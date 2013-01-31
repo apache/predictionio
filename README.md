@@ -10,7 +10,14 @@ With PredictionIO, you can write apps
 
 Detailed documentation *will be* available on our [wiki](https://github.com/PredictionIO/PredictionIO/wiki) page.
 
-
+PREREQUISITES
+=============
+The current default PredictionIO setup assumes that you have the following installed and configured in a trusted environment:
+* Apache Hadoop 1.0+ (or any compatible distribution that supports the "hadoop jar" command)
+* MongoDB 2.0+ (http://www.mongodb.org/)
+* Scala 2.9.2+ (http://www.scala-lang.org/)
+* sbt 0.12.1+ (http://www.scala-sbt.org/)
+* Play 2.0+ (http://www.playframework.org/)
 
 QUICK START
 ===========
