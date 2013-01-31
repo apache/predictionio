@@ -21,27 +21,55 @@ The current default PredictionIO setup assumes that you have the following insta
 
 QUICK START
 ===========
-Download PredictionIO:
+Cloning
+-------
+Simply clone PredictionIO to your local machine.
+The following steps assume that you have cloned the repo at your home directory.
 
-    [ curl http://www.github.com/xxxxx-current.zip ]
+Compiling PredictionIO
+----------------------
+Compile dependencies first using sbt.
 
-Prerequisites:
+    cd ~/PredictionIO/commons
+    sbt +publish
+    cd ~/PredictionIO/output
+    sbt +publish
 
-    [Hadoop, Scala, Sbt] ?
+Compile and build a process assembly using sbt,
+where `>` indicates commands that will be run in the sbt console.
 
-Install and Run PredictionIO
+    cd ~/PredictionIO/process/hadoop/scala
+    sbt
+    > project scala-assembly
+    > assembly
 
-    [command here]
+Compile and pack the command line user administration tool.
 
-Create an Administrator Account
+    cd ~/PredictionIO/tools/users
+    sbt pack
 
-    [command here]
+Adding a User
+-------------
+You must add at least one user to be able to log in.
+Run
 
+    ~/PredictionIO/tools/users/target/pack/bin/users
 
-Browse the web admin panel at http://*your-server-host*:9000/
+and follow the on-screen instructions to create a user.
 
+Launch the Admin Panel
+----------------------
+Assuming you have installed the Play framework at /opt/play,
+where `>` indicates commands that will be run in the Play console.
 
+    cd ~/PredictionIO/adminServer
+    /opt/play/play
+    > update
+    > compile
+    > run
 
+To access the admin panel, point your browser to http://localhost:9000/.
+After the first run, you may skip `update` and `compile`.
 
 
 STEP-BY-STEP TUTORIAL
