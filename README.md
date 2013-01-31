@@ -13,6 +13,7 @@ Detailed documentation *will be* available on our [wiki](https://github.com/Pred
 PREREQUISITES
 =============
 The current default PredictionIO setup assumes that you have the following installed and configured in a trusted environment:
+* A recent version of Linux (other OS's have not been tested yet)
 * Apache Hadoop 1.0+ (or any compatible distribution that supports the "hadoop jar" command)
 * MongoDB 2.0+ (http://www.mongodb.org/)
 * Scala 2.9.2+ (http://www.scala-lang.org/)
