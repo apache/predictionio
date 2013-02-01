@@ -126,23 +126,28 @@ STEP-BY-STEP TUTORIAL
 Build a Recommendation Engine with 5 steps
 ===========================================
 
-In this tutorial, we are building a unique recommendation engine on PredictionIO for a restaurant discovery app. Sign into PredictionIO web admin panel using the administrator account you have created during installation. Then follow these 5 steps:
+In this tutorial, we are building a unique recommendation engine on PredictionIO for a restaurant discovery app.
+Sign into PredictionIO web admin panel using the administrator account you have created during installation.
+Then follow these 5 steps:
 
 Step 1: Add your App
 --------------------
 
-In the Applications page, add a new app by giving it a name, e.g. ‘My Restaurant App’, and click [Create].
+In the Applications page, add a new app by giving it a name, e.g. ‘My Restaurant App’, and click **Create**.
 
 Step 2:  Obtain an App Key
 --------------------------
 
-Click [Develop] on ‘My Restaurant App’, and you will find: (1) API Endpoint; (2) App Key. These are the information you need to integrate your app with PredictionIO SDKs later.
+Click **Develop** on ‘My Restaurant App’, and you will find the App Key.
+This is the information you need when you integrate your app with PredictionIO SDKs later.
 
 Step 3:  Create the Engine
 --------------------------
-Click [Add an Engine]. You will see the available engine types of PredictionIO. In this example, we want to use ‘Item Recommendation Engine’ which can predict user preferences for items. In our case, restaurants are the items.
+Click **Add an Engine**. You will see the available engine types of PredictionIO.
+In this example, we want to use ‘Item Recommendation Engine’ which can predict user preferences for items.
+In our case, restaurants are the items.
 
-Give your new engine a name, e.g. ‘restaurant-rec’, and click [Create].
+Give your new engine a name, e.g. ‘restaurant-rec’, and click **Create**.
 
 Now you have a working recommendation engine. You can start using it right away! 
 If you can spare another minute with us, see how you can fine-tune this engine in ‘Adjust Prediction Settings’ (Step 4). Otherwise, skip to ‘Start Using the Engine’ (Step 5).
@@ -172,26 +177,29 @@ After your first engine is created, you will arrive at the Prediction Settings p
 
 Step 5: Start Using the Engine
 ------------------------------
+Ruby SDK is used in examples below.
+
+    client = PredictionIO::Client.new(<appkey>)
 
 1. Import your Data
 
     Import your users, items and behaviors data into ‘My Restaurant App’ through the API key that you have obtained:
 
     Add User
-    
-        (code here)
-    
+
+        client.acreate_user(<username>)
+
     Add Item (restaurant)
     
-        (code here)
+        client.acreate_item(<itemname>, <array_of_item_types>)
     
     Add Behavior
 
-        (code here)
+        client.auser_rate_item(<username>, <itemname>, <rating_from_1_to_5>)
     
     > Note 1: Item Recommendation Engine uses previous user behavior data to predict users’ future preferences. 
     
-    > Note2 : The data you import into ‘My Restaurant App’ will be shared among all engines you create.
+    > Note 2: The data you import into ‘My Restaurant App’ will be shared among all engines you create.
 
 
 2. Retrieve Prediction
@@ -200,7 +208,7 @@ Step 5: Start Using the Engine
     
     To predict top N restaurants that a user may like:
     
-        (code here)
+        client.get_itemrec_top_n(<enginename>, <username>, <N>)
     
     Item Recommendation Engine also supports location-based and item validity scenario. Please refer to the [wiki](https://github.com/PredictionIO/PredictionIO/wiki) for more information.
     
@@ -208,13 +216,10 @@ Step 5: Start Using the Engine
 Extra Step: Select and Tune Algorithms
 --------------------------------------
 
-An [Algorithms] tab can be found next to the [Prediction Settings] tab. This is the place where you can fine-tune the underlying algorithm of the engine.  
-
+An **Algorithms** tab can be found next to the **Prediction Settings** tab.
+This is the place where you can fine-tune the underlying algorithm of the engine.
 
 
 LICENSE
 =======
-
-PredictionIO source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL). 
-
-
+PredictionIO source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL).
