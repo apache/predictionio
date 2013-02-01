@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET     /                                         io.prediction.output.api.API.status()
+
+POST    /users.:format                            io.prediction.output.api.API.createUser(format)
+GET     /users/:uid.:format                       io.prediction.output.api.API.getUser(format, uid)
+DELETE  /users/:uid.:format                       io.prediction.output.api.API.deleteUser(format, uid)
+
+POST    /items.:format                            io.prediction.output.api.API.createItem(format)
+GET     /items/:iid.:format                       io.prediction.output.api.API.getItem(format, iid)
+DELETE  /items/:iid.:format                       io.prediction.output.api.API.deleteItem(format, iid)
+
+POST    /actions/u2i/rate.:format                 io.prediction.output.api.API.userToItemRate(format)
+POST    /actions/u2i/like.:format                 io.prediction.output.api.API.userToItemLike(format)
+POST    /actions/u2i/dislike.:format              io.prediction.output.api.API.userToItemDislike(format)
+POST    /actions/u2i/view.:format                 io.prediction.output.api.API.userToItemView(format)
+POST    /actions/u2i/conversion.:format           io.prediction.output.api.API.userToItemConversion(format)
+
+GET     /engines/itemrec/:engine/topn.:format     io.prediction.output.api.API.itemRecTopN(format, engine)

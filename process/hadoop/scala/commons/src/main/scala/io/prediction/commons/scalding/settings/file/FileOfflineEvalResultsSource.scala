@@ -1,0 +1,25 @@
+package io.prediction.commons.scalding.settings.file
+
+import com.twitter.scalding._
+
+import cascading.pipe.Pipe
+import cascading.flow.FlowDef
+
+//import io.prediction.commons.scalding.OfflineEvalDataFile
+import io.prediction.commons.scalding.settings.OfflineEvalResultsSource
+
+class FileOfflineEvalResultsSource(path: String) extends Tsv(
+    p = path + "/offlineEvalResults.tsv" //OfflineEvalDataFile(appId, engineId, evalId, metricId, algoId, name="offlineEvalResults.tsv")
+) with OfflineEvalResultsSource {
+  
+  import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
+  
+  override def getSource: Source = this
+  
+  override def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    val dataPipe = p.project(evalidField, metricidField, algoidField, scoreField)
+                    .write(this)
+
+    dataPipe
+  }
+}

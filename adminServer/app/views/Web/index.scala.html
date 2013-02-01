@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>PredictionIO Admin Web</title>
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width">
+
+<link rel="stylesheet"
+	href="assets/stylesheets/vendors/bootstrap.min.css">
+<link rel="stylesheet" href="assets/stylesheets/vendors/darkstrap.css">
+<link rel="stylesheet" href="assets/stylesheets/main.css">
+<link rel="stylesheet"
+	href="assets/stylesheets/vendors/jquery-ui-1.9.2.custom.min.css">
+<script type="text/javascript"
+	src="assets/javascripts/vendors/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+
+<script type="text/template" id="auth_template">
+        <% if (data.adminName) { %>
+            <div id="navAuth" class="btn-group pull-right">
+                <a class="btn btn-inverse btn-small dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user icon-white"></i> <%= data.adminName %> <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <!-- TODO
+                    <li><a href="#">Edit Account</a></li>
+                    <li><a href="#">Admin Settings</a></li>
+                    <li class="divider"></li>
+                    -->
+                    <li><a href="?#signout"><i class="i"></i> Logout</a></li>
+                </ul>
+            </div>
+        <% } %>
+</script>
+<script type="text/template" id="signin_template">
+    <div class="row-fluid">
+        <div class="span12">
+            <div id="signinContainer" class="center">
+                <form id="signinForm" class="form-horizontal">
+                    <div class="modal modal-visible">
+                        <div class="modal-header">
+                            <h4>PredictionIO Admin Panel</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="control-group">
+                                <label class="control-label" for="adminEmail">Email</label>
+                                <div class="controls">
+                                    <input type="text" name="adminEmail" required="required" placeholder="your email">
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="adminPassword">Password</label>
+                                <div class="controls">
+                                    <input type="password" name="adminPassword" required="required" placeholder="your password">
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="controls">
+                                    <label class="checkbox"> <input name="adminRemember" type="checkbox">
+                                        Remember me
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="pull-right">
+                                 <span id="signinFormError" class="displayNone text-warning">error</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+
+                            <button type="submit" class="btn btn-primary input-medium">Sign In</button>
+                        </div>
+                    </div>
+                </form>
+                <div>
+                    <!-- TODO
+                    <a href="#">Forget Password?</a>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="appsDashboard_template">
+	<div class="row-fluid topMargin">
+		<div class="span10 offset1">
+			<div class="modal modal-visible modal-inverse">
+				<div class="modal-header">
+					<h5>Applications</h5>
+				</div>
+				<div class="modal-container">
+					<section class="modal-content">
+						<div class="modal-item-box">
+							<div id="appList">
+								<!-- App list template -->
+							</div>
+							<div id="appCreatePanel" class="displayNone modal-item">
+								<div class="row-fluid">
+									<div class="span5">
+										<form class="navbar-form">
+											<div class="input-append">
+												<input id="addAppInput" type="text"
+													placeholder="Name your app. E.g. MyMobileApp">
+												<button id="createAppBtn" class="btn" type="button">Create</button>
+											</div>
+											<span id="addAppInputError" class="displayNone text-error">Something
+												may have gone wrong</span>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- End of App -->
+						<a href="#" id="showAddAppBtn" class="btn btn-small pull-right">Add
+							an App</a>
+					</section>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
+
+<script type="text/template" id="app_template">
+    <div class="modal-item">
+        <div class="clearfix">
+            <div class="pull-left">
+                <h5>
+                    <a class="toggleAppDetailsAction" href="#"><%= data.appName %></a>
+                </h5>
+            </div>
+            <div class="modal-item-panel pull-right">
+                <a href="#" class="actionbtn toggleAppDetailsAction"><i
+                    class="icon-cog icon-white"></i> Develop</a>
+            </div>
+        </div>
+        <div class="app-info displayNone">
+            <div class="appdetails">
+                <!--  app details template -->
+            </div>
+            <div class="appenginelist">
+                <!--  app engine template -->
+            </div>
+            <p>
+<!-- TODO
+                [ <a href="#" class="eraseAllDataAction"><span
+                    class="text-warning">Reset and Erase All Data</span></a> ] [ <a href="#"
+                    class="removeAppAction"><span class="text-warning">Remove
+                        this App</span></a> ]
+-->
+                [ <a href="javascript:alert('This feature will be available soon.');" ><span
+                    class="text-warning">Reset and Erase All Data</span></a> ] [ <a href="javascript:alert('This feature will be available soon.');"
+                    ><span class="text-warning">Remove
+                        this App</span></a> ]
+            </p>
+        </div>
+    </div>
+</script>
+<script type="text/template" id="appdetails_template">
+                                    <div class="row-fluid">
+                                        <div class="span8">
+                                            <p>
+<!-- TODO
+                                                Last Updated: <%= data.updatedTime %> <a class="detailsRefreshAction" href="#"><i class="icon-refresh"></i></a>
+                                                <br />
+                                                Number of Active Users: <%= data.nUsers %>
+                                                <br /> Number of Active Items: <%= data.nItems %>
+-->
+                                            </p>
+<!--
+                                            <strong>API Endpoint</strong> &nbsp;[<a href="#">?</a>]
+                                            <input class="span12" type="text" readonly required="" value="<%= data.apiEndPoint %>" name="apiEndPoint">
+-->
+                                            <strong>App Key</strong> &nbsp;<!-- TODO [<a href="#">?</a>] -->
+                                            <input class="span12" type="text" readonly required="" value="<%= data.appkey %>" name="appkey">
+                                            <div class="bottomMargin"></div>
+
+                                            <div class="clearfix">
+                                                <strong>Prediction Engines</strong>
+                                                <a href="?app_id=<%= data.id %>#addEngine" class="pull-right btn btn-small">Add an Engine &raquo;</a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+</script>
+<script type="text/template" id="appenginelist_template">
+                                    <div class="row-fluid">
+                                        <div class="span8">
+                                            <table class="table bottomMargin-large">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Engine Name</th>
+                                                        <th>Type</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="appdetails_engines">
+                                                <% _.each(data.enginelist, function(engine) { %>
+                                                    <tr>
+                                                        <td><%= engine.engineName %></td>
+                                                        <td><%= engine.enginetype_id %></td>
+                                                        <td><a href="?app_id=<%= data.id %>&engine_id=<%= engine.id %>&enginetype_id=<%= engine.enginetype_id %>#engine" class="btn btn-small">Manage</a></td>
+                                                    </tr>
+                                                <% }); %>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+</script>
+<script type="text/template" id="breadcrumb_template">
+        <ul class="breadcrumb">
+            <% if(data.appName != null) { %>
+                <li><strong><a href="#appsDashboard"><%= data.appName %></a></strong>
+            <% } %>
+            <% if(data.engineName != null) { %>
+                <span class="divider">/</span></li>
+                <li class="active"><%= data.engineName %></li>
+            <% } %>
+        </ul>
+</script>
+<script type="text/template" id="app_addEngine_template">
+<div class="row-fluid">
+    <div class="span10 offset1">
+        <div id="breadcrumb_ContentHolder"></div>
+        <div class="page-header"><h4>Create an Engine</h4></div>
+            <div id="createEngine" class="boxContainer clearfix bottomMargin-large">
+                <% _.each(data, function(enginetype, index) { %>
+                    <% if(index % 2 == 0) { %>
+                    <div class="row-fluid">
+                    <% } %>
+                        <div class="span6 boxBlock">
+                            <div class="boxtitle">
+                                <strong><i class="icon-cog icon-white"></i> <%= enginetype.enginetypeName%></strong>
+                            </div>
+                            <div class="boxContent">
+                                <%= enginetype.description%>
+                            </div>
+                            <div class="boxPanel clearfix">
+                                <form>
+                                    <div class="textRight">
+                                        <span class="createEngineError text-error displayNone">Error text here</span>
+                                    </div>
+                                    <div class="pull-right">
+                                        <div class="input-append">
+                                            <input type="hidden" name="enginetype_id" value="<%= enginetype.id%>"/>
+                                            <input class="btn-input" name="engineName" type="text" placeholder="type engine name..."/>
+                                            <button class="btn btn-inverse" type="submit">Create</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    <% if(index % 2 != 0) { %>
+                    </div>
+                    <% } %>
+
+                <% }); %>
+            </div>
+        </div>
+    </div>
+</div>
+
+</script>
+
+<script type="text/template" id="engineTabAlgorithms_template">
+                    <div class="row-fluid bottomMargin">
+                        <div class="span8">
+                            <div class="boxContainer">
+                                <div class="boxBlock">
+                                    <div class="boxtitle">
+                                        <i class="icon-fire icon-white"></i> Deployed Algorithm <small>
+                                            - running on live system</small>
+                                    </div>
+                                    <div class="boxContent">
+                                        <div id="engine_deployedAlgo_ContentHolder"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="boxContainer">
+                        <div class="boxBlock">
+                            <div class="boxContent">
+                                <div class="row-fluid">
+                                    <div class="span8">
+                                        <h4>Available Algorithms</h4>
+<!-- TODO
+                                        <a href="#" disabled id="availableAlgoDeployBtn" class="btn btn-small btn-primary">
+                                            Deploy <i class="icon-play icon-white"></i>
+                                        </a>
+-->
+                                        &nbsp;
+                                        <a href="#" disabled id="availableSimEvalBtn" class="btn btn-small btn-primary">
+                                            Run Simulated Evaluation <i class="icon-signal icon-white"></i>
+                                        </a>
+                                        &nbsp;
+                                        <a href="#engineAddAlgorithm" class="btn btn-info btn-small">Add an Algorithm &raquo;</a>
+                                        <div id="engine_availableAlgoList_ContentHolder">
+                                            <!-- template here -->
+                                        </div>
+                                    </div>
+                                    <div class="span4">
+                                        <div id="engine_simevalList_ContentHolder">
+                                            <!-- template here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+</script>
+<script type="text/template" id="engine_simevalList_template">
+                                        <h4>
+                                            Simulated Evaluation <i class="icon-signal icon-white"></i>
+                                        </h4>
+                                        <table
+                                            class="table table-bordered table-condensed smallContent table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Created Date</th>
+                                                    <th>Algo(s)</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- template here -->
+                                            </tbody>
+                                        </table>
+</script>
+<script type="text/template" id="engine_simeval_template">
+    <td><%= data.startTime %></td>
+    <td>
+        <%
+            var algoArray = [];
+            _.each(data.algolist, function(algo, index) {
+                algoArray.push(algo.algoName);
+            });
+        %>
+        <%= algoArray.join(', ') %>
+    </td>
+    <td><% if(data.status == 'completed') { %>
+        <div class="btn-group dropup">
+            <button data-toggle="dropdown"
+                class="btn btn-mini btn-inverse dropdown-toggle">
+                Completed <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu pull-right">
+                <li><a href="#simEvalReport/<%= encodeURIComponent(data.id) %>">View Report</a></li>
+<!-- TODO
+                <li><a class="simevalDeleteBtn" href="#">Delete</a></li>
+-->
+                <li><a href="javascript:alert('This feature will be available soon.');">Delete</a></li>
+            </ul>
+        </div> <% } else { %>
+        <div class="btn-group dropup">
+            <button data-toggle="dropdown"
+                class="btn btn-mini btn-inverse dropdown-toggle">
+                Pending <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu pull-right">
+<!-- TODO
+                <li><a class="simevalDeleteBtn" href="#">Stop and Delete</a></li>
+-->
+                <li><a href="javascript:alert('This feature will be available soon.');">Stop and Delete</a></li>
+            </ul>
+        </div> <% } %>
+    </td>
+</script>
+
+<script type="text/template" id="engine_deployedAlgo_template">
+<table class="table">
+	<thead>
+		<tr>
+			<th>Algo Name</th>
+			<th>Algorithm</th>
+			<th>Status</th>
+<!-- TODO
+			<th>Running Since</th>
+-->
+		</tr>
+	</thead>
+	<tbody>
+        <% _.each(data.algolist, function(algo, index) { %>
+		<tr>
+			<td><%= algo.algoName %></td>
+			<td><%= algo.algotypeName %></td>
+			<td span="2">
+                <% if(index == 0) { %>
+				<div class="btn-group">
+					<button data-toggle="dropdown"
+						class="btn btn-mini btn-inverse dropdown-toggle">
+						<%= data.status %> <span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu pull-right">
+                        <!-- TODO
+						<li><a href="#"><i class="icon-signal"></i> View Report</a></li>
+						<li><a href="#"><i class="icon-pencil"></i> Edit Deploy
+								Settings</a></li>
+						<li class="divider"></li>
+                        -->
+						<li><a id="algoUndeployBtn" href="#">Undeploy</a></li>
+					</ul>
+				</div>
+                <% } %>
+			</td>
+<!-- TODO
+			<td span="2" class="smallContent">
+                <% if(index == 0) { %>
+                    <%= data.updatedTime %>
+                <% } %>
+            </td>
+-->
+		</tr>
+        <% }); %>
+	</tbody>
+</table>
+</script>
+
+<script type="text/template" id="engine_availableAlgoList_template">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Algo Name</th>
+                                                    <th>Algorithm</th>
+                                                    <th>Status</th>
+                                                    <th>Last Updated</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- template here -->
+                                            </tbody>
+                                        </table>
+</script>
+
+<script type="text/template" id="engine_availableAlgo_template">
+                                                    <td>
+                                                        <% if ( data.status == "ready") {%>
+                                                        <input type="checkbox" name="avaalgoSelect" value="<%= data.id %>" />
+                                                        <% } %>
+                                                    </td>
+                                                    <td><%= data.algoName %></td>
+                                                    <td><%= data.algotypeName %></td>
+                                                    <td>
+                                                        <% if ( data.status == "ready") {%>
+                                                        <div class="btn-group dropup">
+                                                            <button data-toggle="dropdown"
+                                                                class="btn btn-mini btn-inverse dropdown-toggle">
+                                                                Ready to Deploy<span class="caret"></span>
+                                                            </button>
+                                                            <ul class="dropdown-menu pull-right">
+                                                                <li><a class="algoDeployBtn" href="#">Deploy</a></li>
+                                                                <li><a href="#simEvalSettings/<%= encodeURIComponent(data.id) %>">Run Simulated Evaluation</a></li>
+                                                                <!-- TODO
+                                                                <li><a href="#">Edit Algorithm Settings</a></li>
+                                                                -->
+                                                                <li class="divider"></li>
+                                                                <!-- TODO <li><a class="algoDeleteBtn" href="#">Delete</a></li> -->
+                                                            </ul>
+                                                        </div>
+                                                        <% } else { %>
+                                                        <div class="btn-group dropup">
+                                                            <button data-toggle="dropdown"
+                                                                class="btn btn-mini btn-inverse dropdown-toggle">
+                                                                <em>Auto-tuning...</em><span class="caret"></span>
+                                                            </button>
+                                                            <ul class="dropdown-menu pull-right">
+                                                                <li><a href="#">Edit Algorithm Settings</a></li>
+                                                                <li class="divider"></li>
+                                                                <li><a href="#">Stop and Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                        <% } %>
+                                                    </td>
+                                                    <td class="smallContent"><%= data.updatedTime %></td>
+</script>
+<script type="text/template" id="engine_addAlgorithm_template">
+    <div class="row-fluid bottomMargin">
+        <div class="span12">
+            <div class="boxContainer">
+                <div class="boxBlock">
+                    <div class="boxtitle">Available Algorithms for <%= data.enginetypeName %></div>
+                    <div class="boxContent">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Algorithm</th>
+                                    <th>Description</th>
+                                    <th>Requirement</th>
+                                    <th>Data Requirement</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% _.each(data.algotypelist, function(algotype) { %>
+                                <tr>
+                                    <td><%= algotype.algotypeName %></td>
+                                    <td><%= algotype.description %></td>
+                                    <td><%= algotype.req %></td>
+                                    <td><%= algotype.datareq %></td>
+                                    <td>
+                                        <form>
+                                        <div class="input-append">
+                                            <input type="hidden" name="algotype_id" value="<%= algotype.id%>"/>
+                                            <input class="btn-input span9" name="algoName" type="text" placeholder="type algo name..."/>
+                                            <button class="btn btn-primary" type="submit">Add</button>
+                                        </div>
+                                        <div class="addAlgoError text-error displayNone">Error text here</div>
+                                        </form>
+                                     </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="engine_template">
+<div class="row-fluid">
+    <div class="span10 offset1">
+        <div class="alert alert-block alert-error displayNone">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>Warning!</strong> Error placeholder here.... It should be
+            hidden by default. For now, please click the 'x' button.
+        </div>
+        <!--  breadcrumb -->
+        <div id="breadcrumb_ContentHolder"></div>
+        <div class="row-fluid bottomMargin">
+            <div class="span12">
+<!-- TODO
+                Engine Status: <span class="label label-info">Running <i
+                    class="icon-ok icon-white"></i></span>
+-->
+            </div>
+        </div>
+        <div id="engineTab" class="row-fluid">
+            <div class="span12">
+                <ul class="nav nav-tabs" id="engineTab">
+                    <li><a id="engineTabSettingsBtn" href="#engineTabSettings">Prediction
+                            Settings</a></li>
+                    <li><a id="engineTabAlgorithmsBtn" href="#engineTabAlgorithms">Algorithms</a></li>
+                    <li id="engineExtraTabTitle" class="displayNone"><a onclick="return false;" id="engineExtraTabBtn" href="#engineExtraTab">-</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane" id="engineTabSettings">
+                <div id="engineTabSettingsContentHolder">
+                    <!-- engine settings template -->
+                </div>
+            </div>
+            <div class="tab-pane" id="engineTabAlgorithms">
+                <div id="engineTabAlgorithmsContentHolder">
+                    <!-- engine algorithms tab template -->
+                </div>
+            </div>
+            <div class="tab-pane" id="engineExtraTab">
+                <div id="engineExtraTabContentHolder">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+<script type="text/template" id="engine_simEvalReport_template">
+<div class="row-fluid">
+    <div class="span12">
+        <form class="form-horizontal">
+            <div class="modal modal-visible">
+                <div class="modal-header">
+                    <h4>Simulated Evaluation Report</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bottomMargin">
+                        <div>Start Time: <%= data.startTime %></div>
+                        <div>End Time: <%= data.endTime %></div>
+                    </div>
+                    <h5>Algorithms</h5>
+                    <p>Settings of algorithms at the time of evaluation.</p>
+                    <div class="well">
+                        <ul>
+                            <% _.each(data.algolist, function(algo) { %>
+                            <li><%= algo.algoName %>
+                                <p>(<%= algo.settingsString %>)</p>
+                            </li>
+                            <% }); %>
+                        </ul>
+                    </div>
+
+                    <h5>Results</h5>
+                    <% // create result matrix
+                        var result = {};
+                        _.each(data.algolist, function(algo) {
+                            result[algo.id] = {};
+                        });
+                        _.each(data.metricscorelist, function(s) {
+                            result[s.algo_id][s.metrics_id] = s.score;
+                        });
+                    %>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Algorithm ID</th>
+                                <% _.each(data.metricslist, function(metrics) { %>
+                                <th><%= metrics.metricsName%> (<%= metrics.settingsString%>)</th>
+                                <% }); %>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% _.each(data.algolist, function(algo) { %>
+                            <tr>
+                                <td><%= algo.algoName %></td>
+                                <% _.each(data.metricslist, function(metrics) { %>
+                                    <td><%= result[algo.id][metrics.id] %></td>
+                                <% }); %>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</script>
+
+<script type="text/template" id="engine_simEvalSettingsMetrics_template">
+
+                                            <li class="bottomMargin">
+                                                <select name="metrics[<%= data.index %>]" class="span6">
+                                                    <% _.each(data.metricslist, function(metrics) { %>
+                                                        <option value="<%= metrics.id %>"><%= metrics.metricsLongName %> (<%= metrics.metricsName %>)</option>
+                                                    <% }); %>
+                                                </select>
+                                                <!-- TODO: support dynamic settings fields -->
+                                                <span>
+                                                k = <input name="metricsSettings[<%= data.index %>]" class="span1" value="20" type="text"></input>   &nbsp;&nbsp;&nbsp;&nbsp;[<a href="#" class="deleteMetricsBtn"> remove </a>]
+                                                </span>
+                                            </li>
+</script>
+
+<script type="text/template" id="engine_simEvalSettings_template">
+                        <div class="row-fluid">
+                           <div class="span10 offset1">
+                                <form id="simEvalSettingsForm" class="form-horizontal">
+                                <div class="modal modal-visible">
+                                    <div class="modal-header">
+                                        <h4>Item Recsys Simulated Evaluation</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <h5>Algorithms to be Evaluated</h5>
+                                        <div class="well">
+                                            <ul>
+                                                <% _.each(data.algoList, function(algo, index) { %>
+                                                    <li><%= algo.algoName %><input type="hidden" value="<%= algo.id %>" name="algo[<%= index %>]"/></li>
+                                                <% }); %>
+                                            </ul>
+                                        </div>
+
+                                        <h5>Metrics <small><!-- TODO [<a href="#">?</a>] --> </small></h5>
+                                        <p>
+                                            The above algorithms will be evaluated against the following metrics.
+                                        </p>
+
+                                        <ul id="metrics_list_ContentHolder">
+
+                                        </ul>
+                                        <a href="#" id="addMetricsBtn" class="btn btn-small btn-inverse">Add Another Metric</a>
+
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary input-medium">Run Now</button>
+                                    </div>
+                                </div>
+                                </form>
+                            </div>
+                        </div>
+</script>
+
+</head>
+
+<body>
+	<!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please upgrade your browser or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    <![endif]-->
+
+	<div class="wrapper">
+		<!-- sticky footer -->
+		<div id="headbar" class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+					<a class="btn btn-navbar" data-toggle="collapse"
+						data-target=".nav-collapse"> <span class="icon-bar"></span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span>
+					</a> <a class="brand" href="?#appsDashboard"><img width="130px"
+						src="assets/images/predictionio.png" /></a>
+					<div id="navBar" class="nav-collapse collapse">
+						<ul class="nav">
+							<!-- <li><a href="#about">Processing Tasks <span class="badge badge-info">0</span></a></li> -->
+							<li class="dropdown"><a href="#" class="dropdown-toggle"
+								data-toggle="dropdown">Help <b class="caret"></b></a>
+								<ul class="dropdown-menu">
+									<li><a href="#">Prediction IO Guide</a></li>
+									<li><a href="#">Download SDKs</a></li>
+									<li><a href="#">View Source Codes</a></li>
+									<li class="divider"></li>
+									<li class="nav-header">Support</li>
+									<li><a href="#">Google Group</a></li>
+									<li><a href="#">Twitter</a></li>
+									<li><a href="#">Email Us</a></li>
+								</ul></li>
+						</ul>
+						<div id="AuthHolder"></div>
+					</div>
+					<!--/.nav-collapse -->
+				</div>
+			</div>
+		</div>
+		<div id="mainarea" class="container-fluid">
+			<div id="ContentHolder"></div>
+		</div>
+		<div class="push"></div>
+		<!-- sticky footer -->
+	</div>
+
+	<div class="footer">
+		<hr />
+		<footer>
+			<p>Prediction IO Community Edition core is released under the
+				AGPL License, SDKs under Apache License and documentation under
+				Creative Common.</p>
+			<p>
+				<a href="#">Contact Us</a> <a href="#">Report Bugs</a> <a href="#">Contribute
+					Codes</a>
+			</p>
+		</footer>
+	</div>
+
+	<script
+		src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+	<script>
+		window.jQuery
+				|| document
+						.write('<script type="text/javascript" src="assets/javascripts/vendors/jquery-1.8.3.min.js"><\/script>')
+	</script>
+	<script type="text/javascript"
+		src="assets/javascripts/vendors/jquery-ui-1.9.2.custom.min.js"></script>
+	<script type="text/javascript"
+		src="assets/javascripts/vendors/bootstrap.min.js"></script>
+	<script type="text/javascript"
+		src="assets/javascripts/vendors/underscore-min.js"></script>
+	<script type="text/javascript"
+		src="assets/javascripts/vendors/json2.js"></script>
+	<script type="text/javascript"
+		src="assets/javascripts/vendors/backbone-min.js"></script>
+	<script type="text/javascript" src="assets/javascripts/core.js"></script>
+</body>
+</html>

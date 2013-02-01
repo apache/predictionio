@@ -1,0 +1,154 @@
+<script type="text/template" id="knnitembasedTemplate">
+                        <div class="row-fluid bottomMargin">
+                        <form id="knnitembasedForm">
+                           <div class="span12">
+                                <div class="boxContainer clearfix">
+                                    
+                                    <div class="boxBlock">
+                                        <div class="boxtitle">
+                                           Parameter Settings
+                                            <div class="btn-group pull-right">
+                                                <a href="#" data-toggle="dropdown" class="btn btn-small btn-inverse dropdown-toggle"><i class="icon-wrench icon-white"></i> Manual Tuning <span class="caret"></span></a>
+                                                <ul class="dropdown-menu">
+                                                <li><a href="javascript:alert('This feature will be available soon.');">Auto-tune Parameters</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="boxContent">
+                                            <div class="form-horizontal">
+                                                <h5>Item Similarity Measurement</h5>
+                                                <div class="control-group">
+                                                    <label for="distanceFunc" class="control-label">Distance Function </label>
+                                                    <div class="controls">
+                                                        <select name="distanceFunc" id="knnitembase_distanceFunc">
+                                                            <option value="correl">Pearson Correlation Similarity</option>
+                                                            <option value="cosine">Cosine Similarity</option>
+                                                            <option value="jaccard">Jaccard Similarity</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+    
+                                                <h5>Regularization</h5>
+                                                <p>
+                                                   Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.
+                                                </p>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Virtual Count</label>
+                                                    <div class="controls">
+                                                        <input id="knnitembase_virtualCount" name="virtualCount" class="span1" type="text" id="reg-virtualcount" value="50">
+                                                        <span class="help-inline">Suggested range: 0 to 100. Default 50.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Prior Correlation</label>
+                                                    <div class="controls">
+                                                        <input id="knnitembase_priorCorrelation" name="priorCorrelation" class="span1" type="text" id="reg-priorcorr" value="0">
+                                                        <span class="help-inline">Suggested range: 0 to 50. Default 0.</span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="boxBlock">
+                                        <div class="boxtitle">
+                                           User Actions Representation Settings
+                                        </div>
+                                        <div class="boxContent">
+                                            <div class="form-horizontal">
+                                                <h5>User Action Scores</h5>
+                                                <p>Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.</p>
+                                                <div class="control-group">
+                                                    <label for="view" class="control-label">View</label>
+                                                    <div class="controls">
+                                                        <select id="knnitembase_viewAction" name="viewAction" class="span2">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="ignore">Ignore</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+<!-- TODO
+                                                <div class="control-group">
+                                                    <label for="viewMore" class="control-label">View More</label>
+                                                    <div class="controls">
+                                                        <select id="knnitembase_viewmoreAction" name="viewmoreAction" class="span2">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="ignore">Ignore</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+-->
+                                                <div class="control-group">
+                                                    <label for="like" class="control-label">Like</label>
+                                                    <div class="controls">
+                                                        <select id="knnitembase_likeAction" name="likeAction" class="span2">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="ignore">Ignore</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="dislike" class="control-label">Dislike</label>
+                                                    <div class="controls">
+                                                        <select id="knnitembase_dislikeAction" name="dislike" class="span2">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="ignore">Ignore</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="buy" class="control-label">Buy</label>
+                                                    <div class="controls">
+                                                        <select id="knnitembase_buyAction" name="buyAction" class="span2">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="ignore">Ignore</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <h5>Overriding</h5>
+                                                <p>When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.</p>
+                                                <div class="control-group">
+                                                    <label for="override" class="control-label">Override Priority</label>
+                                                    <div class="controls">
+                                                        <select id="knnitembase_override" name="override" class="span5" id="overrideSelect">
+                                                            <option value="latest">Use the latest action</option>
+                                                            <option value="highest">Use the highest preference score one</option>
+                                                            <option value="lowest">Use the lowest preference score one</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pull-right">
+                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                    </div>
+                                </div>  
+                            </div>
+                        </form>
+                        </div>
+</script>
+
+<div id="knnitembasedContentHolder"></div>

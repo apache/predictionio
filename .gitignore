@@ -1,0 +1,7 @@
+.project
+project/*
+!project/Build.scala
+target/*
+vendors
+.DS_Store
+.idea

@@ -1,0 +1,60 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET     /                           controllers.Application.redirectToWeb
+GET     /web                        controllers.Application.redirectToWeb
+GET     /web/                        controllers.Application.showWeb
+GET     /web/assets/*file               controllers.Assets.at(path="/public", file)
+### During development, use enginebase controller instead to avoid cache problems
+# GET    /web/enginebase/*file               controllers.Assets.at(path="/enginebase", file) # Remeber to update project/Build.scala
+GET     /web/enginebase/*file                controllers.Application.enginebase(file)
+
+
+POST    /signin                       controllers.Application.signin
+POST    /signout                    controllers.Application.signout
+
+# Admin User 
+GET     /auth                       controllers.Application.getAuth
+
+# An App
+GET     /app_list                      controllers.Application.getApplist
+GET   /app/:id                          controllers.Application.getApp(id) 
+POST    /app                          controllers.Application.createApp
+DELETE  /app/:id                      controllers.Application.removeApp(id)
+#PUT    /app/:id                      controllers.Application.updateApp(id)
+GET     /app_details/:id              controllers.Application.getAppDetails(id)
+GET     /app_engine_list/:id           controllers.Application.getAppEnginelist(id)
+POST     /app/erasedata/:id           controllers.Application.eraseAppData(id)
+
+# System Level
+GET     /enginetype_list                 controllers.Application.getEngineTypeList
+GET     /enginetype_algolist/:id                 controllers.Application.getEngineTypeAlgoList(id)
+GET     /enginetype_metricstype_list/:id        controllers.Application.getEngineTypeMetricsTypeList(id)
+
+# An Engine of an App
+GET    /app/:app_id/engine/:id             controllers.Application.getEngine(app_id, id)
+POST    /app/:app_id/engine             controllers.Application.createEngine(app_id)
+GET     /app/:app_id/engine/:engine_id/algo_available_list      controllers.Application.getAvailableAlgoList(app_id, engine_id)
+GET    /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.getAvailableAlgo(app_id, engine_id, id)
+POST    /app/:app_id/engine/:engine_id/algo_available       controllers.Application.createAvailableAlgo(app_id, engine_id)
+DELETE  /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.removeAvailableAlgo(app_id, engine_id, id)
+
+GET     /app/:app_id/engine/:engine_id/algo_deployed      controllers.Application.getDeployedAlgo(app_id, engine_id)
+
+GET     /app/:app_id/engine/:engine_id/simeval_list      controllers.Application.getSimEvalList(app_id, engine_id)
+POST    /app/:app_id/engine/:engine_id/simeval       controllers.Application.createSimEval(app_id, engine_id)
+DELETE  /app/:app_id/engine/:engine_id/simeval/:id       controllers.Application.removeSimEval(app_id, engine_id, id)
+GET     /app/:app_id/engine/:engine_id/simeval_report/:id      controllers.Application.getSimEvalReport(app_id, engine_id, id)
+
+POST     /app/:app_id/engine/:engine_id/algo_deploy      controllers.Application.algoDeploy(app_id, engine_id)
+POST     /app/:app_id/engine/:engine_id/algo_undeploy      controllers.Application.algoUndeploy(app_id, engine_id)
+
+
+# Engine Module
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.getSettings(app_id, engine_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.updateSettings(app_id, engine_id)
+# Algo Module
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/knnitembased/:algo_id     controllers.Itemrec.Knnitembased.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/knnitembased/:algo_id     controllers.Itemrec.Knnitembased.updateSettings(app_id, engine_id, algo_id)
+

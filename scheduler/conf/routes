@@ -1,0 +1,5 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET     /users/:userid/sync             io.prediction.scheduler.Scheduler.userSync(userid: Int)
