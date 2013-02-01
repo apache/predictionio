@@ -45,6 +45,15 @@ where `>` indicates commands that will be run in the sbt console.
     > assembly
 
 Compile and pack the command line user administration tool.
+The default configuration assumes that you are running MongoDB at localhost:27017.
+If this is not the case, update the configuration in
+`~/PredictionIO/tools/users/src/main/resources/application.conf` before compiling.
+
+    io.prediction.commons.settings.db.type=mongodb
+    io.prediction.commons.settings.db.host=your.host.com
+    io.prediction.commons.settings.db.port=12345
+
+After that, compile the tool.
 
     cd ~/PredictionIO/tools/users
     sbt pack
@@ -60,6 +69,11 @@ and follow the on-screen instructions to create a user.
 
 Launch the Admin Panel
 ----------------------
+Similar to the CLI tool, you may want to change your configuration, which is located at
+`~/PredictionIO/adminServer/conf/application.conf`
+
+Notice that the commons settings database should be the same as the one specified in the CLI tool.
+
 Assuming you have installed the Play framework at /opt/play,
 where `>` indicates commands that will be run in the Play console.
 
