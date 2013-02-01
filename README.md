@@ -27,6 +27,9 @@ Cloning
 Simply clone PredictionIO to your local machine.
 The following steps assume that you have cloned the repo at your home directory.
 
+    cd ~
+    git clone git://github.com/PredictionIO/PredictionIO.git
+
 Compiling PredictionIO
 ----------------------
 Compile dependencies first using sbt.
@@ -85,6 +88,37 @@ where `>` indicates commands that will be run in the Play console.
 
 To access the admin panel, point your browser to http://localhost:9000/.
 After the first run, you may skip `update` and `compile`.
+
+Start the API Server
+--------------------
+Again, change the configuration in `~/PredictionIO/output/api/conf/application.conf`
+where you see fit. With the same assumption from the step before,
+
+    cd ~/PredictionIO/output/api
+    /opt/play/play
+    > update
+    > compile
+    > run 8000
+
+This will start the API server on the default port 8000.
+
+Start the Scheduler
+-------------------
+Change the configuration in `~PredictionIO/scheduler/conf/application.conf`
+where you see fit.
+
+In this configuration, however, you may want to change all database host names to one
+that can be resolved by all nodes in your Hadoop farm.
+
+With the same assumption from the step before,
+
+    cd ~/PredictionIO/scheduler
+    /opt/play/play
+    > update
+    > compile
+    > run 7000
+
+This will start the scheduler on the default port 7000.
 
 
 STEP-BY-STEP TUTORIAL
