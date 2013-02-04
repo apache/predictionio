@@ -220,6 +220,13 @@ An **Algorithms** tab can be found next to the **Prediction Settings** tab.
 This is the place where you can fine-tune the underlying algorithm of the engine.
 
 
+SUPPORT
+===========
+
+Forum
+-----
+https://groups.google.com/group/predictionio-user
+
 LICENSE
 =======
 PredictionIO source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL).
