@@ -7,7 +7,7 @@ organization := "io.prediction"
 scalaVersion := "2.9.2"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.1-SNAPSHOT",
+  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
   "jline" % "jline" % "2.9"
 )
 
