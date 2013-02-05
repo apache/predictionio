@@ -10,8 +10,10 @@ With PredictionIO, you can write apps
 
 Detailed documentation *will be* available on our [wiki](https://github.com/PredictionIO/PredictionIO/wiki) page.
 
+
 PREREQUISITES
 =============
+
 The current default PredictionIO setup assumes that you have the following installed and configured in a trusted environment:
 * At least 512MB of free memory for building the source
 * A recent version of Linux (other OS's have not been tested yet)
@@ -21,10 +23,13 @@ The current default PredictionIO setup assumes that you have the following insta
 * sbt 0.12.1+ (http://www.scala-sbt.org/)
 * Play 2.0+ (http://www.playframework.org/)
 
+
 QUICK START
 ===========
+
 Cloning
 -------
+
 Simply clone PredictionIO to your local machine.
 The following steps assume that you have cloned the repo at your home directory.
 
@@ -33,6 +38,8 @@ The following steps assume that you have cloned the repo at your home directory.
 
 Compiling PredictionIO
 ----------------------
+
+### Common Dependencies ###
 Compile dependencies first using sbt.
 
     cd ~/PredictionIO/commons
@@ -44,13 +51,17 @@ If you run into any memory space problem, you may want to try adding `-Xmx512m` 
 
     sbt +publish -Xmx512m
 
-Compile and build a process assembly using sbt,
+### Process Assembly ###
+Compile and build the process assembly using sbt,
 where `>` indicates commands that will be run in the sbt console.
 
     cd ~/PredictionIO/process/hadoop/scala
     sbt
     > project scala-assembly
     > assembly
+
+### Command-line User Administration Tool ###
+> Note: It is not necessary to have MongoDB running to compile the command line user administration tool.
 
 Compile and pack the command line user administration tool.
 The default configuration assumes that you are running MongoDB at localhost:27017.
@@ -68,6 +79,9 @@ After that, compile the tool.
 
 Adding a User
 -------------
+
+> Note: MongoDB must be running for this step and beyond.
+
 You must add at least one user to be able to log in.
 Run
 
@@ -75,12 +89,14 @@ Run
 
 and follow the on-screen instructions to create a user.
 
-Launch the Admin Panel
+Starting the Admin Panel
 ----------------------
+
 Similar to the CLI tool, you may want to change your configuration, which is located at
 `~/PredictionIO/adminServer/conf/application.conf`
 
-Notice that the commons settings database should be the same as the one specified in the CLI tool.
+The commons settings database, specified by `io.prediction.commons.settings.db.*` keys,
+should be the same as the one specified in the CLI tool.
 
 Assuming you have installed the Play framework at /opt/play,
 where `>` indicates commands that will be run in the Play console.
@@ -94,8 +110,9 @@ where `>` indicates commands that will be run in the Play console.
 To access the admin panel, point your browser to http://localhost:9000/.
 After the first run, you may skip `update` and `compile`.
 
-Start the API Server
+Starting the API Server
 --------------------
+
 Again, change the configuration in `~/PredictionIO/output/api/conf/application.conf`
 where you see fit. With the same assumption from the step before,
 
@@ -107,8 +124,9 @@ where you see fit. With the same assumption from the step before,
 
 This will start the API server on the default port 8000.
 
-Start the Scheduler
+Starting the Scheduler
 -------------------
+
 Change the configuration in `~PredictionIO/scheduler/conf/application.conf`
 where you see fit.
 
@@ -182,6 +200,7 @@ After your first engine is created, you will arrive at the Prediction Settings p
 
 Step 5: Start Using the Engine
 ------------------------------
+
 Ruby SDK is used in examples below.
 
     client = PredictionIO::Client.new(<appkey>)
@@ -209,7 +228,7 @@ Ruby SDK is used in examples below.
 
 2. Retrieve Prediction
 
-    Item Recommendation Engine is trained/re-trained with new data every day. 
+    Item Recommendation Engine is trained/re-trained with new data every hour. 
     
     To predict top N restaurants that a user may like:
     
@@ -230,8 +249,10 @@ SUPPORT
 
 Forum
 -----
+
 https://groups.google.com/group/predictionio-user
 
 LICENSE
 =======
+
 PredictionIO source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL).
