@@ -13,6 +13,7 @@ Detailed documentation *will be* available on our [wiki](https://github.com/Pred
 PREREQUISITES
 =============
 The current default PredictionIO setup assumes that you have the following installed and configured in a trusted environment:
+* At least 512MB of free memory for building the source
 * A recent version of Linux (other OS's have not been tested yet)
 * Apache Hadoop 1.0+ (or any compatible distribution that supports the "hadoop jar" command)
 * MongoDB 2.0+ (http://www.mongodb.org/)
