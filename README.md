@@ -40,6 +40,10 @@ Compile dependencies first using sbt.
     cd ~/PredictionIO/output
     sbt +publish
 
+If you run into any memory space problem, you may want to try adding `-Xmx512m` to your `sbt` commands, e.g.
+
+    sbt +publish -Xmx512m
+
 Compile and build a process assembly using sbt,
 where `>` indicates commands that will be run in the sbt console.
 
