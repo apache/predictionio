@@ -1,5 +1,7 @@
 package io.prediction.output
 
+import io.prediction.commons.modeldata._
+import io.prediction.commons.modeldata.mongodb._
 import io.prediction.commons.settings._
 import io.prediction.commons.settings.mongodb._
 
@@ -20,12 +22,14 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     "get itemsim output from a valid engine with an unsupported algorithm"    ! itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
     "get itemsim output from a valid engine with no algorithm"                ! itemSimOutputSelectionNoAlgo(algoOutputSelector) ^
     "get itemsim output from an invalid engine"                               ! itemSimOutputSelectionBadEngine(algoOutputSelector) ^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase()) ^
+                                                                              Step(mongoDb.dropDatabase()) ^
                                                                               end
 
   val mongoDbName = "predictionio_algooutputselection_test"
-  val mongoEngines = new mongodb.MongoEngines(MongoConnection()(mongoDbName))
-  val mongoAlgos = new mongodb.MongoAlgos(MongoConnection()(mongoDbName))
+  val mongoDb = MongoConnection()(mongoDbName)
+  val mongoEngines = new MongoEngines(mongoDb)
+  val mongoAlgos = new MongoAlgos(mongoDb)
+  val mongoItemRecScores = new MongoItemRecScores(mongoDb)
   val algoOutputSelector = new AlgoOutputSelector(mongoAlgos)
 
   val dummyApp = App(
@@ -67,7 +71,37 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     )
     val algoid = mongoAlgos.insert(algo)
 
-    algoOutputSelector.itemRecSelection("dummy", 10, None)(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("itemrec", "dummy", algoid.toString, "foo", "bar"))
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_x",
+      score = 5,
+      itypes = List("bar"),
+      appid = 0,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_y",
+      score = 4,
+      itypes = List("foo"),
+      appid = 0,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_z",
+      score = 3,
+      itypes = List("unrelated"),
+      appid = 0,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    algoOutputSelector.itemRecSelection("user1", 10, Some(List("bar", "foo")))(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y"))
   }
 
   def itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {

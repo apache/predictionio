@@ -5,11 +5,11 @@ import PlayProject._
 object ApplicationBuild extends Build {
 
     val appName         = "predictionio-scheduler"
-    val appVersion      = "0.1"
+    val appVersion      = "0.2-SNAPSHOT"
 
     val appDependencies = Seq(
       "commons-io" % "commons-io" % "2.4",
-      "io.prediction" %% "predictionio-commons" % "0.1-SNAPSHOT" changing(),
+      "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT" changing(),
       "mysql" % "mysql-connector-java" % "5.1.22",
       "org.clapper" %% "scalasti" % "0.5.8",
       "org.quartz-scheduler" % "quartz" % "2.1.6",

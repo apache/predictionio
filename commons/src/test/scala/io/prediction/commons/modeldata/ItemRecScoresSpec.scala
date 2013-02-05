@@ -1,5 +1,7 @@
 package io.prediction.commons.modeldata
 
+import io.prediction.commons.settings.{Algo, App}
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
@@ -36,6 +38,30 @@ class ItemRecScoresSpec extends Specification {
   def newMongoItemRecScores = new mongodb.MongoItemRecScores(MongoConnection()(mongoDbName))
 
   def insert(itemRecScores: ItemRecScores) = {
+    implicit val app = App(
+      id = 0,
+      userid = 0,
+      appkey = "",
+      display = "",
+      url = None,
+      cat = None,
+      desc = None,
+      timezone = "UTC"
+    )
+    implicit val algo = Algo(
+      id = 1,
+      engineid = 0,
+      name = "",
+      pkgname = "",
+      deployed = true,
+      command = "",
+      params = Map(),
+      settings = Map(),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      offlineevalid = None
+    )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
       iid = "testUserItem1",
@@ -60,17 +86,25 @@ class ItemRecScoresSpec extends Specification {
       appid = 0,
       algoid = 1,
       modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem4",
+      score = 999,
+      itypes = List("invalid"),
+      appid = 0,
+      algoid = 1,
+      modelset = true
     ))
     itemScores foreach {
       itemRecScores.insert(_)
     }
-    val results = itemRecScores.getAll(0, "testUser", true)
+    val results = itemRecScores.getTopN("testUser", 4, Some(List("1", "5", "9")))
     val r1 = results.next
     val r2 = results.next
     val r3 = results.next()
     results.hasNext must beFalse and
-      (r1 must beEqualTo(itemScores(0))) and
+      (r1 must beEqualTo(itemScores(2))) and
       (r2 must beEqualTo(itemScores(1))) and
-      (r3 must beEqualTo(itemScores(2)))
+      (r3 must beEqualTo(itemScores(0)))
   }
 }

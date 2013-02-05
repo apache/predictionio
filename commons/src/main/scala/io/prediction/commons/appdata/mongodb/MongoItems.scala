@@ -1,6 +1,6 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils
+import io.prediction.commons.MongoUtils._
 import io.prediction.commons.appdata.{Item, Items}
 
 import com.mongodb.casbah.Imports._
@@ -9,15 +9,12 @@ import org.scala_tools.time.Imports._
 
 /** MongoDB implementation of Items. */
 class MongoItems(db: MongoDB) extends Items {
-  private val emptyObj = MongoDBObject()
   private val itemColl = db("items")
 
   RegisterJodaTimeConversionHelpers()
 
-  private def dbId(appid: Int, id: String): String = appid + "_" + id
-
   def insert(item: Item) = {
-    val id = MongoDBObject("_id" -> dbId(item.appid, item.id))
+    val id = MongoDBObject("_id" -> idWithAppid(item.appid, item.id))
     val appid = MongoDBObject("appid" -> item.appid)
     val ct = MongoDBObject("ct" -> item.ct)
     val itypes = MongoDBObject("itypes" -> item.itypes)
@@ -32,11 +29,11 @@ class MongoItems(db: MongoDB) extends Items {
   }
 
   def get(appid: Int, id: String) = {
-    itemColl.findOne(MongoDBObject("_id" -> dbId(appid, id))) map { dbObjToItem(_) }
+    itemColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToItem(_) }
   }
 
   def update(item: Item) = {
-    val id = MongoDBObject("_id" -> dbId(item.appid, item.id))
+    val id = MongoDBObject("_id" -> idWithAppid(item.appid, item.id))
     val appid = MongoDBObject("appid" -> item.appid)
     val ct = MongoDBObject("ct" -> item.ct)
     val itypes = MongoDBObject("itypes" -> item.itypes)
@@ -50,7 +47,7 @@ class MongoItems(db: MongoDB) extends Items {
     itemColl.update(id, id ++ appid ++ ct ++ itypes ++ startt ++ endt ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
   }
 
-  def delete(appid: Int, id: String) = itemColl.remove(MongoDBObject("_id" -> dbId(appid, id)))
+  def delete(appid: Int, id: String) = itemColl.remove(MongoDBObject("_id" -> idWithAppid(appid, id)))
   def delete(item: Item) = delete(item.appid, item.id)
 
   private def dbObjToItem(dbObj: DBObject) = {
@@ -59,14 +56,14 @@ class MongoItems(db: MongoDB) extends Items {
       id         = dbObj.as[String]("_id").drop(appid.toString.length + 1),
       appid      = appid,
       ct         = dbObj.as[DateTime]("ct"),
-      itypes     = dbObj.as[MongoDBList]("itypes").toList.map(_.asInstanceOf[String]),
+      itypes     = dbObj.as[MongoDBList]("itypes"),
       startt     = dbObj.getAs[DateTime]("startt"),
       endt       = dbObj.getAs[DateTime]("endt"),
       price      = dbObj.getAs[Double]("price"),
       profit     = dbObj.getAs[Double]("profit"),
       latlng     = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
       inactive   = dbObj.getAs[Boolean]("inactive"),
-      attributes = dbObj.getAs[DBObject]("attributes") map { MongoUtils.dbObjToMap(_) }
+      attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
     )
   }
 }

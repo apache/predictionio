@@ -15,7 +15,7 @@ libraryDependencies += "com.twitter" % "scalding_2.9.2" % "0.8.1"
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.12.3" % "test",
-  "io.prediction" %% "predictionio-commons" % "0.1-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT"
 )
 
 resolvers ++= Seq(

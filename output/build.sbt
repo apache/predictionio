@@ -1,6 +1,6 @@
 name := "PredictionIO Output"
 
-version := "0.1-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
 organization := "io.prediction"
 
@@ -11,7 +11,7 @@ scalacOptions in (Compile, doc) ++= Opts.doc.title("PredictionIO Output API Docu
 crossScalaVersions := Seq("2.9.1", "2.9.2")
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.1-SNAPSHOT",
+  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
   "org.specs2" %% "specs2" % "1.12.3" % "test"
 )
 

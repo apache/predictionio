@@ -1,6 +1,6 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils
+import io.prediction.commons.MongoUtils._
 import io.prediction.commons.appdata.{User, Users}
 
 import com.mongodb.casbah.Imports._
@@ -14,10 +14,8 @@ class MongoUsers(db: MongoDB) extends Users {
 
   RegisterJodaTimeConversionHelpers()
 
-  private def dbId(appid: Int, id: String): String = appid + "_" + id
-
   def insert(user: User) = {
-    val id = MongoDBObject("_id" -> dbId(user.appid, user.id))
+    val id = MongoDBObject("_id" -> idWithAppid(user.appid, user.id))
     val appid = MongoDBObject("appid" -> user.appid)
     val ct = MongoDBObject("ct" -> user.ct)
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
@@ -27,11 +25,11 @@ class MongoUsers(db: MongoDB) extends Users {
   }
 
   def get(appid: Int, id: String) = {
-    userColl.findOne(MongoDBObject("_id" -> dbId(appid, id))) map { dbObjToUser(_) }
+    userColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToUser(_) }
   }
 
   def update(user: User) = {
-    val id = MongoDBObject("_id" -> dbId(user.appid, user.id))
+    val id = MongoDBObject("_id" -> idWithAppid(user.appid, user.id))
     val appid = MongoDBObject("appid" -> user.appid)
     val ct = MongoDBObject("ct" -> user.ct)
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
@@ -40,7 +38,7 @@ class MongoUsers(db: MongoDB) extends Users {
     userColl.update(id, id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
-  def delete(appid: Int, id: String) = userColl.remove(MongoDBObject("_id" -> dbId(appid, id)))
+  def delete(appid: Int, id: String) = userColl.remove(MongoDBObject("_id" -> idWithAppid(appid, id)))
   def delete(user: User) = delete(user.appid, user.id)
 
   private def dbObjToUser(dbObj: DBObject) = {
@@ -51,7 +49,7 @@ class MongoUsers(db: MongoDB) extends Users {
       ct         = dbObj.as[DateTime]("ct"),
       latlng     = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
       inactive   = dbObj.getAs[Boolean]("inactive"),
-      attributes = dbObj.getAs[DBObject]("attributes") map { MongoUtils.dbObjToMap(_) }
+      attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
     )
   }
 }

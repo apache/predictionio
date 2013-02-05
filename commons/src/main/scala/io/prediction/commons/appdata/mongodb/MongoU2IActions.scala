@@ -1,6 +1,6 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils
+import io.prediction.commons.MongoUtils._
 import io.prediction.commons.appdata.{U2IAction, U2IActions}
 
 import com.mongodb.casbah.Imports._
@@ -14,13 +14,11 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
 
   RegisterJodaTimeConversionHelpers()
 
-  private def dbId(appid: Int, id: String) = appid + "_" + id
-
   def insert(u2iAction: U2IAction) = {
     val appid = MongoDBObject("appid" -> u2iAction.appid)
     val action = MongoDBObject("action" -> u2iAction.action)
-    val uid = MongoDBObject("uid" -> dbId(u2iAction.appid, u2iAction.uid))
-    val iid = MongoDBObject("iid" -> dbId(u2iAction.appid, u2iAction.iid))
+    val uid = MongoDBObject("uid" -> idWithAppid(u2iAction.appid, u2iAction.uid))
+    val iid = MongoDBObject("iid" -> idWithAppid(u2iAction.appid, u2iAction.iid))
     val t = MongoDBObject("t" -> u2iAction.t)
     val lnglat = u2iAction.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val v = u2iAction.v map { v => MongoDBObject("v" -> v) } getOrElse emptyObj

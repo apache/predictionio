@@ -18,7 +18,7 @@ class AlgoOutputSelector(algos: Algos) {
     /** Multiple deployment not yet supported. */
     if (itemRecAlgos.hasNext) throw new RuntimeException(multipleAlgoErrorMsg)
 
-    ItemRecAlgoOutput.output(uid, n, itypes)
+    itemrec.ItemRecAlgoOutput.output(uid, n, itypes)
   }
 
   def itemSimSelection(iid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine): Seq[String] = {
