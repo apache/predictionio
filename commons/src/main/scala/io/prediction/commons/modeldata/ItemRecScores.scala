@@ -29,4 +29,8 @@ trait ItemRecScores {
 
   /** Get the top N ItemSimScore ranked by score in descending order. */
   def getTopN(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, algo: Algo): Iterator[ItemRecScore]
+  
+  /** delete by alogid */
+  def deleteByAlgoid(algoid: Int)
+  
 }
