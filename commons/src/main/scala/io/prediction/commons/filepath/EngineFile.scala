@@ -6,21 +6,21 @@ package io.prediction.commons.filepath
 
 object BaseDir {
   
-  def appDir(appId: Int): String = "apps/" + appId + "/"
+  def appDir(rootDir: String, appId: Int): String = rootDir + "apps/" + appId + "/"
   
-  def engineDir(appId: Int, engineId: Int): String = appDir(appId) + "engines/" + engineId + "/"
+  def engineDir(rootDir: String, appId: Int, engineId: Int): String = appDir(rootDir, appId) + "engines/" + engineId + "/"
   
-  def offlineEvalDir(appId: Int, engineId: Int, evalId: Int): String = engineDir(appId, engineId) + "offlineeval/" + evalId + "/"
+  def offlineEvalDir(rootDir: String, appId: Int, engineId: Int, evalId: Int): String = engineDir(rootDir, appId, engineId) + "offlineeval/" + evalId + "/"
 
-  def algoDir(appId: Int, engineId: Int, algoId: Int, evalId: Option[Int]): String = {
+  def algoDir(rootDir: String, appId: Int, engineId: Int, algoId: Int, evalId: Option[Int]): String = {
     evalId match {
-      case Some(eva) => offlineEvalDir(appId, engineId, eva) + "algos/" + algoId + "/"
-      case _ => engineDir(appId, engineId) + "batch/" + "algos/" + algoId + "/"
+      case Some(eva) => offlineEvalDir(rootDir, appId, engineId, eva) + "algos/" + algoId + "/"
+      case _ => engineDir(rootDir, appId, engineId) + "batch/" + "algos/" + algoId + "/"
     }
   }
 
-  def offlineMetricDir(appId: Int, engineId: Int, algoId: Int, evalId: Int, metricId: Int): String = {
-    offlineEvalDir(appId, engineId, evalId) + "metrics/" + metricId + "/algos/" + algoId + "/"
+  def offlineMetricDir(rootDir: String, appId: Int, engineId: Int, algoId: Int, evalId: Int, metricId: Int): String = {
+    offlineEvalDir(rootDir, appId, engineId, evalId) + "metrics/" + metricId + "/algos/" + algoId + "/"
   }
   
 }
@@ -35,7 +35,7 @@ object BaseDir {
 object DataFile {
   
   def apply(rootDir: String, appId: Int, engineId: Int, algoId: Int, evalId: Option[Int], name: String): String =
-    rootDir + BaseDir.algoDir(appId, engineId, algoId, evalId) + "data/" + name
+    BaseDir.algoDir(rootDir, appId, engineId, algoId, evalId) + "data/" + name
     
 }
 
@@ -45,7 +45,7 @@ object DataFile {
 object AlgoFile {
   
   def apply(rootDir: String, appId: Int, engineId: Int, algoId: Int, evalId: Option[Int], name: String): String =
-    rootDir + BaseDir.algoDir(appId, engineId, algoId, evalId) + "algo/" + name
+    BaseDir.algoDir(rootDir, appId, engineId, algoId, evalId) + "algo/" + name
     
 }
 
@@ -55,7 +55,7 @@ object AlgoFile {
 object OfflineMetricFile {
   
   def apply(rootDir: String, appId: Int, engineId: Int, evalId: Int, metricId: Int, algoId: Int, name: String): String =
-    rootDir + BaseDir.offlineMetricDir(appId, engineId, algoId, evalId, metricId) + "metric/" + name
+    BaseDir.offlineMetricDir(rootDir, appId, engineId, algoId, evalId, metricId) + "metric/" + name
 }
 
 
@@ -69,7 +69,7 @@ object OfflineMetricFile {
 object ModelDataDir {
   
   def apply(rootDir: String, appId: Int, engineId: Int, algoId: Int, evalId: Option[Int]): String =
-    rootDir + BaseDir.algoDir(appId, engineId, algoId, evalId) + "modeldata/"
+    BaseDir.algoDir(rootDir, appId, engineId, algoId, evalId) + "modeldata/"
 }
 
 /**
@@ -78,7 +78,7 @@ object ModelDataDir {
 object OfflineEvalResultsDir {
   
   def apply(rootDir: String, appId: Int, engineId: Int, evalId: Int, metricId: Int, algoId: Int): String =
-    rootDir + BaseDir.offlineMetricDir(appId, engineId, algoId, evalId, metricId) + "evalresults/"
+    BaseDir.offlineMetricDir(rootDir, appId, engineId, algoId, evalId, metricId) + "evalresults/"
 }
 
 /**
@@ -88,8 +88,8 @@ object AppDataDir {
   
   def apply(rootDir: String, appId: Int, engineId: Option[Int], evalId: Option[Int], testSet: Option[Boolean]): String = {
     (engineId, evalId, testSet) match {
-      case (Some(eng), Some(eva), Some(test)) => rootDir + BaseDir.offlineEvalDir(appId, eng, eva) + "appdata/" + (if (test) "test/" else "training/")
-      case _ => rootDir + BaseDir.appDir(appId) + "appdata/"
+      case (Some(eng), Some(eva), Some(test)) => BaseDir.offlineEvalDir(rootDir, appId, eng, eva) + "appdata/" + (if (test) "test/" else "training/")
+      case _ => BaseDir.appDir(rootDir, appId) + "appdata/"
     }
   }
 }

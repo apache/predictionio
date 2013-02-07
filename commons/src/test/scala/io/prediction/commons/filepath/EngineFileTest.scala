@@ -4,6 +4,27 @@ import org.specs2.mutable._
 
 class EngineFileTest extends Specification {
   
+  "BaseDir" should {
+    "correctly return appDir" in {
+      BaseDir.appDir("testroot/", appId=4) must be_==("testroot/apps/4/")
+    }
+    "correctly return engineDir" in {
+      BaseDir.engineDir("testroot/", appId=4, engineId=5) must be_==("testroot/apps/4/engines/5/")
+    }
+    "correctly return offlineEvalDir" in {
+      BaseDir.offlineEvalDir("testroot/", appId=4, engineId=5, evalId=6) must be_==("testroot/apps/4/engines/5/offlineeval/6/")
+    }
+    "correctly return algoDir" in {
+      BaseDir.algoDir("testroot/", appId=4, engineId=5, algoId=7, evalId=None) must be_==("testroot/apps/4/engines/5/batch/algos/7/")
+    }
+    "correctly return algoDir for offline eval" in {
+      BaseDir.algoDir("testroot/", appId=4, engineId=5, algoId=7, evalId=Some(8)) must be_==("testroot/apps/4/engines/5/offlineeval/8/algos/7/")
+    }
+    "correctly return offlineMetricDir" in {
+      BaseDir.offlineMetricDir("testroot/", appId=4, engineId=5, algoId=17, evalId=8, metricId=9) must be_==("testroot/apps/4/engines/5/offlineeval/8/metrics/9/algos/17/")
+    }
+  }
+  
   // simple tests
   "DataFile" should {
     "correctly return path in batch mode" in {
