@@ -11,28 +11,28 @@ class TestSetConfig {
   private var config = ConfigFactory.load()
   
   /** The database type that stores PredictionIO appdata. */
-  val appdataDbType: String = config.getString("io.prediction.commons.test_appdata.db.type")
+  val appdataDbType: String = config.getString("io.prediction.commons.appdata.test.db.type")
   
   /** The database host that stores PredictionIO appdata. */
   val appdataDbHost: String = appdataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.test_appdata.db.host") } catch { case _ => "127.0.0.1" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.host") } catch { case _ => "127.0.0.1" }
   }
 
   /** The database port that stores PredictionIO appdata. */
   val appdataDbPort: Int = appdataDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.test_appdata.db.port") } catch { case _ => 27017 }
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.test.db.port") } catch { case _ => 27017 }
   }
 
   /** The database name that stores PredictionIO appdata. */
   val appdataDbName: String = appdataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.test_appdata.db.name") } catch { case _ => "predictionio_test_appdata" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.name") } catch { case _ => "predictionio_test_appdata" }
   }
   
   /** The database user that stores PredictionIO appdata. */
-  val appdataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.test_appdata.db.user")) } catch { case _ => None }
+  val appdataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.test.db.user")) } catch { case _ => None }
 
   /** The database password that stores PredictionIO appdata. */
-  val appdataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.test_appdata.db.password")) } catch { case _ => None }
+  val appdataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.test.db.password")) } catch { case _ => None }
 
   /** If appdataDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val mongoDb: Option[MongoDB] = appdataDbType match {

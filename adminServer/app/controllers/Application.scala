@@ -1,6 +1,10 @@
 package controllers
 
 import io.prediction.commons.settings._
+import io.prediction.commons.modeldata.{Config => ModelDataConfig}
+import io.prediction.commons.modeldata.ItemRecScores
+import io.prediction.commons.appdata.{Config => AppDataConfig, TestSetConfig, TrainingSetConfig}
+import io.prediction.commons.appdata.{Users, Items, U2IActions}
 
 import play.api._
 import play.api.mvc._
@@ -29,7 +33,7 @@ import org.scala_tools.time.Imports._
  * Pure REST APIs in JSON.
  */
 object Application extends Controller {
-  /** PredictionIO Commons */
+  /** PredictionIO Commons settings*/
   val config = new Config()
   val users = config.getUsers()
   val apps = config.getApps()
@@ -39,6 +43,28 @@ object Application extends Controller {
   val offlineEvalMetrics = config.getOfflineEvalMetrics()
   val offlineEvalResults = config.getOfflineEvalResults()
 
+  /** PredictionIO Commons modeldata */
+  val modelDataConfig = new ModelDataConfig()
+  val itemRecScores = modelDataConfig.getItemRecScores()
+  
+  /** PredictionIO Commons appdata */
+  val appDataConfig = new AppDataConfig()
+  val appDataUsers = appDataConfig.getUsers()
+  val appDataItems = appDataConfig.getItems()
+  val appDataU2IActions = appDataConfig.getU2IActions()
+  
+  /** PredictionIO Commons training set appdata */
+  val trainingSetConfig = new TrainingSetConfig()
+  val trainingSetUsers = trainingSetConfig.getUsers()
+  val trainingSetItems = trainingSetConfig.getItems()
+  val trainingSetU2IActions = trainingSetConfig.getU2IActions()
+  
+  /** PredictionIO Commons test set appdata */
+  val testSetConfig = new TestSetConfig()
+  val testSetUsers = testSetConfig.getUsers()
+  val testSetItems = testSetConfig.getItems()
+  val testSetU2IActions = testSetConfig.getU2IActions()
+  
   /** */
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
 
@@ -263,9 +289,15 @@ object Application extends Controller {
     /*
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
+    /*
+    val appid = id.toInt
+    deleteApp(appid, keepSettings=false)
 
-    //apps.deleteByIdAndUserid(id.toInt, user.id) // TODO
-    //Ok
+    // TODO: add code here: send deleteAppDir(appid) request to scheduler
+    
+    apps.deleteByIdAndUserid(appid, user.id)
+    Ok */
+
     BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
   def eraseAppData(id: String) = withUser { user => implicit request =>
@@ -278,8 +310,14 @@ object Application extends Controller {
     /*
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
-
-    //Ok
+    
+    /*
+    val appid = id.toInt
+    deleteApp(appid, keepSettings=true)
+    // TODO: add code here: send deleteAppDir(appid) request to scheduler
+    Ok
+    */
+    
     BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
 
@@ -613,10 +651,113 @@ object Application extends Controller {
     )
 
   }
+  
+  /**
+   * delete appdata DB of this appid
+   */
+  def deleteAppData(appid: Int) = {
+    appDataUsers.deleteByAppid(appid)
+    appDataItems.deleteByAppid(appid)
+    appDataU2IActions.deleteByAppid(appid)
+  }
+  
+  def deleteTrainingSetData(evalid: Int) = {
+    trainingSetUsers.deleteByAppid(evalid)
+    trainingSetItems.deleteByAppid(evalid)
+    trainingSetU2IActions.deleteByAppid(evalid)
+  }
+  
+  def deleteTestSetData(evalid: Int) = {
+    testSetUsers.deleteByAppid(evalid)
+    testSetItems.deleteByAppid(evalid)
+    testSetU2IActions.deleteByAppid(evalid)
+  }
+  
+  def deleteModelData(algoid: Int) = {
+    itemRecScores.deleteByAlgoid(algoid) // TODO: check engine type and delete corresponding modeldata, now hardcode as itemRecScores
+  }
+  
+  
+  /** 
+   * delete DB data under this app
+   */
+  def deleteApp(appid: Int, keepSettings: Boolean) = {
+    
+    val appEngines = engines.getByAppid(appid)
+    
+    appEngines foreach { eng =>
+      deleteEngine(eng.id, keepSettings)
+      if (!keepSettings) {
+        engines.deleteByIdAndAppid(eng.id, appid)
+      }
+    }
+    
+    deleteAppData(appid)
+  }
+  
+  /**
+   * delete DB data under this engine
+   */
+  def deleteEngine(engineid: Int, keepSettings: Boolean) = {
+    
+    val engineAlgos = algos.getByEngineid(engineid)
+    
+    engineAlgos foreach { algo =>
+      deleteModelData(algo.id)
+      if (!keepSettings) {
+        algos.delete(algo.id)
+      }
+    }
+    
+    val engineOfflineEvals = offlineEvals.getByEngineid(engineid)
+    
+    engineOfflineEvals foreach { eval =>
+      deleteOfflineEval(eval.id, keepSettings)
+      if (!keepSettings) {
+        offlineEvals.delete(eval.id)
+      }
+    }
+    
+  }
+  
+  
+  /**
+   * delete DB data under this offline eval
+   */
+  def deleteOfflineEval(evalid: Int, keepSettings: Boolean) = {
+    
+    deleteTrainingSetData(evalid)
+    deleteTestSetData(evalid)
+    
+    val evalAlgos = algos.getByOfflineEvalid(evalid)
+    
+    evalAlgos foreach { algo =>
+      deleteModelData(algo.id)
+      if (!keepSettings) { 
+        algos.delete(algo.id) 
+      }
+    }
+    
+    if (!keepSettings) {
+      val evalMetrics = offlineEvalMetrics.getByEvalid(evalid)
+    
+      evalMetrics foreach { metric =>
+        offlineEvalMetrics.delete(metric.id)
+      }
+    
+      offlineEvalResults.deleteByEvalid(evalid)
+    }
+    
+  }
+  
 
   def removeAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
-    //algos.delete(id.toInt)
-    //Ok
+    /*
+    deleteAlgoData(id.toInt)  
+    // TODO: add code here: send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
+    algos.delete(id.toInt)
+    Ok
+    */
     BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
   }
 
@@ -901,23 +1042,13 @@ object Application extends Controller {
     // TODO: need to stop running job in scheduler side first!!
     // TODO: any race condition of this eval job is in the processig of being deleted and get picked up by scheduler again?
 
-    val evalAlgos = algos.getByOfflineEvalid(id.toInt)
-
-    evalAlgos foreach { algo =>
-      algos.delete(algo.id)
-    }
-
-    val evalMetrics = offlineEvalMetrics.getByEvalid(id.toInt)
-
-    evalMetrics foreach { metric =>
-      offlineEvalMetrics.delete(metric.id)
-    }
-
-    offlineEvalResults.deleteByEvalid(id.toInt)
-
+    /*
+    deleteOfflineEval(id.toInt, keepSettings=false)
+    // TODO: add code here: send deleteOfflineEvalDir(app_id.toInt, engine_id.toInt, id.toInt) request to scheduler
     offlineEvals.delete(id.toInt)
-
     Ok
+    */ 
+    BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
   }
 
   def getSimEvalReport(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
