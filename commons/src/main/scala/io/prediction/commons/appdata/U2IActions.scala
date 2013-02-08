@@ -46,8 +46,11 @@ trait U2IActions {
   def insert(u2iAction: U2IAction): Unit
 
   /** Gets all user-to-item actions by App ID. */
-  def getAll(appid: Int): Iterator[U2IAction]
-  
+  def getAllByAppid(appid: Int): Iterator[U2IAction]
+
+  /** Gets all user-to-item actions by App ID, User ID, and Item IDs. */
+  def getAllByAppidAndUidAndIids(appid: Int, uid: String, iids: List[String]): Iterator[U2IAction]
+
   /** Delete all user-to-item actions by App ID */
   def deleteByAppid(appid: Int): Unit
 }

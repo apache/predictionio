@@ -27,8 +27,12 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     itemColl.insert(appid ++ action ++ uid ++ iid ++ t ++ lnglat ++ v ++ price ++ evalid)
   }
 
-  def getAll(appid: Int) = new MongoU2IActionIterator(itemColl.find(MongoDBObject("appid" -> appid)))
-  
+  def getAllByAppid(appid: Int) = new MongoU2IActionIterator(itemColl.find(MongoDBObject("appid" -> appid)))
+
+  def getAllByAppidAndUidAndIids(appid: Int, uid: String, iids: List[String]) = new MongoU2IActionIterator(
+    itemColl.find(MongoDBObject("appid" -> appid, "uid" -> idWithAppid(appid, uid), "iid" -> MongoDBObject("$in" -> iids.map(idWithAppid(appid, _)))))
+  )
+
   def deleteByAppid(appid: Int): Unit = {
     itemColl.remove(MongoDBObject("appid" -> appid))
   }

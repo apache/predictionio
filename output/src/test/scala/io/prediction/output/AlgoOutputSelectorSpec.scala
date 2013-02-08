@@ -1,5 +1,7 @@
 package io.prediction.output
 
+import io.prediction.commons.appdata._
+import io.prediction.commons.appdata.mongodb._
 import io.prediction.commons.modeldata._
 import io.prediction.commons.modeldata.mongodb._
 import io.prediction.commons.settings._
@@ -15,6 +17,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   "PredictionIO AlgoOutputSelector Specification"                             ^
                                                                               p ^
     "get itemrec output from a valid engine"                                  ! itemRecOutputSelection(algoOutputSelector) ^
+    "get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
     "get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
     "get itemrec output from a valid engine with no algorithm"                ! itemRecOutputSelectionNoAlgo(algoOutputSelector) ^
     "get itemrec output from an invalid engine"                               ! itemRecOutputSelectionBadEngine(algoOutputSelector) ^
@@ -29,6 +32,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   val mongoDb = MongoConnection()(mongoDbName)
   val mongoEngines = new MongoEngines(mongoDb)
   val mongoAlgos = new MongoAlgos(mongoDb)
+  val mongoU2IActions = new MongoU2IActions(mongoDb)
   val mongoItemRecScores = new MongoItemRecScores(mongoDb)
   val algoOutputSelector = new AlgoOutputSelector(mongoAlgos)
 
@@ -76,7 +80,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       iid = "item_x",
       score = 5,
       itypes = List("bar"),
-      appid = 0,
+      appid = dummyApp.id,
       algoid = algoid,
       modelset = true
     ))
@@ -86,7 +90,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       iid = "item_y",
       score = 4,
       itypes = List("foo"),
-      appid = 0,
+      appid = dummyApp.id,
       algoid = algoid,
       modelset = true
     ))
@@ -96,7 +100,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       iid = "item_z",
       score = 3,
       itypes = List("unrelated"),
-      appid = 0,
+      appid = dummyApp.id,
       algoid = algoid,
       modelset = true
     ))
@@ -104,10 +108,112 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     algoOutputSelector.itemRecSelection("user1", 10, Some(List("bar", "foo")))(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y"))
   }
 
+  def itemRecOutputSelectionUnseenOnly(algoOutputSelector: AlgoOutputSelector) = {
+    val engine = Engine(
+      id         = 0,
+      appid      = dummyApp.id,
+      name       = "itemRecOutputSelection",
+      enginetype = "itemrec",
+      itypes     = Some(List("foo", "bar")),
+      settings   = Map()
+    )
+    val engineid = mongoEngines.insert(engine)
+
+    val algo = Algo(
+      id       = 0,
+      engineid = engineid,
+      name     = "itemRecOutputSelection",
+      pkgname  = "io.prediction.algorithms.scalding.itemrec.knnitembased",
+      deployed = true,
+      command  = "itemRecOutputSelection",
+      params   = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      offlineevalid = None
+    )
+    val algoid = mongoAlgos.insert(algo)
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_x",
+      score = 5,
+      itypes = List("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_y",
+      score = 4,
+      itypes = List("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_z",
+      score = 3,
+      itypes = List("unrelated"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_a",
+      score = 0,
+      itypes = List("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_b",
+      score = 1,
+      itypes = List("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_c",
+      score = 2,
+      itypes = List("foo", "bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    mongoU2IActions.insert(U2IAction(
+      appid = dummyApp.id,
+      action = mongoU2IActions.view,
+      uid = "user1",
+      iid = "item_b",
+      t = DateTime.now,
+      latlng = None,
+      v = None,
+      price = None,
+      evalid = None
+    ))
+
+    algoOutputSelector.itemRecSelection("user1", 10, Some(List("bar", "foo")))(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y", "item_c", "item_a"))
+  }
+
   def itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id         = 0,
-      appid      = 123,
+      appid      = dummyApp.id,
       name       = "itemRecOutputSelection",
       enginetype = "itemrec",
       itypes     = Some(List("foo", "bar")),
@@ -137,7 +243,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemRecOutputSelectionNoAlgo(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
-      appid = 234,
+      appid = dummyApp.id,
       name = "itemRecOutputSelectionNoAlgo",
       enginetype = "itemrec",
       itypes = Some(List("foo", "bar")),
@@ -150,7 +256,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemRecOutputSelectionBadEngine(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
-      appid = 345,
+      appid = dummyApp.id,
       name = "itemRecOutputSelectionBadEngine",
       enginetype = "itemRecOutputSelectionBadEngine",
       itypes = Some(List("foo", "bar")),
@@ -164,7 +270,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemSimOutputSelection(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
-      appid = 123,
+      appid = dummyApp.id,
       name = "itemSimOutputSelection",
       enginetype = "itemsim",
       itypes = Some(List("foo", "bar")),
@@ -194,7 +300,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
-      appid = 123,
+      appid = dummyApp.id,
       name = "itemSimOutputSelection",
       enginetype = "itemsim",
       itypes = Some(List("foo", "bar")),
@@ -224,7 +330,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemSimOutputSelectionNoAlgo(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
-      appid = 234,
+      appid = dummyApp.id,
       name = "itemSimOutputSelectionNoAlgo",
       enginetype = "itemsim",
       itypes = Some(List("foo", "bar")),
@@ -237,7 +343,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemSimOutputSelectionBadEngine(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
-      appid = 345,
+      appid = dummyApp.id,
       name = "itemSimOutputSelectionBadEngine",
       enginetype = "itemSimOutputSelectionBadEngine",
       itypes = Some(List("foo", "bar")),
