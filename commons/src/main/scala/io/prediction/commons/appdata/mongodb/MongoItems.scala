@@ -49,6 +49,10 @@ class MongoItems(db: MongoDB) extends Items {
 
   def delete(appid: Int, id: String) = itemColl.remove(MongoDBObject("_id" -> idWithAppid(appid, id)))
   def delete(item: Item) = delete(item.appid, item.id)
+  
+  def deleteByAppid(appid: Int): Unit = {
+    itemColl.remove(MongoDBObject("appid" -> appid))
+  }
 
   private def dbObjToItem(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")

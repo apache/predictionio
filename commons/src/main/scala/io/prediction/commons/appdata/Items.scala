@@ -46,4 +46,8 @@ trait Items {
 
   /** Delete an item. */
   def delete(item: Item): Unit
+  
+  /** Delete all items by App ID */
+  def deleteByAppid(appid: Int): Unit
+  
 }

@@ -40,6 +40,10 @@ class MongoUsers(db: MongoDB) extends Users {
 
   def delete(appid: Int, id: String) = userColl.remove(MongoDBObject("_id" -> idWithAppid(appid, id)))
   def delete(user: User) = delete(user.appid, user.id)
+  
+  def deleteByAppid(appid: Int): Unit = {
+    userColl.remove(MongoDBObject("appid" -> appid))
+  }
 
   private def dbObjToUser(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")

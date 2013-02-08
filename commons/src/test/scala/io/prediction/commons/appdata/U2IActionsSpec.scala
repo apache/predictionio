@@ -19,6 +19,7 @@ class U2IActionsSpec extends Specification { def is =
 
   def u2iActions(u2iActions: U2IActions) = {                                  t ^
     "inserting and getting 3 U2IAction's"                                     ! insert(u2iActions) ^
+    "delete U2IActions by appid"                                              ! deleteByAppid(u2iActions) ^
                                                                               bt
   }
 
@@ -68,4 +69,67 @@ class U2IActionsSpec extends Specification { def is =
       (r2 must beEqualTo(actions(1))) and
       (r3 must beEqualTo(actions(2)))
   }
+  
+  def deleteByAppid(u2iActions: U2IActions) = {
+    // insert a few u2iActions with appid1 and a few u2iActions with appid2.
+    // delete all u2iActions of appid1.
+    // u2iActions of appid1 should be deleted and u2iActions of appid2 should still exist.
+    // delete all u2iActions of appid2
+    // u2iActions of appid2 should be deleted
+    
+    val appid1 = 10
+    val appid2 = 11
+    
+    val ida = "deleteByAppid-ida"
+    val idb = "deleteByAppid-idb"
+    val idc = "deleteByAppid-idc"
+    
+    val u2iAction1a = U2IAction(
+      appid  = appid1,
+      action = u2iActions.rate,
+      uid    = "dead",
+      iid    = "meat",
+      t      = DateTime.now,
+      latlng = None,
+      v      = Some(3),
+      price  = None,
+      evalid = None
+    )
+    val u2iActionsApp1 = List(
+        u2iAction1a, 
+        u2iAction1a.copy(
+          v = Some(1)
+        ),
+        u2iAction1a.copy(
+          v = Some(2)
+        ))
+    
+    val u2iActionsApp2 = u2iActionsApp1 map (x => x.copy(appid = appid2))
+    
+    u2iActionsApp1 foreach { u2iActions.insert(_) }
+    u2iActionsApp2 foreach { u2iActions.insert(_) }
+    
+    // NOTE: Call toList to retrieve all results first.
+    // If call toList after delete, the data is gone because getAll returns
+    // iterator which doesn't actually retrieve the result yet.
+    val g1_App1 = u2iActions.getAll(appid1).toList
+    val g1_App2 = u2iActions.getAll(appid2).toList
+        
+    u2iActions.deleteByAppid(appid1)
+    
+    val g2_App1 = u2iActions.getAll(appid1).toList
+    val g2_App2 = u2iActions.getAll(appid2).toList
+    
+    u2iActions.deleteByAppid(appid2)
+    
+    val g3_App2 = u2iActions.getAll(appid2).toList
+    
+    g1_App1 must containTheSameElementsAs(u2iActionsApp1) and
+      (g1_App2 must containTheSameElementsAs(u2iActionsApp2)) and
+      (g2_App1 must be empty) and
+      (g2_App2 must containTheSameElementsAs(u2iActionsApp2)) and
+      (g3_App2 must be empty)
+    
+  }
+  
 }

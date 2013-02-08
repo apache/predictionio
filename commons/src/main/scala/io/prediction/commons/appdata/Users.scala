@@ -36,4 +36,7 @@ trait Users {
 
   /** Delete a user. */
   def delete(user: User): Unit
+  
+  /** Delete all users by App ID */
+  def deleteByAppid(appid: Int): Unit
 }

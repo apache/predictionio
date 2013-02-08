@@ -47,4 +47,7 @@ trait U2IActions {
 
   /** Gets all user-to-item actions by App ID. */
   def getAll(appid: Int): Iterator[U2IAction]
+  
+  /** Delete all user-to-item actions by App ID */
+  def deleteByAppid(appid: Int): Unit
 }

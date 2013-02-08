@@ -28,6 +28,10 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
   }
 
   def getAll(appid: Int) = new MongoU2IActionIterator(itemColl.find(MongoDBObject("appid" -> appid)))
+  
+  def deleteByAppid(appid: Int): Unit = {
+    itemColl.remove(MongoDBObject("appid" -> appid))
+  }
 
   private def dbObjToItem(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
