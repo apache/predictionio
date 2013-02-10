@@ -12,6 +12,7 @@ crossScalaVersions := Seq("2.9.1", "2.9.2")
 
 libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
+  "junit" % "junit" % "4.11",
   "org.specs2" %% "specs2" % "1.12.3" % "test"
 )
 
@@ -20,6 +21,8 @@ resolvers ++= Seq(
   "releases"  at "http://oss.sonatype.org/content/repositories/releases",
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 )
+
+testOptions in Test += Tests.Argument("junitxml")
 
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.m2/repository")))
 
