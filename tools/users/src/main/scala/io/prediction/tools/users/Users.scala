@@ -21,7 +21,7 @@ object Users {
     val cr = new ConsoleReader()
     println("Adding a confirmed user")
     val email = cr.readLine("Email: ")
-    val password = cr.readLine("Password: ", new Character('*'));
+    val password = cr.readLine("Password: ", new java.lang.Character('*'));
     val firstName = cr.readLine("First name: ")
     val lastName = cr.readLine("Last name: ")
     if (users.emailExists(email)) {
