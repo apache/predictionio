@@ -159,7 +159,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       uid = "user1",
       iid = "item_z",
       score = 3,
-      itypes = List("unrelated"),
+      itypes = List("bar"),
       appid = dummyApp.id,
       algoid = algoid,
       modelset = true
@@ -207,7 +207,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       evalid = None
     ))
 
-    algoOutputSelector.itemRecSelection("user1", 10, Some(List("bar", "foo")))(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y", "item_c", "item_a"))
+    algoOutputSelector.itemRecSelection("user1", 5, Some(List("bar", "foo")))(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y", "item_z", "item_c", "item_a"))
   }
 
   def itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {

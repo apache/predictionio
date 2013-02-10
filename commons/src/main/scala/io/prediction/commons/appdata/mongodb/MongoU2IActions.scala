@@ -10,7 +10,7 @@ import org.scala_tools.time.Imports._
 /** MongoDB implementation of Items. */
 class MongoU2IActions(db: MongoDB) extends U2IActions {
   private val emptyObj = MongoDBObject()
-  private val itemColl = db("u2iActions")
+  private val u2iActionColl = db("u2iActions")
 
   RegisterJodaTimeConversionHelpers()
 
@@ -24,17 +24,17 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     val v = u2iAction.v map { v => MongoDBObject("v" -> v) } getOrElse emptyObj
     val price = u2iAction.price map { p => MongoDBObject("price" -> p) } getOrElse emptyObj
     val evalid = u2iAction.evalid map { e => MongoDBObject("evalid" -> e) } getOrElse emptyObj
-    itemColl.insert(appid ++ action ++ uid ++ iid ++ t ++ lnglat ++ v ++ price ++ evalid)
+    u2iActionColl.insert(appid ++ action ++ uid ++ iid ++ t ++ lnglat ++ v ++ price ++ evalid)
   }
 
-  def getAllByAppid(appid: Int) = new MongoU2IActionIterator(itemColl.find(MongoDBObject("appid" -> appid)))
+  def getAllByAppid(appid: Int) = new MongoU2IActionIterator(u2iActionColl.find(MongoDBObject("appid" -> appid)))
 
   def getAllByAppidAndUidAndIids(appid: Int, uid: String, iids: List[String]) = new MongoU2IActionIterator(
-    itemColl.find(MongoDBObject("appid" -> appid, "uid" -> idWithAppid(appid, uid), "iid" -> MongoDBObject("$in" -> iids.map(idWithAppid(appid, _)))))
+    u2iActionColl.find(MongoDBObject("appid" -> appid, "uid" -> idWithAppid(appid, uid), "iid" -> MongoDBObject("$in" -> iids.map(idWithAppid(appid, _)))))
   )
 
   def deleteByAppid(appid: Int): Unit = {
-    itemColl.remove(MongoDBObject("appid" -> appid))
+    u2iActionColl.remove(MongoDBObject("appid" -> appid))
   }
 
   private def dbObjToItem(dbObj: DBObject) = {

@@ -10,18 +10,32 @@ import com.mongodb.casbah.Imports._
 class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
   private val itemRecScoreColl = db("itemRecScores")
 
-  def getTopN(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, algo: Algo) = new MongoItemRecScoreIterator(
-    itemRecScoreColl.find(
-      MongoDBObject("algoid" -> algo.id, "modelset" -> algo.modelset, "uid" -> idWithAppid(app.id, uid)) ++
-        (itypes map { loi =>
-          MongoDBObject("itypes" -> MongoDBObject("$in" -> loi))
-        } getOrElse emptyObj)
-    ).sort(MongoDBObject("score" -> -1)).limit(n),
-    app.id
-  )
+  /** Indices and hints. */
+  val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
+  itemRecScoreColl.ensureIndex(scoreIdIndex)
+
+  def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo) = {
+    val query = MongoDBObject("algoid" -> algo.id, "modelset" -> algo.modelset, "uid" -> idWithAppid(app.id, uid)) ++
+      (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
+    after map { irs =>
+      new MongoItemRecScoreIterator(
+        itemRecScoreColl.find(query).
+          $min(MongoDBObject("score" -> irs.score, "_id" -> irs.id)).
+          sort(scoreIdIndex).
+          hint(scoreIdIndex).
+          skip(1).limit(n),
+        app.id
+      )
+    } getOrElse new MongoItemRecScoreIterator(
+      itemRecScoreColl.find(query).sort(scoreIdIndex).hint(scoreIdIndex).limit(n),
+      app.id
+    )
+  }
 
   def insert(itemrecscore: ItemRecScore) = {
+    val id = new ObjectId
     val itemRecObj = MongoDBObject(
+      "_id" -> id,
       "uid" -> idWithAppid(itemrecscore.appid, itemrecscore.uid),
       "iid" -> idWithAppid(itemrecscore.appid, itemrecscore.iid),
       "score" -> itemrecscore.score,
@@ -30,12 +44,13 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
       "modelset" -> itemrecscore.modelset
     )
     itemRecScoreColl.insert(itemRecObj)
+    itemrecscore.copy(id = Some(id))
   }
 
   def deleteByAlgoid(algoid: Int) = {
     itemRecScoreColl.remove(MongoDBObject("algoid" -> algoid))
   }
-  
+
   /** Private mapping function to map DB Object to ItemRecScore object */
   private def dbObjToItemRecScore(dbObj: DBObject, appid: Int) = {
     ItemRecScore(
@@ -45,7 +60,8 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
       itypes = dbObj.as[MongoDBList]("itypes"),
       appid = appid,
       algoid = dbObj.as[Int]("algoid"),
-      modelset = dbObj.as[Boolean]("modelset")
+      modelset = dbObj.as[Boolean]("modelset"),
+      id = Some(dbObj.as[ObjectId]("_id"))
     )
   }
 

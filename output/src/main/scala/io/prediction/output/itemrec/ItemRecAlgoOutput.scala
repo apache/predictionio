@@ -1,12 +1,13 @@
 package io.prediction.output.itemrec
 
 import io.prediction.commons.appdata.Config
+import io.prediction.commons.modeldata.ItemRecScore
 import io.prediction.commons.settings.{Algo, App, Engine}
 
 import scala.util.Random
 
 trait ItemRecAlgoOutput {
-  def output(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, algo: Algo): Seq[String]
+  def output(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo): Seq[ItemRecScore]
 }
 
 object ItemRecAlgoOutput {
@@ -22,10 +23,30 @@ object ItemRecAlgoOutput {
       */
     val finalN = serendipity map { s => n*(s+1) } getOrElse n
 
-    val output = algo.pkgname match {
-      case "io.prediction.algorithms.scalding.itemrec.knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, finalN, itypes)
-      case _ => throw new RuntimeException("Unsupported itemrec algorithm package: %s" format algo.pkgname)
+    /** Filter unseen item.
+      * Query U2I appdata with UID and IIDs.
+      * If the result is non-zero, substract it from the current output.
+      */
+    var stopMore = false
+    var after: Option[ItemRecScore] = None
+
+    var outputBuffer = collection.mutable.ListBuffer[String]()
+
+    while (outputBuffer.size < finalN && !stopMore) {
+      val moreItemRecScores = more(uid, finalN, itypes, after)
+      val moreIids = moreItemRecScores.map(_.iid).toList
+
+      /** Stop the loop if no more scores can be found. */
+      if (moreItemRecScores.size == 0)
+        stopMore = true
+      else {
+        val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, moreIids)
+        outputBuffer ++= (moreIids filterNot (seenItems.toList.map(_.iid) contains))
+        after = Some(moreItemRecScores.last)
+      }
     }
+
+    val output = outputBuffer.toList
 
     /** Serendipity output. */
     val finalOutput = serendipity map { s =>
@@ -35,13 +56,15 @@ object ItemRecAlgoOutput {
         output
     } getOrElse output
 
-    /** Filter unseen item.
-      * Query U2I appdata with UID and IIDs.
-      * If the result is non-zero, substract it from the current output.
-      */
-    val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, finalOutput)
-    val unseenItems = finalOutput -- seenItems.toList.map(_.iid)
 
-    unseenItems
+    finalOutput
+  }
+
+  /** Private method just to get items. */
+  private def more(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo): Seq[ItemRecScore] = {
+    algo.pkgname match {
+      case "io.prediction.algorithms.scalding.itemrec.knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
+      case _ => throw new RuntimeException("Unsupported itemrec algorithm package: %s" format algo.pkgname)
+    }
   }
 }

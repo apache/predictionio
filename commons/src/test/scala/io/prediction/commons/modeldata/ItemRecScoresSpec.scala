@@ -30,6 +30,7 @@ class ItemRecScoresSpec extends Specification {
   def itemRecScores(itemRecScores: ItemRecScores) = {
     t ^
       "inserting and getting 3 ItemRecScores" ! insert(itemRecScores) ^
+      "getting 4+4+2 ItemRecScores" ! getTopN(itemRecScores) ^
       "delete ItemRecScores by algoid" ! deleteByAlgoid(itemRecScores) ^
       bt
   }
@@ -68,49 +69,186 @@ class ItemRecScoresSpec extends Specification {
       iid = "testUserItem1",
       score = -5.6,
       itypes = List("1","2","3"),
-      appid = 0,
-      algoid = 1,
+      appid = app.id,
+      algoid = algo.id,
       modelset = true
     ), ItemRecScore(
       uid = "testUser",
       iid = "testUserItem2",
       score = 10,
       itypes = List("4","5","6"),
-      appid = 0,
-      algoid = 1,
+      appid = app.id,
+      algoid = algo.id,
       modelset = true
     ), ItemRecScore(
       uid = "testUser",
       iid = "testUserItem3",
       score = 124.678,
       itypes = List("7","8","9"),
-      appid = 0,
-      algoid = 1,
+      appid = app.id,
+      algoid = algo.id,
       modelset = true
     ), ItemRecScore(
       uid = "testUser",
       iid = "testUserItem4",
       score = 999,
       itypes = List("invalid"),
-      appid = 0,
-      algoid = 1,
+      appid = app.id,
+      algoid = algo.id,
       modelset = true
     ))
-    itemScores foreach {
+    val dbItemScores = itemScores map {
       itemRecScores.insert(_)
     }
-    val results = itemRecScores.getTopN("testUser", 4, Some(List("1", "5", "9")))
+    val results = itemRecScores.getTopN("testUser", 4, Some(List("1", "5", "9")), None)
     val r1 = results.next
     val r2 = results.next
     val r3 = results.next()
     results.hasNext must beFalse and
-      (r1 must beEqualTo(itemScores(2))) and
-      (r2 must beEqualTo(itemScores(1))) and
-      (r3 must beEqualTo(itemScores(0)))
+      (r1 must beEqualTo(dbItemScores(2))) and
+      (r2 must beEqualTo(dbItemScores(1))) and
+      (r3 must beEqualTo(dbItemScores(0)))
   }
-  
+
+  def getTopN(itemRecScores: ItemRecScores) = {
+    implicit val app = App(
+      id = 234,
+      userid = 0,
+      appkey = "",
+      display = "",
+      url = None,
+      cat = None,
+      desc = None,
+      timezone = "UTC"
+    )
+    implicit val algo = Algo(
+      id = 234,
+      engineid = 0,
+      name = "",
+      pkgname = "",
+      deployed = true,
+      command = "",
+      params = Map(),
+      settings = Map(),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      offlineevalid = None
+    )
+    val itemScores = List(ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem1",
+      score = -5.6,
+      itypes = List("1","2","3"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem2",
+      score = 10,
+      itypes = List("4","5","6"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem3",
+      score = 124.678,
+      itypes = List("7","8","9"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem4",
+      score = 999,
+      itypes = List("invalid"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem5",
+      score = -5.6,
+      itypes = List("1","2","3"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem6",
+      score = 10,
+      itypes = List("4","5","6"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem7",
+      score = 124.678,
+      itypes = List("7","8","9"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem8",
+      score = 999,
+      itypes = List("invalid"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem9",
+      score = 124.678,
+      itypes = List("7","8","9"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ), ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem10",
+      score = 999,
+      itypes = List("invalid"),
+      appid = app.id,
+      algoid = algo.id,
+      modelset = true
+    ))
+    val dbItemScores = itemScores map {
+      itemRecScores.insert(_)
+    }
+    val results1234 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), None)
+    val r1 = results1234.next
+    val r2 = results1234.next
+    val r3 = results1234.next
+    val r4 = results1234.next
+    val results5678 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r4))
+    val r5 = results5678.next
+    val r6 = results5678.next
+    val r7 = results5678.next
+    val r8 = results5678.next
+    val results910 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r8))
+    val r9 = results910.next
+    val r10 = results910.next
+    results1234.hasNext must beFalse and
+      (r1 must beEqualTo(dbItemScores(3))) and
+      (r2 must beEqualTo(dbItemScores(7))) and
+      (r3 must beEqualTo(dbItemScores(9))) and
+      (r4 must beEqualTo(dbItemScores(2))) and
+      (results5678.hasNext must beFalse) and
+      (r5 must beEqualTo(dbItemScores(6))) and
+      (r6 must beEqualTo(dbItemScores(8))) and
+      (r7 must beEqualTo(dbItemScores(1))) and
+      (r8 must beEqualTo(dbItemScores(5))) and
+      (results910.hasNext must beFalse) and
+      (r9 must beEqualTo(dbItemScores(0))) and
+      (r10 must beEqualTo(dbItemScores(4)))
+  }
+
   def deleteByAlgoid(itemRecScores: ItemRecScores) = {
-    
+
     implicit val app = App(
       id = 0,
       userid = 0,
@@ -121,7 +259,7 @@ class ItemRecScoresSpec extends Specification {
       desc = None,
       timezone = "UTC"
     )
-    
+
     val algo1 = Algo(
       id = 1,
       engineid = 0,
@@ -136,7 +274,7 @@ class ItemRecScoresSpec extends Specification {
       updatetime = DateTime.now,
       offlineevalid = None
     )
-    
+
     val algo2 = algo1.copy(id = 2) // NOTE: different id
 
     val itemScores1 = List(ItemRecScore(
@@ -172,7 +310,7 @@ class ItemRecScoresSpec extends Specification {
       algoid = algo1.id,
       modelset = algo1.modelset
     ))
-    
+
     val itemScores2 = List(ItemRecScore(
       uid = "deleteByAlgoidUser",
       iid = "testUserItem1",
@@ -206,56 +344,56 @@ class ItemRecScoresSpec extends Specification {
       algoid = algo2.id,
       modelset = algo2.modelset
     ))
-    
-    itemScores1 foreach {
+
+    val dbItemScores1 = itemScores1 map {
       itemRecScores.insert(_)
     }
-    
-    itemScores2 foreach {
+
+    val dbItemScores2 = itemScores2 map {
       itemRecScores.insert(_)
     }
-    
-    val results1 = itemRecScores.getTopN("deleteByAlgoidUser", 4, None)(app, algo1)
+
+    val results1 = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo1)
     val r1r1 = results1.next
     val r1r2 = results1.next
     val r1r3 = results1.next
     val r1r4 = results1.next
-    
-    val results2 = itemRecScores.getTopN("deleteByAlgoidUser", 4, None)(app, algo2)
+
+    val results2 = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
     val r2r1 = results2.next
     val r2r2 = results2.next
     val r2r3 = results2.next
     val r2r4 = results2.next
-    
+
     itemRecScores.deleteByAlgoid(algo1.id)
-    
-    val results1b = itemRecScores.getTopN("deleteByAlgoidUser", 4, None)(app, algo1)
-    
-    val results2b = itemRecScores.getTopN("deleteByAlgoidUser", 4, None)(app, algo2)
+
+    val results1b = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo1)
+
+    val results2b = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
     val r2br1 = results2b.next
     val r2br2 = results2b.next
     val r2br3 = results2b.next
     val r2br4 = results2b.next
-    
+
     itemRecScores.deleteByAlgoid(algo2.id)
-    val results2c = itemRecScores.getTopN("deleteByAlgoidUser", 4, None)(app, algo2)
-    
+    val results2c = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
+
     results1.hasNext must beFalse and
-      (r1r1 must beEqualTo(itemScores1(3))) and
-      (r1r2 must beEqualTo(itemScores1(2))) and
-      (r1r3 must beEqualTo(itemScores1(1))) and
-      (r1r4 must beEqualTo(itemScores1(0))) and
+      (r1r1 must beEqualTo(dbItemScores1(3))) and
+      (r1r2 must beEqualTo(dbItemScores1(2))) and
+      (r1r3 must beEqualTo(dbItemScores1(1))) and
+      (r1r4 must beEqualTo(dbItemScores1(0))) and
       (results2.hasNext must beFalse) and
-      (r2r1 must beEqualTo(itemScores2(0))) and
-      (r2r2 must beEqualTo(itemScores2(1))) and
-      (r2r3 must beEqualTo(itemScores2(2))) and
-      (r2r4 must beEqualTo(itemScores2(3))) and
+      (r2r1 must beEqualTo(dbItemScores2(0))) and
+      (r2r2 must beEqualTo(dbItemScores2(1))) and
+      (r2r3 must beEqualTo(dbItemScores2(2))) and
+      (r2r4 must beEqualTo(dbItemScores2(3))) and
       (results1b.hasNext must beFalse) and
       (results2b.hasNext must beFalse) and
-      (r2br1 must beEqualTo(itemScores2(0))) and
-      (r2br2 must beEqualTo(itemScores2(1))) and
-      (r2br3 must beEqualTo(itemScores2(2))) and
-      (r2br4 must beEqualTo(itemScores2(3))) and
+      (r2br1 must beEqualTo(dbItemScores2(0))) and
+      (r2br2 must beEqualTo(dbItemScores2(1))) and
+      (r2br3 must beEqualTo(dbItemScores2(2))) and
+      (r2br4 must beEqualTo(dbItemScores2(3))) and
       (results2c.hasNext must beFalse)
   }
 }
