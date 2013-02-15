@@ -19,6 +19,7 @@ class ItemsSpec extends Specification { def is =
 
   def items(items: Items) = {                                                 t ^
     "inserting and getting an item"                                           ! insert(items) ^
+    "getting items by IDs sorted by start time"                               ! getRecentByIds(items) ^
     "updating an item"                                                        ! update(items) ^
     "deleting an item"                                                        ! delete(items) ^
     "deleting items by appid"                                                 ! deleteByAppid(items) ^
@@ -36,8 +37,8 @@ class ItemsSpec extends Specification { def is =
       appid      = appid,
       ct         = DateTime.now,
       itypes     = List("fresh", "meat"),
-      startt     = Some(DateTime.now.hour(23).minute(13)),
-      endt       = None,
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
       price      = Some(49.394),
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
@@ -48,6 +49,62 @@ class ItemsSpec extends Specification { def is =
     items.get(appid, id) must beSome(item)
   }
 
+  def getRecentByIds(items: Items) = {
+    val id = "getRecentByIds"
+    val appid = 3
+    val timedItems = List(Item(
+      id         = id + "foo",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(14).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ), Item(
+      id         = id + "bar",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ), Item(
+      id         = id + "baz",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(17).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ), Item(
+      id         = id + "pub",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(3).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ))
+    timedItems foreach { items.insert(_) }
+    items.getRecentByIds(appid, List(id + "pub", id + "bar", id + "baz")) must beEqualTo(List(timedItems(1), timedItems(2), timedItems(3)))
+  }
+
   def update(items: Items) = {
     val appid = 1
     val id = "update"
@@ -56,8 +113,8 @@ class ItemsSpec extends Specification { def is =
       appid      = appid,
       ct         = DateTime.now,
       itypes     = List("slash", "dot"),
-      startt     = None,
-      endt       = None,
+      starttime  = None,
+      endtime    = None,
       price      = None,
       profit     = None,
       latlng     = None,
@@ -66,7 +123,7 @@ class ItemsSpec extends Specification { def is =
     )
 
     val updatedItem = item.copy(
-      endt       = Some(DateTime.now.minute(47)),
+      endtime    = Some(DateTime.now.minute(47)),
       price      = Some(99.99),
       latlng     = Some((43, 48.378)),
       attributes = Some(Map("raw" -> "beef"))
@@ -84,8 +141,8 @@ class ItemsSpec extends Specification { def is =
       appid      = appid,
       ct         = DateTime.now,
       itypes     = List("fresh", "meat"),
-      startt     = Some(DateTime.now.hour(23).minute(13)),
-      endt       = None,
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
       price      = Some(49.394),
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
@@ -95,28 +152,28 @@ class ItemsSpec extends Specification { def is =
     items.delete(item)
     items.get(appid, id) must beNone
   }
-  
+
   def deleteByAppid(items: Items) = {
     // insert a few items with appid1 and a few items with appid2.
     // delete all items of appid1.
     // items of appid1 should be deleted and items of appid2 should still exist.
     // delete all items of appid2
     // items of appid2 should be deleted
-    
+
     val appid1 = 10
     val appid2 = 11
-    
+
     val ida = "deleteByAppid-ida"
     val idb = "deleteByAppid-idb"
     val idc = "deleteByAppid-idc"
-    
+
     val item1a = Item(
       id         = ida,
       appid      = appid1,
       ct         = DateTime.now,
       itypes     = List("fresh", "meat"),
-      startt     = Some(DateTime.now.hour(23).minute(13)),
-      endt       = None,
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
       price      = Some(49.394),
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
@@ -131,7 +188,7 @@ class ItemsSpec extends Specification { def is =
       id         = idc,
       price      = Some(2.45)
     )
-    
+
     val item2a = item1a.copy(
       appid      = appid2
     )
@@ -141,43 +198,43 @@ class ItemsSpec extends Specification { def is =
     val item2c = item1c.copy(
       appid      = appid2
     )
-    
+
     items.insert(item1a)
     items.insert(item1b)
     items.insert(item1c)
     items.insert(item2a)
     items.insert(item2b)
     items.insert(item2c)
-    
+
     val g1_1a = items.get(appid1, ida)
     val g1_1b = items.get(appid1, idb)
     val g1_1c = items.get(appid1, idc)
-    
+
     val g1_2a = items.get(appid2, ida)
     val g1_2b = items.get(appid2, idb)
     val g1_2c = items.get(appid2, idc)
-    
+
     items.deleteByAppid(appid1)
-    
+
     val g2_1a = items.get(appid1, ida)
     val g2_1b = items.get(appid1, idb)
     val g2_1c = items.get(appid1, idc)
-    
+
     val g2_2a = items.get(appid2, ida)
     val g2_2b = items.get(appid2, idb)
     val g2_2c = items.get(appid2, idc)
-    
+
     items.deleteByAppid(appid2)
-    
+
     val g3_2a = items.get(appid2, ida)
     val g3_2b = items.get(appid2, idb)
     val g3_2c = items.get(appid2, idc)
-    
+
     (g1_1a, g1_1b, g1_1c) must be_==((Some(item1a), Some(item1b), Some(item1c))) and
       ((g1_2a, g1_2b, g1_2c) must be_==((Some(item2a), Some(item2b), Some(item2c)))) and
       ((g2_1a, g2_1b, g2_1c) must be_==((None, None, None))) and
       ((g2_2a, g2_2b, g2_2c) must be_==((Some(item2a), Some(item2b), Some(item2c)))) and
       ((g3_2a, g3_2b, g3_2c) must be_==((None, None, None)))
-    
+
   }
 }

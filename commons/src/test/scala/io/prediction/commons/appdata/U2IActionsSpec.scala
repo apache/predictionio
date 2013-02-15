@@ -105,7 +105,7 @@ class U2IActionsSpec extends Specification { def is =
       evalid = Some(100)
     ))
     actions foreach { u2iActions.insert(_) }
-    val results = u2iActions.getAllByAppidAndUidAndIids(appid, "dead", List("sub", "meat")).toList.sort((s, t) => s.iid < t.iid)
+    val results = u2iActions.getAllByAppidAndUidAndIids(appid, "dead", List("sub", "meat")).toList.sortWith((s, t) => s.iid < t.iid)
     results.size must beEqualTo(2) and
       (results(0) must beEqualTo(actions(0))) and
       (results(1) must beEqualTo(actions(2)))

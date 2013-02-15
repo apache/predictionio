@@ -12,6 +12,7 @@ trait ItemRecAlgoOutput {
 
 object ItemRecAlgoOutput {
   val appdataConfig = new Config
+  val items = appdataConfig.getItems
   val u2iActions = appdataConfig.getU2IActions
 
   def output(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine, algo: Algo): Seq[String] = {
@@ -46,16 +47,32 @@ object ItemRecAlgoOutput {
       }
     }
 
+    /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
     val output = outputBuffer.toList
 
+    /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
+      * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
+      */
+    val freshness = engine.settings.get("freshness") map { _.asInstanceOf[Int] }
+    val freshnessOutput = items.getRecentByIds(app.id, output).map(_.id)
+
     /** Serendipity output. */
-    val finalOutput = serendipity map { s =>
+    val serendipityOutput = serendipity map { s =>
       if (s > 0)
         Random.shuffle(output).take(n)
       else
         output
     } getOrElse output
 
+    /** Freshness output. */
+    val finalOutput = freshness map { f =>
+      if (f > 0) {
+        val freshnessN = scala.math.round(n*f/10)
+        val otherN = n-freshnessN
+        freshnessOutput.take(freshnessN) ++ serendipityOutput.take(otherN)
+      } else
+        serendipityOutput
+    } getOrElse serendipityOutput
 
     finalOutput
   }
