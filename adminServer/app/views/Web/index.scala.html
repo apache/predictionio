@@ -325,7 +325,7 @@
                                                 <tr>
                                                     <th>Created Date</th>
                                                     <th>Algo(s)</th>
-                                                    <th>Status</th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -344,32 +344,20 @@
         %>
         <%= algoArray.join(', ') %>
     </td>
-    <td><% if(data.status == 'completed') { %>
+    <td>
         <div class="btn-group dropup">
             <button data-toggle="dropdown"
                 class="btn btn-mini btn-inverse dropdown-toggle">
-                Completed <span class="caret"></span>
+                Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu pull-right">
                 <li><a href="#simEvalReport/<%= encodeURIComponent(data.id) %>">View Report</a></li>
-<!-- TODO
-                <li><a class="simevalDeleteBtn" href="#">Delete</a></li>
--->
-                <li><a href="javascript:alert('This feature will be available soon.');">Delete</a></li>
-            </ul>
-        </div> <% } else { %>
-        <div class="btn-group dropup">
-            <button data-toggle="dropdown"
-                class="btn btn-mini btn-inverse dropdown-toggle">
-                Pending <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu pull-right">
 <!-- TODO
                 <li><a class="simevalDeleteBtn" href="#">Stop and Delete</a></li>
 -->
                 <li><a href="javascript:alert('This feature will be available soon.');">Stop and Delete</a></li>
             </ul>
-        </div> <% } %>
+        </div>
     </td>
 </script>
 
@@ -592,7 +580,6 @@
                 <div class="modal-body">
                     <div class="bottomMargin">
                         <div>Start Time: <%= data.startTime %></div>
-                        <div>End Time: <%= data.endTime %></div>
                     </div>
                     <h5>Algorithms</h5>
                     <p>Settings of algorithms at the time of evaluation.</p>
