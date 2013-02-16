@@ -24,28 +24,33 @@ object ItemRecAlgoOutput {
       */
     val finalN = serendipity map { s => n*(s+1) } getOrElse n
 
-    /** Filter unseen item.
+    /** Seen item filter settings. */
+    val unseenonly = engine.settings.get("unseenonly") map { _.asInstanceOf[Boolean] } getOrElse false
+
+    /** Filter seen item.
       * Query U2I appdata with UID and IIDs.
       * If the result is non-zero, substract it from the current output.
       */
-    var stopMore = false
-    var after: Option[ItemRecScore] = None
-
     var outputBuffer = collection.mutable.ListBuffer[String]()
 
-    while (outputBuffer.size < finalN && !stopMore) {
-      val moreItemRecScores = more(uid, finalN, itypes, after)
-      val moreIids = moreItemRecScores.map(_.iid).toList
+    if (unseenonly) {
+      var stopMore = false
+      var after: Option[ItemRecScore] = None
 
-      /** Stop the loop if no more scores can be found. */
-      if (moreItemRecScores.size == 0)
-        stopMore = true
-      else {
-        val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, moreIids)
-        outputBuffer ++= (moreIids filterNot (seenItems.toList.map(_.iid) contains))
-        after = Some(moreItemRecScores.last)
+      while (outputBuffer.size < finalN && !stopMore) {
+        val moreItemRecScores = more(uid, finalN, itypes, after)
+        val moreIids = moreItemRecScores.map(_.iid).toList
+
+        /** Stop the loop if no more scores can be found. */
+        if (moreItemRecScores.size == 0)
+          stopMore = true
+        else {
+          val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, moreIids)
+          outputBuffer ++= (moreIids filterNot (seenItems.toList.map(_.iid) contains))
+          after = Some(moreItemRecScores.last)
+        }
       }
-    }
+    } else outputBuffer ++= more(uid, finalN, itypes, None) map { _.iid }
 
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
     val output = outputBuffer.toList

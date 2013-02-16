@@ -115,7 +115,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name       = "itemRecOutputSelection",
       enginetype = "itemrec",
       itypes     = Some(List("foo", "bar")),
-      settings   = Map()
+      settings   = Map("unseenonly" -> true)
     )
     val engineid = mongoEngines.insert(engine)
 
