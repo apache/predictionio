@@ -13,7 +13,7 @@ import controllers.Application.{engines, withUser}
 
 object Engine extends Controller {
     
-  val defaultSettings: Map[String, Any] = Map("serendipity" -> 0, "freshness" -> 0, "goal" -> "rate3")
+  val defaultSettings: Map[String, Any] = Map("serendipity" -> 0, "freshness" -> 0, "unseenonly"-> 0, "goal" -> "rate3")
   
   def updateSettings(app_id:String, engine_id:String) = withUser { user => implicit request =>
     /*
@@ -89,6 +89,7 @@ object Engine extends Controller {
       
       val freshness: Int = if (eng.settings.contains("freshness")) eng.settings("freshness").asInstanceOf[Int] else defaultSettings("freshness").asInstanceOf[Int]
       val serendipity: Int = if (eng.settings.contains("serendipity")) eng.settings("serendipity").asInstanceOf[Int] else defaultSettings("serendipity").asInstanceOf[Int]
+      val unseenonly: Int = if (eng.settings.contains("unseenonly")) eng.settings("unseenonly").asInstanceOf[Int] else defaultSettings("unseenonly").asInstanceOf[Int]
       val goal: String = if (eng.settings.contains("goal")) eng.settings("goal").asInstanceOf[String] else defaultSettings("goal").asInstanceOf[String]
       
       Ok(toJson(Map(
@@ -98,6 +99,7 @@ object Engine extends Controller {
         "itemtypelist" -> eng.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull), // TODO: better way?
         "freshness" -> toJson(freshness),
         "serendipity" -> toJson(serendipity),
+        "unseenonly" -> toJson(unseenonly),
         "goal" -> toJson(goal)
         )))
     } getOrElse {
