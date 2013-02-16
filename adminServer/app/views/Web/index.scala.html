@@ -535,26 +535,35 @@
         </div>
         <!--  breadcrumb -->
         <div id="breadcrumb_ContentHolder"></div>
+<!-- TODO
         <div class="row-fluid bottomMargin">
             <div class="span12">
-<!-- TODO
                 Engine Status: <span class="label label-info">Running <i
                     class="icon-ok icon-white"></i></span>
--->
             </div>
         </div>
+-->
         <div id="engineTab" class="row-fluid">
             <div class="span12">
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button data-toggle="dropdown" class="btn btn-inverse btn-small dropdown-toggle">Engine Control <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                            <li><a id="deleteEngineBtn" href="javascript:void(0);">Delete this Engine</a></li>
+                        </ul>
+                    </div>
+                </div>
                 <ul class="nav nav-tabs" id="engineTab">
-                    <li><a id="engineTabSettingsBtn" href="#engineTabSettings">Prediction
-                            Settings</a></li>
+                    <li><a id="engineTabSettingsBtn" href="#engineTabSettings">Engine</a></li>
                     <li><a id="engineTabAlgorithmsBtn" href="#engineTabAlgorithms">Algorithms</a></li>
                     <li id="engineExtraTabTitle" class="displayNone"><a onclick="return false;" id="engineExtraTabBtn" href="#engineExtraTab">-</a></li>
                 </ul>
+
             </div>
         </div>
         <div class="tab-content">
             <div class="tab-pane" id="engineTabSettings">
+                <h4>Prediction Settings</h4>
                 <div id="engineTabSettingsContentHolder">
                     <!-- engine settings template -->
                 </div>

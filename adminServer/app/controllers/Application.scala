@@ -483,6 +483,11 @@ object Application extends Controller {
 
   }
 
+  def removeEngine(app_id: String, engine_id: String) = withUser { user => implicit request =>
+    // Ok
+    BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
+  }
+  
   def getAvailableAlgoList(app_id: String, engine_id: String) = withUser { user => implicit request =>
     /* sample output
     Ok(toJson(Seq(
