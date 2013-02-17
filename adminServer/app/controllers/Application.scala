@@ -311,14 +311,14 @@ object Application extends Controller {
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
     
-    /*
+    
     val appid = id.toInt
     deleteApp(appid, keepSettings=true)
     // TODO: add code here: send deleteAppDir(appid) request to scheduler
     Ok
-    */
     
-    BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
+    
+    //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
 
   /* List all available/installable engine types in the system */
