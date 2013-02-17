@@ -37,7 +37,9 @@ var ItemrecSettingsView = Backbone.View.extend({
 	events : {
 		"click #itemrecAddItemTypeBtn" : "addItemType",
 		'keypress #itemrecAddItemTypeInput': 'onEnterAddItemType',
-		"change #itemrecGoal": "goalSelected"
+		"change #itemrecGoal": "goalSelected",
+		"click #recsys-unseenonly-yes" : "setUnseenOnlyYes",
+		"click #recsys-unseenonly-no" : "setUnseenOnlyNo"
 	},
 	onEnterAddItemType : function(e) {
 		if (e.keyCode == 13) { // if it's ENTER
@@ -86,10 +88,21 @@ var ItemrecSettingsView = Backbone.View.extend({
 		this.model.save();
 		return false;
 	},
+	setUnseenOnlyYes: function(e) {
+		this.model.set({unseenonly: true});
+		this.model.save();
+		this.$el.find('#recsys-unseenonly-text').html('Yes');
+	},
+	setUnseenOnlyNo: function(e) {
+		this.model.set({unseenonly: false});
+		this.model.save();
+		this.$el.find('#recsys-unseenonly-text').html('No');
+	},
 	render : function() {
 		this.$el.html(this.template({'data': this.model.toJSON()}));
 		var self = this;
 		var freshness = self.model.get('freshness');
+		
 		this.$el.find("#slider-freshness").slider({
 			value : freshness,
 			min : 0,
@@ -169,5 +182,4 @@ var ItemrecSettingsItemTypeView = Backbone.View.extend({
 var createEngineView = function(app_id, engine_id) { // Required Engine Module Function
 	return new ItemrecSettingsView({app_id: app_id, engine_id: engine_id});
 };
-
 

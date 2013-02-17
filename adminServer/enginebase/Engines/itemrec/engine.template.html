@@ -64,7 +64,7 @@
                                         <br /> preference for newer items
                                     </div>
                                 </div>
-                                <div class="row-fluid">
+                                <div class="row-fluid bottomMargin">
                                     <div class="span4">
                                         <h5>
                                             Serendipity: <span id="slider-serendipity-val"></span>
@@ -75,6 +75,25 @@
                                         <br /> preference for surprising discovery
                                     </div>
                                 </div>
+                                <div class="row-fluid">
+                                    <h5>Unseen Only</h5>
+                                    <div class="span12">
+                                        Only recommend items that users haven't seen before:
+                                        <div class="btn-group leftMargin-small">
+                                            <button data-toggle="dropdown" class="btn btn-small btn-inverse dropdown-toggle">
+                                                <span id="recsys-unseenonly-text"><% if (data.unseenonly == true){ %> Yes <%} else {%> No <% } %></span>
+                                                 <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a id="recsys-unseenonly-yes" href="javascript:void(0);">Yes</a></li>
+                                                <li><a id="recsys-unseenonly-no" href="javascript:void(0);">No</a></li>
+                                            </ul>
+                                         </div>
+                                    </div>
+                                </div>
+
+
+
                             </div>
                         </div>
 

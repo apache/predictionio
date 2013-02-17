@@ -244,13 +244,13 @@ object API extends Controller {
               appid = app.id,
               ct = DateTime.now,
               itypes = itypes.split(",").toList,
-              startt = startT map { parseDateTimeFromString(_) },
-              endt = endT map { parseDateTimeFromString(_) },
+              starttime = startT map { t => Some(parseDateTimeFromString(t)) } getOrElse Some(DateTime.now),
+              endtime = endT map { parseDateTimeFromString(_) },
               price = price map { _.toDouble },
               profit = profit map { _.toDouble },
               latlng = latlng map { parseLatlng(_) },
               inactive = inactive,
-              attributes = Some(attributes)
+              attributes = if (attributes.isEmpty) None else Some(attributes)
             ))
             (CREATED, Map("status" -> CREATED, "message" -> "Item created."))
           }
@@ -266,8 +266,8 @@ object API extends Controller {
         t => AuthenticatedApp(t) { app =>
           items.get(app.id, iid) map { item =>
             (OK, Map("iid" -> item.id, "ct" -> item.ct, "itypes" -> item.itypes.mkString(",")) ++
-              (item.startt map { v => Map("startT" -> v) } getOrElse emptyMap) ++
-              (item.endt map { v => Map("endT" -> v) } getOrElse emptyMap) ++
+              (item.starttime map { v => Map("startT" -> v) } getOrElse emptyMap) ++
+              (item.endtime map { v => Map("endT" -> v) } getOrElse emptyMap) ++
               (item.price map { v => Map("price" -> v) } getOrElse emptyMap) ++
               (item.profit map { v => Map("profit" -> v) } getOrElse emptyMap) ++
               (item.latlng map { v => Map("latlng" -> latlngToList(v)) } getOrElse emptyMap) ++

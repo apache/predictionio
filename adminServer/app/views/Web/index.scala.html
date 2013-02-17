@@ -323,7 +323,7 @@
                                                 <tr>
                                                     <th>Created Date</th>
                                                     <th>Algo(s)</th>
-                                                    <th>Status</th>
+                                                    <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -342,32 +342,20 @@
         %>
         <%= algoArray.join(', ') %>
     </td>
-    <td><% if(data.status == 'completed') { %>
+    <td>
         <div class="btn-group dropup">
             <button data-toggle="dropdown"
                 class="btn btn-mini btn-inverse dropdown-toggle">
-                Completed <span class="caret"></span>
+                Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu pull-right">
                 <li><a href="#simEvalReport/<%= encodeURIComponent(data.id) %>">View Report</a></li>
-<!-- TODO
-                <li><a class="simevalDeleteBtn" href="#">Delete</a></li>
--->
-                <li><a href="javascript:alert('This feature will be available soon.');">Delete</a></li>
-            </ul>
-        </div> <% } else { %>
-        <div class="btn-group dropup">
-            <button data-toggle="dropdown"
-                class="btn btn-mini btn-inverse dropdown-toggle">
-                Pending <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu pull-right">
 <!-- TODO
                 <li><a class="simevalDeleteBtn" href="#">Stop and Delete</a></li>
 -->
                 <li><a href="javascript:alert('This feature will be available soon.');">Stop and Delete</a></li>
             </ul>
-        </div> <% } %>
+        </div>
     </td>
 </script>
 
@@ -533,26 +521,35 @@
         </div>
         <!--  breadcrumb -->
         <div id="breadcrumb_ContentHolder"></div>
+<!-- TODO
         <div class="row-fluid bottomMargin">
             <div class="span12">
-<!-- TODO
                 Engine Status: <span class="label label-info">Running <i
                     class="icon-ok icon-white"></i></span>
--->
             </div>
         </div>
+-->
         <div id="engineTab" class="row-fluid">
             <div class="span12">
+                <div class="pull-right">
+                    <div class="btn-group">
+                        <button data-toggle="dropdown" class="btn btn-inverse btn-small dropdown-toggle">Engine Control <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                            <li><a id="deleteEngineBtn" href="javascript:void(0);">Delete this Engine</a></li>
+                        </ul>
+                    </div>
+                </div>
                 <ul class="nav nav-tabs" id="engineTab">
-                    <li><a id="engineTabSettingsBtn" href="#engineTabSettings">Prediction
-                            Settings</a></li>
+                    <li><a id="engineTabSettingsBtn" href="#engineTabSettings">Engine</a></li>
                     <li><a id="engineTabAlgorithmsBtn" href="#engineTabAlgorithms">Algorithms</a></li>
                     <li id="engineExtraTabTitle" class="displayNone"><a onclick="return false;" id="engineExtraTabBtn" href="#engineExtraTab">-</a></li>
                 </ul>
+
             </div>
         </div>
         <div class="tab-content">
             <div class="tab-pane" id="engineTabSettings">
+                <h4>Prediction Settings</h4>
                 <div id="engineTabSettingsContentHolder">
                     <!-- engine settings template -->
                 </div>
@@ -581,7 +578,6 @@
                 <div class="modal-body">
                     <div class="bottomMargin">
                         <div>Start Time: <%= data.startTime %></div>
-                        <div>End Time: <%= data.endTime %></div>
                     </div>
                     <h5>Algorithms</h5>
                     <p>Settings of algorithms at the time of evaluation.</p>

@@ -271,6 +271,9 @@ body {
 .bottomMargin-large { margin-bottom: 50px!important; }
 .bottomMargin {margin-bottom: 20px!important; }
 .topMargin {margin-top: 20px!important; }
+.topMargin-large {margin-top: 50px!important; }
+.leftMargin {margin-left: 20px!important; }
+.leftMargin-small {margin-left: 8px!important; }
 .displayNone {display:none;}
 .textRight { text-align: right;}
 /* Sign In */

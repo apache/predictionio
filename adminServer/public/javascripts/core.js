@@ -526,6 +526,9 @@ var EngineView = Backbone.View.extend({
     	this.breadcrumbModel = new BreadcrumbView();
     	this.subViews.push(this.breadcrumbModel);
 	},
+	events: {
+		"click #deleteEngineBtn":  "deleteEngine"
+	},
 	render : function() {
 		this.$el.html(this.template());
 		this.$el.find('#breadcrumb_ContentHolder').html(this.breadcrumbModel.render().el);
@@ -607,6 +610,14 @@ var EngineView = Backbone.View.extend({
 		this.tabExtraTabView = new EngineSimEvalSettingsView({algo_id_list: algo_id_list});
 		this.subViews.push(this.tabExtraTabView);
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
+	},
+	deleteEngine : function() {
+		var engineModel = new EngineModel({app_id: this.app_id, id: this.engine_id});
+		engineModel.destroy({
+			success: function() {
+				window.location = '/';
+			}
+		});
 	}
 });
 

@@ -35,6 +35,7 @@ GET     /enginetype_metricstype_list/:id        controllers.Application.getEngin
 # An Engine of an App
 GET    /app/:app_id/engine/:id             controllers.Application.getEngine(app_id, id)
 POST    /app/:app_id/engine             controllers.Application.createEngine(app_id)
+DELETE  /app/:app_id/engine/:engine_id       controllers.Application.removeEngine(app_id, engine_id)
 GET     /app/:app_id/engine/:engine_id/algo_available_list      controllers.Application.getAvailableAlgoList(app_id, engine_id)
 GET    /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.getAvailableAlgo(app_id, engine_id, id)
 POST    /app/:app_id/engine/:engine_id/algo_available       controllers.Application.createAvailableAlgo(app_id, engine_id)
