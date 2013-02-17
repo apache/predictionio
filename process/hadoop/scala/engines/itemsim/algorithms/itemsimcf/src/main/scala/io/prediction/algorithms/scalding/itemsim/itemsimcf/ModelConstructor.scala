@@ -56,7 +56,7 @@ class ModelConstructor(args: Args) extends Job(args) {
   val debugArg = args.list("debug")
   val DEBUG_TEST = debugArg.contains("test") // test mode
   
-  val modeSetArg = args("modelSet").toBoolean
+  val modelSetArg = args("modelSet").toBoolean
   
   /**
    * input
@@ -78,6 +78,6 @@ class ModelConstructor(args: Args) extends Job(args) {
     
   val src = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg)
   
-  p.then( src.writeData('iid, 'simiid, 'score, 'itypes, algoidArg, modeSetArg) _ )
+  p.then( src.writeData('iid, 'simiid, 'score, 'itypes, algoidArg, modelSetArg) _ )
   
 }
