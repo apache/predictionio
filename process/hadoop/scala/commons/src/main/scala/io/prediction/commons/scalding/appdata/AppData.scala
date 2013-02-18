@@ -5,8 +5,30 @@ import com.twitter.scalding._
 import cascading.flow.FlowDef
 import cascading.tuple.Tuple
 
-import io.prediction.commons.scalding.appdata.mongodb.{MongoItemsSource, MongoU2iActionsSource}
-import io.prediction.commons.scalding.appdata.file.{FileItemsSource, FileU2iActionsSource}
+import io.prediction.commons.scalding.appdata.mongodb.{MongoUsersSource, MongoItemsSource, MongoU2iActionsSource}
+import io.prediction.commons.scalding.appdata.file.{FileUsersSource, FileItemsSource, FileU2iActionsSource}
+
+object Users {
+  
+  /**
+   * dbName: used as file path in dbType=="file"
+   */
+  def apply(appId: Int, dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int]): UsersSource = {
+    dbType match {
+      case "file" => {
+        new FileUsersSource(dbName, appId)
+      }
+      case "mongodb" => {
+        require(((dbHost != None) && (dbPort != None)), "Please specify host and port number for mongodb.")
+        new MongoUsersSource(dbName, dbHost.get, dbPort.get, appId)
+      }
+      case _ => {
+        throw new RuntimeException("Invalid Users database type: " + dbType)
+      }
+    }
+  }
+
+}
   
 object Items {
   

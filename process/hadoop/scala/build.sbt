@@ -8,6 +8,8 @@ version in ThisBuild := "0.1"
 
 scalaVersion in ThisBuild := "2.9.2"
 
+parallelExecution in Test := false
+
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
 
 // NOTE: need to specify resolvers used by subproj as well
