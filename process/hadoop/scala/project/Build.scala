@@ -7,6 +7,7 @@ object PredictionIOAlgorithmsHadoopScalaBuild extends Build {
         itemsim_algo_itemsimcf, 
         itemrec_algo_knnitembased,
         itemrec_algo_randomrank,
+        itemrec_algo_latestrank,
         itemrec_metric_map,
         itemrec_evaluation_trainingtestsplit)
 
@@ -15,6 +16,7 @@ object PredictionIOAlgorithmsHadoopScalaBuild extends Build {
         itemsim_algo_itemsimcf, 
         itemrec_algo_knnitembased,
         itemrec_algo_randomrank,
+        itemrec_algo_latestrank,
         itemrec_metric_map,
         itemrec_evaluation_trainingtestsplit)
       
@@ -31,6 +33,9 @@ object PredictionIOAlgorithmsHadoopScalaBuild extends Build {
 
   lazy val itemrec_algo_randomrank = Project(id = "scala-itemrec-algo-randomrank",
       base = file("engines/itemrec/algorithms/randomrank")) dependsOn(commons)
+
+  lazy val itemrec_algo_latestrank = Project(id = "scala-itemrec-algo-latestrank",
+      base = file("engines/itemrec/algorithms/latestrank")) dependsOn(commons)
       
   lazy val itemrec_metric_map = Project(id = "scala-itemrec-metric-map",
       base = file("engines/itemrec/metrics/map")) dependsOn(commons)

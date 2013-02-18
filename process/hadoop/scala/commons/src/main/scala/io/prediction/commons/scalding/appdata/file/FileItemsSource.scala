@@ -35,7 +35,7 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
     
   }
   
-  def filterItypes(itypesField: Symbol, queryItypes: Option[List[String]])(p: Pipe)(implicit fd: FlowDef): Pipe = {
+  private def filterItypes(itypesField: Symbol, queryItypes: Option[List[String]])(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val dataPipe = 
       if (queryItypes == None) p
       else p.filter(itypesField) { x: List[String] =>
@@ -49,6 +49,16 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
       }
     
     dataPipe
+  }
+
+  override def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
+    this.read
+      .mapTo((0, 1, 2) -> (iidField, itypesField, starttimeField)) { fields: (String, String, String) =>
+        val (iid, itypes, starttime) = fields
+        
+        (iid, itypes.split(",").toList, starttime)
+           
+      }.then( filterItypes('itypes, itypes) _ )
   }
   
   override def writeData(iidField: Symbol, itypesField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe = {

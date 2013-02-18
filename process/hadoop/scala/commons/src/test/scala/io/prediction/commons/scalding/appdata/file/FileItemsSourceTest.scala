@@ -25,8 +25,16 @@ class ReadItypesTestJob(args: Args) extends Job(args) {
       // convert the List back to string with ',' as separator
       (iid, itypes.mkString(","))
     }.write(Tsv("output"))
-    
-
+  
+  src.readStarttime('iid, 'itypes, 'starttime)
+    .mapTo(('iid, 'itypes, 'starttime) -> ('iid, 'itypes, 'starttime)) { fields: (String, List[String], String) =>
+      val (iid, itypes, starttime) = fields
+      
+      // during read, itypes are converted from t1,t2,t3 to List[String] = List(t1,t2,t3)
+      // convert the List back to string with ',' as separator
+      (iid, itypes.mkString(","), starttime)
+    }.write(Tsv("outputStarttime"))
+  
 }
 
 /*
@@ -43,69 +51,69 @@ class WriteTestJob(args: Args) extends Job(args) {
 
 class FileItemsSourceTest extends Specification with TupleConversions {
   
-  val test1Input = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
-  val test1output_all = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
-  val test1output_t4 = List(("i2", "t4"), ("i3", "t3,t4"))
-  val test1output_t2t3 = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i3", "t3,t4"))
+  val test1Input = List(("i0", "t1,t2,t3", "12345"), ("i1", "t2,t3", "45678"), ("i2", "t4", "9"), ("i3", "t3,t4", "101"))
+  val test1output_all = List(("i0", "t1,t2,t3", "12345"), ("i1", "t2,t3", "45678"), ("i2", "t4", "9"), ("i3", "t3,t4", "101"))
+  val test1output_t4 = List(("i2", "t4", "9"), ("i3", "t3,t4", "101"))
+  val test1output_t2t3 = List(("i0", "t1,t2,t3", "12345"), ("i1", "t2,t3", "45678"), ("i3", "t3,t4", "101"))
   val test1output_none = List()
+
+
+  def getIidAndItypes(d: List[(String, String, String)]) = {
+    d map {x => (x._1, x._2)}
+  }
   
-  "FileItemsSource without itypes" should {
-    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob").
-      arg("appid", "1").
-      source(new FileItemsSource("testpath", 1, None), test1Input).
-      sink[(String, String)](Tsv("output")) { outputBuffer =>
-        "correctly read from a file" in {
-          outputBuffer must containTheSameElementsAs(test1output_all)
+  def testWithItypes(appid: Int, itypes: List[String], inputItems: List[(String, String, String)], outputItems: List[(String, String, String)]) = {
+    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob")
+      .arg("appid", appid.toString)
+      .arg("itypes", itypes)
+      .source(new FileItemsSource("testpath", appid, Some(itypes)), inputItems)
+      .sink[(String, String)](Tsv("output")) { outputBuffer =>
+        "correctly read iid and itypes" in {
+          outputBuffer must containTheSameElementsAs(getIidAndItypes(outputItems))
+        }
+      }
+      .sink[(String, String, String)](Tsv("outputStarttime")) { outputBuffer =>
+        "correctly read starttime" in {
+          outputBuffer must containTheSameElementsAs(outputItems)
         }
       }.run.finish
   }
 
-  "FileItemsSource with one itype" should {
-    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob").
-      arg("appid", "2").
-      arg("itypes", List("t4")).
-      source(new FileItemsSource("testpath", 2, Some(List("t4"))), test1Input).
-      sink[(String, String)](Tsv("output")) { outputBuffer =>
-        "correctly read from a file" in {
-          outputBuffer must containTheSameElementsAs(test1output_t4)
+  def testWithoutItypes(appid: Int, inputItems: List[(String, String, String)], outputItems: List[(String, String, String)]) = {
+    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob")
+      .arg("appid", appid.toString)
+      .source(new FileItemsSource("testpath", appid, None), inputItems)
+      .sink[(String, String)](Tsv("output")) { outputBuffer =>
+        "correctly read iid and itypes" in {
+          outputBuffer must containTheSameElementsAs(getIidAndItypes(outputItems))
+        }
+      }
+      .sink[(String, String, String)](Tsv("outputStarttime")) { outputBuffer =>
+        "correctly read starttime" in {
+          outputBuffer must containTheSameElementsAs(outputItems)
         }
       }.run.finish
+  }
+
+
+  "FileItemsSource without itypes" should {
+    testWithoutItypes(1, test1Input, test1output_all)
+  }
+
+  "FileItemsSource with one itype" should {
+    testWithItypes(1, List("t4"), test1Input, test1output_t4)
   }
     
   "FileItemsSource with some itypes" should {
-    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob").
-      arg("appid", "3").
-      arg("itypes", List("t2","t3")).
-      source(new FileItemsSource("testpath", 3, Some(List("t2","t3"))), test1Input).
-      sink[(String, String)](Tsv("output")) { outputBuffer =>
-        "correctly read from a file" in {
-          outputBuffer must containTheSameElementsAs(test1output_t2t3)
-        }
-      }.run.finish
+    testWithItypes(3, List("t2","t3"), test1Input, test1output_t2t3)
   }
   
   "FileItemsSource with all itypes" should {
-    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob").
-      arg("appid", "3").
-      arg("itypes", List("t2","t3","t1","t4")).
-      source(new FileItemsSource("testpath", 3, Some(List("t2","t3","t1","t4"))), test1Input).
-      sink[(String, String)](Tsv("output")) { outputBuffer =>
-        "correctly read from a file" in {
-          outputBuffer must containTheSameElementsAs(test1output_all)
-        }
-      }.run.finish
+    testWithItypes(3, List("t2","t3","t1","t4"), test1Input, test1output_all)
   }
   
   "FileItemsSource without any matching itypes" should {
-    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob").
-      arg("appid", "3").
-      arg("itypes", List("t99")).
-      source(new FileItemsSource("testpath", 3, Some(List("t99"))), test1Input).
-      sink[(String, String)](Tsv("output")) { outputBuffer =>
-        "correctly read from a file" in {
-          outputBuffer must containTheSameElementsAs(test1output_none)
-        }
-      }.run.finish
+    testWithItypes(3,List("t99"), test1Input, test1output_none)
   }
   
   /*

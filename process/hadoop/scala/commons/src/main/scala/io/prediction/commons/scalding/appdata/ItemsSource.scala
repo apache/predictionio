@@ -22,6 +22,13 @@ trait ItemsSource {
    * itypesField: Symbol of itypes(List[String])
    */
   def readData(iidField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe
+
+  /**
+   * starttimeField: Symbol of starttime(String)
+   */
+  def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
+    throw new RuntimeException("ItemsSource readStarttime is not implemented.")
+  }
   
   /**
    * map pipe's field data to DB table fields and write to dbSink
@@ -41,7 +48,7 @@ object ItemsSource {
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
       ("id" -> 'id),
       ("itypes" -> 'itypes),
-      //("evalid" -> 'evalid),
-      ("appid" -> 'appid))
+      ("appid" -> 'appid),
+      ("starttime" -> 'starttime))
       
 }
