@@ -1,9 +1,9 @@
-package io.prediction.commons.settings.scala
+package io.prediction.commons.settings.code
 
 import io.prediction.commons.settings.{AlgoInfo, AlgoInfos}
 
 /** Scala implementation of AlgoInfos. */
-class ScalaAlgoInfos extends AlgoInfos {
+class CodeAlgoInfos extends AlgoInfos {
   private val algoInfos = Map(
     "io.prediction.algorithms.scalding.itemrec.knnitembased" -> AlgoInfo(
       id = "io.prediction.algorithms.scalding.itemrec.knnitembased",
