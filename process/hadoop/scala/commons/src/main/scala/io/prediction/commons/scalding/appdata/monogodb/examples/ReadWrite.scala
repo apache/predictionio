@@ -2,7 +2,7 @@ package io.prediction.commons.scalding.appdata.mongodb.examples
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.mongodb.{MongoItemsSource, MongoU2iActionsSource}
+import io.prediction.commons.scalding.appdata.mongodb.{MongoUsersSource, MongoItemsSource, MongoU2iActionsSource}
 
 //TODO: clean up this example. see if there is better way to test MongoSource?
 class ReadWrite(args: Args) extends Job(args) {
@@ -21,6 +21,18 @@ class ReadWrite(args: Args) extends Job(args) {
 
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
+
+  /**
+   * test MongoUsersSource
+   * read from DB and write to Tsv
+   */
+  val usersSource = new MongoUsersSource(read_dbNameArg, read_dbHostArg, read_dbPortArg, read_appidArg)
+    
+  val users = usersSource.readData('uid)
+    .write(Tsv("users.tsv"))
+  
+  val testUsers = new MongoUsersSource(write_dbNameArg, write_dbHostArg, write_dbPortArg, write_appidArg)
+  users.then( testUsers.writeData('uid, write_appidArg) _ ) 
 
   /**
    * test MongoItemsSource
@@ -48,7 +60,6 @@ class ReadWrite(args: Args) extends Job(args) {
     
   val testU2i = new MongoU2iActionsSource(write_dbNameArg, write_dbHostArg, write_dbPortArg, write_appidArg)
   u2i.then( testU2i.writeData('action, 'uid, 'iid, 't, 'v, write_appidArg) _ )
-  
       
   
 }

@@ -2,7 +2,7 @@ package io.prediction.evaluations.scalding.itemrec.trainingtestsplit
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Items, U2iActions}
+import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
 
 /**
  * Source:
@@ -81,6 +81,9 @@ class TrainingTestSplit(args: Args) extends Job(args) {
    * source
    */
   // get appdata
+  val users = Users(appId=appidArg,
+      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('uid)
+
   val items = Items(appId=appidArg, itypes=itypesArg,
       dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('iidx, 'itypes)
   
@@ -92,6 +95,10 @@ class TrainingTestSplit(args: Args) extends Job(args) {
    */
   // sink to training_appdata
   // NOTE: appid is replaced by evalid for training and test set appdata
+
+  val trainingUsers = Users(appId=evalidArg,
+      dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg)
+
   val trainingItems = Items(appId=evalidArg, itypes=None, 
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg)
       
@@ -134,5 +141,9 @@ class TrainingTestSplit(args: Args) extends Job(args) {
     newIid
   }.then( trainingItems.writeData('newIid, 'itypes, evalidArg) _ ) // NOTE: appid is repalced by evalid 
   
-    
+  users.map('uid -> 'newUid) {uid: String =>
+    val newUid = newPrefix + uid.stripPrefix(oldPrefix)
+    newUid
+  }.then( trainingUsers.writeData('newUid, evalidArg) _ ) // NOTE: appid is repalced by evalid 
+
 }
