@@ -24,9 +24,9 @@ class MongoUsers(db: MongoDB) extends Users {
     userColl.insert(id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
-  def get(appid: Int, id: String) = {
-    userColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToUser(_) }
-  }
+  def get(appid: Int, id: String) = userColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToUser(_) }
+
+  def getByAppid(appid: Int) = new MongoUsersIterator(userColl.find(MongoDBObject("appid" -> appid)))
 
   def update(user: User) = {
     val id = MongoDBObject("_id" -> idWithAppid(user.appid, user.id))
@@ -40,7 +40,7 @@ class MongoUsers(db: MongoDB) extends Users {
 
   def delete(appid: Int, id: String) = userColl.remove(MongoDBObject("_id" -> idWithAppid(appid, id)))
   def delete(user: User) = delete(user.appid, user.id)
-  
+
   def deleteByAppid(appid: Int): Unit = {
     userColl.remove(MongoDBObject("appid" -> appid))
   }
@@ -55,5 +55,10 @@ class MongoUsers(db: MongoDB) extends Users {
       inactive   = dbObj.getAs[Boolean]("inactive"),
       attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
     )
+  }
+
+  class MongoUsersIterator(it: MongoCursor) extends Iterator[User] {
+    def next = dbObjToUser(it.next)
+    def hasNext = it.hasNext
   }
 }

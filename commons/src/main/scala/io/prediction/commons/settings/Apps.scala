@@ -30,6 +30,9 @@ trait Apps {
     */
   def insert(app: App): Int
 
+  /** Get an App by its ID. */
+  def get(id: Int): Option[App]
+
   /** Get Apps by user ID. */
   def getByUserid(userid: Int): Iterator[App]
 

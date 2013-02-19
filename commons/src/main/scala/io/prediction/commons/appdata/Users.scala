@@ -22,11 +22,14 @@ case class User(
 
 /** Base trait for implementations that interact with users in the backend app data store. */
 trait Users {
-  /** Inserts a new user. */
+  /** Insert a new user. */
   def insert(user: User): Unit
 
-  /** Finds a user by ID. */
+  /** Find a user by ID. */
   def get(appid: Int, id: String): Option[User]
+
+  /** Find all users by App ID. */
+  def getByAppid(appid: Int): Iterator[User]
 
   /** Update a user. */
   def update(user: User): Unit
@@ -36,7 +39,7 @@ trait Users {
 
   /** Delete a user. */
   def delete(user: User): Unit
-  
+
   /** Delete all users by App ID */
   def deleteByAppid(appid: Int): Unit
 }

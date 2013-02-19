@@ -37,7 +37,7 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     u2iActionColl.remove(MongoDBObject("appid" -> appid))
   }
 
-  private def dbObjToItem(dbObj: DBObject) = {
+  private def dbObjToU2IAction(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     U2IAction(
       appid  = appid,
@@ -53,7 +53,7 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
   }
 
   class MongoU2IActionIterator(it: MongoCursor) extends Iterator[U2IAction] {
-    def next = dbObjToItem(it.next)
+    def next = dbObjToU2IAction(it.next)
     def hasNext = it.hasNext
   }
 }
