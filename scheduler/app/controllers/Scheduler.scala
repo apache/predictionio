@@ -142,7 +142,7 @@ object Scheduler extends Controller {
 
                   jobChain.addJobChainLink(job.getKey, postProcessJob.getKey)
 
-                  val trigger = newTrigger() forJob(jobKey(algoid, algoJobGroup)) withIdentity(algoid, algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever) build()
+                  val trigger = newTrigger() forJob(jobKey(algoid, algoJobGroup)) withIdentity(algoid, algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
                   scheduler.scheduleJob(trigger)
                 }
               } else {

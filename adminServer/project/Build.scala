@@ -1,17 +1,18 @@
 import sbt._
 import Keys._
-import PlayProject._
+import play.Project._
 
 object ApplicationBuild extends Build {
 
-    val appName         = "PredictionIO Admin Server"
+    val appName         = "PredictionIO-Admin-Server"
     val appVersion      = "0.2-SNAPSHOT"
 
     val appDependencies = Seq(
-      "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT" changing()
+      "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
+      "com.github.nscala-time" %% "nscala-time" % "0.2.0"
     )
 
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
+    val main = play.Project(appName, appVersion, appDependencies).settings(
       resolvers += (
         "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
       )

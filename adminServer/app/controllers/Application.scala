@@ -20,7 +20,7 @@ import play.api.Play.current
 
 import scala.util.Random
 
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 /*
  * TODO:
@@ -46,25 +46,25 @@ object Application extends Controller {
   /** PredictionIO Commons modeldata */
   val modelDataConfig = new ModelDataConfig()
   val itemRecScores = modelDataConfig.getItemRecScores()
-  
+
   /** PredictionIO Commons appdata */
   val appDataConfig = new AppDataConfig()
   val appDataUsers = appDataConfig.getUsers()
   val appDataItems = appDataConfig.getItems()
   val appDataU2IActions = appDataConfig.getU2IActions()
-  
+
   /** PredictionIO Commons training set appdata */
   val trainingSetConfig = new TrainingSetConfig()
   val trainingSetUsers = trainingSetConfig.getUsers()
   val trainingSetItems = trainingSetConfig.getItems()
   val trainingSetU2IActions = trainingSetConfig.getU2IActions()
-  
+
   /** PredictionIO Commons test set appdata */
   val testSetConfig = new TestSetConfig()
   val testSetUsers = testSetConfig.getUsers()
   val testSetItems = testSetConfig.getItems()
   val testSetU2IActions = testSetConfig.getU2IActions()
-  
+
   /** */
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
 
@@ -87,7 +87,7 @@ object Application extends Controller {
 
   /** Appkey Generation */
   def randomAlphanumeric(n: Int): String = {
-    Random.alphanumeric take n mkString
+    Random.alphanumeric.take(n).mkString
   }
 
   def showWeb() = Action {
@@ -170,9 +170,9 @@ object Application extends Controller {
     val userApps = apps.getByUserid(user.id)
     if (!userApps.hasNext) NoContent
     else {
-      Ok(toJson(userApps map { app =>
+      Ok(toJson(userApps.map { app =>
         Map("id" -> app.id.toString, "appName" -> app.display)
-      } toSeq))
+      }.toSeq))
     }
   }
 
@@ -227,7 +227,7 @@ object Application extends Controller {
         "id" -> toJson(id),
         "enginelist" -> toJson((appEngines map { eng =>
           Map("id" -> eng.id.toString, "engineName" -> eng.name,"enginetype_id" -> eng.enginetype)
-        }) toSeq)
+        }).toSeq)
       )))
 
   }
@@ -294,7 +294,7 @@ object Application extends Controller {
     deleteApp(appid, keepSettings=false)
 
     // TODO: add code here: send deleteAppDir(appid) request to scheduler
-    
+
     apps.deleteByIdAndUserid(appid, user.id)
     Ok */
 
@@ -310,14 +310,14 @@ object Application extends Controller {
     /*
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
-    
-    
+
+
     val appid = id.toInt
     deleteApp(appid, keepSettings=true)
     // TODO: add code here: send deleteAppDir(appid) request to scheduler
     Ok
-    
-    
+
+
     //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
 
@@ -487,7 +487,7 @@ object Application extends Controller {
     // Ok
     BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
   }
-  
+
   def getAvailableAlgoList(app_id: String, engine_id: String) = withUser { user => implicit request =>
     /* sample output
     Ok(toJson(Seq(
@@ -541,7 +541,7 @@ object Application extends Controller {
                "status" -> "ready", // TODO
                "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
                )
-         }) toSeq
+         }).toSeq
        ))
 
 
@@ -656,7 +656,7 @@ object Application extends Controller {
     )
 
   }
-  
+
   /**
    * delete appdata DB of this appid
    */
@@ -665,100 +665,100 @@ object Application extends Controller {
     appDataItems.deleteByAppid(appid)
     appDataU2IActions.deleteByAppid(appid)
   }
-  
+
   def deleteTrainingSetData(evalid: Int) = {
     trainingSetUsers.deleteByAppid(evalid)
     trainingSetItems.deleteByAppid(evalid)
     trainingSetU2IActions.deleteByAppid(evalid)
   }
-  
+
   def deleteTestSetData(evalid: Int) = {
     testSetUsers.deleteByAppid(evalid)
     testSetItems.deleteByAppid(evalid)
     testSetU2IActions.deleteByAppid(evalid)
   }
-  
+
   def deleteModelData(algoid: Int) = {
     itemRecScores.deleteByAlgoid(algoid) // TODO: check engine type and delete corresponding modeldata, now hardcode as itemRecScores
   }
-  
-  
-  /** 
+
+
+  /**
    * delete DB data under this app
    */
   def deleteApp(appid: Int, keepSettings: Boolean) = {
-    
+
     val appEngines = engines.getByAppid(appid)
-    
+
     appEngines foreach { eng =>
       deleteEngine(eng.id, keepSettings)
       if (!keepSettings) {
         engines.deleteByIdAndAppid(eng.id, appid)
       }
     }
-    
+
     deleteAppData(appid)
   }
-  
+
   /**
    * delete DB data under this engine
    */
   def deleteEngine(engineid: Int, keepSettings: Boolean) = {
-    
+
     val engineAlgos = algos.getByEngineid(engineid)
-    
+
     engineAlgos foreach { algo =>
       deleteModelData(algo.id)
       if (!keepSettings) {
         algos.delete(algo.id)
       }
     }
-    
+
     val engineOfflineEvals = offlineEvals.getByEngineid(engineid)
-    
+
     engineOfflineEvals foreach { eval =>
       deleteOfflineEval(eval.id, keepSettings)
       if (!keepSettings) {
         offlineEvals.delete(eval.id)
       }
     }
-    
+
   }
-  
-  
+
+
   /**
    * delete DB data under this offline eval
    */
   def deleteOfflineEval(evalid: Int, keepSettings: Boolean) = {
-    
+
     deleteTrainingSetData(evalid)
     deleteTestSetData(evalid)
-    
+
     val evalAlgos = algos.getByOfflineEvalid(evalid)
-    
+
     evalAlgos foreach { algo =>
       deleteModelData(algo.id)
-      if (!keepSettings) { 
-        algos.delete(algo.id) 
+      if (!keepSettings) {
+        algos.delete(algo.id)
       }
     }
-    
+
     if (!keepSettings) {
       val evalMetrics = offlineEvalMetrics.getByEvalid(evalid)
-    
+
       evalMetrics foreach { metric =>
         offlineEvalMetrics.delete(metric.id)
       }
-    
+
       offlineEvalResults.deleteByEvalid(evalid)
     }
-    
+
   }
-  
+
 
   def removeAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
     /*
-    deleteAlgoData(id.toInt)  
+    deleteAlgoData(id.toInt)
     // TODO: add code here: send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
     algos.delete(id.toInt)
     Ok
@@ -807,7 +807,7 @@ object Application extends Controller {
       Ok(toJson(Map(
        "updatedTime" -> toJson("12-03-2012 12:32:12"), // TODO: what's this time for?
        "status" -> toJson("Running"),
-       "algolist" -> toJson(deployedAlgos map { algo =>
+       "algolist" -> toJson(deployedAlgos.map { algo =>
          Map("id" -> algo.id.toString,
 	         "algoName" -> algo.name,
 	         "app_id" -> app_id, // // TODO: should algo db store appid and get it from there?
@@ -816,7 +816,7 @@ object Application extends Controller {
 	         "algotypeName" -> algoTypeNames("knnitembased"),
 	         "status" -> "deployed",
 	         "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
-       } toSeq)
+       }.toSeq)
       )))
 
   }
@@ -891,7 +891,7 @@ object Application extends Controller {
     else {
       Ok(toJson(
 
-        engineOfflineEvals map { eval =>
+        engineOfflineEvals.map { eval =>
 
           val status = (eval.starttime, eval.endtime) match {
             case (Some(x), Some(y)) => "completed"
@@ -903,7 +903,7 @@ object Application extends Controller {
           val algolist = if (!evalAlgos.hasNext) JsNull
           else
             toJson(
-               evalAlgos map { algo =>
+               evalAlgos.map { algo =>
                  Map("id" -> algo.id.toString,
                      "algoName" -> algo.name,
                      "app_id" -> app_id,
@@ -912,7 +912,7 @@ object Application extends Controller {
                      "algotypeName" -> algoTypeNames("knnitembased"),
                      "settingsString" -> Itemrec.Knnitembased.displayAllParams(algo.params)
                      )
-               } toSeq
+               }.toSeq
                )
 
           val createtime = eval.createtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
@@ -928,7 +928,7 @@ object Application extends Controller {
            "startTime" -> toJson(createtime), // NOTE: use createtime here for test date
            "endTime" -> toJson(endtime)
            )
-        } toSeq
+        }.toSeq
 
       ))
 
@@ -1052,7 +1052,7 @@ object Application extends Controller {
     // TODO: add code here: send deleteOfflineEvalDir(app_id.toInt, engine_id.toInt, id.toInt) request to scheduler
     offlineEvals.delete(id.toInt)
     Ok
-    */ 
+    */
     BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
   }
 
@@ -1141,7 +1141,7 @@ object Application extends Controller {
           JsNull
         else {
           toJson(
-            evalAlgos map { algo =>
+            evalAlgos.map { algo =>
               Map("id" -> algo.id.toString,
                   "algoName" -> algo.name,
                   "app_id" -> app_id,
@@ -1150,7 +1150,7 @@ object Application extends Controller {
                   "algotypeName" -> algoTypeNames("knnitembased"),
                   "settingsString" -> Itemrec.Knnitembased.displayAllParams(algo.params)
                   )
-            } toSeq
+            }.toSeq
           )
         }
 
@@ -1161,7 +1161,7 @@ object Application extends Controller {
           JsNull
         else {
           toJson(
-            evalMetrics map { metric =>
+            evalMetrics.map { metric =>
               Map("id" -> metric.id.toString,
                   "engine_id" -> engine_id,
                   "enginetype_id" -> "itemrec", // TODO: hardcode now, should get it from engine db
@@ -1169,7 +1169,7 @@ object Application extends Controller {
                   "metricsName" -> metric.name,
                   "settingsString" -> map_k_displayAllParams(metric.params)
                   )
-            } toSeq
+            }.toSeq
           )
         }
 
@@ -1180,12 +1180,12 @@ object Application extends Controller {
           JsNull
         else {
           toJson(
-            evalResults map { result =>
+            evalResults.map { result =>
               Map("algo_id" -> toJson(result.algoid),
                   "metrics_id" -> toJson(result.metricid),
                   "score" -> toJson(result.score.toString)
                   )
-            } toSeq
+            }.toSeq
           )
         }
 
