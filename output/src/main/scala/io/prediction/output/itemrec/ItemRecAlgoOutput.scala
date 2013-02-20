@@ -46,7 +46,7 @@ object ItemRecAlgoOutput {
           stopMore = true
         else {
           val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, moreIids)
-          outputBuffer ++= (moreIids filterNot (seenItems.toList.map(_.iid) contains))
+          outputBuffer ++= (moreIids filterNot (seenItems.toList.map(_.iid).contains))
           after = Some(moreItemRecScores.last)
         }
       }

@@ -19,7 +19,7 @@ object MongoUtils {
   }
 
   /** Converts MongoDBList to List of String. */
-  implicit def mongoDbListToListOfString(dbList: MongoDBList): List[String] = {
+  def mongoDbListToListOfString(dbList: MongoDBList): List[String] = {
     dbList.toList.map(_.asInstanceOf[String])
   }
 

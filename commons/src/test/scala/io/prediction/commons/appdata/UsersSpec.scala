@@ -4,7 +4,7 @@ import org.specs2._
 import org.specs2.specification.Step
 
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 class UsersSpec extends Specification { def is =
   "PredictionIO App Data Users Specification"                                 ^

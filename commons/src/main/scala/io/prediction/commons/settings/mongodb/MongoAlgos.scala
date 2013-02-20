@@ -5,7 +5,7 @@ import io.prediction.commons.settings.{Algo, Algos}
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 /** MongoDB implementation of Algos. */
 class MongoAlgos(db: MongoDB) extends Algos {

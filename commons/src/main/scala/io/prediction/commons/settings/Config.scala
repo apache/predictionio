@@ -15,30 +15,30 @@ class Config {
 
   /** The database host that stores PredictionIO settings. */
   val settingsDbHost: String = settingsDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.settings.db.host") } catch { case _ => "127.0.0.1" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.settings.db.host") } catch { case _: Throwable => "127.0.0.1" }
   }
 
   /** The database port that stores PredictionIO settings. */
   val settingsDbPort: Int = settingsDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.settings.db.port") } catch { case _ => 27017 }
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.settings.db.port") } catch { case _: Throwable => 27017 }
   }
 
   /** The database name that stores PredictionIO settings. */
   val settingsDbName: String = settingsDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.settings.db.name") } catch { case _ => "predictionio" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.settings.db.name") } catch { case _: Throwable => "predictionio" }
   }
 
   /** The HDFS root location for PredictionIO data. */
-  val settingsHdfsRoot: String = try { config.getString("io.prediction.commons.settings.hdfs.root") } catch { case _ => "predictionio/" }
+  val settingsHdfsRoot: String = try { config.getString("io.prediction.commons.settings.hdfs.root") } catch { case _: Throwable => "predictionio/" }
 
   /** PredictionIO Scheduler base URL. */
-  val settingsSchedulerUrl: String = try { config.getString("io.prediction.commons.settings.scheduler.url") } catch { case _ => "http://localhost:7000" }
+  val settingsSchedulerUrl: String = try { config.getString("io.prediction.commons.settings.scheduler.url") } catch { case _: Throwable => "http://localhost:7000" }
 
   /** The database user that stores PredictionIO settings. */
-  val settingsDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.settings.db.user")) } catch { case _ => None }
+  val settingsDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.settings.db.user")) } catch { case _: Throwable => None }
 
   /** The database password that stores PredictionIO settings. */
-  val settingsDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.settings.db.password")) } catch { case _ => None }
+  val settingsDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.settings.db.password")) } catch { case _: Throwable => None }
 
   /** If settingsDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val mongoDb: Option[MongoDB] = settingsDbType match {
@@ -97,7 +97,7 @@ class Config {
 
   /** Obtains the JAR filename for a specific algorithm package name. */
   def getJar(pkgname: String): Option[String] = {
-    try { Some(config.getString(pkgname + ".jar")) } catch { case _ => None }
+    try { Some(config.getString(pkgname + ".jar")) } catch { case _: Throwable => None }
   }
 
   /** Obtains an OfflineEvals object with configured backend type. */

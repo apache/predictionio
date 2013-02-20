@@ -8,6 +8,6 @@ object ItemRecKNNItemBasedAlgoBatchOutput {
   val itemRecScores = config.getItemRecScores()
 
   def output(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo) = {
-    itemRecScores.getTopN(uid, n, itypes, after) toList
+    itemRecScores.getTopN(uid, n, itypes, after).toList
   }
 }

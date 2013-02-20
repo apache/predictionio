@@ -4,21 +4,18 @@ version := "0.2-SNAPSHOT"
 
 organization := "io.prediction"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.0"
 
 scalacOptions in (Compile, doc) ++= Opts.doc.title("PredictionIO Output API Documentation")
 
-crossScalaVersions := Seq("2.9.1", "2.9.2")
-
 libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
+  "com.github.nscala-time" %% "nscala-time" % "0.2.0",
   "junit" % "junit" % "4.11",
-  "org.specs2" %% "specs2" % "1.12.3" % "test"
+  "org.specs2" %% "specs2" % "1.14" % "test"
 )
 
 resolvers ++= Seq(
-  "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-  "releases"  at "http://oss.sonatype.org/content/repositories/releases",
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 )
 

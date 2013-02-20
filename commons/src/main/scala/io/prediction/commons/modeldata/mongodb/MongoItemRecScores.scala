@@ -57,7 +57,7 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
       uid = dbObj.as[String]("uid").drop(appid.toString.length+1),
       iid = dbObj.as[String]("iid").drop(appid.toString.length+1),
       score = dbObj.as[Double]("score"),
-      itypes = dbObj.as[MongoDBList]("itypes"),
+      itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("itypes")),
       appid = appid,
       algoid = dbObj.as[Int]("algoid"),
       modelset = dbObj.as[Boolean]("modelset"),

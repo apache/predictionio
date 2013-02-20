@@ -5,7 +5,7 @@ import io.prediction.commons.appdata.{User, Users}
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 /** MongoDB implementation of Users. */
 class MongoUsers(db: MongoDB) extends Users {
@@ -20,7 +20,7 @@ class MongoUsers(db: MongoDB) extends Users {
     val ct = MongoDBObject("ct" -> user.ct)
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = user.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = user.attributes map { a => MongoDBObject("attributes" -> a.asDBObject) } getOrElse emptyObj
+    val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
     userColl.insert(id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -34,7 +34,7 @@ class MongoUsers(db: MongoDB) extends Users {
     val ct = MongoDBObject("ct" -> user.ct)
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = user.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = user.attributes map { a => MongoDBObject("attributes" -> a.asDBObject) } getOrElse emptyObj
+    val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
     userColl.update(id, id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
