@@ -8,7 +8,7 @@ import cascading.flow.FlowDef
 import java.util.ArrayList
 import java.util.HashMap
 
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 import com.mongodb.BasicDBList
 import com.mongodb.casbah.Imports._

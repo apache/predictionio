@@ -20,6 +20,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.12.3" % "test",
+  "com.github.nscala-time" %% "nscala-time" % "0.2.0",
   "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT"
 )
 
