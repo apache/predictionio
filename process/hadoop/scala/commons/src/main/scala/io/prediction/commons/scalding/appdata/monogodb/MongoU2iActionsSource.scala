@@ -7,22 +7,19 @@ import cascading.flow.FlowDef
 
 import java.util.ArrayList
 import java.util.HashMap
-import java.util.Date
-import java.text.SimpleDateFormat
+
+import org.scala_tools.time.Imports._
 
 import com.mongodb.BasicDBList
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.U2iActionsSource
 import io.prediction.commons.scalding.appdata.U2iActionsSource.FIELD_SYMBOLS
 
 class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) extends MongoSource (
-    db = db, /*(evalId, testSet) match {
-      case (Some(x), Some(false)) => "training_appdata"
-      case (Some(x), Some(true)) => "test_appdata"
-      case _ => "appdata"
-    },*/
+    db = db,
     coll = "u2iActions",
     cols = {
       val u2iCols = new ArrayList[String]()
@@ -73,6 +70,8 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
   
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
+  RegisterJodaTimeConversionHelpers()
+
   override def getSource: Source = this
   
   /**
@@ -86,21 +85,10 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
   override def readData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol)(implicit fd: FlowDef): Pipe = {
     val u2iactions = this.read
       .mapTo((0, 1, 2, 3, 4) -> (actionField, uidField, iidField, tField, vField)) { 
-        fields: (String, String, String, String, String) => 
+        fields: (String, String, String, DateTime, String) => 
           val (action, uid, iid, t, v) = fields
-          
-          // convert t to long
-          // NOTE: when read from MongoSource, the mongo date object becomes string, eg
-          //          Thu Nov 08 13:33:39 CST 2012
-          //  format: EEE MMM dd HH:mm:ss zzz yyyy
-          // use SimpleDateFormat to parse this date string and and convert back to number in ms unit
-          // so later can easily sort it to pick the latest action
-   
-          val parserSDF: SimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-          val myDate: Date = parserSDF.parse(t);
-          val tms: Long = myDate.getTime() // time in millisecond unit 
-          
-          (action, uid, iid, tms.toString, v)
+                    
+          (action, uid, iid, t.getMillis().toString, v)
       }
     
     u2iactions
@@ -112,7 +100,7 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
         fields: (String, String, String, String, String) =>
           val (action, uid, iid, t, v) = fields
                     
-          (action.toInt, uid, iid, new Date(t.toLong), v.toInt, appid)
+          (action.toInt, uid, iid, new DateTime(t.toLong), v.toInt, appid)
     }.write(this)
     
     dbData

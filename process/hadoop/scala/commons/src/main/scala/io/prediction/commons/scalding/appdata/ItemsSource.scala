@@ -31,6 +31,13 @@ trait ItemsSource {
   }
   
   /**
+   * return Item Obj
+   */
+  def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
+    throw new RuntimeException("ItemsSource readObj is not implemented.")
+  }
+
+  /**
    * map pipe's field data to DB table fields and write to dbSink
    * iidField: Symbol of iid(String)
    * itypesField: Symbol of itypes(List[String])
@@ -38,6 +45,12 @@ trait ItemsSource {
    */
   def writeData(iidField: Symbol, itypesField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe
   
+  /**
+   * write Item Obj
+   */
+  def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    throw new RuntimeException("ItemsSource writeObj is not implemented.")
+  }
 }
 
 object ItemsSource {
@@ -47,8 +60,9 @@ object ItemsSource {
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
       ("id" -> 'id),
-      ("itypes" -> 'itypes),
       ("appid" -> 'appid),
+      ("ct" -> 'ct),
+      ("itypes" -> 'itypes),
       ("starttime" -> 'starttime))
       
 }

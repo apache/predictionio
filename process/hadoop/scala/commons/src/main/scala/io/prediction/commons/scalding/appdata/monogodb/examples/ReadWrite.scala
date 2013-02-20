@@ -3,6 +3,7 @@ package io.prediction.commons.scalding.appdata.mongodb.examples
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.mongodb.{MongoUsersSource, MongoItemsSource, MongoU2iActionsSource}
+import io.prediction.commons.appdata.{Item, User}
 
 //TODO: clean up this example. see if there is better way to test MongoSource?
 class ReadWrite(args: Args) extends Job(args) {
@@ -30,6 +31,15 @@ class ReadWrite(args: Args) extends Job(args) {
     
   val users = usersSource.readData('uid)
     .write(Tsv("users.tsv"))
+
+  val usersObj = usersSource.readObj('user)
+    .write(Tsv("usersObj.tsv"))
+
+  val testUsersObj = new MongoUsersSource(write_dbNameArg+"_obj", write_dbHostArg, write_dbPortArg, write_appidArg)
+
+  usersObj.mapTo('user -> 'user) {obj: User =>
+    obj.copy(appid = write_appidArg)
+  }.then( testUsersObj.writeObj('user) _ )
   
   val testUsers = new MongoUsersSource(write_dbNameArg, write_dbHostArg, write_dbPortArg, write_appidArg)
   users.then( testUsers.writeData('uid, write_appidArg) _ ) 
@@ -46,13 +56,22 @@ class ReadWrite(args: Args) extends Job(args) {
   val itemsStarttime = itemsSource.readStarttime('iid, 'itypes, 'starttime)
     .write(Tsv("itemsStarttime.tsv"))
 
+  val itemsObj = itemsSource.readObj('item)
+    .write(Tsv("itemsObj.tsv"))
+
+  val testItemsObj = new MongoItemsSource(write_dbNameArg+"_obj", write_dbHostArg, write_dbPortArg, write_appidArg, itypesArg)
+  
+  itemsObj.mapTo('item -> 'item) { obj: Item =>
+    obj.copy(appid = write_appidArg)
+  }.then( testItemsObj.writeObj('item) _ )
+
   val testItems = new MongoItemsSource(write_dbNameArg, write_dbHostArg, write_dbPortArg, write_appidArg, itypesArg)
   items.then( testItems.writeData('iid, 'itypes, write_appidArg) _ ) 
   
   /**
    * test MongoU2iActionsSource
    * read from DB and write to Tsv
-   */
+   */ 
   val u2iSource = new MongoU2iActionsSource(read_dbNameArg, read_dbHostArg, read_dbPortArg, read_appidArg)
 
   val u2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
@@ -60,6 +79,6 @@ class ReadWrite(args: Args) extends Job(args) {
     
   val testU2i = new MongoU2iActionsSource(write_dbNameArg, write_dbHostArg, write_dbPortArg, write_appidArg)
   u2i.then( testU2i.writeData('action, 'uid, 'iid, 't, 'v, write_appidArg) _ )
-      
+  
   
 }

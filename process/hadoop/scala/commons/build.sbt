@@ -19,12 +19,14 @@ libraryDependencies ++= Seq(
 //"com.mongodb.casbah" % "casbah_2.9.1" % "2.1.5-1"
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "1.12.3" % "test"
+  "org.specs2" %% "specs2" % "1.12.3" % "test",
+  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT"
 )
 
 resolvers ++= Seq(
   "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-  "releases"  at "http://oss.sonatype.org/content/repositories/releases"
+  "releases"  at "http://oss.sonatype.org/content/repositories/releases",
+  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 )
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"

@@ -4,6 +4,8 @@ import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
 
+import io.prediction.commons.appdata.{User, Item}
+
 /**
  * Source:
  *   appdata.items
@@ -82,10 +84,10 @@ class TrainingTestSplit(args: Args) extends Job(args) {
    */
   // get appdata
   val users = Users(appId=appidArg,
-      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('uid)
+      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readObj('user)
 
   val items = Items(appId=appidArg, itypes=itypesArg,
-      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('iidx, 'itypes)
+      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readObj('item)
   
   val u2i = U2iActions(appId=appidArg,
       dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('action, 'uid, 'iid, 't, 'v)
@@ -96,17 +98,17 @@ class TrainingTestSplit(args: Args) extends Job(args) {
   // sink to training_appdata
   // NOTE: appid is replaced by evalid for training and test set appdata
 
-  val trainingUsers = Users(appId=evalidArg,
+  val trainingUsersSink = Users(appId=evalidArg,
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg)
 
-  val trainingItems = Items(appId=evalidArg, itypes=None, 
+  val trainingItemsSink = Items(appId=evalidArg, itypes=None, 
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg)
       
-  val trainingU2i = U2iActions(appId=evalidArg,
+  val trainingU2iSink = U2iActions(appId=evalidArg,
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg)
   
   // sink to test_appadta
-  val testU2i = U2iActions(appId=evalidArg,
+  val testU2iSink = U2iActions(appId=evalidArg,
       dbType=test_dbTypeArg, dbName=test_dbNameArg, dbHost=test_dbHostArg, dbPort=test_dbPortArg)
      
   /**
@@ -116,13 +118,17 @@ class TrainingTestSplit(args: Args) extends Job(args) {
   val oldPrefix: String = appidArg + "_"
   val newPrefix: String = evalidArg + "_"
   
-  val selectedU2i = u2i.joinWithSmaller('iid -> 'iidx, items) // only select actions of these items
+  def replace_prefix(org: String): String = newPrefix + org.stripPrefix(oldPrefix)
+
+  val itemsIidx = items.mapTo('item -> 'iidx) { obj: Item => obj.id }
+  
+  val selectedU2i = u2i.joinWithSmaller('iid -> 'iidx, itemsIidx) // only select actions of these items
     .map(('uid, 'iid) -> ('randValue, 'newUid, 'newIid)) { fields: (String, String) =>
       
       // NOTE: replace appid prefix by evalid
       val (uid, iid) = fields
-      val newUid = newPrefix + uid.stripPrefix(oldPrefix)
-      val newIid = newPrefix + iid.stripPrefix(oldPrefix)
+      val newUid = replace_prefix(uid)
+      val newIid = replace_prefix(iid)
       
       // scala.math.random is evenly distributed
       val r = (scala.math.random * 10).toInt
@@ -131,19 +137,25 @@ class TrainingTestSplit(args: Args) extends Job(args) {
     }
   
   selectedU2i.filter('randValue) { r: Int => (r < testsizeArg)}
-    .then( testU2i.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _ ) // NOTE: appid is repalced by evalid 
+    .then( testU2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _ ) // NOTE: appid is repalced by evalid 
     
   selectedU2i.filter('randValue) { r: Int => ((r >= testsizeArg) && (r < totalSize)) }
-    .then( trainingU2i.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _) // NOTE: appid is repalced by evalid 
+    .then( trainingU2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _) // NOTE: appid is repalced by evalid 
   
-  items.map('iidx -> 'newIid) {iid: String =>
-    val newIid = newPrefix + iid.stripPrefix(oldPrefix)
-    newIid
-  }.then( trainingItems.writeData('newIid, 'itypes, evalidArg) _ ) // NOTE: appid is repalced by evalid 
+  items.mapTo('item -> 'item) { obj: Item =>
+    val iid = obj.id
+    obj.copy(
+      id = replace_prefix(iid),
+      appid = evalidArg // NOTE: appid is repalced by evalid
+    )
+  }.then( trainingItemsSink.writeObj('item) _ )  
   
-  users.map('uid -> 'newUid) {uid: String =>
-    val newUid = newPrefix + uid.stripPrefix(oldPrefix)
-    newUid
-  }.then( trainingUsers.writeData('newUid, evalidArg) _ ) // NOTE: appid is repalced by evalid 
+  users.mapTo('user -> 'user) { obj: User =>
+    val uid = obj.id
+    obj.copy(
+      id = replace_prefix(uid),
+      appid = evalidArg // NOTE: appid is repalced by evalid
+    )
+  }.then( trainingUsersSink.writeObj('user) _ )
 
 }

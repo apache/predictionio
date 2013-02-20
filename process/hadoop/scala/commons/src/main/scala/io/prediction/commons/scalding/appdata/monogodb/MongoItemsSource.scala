@@ -8,15 +8,17 @@ import cascading.tuple.Tuple
 
 import java.util.ArrayList
 import java.util.HashMap
-import java.util.Date
-import java.text.SimpleDateFormat
+
+import org.scala_tools.time.Imports._
 
 import com.mongodb.BasicDBList
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.ItemsSource
 import io.prediction.commons.scalding.appdata.ItemsSource.FIELD_SYMBOLS
+import io.prediction.commons.appdata.{Item}
 
 class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: Option[List[String]]) extends MongoSource (
     db = db,
@@ -28,6 +30,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
       itemsCols.add("itypes") // 1
       itemsCols.add("appid") // 2
       itemsCols.add("starttime") // 3
+      itemsCols.add("ct") // 4
 
       itemsCols
     },
@@ -38,6 +41,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
       itemsMappings.put("itypes", FIELD_SYMBOLS("itypes").name)
       itemsMappings.put("appid", FIELD_SYMBOLS("appid").name)
       itemsMappings.put("starttime", FIELD_SYMBOLS("starttime").name)
+      itemsMappings.put("ct", FIELD_SYMBOLS("ct").name)
       
       itemsMappings
     },
@@ -52,6 +56,8 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
   
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
+  RegisterJodaTimeConversionHelpers()
+
   override def getSource: Source = this
   
   override def readData(iidField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe = {
@@ -66,21 +72,35 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
   
   override def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, BasicDBList, String) =>
-          // NOTE: when read from MongoSource, the mongo date object becomes string, eg
-          //          Thu Nov 08 13:33:39 CST 2012
-          //  format: EEE MMM dd HH:mm:ss zzz yyyy
-          // use SimpleDateFormat to parse this date string and and convert back to number in ms unit
-          // so later can easily sort it to pick the latest action
-   
-          val parserSDF: SimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-          val myDate: Date = parserSDF.parse(fields._3);
-          val tms: Long = myDate.getTime() // time in millisecond unit 
+      .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, BasicDBList, DateTime) =>
 
         // NOTE: convert itypes form BasicDBList to scala List.
-        (fields._1, fields._2.toList, tms.toString)
+        (fields._1, fields._2.toList, fields._3.getMillis().toString)
       }
     
+    items
+  }
+
+  override def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
+    val items = this.read
+      .mapTo((0, 1, 2, 3, 4) -> (objField)) { fields: (String, BasicDBList, Int, DateTime, DateTime) =>
+        val (id, itypes, appid, starttime, ct) = fields
+
+        Item(
+          id = id,
+          appid = appid,
+          ct = ct,
+          itypes = itypes.toList.map (x => x.toString),
+          starttime = Some(starttime),
+          endtime = None,
+          price = None,
+          profit = None,
+          latlng = None,
+          inactive = None,
+          attributes = None
+        )
+
+      }
     items
   }
 
@@ -100,6 +120,22 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
      }.write(this)
     
      writtenData
+  }
+
+  override def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    val writtenData = p.mapTo(objField ->
+      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"))) { obj: Item =>
+
+        val itypesTuple = new Tuple()
+           
+        for (x <- obj.itypes) {
+          itypesTuple.add(x)
+        }
+
+        (obj.id, itypesTuple, obj.appid, obj.starttime.get, obj.ct)
+    }.write(this)
+
+    writtenData
   }
   
 }

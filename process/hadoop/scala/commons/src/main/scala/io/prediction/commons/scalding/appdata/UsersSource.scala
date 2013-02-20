@@ -23,11 +23,25 @@ trait UsersSource {
   def readData(uidField: Symbol)(implicit fd: FlowDef): Pipe
   
   /**
+   * read User object
+   */
+  def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
+    throw new RuntimeException("UsersSource readObj is not implemented.")
+  }
+
+  /**
    * map pipe's field data to DB table fields and write to dbSink
    * uidField: Symbol of iid(String)
    * appid: Appid Int
    */
   def writeData(uidField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe
+
+  /**
+   * write User object
+   */
+  def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    throw new RuntimeException("UsersSource writeObj is not implemented.")
+  }
   
 }
 
@@ -38,6 +52,7 @@ object UsersSource {
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
       ("id" -> 'id),
-      ("appid" -> 'appid))
+      ("appid" -> 'appid),
+      ("ct" -> 'ct))
       
 }
