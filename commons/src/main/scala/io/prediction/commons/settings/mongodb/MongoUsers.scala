@@ -62,19 +62,19 @@ class MongoUsers(db: MongoDB) extends Users {
   }
 
   def updateEmail(id: Int, email: String) = {
-    userColl.update(MongoDBObject("_id" -> id), $set(Seq("email" -> email)))
+    userColl.update(MongoDBObject("_id" -> id), MongoDBObject("$set" -> MongoDBObject("email" -> email)))
   }
 
   def updatePassword(userid: Int, password: String) = {
-    userColl.update(MongoDBObject("_id" -> userid), $set(Seq("password" -> md5password(password))))
+    userColl.update(MongoDBObject("_id" -> userid), MongoDBObject("$set" -> MongoDBObject("password" -> md5password(password))))
   }
 
   def updatePasswordByEmail(email: String, password: String) = {
-    userColl.update(MongoDBObject("email" -> email), $set(Seq("password" -> md5password(password))))
+    userColl.update(MongoDBObject("email" -> email), MongoDBObject("$set" -> MongoDBObject("password" -> md5password(password))))
   }
 
   def confirm(confirm: String) = {
-    userColl.findAndModify(MongoDBObject("confirm" -> confirm), $unset(Seq("confirm"))) map { dbObjToUser(_) }
+    userColl.findAndModify(MongoDBObject("confirm" -> confirm), MongoDBObject("$unset" -> MongoDBObject("confirm" -> 1))) map { dbObjToUser(_) }
   }
 
   def emailExists(email: String) = {
