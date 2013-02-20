@@ -5,7 +5,7 @@ import io.prediction.commons.appdata.{Item, Items}
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 /** MongoDB implementation of Items. */
 class MongoItems(db: MongoDB) extends Items {
@@ -28,7 +28,7 @@ class MongoItems(db: MongoDB) extends Items {
     val profit = item.profit map { p => MongoDBObject("profit" -> p) } getOrElse emptyObj
     val lnglat = item.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = item.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = item.attributes map { a => MongoDBObject("attributes" -> a.asDBObject) } getOrElse emptyObj
+    val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
     itemColl.insert(id ++ appid ++ ct ++ itypes ++ starttime ++ endtime ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -51,7 +51,7 @@ class MongoItems(db: MongoDB) extends Items {
     val profit = item.profit map { p => MongoDBObject("profit" -> p) } getOrElse emptyObj
     val lnglat = item.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = item.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = item.attributes map { a => MongoDBObject("attributes" -> a.asDBObject) } getOrElse emptyObj
+    val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
     itemColl.update(id, id ++ appid ++ ct ++ itypes ++ starttime ++ endtime ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -68,7 +68,7 @@ class MongoItems(db: MongoDB) extends Items {
       id         = dbObj.as[String]("_id").drop(appid.toString.length + 1),
       appid      = appid,
       ct         = dbObj.as[DateTime]("ct"),
-      itypes     = dbObj.as[MongoDBList]("itypes"),
+      itypes     = mongoDbListToListOfString(dbObj.as[MongoDBList]("itypes")),
       starttime  = dbObj.getAs[DateTime]("starttime"),
       endtime    = dbObj.getAs[DateTime]("endtime"),
       price      = dbObj.getAs[Double]("price"),

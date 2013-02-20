@@ -5,7 +5,7 @@ import io.prediction.commons.appdata.{U2IAction, U2IActions}
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 /** MongoDB implementation of Items. */
 class MongoU2IActions(db: MongoDB) extends U2IActions {

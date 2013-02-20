@@ -15,41 +15,41 @@ class Config {
 
   /** The database host that stores PredictionIO appdata. */
   val appdataDbHost: String = appdataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.db.host") } catch { case _ => "127.0.0.1" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.db.host") } catch { case _: Throwable => "127.0.0.1" }
   }
 
   /** The database port that stores PredictionIO appdata. */
   val appdataDbPort: Int = appdataDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.db.port") } catch { case _ => 27017 }
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.db.port") } catch { case _: Throwable => 27017 }
   }
 
   /** The database name that stores PredictionIO appdata. */
   val appdataDbName: String = appdataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.db.name") } catch { case _ => "predictionio_appdata" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.db.name") } catch { case _: Throwable => "predictionio_appdata" }
   }
 
   /** The database user that stores PredictionIO appdata. */
-  val appdataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.db.user")) } catch { case _ => None }
+  val appdataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.db.user")) } catch { case _: Throwable => None }
 
   /** The database password that stores PredictionIO appdata. */
-  val appdataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.db.password")) } catch { case _ => None }
+  val appdataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.db.password")) } catch { case _: Throwable => None }
 
   /** The database type that stores PredictionIO training appdata. */
   val appdataTrainingDbType: String = config.getString("io.prediction.commons.appdata.training.db.type")
 
   /** The database host that stores PredictionIO training appdata. */
   val appdataTrainingDbHost: String = appdataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.training.db.host") } catch { case _ => "127.0.0.1" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.training.db.host") } catch { case _: Throwable => "127.0.0.1" }
   }
 
   /** The database port that stores PredictionIO training appdata. */
   val appdataTrainingDbPort: Int = appdataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.training.db.port") } catch { case _ => 27017 }
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.training.db.port") } catch { case _: Throwable => 27017 }
   }
 
   /** The database name that stores PredictionIO training appdata. */
   val appdataTrainingDbName: String = appdataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.training.db.name") } catch { case _ => "predictionio_training_appdata" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.training.db.name") } catch { case _: Throwable => "predictionio_training_appdata" }
   }
 
   /** The database type that stores PredictionIO test appdata. */
@@ -57,17 +57,17 @@ class Config {
 
   /** The database host that stores PredictionIO test appdata. */
   val appdataTestDbHost: String = appdataTestDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.host") } catch { case _ => "127.0.0.1" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.host") } catch { case _: Throwable => "127.0.0.1" }
   }
 
   /** The database port that stores PredictionIO test appdata. */
   val appdataTestDbPort: Int = appdataTestDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.test.db.port") } catch { case _ => 27017 }
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.test.db.port") } catch { case _: Throwable => 27017 }
   }
 
   /** The database name that stores PredictionIO test appdata. */
   val appdataTestDbName: String = appdataTestDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.name") } catch { case _ => "predictionio_test_appdata" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.name") } catch { case _: Throwable => "predictionio_test_appdata" }
   }
 
   /** If appdataDbType is "mongodb", this will contain a Some[MongoDB] object. */

@@ -15,24 +15,24 @@ class Config {
 
   /** The database host that stores PredictionIO modeldata. */
   val modeldataDbHost: String = modeldataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.modeldata.db.host") } catch { case _ => "127.0.0.1" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.modeldata.db.host") } catch { case _: Throwable => "127.0.0.1" }
   }
 
   /** The database port that stores PredictionIO modeldata. */
   val modeldataDbPort: Int = modeldataDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.modeldata.db.port") } catch { case _ => 27017 }
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.modeldata.db.port") } catch { case _: Throwable => 27017 }
   }
 
   /** The database name that stores PredictionIO modeldata. */
   val modeldataDbName: String = modeldataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.modeldata.db.name") } catch { case _ => "predictionio_modeldata" }
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.modeldata.db.name") } catch { case _: Throwable => "predictionio_modeldata" }
   }
 
   /** The database user that stores PredictionIO modeldata. */
-  val modeldataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.db.user")) } catch { case _ => None }
+  val modeldataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.db.user")) } catch { case _: Throwable => None }
 
   /** The database password that stores PredictionIO modeldata. */
-  val modeldataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.db.password")) } catch { case _ => None }
+  val modeldataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.db.password")) } catch { case _: Throwable => None }
 
   /** If modeldataDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val mongoDb: Option[MongoDB] = modeldataDbType match {

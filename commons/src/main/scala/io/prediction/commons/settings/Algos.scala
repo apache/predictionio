@@ -1,6 +1,6 @@
 package io.prediction.commons.settings
 
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 
 /** Algo object.
   *

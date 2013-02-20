@@ -5,7 +5,7 @@ import io.prediction.commons.settings.{Algo, App}
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
-import org.scala_tools.time.Imports._
+import com.github.nscala_time.time.Imports._
 import scala.Some
 
 /**
