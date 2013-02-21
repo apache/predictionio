@@ -17,11 +17,12 @@ PREREQUISITES
 The current default PredictionIO setup assumes that you have the following installed and configured in a trusted environment:
 * At least 512MB of free memory for building the source
 * A recent version of Linux (other OS's have not been tested yet)
+* JDK 7.0+ (may work with JDK 6 but untested at the moment)
 * Apache Hadoop 1.0+ (or any compatible distribution that supports the "hadoop jar" command)
 * MongoDB 2.0+ (http://www.mongodb.org/)
-* Scala 2.9.2+ (http://www.scala-lang.org/)
+* Scala 2.9.2 and 2.10.0+ (sbt will download correct compilers automatically) (http://www.scala-lang.org/)
 * sbt 0.12.1+ (http://www.scala-sbt.org/)
-* Play 2.0+ (http://www.playframework.org/)
+* Play 2.1+ (http://www.playframework.org/)
 
 
 QUICK START
