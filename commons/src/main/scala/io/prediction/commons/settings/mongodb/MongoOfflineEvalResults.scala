@@ -4,7 +4,7 @@ import io.prediction.commons.settings.{OfflineEvalResult, OfflineEvalResults}
 import com.mongodb.casbah.Imports._
 
 class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
-  
+
   private val emptyObj = MongoDBObject()
   private val offlineEvalResultsColl = db("offlineEvalResults")
   private val getFields = MongoDBObject( // fields to be read
@@ -13,7 +13,7 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
     "algoid" -> 1,
     "score" -> 1
   )
-  
+
   private def dbObjToOfflineEvalResult(dbObj: DBObject) = {
     OfflineEvalResult(
       id = dbObj.as[String]("_id"),
@@ -27,8 +27,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
   class MongoOfflineEvalResultIterator(it: MongoCursor) extends Iterator[OfflineEvalResult] {
     def next = dbObjToOfflineEvalResult(it.next)
     def hasNext = it.hasNext
-  }  
-  
+  }
+
   /** save(update existing or create a new one) a OfflineEvalResult and return id*/
   def save(result: OfflineEvalResult): String = {
     val id = (result.evalid + "_" + result.metricid + "_" + result.algoid)
@@ -39,10 +39,14 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
       "algoid" -> result.algoid,
       "score" -> result.score
     ))
-    
+
     id
   }
-  
+
+  def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Option[OfflineEvalResult] = {
+    offlineEvalResultsColl.findOne(MongoDBObject("_id" -> "%d_%d_%d".format(evalid, metricid, algoid)), getFields) map { dbObjToOfflineEvalResult(_) }
+  }
+
   /** get results by OfflineEval ID */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalResult] = new MongoOfflineEvalResultIterator(
     offlineEvalResultsColl.find(MongoDBObject("evalid" -> evalid), getFields)

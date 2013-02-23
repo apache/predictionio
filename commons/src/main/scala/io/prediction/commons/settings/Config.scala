@@ -65,7 +65,7 @@ class Config {
     }
   }
 
-  /** Obtains a Apps object with configured backend type. */
+  /** Obtains an Apps object with configured backend type. */
   def getApps(): Apps = {
     settingsDbType match {
       case "mongodb" => {
@@ -85,7 +85,7 @@ class Config {
     }
   }
 
-  /** Obtains a Apps object with configured backend type. */
+  /** Obtains an Algos object with configured backend type. */
   def getAlgos(): Algos = {
     settingsDbType match {
       case "mongodb" => {
@@ -93,6 +93,11 @@ class Config {
       }
       case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
     }
+  }
+
+  /** Obtains an AlgoInfos object with configured backend type. */
+  def getAlgoInfos(): AlgoInfos = {
+    new code.CodeAlgoInfos()
   }
 
   /** Obtains the JAR filename for a specific algorithm package name. */
