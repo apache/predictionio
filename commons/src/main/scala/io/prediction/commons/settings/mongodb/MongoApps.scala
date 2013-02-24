@@ -70,11 +70,11 @@ class MongoApps(db: MongoDB) extends Apps {
   }
 
   def updateAppkeyByAppkeyAndUserid(appkey: String, userid: Int, newAppkey: String) = {
-    appColl.findAndModify(MongoDBObject("appkey" -> appkey, "userid" -> userid), $set(Seq("appkey" -> newAppkey))) map { dbObjToApp(_) }
+    appColl.findAndModify(MongoDBObject("appkey" -> appkey, "userid" -> userid), MongoDBObject("$set" -> MongoDBObject("appkey" -> newAppkey))) map { dbObjToApp(_) }
   }
 
   def updateTimezoneByAppkeyAndUserid(appkey: String, userid: Int, timezone: String) = {
-    appColl.findAndModify(MongoDBObject("appkey" -> appkey, "userid" -> userid), $set(Seq("timezone" -> timezone))) map { dbObjToApp(_) }
+    appColl.findAndModify(MongoDBObject("appkey" -> appkey, "userid" -> userid), MongoDBObject("$set" -> MongoDBObject("timezone" -> timezone))) map { dbObjToApp(_) }
   }
 
   def deleteByIdAndUserid(id: Int, userid: Int) = appColl.remove(MongoDBObject("_id" -> id, "userid" -> userid))

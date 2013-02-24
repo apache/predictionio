@@ -2,4 +2,16 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /users/:userid/sync             io.prediction.scheduler.Scheduler.userSync(userid: Int)
+GET     /                               io.prediction.scheduler.Scheduler.online()
+
+GET     /users/:userid/sync                       io.prediction.scheduler.Scheduler.userSync(userid: Int)
+
+GET     /apps/:appid/delete                       io.prediction.scheduler.Operations.deleteApp(appid: Int)
+
+GET     /apps/:appid/engines/:engineid/delete     io.prediction.scheduler.Operations.deleteEngine(appid: Int, engineid: Int)
+
+GET     /apps/:appid/engines/:engineid/algos/:algoid/delete                     io.prediction.scheduler.Operations.deleteAlgo(appid: Int, engineid: Int, algoid: Int)
+
+GET     /apps/:appid/engines/:engineid/offlineevals/:offlineevalid/delete       io.prediction.scheduler.Operations.deleteOfflineEval(appid: Int, engineid: Int, offlineevalid: Int)
+
+GET     /apps/:appid/engines/:engineid/offlineevals/:offlineevalid/algos/:algoid/delete   io.prediction.scheduler.Operations.deleteOfflineEvalAlgo(appid: Int, engineid: Int, offlineevalid: Int, algoid: Int)

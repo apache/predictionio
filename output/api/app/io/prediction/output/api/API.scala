@@ -12,8 +12,9 @@ import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation._
 import play.api.i18n._
+import play.api.libs.json._
 
-import com.codahale.jerkson.Json._
+//import com.codahale.jerkson.Json._
 import org.joda.time._
 import org.joda.time.format._
 
@@ -35,23 +36,78 @@ object API extends Controller {
 
   val notFound = NotFound("Your request is not supported.")
 
-  def FormattedResponse(format: String)(t: Tuple2[Int, _]) = {
+  /** Implicits for JSON conversion. */
+  trait APIResponse {
+    def status: Int
+  }
+  case class APIMessageResponse(status: Int, body: Map[String, Any]) extends APIResponse
+  case class APIUserResponse(status: Int, user: User) extends APIResponse
+  case class APIItemResponse(status: Int, item: Item) extends APIResponse
+  case class APIErrors(errors: Seq[Map[String, String]])
+
+  implicit object APIResponseToJson extends Writes[APIResponse] {
+    def writes(r: APIResponse) = r match {
+      case msg: APIMessageResponse => Json.toJson(msg.asInstanceOf[APIMessageResponse].body.mapValues { anyToJsValue(_) })
+      case user: APIUserResponse => Json.toJson(user.asInstanceOf[APIUserResponse].user)
+      case item: APIItemResponse => Json.toJson(item.asInstanceOf[APIItemResponse].item)
+    }
+  }
+
+  implicit object APIErrorsToJson extends Writes[APIErrors] {
+    def writes(e: APIErrors) = {
+      Json.toJson(e.errors)
+    }
+  }
+
+  implicit object UserToJson extends Writes[User] {
+    def writes(user: User) =
+      Json.obj(
+        "uid" -> user.id,
+        "ct" -> user.ct) ++
+        (user.latlng map { l => Json.obj("latlng" -> Json.arr(l._1, l._2)) } getOrElse emptyJsonObj) ++
+        (user.inactive map { i => Json.obj("inactive" -> i) } getOrElse emptyJsonObj) ++
+        (user.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
+  }
+
+  implicit object ItemToJson extends Writes[Item] {
+    def writes(item: Item) =
+      Json.obj(
+        "iid" -> item.id,
+        "ct" -> item.ct,
+        "itypes" -> item.itypes) ++
+        (item.starttime map { v => Json.obj("startT" -> v) } getOrElse emptyJsonObj) ++
+        (item.endtime map { v => Json.obj("endT" -> v) } getOrElse emptyJsonObj) ++
+        (item.price map { v => Json.obj("price" -> v) } getOrElse emptyJsonObj) ++
+        (item.profit map { v => Json.obj("profit" -> v) } getOrElse emptyJsonObj) ++
+        (item.latlng map { v => Json.obj("latlng" -> latlngToList(v)) } getOrElse emptyJsonObj) ++
+        (item.inactive map { v => Json.obj("inactive" -> v) } getOrElse emptyJsonObj) ++
+        (item.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
+  }
+
+  def anyToJsValue(v: Any): JsValue = v match {
+    case x: Int => Json.toJson(v.asInstanceOf[Int])
+    case x: String => Json.toJson(v.asInstanceOf[String])
+    case x: APIErrors => Json.toJson(v.asInstanceOf[APIErrors])
+    case _ => JsNull
+  }
+
+  /** Control structures used by the API. */
+  def FormattedResponse(format: String)(r: APIResponse) = {
     format match {
-      case "json" => (new Status(t._1)(generate(t._2))).as(JSON)
+      case "json" => (new Status(r.status)(Json.stringify(Json.toJson(r)))).as(JSON)
       case _ => notFound
     }
   }
 
-  def AuthenticatedApp(appkey: String)(f: App => Tuple2[Int, _]) = {
-    apps.getByAppkey(appkey) map { f(_) } getOrElse (FORBIDDEN, Map("status" -> FORBIDDEN, "message" -> "Invalid appkey."))
+  def AuthenticatedApp(appkey: String)(f: App => APIResponse) = {
+    apps.getByAppkey(appkey) map { f(_) } getOrElse APIMessageResponse(FORBIDDEN, Map("message" -> "Invalid appkey."))
   }
 
-  def ValidEngine(enginename: String)(f: Engine => Tuple2[Int, _])(implicit app: App) = {
-    engines.getByAppidAndName(app.id, enginename) map { f(_) } getOrElse (
+  def ValidEngine(enginename: String)(f: Engine => APIResponse)(implicit app: App) = {
+    engines.getByAppidAndName(app.id, enginename) map { f(_) } getOrElse APIMessageResponse(
       NOT_FOUND,
       Map(
-        "status" -> NOT_FOUND,
-        "message"  -> (enginename + " is not a valid engine. Please make sure it is defined in your app's control panel.")
+        "message" -> (enginename + " is not a valid engine. Please make sure it is defined in your app's control panel.")
       )
     )
   }
@@ -61,11 +117,10 @@ object API extends Controller {
     * default messages cannot be overridden by simply using conf/messages
     * without specifying a language.
     */
-  def bindFailed(loe: Seq[FormError]) = (
+  def bindFailed(loe: Seq[FormError]) = APIMessageResponse(
     BAD_REQUEST,
     Map(
-      "status" -> BAD_REQUEST,
-      "errors" -> loe.map(e => Map("field" -> e.key, "message" -> Messages(e.message, e.args: _*)(Lang("en"))))
+      "errors" -> APIErrors(loe.map(e => Map("field" -> e.key, "message" -> Messages(e.message, e.args: _*)(Lang("en")))))
     )
   )
 
@@ -123,6 +178,7 @@ object API extends Controller {
 
   /** Utilties. */
   val emptyMap = Map()
+  val emptyJsonObj = Json.obj()
 
   def parseLatlng(latlng: String): Tuple2[Double, Double] = {
     val splitted = latlng.split(",")
@@ -176,7 +232,7 @@ object API extends Controller {
               inactive = inactive,
               attributes = Some(attributes)
             ))
-            (CREATED, Map("status" -> CREATED, "message" -> "User created."))
+            APIMessageResponse(CREATED, Map("message" -> "User created."))
           }
         }
       )
@@ -189,11 +245,8 @@ object API extends Controller {
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           users.get(app.id, uid) map { user =>
-            (OK, Map("uid" -> user.id, "ct" -> user.ct) ++
-              (user.latlng map { l => Map("latlng" -> latlngToList(l)) } getOrElse emptyMap) ++
-              (user.inactive map { i => Map("inactive" -> i) } getOrElse emptyMap) ++
-              (user.attributes getOrElse emptyMap))
-          } getOrElse (NOT_FOUND, Map("status" -> NOT_FOUND, "message" -> "Cannot find user."))
+            APIUserResponse(OK, user)
+          } getOrElse APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find user."))
         }
       )
     }
@@ -205,7 +258,7 @@ object API extends Controller {
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           users.delete(app.id, uid)
-          (OK, Map("status" -> OK, "message" -> "User deleted."))
+          APIMessageResponse(OK, Map("message" -> "User deleted."))
         }
       )
     }
@@ -252,7 +305,7 @@ object API extends Controller {
               inactive = inactive,
               attributes = if (attributes.isEmpty) None else Some(attributes)
             ))
-            (CREATED, Map("status" -> CREATED, "message" -> "Item created."))
+            APIMessageResponse(CREATED, Map("message" -> "Item created."))
           }
         }
       )
@@ -265,17 +318,8 @@ object API extends Controller {
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           items.get(app.id, iid) map { item =>
-            (OK, Map("iid" -> item.id, "ct" -> item.ct, "itypes" -> item.itypes.mkString(",")) ++
-              (item.starttime map { v => Map("startT" -> v) } getOrElse emptyMap) ++
-              (item.endtime map { v => Map("endT" -> v) } getOrElse emptyMap) ++
-              (item.price map { v => Map("price" -> v) } getOrElse emptyMap) ++
-              (item.profit map { v => Map("profit" -> v) } getOrElse emptyMap) ++
-              (item.latlng map { v => Map("latlng" -> latlngToList(v)) } getOrElse emptyMap) ++
-              (item.inactive map { v => Map("inactive" -> v) } getOrElse emptyMap) ++
-              (item.attributes getOrElse emptyMap))
-          } getOrElse {
-            (NOT_FOUND, Map("status" -> NOT_FOUND, "message" -> "Cannot find item."))
-          }
+            APIItemResponse(OK, item)
+          } getOrElse APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find item."))
         }
       )
     }
@@ -287,7 +331,7 @@ object API extends Controller {
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           items.delete(app.id, iid)
-          (OK, Map("status" -> OK, "message" -> "Item deleted."))
+          APIMessageResponse(OK, Map("message" -> "Item deleted."))
         }
       )
     }
@@ -316,7 +360,7 @@ object API extends Controller {
             price = None,
             evalid = None
           ))
-          (CREATED, Map("status" -> CREATED, "message" -> "Rating recorded."))
+          APIMessageResponse(CREATED, Map("message" -> "Rating recorded."))
         }
       )
     }
@@ -344,7 +388,7 @@ object API extends Controller {
             price = None,
             evalid = None
           ))
-          (CREATED, Map("status" -> CREATED, "message" -> "Like recorded."))
+          APIMessageResponse(CREATED, Map("message" -> "Like recorded."))
         }
       )
     }
@@ -372,7 +416,7 @@ object API extends Controller {
             price = None,
             evalid = None
           ))
-          (CREATED, Map("status" -> CREATED, "message" -> "Dislike recorded."))
+          APIMessageResponse(CREATED, Map("message" -> "Dislike recorded."))
         }
       )
     }
@@ -400,7 +444,7 @@ object API extends Controller {
             price = None,
             evalid = None
           ))
-          (CREATED, Map("status" -> CREATED, "message" -> "View recorded."))
+          APIMessageResponse(CREATED, Map("message" -> "View recorded."))
         }
       )
     }
@@ -429,7 +473,7 @@ object API extends Controller {
             price = t._6 map { _.toDouble },
             evalid = None
           ))
-          (CREATED, Map("status" -> CREATED, "message" -> "Conversion recorded."))
+          APIMessageResponse(CREATED, Map("message" -> "Conversion recorded."))
         }
       )
     }
@@ -458,12 +502,12 @@ object API extends Controller {
                   itypes = itypes map { _.split(",").toList }
                 )
                 if (res.length > 0)
-                  (OK, Map("status" -> OK, "iids" -> res))
+                  APIMessageResponse(OK, Map("iids" -> res))
                 else
-                  (NOT_FOUND, Map("status" -> NOT_FOUND, "message" -> "Cannot find recommendation for user."))
+                  APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find recommendation for user."))
               } catch {
                 case e: Exception =>
-                  (INTERNAL_SERVER_ERROR, Map("status" -> INTERNAL_SERVER_ERROR, "message" -> e.getMessage()))
+                  APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage()))
               }
             }
           }
