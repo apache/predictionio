@@ -184,7 +184,7 @@ object Jobs {
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
-    val offlineEvalMetricJob = newJob(classOf[SeqNativeJob]) withIdentity(algo.id.toString, offlineEvalMetricJobGroup) build()
+    val offlineEvalMetricJob = newJob(classOf[SeqNativeJob]) withIdentity(metric.id.toString, offlineEvalMetricJobGroup) build()
     offlineEvalMetricJob.getJobDataMap().put(
       NativeJob.PROP_COMMAND,
       command.toString
