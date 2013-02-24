@@ -10,6 +10,11 @@ libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.3"
 
 libraryDependencies += "com.twitter" % "scalding_2.9.2" % "0.8.1"
 
+libraryDependencies ++= Seq(
+  "joda-time" % "joda-time" % "2.1",
+  "org.joda" % "joda-convert" % "1.2"
+)
+
 // for compiling mongotap
 libraryDependencies ++= Seq(
   "org.mongodb" % "mongo-hadoop-core_cdh3u3" % "1.0.0-rc0",

@@ -9,11 +9,13 @@ import cascading.tuple.Tuple
 import java.util.ArrayList
 import java.util.HashMap
 
-import com.github.nscala_time.time.Imports._
+//import org.scala_tools.time.Imports._
+//import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 
 import com.mongodb.BasicDBList
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
+//import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.ItemsSource
@@ -56,8 +58,6 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
   
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
-  RegisterJodaTimeConversionHelpers()
-
   override def getSource: Source = this
   
   override def readData(iidField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe = {
@@ -72,10 +72,12 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
   
   override def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, BasicDBList, DateTime) =>
+      .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, BasicDBList, java.util.Date) =>
+
+        //val dt = new DateTime(fields._3)
 
         // NOTE: convert itypes form BasicDBList to scala List.
-        (fields._1, fields._2.toList, fields._3.getMillis().toString)
+        (fields._1, fields._2.toList, fields._3.getTime().toString)
       }
     
     items
@@ -83,15 +85,15 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
 
   override def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1, 2, 3, 4) -> (objField)) { fields: (String, BasicDBList, Int, DateTime, DateTime) =>
+      .mapTo((0, 1, 2, 3, 4) -> (objField)) { fields: (String, BasicDBList, Int, java.util.Date, java.util.Date) =>
         val (id, itypes, appid, starttime, ct) = fields
 
         Item(
           id = id,
           appid = appid,
-          ct = ct,
+          ct = new DateTime(ct),
           itypes = itypes.toList.map (x => x.toString),
-          starttime = Some(starttime),
+          starttime = Some(new DateTime(starttime)),
           endtime = None,
           price = None,
           profit = None,
@@ -127,12 +129,15 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
       (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"))) { obj: Item =>
 
         val itypesTuple = new Tuple()
-           
+        
         for (x <- obj.itypes) {
           itypesTuple.add(x)
         }
 
-        (obj.id, itypesTuple, obj.appid, obj.starttime.get, obj.ct)
+        val starttime: java.util.Date = obj.starttime.get.toDate()
+        val ct: java.util.Date = obj.ct.toDate()
+
+        (obj.id, itypesTuple, obj.appid, starttime, ct)
     }.write(this)
 
     writtenData

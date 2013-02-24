@@ -8,11 +8,13 @@ import cascading.flow.FlowDef
 import java.util.ArrayList
 import java.util.HashMap
 
-import com.github.nscala_time.time.Imports._
+//import org.scala_tools.time.Imports._
+//import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 
 import com.mongodb.BasicDBList
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
+//import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.U2iActionsSource
@@ -70,7 +72,7 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
   
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
-  RegisterJodaTimeConversionHelpers()
+  //RegisterJodaTimeConversionHelpers()
 
   override def getSource: Source = this
   
@@ -85,10 +87,12 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
   override def readData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol)(implicit fd: FlowDef): Pipe = {
     val u2iactions = this.read
       .mapTo((0, 1, 2, 3, 4) -> (actionField, uidField, iidField, tField, vField)) { 
-        fields: (String, String, String, DateTime, String) => 
+        fields: (String, String, String, java.util.Date, String) => 
           val (action, uid, iid, t, v) = fields
-                    
-          (action, uid, iid, t.getMillis().toString, v)
+
+          //val dt = new DateTime(t)
+
+          (action, uid, iid, t.getTime().toString, v)
       }
     
     u2iactions
@@ -100,7 +104,7 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
         fields: (String, String, String, String, String) =>
           val (action, uid, iid, t, v) = fields
                     
-          (action.toInt, uid, iid, new DateTime(t.toLong), v.toInt, appid)
+          (action.toInt, uid, iid, new java.util.Date(t.toLong), v.toInt, appid)
     }.write(this)
     
     dbData

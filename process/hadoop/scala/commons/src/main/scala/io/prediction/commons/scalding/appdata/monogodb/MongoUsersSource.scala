@@ -9,11 +9,13 @@ import cascading.tuple.Tuple
 import java.util.ArrayList
 import java.util.HashMap
 
-import com.github.nscala_time.time.Imports._
+//import org.scala_tools.time.Imports._
+//import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 
 import com.mongodb.BasicDBList
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
+//import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.UsersSource
@@ -52,7 +54,7 @@ class MongoUsersSource(db: String, host: String, port: Int, appid: Int) extends 
   
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
-  RegisterJodaTimeConversionHelpers()
+  //RegisterJodaTimeConversionHelpers()
 
   override def getSource: Source = this
   
@@ -68,13 +70,13 @@ class MongoUsersSource(db: String, host: String, port: Int, appid: Int) extends 
   
   override def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
     val users = this.read
-      .mapTo((0, 1, 2) -> objField) { fields: (String, Int, DateTime) =>
+      .mapTo((0, 1, 2) -> objField) { fields: (String, Int, java.util.Date) =>
         val (id, appid, ct) = fields
 
         User(
           id = id,
           appid = appid,
-          ct = ct,
+          ct = new DateTime(ct),
           latlng = None,
           inactive = None,
           attributes = None
@@ -100,7 +102,9 @@ class MongoUsersSource(db: String, host: String, port: Int, appid: Int) extends 
     val writtenData = p.mapTo((objField) ->
       (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("ct"))) { obj: User =>
 
-      (obj.id, obj.appid, obj.ct)
+      val ct: java.util.Date = obj.ct.toDate()
+
+      (obj.id, obj.appid, ct)
     }.write(this)
 
     writtenData
