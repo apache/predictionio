@@ -27,7 +27,7 @@ class MongoItemRecScoresSource(db: String, host: String, port: Int) extends Mong
       itemRecScoreCols.add("itypes")
       itemRecScoreCols.add("algoid")
       itemRecScoreCols.add("modelset")
-      
+
       itemRecScoreCols
     },
     mappings = {
@@ -38,44 +38,50 @@ class MongoItemRecScoresSource(db: String, host: String, port: Int) extends Mong
       itemRecScoreMappings.put("itypes", FIELD_SYMBOLS("itypes").name)
       itemRecScoreMappings.put("algoid", FIELD_SYMBOLS("algoid").name)
       itemRecScoreMappings.put("modelset", FIELD_SYMBOLS("modelset").name)
-      
+
       itemRecScoreMappings
-    }, 
+    },
     query = MongoDBObject(), // don't support read query
-    host = host, // String 
+    host = host, // String
     port = port // Int
     ) with ItemRecScoresSource {
-  
+
   import com.twitter.scalding.Dsl._
-  
+
   override def getSource: Source = this
-  
-  
+
+
   override def readData(uidField: Symbol, iidField: Symbol, scoreField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe = {
-    assert(false, "MongoItemRecScoresSource's readData is not implemented yet!") // TODO: implement this
-    this.read
+    val itemRecScores = this.read
+      .mapTo((0, 1, 2, 3) -> (uidField, iidField, scoreField, itypesField)) {
+        fields: (String, String, Double, BasicDBList) =>
+          val (uid, iid, score, itypes) = fields
+
+          (uid, iid, score, itypes.toList)
+      }
+    itemRecScores
   }
-  
+
   override def writeData(uidField: Symbol, iidField: Symbol, scoreField: Symbol, itypesField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe = {
-    val dbData = p.mapTo((uidField, iidField, scoreField, itypesField) -> 
-    (FIELD_SYMBOLS("uid"), FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("score"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("modelset"))) { 
+    val dbData = p.mapTo((uidField, iidField, scoreField, itypesField) ->
+    (FIELD_SYMBOLS("uid"), FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("score"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("modelset"))) {
       fields: (String, String, Double, List[String]) =>
         val (uid, iid, score, itypes) = fields
-        
+
         // NOTE: convert itypes List to Cascading Tuple which will become array in Mongo.
         // can't use List directly because it doesn't implement Comparable interface
         val itypesTuple = new Tuple()
-           
+
         for (x <- itypes) {
           itypesTuple.add(x)
         }
-        
+
         (uid, iid, score, itypesTuple, algoid, modelSet)
-      
+
     }.write(this)
-    
+
     dbData
   }
 
-  
+
 }
