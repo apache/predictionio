@@ -39,10 +39,10 @@ object Knnitembased extends Controller {
       "measureParam" -> "correl",
       "priorCountParam" -> 20,
       "priorCorrelParam" -> 0,
-      "minNumRatersParam" -> 5, // TODO: add UI
+      "minNumRatersParam" -> 3, // TODO: add UI
       "maxNumRatersParam" -> 100000, // TODO: add UI
-      "minIntersectionParam" -> 5, // TOOD: add UI
-      "minNumRatedSimParam" -> 10, // TODO add UI
+      "minIntersectionParam" -> 1, // TOOD: add UI
+      "minNumRatedSimParam" -> 1, // TODO add UI
       "viewParam" -> 3,
       "viewmoreParam" -> 3,
       "likeParam" -> 5,
@@ -87,7 +87,7 @@ object Knnitembased extends Controller {
         
         optAlgo map { algo =>
           val updatedAlgo = algo.copy(
-            params = Map("measureParam" -> distanceFunc,
+            params = algo.params ++ Map("measureParam" -> distanceFunc, // NOTE: read-modify-write!
                 "priorCountParam" -> virtualCount,
                 "priorCorrelParam" -> priorCorrelation,
                 "viewParam" -> viewAction,
