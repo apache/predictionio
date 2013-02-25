@@ -23,12 +23,12 @@ class JobTreeJobListener(name: String) extends JobListenerSupport {
 
     treeLinks.get(executedJobKey) map { links =>
       links foreach { link =>
-        getLog().info("Job '" + executedJobKey + "' will now link to Job '" + link + "'");
+        getLog().info("Job '" + executedJobKey + "' will now link to Job '" + link + "'")
 
         try {
-          context.getScheduler().triggerJob(link);
+          context.getScheduler().triggerJob(link)
         } catch {
-          case se: SchedulerException => getLog().error("Error encountered during chaining to Job '" + link + "'", se);
+          case se: SchedulerException => getLog().error("Error encountered during chaining to Job '" + link + "'", se)
         }
       }
     }
