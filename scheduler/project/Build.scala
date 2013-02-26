@@ -16,6 +16,7 @@ object ApplicationBuild extends Build {
       "org.specs2" %% "specs2" % "1.14" % "test"
     )
 
+    /**
     val hadoopClasspath: Classpath = Seq(
       new File("/opt/mapr/hadoop/hadoop-0.20.2/conf"),
       new File("/opt/mapr/hadoop/hadoop-0.20.2/lib/hadoop-0.20.2-dev-core.jar"),
@@ -23,13 +24,13 @@ object ApplicationBuild extends Build {
       new File("/opt/mapr/hadoop/hadoop-0.20.2/lib/log4j-1.2.15.jar"),
       new File("/opt/mapr/hadoop/hadoop-0.20.2/lib/maprfs-0.1.jar"),
       new File("/opt/mapr/hadoop/hadoop-0.20.2/lib/zookeeper-3.3.6.jar")).classpath
-
+      */
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
       resolvers += (
         "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-      ),
-      unmanagedClasspath in Compile := hadoopClasspath
+      )
+      //unmanagedClasspath in Compile := hadoopClasspath
     )
 
 }
