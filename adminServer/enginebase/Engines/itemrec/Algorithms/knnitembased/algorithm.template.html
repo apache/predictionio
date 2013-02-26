@@ -47,7 +47,40 @@
                                                         <span class="help-inline">Suggested range: 0 to 50. Default 0.</span>
                                                     </div>
                                                 </div>
-                                                
+
+                                                <h5>Advanced Parameters</h5>
+                                                <p>
+                                                    Filters to speed up computation and reduce noise.
+                                                </p>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Minimum Number of Raters of an Item</label>
+                                                    <div class="controls">
+                                                        <input id="knnitembase_minNumRaters" name="minNumRaters" class="span1" type="text" id="reg-minnumraters" value="1">
+                                                        <span class="help-inline">Default: 1.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Maximum Number of Raters of an Item</label>
+                                                    <div class="controls">
+                                                        <input id="knnitembase_maxNumRaters" name="maxNumRaters" class="span2" type="text" id="reg-maxnumraters" value="10000">
+                                                        <span class="help-inline">Default: 10000.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Minimum Intersection</label>
+                                                    <div class="controls">
+                                                        <input id="knnitembase_minIntersection" name="minIntersection" class="span1" type="text" id="reg-minintersection" value="1">
+                                                        <span class="help-inline">Default: 1.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Minimum Number of Rated Similar Items</label>
+                                                    <div class="controls">
+                                                        <input id="knnitembase_minNumRatedSim" name="minNumRatedSim" class="span1" type="text" id="reg-minnumratedsim" value="1">
+                                                        <span class="help-inline">Default: 1.</span>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
                                     </div>

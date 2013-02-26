@@ -21,6 +21,10 @@ var KnnItemBasedAlgoSettingsView = Backbone.View.extend({
 				self.initValue('distanceFunc');
 				self.initValue('virtualCount');
 				self.initValue('priorCorrelation');
+				self.initValue('minNumRaters');
+				self.initValue('maxNumRaters');
+				self.initValue('minIntersection');
+				self.initValue('minNumRatedSim');
 				self.initValue('viewAction');
 				self.initValue('viewmoreAction');
 				self.initValue('likeAction');

@@ -14,13 +14,19 @@ import controllers.Application.{algos, withUser}
 object Knnitembased extends Controller {
   
   // NOTE: use List to preserve this order when display these params
-  val displayNames: List[String] = List("Distance Function", "Virtual Count", "Prior Correlation", "View Score", //"View More Score",
+  val displayNames: List[String] = List("Distance Function", "Virtual Count", "Prior Correlation",
+      "Minimum Number of Raters", "Maximum Number of Raters", "Minimum Intersection", "Minimum Number of Rated Similar Items",
+      "View Score", //"View More Score",
       "Like Score", "Dislike Score", "Buy Score", "Override")
       
   val displayToParamNames: Map[String, String] = Map(
       "Distance Function" -> "measureParam",
       "Virtual Count" -> "priorCountParam",
       "Prior Correlation" -> "priorCorrelParam",
+      "Minimum Number of Raters" -> "minNumRatersParam",
+      "Maximum Number of Raters" -> "maxNumRatersParam",
+      "Minimum Intersection" -> "minIntersectionParam",
+      "Minimum Number of Rated Similar Items" -> "minNumRatedSimParam",
       "View Score" -> "viewParam",
       "View More Score" -> "viewmoreParam",
       "Like Score" -> "likeParam",
@@ -39,10 +45,10 @@ object Knnitembased extends Controller {
       "measureParam" -> "correl",
       "priorCountParam" -> 20,
       "priorCorrelParam" -> 0,
-      "minNumRatersParam" -> 3, // TODO: add UI
-      "maxNumRatersParam" -> 100000, // TODO: add UI
-      "minIntersectionParam" -> 1, // TOOD: add UI
-      "minNumRatedSimParam" -> 1, // TODO add UI
+      "minNumRatersParam" -> 1,
+      "maxNumRatersParam" -> 10000,
+      "minIntersectionParam" -> 1,
+      "minNumRatedSimParam" -> 1,
       "viewParam" -> 3,
       "viewmoreParam" -> 3,
       "likeParam" -> 5,
@@ -65,6 +71,10 @@ object Knnitembased extends Controller {
       "distanceFunc" -> nonEmptyText, // TODO: verifying
       "virtualCount" -> number,
       "priorCorrelation" -> nonEmptyText, // TODO: verifying double?
+      "minNumRaters" -> number,
+      "maxNumRaters" -> number,
+      "minIntersection" -> number,
+      "minNumRatedSim" -> number,
       "viewAction" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
       "viewmoreAction" -> nonEmptyText,
       "likeAction" -> nonEmptyText,
@@ -80,7 +90,9 @@ object Knnitembased extends Controller {
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (id, appId, engineId, distanceFunc, virtualCount, priorCorrelation, viewAction, viewmoreAction, likeAction, dislikeAction, buyAction, overrideParam) = formData
+        val (id, appId, engineId, distanceFunc, virtualCount, priorCorrelation, 
+          minNumRaters, maxNumRaters, minIntersection, minNumRatedSim,
+          viewAction, viewmoreAction, likeAction, dislikeAction, buyAction, overrideParam) = formData
         
         // get original Algo first
         val optAlgo: Option[Algo] = algos.get(id)
@@ -90,6 +102,10 @@ object Knnitembased extends Controller {
             params = algo.params ++ Map("measureParam" -> distanceFunc, // NOTE: read-modify-write!
                 "priorCountParam" -> virtualCount,
                 "priorCorrelParam" -> priorCorrelation,
+                "minNumRatersParam" -> minNumRaters,
+                "maxNumRatersParam" -> maxNumRaters,
+                "minIntersectionParam" -> minIntersection,
+                "minNumRatedSimParam" -> minNumRatedSim,
                 "viewParam" -> viewAction,
                 "viewmoreParam" -> viewmoreAction,
                 "likeParam" -> likeAction,
@@ -142,6 +158,12 @@ object Knnitembased extends Controller {
       val distanceFunc: String = algoParamGetOrElse[String](algo, "measureParam", defaultParams("measureParam"))
       val virtualCount: Int = algoParamGetOrElse[Int](algo, "priorCountParam", defaultParams("priorCountParam"))
       val priorCorrelation: Int = algoParamGetOrElse[Int](algo, "priorCorrelParam", defaultParams("priorCorrelParam"))
+
+      val minNumRaters: Int = algoParamGetOrElse[Int](algo, "minNumRatersParam", defaultParams("minNumRatersParam"))
+      val maxNumRaters: Int = algoParamGetOrElse[Int](algo, "maxNumRatersParam", defaultParams("maxNumRatersParam"))
+      val minIntersection: Int = algoParamGetOrElse[Int](algo, "minIntersectionParam", defaultParams("minIntersectionParam"))
+      val minNumRatedSim: Int = algoParamGetOrElse[Int](algo, "minNumRatedSimParam", defaultParams("minNumRatedSimParam"))
+
       val viewAction: Int = algoParamGetOrElse[Int](algo, "viewParam", defaultParams("viewParam"))
       val viewmoreAction: Int = algoParamGetOrElse[Int](algo, "viewmoreParam", defaultParams("viewmoreParam"))
       val likeAction: Int = algoParamGetOrElse[Int](algo, "likeParam", defaultParams("likeParam"))
@@ -156,6 +178,10 @@ object Knnitembased extends Controller {
         "distanceFunc" -> toJson(distanceFunc),
         "virtualCount" -> toJson(virtualCount),
         "priorCorrelation" -> toJson(priorCorrelation),
+        "minNumRaters" -> toJson(minNumRaters),
+        "maxNumRaters" -> toJson(maxNumRaters),
+        "minIntersection" -> toJson(minIntersection),
+        "minNumRatedSim" -> toJson(minNumRatedSim),
         "viewAction" -> toJson(viewAction),
         "viewmoreAction" -> toJson(viewmoreAction),
         "likeAction" -> toJson(likeAction),
