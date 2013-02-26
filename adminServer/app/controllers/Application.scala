@@ -608,10 +608,11 @@ object Application extends Controller {
 
     val createAlgoForm = Form(tuple(
       "algotype_id" -> (nonEmptyText verifying("Unsupported algo type.", t => supportedAlgoTypes.contains(t))),
-      "algoName" -> nonEmptyText, // TODO: verifying name convention and unique algo name (similar way as engine name)
+      "algoName" -> (text verifying("Please name your algo.", name => name.length > 0)
+                          verifying enginenameConstraint), // same name constraint as engine
       "app_id" -> number,
       "engine_id" -> number
-    )) // TODO: verifying thie user owns app_id and engine_id
+    ) verifying("Algo name must be unique.", f => !algos.existsByEngineidAndName(f._4, f._2)))
 
     createAlgoForm.bindFromRequest.fold(
       formWithError => {

@@ -109,6 +109,8 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   def delete(id: Int) = algoColl.remove(MongoDBObject("_id" -> id))
 
+  def existsByEngineidAndName(engineid: Int, name: String) = algoColl.findOne(MongoDBObject("name" -> name, "engineid" -> engineid)) map { _ => true } getOrElse false
+
   class MongoAlgoIterator(it: MongoCursor) extends Iterator[Algo] {
     def next = dbObjToAlgo(it.next)
     def hasNext = it.hasNext

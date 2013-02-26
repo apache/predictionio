@@ -52,4 +52,7 @@ trait Algos {
 
   /** Delete an algo by its ID. */
   def delete(id: Int)
+
+  /** Check existence of an algo by its engine ID and name. */
+  def existsByEngineidAndName(engineid: Int, name: String): Boolean
 }

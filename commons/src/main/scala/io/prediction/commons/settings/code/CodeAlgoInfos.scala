@@ -21,10 +21,10 @@ class CodeAlgoInfos extends AlgoInfos {
         "measureParam" -> "correl",
         "priorCountParam" -> 20,
         "priorCorrelParam" -> 0,
-        "minNumRatersParam" -> 5, // TODO: add UI
-        "maxNumRatersParam" -> 100000, // TODO: add UI
-        "minIntersectionParam" -> 5, // TOOD: add UI
-        "minNumRatedSimParam" -> 10, // TODO add UI
+        "minNumRatersParam" -> 1,
+        "maxNumRatersParam" -> 10000,
+        "minIntersectionParam" -> 1,
+        "minNumRatedSimParam" -> 1,
         "viewParam" -> 3,
         "viewmoreParam" -> 3,
         "likeParam" -> 5,

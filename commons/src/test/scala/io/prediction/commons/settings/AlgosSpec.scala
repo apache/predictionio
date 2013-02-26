@@ -24,6 +24,7 @@ class AlgosSpec extends Specification { def is =
     "get two algos by offlineevalid"                                          ! getByOfflineEvalid(algos)^
     "update an algo"                                                          ! update(algos)^
     "delete an algo"                                                          ! delete(algos)^
+    "checking existence of algo"                                              ! existsByEngineidAndName(algos)^
                                                                               bt
   }
 
@@ -209,5 +210,26 @@ class AlgosSpec extends Specification { def is =
     ))
     algos.delete(id)
     algos.get(id) must beNone
+  }
+
+  def existsByEngineidAndName(algos: Algos) = {
+    val id = algos.insert(Algo(
+      id       = 0,
+      engineid = 456,
+      name     = "existsByEngineidAndName-1",
+      pkgname  = "dummy",
+      deployed = false,
+      command  = "delete",
+      params   = Map("az" -> "ba"),
+      settings = Map("we" -> "rt"),
+      modelset = false,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      offlineevalid = None
+    ))
+    
+    algos.existsByEngineidAndName(456, "existsByEngineidAndName-1") must beTrue and
+      (algos.existsByEngineidAndName(456, "existsByEngineidAndName-2") must beFalse) and
+      (algos.existsByEngineidAndName(457, "existsByEngineidAndName-1") must beFalse)
   }
 }
