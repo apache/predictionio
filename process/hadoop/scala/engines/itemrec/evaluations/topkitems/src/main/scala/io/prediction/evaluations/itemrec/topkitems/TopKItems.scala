@@ -1,29 +1,25 @@
 package io.prediction.evaluations.itemrec.topkitems
 
 import io.prediction.commons._
+import io.prediction.commons.filepath.OfflineMetricFile
 import io.prediction.output.itemrec.ItemRecAlgoOutput
 
 import com.typesafe.config.ConfigFactory
 import grizzled.slf4j.Logger
-import org.rogach.scallop._
-
-class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-  val appidArg    = opt[Int]("appid", required = true)
-  val engineidArg = opt[Int]("engineid", required = true)
-  val evalidArg   = opt[Int]("evalid", required = true)
-  val metricidArg = opt[Int]("metricid", required = true)
-  val algoidArg   = opt[Int]("algoid", required = true)
-}
+import java.io.File
+import scala.sys.process._
+import scalax.io._
 
 object TopKItems {
   def main(args: Array[String]) {
     val logger = Logger(TopKItems.getClass)
 
-    //val conf = new Conf(args)
     val config = ConfigFactory.load
 
     val evalid = config.getInt("evalid")
     val algoid = config.getInt("algoid")
+    val metricid = config.getInt("metricid")
+    val hdfsRoot = config.getString("hdfsroot")
     val k = config.getInt("k")
 
     val trainingSetConfig = new appdata.TrainingSetConfig
@@ -40,11 +36,31 @@ object TopKItems {
     val engine = engines.get(offlineEval.engineid).get
     val app = apps.get(engine.appid).get.copy(id = evalid)
 
-    //users.getByAppid(conf.appidArg()) foreach { u =>
+    val tmpFile = File.createTempFile("pdio-", ".topk")
+    tmpFile.deleteOnExit
+    val output: Output = Resource.fromFile(tmpFile)
+    logger.info("Dumping data to temporary file %s...".format(tmpFile))
+
+    var userCount = 0
     users.getByAppid(evalid) foreach { u =>
       val topKItems = ItemRecAlgoOutput.output(u.id, k, None)(app, engine, algo, Some(offlineEval))
-      if (topKItems.size > 0)
-        logger.info(u.id+"\t"+topKItems.mkString(","))
+      if (topKItems.length > 0) {
+        userCount += 1
+        output.write("%d_%s\t%s\n".format(evalid, u.id, topKItems.map(iid => "%d_%s".format(evalid, iid)).mkString(",")))
+      }
     }
+    logger.info("Found %d user(s) with non-zero top-K items".format(userCount))
+
+    val hdfsFile = OfflineMetricFile(hdfsRoot, engine.appid, engine.id, evalid, metricid, algoid, "topKItems.tsv")
+
+    val rmCommand = "hadoop fs -rm %s".format(hdfsFile)
+    logger.info("Executing '%s'...".format(rmCommand))
+    rmCommand.!
+
+    val copyCommand = "hadoop fs -copyFromLocal %s %s".format(tmpFile, hdfsFile)
+    logger.info("Executing '%s'...".format(copyCommand))
+    copyCommand.!
+
+    logger.info("Finished")
   }
 }
