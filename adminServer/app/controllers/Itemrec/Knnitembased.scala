@@ -9,16 +9,18 @@ import play.api.data.Forms.{tuple, number, text, list, boolean, nonEmptyText}
 import play.api.libs.json.Json._
 import play.api.libs.json._
 
-import controllers.Application.{algos, withUser}
+import controllers.Application.{algos, withUser, algoInfos}
 
 object Knnitembased extends Controller {
   
   // NOTE: use List to preserve this order when display these params
+  /*
   val displayNames: List[String] = List("Distance Function", "Virtual Count", "Prior Correlation",
       "Minimum Number of Raters", "Maximum Number of Raters", "Minimum Intersection", "Minimum Number of Rated Similar Items",
       "View Score", //"View More Score",
       "Like Score", "Dislike Score", "Buy Score", "Override")
-      
+    */
+  /*  
   val displayToParamNames: Map[String, String] = Map(
       "Distance Function" -> "measureParam",
       "Virtual Count" -> "priorCountParam",
@@ -34,13 +36,14 @@ object Knnitembased extends Controller {
       "Buy Score" -> "conversionParam",
       "Override" -> "conflictParam"
   )
-  
+  */
   //val paramToDisplayNames: Map[String, String] = displayToParamNames map { case(k,v) => (v,k) }
-  
+  /*
   def displayAllParams(params: Map[String, Any]): String = {
     displayNames map ( x => x + " = " + params(displayToParamNames(x))) mkString(", ")
   }
-  
+  */
+  /*
   val defaultParams: Map[String, Any] = Map(
       "measureParam" -> "correl",
       "priorCountParam" -> 20,
@@ -55,8 +58,8 @@ object Knnitembased extends Controller {
       "dislikeParam" -> 1,
       "conversionParam" -> 4,
       "conflictParam" -> "latest") // latest, highest, lowest
-  
-  val defaultSettings: Map[String, Any] = Map()
+  */
+  //val defaultSettings: Map[String, Any] = Map()
   
   def updateSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
     /* request payload
@@ -154,6 +157,8 @@ object Knnitembased extends Controller {
       def algoParamGetOrElse[T](algoObj: Algo, param: String, defaultValue: Any): T = {
         if (algoObj.params.contains(param)) algoObj.params(param).asInstanceOf[T] else defaultValue.asInstanceOf[T]
       }
+      
+      val defaultParams = Algorithms.getDefaultParams(algoInfos.get("pdio-knnitembased").get)
       
       val distanceFunc: String = algoParamGetOrElse[String](algo, "measureParam", defaultParams("measureParam"))
       val virtualCount: Int = algoParamGetOrElse[Int](algo, "priorCountParam", defaultParams("priorCountParam"))

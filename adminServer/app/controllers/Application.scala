@@ -65,6 +65,9 @@ object Application extends Controller {
   val testSetItems = testSetConfig.getItems()
   val testSetU2IActions = testSetConfig.getU2IActions()
 
+  /** PredictionIO Commons AlgoInfos */
+  val algoInfos = new code.CodeAlgoInfos
+
   /** */
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
 
@@ -359,17 +362,27 @@ object Application extends Controller {
     Ok(toJson(
       Map(
         "enginetypeName" -> toJson("Item Recommendation Engine"),
-        "algotypelist" -> toJson(Seq(
+       /* "algotypelist" -> toJson(Seq(
           Map(
-            "id" -> "knnitembased",
-            "algotypeName" -> algoTypeNames("knnitembased"), //"Item-based Similarity (kNN) ",
-            "description" -> """
-						    						This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.
-						    					""",
-            "req" -> """ Hadoop """,
-            "datareq" -> """ U2I Actions such as Like, Buy and Rate. """)
-            ))
+            "id" -> "pdio-knnitembased",
+            "algotypeName" -> algoTypeNames("pdio-knnitembased"), //"Item-based Similarity (kNN) ",
+            "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
+            "req" -> "Hadoop",
+            "datareq" -> "U2I Actions such as Like, Buy and Rate.")
+            )) */
+        "algotypelist" -> toJson(
+          (algoInfos.getByEngineType("itemrec") map { algoInfo =>
+            Map(
+              "id" -> toJson(algoInfo.id),
+              "algotypeName" -> toJson(algoInfo.name),
+              "description" -> toJson(algoInfo.description.getOrElse("")),
+              "req" -> toJson(algoInfo.techreq),
+              "datareq" -> toJson(algoInfo.datareq)
+              )
+
+          }).toSeq )
          )
+
      ))
   }
 
@@ -496,7 +509,7 @@ object Application extends Controller {
         "algoName" -> "algo-test-sim-correl=12",
         "app_id" -> "appid1234",
         "engine_id" -> "engid33333",
-        "algotype_id" -> "knnitembased",
+        "algotype_id" -> "pdio-knnitembased",
         "algotypeName" -> "Item-based Similarity (kNN) ",
         "status" -> "ready",
         "updatedTime" -> "04-23-2012 12:21:33"),
@@ -506,7 +519,7 @@ object Application extends Controller {
         "algoName" -> "algo-test-mf-gamma=0.1,sigma=8",
         "app_id" -> "appid1234",
         "engine_id" -> "engid33333",
-        "algotype_id" -> "knnitembased",
+        "algotype_id" -> "pdio-knnitembased",
         "algotypeName" -> "Non-negative Matrix Factorization",
         "status" -> "autotuning",
         "updatedTime" -> "04-23-2012 12:21:23"),
@@ -516,7 +529,7 @@ object Application extends Controller {
         "algoName" -> "algo-test-mf-gamma=0.5,sigma=4",
         "app_id" -> "appid765",
         "engine_id" -> "engid33333",
-        "algotype_id" -> "knnitembased",
+        "algotype_id" -> "pdio-knnitembased",
         "algotypeName" -> "Non-negative Matrix Factorization",
         "status" -> "ready",
         "updatedTime" -> "04-23-2012 12:21:23")
@@ -536,8 +549,8 @@ object Application extends Controller {
                "algoName" -> algo.name,
                "app_id" -> app_id, // TODO: should algo db store appid and get it from there?
                "engine_id" -> algo.engineid.toString,
-               "algotype_id" -> "knnitembased", // TODO
-               "algotypeName" -> algoTypeNames("knnitembased"),
+               "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo table
+               "algotypeName" -> algoInfos.get("pdio-knnitembased").get.name,
                "status" -> "ready", // TODO
                "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
                )
@@ -555,7 +568,7 @@ object Application extends Controller {
         "algoName" -> "algo-test-sim-correl=12",
         "app_id" -> "appid1234",
         "engine_id" -> "engid33333",
-        "algotype_id" -> "knnitembased",
+        "algotype_id" -> "pdio-knnitembased",
         "algotypeName" -> "Item-based Similarity (kNN) ",
         "status" -> "ready",
         "createdTime" -> "04-23-2012 12:21:33",
@@ -573,8 +586,8 @@ object Application extends Controller {
           "algoName" -> algo.name,
           "app_id" -> app_id, // TODO
           "engine_id" -> algo.engineid.toString,
-          "algotype_id" -> "knnitembased", // TODO
-          "algotypeName" -> algoTypeNames("knnitembased"),
+          "algotype_id" -> "pdio-knnitembased", // TODO
+          "algotypeName" -> algoInfos.get("pdio-knnitembased").get.name,
           "status" -> "ready", // default status
           "createdTime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
           "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
@@ -584,12 +597,11 @@ object Application extends Controller {
     }
   }
 
-  val supportedAlgoTypes: List[String] = List("knnitembased")
-  val algoTypeNames: Map[String, String] = Map("knnitembased" -> "kNN Item-Based CF") // TODO: or "Item-based Similarity (kNN)"?
+  val supportedAlgoTypes: List[String] = List("pdio-knnitembased")
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // request payload
-    //{"algotype_id":"knnitembased","algoName":"test","app_id":"1","engine_id":"12"}
+    //{"algotype_id":"pdio-knnitembased","algoName":"test","app_id":"1","engine_id":"12"}
 
     // If NOT authenticated
     /*
@@ -607,7 +619,7 @@ object Application extends Controller {
      */
 
     val createAlgoForm = Form(tuple(
-      "algotype_id" -> (nonEmptyText verifying("Unsupported algo type.", t => supportedAlgoTypes.contains(t))),
+      "algotype_id" -> (nonEmptyText verifying("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
       "algoName" -> (text verifying("Please name your algo.", name => name.length > 0)
                           verifying enginenameConstraint), // same name constraint as engine
       "app_id" -> number,
@@ -624,35 +636,43 @@ object Application extends Controller {
         val (algoType, algoName, appId, engineId) = formData
 
         // TODO: store algotype into algos db?
-        val pkgname = "io.prediction.algorithms.scalding.itemrec.knnitembased"
-        val newAlgo = Algo(
-          id = -1,
-          engineid = engineId,
-          name = algoName,
-          pkgname = pkgname, // TODO, depends on algoType
-          deployed = false,
-          command = "",
-          params = Itemrec.Knnitembased.defaultParams, // TODO, depends on enginetype and algoType
-          settings = Itemrec.Knnitembased.defaultSettings, // TODO, depends on enginetype and algoType
-          modelset = false, // init value
-          createtime = DateTime.now,
-          updatetime = DateTime.now,
-          offlineevalid = None
-        )
+        val algoInfoOpt = algoInfos.get(algoType)
 
-        val algoId = algos.insert(newAlgo)
+        if (algoInfoOpt == None) {
+          BadRequest(toJson(Map("message" -> toJson("Invalid AlgoType."))))
+        } else {
+          val algoInfo = algoInfoOpt.get
 
-        Ok(toJson(Map(
-          "id" -> algoId.toString, // algo id
-          "algoName" -> newAlgo.name,
-          "app_id" -> appId.toString,
-          "engine_id" -> newAlgo.engineid.toString,
-          "algotype_id" -> algoType, // TODO
-          "algotypeName" -> algoTypeNames(algoType),
-          "status" -> "ready", // default status
-          "createdTime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
-          "updatedTime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
-        )))
+          val newAlgo = Algo(
+            id = -1,
+            engineid = engineId,
+            name = algoName,
+            pkgname = algoInfo.pkgname,
+            deployed = false,
+            command = "",
+            params = Itemrec.Algorithms.getDefaultParams(algoInfo),
+            settings = Map(), // no use for now
+            modelset = false, // init value
+            createtime = DateTime.now,
+            updatetime = DateTime.now,
+            offlineevalid = None
+          )
+
+          val algoId = algos.insert(newAlgo)
+
+          Ok(toJson(Map(
+            "id" -> algoId.toString, // algo id
+            "algoName" -> newAlgo.name,
+            "app_id" -> appId.toString,
+            "engine_id" -> newAlgo.engineid.toString,
+            "algotype_id" -> algoType,
+            "algotypeName" -> algoInfos.get(algoType).get.name,
+            "status" -> "ready", // default status
+            "createdTime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
+            "updatedTime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
+          )))
+        }
+
       }
     )
 
@@ -778,7 +798,7 @@ object Application extends Controller {
 	        "algoName" -> "algo-test-sim1",
 	        "app_id" -> "appid1234",
 	        "engine_id" -> "engid33333",
-	        "algotype_id" -> "knnitembased",
+	        "algotype_id" -> "pdio-knnitembased",
 	        "algotypeName" -> "kNN Item-Based CF",
 	        "status" -> "deployed",
 	        "updatedTime" -> "04-23-2012 12:21:23"
@@ -788,7 +808,7 @@ object Application extends Controller {
 	        "algoName" -> "algo-test-sim-correl=12",
 	        "app_id" -> "appid765",
 	        "engine_id" -> "engid33333",
-	        "algotype_id" -> "knnitembased",
+	        "algotype_id" -> "pdio-knnitembased",
 	        "algotypeName" -> "kNN Item-Based CF",
 	        "status" -> "deployed",
 	        "updatedTime" -> "04-23-2012 12:21:23"
@@ -813,8 +833,8 @@ object Application extends Controller {
 	         "algoName" -> algo.name,
 	         "app_id" -> app_id, // // TODO: should algo db store appid and get it from there?
 	         "engine_id" -> algo.engineid.toString,
-	         "algotype_id" -> "knnitembased", // TODO: get it from algo db
-	         "algotypeName" -> algoTypeNames("knnitembased"),
+	         "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo db
+	         "algotypeName" -> algoInfos.get("pdio-knnitembased").get.name,
 	         "status" -> "deployed",
 	         "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
        }.toSeq)
@@ -845,7 +865,7 @@ object Application extends Controller {
 						        "algoName" -> "algo-test-mf-gamma=0.1,sigma=8 ",
 						        "app_id" -> "appid765",
 						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "algotype_id" -> "pdio-knnitembased",
 						        "algotypeName" -> "kNN Item-Based CF",
 						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )
@@ -863,7 +883,7 @@ object Application extends Controller {
 						        "algoName" -> "algo-test-sim2",
 						        "app_id" -> "appid1234",
 						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "algotype_id" -> "pdio-knnitembased",
 						        "algotypeName" -> "kNN Item-Based CF",
 						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      ),
@@ -872,7 +892,7 @@ object Application extends Controller {
 						        "algoName" -> "second_algo-test-mf-gamma=0.1,sigma=8 ",
 						        "app_id" -> "appid765",
 						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "algotype_id" -> "pdio-knnitembased",
 						        "algotypeName" -> "kNN Item-Based CF",
 						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )
@@ -904,17 +924,19 @@ object Application extends Controller {
           val algolist = if (!evalAlgos.hasNext) JsNull
           else
             toJson(
-               evalAlgos.map { algo =>
-                 Map("id" -> algo.id.toString,
+              evalAlgos.map { algo =>
+                val algoInfo = algoInfos.get("pdio-knnitembased").get // TODO: what if couldn't get the algoInfo here?
+
+                Map("id" -> algo.id.toString,
                      "algoName" -> algo.name,
                      "app_id" -> app_id,
                      "engine_id" -> algo.engineid.toString,
-                     "algotype_id" -> "knnitembased", // TODO: get it from algo db
-                     "algotypeName" -> algoTypeNames("knnitembased"),
-                     "settingsString" -> Itemrec.Knnitembased.displayAllParams(algo.params)
+                     "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo db
+                     "algotypeName" -> algoInfo.name,
+                     "settingsString" -> Itemrec.Algorithms.displayVisibleParams(algoInfo, algo.params)
                      )
-               }.toSeq
-               )
+              }.toSeq
+              )
 
           val createtime = eval.createtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
           val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
@@ -1080,7 +1102,7 @@ object Application extends Controller {
 						        "algoName" -> "algo-test-mf-gamma=0.1,sigma=8",
 						        "app_id" -> "appid765",
 						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "algotype_id" -> "pdio-knnitembased",
 						        "algotypeName" -> "kNN Item-Based CF",
 						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )
@@ -1143,13 +1165,16 @@ object Application extends Controller {
         else {
           toJson(
             evalAlgos.map { algo =>
+
+              val algoInfo = algoInfos.get("pdio-knnitembased").get // TODO: what if couldn't get the algoInfo here?
+
               Map("id" -> algo.id.toString,
                   "algoName" -> algo.name,
                   "app_id" -> app_id,
                   "engine_id" -> algo.engineid.toString,
-                  "algotype_id" -> "knnitembased", // TODO: get it from algo db
-                  "algotypeName" -> algoTypeNames("knnitembased"),
-                  "settingsString" -> Itemrec.Knnitembased.displayAllParams(algo.params)
+                  "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo db
+                  "algotypeName" -> algoInfo.name,
+                  "settingsString" -> Itemrec.Algorithms.displayVisibleParams(algoInfo, algo.params)
                   )
             }.toSeq
           )
