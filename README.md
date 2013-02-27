@@ -61,6 +61,12 @@ where `>` indicates commands that will be run in the sbt console.
     > project scala-assembly
     > assembly
 
+### MAP@k Top-K Items Collector ###
+Compile and build the collector using sbt.
+
+    cd ~/PredictionIO/process/hadoop/scala/engines/itemrec/evaluations/topkitems
+    sbt assembly
+
 ### Command-line User Administration Tool ###
 > Note: It is not necessary to have MongoDB running to compile the command line user administration tool.
 
