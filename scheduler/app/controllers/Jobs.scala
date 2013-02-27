@@ -26,7 +26,8 @@ object Jobs {
   )
   val offlineEvalMetricCommands = Map(
     "itemrec" -> (
-      "hadoop jar $jar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType file --modeldata_dbName $modeldatadir$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
+      "hadoop jar $jar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
+      "java -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar ../process/hadoop/scala/engines/itemrec/evaluations/topkitems/target/TopKItems-assembly-0.2-SNAPSHOT.jar && " +
       "hadoop jar $jar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$"
     )
   )
@@ -104,7 +105,7 @@ object Jobs {
     offlineEvalSplitJob
   }
 
-  def offlineEvalTrainingJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, offlineEvalCommands: Seq[String]): JobDetail = {
+  def offlineEvalTrainingJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataTrainingSetConfig: modeldata.TrainingSetConfig, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, offlineEvalCommands: Seq[String]): JobDetail = {
     val command = new StringTemplate(offlineEvalCommands.mkString(" && "))
     command.setAttributes(algo.params)
     engine.itypes foreach { it =>
@@ -122,6 +123,10 @@ object Jobs {
     command.setAttribute("appdataTrainingDbName", appdataConfig.appdataTrainingDbName)
     command.setAttribute("appdataTrainingDbHost", appdataConfig.appdataTrainingDbHost)
     command.setAttribute("appdataTrainingDbPort", appdataConfig.appdataTrainingDbPort)
+    command.setAttribute("modeldataDbType", modeldataTrainingSetConfig.modeldataDbType)
+    command.setAttribute("modeldataDbName", modeldataTrainingSetConfig.modeldataDbName)
+    command.setAttribute("modeldataDbHost", modeldataTrainingSetConfig.modeldataDbHost)
+    command.setAttribute("modeldataDbPort", modeldataTrainingSetConfig.modeldataDbPort)
     command.setAttribute("modeldatadir", ModelDataDir(
       settingsConfig.settingsHdfsRoot,
       app.id,
@@ -143,7 +148,7 @@ object Jobs {
     offlineEvalTrainingJob
   }
 
-  def offlineEvalMetricJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, metric: OfflineEvalMetric): JobDetail = {
+  def offlineEvalMetricJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataTrainingSetConfig: modeldata.TrainingSetConfig, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, metric: OfflineEvalMetric): JobDetail = {
     val command = new StringTemplate(offlineEvalMetricCommands(engine.enginetype))
     command.setAttributes(algo.params)
     engine.itypes foreach { it =>
@@ -172,6 +177,10 @@ object Jobs {
     command.setAttribute("appdataTestDbName", appdataConfig.appdataTestDbName)
     command.setAttribute("appdataTestDbHost", appdataConfig.appdataTestDbHost)
     command.setAttribute("appdataTestDbPort", appdataConfig.appdataTestDbPort)
+    command.setAttribute("modeldataDbType", modeldataTrainingSetConfig.modeldataDbType)
+    command.setAttribute("modeldataDbName", modeldataTrainingSetConfig.modeldataDbName)
+    command.setAttribute("modeldataDbHost", modeldataTrainingSetConfig.modeldataDbHost)
+    command.setAttribute("modeldataDbPort", modeldataTrainingSetConfig.modeldataDbPort)
     command.setAttribute("modeldatadir", ModelDataDir(
       settingsConfig.settingsHdfsRoot,
       app.id,
