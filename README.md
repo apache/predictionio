@@ -44,13 +44,13 @@ Compiling PredictionIO
 Compile dependencies first using sbt.
 
     cd ~/PredictionIO/commons
-    sbt +publish
+    sbt clean update +publish
     cd ~/PredictionIO/output
-    sbt +publish
+    sbt clean update +publish
 
 If you run into any memory space problem, you may want to try adding `-Xmx512m` to your `sbt` commands, e.g.
 
-    sbt +publish -Xmx512m
+    sbt clean update +publish -Xmx512m
 
 ### Process Assembly ###
 Compile and build the process assembly using sbt,
@@ -58,6 +58,8 @@ where `>` indicates commands that will be run in the sbt console.
 
     cd ~/PredictionIO/process/hadoop/scala
     sbt
+    > clean
+    > update
     > project scala-assembly
     > assembly
 
@@ -65,7 +67,7 @@ where `>` indicates commands that will be run in the sbt console.
 Compile and build the collector using sbt.
 
     cd ~/PredictionIO/process/hadoop/scala/engines/itemrec/evaluations/topkitems
-    sbt assembly
+    sbt clean update assembly
 
 ### Command-line User Administration Tool ###
 > Note: It is not necessary to have MongoDB running to compile the command line user administration tool.
@@ -82,7 +84,7 @@ If this is not the case, update the configuration in
 After that, compile the tool.
 
     cd ~/PredictionIO/tools/users
-    sbt pack
+    sbt clean update pack
 
 Adding a User
 -------------
@@ -110,6 +112,7 @@ where `>` indicates commands that will be run in the Play console.
 
     cd ~/PredictionIO/adminServer
     /opt/play/play
+    > clean
     > update
     > compile
     > run
@@ -125,6 +128,7 @@ where you see fit. With the same assumption from the step before,
 
     cd ~/PredictionIO/output/api
     /opt/play/play
+    > clean
     > update
     > compile
     > run 8000
@@ -144,6 +148,7 @@ With the same assumption from the step before,
 
     cd ~/PredictionIO/scheduler
     /opt/play/play
+    > clean
     > update
     > compile
     > run 7000
