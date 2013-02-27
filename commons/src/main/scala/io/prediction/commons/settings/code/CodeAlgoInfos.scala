@@ -4,7 +4,7 @@ import io.prediction.commons.settings.{AlgoInfo, AlgoInfos}
 
 /** Scala implementation of AlgoInfos. */
 class CodeAlgoInfos extends AlgoInfos {
-  private val algoInfos = Map(
+  private val wipAlgoInfos = Map(
     "pdio-knnitembased" -> AlgoInfo(
       id = "pdio-knnitembased",
       pkgname = "io.prediction.algorithms.scalding.itemrec.knnitembased",
@@ -97,6 +97,9 @@ class CodeAlgoInfos extends AlgoInfos {
       datareq = Seq("Users and Items with starttime.")
     )
   )
+
+  /** Temporarily add alias before generalization is finished. */
+  private val algoInfos = wipAlgoInfos ++ Map("io.prediction.algorithms.scalding.itemrec.knnitembased" -> wipAlgoInfos("pdio-knnitembased"))
 
   private val engineTypeToAlgoInfos = Map("itemrec" -> Seq("pdio-knnitembased", "mahout-itembased", "mahout-parallelals", "pdio-randomrank", "pdio-latestrank"))
 

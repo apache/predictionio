@@ -51,6 +51,10 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
     itemRecScoreColl.remove(MongoDBObject("algoid" -> algoid))
   }
 
+  def deleteByAlgoidAndModelset(algoid: Int, modelset: Boolean) = {
+    itemRecScoreColl.remove(MongoDBObject("algoid" -> algoid, "modelset" -> modelset))
+  }
+
   /** Private mapping function to map DB Object to ItemRecScore object */
   private def dbObjToItemRecScore(dbObj: DBObject, appid: Int) = {
     ItemRecScore(

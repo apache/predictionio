@@ -60,90 +60,66 @@ object Scheduler extends Controller {
           /** Algos. */
           algos.getByEngineid(engine.id) foreach { algo =>
             algoinfos.get(algo.pkgname) map { algoinfo =>
-            val algoid = algo.id.toString
-            val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
-            if (algo.deployed == true) {
-              if (scheduler.checkExists(triggerkey) == false) {
-                Logger.info("Setting up batch algo job. Algo ID: %d.".format(algo.id))
-                algoinfo.batchcommands map { batchcommands =>
-                  val job = Jobs.algoJob(settingsConfig, appdataConfig, modeldataConfig, app, engine, algo, batchcommands)
-                  scheduler.addJob(job, true) // this is needed to update the job
+              val algoid = algo.id.toString
+              val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
+              if (algo.deployed == true) {
+                if (scheduler.checkExists(triggerkey) == false) {
+                  Logger.info("Algo ID %d: Setting up batch algo job".format(algo.id))
+                  algoinfo.batchcommands map { batchcommands =>
+                    val job = Jobs.algoJobs(settingsConfig, appdataConfig, modeldataConfig, app, engine, algo, batchcommands)
+                    scheduler.addJob(job, true)
 
-                  val postProcessJob = newJob(classOf[FlipModelSetJob]) withIdentity(algoid, Jobs.algoPostProcessJobGroup) build()
-                  postProcessJob.getJobDataMap().put("algoid", algo.id)
-                  scheduler.addJob(postProcessJob, true)
-
-                  jobTree.addJobTreeLink(job.getKey, postProcessJob.getKey)
-
-                  val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(algoid, Jobs.algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
-                  scheduler.scheduleJob(trigger)
-                } getOrElse {
-                  Logger.info("Giving up setting up batch algo job because it does not have any batch command.")
+                    val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(algoid, Jobs.algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
+                    scheduler.scheduleJob(trigger)
+                  } getOrElse {
+                    Logger.info("Giving up setting up batch algo job because it does not have any batch command.")
+                  }
+                }
+              } else {
+                if (scheduler.checkExists(triggerkey) == true) {
+                  scheduler.unscheduleJob(triggerkey)
                 }
               }
-            } else {
-              if (scheduler.checkExists(triggerkey) == true) {
-                scheduler.unscheduleJob(triggerkey)
-              }
+            } getOrElse {
+              Logger.info("Skipping batch algo job setup because information about this algo cannot be found. Algo ID: %d. Package name: %s.".format(algo.id, algo.pkgname))
             }
-          } getOrElse {
-            Logger.info("Skipping batch algo job setup because information about this algo cannot be found. Algo ID: %d. Package name: %s.".format(algo.id, algo.pkgname))
           }
-        }
 
-        /** Offline evaluations. */
-        offlineEvals.getByEngineid(engine.id) foreach { offlineEval =>
-          val offlineEvalid = offlineEval.id.toString
-          val triggerkey = triggerKey(offlineEvalid, Jobs.offlineEvalJobGroup)
-          offlineEval.createtime foreach { ct =>
-            if (scheduler.checkExists(triggerkey) == false) {
-              offlineEval.endtime match {
-                case None => {
-                  Logger.info("Setting up offline evaluation splitting job. Eval ID: %d.".format(offlineEval.id))
-                  /** Add a job, then build a trigger for it.
-                    * This is necessary for updating any existing job,
-                    * and make sure the trigger will fire.
-                    */
-                  val offlineEvalJob = newJob(classOf[OfflineEvalStartJob]) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) build()
-                  offlineEvalJob.getJobDataMap().put("evalid", offlineEval.id)
-                  scheduler.addJob(offlineEvalJob, true)
+          /** Offline evaluations. */
+          offlineEvals.getByEngineid(engine.id) foreach { offlineEval =>
+            val offlineEvalid = offlineEval.id.toString
+            val triggerkey = triggerKey(offlineEvalid, Jobs.offlineEvalJobGroup)
+            offlineEval.createtime foreach { ct =>
+              if (scheduler.checkExists(triggerkey) == false) {
+                offlineEval.endtime match {
+                  case None => {
+                    Logger.info("Setting up offline evaluation splitting job. Eval ID: %d.".format(offlineEval.id))
+                    /** Add a job, then build a trigger for it.
+                      * This is necessary for updating any existing job,
+                      * and make sure the trigger will fire.
+                      */
+                    val offlineEvalJob = newJob(classOf[OfflineEvalStartJob]) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) build()
+                    offlineEvalJob.getJobDataMap().put("evalid", offlineEval.id)
+                    scheduler.addJob(offlineEvalJob, true)
 
-                  val offlineEvalSplitJob = Jobs.offlineEvalSplitJob(
-                    settingsConfig,
-                    appdataConfig,
-                    app,
-                    engine,
-                    offlineEval)
-                  scheduler.addJob(offlineEvalSplitJob, true) // this is needed to update the job
-                  jobTree.addJobTreeLink(offlineEvalJob.getKey, offlineEvalSplitJob.getKey)
+                    val offlineEvalSplitJob = Jobs.offlineEvalSplitJob(
+                      settingsConfig,
+                      appdataConfig,
+                      app,
+                      engine,
+                      offlineEval)
+                    scheduler.addJob(offlineEvalSplitJob, true) // this is needed to update the job
+                    jobTree.addJobTreeLink(offlineEvalJob.getKey, offlineEvalSplitJob.getKey)
 
-                  /** Training algo job. */
-                  val algosToRun = algos.getByOfflineEvalid(offlineEval.id).toList
-                  val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toList
+                    /** Training algo job. */
+                    val algosToRun = algos.getByOfflineEvalid(offlineEval.id).toList
+                    val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toList
 
-                  algosToRun foreach { algo =>
-                    algoinfos.get(algo.pkgname) map { algoinfo =>
-                      Logger.info("Setting up offline evaluation training job. Eval ID: %d. Algo ID: %d.".format(offlineEval.id, algo.id))
-                      algoinfo.offlineevalcommands map { offlineEvalCommands =>
-                        val offlineEvalTrainingJob = Jobs.offlineEvalTrainingJob(
-                          settingsConfig,
-                          appdataConfig,
-                          modeldataTrainingSetConfig,
-                          app,
-                          engine,
-                          algo,
-                          offlineEval,
-                          offlineEvalCommands)
-
-                        scheduler.addJob(offlineEvalTrainingJob, true) // this is needed to update the job
-
-                        jobTree.addJobTreeLink(offlineEvalSplitJob.getKey, offlineEvalTrainingJob.getKey)
-
-                        /** Metrics. */
-                        metricsToRun foreach { metric =>
-                          Logger.info("Setting up offline evaluation metric job. Eval ID: %d. Algo ID: %d. Metric ID: %d.".format(offlineEval.id, algo.id, metric.id))
-
-                          val offlineEvalMetricJob = Jobs.offlineEvalMetricJob(
+                    algosToRun foreach { algo =>
+                      algoinfos.get(algo.pkgname) map { algoinfo =>
+                        Logger.info("Setting up offline evaluation training job. Eval ID: %d. Algo ID: %d.".format(offlineEval.id, algo.id))
+                        algoinfo.offlineevalcommands map { offlineEvalCommands =>
+                          val offlineEvalTrainingJob = Jobs.offlineEvalTrainingJob(
                             settingsConfig,
                             appdataConfig,
                             modeldataTrainingSetConfig,
@@ -151,40 +127,58 @@ object Scheduler extends Controller {
                             engine,
                             algo,
                             offlineEval,
-                            metric)
+                            offlineEvalCommands)
 
-                          scheduler.addJob(offlineEvalMetricJob, true) // this is needed to update the job
+                          scheduler.addJob(offlineEvalTrainingJob, true) // this is needed to update the job
 
-                          jobTree.addJobTreeLink(offlineEvalTrainingJob.getKey, offlineEvalMetricJob.getKey)
+                          jobTree.addJobTreeLink(offlineEvalSplitJob.getKey, offlineEvalTrainingJob.getKey)
+
+                          /** Metrics. */
+                          metricsToRun foreach { metric =>
+                            Logger.info("Setting up offline evaluation metric job. Eval ID: %d. Algo ID: %d. Metric ID: %d.".format(offlineEval.id, algo.id, metric.id))
+
+                            val offlineEvalMetricJob = Jobs.offlineEvalMetricJob(
+                              settingsConfig,
+                              appdataConfig,
+                              modeldataTrainingSetConfig,
+                              app,
+                              engine,
+                              algo,
+                              offlineEval,
+                              metric)
+
+                            scheduler.addJob(offlineEvalMetricJob, true) // this is needed to update the job
+
+                            jobTree.addJobTreeLink(offlineEvalTrainingJob.getKey, offlineEvalMetricJob.getKey)
+                          }
+                        } getOrElse {
+                          Logger.info("Giving up setting up offline evaluation training algo job because it does not have any offline evaluation command.")
                         }
                       } getOrElse {
-                        Logger.info("Giving up setting up offline evaluation training algo job because it does not have any offline evaluation command.")
+                        Logger.info("Skipping batch algo job setup because information about this algo cannot be found. Algo ID: %d. Package name: %s.".format(algo.id, algo.pkgname))
                       }
-                    } getOrElse {
-                      Logger.info("Skipping batch algo job setup because information about this algo cannot be found. Algo ID: %d. Package name: %s.".format(algo.id, algo.pkgname))
                     }
+
+                    /** Schedule job to poll for results. */
+                    Logger.info("Setting up offline evaluation results polling job. Eval ID: %d.".format(offlineEval.id))
+                    val pollOfflineEvalResultsJob = newJob(classOf[PollOfflineEvalResultsJob]) withIdentity(offlineEvalid, Jobs.offlineEvalResultsJobGroup) build()
+                    pollOfflineEvalResultsJob.getJobDataMap().put("evalid", offlineEvalid)
+                    pollOfflineEvalResultsJob.getJobDataMap().put("metricids", metricsToRun.map(_.id).mkString(","))
+                    pollOfflineEvalResultsJob.getJobDataMap().put("algoids", algosToRun.map(_.id).mkString(","))
+                    scheduler.addJob(pollOfflineEvalResultsJob, true)
+                    jobTree.addJobTreeLink(offlineEvalJob.getKey, pollOfflineEvalResultsJob.getKey)
+
+                    /** Schedule the first step of the offline evaluation job after everything is done. */
+                    val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
+                    scheduler.scheduleJob(trigger)
                   }
-
-                  /** Schedule job to poll for results. */
-                  Logger.info("Setting up offline evaluation results polling job. Eval ID: %d.".format(offlineEval.id))
-                  val pollOfflineEvalResultsJob = newJob(classOf[PollOfflineEvalResultsJob]) withIdentity(offlineEvalid, Jobs.offlineEvalResultsJobGroup) build()
-                  pollOfflineEvalResultsJob.getJobDataMap().put("evalid", offlineEvalid)
-                  pollOfflineEvalResultsJob.getJobDataMap().put("metricids", metricsToRun.map(_.id).mkString(","))
-                  pollOfflineEvalResultsJob.getJobDataMap().put("algoids", algosToRun.map(_.id).mkString(","))
-                  scheduler.addJob(pollOfflineEvalResultsJob, true)
-                  jobTree.addJobTreeLink(offlineEvalJob.getKey, pollOfflineEvalResultsJob.getKey)
-
-                  /** Schedule the first step of the offline evaluation job after everything is done. */
-                  val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
-                  scheduler.scheduleJob(trigger)
+                  case Some(et) => Logger.info("Offline evaluation (ID: %d) has already finished at %s.".format(offlineEval.id, et))
                 }
-                case Some(et) => Logger.info("Offline evaluation (ID: %d) has already finished at %s.".format(offlineEval.id, et))
               }
             }
           }
         }
       }
-    }
 
       /** Complete synchronization. */
       Ok(Json.obj("message" -> "Synchronized algorithms settings with scheduler successfully."))

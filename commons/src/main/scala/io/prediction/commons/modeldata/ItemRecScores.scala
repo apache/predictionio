@@ -35,6 +35,9 @@ trait ItemRecScores {
     */
   def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo): Iterator[ItemRecScore]
 
-  /** Delete by Alog ID. */
+  /** Delete by Algo ID. */
   def deleteByAlgoid(algoid: Int)
+
+  /** Delete by Algo ID and model set. */
+  def deleteByAlgoidAndModelset(algoid: Int, modelset: Boolean)
 }

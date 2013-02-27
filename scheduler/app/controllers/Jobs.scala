@@ -6,12 +6,15 @@ import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval, OfflineEv
 
 import com.github.nscala_time.time.Imports._
 import org.clapper.scalasti.StringTemplate
-import org.quartz.DisallowConcurrentExecution
+import org.quartz.{DisallowConcurrentExecution, PersistJobDataAfterExecution}
 import org.quartz.{Job, JobDetail, JobExecutionContext}
 import org.quartz.JobBuilder.newJob
+import org.quartz.JobKey.jobKey
 import org.quartz.jobs.NativeJob
 
 import play.api.Logger
+
+import scala.sys.process._
 
 object Jobs {
   val algoJobGroup = "predictionio-algo"
@@ -32,7 +35,7 @@ object Jobs {
     )
   )
 
-  def algoJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataConfig: modeldata.Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
+  def algoJobs(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataConfig: modeldata.Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
     /** Build command from template. */
     val command = new StringTemplate(batchcommands.mkString(" && "))
     command.setAttributes(algo.params)
@@ -45,7 +48,7 @@ object Jobs {
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
-    command.setAttribute("modelset", !algo.modelset)
+    command.setAttribute("modelset", "$modelset$")
     command.setAttribute("hdfsRoot", settingsConfig.settingsHdfsRoot)
     command.setAttribute("appdataDbType", appdataConfig.appdataDbType)
     command.setAttribute("appdataDbName", appdataConfig.appdataDbName)
@@ -60,11 +63,11 @@ object Jobs {
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
-    val job = newJob(classOf[SeqNativeJob]) withIdentity(algo.id.toString, algoJobGroup) build()
-    job.getJobDataMap().put(
-      NativeJob.PROP_COMMAND,
-      command.toString
-    )
+    val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) build()
+    job.getJobDataMap().put("template", command.toString)
+    job.getJobDataMap().put("algoid", algo.id)
+    job.getJobDataMap().put("enginetype", engine.enginetype)
+
     job
   }
 
@@ -203,15 +206,40 @@ object Jobs {
   }
 }
 
-class FlipModelSetJob extends Job {
-  def execute(context: JobExecutionContext) = {
-    val data = context.getJobDetail.getJobDataMap
-    val algoid = data.getInt("algoid")
+@DisallowConcurrentExecution
+@PersistJobDataAfterExecution
+class AlgoJob extends Job {
+  override def execute(context: JobExecutionContext) = {
+    val jobDataMap = context.getMergedJobDataMap
+    val algoid = jobDataMap.getInt("algoid")
+    val enginetype = jobDataMap.getString("enginetype")
+    val template = new StringTemplate(jobDataMap.getString("template"))
     val config = new settings.Config
     val algos = config.getAlgos
-    algos.get(algoid) foreach { algo =>
-      algos.update(algo.copy(modelset = !algo.modelset))
-    }
+    val modeldataConfig = new modeldata.Config
+    val itemRecScores = modeldataConfig.getItemRecScores
+    algos.get(algoid) map { algo =>
+      Logger.info("Algo ID %d: Current model set for is %s".format(algo.id, algo.modelset))
+      Logger.info("Algo ID %d: Launching algo job for model set %s".format(algo.id, !algo.modelset))
+      template.setAttribute("modelset", !algo.modelset)
+      val command = template.toString
+      Logger.info("Algo ID %d: Going to run %s".format(algo.id, command))
+      val code = command.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).!
+      if (code == 0) {
+        Logger.info("Algo ID %d: Flipping model set flag to %s".format(algo.id, !algo.modelset))
+        algos.update(algo.copy(modelset = !algo.modelset))
+        enginetype match {
+          case "itemrec" => {
+            Logger.info("Algo ID %d: Deleting data of model set %s".format(algo.id, algo.modelset))
+            itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
+            Logger.info("Algo ID %d: Deletion completed".format(algo.id))
+          }
+        }
+        Logger.info("Algo ID %d: Job completed".format(algo.id))
+      } else {
+        Logger.warn("Algo ID %d: Not flipping model set flag because the algo job returned non-zero exit code".format(algo.id))
+      }
+    } getOrElse Logger.warn("Algo ID %d: No job to run because the algo cannot be found from the database".format(algoid))
   }
 }
 
