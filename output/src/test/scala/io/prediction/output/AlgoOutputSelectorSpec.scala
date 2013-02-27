@@ -195,6 +195,16 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       modelset = true
     ))
 
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iid = "item_d",
+      score = -1,
+      itypes = List("foo", "bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
     mongoU2IActions.insert(U2IAction(
       appid = dummyApp.id,
       action = mongoU2IActions.view,

@@ -2,12 +2,12 @@ package io.prediction.output.itemrec
 
 import io.prediction.commons.appdata.Config
 import io.prediction.commons.modeldata.ItemRecScore
-import io.prediction.commons.settings.{Algo, App, Engine}
+import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval}
 
 import scala.util.Random
 
 trait ItemRecAlgoOutput {
-  def output(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo): Seq[ItemRecScore]
+  def output(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore]
 }
 
 object ItemRecAlgoOutput {
@@ -15,7 +15,7 @@ object ItemRecAlgoOutput {
   val items = appdataConfig.getItems
   val u2iActions = appdataConfig.getU2IActions
 
-  def output(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine, algo: Algo): Seq[String] = {
+  def output(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
     /** Serendipity settings. */
     val serendipity = engine.settings.get("serendipity") map { _.asInstanceOf[Int] }
 
@@ -37,12 +37,12 @@ object ItemRecAlgoOutput {
       var stopMore = false
       var after: Option[ItemRecScore] = None
 
-      while (outputBuffer.size < finalN && !stopMore) {
+      while (outputBuffer.length < finalN && !stopMore) {
         val moreItemRecScores = more(uid, finalN, itypes, after)
         val moreIids = moreItemRecScores.map(_.iid).toList
 
         /** Stop the loop if no more scores can be found. */
-        if (moreItemRecScores.size == 0)
+        if (moreItemRecScores.length == 0)
           stopMore = true
         else {
           val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, moreIids)
@@ -53,7 +53,7 @@ object ItemRecAlgoOutput {
     } else outputBuffer ++= more(uid, finalN, itypes, None) map { _.iid }
 
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
-    val output = outputBuffer.toList
+    val output = outputBuffer.toList.take(finalN)
 
     /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
       * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
@@ -83,7 +83,7 @@ object ItemRecAlgoOutput {
   }
 
   /** Private method just to get items. */
-  private def more(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo): Seq[ItemRecScore] = {
+  private def more(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore] = {
     algo.pkgname match {
       case "io.prediction.algorithms.scalding.itemrec.knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case _ => throw new RuntimeException("Unsupported itemrec algorithm package: %s" format algo.pkgname)

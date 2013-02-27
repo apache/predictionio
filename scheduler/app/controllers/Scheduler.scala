@@ -28,6 +28,7 @@ object Scheduler extends Controller {
   val appdataConfig = new appdata.Config
 
   val modeldataConfig = new modeldata.Config
+  val modeldataTrainingSetConfig = new modeldata.TrainingSetConfig
 
   val scheduler = StdSchedulerFactory.getDefaultScheduler()
   val jobTree = new JobTreeJobListener("predictionio-algo")
@@ -127,6 +128,7 @@ object Scheduler extends Controller {
                         val offlineEvalTrainingJob = Jobs.offlineEvalTrainingJob(
                           settingsConfig,
                           appdataConfig,
+                          modeldataTrainingSetConfig,
                           app,
                           engine,
                           algo,
@@ -144,6 +146,7 @@ object Scheduler extends Controller {
                           val offlineEvalMetricJob = Jobs.offlineEvalMetricJob(
                             settingsConfig,
                             appdataConfig,
+                            modeldataTrainingSetConfig,
                             app,
                             engine,
                             algo,

@@ -11,7 +11,7 @@ packageOptions +=
 
 libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.3"
 
-libraryDependencies += "com.twitter" % "scalding_2.9.2" % "0.8.1"
+libraryDependencies += "com.twitter" % "scalding_2.9.2" % "0.8.3"
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.12.3" % "test",
