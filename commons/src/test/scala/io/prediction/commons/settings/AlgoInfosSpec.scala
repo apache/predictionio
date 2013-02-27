@@ -22,10 +22,10 @@ class AlgoInfosSpec extends Specification { def is =
   def newCodeAlgoInfos = new code.CodeAlgoInfos
 
   def get(algoinfos: AlgoInfos) = {
-    algoinfos.get("io.prediction.algorithms.scalding.itemrec.knnitembased").get.name must beEqualTo("kNN Item Based Collaborative Filtering")
+    algoinfos.get("pdio-knnitembased").get.name must beEqualTo("kNN Item Based Collaborative Filtering")
   }
 
   def getByEngineType(algoinfos: AlgoInfos) = {
-    algoinfos.getByEngineType("itemrec").size must beEqualTo(1)
+    algoinfos.getByEngineType("itemrec").size must beEqualTo(5)
   }
 }

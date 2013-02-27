@@ -56,6 +56,6 @@ POST     /app/:app_id/engine/:engine_id/algo_undeploy      controllers.Applicati
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.getSettings(app_id, engine_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.updateSettings(app_id, engine_id)
 # Algo Module
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/knnitembased/:algo_id     controllers.Itemrec.Knnitembased.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/knnitembased/:algo_id     controllers.Itemrec.Knnitembased.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.Knnitembased.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.Knnitembased.updateSettings(app_id, engine_id, algo_id)
 
