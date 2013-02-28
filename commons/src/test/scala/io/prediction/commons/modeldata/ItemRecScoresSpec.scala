@@ -424,7 +424,8 @@ class ItemRecScoresSpec extends Specification {
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      offlineevalid = None,
+      infoid = "dummy"
     )
     val algo2 = algo1.copy(id = 3456)
     itemRecScores.insert(ItemRecScore(
