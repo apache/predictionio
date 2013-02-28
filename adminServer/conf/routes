@@ -59,3 +59,5 @@ PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.Knnitembased.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.Knnitembased.updateSettings(app_id, engine_id, algo_id)
 
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemrec.MahoutItemBased.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemrec.MahoutItemBased.updateSettings(app_id, engine_id, algo_id)
