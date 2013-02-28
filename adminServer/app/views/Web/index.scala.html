@@ -221,6 +221,7 @@
             <% } %>
         </ul>
 </script>
+
 <script type="text/template" id="app_addEngine_template">
 <div class="row-fluid">
     <div class="span10 offset1">
@@ -510,7 +511,19 @@
         </div>
     </div>
 </script>
-
+<script type="text/template" id="engineStatus_template">
+        <div class="row-fluid bottomMargin">
+            <div class="span12">
+                Engine Status: &nbsp;
+                    <% if(data.engineStatus == true) { %>
+                        <span class="label label-info">Running <i class="icon-ok icon-white"></i></span>                
+                    <% } else { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: No data or no algo selected</span>
+                    <% } %>
+                &nbsp;&nbsp;<a href="javascript:void(0);" id="engineStatusReloadBtn" title="refresh engine status"><i class="icon-refresh"></i></a>
+            </div>
+        </div>
+</script>
 <script type="text/template" id="engine_template">
 <div class="row-fluid">
     <div class="span10 offset1">
@@ -521,14 +534,9 @@
         </div>
         <!--  breadcrumb -->
         <div id="breadcrumb_ContentHolder"></div>
-<!-- TODO
-        <div class="row-fluid bottomMargin">
-            <div class="span12">
-                Engine Status: <span class="label label-info">Running <i
-                    class="icon-ok icon-white"></i></span>
-            </div>
-        </div>
--->
+
+        <div id="engineStatus_ContentHolder"></div>
+
         <div id="engineTab" class="row-fluid">
             <div class="span12">
                 <div class="pull-right">
