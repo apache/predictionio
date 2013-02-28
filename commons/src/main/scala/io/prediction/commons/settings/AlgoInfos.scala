@@ -16,12 +16,11 @@ package io.prediction.commons.settings
 case class AlgoInfo(
   id: String,
   name: String,
-  pkgname: String,
   description: Option[String],
   batchcommands: Option[Seq[String]],
   offlineevalcommands: Option[Seq[String]],
   paramdefaults: Map[String, Any],
-  paramdescription: Map[String,(String, String)], 
+  paramdescription: Map[String,(String, String)],
   paramorder: Seq[String],
   enginetype: String,
   techreq: Seq[String],

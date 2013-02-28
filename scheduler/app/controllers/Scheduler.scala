@@ -59,7 +59,7 @@ object Scheduler extends Controller {
         engines.getByAppid(app.id) foreach { engine =>
           /** Algos. */
           algos.getByEngineid(engine.id) foreach { algo =>
-            algoinfos.get(algo.pkgname) map { algoinfo =>
+            algoinfos.get(algo.infoid) map { algoinfo =>
               val algoid = algo.id.toString
               val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
               if (algo.deployed == true) {
@@ -81,7 +81,7 @@ object Scheduler extends Controller {
                 }
               }
             } getOrElse {
-              Logger.info("Skipping batch algo job setup because information about this algo cannot be found. Algo ID: %d. Package name: %s.".format(algo.id, algo.pkgname))
+              Logger.info("Algo ID %d: Skipping batch algo job setup because information about this algo (%s) cannot be found".format(algo.id, algo.infoid))
             }
           }
 
@@ -116,7 +116,7 @@ object Scheduler extends Controller {
                     val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toList
 
                     algosToRun foreach { algo =>
-                      algoinfos.get(algo.pkgname) map { algoinfo =>
+                      algoinfos.get(algo.infoid) map { algoinfo =>
                         Logger.info("Setting up offline evaluation training job. Eval ID: %d. Algo ID: %d.".format(offlineEval.id, algo.id))
                         algoinfo.offlineevalcommands map { offlineEvalCommands =>
                           val offlineEvalTrainingJob = Jobs.offlineEvalTrainingJob(
@@ -155,7 +155,7 @@ object Scheduler extends Controller {
                           Logger.info("Giving up setting up offline evaluation training algo job because it does not have any offline evaluation command.")
                         }
                       } getOrElse {
-                        Logger.info("Skipping batch algo job setup because information about this algo cannot be found. Algo ID: %d. Package name: %s.".format(algo.id, algo.pkgname))
+                        Logger.info("Algo ID %d: Skipping batch algo job setup because information about this algo (%s) cannot be found".format(algo.id, algo.infoid))
                       }
                     }
 
@@ -183,7 +183,7 @@ object Scheduler extends Controller {
       /** Complete synchronization. */
       Ok(Json.obj("message" -> "Synchronized algorithms settings with scheduler successfully."))
     } catch {
-      case e: RuntimeException => NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
+      case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
       case e: Exception => InternalServerError(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
     }
   }

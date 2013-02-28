@@ -657,7 +657,6 @@ object Application extends Controller {
             engineid = engineId,
             name = algoName,
             infoid = algoType,
-            pkgname = algoInfo.pkgname,
             deployed = false,
             command = "",
             params = algoInfo.paramdefaults,

@@ -7,7 +7,6 @@ class CodeAlgoInfos extends AlgoInfos {
   private val wipAlgoInfos = Map(
     "pdio-knnitembased" -> AlgoInfo(
       id = "pdio-knnitembased",
-      pkgname = "io.prediction.algorithms.scalding.itemrec.knnitembased",
       name = "kNN Item Based Collaborative Filtering",
       description = Some("This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items."),
       batchcommands = Some(Seq(
@@ -66,7 +65,6 @@ class CodeAlgoInfos extends AlgoInfos {
     ),
     "mahout-itembased" -> AlgoInfo(
       id = "mahout-itembased",
-      pkgname = "TODO",
       name = "Mahout's Item Based Recommendation",
       description = Some("Predicts user preferences based on previous behaviors of users on similar items."),
       batchcommands = Some(Seq("TODO")),
@@ -101,7 +99,6 @@ class CodeAlgoInfos extends AlgoInfos {
     ),
     "mahout-parallelals" -> AlgoInfo(
       id = "mahout-parallelals",
-      pkgname = "TODO",
       name = "Mahout's Parallel ALS",
       description = Some("Predicts user preferences based on previous behaviors of users."),
       batchcommands = Some(Seq("TODO")),
@@ -145,7 +142,6 @@ class CodeAlgoInfos extends AlgoInfos {
     ),
     "pdio-randomrank" -> AlgoInfo(
       id = "pdio-randomrank",
-      pkgname = "TODO",
       name = "Random Rank",
       description = Some("Predict user preferences randomly."),
       batchcommands = Some(Seq("TODO")),
@@ -159,7 +155,6 @@ class CodeAlgoInfos extends AlgoInfos {
     ),
     "pdio-latestrank" -> AlgoInfo(
       id = "pdio-latestrank",
-      pkgname = "TODO",
       name = "Latest Rank",
       description = Some("Recommend latest items to users."),
       batchcommands = Some(Seq("TODO")),

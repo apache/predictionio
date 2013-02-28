@@ -44,7 +44,7 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("jar", settingsConfig.getJar(algo.pkgname).get)
+    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
@@ -116,7 +116,7 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("jar", settingsConfig.getJar(algo.pkgname).get)
+    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).get)
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
@@ -161,7 +161,7 @@ object Jobs {
     /** Fill in settings values. */
     command.setAttributes(metric.params)
     command.setAttribute("goalParam", engine.settings("goal"))
-    command.setAttribute("jar", settingsConfig.getJar(algo.pkgname).get)
+    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).get)
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
