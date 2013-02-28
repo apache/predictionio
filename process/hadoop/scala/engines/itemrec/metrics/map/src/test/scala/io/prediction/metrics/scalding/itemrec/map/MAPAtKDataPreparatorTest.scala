@@ -77,11 +77,11 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
           
         }
       }
-      .sink[(String, String)](Tsv(OfflineMetricFile(hdfsRoot, 2, 4, 5, 6, 8, "topKItems.tsv"))) { outputBuffer =>
+      /*.sink[(String, String)](Tsv(OfflineMetricFile(hdfsRoot, 2, 4, 5, 6, 8, "topKItems.tsv"))) { outputBuffer =>
         "correctly generates topKItems for each user" in {
           outputBuffer.toList must containTheSameElementsAs(topKItems)
         }
-      }
+      }*/
       .run
       .finish
   }
