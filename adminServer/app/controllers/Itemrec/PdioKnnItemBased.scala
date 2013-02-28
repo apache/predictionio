@@ -11,7 +11,7 @@ import play.api.libs.json._
 
 import controllers.Application.{algos, withUser, algoInfos}
 
-object Knnitembased extends Controller {
+object PdioKnnItemBased extends Controller {
   
   def updateSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
     /* request payload

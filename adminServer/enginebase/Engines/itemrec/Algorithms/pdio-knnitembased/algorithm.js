@@ -36,7 +36,7 @@ var PdioKnnItemBasedAlgoSettingsView = Backbone.View.extend({
     },
     initValue: function(attrName){
 		var value = this.model.get(attrName);
-		this.$el.find('#knnitembase_'+attrName).val(value);
+		this.$el.find('#pdio-knnitembased_'+attrName).val(value);
     },
 	events: {
 		"change #pdio-knnitembasedForm input":  "formDataChanged",
