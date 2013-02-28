@@ -1,0 +1,5 @@
+clean
+update
+project scala-assembly
+assembly
+exit
