@@ -156,6 +156,22 @@ With the same assumption from the step before,
 This will start the scheduler on the default port 7000.
 
 
+UPGRADING
+=========
+
+From 0.1 to 0.2
+---------------
+
+In 0.2, PredictionIO stores its algorithm settings in a more modular way.
+This breaks backward compatibility with 0.1 and requires a tool to migrate this data.
+
+    cd ~/PredictionIO/tools/migration/0.2/algoinfos
+    sbt clean update run
+
+Follow the on-screen instructions to complete the migration.
+After the upgrade, the suite should return to normal operation.
+
+
 STEP-BY-STEP TUTORIAL
 =====================
 Build a Recommendation Engine with 5 steps
