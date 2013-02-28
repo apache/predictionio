@@ -1,0 +1,70 @@
+<script type="text/template" id="mahout-parallelalsTemplate">
+                        <div class="row-fluid bottomMargin">
+                        <form id="mahout-parallelalsForm">
+                           <div class="span12">
+                                <div class="boxContainer clearfix">
+                                    
+                                    <div class="boxBlock">
+                                        <div class="boxtitle">
+                                           Parameter Settings
+                                        </div>
+
+                                        <div class="boxContent">
+                                            <div class="form-horizontal">
+
+
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Lamda</label>
+                                                    <div class="controls">
+                                                        <input id="mahout-parallelals_lamda" name="lamda" class="span1" type="text" value="0.03">
+                                                        <span class="help-inline">Regularization param to avoid overfitting.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Implicit Feedback</label>
+                                                    <div class="controls">
+                                                        <select class="span2" name="implicitFeedback" id="mahout-parallelals_implicitFeedback">
+                                                            <option value="false">False</option>
+                                                            <option value="true">True</option>
+                                                        </select>
+                                                        <span class="help-inline">Whether data consists of implicit data.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Alpha</label>
+                                                    <div class="controls">
+                                                        <input id="mahout-parallelals_alpha" name="alpha" class="span1" type="text" value="40">
+                                                        <span class="help-inline">Confidence param (will be ignored if Implicit Feedback is false)</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Num of Factorized Features</label>
+                                                    <div class="controls">
+                                                        <input id="mahout-parallelals_nfeatures" name="nfeatures" class="span1" type="text" value="3">
+                                                        <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Num of Iteration</label>
+                                                    <div class="controls">
+                                                        <input id="mahout-parallelals_niteration" name="lamda" class="span1" type="text" value="10">
+                                                        <span class="help-inline">Number of training iteration.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pull-right">
+                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                    </div>
+                                </div>  
+                            </div>
+                        </form>
+                        </div>
+</script>
+
+<div id="mahout-parallelalsContentHolder"></div>
