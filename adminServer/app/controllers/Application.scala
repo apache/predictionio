@@ -597,7 +597,7 @@ object Application extends Controller {
     }
   }
 
-  val supportedAlgoTypes: List[String] = List("pdio-knnitembased")
+  val supportedAlgoTypes: List[String] = List("pdio-knnitembased", "pdio-latestrank", "pdio-randomrank")
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // request payload
