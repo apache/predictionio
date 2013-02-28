@@ -549,8 +549,8 @@ object Application extends Controller {
                "algoName" -> algo.name,
                "app_id" -> app_id, // TODO: should algo db store appid and get it from there?
                "engine_id" -> algo.engineid.toString,
-               "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo table
-               "algotypeName" -> algoInfos.get("pdio-knnitembased").get.name,
+               "algotype_id" -> algo.infoid,
+               "algotypeName" -> algoInfos.get(algo.infoid).get.name,
                "status" -> "ready", // TODO
                "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
                )
@@ -586,8 +586,8 @@ object Application extends Controller {
           "algoName" -> algo.name,
           "app_id" -> app_id, // TODO
           "engine_id" -> algo.engineid.toString,
-          "algotype_id" -> "pdio-knnitembased", // TODO
-          "algotypeName" -> algoInfos.get("pdio-knnitembased").get.name,
+          "algotype_id" -> algo.infoid,
+          "algotypeName" -> algoInfos.get(algo.infoid).get.name,
           "status" -> "ready", // default status
           "createdTime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
           "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
@@ -647,6 +647,7 @@ object Application extends Controller {
             id = -1,
             engineid = engineId,
             name = algoName,
+            infoid = algoType,
             pkgname = algoInfo.pkgname,
             deployed = false,
             command = "",
@@ -833,8 +834,8 @@ object Application extends Controller {
 	         "algoName" -> algo.name,
 	         "app_id" -> app_id, // // TODO: should algo db store appid and get it from there?
 	         "engine_id" -> algo.engineid.toString,
-	         "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo db
-	         "algotypeName" -> algoInfos.get("pdio-knnitembased").get.name,
+	         "algotype_id" -> algo.infoid,
+	         "algotypeName" -> algoInfos.get(algo.infoid).get.name,
 	         "status" -> "deployed",
 	         "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
        }.toSeq)
@@ -925,13 +926,13 @@ object Application extends Controller {
           else
             toJson(
               evalAlgos.map { algo =>
-                val algoInfo = algoInfos.get("pdio-knnitembased").get // TODO: what if couldn't get the algoInfo here?
+                val algoInfo = algoInfos.get(algo.infoid).get // TODO: what if couldn't get the algoInfo here?
 
                 Map("id" -> algo.id.toString,
                      "algoName" -> algo.name,
                      "app_id" -> app_id,
                      "engine_id" -> algo.engineid.toString,
-                     "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo db
+                     "algotype_id" -> algo.infoid,
                      "algotypeName" -> algoInfo.name,
                      "settingsString" -> Itemrec.Algorithms.displayVisibleParams(algoInfo, algo.params)
                      )
@@ -1166,13 +1167,13 @@ object Application extends Controller {
           toJson(
             evalAlgos.map { algo =>
 
-              val algoInfo = algoInfos.get("pdio-knnitembased").get // TODO: what if couldn't get the algoInfo here?
+              val algoInfo = algoInfos.get(algo.infoid).get // TODO: what if couldn't get the algoInfo here?
 
               Map("id" -> algo.id.toString,
                   "algoName" -> algo.name,
                   "app_id" -> app_id,
                   "engine_id" -> algo.engineid.toString,
-                  "algotype_id" -> "pdio-knnitembased", // TODO: get it from algo db
+                  "algotype_id" -> algo.infoid,
                   "algotypeName" -> algoInfo.name,
                   "settingsString" -> Itemrec.Algorithms.displayVisibleParams(algoInfo, algo.params)
                   )

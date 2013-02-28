@@ -15,6 +15,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
   private val getFields = MongoDBObject(
     "engineid" -> 1,
     "name"     -> 1,
+    "infoid"   -> 1,
     "pkgname"  -> 1,
     "deployed" -> 1,
     "command"  -> 1,
@@ -33,6 +34,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
       id       = dbObj.as[Int]("_id"),
       engineid = dbObj.as[Int]("engineid"),
       name     = dbObj.as[String]("name"),
+      infoid   = dbObj.getAs[String]("infoid").getOrElse("pdio-knnitembased"), // TODO: tempararily default for backward compatiblity
       pkgname  = dbObj.as[String]("pkgname"),
       deployed = dbObj.as[Boolean]("deployed"),
       command  = dbObj.as[String]("command"),
@@ -53,6 +55,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
       "_id"      -> id,
       "engineid" -> algo.engineid,
       "name"     -> algo.name,
+      "infoid"   -> algo.infoid,
       "pkgname"  -> algo.pkgname,
       "deployed" -> algo.deployed,
       "command"  -> algo.command,
@@ -91,6 +94,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
     val obj = MongoDBObject(
       "engineid" -> algo.engineid,
       "name"     -> algo.name,
+      "infoid"   -> algo.infoid,
       "pkgname"  -> algo.pkgname,
       "deployed" -> algo.deployed,
       "command"  -> algo.command,
