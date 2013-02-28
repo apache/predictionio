@@ -651,7 +651,7 @@ object Application extends Controller {
             pkgname = algoInfo.pkgname,
             deployed = false,
             command = "",
-            params = Itemrec.Algorithms.getDefaultParams(algoInfo),
+            params = algoInfo.paramdefaults,
             settings = Map(), // no use for now
             modelset = false, // init value
             createtime = DateTime.now,
@@ -934,7 +934,7 @@ object Application extends Controller {
                      "engine_id" -> algo.engineid.toString,
                      "algotype_id" -> algo.infoid,
                      "algotypeName" -> algoInfo.name,
-                     "settingsString" -> Itemrec.Algorithms.displayVisibleParams(algoInfo, algo.params)
+                     "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
                      )
               }.toSeq
               )
@@ -1175,7 +1175,7 @@ object Application extends Controller {
                   "engine_id" -> algo.engineid.toString,
                   "algotype_id" -> algo.infoid,
                   "algotypeName" -> algoInfo.name,
-                  "settingsString" -> Itemrec.Algorithms.displayVisibleParams(algoInfo, algo.params)
+                  "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
                   )
             }.toSeq
           )

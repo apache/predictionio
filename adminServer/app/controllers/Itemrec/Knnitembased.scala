@@ -13,54 +13,6 @@ import controllers.Application.{algos, withUser, algoInfos}
 
 object Knnitembased extends Controller {
   
-  // NOTE: use List to preserve this order when display these params
-  /*
-  val displayNames: List[String] = List("Distance Function", "Virtual Count", "Prior Correlation",
-      "Minimum Number of Raters", "Maximum Number of Raters", "Minimum Intersection", "Minimum Number of Rated Similar Items",
-      "View Score", //"View More Score",
-      "Like Score", "Dislike Score", "Buy Score", "Override")
-    */
-  /*  
-  val displayToParamNames: Map[String, String] = Map(
-      "Distance Function" -> "measureParam",
-      "Virtual Count" -> "priorCountParam",
-      "Prior Correlation" -> "priorCorrelParam",
-      "Minimum Number of Raters" -> "minNumRatersParam",
-      "Maximum Number of Raters" -> "maxNumRatersParam",
-      "Minimum Intersection" -> "minIntersectionParam",
-      "Minimum Number of Rated Similar Items" -> "minNumRatedSimParam",
-      "View Score" -> "viewParam",
-      "View More Score" -> "viewmoreParam",
-      "Like Score" -> "likeParam",
-      "Dislike Score" -> "dislikeParam",
-      "Buy Score" -> "conversionParam",
-      "Override" -> "conflictParam"
-  )
-  */
-  //val paramToDisplayNames: Map[String, String] = displayToParamNames map { case(k,v) => (v,k) }
-  /*
-  def displayAllParams(params: Map[String, Any]): String = {
-    displayNames map ( x => x + " = " + params(displayToParamNames(x))) mkString(", ")
-  }
-  */
-  /*
-  val defaultParams: Map[String, Any] = Map(
-      "measureParam" -> "correl",
-      "priorCountParam" -> 20,
-      "priorCorrelParam" -> 0,
-      "minNumRatersParam" -> 1,
-      "maxNumRatersParam" -> 10000,
-      "minIntersectionParam" -> 1,
-      "minNumRatedSimParam" -> 1,
-      "viewParam" -> 3,
-      "viewmoreParam" -> 3,
-      "likeParam" -> 5,
-      "dislikeParam" -> 1,
-      "conversionParam" -> 4,
-      "conflictParam" -> "latest") // latest, highest, lowest
-  */
-  //val defaultSettings: Map[String, Any] = Map()
-  
   def updateSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
     /* request payload
      * {"app_id":"app_id1234","engine_id":"engne_id1234","id":"algo_id2","distanceFunc":"consine","viewmoreAction":"4",
@@ -158,7 +110,7 @@ object Knnitembased extends Controller {
         if (algoObj.params.contains(param)) algoObj.params(param).asInstanceOf[T] else defaultValue.asInstanceOf[T]
       }
       
-      val defaultParams = Algorithms.getDefaultParams(algoInfos.get("pdio-knnitembased").get)
+      val defaultParams = algoInfos.get("pdio-knnitembased").get.paramdefaults
       
       val distanceFunc: String = algoParamGetOrElse[String](algo, "measureParam", defaultParams("measureParam"))
       val virtualCount: Int = algoParamGetOrElse[Int](algo, "priorCountParam", defaultParams("priorCountParam"))
