@@ -5,3 +5,4 @@ target/*
 vendors
 .DS_Store
 .idea
+process/hadoop/target
