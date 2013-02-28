@@ -6,6 +6,12 @@ class AlgoOutputSelector(algos: Algos) {
   val multipleAlgoErrorMsg = "Deploying multiple algorithms is not yet supported. No results can be returned."
 
   def itemRecSelection(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine): Seq[String] = {
+    implicit val algo = itemRecAlgoSelection(engine)
+
+    itemrec.ItemRecAlgoOutput.output(uid, n, itypes)
+  }
+
+  def itemRecAlgoSelection(engine: Engine): Algo = {
     /** Check engine type. */
     if (engine.enginetype != "itemrec") throw new RuntimeException("Not an itemrec engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.enginetype))
 
@@ -13,12 +19,12 @@ class AlgoOutputSelector(algos: Algos) {
 
     if (!itemRecAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.enginetype))
 
-    implicit val algo = itemRecAlgos.next()
+    val algo = itemRecAlgos.next()
 
     /** Multiple deployment not yet supported. */
     if (itemRecAlgos.hasNext) throw new RuntimeException(multipleAlgoErrorMsg)
 
-    itemrec.ItemRecAlgoOutput.output(uid, n, itypes)
+    algo
   }
 
   def itemSimSelection(iid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine): Seq[String] = {

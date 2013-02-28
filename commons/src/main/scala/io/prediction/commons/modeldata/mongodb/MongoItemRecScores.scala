@@ -55,6 +55,10 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
     itemRecScoreColl.remove(MongoDBObject("algoid" -> algoid, "modelset" -> modelset))
   }
 
+  def existByAlgo(algo: Algo) = {
+    itemRecScoreColl.findOne(MongoDBObject("algoid" -> algo.id, "modelset" -> algo.modelset)) map { _ => true } getOrElse false
+  }
+
   /** Private mapping function to map DB Object to ItemRecScore object */
   private def dbObjToItemRecScore(dbObj: DBObject, appid: Int) = {
     ItemRecScore(

@@ -5,6 +5,7 @@ import io.prediction.commons.modeldata.{Config => ModelDataConfig}
 import io.prediction.commons.modeldata.ItemRecScores
 import io.prediction.commons.appdata.{Config => AppDataConfig, TestSetConfig, TrainingSetConfig}
 import io.prediction.commons.appdata.{Users, Items, U2IActions}
+import io.prediction.output.AlgoOutputSelector
 
 import play.api._
 import play.api.mvc._
@@ -67,6 +68,9 @@ object Application extends Controller {
 
   /** PredictionIO Commons AlgoInfos */
   val algoInfos = new code.CodeAlgoInfos
+
+  /** PredictionIO Output */
+  val algoOutputSelector = new AlgoOutputSelector(algos)
 
   /** */
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
@@ -427,11 +431,16 @@ object Application extends Controller {
     val engine = engines.get(id.toInt)
 
     engine map { eng: Engine =>
-      Ok(toJson(Map(
+      val dataExist: Boolean = eng.enginetype match {
+        case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
+        case _ => false
+      }
+      Ok(obj(
         "id" -> eng.id.toString, // engine id
         "enginetype_id" -> eng.enginetype,
         "app_id" -> eng.appid.toString,
-        "engineName" -> eng.name)))
+        "engineName" -> eng.name,
+        "engineStatus" -> dataExist))
     } getOrElse {
       // if No such app id
       NotFound(toJson(Map("message" -> toJson("Invalid app id or engine id."))))
