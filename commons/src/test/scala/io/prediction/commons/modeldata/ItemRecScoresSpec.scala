@@ -29,9 +29,10 @@ class ItemRecScoresSpec extends Specification {
 
   def itemRecScores(itemRecScores: ItemRecScores) = {
     t ^
-      "inserting and getting 3 ItemRecScores" ! insert(itemRecScores) ^
-      "getting 4+4+2 ItemRecScores" ! getTopN(itemRecScores) ^
-      "delete ItemRecScores by algoid" ! deleteByAlgoid(itemRecScores) ^
+      "inserting and getting 3 ItemRecScores"     ! insert(itemRecScores) ^
+      "getting 4+4+2 ItemRecScores"               ! getTopN(itemRecScores) ^
+      "delete ItemRecScores by algoid"            ! deleteByAlgoid(itemRecScores) ^
+      "existence by Algo"                         ! existByAlgo(itemRecScores) ^
       bt
   }
 
@@ -395,5 +396,44 @@ class ItemRecScoresSpec extends Specification {
       (r2br3 must beEqualTo(dbItemScores2(2))) and
       (r2br4 must beEqualTo(dbItemScores2(3))) and
       (results2c.hasNext must beFalse)
+  }
+
+  def existByAlgo(itemRecScores: ItemRecScores) = {
+    implicit val app = App(
+      id = 345,
+      userid = 0,
+      appkey = "",
+      display = "",
+      url = None,
+      cat = None,
+      desc = None,
+      timezone = "UTC"
+    )
+    val algo1 = Algo(
+      id = 345,
+      engineid = 0,
+      name = "",
+      pkgname = "",
+      deployed = true,
+      command = "",
+      params = Map(),
+      settings = Map(),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      offlineevalid = None
+    )
+    val algo2 = algo1.copy(id = 3456)
+    itemRecScores.insert(ItemRecScore(
+      uid = "testUser",
+      iid = "testUserItem4",
+      score = 999,
+      itypes = List("invalid"),
+      appid = app.id,
+      algoid = algo1.id,
+      modelset = algo1.modelset
+    ))
+    itemRecScores.existByAlgo(algo1) must beTrue and
+      (itemRecScores.existByAlgo(algo2) must beFalse)
   }
 }

@@ -40,4 +40,7 @@ trait ItemRecScores {
 
   /** Delete by Algo ID and model set. */
   def deleteByAlgoidAndModelset(algoid: Int, modelset: Boolean)
+
+  /** Check whether data exist for a given Algo. */
+  def existByAlgo(algo: Algo): Boolean
 }
