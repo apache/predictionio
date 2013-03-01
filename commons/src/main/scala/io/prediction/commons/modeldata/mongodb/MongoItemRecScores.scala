@@ -2,7 +2,7 @@ package io.prediction.commons.modeldata.mongodb
 
 import io.prediction.commons.MongoUtils._
 import io.prediction.commons.modeldata.{ItemRecScore, ItemRecScores}
-import io.prediction.commons.settings.{Algo, App}
+import io.prediction.commons.settings.{Algo, App, OfflineEval}
 
 import com.mongodb.casbah.Imports._
 
@@ -14,8 +14,9 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
   val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
   itemRecScoreColl.ensureIndex(scoreIdIndex)
 
-  def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo) = {
-    val query = MongoDBObject("algoid" -> algo.id, "modelset" -> algo.modelset, "uid" -> idWithAppid(app.id, uid)) ++
+  def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
+    val modelset = offlineEval map { _ => false } getOrElse algo.modelset
+    val query = MongoDBObject("algoid" -> algo.id, "modelset" -> modelset, "uid" -> idWithAppid(app.id, uid)) ++
       (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
     after map { irs =>
       new MongoItemRecScoreIterator(

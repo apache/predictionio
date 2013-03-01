@@ -1,6 +1,6 @@
 package io.prediction.commons.modeldata
 
-import io.prediction.commons.settings.{Algo, App}
+import io.prediction.commons.settings.{Algo, App, OfflineEval}
 
 /** ItemRecScore object.
   * This object represents an item to be recommended to a user.
@@ -33,7 +33,7 @@ trait ItemRecScores {
     *
     * @param after Returns the next top N results after the provided ItemSimScore, if provided.
     */
-  def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo): Iterator[ItemRecScore]
+  def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[ItemRecScore]
 
   /** Delete by Algo ID. */
   def deleteByAlgoid(algoid: Int)
