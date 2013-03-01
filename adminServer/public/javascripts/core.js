@@ -724,6 +724,7 @@ var EngineAlgorithmsView = Backbone.View.extend({
 
 		// Listen to deployDone, undeployDone events for refreshing display
 		this.listenTo(this.deployedAlgoView, 'undeployDone', this.engineStatusUpdate); // listen to undeploy, trigger engineStatusUpdate when it happens
+		this.listenTo(this.availableAlgoListView, 'deployDone', this.engineStatusUpdate); // listen to deploy, trigger engineStatusUpdate when it happens
 		this.availableAlgoListView.listenTo(this.deployedAlgoView, 'undeployDone', this.availableAlgoListView.undeployDone);
 		this.deployedAlgoView.listenTo(this.availableAlgoListView, 'deployDone', this.deployedAlgoView.deployDone);
 	},
