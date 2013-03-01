@@ -42,4 +42,8 @@ trait Users {
 
   /** Delete all users by App ID */
   def deleteByAppid(appid: Int): Unit
+
+  /** count number of records by App ID*/
+  def countByAppid(appid: Int): Long
+
 }

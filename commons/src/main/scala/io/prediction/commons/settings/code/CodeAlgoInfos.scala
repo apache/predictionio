@@ -61,7 +61,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "conflictParam"),
       enginetype = "itemrec",
       techreq = Seq("Hadoop"),
-      datareq = Seq("U2I Actions such as Like, Buy and Rate.")
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
     "mahout-itembased" -> AlgoInfo(
       id = "mahout-itembased",
@@ -107,7 +107,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "conflictParam"),
       enginetype = "itemrec",
       techreq = Seq("Hadoop"),
-      datareq = Seq("U2I Actions such as Like, Buy and Rate.")
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
     "mahout-parallelals" -> AlgoInfo(
       id = "mahout-parallelals",
@@ -153,7 +153,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "conflictParam"),
       enginetype = "itemrec",
       techreq = Seq("Hadoop"),
-      datareq = Seq("U2I Actions such as Like, Buy and Rate.")
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
     "pdio-randomrank" -> AlgoInfo(
       id = "pdio-randomrank",
