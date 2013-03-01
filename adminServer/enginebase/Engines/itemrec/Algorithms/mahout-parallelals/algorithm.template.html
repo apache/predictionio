@@ -1,86 +1,59 @@
-<script type="text/template" id="pdio-knnitembasedTemplate">
+<script type="text/template" id="mahout-parallelalsTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="pdio-knnitembasedForm">
+                        <form id="mahout-parallelalsForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
                                     <div class="boxBlock">
                                         <div class="boxtitle">
                                            Parameter Settings
-                                            <div class="btn-group pull-right">
-                                                <a href="#" data-toggle="dropdown" class="btn btn-small btn-inverse dropdown-toggle"><i class="icon-wrench icon-white"></i> Manual Tuning <span class="caret"></span></a>
-                                                <ul class="dropdown-menu">
-                                                <li><a href="javascript:alert('This feature will be available soon.');">Auto-tune Parameters</a></li>
-                                                </ul>
-                                            </div>
                                         </div>
 
                                         <div class="boxContent">
                                             <div class="form-horizontal">
-                                                <h5>Item Similarity Measurement</h5>
+
+
                                                 <div class="control-group">
-                                                    <label for="distanceFunc" class="control-label">Distance Function </label>
+                                                    <label for="inputError" class="control-label">Lamda</label>
                                                     <div class="controls">
-                                                        <select name="distanceFunc" id="pdio-knnitembased_distanceFunc">
-                                                            <option value="correl">Pearson Correlation Similarity</option>
-                                                            <option value="cosine">Cosine Similarity</option>
-                                                            <option value="jaccard">Jaccard Similarity</option>
+                                                        <input id="mahout-parallelals_lambda" name="lambda" class="span1" type="text" value="0.03">
+                                                        <span class="help-inline">Regularization param to avoid overfitting.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Implicit Feedback</label>
+                                                    <div class="controls">
+                                                        <select class="span2" name="implicitFeedback" id="mahout-parallelals_implicitFeedback">
+                                                            <option value="false">False</option>
+                                                            <option value="true">True</option>
                                                         </select>
-                                                    </div>
-                                                </div>
-    
-                                                <h5>Regularization</h5>
-                                                <p>
-                                                   Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.
-                                                </p>
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Virtual Count</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_virtualCount" name="virtualCount" class="span1" type="text" value="50">
-                                                        <span class="help-inline">Suggested range: 0 to 100. Default 50.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Prior Correlation</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_priorCorrelation" name="priorCorrelation" class="span1" type="text" value="0">
-                                                        <span class="help-inline">Suggested range: 0 to 50. Default 0.</span>
+                                                        <span class="help-inline">Whether data consists of implicit data.</span>
                                                     </div>
                                                 </div>
 
-                                                <h5>Advanced Parameters</h5>
-                                                <p>
-                                                    Filters to speed up computation and reduce noise.
-                                                </p>
                                                 <div class="control-group">
-                                                    <label for="inputError" class="control-label">Minimum Number of Raters of an Item</label>
+                                                    <label for="inputError" class="control-label">Alpha</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_minNumRaters" name="minNumRaters" class="span1" type="text" value="1">
-                                                        <span class="help-inline">Default: 1.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Maximum Number of Raters of an Item</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_maxNumRaters" name="maxNumRaters" class="span2" type="text" value="10000">
-                                                        <span class="help-inline">Default: 10000.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Minimum Intersection</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_minIntersection" name="minIntersection" class="span1" type="text" value="1">
-                                                        <span class="help-inline">Default: 1.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Minimum Number of Rated Similar Items</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_minNumRatedSim" name="minNumRatedSim" class="span1" type="text" value="1">
-                                                        <span class="help-inline">Default: 1.</span>
+                                                        <input id="mahout-parallelals_alpha" name="alpha" class="span1" type="text" value="40">
+                                                        <span class="help-inline">Confidence param (will be ignored if Implicit Feedback is false)</span>
                                                     </div>
                                                 </div>
 
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Num of Factorized Features</label>
+                                                    <div class="controls">
+                                                        <input id="mahout-parallelals_numFeatures" name="numFeatures" class="span1" type="text" value="3">
+                                                        <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="inputError" class="control-label">Num of Iteration</label>
+                                                    <div class="controls">
+                                                        <input id="mahout-parallelals_numIterations" name="numIterations" class="span1" type="text" value="10">
+                                                        <span class="help-inline">Number of training iteration.</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -96,7 +69,7 @@
                                                 <div class="control-group">
                                                     <label for="view" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_viewAction" name="viewAction" class="span2">
+                                                        <select id="mahout-parallelals_viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -110,7 +83,7 @@
                                                 <div class="control-group">
                                                     <label for="viewMore" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_viewmoreAction" name="viewmoreAction" class="span2">
+                                                        <select id="mahout-parallelals_viewmoreAction" name="viewmoreAction" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -124,7 +97,7 @@
                                                 <div class="control-group">
                                                     <label for="like" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_likeAction" name="likeAction" class="span2">
+                                                        <select id="mahout-parallelals_likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -137,7 +110,7 @@
                                                 <div class="control-group">
                                                     <label for="dislike" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_dislikeAction" name="dislike" class="span2">
+                                                        <select id="mahout-parallelals_dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -150,7 +123,7 @@
                                                 <div class="control-group">
                                                     <label for="buy" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_buyAction" name="buyAction" class="span2">
+                                                        <select id="mahout-parallelals_conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -165,7 +138,7 @@
                                                 <div class="control-group">
                                                     <label for="override" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_override" name="override" class="span5">
+                                                        <select id="mahout-parallelals_conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -175,6 +148,7 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="pull-right">
                                         <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
                                     </div>
@@ -184,4 +158,4 @@
                         </div>
 </script>
 
-<div id="pdio-knnitembasedContentHolder"></div>
+<div id="mahout-parallelalsContentHolder"></div>

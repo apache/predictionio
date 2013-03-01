@@ -606,7 +606,13 @@ object Application extends Controller {
     }
   }
 
-  val supportedAlgoTypes: List[String] = List("pdio-knnitembased", "pdio-latestrank", "pdio-randomrank", "mahout-itembased")
+  val supportedAlgoTypes: List[String] = List(
+      "pdio-knnitembased", 
+      "pdio-latestrank", 
+      "pdio-randomrank", 
+      "mahout-itembased",
+      "mahout-parallelals"
+  )
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // request payload
@@ -916,10 +922,10 @@ object Application extends Controller {
 
     // get offlineeval for this engine
     val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt)
-
+    
     if (!engineOfflineEvals.hasNext) NoContent
     else {
-      Ok(toJson(
+      val resp = toJson(
 
         engineOfflineEvals.map { eval =>
 
@@ -962,7 +968,9 @@ object Application extends Controller {
            )
         }.toSeq
 
-      ))
+      )
+
+      Ok(resp)
 
     }
 

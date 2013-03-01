@@ -509,6 +509,29 @@ var AppEnginelistView = Backbone.View.extend({
 	},
 });
 
+var EngineStatusView = Backbone.View.extend({
+	initialize : function() {
+		this.template_el = '#engineStatus_template';
+		this.template = _.template($(this.template_el).html()); // define template function
+		this.app_id = getUrlParam("app_id");
+		this.engine_id = getUrlParam("engine_id");
+		this.enginetype_id = getUrlParam("enginetype_id");
+	},
+	events: {
+		"click #engineStatusReloadBtn" : "render" 
+	},
+	render : function() {
+		var self = this;
+		var engineModel = new EngineModel({app_id: this.app_id, id: this.engine_id});
+		engineModel.fetch({
+			success: function() {
+				self.$el.html(self.template({"data": engineModel.toJSON()}));
+			}
+		});
+		return this;
+	}
+});
+
 
 var EngineView = Backbone.View.extend({
 	initialize : function() {
@@ -523,15 +546,18 @@ var EngineView = Backbone.View.extend({
 		this.tabAlgorithmsView == null;
 		this.tabExtraTabView == null;
 
-    	this.breadcrumbModel = new BreadcrumbView();
-    	this.subViews.push(this.breadcrumbModel);
+    	this.breadcrumbView = new BreadcrumbView();
+    	this.engineStatusView = new EngineStatusView();
+    	this.subViews.push(this.breadcrumbView);
+    	this.subViews.push(this.engineStatusView);
 	},
 	events: {
 		"click #deleteEngineBtn":  "deleteEngine"
 	},
 	render : function() {
 		this.$el.html(this.template());
-		this.$el.find('#breadcrumb_ContentHolder').html(this.breadcrumbModel.render().el);
+		this.$el.find('#breadcrumb_ContentHolder').html(this.breadcrumbView.render().el);
+		this.$el.find('#engineStatus_ContentHolder').html(this.engineStatusView.render().el);
 		return this;
 	},
 	isEngineView : function() {
@@ -564,6 +590,7 @@ var EngineView = Backbone.View.extend({
 
 		if (!this.tabAlgorithmsView) {
 			this.tabAlgorithmsView = new EngineAlgorithmsView();
+			this.engineStatusView.listenTo(this.tabAlgorithmsView, 'engineStatusUpdate', this.engineStatusView.render); // listen to engineStatusUpdate event 
 			this.subViews.push(this.tabAlgorithmsView);
 			this.$el.find("#engineTabAlgorithmsContentHolder").html(this.tabAlgorithmsView.render().el);
 		} else {
@@ -642,8 +669,8 @@ var AddEngineView = Backbone.View.extend({
 		this.model.bind('change', this.render, this);
     	this.model.fetch();
 
-    	this.breadcrumbModel = new BreadcrumbView();
-    	this.subViews.push(this.breadcrumbModel);
+    	this.breadcrumbView = new BreadcrumbView();
+    	this.subViews.push(this.breadcrumbView);
 	},
 	events: {
 		"submit":  "createEngine"
@@ -671,7 +698,7 @@ var AddEngineView = Backbone.View.extend({
 	},
 	render: function() {
 		this.$el.html(this.template({"data": this.model.toJSON()}));
-		this.$el.find('#breadcrumb_ContentHolder').html(this.breadcrumbModel.render().el);
+		this.$el.find('#breadcrumb_ContentHolder').html(this.breadcrumbView.render().el);
     	return this;
 	},
 });
@@ -696,6 +723,7 @@ var EngineAlgorithmsView = Backbone.View.extend({
 		this.subViews.push(this.simevalListView);
 
 		// Listen to deployDone, undeployDone events for refreshing display
+		this.listenTo(this.deployedAlgoView, 'undeployDone', this.engineStatusUpdate); // listen to undeploy, trigger engineStatusUpdate when it happens
 		this.availableAlgoListView.listenTo(this.deployedAlgoView, 'undeployDone', this.availableAlgoListView.undeployDone);
 		this.deployedAlgoView.listenTo(this.availableAlgoListView, 'deployDone', this.deployedAlgoView.deployDone);
 	},
@@ -715,6 +743,9 @@ var EngineAlgorithmsView = Backbone.View.extend({
 		this.availableAlgoListView.reloadData();
 		this.simevalListView.reloadData();
 		this.deployedAlgoView.reloadData();
+	},
+	engineStatusUpdate: function() {
+		this.trigger('engineStatusUpdate');
 	},
 	changeAvailableAlgoSelected: function(selectedAlgos) {
 		if ($.isEmptyObject(selectedAlgos)) {
