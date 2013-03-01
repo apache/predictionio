@@ -1,7 +1,7 @@
 package io.prediction.scheduler
 
 import io.prediction.commons._
-import io.prediction.commons.filepath.ModelDataDir
+import io.prediction.commons.filepath._
 import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval, OfflineEvalMetric}
 
 import com.github.nscala_time.time.Imports._
@@ -25,13 +25,13 @@ object Jobs {
   val offlineEvalMetricJobGroup   = "predictionio-offlineeval-metrics"
   val offlineEvalResultsJobGroup = "predictionio-offlineevalresults"
   val offlineEvalSplitCommands = Map(
-    "itemrec" -> "hadoop jar $jar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$"
+    "itemrec" -> "hadoop jar $pdioJar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$"
   )
   val offlineEvalMetricCommands = Map(
     "itemrec" -> (
-      "hadoop jar $jar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
+      "hadoop jar $pdioJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
       "java -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar ../process/hadoop/scala/engines/itemrec/evaluations/topkitems/target/TopKItems-assembly-0.2-SNAPSHOT.jar && " +
-      "hadoop jar $jar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$"
+      "hadoop jar $pdioJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$"
     )
   )
 
@@ -45,6 +45,8 @@ object Jobs {
 
     /** Fill in settings values. */
     command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
+    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
@@ -58,6 +60,10 @@ object Jobs {
     command.setAttribute("modeldataDbName", modeldataConfig.modeldataDbName)
     command.setAttribute("modeldataDbHost", modeldataConfig.modeldataDbHost)
     command.setAttribute("modeldataDbPort", modeldataConfig.modeldataDbPort)
+    command.setAttribute("mahoutTempDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, algo.id, None))
+    command.setAttribute("algoDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, None))
+    command.setAttribute("dataFilePrefix", DataFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, None, ""))
+    command.setAttribute("algoFilePrefix", AlgoFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, None, ""))
 
     /** Add a job, then build a trigger for it.
       * This is necessary for updating any existing job,
@@ -79,7 +85,7 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("jar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec.trainingtestsplit").get)
+    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("evalid", offlineEval.id)
@@ -116,11 +122,14 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).get)
+    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
+    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
     command.setAttribute("evalid", offlineEval.id)
+    command.setAttribute("modelset", "false")
     command.setAttribute("hdfsRoot", settingsConfig.settingsHdfsRoot)
     command.setAttribute("appdataTrainingDbType", appdataConfig.appdataTrainingDbType)
     command.setAttribute("appdataTrainingDbName", appdataConfig.appdataTrainingDbName)
@@ -137,6 +146,10 @@ object Jobs {
       algo.id,
       Some(offlineEval.id)
     ))
+    command.setAttribute("mahoutTempDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, algo.id, Some(offlineEval.id)))
+    command.setAttribute("algoDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id)))
+    command.setAttribute("dataFilePrefix", DataFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id), ""))
+    command.setAttribute("algoFilePrefix", AlgoFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id), ""))
 
     /** Add a job, then build a trigger for it.
       * This is necessary for updating any existing job,
@@ -161,7 +174,7 @@ object Jobs {
     /** Fill in settings values. */
     command.setAttributes(metric.params)
     command.setAttribute("goalParam", engine.settings("goal"))
-    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).get)
+    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)

@@ -23,12 +23,11 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
         itemRecScoreColl.find(query).
           $min(MongoDBObject("score" -> irs.score, "_id" -> irs.id)).
           sort(scoreIdIndex).
-          hint(scoreIdIndex).
           skip(1).limit(n),
         app.id
       )
     } getOrElse new MongoItemRecScoreIterator(
-      itemRecScoreColl.find(query).sort(scoreIdIndex).hint(scoreIdIndex).limit(n),
+      itemRecScoreColl.find(query).sort(scoreIdIndex).limit(n),
       app.id
     )
   }

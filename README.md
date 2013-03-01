@@ -37,6 +37,15 @@ The following steps assume that you have cloned the repo at your home directory.
     cd ~
     git clone git://github.com/PredictionIO/PredictionIO.git
 
+Downloading Apache Mahout
+-------------------------
+
+If you plan to deploy Apache Mahout algorithms, you need to obtain a binary distribution from its official web site.
+Currently, only 0.7 has been tested.
+Once you have downloaded and unpacked the content, copy `mahout-core-0.7-job.jar` to the `lib`.
+
+    cp mahout-core-0.7-job.jar ~/PredictionIO/lib
+
 Compiling PredictionIO
 ----------------------
 

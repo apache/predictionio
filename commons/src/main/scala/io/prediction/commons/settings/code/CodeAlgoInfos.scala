@@ -67,8 +67,20 @@ class CodeAlgoInfos extends AlgoInfos {
       id = "mahout-itembased",
       name = "Mahout's Item Based Recommendation",
       description = Some("Predicts user preferences based on previous behaviors of users on similar items."),
-      batchcommands = Some(Seq("TODO")),
-      offlineevalcommands = Some(Seq("TODO")),
+      batchcommands = Some(Seq(
+        "../lib/quiet.sh hadoop fs -rmr $mahoutTempDir$",
+        "../lib/quiet.sh hadoop fs -rmr $algoDir$",
+        "hadoop jar $pdioJar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "hadoop jar $pdioJar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "hadoop jar $mahoutJar$ org.apache.mahout.cf.taste.hadoop.item.RecommenderJob --input $dataFilePrefix$ratings.csv --output $algoFilePrefix$predicted.tsv --tempDir $mahoutTempDir$ --similarityClassname $similarityClassname$ --numRecommendations 10000",
+        "hadoop jar $pdioJar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$")),
+      offlineevalcommands = Some(Seq(
+        "../lib/quiet.sh hadoop fs -rmr $mahoutTempDir$",
+        "../lib/quiet.sh hadoop fs -rmr $algoDir$",
+        "hadoop jar $pdioJar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "hadoop jar $pdioJar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "hadoop jar $mahoutJar$ org.apache.mahout.cf.taste.hadoop.item.RecommenderJob --input $dataFilePrefix$ratings.csv --output $algoFilePrefix$predicted.tsv --tempDir $mahoutTempDir$ --similarityClassname $similarityClassname$ --numRecommendations 10000",
+        "hadoop jar $pdioJar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$")),
       paramdefaults = Map(
         "similarityClassname" -> "SIMILARITY_COOCCURRENCE",
         "viewParam" -> 3,
