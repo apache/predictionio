@@ -37,6 +37,8 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     u2iActionColl.remove(MongoDBObject("appid" -> appid))
   }
 
+  def countByAppid(appid: Int): Long = u2iActionColl.count(MongoDBObject("appid" -> appid))
+
   private def dbObjToU2IAction(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     U2IAction(

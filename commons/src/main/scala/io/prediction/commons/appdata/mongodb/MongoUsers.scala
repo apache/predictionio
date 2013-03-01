@@ -45,6 +45,8 @@ class MongoUsers(db: MongoDB) extends Users {
     userColl.remove(MongoDBObject("appid" -> appid))
   }
 
+  def countByAppid(appid: Int): Long = userColl.count(MongoDBObject("appid" -> appid))
+
   private def dbObjToUser(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     User(

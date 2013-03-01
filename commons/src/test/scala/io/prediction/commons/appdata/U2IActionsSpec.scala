@@ -21,6 +21,7 @@ class U2IActionsSpec extends Specification { def is =
     "inserting and getting 3 U2IAction's"                                     ! insert(u2iActions) ^
     "getting U2IActions by App ID, User ID, and Item IDs"                     ! getAllByAppidAndUidAndIids(u2iActions) ^
     "delete U2IActions by appid"                                              ! deleteByAppid(u2iActions) ^
+    "count U2IActions by appid"                                               ! countByAppid(u2iActions) ^
                                                                               bt
   }
 
@@ -170,6 +171,39 @@ class U2IActionsSpec extends Specification { def is =
       (g2_App1 must be empty) and
       (g2_App2 must containTheSameElementsAs(u2iActionsApp2)) and
       (g3_App2 must be empty)
+
+  }
+
+  def countByAppid(u2iActions: U2IActions) = {
+    val appid1 = 20
+    val appid2 = 21
+    val appid3 = 22
+
+    val u2iAction1a = U2IAction(
+      appid  = appid1,
+      action = u2iActions.rate,
+      uid    = "dead",
+      iid    = "meat",
+      t      = DateTime.now,
+      latlng = None,
+      v      = Some(3),
+      price  = None,
+      evalid = None
+    )
+    val u2iAction1b = u2iAction1a.copy(
+      appid  = appid1
+    )
+    val u2iAction2a = u2iAction1a.copy(
+      appid  = appid2
+    )
+
+    u2iActions.insert(u2iAction1a)
+    u2iActions.insert(u2iAction1b)
+    u2iActions.insert(u2iAction2a)
+
+    u2iActions.countByAppid(appid1) must be_==(2) and
+      (u2iActions.countByAppid(appid2) must be_==(1)) and
+      (u2iActions.countByAppid(appid3) must be_==(0))
 
   }
 

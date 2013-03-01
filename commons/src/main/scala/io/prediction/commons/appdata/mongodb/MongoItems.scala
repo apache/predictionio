@@ -62,6 +62,8 @@ class MongoItems(db: MongoDB) extends Items {
     itemColl.remove(MongoDBObject("appid" -> appid))
   }
 
+  def countByAppid(appid: Int): Long = itemColl.count(MongoDBObject("appid" -> appid))
+
   private def dbObjToItem(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     Item(

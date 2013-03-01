@@ -23,6 +23,7 @@ class UsersSpec extends Specification { def is =
     "updating a user"                                                         ! update(users) ^
     "deleting a user"                                                         ! delete(users) ^
     "deleting users by appid"                                                 ! deleteByAppid(users) ^
+    "count users by appid"                                                    ! countByAppid(users) ^
                                                                               bt
   }
 
@@ -189,5 +190,39 @@ class UsersSpec extends Specification { def is =
       ((g2_2a, g2_2b, g2_2c) must be_==((Some(user2a), Some(user2b), Some(user2c)))) and
       ((g3_2a, g3_2b, g3_2c) must be_==((None, None, None)))
 
+  }
+
+  def countByAppid(users: Users) = {
+    val appid1 = 23
+    val appid2 = 24
+    val appid3 = 25
+
+    val ida = "countByAppid-ida"
+    val idb = "countByAppid-idb"
+
+    val user1a = User(
+      id = ida,
+      appid = appid1,
+      ct = DateTime.now,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
+      attributes = Some(Map("c" -> "d"))
+    )
+    val user1b = user1a.copy(
+      id         = idb,
+      appid      = appid1,
+      attributes = Some(Map("e" -> "f"))
+    )
+    val user2a = user1a.copy(
+      appid      = appid2
+    )
+
+    users.insert(user1a)
+    users.insert(user1b)
+    users.insert(user2a)
+
+    users.countByAppid(appid1) must be_==(2) and
+      (users.countByAppid(appid2) must be_==(1)) and
+      (users.countByAppid(appid3) must be_==(0))
   }
 }

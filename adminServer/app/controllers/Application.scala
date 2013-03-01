@@ -194,11 +194,15 @@ object Application extends Controller {
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
     apps.getByIdAndUserid(id.toInt, user.id) map { app =>
+      val numUsers = appDataUsers.countByAppid(app.id)
+      val numItems = appDataItems.countByAppid(app.id)
+      val numU2IActions = appDataU2IActions.countByAppid(app.id)
       Ok(toJson(Map(
         "id" -> toJson(app.id), // app id
-        "updatedTime" -> toJson("Jan 30, 2013 12:30:12"), // TODO
-        "nUsers" -> toJson(1234), // TODO
-        "nItems" -> toJson(4567), // TODO
+        "updatedTime" -> toJson(timeFormat.print(DateTime.now.withZone(DateTimeZone.forID("UTC")))),
+        "nUsers" -> toJson(numUsers),
+        "nItems" -> toJson(numItems),
+        "nU2IActions" -> toJson(numU2IActions),
         "apiEndPoint" -> toJson("http://yourhost.com:123/appid12"),
         "appkey" -> toJson(app.appkey))))
     } getOrElse {

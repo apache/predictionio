@@ -23,6 +23,7 @@ class ItemsSpec extends Specification { def is =
     "updating an item"                                                        ! update(items) ^
     "deleting an item"                                                        ! delete(items) ^
     "deleting items by appid"                                                 ! deleteByAppid(items) ^
+    "count items by appid"                                                    ! countByAppid(items) ^
                                                                               bt
   }
 
@@ -236,5 +237,42 @@ class ItemsSpec extends Specification { def is =
       ((g2_2a, g2_2b, g2_2c) must be_==((Some(item2a), Some(item2b), Some(item2c)))) and
       ((g3_2a, g3_2b, g3_2c) must be_==((None, None, None)))
 
+  }
+
+  def countByAppid(items: Items) = {
+    val appid1 = 20
+    val appid2 = 21
+    val appid3 = 22
+
+    val ida = "countByAppid-ida"
+    val idb = "countByAppid-idb"
+
+    val item1a = Item(
+      id         = ida,
+      appid      = appid1,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    )
+    val item1b = item1a.copy(
+      id         = idb
+    )
+    val item2a = item1a.copy(
+      appid      = appid2
+    )
+
+    items.insert(item1a)
+    items.insert(item1b)
+    items.insert(item2a)
+
+    items.countByAppid(appid1) must be_==(2) and
+      (items.countByAppid(appid2) must be_==(1)) and
+      (items.countByAppid(appid3) must be_==(0))
   }
 }
