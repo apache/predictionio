@@ -286,6 +286,7 @@ object Application extends Controller {
       } getOrElse bad
     } getOrElse bad
   }
+
   def removeApp(id: String) = withUser { user => implicit request =>
     // If NOT authenticated
     /*
@@ -296,16 +297,19 @@ object Application extends Controller {
     /*
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
-    /*
+    
     val appid = id.toInt
     deleteApp(appid, keepSettings=false)
+    
+    //send deleteAppDir(appid) request to scheduler
+    WS.url(config.settingsSchedulerUrl+"/apps/"+id+"/delete").get()
 
-    // TODO: add code here: send deleteAppDir(appid) request to scheduler
-
+    Logger.info("Delete app ID "+appid)
     apps.deleteByIdAndUserid(appid, user.id)
-    Ok */
 
-    BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
+    Ok 
+
+    //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
   def eraseAppData(id: String) = withUser { user => implicit request =>
     // If NOT authenticated
@@ -318,13 +322,13 @@ object Application extends Controller {
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
 
-
     val appid = id.toInt
     deleteApp(appid, keepSettings=true)
-    // TODO: add code here: send deleteAppDir(appid) request to scheduler
+
+    //send deleteAppDir(appid) request to scheduler
+    WS.url(config.settingsSchedulerUrl+"/apps/"+id+"/delete").get()
+    
     Ok
-
-
     //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
 
@@ -697,25 +701,37 @@ object Application extends Controller {
    * delete appdata DB of this appid
    */
   def deleteAppData(appid: Int) = {
+    Logger.info("Delete appdata for app ID "+appid)
     appDataUsers.deleteByAppid(appid)
     appDataItems.deleteByAppid(appid)
     appDataU2IActions.deleteByAppid(appid)
   }
 
   def deleteTrainingSetData(evalid: Int) = {
+    Logger.info("Delete training set for offline eval ID "+evalid)
     trainingSetUsers.deleteByAppid(evalid)
     trainingSetItems.deleteByAppid(evalid)
     trainingSetU2IActions.deleteByAppid(evalid)
   }
 
   def deleteTestSetData(evalid: Int) = {
+    Logger.info("Delete test set for offline eval ID "+evalid)
     testSetUsers.deleteByAppid(evalid)
     testSetItems.deleteByAppid(evalid)
     testSetU2IActions.deleteByAppid(evalid)
   }
 
   def deleteModelData(algoid: Int) = {
-    itemRecScores.deleteByAlgoid(algoid) // TODO: check engine type and delete corresponding modeldata, now hardcode as itemRecScores
+    val algoOpt = algos.get(algoid)
+    algoOpt map { algo =>
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        Logger.info("Delete model data for algo ID "+algoid)
+        algoInfo.enginetype match {
+          case "itemrec" => itemRecScores.deleteByAlgoid(algoid)
+          case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.enginetype)
+        }
+      } getOrElse { throw new RuntimeException("Try to delete algo of non-existing algotype: " + algo.infoid) }
+    } getOrElse { throw new RuntimeException("Try to delete non-existing algo: " + algoid) }
   }
 
 
@@ -729,6 +745,7 @@ object Application extends Controller {
     appEngines foreach { eng =>
       deleteEngine(eng.id, keepSettings)
       if (!keepSettings) {
+        Logger.info("Delete engine ID "+eng.id)
         engines.deleteByIdAndAppid(eng.id, appid)
       }
     }
@@ -746,6 +763,7 @@ object Application extends Controller {
     engineAlgos foreach { algo =>
       deleteModelData(algo.id)
       if (!keepSettings) {
+        Logger.info("Delete algo ID "+algo.id)
         algos.delete(algo.id)
       }
     }
@@ -755,6 +773,7 @@ object Application extends Controller {
     engineOfflineEvals foreach { eval =>
       deleteOfflineEval(eval.id, keepSettings)
       if (!keepSettings) {
+        Logger.info("Delete offline eval ID "+eval.id)
         offlineEvals.delete(eval.id)
       }
     }
@@ -793,13 +812,13 @@ object Application extends Controller {
 
 
   def removeAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
-    /*
-    deleteAlgoData(id.toInt)
-    // TODO: add code here: send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
+    
+    deleteModelData(id.toInt)
+    // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
+    WS.url(config.settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
     algos.delete(id.toInt)
     Ok
-    */
-    BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
+
   }
 
   def getDeployedAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
@@ -1089,7 +1108,8 @@ object Application extends Controller {
 
     /*
     deleteOfflineEval(id.toInt, keepSettings=false)
-    // TODO: add code here: send deleteOfflineEvalDir(app_id.toInt, engine_id.toInt, id.toInt) request to scheduler
+    // send deleteOfflineEvalDir(app_id.toInt, engine_id.toInt, id.toInt) request to scheduler
+    WS.url(config.settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/offlineevals/"+id+"/delete").get()
     offlineEvals.delete(id.toInt)
     Ok
     */
