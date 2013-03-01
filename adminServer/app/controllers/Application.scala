@@ -922,10 +922,10 @@ object Application extends Controller {
 
     // get offlineeval for this engine
     val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt)
-
+    
     if (!engineOfflineEvals.hasNext) NoContent
     else {
-      Ok(toJson(
+      val resp = toJson(
 
         engineOfflineEvals.map { eval =>
 
@@ -968,7 +968,9 @@ object Application extends Controller {
            )
         }.toSeq
 
-      ))
+      )
+
+      Ok(resp)
 
     }
 
