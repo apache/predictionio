@@ -23,7 +23,11 @@ object MahoutParallelALS extends Controller {
       "id" -> number, // algoid
       "app_id" -> number,
       "engine_id" -> number,
-      "similarityClassname" -> nonEmptyText, // TODO: verifying
+      "lambda" -> nonEmptyText, // TODO: verifying
+      "implicitFeedback" -> boolean,
+      "alpha" -> nonEmptyText,
+      "numFeatures" -> number,
+      "numIterations" -> number,
       "viewParam" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
       "likeParam" -> nonEmptyText,
       "dislikeParam" -> nonEmptyText,
@@ -39,7 +43,7 @@ object MahoutParallelALS extends Controller {
       },
       formData => {
         val (id, appId, engineId, 
-          similarityClassname,
+          lambda, implicitFeedback, alpha, numFeatures, numIterations,
           viewParam, likeParam, dislikeParam, conversionParam, conflictParam) = formData
         
         // get original Algo first
@@ -47,7 +51,11 @@ object MahoutParallelALS extends Controller {
         
         optAlgo map { algo =>
           val updatedAlgo = algo.copy(
-            params = algo.params ++ Map("similarityClassname" -> similarityClassname, // NOTE: read-modify-write!
+            params = algo.params ++ Map("lambda" -> lambda, // NOTE: read-modify-write!
+                "implicitFeedback" -> implicitFeedback,
+                "alpha" -> alpha,
+                "numFeatures" -> numFeatures,
+                "numIterations" -> numIterations,
                 "viewParam" -> viewParam,
                 "likeParam" -> likeParam,
                 "dislikeParam" -> dislikeParam,

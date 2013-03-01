@@ -104,8 +104,9 @@ class CodeAlgoInfos extends AlgoInfos {
       batchcommands = Some(Seq("TODO")),
       offlineevalcommands = Some(Seq("TODO")),
       paramdefaults = Map(
-        "lambda" -> 0.05,
+        "lambda" -> 0.03,
         "implicitFeedback" -> false,
+        "alpha" -> 40,
         "numFeatures" -> 3,
         "numIterations" -> 5,
         "viewParam" -> 3,
@@ -115,10 +116,11 @@ class CodeAlgoInfos extends AlgoInfos {
         "conversionParam" -> 4,
         "conflictParam" -> "latest"), // latest, highest, lowest
       paramdescription = Map(
-        "lambda" -> ("Lambda", ""),
-        "implicitFeedback" -> ("Implicit Feedback", ""),
-        "numFeatures" -> ("Number of Features", ""),
-        "numIterations" -> ("Number of Iterations", ""),
+        "lambda" -> ("Lambda", "Regularization param to avoid overfitting."),
+        "implicitFeedback" -> ("Implicit Feedback", "Whether data consists of implicit data."),
+        "alpha" -> ("Alpha", "Confidence param (will be ignored if Implicit Feedback is false)."),
+        "numFeatures" -> ("Num of Factorized Features", "Dimension of the factorized feature space."),
+        "numIterations" -> ("Number of Iterations", "Number of training iteration."),
         "viewParam" -> ("View Score", ""),
         "viewmoreParam" -> ("View More Score", ""),
         "likeParam" -> ("Like Score", ""),
@@ -128,6 +130,7 @@ class CodeAlgoInfos extends AlgoInfos {
       paramorder = Seq(
         "lambda",
         "implicitFeedback",
+        "alpha",
         "numFeatures",
         "numIterations",
         "viewParam",

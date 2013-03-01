@@ -18,14 +18,16 @@ var MahoutParallalALSAlgoSettingsView = Backbone.View.extend({
 		this.model.fetch({
 			success: function() {
 				self.render();
-				/* TODO init parallel als values;
-				self.initValue('similarityClassname');
+				self.initValue('lambda');
+				self.initValue('implicitFeedback');
+				self.initValue('alpha');
+				self.initValue('numFeatures');
+				self.initValue('numIterations');
 				self.initValue('viewParam');
 				self.initValue('likeParam');
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
-				*/
 			}
 		});
     },
