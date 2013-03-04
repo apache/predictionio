@@ -1,6 +1,6 @@
 name := "PredictionIO Algorithms Hadoop Scala ItemSim ItemSimCF"
 
-version := "0.1"
+version := "0.3-SNAPSHOT"
 
 scalaVersion := "2.9.2"
 
@@ -11,11 +11,11 @@ packageOptions +=
 
 libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.3"
 
-libraryDependencies += "com.twitter" % "scalding_2.9.2" % "0.8.1"
+libraryDependencies += "com.twitter" % "scalding_2.9.2" % "0.8.3"
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.12.3" % "test",
-  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT"
 )
 
 resolvers ++= Seq(

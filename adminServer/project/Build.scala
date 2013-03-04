@@ -5,11 +5,11 @@ import play.Project._
 object ApplicationBuild extends Build {
 
     val appName         = "PredictionIO-Admin-Server"
-    val appVersion      = "0.2-SNAPSHOT"
+    val appVersion      = "0.3-SNAPSHOT"
 
     val appDependencies = Seq(
-      "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
-      "io.prediction" %% "predictionio-output" % "0.2-SNAPSHOT",
+      "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT",
+      "io.prediction" %% "predictionio-output" % "0.3-SNAPSHOT",
       "com.github.nscala-time" %% "nscala-time" % "0.2.0"
     )
 

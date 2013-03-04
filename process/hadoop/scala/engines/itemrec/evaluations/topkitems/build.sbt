@@ -4,13 +4,13 @@ assemblySettings
 
 name := "TopKItems"
 
-version := "0.2-SNAPSHOT"
+version := "0.3-SNAPSHOT"
 
 scalaVersion := "2.10.0"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT",
-  "io.prediction" %% "predictionio-output" % "0.2-SNAPSHOT",
+  "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT",
+  "io.prediction" %% "predictionio-output" % "0.3-SNAPSHOT",
   "ch.qos.logback" % "logback-classic" % "1.0.9",
   "ch.qos.logback" % "logback-core" % "1.0.9",
   "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2",

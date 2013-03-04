@@ -1,6 +1,6 @@
 name := "PredictionIO Commons Hadoop Scala"
 
-version := "0.1"
+version := "0.3-SNAPSHOT"
 
 scalaVersion := "2.9.2"
 
@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.12.3" % "test",
   "com.github.nscala-time" %% "nscala-time" % "0.2.0",
-  "io.prediction" %% "predictionio-commons" % "0.2-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT"
 )
 
 resolvers ++= Seq(
