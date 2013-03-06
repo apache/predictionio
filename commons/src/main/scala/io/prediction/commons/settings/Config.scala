@@ -28,6 +28,9 @@ class Config {
     case dbTypeMongoDb => try { config.getString("io.prediction.commons.settings.db.name") } catch { case _: Throwable => "predictionio" }
   }
 
+  /** The installation location of Hadoop (equivalent to $HADOOP_HOME). */
+  val settingsHadoopHome: Option[String] = try { Some(config.getString("io.prediction.commons.settings.hadoop.home")) } catch { case _: Throwable => None }
+
   /** The HDFS root location for PredictionIO data. */
   val settingsHdfsRoot: String = try { config.getString("io.prediction.commons.settings.hdfs.root") } catch { case _: Throwable => "predictionio/" }
 
