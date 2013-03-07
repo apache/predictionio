@@ -9,7 +9,7 @@ command_exists () {
 
 install_sbt () {
 	echo "Going to download and install sbt 0.12.2..."
-	VENDORS_PATH=$1/sbt-0.12.2
+	local VENDORS_PATH=$1/sbt-0.12.2
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
 	curl -o sbt-launch.jar http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.2/sbt-launch.jar
@@ -19,7 +19,7 @@ install_sbt () {
 
 install_play () {
 	echo "Going to download and install Play Framework 2.1.0..."
-	VENDORS_PATH=$1
+	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
 	curl -o play-2.1.0.zip http://downloads.typesafe.com/play/2.1.0/play-2.1.0.zip
@@ -73,7 +73,7 @@ if test "$REBUILD" = "1" ; then
 	echo "Rebuild set."
 	CLEAN=clean
 else
-	echo "Incremental build set."
+	echo "Incremental build set. Use \"REBUILD=1 $0\" for clean rebuild."
 	CLEAN=
 fi
 
