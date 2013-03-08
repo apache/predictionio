@@ -1,4 +1,5 @@
 lib/
+logs/
 .project
 project/*
 !project/Build.scala
