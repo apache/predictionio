@@ -30,7 +30,7 @@ object Jobs {
   val offlineEvalMetricCommands = Map(
     "itemrec" -> (
       "$hadoop$ jar $pdioJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
-      "java -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar ../process/hadoop/scala/engines/itemrec/evaluations/topkitems/target/TopKItems-assembly-0.3-SNAPSHOT.jar && " +
+      "java -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$ && " +
       "$hadoop$ jar $pdioJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$"
     )
   )
@@ -179,6 +179,7 @@ object Jobs {
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
     command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("topkJar", settingsConfig.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
