@@ -14,6 +14,7 @@ object ApplicationBuild extends Build {
     )
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
+      playAssetsDirectories <+= baseDirectory / "enginebase",
       resolvers += (
         "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
       )

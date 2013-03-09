@@ -4,6 +4,7 @@ logs/
 project/*
 !project/Build.scala
 target/*
+dist/target/
 vendors
 .DS_Store
 .idea

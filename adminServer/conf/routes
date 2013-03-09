@@ -7,8 +7,8 @@ GET     /web                        controllers.Application.redirectToWeb
 GET     /web/                        controllers.Application.showWeb
 GET     /web/assets/*file               controllers.Assets.at(path="/public", file)
 ### During development, use enginebase controller instead to avoid cache problems
-# GET    /web/enginebase/*file               controllers.Assets.at(path="/enginebase", file) # Remeber to update project/Build.scala
-GET     /web/enginebase/*file                controllers.Application.enginebase(file)
+GET     /web/enginebase/*file               controllers.Assets.at(path="/enginebase", file)
+# GET     /web/enginebase/*file                controllers.Application.enginebase(file)
 
 
 POST    /signin                       controllers.Application.signin
