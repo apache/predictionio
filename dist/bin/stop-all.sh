@@ -47,3 +47,6 @@ else
 	echo "Cannot find $SCHEDULER_DIR/RUNNING_PID"
 	echo "Server may not be running"
 fi
+
+echo ""
+echo "Note: You must stop any running MongoDB/Hadoop processes manually"

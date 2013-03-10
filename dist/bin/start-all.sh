@@ -14,6 +14,7 @@ cd $DIR
 BASE=`pwd`
 
 . "$BASE/bin/common.sh"
+. "$BASE/bin/vendors.sh"
 
 mkdir -p "$LOGDIR"
 
@@ -31,3 +32,27 @@ $API_DIR/start $PLAY_START_OPTS -Dhttp.port=$API_PORT >>"$API_LOG" 2>>"$API_ERR"
 echo "Trying to start scheduler server..."
 echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_LOG"
 $SCHEDULER_DIR/start $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT >>"$SCHEDULER_LOG" 2>>"$SCHEDULER_ERR" &
+
+# MongoDB
+if vendor_mongodb_exists ; then
+	while true; do
+		read -p "Found MongoDB in vendors area. Do you want to start it? [y/n] " yn
+		case $yn in
+			[Yy]* ) start_mongodb; break;;
+			[Nn]* ) break;;
+			* ) echo "Please answer 'y' or 'n'.";;
+		esac
+	done
+fi
+
+# Apache Hadoop
+if vendor_hadoop_exists ; then
+	while true; do
+		read -p "Found Hadoop in vendors area. Do you want to start it? [y/n] " yn
+		case $yn in
+			[Yy]* ) start_hadoop; break;;
+			[Nn]* ) break;;
+			* ) echo "Please answer 'y' or 'n'.";;
+		esac
+	done
+fi
