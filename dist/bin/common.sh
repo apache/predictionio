@@ -6,7 +6,7 @@ VERSION=0.3-SNAPSHOT
 
 # Play framework related
 PLAY_OPTS=""
-PLAY_START_OPTS="-Dsbt.log.noformat=true -Dconfig.file=$BASE/conf/predictionio.conf"
+PLAY_START_OPTS="-Dio.prediction.base=$BASE -Dsbt.log.noformat=true -Dconfig.file=$BASE/conf/predictionio.conf"
 
 # Log related
 LOGDIR="$BASE/logs"
