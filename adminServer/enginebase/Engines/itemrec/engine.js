@@ -31,6 +31,9 @@ var ItemrecSettingsView = Backbone.View.extend({
 				}
 				var goal = self.model.get('goal');
 				self.$el.find('#itemrecGoal').val(goal);
+
+				var numRecommendations = self.model.get('numRecommendations')
+				self.$el.find('#itemrecNumRecommendations').val(numRecommendations);
 			}
 		});
 	},
@@ -39,7 +42,8 @@ var ItemrecSettingsView = Backbone.View.extend({
 		'keypress #itemrecAddItemTypeInput': 'onEnterAddItemType',
 		"change #itemrecGoal": "goalSelected",
 		"click #recsys-unseenonly-yes" : "setUnseenOnlyYes",
-		"click #recsys-unseenonly-no" : "setUnseenOnlyNo"
+		"click #recsys-unseenonly-no" : "setUnseenOnlyNo",
+		'change #itemrecNumRecommendations' : 'changeNumRecommendations'
 	},
 	onEnterAddItemType : function(e) {
 		if (e.keyCode == 13) { // if it's ENTER
@@ -97,6 +101,11 @@ var ItemrecSettingsView = Backbone.View.extend({
 		this.model.set({unseenonly: false});
 		this.model.save();
 		this.$el.find('#recsys-unseenonly-text').html('No');
+	},
+	changeNumRecommendations: function(e) {
+		var numRecommendations = this.$el.find('#itemrecNumRecommendations').val();
+		this.model.set({numRecommendations: numRecommendations});
+		this.model.save();
 	},
 	render : function() {
 		this.$el.html(this.template({'data': this.model.toJSON()}));

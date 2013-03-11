@@ -13,7 +13,12 @@ import controllers.Application.{engines, withUser}
 
 object Engine extends Controller {
 
-  val defaultSettings: Map[String, Any] = Map("serendipity" -> 0, "freshness" -> 0, "unseenonly" -> false, "goal" -> "rate3")
+  val defaultSettings: Map[String, Any] = Map(
+    "serendipity" -> 0, 
+    "freshness" -> 0, 
+    "unseenonly" -> false, 
+    "goal" -> "rate3",
+    "numRecommendations" -> 500)
 
   def updateSettings(app_id:String, engine_id:String) = withUser { user => implicit request =>
     /*
@@ -31,7 +36,8 @@ object Engine extends Controller {
       "freshness" -> number(min=0, max=10),
       "allitemtypes" -> boolean,
       "itemtypelist" -> list(text), // TODO verifying
-      "unseenonly" -> boolean
+      "unseenonly" -> boolean,
+      "numRecommendations" -> number
     ))
 
     // TODO: check this user owns this appid
@@ -45,7 +51,7 @@ object Engine extends Controller {
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (app_id, id, goal, serendipity, freshness, allitemtypes, itemtypelist, unseenonly) = formData
+        val (app_id, id, goal, serendipity, freshness, allitemtypes, itemtypelist, unseenonly, numRecommendations) = formData
 
         // get original engine first
         val engine = engines.get(id.toInt)
@@ -53,7 +59,12 @@ object Engine extends Controller {
         engine map { eng: Engine =>
           val updatedEngine = eng.copy(
             itypes = (if (itemtypelist.isEmpty) None else Option(itemtypelist)),
-            settings = Map("serendipity" -> serendipity, "freshness" -> freshness, "goal" -> goal, "unseenonly" -> unseenonly)
+            settings = eng.settings ++ Map(
+              "serendipity" -> serendipity,
+              "freshness" -> freshness,
+              "goal" -> goal,
+              "unseenonly" -> unseenonly,
+              "numRecommendations" -> numRecommendations)
           )
 
           engines.update(updatedEngine)
@@ -87,21 +98,26 @@ object Engine extends Controller {
     val engine = engines.get(engine_id.toInt)
 
     engine map { eng: Engine =>
-
+/*
       val freshness: Int = if (eng.settings.contains("freshness")) eng.settings("freshness").asInstanceOf[Int] else defaultSettings("freshness").asInstanceOf[Int]
       val serendipity: Int = if (eng.settings.contains("serendipity")) eng.settings("serendipity").asInstanceOf[Int] else defaultSettings("serendipity").asInstanceOf[Int]
       val unseenonly: Boolean = if (eng.settings.contains("unseenonly")) eng.settings("unseenonly").asInstanceOf[Boolean] else defaultSettings("unseenonly").asInstanceOf[Boolean]
+      val numRecommendations: Int = if (eng.settings.contains("numRecommendations")) eng.settings("numRecommendations").asInstanceOf[Int] else defaultSettings("numRecommendations").asInstanceOf[Int]
       val goal: String = if (eng.settings.contains("goal")) eng.settings("goal").asInstanceOf[String] else defaultSettings("goal").asInstanceOf[String]
+*/
+      // note: the order matters here, use eng.settings to override defaultSettings
+      val settings = defaultSettings ++ eng.settings
 
       Ok(toJson(Map(
         "id" -> toJson(eng.id), // engine id
         "app_id" -> toJson(eng.appid),
         "allitemtypes" -> toJson(eng.itypes == None),
         "itemtypelist" -> eng.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull), // TODO: better way?
-        "freshness" -> toJson(freshness),
-        "serendipity" -> toJson(serendipity),
-        "unseenonly" -> toJson(unseenonly),
-        "goal" -> toJson(goal)
+        "freshness" -> toJson(settings("freshness").toString),
+        "serendipity" -> toJson(settings("serendipity").toString),
+        "unseenonly" -> toJson(settings("unseenonly").toString),
+        "goal" -> toJson(settings("goal").toString),
+        "numRecommendations" -> toJson(settings("numRecommendations").toString)
         )))
     } getOrElse {
       // if No such app id
