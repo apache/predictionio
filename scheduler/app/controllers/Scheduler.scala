@@ -34,6 +34,9 @@ object Scheduler extends Controller {
   val jobTree = new JobTreeJobListener("predictionio-algo")
   scheduler.getListenerManager.addJobListener(jobTree)
 
+  /** Try search path if hadoop home is not set. */
+  val hadoopCommand = settingsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+
   def online() = Action { Ok("PredictionIO Scheduler is online.") }
 
   def userSync(userid: Int) = Action {
