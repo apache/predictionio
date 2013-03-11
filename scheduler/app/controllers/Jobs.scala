@@ -46,6 +46,8 @@ object Jobs {
     /** Fill in settings values. */
     command.setAttribute("base", Option(System.getProperty("io.prediction.base")).getOrElse(".."))
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
+    command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
+    command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
     command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
     command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
     command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
@@ -128,6 +130,8 @@ object Jobs {
     /** Fill in settings values. */
     command.setAttribute("base", Option(System.getProperty("io.prediction.base")).getOrElse(".."))
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
+    command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
+    command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
     command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
     command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
     command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
