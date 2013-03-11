@@ -49,6 +49,7 @@ chmod a+x "$PACKAGE_DIR/servers/predictionio-output-api-$VERSION/start"
 chmod a+x "$PACKAGE_DIR/servers/predictionio-scheduler-$VERSION/start"
 
 cp -R $DIST_DIR/bin $PACKAGE_DIR
+cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
 mkdir -p "$PACKAGE_DIR/lib"
