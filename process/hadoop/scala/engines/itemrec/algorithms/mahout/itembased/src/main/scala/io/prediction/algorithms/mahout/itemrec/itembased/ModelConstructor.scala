@@ -22,7 +22,9 @@ import io.prediction.commons.scalding.modeldata.ItemRecScores
  * --engineid: <int>
  * --algoid: <int>
  * --modelSet: <boolean> (true/false). flag to indicate which set
- * 
+ *
+ * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true. 
+ *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
@@ -56,13 +58,15 @@ class ModelConstructor(args: Args) extends Job(args) {
   
   val modelSetArg = args("modelSet").toBoolean
   
+  val unseenOnlyArg = args("unseenOnly").toBoolean
+
   /**
    * source
    */
  
   val predicted = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "predicted.tsv"), ('uindex, 'predicted)).read
 
-  val rating = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindex, 'iindex, 'rating)).read
+  val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindex, 'iindex, 'rating))
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
     .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
@@ -90,7 +94,9 @@ class ModelConstructor(args: Args) extends Job(args) {
   val predictedRating = predicted.flatMap('predicted -> ('iindex, 'rating)) { data: String => parsePredictedData(data) }
     .project('uindex, 'iindex, 'rating)
 
-  (predictedRating ++ rating)
+  val combinedRating = if (unseenOnlyArg) predictedRating else (predictedRating ++ (ratingSource.read))
+  
+  combinedRating
     // just in case, if there are duplicates for the same u-i pair, simply take 1
     // But note this is not supposed to happen anyway, because
     // Mahout only recommends items which are not in ratings set.
