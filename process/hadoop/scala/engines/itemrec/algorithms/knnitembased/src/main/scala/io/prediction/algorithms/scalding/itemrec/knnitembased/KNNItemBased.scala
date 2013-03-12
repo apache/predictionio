@@ -26,7 +26,9 @@ import cascading.pipe.Pipe
  * --maxNumRatersParam: <int> max number of raters of the item
  * --minIntersectionParam: <int>. min number of co-rater users between 2 simliar items 
  * --minNumRatedSimParam: <int>. minimum number of rated similar items for valid prediction
- * 
+ * --numRecommendations: <int>. number of recommendations to be generated
+ * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true. 
+ *
  * Optional args:
  * --evalid: <int>. Offline Evaluation if evalid is specified
  * --mergeRatingParam: If defined, merge known rating into final predicted scores
@@ -52,7 +54,9 @@ class KNNItemBased(args: Args) extends VectorSimilarities(args) {
   val maxNumRatersParamArg = args("maxNumRatersParam").toInt
   val minIntersectionParamArg = args("minIntersectionParam").toInt
   val minNumRatedSimParamArg = args("minNumRatedSimParam").toInt
-    
+  val numRecommendationsArg = args("numRecommendations").toInt
+  val unseenOnlyArg = args("unseenOnly").toBoolean
+
   val mergeRatingParamArg = args.boolean("mergeRatingParam") // true if it's defined.
   
   // override VectorSimilarities param
@@ -81,13 +85,13 @@ class KNNItemBased(args: Args) extends VectorSimilarities(args) {
   
   val MIN_NUM_RATED_SIMILAR: Int = minNumRatedSimParamArg
   
-  val PREDICT_ONLY: Boolean = !mergeRatingParamArg
+  val SCORE_ONLY: Boolean = !mergeRatingParamArg
   
   // start computation  
   val ratings = ratingsRaw.mapTo((0, 1, 2) -> ('uid, 'iid, 'rating)) {fields: (String, String, Double) => fields}
   
   vectorSimilaritiesAlgo('iid, 'simiid, 'score)//.write(Tsv(AlgoFile(engineidArg, algoidArg, evalidArg, "itemSimScores.tsv").path))
-    .then( weightedSumAlgo(ratings, MIN_NUM_RATED_SIMILAR, PREDICT_ONLY) _ )
+    .then( weightedSumAlgo(ratings, MIN_NUM_RATED_SIMILAR, SCORE_ONLY) _ )
     .write(Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemRecScores.tsv")))
 
 
@@ -99,7 +103,7 @@ class KNNItemBased(args: Args) extends VectorSimilarities(args) {
    * returns
    * 	itemRecScores Pipe: 'uid 'iid 'score
    */
-  def weightedSumAlgo(ratings: Pipe, minNumRatedSimiid: Int=1, predictOnly: Boolean=false)(itemSimScores: Pipe): Pipe = {
+  def weightedSumAlgo(ratings: Pipe, minNumRatedSimiid: Int=1, scoreOnly: Boolean=false)(itemSimScores: Pipe): Pipe = {
     
     import Matrix._
     
@@ -124,7 +128,7 @@ class KNNItemBased(args: Args) extends VectorSimilarities(args) {
     // calculate the absolute value of itemSimScores score
     val absItemsimscoresMat = itemSimScoresMat.mapValues{ score: Double => if (score < 0) -score else score}
  
-    // this is the denomator of the prediction formular
+    // this is the denominator of the prediction formular
     val absScoreSumMat = (ratingsBinMat * absItemsimscoresMat)
   
     val predictScoreMat = weightedRatingSumMat.elemWiseOp(absScoreSumMat) { (x, y) => x/y }
@@ -152,15 +156,20 @@ class KNNItemBased(args: Args) extends VectorSimilarities(args) {
     val itemRecScores = predict.filter('numRatedSimiid, 'predict, 'rating) { fields: (Double, Double, Double) =>
       val (numRatedSimiid, predict, rating) = fields
       
-      (numRatedSimiid >= minNumRatedSimiid) || ((!predictOnly) && (rating != 0))
+      if (unseenOnlyArg) 
+        ((numRatedSimiid >= minNumRatedSimiid) && (rating == 0)) // rating==0 means there's no known rating (ie. unseen)
+      else
+        ((numRatedSimiid >= minNumRatedSimiid) || ((!scoreOnly) && (rating != 0)))
         
     }.mapTo(('uid, 'iid, 'numRatedSimiid, 'predict, 'rating) -> ('uid, 'iid, 'score)) { fields: (String, String, Double, Double, Double) =>
       val (uid, iid, numRatedSimiid, predict, rating) = fields
       
-      val score = if ((!predictOnly) && (rating != 0)) rating else predict
+      val score = if ((!scoreOnly) && (rating != 0)) rating else predict
         
       (uid, iid, score)
-    }
+    }// NOTE: sortBy is from small to large. so need to do reverse since higher score means better.
+    //.groupBy('uid) { _.sortedReverseTake[(Double, String)](('score, 'iid) -> 'scoreList, numRecommendationsArg) }
+    .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
     
     itemRecScores    
   }

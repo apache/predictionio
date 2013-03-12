@@ -22,6 +22,75 @@ class KNNItemBasedTest extends Specification with TupleConversions {
     }
   }
   
+  def testWithMerge(testArgs: Map[String, String],
+    testInput: List[(String, String, Int)],
+    testOutput: List[(String, String, Double)]
+    ) = {
+
+    val appid = 1
+    val engineid = 2
+    val algoid = 3
+    val hdfsRoot = "testroot/"
+
+    JobTest("io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased")
+      .arg("appid", appid.toString)
+      .arg("engineid", engineid.toString)
+      .arg("algoid", algoid.toString)
+      .arg("hdfsRoot", hdfsRoot)
+      .arg("measureParam", testArgs("measureParam"))
+      .arg("priorCountParam", testArgs("priorCountParam"))
+      .arg("priorCorrelParam", testArgs("priorCorrelParam"))
+      .arg("minNumRatersParam", testArgs("minNumRatersParam"))
+      .arg("maxNumRatersParam", testArgs("maxNumRatersParam"))
+      .arg("minIntersectionParam", testArgs("minIntersectionParam"))
+      .arg("minNumRatedSimParam", testArgs("minNumRatedSimParam"))
+      .arg("mergeRatingParam", "")
+      .arg("unseenOnly", testArgs("unseenOnly"))
+      .arg("numRecommendations", testArgs("numRecommendations"))
+      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, None, "ratings.tsv")), testInput)
+      .sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, None,"itemRecScores.tsv"))) { outputBuffer =>
+        "correctly calculate itemRecScores" in {
+          roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(testOutput))
+        }
+      }
+      .run
+      .finish
+  }
+
+  def testWithoutMerge(testArgs: Map[String, String],
+    testInput: List[(String, String, Int)],
+    testOutput: List[(String, String, Double)]
+    ) = {
+
+    val appid = 1
+    val engineid = 2
+    val algoid = 3
+    val hdfsRoot = "testroot/"
+
+    JobTest("io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased")
+      .arg("appid", appid.toString)
+      .arg("engineid", engineid.toString)
+      .arg("algoid", algoid.toString)
+      .arg("hdfsRoot", hdfsRoot)
+      .arg("measureParam", testArgs("measureParam"))
+      .arg("priorCountParam", testArgs("priorCountParam"))
+      .arg("priorCorrelParam", testArgs("priorCorrelParam"))
+      .arg("minNumRatersParam", testArgs("minNumRatersParam"))
+      .arg("maxNumRatersParam", testArgs("maxNumRatersParam"))
+      .arg("minIntersectionParam", testArgs("minIntersectionParam"))
+      .arg("minNumRatedSimParam", testArgs("minNumRatedSimParam"))
+      .arg("unseenOnly", testArgs("unseenOnly"))
+      .arg("numRecommendations", testArgs("numRecommendations"))
+      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, None, "ratings.tsv")), testInput)
+      .sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, None,"itemRecScores.tsv"))) { outputBuffer =>
+        "correctly calculate itemRecScores" in {
+          roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(testOutput))
+        }
+      }
+      .run
+      .finish
+  }
+
   // test1
   val test1args = Map[String, String]("measureParam" -> "correl",
       "priorCountParam" -> "10",
@@ -29,7 +98,9 @@ class KNNItemBasedTest extends Specification with TupleConversions {
       "minNumRatersParam" -> "1",
       "maxNumRatersParam" -> "100000",
       "minIntersectionParam" -> "1",
-      "minNumRatedSimParam" -> "1"
+      "minNumRatedSimParam" -> "1",
+      "unseenOnly" -> "false",
+      "numRecommendations" -> "500"
   )
   
   val test1Input = List(
@@ -78,31 +149,8 @@ class KNNItemBasedTest extends Specification with TupleConversions {
       ("u3","i2",1),
       ("u3","i3",5))
   
-  val hdfsRoot = "testroot/"
-  
   "KNNItemBasedTest minNumRatedSimParam=1 and mergeRatingParam defined" should {
-    JobTest("io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased").
-      arg("appid", "1").
-      arg("engineid", "2").
-      arg("algoid", "3").
-      arg("hdfsRoot", hdfsRoot).
-      arg("measureParam", test1args("measureParam")).
-      arg("priorCountParam", test1args("priorCountParam")).
-      arg("priorCorrelParam", test1args("priorCorrelParam")).
-      arg("minNumRatersParam", test1args("minNumRatersParam")).
-      arg("maxNumRatersParam", test1args("maxNumRatersParam")).
-      arg("minIntersectionParam", test1args("minIntersectionParam")).
-      arg("minNumRatedSimParam", test1args("minNumRatedSimParam")).
-      arg("mergeRatingParam", "").
-      source(Tsv(DataFile(hdfsRoot, 1, 2, 3, None, "ratings.tsv")), test1Input).
-      sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 1,2,3,None,"itemRecScores.tsv"))) { outputBuffer =>
-         "correctly calculate itemRecScores" in {
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test1Output))
-         }
-       }
-       .run
-       .finish
-       
+    testWithMerge(test1args, test1Input, test1Output)
   }
  
   // test2
@@ -112,7 +160,9 @@ class KNNItemBasedTest extends Specification with TupleConversions {
       "minNumRatersParam" -> "1",
       "maxNumRatersParam" -> "100000",
       "minIntersectionParam" -> "1",
-      "minNumRatedSimParam" -> "3"
+      "minNumRatedSimParam" -> "3",
+      "unseenOnly" -> "false",
+      "numRecommendations" -> "500"
   )
   
   val test2Input = List(
@@ -163,28 +213,7 @@ class KNNItemBasedTest extends Specification with TupleConversions {
   
 
   "KNNItemBasedTest minNumRatedSimParam=3 and mergeRatingParam defined" should {
-    JobTest("io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased").
-      arg("appid", "1").
-      arg("engineid", "2").
-      arg("algoid", "3").
-      arg("hdfsRoot", hdfsRoot).
-      arg("measureParam", test2args("measureParam")).
-      arg("priorCountParam", test2args("priorCountParam")).
-      arg("priorCorrelParam", test2args("priorCorrelParam")).
-      arg("minNumRatersParam", test2args("minNumRatersParam")).
-      arg("maxNumRatersParam", test2args("maxNumRatersParam")).
-      arg("minIntersectionParam", test2args("minIntersectionParam")).
-      arg("minNumRatedSimParam", test2args("minNumRatedSimParam")).
-      arg("mergeRatingParam", "").
-      source(Tsv(DataFile(hdfsRoot, 1, 2, 3, None, "ratings.tsv")), test2Input).
-      sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 1,2,3,None,"itemRecScores.tsv"))) { outputBuffer =>
-         "correctly calculate itemRecScores" in {
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test2Output))
-         }
-       }
-       .run
-       .finish
-       
+    testWithMerge(test2args, test2Input, test2Output)       
   }
   
   // test3
@@ -194,7 +223,9 @@ class KNNItemBasedTest extends Specification with TupleConversions {
       "minNumRatersParam" -> "1",
       "maxNumRatersParam" -> "100000",
       "minIntersectionParam" -> "1",
-      "minNumRatedSimParam" -> "1"
+      "minNumRatedSimParam" -> "1",
+      "unseenOnly" -> "false",
+      "numRecommendations" -> "500"
   )
   
   val test3Input = List(
@@ -244,27 +275,36 @@ class KNNItemBasedTest extends Specification with TupleConversions {
       ("u3","i3",-1.5))
   
 
-  "KNNItemBasedTest without mergeRatingParam defined" should {
-    JobTest("io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased").
-      arg("appid", "1").
-      arg("engineid", "2").
-      arg("algoid", "3").
-      arg("hdfsRoot", hdfsRoot).
-      arg("measureParam", test3args("measureParam")).
-      arg("priorCountParam", test3args("priorCountParam")).
-      arg("priorCorrelParam", test3args("priorCorrelParam")).
-      arg("minNumRatersParam", test3args("minNumRatersParam")).
-      arg("maxNumRatersParam", test3args("maxNumRatersParam")).
-      arg("minIntersectionParam", test3args("minIntersectionParam")).
-      arg("minNumRatedSimParam", test3args("minNumRatedSimParam")).
-      source(Tsv(DataFile(hdfsRoot, 1, 2, 3, None, "ratings.tsv")), test3Input).
-      sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 1,2,3,None,"itemRecScores.tsv"))) { outputBuffer =>
-         "correctly calculate itemRecScores" in {
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test3Output))
-         }
-       }
-       .run
-       .finish
-       
+  "KNNItemBasedTest with large numRecommendations and mergeRatingParam undefined" should {
+    testWithoutMerge(test3args, test3Input, test3Output)
   }
+
+  val test3OutputTop3 = List[(String, String, Double)](
+      ("u0","i1",3.0),
+      ("u0","i2",0.5),
+      ("u0","i3",-0.666666666666667),
+      ("u1","i1",3.0),
+      ("u1","i2",1.0),
+      ("u1","i3",0.0),
+      ("u2","i1",1.0),
+      ("u2","i2",-0.666666666666667),
+      ("u2","i3",-0.5),
+      ("u3","i0",-3.0),
+      ("u3","i1",3.0),
+      ("u3","i3",-1.5))
+
+  "KNNItemBasedTest with small numRecommendations and mergeRatingParam undefined" should {
+    testWithoutMerge(test3args ++ Map("numRecommendations" -> "3"), test3Input, test3OutputTop3)
+  }
+
+  val test3OutputUnseenOnly = List[(String, String, Double)](
+      ("u0","i3",-0.666666666666667),
+      ("u1","i0",-3.0),
+      ("u2","i2",-0.666666666666667),
+      ("u3","i1",3.0))
+
+  "KNNItemBasedTest with unseenOnly=true and mergeRatingParam undefined" should {
+    testWithoutMerge(test3args ++ Map("unseenOnly" -> "true"), test3Input, test3OutputUnseenOnly)
+  }
+
 }

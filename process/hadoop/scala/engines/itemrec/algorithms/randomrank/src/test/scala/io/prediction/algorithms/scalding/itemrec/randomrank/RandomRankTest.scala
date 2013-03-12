@@ -11,7 +11,8 @@ import io.prediction.commons.filepath.{AlgoFile}
 class RandomRankTest extends Specification with TupleConversions {
 
   def test(algoid: Int, modelSet: Boolean,
-    itypes: List[String], 
+    itypes: List[String],
+    numRecommendations: Int,
     items: List[(String, String)],
     users: List[(String, String)],
     itemRecScores: List[(String, String, Double, String, Int, Boolean)]
@@ -39,6 +40,7 @@ class RandomRankTest extends Specification with TupleConversions {
       .arg("engineid", engineid.toString)
       .arg("algoid", algoid.toString)
       .arg("itypes", itypes)
+      .arg("numRecommendations", numRecommendations.toString)
       .arg("modelSet", modelSet.toString)
       .source(Items(appId=appid, itypes=Some(itypes), 
         dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, items)
@@ -94,7 +96,7 @@ class RandomRankTest extends Specification with TupleConversions {
       .finish
   }
 
-  "randomrank.RandomRank" should {
+  "randomrank.RandomRank with selected itypes" should {
 
     val algoid = 12
     val modelSet = false
@@ -111,8 +113,39 @@ class RandomRankTest extends Specification with TupleConversions {
       ("u3", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
       ("u3", "i1", 0.0, "t2,t3", algoid, modelSet))
 
-    test(algoid, modelSet, itypes, items, users, itemRecScores)
+    test(algoid, modelSet, itypes, 500, items, users, itemRecScores)
 
   }
 
+  "randomrank.RandomRank with all itypes" should {
+
+    val algoid = 12
+    val modelSet = false
+    val itypes = List("")
+    val items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
+    val users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
+    val itemRecScores = List(
+      ("u0", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
+      ("u0", "i1", 0.0, "t2,t3", algoid, modelSet),
+      ("u0", "i2", 0.0, "t4", algoid, modelSet),
+      ("u0", "i3", 0.0, "t3,t4", algoid, modelSet),
+      ("u1", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
+      ("u1", "i1", 0.0, "t2,t3", algoid, modelSet),
+      ("u1", "i2", 0.0, "t4", algoid, modelSet),
+      ("u1", "i3", 0.0, "t3,t4", algoid, modelSet),
+      ("u2", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
+      ("u2", "i1", 0.0, "t2,t3", algoid, modelSet),
+      ("u2", "i2", 0.0, "t4", algoid, modelSet),
+      ("u2", "i3", 0.0, "t3,t4", algoid, modelSet),
+      ("u3", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
+      ("u3", "i1", 0.0, "t2,t3", algoid, modelSet),
+      ("u3", "i2", 0.0, "t4", algoid, modelSet),
+      ("u3", "i3", 0.0, "t3,t4", algoid, modelSet))
+
+    test(algoid, modelSet, itypes, 500, items, users, itemRecScores)
+
+  }
+
+  // TODO: test with smaller number of numRecommendations (but can't know expected result beacause the score is random...)
+  
 }

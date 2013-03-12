@@ -32,6 +32,7 @@ import io.prediction.commons.filepath.{AlgoFile}
  * --evalid: <int>. optional. Offline Evaluation if evalid is specified
  *
  * --itypes: <string separated by white space>. optional. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
+ * --numRecommendations: <int>. number of recommendations to be generated
  *
  * --modelSet: <boolean> (true/false). flag to indicate which set
  *
@@ -64,6 +65,8 @@ class RandomRank(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
+  val numRecommendationsArg = args("numRecommendations").toInt
+
   val modelSetArg = args("modelSet").toBoolean
 
   /**
@@ -81,12 +84,14 @@ class RandomRank(args: Args) extends Job(args) {
   val users = Users(appId=trainingAppid,
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg).readData('uid)
 
+  // TODO: unseenOnly filtering (need u2iActions)
+
   /**
    * sink
    */
   val itemRecScores = ItemRecScores(dbType=modeldata_dbTypeArg, dbName=modeldata_dbNameArg, dbHost=modeldata_dbHostArg, dbPort=modeldata_dbPortArg)
   
-  val scoresFile = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemRecScores.tsv"))
+  //val scoresFile = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemRecScores.tsv"))
 
   /**
    * computation
@@ -96,6 +101,7 @@ class RandomRank(args: Args) extends Job(args) {
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
     .map(() -> 'score) { u: Unit => scala.util.Random.nextDouble() }
+    .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
 
   // this is solely for debug purpose
   /*
