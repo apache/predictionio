@@ -44,7 +44,7 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("base", Option(System.getProperty("io.prediction.base")).getOrElse(".."))
+    command.setAttribute("base", settingsConfig.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
@@ -89,7 +89,7 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("base", Option(System.getProperty("io.prediction.base")).getOrElse(".."))
+    command.setAttribute("base", settingsConfig.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
     command.setAttribute("appid", app.id)
@@ -128,7 +128,7 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("base", Option(System.getProperty("io.prediction.base")).getOrElse(".."))
+    command.setAttribute("base", settingsConfig.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
@@ -183,7 +183,7 @@ object Jobs {
 
     /** Fill in settings values. */
     command.setAttributes(metric.params)
-    command.setAttribute("base", Option(System.getProperty("io.prediction.base")).getOrElse(".."))
+    command.setAttribute("base", settingsConfig.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
     command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))

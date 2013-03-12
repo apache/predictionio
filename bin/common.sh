@@ -12,9 +12,9 @@ PLAY_START_OPTS=-Dsbt.log.noformat=true
 LOGDIR="$BASE/logs"
 
 # Play apps related
-ADMIN_DIR="$BASE/adminServer"
-API_DIR="$BASE/output/api"
-SCHEDULER_DIR="$BASE/scheduler"
+ADMIN_DIR="$BASE/servers/admin"
+API_DIR="$BASE/servers/api"
+SCHEDULER_DIR="$BASE/servers/scheduler"
 
 ADMIN_LOG="$LOGDIR/admin.log"
 API_LOG="$LOGDIR/api.log"

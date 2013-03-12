@@ -54,15 +54,15 @@ $SBT $CLEAN update pack
 
 # Build admin server
 echo "Going to build PredictionIO Admin Server..."
-cd $BASE/adminServer
-$PLAY $CLEAN update compile stage
+cd $BASE/servers/admin
+$PLAY $CLEAN update compile
 
 # Build API server
 echo "Going to build PredictionIO API Server..."
-cd $BASE/output/api
-$PLAY $CLEAN update compile stage
+cd $BASE/servers/api
+$PLAY $CLEAN update compile
 
 # Build scheduler server
 echo "Going to build PredictionIO Scheduler Server..."
-cd $BASE/scheduler
-$PLAY $CLEAN update compile stage
+cd $BASE/servers/scheduler
+$PLAY $CLEAN update compile

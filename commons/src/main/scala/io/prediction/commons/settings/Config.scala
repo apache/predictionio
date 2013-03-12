@@ -10,6 +10,9 @@ import com.typesafe.config._
 class Config {
   private var config = ConfigFactory.load()
 
+  /** The base directory of PredictionIO deployment/repository. */
+  val base: String = config.getString("io.prediction.base")
+
   /** The database type that stores PredictionIO settings. */
   val settingsDbType: String = config.getString("io.prediction.commons.settings.db.type")
 
