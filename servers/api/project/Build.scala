@@ -4,7 +4,7 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName         = "PredictionIO-Output-API"
+  val appName         = "predictionio-api"
   val appVersion      = "0.3-SNAPSHOT"
 
   val appDependencies = Seq(

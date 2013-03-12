@@ -40,12 +40,12 @@ rm -rf "$PACKAGE_DIR"
 mkdir -p "$PACKAGE_DIR/servers"
 cd "$PACKAGE_DIR/servers"
 
-unzip -q "$ADMIN_DIR/dist/predictionio-admin-server-$VERSION.zip"
-unzip -q "$API_DIR/dist/predictionio-output-api-$VERSION.zip"
+unzip -q "$ADMIN_DIR/dist/predictionio-admin-$VERSION.zip"
+unzip -q "$API_DIR/dist/predictionio-api-$VERSION.zip"
 unzip -q "$SCHEDULER_DIR/dist/predictionio-scheduler-$VERSION.zip"
 
-chmod a+x "$PACKAGE_DIR/servers/predictionio-admin-server-$VERSION/start"
-chmod a+x "$PACKAGE_DIR/servers/predictionio-output-api-$VERSION/start"
+chmod a+x "$PACKAGE_DIR/servers/predictionio-admin-$VERSION/start"
+chmod a+x "$PACKAGE_DIR/servers/predictionio-api-$VERSION/start"
 chmod a+x "$PACKAGE_DIR/servers/predictionio-scheduler-$VERSION/start"
 
 cp -R $DIST_DIR/bin $PACKAGE_DIR

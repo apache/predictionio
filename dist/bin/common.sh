@@ -16,8 +16,8 @@ ADMIN_PORT=9000
 API_PORT=8000
 SCHEDULER_PORT=7000
 
-ADMIN_DIR="$BASE/servers/predictionio-admin-server-$VERSION"
-API_DIR="$BASE/servers/predictionio-output-api-$VERSION"
+ADMIN_DIR="$BASE/servers/predictionio-admin-$VERSION"
+API_DIR="$BASE/servers/predictionio-api-$VERSION"
 SCHEDULER_DIR="$BASE/servers/predictionio-scheduler-$VERSION"
 
 ADMIN_LOG="$LOGDIR/admin.log"
