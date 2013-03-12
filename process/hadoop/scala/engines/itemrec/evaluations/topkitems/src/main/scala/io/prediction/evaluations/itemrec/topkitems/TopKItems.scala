@@ -25,6 +25,9 @@ object TopKItems {
     val trainingSetConfig = new appdata.TrainingSetConfig
     val settingsConfig = new settings.Config
 
+    /** Try search path if hadoop home is not set. */
+    val hadoopCommand = settingsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+
     val apps = settingsConfig.getApps
     val engines = settingsConfig.getEngines
     val algos = settingsConfig.getAlgos
@@ -53,11 +56,11 @@ object TopKItems {
 
     val hdfsFile = OfflineMetricFile(hdfsRoot, engine.appid, engine.id, evalid, metricid, algoid, "topKItems.tsv")
 
-    val rmCommand = "hadoop fs -rm %s".format(hdfsFile)
+    val rmCommand = s"$hadoopCommand fs -rm $hdfsFile"
     logger.info("Executing '%s'...".format(rmCommand))
     rmCommand.!
 
-    val copyCommand = "hadoop fs -copyFromLocal %s %s".format(tmpFile, hdfsFile)
+    val copyCommand = s"$hadoopCommand fs -copyFromLocal $tmpFile $hdfsFile"
     logger.info("Executing '%s'...".format(copyCommand))
     copyCommand.!
 
