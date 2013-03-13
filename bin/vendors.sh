@@ -46,9 +46,10 @@ else
 	exit 1
 fi
 
-if command_exists "play" ; then
-	PLAY=play
-elif [ -x "$VENDOR_PLAY" ] ; then
+# Do not use existing Play due to potential compatibility issue
+#if command_exists "play" ; then
+#	PLAY=play
+if [ -x "$VENDOR_PLAY" ] ; then
 	echo "Using play in vendors."
 	PLAY="$VENDOR_PLAY"
 elif install_play "$VENDORS_PATH" ; then
