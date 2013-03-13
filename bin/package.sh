@@ -55,6 +55,7 @@ cp -R $DIST_DIR/conf $PACKAGE_DIR
 mkdir -p "$PACKAGE_DIR/lib"
 cp "$BASE/process/hadoop/scala/target/PredictionIO-Process-Hadoop-Scala-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/hadoop/scala/engines/itemrec/evaluations/topkitems/target/TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
 cd $DIST_DIR/target
 rm "$PACKAGE_NAME.zip"
