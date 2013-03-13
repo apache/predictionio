@@ -791,7 +791,8 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
     	this.model.fetch();
 	},
 	events: {
-		'click #algoUndeployBtn': 'undeploy'
+		'click #algoUndeployBtn': 'undeploy',
+		'click #algoTrainNowBtn': 'trainnow',
 	},
 	render : function() {
 		this.$el.html(this.template({"data": this.model.toJSON()}));
@@ -810,6 +811,20 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
     		alert("An error has occured:" + res.status);
     	});
     	return false;
+	},
+	trainnow: function() {
+    	var self = this;
+    	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo_trainnow';
+    	$.post(getAPIUrl(path), function(res) {
+    		alert("Success: " + res.message);
+    	}).error(function(res) {
+        	try { // show error message if fail
+        		var resData = $.parseJSON(res.responseText);
+        		alert("An error has occured:" + resData.message);
+        	} catch(err) {
+        		alert("An error has occured. HTTP Status Code: " + res.status);
+        	}
+    	});
 	},
 	deployDone: function() {
 		this.model.fetch();

@@ -1311,4 +1311,17 @@ object Application extends Controller {
     WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
     Ok
   }
+  
+  // Add model training of the currently deployed algo(s) to queue.
+  def algoTrainNow(app_id: String, engine_id: String) = withUser { user => implicit request =>
+    // No extra param required
+    
+    // TODO: Add function here....
+    Ok(toJson(
+      Map("message" -> toJson("Added this algorithm training task to the job queue."))
+    ))
+    // Remove the line below when this function is completed.
+    NotFound(toJson(Map("message" -> toJson("This feature is coming soon."))))
+  }
+  
 }

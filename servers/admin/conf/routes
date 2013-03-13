@@ -50,6 +50,7 @@ GET     /app/:app_id/engine/:engine_id/simeval_report/:id      controllers.Appli
 
 POST     /app/:app_id/engine/:engine_id/algo_deploy      controllers.Application.algoDeploy(app_id, engine_id)
 POST     /app/:app_id/engine/:engine_id/algo_undeploy      controllers.Application.algoUndeploy(app_id, engine_id)
+POST     /app/:app_id/engine/:engine_id/algo_trainnow      controllers.Application.algoTrainNow(app_id, engine_id)
 
 
 # Engine Module
