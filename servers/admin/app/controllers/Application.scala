@@ -503,6 +503,27 @@ object Application extends Controller {
           settings = Itemrec.Engine.defaultSettings // TODO: depends on enginetype
         ))
 
+        // automatically create default algo
+        val defaultAlgoType = "mahout-itembased" // TODO: get it from engineInfo
+        val defaultAlgo = Algo(
+          id = -1,
+          engineid = engineId,
+          name = "Default-Algo", // TODO: get it from engineInfo
+          infoid = defaultAlgoType,
+          deployed = true, // default true
+          command = "",
+          params = algoInfos.get(defaultAlgoType).get.paramdefaults,
+          settings = Map(), // no use for now
+          modelset = false, // init value
+          createtime = DateTime.now,
+          updatetime = DateTime.now,
+          offlineevalid = None
+        )
+
+        val algoId = algos.insert(defaultAlgo)
+
+        WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+
         Ok(toJson(Map(
           "id" -> engineId.toString, // engine id
           "enginetype_id" -> "itemrec",
