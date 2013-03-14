@@ -37,14 +37,29 @@ echo "Going to build PredictionIO Output..."
 cd $BASE/output
 $SBT $CLEAN update +publish
 
-# Build process assembly
-echo "Going to build PredictionIO Process Assembly..."
-cd $BASE/process/hadoop/scala
+# Build process commons
+echo "Going to build PredictionIO Process Commons..."
+cd $BASE/process/commons/hadoop/scalding
+$SBT $CLEAN update +publish
+
+# Build process itemrec algo assembly
+echo "Going to build PredictionIO Process ItemRec Algorithms Assembly..."
+cd $BASE/process/engines/itemrec/algorithms/hadoop/scalding
 $SBT $CLEAN update assembly
 
-# Build MAP@k Top-k Items Collector
-echo "Going to build PredictionIO MAP@k Top-k Items Collector..."
-cd $BASE/process/hadoop/scala/engines/itemrec/evaluations/topkitems
+# Build process itemrec eval assembly
+echo "Going to build PredictionIO Process ItemRec Evaluations Assembly..."
+cd $BASE/process/engines/itemrec/evaluations/hadoop/scalding
+$SBT $CLEAN update assembly
+
+# Build process itemrec Top-k Items Collector
+echo "Going to build PredictionIO Top-k Items Collector..."
+cd $BASE/process/engines/itemrec/evaluations/scala/topkitems
+$SBT $CLEAN update assembly
+
+# Build process itemsim algo assembly
+echo "Going to build PredictionIO Process ItemRec Algorithms Assembly..."
+cd $BASE/process/engines/itemsim/algorithms/hadoop/scalding
 $SBT $CLEAN update assembly
 
 # Build user tool

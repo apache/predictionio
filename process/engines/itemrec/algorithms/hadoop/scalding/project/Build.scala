@@ -1,0 +1,35 @@
+import sbt._
+import Keys._
+
+object PredictionIOAlgorithmsHadoopScaldingBuild extends Build {
+  lazy val root = Project(
+    id = "itemrec-algo-scalding",
+    base = file(".")).aggregate(
+    algo_knnitembased,
+    algo_randomrank,
+    algo_latestrank,
+    algo_mahout_itembased
+  ).dependsOn(
+    algo_knnitembased,
+    algo_randomrank,
+    algo_latestrank,
+    algo_mahout_itembased
+  )
+
+  lazy val algo_knnitembased = Project(
+    id = "algo-knnitembased",
+    base = file("knnitembased"))
+
+  lazy val algo_randomrank = Project(
+    id = "algo-randomrank",
+    base = file("randomrank"))
+
+  lazy val algo_latestrank = Project(
+    id = "algo-latestrank",
+    base = file("latestrank"))
+
+  lazy val algo_mahout_itembased = Project(
+    id = "algo-mahout-itembased",
+    base = file("mahout/itembased"))
+
+}

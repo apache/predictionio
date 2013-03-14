@@ -3,9 +3,8 @@ logs/
 .project
 project/*
 !project/Build.scala
-target/*
+target/
 dist/target/
 vendors
 .DS_Store
 .idea
-process/hadoop/target

@@ -25,13 +25,13 @@ object Jobs {
   val offlineEvalMetricJobGroup   = "predictionio-offlineeval-metrics"
   val offlineEvalResultsJobGroup = "predictionio-offlineevalresults"
   val offlineEvalSplitCommands = Map(
-    "itemrec" -> "$hadoop$ jar $pdioJar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$"
+    "itemrec" -> "$hadoop$ jar $pdioEvalJar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$"
   )
   val offlineEvalMetricCommands = Map(
     "itemrec" -> (
-      "$hadoop$ jar $pdioJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
+      "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$ && " +
       "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$ && " +
-      "$hadoop$ jar $pdioJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$"
+      "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$"
     )
   )
 
@@ -49,7 +49,7 @@ object Jobs {
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
     command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
-    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
@@ -91,7 +91,7 @@ object Jobs {
     /** Fill in settings values. */
     command.setAttribute("base", settingsConfig.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
-    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("evalid", offlineEval.id)
@@ -133,7 +133,7 @@ object Jobs {
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
     command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
-    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
@@ -186,7 +186,7 @@ object Jobs {
     command.setAttribute("base", settingsConfig.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
-    command.setAttribute("pdioJar", settingsConfig.getJar("io.prediction.algorithms.scalding").getOrElse(""))
+    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("topkJar", settingsConfig.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
     command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse(""))
     command.setAttribute("appid", app.id)
