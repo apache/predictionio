@@ -32,10 +32,11 @@ VENDOR_SBT="$VENDORS_PATH/sbt-0.12.2/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.1.0/play"
 
 # Detect existing installations in search path
-if command_exists "sbt" ; then
-	echo "Using sbt in search path. No additional JVM optimization will be set."
-	SBT=sbt
-elif [ -x "$VENDOR_SBT" ] ; then
+# Do not use existing sbt to enforce JVM settings
+#if command_exists "sbt" ; then
+#	echo "Using sbt in search path. No additional JVM optimization will be set."
+#	SBT=sbt
+if [ -x "$VENDOR_SBT" ] ; then
 	echo "Using sbt in vendors."
 	SBT="$VENDOR_SBT"
 elif install_sbt "$VENDORS_PATH" ; then
@@ -45,9 +46,10 @@ else
 	exit 1
 fi
 
-if command_exists "play" ; then
-	PLAY=play
-elif [ -x "$VENDOR_PLAY" ] ; then
+# Do not use existing Play due to potential compatibility issue
+#if command_exists "play" ; then
+#	PLAY=play
+if [ -x "$VENDOR_PLAY" ] ; then
 	echo "Using play in vendors."
 	PLAY="$VENDOR_PLAY"
 elif install_play "$VENDORS_PATH" ; then
