@@ -301,17 +301,17 @@ object Application extends Controller {
     /*
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
-    
+
     val appid = id.toInt
     deleteApp(appid, keepSettings=false)
-    
+
     //send deleteAppDir(appid) request to scheduler
     WS.url(config.settingsSchedulerUrl+"/apps/"+id+"/delete").get()
 
     Logger.info("Delete app ID "+appid)
     apps.deleteByIdAndUserid(appid, user.id)
 
-    Ok 
+    Ok
 
     //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
@@ -331,7 +331,7 @@ object Application extends Controller {
 
     //send deleteAppDir(appid) request to scheduler
     WS.url(config.settingsSchedulerUrl+"/apps/"+id+"/delete").get()
-    
+
     Ok
     //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
   }
@@ -439,16 +439,25 @@ object Application extends Controller {
     val engine = engines.get(id.toInt)
 
     engine map { eng: Engine =>
-      val dataExist: Boolean = eng.enginetype match {
+      val modelDataExist: Boolean = eng.enginetype match {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case _ => false
       }
+      val engineStatus: String =
+        if (appDataUsers.countByAppid(eng.appid) == 0 && appDataItems.countByAppid(eng.appid) == 0 && appDataU2IActions.countByAppid(eng.appid) == 0)
+          "noappdata"
+        else if (algos.getDeployedByEngineid(eng.id).length == 0)
+          "nodeployedalgo"
+        else if (!modelDataExist)
+          "nomodeldata"
+        else
+          "running"
       Ok(obj(
         "id" -> eng.id.toString, // engine id
         "enginetype_id" -> eng.enginetype,
         "app_id" -> eng.appid.toString,
         "engineName" -> eng.name,
-        "engineStatus" -> dataExist))
+        "engineStatus" -> engineStatus))
     } getOrElse {
       // if No such app id
       NotFound(toJson(Map("message" -> toJson("Invalid app id or engine id."))))
@@ -636,9 +645,9 @@ object Application extends Controller {
   }
 
   val supportedAlgoTypes: List[String] = List(
-      "pdio-knnitembased", 
-      "pdio-latestrank", 
-      "pdio-randomrank", 
+      "pdio-knnitembased",
+      "pdio-latestrank",
+      "pdio-randomrank",
       "mahout-itembased",
       "mahout-parallelals"
   )
@@ -837,7 +846,7 @@ object Application extends Controller {
 
 
   def removeAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
-    
+
     deleteModelData(id.toInt)
     // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
     WS.url(config.settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
@@ -966,7 +975,7 @@ object Application extends Controller {
 
     // get offlineeval for this engine
     val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt)
-    
+
     if (!engineOfflineEvals.hasNext) NoContent
     else {
       val resp = toJson(
@@ -1332,11 +1341,11 @@ object Application extends Controller {
     WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
     Ok
   }
-  
+
   // Add model training of the currently deployed algo(s) to queue.
   def algoTrainNow(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // No extra param required
-    
+
     // TODO: Add function here....
     Ok(toJson(
       Map("message" -> toJson("Added this algorithm training task to the job queue."))
@@ -1344,5 +1353,5 @@ object Application extends Controller {
     // Remove the line below when this function is completed.
     NotFound(toJson(Map("message" -> toJson("This feature is coming soon."))))
   }
-  
+
 }

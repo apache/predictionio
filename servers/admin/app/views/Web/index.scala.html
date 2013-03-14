@@ -514,10 +514,16 @@
         <div class="row-fluid bottomMargin">
             <div class="span12">
                 Engine Status: &nbsp;
-                    <% if(data.engineStatus == true) { %>
-                        <span class="label label-info">Running <i class="icon-ok icon-white"></i></span>                
+                    <% if (data.engineStatus == "noappdata") { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: No Data. Please import some data.</span>
+                    <% } else if (data.engineStatus == "nodeployedalgo") { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Please deploy an algorithm.</span>
+                    <% } else if (data.engineStatus == "nomodeldata") { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Waiting for the the first-time data model training.</span>
+                    <% } else if (data.engineStatus == "running") { %>
+                        <span class="label label-info">Running <i class="icon-ok icon-white"></i></span>
                     <% } else { %>
-                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: No data or no deployed algorithm</span>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Undetermined error</span>
                     <% } %>
                 &nbsp;&nbsp;<a href="javascript:void(0);" id="engineStatusReloadBtn" title="refresh engine status"><i class="icon-refresh"></i></a>
             </div>
