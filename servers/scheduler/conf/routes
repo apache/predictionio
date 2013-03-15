@@ -10,6 +10,7 @@ GET     /apps/:appid/delete                       io.prediction.scheduler.Operat
 
 GET     /apps/:appid/engines/:engineid/delete     io.prediction.scheduler.Operations.deleteEngine(appid: Int, engineid: Int)
 
+GET     /apps/:appid/engines/:engineid/algos/:algoid/status                     io.prediction.scheduler.Scheduler.algoStatus(appid: Int, engineid: Int, algoid: Int)
 GET     /apps/:appid/engines/:engineid/algos/:algoid/delete                     io.prediction.scheduler.Operations.deleteAlgo(appid: Int, engineid: Int, algoid: Int)
 
 GET     /apps/:appid/engines/:engineid/offlineevals/:offlineevalid/delete       io.prediction.scheduler.Operations.deleteOfflineEval(appid: Int, engineid: Int, offlineevalid: Int)

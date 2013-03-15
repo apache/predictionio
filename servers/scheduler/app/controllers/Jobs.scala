@@ -73,7 +73,7 @@ object Jobs {
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
-    val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) build()
+    val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) storeDurably(true) build()
     job.getJobDataMap().put("template", command.toString)
     job.getJobDataMap().put("algoid", algo.id)
     job.getJobDataMap().put("enginetype", engine.enginetype)

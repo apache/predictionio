@@ -49,13 +49,6 @@ object Scheduler extends Controller {
           scheduler.deleteJob(jobKey)
         }
       }
-      scheduler.getJobKeys(groupEquals(Jobs.algoPostProcessJobGroup)) foreach { jobKey =>
-        val algoid = jobKey.getName().toInt
-        algos.get(algoid) getOrElse {
-          Logger.info("Found postprocess job for algo ID " + algoid + " in scheduler but not in settings. Removing job from scheduler.")
-          scheduler.deleteJob(jobKey)
-        }
-      }
 
       /** Synchronize every app of the user. */
       apps.getByUserid(userid) foreach { app =>
@@ -188,6 +181,28 @@ object Scheduler extends Controller {
     } catch {
       case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
       case e: Exception => InternalServerError(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
+    }
+  }
+
+  def algoStatus(appid: Int, engineid: Int, algoid: Int) = Action {
+    if (scheduler.checkExists(jobKey(algoid.toString(), Jobs.algoJobGroup))) {
+      /** The following checks only jobs in this particular scheduler node. */
+      /** TODO: Clustering support. */
+      try {
+        val running = scheduler.getCurrentlyExecutingJobs() map { context =>
+          val jobDetail = context.getJobDetail()
+          val jobKey = jobDetail.getKey()
+          jobKey.getName() == algoid.toString()
+        } reduce { (a, b) => a || b }
+        if (running)
+          Ok(Json.obj("algoid" -> algoid, "status" -> "jobrunning"))
+        else
+          Ok(Json.obj("algoid" -> algoid, "status" -> "jobnotrunning"))
+      } catch {
+        case e: UnsupportedOperationException => Ok(Json.obj("algoid" -> algoid, "status" -> "jobnotrunning"))
+      }
+    } else {
+      Ok(Json.obj("algoid" -> algoid, "status" -> "jobnotexist"))
     }
   }
 }

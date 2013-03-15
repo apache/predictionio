@@ -14,11 +14,14 @@ import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation.{Constraints}
 import play.api.i18n.{Messages, Lang}
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json._
 import play.api.libs.json.{JsNull}
 import play.api.libs.ws.WS
 import play.api.Play.current
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.util.Random
 
 import com.github.nscala_time.time.Imports._
@@ -443,15 +446,32 @@ object Application extends Controller {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case _ => false
       }
+      val deployedAlgos = algos.getDeployedByEngineid(eng.id)
+      val hasDeployedAlgo = deployedAlgos.hasNext
+      val algo = if (deployedAlgos.hasNext) Some(deployedAlgos.next()) else None
       val engineStatus: String =
         if (appDataUsers.countByAppid(eng.appid) == 0 && appDataItems.countByAppid(eng.appid) == 0 && appDataU2IActions.countByAppid(eng.appid) == 0)
           "noappdata"
-        else if (algos.getDeployedByEngineid(eng.id).length == 0)
+        else if (!hasDeployedAlgo)
           "nodeployedalgo"
         else if (!modelDataExist)
-          "nomodeldata"
+          try {
+            (Await.result(WS.url(s"${config.settingsSchedulerUrl}/apps/${eng.appid}/engines/${eng.id}/algos/${algo.get.id}/status").get(), scala.concurrent.duration.Duration(5, SECONDS)).json \ "status").as[String] match {
+              case "jobrunning" => "firsttraining"
+              case _ => "nomodeldata"
+            }
+          } catch {
+            case e: java.net.ConnectException => "nomodeldatanoscheduler"
+          }
         else
-          "running"
+          try {
+            (Await.result(WS.url(s"${config.settingsSchedulerUrl}/apps/${eng.appid}/engines/${eng.id}/algos/${algo.get.id}/status").get(), scala.concurrent.duration.Duration(5, SECONDS)).json \ "status").as[String] match {
+              case "jobrunning" => "training"
+              case _ => "running"
+            }
+          } catch {
+            case e: java.net.ConnectException => "runningnoscheduler"
+          }
       Ok(obj(
         "id" -> eng.id.toString, // engine id
         "enginetype_id" -> eng.enginetype,

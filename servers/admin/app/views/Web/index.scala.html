@@ -520,6 +520,14 @@
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Please deploy an algorithm.</span>
                     <% } else if (data.engineStatus == "nomodeldata") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Waiting for the the first-time data model training.</span>
+                    <% } else if (data.engineStatus == "nomodeldatanoscheduler") { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Waiting for the the first-time data model training. (Scheduler is unreachable)</span>
+                    <% } else if (data.engineStatus == "firsttraining") { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Training the first data model.</span>
+                    <% } else if (data.engineStatus == "training") { %>
+                        <span class="label label-info">Running (training data model) <i class="icon-ok icon-white"></i></span>
+                    <% } else if (data.engineStatus == "runningnoscheduler") { %>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Running (Scheduler is unreachable)</span>
                     <% } else if (data.engineStatus == "running") { %>
                         <span class="label label-info">Running <i class="icon-ok icon-white"></i></span>
                     <% } else { %>
