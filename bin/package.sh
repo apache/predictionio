@@ -23,41 +23,35 @@ BASE=`pwd`
 # Package admin server
 echo "Going to package PredictionIO Admin Server..."
 cd $ADMIN_DIR
-$PLAY dist
+$PLAY stage
 
 # Package API server
 echo "Going to package PredictionIO API Server..."
 cd $API_DIR
-$PLAY dist
+$PLAY stage
 
 # Package scheduler server
 echo "Going to package PredictionIO Scheduler Server..."
 cd $SCHEDULER_DIR
-$PLAY dist
+$PLAY stage
 
 # Packaging
 rm -rf "$PACKAGE_DIR"
-mkdir -p "$PACKAGE_DIR/servers"
-cd "$PACKAGE_DIR/servers"
+mkdir -p "$PACKAGE_DIR/lib"
 
-unzip -q "$ADMIN_DIR/dist/predictionio-admin-$VERSION.zip"
-unzip -q "$API_DIR/dist/predictionio-api-$VERSION.zip"
-unzip -q "$SCHEDULER_DIR/dist/predictionio-scheduler-$VERSION.zip"
-
-chmod a+x "$PACKAGE_DIR/servers/predictionio-admin-$VERSION/start"
-chmod a+x "$PACKAGE_DIR/servers/predictionio-api-$VERSION/start"
-chmod a+x "$PACKAGE_DIR/servers/predictionio-scheduler-$VERSION/start"
+cp -n $ADMIN_DIR/target/staged/* $PACKAGE_DIR/lib
+cp -n $API_DIR/target/staged/* $PACKAGE_DIR/lib
+cp -n $SCHEDULER_DIR/target/staged/* $PACKAGE_DIR/lib
 
 cp -R $DIST_DIR/bin $PACKAGE_DIR
 cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
-mkdir -p "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/PredictionIO-Process-ItemRec-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/PredictionIO-Process-ItemRec-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
 cd $DIST_DIR/target
 rm "$PACKAGE_NAME.zip"

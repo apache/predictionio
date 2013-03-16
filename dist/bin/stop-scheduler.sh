@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# PredictionIO Shutdown Script
+# PredictionIO Scheduler Server Shutdown Script
 
 # Get the absolute path of the build script
 SCRIPT="$0"
@@ -15,14 +15,4 @@ BASE=`pwd`
 
 . "$BASE/bin/common.sh"
 
-# Admin server
-$BASE/bin/stop-admin.sh
-
-# API server
-$BASE/bin/stop-api.sh
-
-# Scheduler server
-$BASE/bin/stop-scheduler.sh
-
-echo ""
-echo "Note: You must stop any running MongoDB/Hadoop processes manually"
+stop_play "scheduler" $SCHEDULER_DIR $SCHEDULER_OUT

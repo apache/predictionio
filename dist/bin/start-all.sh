@@ -20,18 +20,18 @@ mkdir -p "$LOGDIR"
 
 # Admin server
 echo "Trying to start admin server..."
-echo "Trying to start admin server at: `date`" >>"$ADMIN_LOG"
-$ADMIN_DIR/start $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT >>"$ADMIN_LOG" 2>>"$ADMIN_ERR" &
+echo "Trying to start admin server at: `date`" >>"$ADMIN_OUT"
+$BASE/bin/start-admin.sh $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT -Dlogger.file=$BASE/conf/admin-logger.xml >>"$ADMIN_OUT" 2>>"$ADMIN_ERR" &
 
 # API server
 echo "Trying to start API server..."
-echo "Trying to start API server at: `date`" >>"$API_LOG"
-$API_DIR/start $PLAY_START_OPTS -Dhttp.port=$API_PORT >>"$API_LOG" 2>>"$API_ERR" &
+echo "Trying to start API server at: `date`" >>"$API_OUT"
+$BASE/bin/start-api.sh $PLAY_START_OPTS -Dhttp.port=$API_PORT -Dlogger.file=$BASE/conf/api-logger.xml >>"$API_OUT" 2>>"$API_ERR" &
 
 # Scheduler server
 echo "Trying to start scheduler server..."
-echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_LOG"
-$SCHEDULER_DIR/start $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT >>"$SCHEDULER_LOG" 2>>"$SCHEDULER_ERR" &
+echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_OUT"
+$BASE/bin/start-scheduler.sh $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
 
 # MongoDB
 if vendor_mongodb_exists ; then

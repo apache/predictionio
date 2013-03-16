@@ -16,13 +16,13 @@ ADMIN_PORT=9000
 API_PORT=8000
 SCHEDULER_PORT=7000
 
-ADMIN_DIR="$BASE/servers/predictionio-admin-$VERSION"
-API_DIR="$BASE/servers/predictionio-api-$VERSION"
-SCHEDULER_DIR="$BASE/servers/predictionio-scheduler-$VERSION"
+ADMIN_DIR="$BASE/servers/admin"
+API_DIR="$BASE/servers/api"
+SCHEDULER_DIR="$BASE/servers/scheduler"
 
-ADMIN_LOG="$LOGDIR/admin.log"
-API_LOG="$LOGDIR/api.log"
-SCHEDULER_LOG="$LOGDIR/scheduler.log"
+ADMIN_OUT="$LOGDIR/admin.out"
+API_OUT="$LOGDIR/api.out"
+SCHEDULER_OUT="$LOGDIR/scheduler.out"
 
 ADMIN_ERR="$LOGDIR/admin.err"
 API_ERR="$LOGDIR/api.err"
@@ -30,3 +30,19 @@ SCHEDULER_ERR="$LOGDIR/scheduler.err"
 
 # Kill the whole shell when Ctrl+C is pressed
 trap "exit 1" INT
+
+# Stop Play server
+stop_play () {
+	PLAY_NAME=$1
+	PLAY_DIR=$2
+	PLAY_OUT=$3
+	echo "Trying to stop ${PLAY_NAME} server..."
+	echo "Trying to stop ${PLAY_NAME} server at: `date`" >>"$PLAY_OUT"
+	if [ -e $PLAY_DIR/RUNNING_PID ] ; then
+		kill -TERM `cat ${PLAY_DIR}/RUNNING_PID`
+		echo "Stopped"
+	else
+		echo "Cannot find ${PLAY_DIR}/RUNNING_PID"
+		echo "Server may not be running"
+	fi
+}
