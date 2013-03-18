@@ -17,25 +17,20 @@ import org.quartz.TriggerKey.triggerKey
 
 object Scheduler extends Controller {
   /** Get settings. */
-  val settingsConfig = new settings.Config
-  val apps = settingsConfig.getApps
-  val engines = settingsConfig.getEngines
-  val algos = settingsConfig.getAlgos
-  val offlineEvals = settingsConfig.getOfflineEvals
-  val offlineEvalMetrics = settingsConfig.getOfflineEvalMetrics
-  val algoinfos = settingsConfig.getAlgoInfos
-
-  val appdataConfig = new appdata.Config
-
-  val modeldataConfig = new modeldata.Config
-  val modeldataTrainingSetConfig = new modeldata.TrainingSetConfig
+  val config = new Config
+  val apps = config.getSettingsApps
+  val engines = config.getSettingsEngines
+  val algos = config.getSettingsAlgos
+  val offlineEvals = config.getSettingsOfflineEvals
+  val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics
+  val algoinfos = config.getSettingsAlgoInfos
 
   val scheduler = StdSchedulerFactory.getDefaultScheduler()
   val jobTree = new JobTreeJobListener("predictionio-algo")
   scheduler.getListenerManager.addJobListener(jobTree)
 
   /** Try search path if hadoop home is not set. */
-  val hadoopCommand = settingsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+  val hadoopCommand = config.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
 
   def online() = Action { Ok("PredictionIO Scheduler is online.") }
 
@@ -62,7 +57,7 @@ object Scheduler extends Controller {
                 if (scheduler.checkExists(triggerkey) == false) {
                   Logger.info("Algo ID %d: Setting up batch algo job".format(algo.id))
                   algoinfo.batchcommands map { batchcommands =>
-                    val job = Jobs.algoJobs(settingsConfig, appdataConfig, modeldataConfig, app, engine, algo, batchcommands)
+                    val job = Jobs.algoJobs(config, app, engine, algo, batchcommands)
                     scheduler.addJob(job, true)
 
                     val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(algoid, Jobs.algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
@@ -94,13 +89,12 @@ object Scheduler extends Controller {
                       * This is necessary for updating any existing job,
                       * and make sure the trigger will fire.
                       */
-                    val offlineEvalJob = newJob(classOf[OfflineEvalStartJob]) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) build()
+                    val offlineEvalJob = newJob(classOf[OfflineEvalStartJob]) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) storeDurably(true) build()
                     offlineEvalJob.getJobDataMap().put("evalid", offlineEval.id)
                     scheduler.addJob(offlineEvalJob, true)
 
                     val offlineEvalSplitJob = Jobs.offlineEvalSplitJob(
-                      settingsConfig,
-                      appdataConfig,
+                      config,
                       app,
                       engine,
                       offlineEval)
@@ -116,9 +110,7 @@ object Scheduler extends Controller {
                         Logger.info("Setting up offline evaluation training job. Eval ID: %d. Algo ID: %d.".format(offlineEval.id, algo.id))
                         algoinfo.offlineevalcommands map { offlineEvalCommands =>
                           val offlineEvalTrainingJob = Jobs.offlineEvalTrainingJob(
-                            settingsConfig,
-                            appdataConfig,
-                            modeldataTrainingSetConfig,
+                            config,
                             app,
                             engine,
                             algo,
@@ -134,9 +126,7 @@ object Scheduler extends Controller {
                             Logger.info("Setting up offline evaluation metric job. Eval ID: %d. Algo ID: %d. Metric ID: %d.".format(offlineEval.id, algo.id, metric.id))
 
                             val offlineEvalMetricJob = Jobs.offlineEvalMetricJob(
-                              settingsConfig,
-                              appdataConfig,
-                              modeldataTrainingSetConfig,
+                              config,
                               app,
                               engine,
                               algo,
@@ -157,7 +147,7 @@ object Scheduler extends Controller {
 
                     /** Schedule job to poll for results. */
                     Logger.info("Setting up offline evaluation results polling job. Eval ID: %d.".format(offlineEval.id))
-                    val pollOfflineEvalResultsJob = newJob(classOf[PollOfflineEvalResultsJob]) withIdentity(offlineEvalid, Jobs.offlineEvalResultsJobGroup) build()
+                    val pollOfflineEvalResultsJob = newJob(classOf[PollOfflineEvalResultsJob]) withIdentity(offlineEvalid, Jobs.offlineEvalResultsJobGroup) storeDurably(true) build()
                     pollOfflineEvalResultsJob.getJobDataMap().put("evalid", offlineEvalid)
                     pollOfflineEvalResultsJob.getJobDataMap().put("metricids", metricsToRun.map(_.id).mkString(","))
                     pollOfflineEvalResultsJob.getJobDataMap().put("algoids", algosToRun.map(_.id).mkString(","))

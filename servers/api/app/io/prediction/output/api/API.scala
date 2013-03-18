@@ -20,16 +20,15 @@ import org.joda.time.format._
 
 object API extends Controller {
   /** Set up commons. */
-  val appdataConfig = new appdata.Config()
-  val settingsConfig = new settings.Config()
+  val config = new Config()
 
-  val apps = settingsConfig.getApps()
-  val engines = settingsConfig.getEngines()
-  val algos = settingsConfig.getAlgos()
+  val apps = config.getSettingsApps()
+  val engines = config.getSettingsEngines()
+  val algos = config.getSettingsAlgos()
 
-  val users = appdataConfig.getUsers()
-  val items = appdataConfig.getItems()
-  val u2iActions = appdataConfig.getU2IActions()
+  val users = config.getAppdataUsers()
+  val items = config.getAppdataItems()
+  val u2iActions = config.getAppdataU2IActions()
 
   /** Set up output. */
   val algoOutputSelector = new AlgoOutputSelector(algos)

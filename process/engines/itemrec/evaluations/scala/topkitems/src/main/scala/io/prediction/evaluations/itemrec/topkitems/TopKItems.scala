@@ -22,17 +22,16 @@ object TopKItems {
     val hdfsRoot = config.getString("hdfsroot")
     val k = config.getInt("k")
 
-    val trainingSetConfig = new appdata.TrainingSetConfig
-    val settingsConfig = new settings.Config
+    val commonsConfig = new Config
 
     /** Try search path if hadoop home is not set. */
-    val hadoopCommand = settingsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+    val hadoopCommand = commonsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
 
-    val apps = settingsConfig.getApps
-    val engines = settingsConfig.getEngines
-    val algos = settingsConfig.getAlgos
-    val offlineEvals = settingsConfig.getOfflineEvals
-    val users = trainingSetConfig.getUsers
+    val apps = commonsConfig.getSettingsApps
+    val engines = commonsConfig.getSettingsEngines
+    val algos = commonsConfig.getSettingsAlgos
+    val offlineEvals = commonsConfig.getSettingsOfflineEvals
+    val users = commonsConfig.getAppdataTrainingUsers
 
     val algo = algos.get(algoid).get
     val offlineEval = offlineEvals.get(evalid).get

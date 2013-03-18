@@ -1,7 +1,7 @@
 package io.prediction.scheduler
 
 import io.prediction.commons.filepath.BaseDir
-import io.prediction.commons.settings.Config
+import io.prediction.commons.Config
 
 //import org.apache.hadoop.conf.Configuration
 //import org.apache.hadoop.fs.{FileSystem, Path}

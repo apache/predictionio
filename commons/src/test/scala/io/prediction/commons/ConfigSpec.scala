@@ -1,4 +1,4 @@
-package io.prediction.commons.settings
+package io.prediction.commons
 
 import org.specs2._
 import org.specs2.specification.Step
@@ -27,18 +27,18 @@ class ConfigSpec extends Specification { def is =
   }
 
   def getMongoUsers() = {
-    mongoConfig.getUsers() must beAnInstanceOf[mongodb.MongoUsers]
+    mongoConfig.getSettingsUsers() must beAnInstanceOf[settings.mongodb.MongoUsers]
   }
 
   def getMongoApps() = {
-    mongoConfig.getApps() must beAnInstanceOf[mongodb.MongoApps]
+    mongoConfig.getSettingsApps() must beAnInstanceOf[settings.mongodb.MongoApps]
   }
 
   def getMongoEngines() = {
-    mongoConfig.getEngines() must beAnInstanceOf[mongodb.MongoEngines]
+    mongoConfig.getSettingsEngines() must beAnInstanceOf[settings.mongodb.MongoEngines]
   }
 
   def getMongoAlgos() = {
-    mongoConfig.getAlgos() must beAnInstanceOf[mongodb.MongoAlgos]
+    mongoConfig.getSettingsAlgos() must beAnInstanceOf[settings.mongodb.MongoAlgos]
   }
 }

@@ -1,9 +1,8 @@
 package controllers
 
+import io.prediction.commons.Config
 import io.prediction.commons.settings._
-import io.prediction.commons.modeldata.{Config => ModelDataConfig}
 import io.prediction.commons.modeldata.ItemRecScores
-import io.prediction.commons.appdata.{Config => AppDataConfig, TestSetConfig, TrainingSetConfig}
 import io.prediction.commons.appdata.{Users, Items, U2IActions}
 import io.prediction.output.AlgoOutputSelector
 
@@ -39,38 +38,32 @@ import com.github.nscala_time.time.Imports._
 object Application extends Controller {
   /** PredictionIO Commons settings*/
   val config = new Config()
-  val users = config.getUsers()
-  val apps = config.getApps()
-  val engines = config.getEngines()
-  val algos = config.getAlgos()
-  val offlineEvals = config.getOfflineEvals()
-  val offlineEvalMetrics = config.getOfflineEvalMetrics()
-  val offlineEvalResults = config.getOfflineEvalResults()
+  val users = config.getSettingsUsers()
+  val apps = config.getSettingsApps()
+  val engines = config.getSettingsEngines()
+  val algos = config.getSettingsAlgos()
+  val algoInfos = config.getSettingsAlgoInfos()
+  val offlineEvals = config.getSettingsOfflineEvals()
+  val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
+  val offlineEvalResults = config.getSettingsOfflineEvalResults()
 
   /** PredictionIO Commons modeldata */
-  val modelDataConfig = new ModelDataConfig()
-  val itemRecScores = modelDataConfig.getItemRecScores()
+  val itemRecScores = config.getModeldataItemRecScores()
 
   /** PredictionIO Commons appdata */
-  val appDataConfig = new AppDataConfig()
-  val appDataUsers = appDataConfig.getUsers()
-  val appDataItems = appDataConfig.getItems()
-  val appDataU2IActions = appDataConfig.getU2IActions()
+  val appDataUsers = config.getAppdataUsers()
+  val appDataItems = config.getAppdataItems()
+  val appDataU2IActions = config.getAppdataU2IActions()
 
   /** PredictionIO Commons training set appdata */
-  val trainingSetConfig = new TrainingSetConfig()
-  val trainingSetUsers = trainingSetConfig.getUsers()
-  val trainingSetItems = trainingSetConfig.getItems()
-  val trainingSetU2IActions = trainingSetConfig.getU2IActions()
+  val trainingSetUsers = config.getAppdataTrainingUsers()
+  val trainingSetItems = config.getAppdataTrainingItems()
+  val trainingSetU2IActions = config.getAppdataTrainingU2IActions()
 
   /** PredictionIO Commons test set appdata */
-  val testSetConfig = new TestSetConfig()
-  val testSetUsers = testSetConfig.getUsers()
-  val testSetItems = testSetConfig.getItems()
-  val testSetU2IActions = testSetConfig.getU2IActions()
-
-  /** PredictionIO Commons AlgoInfos */
-  val algoInfos = new code.CodeAlgoInfos
+  val testSetUsers = config.getAppdataTestUsers()
+  val testSetItems = config.getAppdataTestItems()
+  val testSetU2IActions = config.getAppdataTestU2IActions()
 
   /** PredictionIO Output */
   val algoOutputSelector = new AlgoOutputSelector(algos)
