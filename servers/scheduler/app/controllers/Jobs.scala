@@ -35,7 +35,7 @@ object Jobs {
     )
   )
 
-  def algoJobs(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataConfig: modeldata.Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
+  def algoJobs(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
     /** Build command from template. */
     val command = new StringTemplate(batchcommands.mkString(" && "))
     command.setAttributes(algo.params)
@@ -44,30 +44,30 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("base", settingsConfig.base)
+    command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
-    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
-    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
-    command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
+    command.setAttribute("jar", config.getJar(algo.infoid).getOrElse(""))
+    command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
+    command.setAttribute("mahoutJar", config.getJar("io.prediction.algorithms.mahout").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
     command.setAttribute("modelset", "$modelset$")
-    command.setAttribute("hdfsRoot", settingsConfig.settingsHdfsRoot)
-    command.setAttribute("appdataDbType", appdataConfig.appdataDbType)
-    command.setAttribute("appdataDbName", appdataConfig.appdataDbName)
-    command.setAttribute("appdataDbHost", appdataConfig.appdataDbHost)
-    command.setAttribute("appdataDbPort", appdataConfig.appdataDbPort)
-    command.setAttribute("modeldataDbType", modeldataConfig.modeldataDbType)
-    command.setAttribute("modeldataDbName", modeldataConfig.modeldataDbName)
-    command.setAttribute("modeldataDbHost", modeldataConfig.modeldataDbHost)
-    command.setAttribute("modeldataDbPort", modeldataConfig.modeldataDbPort)
-    command.setAttribute("mahoutTempDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, algo.id, None))
-    command.setAttribute("algoDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, None))
-    command.setAttribute("dataFilePrefix", DataFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, None, ""))
-    command.setAttribute("algoFilePrefix", AlgoFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, None, ""))
+    command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
+    command.setAttribute("appdataDbType", config.appdataDbType)
+    command.setAttribute("appdataDbName", config.appdataDbName)
+    command.setAttribute("appdataDbHost", config.appdataDbHost)
+    command.setAttribute("appdataDbPort", config.appdataDbPort)
+    command.setAttribute("modeldataDbType", config.modeldataDbType)
+    command.setAttribute("modeldataDbName", config.modeldataDbName)
+    command.setAttribute("modeldataDbHost", config.modeldataDbHost)
+    command.setAttribute("modeldataDbPort", config.modeldataDbPort)
+    command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, algo.id, None))
+    command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, algo.id, None))
+    command.setAttribute("dataFilePrefix", DataFile(config.settingsHdfsRoot, app.id, engine.id, algo.id, None, ""))
+    command.setAttribute("algoFilePrefix", AlgoFile(config.settingsHdfsRoot, app.id, engine.id, algo.id, None, ""))
 
     /** Add a job, then build a trigger for it.
       * This is necessary for updating any existing job,
@@ -81,7 +81,7 @@ object Jobs {
     job
   }
 
-  def offlineEvalSplitJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, app: App, engine: Engine, offlineEval: OfflineEval) = {
+  def offlineEvalSplitJob(config: Config, app: App, engine: Engine, offlineEval: OfflineEval) = {
     /** Build command from template. */
     val command = new StringTemplate(offlineEvalSplitCommands(engine.enginetype))
     engine.itypes foreach { it =>
@@ -89,29 +89,29 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("base", settingsConfig.base)
+    command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
-    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
+    command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("evalid", offlineEval.id)
     command.setAttribute("trainingsize", offlineEval.trainingsize)
     command.setAttribute("testsize", offlineEval.testsize)
-    command.setAttribute("hdfsRoot", settingsConfig.settingsHdfsRoot)
-    command.setAttribute("appdataDbType", appdataConfig.appdataDbType)
-    command.setAttribute("appdataDbName", appdataConfig.appdataDbName)
-    command.setAttribute("appdataDbHost", appdataConfig.appdataDbHost)
-    command.setAttribute("appdataDbPort", appdataConfig.appdataDbPort)
-    command.setAttribute("appdataTrainingDbType", appdataConfig.appdataTrainingDbType)
-    command.setAttribute("appdataTrainingDbName", appdataConfig.appdataTrainingDbName)
-    command.setAttribute("appdataTrainingDbHost", appdataConfig.appdataTrainingDbHost)
-    command.setAttribute("appdataTrainingDbPort", appdataConfig.appdataTrainingDbPort)
-    command.setAttribute("appdataTestDbType", appdataConfig.appdataTestDbType)
-    command.setAttribute("appdataTestDbName", appdataConfig.appdataTestDbName)
-    command.setAttribute("appdataTestDbHost", appdataConfig.appdataTestDbHost)
-    command.setAttribute("appdataTestDbPort", appdataConfig.appdataTestDbPort)
+    command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
+    command.setAttribute("appdataDbType", config.appdataDbType)
+    command.setAttribute("appdataDbName", config.appdataDbName)
+    command.setAttribute("appdataDbHost", config.appdataDbHost)
+    command.setAttribute("appdataDbPort", config.appdataDbPort)
+    command.setAttribute("appdataTrainingDbType", config.appdataTrainingDbType)
+    command.setAttribute("appdataTrainingDbName", config.appdataTrainingDbName)
+    command.setAttribute("appdataTrainingDbHost", config.appdataTrainingDbHost)
+    command.setAttribute("appdataTrainingDbPort", config.appdataTrainingDbPort)
+    command.setAttribute("appdataTestDbType", config.appdataTestDbType)
+    command.setAttribute("appdataTestDbName", config.appdataTestDbName)
+    command.setAttribute("appdataTestDbHost", config.appdataTestDbHost)
+    command.setAttribute("appdataTestDbPort", config.appdataTestDbPort)
 
-    val offlineEvalSplitJob = newJob(classOf[SeqNativeJob]) withIdentity(offlineEval.id.toString, offlineEvalSplitJobGroup) build()
+    val offlineEvalSplitJob = newJob(classOf[SeqNativeJob]) withIdentity(offlineEval.id.toString, offlineEvalSplitJobGroup) storeDurably(true) build()
     offlineEvalSplitJob.getJobDataMap().put(
       NativeJob.PROP_COMMAND,
       command.toString
@@ -120,7 +120,7 @@ object Jobs {
     offlineEvalSplitJob
   }
 
-  def offlineEvalTrainingJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataTrainingSetConfig: modeldata.TrainingSetConfig, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, offlineEvalCommands: Seq[String]): JobDetail = {
+  def offlineEvalTrainingJob(config: Config, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, offlineEvalCommands: Seq[String]): JobDetail = {
     val command = new StringTemplate(offlineEvalCommands.mkString(" && "))
     command.setAttributes(algo.params)
     engine.itypes foreach { it =>
@@ -128,44 +128,44 @@ object Jobs {
     }
 
     /** Fill in settings values. */
-    command.setAttribute("base", settingsConfig.base)
+    command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
-    command.setAttribute("jar", settingsConfig.getJar(algo.infoid).getOrElse(""))
-    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
-    command.setAttribute("mahoutJar", settingsConfig.getJar("io.prediction.algorithms.mahout").getOrElse(""))
+    command.setAttribute("jar", config.getJar(algo.infoid).getOrElse(""))
+    command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
+    command.setAttribute("mahoutJar", config.getJar("io.prediction.algorithms.mahout").getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
     command.setAttribute("evalid", offlineEval.id)
     command.setAttribute("modelset", "false")
-    command.setAttribute("hdfsRoot", settingsConfig.settingsHdfsRoot)
-    command.setAttribute("appdataTrainingDbType", appdataConfig.appdataTrainingDbType)
-    command.setAttribute("appdataTrainingDbName", appdataConfig.appdataTrainingDbName)
-    command.setAttribute("appdataTrainingDbHost", appdataConfig.appdataTrainingDbHost)
-    command.setAttribute("appdataTrainingDbPort", appdataConfig.appdataTrainingDbPort)
-    command.setAttribute("modeldataDbType", modeldataTrainingSetConfig.modeldataDbType)
-    command.setAttribute("modeldataDbName", modeldataTrainingSetConfig.modeldataDbName)
-    command.setAttribute("modeldataDbHost", modeldataTrainingSetConfig.modeldataDbHost)
-    command.setAttribute("modeldataDbPort", modeldataTrainingSetConfig.modeldataDbPort)
+    command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
+    command.setAttribute("appdataTrainingDbType", config.appdataTrainingDbType)
+    command.setAttribute("appdataTrainingDbName", config.appdataTrainingDbName)
+    command.setAttribute("appdataTrainingDbHost", config.appdataTrainingDbHost)
+    command.setAttribute("appdataTrainingDbPort", config.appdataTrainingDbPort)
+    command.setAttribute("modeldataDbType", config.modeldataTrainingDbType)
+    command.setAttribute("modeldataDbName", config.modeldataTrainingDbName)
+    command.setAttribute("modeldataDbHost", config.modeldataTrainingDbHost)
+    command.setAttribute("modeldataDbPort", config.modeldataTrainingDbPort)
     command.setAttribute("modeldatadir", ModelDataDir(
-      settingsConfig.settingsHdfsRoot,
+      config.settingsHdfsRoot,
       app.id,
       engine.id,
       algo.id,
       Some(offlineEval.id)
     ))
-    command.setAttribute("mahoutTempDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, algo.id, Some(offlineEval.id)))
-    command.setAttribute("algoDir", BaseDir.algoDir(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id)))
-    command.setAttribute("dataFilePrefix", DataFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id), ""))
-    command.setAttribute("algoFilePrefix", AlgoFile(settingsConfig.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id), ""))
+    command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, algo.id, Some(offlineEval.id)))
+    command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id)))
+    command.setAttribute("dataFilePrefix", DataFile(config.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id), ""))
+    command.setAttribute("algoFilePrefix", AlgoFile(config.settingsHdfsRoot, app.id, engine.id, algo.id, Some(offlineEval.id), ""))
 
     /** Add a job, then build a trigger for it.
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
-    val offlineEvalTrainingJob = newJob(classOf[SeqNativeJob]) withIdentity(algo.id.toString, offlineEvalTrainingJobGroup) build()
+    val offlineEvalTrainingJob = newJob(classOf[SeqNativeJob]) withIdentity(algo.id.toString, offlineEvalTrainingJobGroup) storeDurably(true) build()
     offlineEvalTrainingJob.getJobDataMap().put(
       NativeJob.PROP_COMMAND,
       command.toString
@@ -174,7 +174,7 @@ object Jobs {
     offlineEvalTrainingJob
   }
 
-  def offlineEvalMetricJob(settingsConfig: settings.Config, appdataConfig: appdata.Config, modeldataTrainingSetConfig: modeldata.TrainingSetConfig, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, metric: OfflineEvalMetric): JobDetail = {
+  def offlineEvalMetricJob(config: Config, app: App, engine: Engine, algo: Algo, offlineEval: OfflineEval, metric: OfflineEvalMetric): JobDetail = {
     val command = new StringTemplate(offlineEvalMetricCommands(engine.enginetype))
     command.setAttributes(algo.params)
     engine.itypes foreach { it =>
@@ -183,36 +183,36 @@ object Jobs {
 
     /** Fill in settings values. */
     command.setAttributes(metric.params)
-    command.setAttribute("base", settingsConfig.base)
+    command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
-    command.setAttribute("pdioEvalJar", settingsConfig.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
-    command.setAttribute("topkJar", settingsConfig.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
+    command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
+    command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
     command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("algoid", algo.id)
     command.setAttribute("evalid", offlineEval.id)
     command.setAttribute("metricid", metric.id)
-    command.setAttribute("hdfsRoot", settingsConfig.settingsHdfsRoot)
-    command.setAttribute("settingsDbType", settingsConfig.settingsDbType)
-    command.setAttribute("settingsDbName", settingsConfig.settingsDbName)
-    command.setAttribute("settingsDbHost", settingsConfig.settingsDbHost)
-    command.setAttribute("settingsDbPort", settingsConfig.settingsDbPort)
-    command.setAttribute("appdataTrainingDbType", appdataConfig.appdataTrainingDbType)
-    command.setAttribute("appdataTrainingDbName", appdataConfig.appdataTrainingDbName)
-    command.setAttribute("appdataTrainingDbHost", appdataConfig.appdataTrainingDbHost)
-    command.setAttribute("appdataTrainingDbPort", appdataConfig.appdataTrainingDbPort)
-    command.setAttribute("appdataTestDbType", appdataConfig.appdataTestDbType)
-    command.setAttribute("appdataTestDbName", appdataConfig.appdataTestDbName)
-    command.setAttribute("appdataTestDbHost", appdataConfig.appdataTestDbHost)
-    command.setAttribute("appdataTestDbPort", appdataConfig.appdataTestDbPort)
-    command.setAttribute("modeldataDbType", modeldataTrainingSetConfig.modeldataDbType)
-    command.setAttribute("modeldataDbName", modeldataTrainingSetConfig.modeldataDbName)
-    command.setAttribute("modeldataDbHost", modeldataTrainingSetConfig.modeldataDbHost)
-    command.setAttribute("modeldataDbPort", modeldataTrainingSetConfig.modeldataDbPort)
+    command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
+    command.setAttribute("settingsDbType", config.settingsDbType)
+    command.setAttribute("settingsDbName", config.settingsDbName)
+    command.setAttribute("settingsDbHost", config.settingsDbHost)
+    command.setAttribute("settingsDbPort", config.settingsDbPort)
+    command.setAttribute("appdataTrainingDbType", config.appdataTrainingDbType)
+    command.setAttribute("appdataTrainingDbName", config.appdataTrainingDbName)
+    command.setAttribute("appdataTrainingDbHost", config.appdataTrainingDbHost)
+    command.setAttribute("appdataTrainingDbPort", config.appdataTrainingDbPort)
+    command.setAttribute("appdataTestDbType", config.appdataTestDbType)
+    command.setAttribute("appdataTestDbName", config.appdataTestDbName)
+    command.setAttribute("appdataTestDbHost", config.appdataTestDbHost)
+    command.setAttribute("appdataTestDbPort", config.appdataTestDbPort)
+    command.setAttribute("modeldataDbType", config.modeldataTrainingDbType)
+    command.setAttribute("modeldataDbName", config.modeldataTrainingDbName)
+    command.setAttribute("modeldataDbHost", config.modeldataTrainingDbHost)
+    command.setAttribute("modeldataDbPort", config.modeldataTrainingDbPort)
     command.setAttribute("modeldatadir", ModelDataDir(
-      settingsConfig.settingsHdfsRoot,
+      config.settingsHdfsRoot,
       app.id,
       engine.id,
       algo.id,
@@ -223,7 +223,7 @@ object Jobs {
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
-    val offlineEvalMetricJob = newJob(classOf[SeqNativeJob]) withIdentity(algo.id.toString+"."+metric.id.toString, offlineEvalMetricJobGroup) build()
+    val offlineEvalMetricJob = newJob(classOf[SeqNativeJob]) withIdentity(algo.id.toString+"."+metric.id.toString, offlineEvalMetricJobGroup) storeDurably(true) build()
     Logger.info(s"Metric ID ${metric.id}: Setting command: ${command.toString}")
     offlineEvalMetricJob.getJobDataMap().put(
       NativeJob.PROP_COMMAND,
@@ -242,10 +242,9 @@ class AlgoJob extends Job {
     val algoid = jobDataMap.getInt("algoid")
     val enginetype = jobDataMap.getString("enginetype")
     val template = new StringTemplate(jobDataMap.getString("template"))
-    val config = new settings.Config
-    val algos = config.getAlgos
-    val modeldataConfig = new modeldata.Config
-    val itemRecScores = modeldataConfig.getItemRecScores
+    val config = new Config
+    val algos = config.getSettingsAlgos
+    val itemRecScores = config.getModeldataItemRecScores
     algos.get(algoid) map { algo =>
       Logger.info("Algo ID %d: Current model set for is %s".format(algo.id, algo.modelset))
       Logger.info("Algo ID %d: Launching algo job for model set %s".format(algo.id, !algo.modelset))
@@ -276,8 +275,8 @@ class OfflineEvalStartJob extends Job {
     val jobDataMap = context.getMergedJobDataMap
     val evalid = jobDataMap.getInt("evalid")
 
-    val settingsConfig = new settings.Config
-    val offlineEvals = settingsConfig.getOfflineEvals
+    val config = new Config
+    val offlineEvals = config.getSettingsOfflineEvals
 
     offlineEvals.get(evalid) map { offlineEval =>
       Logger.info("Starting offline evaluation for OfflineEval ID %d.".format(evalid))
@@ -293,9 +292,9 @@ class PollOfflineEvalResultsJob extends Job {
     val algoids = jobDataMap.getString("algoids").split(",") map { _.toInt }
     val metricids = jobDataMap.getString("metricids").split(",") map { _.toInt }
 
-    val settingsConfig = new settings.Config
-    val offlineEvals = settingsConfig.getOfflineEvals
-    val offlineEvalResults = settingsConfig.getOfflineEvalResults
+    val config = new Config
+    val offlineEvals = config.getSettingsOfflineEvals
+    val offlineEvalResults = config.getSettingsOfflineEvalResults
 
     var allResultsPresent = false
 

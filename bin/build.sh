@@ -2,6 +2,8 @@
 
 # PredictionIO Build Script
 
+set -e
+
 # Get the absolute path of the build script
 SCRIPT="$0"
 while [ -h "$SCRIPT" ] ; do

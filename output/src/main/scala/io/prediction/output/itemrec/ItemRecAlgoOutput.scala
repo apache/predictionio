@@ -1,6 +1,6 @@
 package io.prediction.output.itemrec
 
-import io.prediction.commons.appdata.Config
+import io.prediction.commons.Config
 import io.prediction.commons.modeldata.ItemRecScore
 import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval}
 
@@ -11,9 +11,9 @@ trait ItemRecAlgoOutput {
 }
 
 object ItemRecAlgoOutput {
-  val appdataConfig = new Config
-  val items = appdataConfig.getItems
-  val u2iActions = appdataConfig.getU2IActions
+  val config = new Config
+  val items = config.getAppdataItems
+  val u2iActions = config.getAppdataU2IActions
 
   def output(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
     /** Serendipity settings. */

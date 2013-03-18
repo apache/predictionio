@@ -1,11 +1,11 @@
 package io.prediction.tools.users
 
-import io.prediction.commons.settings._
+import io.prediction.commons._
 import jline.console._
 
 object Users {
   val config = new Config()
-  val users = config.getUsers()
+  val users = config.getSettingsUsers()
 
   def main(args: Array[String]) {
     println("PredictionIO CLI User Management")
