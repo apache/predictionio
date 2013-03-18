@@ -35,8 +35,12 @@ function MapKeyToArray(mapObj) {
 	    }
 	}
 	return array;
-
 }
+/* Global Dialogbox function */
+function createDialog(title, content, params) {
+	$('#dialog_template').attr('title',title).find('#dialog_text').text(content).end().dialog(params);	
+}
+
 $(function() {
 	// TODO: prevent "a href='#'" behavior
 
@@ -437,22 +441,48 @@ var AppView = Backbone.View.extend({
 	},
 	eraseAllData: function() {
 		var self = this;
-		$.post(getAPIUrl("app/erasedata/"+this.id), function() {
-			self.appDetailsView.model.fetch(); // refresh data
-		}).error(function(res) {
-			alert("An error has occured: "+res.status);
+		createDialog('Erase All Data?','All data of this application will be permanently erased and cannot be recovered. Are you sure?', {
+		      resizable: false,
+		      height:185,
+		      modal: true,
+		      buttons: {
+		        "Delete Application": function() {
+		    		$.post(getAPIUrl("app/erasedata/"+self.id), function() {
+		    			self.appDetailsView.model.fetch(); // refresh data
+		    		}).error(function(res) {
+		    			alert("An error has occured: "+res.status);
+		    		});
+		    		$( this ).dialog( "close" );
+		        },
+		        Cancel: function() {
+		        	$( this ).dialog( "close" );
+		        }
+		      }
 		});
 		return false;
 	},
 	removeApp: function() {
 		var self = this;
-		this.model.destroy({
-			success: function(model, res) {
-				self.close();
-			},
-			error: function(model, res) {
-				alert("An error has occured. HTTP Status Code: " + res.status);
-			}
+		createDialog('Remove Application?','This application and all its data will be permanently deleted and cannot be recovered. Are you sure?', {
+		      resizable: false,
+		      height:185,
+		      modal: true,
+		      buttons: {
+		        "Delete Application": function() {
+		    		self.model.destroy({
+		    			success: function(model, res) {
+		    				self.close();
+		    			},
+		    			error: function(model, res) {
+		    				alert("An error has occured. HTTP Status Code: " + res.status);
+		    			}
+		    		});
+		    		$( this ).dialog( "close" );
+		        },
+		        Cancel: function() {
+		        	$( this ).dialog( "close" );
+		        }
+		      }
 		});
 		return false;
 	}
