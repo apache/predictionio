@@ -2,6 +2,8 @@
 
 # PredictionIO Startup Script
 
+set -e
+
 # Get the absolute path of the build script
 SCRIPT="$0"
 while [ -h "$SCRIPT" ] ; do
@@ -12,6 +14,8 @@ done
 DIR=`dirname $SCRIPT`/..
 cd $DIR
 BASE=`pwd`
+
+$BASE/bin/conncheck
 
 . "$BASE/bin/common.sh"
 . "$BASE/bin/vendors.sh"

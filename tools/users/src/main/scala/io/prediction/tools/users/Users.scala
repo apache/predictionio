@@ -8,6 +8,10 @@ object Users {
   val users = config.getSettingsUsers()
 
   def main(args: Array[String]) {
+    if (!config.settingsDbConnectable()) {
+      println(s"Cannot connect to ${config.settingsDbType}://${config.settingsDbHost}:${config.settingsDbPort}/${config.settingsDbName}. Aborting.")
+      sys.exit(1)
+    }
     println("PredictionIO CLI User Management")
     println("1. Add a confirmed user")
     val choice = readLine("Enter a choice: ")

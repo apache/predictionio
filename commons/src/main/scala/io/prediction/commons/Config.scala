@@ -167,63 +167,135 @@ class Config {
   val modeldataTrainingDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.training.db.password")) } catch { case _: Throwable => None }
 
   /** If settingsDbType is "mongodb", this will contain a Some[MongoDB] object. */
-  val settingsMongoDb: Option[MongoDB] = settingsDbType match {
-    case "mongodb" => {
-      val db = MongoConnection(settingsDbHost, settingsDbPort)(settingsDbName)
-      settingsDbUser map { db.authenticate(_, settingsDbPassword.getOrElse("")) }
-      Some(db)
-    }
-    case _ => None
-  }
+  val settingsMongoDb: Option[MongoDB] = if (settingsDbType == "mongodb") {
+    val db = MongoClient(settingsDbHost, settingsDbPort)(settingsDbName)
+    settingsDbUser map { db.authenticate(_, settingsDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
 
   /** If appdataDbType is "mongodb", this will contain a Some[MongoDB] object. */
-  val appdataMongoDb: Option[MongoDB] = appdataDbType match {
-    case "mongodb" => {
-      val db = MongoConnection(appdataDbHost, appdataDbPort)(appdataDbName)
-      appdataDbUser map { db.authenticate(_, appdataDbPassword.getOrElse("")) }
-      Some(db)
-    }
-    case _ => None
-  }
+  val appdataMongoDb: Option[MongoDB] = if (appdataDbType == "mongodb") {
+    val db = MongoClient(appdataDbHost, appdataDbPort)(appdataDbName)
+    appdataDbUser map { db.authenticate(_, appdataDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
 
   /** If appdataTrainingDbType is "mongodb", this will contain a Some[MongoDB] object. */
-  val appdataTrainingMongoDb: Option[MongoDB] = appdataTrainingDbType match {
-    case "mongodb" => {
-      val db = MongoConnection(appdataTrainingDbHost, appdataTrainingDbPort)(appdataTrainingDbName)
-      appdataTrainingDbUser map { db.authenticate(_, appdataTrainingDbPassword.getOrElse("")) }
-      Some(db)
-    }
-    case _ => None
-  }
+  val appdataTrainingMongoDb: Option[MongoDB] = if (appdataTrainingDbType == "mongodb") {
+    val db = MongoClient(appdataTrainingDbHost, appdataTrainingDbPort)(appdataTrainingDbName)
+    appdataTrainingDbUser map { db.authenticate(_, appdataTrainingDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
 
   /** If appdataTestDbType is "mongodb", this will contain a Some[MongoDB] object. */
-  val appdataTestMongoDb: Option[MongoDB] = appdataTestDbType match {
-    case "mongodb" => {
-      val db = MongoConnection(appdataTestDbHost, appdataTestDbPort)(appdataTestDbName)
-      appdataTestDbUser map { db.authenticate(_, appdataTestDbPassword.getOrElse("")) }
-      Some(db)
-    }
-    case _ => None
-  }
+  val appdataTestMongoDb: Option[MongoDB] = if (appdataTestDbType == "mongodb") {
+    val db = MongoClient(appdataTestDbHost, appdataTestDbPort)(appdataTestDbName)
+    appdataTestDbUser map { db.authenticate(_, appdataTestDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
 
   /** If modeldataDbType is "mongodb", this will contain a Some[MongoDB] object. */
-  val modeldataMongoDb: Option[MongoDB] = modeldataDbType match {
-    case "mongodb" => {
-      val db = MongoConnection(modeldataDbHost, modeldataDbPort)(modeldataDbName)
-      modeldataDbUser map { db.authenticate(_, modeldataDbPassword.getOrElse("")) }
-      Some(db)
-    }
-    case _ => None
-  }
+  val modeldataMongoDb: Option[MongoDB] = if (modeldataDbType == "mongodb") {
+    val db = MongoClient(modeldataDbHost, modeldataDbPort)(modeldataDbName)
+    modeldataDbUser map { db.authenticate(_, modeldataDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
 
   /** If modeldataTrainingDbType is "mongodb", this will contain a Some[MongoDB] object. */
-  val modeldataTrainingMongoDb: Option[MongoDB] = modeldataTrainingDbType match {
-    case "mongodb" => {
-      val db = MongoConnection(modeldataTrainingDbHost, modeldataTrainingDbPort)(modeldataTrainingDbName)
-      modeldataTrainingDbUser map { db.authenticate(_, modeldataTrainingDbPassword.getOrElse("")) }
-      Some(db)
+  val modeldataTrainingMongoDb: Option[MongoDB] = if (modeldataTrainingDbType == "mongodb") {
+    val db = MongoClient(modeldataTrainingDbHost, modeldataTrainingDbPort)(modeldataTrainingDbName)
+    modeldataTrainingDbUser map { db.authenticate(_, modeldataTrainingDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
+
+  /** Check whether settings database can be connected. */
+  def settingsDbConnectable() = {
+    settingsDbType match {
+      case "mongodb" => {
+        try {
+          settingsMongoDb.get.getCollectionNames()
+          true
+        } catch {
+          case _: Throwable => false
+        }
+      }
+      case _ => false
     }
-    case _ => None
+  }
+
+  /** Check whether app data database can be connected. */
+  def appdataDbConnectable() = {
+    appdataDbType match {
+      case "mongodb" => {
+        try {
+          appdataMongoDb.get.getCollectionNames()
+          true
+        } catch {
+          case _: Throwable => false
+        }
+      }
+      case _ => false
+    }
+  }
+
+  /** Check whether app data training database can be connected. */
+  def appdataTrainingDbConnectable() = {
+    appdataTrainingDbType match {
+      case "mongodb" => {
+        try {
+          appdataTrainingMongoDb.get.getCollectionNames()
+          true
+        } catch {
+          case _: Throwable => false
+        }
+      }
+      case _ => false
+    }
+  }
+
+  /** Check whether app data test database can be connected. */
+  def appdataTestDbConnectable() = {
+    appdataTestDbType match {
+      case "mongodb" => {
+        try {
+          appdataTestMongoDb.get.getCollectionNames()
+          true
+        } catch {
+          case _: Throwable => false
+        }
+      }
+      case _ => false
+    }
+  }
+
+  /** Check whether model data database can be connected. */
+  def modeldataDbConnectable() = {
+    modeldataDbType match {
+      case "mongodb" => {
+        try {
+          modeldataMongoDb.get.getCollectionNames()
+          true
+        } catch {
+          case _: Throwable => false
+        }
+      }
+      case _ => false
+    }
+  }
+
+  /** Check whether model data training database can be connected. */
+  def modeldataTrainingDbConnectable() = {
+    modeldataTrainingDbType match {
+      case "mongodb" => {
+        try {
+          modeldataTrainingMongoDb.get.getCollectionNames()
+          true
+        } catch {
+          case _: Throwable => false
+        }
+      }
+      case _ => false
+    }
   }
 
   /** Obtains a Users object with configured backend type. */

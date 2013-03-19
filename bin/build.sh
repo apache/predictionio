@@ -64,6 +64,11 @@ echo "Going to build PredictionIO Process ItemRec Algorithms Assembly..."
 cd $BASE/process/engines/itemsim/algorithms/hadoop/scalding
 $SBT $CLEAN update assembly
 
+# Build connection check tool
+echo "Going to build PredictionIO Connection Check Tool..."
+cd $BASE/tools/conncheck
+$SBT $CLEAN update pack
+
 # Build user tool
 echo "Going to build PredictionIO User Tool..."
 cd $BASE/tools/users
