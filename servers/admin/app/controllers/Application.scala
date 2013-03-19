@@ -557,8 +557,28 @@ object Application extends Controller {
   }
 
   def removeEngine(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // Ok
-    BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
+    // If NOT authenticated
+    /*
+     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
+     */
+
+    // if No such app id
+    /*
+     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
+     */
+
+    val appid = app_id.toInt
+    val engineid = engine_id.toInt
+
+    deleteEngine(engineid, keepSettings=false)
+
+    //send deleteAppDir(appid) request to scheduler
+    WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/delete").get()
+
+    Logger.info("Delete Engine ID "+engine_id)
+    engines.deleteByIdAndAppid(engineid, appid)
+
+    Ok    // Ok
   }
 
   def getAvailableAlgoList(app_id: String, engine_id: String) = withUser { user => implicit request =>

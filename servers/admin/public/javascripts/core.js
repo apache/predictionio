@@ -38,7 +38,7 @@ function MapKeyToArray(mapObj) {
 }
 /* Global Dialogbox function */
 function createDialog(title, content, params) {
-	$('#dialog_template').attr('title',title).find('#dialog_text').text(content).end().dialog(params);	
+	$('#dialog_template').attr('title',title).find('#dialog_text').text(content).end().dialog(params);
 }
 
 $(function() {
@@ -548,7 +548,7 @@ var EngineStatusView = Backbone.View.extend({
 		this.enginetype_id = getUrlParam("enginetype_id");
 	},
 	events: {
-		"click #engineStatusReloadBtn" : "render" 
+		"click #engineStatusReloadBtn" : "render"
 	},
 	render : function() {
 		var self = this;
@@ -620,7 +620,7 @@ var EngineView = Backbone.View.extend({
 
 		if (!this.tabAlgorithmsView) {
 			this.tabAlgorithmsView = new EngineAlgorithmsView();
-			this.engineStatusView.listenTo(this.tabAlgorithmsView, 'engineStatusUpdate', this.engineStatusView.render); // listen to engineStatusUpdate event 
+			this.engineStatusView.listenTo(this.tabAlgorithmsView, 'engineStatusUpdate', this.engineStatusView.render); // listen to engineStatusUpdate event
 			this.subViews.push(this.tabAlgorithmsView);
 			this.$el.find("#engineTabAlgorithmsContentHolder").html(this.tabAlgorithmsView.render().el);
 		} else {
@@ -669,12 +669,30 @@ var EngineView = Backbone.View.extend({
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
 	},
 	deleteEngine : function() {
-		var engineModel = new EngineModel({app_id: this.app_id, id: this.engine_id});
-		engineModel.destroy({
-			success: function() {
-				window.location = '/';
-			}
+		var self = this;
+		createDialog('Remove Engine?','This engine and all its data will be permanently deleted and cannot be recovered. Are you sure?', {
+		      resizable: false,
+		      height:185,
+		      modal: true,
+		      buttons: {
+		        "Delete Engine": function() {
+					var engineModel = new EngineModel({app_id: self.app_id, id: self.engine_id});
+					engineModel.destroy({
+						success: function() {
+							window.location = '/';
+						},
+		    			error: function(model, res) {
+		    				alert("An error has occured. HTTP Status Code: " + res.status);
+		    			}
+					});
+		    		$( this ).dialog( "close" );
+		        },
+		        Cancel: function() {
+		        	$( this ).dialog( "close" );
+		        }
+		      }
 		});
+		return false;
 	}
 });
 
