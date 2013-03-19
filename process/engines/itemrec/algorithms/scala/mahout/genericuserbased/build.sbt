@@ -14,6 +14,10 @@ libraryDependencies += "com.github.scopt" %% "scopt" % "2.1.0"
 
 libraryDependencies += "org.clapper" %% "grizzled-slf4j" % "1.0.1"
 
+libraryDependencies ++= Seq(
+  "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT"
+)
+
 resolvers ++= Seq(
   "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
   "releases"  at "http://oss.sonatype.org/content/repositories/releases"
