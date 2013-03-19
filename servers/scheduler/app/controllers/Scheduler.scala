@@ -23,7 +23,9 @@ object Scheduler extends Controller {
   val algos = config.getSettingsAlgos
   val offlineEvals = config.getSettingsOfflineEvals
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics
+  val offlineEvalResults = config.getSettingsOfflineEvalResults
   val algoinfos = config.getSettingsAlgoInfos
+  val itemRecScores = config.getModeldataItemRecScores
 
   val scheduler = StdSchedulerFactory.getDefaultScheduler()
   val jobTree = new JobTreeJobListener("predictionio-algo")
