@@ -57,21 +57,21 @@ object MahoutJob {
 
 }
 
-/** wrapper job class for Mahout algo */
+/** Wrapper job class for Mahout algo */
 abstract class MahoutJob {
 
   val commonsConfig = new Config
   /** Try search path if hadoop home is not set. */
   val hadoopCommand = commonsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
 
-  /** get required arg */
+  /** Get required arg */
   def getArg(args: Map[String, String], key: String): String = {
     if (!args.contains(key)) sys.error("Please specify value for parameter --" + key)
 
     args(key)
   }
 
-  /** get optional arg */
+  /** Get optional arg */
   def getArgOpt(args: Map[String, String], key: String, default: String): String = {
     if (args.contains(key)) args(key) else default
   }
@@ -80,7 +80,7 @@ abstract class MahoutJob {
     if (args.contains(key)) Some(args(key)) else None
   }
 
-  /** prepare stage for algo */
+  /** Prepare stage for algo */
   def prepare(args: Map[String, String]): Map[String, String] = {
     
     val hdfsRoot = getArg(args, "hdfsRoot") // required
@@ -116,7 +116,12 @@ abstract class MahoutJob {
     args ++ Map("input" -> localRatingsPath, "output" -> localPredictedPath, "hdfsOutput" -> hdfsPredictedPath)
   }
 
-  /** run algo job */
+  /** Run algo job.
+    In default implementation, the prepare() function copies the ratings.csv from HDFS to local temporary directory.
+    The run() function should read and process this local file (defined by --input arg) file and generate the prediction 
+    output file (defined by --output arg) for each user.
+    Then finish() function copies the local prediction output file to HDFS predicted.tsv
+  */
   def run(args: Map[String, String]): Map[String, String]
 
   /** finish stage for algo */
@@ -141,7 +146,7 @@ abstract class MahoutJob {
     args
   }
 
-  /** cleanup stage for algo */
+  /** Cleanup stage for algo */
   def cleanup(args: Map[String, String]) = {
     val localRatingsPath = args("input") // required
     val localPredictedPath = args("output") // required
