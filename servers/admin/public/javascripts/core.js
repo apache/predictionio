@@ -89,7 +89,7 @@ var CoreRouter = Backbone.Router.extend({
 		engineTabAlgorithms : 'engineTabAlgorithms',
 		engineAddAlgorithm : 'engineExtraTabAddAlgorithm',
 		addEngine : 'addEnginePage',
-		'algoSettings/:algotype_id/:algo_id' : 'engineExtraTabAlgorithmSettings',
+		'algoSettings/:algotype_id/:algoName/:algo_id' : 'engineExtraTabAlgorithmSettings',
 		'simEvalSettings/:algo_id_list' : 'engineExtraTabSimEvalSettings',
 		'simEvalReport/:id' : 'engineExtraTabSimEvalReport',
 		'*actions' : 'defaultRoute' // default -- exception
@@ -154,14 +154,14 @@ var CoreRouter = Backbone.Router.extend({
 		this.currentView = new AddEngineView();
 		$(this.target_el).html(this.currentView.el);
 	},
-	engineExtraTabAlgorithmSettings: function(algotype_id, algo_id) {
+	engineExtraTabAlgorithmSettings: function(algotype_id, algoName, algo_id) {
 		this.authView.ensureAuth();
 		if (!this.currentView || !this.currentView.isEngineView) { // if not currently Engine view
 			if (this.currentView) {this.currentView.close();}
 			this.currentView = new EngineView();
 			$(this.target_el).html(this.currentView.render().el);
 		}
-		this.currentView.showExtraTabAlgorithmSettings(algotype_id, algo_id);
+		this.currentView.showExtraTabAlgorithmSettings(algotype_id, algoName, algo_id);
 	},
 	engineExtraTabSimEvalReport : function(simeval_id) {
 		this.authView.ensureAuth();
@@ -637,9 +637,9 @@ var EngineView = Backbone.View.extend({
 		this.subViews.push(this.tabExtraTabView);
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
 	},
-	showExtraTabAlgorithmSettings : function(algotype_id, algo_id) {
+	showExtraTabAlgorithmSettings : function(algotype_id, algoName, algo_id) {
 		this.closeExtraTab();
-		this.$el.find('#engineExtraTabBtn').html("Algorithm Settings: "+algotype_id).tab('show');
+		this.$el.find('#engineExtraTabBtn').html("Algorithm Settings: "+algoName).tab('show');
 		this.$el.find('#engineExtraTabTitle').show();
 
         $.ajaxSetup({async:false}); // make jquery sync temporary to ensure it's loaded before we move on
@@ -1134,7 +1134,9 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 		var algoModel = new AvailableAlgoModel();
 		algoModel.save(algoData, {
 	        success: function(model, resData) { // success, go to algo settings
-	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algotype_id) + '/' + decodeURIComponent(resData.id);
+	        	console.log("HI");
+	        	console.log(resData);
+	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algotype_id) + '/'+ decodeURIComponent(resData.algoName) + '/' + decodeURIComponent(resData.id);
 	        },
 	        error: function(model, res) {
 	        	try { // show error message if fail
