@@ -242,9 +242,8 @@ class AlgoJob extends Job {
     val algoid = jobDataMap.getInt("algoid")
     val enginetype = jobDataMap.getString("enginetype")
     val template = new StringTemplate(jobDataMap.getString("template"))
-    val config = new Config
-    val algos = config.getSettingsAlgos
-    val itemRecScores = config.getModeldataItemRecScores
+    val algos = Scheduler.algos
+    val itemRecScores = Scheduler.itemRecScores
     algos.get(algoid) map { algo =>
       Logger.info("Algo ID %d: Current model set for is %s".format(algo.id, algo.modelset))
       Logger.info("Algo ID %d: Launching algo job for model set %s".format(algo.id, !algo.modelset))
@@ -275,8 +274,7 @@ class OfflineEvalStartJob extends Job {
     val jobDataMap = context.getMergedJobDataMap
     val evalid = jobDataMap.getInt("evalid")
 
-    val config = new Config
-    val offlineEvals = config.getSettingsOfflineEvals
+    val offlineEvals = Scheduler.offlineEvals
 
     offlineEvals.get(evalid) map { offlineEval =>
       Logger.info("Starting offline evaluation for OfflineEval ID %d.".format(evalid))
@@ -292,9 +290,8 @@ class PollOfflineEvalResultsJob extends Job {
     val algoids = jobDataMap.getString("algoids").split(",") map { _.toInt }
     val metricids = jobDataMap.getString("metricids").split(",") map { _.toInt }
 
-    val config = new Config
-    val offlineEvals = config.getSettingsOfflineEvals
-    val offlineEvalResults = config.getSettingsOfflineEvalResults
+    val offlineEvals = Scheduler.offlineEvals
+    val offlineEvalResults = Scheduler.offlineEvalResults
 
     var allResultsPresent = false
 

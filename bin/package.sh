@@ -51,6 +51,7 @@ cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/PredictionIO
 cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/PredictionIO-Process-ItemRec-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
 cd $DIST_DIR/target

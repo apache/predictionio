@@ -147,14 +147,14 @@
             </div>
             <p>
                 [ <a href="#" class="eraseAllDataAction"><span
-                    class="text-warning">Reset and Erase All Data</span></a> ] 
+                    class="text-warning">Reset and Erase All Data</span></a> ]
 
                 [ <a href="#"
                     class="removeAppAction"><span class="text-warning">Remove
                         this App</span></a> ]
  <!-- TODO
                 [ <a href="javascript:alert('This feature will be available soon.');" ><span
-                    class="text-warning">Reset and Erase All Data</span></a> ] 
+                    class="text-warning">Reset and Erase All Data</span></a> ]
 
                 [ <a href="javascript:alert('This feature will be available soon.');"><span class="text-warning">Remove this App</span></a> ]
 -->
@@ -446,12 +446,12 @@
                                                             </button>
                                                             <ul class="dropdown-menu pull-right">
                                                                 <li><a class="algoDeployBtn" href="#">Deploy</a></li>
-                                                                <li><a href="#simEvalSettings/<%= encodeURIComponent(data.id) %>">Run Simulated Evaluation</a></li>
-                                                                <!-- TODO
-                                                                <li><a href="#">Edit Algorithm Settings</a></li>
+                                                                <!-- TODO: waiting for PDIO-73 
+                                                                <li><a href="#algoSettings/<%= data.algotype_id %>/<%= data.algoName %>/<%= encodeURIComponent(data.id) %>">View/Edit Algorithm Settings</a></li>
                                                                 -->
+                                                                <li><a href="#simEvalSettings/<%= encodeURIComponent(data.id) %>">Run Simulated Evaluation</a></li>
                                                                 <li class="divider"></li>
-                                                                <!-- TODO <li><a class="algoDeleteBtn" href="#">Delete</a></li> -->
+                                                                <li><a class="algoDeleteBtn" href="#">Delete</a></li>
                                                             </ul>
                                                         </div>
                                                         <% } else { %>
@@ -560,7 +560,7 @@
                     <div class="btn-group">
                         <button data-toggle="dropdown" class="btn btn-inverse btn-small dropdown-toggle">Engine Control <span class="caret"></span></button>
                         <ul class="dropdown-menu">
-                            <li><a id="deleteEngineBtn" href="javascript:void(0);">Delete this Engine</a></li>
+                            <li><a id="deleteEngineBtn" href="#">Delete this Engine</a></li>
                         </ul>
                     </div>
                 </div>
@@ -730,14 +730,13 @@
 							<li class="dropdown"><a href="#" class="dropdown-toggle"
 								data-toggle="dropdown">Help <b class="caret"></b></a>
 								<ul class="dropdown-menu">
-									<li><a href="#">Prediction IO Guide</a></li>
-									<li><a href="#">Download SDKs</a></li>
-									<li><a href="#">View Source Codes</a></li>
+									<li><a href="http://docs.prediction.io" target="_blank">PredictionIO Docs</a></li>
+									<li><a href="http://prediction.io/download">Download SDKs</a></li>
+									<li><a href="https://github.com/PredictionIO">View Source Code</a></li>
 									<li class="divider"></li>
 									<li class="nav-header">Support</li>
-									<li><a href="#">Google Group</a></li>
-									<li><a href="#">Twitter</a></li>
-									<li><a href="#">Email Us</a></li>
+									<li><a href="https://groups.google.com/#predictionio-user">Google Group</a></li>
+									<li><a href="http://www.twitter.com/predictionio">Twitter</a></li>
 								</ul></li>
 						</ul>
 						<div id="AuthHolder"></div>
@@ -788,6 +787,6 @@
 		src="assets/javascripts/vendors/json2.js"></script>
 	<script type="text/javascript"
 		src="assets/javascripts/vendors/backbone-min.js"></script>
-	<script type="text/javascript" src="assets/javascripts/core.js"></script>
+	<script type="text/javascript" src="assets/javascripts/core.js?v=20130320-1"></script>
 </body>
 </html>
