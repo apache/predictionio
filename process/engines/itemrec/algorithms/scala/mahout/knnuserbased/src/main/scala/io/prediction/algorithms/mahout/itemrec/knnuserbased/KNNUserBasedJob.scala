@@ -1,4 +1,4 @@
-package io.prediction.algorithms.mahout.itemrec.thresholduserbased
+package io.prediction.algorithms.mahout.itemrec.knnuserbased
 
 import java.io.File
 import java.io.FileWriter
@@ -15,11 +15,11 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity
 import org.apache.mahout.cf.taste.common.Weighting
 import org.apache.mahout.cf.taste.impl.recommender.{GenericUserBasedRecommender, GenericBooleanPrefUserBasedRecommender}
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel
-import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood
+import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood
 import org.apache.mahout.cf.taste.impl.similarity.{CityBlockSimilarity, EuclideanDistanceSimilarity, LogLikelihoodSimilarity, 
   PearsonCorrelationSimilarity, SpearmanCorrelationSimilarity, TanimotoCoefficientSimilarity, UncenteredCosineSimilarity}
 
-class ThresholdUserBasedJob extends MahoutJob {
+class KNNUserBasedJob extends MahoutJob {
   
   val userSimilarityValues = Seq(
     "CityBlockSimilarity", 
@@ -33,18 +33,19 @@ class ThresholdUserBasedJob extends MahoutJob {
   val defaultUserSimilarity = "PearsonCorrelationSimilarity"
 
   override def run(args: Map[String, String]) = {
-
+    
     println("Running job with args: " + args)
 
     val input = args("input")
     val output = args("output")
     val booleanData: Boolean = getArgOpt(args, "booleanData", "false").toBoolean
     val numRecommendations: Int = getArgOpt(args, "numRecommendations", "10").toInt
+    val nearestN: Int = getArgOpt(args, "nearestN", "10").toInt
     val userSimilarity: String = getArgOpt(args, "userSimilarity", defaultUserSimilarity)
     val weighted: Boolean = getArgOpt(args, "weighted", "false").toBoolean
-    val threshold: Double = getArgOpt(args, "threshold").map( _.toDouble).getOrElse(Double.MinPositiveValue)
+    val minSimilarity: Double = getArgOpt(args, "threshold").map( _.toDouble).getOrElse(Double.NegativeInfinity)
     val samplingRate: Double = getArgOpt(args, "samplingRate", "1.0").toDouble
-
+      
     val model: DataModel = new FileDataModel(new File(input))
       
     val weightedParam: Weighting = if (weighted) Weighting.WEIGHTED else Weighting.UNWEIGHTED
@@ -60,7 +61,7 @@ class ThresholdUserBasedJob extends MahoutJob {
       case _ => throw new RuntimeException("Invalid UserSimilarity: " + userSimilarity)
     }
 
-    val neighborhood: UserNeighborhood = new ThresholdUserNeighborhood(threshold, similarity, model, samplingRate)
+    val neighborhood: UserNeighborhood = new NearestNUserNeighborhood(nearestN, minSimilarity, similarity, model, samplingRate)
 
     val recommender: Recommender = if (booleanData) {
       new GenericBooleanPrefUserBasedRecommender(model, neighborhood, similarity)
@@ -69,9 +70,9 @@ class ThresholdUserBasedJob extends MahoutJob {
     }
 
     // generate prediction output file
-    
+
     val outputWriter = new FileWriter(new File(output))
-    
+
     val userIds = model.getUserIDs
 
     while (userIds.hasNext) {
@@ -87,5 +88,4 @@ class ThresholdUserBasedJob extends MahoutJob {
 
     args
   }
-  
 }
