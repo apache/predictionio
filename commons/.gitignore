@@ -2,3 +2,12 @@
 .ensime_lucene
 project
 target
+
+# Eclipse
+.settings
+.cache
+.project
+.classpath
+.scala_dependencies
+bin
+.metadata
