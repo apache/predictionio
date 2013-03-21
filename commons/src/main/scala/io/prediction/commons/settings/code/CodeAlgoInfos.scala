@@ -65,7 +65,7 @@ class CodeAlgoInfos extends AlgoInfos {
     ),
     "mahout-itembased" -> AlgoInfo(
       id = "mahout-itembased",
-      name = "Mahout's Item Based Recommendation",
+      name = "Mahout's Item Based Collaborative Filtering",
       description = Some("Predicts user preferences based on previous behaviors of users on similar items."),
       batchcommands = Some(Seq(
         "$base$/bin/quiet.sh $hadoop$ fs -rmr $mahoutTempDir$",
@@ -111,7 +111,7 @@ class CodeAlgoInfos extends AlgoInfos {
     ),
     "mahout-parallelals" -> AlgoInfo(
       id = "mahout-parallelals",
-      name = "Mahout's Parallel ALS",
+      name = "Mahout's Parallel ALS-WR",
       description = Some("Predicts user preferences based on previous behaviors of users."),
       batchcommands = Some(Seq(
         "$base$/bin/quiet.sh $hadoop$ fs -rmr $mahoutTempDir$",
@@ -169,6 +169,118 @@ class CodeAlgoInfos extends AlgoInfos {
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
+    "mahout-knnuserbased" -> AlgoInfo(
+      id = "mahout-knnuserbased",
+      name = "Mahout's kNN User Based Collaborative Filtering (Non-distributed)",
+      description = Some("Predicts user preferences based on previous behaviors of users who are the k-nearest neighbors (Non-distributed)."),
+      batchcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $mahoutScalaJar$ io.prediction.algorithms.mahout.itemrec.knnuserbased.KNNUserBasedJob --hdfsRoot $hdfsRoot$ --localTempRoot /tmp/ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --nearestN $nearestN$ --userSimilarity $userSimilarity$ --weighted $weighted$ --minSimilarity $minSimilarity$ --samplingRate $samplingRate$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
+      offlineevalcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $mahoutScalaJar$ io.prediction.algorithms.mahout.itemrec.knnuserbased.KNNUserBasedJob --hdfsRoot $hdfsRoot$ --localTempRoot /tmp/ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --nearestN $nearestN$ --userSimilarity $userSimilarity$ --weighted $weighted$ --minSimilarity $minSimilarity$ --samplingRate $samplingRate$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
+      paramdefaults = Map(
+        "booleanData" -> false,
+        "nearestN" -> 10,
+        "userSimilarity" -> "PearsonCorrelationSimilarity",
+        "weighted" -> false,
+        "minSimilarity" -> -1.0,
+        "samplingRate" -> 1.0,
+        "viewParam" -> 3,
+        "viewmoreParam" -> 3,
+        "likeParam" -> 5,
+        "dislikeParam" -> 1,
+        "conversionParam" -> 4,
+        "conflictParam" -> "latest"), // latest, highest, lowest
+      paramdescription = Map(
+        "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
+        "nearestN" -> ("Nearest N", "Nearest n users to a given user."),
+        "userSimilarity" -> ("User Similarity", "User Similarity Measure."),
+        "weighted" -> ("Weighted", "The Similarity score is weighted."),
+        "minSimilarity" -> ("Minimal similarity", "Minimal similarity required for neighbors."),
+        "samplingRate" -> ("Sampling Rate", "Percentage of users to consider when building neighborhood. Decrease to trade quality for performance."),
+        "viewParam" -> ("View Score", ""),
+        "viewmoreParam" -> ("View More Score", ""),
+        "likeParam" -> ("Like Score", ""),
+        "dislikeParam" -> ("Dislike Score", ""),
+        "conversionParam" -> ("Buy Score", ""),
+        "conflictParam" -> ("Override", "")),
+      paramorder = Seq(
+        "booleanData",
+        "nearestN",
+        "userSimilarity",
+        "weighted",
+        "minSimilarity",
+        "samplingRate",
+        "viewParam",
+        //"viewmoreParam", // not visible for now
+        "likeParam",
+        "dislikeParam",
+        "conversionParam",
+        "conflictParam"),
+      enginetype = "itemrec",
+      techreq = Seq("Hadoop"),
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
+    ),
+    "mahout-thresholduserbased" -> AlgoInfo(
+      id = "mahout-thresholduserbased",
+      name = "Mahout's Threshold User Based Collaborative Filtering (Non-distributed)",
+      description = Some("Predicts user preferences based on previous behaviors of users whose similarity meets or exceeds a certain threshold (Non-distributed)."),
+      batchcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $mahoutScalaJar$ io.prediction.algorithms.mahout.itemrec.thresholduserbased.ThresholdUserBasedJob --hdfsRoot $hdfsRoot$ --localTempRoot /tmp/ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --threshold $threshold$ --userSimilarity $userSimilarity$ --weighted $weighted$ --samplingRate $samplingRate$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
+      offlineevalcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $mahoutScalaJar$ io.prediction.algorithms.mahout.itemrec.thresholduserbased.ThresholdUserBasedJob --hdfsRoot $hdfsRoot$ --localTempRoot /tmp/ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --threshold $threshold$ --userSimilarity $userSimilarity$ --weighted $weighted$ --samplingRate $samplingRate$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
+      paramdefaults = Map(
+        "booleanData" -> false,
+        "threshold" -> 0,
+        "userSimilarity" -> "PearsonCorrelationSimilarity",
+        "weighted" -> false,
+        "samplingRate" -> 1.0,
+        "viewParam" -> 3,
+        "viewmoreParam" -> 3,
+        "likeParam" -> 5,
+        "dislikeParam" -> 1,
+        "conversionParam" -> 4,
+        "conflictParam" -> "latest"), // latest, highest, lowest
+      paramdescription = Map(
+        "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
+        "threshold" -> ("Threshold", "Similarity threshold"),
+        "userSimilarity" -> ("User Similarity", "User Similarity Measure."),
+        "weighted" -> ("Weighted", "The Similarity score is weighted."),
+        "samplingRate" -> ("Sampling Rate", "Percentage of users to consider when building neighborhood. Decrease to trade quality for performance."),
+        "viewParam" -> ("View Score", ""),
+        "viewmoreParam" -> ("View More Score", ""),
+        "likeParam" -> ("Like Score", ""),
+        "dislikeParam" -> ("Dislike Score", ""),
+        "conversionParam" -> ("Buy Score", ""),
+        "conflictParam" -> ("Override", "")),
+      paramorder = Seq(
+        "booleanData",
+        "threshold",
+        "userSimilarity",
+        "weighted",
+        "samplingRate",
+        "viewParam",
+        //"viewmoreParam", // not visible for now
+        "likeParam",
+        "dislikeParam",
+        "conversionParam",
+        "conflictParam"),
+      enginetype = "itemrec",
+      techreq = Seq("Hadoop"),
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
+    ),
+
     "pdio-randomrank" -> AlgoInfo(
       id = "pdio-randomrank",
       name = "Random Rank",
@@ -200,7 +312,14 @@ class CodeAlgoInfos extends AlgoInfos {
   /** Temporarily add alias before generalization is finished. */
   private val algoInfos = wipAlgoInfos ++ Map("io.prediction.algorithms.scalding.itemrec.knnitembased" -> wipAlgoInfos("pdio-knnitembased"))
 
-  private val engineTypeToAlgoInfos = Map("itemrec" -> Seq("pdio-knnitembased", "mahout-itembased", "mahout-parallelals", "pdio-randomrank", "pdio-latestrank"))
+  private val engineTypeToAlgoInfos = Map("itemrec" -> Seq(
+    "pdio-knnitembased",
+    "mahout-itembased",
+    "mahout-parallelals",
+    "mahout-knnuserbased",
+    "mahout-thresholduserbased",
+    "pdio-randomrank",
+    "pdio-latestrank"))
 
   def get(id: String) = {
     algoInfos.get(id)

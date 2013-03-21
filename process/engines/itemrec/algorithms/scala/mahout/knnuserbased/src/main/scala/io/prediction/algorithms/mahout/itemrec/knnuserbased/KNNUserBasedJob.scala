@@ -43,7 +43,7 @@ class KNNUserBasedJob extends MahoutJob {
     val nearestN: Int = getArgOpt(args, "nearestN", "10").toInt
     val userSimilarity: String = getArgOpt(args, "userSimilarity", defaultUserSimilarity)
     val weighted: Boolean = getArgOpt(args, "weighted", "false").toBoolean
-    val minSimilarity: Double = getArgOpt(args, "threshold").map( _.toDouble).getOrElse(Double.NegativeInfinity)
+    val minSimilarity: Double = getArgOpt(args, "minSimilarity").map( _.toDouble).getOrElse(Double.NegativeInfinity)
     val samplingRate: Double = getArgOpt(args, "samplingRate", "1.0").toDouble
       
     val model: DataModel = new FileDataModel(new File(input))
