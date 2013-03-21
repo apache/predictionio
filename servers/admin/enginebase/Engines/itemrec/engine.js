@@ -2,6 +2,13 @@ var ItemrecEngineSettingsModel = Backbone.Model.extend({
 	/* Required params: app_id, id (engine_id) */
 	urlRoot: function(){ 
 		return '/modules/itemrec/settings/app/'+ this.get("app_id") +'/engine';
+	},
+	/* Override save for displaying saving status */
+	save: function(attributes, options) {
+	    var settingSave = toastr.info('Saving Settings...','', {positionClass: 'toast-bottom-right'});
+		var result = Backbone.Model.prototype.save.call(this, attributes, options);
+	    toastr.clear(settingSave);
+	    return result;
 	}
 });
 
@@ -43,7 +50,8 @@ var ItemrecSettingsView = Backbone.View.extend({
 		"change #itemrecGoal": "goalSelected",
 		"click #recsys-unseenonly-yes" : "setUnseenOnlyYes",
 		"click #recsys-unseenonly-no" : "setUnseenOnlyNo",
-		'change #itemrecNumRecommendations' : 'changeNumRecommendations'
+		"change #itemrecNumRecommendations" : "changeNumRecommendations",
+		"change #itemrecAllItemTypes" : "toggleAllItemTypes"
 	},
 	onEnterAddItemType : function(e) {
 		if (e.keyCode == 13) { // if it's ENTER
@@ -77,13 +85,40 @@ var ItemrecSettingsView = Backbone.View.extend({
 		this.$el.find('#itemrecItemTypeList_ContentHolder').append(itemTypeView.render().el);
 		this.subViews.push(itemTypeView);
 		this.listenTo(itemTypeView, 'ItemTypeRemoved', this.itemtypeRemoved);
+		itemTypeView.listenTo(this, 'AllItemTypesSelected', itemTypeView.remove);
 		this.index += 1;
 	},
 	itemtypeRemoved: function(itemtype_id) {
 		if (itemtype_id in this.itemtypelist) {
 			delete this.itemtypelist[itemtype_id];
+			if ($.isEmptyObject(this.itemtypelist)) { // if no more selected item types
+				this.model.set({allitemtypes: true});
+				this.$el.find('#itemrecAllItemTypes').prop('checked', true);
+			}
 			this.model.set({itemtypelist: MapKeyToArray(this.itemtypelist)});
 			this.model.save();
+		}
+	},
+	toggleAllItemTypes: function() {
+		var inputObj = this.$el.find('#itemrecAllItemTypes');
+		var isAllItemTypes = inputObj.is(':checked');
+		if (isAllItemTypes == true) {	// select AllItemTypes
+			this.trigger('AllItemTypesSelected');
+			this.itemtypelist = {};
+			this.model.set({itemtypelist: MapKeyToArray(this.itemtypelist), allitemtypes: true});
+			this.model.save();
+		} else { //unselect AllItemTypes
+			createDialog('Item Type Required','You must select at least one item type for the engine.', {
+			      resizable: false,
+			      height:185,
+			      modal: false,
+			      buttons: {
+			        Okay: function() {
+			        	$( this ).dialog( "close" );
+			        }
+			      }
+			});
+			inputObj.prop('checked', true); // disallow unselect ALlItemTypes manually
 		}
 	},
 	goalSelected: function(e) {
