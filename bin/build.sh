@@ -45,8 +45,12 @@ cd $BASE/process/commons/hadoop/scalding
 $SBT $CLEAN update +publish
 
 # Build process itemrec algo assembly
-echo "Going to build PredictionIO Process ItemRec Algorithms Assembly..."
+echo "Going to build PredictionIO Process ItemRec Hadoop Scalding Algorithms Assembly..."
 cd $BASE/process/engines/itemrec/algorithms/hadoop/scalding
+$SBT $CLEAN update assembly
+
+echo "Going to build PredictionIO Process ItemRec Scala Mahout Algorithms Assembly..."
+cd $BASE/process/engines/itemrec/algorithms/scala/mahout
 $SBT $CLEAN update assembly
 
 # Build process itemrec eval assembly

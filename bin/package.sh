@@ -48,6 +48,7 @@ cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
 cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/PredictionIO-Process-ItemRec-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/PredictionIO-Process-ItemRec-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
