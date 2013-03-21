@@ -1097,12 +1097,12 @@ var EngineAlgorithmsSimEvalView = Backbone.View.extend({
 				self.close();
 			},
 			error: function(model, res) {
-	        	try { // show error message if fail
-	        		var resData = $.parseJSON(res.responseText);
-	        		alert("An error has occured: " + resData.message);
-	        	} catch(err) {
-	        		alert("An error has occured. HTTP Status Code: " + res.status);
-	        	}
+        		var resData = $.parseJSON(res.responseText);
+        		//alert("An HTTP error (" + res.status + ") has occured: " + resData.message);
+				createDialog("HTTP " + res.status, "An has occured: " + resData.message, {
+			    	width: 400,
+			    	modal: true
+				});
 			}
 		});
 	}
