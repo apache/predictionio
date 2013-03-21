@@ -682,7 +682,9 @@ object Application extends Controller {
       "pdio-latestrank",
       "pdio-randomrank",
       "mahout-itembased",
-      "mahout-parallelals"
+      "mahout-parallelals",
+      "mahout-knnuserbased",
+      "mahout-thresholduserbased"
   )
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>

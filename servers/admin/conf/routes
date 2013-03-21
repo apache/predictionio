@@ -64,3 +64,7 @@ GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-itembased
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemrec.MahoutItemBased.updateSettings(app_id, engine_id, algo_id)
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-parallelals/:algo_id     controllers.Itemrec.MahoutParallelALS.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-parallelals/:algo_id     controllers.Itemrec.MahoutParallelALS.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-knnuserbased/:algo_id     controllers.Itemrec.MahoutKnnUserBased.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-knnuserbased/:algo_id     controllers.Itemrec.MahoutKnnUserBased.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-thresholduserbased/:algo_id     controllers.Itemrec.MahoutThresholdUserBased.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-thresholduserbased/:algo_id     controllers.Itemrec.MahoutThresholdUserBased.updateSettings(app_id, engine_id, algo_id)

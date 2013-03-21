@@ -198,11 +198,11 @@ class CodeAlgoInfos extends AlgoInfos {
         "conflictParam" -> "latest"), // latest, highest, lowest
       paramdescription = Map(
         "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
-        "nearestN" -> ("Nearest N", "Nearest n users to a given user."),
+        "nearestN" -> ("Nearest K", "K-nearest neighbors to a given user."),
         "userSimilarity" -> ("User Similarity", "User Similarity Measure."),
-        "weighted" -> ("Weighted", "The Similarity score is weighted."),
-        "minSimilarity" -> ("Minimal similarity", "Minimal similarity required for neighbors."),
-        "samplingRate" -> ("Sampling Rate", "Percentage of users to consider when building neighborhood. Decrease to trade quality for performance."),
+        "weighted" -> ("Weighted", "The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine user similarity)."),
+        "minSimilarity" -> ("Minimal Similarity", "Minimal similarity required for neighbors."),
+        "samplingRate" -> ("Sampling Rate", "Must be greater > 0 and <= 1. Percentage of users to consider when building neighborhood. Decrease to trade quality for performance."),
         "viewParam" -> ("View Score", ""),
         "viewmoreParam" -> ("View More Score", ""),
         "likeParam" -> ("Like Score", ""),
@@ -242,7 +242,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
       paramdefaults = Map(
         "booleanData" -> false,
-        "threshold" -> 0,
+        "threshold" -> 0.0001,
         "userSimilarity" -> "PearsonCorrelationSimilarity",
         "weighted" -> false,
         "samplingRate" -> 1.0,
@@ -254,10 +254,10 @@ class CodeAlgoInfos extends AlgoInfos {
         "conflictParam" -> "latest"), // latest, highest, lowest
       paramdescription = Map(
         "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
-        "threshold" -> ("Threshold", "Similarity threshold"),
+        "threshold" -> ("Threshold", "Similarity threshold."),
         "userSimilarity" -> ("User Similarity", "User Similarity Measure."),
-        "weighted" -> ("Weighted", "The Similarity score is weighted."),
-        "samplingRate" -> ("Sampling Rate", "Percentage of users to consider when building neighborhood. Decrease to trade quality for performance."),
+        "weighted" -> ("Weighted", "The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine user similarity)."),
+        "samplingRate" -> ("Sampling Rate", "Must be greater > 0 and <= 1. Percentage of users to consider when building neighborhood. Decrease to trade quality for performance."),
         "viewParam" -> ("View Score", ""),
         "viewmoreParam" -> ("View More Score", ""),
         "likeParam" -> ("Like Score", ""),
