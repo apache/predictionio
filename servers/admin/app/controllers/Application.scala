@@ -1163,24 +1163,52 @@ object Application extends Controller {
    * Stop the simulated evaluation job if it's still running/pending
    * Then delete it
    */
-  def removeSimEval(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
+  def removeSimEval(app_id: Int, engine_id: Int, id: Int) = withUser { user => implicit request =>
 
     // TODO: check if user owns this app + enigne + simeval
 
     // remove algo, remove metric, remove offline eval
-    // TODO: check id is Int
 
-    // TODO: need to stop running job in scheduler side first!!
-    // TODO: any race condition of this eval job is in the processig of being deleted and get picked up by scheduler again?
+    /** Deletion of app data and model data could take a while */
+    val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
 
-    /*
-    deleteOfflineEval(id.toInt, keepSettings=false)
-    // send deleteOfflineEvalDir(app_id.toInt, engine_id.toInt, id.toInt) request to scheduler
-    WS.url(config.settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/offlineevals/"+id+"/delete").get()
-    offlineEvals.delete(id.toInt)
-    Ok
-    */
-    BadRequest(toJson(Map("message" -> "This feature will be available soon."))) // TODO
+    val offlineEval = offlineEvals.get(id)
+
+    offlineEval map { oe =>
+      /** Make sure to unset offline eval's creation time to prevent scheduler from picking up */
+      offlineEvals.update(oe.copy(createtime = None))
+
+      /** Stop any possible running jobs */
+      val stop = WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/stop").get()
+      /** Clean up intermediate data files */
+      val delete = WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/delete").get()
+      /** Synchronize on both scheduler actions */
+      val remove = for {
+        s <- stop
+        d <- delete
+      } yield {
+        /** Delete settings from database */
+        deleteOfflineEval(id, keepSettings=false)
+        offlineEvals.delete(id)
+      }
+
+      /** Handle any error that might occur within the Future */
+      val complete = remove map { r =>
+        Ok(obj("message" -> s"Offline evaluation ID $id has been deleted"))
+      } recover {
+        case e: Exception => InternalServerError(obj("message" -> e.getMessage()))
+      }
+
+      /** Detect timeout (10 minutes by default) */
+      Async {
+        concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
+          case r: SimpleResult[_] => r
+          case t: String => InternalServerError(obj("message" -> t))
+        }
+      }
+    } getOrElse {
+      NotFound(obj("message" -> s"Offline evaluation ID $id does not exist"))
+    }
   }
 
   def getSimEvalReport(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>

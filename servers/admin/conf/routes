@@ -14,12 +14,12 @@ GET     /web/enginebase/*file               controllers.Assets.at(path="/engineb
 POST    /signin                       controllers.Application.signin
 POST    /signout                    controllers.Application.signout
 
-# Admin User 
+# Admin User
 GET     /auth                       controllers.Application.getAuth
 
 # An App
 GET     /app_list                      controllers.Application.getApplist
-GET   /app/:id                          controllers.Application.getApp(id) 
+GET   /app/:id                          controllers.Application.getApp(id)
 POST    /app                          controllers.Application.createApp
 DELETE  /app/:id                      controllers.Application.removeApp(id)
 #PUT    /app/:id                      controllers.Application.updateApp(id)
@@ -43,10 +43,10 @@ DELETE  /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Appl
 
 GET     /app/:app_id/engine/:engine_id/algo_deployed      controllers.Application.getDeployedAlgo(app_id, engine_id)
 
-GET     /app/:app_id/engine/:engine_id/simeval_list      controllers.Application.getSimEvalList(app_id, engine_id)
-POST    /app/:app_id/engine/:engine_id/simeval       controllers.Application.createSimEval(app_id, engine_id)
-DELETE  /app/:app_id/engine/:engine_id/simeval/:id       controllers.Application.removeSimEval(app_id, engine_id, id)
-GET     /app/:app_id/engine/:engine_id/simeval_report/:id      controllers.Application.getSimEvalReport(app_id, engine_id, id)
+GET     /app/:app_id/engine/:engine_id/simeval_list         controllers.Application.getSimEvalList(app_id, engine_id)
+POST    /app/:app_id/engine/:engine_id/simeval              controllers.Application.createSimEval(app_id, engine_id)
+DELETE  /app/:app_id/engine/:engine_id/simeval/:id          controllers.Application.removeSimEval(app_id: Int, engine_id: Int, id: Int)
+GET     /app/:app_id/engine/:engine_id/simeval_report/:id   controllers.Application.getSimEvalReport(app_id, engine_id, id)
 
 POST     /app/:app_id/engine/:engine_id/algo_deploy      controllers.Application.algoDeploy(app_id, engine_id)
 POST     /app/:app_id/engine/:engine_id/algo_undeploy      controllers.Application.algoUndeploy(app_id, engine_id)
