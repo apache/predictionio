@@ -24,6 +24,7 @@ import io.prediction.commons.scalding.modeldata.ItemRecScores
  * --modelSet: <boolean> (true/false). flag to indicate which set
  *
  * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true. 
+ * --numRecommendations: <int>. number of recommendations to be generated
  *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -59,6 +60,7 @@ class ModelConstructor(args: Args) extends Job(args) {
   val modelSetArg = args("modelSet").toBoolean
   
   val unseenOnlyArg = args("unseenOnly").toBoolean
+  val numRecommendationsArg = args("numRecommendations").toInt
 
   /**
    * source
@@ -101,6 +103,7 @@ class ModelConstructor(args: Args) extends Job(args) {
     // But note this is not supposed to happen anyway, because
     // Mahout only recommends items which are not in ratings set.
     .groupBy('uindex, 'iindex) { _.take(1) }
+    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)
     .then( itemRecScoresSink.writeData('uidU, 'iidI, 'rating, 'itypesI, algoidArg, modelSetArg) _ )

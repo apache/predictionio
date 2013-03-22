@@ -10,7 +10,7 @@ import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
 
 class ModelConstructorTest extends Specification with TupleConversions {
 
-  def test(unseenOnly: Boolean,
+  def test(unseenOnly: Boolean, numRecommendations: Int,
     items: List[(String, String, String)],
     users: List[(String, String)],
     predicted: List[(String, String)],
@@ -40,6 +40,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
       .arg("algoid", algoid.toString)
       .arg("modelSet", modelSet.toString)
       .arg("unseenOnly", unseenOnly.toString)
+      .arg("numRecommendations", numRecommendations.toString)
       .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv"), new Fields("uindex", "predicted")), predicted)
       .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindex", "iindex", "rating")), ratings)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
@@ -68,20 +69,42 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("u0", "i2", "0.456", "t2,t3"),
     ("u1", "i0", "1.2", "t1,t2,t3"))
 
+  // only output 2 recommendations
+  val test1Output2 = List(("u0", "i0", "2.3", "t1,t2,t3"), 
+    ("u0", "i3", "4.56", "t2"), 
+    ("u1", "i0", "1.2", "t1,t2,t3"))
+
   val test1OutputUnseenOnly = List(
     ("u0", "i1", "0.123", "t1,t2"), 
     ("u0", "i2", "0.456", "t2,t3"),
     ("u1", "i0", "1.2", "t1,t2,t3"))
 
-  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false" should {
+  // only output 1 recommendation
+  val test1OutputUnseenOnly1 = List(
+    ("u0", "i2", "0.456", "t2,t3"),
+    ("u1", "i0", "1.2", "t1,t2,t3"))
 
-    test(false, test1Items, test1Users, test1Predicted, test1Ratings, test1Output)
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100" should {
+
+    test(false, 100, test1Items, test1Users, test1Predicted, test1Ratings, test1Output)
 
   }
 
-  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true" should {
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=2" should {
 
-    test(true, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly)
+    test(false, 2, test1Items, test1Users, test1Predicted, test1Ratings, test1Output2)
+
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=100" should {
+
+    test(true, 100, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly)
+
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=1" should {
+
+    test(true, 1, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly1)
 
   }
 
