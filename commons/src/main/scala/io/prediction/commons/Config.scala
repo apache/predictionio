@@ -37,6 +37,9 @@ class Config {
   /** The HDFS root location for PredictionIO data. */
   val settingsHdfsRoot: String = try { config.getString("io.prediction.commons.settings.hdfs.root") } catch { case _: Throwable => "predictionio/" }
 
+  /** The local temporary root location for PredictionIO data. */
+  val settingsLocalTempRoot: String = try { config.getString("io.prediction.commons.settings.local.temp.root") } catch { case _: Throwable => "/tmp/" }
+
   /** PredictionIO Scheduler base URL. */
   val settingsSchedulerUrl: String = try { config.getString("io.prediction.commons.settings.scheduler.url") } catch { case _: Throwable => "http://localhost:7000" }
 
