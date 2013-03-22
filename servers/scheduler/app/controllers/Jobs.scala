@@ -132,6 +132,10 @@ object Jobs {
       command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("dataFilePrefix", DataFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
       command.setAttribute("algoFilePrefix", AlgoFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
+      /** Attributes that only apply to batch algo run that are NOT offline evaluations */
+      offlineEval getOrElse {
+        command.setAttribute("modelset", "$modelset$")
+      }
     }
 
     /** Common attributes */
