@@ -39,6 +39,9 @@ var ItemrecSettingsView = Backbone.View.extend({
 				var goal = self.model.get('goal');
 				self.$el.find('#itemrecGoal').val(goal);
 
+				var unseen = self.model.get('unseenonly').toString();
+				self.$el.find('#itemrecUnseenOnly').val(unseen);
+				
 				var numRecommendations = self.model.get('numRecommendations')
 				self.$el.find('#itemrecNumRecommendations').val(numRecommendations);
 			}
@@ -48,8 +51,9 @@ var ItemrecSettingsView = Backbone.View.extend({
 		"click #itemrecAddItemTypeBtn" : "addItemType",
 		'keypress #itemrecAddItemTypeInput': 'onEnterAddItemType',
 		"change #itemrecGoal": "goalSelected",
-		"click #recsys-unseenonly-yes" : "setUnseenOnlyYes",
-		"click #recsys-unseenonly-no" : "setUnseenOnlyNo",
+		"change #itemrecUnseenOnly": "unseenSelected",
+		//"click #recsys-unseenonly-yes" : "setUnseenOnlyYes",
+		//"click #recsys-unseenonly-no" : "setUnseenOnlyNo",
 		"change #itemrecNumRecommendations" : "changeNumRecommendations",
 		"change #itemrecAllItemTypes" : "toggleAllItemTypes"
 	},
@@ -127,15 +131,11 @@ var ItemrecSettingsView = Backbone.View.extend({
 		this.model.save();
 		return false;
 	},
-	setUnseenOnlyYes: function(e) {
-		this.model.set({unseenonly: true});
+	unseenSelected: function(e) {
+		var unseen = (this.$el.find('#itemrecUnseenOnly').val() == "true");
+		this.model.set({unseenonly: unseen});
 		this.model.save();
-		this.$el.find('#recsys-unseenonly-text').html('Yes');
-	},
-	setUnseenOnlyNo: function(e) {
-		this.model.set({unseenonly: false});
-		this.model.save();
-		this.$el.find('#recsys-unseenonly-text').html('No');
+		return false;
 	},
 	changeNumRecommendations: function(e) {
 		var numRecommendations = this.$el.find('#itemrecNumRecommendations').val();
