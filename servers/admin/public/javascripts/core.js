@@ -446,10 +446,14 @@ var AppView = Backbone.View.extend({
 		      height:185,
 		      modal: true,
 		      buttons: {
-		        "Delete Application": function() {
+		        "Erase All Data": function() {
+		        	var erasingInfo = toastr.info('Erasing All Application Data...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
 		    		$.post(getAPIUrl("app/erasedata/"+self.id), function() {
 		    			self.appDetailsView.model.fetch(); // refresh data
+		    			toastr.clear(erasingInfo);
+		    			toastr.info('Data Erased.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
 		    		}).error(function(res) {
+		    			toastr.clear(erasingInfo);
 		    			alert("An error has occured: "+res.status);
 		    		});
 		    		$( this ).dialog( "close" );
@@ -469,11 +473,15 @@ var AppView = Backbone.View.extend({
 		      modal: true,
 		      buttons: {
 		        "Delete Application": function() {
+		        	var deletingInfo = toastr.info('Deleting Application...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
 		    		self.model.destroy({
 		    			success: function(model, res) {
+		    				toastr.clear(deletingInfo);
+		    				toastr.info('Application Deleted.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
 		    				self.close();
 		    			},
 		    			error: function(model, res) {
+		    				toastr.clear(deletingInfo);
 		    				alert("An error has occured. HTTP Status Code: " + res.status);
 		    			}
 		    		});
