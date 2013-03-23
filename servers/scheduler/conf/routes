@@ -8,7 +8,8 @@ GET     /users/:userid/sync                       io.prediction.scheduler.Schedu
 
 GET     /apps/:appid/delete                       io.prediction.scheduler.Operations.deleteApp(appid: Int)
 
-GET     /apps/:appid/engines/:engineid/delete     io.prediction.scheduler.Operations.deleteEngine(appid: Int, engineid: Int)
+GET     /apps/:appid/engines/:engineid/delete               io.prediction.scheduler.Operations.deleteEngine(appid: Int, engineid: Int)
+GET     /apps/:appid/engines/:engineid/trainoncenow         io.prediction.scheduler.Scheduler.trainEngineOnceNow(appid: Int, engineid: Int)
 
 GET     /apps/:appid/engines/:engineid/algos/:algoid/status                     io.prediction.scheduler.Scheduler.algoStatus(appid: Int, engineid: Int, algoid: Int)
 GET     /apps/:appid/engines/:engineid/algos/:algoid/delete                     io.prediction.scheduler.Operations.deleteAlgo(appid: Int, engineid: Int, algoid: Int)

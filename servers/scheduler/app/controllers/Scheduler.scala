@@ -51,32 +51,7 @@ object Scheduler extends Controller {
       apps.getByUserid(userid) foreach { app =>
         engines.getByAppid(app.id) foreach { engine =>
           /** Algos. */
-          algos.getByEngineid(engine.id) foreach { algo =>
-            algoinfos.get(algo.infoid) map { algoinfo =>
-              val algoid = algo.id.toString
-              val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
-              if (algo.deployed == true) {
-                if (scheduler.checkExists(triggerkey) == false) {
-                  Logger.info("Algo ID %d: Setting up batch algo job".format(algo.id))
-                  algoinfo.batchcommands map { batchcommands =>
-                    val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
-                    scheduler.addJob(job, true)
-
-                    val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(algoid, Jobs.algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
-                    scheduler.scheduleJob(trigger)
-                  } getOrElse {
-                    Logger.info("Giving up setting up batch algo job because it does not have any batch command.")
-                  }
-                }
-              } else {
-                if (scheduler.checkExists(triggerkey) == true) {
-                  scheduler.unscheduleJob(triggerkey)
-                }
-              }
-            } getOrElse {
-              Logger.info("Algo ID %d: Skipping batch algo job setup because information about this algo (%s) cannot be found".format(algo.id, algo.infoid))
-            }
-          }
+          syncAlgoJobs(app, engine, false)
 
           /** Offline evaluations. */
           offlineEvals.getByEngineid(engine.id) foreach { offlineEval =>
@@ -102,6 +77,66 @@ object Scheduler extends Controller {
     } catch {
       case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
       case e: Exception => InternalServerError(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
+    }
+  }
+
+  /** Run training of deployed algorithms immediately */
+  def syncAlgoJobs(app: settings.App, engine: settings.Engine, runoncenow: Boolean = false) = {
+    /** Algos. */
+    algos.getByEngineid(engine.id) foreach { algo =>
+      val logPrefix = s"Algo ID ${algo.id}: "
+      algoinfos.get(algo.infoid) map { algoinfo =>
+        val algoid = algo.id.toString
+        val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
+        if (algo.deployed == true) {
+          /** Running once now is independent of whether the trigger exist or not */
+          if (runoncenow) {
+            Logger.info(s"${logPrefix}Setting up batch algo job (run once now)")
+            algoinfo.batchcommands map { batchcommands =>
+              val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
+              scheduler.addJob(job, true)
+              val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(s"${algoid}-runonce", Jobs.algoJobGroup) startNow() build()
+              scheduler.scheduleJob(trigger)
+            } getOrElse {
+              Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
+            }
+          } else if (scheduler.checkExists(triggerkey) == false) {
+            Logger.info(s"${logPrefix}Setting up batch algo job (run every hour from now)")
+            algoinfo.batchcommands map { batchcommands =>
+              val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
+              scheduler.addJob(job, true)
+              val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(algoid, Jobs.algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
+              scheduler.scheduleJob(trigger)
+            } getOrElse {
+              Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
+            }
+          }
+        } else {
+          if (scheduler.checkExists(triggerkey) == true) {
+            scheduler.unscheduleJob(triggerkey)
+          }
+        }
+      } getOrElse {
+        Logger.info(s"${logPrefix}Skipping batch algo job setup because information about this algo (${algo.infoid}) cannot be found")
+      }
+    }
+  }
+
+  def trainEngineOnceNow(appid: Int, engineid: Int) = Action {
+    try {
+      apps.get(appid) map { app =>
+        engines.get(engineid) map { engine =>
+          syncAlgoJobs(app, engine, true)
+          Ok(Json.obj("message" -> "Immediate engine training request has been accepted."))
+        } getOrElse {
+          NotFound(Json.obj("message" -> s"Engine ID $engineid is invalid"))
+        }
+      } getOrElse {
+        NotFound(Json.obj("message" -> s"App ID $appid is invalid"))
+      }
+    } catch {
+      case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Request failed: " + e.getMessage())))
+      case e: Exception => InternalServerError(Json.obj("message" -> ("Request failed: " + e.getMessage())))
     }
   }
 

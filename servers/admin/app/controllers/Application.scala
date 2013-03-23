@@ -1408,13 +1408,19 @@ object Application extends Controller {
   // Add model training of the currently deployed algo(s) to queue.
   def algoTrainNow(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // No extra param required
+    val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+    val request = WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/trainoncenow").get() map { r =>
+      Ok(obj("message" -> (r.json \ "message").as[String]))
+    } recover {
+      case e: Exception => InternalServerError(obj("message" -> e.getMessage()))
+    }
 
-    // TODO: Add function here....
-    Ok(toJson(
-      Map("message" -> toJson("Added this algorithm training task to the job queue."))
-    ))
-    // Remove the line below when this function is completed.
-    NotFound(toJson(Map("message" -> toJson("This feature is coming soon."))))
+    /** Detect timeout (10 minutes by default) */
+    Async {
+      concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
+        case r: SimpleResult[_] => r
+        case t: String => InternalServerError(obj("message" -> t))
+      }
+    }
   }
-
 }

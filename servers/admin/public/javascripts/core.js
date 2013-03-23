@@ -863,12 +863,15 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	trainnow: function() {
     	var self = this;
     	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo_trainnow';
+        var info = toastr.info('Requesting to train data model immediately...', '', {positionClass: 'toast-bottom-right', fadeOut: 1});
     	$.post(getAPIUrl(path), function(res) {
-    		alert("Success: " + res.message);
+            toastr.clear(info);
+            toastr.success(res.message, '', {positionClass: 'toast-bottom-right', timeOut: 2800});
     	}).error(function(res) {
         	try { // show error message if fail
         		var resData = $.parseJSON(res.responseText);
-        		alert("An error has occured:" + resData.message);
+	            toastr.clear(info);
+	            toastr.error("HTTP " + res.status + ": " + resData.message, '', {positionClass: 'toast-bottom-right', timeOut: 5000});
         	} catch(err) {
         		alert("An error has occured. HTTP Status Code: " + res.status);
         	}
@@ -1097,12 +1100,16 @@ var EngineAlgorithmsSimEvalView = Backbone.View.extend({
 				self.close();
 			},
 			error: function(model, res) {
-        		var resData = $.parseJSON(res.responseText);
-        		//alert("An HTTP error (" + res.status + ") has occured: " + resData.message);
-				createDialog("HTTP " + res.status, "An has occured: " + resData.message, {
-			    	width: 400,
-			    	modal: true
-				});
+	        	try { // show error message if fail
+	        		var resData = $.parseJSON(res.responseText);
+	        		//alert("An HTTP error (" + res.status + ") has occured: " + resData.message);
+					createDialog("HTTP " + res.status, "An has occured: " + resData.message, {
+				    	width: 400,
+				    	modal: true
+					});
+	        	} catch(err) {
+	        		alert("An error has occured. HTTP Status Code: " + res.status);
+	        	}
 			}
 		});
 	}
