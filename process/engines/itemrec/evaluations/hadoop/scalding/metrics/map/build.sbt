@@ -22,11 +22,6 @@ libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.3-SNAPSHOT"
 )
 
-resolvers ++= Seq(
-  "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-  "releases"  at "http://oss.sonatype.org/content/repositories/releases"
-)
-
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
