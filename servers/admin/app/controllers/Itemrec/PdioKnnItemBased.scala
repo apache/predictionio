@@ -23,19 +23,19 @@ object PdioKnnItemBased extends Controller {
       "id" -> number, // algoid
       "app_id" -> number,
       "engine_id" -> number,
-      "distanceFunc" -> nonEmptyText, // TODO: verifying
-      "virtualCount" -> number,
-      "priorCorrelation" -> nonEmptyText, // TODO: verifying double?
-      "minNumRaters" -> number,
-      "maxNumRaters" -> number,
-      "minIntersection" -> number,
-      "minNumRatedSim" -> number,
-      "viewAction" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
-      "viewmoreAction" -> nonEmptyText,
-      "likeAction" -> nonEmptyText,
-      "dislikeAction" -> nonEmptyText,
-      "buyAction" -> nonEmptyText,
-      "override" -> nonEmptyText // TODO: verifying
+      "measureParam" -> nonEmptyText, // TODO: verifying
+      "priorCountParam" -> number,
+      "priorCorrelParam" -> nonEmptyText, // TODO: verifying double?
+      "minNumRatersParam" -> number,
+      "maxNumRatersParam" -> number,
+      "minIntersectionParam" -> number,
+      "minNumRatedSimParam" -> number,
+      "viewParam" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
+      "viewmoreParam" -> nonEmptyText,
+      "likeParam" -> nonEmptyText,
+      "dislikeParam" -> nonEmptyText,
+      "conversionParam" -> nonEmptyText,
+      "conflictParam" -> nonEmptyText // TODO: verifying
     ))
     
     algoSettingForm.bindFromRequest.fold(
@@ -45,28 +45,29 @@ object PdioKnnItemBased extends Controller {
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (id, appId, engineId, distanceFunc, virtualCount, priorCorrelation, 
-          minNumRaters, maxNumRaters, minIntersection, minNumRatedSim,
-          viewAction, viewmoreAction, likeAction, dislikeAction, buyAction, overrideParam) = formData
+        val (id, appId, engineId, 
+          measureParam, priorCountParam, priorCorrelParam, minNumRatersParam, maxNumRatersParam, minIntersectionParam, minNumRatedSimParam,
+          viewParam, viewmoreParam, likeParam, dislikeParam, conversionParam, conflictParam) = formData
         
         // get original Algo first
         val optAlgo: Option[Algo] = algos.get(id)
         
         optAlgo map { algo =>
           val updatedAlgo = algo.copy(
-            params = algo.params ++ Map("measureParam" -> distanceFunc, // NOTE: read-modify-write!
-                "priorCountParam" -> virtualCount,
-                "priorCorrelParam" -> priorCorrelation,
-                "minNumRatersParam" -> minNumRaters,
-                "maxNumRatersParam" -> maxNumRaters,
-                "minIntersectionParam" -> minIntersection,
-                "minNumRatedSimParam" -> minNumRatedSim,
-                "viewParam" -> viewAction,
-                "viewmoreParam" -> viewmoreAction,
-                "likeParam" -> likeAction,
-                "dislikeParam" -> dislikeAction,
-                "conversionParam" -> buyAction,
-                "conflictParam" -> overrideParam
+            params = algo.params ++ Map( // NOTE: read-modify-write!
+                "measureParam" -> measureParam, 
+                "priorCountParam" -> priorCountParam,
+                "priorCorrelParam" -> priorCorrelParam,
+                "minNumRatersParam" -> minNumRatersParam,
+                "maxNumRatersParam" -> maxNumRatersParam,
+                "minIntersectionParam" -> minIntersectionParam,
+                "minNumRatedSimParam" -> minNumRatedSimParam,
+                "viewParam" -> viewParam,
+                "viewmoreParam" -> viewmoreParam,
+                "likeParam" -> likeParam,
+                "dislikeParam" -> dislikeParam,
+                "conversionParam" -> conversionParam,
+                "conflictParam" -> conflictParam
                 )
           )
           
@@ -106,46 +107,13 @@ object PdioKnnItemBased extends Controller {
     
     optAlgo map { algo =>
       
-      def algoParamGetOrElse[T](algoObj: Algo, param: String, defaultValue: Any): T = {
-        if (algoObj.params.contains(param)) algoObj.params(param).asInstanceOf[T] else defaultValue.asInstanceOf[T]
-      }
-      
-      val defaultParams = algoInfos.get("pdio-knnitembased").get.paramdefaults
-      
-      val distanceFunc: String = algoParamGetOrElse[String](algo, "measureParam", defaultParams("measureParam"))
-      val virtualCount: Int = algoParamGetOrElse[Int](algo, "priorCountParam", defaultParams("priorCountParam"))
-      val priorCorrelation: Int = algoParamGetOrElse[Int](algo, "priorCorrelParam", defaultParams("priorCorrelParam"))
-
-      val minNumRaters: Int = algoParamGetOrElse[Int](algo, "minNumRatersParam", defaultParams("minNumRatersParam"))
-      val maxNumRaters: Int = algoParamGetOrElse[Int](algo, "maxNumRatersParam", defaultParams("maxNumRatersParam"))
-      val minIntersection: Int = algoParamGetOrElse[Int](algo, "minIntersectionParam", defaultParams("minIntersectionParam"))
-      val minNumRatedSim: Int = algoParamGetOrElse[Int](algo, "minNumRatedSimParam", defaultParams("minNumRatedSimParam"))
-
-      val viewAction: Int = algoParamGetOrElse[Int](algo, "viewParam", defaultParams("viewParam"))
-      val viewmoreAction: Int = algoParamGetOrElse[Int](algo, "viewmoreParam", defaultParams("viewmoreParam"))
-      val likeAction: Int = algoParamGetOrElse[Int](algo, "likeParam", defaultParams("likeParam"))
-      val dislikeAction: Int = algoParamGetOrElse[Int](algo, "dislikeParam", defaultParams("dislikeParam"))
-      val buyAction: Int = algoParamGetOrElse[Int](algo, "conversionParam", defaultParams("conversionParam"))
-      val overrideParam: String = algoParamGetOrElse[String](algo, "conflictParam", defaultParams("conflictParam"))
-      
       Ok(toJson(Map(
         "id" -> toJson(algo.id),
         "app_id" -> toJson(app_id),
-        "engine_id" -> toJson(engine_id),
-        "distanceFunc" -> toJson(distanceFunc),
-        "virtualCount" -> toJson(virtualCount),
-        "priorCorrelation" -> toJson(priorCorrelation),
-        "minNumRaters" -> toJson(minNumRaters),
-        "maxNumRaters" -> toJson(maxNumRaters),
-        "minIntersection" -> toJson(minIntersection),
-        "minNumRatedSim" -> toJson(minNumRatedSim),
-        "viewAction" -> toJson(viewAction),
-        "viewmoreAction" -> toJson(viewmoreAction),
-        "likeAction" -> toJson(likeAction),
-        "dislikeAction" -> toJson(dislikeAction),
-        "buyAction" -> toJson(buyAction),
-        "override" -> toJson(overrideParam)
-      )))
+        "engine_id" -> toJson(engine_id)
+        ) ++ (algo.params map { case (k,v) => (k, toJson(v.toString))})
+      ))
+
     } getOrElse {
       NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
     }

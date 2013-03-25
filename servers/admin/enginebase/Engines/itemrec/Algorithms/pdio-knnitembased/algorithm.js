@@ -18,19 +18,19 @@ var PdioKnnItemBasedAlgoSettingsView = Backbone.View.extend({
 		this.model.fetch({
 			success: function() {
 				self.render();
-				self.initValue('distanceFunc');
-				self.initValue('virtualCount');
-				self.initValue('priorCorrelation');
-				self.initValue('minNumRaters');
-				self.initValue('maxNumRaters');
-				self.initValue('minIntersection');
-				self.initValue('minNumRatedSim');
-				self.initValue('viewAction');
-				self.initValue('viewmoreAction');
-				self.initValue('likeAction');
-				self.initValue('dislikeAction');
-				self.initValue('buyAction');
-				self.initValue('override');
+				self.initValue('measureParam');
+				self.initValue('priorCountParam');
+				self.initValue('priorCorrelParam');
+				self.initValue('minNumRatersParam');
+				self.initValue('maxNumRatersParam');
+				self.initValue('minIntersectionParam');
+				self.initValue('minNumRatedSimParam');
+				self.initValue('viewParam');
+				self.initValue('viewmoreParam');
+				self.initValue('likeParam');
+				self.initValue('dislikeParam');
+				self.initValue('conversionParam');
+				self.initValue('conflictParam');
 			}
 		});
     },
