@@ -11,7 +11,7 @@ import play.api.libs.json._
 
 import controllers.Application.{algos, withUser, algoInfos}
 
-object PdioKnnItemBased extends Controller {
+object MahoutSlopeOne extends Controller {
   
   def updateSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
     /* request payload
@@ -23,15 +23,8 @@ object PdioKnnItemBased extends Controller {
       "id" -> number, // algoid
       "app_id" -> number,
       "engine_id" -> number,
-      "measureParam" -> nonEmptyText, // TODO: verifying
-      "priorCountParam" -> number,
-      "priorCorrelParam" -> nonEmptyText, // TODO: verifying double?
-      "minNumRatersParam" -> number,
-      "maxNumRatersParam" -> number,
-      "minIntersectionParam" -> number,
-      "minNumRatedSimParam" -> number,
+      "weighting" -> nonEmptyText, // TODO: verifying
       "viewParam" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
-      "viewmoreParam" -> nonEmptyText,
       "likeParam" -> nonEmptyText,
       "dislikeParam" -> nonEmptyText,
       "conversionParam" -> nonEmptyText,
@@ -46,8 +39,8 @@ object PdioKnnItemBased extends Controller {
       },
       formData => {
         val (id, appId, engineId, 
-          measureParam, priorCountParam, priorCorrelParam, minNumRatersParam, maxNumRatersParam, minIntersectionParam, minNumRatedSimParam,
-          viewParam, viewmoreParam, likeParam, dislikeParam, conversionParam, conflictParam) = formData
+          weighting,
+          viewParam, likeParam, dislikeParam, conversionParam, conflictParam) = formData
         
         // get original Algo first
         val optAlgo: Option[Algo] = algos.get(id)
@@ -55,15 +48,8 @@ object PdioKnnItemBased extends Controller {
         optAlgo map { algo =>
           val updatedAlgo = algo.copy(
             params = algo.params ++ Map( // NOTE: read-modify-write!
-                "measureParam" -> measureParam, 
-                "priorCountParam" -> priorCountParam,
-                "priorCorrelParam" -> priorCorrelParam,
-                "minNumRatersParam" -> minNumRatersParam,
-                "maxNumRatersParam" -> maxNumRatersParam,
-                "minIntersectionParam" -> minIntersectionParam,
-                "minNumRatedSimParam" -> minNumRatedSimParam,
+                "weighting" -> weighting,
                 "viewParam" -> viewParam,
-                "viewmoreParam" -> viewmoreParam,
                 "likeParam" -> likeParam,
                 "dislikeParam" -> dislikeParam,
                 "conversionParam" -> conversionParam,
@@ -106,14 +92,13 @@ object PdioKnnItemBased extends Controller {
     val optAlgo: Option[Algo] = algos.get(algo_id.toInt)
     
     optAlgo map { algo =>
-      
+
       Ok(toJson(Map(
         "id" -> toJson(algo.id),
         "app_id" -> toJson(app_id),
         "engine_id" -> toJson(engine_id)
         ) ++ (algo.params map { case (k,v) => (k, toJson(v.toString))})
       ))
-
     } getOrElse {
       NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
     }

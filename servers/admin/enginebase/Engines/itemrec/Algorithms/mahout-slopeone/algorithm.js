@@ -1,32 +1,25 @@
-var PdioKnnItemBasedAlgoSettingsModel = Backbone.Model.extend({
+var MahoutSlopeOneAlgoSettingsModel = Backbone.Model.extend({
 	/* Required params: app_id, engine_id, id (algo_id) */
 	urlRoot: function(){ 
-		return '/modules/itemrec/settings/app/'+ this.get("app_id") +'/engine/' + this.get("engine_id") + '/pdio-knnitembased';
+		return '/modules/itemrec/settings/app/'+ this.get("app_id") +'/engine/' + this.get("engine_id") + '/mahout-slopeone';
 	}
 });
 
-var PdioKnnItemBasedAlgoSettingsView = Backbone.View.extend({
-    el: '#pdio-knnitembasedContentHolder', 
+var MahoutSlopeOneAlgoSettingsView = Backbone.View.extend({
+    el: '#mahout-slopeoneContentHolder', 
     initialize : function() {
-    	this.form_el = '#pdio-knnitembasedForm';
-        this.template = _.template($("#pdio-knnitembasedTemplate").html());
+    	this.form_el = '#mahout-slopeoneForm';
+        this.template = _.template($("#mahout-slopeoneTemplate").html());
 		this.app_id = this.options.app_id;
 		this.engine_id = this.options.engine_id;
 		this.algo_id = this.options.algo_id;
-		this.model = new PdioKnnItemBasedAlgoSettingsModel({app_id: this.app_id, engine_id: this.engine_id, id: this.algo_id})
+		this.model = new MahoutSlopeOneAlgoSettingsModel({app_id: this.app_id, engine_id: this.engine_id, id: this.algo_id})
 		var self = this;
 		this.model.fetch({
 			success: function() {
 				self.render();
-				self.initValue('measureParam');
-				self.initValue('priorCountParam');
-				self.initValue('priorCorrelParam');
-				self.initValue('minNumRatersParam');
-				self.initValue('maxNumRatersParam');
-				self.initValue('minIntersectionParam');
-				self.initValue('minNumRatedSimParam');
+				self.initValue('weighting');
 				self.initValue('viewParam');
-				self.initValue('viewmoreParam');
 				self.initValue('likeParam');
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
@@ -36,11 +29,11 @@ var PdioKnnItemBasedAlgoSettingsView = Backbone.View.extend({
     },
     initValue: function(attrName){
 		var value = this.model.get(attrName);
-		this.$el.find('#pdio-knnitembased_'+attrName).val(value);
+		this.$el.find('#mahout-slopeone_'+attrName).val(value);
     },
 	events: {
-		"change #pdio-knnitembasedForm input":  "formDataChanged",
-		"change #pdio-knnitembasedForm select":  "formDataChanged"
+		"change #mahout-slopeoneForm input":  "formDataChanged",
+		"change #mahout-slopeoneForm select":  "formDataChanged"
 	},
     render : function() {
         this.$el.html(this.template());
@@ -82,5 +75,5 @@ var PdioKnnItemBasedAlgoSettingsView = Backbone.View.extend({
 });
 
 createAlgorithmView = function(app_id, engine_id, algo_id) { // Required Algorithm Module Function
-    return new PdioKnnItemBasedAlgoSettingsView({app_id: app_id, engine_id: engine_id, algo_id: algo_id});
+    return new MahoutSlopeOneAlgoSettingsView({app_id: app_id, engine_id: engine_id, algo_id: algo_id});
 };

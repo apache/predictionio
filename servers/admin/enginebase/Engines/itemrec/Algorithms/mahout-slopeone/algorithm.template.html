@@ -1,6 +1,6 @@
-<script type="text/template" id="pdio-knnitembasedTemplate">
+<script type="text/template" id="mahout-slopeoneTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="pdio-knnitembasedForm">
+                        <form id="mahout-slopeoneForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
@@ -19,70 +19,19 @@
 
                                         <div class="boxContent">
                                             <div class="form-horizontal">
-                                                <h5>Item Similarity Measurement</h5>
+                                                <h5>Weighting Settings</h5>
+                                                <p>Weighting could be based on count or based on standard deviation.</p>
                                                 <div class="control-group">
-                                                    <label for="measureParam" class="control-label">Distance Function </label>
+                                                    <label for="weighting" class="control-label">Weighting</label>
                                                     <div class="controls">
-                                                        <select name="measureParam" id="pdio-knnitembased_measureParam">
-                                                            <option value="correl">Pearson Correlation Similarity</option>
-                                                            <option value="cosine">Cosine Similarity</option>
-                                                            <option value="jaccard">Jaccard Similarity</option>
+                                                        <select name="weighting" id="mahout-slopeone_weighting" class="span3">
+                                                            <option value="No_Weighting">No_Weighting</option>
+                                                            <option value="Count">Count</option>
+                                                            <option value="Standard_Deviation">Standard_Deviation</option>
                                                         </select>
+                                                        <span class="help-inline">Weighted preference difference.</span>
                                                     </div>
                                                 </div>
-    
-                                                <h5>Regularization</h5>
-                                                <p>
-                                                   Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.
-                                                </p>
-                                                <div class="control-group">
-                                                    <label for="priorCountParam" class="control-label">Virtual Count</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_priorCountParam" name="priorCountParam" class="span1" type="text" value="50">
-                                                        <span class="help-inline">Suggested range: 0 to 100. Default 50.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="priorCorrelParam" class="control-label">Prior Correlation</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_priorCorrelParam" name="priorCorrelParam" class="span1" type="text" value="0">
-                                                        <span class="help-inline">Suggested range: 0 to 50. Default 0.</span>
-                                                    </div>
-                                                </div>
-
-                                                <h5>Advanced Parameters</h5>
-                                                <p>
-                                                    Filters to speed up computation and reduce noise.
-                                                </p>
-                                                <div class="control-group">
-                                                    <label for="minNumRatersParam" class="control-label">Minimum Number of Raters of an Item</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_minNumRatersParam" name="minNumRatersParam" class="span1" type="text" value="1">
-                                                        <span class="help-inline">Default: 1.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="maxNumRatersParam" class="control-label">Maximum Number of Raters of an Item</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_maxNumRatersParam" name="maxNumRatersParam" class="span2" type="text" value="10000">
-                                                        <span class="help-inline">Default: 10000.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="minIntersectionParam" class="control-label">Minimum Intersection</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_minIntersectionParam" name="minIntersectionParam" class="span1" type="text" value="1">
-                                                        <span class="help-inline">Default: 1.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="control-group">
-                                                    <label for="minNumRatedSimParam" class="control-label">Minimum Number of Rated Similar Items</label>
-                                                    <div class="controls">
-                                                        <input id="pdio-knnitembased_minNumRatedSimParam" name="minNumRatedSimParam" class="span1" type="text" value="1">
-                                                        <span class="help-inline">Default: 1.</span>
-                                                    </div>
-                                                </div>
-
                                             </div>
                                         </div>
                                     </div>
@@ -96,9 +45,9 @@
                                                 <h5>User Action Scores</h5>
                                                 <p>Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.</p>
                                                 <div class="control-group">
-                                                    <label for="viewParam" class="control-label">View</label>
+                                                    <label for="view" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_viewParam" name="viewParam" class="span2">
+                                                        <select id="mahout-slopeone_viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -110,9 +59,9 @@
                                                 </div>
 <!-- TODO
                                                 <div class="control-group">
-                                                    <label for="viewmoreParam" class="control-label">View More</label>
+                                                    <label for="viewMore" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_viewmoreParam" name="viewmoreParam" class="span2">
+                                                        <select id="mahout-slopeone_viewmoreAction" name="viewmoreAction" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -124,9 +73,9 @@
                                                 </div>
 -->
                                                 <div class="control-group">
-                                                    <label for="likeParam" class="control-label">Like</label>
+                                                    <label for="like" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_likeParam" name="likeParam" class="span2">
+                                                        <select id="mahout-slopeone_likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -137,9 +86,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
-                                                    <label for="dislikeParam" class="control-label">Dislike</label>
+                                                    <label for="dislike" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_dislikeParam" name="dislikeParam" class="span2">
+                                                        <select id="mahout-slopeone_dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -150,9 +99,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
-                                                    <label for="conversionParam" class="control-label">Buy</label>
+                                                    <label for="buy" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_conversionParam" name="conversionParam" class="span2">
+                                                        <select id="mahout-slopeone_conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -165,9 +114,9 @@
                                                 <h5>Overriding</h5>
                                                 <p>When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.</p>
                                                 <div class="control-group">
-                                                    <label for="conflictParam" class="control-label">Override Priority</label>
+                                                    <label for="override" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_conflictParam" name="conflictParam" class="span5">
+                                                        <select id="mahout-slopeone_conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -186,4 +135,4 @@
                         </div>
 </script>
 
-<div id="pdio-knnitembasedContentHolder"></div>
+<div id="mahout-slopeoneContentHolder"></div>

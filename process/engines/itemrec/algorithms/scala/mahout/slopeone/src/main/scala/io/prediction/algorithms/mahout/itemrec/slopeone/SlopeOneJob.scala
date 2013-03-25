@@ -19,17 +19,23 @@ import org.apache.mahout.cf.taste.impl.recommender.slopeone.MemoryDiffStorage
 class SlopeOneJob extends MahoutJob {
 
   override def run(args: Map[String, String]) = {
-
     val input = args("input")
     val output = args("output")
     val numRecommendations: Int = getArgOpt(args, "numRecommendations", "10").toInt
-    val weightingArg: Boolean = getArgOpt(args, "weighting", "true").toBoolean // weighted slope one recommender
-    val stdDevWeightingArg: Boolean = getArgOpt(args, "stdDevWeighting", "true").toBoolean // weights item-item ratings diffs with lower standard deviation more highly
+    // Weighting param:
+    // - No_Weighting:
+    // - Count: 
+    // - Standard_Deviation: Weights preference difference with lower standard deviation more highly.
+    val weightingArg: String = getArgOpt(args, "weighting", "Standard_Deviation") // weighted slope one recommender
 
     val dataModel: DataModel = new FileDataModel(new File(input))
 
-    val weighting: Weighting = if (weightingArg) Weighting.WEIGHTED else Weighting.UNWEIGHTED
-    val stdDevWeighting: Weighting = if (stdDevWeightingArg) Weighting.WEIGHTED else Weighting.UNWEIGHTED
+    val (weighting, stdDevWeighting): (Weighting, Weighting) = weightingArg match {
+      case "No_Weighting" => (Weighting.UNWEIGHTED, Weighting.UNWEIGHTED)
+      case "Count" => (Weighting.WEIGHTED, Weighting.UNWEIGHTED)
+      case "Standard_Deviation" => (Weighting.WEIGHTED, Weighting.WEIGHTED)
+      case _ => throw new RuntimeException("Invalid weighting parameter: " + weightingArg)
+    }
 
     val recommender: Recommender = new SlopeOneRecommender(dataModel,
          weighting, // weighting
