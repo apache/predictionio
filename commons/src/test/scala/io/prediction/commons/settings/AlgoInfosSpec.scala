@@ -26,6 +26,6 @@ class AlgoInfosSpec extends Specification { def is =
   }
 
   def getByEngineType(algoinfos: AlgoInfos) = {
-    algoinfos.getByEngineType("itemrec").size must beEqualTo(7)
+    algoinfos.getByEngineType("itemrec").size must beEqualTo(8)
   }
 }

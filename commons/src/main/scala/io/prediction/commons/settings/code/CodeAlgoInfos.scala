@@ -280,7 +280,51 @@ class CodeAlgoInfos extends AlgoInfos {
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
-
+    "mahout-slopeone" -> AlgoInfo(
+      id = "mahout-slopeone",
+      name = "Mahout's SlopeOne Rating Based Collaborative Filtering (Non-distributed)",
+      description = Some("Predicts user preferences based on average difference in preference values between new items and the items for which the user has indicated preferences (Non-distributed)."),
+      batchcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $itemrecScalaMahoutJar$ io.prediction.algorithms.mahout.itemrec.slopeone.SlopeOneJob --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numRecommendations $numRecommendations$ --weighting $weighting$ --stdDevWeighting $stdDevWeighting$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
+      offlineevalcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $itemrecScalaMahoutJar$ io.prediction.algorithms.mahout.itemrec.slopeone.SlopeOneJob --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --numRecommendations $numRecommendations$ --weighting $weighting$ --stdDevWeighting $stdDevWeighting$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$")),
+      paramdefaults = Map(
+        "weighting" -> true,
+        "stdDevWeighting" -> true,
+        "viewParam" -> 3,
+        "viewmoreParam" -> 3,
+        "likeParam" -> 5,
+        "dislikeParam" -> 1,
+        "conversionParam" -> 4,
+        "conflictParam" -> "latest"), // latest, highest, lowest
+      paramdescription = Map(
+        "weighting" -> ("Weighting", "Weighted preference difference."),
+        "stdDevWeighting" -> ("Standard Deviation Weighting", "Weights preference difference with lower standard deviation more highly."),
+        "viewParam" -> ("View Score", ""),
+        "viewmoreParam" -> ("View More Score", ""),
+        "likeParam" -> ("Like Score", ""),
+        "dislikeParam" -> ("Dislike Score", ""),
+        "conversionParam" -> ("Buy Score", ""),
+        "conflictParam" -> ("Override", "")),
+      paramorder = Seq(
+        "weighting",
+        "stdDevWeighting",
+        "viewParam",
+        //"viewmoreParam", // not visible for now
+        "likeParam",
+        "dislikeParam",
+        "conversionParam",
+        "conflictParam"),
+      enginetype = "itemrec",
+      techreq = Seq("Hadoop"),
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
+    ),
     "pdio-randomrank" -> AlgoInfo(
       id = "pdio-randomrank",
       name = "Random Rank",
@@ -318,6 +362,7 @@ class CodeAlgoInfos extends AlgoInfos {
     "mahout-parallelals",
     "mahout-knnuserbased",
     "mahout-thresholduserbased",
+    "mahout-slopeone",
     "pdio-randomrank",
     "pdio-latestrank"))
 
