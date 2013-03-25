@@ -7,11 +7,13 @@ object PredictionIOAlgorithmsScalaMahoutBuild extends Build {
     base = file(".")).aggregate(
     commons,
     algo_thresholduserbased,
-    algo_knnuserbased
+    algo_knnuserbased,
+    algo_slopeone
   ).dependsOn(
     commons,
     algo_thresholduserbased,
-    algo_knnuserbased
+    algo_knnuserbased,
+    algo_slopeone
   )
 
   lazy val commons = Project(
@@ -25,5 +27,9 @@ object PredictionIOAlgorithmsScalaMahoutBuild extends Build {
   lazy val algo_knnuserbased = Project(
     id = "algo-knnuserbased",
     base = file("knnuserbased")) dependsOn commons
+
+  lazy val algo_slopeone = Project(
+    id = "algo-slopeone",
+    base = file("slopeone")) dependsOn commons
 
 }
