@@ -76,6 +76,7 @@ object Jobs {
     val job = newJob(classOf[OfflineEvalJob]) withIdentity(offlineEval.id.toString, offlineEvalJobGroup) storeDurably(true) build()
     job.getJobDataMap().put("evalid", offlineEval.id)
     job.getJobDataMap().put("splitCommand", splitCommand.toString)
+    job.getJobDataMap().put("enginetype", engine.enginetype)
 
     /** Training algo job. */
     val algosToRun = config.getSettingsAlgos.getByOfflineEvalid(offlineEval.id).toList
@@ -225,12 +226,11 @@ class OfflineEvalJob extends InterruptableJob {
 
   override def execute(context: JobExecutionContext): Unit = {
     val jobDataMap = context.getMergedJobDataMap
-    //val appid = jobDataMap.getInt("appid")
-    //val engineid = jobDataMap.getInt("engineid")
     val evalid = jobDataMap.getInt("evalid")
     val algoids = jobDataMap.getString("algoids").split(",") map { _.toInt }
     val metricids = jobDataMap.getString("metricids").split(",") map { _.toInt }
     val splitCommand = jobDataMap.getString("splitCommand")
+    val enginetype = jobDataMap.getString("enginetype")
 
     val offlineEvals = Scheduler.offlineEvals
 
@@ -244,6 +244,14 @@ class OfflineEvalJob extends InterruptableJob {
       Logger.info(s"${logPrefix}Starting offline evaluation")
       /** Mark the start time */
       offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
+
+      /** Delete old model data, if any (usually recovering from an incomplete run) */
+      enginetype match {
+        case "itemrec" => algoids foreach { algoid =>
+          Logger.info(s"${logPrefix}Algo ID $algoid: Deleting any old model data")
+          Scheduler.itemRecScores.deleteByAlgoid(algoid)
+        }
+      }
 
       /** Run and wait on splitting */
       Logger.info(s"${logPrefix}(Split) Going to run: $splitCommand")
