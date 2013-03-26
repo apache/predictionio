@@ -3,10 +3,16 @@ package io.prediction.commons.mahout.itemrec
 import java.io.File
 import java.io.FileWriter
 
+import scala.collection.JavaConversions._
+
 import scala.sys.process._
 
 import io.prediction.commons.filepath.{DataFile, AlgoFile}
 import io.prediction.commons.Config
+
+import org.apache.mahout.cf.taste.recommender.Recommender
+import org.apache.mahout.cf.taste.model.DataModel
+import org.apache.mahout.cf.taste.impl.model.file.FileDataModel
 
 /** main function to run non-distributed Mahout Job */
 object MahoutJob {
@@ -116,13 +122,42 @@ abstract class MahoutJob {
     args ++ Map("input" -> localRatingsPath, "output" -> localPredictedPath, "hdfsOutput" -> hdfsPredictedPath)
   }
 
+  /** create and return Mahout's Recommender object. */
+  def buildRecommender(dataModel: DataModel, args: Map[String, String]): Recommender
+
   /** Run algo job.
     In default implementation, the prepare() function copies the ratings.csv from HDFS to local temporary directory.
     The run() function should read and process this local file (defined by --input arg) file and generate the prediction 
     output file (defined by --output arg) for each user.
     Then finish() function copies the local prediction output file to HDFS predicted.tsv
   */
-  def run(args: Map[String, String]): Map[String, String]
+  def run(args: Map[String, String]): Map[String, String] = {
+
+    val input = args("input")
+    val output = args("output")
+    val numRecommendations: Int = getArgOpt(args, "numRecommendations", "10").toInt
+    
+    val dataModel: DataModel = new FileDataModel(new File(input))
+    val recommender: Recommender = buildRecommender(dataModel, args)
+
+    // generate prediction output file
+    val outputWriter = new FileWriter(new File(output))
+
+    val userIds = dataModel.getUserIDs
+
+    while (userIds.hasNext) {
+      val uid = userIds.next
+      val rec = recommender.recommend(uid, numRecommendations)
+      if (rec.size != 0) {
+        val prediction = uid+"\t"+"[" + (rec map {x => x.getItemID +":"+x.getValue }).mkString(",") + "]"
+        outputWriter.write(prediction+"\n")
+      }
+    }
+
+    outputWriter.close()
+
+    args
+  }
 
   /** finish stage for algo */
   def finish(args: Map[String, String]): Map[String, String] = {

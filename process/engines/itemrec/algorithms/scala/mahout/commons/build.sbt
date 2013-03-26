@@ -10,6 +10,8 @@ libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT"
 )
 
+libraryDependencies += "org.apache.mahout" % "mahout-core" % "0.7"
+
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
