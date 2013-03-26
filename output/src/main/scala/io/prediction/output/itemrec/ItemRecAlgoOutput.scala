@@ -88,6 +88,7 @@ object ItemRecAlgoOutput {
       case "pdio-knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "pdio-randomrank" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "pdio-latestrank" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
+      case "mahout-alswr" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "mahout-itembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "mahout-knnuserbased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "mahout-parallelals" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)

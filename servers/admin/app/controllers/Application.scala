@@ -685,7 +685,8 @@ object Application extends Controller {
       "mahout-parallelals",
       "mahout-knnuserbased",
       "mahout-thresholduserbased",
-      "mahout-slopeone"
+      "mahout-slopeone",
+      "mahout-alswr"
   )
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>

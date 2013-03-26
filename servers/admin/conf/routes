@@ -70,3 +70,5 @@ GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-threshold
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-thresholduserbased/:algo_id     controllers.Itemrec.MahoutThresholdUserBased.updateSettings(app_id, engine_id, algo_id)
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-slopeone/:algo_id     controllers.Itemrec.MahoutSlopeOne.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-slopeone/:algo_id     controllers.Itemrec.MahoutSlopeOne.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-alswr/:algo_id     controllers.Itemrec.MahoutALSWR.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-alswr/:algo_id     controllers.Itemrec.MahoutALSWR.updateSettings(app_id, engine_id, algo_id)

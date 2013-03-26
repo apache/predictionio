@@ -322,6 +322,55 @@ class CodeAlgoInfos extends AlgoInfos {
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
+    "mahout-alswr" -> AlgoInfo(
+      id = "mahout-alswr",
+      name = "Mahout's ALS-WR (Non-distributed)",
+      description = Some("Predict user preferences using matrix factorization (Non-distributed)."),
+      batchcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $itemrecScalaMahoutJar$ io.prediction.algorithms.mahout.itemrec.alswr.ALSWRJob --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numRecommendations $numRecommendations$ --numFeatures $numFeatures$ --lambda $lambda$ --numIterations $numIterations$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$")),
+      offlineevalcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataCopy --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -jar $itemrecScalaMahoutJar$ io.prediction.algorithms.mahout.itemrec.alswr.ALSWRJob --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --numRecommendations $numRecommendations$ --numFeatures $numFeatures$ --lambda $lambda$ --numIterations $numIterations$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$")),
+      paramdefaults = Map(
+        "numFeatures" -> 3,
+        "lambda" -> 0.03,
+        "numIterations" -> 3,
+        "viewParam" -> 3,
+        "viewmoreParam" -> 3,
+        "likeParam" -> 5,
+        "dislikeParam" -> 1,
+        "conversionParam" -> 4,
+        "conflictParam" -> "latest"), // latest, highest, lowest
+      paramdescription = Map(
+        "numFeatures" -> ("Num of Factorized Features", "Dimension of the factorized feature space."),
+        "lambda" -> ("Lambda", "Regularization param to avoid overfitting."),
+        "numIterations" -> ("Number of Iterations", "Number of training iteration."),
+        "viewParam" -> ("View Score", ""),
+        "viewmoreParam" -> ("View More Score", ""),
+        "likeParam" -> ("Like Score", ""),
+        "dislikeParam" -> ("Dislike Score", ""),
+        "conversionParam" -> ("Buy Score", ""),
+        "conflictParam" -> ("Override", "")),
+      paramorder = Seq(
+        "numFeatures",
+        "lambda",
+        "numIterations",
+        "viewParam",
+        //"viewmoreParam", // not visible for now
+        "likeParam",
+        "dislikeParam",
+        "conversionParam",
+        "conflictParam"),
+      enginetype = "itemrec",
+      techreq = Seq("Hadoop"),
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
+    ),
+
     "pdio-randomrank" -> AlgoInfo(
       id = "pdio-randomrank",
       name = "Random Rank",
@@ -360,6 +409,7 @@ class CodeAlgoInfos extends AlgoInfos {
     "mahout-knnuserbased",
     "mahout-thresholduserbased",
     "mahout-slopeone",
+    "mahout-alswr",
     "pdio-randomrank",
     "pdio-latestrank"))
 
