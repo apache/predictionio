@@ -5,11 +5,11 @@
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.0.4"
-VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-distribution-0.7"
+VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-0.8-snapshot-1935"
 VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.2.3"
 
 VENDOR_HADOOP_NAME="Apache Hadoop 1.0.4"
-VENDOR_MAHOUT_NAME="Apache Mahout 0.7"
+VENDOR_MAHOUT_NAME="Apache Mahout 0.8-SNAPSHOT Build 1935"
 VENDOR_MONGODB_NAME="MongoDB 2.2.3 (64-bit Linux)"
 
 # Utilities
@@ -61,15 +61,9 @@ install_hadoop () {
 
 install_mahout () {
 	echo "Going to download and install $VENDOR_MAHOUT_NAME..."
-	local VENDORS_PATH=$1
-	mkdir -p $VENDORS_PATH
-	cd $VENDORS_PATH
-	echo "Retrieving Apache mirror list..."
-	curl -o apache_mahout_mirrors.txt http://www.apache.org/dyn/closer.cgi/mahout/0.7/mahout-distribution-0.7.tar.gz
-	MAHOUT_URL=$(cat apache_mahout_mirrors.txt | grep -m 1 "<strong>.*</strong>" | sed 's/.*<strong>//' | sed 's/<\/strong>.*//')
-	echo "Found mirror: $MAHOUT_URL"
-	curl -o mahout-distribution-0.7.tar.gz $MAHOUT_URL
-	tar zxvf mahout-distribution-0.7.tar.gz
+	mkdir -p $VENDOR_MAHOUT_PATH
+	cd $VENDOR_MAHOUT_PATH
+	curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
 }
 
 start_mongodb () {
@@ -93,5 +87,5 @@ vendor_hadoop_exists () {
 }
 
 vendor_mahout_exists () {
-	[ -e "$VENDOR_MAHOUT_PATH/mahout-core-0.7-job.jar" ]
+	[ -e "$VENDOR_MAHOUT_PATH/mahout-core-0.8-SNAPSHOT-job.jar" ]
 }
