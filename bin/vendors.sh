@@ -26,10 +26,29 @@ install_play () {
 	unzip play-2.1.0.zip
 }
 
+install_mahout () {
+	echo "Going to download and build Apache Mahout 0.8 Build 1935..."
+	mkdir -p $LIB_MAHOUT
+	cd $LIB_MAHOUT
+	if [ ! -f mahout-core-0.8-SNAPSHOT.jar ] ; then
+		curl -o mahout-core-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT.jar
+	fi
+	if [ ! -f mahout-math-0.8-SNAPSHOT.jar ] ; then
+		curl -o mahout-math-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/math/target/mahout-math-0.8-SNAPSHOT.jar
+	fi
+	mkdir -p $VENDOR_MAHOUT
+	cd $VENDOR_MAHOUT
+	if [ ! -f mahout-core-0.8-SNAPSHOT-job.jar ] ; then
+		curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
+	fi
+}
+
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_SBT="$VENDORS_PATH/sbt-0.12.2/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.1.0/play"
+VENDOR_MAHOUT="$VENDORS_PATH/mahout-0.8-snapshot-1935"
+LIB_MAHOUT="$BASE/process/engines/itemrec/algorithms/scala/mahout/commons/lib"
 
 # Detect existing installations in search path
 # Do not use existing sbt to enforce JVM settings
@@ -56,5 +75,14 @@ elif install_play "$VENDORS_PATH" ; then
 	PLAY="$VENDOR_PLAY"
 else
 	echo "Unable to locate play and automatic installation failed. Aborting." >&2
+	exit 1
+fi
+
+if [ -r "$LIB_MAHOUT/mahout-core-0.8-SNAPSHOT.jar" -a -r "$LIB_MAHOUT/mahout-math-0.8-SNAPSHOT.jar" -a -r "$VENDOR_MAHOUT/mahout-core-0.8-SNAPSHOT-job.jar" ] ; then
+	echo "Using Apache Mahout 0.8 Build 1935 in vendors."
+elif install_mahout ; then
+	echo ""
+else
+	echo "Unable to locate Apache Mahout 0.8 Build 1935 and automatic installation failed. Aborting." >&2
 	exit 1
 fi
