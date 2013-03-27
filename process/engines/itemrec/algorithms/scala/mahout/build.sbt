@@ -18,3 +18,11 @@ resolvers in ThisBuild ++= Seq(
 assemblySettings
 
 test in assembly := {}
+
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => 
+  {
+    case ("org/xmlpull/v1/XmlPullParser.class") => MergeStrategy.rename
+    case ("org/xmlpull/v1/XmlPullParserException.class") => MergeStrategy.rename
+    case x => old(x)
+  }
+}
