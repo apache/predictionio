@@ -72,3 +72,7 @@ GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-slopeone/
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-slopeone/:algo_id     controllers.Itemrec.MahoutSlopeOne.updateSettings(app_id, engine_id, algo_id)
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-alswr/:algo_id     controllers.Itemrec.MahoutALSWR.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-alswr/:algo_id     controllers.Itemrec.MahoutALSWR.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdsgd/:algo_id     controllers.Itemrec.MahoutSVDSGD.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdsgd/:algo_id     controllers.Itemrec.MahoutSVDSGD.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdplusplus/:algo_id     controllers.Itemrec.MahoutSVDPlusPlus.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdplusplus/:algo_id     controllers.Itemrec.MahoutSVDPlusPlus.updateSettings(app_id, engine_id, algo_id)
