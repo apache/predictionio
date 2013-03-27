@@ -6,11 +6,11 @@
 VENDORS_PATH="$BASE/vendors"
 VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.0.4"
 VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-0.8-snapshot-1935"
-VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.2.3"
+VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.1"
 
 VENDOR_HADOOP_NAME="Apache Hadoop 1.0.4"
 VENDOR_MAHOUT_NAME="Apache Mahout 0.8-SNAPSHOT Build 1935"
-VENDOR_MONGODB_NAME="MongoDB 2.2.3 (64-bit Linux)"
+VENDOR_MONGODB_NAME="MongoDB 2.4.1 (64-bit Linux)"
 
 # Utilities
 command_exists () {
@@ -26,8 +26,8 @@ install_mongodb () {
 	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -o mongodb-linux-x86_64-2.2.3.tgz http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.2.3.tgz
-	tar zxvf mongodb-linux-x86_64-2.2.3.tgz
+	curl -o mongodb-linux-x86_64-2.4.1.tgz http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.4.1.tgz
+	tar zxvf mongodb-linux-x86_64-2.4.1.tgz
 }
 
 install_hadoop () {
