@@ -41,6 +41,23 @@ function createDialog(title, content, params) {
 	$('#dialog_template').attr('title',title).find('#dialog_text').text(content).end().dialog(params);
 }
 
+/* Notification functions */
+function notifyInfo(message, title, optionsOverride) {
+	return toastr.info(message, title, optionsOverride);
+}
+
+function notifySuccess(message, title, optionsOverride) {
+	return toastr.success(message, title, optionsOverride);
+}
+
+function notifyError(message, title, optionsOverride) {
+	return toastr.error(message, title, optionsOverride);
+}
+
+function notifyClear(element) {
+	return toastr.clear(element);
+}
+
 $(function() {
 	// TODO: prevent "a href='#'" behavior
 
@@ -447,13 +464,13 @@ var AppView = Backbone.View.extend({
 		      modal: true,
 		      buttons: {
 		        "Erase All Data": function() {
-		        	var erasingInfo = toastr.info('Erasing All Application Data...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
+		        	var erasingInfo = notifyInfo('Erasing All Application Data...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
 		    		$.post(getAPIUrl("app/erasedata/"+self.id), function() {
 		    			self.appDetailsView.model.fetch(); // refresh data
-		    			toastr.clear(erasingInfo);
-		    			toastr.info('Data Erased.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
+		    			notifyClear(erasingInfo);
+		    			notifyInfo('Data Erased.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
 		    		}).error(function(res) {
-		    			toastr.clear(erasingInfo);
+		    			notifyClear(erasingInfo);
 		    			alert("An error has occured: "+res.status);
 		    		});
 		    		$( this ).dialog( "close" );
@@ -473,15 +490,15 @@ var AppView = Backbone.View.extend({
 		      modal: true,
 		      buttons: {
 		        "Delete Application": function() {
-		        	var deletingInfo = toastr.info('Deleting Application...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
+		        	var deletingInfo = notifyInfo('Deleting Application...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
 		    		self.model.destroy({
 		    			success: function(model, res) {
-		    				toastr.clear(deletingInfo);
-		    				toastr.info('Application Deleted.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
+		    				notifyClear(deletingInfo);
+		    				notifyInfo('Application Deleted.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
 		    				self.close();
 		    			},
 		    			error: function(model, res) {
-		    				toastr.clear(deletingInfo);
+		    				notifyClear(deletingInfo);
 		    				alert("An error has occured. HTTP Status Code: " + res.status);
 		    			}
 		    		});
@@ -871,15 +888,15 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	trainnow: function() {
     	var self = this;
     	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo_trainnow';
-        var info = toastr.info('Requesting to train data model immediately...', '', {positionClass: 'toast-bottom-right', fadeOut: 1});
+        var info = notifyInfo('Requesting to train data model immediately...', '', {positionClass: 'toast-bottom-right', fadeOut: 1});
     	$.post(getAPIUrl(path), function(res) {
-            toastr.clear(info);
-            toastr.success(res.message, '', {positionClass: 'toast-bottom-right', timeOut: 2800});
+            notifyClear(info);
+            notifySuccess(res.message, '', {positionClass: 'toast-bottom-right', timeOut: 2800});
     	}).error(function(res) {
         	try { // show error message if fail
         		var resData = $.parseJSON(res.responseText);
-	            toastr.clear(info);
-	            toastr.error("HTTP " + res.status + ": " + resData.message, '', {positionClass: 'toast-bottom-right', timeOut: 5000});
+	            notifyClear(info);
+	            notifyError("HTTP " + res.status + ": " + resData.message, '', {positionClass: 'toast-bottom-right', timeOut: 5000});
         	} catch(err) {
         		alert("An error has occured. HTTP Status Code: " + res.status);
         	}
