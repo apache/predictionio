@@ -93,6 +93,8 @@ object ItemRecAlgoOutput {
       case "mahout-knnuserbased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "mahout-parallelals" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "mahout-slopeone" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
+      case "mahout-svdplusplus" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
+      case "mahout-svdsgd" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "mahout-thresholduserbased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case _ => throw new RuntimeException("Unsupported itemrec algorithm package: %s" format algo.infoid)
     }
