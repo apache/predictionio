@@ -1,4 +1,4 @@
-name := "PredictionIO Process ItemRec Algorithms Hadoop Scalding Mahout ItemBased"
+name := "PredictionIO Process ItemRec Algorithms Hadoop Scalding Mahout"
 
 version := "0.3-SNAPSHOT"
 

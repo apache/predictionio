@@ -1,4 +1,4 @@
-package io.prediction.algorithms.mahout.itemrec.itembased
+package io.prediction.algorithms.scalding.mahout.itemrec
 
 import org.specs2.mutable._
 
@@ -44,7 +44,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     val algoid = 5
     val evalid = None
 
-    JobTest("io.prediction.algorithms.mahout.itemrec.itembased.DataCopy")
+    JobTest("io.prediction.algorithms.scalding.mahout.itemrec.DataCopy")
       .arg("dbType", dbType)
       .arg("dbName", dbName)
       .arg("hdfsRoot", hdfsRoot)
@@ -73,7 +73,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
       .finish
 
 
-    JobTest("io.prediction.algorithms.mahout.itemrec.itembased.DataPreparator")
+    JobTest("io.prediction.algorithms.scalding.mahout.itemrec.DataPreparator")
       .arg("dbType", dbType)
       .arg("dbName", dbName)
       .arg("hdfsRoot", hdfsRoot)

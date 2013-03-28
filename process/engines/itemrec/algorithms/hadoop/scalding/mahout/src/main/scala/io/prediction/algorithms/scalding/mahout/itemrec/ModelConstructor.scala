@@ -1,4 +1,4 @@
-package io.prediction.algorithms.mahout.itemrec.itembased
+package io.prediction.algorithms.scalding.mahout.itemrec
 
 import com.twitter.scalding._
 

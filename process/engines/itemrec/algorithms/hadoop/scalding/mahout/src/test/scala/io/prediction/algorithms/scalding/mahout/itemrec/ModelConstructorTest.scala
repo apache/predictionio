@@ -1,4 +1,4 @@
-package io.prediction.algorithms.mahout.itemrec.itembased
+package io.prediction.algorithms.scalding.mahout.itemrec
 
 import org.specs2.mutable._
 
@@ -31,7 +31,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
     
     val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet)} 
 
-    JobTest("io.prediction.algorithms.mahout.itemrec.itembased.ModelConstructor")
+    JobTest("io.prediction.algorithms.scalding.mahout.itemrec.ModelConstructor")
       .arg("dbType", dbType)
       .arg("dbName", dbName)
       .arg("hdfsRoot", hdfsRoot)

@@ -8,12 +8,12 @@ object PredictionIOAlgorithmsHadoopScaldingBuild extends Build {
     algo_knnitembased,
     algo_randomrank,
     algo_latestrank,
-    algo_mahout_itembased
+    algo_mahout
   ).dependsOn(
     algo_knnitembased,
     algo_randomrank,
     algo_latestrank,
-    algo_mahout_itembased
+    algo_mahout
   )
 
   lazy val algo_knnitembased = Project(
@@ -28,8 +28,8 @@ object PredictionIOAlgorithmsHadoopScaldingBuild extends Build {
     id = "algo-latestrank",
     base = file("latestrank"))
 
-  lazy val algo_mahout_itembased = Project(
-    id = "algo-mahout-itembased",
-    base = file("mahout/itembased"))
+  lazy val algo_mahout = Project(
+    id = "algo-mahout",
+    base = file("mahout"))
 
 }
