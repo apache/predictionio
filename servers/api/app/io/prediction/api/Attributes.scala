@@ -1,4 +1,4 @@
-package io.prediction.output.api
+package io.prediction.api
 
 import play.api.data._
 
