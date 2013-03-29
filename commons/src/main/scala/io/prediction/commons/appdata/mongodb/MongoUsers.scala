@@ -21,7 +21,7 @@ class MongoUsers(db: MongoDB) extends Users {
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = user.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
     val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
-    userColl.insert(id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
+    userColl.save(id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
   def get(appid: Int, id: String) = userColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToUser(_) }

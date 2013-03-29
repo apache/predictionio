@@ -29,7 +29,7 @@ class MongoItems(db: MongoDB) extends Items {
     val lnglat = item.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = item.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
     val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
-    itemColl.insert(id ++ appid ++ ct ++ itypes ++ starttime ++ endtime ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
+    itemColl.save(id ++ appid ++ ct ++ itypes ++ starttime ++ endtime ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
   }
 
   def get(appid: Int, id: String) = {
