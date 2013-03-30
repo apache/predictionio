@@ -1,4 +1,4 @@
-package io.prediction.output.api
+package io.prediction.api
 
 import io.prediction.commons._
 import io.prediction.commons.appdata.{Item, U2IAction, User}
