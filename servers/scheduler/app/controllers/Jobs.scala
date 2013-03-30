@@ -38,21 +38,6 @@ object Jobs {
   def algoJob(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
     /** Build command from template. */
     val command = new StringTemplate(batchcommands.mkString(" && "))
-
-    // get default params value so old algo record still work even after algo default param is updated.
-    val algoinfos = config.getSettingsAlgoInfos
-    val defaultParams = algoinfos.get(algo.infoid) map { algoinfo =>
-      algoinfo.paramdefaults
-    } getOrElse {
-      throw new RuntimeException("No algo info found for this infoid: " + algo.infoid)
-    }
-
-    val params = defaultParams ++ algo.params
-    command.setAttributes(params)
-    engine.itypes foreach { it =>
-      command.setAttribute("itypes", "--itypes" + it.mkString(" "))
-    }
-
     setSharedAttributes(command, config, app, engine, Some(algo), None, None)
 
     /** Add a job, then build a trigger for it.
@@ -136,7 +121,8 @@ object Jobs {
 
     /** Algo-specific attributes */
     algo map { alg =>
-      command.setAttributes(command.attributes ++ alg.params)
+      val defaultParams = Scheduler.algoinfos.get(alg.infoid) map { _.paramdefaults } getOrElse Map[String, String]()
+      command.setAttributes(command.attributes ++ defaultParams ++ alg.params)
       command.setAttribute("jar", config.getJar(alg.infoid).getOrElse(""))
       command.setAttribute("algoid", alg.id)
       command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, alg.id, offlineEval.map(_.id)))
