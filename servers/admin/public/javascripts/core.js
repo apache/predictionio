@@ -571,19 +571,23 @@ var EngineStatusView = Backbone.View.extend({
 		this.app_id = getUrlParam("app_id");
 		this.engine_id = getUrlParam("engine_id");
 		this.enginetype_id = getUrlParam("enginetype_id");
+		this.model = new EngineModel({app_id: this.app_id, id: this.engine_id});
 	},
 	events: {
 		"click #engineStatusReloadBtn" : "render"
 	},
 	render : function() {
-		var self = this;
-		var engineModel = new EngineModel({app_id: this.app_id, id: this.engine_id});
-		engineModel.fetch({
+		this.poll(this);
+		return this;
+	},
+	poll: function(view) {
+		view.model.fetch({
 			success: function() {
-				self.$el.html(self.template({"data": engineModel.toJSON()}));
+				view.$el.html(view.template({"data": view.model.toJSON()}));
+				setTimeout(function() {view.poll(view);}, 2000);
 			}
 		});
-		return this;
+		return view;
 	}
 });
 
