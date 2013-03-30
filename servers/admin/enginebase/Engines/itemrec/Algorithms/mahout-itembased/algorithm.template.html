@@ -21,7 +21,7 @@
                                             <div class="form-horizontal">
                                                 <h5>Item Similarity Measurement</h5>
                                                 <div class="control-group">
-                                                    <label for="similarityClassname" class="control-label">Distance Function </label>
+                                                    <label for="similarityClassname" class="control-label">Distance Function</label>
                                                     <div class="controls">
                                                         <select name="similarityClassname" id="mahout-itembased_similarityClassname">
                                                             <option value="SIMILARITY_COOCCURRENCE">Co-occurrence</option>
@@ -34,6 +34,59 @@
                                                         </select>
                                                     </div>
                                                 </div>
+
+                                                <h5>Advanced Parameters</h5>
+                                                <div class="control-group">
+                                                    <label for="threshold" class="control-label">Threshold</label>
+                                                    <div class="controls">
+                                                        <input name="threshold" id="mahout-itembased_threshold" class="span2" type="text" value="0.0001">
+                                                        <span class="help-inline">Discard item pairs with a similarity value below this.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="booleanData" class="control-label">Boolean Data</label>
+                                                    <div class="controls">
+                                                        <select name="booleanData" id="mahout-itembased_booleanData" class="span2">
+                                                            <option value="true">True</option>
+                                                            <option value="false">False</option>
+                                                        </select>
+                                                        <span class="help-inline">Treat input data as having no preference values.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="maxPrefsPerUser" class="control-label">Max Num of Preferences per User</label>
+                                                    <div class="controls">
+                                                        <input name="maxPrefsPerUser" id="mahout-itembased_maxPrefsPerUser" class="span2" type="text" value="10">
+                                                        <span class="help-inline">Maximum number of preferences considered per user in final recommendation phase.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="minPrefsPerUser" class="control-label">Min Num of Preferences per User</label>
+                                                    <div class="controls">
+                                                        <input name="minPrefsPerUser" id="mahout-itembased_minPrefsPerUser" class="span2" type="text" value="10">
+                                                        <span class="help-inline">Ignore users with less preferences than this.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="maxSimilaritiesPerItem" class="control-label">Max Num of Similarities per Item</label>
+                                                    <div class="controls">
+                                                        <input name="maxSimilaritiesPerItem" id="mahout-itembased_maxSimilaritiesPerItem" class="span2" type="text" value="10">
+                                                        <span class="help-inline">Maximum number of similarities considered per item.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label for="maxPrefsPerUserInItemSimilarity" class="control-label">Max Num of Preferences per User in Item Similarity</label>
+                                                    <div class="controls">
+                                                        <input name="maxPrefsPerUserInItemSimilarity" id="mahout-itembased_maxPrefsPerUserInItemSimilarity" class="span2" type="text" value="10">
+                                                        <span class="help-inline">Max number of preferences to consider per user in the item similarity computation phase, users with more preferences will be sampled down.</span>
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
                                     </div>

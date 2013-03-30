@@ -24,6 +24,12 @@ object MahoutItemBased extends Controller {
       "app_id" -> number,
       "engine_id" -> number,
       "similarityClassname" -> nonEmptyText, // TODO: verifying
+      "threshold" -> nonEmptyText,
+      "booleanData" -> boolean,
+      "maxPrefsPerUser" -> number,
+      "minPrefsPerUser" -> number,
+      "maxSimilaritiesPerItem" -> number,
+      "maxPrefsPerUserInItemSimilarity" -> number,
       "viewParam" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
       "likeParam" -> nonEmptyText,
       "dislikeParam" -> nonEmptyText,
@@ -39,7 +45,7 @@ object MahoutItemBased extends Controller {
       },
       formData => {
         val (id, appId, engineId, 
-          similarityClassname,
+          similarityClassname, threshold, booleanData, maxPrefsPerUser, minPrefsPerUser, maxSimilaritiesPerItem, maxPrefsPerUserInItemSimilarity,
           viewParam, likeParam, dislikeParam, conversionParam, conflictParam) = formData
         
         // get original Algo first
@@ -47,7 +53,14 @@ object MahoutItemBased extends Controller {
         
         optAlgo map { algo =>
           val updatedAlgo = algo.copy(
-            params = algo.params ++ Map("similarityClassname" -> similarityClassname, // NOTE: read-modify-write!
+            params = algo.params ++ Map(
+                "similarityClassname" -> similarityClassname,
+                "threshold" -> threshold,
+                "booleanData" -> booleanData,
+                "maxPrefsPerUser" -> maxPrefsPerUser,
+                "minPrefsPerUser" -> minPrefsPerUser,
+                "maxSimilaritiesPerItem" -> maxSimilaritiesPerItem,
+                "maxPrefsPerUserInItemSimilarity" -> maxPrefsPerUserInItemSimilarity,
                 "viewParam" -> viewParam,
                 "likeParam" -> likeParam,
                 "dislikeParam" -> dislikeParam,

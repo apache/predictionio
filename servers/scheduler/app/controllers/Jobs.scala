@@ -38,7 +38,17 @@ object Jobs {
   def algoJob(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
     /** Build command from template. */
     val command = new StringTemplate(batchcommands.mkString(" && "))
-    command.setAttributes(algo.params)
+
+    // get default params value so old algo record still work even after algo default param is updated.
+    val algoinfos = config.getSettingsAlgoInfos
+    val defaultParams = algoinfos.get(algo.infoid) map { algoinfo =>
+      algoinfo.paramdefaults
+    } getOrElse {
+      throw new RuntimeException("No algo info found for this infoid: " + algo.infoid)
+    }
+
+    val params = defaultParams ++ algo.params
+    command.setAttributes(params)
     engine.itypes foreach { it =>
       command.setAttribute("itypes", "--itypes" + it.mkString(" "))
     }

@@ -19,6 +19,12 @@ var MahoutItemBasedAlgoSettingsView = Backbone.View.extend({
 			success: function() {
 				self.render();
 				self.initValue('similarityClassname');
+				self.initValue('threshold');
+				self.initValue('booleanData');
+				self.initValue('maxPrefsPerUser');
+				self.initValue('minPrefsPerUser');
+				self.initValue('maxSimilaritiesPerItem');
+				self.initValue('maxPrefsPerUserInItemSimilarity')
 				self.initValue('viewParam');
 				self.initValue('likeParam');
 				self.initValue('dislikeParam');
