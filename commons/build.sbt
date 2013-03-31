@@ -1,6 +1,6 @@
 name := "PredictionIO Commons"
 
-version := "0.3-SNAPSHOT"
+version := "0.3"
 
 organization := "io.prediction"
 

@@ -4,7 +4,7 @@ name := "PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout"
 
 packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "io.prediction.commons.mahout.itemrec.MahoutJob")
 
-version in ThisBuild:= "0.3-SNAPSHOT"
+version in ThisBuild:= "0.3"
 
 scalaVersion in ThisBuild:= "2.10.0"
 
@@ -19,7 +19,7 @@ assemblySettings
 
 test in assembly := {}
 
-mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => 
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case ("org/xmlpull/v1/XmlPullParser.class") => MergeStrategy.rename
     case ("org/xmlpull/v1/XmlPullParserException.class") => MergeStrategy.rename

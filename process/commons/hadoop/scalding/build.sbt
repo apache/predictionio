@@ -2,7 +2,7 @@ name := "PredictionIO Process Commons Hadoop Scalding"
 
 organization := "io.prediction"
 
-version := "0.3-SNAPSHOT"
+version := "0.3"
 
 scalaVersion := "2.9.2"
 
@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.3-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.3"
 )
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
