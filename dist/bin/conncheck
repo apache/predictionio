@@ -126,7 +126,7 @@ fi
 
 PROG_NAME=users
 
-JARS="${PROG_HOME}/lib/predictionio-connection-check-tool_2.10-0.3.jar:"
+JARS="${PROG_HOME}/lib/predictionio-connection-check-tool_2.10-0.4-SNAPSHOT.jar:"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-commons_2.10-2.5.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-core_2.10-2.5.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-gridfs_2.10-2.5.0.jar"
@@ -138,7 +138,7 @@ JARS="${JARS}:${PROG_HOME}/lib/joda-convert-1.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/joda-time-2.1.jar"
 JARS="${JARS}:${PROG_HOME}/lib/mongo-java-driver-2.10.1.jar"
 JARS="${JARS}:${PROG_HOME}/lib/nscala-time_2.10-0.2.0.jar"
-JARS="${JARS}:${PROG_HOME}/lib/predictionio-commons_2.10-0.3.jar"
+JARS="${JARS}:${PROG_HOME}/lib/predictionio-commons_2.10-0.4-SNAPSHOT.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scala-library-2.10.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scalaz-concurrent_2.10-7.0.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scalaz-core_2.10-7.0.0.jar"

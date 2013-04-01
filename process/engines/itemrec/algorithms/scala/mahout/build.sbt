@@ -4,7 +4,7 @@ name := "PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout"
 
 packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "io.prediction.commons.mahout.itemrec.MahoutJob")
 
-version in ThisBuild:= "0.3"
+version in ThisBuild:= "0.4-SNAPSHOT"
 
 scalaVersion in ThisBuild:= "2.10.0"
 
