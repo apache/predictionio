@@ -15,7 +15,6 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
   private val getFields = MongoDBObject( // fields to be read
     "name" -> 1,
     "metrictype" -> 1,
-    "jarname" -> 1,
     "evalid" -> 1,
     "params" -> 1
   )
@@ -31,7 +30,6 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
       id = dbObj.as[Int]("_id"),
       name = dbObj.as[String]("name"),
       metrictype = dbObj.as[String]("metrictype"),
-      jarname = dbObj.as[String]("jarname"),
       evalid = dbObj.as[Int]("evalid"),
       params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params"))
     )
@@ -45,7 +43,6 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
       "_id" -> id,
       "name" -> metric.name,
       "metrictype" -> metric.metrictype,
-      "jarname" -> metric.jarname,
       "evalid" -> metric.evalid,
       "params" -> metric.params
     ))
@@ -68,7 +65,6 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
     offlineEvalMetricsColl.update(MongoDBObject("_id" -> metric.id), MongoDBObject(
       "name" -> metric.name,
       "metrictype" -> metric.metrictype,
-      "jarname" -> metric.jarname,
       "evalid" -> metric.evalid,
       "params" -> metric.params
     ))

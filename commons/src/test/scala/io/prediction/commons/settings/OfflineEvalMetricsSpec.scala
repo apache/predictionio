@@ -34,7 +34,6 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       id = -1,
       name = "metric-insert1",
       metrictype = "metric-insert-type1",
-      jarname = "metric-insert-jar1",
       evalid = 42,
       params = Map(("abc" -> 3), ("bar" -> "foo1 foo2"))
     )
@@ -51,7 +50,6 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       id = -1,
       name = "metric-getByEvalid1",
       metrictype = "metric-getByEvalid-type1",
-      jarname = "metric-getByEvalid-jar1",
       evalid = 15,
       params = Map(("abc1" -> 6), ("bar1" -> "foo1 foo2"), ("bar1b" -> "foo1b"))
     )
@@ -59,7 +57,6 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       id = -1,
       name = "metric-getByEvalid2",
       metrictype = "metric-getByEvalid-type2",
-      jarname = "metric-getByEvalid-jar2",
       evalid = 15,
       params = Map(("abc2" -> 0), ("bar2" -> "foox"))
     )
@@ -87,7 +84,6 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       id = -1,
       name = "metric-update1",
       metrictype = "metric-update-type1",
-      jarname = "metric-update-jar1",
       evalid = 16,
       params = Map(("def" -> "a1 a2 a3"), ("def2" -> 1), ("def3" -> "food"))
     )
@@ -99,7 +95,6 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       id = updateid,
       name = "metric-update2",
       metrictype = "metric-update-type2",
-      jarname = "metric-update-jar2",
       evalid = 99,
       params = Map()
     )
@@ -121,7 +116,6 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       id = -1,
       name = "metric-delete1",
       metrictype = "metric-delete-type1",
-      jarname = "metric-delete-jar1",
       evalid = 3,
       params = Map(("x" -> 1))
     )

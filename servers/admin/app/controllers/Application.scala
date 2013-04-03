@@ -1136,7 +1136,6 @@ object Application extends Controller {
               id = -1,
               name = metricTypeNames("map_k"),
               metrictype = metricType,
-              jarname = "TODO jarname", // TODO
               evalid = evalid,
               params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
             ))
