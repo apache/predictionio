@@ -652,14 +652,14 @@
                         </tbody>
                     </table>
 
-                    <% _.each(data.algoList, function(algo, index) { %>
-                        <h5>Results in Iteration 1</h5>
+                    <% _.each(data.metricscoreiterationlist, function(iterationscorelist, index) { %>
+                        <h6>Results in Iteration <%= index+1 %></h6>
                         <% // create result matrix
                             var result = {};
                             _.each(data.algolist, function(algo) {
                                 result[algo.id] = {};
                             });
-                            _.each(data.metricscorelist, function(s) {
+                            _.each(iterationscorelist, function(s) {
                                 result[s.algo_id][s.metrics_id] = s.score;
                             });
                         %>

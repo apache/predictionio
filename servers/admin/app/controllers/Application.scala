@@ -1351,15 +1351,6 @@ object Application extends Controller {
             }.toSeq
           )
         }
-
-      		"metricscorelist" -> toJson(Seq(
-		    Map("algo_id" -> toJson("algoid1234"), "metrics_id"-> toJson("metricid_123"), "score"-> toJson(0.12341)),
-		    Map("algo_id"-> toJson("algoid1234"), "metrics_id"-> toJson("metricid_888"), "score"-> toJson(0.832)),
-		    Map("algo_id"-> toJson("algoid1234"), "metrics_id"-> toJson("metricid_811"), "score"-> toJson(0.341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_123"), "score"-> toJson(0.2341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_888"), "score"-> toJson(0.9341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_811"), "score"-> toJson(0.1241))
-		 ));
 		 
       val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
       val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
@@ -1371,13 +1362,13 @@ object Application extends Controller {
            "engine_id" -> toJson(eval.engineid),
            "algolist" -> algolist,
            "metricslist" -> metricslist,
-           "metricscorelist" -> metricscorelist,
-           //"metricscoreiterationlist" -> toJson(Seq(metricscorelist, metricscorelist)), // TODO: this is a placeholder for 
+           "metricscorelist" -> metricscorelist,   // TODO: change to average score at PDIO-150
+           "metricscoreiterationlist" -> JsNull, // TODO: this is a placeholder for PDIO-150. Example: "metricscoreiterationlist" -> toJson(Seq(metricscorelist, metricscorelist)) 
            "splitTrain" -> toJson(55), // TODO: this is a placeholder for PDIO-129
            "splitValidation" -> toJson(20), // TODO: this is a placeholder for PDIO-129
            "splitTest" -> toJson(15), // TODO: this is a placeholder for PDIO-129
            "splitMethod" -> toJson("random"), // TODO: this is a placeholder for PDIO-129
-           "evalIteration" -> toJson(3), // TODO: this is a placeholder for PDIO-129
+           "evalIteration" -> toJson(3), // TODO: this is a placeholder for PDIO-150
            "status" -> toJson(status),
            "startTime" -> toJson(starttime),
            "endTime" -> toJson(endtime)
