@@ -595,7 +595,19 @@
                 </div>
                 <div class="modal-body">
                     <div class="bottomMargin">
-                        <div>Start Time: <%= data.startTime %></div>
+                        <p>Start Time: <%= data.startTime %></p>
+                        <h5>Data Split Settings:</h5>
+                        <span>Train Set: <%= data.splitTrain %>%</span>
+                        <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
+                        <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
+                        <div>
+                            Data Selection: 
+                            <% if(data.splitMethod == "random") { %>
+                                Random Sampling
+                            <% } else { %>
+                                Random with Time Order
+                            <% } %>
+                        </div>
                     </div>
                     <h5>Algorithms</h5>
                     <p>Settings of algorithms at the time of evaluation.</p>
@@ -609,7 +621,7 @@
                         </ul>
                     </div>
 
-                    <h5>Results</h5>
+                    <h4>Average Results</h4>
                     <% // create result matrix
                         var result = {};
                         _.each(data.algolist, function(algo) {
@@ -619,7 +631,7 @@
                             result[s.algo_id][s.metrics_id] = s.score;
                         });
                     %>
-                    <table class="table">
+                    <table class="table bottomMargin-large">
                         <thead>
                             <tr>
                                 <th>Algorithm ID</th>
@@ -639,6 +651,39 @@
                             <% }); %>
                         </tbody>
                     </table>
+
+                    <% _.each(data.algoList, function(algo, index) { %>
+                        <h5>Results in Iteration 1</h5>
+                        <% // create result matrix
+                            var result = {};
+                            _.each(data.algolist, function(algo) {
+                                result[algo.id] = {};
+                            });
+                            _.each(data.metricscorelist, function(s) {
+                                result[s.algo_id][s.metrics_id] = s.score;
+                            });
+                        %>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Algorithm ID</th>
+                                    <% _.each(data.metricslist, function(metrics) { %>
+                                    <th><%= metrics.metricsName%> (<%= metrics.settingsString%>)</th>
+                                    <% }); %>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% _.each(data.algolist, function(algo) { %>
+                                <tr>
+                                    <td><%= algo.algoName %></td>
+                                    <% _.each(data.metricslist, function(metrics) { %>
+                                        <td><%= result[algo.id][metrics.id] %></td>
+                                    <% }); %>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% }); %>
                 </div>
             </div>
         </form>
