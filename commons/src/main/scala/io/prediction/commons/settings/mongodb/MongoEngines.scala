@@ -7,7 +7,6 @@ import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of Engines. */
 class MongoEngines(db: MongoDB) extends Engines {
-  private val emptyObj = MongoDBObject()
   private val engineColl = db("engines")
   private val seq = new MongoSequences(db)
   private val getFields = MongoDBObject("appid" -> 1, "name" -> 1, "enginetype" -> 1, "itypes" -> 1, "settings" -> 1)
@@ -41,7 +40,7 @@ class MongoEngines(db: MongoDB) extends Engines {
     )
 
     // optional fields
-    val optObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(emptyObj)
+    val optObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
 
     engineColl.insert( obj ++ optObj )
 
@@ -59,7 +58,7 @@ class MongoEngines(db: MongoDB) extends Engines {
     val nameObj = MongoDBObject("name" -> engine.name)
     val appidObj = MongoDBObject("appid" -> engine.appid)
     val enginetypeObj = MongoDBObject("enginetype" -> engine.enginetype)
-    val itypesObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(emptyObj)
+    val itypesObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
     val settingsObj = MongoDBObject("settings" -> engine.settings)
 
     engineColl.update(
