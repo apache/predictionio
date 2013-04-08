@@ -5,7 +5,7 @@ import io.prediction.commons.settings.{SystemInfo, SystemInfos}
 
 import com.mongodb.casbah.Imports._
 
-/** MongoDB implementation of Engines. */
+/** MongoDB implementation of SystemInfos. */
 class MongoSystemInfos(db: MongoDB) extends SystemInfos {
   private val coll = db("systemInfos")
 
