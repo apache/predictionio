@@ -667,7 +667,7 @@
                                 <form id="simEvalSettingsForm" class="form-horizontal">
                                 <div class="modal modal-visible">
                                     <div class="modal-header">
-                                        <h4>Item Recsys Simulated Evaluation</h4>
+                                        <h4>Simulated Evaluation</h4>
                                     </div>
                                     <div class="modal-body">
                                         <h5>Algorithms to be Evaluated</h5>
@@ -679,7 +679,7 @@
                                             </ul>
                                         </div>
 
-                                        <h5>Metrics <small><!-- TODO [<a href="#">?</a>] --> </small></h5>
+                                        <h5 class="topMargin-large">Metrics <small><!-- TODO [<a href="#">?</a>] --> </small></h5>
                                         <p>
                                             The above algorithms will be evaluated against the following metrics.
                                         </p>
@@ -689,6 +689,37 @@
                                         </ul>
                                         <a href="#" id="addMetricsBtn" class="btn btn-small btn-inverse">Add Another Metric</a>
 
+                                        <h5 class="topMargin-large">Data Split</h5>
+                                        <p class="bottomMargin">Adjust the slider to specify how you want to split data into Train Set, Validation Set and Test Set.</p>
+                                        <table id="dataSplitBar" width="70%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td class="selection" width="55%"><span>Train Set</span></td>
+                                                <td class="selection" width="20%"><span>Validation Set</span></td>
+                                                <td class="selection" width="15%"><span>Test Set</span></td>
+                                                <td width="10%"></td>
+                                            </tr>
+                                        </table>
+                                        <div class="topMargin">
+                                            <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="55">%
+                                            <span class="leftMargin">Validation: </span><input class="span1" readonly type="text" id="splitValidation" name="splitValidation" value="20">%
+                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="15">%
+                                        </div>
+                                        <div class="topMargin-large">
+                                            <span>Data Selection: </span>
+                                            <select id="splitMethod" name="splitMethod">
+                                                <option value="random">Random Sampling</option>
+                                                <option value="time">Random with Time Order</option>
+                                            </select>
+                                            <p>
+                                                <small>Random with Time Order means that data in Validation Set is always newer than those in Train Set and data in Test Set is always newer than those in Validation Set.</small>
+                                            </p>
+                                        </div>
+
+                                        <h5 class="topMargin-large">Iteration</h5>
+                                        <p>You may want to repeat the evaluation for a few times with different sampling. An average score will be reported.</p>
+                                        <div class="topMargin">
+                                            <span>Number of Iteration:  </span><input class="span1" type="text" name="evalIteration" value="3">
+                                        </div>                                        
 
                                     </div>
                                     <div class="modal-footer">
@@ -782,5 +813,6 @@
 		src="assets/javascripts/vendors/backbone-min.js"></script>
 	<script type="text/javascript" src="assets/javascripts/core.js?v=20130320-1"></script>
     <script type="text/javascript" src="assets/javascripts/vendors/toastr-1.2.2.min.js"></script>
+    <script type="text/javascript" src="assets/javascripts/vendors/colResizable-1.3.min.js"></script>
 </body>
 </html>

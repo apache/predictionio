@@ -429,3 +429,75 @@ body {
     top: -1px;
 }
 */
+
+
+
+/* Data Split Slider in EngineSimEvalSettings*/
+#dataSplitBar{
+    border:none;
+    height:15px;
+    background-image: url('img/colResizable/range.png');  
+}
+#dataSplitBar .selection {
+    background-image: url('img/colResizable/range.png');
+    background-position: 0px -15px;
+    padding:0px;
+    margin:0px;
+    vertical-align:text-top;
+}
+#dataSplitBar .selection span{
+    width:100%;
+    height:15px;
+    position:relative;
+    display:block;
+    content:"";
+    padding-left: 10px;
+    font-size: 10px;
+    color: #000000;
+    font-weight: bold;
+}
+/*
+#dataSplitBar .selection span:after{
+    background-image: url('img/colResizable/range.png');
+    background-position: 0px -30px;
+    position:absolute;
+    left:0px;
+    top:0px;
+    display:block;
+    content:"";
+    height:15px;
+    width:22px;
+    display:block;
+    content:"";
+}
+*/
+#dataSplitBar .selection span:before{
+    background-image: url('img/colResizable/range.png');
+    background-position: 0px -45px;
+    position:absolute;
+    right:10px;
+    top:0px;
+    display:block;
+    content:"";
+    height:15px;
+    width:22px;
+    display:block;
+    content:"";
+}
+#dataSplitBar td{
+    border:none;
+}
+.rangeGrip{
+    width:14px;
+    height:21px;
+    cursor:e-resize;
+    background-image: url('img/colResizable/range.png');
+    background-position: 0px -60px;
+    position:absolute;
+    left:-3px;
+    top:-3px;
+    z-index:8;
+}
+.rangeDrag .rangeGrip, .rangeGrip:hover{
+    background-position: -14px -60px;
+}

@@ -591,6 +591,31 @@ var EngineStatusView = Backbone.View.extend({
 	}
 });
 
+/* Data Split Slider onChange in EngineSimEvalSettings */
+var onDataSplitPercentChange = function(e){
+	var columns = $(e.currentTarget).find("td");
+	var ranges = [], total = 0, i, w;
+	for(i = 0; i<columns.length; i++) {
+		// workaround, fix it later
+		if (i==0) {
+			w = columns.eq(i).width() - 35;
+		} else if (i==3) {
+			w = columns.eq(i).width() - 14;
+		} else {
+			w = columns.eq(i).width() -7;
+		}
+		ranges.push(w);
+		total+=w;
+	}		 
+	for(i=0; i<columns.length; i++){
+		ranges[i] = 100*ranges[i]/total;
+	}
+	var trainPercent = Math.round(ranges[0]);
+	var validationPercent = Math.round(ranges[1]);
+	var unusedPercent = Math.round(ranges[3]);
+	var testPercent = 100 - trainPercent - validationPercent - unusedPercent;
+	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitValidation').val(validationPercent).end().find('#splitTest').val(testPercent).end();
+};
 
 var EngineView = Backbone.View.extend({
 	initialize : function() {
@@ -623,9 +648,16 @@ var EngineView = Backbone.View.extend({
 		return true;
 	},
 	closeExtraTab : function() {
-		this.$el.find('#engineExtraTabTitle').hide();
-		if (this.tabExtraTabView) {this.tabExtraTabView.close();}
-		this.$el.find("#engineExtraTabContentHolder").html("");
+		if (this.tabExtraTabView) {
+			// remove data split slider for EngineSimEvalSetting page
+			if (this.tabExtraTabView.isEngineSimEvalSettingsView) {
+				$("#dataSplitBar").colResizable({disable:true});		
+			}
+			this.tabExtraTabView.close();
+			this.$el.find('#engineExtraTabTitle').hide();
+			this.$el.find("#engineExtraTabContentHolder").html("");
+		}
+		
 	},
 	showTabSettings : function() {
 		this.closeExtraTab();
@@ -695,7 +727,16 @@ var EngineView = Backbone.View.extend({
 
 		this.tabExtraTabView = new EngineSimEvalSettingsView({algo_id_list: algo_id_list});
 		this.subViews.push(this.tabExtraTabView);
-		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
+
+		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el).promise().done(function(){
+			$("#dataSplitBar").colResizable({
+				liveDrag: true,
+				draggingClass: "rangeDrag",
+				gripInnerHtml: "<div class='rangeGrip'></div>",
+				onDrag: onDataSplitPercentChange,
+				minWidth: 12
+			});
+		});
 	},
 	deleteEngine : function() {
 		var self = this;
@@ -1174,8 +1215,6 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 		var algoModel = new AvailableAlgoModel();
 		algoModel.save(algoData, {
 	        success: function(model, resData) { // success, go to algo settings
-	        	console.log("HI");
-	        	console.log(resData);
 	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algotype_id) + '/'+ decodeURIComponent(resData.algoName) + '/' + decodeURIComponent(resData.id);
 	        },
 	        error: function(model, res) {
@@ -1215,12 +1254,16 @@ var EngineSimEvalReportView = Backbone.View.extend({
 	}
 });
 
+
+
+
 var EnginetypeMetricsTypeListModel = Backbone.Model.extend({
 	urlRoot: getAPIUrl('enginetype_metricstype_list')
 });
 /* Required Param: algo_id_list  (algo ids to be evaluated) */
 var EngineSimEvalSettingsView = Backbone.View.extend({
 	initialize : function() {
+		this.isEngineSimEvalSettingsView = true;
 		this.subViews = [];
 		this.template_el = '#engine_simEvalSettings_template';
 		this.template = _.template($(this.template_el).html()); // define template function
@@ -1240,20 +1283,19 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 		'click #addMetricsBtn': 'addMetrics'
 	},
 	render : function() {
+		$.ajaxSetup({async:false});  // ensure sync, necessary for Data Split Slider
 		//this.$el.html(this.template({"data": this.model.toJSON()}));
 		// construct algo id list
 		var self = this;
 
 		// construct algo name list (this.algoName_list) from inputted algo id list
 		var algoArrayRaw = this.algo_id_list.split(',');
-		$.ajaxSetup({async:false});
 		this.algoList = algoArrayRaw.map(function(algo_id_encoded){
 			var algo_id = decodeURIComponent(algo_id_encoded);
 			var algoModel = new AvailableAlgoModel({app_id: self.app_id, engine_id: self.engine_id, id: algo_id});
 			algoModel.fetch();
 			return {algoName: algoModel.get('algoName'), id: algoModel.get('id')};
 		});
-		$.ajaxSetup({async:true});
 
 		// render metrics options
 		metricstypeListModel = new EnginetypeMetricsTypeListModel({id: this.enginetype_id});
@@ -1264,6 +1306,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 					self.addOne();
 				}
 		});
+		$.ajaxSetup({async:true}); // end of ensure sync, necessary for Data Split Slider
 		return this;
 	},
 	addMetrics: function() {
@@ -1300,7 +1343,6 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 	}
 });
 
-/*  */
 var EngineSimEvalSettingsMetricsView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engine_simEvalSettingsMetrics_template';
