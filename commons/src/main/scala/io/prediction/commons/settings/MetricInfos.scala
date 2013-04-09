@@ -8,7 +8,7 @@ package io.prediction.commons.settings
   * @param engineinfoids A list of EngineInfo IDs that this metric can apply to.
   * @param commands A sequence of commands to run this metric.
   * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramdescription Key value paris of (parameter -> display name).
+  * @param paramnames Key value paris of (parameter -> display name).
   * @param paramdescription Key value paris of (parameter -> description).
   * @param paramorder The display order of parameters.
   */
