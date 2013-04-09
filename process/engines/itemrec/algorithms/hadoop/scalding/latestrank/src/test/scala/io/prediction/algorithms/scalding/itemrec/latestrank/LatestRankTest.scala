@@ -12,7 +12,7 @@ class LatestRankTest extends Specification with TupleConversions {
 
   def test(algoid: Int, modelSet: Boolean,
     itypes: List[String], 
-    items: List[(String, String, String)],
+    items: List[(String, String, String, String)],
     users: List[(String, String)],
     itemRecScores: List[(String, String, Double, String, Int, Boolean)]
     ) = {
@@ -60,7 +60,7 @@ class LatestRankTest extends Specification with TupleConversions {
     val algoid = 12
     val modelSet = false
     val itypes = List("t1", "t2")
-    val items = List(("i0", "t1,t2,t3", "123456"), ("i1", "t2,t3", "123457"), ("i2", "t4", "21"), ("i3", "t3,t4", "9876543210"))
+    val items = List(("i0", "t1,t2,t3", "19", "123456"), ("i1", "t2,t3", "19", "123457"), ("i2", "t4", "19", "21"), ("i3", "t3,t4", "19", "9876543210"))
     val users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
     val itemRecScores = List(
       ("u0", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),

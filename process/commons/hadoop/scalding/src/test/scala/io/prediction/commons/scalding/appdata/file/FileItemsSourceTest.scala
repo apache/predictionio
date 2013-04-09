@@ -7,15 +7,16 @@ import com.twitter.scalding._
 class ReadItypesTestJob(args: Args) extends Job(args) {
   
   val appidArg: Int = args("appid").toInt
-  val itypesArg: List[String] = args.list("itypes")
+  val writeAppidArg: Int = args("writeAppid").toInt
 
-  System.err.println(itypesArg)
-  
+  val preItypesArg = args.list("itypes")
   // use itypesArg.mkString(",").size instead of itypesArg.size
   // to work aroud empty List("") corner case.
-  val queryItypes: Option[List[String]] = if ( itypesArg.mkString(",").length == 0) None else Some(itypesArg)
+  val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
   
-  val src = new FileItemsSource("testpath", appidArg, queryItypes)
+  System.err.println(itypesArg)
+  
+  val src = new FileItemsSource("testpath", appidArg, itypesArg)
   
   src.readData('iid, 'itypes)
     .mapTo(('iid, 'itypes) -> ('iid, 'itypes)) { fields: (String, List[String]) =>
@@ -34,101 +35,97 @@ class ReadItypesTestJob(args: Args) extends Job(args) {
       // convert the List back to string with ',' as separator
       (iid, itypes.mkString(","), starttime)
     }.write(Tsv("outputStarttime"))
+
+  val writeDataSink = new FileItemsSource("writeDataTestpath", appidArg, None)
+
+  src.readData('iid, 'itypes)
+    .then ( writeDataSink.writeData('iid, 'itypes, writeAppidArg) _ )
+
+  val writeObjSink = new FileItemsSource("writeObjTestpath", appidArg, None)
   
+  src.readObj('item)
+    .then ( writeObjSink.writeObj('item) _ )
 }
 
-/*
-class WriteTestJob(args: Args) extends Job(args) {
-  
-  val src1 = new FileItemsSource(1, None)
-  val src2 = new FileItemsSource(2, None)
-  
-  val p = src1.read
-  
-  src2.writeData(p)
-}
-*/
 
 class FileItemsSourceTest extends Specification with TupleConversions {
   
-  val test1Input = List(("i0", "t1,t2,t3", "12345"), ("i1", "t2,t3", "45678"), ("i2", "t4", "9"), ("i3", "t3,t4", "101"))
-  val test1output_all = List(("i0", "t1,t2,t3", "12345"), ("i1", "t2,t3", "45678"), ("i2", "t4", "9"), ("i3", "t3,t4", "101"))
-  val test1output_t4 = List(("i2", "t4", "9"), ("i3", "t3,t4", "101"))
-  val test1output_t2t3 = List(("i0", "t1,t2,t3", "12345"), ("i1", "t2,t3", "45678"), ("i3", "t3,t4", "101"))
+  val test1Input = List(
+      ("i0", "t1,t2,t3", "appid", "2293300", "1266673"), 
+      ("i1", "t2,t3", "appid", "14526361", "12345135"), 
+      ("i2", "t4", "appid", "14526361", "23423424"), 
+      ("i3", "t3,t4", "appid", "1231415", "378462511"))
+
+  val test1output_all = test1Input
+
+  val test1output_t4 = List(
+      ("i2", "t4", "appid", "14526361", "23423424"), 
+      ("i3", "t3,t4", "appid", "1231415", "378462511"))
+
+  val test1output_t2t3 = List(
+      ("i0", "t1,t2,t3", "appid", "2293300", "1266673"), 
+      ("i1", "t2,t3", "appid", "14526361", "12345135"), 
+      ("i3", "t3,t4", "appid", "1231415", "378462511"))
+
   val test1output_none = List()
 
+  def testWithItypes(appid: Int, writeAppid: Int, itypes: List[String], 
+    inputItems: List[(String, String, String, String, String)], 
+    outputItems: List[(String, String, String, String, String)]) = {
 
-  def getIidAndItypes(d: List[(String, String, String)]) = {
-    d map {x => (x._1, x._2)}
-  }
-  
-  def testWithItypes(appid: Int, itypes: List[String], inputItems: List[(String, String, String)], outputItems: List[(String, String, String)]) = {
+    val inputSource = inputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, appid.toString, starttime, ct) }
+    val outputExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes) }
+    val outputStarttimeExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, starttime) }
+    val writeDataExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, writeAppid.toString) }
+    val writeObjExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, appid.toString, starttime, ct) } 
+
     JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob")
       .arg("appid", appid.toString)
+      .arg("writeAppid", writeAppid.toString)
       .arg("itypes", itypes)
-      .source(new FileItemsSource("testpath", appid, Some(itypes)), inputItems)
+      .source(new FileItemsSource("testpath", appid, Some(itypes)), inputSource)
       .sink[(String, String)](Tsv("output")) { outputBuffer =>
         "correctly read iid and itypes" in {
-          outputBuffer must containTheSameElementsAs(getIidAndItypes(outputItems))
+          outputBuffer must containTheSameElementsAs(outputExpected)
         }
       }
       .sink[(String, String, String)](Tsv("outputStarttime")) { outputBuffer =>
         "correctly read starttime" in {
-          outputBuffer must containTheSameElementsAs(outputItems)
-        }
-      }.run.finish
-  }
-
-  def testWithoutItypes(appid: Int, inputItems: List[(String, String, String)], outputItems: List[(String, String, String)]) = {
-    JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob")
-      .arg("appid", appid.toString)
-      .source(new FileItemsSource("testpath", appid, None), inputItems)
-      .sink[(String, String)](Tsv("output")) { outputBuffer =>
-        "correctly read iid and itypes" in {
-          outputBuffer must containTheSameElementsAs(getIidAndItypes(outputItems))
+          outputBuffer must containTheSameElementsAs(outputStarttimeExpected)
         }
       }
-      .sink[(String, String, String)](Tsv("outputStarttime")) { outputBuffer =>
-        "correctly read starttime" in {
-          outputBuffer must containTheSameElementsAs(outputItems)
+      .sink[(String, String, String)]((new FileItemsSource("writeDataTestpath", appid, None)).getSource) { outputBuffer =>
+        "sink with writeData using different appid" in {
+          outputBuffer must containTheSameElementsAs(writeDataExpected)
         }
-      }.run.finish
+      }
+      .sink[(String, String, String, String, String)]((new FileItemsSource("writeObjTestpath", appid, None)).getSource) { outputBuffer =>
+        "sink with writeObj" in {
+          outputBuffer must containTheSameElementsAs(writeObjExpected)
+        }
+      }
+      .run.finish
   }
 
 
   "FileItemsSource without itypes" should {
-    testWithoutItypes(1, test1Input, test1output_all)
+    testWithItypes(1, 3, List(""), test1Input, test1output_all)
   }
 
   "FileItemsSource with one itype" should {
-    testWithItypes(1, List("t4"), test1Input, test1output_t4)
+    testWithItypes(1, 5, List("t4"), test1Input, test1output_t4)
   }
     
   "FileItemsSource with some itypes" should {
-    testWithItypes(3, List("t2","t3"), test1Input, test1output_t2t3)
+    testWithItypes(3, 6, List("t2","t3"), test1Input, test1output_t2t3)
   }
   
   "FileItemsSource with all itypes" should {
-    testWithItypes(3, List("t2","t3","t1","t4"), test1Input, test1output_all)
+    testWithItypes(3, 7, List("t2","t3","t1","t4"), test1Input, test1output_all)
   }
   
   "FileItemsSource without any matching itypes" should {
-    testWithItypes(3,List("t99"), test1Input, test1output_none)
+    testWithItypes(3, 10, List("t99"), test1Input, test1output_none)
   }
   
-  /*
-  /**
-   * write test
-   */
-  
-  "Writing to FileItemsSource" should {
-    JobTest("io.prediction.commons.scalding.appdata.file.WriteTestJob").
-      source(new FileItemsSource(1, None), test1Input).
-      sink[(String, String)](new FileItemsSource(2, None)) { outputBuffer =>
-        "work" in {
-          outputBuffer must containTheSameElementsAs(test1Input)
-        }
-      }.run.finish
-  }
-  */
 }
