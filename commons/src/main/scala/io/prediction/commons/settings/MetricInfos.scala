@@ -5,7 +5,7 @@ package io.prediction.commons.settings
   * @param id Unique identifier of a metric.
   * @param name Metric name.
   * @param description A long description of the metric.
-  * @param metricinfoids A list of MetricInfo IDs that this metric can apply to.
+  * @param engineinfoids A list of EngineInfo IDs that this metric can apply to.
   * @param commands A sequence of commands to run this metric.
   * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
   * @param paramdescription Key value paris of (parameter -> display name).
