@@ -274,6 +274,8 @@ body {
 .topMargin-large {margin-top: 50px!important; }
 .leftMargin {margin-left: 20px!important; }
 .leftMargin-small {margin-left: 8px!important; }
+.rightMargin {margin-right: 20px!important; }
+.rightMargin-small {margin-right: 8px!important; }
 .displayNone {display:none;}
 .textRight { text-align: right;}
 /* Sign In */

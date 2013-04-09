@@ -7,19 +7,19 @@
                                     <div class="boxBlock">
                                         <div class="boxtitle">
                                            Parameter Settings
-                                            <!--
-                                            <div class="btn-group pull-right">
-                                                <a href="#" data-toggle="dropdown" class="btn btn-small btn-inverse dropdown-toggle"><i class="icon-wrench icon-white"></i> Manual Tuning <span class="caret"></span></a>
-                                                <ul class="dropdown-menu">
-                                                <li><a href="javascript:alert('This feature will be available soon.');">Auto-tune Parameters</a></li>
-                                                </ul>
-                                            </div>
-                                            -->
                                         </div>
 
                                         <div class="boxContent">
-                                            <div class="form-horizontal">
-                                                
+                                            <!-- TODO
+                                            <div class="bottomMargin switch candy blue" style="width: 250px;">
+                                                <input id="tuneManual" name="tune" value="manual" type="radio" checked>
+                                                <label for="tuneManual" onclick="">Manual Tuning</label>
+                                                <input id="tuneAuto" name="tune" value="auto" type="radio"> 
+                                                <label for="tuneAuto" onclick="">Auto Tuning</label>
+                                                <span class="slide-button"></span>
+                                            </div>
+                                            -->
+                                            <div id="tuneManualPanel" class="form-horizontal">
                                                 <div class="control-group">
                                                     <label for="numFeatures" class="control-label">Num of Factorized Features</label>
                                                     <div class="controls">
@@ -43,8 +43,37 @@
                                                         <span class="help-inline">Number of training iteration.</span>
                                                     </div>
                                                 </div>
-
                                             </div>
+
+                                            <div id="tuneAutoPanel" class="hide form-horizontal">
+                                                <div class="control-group">
+                                                    <label class="control-label">Num of Factorized Features</label>
+                                                    <div class="controls">
+                                                        Min: <input name="numFeaturesMin" id="mahout-alswr_numFeaturesMin" class="rightMargin span1" type="text" value="10">
+                                                        Max: <input name="numFeaturesMax" id="mahout-alswr_numFeaturesMax" class="span1" type="text" value="11">
+                                                        <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label class="control-label">Lambda</label>
+                                                    <div class="controls">
+                                                        Min: <input name="lambdaMin" id="mahout-alswr_lambdaMin" class="rightMargin span1" type="text" value="10">
+                                                        Max: <input name="lambdaMax" id="mahout-alswr_lambdaMax" class="span1" type="text" value="11">
+                                                        <span class="help-inline">Regularization param to avoid overfitting.</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="control-group">
+                                                    <label class="control-label">Num of Iteration</label>
+                                                    <div class="controls">
+                                                        Min: <input name="numIterationsMin" id="mahout-alswr_numIterationsMin" class="rightMargin span1" type="text" value="10">
+                                                        Max: <input name="numIterationsMax" id="mahout-alswr_numIterationsMax" class="span1" type="text" value="11">
+                                                        <span class="help-inline">Number of training iteration.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
 
@@ -139,7 +168,8 @@
                                         </div>
                                     </div>
                                     <div class="pull-right">
-                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                        <a href="#engineTabAlgorithms" class="btn">Cancel</a>                                        
+                                        <button class="btn btn-primary leftMargin" type="submit">Save</button>
                                     </div>
                                 </div>  
                             </div>
