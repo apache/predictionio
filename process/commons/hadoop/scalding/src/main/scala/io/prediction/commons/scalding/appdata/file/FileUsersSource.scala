@@ -25,9 +25,7 @@ class FileUsersSource(path: String, appId: Int) extends Tsv (
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
   override def getSource: Source = this
-  
-  // file format, TAB separated file with following field for each line
-  
+    
   override def readData(uidField: Symbol)(implicit fd: FlowDef): Pipe = {
     val users = this.read
       .mapTo((0) -> (uidField)) { fields: String => 

@@ -20,7 +20,7 @@ import io.prediction.commons.appdata.{Item}
  * 1  t1,t2,t3  4  123456  123210
  */
 class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) extends Tsv (
-  p = path + "items.tsv" //AppDataFile(appId, None, None, None, "items.tsv")
+  p = path + "items.tsv"
 ) with ItemsSource {
   
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
