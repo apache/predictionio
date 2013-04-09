@@ -11,6 +11,7 @@ package io.prediction.commons.settings
   * @param paramdescription Key value paris of (parameter -> (display name, description)).
   * @param paramorder The display order of parameters.
   * @param enginetype The engine type associated to this algorithm.
+  * @param techreq Technology requirement for this algorithm to run.
   * @param datareq Data requirement for this algorithm to run.
   */
 case class AlgoInfo(
@@ -20,7 +21,7 @@ case class AlgoInfo(
   batchcommands: Option[Seq[String]],
   offlineevalcommands: Option[Seq[String]],
   paramdefaults: Map[String, Any],
-  paramdescription: Map[String,(String, String)],
+  paramdescription: Map[String, (String, String)],
   paramorder: Seq[String],
   enginetype: String,
   techreq: Seq[String],

@@ -30,7 +30,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Recommend interesting items to each user personally."),
-      defaultsettings = Map[String, Any](),
+      defaultsettings = Map[String, Any]("numRecs" -> 500),
       defaultalgoinfoid = "mahout-itembased")
     engineInfos.insert(itemrec)
     engineInfos.get("itemrec") must beSome(itemrec)

@@ -17,7 +17,7 @@ class MongoEngines(db: MongoDB) extends Engines {
       appid      = dbObj.as[Int]("appid"),
       name       = dbObj.as[String]("name"),
       enginetype = dbObj.as[String]("enginetype"),
-      itypes     = dbObj.getAs[MongoDBList]("itypes") map { _.toList.map { _.toString } },
+      itypes     = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
       settings   = MongoUtils.dbObjToMap(dbObj.as[DBObject]("settings"))
     )
   }
