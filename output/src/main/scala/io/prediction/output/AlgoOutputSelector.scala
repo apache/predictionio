@@ -13,11 +13,11 @@ class AlgoOutputSelector(algos: Algos) {
 
   def itemRecAlgoSelection(engine: Engine): Algo = {
     /** Check engine type. */
-    if (engine.enginetype != "itemrec") throw new RuntimeException("Not an itemrec engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.enginetype))
+    if (engine.infoid != "itemrec") throw new RuntimeException("Not an itemrec engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
     val itemRecAlgos = algos.getDeployedByEngineid(engine.id)
 
-    if (!itemRecAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.enginetype))
+    if (!itemRecAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
     val algo = itemRecAlgos.next()
 
@@ -29,11 +29,11 @@ class AlgoOutputSelector(algos: Algos) {
 
   def itemSimSelection(iid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine): Seq[String] = {
     /** Check engine type. */
-    if (engine.enginetype != "itemsim") throw new RuntimeException("Not an itemsim engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.enginetype))
+    if (engine.infoid != "itemsim") throw new RuntimeException("Not an itemsim engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
     val itemSimAlgos = algos.getDeployedByEngineid(engine.id)
 
-    if (!itemSimAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.enginetype))
+    if (!itemSimAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
     implicit val algo = itemSimAlgos.next()
 

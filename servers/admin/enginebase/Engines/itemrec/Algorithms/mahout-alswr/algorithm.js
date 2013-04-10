@@ -26,6 +26,9 @@ var MahoutALSWRAlgoSettingsView = Backbone.View.extend({
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
+				
+				// TODO: If Autotune is set, toggleTune
+				// TODO: load Autotune values
 			}
 		});
     },
@@ -34,8 +37,11 @@ var MahoutALSWRAlgoSettingsView = Backbone.View.extend({
 		this.$el.find('#mahout-alswr_'+attrName).val(value);
     },
 	events: {
-		"change #mahout-alswrForm input":  "formDataChanged",
-		"change #mahout-alswrForm select":  "formDataChanged"
+		//"change #mahout-alswrForm input":  "formDataChanged",
+		//"change #mahout-alswrForm select":  "formDataChanged",
+		"submit #mahout-alswrForm" : "formDataSubmit",
+		'click #tuneManual' : "tuneManual", 
+		'click #tuneAuto' : "tuneAuto"
 	},
     render : function() {
         this.$el.html(this.template());
@@ -43,15 +49,18 @@ var MahoutALSWRAlgoSettingsView = Backbone.View.extend({
     },
 	reloadData : function() { // Required Algorithm Module Function
 	},
-	formDataChanged: function() {
+	tuneManual: function() {
+		$('#tuneAutoPanel').slideUp(); 
+		$('#tuneManualPanel').slideDown();
+	},
+	tuneAuto: function() {
+		$('#tuneManualPanel').slideUp(); 
+		$('#tuneAutoPanel').slideDown();
+	},
+	formDataSubmit: function() {
 		var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs
 		console.log(data);
-		this.model.set(data);
-		this.model.save();
-		/*
-		var simEvalModel = new SimEvalModel({app_id: this.app_id, engine_id: this.engine_id});
-		var self = this;
-		simEvalModel.save(data, {
+		this.model.save(data, {
 			wait: true,
 			success: function(model, res) {
 				window.location.hash = 'engineTabAlgorithms';
@@ -62,7 +71,6 @@ var MahoutALSWRAlgoSettingsView = Backbone.View.extend({
 			}
 		});
 		return false;
-		*/
 	},
     close : function() {  // Required Algorithm Module Function
         this.remove();

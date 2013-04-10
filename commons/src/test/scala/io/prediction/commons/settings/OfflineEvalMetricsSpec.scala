@@ -32,8 +32,7 @@ class OfflineEvalMetricsSpec extends Specification { def is =
   def insert(offlineEvalMetrics: OfflineEvalMetrics) = {
     val obj = OfflineEvalMetric(
       id = -1,
-      name = "metric-insert1",
-      metrictype = "metric-insert-type1",
+      infoid = "metric-insert1",
       evalid = 42,
       params = Map(("abc" -> 3), ("bar" -> "foo1 foo2"))
     )
@@ -48,15 +47,13 @@ class OfflineEvalMetricsSpec extends Specification { def is =
   def getByEvalid(offlineEvalMetrics: OfflineEvalMetrics) = {
     val obj1 = OfflineEvalMetric(
       id = -1,
-      name = "metric-getByEvalid1",
-      metrictype = "metric-getByEvalid-type1",
+      infoid = "metric-getByEvalid1",
       evalid = 15,
       params = Map(("abc1" -> 6), ("bar1" -> "foo1 foo2"), ("bar1b" -> "foo1b"))
     )
     val obj2 = OfflineEvalMetric(
       id = -1,
-      name = "metric-getByEvalid2",
-      metrictype = "metric-getByEvalid-type2",
+      infoid = "metric-getByEvalid2",
       evalid = 15,
       params = Map(("abc2" -> 0), ("bar2" -> "foox"))
     )
@@ -82,8 +79,7 @@ class OfflineEvalMetricsSpec extends Specification { def is =
   def update(offlineEvalMetrics: OfflineEvalMetrics) = {
     val obj1 = OfflineEvalMetric(
       id = -1,
-      name = "metric-update1",
-      metrictype = "metric-update-type1",
+      infoid = "metric-update1",
       evalid = 16,
       params = Map(("def" -> "a1 a2 a3"), ("def2" -> 1), ("def3" -> "food"))
     )
@@ -93,8 +89,7 @@ class OfflineEvalMetricsSpec extends Specification { def is =
 
     val obj2 = obj1.copy(
       id = updateid,
-      name = "metric-update2",
-      metrictype = "metric-update-type2",
+      infoid = "metric-update2",
       evalid = 99,
       params = Map()
     )
@@ -114,8 +109,7 @@ class OfflineEvalMetricsSpec extends Specification { def is =
   def delete(offlineEvalMetrics: OfflineEvalMetrics) = {
     val obj1 = OfflineEvalMetric(
       id = -1,
-      name = "metric-delete1",
-      metrictype = "metric-delete-type1",
+      infoid = "metric-delete1",
       evalid = 3,
       params = Map(("x" -> 1))
     )

@@ -53,7 +53,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id         = 0,
       appid      = 123,
       name       = "itemRecOutputSelection",
-      enginetype = "itemrec",
+      infoid = "itemrec",
       itypes     = Some(List("foo", "bar")),
       settings   = Map()
     )
@@ -113,7 +113,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id         = 0,
       appid      = dummyApp.id,
       name       = "itemRecOutputSelection",
-      enginetype = "itemrec",
+      infoid = "itemrec",
       itypes     = Some(List("foo", "bar")),
       settings   = Map("unseenonly" -> true)
     )
@@ -225,7 +225,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id         = 0,
       appid      = dummyApp.id,
       name       = "itemRecOutputSelection",
-      enginetype = "itemrec",
+      infoid = "itemrec",
       itypes     = Some(List("foo", "bar")),
       settings   = Map()
     )
@@ -255,7 +255,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id = 0,
       appid = dummyApp.id,
       name = "itemRecOutputSelectionNoAlgo",
-      enginetype = "itemrec",
+      infoid = "itemrec",
       itypes = Some(List("foo", "bar")),
       settings = Map()
     )
@@ -268,7 +268,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id = 0,
       appid = dummyApp.id,
       name = "itemRecOutputSelectionBadEngine",
-      enginetype = "itemRecOutputSelectionBadEngine",
+      infoid = "itemRecOutputSelectionBadEngine",
       itypes = Some(List("foo", "bar")),
       settings = Map()
     )
@@ -282,7 +282,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id = 0,
       appid = dummyApp.id,
       name = "itemSimOutputSelection",
-      enginetype = "itemsim",
+      infoid = "itemsim",
       itypes = Some(List("foo", "bar")),
       settings = Map()
     )
@@ -312,7 +312,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id = 0,
       appid = dummyApp.id,
       name = "itemSimOutputSelection",
-      enginetype = "itemsim",
+      infoid = "itemsim",
       itypes = Some(List("foo", "bar")),
       settings = Map()
     )
@@ -342,7 +342,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id = 0,
       appid = dummyApp.id,
       name = "itemSimOutputSelectionNoAlgo",
-      enginetype = "itemsim",
+      infoid = "itemsim",
       itypes = Some(List("foo", "bar")),
       settings = Map()
     )
@@ -355,7 +355,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       id = 0,
       appid = dummyApp.id,
       name = "itemSimOutputSelectionBadEngine",
-      enginetype = "itemSimOutputSelectionBadEngine",
+      infoid = "itemSimOutputSelectionBadEngine",
       itypes = Some(List("foo", "bar")),
       settings = Map()
     )

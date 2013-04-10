@@ -5,7 +5,7 @@ package io.prediction.commons.settings
   * @param id ID.
   * @param appid App ID that owns this engine.
   * @param name Engine name.
-  * @param enginetype Engine type (itemrec, itemsim, etc).
+  * @param infoid EngineInfo ID.
   * @param itypes List of item types.
   * @param settings Engine settings as key-value pairs.
   */
@@ -13,7 +13,7 @@ case class Engine(
   id: Int,
   appid: Int,
   name: String,
-  enginetype: String,
+  infoid: String,
   itypes: Option[List[String]],
   settings: Map[String, Any]
 )

@@ -43,6 +43,7 @@ object Application extends Controller {
   val engines = config.getSettingsEngines()
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
+  val metricInfos = config.getSettingsMetricInfos()
   val offlineEvals = config.getSettingsOfflineEvals()
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
@@ -233,7 +234,7 @@ object Application extends Controller {
       Ok(toJson(Map(
         "id" -> toJson(id),
         "enginelist" -> toJson((appEngines map { eng =>
-          Map("id" -> eng.id.toString, "engineName" -> eng.name,"enginetype_id" -> eng.enginetype)
+          Map("id" -> eng.id.toString, "engineName" -> eng.name,"enginetype_id" -> eng.infoid)
         }).toSeq)
       )))
 
@@ -379,7 +380,7 @@ object Application extends Controller {
             "datareq" -> "U2I Actions such as Like, Buy and Rate.")
             )) */
         "algotypelist" -> toJson(
-          (algoInfos.getByEngineType("itemrec") map { algoInfo =>
+          (algoInfos.getByEngineInfoId("itemrec") map { algoInfo =>
             Map(
               "id" -> toJson(algoInfo.id),
               "algotypeName" -> toJson(algoInfo.name),
@@ -435,7 +436,7 @@ object Application extends Controller {
     val engine = engines.get(id.toInt)
 
     engine map { eng: Engine =>
-      val modelDataExist: Boolean = eng.enginetype match {
+      val modelDataExist: Boolean = eng.infoid match {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case _ => false
       }
@@ -467,7 +468,7 @@ object Application extends Controller {
           }
       Ok(obj(
         "id" -> eng.id.toString, // engine id
-        "enginetype_id" -> eng.enginetype,
+        "enginetype_id" -> eng.infoid,
         "app_id" -> eng.appid.toString,
         "engineName" -> eng.name,
         "engineStatus" -> engineStatus))
@@ -520,7 +521,7 @@ object Application extends Controller {
           id = -1,
           appid = fappid,
           name = enginename,
-          enginetype = enginetype,
+          infoid = enginetype,
           itypes = None, // NOTE: default None (means all itypes)
           settings = Itemrec.Engine.defaultSettings // TODO: depends on enginetype
         ))
@@ -799,9 +800,9 @@ object Application extends Controller {
     algoOpt map { algo =>
       algoInfos.get(algo.infoid) map { algoInfo =>
         Logger.info("Delete model data for algo ID "+algoid)
-        algoInfo.enginetype match {
+        algoInfo.engineinfoid match {
           case "itemrec" => itemRecScores.deleteByAlgoid(algoid)
-          case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.enginetype)
+          case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.engineinfoid)
         }
       } getOrElse { throw new RuntimeException("Try to delete algo of non-existing algotype: " + algo.infoid) }
     } getOrElse { throw new RuntimeException("Try to delete non-existing algo: " + algoid) }
@@ -1134,8 +1135,7 @@ object Application extends Controller {
           for ((metricType, metricSetting) <- (metricTypes zip metricSettings)) {
             val metricId = offlineEvalMetrics.insert(OfflineEvalMetric(
               id = -1,
-              name = metricTypeNames("map_k"),
-              metrictype = metricType,
+              infoid = "map_k",
               evalid = evalid,
               params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
             ))
@@ -1328,8 +1328,8 @@ object Application extends Controller {
               Map("id" -> metric.id.toString,
                   "engine_id" -> engine_id,
                   "enginetype_id" -> "itemrec", // TODO: hardcode now, should get it from engine db
-                  "metricstype_id" -> metric.metrictype,
-                  "metricsName" -> metric.name,
+                  "metricstype_id" -> metric.infoid,
+                  "metricsName" -> (metricInfos.get(metric.infoid) map { _.name } getOrElse ""),
                   "settingsString" -> map_k_displayAllParams(metric.params)
                   )
             }.toSeq

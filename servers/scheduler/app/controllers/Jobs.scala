@@ -47,7 +47,7 @@ object Jobs {
     val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) storeDurably(true) build()
     job.getJobDataMap().put("template", command.toString)
     job.getJobDataMap().put("algoid", algo.id)
-    job.getJobDataMap().put("enginetype", engine.enginetype)
+    job.getJobDataMap().put("infoid", engine.infoid)
 
     job
   }
@@ -61,7 +61,7 @@ object Jobs {
     * 3. Mark offline evaluation as finished
     */
   def offlineEvalJob(config: Config, app: App, engine: Engine, offlineEval: OfflineEval) = {
-    val splitCommand = new StringTemplate(offlineEvalSplitCommands(engine.enginetype).mkString(" && "))
+    val splitCommand = new StringTemplate(offlineEvalSplitCommands(engine.infoid).mkString(" && "))
     setSharedAttributes(splitCommand, config, app, engine, None, Some(offlineEval), None)
 
     /** Add a job, then build a trigger for it.
@@ -71,7 +71,7 @@ object Jobs {
     val job = newJob(classOf[OfflineEvalJob]) withIdentity(offlineEval.id.toString, offlineEvalJobGroup) storeDurably(true) build()
     job.getJobDataMap().put("evalid", offlineEval.id)
     job.getJobDataMap().put("splitCommand", splitCommand.toString)
-    job.getJobDataMap().put("enginetype", engine.enginetype)
+    job.getJobDataMap().put("infoid", engine.infoid)
 
     /** Training algo job. */
     val algosToRun = config.getSettingsAlgos.getByOfflineEvalid(offlineEval.id).toList
@@ -89,7 +89,7 @@ object Jobs {
 
           /** Metrics. */
           metricsToRun foreach { metric =>
-            val metricCommand = new StringTemplate(offlineEvalMetricCommands(engine.enginetype).mkString(" && "))
+            val metricCommand = new StringTemplate(offlineEvalMetricCommands(engine.infoid).mkString(" && "))
             setSharedAttributes(metricCommand, config, app, engine, Some(algo), Some(offlineEval), Some(metric))
             job.getJobDataMap().put(s"metricCommand${algo.id}.${metric.id}", metricCommand.toString)
           }
@@ -186,7 +186,7 @@ class AlgoJob extends Job {
   override def execute(context: JobExecutionContext) = {
     val jobDataMap = context.getMergedJobDataMap
     val algoid = jobDataMap.getInt("algoid")
-    val enginetype = jobDataMap.getString("enginetype")
+    val infoid = jobDataMap.getString("infoid")
     val template = new StringTemplate(jobDataMap.getString("template"))
     val algos = Scheduler.algos
     val itemRecScores = Scheduler.itemRecScores
@@ -200,7 +200,7 @@ class AlgoJob extends Job {
       if (code == 0) {
         Logger.info("Algo ID %d: Flipping model set flag to %s".format(algo.id, !algo.modelset))
         algos.update(algo.copy(modelset = !algo.modelset))
-        enginetype match {
+        infoid match {
           case "itemrec" => {
             Logger.info("Algo ID %d: Deleting data of model set %s".format(algo.id, algo.modelset))
             itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
@@ -226,7 +226,7 @@ class OfflineEvalJob extends InterruptableJob {
     val algoids = jobDataMap.getString("algoids").split(",") map { _.toInt }
     val metricids = jobDataMap.getString("metricids").split(",") map { _.toInt }
     val splitCommand = jobDataMap.getString("splitCommand")
-    val enginetype = jobDataMap.getString("enginetype")
+    val infoid = jobDataMap.getString("infoid")
 
     val offlineEvals = Scheduler.offlineEvals
 
@@ -242,7 +242,7 @@ class OfflineEvalJob extends InterruptableJob {
       offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
 
       /** Delete old model data, if any (usually recovering from an incomplete run) */
-      enginetype match {
+      infoid match {
         case "itemrec" => algoids foreach { algoid =>
           Logger.info(s"${logPrefix}Algo ID $algoid: Deleting any old model data")
           Scheduler.itemRecScores.deleteByAlgoid(algoid)

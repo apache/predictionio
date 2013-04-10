@@ -15,7 +15,7 @@ class AlgoInfosSpec extends Specification { def is =
 
   def algoinfos(algoinfos: AlgoInfos) = {                                     t ^
     "get info of an algo by its ID"                                           ! get(algoinfos) ^
-    "get info of algos by their engine type"                                  ! getByEngineType(algoinfos) ^
+    "get info of algos by their engine type"                                  ! getByEngineInfoId(algoinfos) ^
                                                                               bt
   }
 
@@ -25,7 +25,7 @@ class AlgoInfosSpec extends Specification { def is =
     algoinfos.get("pdio-knnitembased").get.name must beEqualTo("kNN Item Based Collaborative Filtering")
   }
 
-  def getByEngineType(algoinfos: AlgoInfos) = {
-    algoinfos.getByEngineType("itemrec").size must beEqualTo(11)
+  def getByEngineInfoId(algoinfos: AlgoInfos) = {
+    algoinfos.getByEngineInfoId("itemrec").size must beEqualTo(11)
   }
 }

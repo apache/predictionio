@@ -32,7 +32,7 @@ class EnginesSpec extends Specification { def is =
       id = 0,
       appid = 123,
       name = "insert",
-      enginetype = "insert",
+      infoid = "insert",
       itypes = Option(List("foo", "bar")),
       settings = Map()
     )
@@ -45,7 +45,7 @@ class EnginesSpec extends Specification { def is =
       id = 0,
       appid = 234,
       name = "getByAppid1",
-      enginetype = "getByAppid1",
+      infoid = "getByAppid1",
       itypes = Option(List("foo", "bar")),
       settings = Map("apple" -> "red")
     )
@@ -53,7 +53,7 @@ class EnginesSpec extends Specification { def is =
       id = 0,
       appid = 234,
       name = "getByAppid2",
-      enginetype = "getByAppid2",
+      infoid = "getByAppid2",
       itypes = None,
       settings = Map("foo2" -> "bar2")
     )
@@ -71,7 +71,7 @@ class EnginesSpec extends Specification { def is =
       id = 0,
       appid = 345,
       name = "update",
-      enginetype = "update",
+      infoid = "update",
       itypes = Option(List("foo", "bar")),
       settings = Map()
     ))
@@ -79,7 +79,7 @@ class EnginesSpec extends Specification { def is =
       id = id,
       appid = 345,
       name = "updated",
-      enginetype = "updated",
+      infoid = "updated",
       itypes = Option(List("foo", "baz")),
       settings = Map("set1" -> "dat1", "set2" -> "dat2")
     )
@@ -92,7 +92,7 @@ class EnginesSpec extends Specification { def is =
       id = 0,
       appid = 456,
       name = "deleteByIdAndAppid",
-      enginetype = "deleteByIdAndAppid",
+      infoid = "deleteByIdAndAppid",
       itypes = Option(List("foo", "bar")),
       settings = Map("x" -> "y")
     ))
@@ -105,7 +105,7 @@ class EnginesSpec extends Specification { def is =
       id = 0,
       appid = 567,
       name = "existsByAppidAndName",
-      enginetype = "existsByAppidAndName",
+      infoid = "existsByAppidAndName",
       itypes = None,
       settings = Map()
     ))

@@ -59,7 +59,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -123,7 +123,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -183,7 +183,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -240,7 +240,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -294,7 +294,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -336,7 +336,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -384,7 +384,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -441,7 +441,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -498,7 +498,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")
     ),
@@ -512,7 +512,7 @@ class CodeAlgoInfos extends AlgoInfos {
       paramdefaults = Map(),
       paramdescription = Map(),
       paramorder = Seq(),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users and Items.")
     ),
@@ -525,7 +525,7 @@ class CodeAlgoInfos extends AlgoInfos {
       paramdefaults = Map(),
       paramdescription = Map(),
       paramorder = Seq(),
-      enginetype = "itemrec",
+      engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users and Items with starttime.")
     )
@@ -534,7 +534,7 @@ class CodeAlgoInfos extends AlgoInfos {
   /** Temporarily add alias before generalization is finished. */
   private val algoInfos = wipAlgoInfos ++ Map("io.prediction.algorithms.scalding.itemrec.knnitembased" -> wipAlgoInfos("pdio-knnitembased"))
 
-  private val engineTypeToAlgoInfos = Map("itemrec" -> Seq(
+  private val engineInfoIdToAlgoInfos = Map("itemrec" -> Seq(
     "pdio-knnitembased",
     "mahout-itembased",
     "mahout-parallelals",
@@ -551,7 +551,7 @@ class CodeAlgoInfos extends AlgoInfos {
     algoInfos.get(id)
   }
 
-  def getByEngineType(enginetype: String) = {
-    engineTypeToAlgoInfos.getOrElse(enginetype, Seq()).map(algoInfos(_))
+  def getByEngineInfoId(engineinfoid: String) = {
+    engineInfoIdToAlgoInfos.getOrElse(engineinfoid, Seq()).map(algoInfos(_))
   }
 }
