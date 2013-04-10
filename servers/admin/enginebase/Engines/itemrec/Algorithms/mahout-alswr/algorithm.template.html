@@ -10,7 +10,7 @@
                                         </div>
 
                                         <div class="boxContent">
-                                            <!-- TODO
+                                            
                                             <div class="bottomMargin switch candy blue" style="width: 250px;">
                                                 <input id="tuneManual" name="tune" value="manual" type="radio" checked>
                                                 <label for="tuneManual" onclick="">Manual Tuning</label>
@@ -18,7 +18,8 @@
                                                 <label for="tuneAuto" onclick="">Auto Tuning</label>
                                                 <span class="slide-button"></span>
                                             </div>
-                                            -->
+                                            
+
                                             <div id="tuneManualPanel" class="form-horizontal">
                                                 <div class="control-group">
                                                     <label for="numFeatures" class="control-label">Num of Factorized Features</label>
@@ -46,6 +47,7 @@
                                             </div>
 
                                             <div id="tuneAutoPanel" class="hide form-horizontal">
+                                                <div id="tuneMethodContentHolder"></div>
                                                 <div class="control-group">
                                                     <label class="control-label">Num of Factorized Features</label>
                                                     <div class="controls">
@@ -176,5 +178,17 @@
                         </form>
                         </div>
 </script>
+<script type="text/template" id="tuneMethodTemplate">
+    <div class="span12 bottomMargin-large">
+        <p>Select an Autotuning Method:</p>
+        <div>
+            <select id="tuneMethod">
+                <option value="random">Random Search</option>
+            </select>
+        </div>
+    </div>
+</script>
+
+
 
 <div id="mahout-alswrContentHolder"></div>

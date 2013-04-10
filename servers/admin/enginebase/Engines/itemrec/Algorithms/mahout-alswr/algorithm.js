@@ -40,7 +40,8 @@ var MahoutALSWRAlgoSettingsView = Backbone.View.extend({
 		//"change #mahout-alswrForm input":  "formDataChanged",
 		//"change #mahout-alswrForm select":  "formDataChanged",
 		"submit #mahout-alswrForm" : "formDataSubmit",
-		'click input[name="tune"]' : "toggleTune" 
+		'click #tuneManual' : "tuneManual", 
+		'click #tuneAuto' : "tuneAuto"
 	},
     render : function() {
         this.$el.html(this.template());
@@ -48,9 +49,13 @@ var MahoutALSWRAlgoSettingsView = Backbone.View.extend({
     },
 	reloadData : function() { // Required Algorithm Module Function
 	},
-	toggleTune: function() {
-	     $('#tuneManualPanel').slideToggle();
-	     $('#tuneAutoPanel').slideToggle(); 
+	tuneManual: function() {
+		$('#tuneAutoPanel').slideUp(); 
+		$('#tuneManualPanel').slideDown();
+	},
+	tuneAuto: function() {
+		$('#tuneManualPanel').slideUp(); 
+		$('#tuneAutoPanel').slideDown();
 	},
 	formDataSubmit: function() {
 		var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs
