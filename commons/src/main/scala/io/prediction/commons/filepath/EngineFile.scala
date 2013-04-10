@@ -58,6 +58,14 @@ object OfflineMetricFile {
     BaseDir.offlineMetricDir(rootDir, appId, engineId, algoId, evalId, metricId) + "metric/" + name
 }
 
+/**
+ * Training Test Set Generator Internal File
+ */
+object TrainingTestSplitFile {
+
+  def apply(rootDir: String, appId: Int, engineId: Int, evalId: Int, name: String): String =
+    BaseDir.offlineEvalDir(rootDir, appId, engineId, evalId) + "trainingtestsplit/" + name
+}
 
 /*
  * standard

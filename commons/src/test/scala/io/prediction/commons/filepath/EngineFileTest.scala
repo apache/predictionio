@@ -49,6 +49,12 @@ class EngineFileTest extends Specification {
       OfflineMetricFile("hdfs/predictionio/",2,11,22,33,44,"test.tsv") must be_==("hdfs/predictionio/apps/2/engines/11/offlineeval/22/metrics/33/algos/44/metric/test.tsv")
     }
   }
+
+  "TrainingTestSplitFile" should {
+    "correctly return path" in {
+      TrainingTestSplitFile("hdfs/predictionio/", 2, 4, 6, "test8.tsv") must be_==("hdfs/predictionio/apps/2/engines/4/offlineeval/6/trainingtestsplit/test8.tsv")
+    }
+  }
   
   "ModelDataDir" should {
     "correctly return path in batch mode" in {
