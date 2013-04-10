@@ -1,6 +1,6 @@
-<script type="text/template" id="mahout-parallelalsTemplate">
+<script type="text/template" id="algoSettingsTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="mahout-parallelalsForm">
+                        <form id="algoSettingsForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
@@ -16,14 +16,14 @@
                                                 <div class="control-group">
                                                     <label for="inputError" class="control-label">Lamda</label>
                                                     <div class="controls">
-                                                        <input id="mahout-parallelals_lambda" name="lambda" class="span1" type="text" value="0.03">
+                                                        <input id="lambda" name="lambda" class="span1" type="text" value="0.03">
                                                         <span class="help-inline">Regularization param to avoid overfitting.</span>
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
                                                     <label for="inputError" class="control-label">Implicit Feedback</label>
                                                     <div class="controls">
-                                                        <select class="span2" name="implicitFeedback" id="mahout-parallelals_implicitFeedback">
+                                                        <select class="span2" name="implicitFeedback" id="implicitFeedback">
                                                             <option value="false">False</option>
                                                             <option value="true">True</option>
                                                         </select>
@@ -34,7 +34,7 @@
                                                 <div class="control-group">
                                                     <label for="inputError" class="control-label">Alpha</label>
                                                     <div class="controls">
-                                                        <input id="mahout-parallelals_alpha" name="alpha" class="span1" type="text" value="40">
+                                                        <input id="alpha" name="alpha" class="span1" type="text" value="40">
                                                         <span class="help-inline">Confidence param (will be ignored if Implicit Feedback is false)</span>
                                                     </div>
                                                 </div>
@@ -42,7 +42,7 @@
                                                 <div class="control-group">
                                                     <label for="inputError" class="control-label">Num of Factorized Features</label>
                                                     <div class="controls">
-                                                        <input id="mahout-parallelals_numFeatures" name="numFeatures" class="span1" type="text" value="3">
+                                                        <input id="numFeatures" name="numFeatures" class="span1" type="text" value="3">
                                                         <span class="help-inline">Dimension of the factorized feature space.</span>
                                                     </div>
                                                 </div>
@@ -50,7 +50,7 @@
                                                 <div class="control-group">
                                                     <label for="inputError" class="control-label">Num of Iteration</label>
                                                     <div class="controls">
-                                                        <input id="mahout-parallelals_numIterations" name="numIterations" class="span1" type="text" value="10">
+                                                        <input id="numIterations" name="numIterations" class="span1" type="text" value="10">
                                                         <span class="help-inline">Number of training iteration.</span>
                                                     </div>
                                                 </div>
@@ -69,7 +69,7 @@
                                                 <div class="control-group">
                                                     <label for="view" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="mahout-parallelals_viewParam" name="viewParam" class="span2">
+                                                        <select id="viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -83,7 +83,7 @@
                                                 <div class="control-group">
                                                     <label for="viewMore" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="mahout-parallelals_viewmoreAction" name="viewmoreAction" class="span2">
+                                                        <select id="viewmoreAction" name="viewmoreAction" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -97,7 +97,7 @@
                                                 <div class="control-group">
                                                     <label for="like" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="mahout-parallelals_likeParam" name="likeParam" class="span2">
+                                                        <select id="likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -110,7 +110,7 @@
                                                 <div class="control-group">
                                                     <label for="dislike" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="mahout-parallelals_dislikeParam" name="dislikeParam" class="span2">
+                                                        <select id="dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -123,7 +123,7 @@
                                                 <div class="control-group">
                                                     <label for="buy" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="mahout-parallelals_conversionParam" name="conversionParam" class="span2">
+                                                        <select id="conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -138,7 +138,7 @@
                                                 <div class="control-group">
                                                     <label for="override" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="mahout-parallelals_conflictParam" name="conflictParam" class="span5">
+                                                        <select id="conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -150,7 +150,8 @@
                                     </div>
 
                                     <div class="pull-right">
-                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                        <a href="#engineTabAlgorithms" class="btn">Cancel</a>                                        
+                                        <button class="btn btn-primary leftMargin" type="submit">Change</button>
                                     </div>
                                 </div>  
                             </div>
@@ -158,4 +159,4 @@
                         </div>
 </script>
 
-<div id="mahout-parallelalsContentHolder"></div>
+<div id="algoSettingsContentHolder"></div>

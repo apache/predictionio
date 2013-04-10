@@ -1,6 +1,6 @@
-<script type="text/template" id="pdio-knnitembasedTemplate">
+<script type="text/template" id="algoSettingsTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="pdio-knnitembasedForm">
+                        <form id="algoSettingsForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
@@ -23,7 +23,7 @@
                                                 <div class="control-group">
                                                     <label for="measureParam" class="control-label">Distance Function </label>
                                                     <div class="controls">
-                                                        <select name="measureParam" id="pdio-knnitembased_measureParam">
+                                                        <select name="measureParam" id="measureParam">
                                                             <option value="correl">Pearson Correlation Similarity</option>
                                                             <option value="cosine">Cosine Similarity</option>
                                                             <option value="jaccard">Jaccard Similarity</option>
@@ -38,14 +38,14 @@
                                                 <div class="control-group">
                                                     <label for="priorCountParam" class="control-label">Virtual Count</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_priorCountParam" name="priorCountParam" class="span1" type="text" value="50">
+                                                        <input id="priorCountParam" name="priorCountParam" class="span1" type="text" value="50">
                                                         <span class="help-inline">Suggested range: 0 to 100. Default 50.</span>
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
                                                     <label for="priorCorrelParam" class="control-label">Prior Correlation</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_priorCorrelParam" name="priorCorrelParam" class="span1" type="text" value="0">
+                                                        <input id="priorCorrelParam" name="priorCorrelParam" class="span1" type="text" value="0">
                                                         <span class="help-inline">Suggested range: 0 to 50. Default 0.</span>
                                                     </div>
                                                 </div>
@@ -57,28 +57,28 @@
                                                 <div class="control-group">
                                                     <label for="minNumRatersParam" class="control-label">Minimum Number of Raters of an Item</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_minNumRatersParam" name="minNumRatersParam" class="span1" type="text" value="1">
+                                                        <input id="minNumRatersParam" name="minNumRatersParam" class="span1" type="text" value="1">
                                                         <span class="help-inline">Default: 1.</span>
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
                                                     <label for="maxNumRatersParam" class="control-label">Maximum Number of Raters of an Item</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_maxNumRatersParam" name="maxNumRatersParam" class="span2" type="text" value="10000">
+                                                        <input id="maxNumRatersParam" name="maxNumRatersParam" class="span2" type="text" value="10000">
                                                         <span class="help-inline">Default: 10000.</span>
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
                                                     <label for="minIntersectionParam" class="control-label">Minimum Intersection</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_minIntersectionParam" name="minIntersectionParam" class="span1" type="text" value="1">
+                                                        <input id="minIntersectionParam" name="minIntersectionParam" class="span1" type="text" value="1">
                                                         <span class="help-inline">Default: 1.</span>
                                                     </div>
                                                 </div>
                                                 <div class="control-group">
                                                     <label for="minNumRatedSimParam" class="control-label">Minimum Number of Rated Similar Items</label>
                                                     <div class="controls">
-                                                        <input id="pdio-knnitembased_minNumRatedSimParam" name="minNumRatedSimParam" class="span1" type="text" value="1">
+                                                        <input id="minNumRatedSimParam" name="minNumRatedSimParam" class="span1" type="text" value="1">
                                                         <span class="help-inline">Default: 1.</span>
                                                     </div>
                                                 </div>
@@ -98,7 +98,7 @@
                                                 <div class="control-group">
                                                     <label for="viewParam" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_viewParam" name="viewParam" class="span2">
+                                                        <select id="viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -112,7 +112,7 @@
                                                 <div class="control-group">
                                                     <label for="viewmoreParam" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_viewmoreParam" name="viewmoreParam" class="span2">
+                                                        <select id="viewmoreParam" name="viewmoreParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -126,7 +126,7 @@
                                                 <div class="control-group">
                                                     <label for="likeParam" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_likeParam" name="likeParam" class="span2">
+                                                        <select id="likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -139,7 +139,7 @@
                                                 <div class="control-group">
                                                     <label for="dislikeParam" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_dislikeParam" name="dislikeParam" class="span2">
+                                                        <select id="dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -152,7 +152,7 @@
                                                 <div class="control-group">
                                                     <label for="conversionParam" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_conversionParam" name="conversionParam" class="span2">
+                                                        <select id="conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -167,7 +167,7 @@
                                                 <div class="control-group">
                                                     <label for="conflictParam" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="pdio-knnitembased_conflictParam" name="conflictParam" class="span5">
+                                                        <select id="conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -178,7 +178,8 @@
                                         </div>
                                     </div>
                                     <div class="pull-right">
-                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                        <a href="#engineTabAlgorithms" class="btn">Cancel</a>                                        
+                                        <button class="btn btn-primary leftMargin" type="submit">Change</button>
                                     </div>
                                 </div>  
                             </div>
@@ -186,4 +187,4 @@
                         </div>
 </script>
 
-<div id="pdio-knnitembasedContentHolder"></div>
+<div id="algoSettingsContentHolder"></div>

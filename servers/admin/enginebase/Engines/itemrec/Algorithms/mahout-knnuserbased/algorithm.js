@@ -1,19 +1,20 @@
-var MahoutKnnUserBasedAlgoSettingsModel = Backbone.Model.extend({
+var AlgoSettingsModel = Backbone.Model.extend({
 	/* Required params: app_id, engine_id, id (algo_id) */
 	urlRoot: function(){ 
 		return '/modules/itemrec/settings/app/'+ this.get("app_id") +'/engine/' + this.get("engine_id") + '/mahout-knnuserbased';
 	}
 });
 
-var MahoutKnnUserBasedAlgoSettingsView = Backbone.View.extend({
-    el: '#mahout-knnuserbasedContentHolder', 
+var AlgoSettingsView = Backbone.View.extend({
+    el: '#algoSettingsContentHolder', 
     initialize : function() {
-    	this.form_el = '#mahout-knnuserbasedForm';
-        this.template = _.template($("#mahout-knnuserbasedTemplate").html());
+    	this.form_el = '#algoSettingsForm';
+        this.template = _.template($("#algoSettingsTemplate").html());
 		this.app_id = this.options.app_id;
 		this.engine_id = this.options.engine_id;
 		this.algo_id = this.options.algo_id;
-		this.model = new MahoutKnnUserBasedAlgoSettingsModel({app_id: this.app_id, engine_id: this.engine_id, id: this.algo_id})
+		this.algotype_id = this.options.algotype_id;
+		this.model = new AlgoSettingsModel({app_id: this.app_id, engine_id: this.engine_id, id: this.algo_id})
 		var self = this;
 		this.model.fetch({
 			success: function() {
@@ -29,16 +30,20 @@ var MahoutKnnUserBasedAlgoSettingsView = Backbone.View.extend({
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
+				
+				// TODO: PDIO-148: initValue for Autotune variables: tune, tuneMethod, and other Min/Max....
+				// TODO: PDIO-148: If tune == 'auto', call this.tuneAuto();
 			}
 		});
     },
     initValue: function(attrName){
 		var value = this.model.get(attrName);
-		this.$el.find('#mahout-knnuserbased_'+attrName).val(value);
+		this.$el.find('#'+attrName).val(value);
     },
 	events: {
-		"change #mahout-knnuserbasedForm input":  "formDataChanged",
-		"change #mahout-knnuserbasedForm select":  "formDataChanged"
+		"submit #algoSettingsForm" : "formDataSubmit",
+		'click #tuneManual' : "tuneManual", 
+		'click #tuneAuto' : "tuneAuto"
 	},
     render : function() {
         this.$el.html(this.template());
@@ -46,15 +51,17 @@ var MahoutKnnUserBasedAlgoSettingsView = Backbone.View.extend({
     },
 	reloadData : function() { // Required Algorithm Module Function
 	},
-	formDataChanged: function() {
+	tuneManual: function() {
+		$('#tuneAutoPanel').slideUp(); 
+		$('#tuneManualPanel').slideDown();
+	},
+	tuneAuto: function() {
+		$('#tuneManualPanel').slideUp(); 
+		$('#tuneAutoPanel').slideDown();
+	},
+	formDataSubmit: function() {
 		var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs
-		console.log(data);
-		this.model.set(data);
-		this.model.save();
-		/*
-		var simEvalModel = new SimEvalModel({app_id: this.app_id, engine_id: this.engine_id});
-		var self = this;
-		simEvalModel.save(data, {
+		this.model.save(data, {
 			wait: true,
 			success: function(model, res) {
 				window.location.hash = 'engineTabAlgorithms';
@@ -65,7 +72,6 @@ var MahoutKnnUserBasedAlgoSettingsView = Backbone.View.extend({
 			}
 		});
 		return false;
-		*/
 	},
     close : function() {  // Required Algorithm Module Function
         this.remove();
@@ -79,6 +85,6 @@ var MahoutKnnUserBasedAlgoSettingsView = Backbone.View.extend({
     }
 });
 
-createAlgorithmView = function(app_id, engine_id, algo_id) { // Required Algorithm Module Function
-    return new MahoutKnnUserBasedAlgoSettingsView({app_id: app_id, engine_id: engine_id, algo_id: algo_id});
+createAlgorithmView = function(app_id, engine_id, algo_id, algotype_id) { // Required Algorithm Module Function
+    return new AlgoSettingsView({app_id: app_id, engine_id: engine_id, algo_id: algo_id, algotype_id: algotype_id});
 };

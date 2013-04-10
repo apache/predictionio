@@ -1,7 +1,7 @@
-var PdioRandomRankAlgoSettingsView = Backbone.View.extend({
-    el: '#pdio-randomrankContentHolder', 
+var AlgoSettingsView = Backbone.View.extend({
+    el: '#algoSettingsContentHolder', 
     initialize : function() {
-        this.template = _.template($("#pdio-randomrankTemplate").html());
+        this.template = _.template($("#algoSettingsTemplate").html());
 		this.render();
     },
     render : function() {
@@ -22,6 +22,6 @@ var PdioRandomRankAlgoSettingsView = Backbone.View.extend({
     }
 });
 
-createAlgorithmView = function(app_id, engine_id, algo_id) { // Required Algorithm Module Function
-    return new PdioRandomRankAlgoSettingsView();
+createAlgorithmView = function(app_id, engine_id, algo_id, algotype_id) { // Required Algorithm Module Function
+    return new AlgoSettingsView();
 };

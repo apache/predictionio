@@ -1,7 +1,7 @@
-var PdioLatestRankAlgoSettingsView = Backbone.View.extend({
-    el: '#pdio-latestrankContentHolder', 
+var AlgoSettingsView = Backbone.View.extend({
+    el: '#algoSettingsContentHolder', 
     initialize : function() {
-        this.template = _.template($("#pdio-latestrankTemplate").html());
+        this.template = _.template($("#algoSettingsTemplate").html());
 		this.render();
     },
     render : function() {
@@ -22,6 +22,6 @@ var PdioLatestRankAlgoSettingsView = Backbone.View.extend({
     }
 });
 
-createAlgorithmView = function(app_id, engine_id, algo_id) { // Required Algorithm Module Function
-    return new PdioLatestRankAlgoSettingsView();
+createAlgorithmView = function(app_id, engine_id, algo_id, algotype_id) { // Required Algorithm Module Function
+    return new AlgoSettingsView();
 };

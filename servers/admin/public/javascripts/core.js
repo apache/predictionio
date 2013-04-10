@@ -708,7 +708,7 @@ var EngineView = Backbone.View.extend({
        	$.getScript("enginebase/Engines/" + this.enginetype_id + "/Algorithms/" + algotype_id + "/algorithm.js");
        	$.ajaxSetup({async:true});
        	// algorithm template and js should be ready by now
-       	this.tabExtraTabView = createAlgorithmView(this.app_id, this.engine_id, algo_id);
+       	this.tabExtraTabView = createAlgorithmView(this.app_id, this.engine_id, algo_id, algotype_id);
        	this.subViews.push(this.tabExtraTabView);
 	},
 	showExtraTabSimEvalReport : function(simeval_id) {

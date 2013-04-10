@@ -1,6 +1,6 @@
-<script type="text/template" id="mahout-thresholduserbasedTemplate">
+<script type="text/template" id="algoSettingsTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="mahout-thresholduserbasedForm">
+                        <form id="algoSettingsForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
@@ -23,7 +23,7 @@
                                                 <div class="control-group">
                                                     <label for="userSimilarity" class="control-label">User Similarity</label>
                                                     <div class="controls">
-                                                        <select name="userSimilarity" id="mahout-thresholduserbased_userSimilarity">
+                                                        <select name="userSimilarity" id="userSimilarity">
                                                             <option value="CityBlockSimilarity">City Block</option>
                                                             <option value="EuclideanDistanceSimilarity">Euclidean Distance</option>
                                                             <option value="LogLikelihoodSimilarity">Log-Likelihood</option>
@@ -38,7 +38,7 @@
                                                 <div class="control-group">
                                                     <label for="threshold" class="control-label">Threshold</label>
                                                     <div class="controls">
-                                                        <input name="threshold" id="mahout-thresholduserbased_threshold" class="span2" type="text" value="0.0001">
+                                                        <input name="threshold" id="threshold" class="span2" type="text" value="0.0001">
                                                         <span class="help-inline">Similarity threshold.</span>
                                                     </div>
                                                 </div>
@@ -48,7 +48,7 @@
                                                 <div class="control-group">
                                                     <label for="booleanData" class="control-label">Boolean Data</label>
                                                     <div class="controls">
-                                                        <select name="booleanData" id="mahout-thresholduserbased_booleanData" class="span2">
+                                                        <select name="booleanData" id="booleanData" class="span2">
                                                             <option value="true">True</option>
                                                             <option value="false">False</option>
                                                         </select>
@@ -59,7 +59,7 @@
                                                 <div class="control-group">
                                                     <label for="weighted" class="control-label">Weighted Score</label>
                                                     <div class="controls">
-                                                        <select name="weighted" id="mahout-thresholduserbased_weighted" class="span2">
+                                                        <select name="weighted" id="weighted" class="span2">
                                                             <option value="true">True</option>
                                                             <option value="false">False</option>
                                                         </select>
@@ -72,7 +72,7 @@
                                                 <div class="control-group">
                                                     <label for="samplingRate" class="control-label">Sampling Rate</label>
                                                     <div class="controls">
-                                                        <input name="samplingRate" id="mahout-thresholduserbased_samplingRate" class="span2" type="text" value="1.0">
+                                                        <input name="samplingRate" id="samplingRate" class="span2" type="text" value="1.0">
                                                         <span class="help-inline">Must be greater &gt; 0 and &lt;= 1.</span>
                                                     </div>
                                                 </div>
@@ -92,7 +92,7 @@
                                                 <div class="control-group">
                                                     <label for="view" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="mahout-thresholduserbased_viewParam" name="viewParam" class="span2">
+                                                        <select id="viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -106,7 +106,7 @@
                                                 <div class="control-group">
                                                     <label for="viewMore" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="mahout-thresholduserbased_viewmoreAction" name="viewmoreAction" class="span2">
+                                                        <select id="viewmoreAction" name="viewmoreAction" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -120,7 +120,7 @@
                                                 <div class="control-group">
                                                     <label for="like" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="mahout-thresholduserbased_likeParam" name="likeParam" class="span2">
+                                                        <select id="likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -133,7 +133,7 @@
                                                 <div class="control-group">
                                                     <label for="dislike" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="mahout-thresholduserbased_dislikeParam" name="dislikeParam" class="span2">
+                                                        <select id="dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -146,7 +146,7 @@
                                                 <div class="control-group">
                                                     <label for="buy" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="mahout-thresholduserbased_conversionParam" name="conversionParam" class="span2">
+                                                        <select id="conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -161,7 +161,7 @@
                                                 <div class="control-group">
                                                     <label for="override" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="mahout-thresholduserbased_conflictParam" name="conflictParam" class="span5">
+                                                        <select id="conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -172,7 +172,8 @@
                                         </div>
                                     </div>
                                     <div class="pull-right">
-                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                        <a href="#engineTabAlgorithms" class="btn">Cancel</a>                                        
+                                        <button class="btn btn-primary leftMargin" type="submit">Change</button>
                                     </div>
                                 </div>  
                             </div>
@@ -180,4 +181,4 @@
                         </div>
 </script>
 
-<div id="mahout-thresholduserbasedContentHolder"></div>
+<div id="algoSettingsContentHolder"></div>

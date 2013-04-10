@@ -1,6 +1,6 @@
-<script type="text/template" id="mahout-knnuserbasedTemplate">
+<script type="text/template" id="algoSettingsTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="mahout-knnuserbasedForm">
+                        <form id="algoSettingsForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
@@ -23,7 +23,7 @@
                                                 <div class="control-group">
                                                     <label for="userSimilarity" class="control-label">User Similarity</label>
                                                     <div class="controls">
-                                                        <select name="userSimilarity" id="mahout-knnuserbased_userSimilarity">
+                                                        <select name="userSimilarity" id="userSimilarity">
                                                             <option value="CityBlockSimilarity">City Block</option>
                                                             <option value="EuclideanDistanceSimilarity">Euclidean Distance</option>
                                                             <option value="LogLikelihoodSimilarity">Log-Likelihood</option>
@@ -38,7 +38,7 @@
                                                 <div class="control-group">
                                                     <label for="nearestN" class="control-label">Nearest K</label>
                                                     <div class="controls">
-                                                        <input name="nearestN" id="mahout-knnuserbased_nearestN" class="span2" type="text" value="10">
+                                                        <input name="nearestN" id="nearestN" class="span2" type="text">
                                                         <span class="help-inline">K-nearest neighbors to a given user.</span>
                                                     </div>
                                                 </div>
@@ -48,7 +48,7 @@
                                                 <div class="control-group">
                                                     <label for="booleanData" class="control-label">Boolean Data</label>
                                                     <div class="controls">
-                                                        <select name="booleanData" id="mahout-knnuserbased_booleanData" class="span2">
+                                                        <select name="booleanData" id="booleanData" class="span2">
                                                             <option value="true">True</option>
                                                             <option value="false">False</option>
                                                         </select>
@@ -59,7 +59,7 @@
                                                 <div class="control-group">
                                                     <label for="minSimilarity" class="control-label">Minimal Similarity</label>
                                                     <div class="controls">
-                                                        <input name="minSimilarity" id="mahout-knnuserbased_minSimilarity" class="span2" type="text" value="-1.0">
+                                                        <input name="minSimilarity" id="minSimilarity" class="span2" type="text">
                                                         <span class="help-inline">Minimal similarity required for neighbors.</span>
                                                     </div>
                                                 </div>
@@ -67,7 +67,7 @@
                                                 <div class="control-group">
                                                     <label for="weighted" class="control-label">Weighted</label>
                                                     <div class="controls">
-                                                        <select name="weighted" id="mahout-knnuserbased_weighted" class="span2">
+                                                        <select name="weighted" id="weighted" class="span2">
                                                             <option value="true">True</option>
                                                             <option value="false">False</option>
                                                         </select>
@@ -80,7 +80,7 @@
                                                 <div class="control-group">
                                                     <label for="samplingRate" class="control-label">Sampling Rate</label>
                                                     <div class="controls">
-                                                        <input name="samplingRate" id="mahout-knnuserbased_samplingRate" class="span2" type="text" value="1.0">
+                                                        <input name="samplingRate" id="samplingRate" class="span2" type="text">
                                                         <span class="help-inline">Must be greater &gt; 0 and &lt;= 1.</span>
                                                     </div>
                                                 </div>
@@ -100,7 +100,7 @@
                                                 <div class="control-group">
                                                     <label for="view" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="mahout-knnuserbased_viewParam" name="viewParam" class="span2">
+                                                        <select id="viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -114,7 +114,7 @@
                                                 <div class="control-group">
                                                     <label for="viewMore" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="mahout-knnuserbased_viewmoreAction" name="viewmoreAction" class="span2">
+                                                        <select id="viewmoreAction" name="viewmoreAction" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -128,7 +128,7 @@
                                                 <div class="control-group">
                                                     <label for="like" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="mahout-knnuserbased_likeParam" name="likeParam" class="span2">
+                                                        <select id="likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -141,7 +141,7 @@
                                                 <div class="control-group">
                                                     <label for="dislike" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="mahout-knnuserbased_dislikeParam" name="dislikeParam" class="span2">
+                                                        <select id="dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -154,7 +154,7 @@
                                                 <div class="control-group">
                                                     <label for="buy" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="mahout-knnuserbased_conversionParam" name="conversionParam" class="span2">
+                                                        <select id="conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -169,7 +169,7 @@
                                                 <div class="control-group">
                                                     <label for="override" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="mahout-knnuserbased_conflictParam" name="conflictParam" class="span5">
+                                                        <select id="conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -180,7 +180,8 @@
                                         </div>
                                     </div>
                                     <div class="pull-right">
-                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                        <a href="#engineTabAlgorithms" class="btn">Cancel</a>                                        
+                                        <button class="btn btn-primary leftMargin" type="submit">Change</button>
                                     </div>
                                 </div>  
                             </div>
@@ -188,4 +189,4 @@
                         </div>
 </script>
 
-<div id="mahout-knnuserbasedContentHolder"></div>
+<div id="algoSettingsContentHolder"></div>

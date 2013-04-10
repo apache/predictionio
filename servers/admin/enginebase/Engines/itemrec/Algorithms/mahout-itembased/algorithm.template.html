@@ -1,6 +1,6 @@
-<script type="text/template" id="mahout-itembasedTemplate">
+<script type="text/template" id="algoSettingsTemplate">
                         <div class="row-fluid bottomMargin">
-                        <form id="mahout-itembasedForm">
+                        <form id="algoSettingsForm">
                            <div class="span12">
                                 <div class="boxContainer clearfix">
                                     
@@ -23,7 +23,7 @@
                                                 <div class="control-group">
                                                     <label for="similarityClassname" class="control-label">Distance Function</label>
                                                     <div class="controls">
-                                                        <select name="similarityClassname" id="mahout-itembased_similarityClassname">
+                                                        <select name="similarityClassname" id="similarityClassname">
                                                             <option value="SIMILARITY_COOCCURRENCE">Co-occurrence</option>
                                                             <option value="SIMILARITY_LOGLIKELIHOOD">Log-Likelihood</option>
                                                             <option value="SIMILARITY_TANIMOTO_COEFFICIENT">Tanimoto Coefficient</option>
@@ -34,20 +34,12 @@
                                                         </select>
                                                     </div>
                                                 </div>
-
-                                                <h5>Advanced Parameters</h5>
-                                                <div class="control-group">
-                                                    <label for="threshold" class="control-label">Threshold</label>
-                                                    <div class="controls">
-                                                        <input name="threshold" id="mahout-itembased_threshold" class="span2" type="text" value="0.0001">
-                                                        <span class="help-inline">Discard item pairs with a similarity value below this.</span>
-                                                    </div>
-                                                </div>
-
+                                                
+                                                <h5>Implicit or Explicit Data</h5>
                                                 <div class="control-group">
                                                     <label for="booleanData" class="control-label">Boolean Data</label>
                                                     <div class="controls">
-                                                        <select name="booleanData" id="mahout-itembased_booleanData" class="span2">
+                                                        <select name="booleanData" id="booleanData" class="span2">
                                                             <option value="true">True</option>
                                                             <option value="false">False</option>
                                                         </select>
@@ -55,37 +47,115 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="control-group">
-                                                    <label for="maxPrefsPerUser" class="control-label">Max Num of Preferences per User</label>
-                                                    <div class="controls">
-                                                        <input name="maxPrefsPerUser" id="mahout-itembased_maxPrefsPerUser" class="span2" type="text" value="10">
-                                                        <span class="help-inline">Maximum number of preferences considered per user in final recommendation phase.</span>
+                                                <h5>Advanced Parameters</h5>
+                                                <!-- // TODO: PDIO-148: Uncomment to enable autotuning
+                                                <div class="bottomMargin switch candy blue" style="width: 250px;">
+                                                    <input id="tuneManual" name="tune" value="manual" type="radio" checked>
+                                                    <label for="tuneManual" onclick="">Manual Tuning</label>
+                                                    <input id="tuneAuto" name="tune" value="auto" type="radio"> 
+                                                    <label for="tuneAuto" onclick="">Auto Tuning</label>
+                                                    <span class="slide-button"></span>
+                                                </div>
+                                                -->
+                                                <div id="tuneManualPanel">
+                                                    <div class="control-group">
+                                                        <label for="threshold" class="control-label">Threshold</label>
+                                                        <div class="controls">
+                                                            <input name="threshold" id="threshold" class="span2" type="text">
+                                                            <span class="help-inline">Discard item pairs with a similarity value below this.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                        <label for="maxPrefsPerUser" class="control-label">Max Num of Preferences per User</label>
+                                                        <div class="controls">
+                                                            <input name="maxPrefsPerUser" id="maxPrefsPerUser" class="span2" type="text">
+                                                            <span class="help-inline">Maximum number of preferences considered per user in final recommendation phase.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="minPrefsPerUser" class="control-label">Min Num of Preferences per User</label>
+                                                        <div class="controls">
+                                                            <input name="minPrefsPerUser" id="minPrefsPerUser" class="span2" type="text">
+                                                            <span class="help-inline">Ignore users with less preferences than this.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="maxSimilaritiesPerItem" class="control-label">Max Num of Similarities per Item</label>
+                                                        <div class="controls">
+                                                            <input name="maxSimilaritiesPerItem" id="maxSimilaritiesPerItem" class="span2" type="text">
+                                                            <span class="help-inline">Maximum number of similarities considered per item.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="maxPrefsPerUserInItemSimilarity" class="control-label">Max Num of Preferences per User in Item Similarity</label>
+                                                        <div class="controls">
+                                                            <input name="maxPrefsPerUserInItemSimilarity" id="maxPrefsPerUserInItemSimilarity" class="span2" type="text">
+                                                            <span class="help-inline">Max number of preferences to consider per user in the item similarity computation phase, users with more preferences will be sampled down.</span>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="control-group">
-                                                    <label for="minPrefsPerUser" class="control-label">Min Num of Preferences per User</label>
-                                                    <div class="controls">
-                                                        <input name="minPrefsPerUser" id="mahout-itembased_minPrefsPerUser" class="span2" type="text" value="10">
-                                                        <span class="help-inline">Ignore users with less preferences than this.</span>
+                                                <div id="tuneAutoPanel" class="hide">
+
+                                                    <!-- TODO: load tuneMethod based on algotype_id dynamically
+                                                    <div class="span12 bottomMargin-large">
+                                                        <p>Select an Autotuning Method:</p>
+                                                        <div>
+                                                            <select id="tuneMethod">
+                                                                <option value="random">Random Search</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    -->
+                                                    <h5>Please specify the Min and Max value range the system should consider during the auto tuning process</h5>
+                                                    <div class="control-group">
+                                                        <label class="control-label">Threshold</label>
+                                                        <div class="controls">
+                                                            Min: <input name="thresholdMin" id="thresholdMin" class="rightMargin span2" type="text">
+                                                            Max: <input name="thresholdMax" id="thresholdMax" class="span2" type="text">
+                                                            <span class="help-inline">Discard item pairs with a similarity value below this.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="control-group">
+                                                        <label class="control-label">Max Num of Preferences per User</label>
+                                                        <div class="controls">
+                                                            Min: <input name="maxPrefsPerUserMin" id="maxPrefsPerUserMin" class="rightMargin span2" type="text">
+                                                            Max: <input name="maxPrefsPerUserMax" id="maxPrefsPerUserMax" class="span2" type="text">
+                                                            <span class="help-inline">Maximum number of preferences considered per user in final recommendation phase.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Min Num of Preferences per User</label>
+                                                        <div class="controls">
+                                                            Min: <input name="minPrefsPerUserMin" id="minPrefsPerUserMin" class="rightMargin span2" type="text">
+                                                            Max: <input name="minPrefsPerUserMax" id="minPrefsPerUserMax" class="span2" type="text">
+                                                            <span class="help-inline">Ignore users with less preferences than this.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Max Num of Similarities per Item</label>
+                                                        <div class="controls">
+                                                            Min: <input name="maxSimilaritiesPerItemMin" id="maxSimilaritiesPerItemMin" class="rightMargin span2" type="text">
+                                                            Max: <input name="maxSimilaritiesPerItemMax" id="maxSimilaritiesPerItemMax" class="span2" type="text">
+                                                            <span class="help-inline">Maximum number of similarities considered per item.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Max Num of Preferences per User in Item Similarity</label>
+                                                        <div class="controls">
+                                                            Min: <input name="maxPrefsPerUserInItemSimilarityMin" id="maxPrefsPerUserInItemSimilarityMin" class="rightMargin span2" type="text">
+                                                            Max: <input name="maxPrefsPerUserInItemSimilarityMax" id="maxPrefsPerUserInItemSimilarityMax" class="span2" type="text">
+                                                            <span class="help-inline">Max number of preferences to consider per user in the item similarity computation phase, users with more preferences will be sampled down.</span>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="control-group">
-                                                    <label for="maxSimilaritiesPerItem" class="control-label">Max Num of Similarities per Item</label>
-                                                    <div class="controls">
-                                                        <input name="maxSimilaritiesPerItem" id="mahout-itembased_maxSimilaritiesPerItem" class="span2" type="text" value="10">
-                                                        <span class="help-inline">Maximum number of similarities considered per item.</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="control-group">
-                                                    <label for="maxPrefsPerUserInItemSimilarity" class="control-label">Max Num of Preferences per User in Item Similarity</label>
-                                                    <div class="controls">
-                                                        <input name="maxPrefsPerUserInItemSimilarity" id="mahout-itembased_maxPrefsPerUserInItemSimilarity" class="span2" type="text" value="10">
-                                                        <span class="help-inline">Max number of preferences to consider per user in the item similarity computation phase, users with more preferences will be sampled down.</span>
-                                                    </div>
-                                                </div>
 
                                             </div>
                                         </div>
@@ -102,7 +172,7 @@
                                                 <div class="control-group">
                                                     <label for="view" class="control-label">View</label>
                                                     <div class="controls">
-                                                        <select id="mahout-itembased_viewParam" name="viewParam" class="span2">
+                                                        <select id="viewParam" name="viewParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -116,7 +186,7 @@
                                                 <div class="control-group">
                                                     <label for="viewMore" class="control-label">View More</label>
                                                     <div class="controls">
-                                                        <select id="mahout-itembased_viewmoreAction" name="viewmoreAction" class="span2">
+                                                        <select id="viewmoreAction" name="viewmoreAction" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -130,7 +200,7 @@
                                                 <div class="control-group">
                                                     <label for="like" class="control-label">Like</label>
                                                     <div class="controls">
-                                                        <select id="mahout-itembased_likeParam" name="likeParam" class="span2">
+                                                        <select id="likeParam" name="likeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -143,7 +213,7 @@
                                                 <div class="control-group">
                                                     <label for="dislike" class="control-label">Dislike</label>
                                                     <div class="controls">
-                                                        <select id="mahout-itembased_dislikeParam" name="dislikeParam" class="span2">
+                                                        <select id="dislikeParam" name="dislikeParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -156,7 +226,7 @@
                                                 <div class="control-group">
                                                     <label for="buy" class="control-label">Buy</label>
                                                     <div class="controls">
-                                                        <select id="mahout-itembased_conversionParam" name="conversionParam" class="span2">
+                                                        <select id="conversionParam" name="conversionParam" class="span2">
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
                                                             <option value="3">3</option>
@@ -171,7 +241,7 @@
                                                 <div class="control-group">
                                                     <label for="override" class="control-label">Override Priority</label>
                                                     <div class="controls">
-                                                        <select id="mahout-itembased_conflictParam" name="conflictParam" class="span5">
+                                                        <select id="conflictParam" name="conflictParam" class="span5">
                                                             <option value="latest">Use the latest action</option>
                                                             <option value="highest">Use the highest preference score one</option>
                                                             <option value="lowest">Use the lowest preference score one</option>
@@ -182,12 +252,13 @@
                                         </div>
                                     </div>
                                     <div class="pull-right">
-                                        <a href="#engineTabAlgorithms" class="btn btn-primary">Done</a>
+                                        <a href="#engineTabAlgorithms" class="btn">Cancel</a>                                        
+                                        <button class="btn btn-primary leftMargin" type="submit">Change</button>
                                     </div>
                                 </div>  
                             </div>
                         </form>
                         </div>
 </script>
-
-<div id="mahout-itembasedContentHolder"></div>
+                                                    
+<div id="algoSettingsContentHolder"></div>
