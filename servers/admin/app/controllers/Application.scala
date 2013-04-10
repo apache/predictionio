@@ -43,6 +43,7 @@ object Application extends Controller {
   val engines = config.getSettingsEngines()
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
+  val metricInfos = config.getSettingsMetricInfos()
   val offlineEvals = config.getSettingsOfflineEvals()
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
@@ -1134,8 +1135,7 @@ object Application extends Controller {
           for ((metricType, metricSetting) <- (metricTypes zip metricSettings)) {
             val metricId = offlineEvalMetrics.insert(OfflineEvalMetric(
               id = -1,
-              name = metricTypeNames("map_k"),
-              metrictype = metricType,
+              infoid = "map_k",
               evalid = evalid,
               params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
             ))
@@ -1328,8 +1328,8 @@ object Application extends Controller {
               Map("id" -> metric.id.toString,
                   "engine_id" -> engine_id,
                   "enginetype_id" -> "itemrec", // TODO: hardcode now, should get it from engine db
-                  "metricstype_id" -> metric.metrictype,
-                  "metricsName" -> metric.name,
+                  "metricstype_id" -> metric.infoid,
+                  "metricsName" -> (metricInfos.get(metric.infoid) map { _.name } getOrElse ""),
                   "settingsString" -> map_k_displayAllParams(metric.params)
                   )
             }.toSeq

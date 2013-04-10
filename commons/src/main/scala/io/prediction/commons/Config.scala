@@ -346,6 +346,16 @@ class Config {
     new settings.code.CodeAlgoInfos()
   }
 
+  /** Obtains a MetricInfos object with configured backend type. */
+  def getSettingsMetricInfos(): settings.MetricInfos = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoMetricInfos(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
   /** Obtains the JAR filename for a specific algorithm package name. */
   def getJar(pkgname: String): Option[String] = {
     try { Some(config.getString(pkgname + ".jar")) } catch { case _: Throwable => None }

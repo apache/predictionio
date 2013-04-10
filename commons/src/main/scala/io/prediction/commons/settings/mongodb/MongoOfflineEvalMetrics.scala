@@ -13,8 +13,7 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
   private def genNextId = seq.genNext("offlineEvalMetricid")
 
   private val getFields = MongoDBObject( // fields to be read
-    "name" -> 1,
-    "metrictype" -> 1,
+    "infoid" -> 1,
     "evalid" -> 1,
     "params" -> 1
   )
@@ -28,8 +27,7 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
   private def dbObjToOfflineEvalMetric(dbObj: DBObject) = {
     OfflineEvalMetric(
       id = dbObj.as[Int]("_id"),
-      name = dbObj.as[String]("name"),
-      metrictype = dbObj.as[String]("metrictype"),
+      infoid = dbObj.as[String]("infoid"),
       evalid = dbObj.as[Int]("evalid"),
       params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params"))
     )
@@ -41,8 +39,7 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
 
     offlineEvalMetricsColl.insert(MongoDBObject(
       "_id" -> id,
-      "name" -> metric.name,
-      "metrictype" -> metric.metrictype,
+      "infoid" -> metric.infoid,
       "evalid" -> metric.evalid,
       "params" -> metric.params
     ))
@@ -57,14 +54,13 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
 
   /** Get metrics by OfflineEval id */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalMetric] = new MongoOfflineEvalMetricIterator(
-    offlineEvalMetricsColl.find(MongoDBObject("evalid" -> evalid), getFields).sort(MongoDBObject("name" -> 1))
+    offlineEvalMetricsColl.find(MongoDBObject("evalid" -> evalid), getFields).sort(MongoDBObject("infoid" -> 1))
   )
 
   /** Update metric */
   def update(metric: OfflineEvalMetric) = {
     offlineEvalMetricsColl.update(MongoDBObject("_id" -> metric.id), MongoDBObject(
-      "name" -> metric.name,
-      "metrictype" -> metric.metrictype,
+      "infoid" -> metric.infoid,
       "evalid" -> metric.evalid,
       "params" -> metric.params
     ))
