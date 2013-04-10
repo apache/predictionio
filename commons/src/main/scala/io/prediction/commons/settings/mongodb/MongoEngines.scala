@@ -9,14 +9,14 @@ import com.mongodb.casbah.Imports._
 class MongoEngines(db: MongoDB) extends Engines {
   private val engineColl = db("engines")
   private val seq = new MongoSequences(db)
-  private val getFields = MongoDBObject("appid" -> 1, "name" -> 1, "enginetype" -> 1, "itypes" -> 1, "settings" -> 1)
+  private val getFields = MongoDBObject("appid" -> 1, "name" -> 1, "infoid" -> 1, "itypes" -> 1, "settings" -> 1)
 
   private def dbObjToEngine(dbObj: DBObject) = {
     Engine(
       id         = dbObj.as[Int]("_id"),
       appid      = dbObj.as[Int]("appid"),
       name       = dbObj.as[String]("name"),
-      enginetype = dbObj.as[String]("enginetype"),
+      infoid = dbObj.as[String]("infoid"),
       itypes     = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
       settings   = MongoUtils.dbObjToMap(dbObj.as[DBObject]("settings"))
     )
@@ -35,7 +35,7 @@ class MongoEngines(db: MongoDB) extends Engines {
       "_id"        -> id,
       "appid"      -> engine.appid,
       "name"       -> engine.name,
-      "enginetype" -> engine.enginetype,
+      "infoid" -> engine.infoid,
       "settings"   -> engine.settings
     )
 
@@ -57,13 +57,13 @@ class MongoEngines(db: MongoDB) extends Engines {
     val idObj = MongoDBObject("_id" -> engine.id)
     val nameObj = MongoDBObject("name" -> engine.name)
     val appidObj = MongoDBObject("appid" -> engine.appid)
-    val enginetypeObj = MongoDBObject("enginetype" -> engine.enginetype)
+    val infoidObj = MongoDBObject("infoid" -> engine.infoid)
     val itypesObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
     val settingsObj = MongoDBObject("settings" -> engine.settings)
 
     engineColl.update(
       idObj,
-      appidObj ++ nameObj ++ enginetypeObj ++ itypesObj ++ settingsObj
+      appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ settingsObj
     )
   }
 

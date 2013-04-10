@@ -10,7 +10,7 @@ package io.prediction.commons.settings
   * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
   * @param paramdescription Key value paris of (parameter -> (display name, description)).
   * @param paramorder The display order of parameters.
-  * @param enginetype The engine type associated to this algorithm.
+  * @param engineinfoid The EngineInfo ID of the engine that can run this algorithm.
   * @param techreq Technology requirement for this algorithm to run.
   * @param datareq Data requirement for this algorithm to run.
   */
@@ -23,7 +23,7 @@ case class AlgoInfo(
   paramdefaults: Map[String, Any],
   paramdescription: Map[String, (String, String)],
   paramorder: Seq[String],
-  enginetype: String,
+  engineinfoid: String,
   techreq: Seq[String],
   datareq: Seq[String]
 )
@@ -34,5 +34,5 @@ trait AlgoInfos {
   def get(id: String): Option[AlgoInfo]
 
   /** Get algo info by their engine type. */
-  def getByEngineType(enginetype: String): Seq[AlgoInfo]
+  def getByEngineInfoId(engineinfoid: String): Seq[AlgoInfo]
 }
