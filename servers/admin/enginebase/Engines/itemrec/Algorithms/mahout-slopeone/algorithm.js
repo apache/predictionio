@@ -25,8 +25,6 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
-				// TODO: PDIO-148: initValue for Autotune variables: tune, tuneMethod, and other Min/Max....
-				// TODO: PDIO-148: If tune == 'auto', call this.tuneAuto();
 			}
 		});
     },
@@ -35,23 +33,13 @@ var AlgoSettingsView = Backbone.View.extend({
 		this.$el.find('#'+attrName).val(value);
     },
 	events: {
-		"submit #algoSettingsForm" : "formDataSubmit",
-		'click #tuneManual' : "tuneManual", 
-		'click #tuneAuto' : "tuneAuto"
+		"submit #algoSettingsForm" : "formDataSubmit"
 	},
     render : function() {
         this.$el.html(this.template());
         return this;
     },
 	reloadData : function() { // Required Algorithm Module Function
-	},
-	tuneManual: function() {
-		$('#tuneAutoPanel').slideUp(); 
-		$('#tuneManualPanel').slideDown();
-	},
-	tuneAuto: function() {
-		$('#tuneManualPanel').slideUp(); 
-		$('#tuneAutoPanel').slideDown();
 	},
 	formDataSubmit: function() {
 		var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs

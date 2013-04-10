@@ -11,15 +11,6 @@
 
                                         <div class="boxContent">
                                             <div class="form-horizontal">
-
-
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Lamda</label>
-                                                    <div class="controls">
-                                                        <input id="lambda" name="lambda" class="span1" type="text" value="0.03">
-                                                        <span class="help-inline">Regularization param to avoid overfitting.</span>
-                                                    </div>
-                                                </div>
                                                 <div class="control-group">
                                                     <label for="inputError" class="control-label">Implicit Feedback</label>
                                                     <div class="controls">
@@ -31,29 +22,101 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Alpha</label>
-                                                    <div class="controls">
-                                                        <input id="alpha" name="alpha" class="span1" type="text" value="40">
-                                                        <span class="help-inline">Confidence param (will be ignored if Implicit Feedback is false)</span>
+                                                <h5>Numeric Parameters</h5>
+                                                <!-- // TODO: PDIO-148: Uncomment to enable autotuning
+                                                <div class="bottomMargin switch candy blue" style="width: 250px;">
+                                                    <input id="tuneManual" name="tune" value="manual" type="radio" checked>
+                                                    <label for="tuneManual" onclick="">Manual Tuning</label>
+                                                    <input id="tuneAuto" name="tune" value="auto" type="radio"> 
+                                                    <label for="tuneAuto" onclick="">Auto Tuning</label>
+                                                    <span class="slide-button"></span>
+                                                </div>
+                                                -->
+
+                                                <div id="tuneManualPanel">
+                                                    <div class="control-group">
+                                                        <label for="inputError" class="control-label">Lamda</label>
+                                                        <div class="controls">
+                                                            <input id="lambda" name="lambda" class="span1" type="text">
+                                                            <span class="help-inline">Regularization param to avoid overfitting.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="inputError" class="control-label">Alpha</label>
+                                                        <div class="controls">
+                                                            <input id="alpha" name="alpha" class="span1" type="text">
+                                                            <span class="help-inline">Confidence param (will be ignored if Implicit Feedback is false)</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="inputError" class="control-label">Num of Factorized Features</label>
+                                                        <div class="controls">
+                                                            <input id="numFeatures" name="numFeatures" class="span1" type="text">
+                                                            <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="inputError" class="control-label">Num of Iteration</label>
+                                                        <div class="controls">
+                                                            <input id="numIterations" name="numIterations" class="span1" type="text">
+                                                            <span class="help-inline">Number of training iteration.</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="tuneAutoPanel" class="hide">
+
+                                                    <!-- TODO: load tuneMethod based on algotype_id dynamically -->
+                                                    <div class="span12 bottomMargin-large">
+                                                        <p>Select an Autotuning Method:</p>
+                                                        <div>
+                                                            <select id="tuneMethod">
+                                                                <option value="random">Random Search</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <h5>Please specify the Min and Max value range the system should consider during the auto tuning process</h5>
+                                                    <div class="control-group">
+                                                        <label class="control-label">Lamda</label>
+                                                        <div class="controls">
+                                                            Min: <input id="lambdaMin" name="lambdaMin" class="span1 rightMargin" type="text">
+                                                            Max: <input id="lambdaMax" name="lambdaMax" class="span1" type="text">
+                                                            <span class="help-inline">Regularization param to avoid overfitting.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Alpha</label>
+                                                        <div class="controls">
+                                                            Min: <input id="alphaMin" name="alphaMin" class="span1 rightMargin" type="text">
+                                                            Max: <input id="alphaMax" name="alphaMax" class="span1" type="text">
+                                                            <span class="help-inline">Confidence param (will be ignored if Implicit Feedback is false)</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Num of Factorized Features</label>
+                                                        <div class="controls">
+                                                            Min: <input id="numFeaturesMin" name="numFeaturesMin" class="span1 rightMargin" type="text">
+                                                            Max: <input id="numFeaturesMax" name="numFeaturesMax" class="span1" type="text">
+                                                            <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Num of Iteration</label>
+                                                        <div class="controls">
+                                                            Min: <input id="numIterationsMin" name="numIterationsMin" class="span1 rightMargin" type="text">
+                                                            Max: <input id="numIterationsMax" name="numIterationsMax" class="span1" type="text">
+                                                            <span class="help-inline">Number of training iteration.</span>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Num of Factorized Features</label>
-                                                    <div class="controls">
-                                                        <input id="numFeatures" name="numFeatures" class="span1" type="text" value="3">
-                                                        <span class="help-inline">Dimension of the factorized feature space.</span>
-                                                    </div>
-                                                </div>
 
-                                                <div class="control-group">
-                                                    <label for="inputError" class="control-label">Num of Iteration</label>
-                                                    <div class="controls">
-                                                        <input id="numIterations" name="numIterations" class="span1" type="text" value="10">
-                                                        <span class="help-inline">Number of training iteration.</span>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>

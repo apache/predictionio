@@ -19,52 +19,132 @@
 
                                         <div class="boxContent">
                                             <div class="form-horizontal">
-                                                
-                                                <div class="control-group">
-                                                    <label for="numFeatures" class="control-label">Num of Factorized Features</label>
-                                                    <div class="controls">
-                                                        <input name="numFeatures" id="numFeatures" class="span1" type="text" value="10">
-                                                        <span class="help-inline">Dimension of the factorized feature space.</span>
+
+                                                <h5>Numeric Parameters</h5>
+                                                <!-- // TODO: PDIO-148: Uncomment to enable autotuning
+                                                <div class="bottomMargin switch candy blue" style="width: 250px;">
+                                                    <input id="tuneManual" name="tune" value="manual" type="radio" checked>
+                                                    <label for="tuneManual" onclick="">Manual Tuning</label>
+                                                    <input id="tuneAuto" name="tune" value="auto" type="radio"> 
+                                                    <label for="tuneAuto" onclick="">Auto Tuning</label>
+                                                    <span class="slide-button"></span>
+                                                </div>
+                                                -->
+
+                                                <div id="tuneManualPanel">
+                                                    <div class="control-group">
+                                                        <label for="numFeatures" class="control-label">Num of Factorized Features</label>
+                                                        <div class="controls">
+                                                            <input name="numFeatures" id="numFeatures" class="span1" type="text">
+                                                            <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="learningRate" class="control-label">Learning Rate</label>
+                                                        <div class="controls">
+                                                            <input name="learningRate" id="learningRate" class="span1" type="text">
+                                                            <span class="help-inline"></span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="preventOverfitting" class="control-label">Prevent Overfitting</label>
+                                                        <div class="controls">
+                                                            <input name="preventOverfitting" id="preventOverfitting" class="span1" type="text">
+                                                            <span class="help-inline">Parameter used to prevent overfitting.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="randomNoise" class="control-label">Random Noise</label>
+                                                        <div class="controls">
+                                                            <input name="randomNoise" id="randomNoise" class="span1" type="text">
+                                                            <span class="help-inline">Standard deviation for random initialization of features.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="numIterations" class="control-label">Num of Iteration</label>
+                                                        <div class="controls">
+                                                            <input name="numIterations" id="numIterations" class="span1" type="text">
+                                                            <span class="help-inline">Number of training iteration.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label for="learningRateDecay" class="control-label">Learning Rate Decay</label>
+                                                        <div class="controls">
+                                                            <input name="learningRateDecay" id="learningRateDecay" class="span1" type="text">
+                                                            <span class="help-inline">Multiplicative decay factor for Learning Rate.</span>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div id="tuneAutoPanel" class="hide">
 
-                                                <div class="control-group">
-                                                    <label for="learningRate" class="control-label">Learning Rate</label>
-                                                    <div class="controls">
-                                                        <input name="learningRate" id="learningRate" class="span1" type="text" value="0.01">
-                                                        <span class="help-inline"></span>
+                                                    <!-- TODO: load tuneMethod based on algotype_id dynamically -->
+                                                    <div class="span12 bottomMargin-large">
+                                                        <p>Select an Autotuning Method:</p>
+                                                        <div>
+                                                            <select id="tuneMethod">
+                                                                <option value="random">Random Search</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <div class="control-group">
-                                                    <label for="preventOverfitting" class="control-label">Prevent Overfitting</label>
-                                                    <div class="controls">
-                                                        <input name="preventOverfitting" id="preventOverfitting" class="span1" type="text" value="0.1">
-                                                        <span class="help-inline">Parameter used to prevent overfitting.</span>
+                                                    <h5>Please specify the Min and Max value range the system should consider during the auto tuning process</h5>
+                                                    <div class="control-group">
+                                                        <label class="control-label">Num of Factorized Features</label>
+                                                        <div class="controls">
+                                                            Min: <input name="numFeaturesMin" id="numFeaturesMin" class="span1 rightMargin" type="text">
+                                                            Max: <input name="numFeaturesMax" id="numFeaturesMax" class="span1" type="text">
+                                                            <span class="help-inline">Dimension of the factorized feature space.</span>
+                                                        </div>
                                                     </div>
-                                                </div>
-
-                                                <div class="control-group">
-                                                    <label for="randomNoise" class="control-label">Random Noise</label>
-                                                    <div class="controls">
-                                                        <input name="randomNoise" id="randomNoise" class="span1" type="text" value="0.01">
-                                                        <span class="help-inline">Standard deviation for random initialization of features.</span>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Learning Rate</label>
+                                                        <div class="controls">
+                                                            Min: <input name="learningRateMin" id="learningRateMin" class="span1 rightMargin" type="text">
+                                                            Max: <input name="learningRateMax" id="learningRateMax" class="span1" type="text">
+                                                            <span class="help-inline"></span>
+                                                        </div>
                                                     </div>
-                                                </div>
-
-                                                <div class="control-group">
-                                                    <label for="numIterations" class="control-label">Num of Iteration</label>
-                                                    <div class="controls">
-                                                        <input name="numIterations" id="numIterations" class="span1" type="text" value="10">
-                                                        <span class="help-inline">Number of training iteration.</span>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Prevent Overfitting</label>
+                                                        <div class="controls">
+                                                            Min: <input name="preventOverfittingMin" id="preventOverfittingMin" class="span1 rightMargin" type="text">
+                                                            Max: <input name="preventOverfittingMax" id="preventOverfittingMax" class="span1" type="text">
+                                                            <span class="help-inline">Parameter used to prevent overfitting.</span>
+                                                        </div>
                                                     </div>
-                                                </div>
-
-                                                <div class="control-group">
-                                                    <label for="learningRateDecay" class="control-label">Learning Rate Decay</label>
-                                                    <div class="controls">
-                                                        <input name="learningRateDecay" id="learningRateDecay" class="span1" type="text" value="1.0">
-                                                        <span class="help-inline">Multiplicative decay factor for Learning Rate.</span>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Random Noise</label>
+                                                        <div class="controls">
+                                                            Min: <input name="randomNoiseMin" id="randomNoiseMin" class="span1 rightMargin" type="text">
+                                                            Max: <input name="randomNoiseMax" id="randomNoiseMax" class="span1" type="text">
+                                                            <span class="help-inline">Standard deviation for random initialization of features.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Num of Iteration</label>
+                                                        <div class="controls">
+                                                            Min: <input name="numIterationsMin" id="numIterationsMin" class="span1 rightMargin" type="text">
+                                                            Max: <input name="numIterationsMax" id="numIterationsMax" class="span1" type="text">
+                                                            <span class="help-inline">Number of training iteration.</span>
+                                                        </div>
+                                                    </div>
+    
+                                                    <div class="control-group">
+                                                        <label class="control-label">Learning Rate Decay</label>
+                                                        <div class="controls">
+                                                            Min: <input name="learningRateDecayMin" id="learningRateDecayMin" class="span1 rightMargin" type="text">
+                                                            Max: <input name="learningRateDecayMax" id="learningRateDecayMax" class="span1" type="text">
+                                                            <span class="help-inline">Multiplicative decay factor for Learning Rate.</span>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -171,5 +251,5 @@
                         </form>
                         </div>
 </script>
-
+	                                                
 <div id="algoSettingsContentHolder"></div>
