@@ -9,24 +9,21 @@ import cascading.flow.FlowDef
 import io.prediction.commons.scalding.appdata.U2iActionsSource
 import io.prediction.commons.scalding.appdata.U2iActionsSource.{FIELD_SYMBOLS}
 
+/**
+ * File Format:
+ * <action>\t<uid>\t<iid>\t<t>\t<v>
+ *
+ * Example:
+ * 3  u2  i13  123456  4
+ */
 class FileU2iActionsSource(path: String, appId: Int) extends Tsv (
-  p = path + "u2iActions.tsv" //AppDataFile(appId, engineId, evalId, testSet, "u2iActions.tsv")
+  p = path + "u2iActions.tsv"
 ) with U2iActionsSource {
     
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
   
   override def getSource: Source = this
-  
-  // the file format, TAB separated file with following field for each line
-  // action: String// 0
-  // uid: String // 1
-  // iid: String // 2
-  // t: String // 3
-  // v: String // 4
-  // 
-  // Example
-  // id0<tab>3<tab>u2<tab>i13<tab>123456<tab>3
-  
+    
   override def readData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol)(implicit fd: FlowDef): Pipe = {
     this.read
       .mapTo((0, 1, 2, 3, 4) -> (actionField, uidField, iidField, tField, vField)) { 
