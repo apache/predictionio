@@ -13,6 +13,8 @@ import play.api.data.format.Formats._
 import play.api.data.validation._
 import play.api.i18n._
 import play.api.libs.json._
+import play.api.libs.iteratee.Enumerator
+import play.api.Play.current
 
 //import com.codahale.jerkson.Json._
 import org.joda.time._
@@ -95,6 +97,12 @@ object API extends Controller {
   def FormattedResponse(format: String)(r: APIResponse) = {
     format match {
       case "json" => (new Status(r.status)(Json.stringify(Json.toJson(r)))).as(JSON)
+      case "png" => Play.resourceAsStream("public/images/spacer.png") map { stream =>
+        val fileContent: Enumerator[Array[Byte]] = Enumerator.fromStream(stream)
+        SimpleResult(
+          header = ResponseHeader(200),
+          body = fileContent)
+      } getOrElse notFound
       case _ => notFound
     }
   }
