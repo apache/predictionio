@@ -950,6 +950,70 @@ object Application extends Controller {
 
   }
 
+  def getAlgoAutotuningReport(app_id: String, engine_id: String, algo_id: String) = withUser { user => implicit request =>
+    // TODO: PDIO-148: sample output
+    Ok(toJson(
+      Map(
+        "id" -> toJson("algo_id123"),
+        "app_id" -> toJson("appid1234"),
+        "engine_id" -> toJson("engid33333"),
+        "algo" -> toJson(Map(
+						        "id" -> "algoid1234",
+						        "algoName" -> "algo-test-sim1",
+						        "app_id" -> "appid1234",
+						        "engine_id" -> "engid33333",
+						        "algotype_id" -> "knnitembased",
+						        "algotypeName" -> "kNN Item-Based CF",
+						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						      )),
+		"metric" -> toJson(Map(
+						        "id" -> "metricid_123",
+						        "engine_id" -> "engid33333",
+						        "enginetype_id" -> "itemrec",
+						        "metricstype_id" -> "map_k",
+						        "metricsName" -> "MAP@k",
+						        "settingsString" -> "k=5"
+						      )),
+		"metricscorelist" -> toJson(Seq(
+		    Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.12341)),
+		    Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.32341)),
+		    Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.52341))
+		 )),
+		"metricscoreiterationlist" -> toJson(Seq(
+		    Seq(
+		    		Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.1)),
+		    		Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
+		    		Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.6))
+		    ),
+		    Seq(
+		    		Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
+		    		Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.23)),
+		    		Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.5))
+		    )
+		 )),
+		"splitTrain" -> toJson(55), // TODO: engine-level setting
+        "splitValidation" -> toJson(20), // TODO: engine-level setting
+        "splitTest" -> toJson(15), // TODO: engine-level setting
+        "splitMethod" -> toJson("random"), // TODO: engine-level setting
+        "evalIteration" -> toJson(2), // TODO: engine-level setting
+
+        "status" -> toJson("completed"),
+        "startTime" -> toJson("04-23-2012 12:21:23"),
+        "endTime" -> toJson("04-25-2012 13:21:23")
+      )
+    ))
+
+  }
+  
+  // Apply the selected params to the algo
+  def algoAutotuningSelect(app_id: String, engine_id: String, algo_id: String, algoautotune_id: String) = withUser { user => implicit request =>
+    // TODO: PDIO-148: sample output
+    // Apply params of algoautotune_id to algo_id
+    // update the status of algo_id from 'tuning' or 'tuned' to 'ready'
+    Ok
+  }
+
+  
   def getSimEvalList(app_id: String, engine_id: String) = withUser { user => implicit request =>
     /* sample output */
     /*

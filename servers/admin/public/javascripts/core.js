@@ -107,6 +107,7 @@ var CoreRouter = Backbone.Router.extend({
 		engineAddAlgorithm : 'engineExtraTabAddAlgorithm',
 		addEngine : 'addEnginePage',
 		'algoSettings/:algotype_id/:algoName/:algo_id' : 'engineExtraTabAlgorithmSettings',
+		'algoAutotuningReport/:algo_id' : 'engineExtraTabAlgoAutotuningReport',
 		'simEvalSettings/:algo_id_list' : 'engineExtraTabSimEvalSettings',
 		'simEvalReport/:id' : 'engineExtraTabSimEvalReport',
 		'*actions' : 'defaultRoute' // default -- exception
@@ -179,6 +180,15 @@ var CoreRouter = Backbone.Router.extend({
 			$(this.target_el).html(this.currentView.render().el);
 		}
 		this.currentView.showExtraTabAlgorithmSettings(algotype_id, algoName, algo_id);
+	},
+	engineExtraTabAlgoAutotuningReport: function(algo_id) {
+		this.authView.ensureAuth();
+		if (!this.currentView || !this.currentView.isEngineView) { // if not currently Engine view
+			if (this.currentView) {this.currentView.close();}
+			this.currentView = new EngineView();
+			$(this.target_el).html(this.currentView.render().el);
+		}
+		this.currentView.showExtraTabAlgoAutotuningReport(algo_id);
 	},
 	engineExtraTabSimEvalReport : function(simeval_id) {
 		this.authView.ensureAuth();
@@ -711,6 +721,15 @@ var EngineView = Backbone.View.extend({
        	this.tabExtraTabView = createAlgorithmView(this.app_id, this.engine_id, algo_id, algotype_id);
        	this.subViews.push(this.tabExtraTabView);
 	},
+	showExtraTabAlgoAutotuningReport : function(algo_id) {
+		this.closeExtraTab();
+		this.$el.find('#engineExtraTabBtn').html("Algo Auto-tuning Report").tab('show');
+		this.$el.find('#engineExtraTabTitle').show();
+
+		this.tabExtraTabView = new EngineAlgoAutotuningReportView({id: algo_id});
+		this.subViews.push(this.tabExtraTabView);
+		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
+	},
 	showExtraTabSimEvalReport : function(simeval_id) {
 		this.closeExtraTab();
 		this.$el.find('#engineExtraTabBtn').html("Simulated Evaluation Report").tab('show');
@@ -1226,6 +1245,43 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 	        	}
 	        }
 		});
+		return false;
+	}
+});
+
+var EngineAlgoAutotuningReportModel = Backbone.Model.extend({
+	initialize: function(model, options) {
+		this.urlRoot = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/algoautotuning_report');
+	}
+});
+var EngineAlgoAutotuningReportView = Backbone.View.extend({
+	initialize : function() {
+		this.template_el = '#engine_algoAutotuningReport_template';
+		this.template = _.template($(this.template_el).html()); // define template function
+		this.algo_id = this.options.id;		
+		this.app_id = getUrlParam("app_id");
+		this.engine_id = getUrlParam("engine_id");
+		this.enginetype_id = getUrlParam("enginetype_id");
+		this.model = new EngineAlgoAutotuningReportModel({"id": this.algo_id}, {app_id: this.app_id, engine_id: this.engine_id});
+		this.model.bind('change', this.render, this);
+    	this.model.fetch();
+	},
+	events: {
+		"click .algoAutotuneSelectBtn":  "selectAutotune"
+	},
+	render : function() {
+		this.$el.html(this.template({"data": this.model.toJSON()}));
+		console.log(this.model.toJSON());
+		return this;
+	},
+	selectAutotune: function(e) {
+		var algoautotune_id = $(e.target).data('autotuneid');
+    	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo/' + this.algo_id + '/algoautotuning_select/' + algoautotune_id;
+    	$.post(getAPIUrl(path), function() {
+    		window.location.hash = 'engineTabAlgorithms';
+    	}).error(function(res) {
+    		alert("An error has occured:" + res.status);
+    	});
 		return false;
 	}
 });

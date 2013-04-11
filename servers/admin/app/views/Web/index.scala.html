@@ -452,12 +452,16 @@
                                                         <div class="btn-group dropup">
                                                             <button data-toggle="dropdown"
                                                                 class="btn btn-mini btn-inverse dropdown-toggle">
-                                                                <em>Auto-tuning...</em><span class="caret"></span>
+                                                                <% if ( data.status == "tuning") {%>
+                                                                    <em>Auto-tuning...</em><span class="caret"></span>
+                                                                <% } else { %>
+                                                                    Auto-tuning Completed<span class="caret"></span>
+                                                                <% } %>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right">
-                                                                <li><a href="#">Edit Algorithm Settings</a></li>
+                                                                <li><a href="#algoAutotuningReport/<%= encodeURIComponent(data.id) %>">View Tuning Report</a></li>
                                                                 <li class="divider"></li>
-                                                                <li><a href="#">Stop and Delete</a></li>
+                                                                <li><a class="algoDeleteBtn" href="#">Delete</a></li>
                                                             </ul>
                                                         </div>
                                                         <% } %>
@@ -583,6 +587,99 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+</script>
+<script type="text/template" id="engine_algoAutotuningReport_template">
+<%  
+    var algo = {};
+    var metric = {}
+    if (data.algo) { 
+        algo = data.algo;
+    }
+    if (data.metric) { 
+        metric = data.metric;
+    }
+%>
+<div class="row-fluid">
+    <div class="span12">
+        <form class="form-horizontal">
+            <div class="modal modal-visible">
+                <div class="modal-header">
+                    <h4>Algorithm Autotuning Report for <%= algo.algoName%></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="bottomMargin">
+                        <p>Auto-tuning Status: <%= data.status %></p>
+                        <p>Start Time: <%= data.startTime %></p>
+                        <p>End Time: <%= data.endTime %></p>
+
+                        <h5 class="topMargin">Targeted Algorithm</h5>
+                        <span>Algo Name: <%= algo.algoName %></span>
+                        <span class="leftMargin">Algo Type: <%= algo.algotypeName %></span>
+
+                        <h5 class="topMargin">Data Split Settings</h5>
+                        <span>Train Set: <%= data.splitTrain %>%</span>
+                        <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
+                        <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
+                        <div>
+                            Data Selection: 
+                            <% if(data.splitMethod == "random") { %>
+                                Random Sampling
+                            <% } else { %>
+                                Random with Time Order
+                            <% } %>
+                        </div>
+                        <h5 class="topMargin">Metric</h5>
+                        <span>Name: <%= metric.metricsName %> (<%= metric.settingsString %>)</span>
+                        <span class="leftMargin">Number of Iteration: <%= data.evalIteration %></span>
+                    </div>
+                   
+                    <h4 class="topMargin-large">Average Results</h4>
+                    <table class="table bottomMargin-large">
+                        <thead>
+                            <tr>
+                                <th>Param Settings</th>
+                                <th>Score</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% _.each(data.metricscorelist, function(m) { %>
+                            <tr>
+                                <td><%= m.settingsString %></td>
+                                <td><%= m.score %></td>
+                                <td><a href="#" data-autotuneid="<%= m.algoautotune_id %>" class="algoAutotuneSelectBtn btn btn-primary btn-small">Use It</a></td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+
+                    <% _.each(data.metricscoreiterationlist, function(iterationscorelist, index) { %>
+                        <h6>Results in Iteration <%= index+1 %></h6>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Param Settings</th>
+                                    <th>Score</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% _.each(iterationscorelist, function(m) { %>
+                                <tr>
+                                    <td><%= m.settingsString %></td>
+                                    <td><%= m.score %></td>
+                                    <td></td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    <% }); %>
+
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 </script>
