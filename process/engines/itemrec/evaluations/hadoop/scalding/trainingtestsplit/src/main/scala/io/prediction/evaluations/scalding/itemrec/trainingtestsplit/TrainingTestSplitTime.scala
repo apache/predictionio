@@ -10,14 +10,15 @@ import io.prediction.commons.appdata.{User, Item}
  * Description:
  *   Split u2i into training and test
  * 
+ * --totalCount <int> total u2i actions count
  */
 class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
 
-  val totalArg = args("total").toInt // total u2i count
+  val totalCountArg = args("totalCount").toInt // total u2i count
 
-  val trainingCount: Int = scala.math.ceil((trainingsizeArg.toDouble / totalSize) * totalArg).toInt
+  val trainingCount: Int = scala.math.ceil((trainingsizeArg.toDouble / totalSize) * totalCountArg).toInt
 
-  //val testCount: Int = totalArg - trainingCount
+  //val testCount: Int = totalCountArg - trainingCount
 
   /**
    * source

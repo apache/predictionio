@@ -110,7 +110,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
       .arg("trainingsize", trainingsize.toString)
       .arg("testsize", testsize.toString)
       .arg("timeorder", timeorder.toString)
-      .arg("total", selectedU2iActions.size.toString)
+      .arg("totalCount", selectedU2iActions.size.toString)
       .source(U2iActions(appId=evalid,
         dbType="file", dbName=TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost=None, dbPort=None).getSource, selectedU2iActions)
       .sink[(String, String, String, String, String)](U2iActions(appId=evalid,
