@@ -601,32 +601,6 @@ var EngineStatusView = Backbone.View.extend({
 	}
 });
 
-/* Data Split Slider onChange in EngineSimEvalSettings */
-var onDataSplitPercentChange = function(e){
-	var columns = $(e.currentTarget).find("td");
-	var ranges = [], total = 0, i, w;
-	for(i = 0; i<columns.length; i++) {
-		// workaround, fix it later
-		if (i==0) {
-			w = columns.eq(i).width() - 35;
-		} else if (i==3) {
-			w = columns.eq(i).width() - 14;
-		} else {
-			w = columns.eq(i).width() -7;
-		}
-		ranges.push(w);
-		total+=w;
-	}		 
-	for(i=0; i<columns.length; i++){
-		ranges[i] = 100*ranges[i]/total;
-	}
-	var trainPercent = Math.round(ranges[0]);
-	var validationPercent = Math.round(ranges[1]);
-	var unusedPercent = Math.round(ranges[3]);
-	var testPercent = 100 - trainPercent - validationPercent - unusedPercent;
-	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitValidation').val(validationPercent).end().find('#splitTest').val(testPercent).end();
-};
-
 var EngineView = Backbone.View.extend({
 	initialize : function() {
 		this.subViews = [];
@@ -752,7 +726,7 @@ var EngineView = Backbone.View.extend({
 				liveDrag: true,
 				draggingClass: "rangeDrag",
 				gripInnerHtml: "<div class='rangeGrip'></div>",
-				onDrag: onDataSplitPercentChange,
+				onDrag: onSimEvalDataSplitPercentChange,
 				minWidth: 12
 			});
 		});
@@ -784,6 +758,57 @@ var EngineView = Backbone.View.extend({
 		return false;
 	}
 });
+
+/* Data Split Slider onChange in EngineSimEvalSettings */
+var onSimEvalDataSplitPercentChange = function(e){
+	var columns = $(e.currentTarget).find("td");
+	var ranges = [], total = 0, i, w;
+	for(i = 0; i<columns.length; i++) {
+		// workaround, fix it later
+		if (i==0) {
+			w = columns.eq(i).width() - 21;
+		} else if (i==2) {
+			w = columns.eq(i).width() - 14;
+		} else {
+			w = columns.eq(i).width();
+		}
+		ranges.push(w);
+		total+=w;
+	}		 
+	for(i=0; i<columns.length; i++){
+		ranges[i] = 100*ranges[i]/total;
+	}
+	var trainPercent = Math.round(ranges[0]);
+	var testPercent = Math.round(ranges[1]);
+	var unusedPercent = 100 - trainPercent - testPercent;
+	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitTest').val(testPercent).end();
+};
+/*
+var onDataSplitPercentChange = function(e){
+	var columns = $(e.currentTarget).find("td");
+	var ranges = [], total = 0, i, w;
+	for(i = 0; i<columns.length; i++) {
+		// workaround, fix it later
+		if (i==0) {
+			w = columns.eq(i).width() - 35;
+		} else if (i==3) {
+			w = columns.eq(i).width() - 14;
+		} else {
+			w = columns.eq(i).width() -7;
+		}
+		ranges.push(w);
+		total+=w;
+	}		 
+	for(i=0; i<columns.length; i++){
+		ranges[i] = 100*ranges[i]/total;
+	}
+	var trainPercent = Math.round(ranges[0]);
+	var validationPercent = Math.round(ranges[1]);
+	var unusedPercent = Math.round(ranges[3]);
+	var testPercent = 100 - trainPercent - validationPercent - unusedPercent;
+	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitValidation').val(validationPercent).end().find('#splitTest').val(testPercent).end();
+};
+*/
 
 
 var EngineTypeListModel = Backbone.Model.extend({

@@ -1429,7 +1429,6 @@ object Application extends Controller {
            "metricscorelist" -> metricscorelist,   // TODO: change to average score at PDIO-150
            "metricscoreiterationlist" -> JsNull, // TODO: this is a placeholder for PDIO-150. Example: "metricscoreiterationlist" -> toJson(Seq(metricscorelist, metricscorelist)) 
            "splitTrain" -> toJson(55), // TODO: this is a placeholder for PDIO-129
-           "splitValidation" -> toJson(20), // TODO: this is a placeholder for PDIO-129
            "splitTest" -> toJson(15), // TODO: this is a placeholder for PDIO-129
            "splitMethod" -> toJson("random"), // TODO: this is a placeholder for PDIO-129
            "evalIteration" -> toJson(3), // TODO: this is a placeholder for PDIO-150

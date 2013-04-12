@@ -696,7 +696,9 @@
                         <p>Start Time: <%= data.startTime %></p>
                         <h5>Data Split Settings:</h5>
                         <span>Train Set: <%= data.splitTrain %>%</span>
+                        <!-- 3-part split
                         <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
+                        -->
                         <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
                         <div>
                             Data Selection: 
@@ -833,7 +835,8 @@
                                         <a href="#" id="addMetricsBtn" class="btn btn-small btn-inverse">Add Another Metric</a>
 
                                         <h5 class="topMargin-large">Data Split</h5>
-                                        <p class="bottomMargin">Adjust the slider to specify how you want to split data into Train Set, Validation Set and Test Set.</p>
+                                        <p class="bottomMargin">Adjust the slider to specify how you want to split data into Train Set and Test Set.</p>
+                                        <!-- 3-part split
                                         <table id="dataSplitBar" width="70%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td class="selection" width="55%"><span>Train Set</span></td>
@@ -842,10 +845,22 @@
                                                 <td width="10%"></td>
                                             </tr>
                                         </table>
+                                        -->
+                                        <table id="dataSplitBar" width="70%" cellspacing="0" cellpadding="0" border="0">
+                                            <tr>
+                                                <td class="selection" width="60%"><span>Train Set</span></td>
+                                                <td class="selection" width="20%"><span>Test Set</span></td>
+                                                <td width="20%"></td>
+                                            </tr>
+                                        </table>
                                         <div class="topMargin">
+                                            <!-- 3-part split
                                             <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="55">%
                                             <span class="leftMargin">Validation: </span><input class="span1" readonly type="text" id="splitValidation" name="splitValidation" value="20">%
                                             <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="15">%
+                                            -->
+                                            <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="60">%
+                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="20">%
                                         </div>
                                         <div class="topMargin-large">
                                             <span>Data Selection: </span>
@@ -854,7 +869,10 @@
                                                 <option value="time">Random with Time Order</option>
                                             </select>
                                             <p>
+                                                <!-- 3-part split
                                                 <small>Random with Time Order means that data in Validation Set is always newer than those in Train Set and data in Test Set is always newer than those in Validation Set.</small>
+                                                -->
+                                                <small>Random with Time Order means that data in Test Set is always newer than those in Train Set.</small>  
                                             </p>
                                         </div>
 
