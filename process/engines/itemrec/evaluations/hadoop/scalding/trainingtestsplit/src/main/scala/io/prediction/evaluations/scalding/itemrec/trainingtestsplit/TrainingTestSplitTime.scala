@@ -16,9 +16,18 @@ class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
 
   val totalCountArg = args("totalCount").toInt // total u2i count
 
-  val trainingCount: Int = scala.math.ceil((trainingsizeArg.toDouble / totalSize) * totalCountArg).toInt
+  // evaluationPercent is sum of trainingPercentArg + validationPercentArg + testPercentArg
+  val evaluationCount: Int = (scala.math.floor(evaluationPercent * totalCountArg)).toInt
 
-  //val testCount: Int = totalCountArg - trainingCount
+  val trainingCount: Int = (scala.math.floor(trainingPercentArg * totalCountArg)).toInt
+  val validationCount: Int = (scala.math.floor(validationPercentArg * totalCountArg)).toInt
+  
+  val trainingValidationCount: Int = trainingCount + validationCount
+  val testCount = evaluationCount - trainingValidationCount
+
+  require((trainingCount >= 1), "Not enough data for training set. trainingCount = " + trainingCount)
+  require((validationCount >= 1), "Not enough data for validation set. validationCount = " + validationCount)
+  require((testCount >= 1), "Not enough data for test set. testCount = " + testCount)
 
   /**
    * source
@@ -35,6 +44,9 @@ class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
   val trainingU2iSink = U2iActions(appId=evalidArg,
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg)
   
+  val validationU2iSink = U2iActions(appId=evalidArg,
+      dbType=validation_dbTypeArg, dbName=validation_dbNameArg, dbHost=validation_dbHostArg, dbPort=validation_dbPortArg)
+
   // sink to test_appadta
   val testU2iSink = U2iActions(appId=evalidArg,
       dbType=test_dbTypeArg, dbName=test_dbNameArg, dbHost=test_dbHostArg, dbPort=test_dbPortArg)
@@ -43,13 +55,33 @@ class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
    * computation
    */
 
-  val sortedU2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
-    .groupAll( _.sortBy('t) ) // NOTE: small to largest
+  val randomU2i = if (timeorderArg) {
 
-  sortedU2i.groupAll ( _.take(trainingCount) )
+    // shuffle, take and then sort
+    u2iSource.readData('action, 'uid, 'iid, 't, 'v)
+      .shuffle(11)
+      .groupAll ( _.take(evaluationCount) )
+      .groupAll( _.sortBy('t) ) // NOTE: small to largest (oldest first, so training set should be taken first)
+
+  } else {
+
+    // shuffle and then take
+    u2iSource.readData('action, 'uid, 'iid, 't, 'v)
+      .shuffle(11)
+      .groupAll ( _.take(evaluationCount) )
+
+  }
+
+  // split
+  val trainingOrValidation = randomU2i.groupAll ( _.take(trainingValidationCount))
+
+  trainingOrValidation.groupAll ( _.take(trainingCount) )
     .then( trainingU2iSink.writeData('action, 'uid, 'iid, 't, 'v, evalidArg) _ ) // NOTE: appid is replaced by evalid
 
-  sortedU2i.groupAll ( _.drop(trainingCount) )
+  trainingOrValidation.groupAll ( _.drop(trainingCount) )
+    .then( validationU2iSink.writeData('action, 'uid, 'iid, 't, 'v, evalidArg) _ ) // NOTE: appid is replaced by evalid
+
+  randomU2i.groupAll ( _.drop(trainingValidationCount))
     .then( testU2iSink.writeData('action, 'uid, 'iid, 't, 'v, evalidArg) _ ) // NOTE: appid is replaced by evalid
 
 }

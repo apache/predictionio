@@ -8,7 +8,8 @@ import io.prediction.commons.appdata.{User, Item}
 
 /**
  * Description:
- *   Write user/items to db. Read u2i and filter with itypes, write to hdfs. appid is replaced by evalid.
+ *   Write user/items to db. Read u2i and filter with itypes, random shuffle and write to hdfs. 
+ *   note: appid is replaced by evalid.
  * 
  */
 class TrainingTestSplitTimePrep(args: Args) extends TrainingTestSplitCommon(args) {
@@ -75,6 +76,19 @@ class TrainingTestSplitTimePrep(args: Args) extends TrainingTestSplitCommon(args
   
   val selectedU2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
     .joinWithSmaller('iid -> 'iidx, itemsIidx) // only select actions of these items
+    .map(('uid, 'iid) -> ('newUid, 'newIid)) { fields: (String, String) =>
+      
+      // NOTE: replace appid prefix by evalid
+      val (uid, iid) = fields
+      val newUid = replacePrefix(uid)
+      val newIid = replacePrefix(iid)
+      
+      (newUid, newIid)
+    }
+    
+  /*
+  val selectedU2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
+    .joinWithSmaller('iid -> 'iidx, itemsIidx) // only select actions of these items
     .map(('uid, 'iid) -> ('randValue, 'newUid, 'newIid)) { fields: (String, String) =>
       
       // NOTE: replace appid prefix by evalid
@@ -88,7 +102,7 @@ class TrainingTestSplitTimePrep(args: Args) extends TrainingTestSplitCommon(args
       (r, newUid, newIid)
     }
     .filter('randValue) { r: Int => (r < totalSize) }
-
+  */
   selectedU2i.then( u2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _ ) // NOTE: appid is replaced by evalid 
   
   // count number of u2i

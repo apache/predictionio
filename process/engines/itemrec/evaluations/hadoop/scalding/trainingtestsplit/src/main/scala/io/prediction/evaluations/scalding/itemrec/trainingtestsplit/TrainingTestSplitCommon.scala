@@ -21,6 +21,11 @@ import io.prediction.commons.appdata.{User, Item}
  * --training_dbHost: <string>. optional
  * --training_dbPort: <int>. optional
  * 
+ * --validation_dbType: <string> validation_appdata DB type
+ * --validation_dbName: <string>
+ * --validation_dbHost: <string>. optional
+ * --validation_dbPort: <int>. optional
+ *
  * --test_dbType: <string> test_appdata DB type
  * --test_dbName: <string>
  * --test_dbHost: <string>. optional
@@ -34,9 +39,11 @@ import io.prediction.commons.appdata.{User, Item}
  *
  * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  *
- * --trainingsize: <int> (1 - 10)
- * --testsize: <int> (1 - 10)
- * --timeorder: <boolean>. Require total size < 10. 
+ * --trainingPercent: <double> (0.01 to 1). training set percentage
+ * --validationPercent: <dboule> (0.01 to 1). validation set percentage
+ * --testPercent: <double> (0.01 to 1). test set percentage
+ *
+ * --timeorder: <boolean>. Require total percentage < 1
  */
 abstract class TrainingTestSplitCommon(args: Args) extends Job(args) {
 
@@ -53,6 +60,11 @@ abstract class TrainingTestSplitCommon(args: Args) extends Job(args) {
   val training_dbHostArg = args.optional("training_dbHost")
   val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt) 
   
+  val validation_dbTypeArg = args("validation_dbType")
+  val validation_dbNameArg = args("validation_dbName")
+  val validation_dbHostArg = args.optional("validation_dbHost")
+  val validation_dbPortArg = args.optional("validation_dbPort") map (x => x.toInt) 
+
   val test_dbTypeArg = args("test_dbType")
   val test_dbNameArg = args("test_dbName")
   val test_dbHostArg = args.optional("test_dbHost")
@@ -67,16 +79,22 @@ abstract class TrainingTestSplitCommon(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
-  val trainingsizeArg = args("trainingsize").toInt
-  val testsizeArg = args("testsize").toInt
+  val trainingPercentArg = args("trainingPercent").toDouble
+  val validationPercentArg = args("validationPercent").toDouble
+  val testPercentArg = args("testPercent").toDouble
+
   val timeorderArg = args("timeorder").toBoolean
 
-  val totalSize = trainingsizeArg + testsizeArg
+  val evaluationPercent = trainingPercentArg + validationPercentArg + testPercentArg
+
+  require((trainingPercentArg >= 0.01), "trainingPercent must be >= 0.01.")
+  require((validationPercentArg >= 0.01), "validationPercent must be >= 0.01.")
+  require((testPercentArg >= 0.01), "testPercent must be >= 0.01.")
 
   // check valid size
   if (timeorderArg)
-    require((totalSize < 10), "The total of trainingsize and testsize must be < 10 if timeorder is true.")
+    require((evaluationPercent < 1), "The total of training/validation/test must be < 1 if timeorder is true.")
   else
-    require((totalSize <= 10), "The total of trainingsize and testsize must be <= 10.")
+    require((evaluationPercent <= 1), "The total of training/validation/test must be <= 1.")
 
 }
