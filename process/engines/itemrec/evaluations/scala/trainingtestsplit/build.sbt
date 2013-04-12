@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplit"
+name := "PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime"
 
 version := "0.4-SNAPSHOT"
 

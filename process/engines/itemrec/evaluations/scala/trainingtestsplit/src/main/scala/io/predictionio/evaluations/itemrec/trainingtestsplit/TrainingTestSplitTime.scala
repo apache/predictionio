@@ -9,9 +9,48 @@ import scala.io.Source
 import scala.sys.process._
 
 /**
- * wrapper for Scalding TrainingTestSplit job
+ * Wrapper for Scalding TrainingTestSplitTime job
+ *
+ * Args:
+ * --hadoop <string> hadoop command
+ * --pdioEvalJar <string> the name of the Scalding TrainingTestSplit job jar
+ * --resplit: <boolean>. if true, using same appdata snapshot as before and only redo random split. 1st run must be false. (for doing multiple training/validation/test set generation using same snaphshot)
+ *
+ * --dbType: <string> appdata DB type
+ * --dbName: <string>
+ * --dbHost: <string>. optional. (eg. "127.0.0.1")
+ * --dbPort: <int>. optional. (eg. 27017)
+ *
+ * --training_dbType: <string> training_appadta DB type
+ * --training_dbName: <string>
+ * --training_dbHost: <string>. optional
+ * --training_dbPort: <int>. optional
+ * 
+ * --validation_dbType: <string> validation_appdata DB type
+ * --validation_dbName: <string>
+ * --validation_dbHost: <string>. optional
+ * --validation_dbPort: <int>. optional
+ *
+ * --test_dbType: <string> test_appdata DB type
+ * --test_dbName: <string>
+ * --test_dbHost: <string>. optional
+ * --test_dbPort: <int>. optional
+ *
+ * --hdfsRoot: <string>. Root directory of the HDFS
+ * 
+ * --appid: <int>
+ * --engineid: <int>
+ * --evalid: <int>
+ *
+ * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
+ *
+ * --trainingPercent: <double> (0.01 to 1). training set percentage
+ * --validationPercent: <dboule> (0.01 to 1). validation set percentage
+ * --testPercent: <double> (0.01 to 1). test set percentage
+ * --timeorder: <boolean>. Require total percentage < 1
+ *
  */
-object TrainingTestSplit {
+object TrainingTestSplitTime {
 
   def main(mainArgs: Array[String]) {
 
@@ -28,13 +67,17 @@ object TrainingTestSplit {
     val engineid = args("engineid").toInt
     val evalid = args("evalid").toInt
 
+    val resplit = args("resplit").toBoolean
+
     val argsString = args.toString
 
     /** command */
-    // prep
-    val splitPrepCmd = hadoop + " jar " + pdioEvalJar + " io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplitTimePrep " + argsString
+    if (!resplit) {
+      // prep
+      val splitPrepCmd = hadoop + " jar " + pdioEvalJar + " io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplitTimePrep " + argsString
+      executeCommandAndCheck(splitPrepCmd)
 
-    executeCommandAndCheck(splitPrepCmd)
+    }
 
     // copy the count to local tmp
     val hdfsCountPath = TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, "u2iCount.tsv")
