@@ -8,8 +8,10 @@ import io.prediction.commons.appdata.{User, Item}
 
 /**
  * Description:
- *   Split u2i into training and test
+ *   Split u2i into training, validation and test set
  * 
+ * Args:
+ * same as TrainingtestsplitCommon, plus additional args:
  * --totalCount <int> total u2i actions count
  */
 class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
