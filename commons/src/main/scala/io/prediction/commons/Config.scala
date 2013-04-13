@@ -346,11 +346,11 @@ class Config {
     new settings.code.CodeAlgoInfos()
   }
 
-  /** Obtains a MetricInfos object with configured backend type. */
-  def getSettingsMetricInfos(): settings.MetricInfos = {
+  /** Obtains a OfflineEvalMetricInfos object with configured backend type. */
+  def getSettingsOfflineEvalMetricInfos(): settings.OfflineEvalMetricInfos = {
     settingsDbType match {
       case "mongodb" => {
-        new settings.mongodb.MongoMetricInfos(settingsMongoDb.get)
+        new settings.mongodb.MongoOfflineEvalMetricInfos(settingsMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
     }

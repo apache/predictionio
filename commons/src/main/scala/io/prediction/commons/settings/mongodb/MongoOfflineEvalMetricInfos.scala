@@ -1,21 +1,21 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{MetricInfo, MetricInfos}
+import io.prediction.commons.settings.{OfflineEvalMetricInfo, OfflineEvalMetricInfos}
 
 import com.mongodb.casbah.Imports._
 
-/** MongoDB implementation of MetricInfos. */
-class MongoMetricInfos(db: MongoDB) extends MetricInfos {
+/** MongoDB implementation of OfflineEvalMetricInfos. */
+class MongoOfflineEvalMetricInfos(db: MongoDB) extends OfflineEvalMetricInfos {
   private val coll = db("metricInfos")
 
-  private def dbObjToMetricInfo(dbObj: DBObject) = {
+  private def dbObjToOfflineEvalMetricInfo(dbObj: DBObject) = {
     val params = dbObj.as[MongoDBList]("params")
     val paramorder = params map { p => p.asInstanceOf[DBObject].as[String]("param") }
     val paramdefaults = params map { p => p.asInstanceOf[DBObject].as[Any]("default") }
     val paramnames = params map { p => p.asInstanceOf[DBObject].as[String]("name") }
     val paramdescription = params map { p => p.asInstanceOf[DBObject].as[String]("description") }
-    MetricInfo(
+    OfflineEvalMetricInfo(
       id               = dbObj.as[String]("_id"),
       name             = dbObj.as[String]("name"),
       description      = dbObj.getAs[String]("description"),
@@ -37,31 +37,31 @@ class MongoMetricInfos(db: MongoDB) extends MetricInfos {
     listBuffer.toSeq
   }
 
-  def insert(MetricInfo: MetricInfo) = {
+  def insert(OfflineEvalMetricInfo: OfflineEvalMetricInfo) = {
     // required fields
     val obj = MongoDBObject(
-      "_id"              -> MetricInfo.id,
-      "name"             -> MetricInfo.name,
-      "engineinfoids"    -> MetricInfo.engineinfoids,
-      "params"           -> mergeParams(MetricInfo.paramorder, MetricInfo.paramnames, MetricInfo.paramdefaults, MetricInfo.paramdescription))
+      "_id"              -> OfflineEvalMetricInfo.id,
+      "name"             -> OfflineEvalMetricInfo.name,
+      "engineinfoids"    -> OfflineEvalMetricInfo.engineinfoids,
+      "params"           -> mergeParams(OfflineEvalMetricInfo.paramorder, OfflineEvalMetricInfo.paramnames, OfflineEvalMetricInfo.paramdefaults, OfflineEvalMetricInfo.paramdescription))
 
     // optional fields
-    val descriptionObj = MetricInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
-    val commandsObj = MetricInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
+    val descriptionObj = OfflineEvalMetricInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
+    val commandsObj = OfflineEvalMetricInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
 
     coll.insert(obj ++ descriptionObj ++ commandsObj)
   }
 
-  def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToMetricInfo(_) }
+  def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToOfflineEvalMetricInfo(_) }
 
-  def update(MetricInfo: MetricInfo) = {
-    val idObj = MongoDBObject("_id" -> MetricInfo.id)
+  def update(OfflineEvalMetricInfo: OfflineEvalMetricInfo) = {
+    val idObj = MongoDBObject("_id" -> OfflineEvalMetricInfo.id)
     val requiredObj = MongoDBObject(
-      "name"             -> MetricInfo.name,
-      "engineinfoids"    -> MetricInfo.engineinfoids,
-      "params"           -> mergeParams(MetricInfo.paramorder, MetricInfo.paramnames, MetricInfo.paramdefaults, MetricInfo.paramdescription))
-    val descriptionObj = MetricInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
-    val commandsObj = MetricInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
+      "name"             -> OfflineEvalMetricInfo.name,
+      "engineinfoids"    -> OfflineEvalMetricInfo.engineinfoids,
+      "params"           -> mergeParams(OfflineEvalMetricInfo.paramorder, OfflineEvalMetricInfo.paramnames, OfflineEvalMetricInfo.paramdefaults, OfflineEvalMetricInfo.paramdescription))
+    val descriptionObj = OfflineEvalMetricInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
+    val commandsObj = OfflineEvalMetricInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
 
     coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ commandsObj)
   }

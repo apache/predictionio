@@ -1,6 +1,6 @@
 package io.prediction.commons.settings
 
-/** MetricInfo object.
+/** OfflineEvalMetricInfo object.
   *
   * @param id Unique identifier of a metric.
   * @param name Metric name.
@@ -12,7 +12,7 @@ package io.prediction.commons.settings
   * @param paramdescription Key value paris of (parameter -> description).
   * @param paramorder The display order of parameters.
   */
-case class MetricInfo(
+case class OfflineEvalMetricInfo(
   id: String,
   name: String,
   description: Option[String],
@@ -25,15 +25,15 @@ case class MetricInfo(
 )
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
-trait MetricInfos {
+trait OfflineEvalMetricInfos {
   /** Inserts an metric info. */
-  def insert(metricInfo: MetricInfo): Unit
+  def insert(metricInfo: OfflineEvalMetricInfo): Unit
 
   /** Get an metric info by its ID. */
-  def get(id: String): Option[MetricInfo]
+  def get(id: String): Option[OfflineEvalMetricInfo]
 
   /** Updates an metric info. */
-  def update(metricInfo: MetricInfo): Unit
+  def update(metricInfo: OfflineEvalMetricInfo): Unit
 
   /** Delete an metric info by its ID. */
   def delete(id: String): Unit

@@ -4,18 +4,18 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class MetricInfosSpec extends Specification { def is =
-  "PredictionIO MetricInfos Specification"                                    ^
+class OfflineEvalMetricInfosSpec extends Specification { def is =
+  "PredictionIO OfflineEvalMetricInfos Specification"                                    ^
                                                                               p^
-  "MetricInfos can be implemented by:"                                        ^ endp^
-    "1. MongoMetricInfos"                                                     ^ mongoMetricInfos^end
+  "OfflineEvalMetricInfos can be implemented by:"                                        ^ endp^
+    "1. MongoOfflineEvalMetricInfos"                                                     ^ mongoOfflineEvalMetricInfos^end
 
-  def mongoMetricInfos =                                                      p^
-    "MongoMetricInfos should"                                                 ^
-      "behave like any MetricInfos implementation"                            ^ metricInfos(newMongoMetricInfos)^
+  def mongoOfflineEvalMetricInfos =                                                      p^
+    "MongoOfflineEvalMetricInfos should"                                                 ^
+      "behave like any OfflineEvalMetricInfos implementation"                            ^ metricInfos(newMongoOfflineEvalMetricInfos)^
                                                                               Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def metricInfos(metricInfos: MetricInfos) = {                               t^
+  def metricInfos(metricInfos: OfflineEvalMetricInfos) = {                               t^
     "create and get an metric info"                                           ! insertAndGet(metricInfos)^
     "update an metric info"                                                   ! update(metricInfos)^
     "delete an metric info"                                                   ! delete(metricInfos)^
@@ -23,10 +23,10 @@ class MetricInfosSpec extends Specification { def is =
   }
 
   val mongoDbName = "predictionio_mongometricinfos_test"
-  def newMongoMetricInfos = new mongodb.MongoMetricInfos(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvalMetricInfos = new mongodb.MongoOfflineEvalMetricInfos(MongoConnection()(mongoDbName))
 
-  def insertAndGet(metricInfos: MetricInfos) = {
-    val mapk = MetricInfo(
+  def insertAndGet(metricInfos: OfflineEvalMetricInfos) = {
+    val mapk = OfflineEvalMetricInfo(
       id = "map-k",
       name = "Mean Average Precision",
       description = None,
@@ -43,8 +43,8 @@ class MetricInfosSpec extends Specification { def is =
     metricInfos.get("map-k") must beSome(mapk)
   }
 
-  def update(metricInfos: MetricInfos) = {
-    val mapk = MetricInfo(
+  def update(metricInfos: OfflineEvalMetricInfos) = {
+    val mapk = OfflineEvalMetricInfo(
       id = "u-map-k",
       name = "Mean Average Precision",
       description = None,
@@ -67,8 +67,8 @@ class MetricInfosSpec extends Specification { def is =
     metricInfos.get("u-map-k") must beSome(updatedMapk)
   }
 
-  def delete(metricInfos: MetricInfos) = {
-    val mapk = MetricInfo(
+  def delete(metricInfos: OfflineEvalMetricInfos) = {
+    val mapk = OfflineEvalMetricInfo(
       id = "foo",
       name = "Mean Average Precision",
       description = None,
