@@ -43,7 +43,7 @@ object Application extends Controller {
   val engines = config.getSettingsEngines()
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
-  val metricInfos = config.getSettingsMetricInfos()
+  val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
   val offlineEvals = config.getSettingsOfflineEvals()
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
@@ -1393,7 +1393,7 @@ object Application extends Controller {
                   "engine_id" -> engine_id,
                   "enginetype_id" -> "itemrec", // TODO: hardcode now, should get it from engine db
                   "metricstype_id" -> metric.infoid,
-                  "metricsName" -> (metricInfos.get(metric.infoid) map { _.name } getOrElse ""),
+                  "metricsName" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
                   "settingsString" -> map_k_displayAllParams(metric.params)
                   )
             }.toSeq
