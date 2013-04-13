@@ -8,7 +8,6 @@ import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
 import io.prediction.commons.filepath.TrainingTestSplitFile
 import io.prediction.commons.appdata.{User, Item}
 
-
 class TrainingTestSplitTimeTest extends Specification with TupleConversions {
 
   def test(itypes: List[String], trainingPercent: Double, validationPercent: Double, testPercent: Double, timeorder: Boolean, 
@@ -19,10 +18,6 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
       selectedItems: List[(String, String, String, String, String)],
       selectedUsers: List[(String, String, String)],
       selectedU2iActions: List[(String, String, String, String, String)]
-      //,
-      /*selectedU2iActionsTraining: List[(String, String, String, String, String)],
-      selectedU2iActionsValidation: List[(String, String, String, String, String)],
-      selectedU2iActionsTest: List[(String, String, String, String, String)]*/
       ) = {
 
     val dbType = "file"
@@ -98,15 +93,12 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
       .sink[(String, String, String, String, String)](U2iActions(appId=evalid,
         dbType="file", dbName=TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost=None, dbPort=None).getSource) { outputBuffer =>
         "correctly write u2iActions" in {
-
           outputBuffer must containTheSameElementsAs(selectedU2iActions)
-
         }
       }
       .sink[(Int)](Tsv(TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, "u2iCount.tsv"))) { outputBuffer =>
         "correctly write u2iActions count" in {
           outputBuffer must containTheSameElementsAs(List(originalCount))
-
         }
       }
       .run
@@ -140,7 +132,11 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
           dbType=training_dbType, dbName=training_dbName, dbHost=training_dbHost, dbPort=training_dbPort).getSource) { outputBuffer =>
           "generate training set" in {
             val output = outputBuffer.toList
-            results += ("training" -> output)
+            results += ("training" -> output) // remember the output for later checking purpose
+
+            // note: since the selection is random, can't know the expected selection beforehand.
+            // so just check if the original data contain the selected data and the size is correct.
+            // Randomness and time order is checked in later stages.
             selectedU2iActions must containAllOf(output) and
               (output.size must be_==(trainingCount))
           }
@@ -178,6 +174,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
         }
 
         if (timeorder) {
+          // check time order
           "validation set must be newer than training set" in {
             getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max)
           }
@@ -192,8 +189,14 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
       val firstSplit = splitTest()
       val secondSplit = splitTest()
 
+      // simple check for randomness
       if (timeorder) {
         "at least one set of two split is different" in {
+          // for timeorder=true case, some sets may still be the same even resplit 2nd time
+          // because the original data is small, we select most of them (say > 90%) and
+          // split according to time order. The chance of ending up same data in the set is high.
+          // so here just do simple check: as long as 1 set is different, consider OK.
+          // (it's possible to check all difference if the test input data is large enough and selected percentage is relative small.)
           (firstSplit("training") must not(containTheSameElementsAs(secondSplit("training")))) or
             (firstSplit("validation") must not(containTheSameElementsAs(secondSplit("validation")))) or
             (firstSplit("test") must not(containTheSameElementsAs(secondSplit("test"))))
@@ -265,28 +268,6 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
     ("4", evalid+"_u2", evalid+"_i3", "1234504", "3"),
     ("4", evalid+"_u1", evalid+"_i3", "1234505", "3"),
     ("4", evalid+"_u0", evalid+"_i3", "1234509", "3"))
-
-  
-/*
-  // since it's random selection, add 1 more.
-  val selectedU2iActionsTraining = List(
-    ("4", evalid+"_u0", evalid+"_i1", "1234500", "5"),
-    ("4", evalid+"_u1", evalid+"_i3", "1234501", "3"),
-    ("3", evalid+"_u2", evalid+"_i3", "1234502", "2"),
-    ("4", evalid+"_u0", evalid+"_i1", "1234503", "2"),
-    ("4", evalid+"_u3", evalid+"_i3", "1234504", "3"))
-
-  val selectedU2iActionsValidation = List(
-    ("4", evalid+"_u3", evalid+"_i3", "1234504", "3"),
-    ("3", evalid+"_u3", evalid+"_i0", "1234505", "1"),
-    ("4", evalid+"_u1", evalid+"_i2", "1234506", "4"),
-    ("2", evalid+"_u1", evalid+"_i0", "1234507", "5"))
-
-  val selectedU2iActionsTest = List(
-    ("2", evalid+"_u1", evalid+"_i0", "1234507", "5"),
-    ("4", evalid+"_u0", evalid+"_i2", "1234508", "3"),
-    ("4", evalid+"_u2", evalid+"_i0", "1234509", "1"))
-*/
 
   "TrainingTestSplitTimeTest with timeorder=true" should {
       test(List(""), 0.4, 0.3, 0.2, true, appid, evalid,

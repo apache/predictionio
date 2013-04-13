@@ -8,7 +8,7 @@ import io.prediction.commons.appdata.{User, Item}
 
 /**
  * Description:
- *   trainingtestsplittime Common
+ *   TrainingtestsplitCommon
  *
  * Args: 
  * --dbType: <string> appdata DB type
