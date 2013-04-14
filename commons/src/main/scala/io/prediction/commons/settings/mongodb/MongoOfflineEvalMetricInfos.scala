@@ -7,7 +7,7 @@ import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of OfflineEvalMetricInfos. */
 class MongoOfflineEvalMetricInfos(db: MongoDB) extends OfflineEvalMetricInfos {
-  private val coll = db("metricInfos")
+  private val coll = db("offlineEvalMetricInfos")
 
   private def dbObjToOfflineEvalMetricInfo(dbObj: DBObject) = {
     val params = dbObj.as[MongoDBList]("params")
