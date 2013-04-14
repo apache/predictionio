@@ -346,6 +346,16 @@ class Config {
     new settings.code.CodeAlgoInfos()
   }
 
+  /** Obtains a OfflineEvalSplitterInfos object with configured backend type. */
+  def getSettingsOfflineEvalSplitterInfos(): settings.OfflineEvalSplitterInfos = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoOfflineEvalSplitterInfos(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
   /** Obtains a OfflineEvalMetricInfos object with configured backend type. */
   def getSettingsOfflineEvalMetricInfos(): settings.OfflineEvalMetricInfos = {
     settingsDbType match {

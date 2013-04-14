@@ -1,7 +1,7 @@
 package io.prediction.tools.settingsinit
 
 import io.prediction.commons._
-import io.prediction.commons.settings.OfflineEvalMetricInfo
+import io.prediction.commons.settings.{OfflineEvalMetricInfo, OfflineEvalSplitterInfo}
 
 import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
@@ -24,6 +24,7 @@ object SettingsInit {
   val config = new Config()
 
   def main(args: Array[String]) {
+    val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos
     val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
 
     val settingsFile = try { args(0) } catch { case e: Throwable =>
@@ -43,6 +44,41 @@ object SettingsInit {
     println("PredictionIO settings initialization starting")
 
     M.unapply(settingsJson) map { settings =>
+      M.unapply(settings("offlineevalsplitterinfos")) map { infos =>
+        println("Populating OfflineEvalSplitterInfos...")
+        for {
+          id <- infos.keys
+          M(info) = infos(id)
+          S(name) = info("name")
+          SS(engineinfoids) = info("engineinfoids")
+          OS(description) = info.get("description")
+          OSS(commands) = info.get("commands")
+          SS(paramorder) = info("paramorder")
+          MSS(paramnames) = info("paramnames")
+          MSS(paramdescription) = info("paramdescription")
+          MSS(paramdefaults) = info("paramdefaults")
+        } yield {
+          val mi = OfflineEvalSplitterInfo(
+            id = id,
+            name = name,
+            engineinfoids = engineinfoids,
+            description = description,
+            commands = commands,
+            paramorder = paramorder,
+            paramnames = paramnames,
+            paramdescription = paramdescription,
+            paramdefaults = paramdefaults)
+
+          offlineEvalSplitterInfos.get(id) map { m =>
+            println(s"Updating OfflineEvalSplitterInfo ID: ${id}")
+            offlineEvalSplitterInfos.update(mi)
+          } getOrElse {
+            println(s"Adding OfflineEvalSplitterInfo ID: ${id}")
+            offlineEvalSplitterInfos.insert(mi)
+          }
+        }
+      } getOrElse println("Cannot find any OfflineEvalSplitterInfo information. Skipping.")
+
       M.unapply(settings("offlineevalmetricinfos")) map { infos =>
         println("Populating OfflineEvalMetricInfos...")
         for {

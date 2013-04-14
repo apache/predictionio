@@ -1,4 +1,32 @@
 {
+    "offlineevalsplitterinfos": {
+        "trainingtestsplit": {
+            "name": "Training/Test Data Splitter",
+            "description": "Split data into training and test sets",
+            "engineinfoids": [
+                "itemrec"
+            ],
+            "commands": [
+                "$hadoop$ jar $pdioEvalJar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$"
+            ],
+            "paramorder": [
+                "trainingsize",
+                "testsize"
+            ],
+            "paramnames": {
+                "trainingsize": "Training Size",
+                "testsize": "Test Size"
+            },
+            "paramdescription": {
+                "trainingsize": "Percentage of data as training set",
+                "testsize": "Percentage of data as test set"
+            },
+            "paramdefaults": {
+                "trainingsize": 60,
+                "testsize": 20
+            }
+        }
+    },
     "offlineevalmetricinfos": {
         "map_k": {
             "name": "MAP@k",
