@@ -55,12 +55,6 @@ object ItemRecAlgoOutput {
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
     val output = outputBuffer.toList.take(finalN)
 
-    /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
-      * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
-      */
-    val freshness = engine.settings.get("freshness") map { _.asInstanceOf[Int] }
-    val freshnessOutput = items.getRecentByIds(app.id, output).map(_.id)
-
     /** Serendipity output. */
     val serendipityOutput = serendipity map { s =>
       if (s > 0)
@@ -69,11 +63,17 @@ object ItemRecAlgoOutput {
         output
     } getOrElse output
 
+    /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
+      * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
+      */
+    val freshness = engine.settings.get("freshness") map { _.asInstanceOf[Int] }
+
     /** Freshness output. */
     val finalOutput = freshness map { f =>
       if (f > 0) {
         val freshnessN = scala.math.round(n*f/10)
         val otherN = n-freshnessN
+        val freshnessOutput = items.getRecentByIds(app.id, output).map(_.id)
         freshnessOutput.take(freshnessN) ++ serendipityOutput.take(otherN)
       } else
         serendipityOutput
