@@ -32,6 +32,7 @@ import io.prediction.commons.filepath.{AlgoFile}
  * --evalid: <int>. optional. Offline Evaluation if evalid is specified
  *
  * --itypes: <string separated by white space>. optional. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
+ * --numRecommendations: <int>. number of recommendations to be generated
  *
  * --modelSet: <boolean> (true/false). flag to indicate which set
  *
@@ -63,6 +64,8 @@ class LatestRank(args: Args) extends Job(args) {
 
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
+
+  val numRecommendationsArg = args("numRecommendations").toInt
 
   val modelSetArg = args("modelSet").toBoolean
 
@@ -96,8 +99,7 @@ class LatestRank(args: Args) extends Job(args) {
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
     .map('starttime -> 'score) { t: String =>  t.toDouble }
-
-  // write modeldata
-  scores.then( itemRecScores.writeData('uid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _ )
-
+    .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
+    .then ( itemRecScores.writeData('uid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _ )
+  
 }

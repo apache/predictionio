@@ -11,7 +11,8 @@ import io.prediction.commons.filepath.{AlgoFile}
 class LatestRankTest extends Specification with TupleConversions {
 
   def test(algoid: Int, modelSet: Boolean,
-    itypes: List[String], 
+    itypes: List[String],
+    numRecommendations: Int,
     items: List[(String, String, String, String)],
     users: List[(String, String)],
     itemRecScores: List[(String, String, Double, String, Int, Boolean)]
@@ -39,6 +40,7 @@ class LatestRankTest extends Specification with TupleConversions {
       .arg("engineid", engineid.toString)
       .arg("algoid", algoid.toString)
       .arg("itypes", itypes)
+      .arg("numRecommendations", numRecommendations.toString)
       .arg("modelSet", modelSet.toString)
       .source(Items(appId=appid, itypes=Some(itypes), 
         dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, items)
@@ -55,24 +57,65 @@ class LatestRankTest extends Specification with TupleConversions {
       .finish
   }
 
-  "latestrank.LatestRank" should {
+  val algoid = 12
+  val modelSet = false
+  val itypesT1T2 = List("t1", "t2")
+  val itypesAll = List("t1", "t2", "t3", "t4")
+  val items = List(("i0", "t1,t2,t3", "19", "123456"), ("i1", "t2,t3", "19", "123457"), ("i2", "t4", "19", "21"), ("i3", "t3,t4", "19", "9876543210"))
+  val users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
+  val itemRecScoresT1T2 = List(
+    ("u0", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u0", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u1", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u1", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u2", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u2", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u3", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u3", "i1", 123457.0, "t2,t3", algoid, modelSet))
 
-    val algoid = 12
-    val modelSet = false
-    val itypes = List("t1", "t2")
-    val items = List(("i0", "t1,t2,t3", "19", "123456"), ("i1", "t2,t3", "19", "123457"), ("i2", "t4", "19", "21"), ("i3", "t3,t4", "19", "9876543210"))
-    val users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
-    val itemRecScores = List(
-      ("u0", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
-      ("u0", "i1", 123457.0, "t2,t3", algoid, modelSet),
-      ("u1", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
-      ("u1", "i1", 123457.0, "t2,t3", algoid, modelSet),
-      ("u2", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
-      ("u2", "i1", 123457.0, "t2,t3", algoid, modelSet),
-      ("u3", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
-      ("u3", "i1", 123457.0, "t2,t3", algoid, modelSet))
+  val itemRecScoresAll = List(
+    ("u0", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u0", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u0", "i2", 21.0, "t4", algoid, modelSet),
+    ("u0", "i3", 9876543210.0, "t3,t4", algoid, modelSet),
+    ("u1", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u1", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u1", "i2", 21.0, "t4", algoid, modelSet),
+    ("u1", "i3", 9876543210.0, "t3,t4", algoid, modelSet),
+    ("u2", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u2", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u2", "i2", 21.0, "t4", algoid, modelSet),
+    ("u2", "i3", 9876543210.0, "t3,t4", algoid, modelSet),
+    ("u3", "i0", 123456.0, "t1,t2,t3", algoid, modelSet),
+    ("u3", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u3", "i2", 21.0, "t4", algoid, modelSet),
+    ("u3", "i3", 9876543210.0, "t3,t4", algoid, modelSet))
 
-    test(algoid, modelSet, itypes, items, users, itemRecScores)
+  val itemRecScoresAllTop2 = List(
+    ("u0", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u0", "i3", 9876543210.0, "t3,t4", algoid, modelSet),
+    ("u1", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u1", "i3", 9876543210.0, "t3,t4", algoid, modelSet),
+    ("u2", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u2", "i3", 9876543210.0, "t3,t4", algoid, modelSet),
+    ("u3", "i1", 123457.0, "t2,t3", algoid, modelSet),
+    ("u3", "i3", 9876543210.0, "t3,t4", algoid, modelSet))
+
+  "latestrank.LatestRank with some itypes and numRecommendations larger than number of items" should {
+
+    test(algoid, modelSet, itypesT1T2, 500, items, users, itemRecScoresT1T2)
+
+  }
+
+  "latestrank.LatestRank with all itypes and numRecommendations larger than number of items" should {
+
+    test(algoid, modelSet, itypesAll, 500, items, users, itemRecScoresAll)
+
+  }
+
+  "latestrank.LatestRank with all itypes numRecommendations smaller than number of items" should {
+
+    test(algoid, modelSet, itypesAll, 2, items, users, itemRecScoresAllTop2)
 
   }
 
