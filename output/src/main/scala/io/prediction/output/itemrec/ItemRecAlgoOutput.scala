@@ -39,21 +39,21 @@ object ItemRecAlgoOutput {
 
       while (outputBuffer.length < finalN && !stopMore) {
         val moreItemRecScores = more(uid, finalN, itypes, after)
-        val moreIids = moreItemRecScores.map(_.iid).toList
+        val moreIids = moreItemRecScores.map(_.iid).toSeq
 
         /** Stop the loop if no more scores can be found. */
         if (moreItemRecScores.length == 0)
           stopMore = true
         else {
           val seenItems = u2iActions.getAllByAppidAndUidAndIids(app.id, uid, moreIids)
-          outputBuffer ++= (moreIids filterNot (seenItems.toList.map(_.iid).contains))
+          outputBuffer ++= (moreIids filterNot (seenItems.toSeq.map(_.iid).contains))
           after = Some(moreItemRecScores.last)
         }
       }
     } else outputBuffer ++= more(uid, finalN, itypes, None) map { _.iid }
 
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
-    val output = outputBuffer.toList.take(finalN)
+    val output = outputBuffer.toSeq.take(finalN)
 
     /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
       * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.

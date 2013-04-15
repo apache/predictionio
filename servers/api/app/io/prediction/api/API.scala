@@ -238,7 +238,7 @@ object API extends Controller {
               ct = DateTime.now,
               latlng = latlng map { parseLatlng(_) },
               inactive = inactive,
-              attributes = Some(attributes)
+              attributes = if (attributes.isEmpty) None else Some(attributes)
             ))
             APIMessageResponse(CREATED, Map("message" -> "User created."))
           }
@@ -496,11 +496,12 @@ object API extends Controller {
         "itypes" -> optional(text),
         "latlng" -> optional(latlng),
         "within" -> optional(numeric),
-        "unit" -> optional(text)
+        "unit" -> optional(text),
+        "attributes" -> optional(text)
       )).bindFromRequest.fold(
         f => bindFailed(f.errors),
         t => {
-          val (appkey, uid, n, itypes, latlng, within, unit) = t
+          val (appkey, uid, n, itypes, latlng, within, unit, attributes) = t
           AuthenticatedApp(appkey) { implicit app =>
             ValidEngine(enginename) { implicit engine =>
               try {
@@ -509,10 +510,26 @@ object API extends Controller {
                   n = n,
                   itypes = itypes map { _.split(",").toList }
                 )
-                if (res.length > 0)
-                  APIMessageResponse(OK, Map("iids" -> res))
-                else
+                if (res.length > 0) {
+                  val attributesToGet = attributes map { _.split(",").toSeq } getOrElse Seq()
+
+                  if (attributesToGet.length > 0) {
+                    val attributedItems = items.getByIds(app.id, res) map { i => (i.id, i) } toMap
+                    val ar = attributesToGet map { atg =>
+                      Map(atg -> res.map(ri =>
+                        attributedItems(ri).attributes map { attribs =>
+                          attribs.get(atg) getOrElse null
+                        } getOrElse null
+                      ))
+                    }
+
+                    APIMessageResponse(OK, Map("iids" -> res) ++ ar.reduceLeft((a, b) => a ++ b))
+                  } else {
+                    APIMessageResponse(OK, Map("iids" -> res))
+                  }
+                } else {
                   APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find recommendation for user."))
+                }
               } catch {
                 case e: Exception =>
                   APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage()))
