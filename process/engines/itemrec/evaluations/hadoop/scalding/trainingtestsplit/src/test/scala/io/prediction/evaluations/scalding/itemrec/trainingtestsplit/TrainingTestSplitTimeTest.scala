@@ -175,11 +175,17 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
 
         if (timeorder) {
           // check time order
-          "validation set must be newer than training set" in {
-            getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max)
+          if (validationPercent != 0) {
+            "validation set must be newer than training set" in {
+              getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max)
+            }
+            "test set must be newer than validation set" in {
+              getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("validation")).max)
+            }
           }
-          "test set must be newer than validation set" in {
-            getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("validation")).max)
+
+          "test set must be newer than training set" in {
+            getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("training")).max)
           }
         }
 
@@ -203,9 +209,15 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
         }
       } else {
         "all sets of two splits are different" in {
-          (firstSplit("training") must not(containTheSameElementsAs(secondSplit("training")))) and
-            (firstSplit("validation") must not(containTheSameElementsAs(secondSplit("validation")))) and
-            (firstSplit("test") must not(containTheSameElementsAs(secondSplit("test"))))
+          if (validationPercent == 0) {
+            // don't check validation set since it is empty
+            (firstSplit("training") must not(containTheSameElementsAs(secondSplit("training")))) and
+              (firstSplit("test") must not(containTheSameElementsAs(secondSplit("test"))))
+          } else {
+            (firstSplit("training") must not(containTheSameElementsAs(secondSplit("training")))) and
+              (firstSplit("validation") must not(containTheSameElementsAs(secondSplit("validation")))) and
+              (firstSplit("test") must not(containTheSameElementsAs(secondSplit("test"))))
+          }
         }
       }
 
@@ -290,7 +302,28 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
         selectedUsers,
         selectedU2iActions
       ) 
-    
+  }
+
+  "TrainingTestSplitTimeTest with timeorder=true and validation=0" should {
+      test(List(""), 0.6, 0, 0.2, true, appid, evalid,
+        items,
+        users,
+        u2iActions,
+        selectedItemsAll,
+        selectedUsers,
+        selectedU2iActions
+      )
+  }
+
+  "TrainingTestSplitTimeTest with timeorder=false and validation=0" should {
+      test(List(""), 0.6, 0, 0.4, false, appid, evalid,
+        items,
+        users,
+        u2iActions,
+        selectedItemsAll,
+        selectedUsers,
+        selectedU2iActions
+      )  
   }
 
 }

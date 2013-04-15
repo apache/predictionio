@@ -40,7 +40,7 @@ import io.prediction.commons.appdata.{User, Item}
  * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  *
  * --trainingPercent: <double> (0.01 to 1). training set percentage
- * --validationPercent: <dboule> (0.01 to 1). validation set percentage
+ * --validationPercent: <dboule> (0 to 1). validation set percentage
  * --testPercent: <double> (0.01 to 1). test set percentage
  *
  * --timeorder: <boolean>. Require total percentage < 1
@@ -87,9 +87,9 @@ abstract class TrainingTestSplitCommon(args: Args) extends Job(args) {
 
   val evaluationPercent = trainingPercentArg + validationPercentArg + testPercentArg
 
-  require((trainingPercentArg >= 0.01), "trainingPercent must be >= 0.01.")
-  require((validationPercentArg >= 0.01), "validationPercent must be >= 0.01.")
-  require((testPercentArg >= 0.01), "testPercent must be >= 0.01.")
+  require(((trainingPercentArg >= 0.01) && (trainingPercentArg <= 1)), "trainingPercent must be >= 0.01 and <= 1.")
+  require(((validationPercentArg >= 0) && (validationPercentArg <= 1)), "validationPercent must be >= 0 and <= 1.")
+  require(((testPercentArg >= 0.01) && (testPercentArg <= 1)), "testPercent must be >= 0.01 and <= 1.")
 
   // check valid size
   if (timeorderArg)

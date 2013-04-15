@@ -28,7 +28,9 @@ class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
   val testCount = evaluationCount - trainingValidationCount
 
   require((trainingCount >= 1), "Not enough data for training set. trainingCount = " + trainingCount)
-  require((validationCount >= 1), "Not enough data for validation set. validationCount = " + validationCount)
+  if (validationPercentArg != 0) {
+    require((validationCount >= 1), "Not enough data for validation set. validationCount = " + validationCount)
+  }
   require((testCount >= 1), "Not enough data for test set. testCount = " + testCount)
 
   /**
