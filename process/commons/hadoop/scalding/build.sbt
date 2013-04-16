@@ -6,6 +6,8 @@ version := "0.3"
 
 scalaVersion := "2.9.2"
 
+javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
+
 parallelExecution in Test := false
 
 libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.3"
