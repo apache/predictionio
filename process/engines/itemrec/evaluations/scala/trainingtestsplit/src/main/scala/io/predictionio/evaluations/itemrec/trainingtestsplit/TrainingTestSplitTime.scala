@@ -14,8 +14,8 @@ import scala.sys.process._
  * Args:
  * --hadoop <string> hadoop command
  * --pdioEvalJar <string> the name of the Scalding TrainingTestSplit job jar
- * --resplit: <boolean>. if true, using same appdata snapshot as before and only redo random split. 1st run must be false. (for doing multiple training/validation/test set generation using same snaphshot)
- *
+ * --sequenceNum. <int>. the sequence number (starts from 1 for the 1st iteration and then increment for later iterations)
+ * 
  * --dbType: <string> appdata DB type
  * --dbName: <string>
  * --dbHost: <string>. optional. (eg. "127.0.0.1")
@@ -67,9 +67,12 @@ object TrainingTestSplitTime {
     val engineid = args("engineid").toInt
     val evalid = args("evalid").toInt
 
-    val resplit = args("resplit").toBoolean
+    val sequenceNum = args("sequenceNum").toInt
+    require((sequenceNum >= 1), "sequenceNum must be >= 1.")
 
     val argsString = args.toString
+
+    val resplit: Boolean = (sequenceNum > 1)
 
     /** command */
     if (!resplit) {
