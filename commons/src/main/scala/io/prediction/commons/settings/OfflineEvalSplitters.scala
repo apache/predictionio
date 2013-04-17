@@ -24,6 +24,9 @@ trait OfflineEvalSplitters {
   /** Get an offline evaluation splitter by its ID. */
   def get(id: Int): Option[OfflineEvalSplitter]
 
+  /** Get offline evluation splitters by Offline Eval ID */
+  def getByEvalid(evalid: Int): Iterator[OfflineEvalSplitter]
+
   /** Update an offline evaluation splitter. */
   def update(splitter: OfflineEvalSplitter)
 

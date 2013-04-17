@@ -401,6 +401,16 @@ class Config {
     }
   }
 
+  /** Obtains an OfflineEvalSplitters object with configured backend type. */
+  def getSettingsOfflineEvalSplitters(): settings.OfflineEvalSplitters = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoOfflineEvalSplitters(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
   /** Obtains a Users object with configured backend type. */
   def getAppdataUsers(): appdata.Users = {
     appdataDbType match {
