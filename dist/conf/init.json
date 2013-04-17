@@ -1,5 +1,6 @@
 {
     "offlineevalsplitterinfos": {
+        /*
         "trainingtestsplit": {
             "name": "Training/Test Data Splitter",
             "description": "Split data into training and test sets",
@@ -24,6 +25,37 @@
             "paramdefaults": {
                 "trainingsize": 60,
                 "testsize": 20
+            }
+        },*/
+        
+        "trainingtestsplit": {
+            "name": "Training/Test Data Splitter With Time Order Option",
+            "description": "Split data into training, validation and test sets",
+            "engineinfoids": [
+                "itemrec"
+            ],
+            "commands": [
+                "java -jar $trainingTestSplitTimeJar$ --hadoop $hadoop$ --pdioEvalJar $pdioEvalJar$ --sequenceNum $sequenceNum$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
+            ],
+            "paramorder": [
+                "trainingPercent",
+                "validationPercent",
+                "testPercent"
+            ],
+            "paramnames": {
+                "trainingPercent": "Training Percentage",
+                "validationPercent": "Validation Percentage",
+                "testPercent": "Test Percentage"
+            },
+            "paramdescription": {
+                "trainingPercent": "Percentage of data as training set",
+                "validationPercent": "Percentage of data as validation set",
+                "testPercent": "Percentage of data as test set"
+            },
+            "paramdefaults": {
+                "trainingPercent": 0.6,
+                "validationPercent": 0.2,
+                "testPercent": 0.2
             }
         }
     },

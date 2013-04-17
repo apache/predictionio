@@ -47,6 +47,7 @@ object Application extends Controller {
   val offlineEvals = config.getSettingsOfflineEvals()
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
+  val offlineEvalSplitters = config.getSettingsOfflineEvalSplitters()
 
   /** PredictionIO Commons modeldata */
   val itemRecScores = config.getModeldataItemRecScores()
@@ -1149,12 +1150,17 @@ object Application extends Controller {
     /* request payload
      * {"app_id":"1","engine_id":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
      */
+     //{"app_id":"17","engine_id":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splitTrain":"71","splitTest":"24","splitMethod":"time","evalIteration":"3"}
     val simEvalForm = Form(tuple(
       "app_id" -> number,
       "engine_id" -> number,
       "algo" -> list(number), // algo id
       "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
-      "metricsSettings" -> list(text)
+      "metricsSettings" -> list(text),
+      "splitTrain" -> number(1, 100),
+      "splitTest" -> number(1, 100),
+      "splitMethod" -> text,
+      "evalIteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
     )) // TODO: verifying this user owns this app_id and engine_id, and the engine_id owns the algo ids
 
     simEvalForm.bindFromRequest.fold(
@@ -1164,16 +1170,16 @@ object Application extends Controller {
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (appId, engineId, algoIds, metricTypes, metricSettings) = formData
+        val (appId, engineId, algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
 
         // insert offlineeval record without create time
         val newOfflineEval = OfflineEval(
           id = -1,
           engineid = engineId,
-          name = "sim-eval", // TODO: auto generate name now
-          trainingsize = 8, // TODO: default now
-          testsize = 2, // TODO: default now
-          timeorder = false, // TODO: default now
+          name = "",
+          trainingsize = 8, // TODO: remove
+          testsize = 2, // TODO: remove
+          timeorder = false, // TODO: remove
           createtime = None, // NOTE: no createtime yet
           starttime = None,
           endtime = None
@@ -1204,6 +1210,20 @@ object Application extends Controller {
               params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
             ))
           }
+
+          // create splitter record
+          offlineEvalSplitters.insert(OfflineEvalSplitter(
+            id = -1,
+            evalid = evalid,
+            name = ("sim-eval-" + evalid + "-splitter"), // auto generate name now
+            infoid = "trainingtestsplit", // TODO: support different splitter
+            settings = Map(
+              "trainingPercent" -> (splitTrain.toDouble/100),
+              "validationPercent" -> 0, // no validatoin set for sim eval
+              "testPercent" -> (splitTest.toDouble/100),
+              "timeorder" -> (splitMethod != "random")
+              )
+          ))
 
           // after all algo and metric info is stored.
           // update offlineeval record with createtime, so scheduler can know it's ready to be picked up
@@ -1419,6 +1439,20 @@ object Application extends Controller {
       val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
       val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
 
+      // get splitter data
+      val splitters = offlineEvalSplitters.getByEvalid(eval.id)
+      if (!splitters.hasNext)
+        throw new RuntimeException("No splitter found for this Offline Eval ID:" + eval.id)
+
+      val splitter = splitters.next
+
+      val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double])*100).toInt
+      val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
+      val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
+
+      if (splitters.hasNext)
+        throw new RuntimeException("More than one splitter found for this Offline Eval ID:" + eval.id)
+
       Ok(toJson(
         Map(
           "id" -> toJson(eval.id),
@@ -1428,9 +1462,9 @@ object Application extends Controller {
            "metricslist" -> metricslist,
            "metricscorelist" -> metricscorelist,   // TODO: change to average score at PDIO-150
            "metricscoreiterationlist" -> JsNull, // TODO: this is a placeholder for PDIO-150. Example: "metricscoreiterationlist" -> toJson(Seq(metricscorelist, metricscorelist)) 
-           "splitTrain" -> toJson(55), // TODO: this is a placeholder for PDIO-129
-           "splitTest" -> toJson(15), // TODO: this is a placeholder for PDIO-129
-           "splitMethod" -> toJson("random"), // TODO: this is a placeholder for PDIO-129
+           "splitTrain" -> toJson(splitTrain),
+           "splitTest" -> toJson(splitTest),
+           "splitMethod" -> toJson(splitMethod),
            "evalIteration" -> toJson(3), // TODO: this is a placeholder for PDIO-150
            "status" -> toJson(status),
            "startTime" -> toJson(starttime),
