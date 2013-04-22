@@ -232,7 +232,7 @@ class OfflineEvalJob extends InterruptableJob {
     val key = s"${steptype}-${iteration}" + algoid.map(id => s"-${id}").getOrElse("") + metricid.map(id => s"-${id}").getOrElse("")
     var abort = false
 
-    steptype match {
+    Some(steptype) collect {
       case "training" => {
         val splitkey = s"split-${iteration}"
         while (!finishFlags(splitkey) && !kill) {
@@ -265,10 +265,9 @@ class OfflineEvalJob extends InterruptableJob {
 
         Logger.info(s"${logPrefix}(${steptype}) Finished iteration")
       }
-      case _ => Unit
     }
 
-    if (!kill && !abort) {
+    if (!kill && !abort && !command.isEmpty) {
       Logger.info(s"${logPrefix}(${steptype}) Going to run: $command")
 
       val proc = command.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).run
@@ -357,19 +356,30 @@ class OfflineEvalJob extends InterruptableJob {
         step(evalid, currentIteration, "iteration", "", None, None, Some(algoids), Some(metricids))
       }
 
-      while (!finishFlags(s"iteration-${totalIterations}") && !kill) {
+      /** Block on the last iteration */
+      while (!finishFlags(s"iteration-${totalIterations}")) {
         Thread.sleep(1000)
       }
 
       /** Check for errors from metric */
-      /**
-      val trainingErrors = trainingCode.values.sum
-      val metricErrors = metricCode.values.sum
-      if (trainingErrors + metricErrors != 0)
+      println(s"${logPrefix}Exit code summary:")
+
+      for (currentIteration <- 1 to totalIterations) {
+        println(s"${logPrefix}Iteration ${currentIteration}:")
+        println(s"${logPrefix}  Split: "+exitCodes(s"split-${currentIteration}"))
+        algoids foreach { algoid =>
+          println(s"${logPrefix}  Algo ID: ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
+          metricids foreach { metricid =>
+            println(s"${logPrefix}    Metric ID: ${metricid}"+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
+          }
+        }
+      }
+
+      if (exitCodes.values.sum != 0)
         Logger.warn(s"${logPrefix}Offline evaluation completed with error(s)")
       else
         Logger.info(s"${logPrefix}Offline evaluation completed")
-      */
+
       /** Mark the end time since this is used to determine whether the run has finished */
       offlineEvals.update(offlineEval.copy(endtime = Some(DateTime.now)))
     } getOrElse {
