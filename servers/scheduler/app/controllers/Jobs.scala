@@ -235,7 +235,7 @@ class OfflineEvalJob extends InterruptableJob {
     Some(steptype) collect {
       case "training" => {
         val splitkey = s"split-${iteration}"
-        while (!finishFlags(splitkey) && !kill) {
+        while (!finishFlags(splitkey)) {
           Thread.sleep(1000)
         }
         if (exitCodes(splitkey) != 0) {
@@ -245,7 +245,7 @@ class OfflineEvalJob extends InterruptableJob {
       }
       case "metric" => {
         val trainingkey = s"training-${iteration}-${algoid.get}"
-        while (!finishFlags(trainingkey) && !kill) {
+        while (!finishFlags(trainingkey)) {
           Thread.sleep(1000)
         }
         if (exitCodes(trainingkey) != 0) {
@@ -259,7 +259,7 @@ class OfflineEvalJob extends InterruptableJob {
           mid <- metricids.get
         } yield s"metric-${iteration}-${aid}-${mid}"
 
-        while (!finishFlags.filterKeys(keys.contains(_)).values.reduce((a, b) => a && b) && !kill) {
+        while (!finishFlags.filterKeys(keys.contains(_)).values.reduce((a, b) => a && b)) {
           Thread.sleep(1000)
         }
 
@@ -268,21 +268,22 @@ class OfflineEvalJob extends InterruptableJob {
     }
 
     if (!kill && !abort && !command.isEmpty) {
-      Logger.info(s"${logPrefix}(${steptype}) Going to run: $command")
+      command.split("&&") map { _.trim } foreach { c =>
+        if (exitCodes(key) == 0) {
+          this.synchronized {
+            Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
+            procs(key) = Process(c).run
+            Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+          }
 
-      val proc = command.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).run
+          val exitCode = procs(key).exitValue
 
-      /** Store the proc for global access (for killing) */
-      procs(key) = proc
+          /** Save completion information for global access */
+          exitCodes(key) = exitCode
 
-      Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
-
-      val exitCode = proc.exitValue
-
-      /** Save completion information for global access */
-      exitCodes(key) = exitCode
-
-      Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+          Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+        }
+      }
     }
 
     finishFlags(key) = true
@@ -368,9 +369,9 @@ class OfflineEvalJob extends InterruptableJob {
         println(s"${logPrefix}Iteration ${currentIteration}:")
         println(s"${logPrefix}  Split: "+exitCodes(s"split-${currentIteration}"))
         algoids foreach { algoid =>
-          println(s"${logPrefix}  Algo ID: ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
+          println(s"${logPrefix}  Algo ID ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
           metricids foreach { metricid =>
-            println(s"${logPrefix}    Metric ID: ${metricid}"+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
+            println(s"${logPrefix}    Metric ID ${metricid}: "+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
           }
         }
       }
@@ -388,7 +389,9 @@ class OfflineEvalJob extends InterruptableJob {
   }
 
   override def interrupt() = {
-    kill = true
-    procs.values map { _.destroy }
+    this.synchronized {
+      kill = true
+      procs.values map { _.destroy }
+    }
   }
 }
