@@ -1177,6 +1177,7 @@ object Application extends Controller {
           id = -1,
           engineid = engineId,
           name = "",
+          iterations = evalIteration,
           trainingsize = 8, // TODO: remove
           testsize = 2, // TODO: remove
           timeorder = false, // TODO: remove

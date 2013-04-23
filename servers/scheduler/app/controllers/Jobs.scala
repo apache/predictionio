@@ -233,6 +233,14 @@ class OfflineEvalJob extends InterruptableJob {
     var abort = false
 
     Some(steptype) collect {
+      case "split" => {
+        if (iteration > 1) {
+          val iterationkey = s"iteration-${iteration-1}"
+          while (!finishFlags(iterationkey)) {
+            Thread.sleep(1000)
+          }
+        }
+      }
       case "training" => {
         val splitkey = s"split-${iteration}"
         while (!finishFlags(splitkey)) {
@@ -267,22 +275,22 @@ class OfflineEvalJob extends InterruptableJob {
       }
     }
 
-    if (!kill && !abort && !command.isEmpty) {
-      command.split("&&") map { _.trim } foreach { c =>
-        if (exitCodes(key) == 0) {
-          this.synchronized {
-            Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
-            procs(key) = Process(c).run
-            Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
-          }
-
-          val exitCode = procs(key).exitValue
-
-          /** Save completion information for global access */
-          exitCodes(key) = exitCode
-
-          Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+    command.split("&&") map { _.trim } foreach { c =>
+      this.synchronized {
+        if (!kill && !abort && !c.isEmpty && exitCodes(key) == 0) {
+          Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
+          procs(key) = Process(c).run
+          Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
         }
+      }
+
+      procs.get(key) map { p =>
+        val exitCode = p.exitValue
+
+        /** Save completion information for global access */
+        exitCodes(key) = exitCode
+
+        Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
       }
     }
 
@@ -299,7 +307,6 @@ class OfflineEvalJob extends InterruptableJob {
     val metricids = jobDataMap.getString("metricids").split(",") map { _.toInt }
     val splitCommand = jobDataMap.getString("splitCommand")
     val engineinfoid = jobDataMap.getString("engineinfoid")
-    val totalIterations = 1
 
     val offlineEvals = Scheduler.offlineEvals
 
@@ -310,7 +317,9 @@ class OfflineEvalJob extends InterruptableJob {
     var splittingCode = 0
 
     offlineEvals.get(evalid) map { offlineEval =>
-      Logger.info(s"${logPrefix}Starting offline evaluation")
+      val totalIterations = offlineEval.iterations
+
+      Logger.info(s"${logPrefix}Starting offline evaluation with ${totalIterations} iteration(s)")
       /** Mark the start time */
       offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
 

@@ -15,6 +15,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
   private val getFields = MongoDBObject( // fields to be read
     "engineid" -> 1,
     "name" -> 1,
+    "iterations" -> 1,
     "trainingsize" -> 1,
     "testsize" -> 1,
     "timeorder" -> 1,
@@ -30,6 +31,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       id = dbObj.as[Int]("_id"),
       engineid = dbObj.as[Int]("engineid"),
       name = dbObj.as[String]("name"),
+      iterations = dbObj.as[Int]("iterations"),
       trainingsize = dbObj.as[Int]("trainingsize"),
       testsize = dbObj.as[Int]("testsize"),
       timeorder = dbObj.as[Boolean]("timeorder"),
@@ -53,6 +55,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       "_id" -> id,
       "engineid" -> offlineEval.engineid,
       "name" -> offlineEval.name,
+      "iterations" -> offlineEval.iterations,
       "trainingsize" -> offlineEval.trainingsize,
       "testsize" -> offlineEval.testsize,
       "timeorder" -> offlineEval.timeorder)
@@ -83,6 +86,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       "_id" -> offlineEval.id,
       "engineid" -> offlineEval.engineid,
       "name" -> offlineEval.name,
+      "iterations" -> offlineEval.iterations,
       "trainingsize" -> offlineEval.trainingsize,
       "testsize" -> offlineEval.testsize,
       "timeorder" -> offlineEval.timeorder)
