@@ -14,6 +14,7 @@ import org.quartz.jobs.NativeJob
 
 import play.api.Logger
 
+import scala.collection.mutable.{HashMap, Map, SynchronizedMap}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
 import scala.sys.process._
@@ -21,19 +22,6 @@ import scala.sys.process._
 object Jobs {
   val algoJobGroup = "predictionio-algo"
   val offlineEvalJobGroup = "predictionio-offlineeval"
-  val offlineEvalSplitJobGroup = "predictionio-offlineeval-split"
-  val offlineEvalTrainingJobGroup = "predictionio-offlineeval-training"
-  val offlineEvalMetricJobGroup   = "predictionio-offlineeval-metrics"
-  val offlineEvalResultsJobGroup = "predictionio-offlineevalresults"
-  val offlineEvalSplitCommands = Map(
-    "itemrec" -> Seq("$hadoop$ jar $pdioEvalJar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$")
-  )
-  val offlineEvalMetricCommands = Map(
-    "itemrec" -> Seq(
-      "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
-      "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
-      "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")
-  )
 
   def algoJob(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
     /** Build command from template. */
@@ -47,67 +35,37 @@ object Jobs {
     val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) storeDurably(true) build()
     job.getJobDataMap().put("template", command.toString)
     job.getJobDataMap().put("algoid", algo.id)
-    job.getJobDataMap().put("infoid", engine.infoid)
+    job.getJobDataMap().put("engineinfoid", engine.infoid)
 
     job
   }
 
   /** Offline Evaluation Flow
     *
-    * 1. Perform training and test set splitting
-    * 2. For each algo to be evaluated
-    *    1. Run algo on training set
-    *    2. Run all metrics on model data from the above against test set
-    * 3. Mark offline evaluation as finished
+    * 1. Iterate the following for a specified number of times
+    *    1. Perform data splitting
+    *    2. For each algo to be evaluated
+    *       1. Run algo on training set
+    *       2. Run all metrics on model data from the above against test set
+    * 2. Mark offline evaluation as finished
     */
   def offlineEvalJob(config: Config, app: App, engine: Engine, offlineEval: OfflineEval) = {
-    val splitCommand = new StringTemplate(offlineEvalSplitCommands(engine.infoid).mkString(" && "))
-    setSharedAttributes(splitCommand, config, app, engine, None, Some(offlineEval), None)
-
     /** Add a job, then build a trigger for it.
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
     val job = newJob(classOf[OfflineEvalJob]) withIdentity(offlineEval.id.toString, offlineEvalJobGroup) storeDurably(true) build()
     job.getJobDataMap().put("evalid", offlineEval.id)
-    job.getJobDataMap().put("splitCommand", splitCommand.toString)
-    job.getJobDataMap().put("infoid", engine.infoid)
-
-    /** Training algo job. */
-    val algosToRun = config.getSettingsAlgos.getByOfflineEvalid(offlineEval.id).toList
-    val algoinfos = config.getSettingsAlgoInfos
-    val metricsToRun = config.getSettingsOfflineEvalMetrics.getByEvalid(offlineEval.id).toList
-    job.getJobDataMap().put("algoids", algosToRun.map(_.id).mkString(","))
-    job.getJobDataMap().put("metricids", metricsToRun.map(_.id).mkString(","))
-
-    algosToRun foreach { algo =>
-      algoinfos.get(algo.infoid) map { algoinfo =>
-        algoinfo.offlineevalcommands map { offlineEvalCommands =>
-          val trainingCommand = new StringTemplate(offlineEvalCommands.mkString(" && "))
-          setSharedAttributes(trainingCommand, config, app, engine, Some(algo), Some(offlineEval), None)
-          job.getJobDataMap().put(s"trainingCommand${algo.id}", trainingCommand.toString)
-
-          /** Metrics. */
-          metricsToRun foreach { metric =>
-            val metricCommand = new StringTemplate(offlineEvalMetricCommands(engine.infoid).mkString(" && "))
-            setSharedAttributes(metricCommand, config, app, engine, Some(algo), Some(offlineEval), Some(metric))
-            job.getJobDataMap().put(s"metricCommand${algo.id}.${metric.id}", metricCommand.toString)
-          }
-        } getOrElse {
-          Logger.info(s"OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id} (${algo.name}): Skipping this algorithm because it does not have any offline evaluation command")
-        }
-      } getOrElse {
-        Logger.info(s"OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id} (${algo.name}): Skipping this algorithm because its information (${algo.infoid}) cannot be found")
-      }
-    }
-
     job
   }
 
-  def setSharedAttributes(command: StringTemplate, config: Config, app: App, engine: Engine, algo: Option[Algo], offlineEval: Option[OfflineEval], metric: Option[OfflineEvalMetric]) = {
+  def setSharedAttributes(command: StringTemplate, config: Config, app: App, engine: Engine, algo: Option[Algo], offlineEval: Option[OfflineEval], metric: Option[OfflineEvalMetric], params: Option[collection.immutable.Map[String, Any]] = None) = {
+    /** Custom attributes */
+    params map { command.setAttributes(_) }
+
     /** OfflineEvalMetric-specific attributes */
     metric map { met =>
-      command.setAttributes(met.params)
+      command.setAttributes(command.attributes ++ met.params)
       command.setAttribute("metricid", met.id)
     }
 
@@ -121,7 +79,7 @@ object Jobs {
 
     /** Algo-specific attributes */
     algo map { alg =>
-      val defaultParams = Scheduler.algoinfos.get(alg.infoid) map { _.paramdefaults } getOrElse Map[String, String]()
+      val defaultParams = Scheduler.algoInfos.get(alg.infoid) map { _.paramdefaults } getOrElse Map[String, String]()
       command.setAttributes(command.attributes ++ defaultParams ++ alg.params)
       command.setAttribute("jar", config.getJar(alg.infoid).getOrElse(""))
       command.setAttribute("algoid", alg.id)
@@ -139,10 +97,14 @@ object Jobs {
     command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
+
+    /** TODO: These JAR naming and locations must be generalized */
     command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("mahoutCoreJobJar", config.getJar("io.prediction.algorithms.mahout-core-job").getOrElse(""))
     command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
     command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
+    command.setAttribute("trainingTestSplitTimeJar", config.getJar("io.prediction.evaluations.itemrec.trainingtestsplit").getOrElse(""))
+
     command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse(""))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
@@ -160,6 +122,10 @@ object Jobs {
     command.setAttribute("appdataTrainingDbName", config.appdataTrainingDbName)
     command.setAttribute("appdataTrainingDbHost", config.appdataTrainingDbHost)
     command.setAttribute("appdataTrainingDbPort", config.appdataTrainingDbPort)
+    command.setAttribute("appdataValidationDbType", config.appdataValidationDbType)
+    command.setAttribute("appdataValidationDbName", config.appdataValidationDbName)
+    command.setAttribute("appdataValidationDbHost", config.appdataValidationDbHost)
+    command.setAttribute("appdataValidationDbPort", config.appdataValidationDbPort)
     command.setAttribute("appdataTestDbType", config.appdataTestDbType)
     command.setAttribute("appdataTestDbName", config.appdataTestDbName)
     command.setAttribute("appdataTestDbHost", config.appdataTestDbHost)
@@ -186,7 +152,7 @@ class AlgoJob extends Job {
   override def execute(context: JobExecutionContext) = {
     val jobDataMap = context.getMergedJobDataMap
     val algoid = jobDataMap.getInt("algoid")
-    val infoid = jobDataMap.getString("infoid")
+    val engineinfoid = jobDataMap.getString("engineinfoid")
     val template = new StringTemplate(jobDataMap.getString("template"))
     val algos = Scheduler.algos
     val itemRecScores = Scheduler.itemRecScores
@@ -200,7 +166,7 @@ class AlgoJob extends Job {
       if (code == 0) {
         Logger.info("Algo ID %d: Flipping model set flag to %s".format(algo.id, !algo.modelset))
         algos.update(algo.copy(modelset = !algo.modelset))
-        infoid match {
+        engineinfoid match {
           case "itemrec" => {
             Logger.info("Algo ID %d: Deleting data of model set %s".format(algo.id, algo.modelset))
             itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
@@ -218,143 +184,241 @@ class AlgoJob extends Job {
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
 class OfflineEvalJob extends InterruptableJob {
+  @volatile
   var kill = false
+
+  val exitCodes: Map[String, Int] = new HashMap[String, Int] with SynchronizedMap[String, Int]
+  val finishFlags: Map[String, Boolean] = new HashMap[String, Boolean] with SynchronizedMap[String, Boolean]
+  val procs: Map[String, Process] = new HashMap[String, Process] with SynchronizedMap[String, Process]
+
+  def step(evalid: Int, iteration: Int, steptype: String, commands: Seq[String], algoid: Option[Int] = None, metricid: Option[Int] = None, algoids: Option[Seq[Int]] = None, metricids: Option[Seq[Int]] = None) = future {
+    val logPrefix = s"OfflineEval ID $evalid: Iteration ${iteration}: " + algoid.map(id => s"Algo ID ${id}: ").getOrElse("") + metricid.map(id => s"Metric ID ${id}: ").getOrElse("")
+    val key = s"${steptype}-${iteration}" + algoid.map(id => s"-${id}").getOrElse("") + metricid.map(id => s"-${id}").getOrElse("")
+    var abort = false
+
+    Some(steptype) collect {
+      case "split" => {
+        if (iteration > 1) {
+          val iterationkey = s"iteration-${iteration-1}"
+          while (!finishFlags(iterationkey)) {
+            Thread.sleep(1000)
+          }
+        }
+      }
+      case "training" => {
+        val splitkey = s"split-${iteration}"
+        while (!finishFlags(splitkey)) {
+          Thread.sleep(1000)
+        }
+        if (exitCodes(splitkey) != 0) {
+          abort = true
+          Logger.info(s"${logPrefix}(${steptype}) Aborted due to split error")
+        }
+      }
+      case "metric" => {
+        val trainingkey = s"training-${iteration}-${algoid.get}"
+        while (!finishFlags(trainingkey)) {
+          Thread.sleep(1000)
+        }
+        if (exitCodes(trainingkey) != 0) {
+          abort = true
+          Logger.info(s"${logPrefix}(${steptype}) Aborted due to training error")
+        }
+      }
+      case "iteration" => {
+        val keys = for {
+          aid <- algoids.get
+          mid <- metricids.get
+        } yield s"metric-${iteration}-${aid}-${mid}"
+
+        while (!finishFlags.filterKeys(keys.contains(_)).values.reduce((a, b) => a && b)) {
+          Thread.sleep(1000)
+        }
+
+        Logger.info(s"${logPrefix}(${steptype}) Finished iteration")
+      }
+    }
+
+    commands map { _.trim } foreach { c =>
+      this.synchronized {
+        if (!kill && !abort && !c.isEmpty && exitCodes(key) == 0) {
+          Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
+          procs(key) = Process(c).run
+          Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+        }
+      }
+
+      procs.get(key) map { p =>
+        val exitCode = p.exitValue
+
+        /** Save completion information for global access */
+        exitCodes(key) = exitCode
+
+        Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+      }
+    }
+
+    finishFlags(key) = true
+
+    /** Display completion information */
+    if (kill) Logger.info(s"${logPrefix}(${steptype}) Sub-process was killed upon request")
+  }
 
   override def execute(context: JobExecutionContext): Unit = {
     val jobDataMap = context.getMergedJobDataMap
     val evalid = jobDataMap.getInt("evalid")
-    val algoids = jobDataMap.getString("algoids").split(",") map { _.toInt }
-    val metricids = jobDataMap.getString("metricids").split(",") map { _.toInt }
-    val splitCommand = jobDataMap.getString("splitCommand")
-    val infoid = jobDataMap.getString("infoid")
 
+    val config = Scheduler.config
+    val apps = Scheduler.apps
+    val engines = Scheduler.engines
+    val algos = Scheduler.algos
+    val algoInfos = Scheduler.algoInfos
     val offlineEvals = Scheduler.offlineEvals
+    val offlineEvalSplitters = Scheduler.offlineEvalSplitters
+    val offlineEvalSplitterInfos = Scheduler.offlineEvalSplitterInfos
+    val offlineEvalMetrics = Scheduler.offlineEvalMetrics
+    val offlineEvalMetricInfos = Scheduler.offlineEvalMetricInfos
 
     val logPrefix = s"OfflineEval ID $evalid: "
 
-    /** Synchronization flags */
-    var splittingDone = false
-    var splittingCode = 0
-
     offlineEvals.get(evalid) map { offlineEval =>
-      Logger.info(s"${logPrefix}Starting offline evaluation")
-      /** Mark the start time */
-      offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
+      engines.get(offlineEval.engineid) map { engine =>
+        apps.get(engine.appid) map {app =>
 
-      /** Delete old model data, if any (usually recovering from an incomplete run) */
-      infoid match {
-        case "itemrec" => algoids foreach { algoid =>
-          Logger.info(s"${logPrefix}Algo ID $algoid: Deleting any old model data")
-          Scheduler.itemRecScores.deleteByAlgoid(algoid)
-        }
-      }
+          val totalIterations = offlineEval.iterations
+          val splittersToRun = offlineEvalSplitters.getByEvalid(offlineEval.id).toSeq
+          val algosToRun = algos.getByOfflineEvalid(offlineEval.id).toSeq
+          val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toSeq
 
-      /** Run and wait on splitting */
-      Logger.info(s"${logPrefix}(Split) Going to run: $splitCommand")
-      val splitProc = splitCommand.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).run
-      future {
-        Logger.info(s"${logPrefix}(Split) Scheduler waiting for sub-process to finish")
-        splittingCode = splitProc.exitValue
-        splittingDone = true
-        Logger.info(s"${logPrefix}(Split) Sub-process has finished")
-      }
-      while (!splittingDone) {
-        if (kill) {
-          Logger.info(s"${logPrefix}(Split) Received termination signal")
-          Logger.info(s"${logPrefix}Aborting offline evaluation")
-          splitProc.destroy
-          return
-        }
-        if (splittingCode != 0) {
-          Logger.warn(s"${logPrefix}(Split) Job failed with exit code: $splittingCode")
-          Logger.info(s"${logPrefix}Aborting offline evaluation")
-          splitProc.destroy
-          return
-        }
-        Thread.sleep(1000)
-      }
+          val algoids = algosToRun map { _.id }
+          val metricids = metricsToRun map { _.id }
 
-      val trainingCode = collection.mutable.Map[Int, Int]()
-      val trainingProc = collection.mutable.Map[Int, Process]()
-      val metricCode = collection.mutable.Map[String, Int]()
-      val metricDone = collection.mutable.Map[String, Boolean]()
-      val metricProc = collection.mutable.Map[String, Process]()
+          Logger.info(s"${logPrefix}Starting offline evaluation with ${totalIterations} iteration(s)")
 
-      /** Run and wait on training before starting metrics */
-      algoids foreach { algoid =>
-        /** Populate data maps first */
-        trainingCode(algoid) = 0
-        metricids foreach { metricid =>
-          metricCode(s"${algoid}.${metricid}") = 0
-          metricDone(s"${algoid}.${metricid}") = false
-        }
+          /** Mark the start time */
+          offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
 
-        val algoLogPrefix = s"Algo ID $algoid: "
-        val trainingCommand = jobDataMap.getString(s"trainingCommand${algoid}")
-        Logger.info(s"${logPrefix}${algoLogPrefix}(Training) Going to run: $trainingCommand")
-        trainingProc(algoid) = trainingCommand.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).run
-        future {
-          Logger.info(s"${logPrefix}${algoLogPrefix}(Training) Scheduler waiting for sub-process to finish")
-          val trainingCode = trainingProc(algoid).exitValue
-          if (trainingCode != 0) {
-            Logger.warn(s"${logPrefix}${algoLogPrefix}(Training) Job failed with exit code: $trainingCode")
-            Logger.info(s"${logPrefix}${algoLogPrefix}(Training) Aborting any subsequent metric jobs")
-          } else {
-            Logger.info(s"${logPrefix}${algoLogPrefix}(Training) Sub-process has finished")
+          /** Delete old model data, if any (usually recovering from an incomplete run) */
+          engine.infoid match {
+            case "itemrec" => algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+              Scheduler.itemRecScores.deleteByAlgoid(algo.id)
+            }
           }
 
-          /** Run metrics */
-          metricids foreach { metricid =>
-            val algometricid = s"${algoid}.${metricid}"
-            if (trainingCode != 0) {
-              /** Skip all metrics with this algo if algo failed */
-              metricDone(algometricid) = true
-            } else {
-              val metricLogPrefix = s"Metric ID $metricid: "
-              val metricCommand = jobDataMap.getString(s"metricCommand${algoid}.${metricid}")
-              Logger.info(s"${logPrefix}${algoLogPrefix}${metricLogPrefix}(Metric) Going to run: $metricCommand")
-              metricProc(algometricid) = metricCommand.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).run
-              future {
-                Logger.info(s"${logPrefix}${algoLogPrefix}${metricLogPrefix}(Metric) Scheduler waiting for sub-process to finish")
-                val metCode = metricProc(algometricid).exitValue
-                metricCode(algometricid) = metCode
-                metricDone(algometricid) = true
-                if (metCode != 0) {
-                  Logger.info(s"${logPrefix}${algoLogPrefix}${metricLogPrefix}(Metric) Job failed with exit code: $metCode")
-                } else {
-                  Logger.info(s"${logPrefix}${algoLogPrefix}${metricLogPrefix}(Metric) Sub-process has finished")
+          for (currentIteration <- 1 to totalIterations) {
+            val iterationParam = collection.immutable.Map("iteration" -> currentIteration)
+
+            /** Spiltters setup (support 1 splitter for now) */
+            if (splittersToRun.length > 0) {
+              val splitkey = s"split-${currentIteration}"
+              exitCodes(splitkey) = 0
+              finishFlags(splitkey) = false
+
+              val splitter = splittersToRun(0)
+              offlineEvalSplitterInfos.get(splitter.infoid) map { splitterInfo =>
+                splitterInfo.commands map { commands =>
+                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.paramdefaults ++ iterationParam)).toString }
+                  step(evalid, currentIteration, "split", splitterCommands)
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}Not doing data split because splitter information for ${splitter.infoid} contains no command")
+                  step(evalid, currentIteration, "split", Seq())
+                }
+              } getOrElse {
+                Logger.warn(s"${logPrefix}Not doing data split because splitter information for ${splitter.infoid} is missing")
+                step(evalid, currentIteration, "split", Seq())
+              }
+            }
+
+            /** Training and metric setup */
+            algosToRun foreach { algo =>
+              val trainingkey = s"training-${currentIteration}-${algo.id}"
+              exitCodes(trainingkey) = 0
+              finishFlags(trainingkey) = false
+
+              algoInfos.get(algo.infoid) map { algoInfo =>
+                algoInfo.offlineevalcommands map { commands =>
+                  val trainingCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), None, Some(iterationParam)).toString }
+                  step(evalid, currentIteration, "training", trainingCommands, Some(algo.id))
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}Algo ID ${algo.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
+                  step(evalid, currentIteration, "training", Seq(), Some(algo.id))
+                }
+              } getOrElse {
+                Logger.warn(s"${logPrefix}Algo ID ${algo.id}: Not doing training because algo information for ${algo.infoid} is missing")
+                step(evalid, currentIteration, "training", Seq(), Some(algo.id))
+              }
+
+              /** Run metrics */
+              metricsToRun foreach { metric =>
+                val metrickey = s"metric-${currentIteration}-${algo.id}-${metric.id}"
+                exitCodes(metrickey) = 0
+                finishFlags(metrickey) = false
+
+                offlineEvalMetricInfos.get(metric.infoid) map { metricInfo =>
+                  metricInfo.commands map { commands =>
+                    val metricCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), Some(metric), Some(iterationParam)).toString }
+                    step(evalid, currentIteration, "metric", metricCommands, Some(algo.id), Some(metric.id))
+                  } getOrElse {
+                    Logger.warn(s"${logPrefix}Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
+                    step(evalid, currentIteration, "metric", Seq(), Some(algo.id), Some(metric.id))
+                  }
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} is missing")
+                    step(evalid, currentIteration, "metric", Seq(), Some(algo.id), Some(metric.id))
                 }
               }
             }
-          }
-        }
-      }
-      while (!metricDone.values.reduce((a, b) => a && b)) {
-        if (kill) {
-          Logger.info(s"${logPrefix}(Training/Metric) Received termination signal")
-          Logger.info(s"${logPrefix}Aborting offline evaluation")
-          trainingProc.values.map(_.destroy)
-          metricProc.values.map(_.destroy)
-          return
-        }
-        Thread.sleep(1000)
-      }
 
-      /** Check for errors from metric */
-      val trainingErrors = trainingCode.values.sum
-      val metricErrors = metricCode.values.sum
-      if (trainingErrors + metricErrors != 0)
-        Logger.warn(s"${logPrefix}Offline evaluation completed with error(s)")
-      else
-        Logger.info(s"${logPrefix}Offline evaluation completed")
-      /** Mark the end time since this is used to determine whether the run has finished */
-      offlineEvals.update(offlineEval.copy(endtime = Some(DateTime.now)))
+            val iterationkey = s"iteration-${currentIteration}"
+            exitCodes(iterationkey) = 0
+            finishFlags(iterationkey) = false
+
+            step(evalid, currentIteration, "iteration", Seq(), None, None, Some(algoids), Some(metricids))
+          }
+
+          /** Block on the last iteration */
+          while (!finishFlags(s"iteration-${totalIterations}")) {
+            Thread.sleep(1000)
+          }
+
+          /** Check for errors from metric */
+          println(s"${logPrefix}Exit code summary:")
+
+          for (currentIteration <- 1 to totalIterations) {
+            println(s"${logPrefix}Iteration ${currentIteration}:")
+            println(s"${logPrefix}  Split: "+exitCodes(s"split-${currentIteration}"))
+            algoids foreach { algoid =>
+              println(s"${logPrefix}  Algo ID ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
+              metricids foreach { metricid =>
+                println(s"${logPrefix}    Metric ID ${metricid}: "+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
+              }
+            }
+          }
+
+          if (exitCodes.values.sum != 0)
+            Logger.warn(s"${logPrefix}Offline evaluation completed with error(s)")
+          else
+            Logger.info(s"${logPrefix}Offline evaluation completed")
+
+          /** Mark the end time since this is used to determine whether the run has finished */
+          offlineEvals.update(offlineEval.copy(endtime = Some(DateTime.now)))
+
+        } getOrElse {
+          Logger.warn(s"${logPrefix}Not starting offline evaluation because the app that owns this offline evaluation cannot be found from the database")
+        }
+      } getOrElse {
+        Logger.warn(s"${logPrefix}Not starting offline evaluation because the engine that owns this offline evaluation cannot be found from the database")
+      }
     } getOrElse {
-      Logger.info(s"${logPrefix}Not starting offline evaluation because the offline evaluation cannot be found from the database")
+      Logger.warn(s"${logPrefix}Not starting offline evaluation because the offline evaluation cannot be found from the database")
     }
   }
 
   override def interrupt() = {
-    kill = true
+    this.synchronized {
+      kill = true
+      procs.values map { _.destroy }
+    }
   }
 }

@@ -20,11 +20,15 @@ object Scheduler extends Controller {
   val config = new Config
   val apps = config.getSettingsApps
   val engines = config.getSettingsEngines
+  val engineInfos = config.getSettingsEngineInfos
   val algos = config.getSettingsAlgos
+  val algoInfos = config.getSettingsAlgoInfos
   val offlineEvals = config.getSettingsOfflineEvals
+  val offlineEvalSplitters = config.getSettingsOfflineEvalSplitters
+  val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics
+  val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
   val offlineEvalResults = config.getSettingsOfflineEvalResults
-  val algoinfos = config.getSettingsAlgoInfos
   val itemRecScores = config.getModeldataItemRecScores
 
   val scheduler = StdSchedulerFactory.getDefaultScheduler()
@@ -85,7 +89,7 @@ object Scheduler extends Controller {
     /** Algos. */
     algos.getByEngineid(engine.id) foreach { algo =>
       val logPrefix = s"Algo ID ${algo.id}: "
-      algoinfos.get(algo.infoid) map { algoinfo =>
+      algoInfos.get(algo.infoid) map { algoinfo =>
         val algoid = algo.id.toString
         val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
         if (algo.deployed == true) {

@@ -97,6 +97,30 @@ class Config {
   /** The database password that stores PredictionIO training appdata. */
   val appdataTrainingDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.training.db.password")) } catch { case _: Throwable => None }
 
+  /** The database type that stores PredictionIO validation appdata. */
+  val appdataValidationDbType: String = config.getString("io.prediction.commons.appdata.validation.db.type")
+
+  /** The database host that stores PredictionIO validation appdata. */
+  val appdataValidationDbHost: String = appdataValidationDbType match {
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.validation.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  }
+
+  /** The database port that stores PredictionIO validation appdata. */
+  val appdataValidationDbPort: Int = appdataValidationDbType match {
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.validation.db.port") } catch { case _: Throwable => 27017 }
+  }
+
+  /** The database name that stores PredictionIO validation appdata. */
+  val appdataValidationDbName: String = appdataValidationDbType match {
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.validation.db.name") } catch { case _: Throwable => "predictionio_validation_appdata" }
+  }
+
+  /** The database user that stores PredictionIO validation appdata. */
+  val appdataValidationDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.validation.db.user")) } catch { case _: Throwable => None }
+
+  /** The database password that stores PredictionIO validation appdata. */
+  val appdataValidationDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.validation.db.password")) } catch { case _: Throwable => None }
+
   /** The database type that stores PredictionIO test appdata. */
   val appdataTestDbType: String = config.getString("io.prediction.commons.appdata.test.db.type")
 
@@ -321,11 +345,21 @@ class Config {
     }
   }
 
-    /** Obtains an Engines object with configured backend type. */
+  /** Obtains an Engines object with configured backend type. */
   def getSettingsEngines(): settings.Engines = {
     settingsDbType match {
       case "mongodb" => {
         new settings.mongodb.MongoEngines(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
+  /** Obtains an EngineInfos object with configured backend type. */
+  def getSettingsEngineInfos(): settings.EngineInfos = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoEngineInfos(settingsMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
     }

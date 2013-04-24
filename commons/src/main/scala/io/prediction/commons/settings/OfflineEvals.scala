@@ -12,11 +12,13 @@ import com.github.nscala_time.time.Imports._
  * @param timeorder Enable flag of random in time order. Allowed only if trainingsize + testsize < 10
  * @param starttime The Starting time of the evaluation
  * @param endtime The End time of the the evaluation. It's still running if it's None.
+ * @param iterations Number of iterations. Default to 1.
  */
 case class OfflineEval(
   id: Int,
   engineid: Int,
   name: String,
+  iterations: Int = 1,
   trainingsize: Int,
   testsize: Int,
   timeorder: Boolean,

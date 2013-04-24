@@ -58,6 +58,11 @@ echo "Going to build PredictionIO Process ItemRec Evaluations Assembly..."
 cd $BASE/process/engines/itemrec/evaluations/hadoop/scalding
 $SBT $CLEAN update assembly
 
+# Build process itemrec training test split assembly
+echo "Going to build PredictionIO Training-Test Split Assembly..."
+cd $BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit
+$SBT $CLEAN update assembly
+
 # Build process itemrec Top-k Items Collector
 echo "Going to build PredictionIO Top-k Items Collector..."
 cd $BASE/process/engines/itemrec/evaluations/scala/topkitems

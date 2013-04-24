@@ -1,33 +1,5 @@
 {
     "offlineevalsplitterinfos": {
-        /*
-        "trainingtestsplit": {
-            "name": "Training/Test Data Splitter",
-            "description": "Split data into training and test sets",
-            "engineinfoids": [
-                "itemrec"
-            ],
-            "commands": [
-                "$hadoop$ jar $pdioEvalJar$ io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingsize $trainingsize$ --testsize $testsize$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$"
-            ],
-            "paramorder": [
-                "trainingsize",
-                "testsize"
-            ],
-            "paramnames": {
-                "trainingsize": "Training Size",
-                "testsize": "Test Size"
-            },
-            "paramdescription": {
-                "trainingsize": "Percentage of data as training set",
-                "testsize": "Percentage of data as test set"
-            },
-            "paramdefaults": {
-                "trainingsize": 60,
-                "testsize": 20
-            }
-        },*/
-        
         "trainingtestsplit": {
             "name": "Training/Test Data Splitter With Time Order Option",
             "description": "Split data into training, validation and test sets",
@@ -35,7 +7,7 @@
                 "itemrec"
             ],
             "commands": [
-                "java -jar $trainingTestSplitTimeJar$ --hadoop $hadoop$ --pdioEvalJar $pdioEvalJar$ --sequenceNum $sequenceNum$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
+                "java -jar $trainingTestSplitTimeJar$ --hadoop $hadoop$ --pdioEvalJar $pdioEvalJar$ --sequenceNum $iteration$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
             ],
             "paramorder": [
                 "trainingPercent",
