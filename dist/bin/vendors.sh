@@ -5,11 +5,11 @@
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.0.4"
-VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-0.8-snapshot-1935"
+VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-0.8-snapshot-1975"
 VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.1"
 
 VENDOR_HADOOP_NAME="Apache Hadoop 1.0.4"
-VENDOR_MAHOUT_NAME="Apache Mahout 0.8-SNAPSHOT Build 1935"
+VENDOR_MAHOUT_NAME="Apache Mahout 0.8-SNAPSHOT Build 1975"
 VENDOR_MONGODB_NAME="MongoDB 2.4.1 (64-bit Linux)"
 
 # Utilities
@@ -63,7 +63,7 @@ install_mahout () {
 	echo "Going to download and install $VENDOR_MAHOUT_NAME..."
 	mkdir -p $VENDOR_MAHOUT_PATH
 	cd $VENDOR_MAHOUT_PATH
-	curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
+	curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
 }
 
 start_mongodb () {

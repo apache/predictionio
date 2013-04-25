@@ -27,19 +27,19 @@ install_play () {
 }
 
 install_mahout () {
-	echo "Going to download and build Apache Mahout 0.8 Build 1935..."
+	echo "Going to download and build Apache Mahout 0.8 Build 1975..."
 	mkdir -p $LIB_MAHOUT
 	cd $LIB_MAHOUT
 	if [ ! -f mahout-core-0.8-SNAPSHOT.jar ] ; then
-		curl -o mahout-core-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT.jar
+		curl -o mahout-core-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT.jar
 	fi
 	if [ ! -f mahout-math-0.8-SNAPSHOT.jar ] ; then
-		curl -o mahout-math-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/math/target/mahout-math-0.8-SNAPSHOT.jar
+		curl -o mahout-math-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/math/target/mahout-math-0.8-SNAPSHOT.jar
 	fi
 	mkdir -p $VENDOR_MAHOUT
 	cd $VENDOR_MAHOUT
 	if [ ! -f mahout-core-0.8-SNAPSHOT-job.jar ] ; then
-		curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1935/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
+		curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
 	fi
 }
 
@@ -47,7 +47,7 @@ install_mahout () {
 VENDORS_PATH="$BASE/vendors"
 VENDOR_SBT="$VENDORS_PATH/sbt-0.12.2/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.1.0/play"
-VENDOR_MAHOUT="$VENDORS_PATH/mahout-0.8-snapshot-1935"
+VENDOR_MAHOUT="$VENDORS_PATH/mahout-0.8-snapshot-1975"
 LIB_MAHOUT="$BASE/process/engines/itemrec/algorithms/scala/mahout/commons/lib"
 
 # Detect existing installations in search path
@@ -79,10 +79,10 @@ else
 fi
 
 if [ -r "$LIB_MAHOUT/mahout-core-0.8-SNAPSHOT.jar" -a -r "$LIB_MAHOUT/mahout-math-0.8-SNAPSHOT.jar" -a -r "$VENDOR_MAHOUT/mahout-core-0.8-SNAPSHOT-job.jar" ] ; then
-	echo "Using Apache Mahout 0.8 Build 1935 in vendors."
+	echo "Using Apache Mahout 0.8 Build 1975 in vendors."
 elif install_mahout ; then
 	echo ""
 else
-	echo "Unable to locate Apache Mahout 0.8 Build 1935 and automatic installation failed. Aborting." >&2
+	echo "Unable to locate Apache Mahout 0.8 Build 1975 and automatic installation failed. Aborting." >&2
 	exit 1
 fi
