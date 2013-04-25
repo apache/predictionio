@@ -124,7 +124,7 @@ if $mingw ; then
 fi
 
 
-PROG_NAME=users
+PROG_NAME=conncheck
 
 JARS="${PROG_HOME}/lib/predictionio-connection-check-tool_2.10-0.4-SNAPSHOT.jar:"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-commons_2.10-2.5.0.jar"
