@@ -766,9 +766,9 @@ var onSimEvalDataSplitPercentChange = function(e){
 	for(i = 0; i<columns.length; i++) {
 		// workaround, fix it later
 		if (i==0) {
-			w = columns.eq(i).width() - 21;
+			w = columns.eq(i).width() - 9;
 		} else if (i==2) {
-			w = columns.eq(i).width() - 14;
+			w = columns.eq(i).width() - 12;
 		} else {
 			w = columns.eq(i).width();
 		}
