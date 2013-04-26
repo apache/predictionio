@@ -51,10 +51,14 @@ var AlgoSettingsView = Backbone.View.extend({
 	reloadData : function() { // Required Algorithm Module Function
 	},
 	tuneManual: function() {
+		$('#tuneAuto').removeAttr('checked');
+		$('#tuneManual').attr('checked', 'checked');
 		$('#tuneAutoPanel').slideUp(); 
 		$('#tuneManualPanel').slideDown();
 	},
 	tuneAuto: function() {
+		$('#tuneManual').removeAttr('checked');
+		$('#tuneAuto').attr('checked', 'checked');
 		$('#tuneManualPanel').slideUp(); 
 		$('#tuneAutoPanel').slideDown();
 	},

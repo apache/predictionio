@@ -27,7 +27,7 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
-				
+				//
 				self.initValue('tune');
 				self.initValue('tuneMethod');
 				self.initValue('numFeaturesMin');
@@ -36,7 +36,7 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('lambdaMax');
 				self.initValue('numIterationsMin');
 				self.initValue('numIterationsMax');
-
+				//
 				if (self.model.get('tune') == 'auto') {
 					self.tuneAuto();
 				}

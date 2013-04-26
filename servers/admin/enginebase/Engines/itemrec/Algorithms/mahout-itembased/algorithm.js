@@ -31,9 +31,24 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
-				
-				// TODO: PDIO-148: initValue for Autotune variables: tune, tuneMethod, thresholdMin, thresholdMax, maxPrefsPerUserMin, maxPrefsPerUserMax, minPrefsPerUserMin, minPrefsPerUserMax, maxSimilaritiesPerItemMin, maxSimilaritiesPerItemMax, maxPrefsPerUserInItemSimilarityMin, maxPrefsPerUserInItemSimilarityMax
-				// TODO: PDIO-148: If tune == 'auto', call this.tuneAuto();
+				//
+				self.initValue('tune');
+				self.initValue('tuneMethod');
+				self.initValue('thresholdMin');
+				self.initValue('thresholdMax');
+				self.initValue('maxPrefsPerUserMin');
+				self.initValue('maxPrefsPerUserMax');
+				self.initValue('minPrefsPerUserMin');
+				self.initValue('minPrefsPerUserMax');
+				self.initValue('maxSimilaritiesPerItemMin');
+				self.initValue('maxSimilaritiesPerItemMax');
+				self.initValue('maxPrefsPerUserInItemSimilarityMin');
+				self.initValue('maxPrefsPerUserInItemSimilarityMax');
+				//
+				if (self.model.get('tune') == 'auto') {
+					self.tuneAuto();
+				}
+
 			}
 		});
     },
@@ -53,10 +68,14 @@ var AlgoSettingsView = Backbone.View.extend({
 	reloadData : function() { // Required Algorithm Module Function
 	},
 	tuneManual: function() {
+		$('#tuneAuto').removeAttr('checked');
+		$('#tuneManual').attr('checked', 'checked');
 		$('#tuneAutoPanel').slideUp(); 
 		$('#tuneManualPanel').slideDown();
 	},
 	tuneAuto: function() {
+		$('#tuneManual').removeAttr('checked');
+		$('#tuneAuto').attr('checked', 'checked');
 		$('#tuneManualPanel').slideUp(); 
 		$('#tuneAutoPanel').slideDown();
 	},
