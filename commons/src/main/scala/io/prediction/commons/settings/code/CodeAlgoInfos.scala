@@ -30,7 +30,21 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "priorCountParamMin" -> 10,
+        "priorCountParamMax" -> 30,
+        "priorCorrelParamMin" -> 0.0,
+        "priorCorrelParamMax" -> 0.1,
+        "minNumRatersParamMin" -> 1,
+        "minNumRatersParamMax" -> 5,
+        "maxNumRatersParamMin" -> 10000,
+        "maxNumRatersParamMax" -> 10000,
+        "minIntersectionParamMin" -> 1,
+        "minIntersectionParamMax" -> 5,
+        "minNumRatedSimParamMin" -> 1,
+        "minNumRatedSimParamMax" -> 5
+        ),
       paramdescription = Map(
         "measureParam" -> ("Distance Function", ""),
         "priorCountParam" -> ("Virtual Count", "Suggested range: 0 to 100."),
@@ -170,7 +184,17 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "lambdaMin" -> 0.01,
+        "lambdaMax" -> 0.1,
+        "alphaMin" -> 10,
+        "alphaMax" -> 50,
+        "numFeaturesMin" -> 2,
+        "numFeaturesMax" -> 10,
+        "numIterationsMin" -> 1,
+        "numIterationsMax" -> 20
+        ),
       paramdescription = Map(
         "lambda" -> ("Lambda", "Regularization param to avoid overfitting."),
         "implicitFeedback" -> ("Implicit Feedback", "Whether data consists of implicit data."),
@@ -218,7 +242,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "nearestN" -> 10,
         "userSimilarity" -> "PearsonCorrelationSimilarity",
         "weighted" -> false,
-        "minSimilarity" -> -1.0,
+        "minSimilarity" -> Double.MinPositiveValue,
         "samplingRate" -> 1.0,
         "viewParam" -> 3,
         "viewmoreParam" -> 3,
@@ -229,8 +253,8 @@ class CodeAlgoInfos extends AlgoInfos {
         // autotune
         "nearestNMin" -> 5,
         "nearestNMax" -> 15,
-        "minSimilarityMin" -> -1.0,
-        "minSimilarityMax" -> 0.0,
+        "minSimilarityMin" -> Double.MinPositiveValue,
+        "minSimilarityMax" -> 0.2,
         "samplingRateMin" -> 0.5,
         "samplingRateMax" -> 1.0
         ),
@@ -280,7 +304,7 @@ class CodeAlgoInfos extends AlgoInfos {
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemrec.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$")),
       paramdefaults = Map(
         "booleanData" -> false,
-        "threshold" -> 0.0001,
+        "threshold" -> Double.MinPositiveValue,
         "userSimilarity" -> "PearsonCorrelationSimilarity",
         "weighted" -> false,
         "samplingRate" -> 1.0,
@@ -289,7 +313,13 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "thresholdMin" -> Double.MinPositiveValue,
+        "thresholdMax" -> 0.2,
+        "samplingRateMin" -> 0.5,
+        "samplingRateMax" -> 1.0
+        ),
       paramdescription = Map(
         "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
         "threshold" -> ("Threshold", "Similarity threshold."),
@@ -442,14 +472,28 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "numFeaturesMin" -> 2,
+        "numFeaturesMax" -> 10,
+        "learningRateMin" -> 0.01,
+        "learningRateMax" -> 0.05,
+        "preventOverfittingMin" -> 0.1,
+        "preventOverfittingMax" -> 0.5,
+        "randomNoiseMin" -> 0.01,
+        "randomNoiseMax" -> 0.05,
+        "numIterationsMin" -> 1,
+        "numIterationsMax" -> 10,
+        "learningRateDecayMin" -> 1.0,
+        "learningRateDecayMax" -> 1.0
+        ),
       paramdescription = Map(
         "numFeatures" -> ("Num of Factorized Features", "Dimension of the factorized feature space."),
-        "learningRate" -> ("Learning Rate", ""),
-        "preventOverfitting" -> ("Prevent Overfitting", ""),
-        "randomNoise" -> ("Random Noise", ""),
+        "learningRate" -> ("Learning Rate", "Learning rate (step size)."),
+        "preventOverfitting" -> ("Prevent Overfitting", "Parameter used to prevent overfitting."),
+        "randomNoise" -> ("Random Noise", "Standard deviation for random initialization of feature."),
         "numIterations" -> ("Number of Iterations", "Number of training iteration."),
-        "learningRateDecay" -> ("Learning Rate Decay", ""),
+        "learningRateDecay" -> ("Learning Rate Decay", "Multiplicative decay factor for Learning Rate."),
         "viewParam" -> ("View Score", ""),
         "viewmoreParam" -> ("View More Score", ""),
         "likeParam" -> ("Like Score", ""),
@@ -499,14 +543,28 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "numFeaturesMin" -> 2,
+        "numFeaturesMax" -> 10,
+        "learningRateMin" -> 0.01,
+        "learningRateMax" -> 0.05,
+        "preventOverfittingMin" -> 0.1,
+        "preventOverfittingMax" -> 0.5,
+        "randomNoiseMin" -> 0.01,
+        "randomNoiseMax" -> 0.05,
+        "numIterationsMin" -> 1,
+        "numIterationsMax" -> 10,
+        "learningRateDecayMin" -> 1.0,
+        "learningRateDecayMax" -> 1.0
+        ),
       paramdescription = Map(
         "numFeatures" -> ("Num of Factorized Features", "Dimension of the factorized feature space."),
-        "learningRate" -> ("Learning Rate", ""),
-        "preventOverfitting" -> ("Prevent Overfitting", ""),
-        "randomNoise" -> ("Random Noise", ""),
+        "learningRate" -> ("Learning Rate", "Learning rate (step size)."),
+        "preventOverfitting" -> ("Prevent Overfitting", "Parameter used to prevent overfitting."),
+        "randomNoise" -> ("Random Noise", "Standard deviation for random initialization of feature."),
         "numIterations" -> ("Number of Iterations", "Number of training iteration."),
-        "learningRateDecay" -> ("Learning Rate Decay", ""),
+        "learningRateDecay" -> ("Learning Rate Decay", "Multiplicative decay factor for Learning Rate."),
         "viewParam" -> ("View Score", ""),
         "viewmoreParam" -> ("View More Score", ""),
         "likeParam" -> ("Like Score", ""),

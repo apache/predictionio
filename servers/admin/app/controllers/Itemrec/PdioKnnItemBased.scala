@@ -1,121 +1,95 @@
 package controllers.Itemrec
 
-import io.prediction.commons.settings.Algo
+//import io.prediction.commons.settings.Algo
 
 import play.api._
 import play.api.mvc._
 import play.api.data._
-import play.api.data.Forms.{tuple, number, text, list, boolean, nonEmptyText}
+//import play.api.data.Forms.{tuple, number, text, list, boolean, nonEmptyText}
 import play.api.libs.json.Json._
 import play.api.libs.json._
+// you need this import to have combinators
+import play.api.libs.functional.syntax._
+import play.api.data.validation.ValidationError
 
-import controllers.Application.{algos, withUser, algoInfos}
+//import controllers.Application.{algos, withUser, algoInfos}
 
-object PdioKnnItemBased extends Controller {
+object PdioKnnItemBased extends GenericAlgoSetting {
   
-  def updateSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
-    /* request payload
-     * {"app_id":"app_id1234","engine_id":"engne_id1234","id":"algo_id2","distanceFunc":"consine","viewmoreAction":"4",
-     * "override":"latest","viewAction":"3","buyAction":"4","priorCorrelation":"0","dislikeAction":1,"likeAction":"5","virtualCount":"50","dislike":"1"}
-     */
-    
-    val algoSettingForm = Form(tuple(
-      "id" -> number, // algoid
-      "app_id" -> number,
-      "engine_id" -> number,
-      "measureParam" -> nonEmptyText, // TODO: verifying
-      "priorCountParam" -> number,
-      "priorCorrelParam" -> nonEmptyText, // TODO: verifying double?
-      "minNumRatersParam" -> number,
-      "maxNumRatersParam" -> number,
-      "minIntersectionParam" -> number,
-      "minNumRatedSimParam" -> number,
-      "viewParam" -> nonEmptyText, // TODO: verifying 1 - 5 or text "ignore"
-      "viewmoreParam" -> nonEmptyText,
-      "likeParam" -> nonEmptyText,
-      "dislikeParam" -> nonEmptyText,
-      "conversionParam" -> nonEmptyText,
-      "conflictParam" -> nonEmptyText // TODO: verifying
-    ))
-    
-    algoSettingForm.bindFromRequest.fold(
-      formWithError => {
-        println(formWithError.errors) // TODO: send back more meaningful message
-        val msg = formWithError.errors(0).message + " Update Failed." // extract 1st error message only
-        BadRequest(toJson(Map("message" -> toJson(msg))))
-      },
-      formData => {
-        val (id, appId, engineId, 
-          measureParam, priorCountParam, priorCorrelParam, minNumRatersParam, maxNumRatersParam, minIntersectionParam, minNumRatedSimParam,
-          viewParam, viewmoreParam, likeParam, dislikeParam, conversionParam, conflictParam) = formData
-        
-        // get original Algo first
-        val optAlgo: Option[Algo] = algos.get(id)
-        
-        optAlgo map { algo =>
-          val updatedAlgo = algo.copy(
-            params = algo.params ++ Map( // NOTE: read-modify-write!
-                "measureParam" -> measureParam, 
-                "priorCountParam" -> priorCountParam,
-                "priorCorrelParam" -> priorCorrelParam,
-                "minNumRatersParam" -> minNumRatersParam,
-                "maxNumRatersParam" -> maxNumRatersParam,
-                "minIntersectionParam" -> minIntersectionParam,
-                "minNumRatedSimParam" -> minNumRatedSimParam,
-                "viewParam" -> viewParam,
-                "viewmoreParam" -> viewmoreParam,
-                "likeParam" -> likeParam,
-                "dislikeParam" -> dislikeParam,
-                "conversionParam" -> conversionParam,
-                "conflictParam" -> conflictParam
-                )
-          )
-          
-          algos.update(updatedAlgo)
-          Ok
-        } getOrElse {
-          NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))
-        }   
-      }
-    )
-    
-  }
-  
-  /* Return default value if nothing has been set */
-  def getSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
-    /*
-    Ok(toJson(Map(
-      "id" -> toJson("algo_id2"), // engine id
-      "app_id" -> toJson("app_id1234"),
-      "engine_id" -> toJson("engne_id1234"),
-      "distanceFunc" -> toJson("cosine"),
-      "virtualCount" -> toJson(50),
-      "priorCorrelation" -> toJson(0),
-      "viewAction" -> toJson(3),
-      "viewmoreAction" -> toJson(4),
-      "likeAction" -> toJson(5),
-      "dislikeAction" -> toJson(1),
-      "buyAction" -> toJson(5),
-      "override" -> toJson("latest")
-    )))
-    */
-    
-    // TODO: check user owns this app + engine + aglo
-    
-    // TODO: check algo_id is Int
-    val optAlgo: Option[Algo] = algos.get(algo_id.toInt)
-    
-    optAlgo map { algo =>
-      
-      Ok(toJson(Map(
-        "id" -> toJson(algo.id),
-        "app_id" -> toJson(app_id),
-        "engine_id" -> toJson(engine_id)
-        ) ++ (algo.params map { case (k,v) => (k, toJson(v.toString))})
-      ))
+  case class Param(
+    measureParam: String,
+    priorCountParam: Int,
+    priorCorrelParam: Double,
+    minNumRatersParam: Int,
+    maxNumRatersParam: Int,
+    minIntersectionParam: Int,
+    minNumRatedSimParam: Int
+  )
 
-    } getOrElse {
-      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+  implicit val paramReads = (
+    (JsPath \ "measureParam").read[String] and
+    (JsPath \ "priorCountParam").read[Int](Reads.min(0)) and
+    (JsPath \ "priorCorrelParam").read[Double] and
+    (JsPath \ "minNumRatersParam").read[Int](Reads.min(1)) and
+    (JsPath \ "maxNumRatersParam").read[Int](Reads.min(1)) and
+    (JsPath \ "minIntersectionParam").read[Int](Reads.min(1)) and
+    (JsPath \ "minNumRatedSimParam").read[Int](Reads.min(1))
+  )(Param)
+
+  case class AutoTuneParam (
+    priorCountParamMin: Int,
+    priorCountParamMax: Int,
+    priorCorrelParamMin: Double,
+    priorCorrelParamMax: Double,
+    minNumRatersParamMin: Int,
+    minNumRatersParamMax: Int,
+    maxNumRatersParamMin: Int,
+    maxNumRatersParamMax: Int,
+    minIntersectionParamMin: Int,
+    minIntersectionParamMax: Int,
+    minNumRatedSimParamMin: Int,
+    minNumRatedSimParamMax: Int
+  )
+
+  implicit val autoTuneParamReads = (
+    (JsPath \ "priorCountParamMin").read[Int](Reads.min(0)) and
+    (JsPath \ "priorCountParamMax").read[Int](Reads.min(0)) and
+    (JsPath \ "priorCorrelParamMin").read[Double] and
+    (JsPath \ "priorCorrelParamMax").read[Double] and
+    (JsPath \ "minNumRatersParamMin").read[Int](Reads.min(1)) and
+    (JsPath \ "minNumRatersParamMax").read[Int](Reads.min(1)) and
+    (JsPath \ "maxNumRatersParamMin").read[Int](Reads.min(1)) and
+    (JsPath \ "maxNumRatersParamMax").read[Int](Reads.min(1)) and
+    (JsPath \ "minIntersectionParamMin").read[Int](Reads.min(1)) and
+    (JsPath \ "minIntersectionParamMax").read[Int](Reads.min(1)) and
+    (JsPath \ "minNumRatedSimParamMin").read[Int](Reads.min(1)) and
+    (JsPath \ "minNumRatedSimParamMax").read[Int](Reads.min(1))
+  )(AutoTuneParam)
+
+  // aggregate all data into one class
+  case class AllData(
+    info: GenericInfo,
+    tune: GenericTune,
+    actionParam: GenericActionParam,
+    param: Param,
+    autoTuneParam: AutoTuneParam
+  ) extends AlgoData {
+
+    override def getParams: Map[String, Any] = {
+      paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
     }
+
+    override def getAlgoid: Int = info.id
   }
+
+  implicit val allDataReads = (
+    JsPath.read[GenericInfo] and
+    JsPath.read[GenericTune] and
+    JsPath.read[GenericActionParam] and
+    JsPath.read[Param] and
+    JsPath.read[AutoTuneParam]
+  )(AllData)
+
+  def updateSettings(app_id:String, engine_id:String, algo_id:String) = updateGenericSettings[AllData](app_id, engine_id, algo_id)(allDataReads)
+
 }

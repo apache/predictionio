@@ -32,8 +32,23 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('dislikeParam');
 				self.initValue('conversionParam');
 				self.initValue('conflictParam');
-				// TODO: PDIO-148: initValue for Autotune variables: tune, tuneMethod, and other Min/Max....
-				// TODO: PDIO-148: If tune == 'auto', call this.tuneAuto();
+				//
+				self.initValue('priorCountParamMin');
+				self.initValue('priorCountParamMax');
+				self.initValue('priorCorrelParamMin');
+				self.initValue('priorCorrelParamMax');
+				self.initValue('minNumRatersParamMin');
+				self.initValue('minNumRatersParamMax');
+				self.initValue('maxNumRatersParamMin');
+				self.initValue('maxNumRatersParamMax');
+				self.initValue('minIntersectionParamMin');
+				self.initValue('minIntersectionParamMax');
+				self.initValue('minNumRatedSimParamMin');
+				self.initValue('minNumRatedSimParamMax');
+				//
+				if (self.model.get('tune') == 'auto') {
+					self.tuneAuto();
+				}
 			}
 		});
     },
