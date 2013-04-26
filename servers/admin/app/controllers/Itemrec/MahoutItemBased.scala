@@ -14,7 +14,7 @@ import play.api.data.validation.ValidationError
 
 //import controllers.Application.{algos, withUser, algoInfos}
 
-object MahoutItemBased extends AlgoSetting {
+object MahoutItemBased extends GenericAlgoSetting {
    
   case class Param (
     similarityClassname: String,
@@ -23,16 +23,7 @@ object MahoutItemBased extends AlgoSetting {
     maxPrefsPerUser: Int, // min 1
     minPrefsPerUser: Int, // min 1 
     maxSimilaritiesPerItem: Int, // min 1
-    maxPrefsPerUserInItemSimilarity: Int, // min 1
-    //
-    viewParam: String, // 1 - 5 or 'ignore'
-    likeParam: String,
-    dislikeParam: String,
-    conversionParam: String,
-    conflictParam: String, // latest, highest or lowest
-    //
-    tune: String, // auto or manual
-    tuneMethod: String // random
+    maxPrefsPerUserInItemSimilarity: Int // min 1
   )
   
   implicit val paramReads = (
@@ -42,16 +33,7 @@ object MahoutItemBased extends AlgoSetting {
     (JsPath \ "maxPrefsPerUser").read[Int](Reads.min(1)) and
     (JsPath \ "minPrefsPerUser").read[Int](Reads.min(1)) and
     (JsPath \ "maxSimilaritiesPerItem").read[Int](Reads.min(1)) and
-    (JsPath \ "maxPrefsPerUserInItemSimilarity").read[Int](Reads.min(1)) and
-    //
-    (JsPath \ "viewParam").read[String](validAction) and
-    (JsPath \ "likeParam").read[String](validAction) and
-    (JsPath \ "dislikeParam").read[String](validAction) and
-    (JsPath \ "conversionParam").read[String](validAction) and
-    (JsPath \ "conflictParam").read[String](validConflict) and
-    //
-    (JsPath \ "tune").read[String](validTune) and
-    (JsPath \ "tuneMethod").read[String](validDataIn(List("random"))) 
+    (JsPath \ "maxPrefsPerUserInItemSimilarity").read[Int](Reads.min(1))
   )(Param)
 
   case class AutoTuneParam(
@@ -82,20 +64,24 @@ object MahoutItemBased extends AlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: Info,
+    info: GenericInfo,
+    tune: GenericTune,
+    actionParam: GenericActionParam,
     param: Param,
     autoTuneParam: AutoTuneParam
   ) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
-      caseClassToMap(param) ++ caseClassToMap(autoTuneParam)
+      paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
     }
 
     override def getAlgoid: Int = info.id
   }
 
   implicit val allDataReads = (
-    JsPath.read[Info] and
+    JsPath.read[GenericInfo] and
+    JsPath.read[GenericTune] and
+    JsPath.read[GenericActionParam] and
     JsPath.read[Param] and
     JsPath.read[AutoTuneParam]
   )(AllData)

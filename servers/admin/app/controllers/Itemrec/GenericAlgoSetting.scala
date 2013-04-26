@@ -14,7 +14,7 @@ import play.api.data.validation.ValidationError
 
 import controllers.Application.{algos, withUser, algoInfos}
 
-trait AlgoSetting extends Controller {
+trait GenericAlgoSetting extends Controller {
 
   // modified from default Reads for allowing conversion from JsString to Int.
   implicit object IntReads extends Reads[Int] {
@@ -61,21 +61,48 @@ trait AlgoSetting extends Controller {
   def minDouble(m: Double)(implicit r: Reads[Double]): Reads[Double] =
     r.filter(ValidationError("Must be greater than or equal to 0.")) ( _ >= m )
 
-  // verify tune param
-  def validTune(implicit r: Reads[String]): Reads[String] = validDataIn(List("auto", "manual"))
-
-  // common info for all algo
-  case class Info (
+  /** common info for all algo */
+  case class GenericInfo(
     id: Int,
     appid: Int,
     engineid: Int
   )
 
-  implicit val InfoReads = (
+  implicit val genericInfoReads = (
     (JsPath \ "id").read[Int] and
     (JsPath \ "app_id").read[Int] and
     (JsPath \ "engine_id").read[Int]
-  )(Info)
+  )(GenericInfo)
+
+  /** generic action conversion param for all algo */
+  case class GenericActionParam(
+    viewParam: String,
+    likeParam: String,
+    dislikeParam: String,
+    conversionParam: String,
+    conflictParam: String
+  )
+
+  implicit val genericActionParamReads = (
+    (JsPath \ "viewParam").read[String](validAction) and
+    (JsPath \ "likeParam").read[String](validAction) and
+    (JsPath \ "dislikeParam").read[String](validAction) and
+    (JsPath \ "conversionParam").read[String](validAction) and
+    (JsPath \ "conflictParam").read[String](validConflict)
+  )(GenericActionParam)
+
+  /** generic tune settings */
+  case class GenericTune(
+    tune: String, // auto or manual
+    tuneMethod: String // random
+  )
+
+  val validTuneMethods: List[String] = List("random") // can be overriden to support different method for particular algo
+
+  implicit val genericTuneReads = (
+    (JsPath \ "tune").read[String](validDataIn(List("auto", "manual"))) and
+    (JsPath \ "tuneMethod").read[String](validDataIn(validTuneMethods))
+  )(GenericTune)
 
   /** generic updateSettings for all algo */
   def updateGenericSettings[T <: AlgoData](app_id:String, engine_id:String, algo_id:String)(implicit rds: Reads[T]) = withUser { user => implicit request =>
@@ -154,8 +181,8 @@ trait AlgoSetting extends Controller {
 trait AlgoData {
 
   /** convert case class to Map */
-  def caseClassToMap(obj: AnyRef): Map[String, Any] = {
-    obj.getClass.getDeclaredFields.map { field => 
+  def paramToMap(obj: AnyRef): Map[String, Any] = {
+    obj.getClass.getDeclaredFields.filterNot( _.isSynthetic ).map { field => 
       field.setAccessible(true)
       (field.getName -> field.get(obj))
     }.toMap
@@ -168,3 +195,4 @@ trait AlgoData {
   def getAlgoid: Int
 
 }
+

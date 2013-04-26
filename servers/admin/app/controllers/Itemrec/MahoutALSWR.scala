@@ -14,32 +14,18 @@ import play.api.data.validation.ValidationError
 
 //import controllers.Application.{algos, withUser, algoInfos}
 
-object MahoutALSWR extends AlgoSetting {
+object MahoutALSWR extends GenericAlgoSetting {
    
   case class Param (
     numFeatures: Int, // min 1
     lambda: Double, // min 0
-    numIterations: Int, // min 1
-    viewParam: String, // 1 - 5 or 'ignore'
-    likeParam: String,
-    dislikeParam: String,
-    conversionParam: String,
-    conflictParam: String, // latest, highest or lowest
-    tune: String, // auto or manual
-    tuneMethod: String // random
+    numIterations: Int // min 1
   )
 
   implicit val paramReads = (
     (JsPath \ "numFeatures").read[Int](Reads.min(1)) and
     (JsPath \ "lambda").read[Double](minDouble(0)) and
-    (JsPath \ "numIterations").read[Int](Reads.min(1)) and
-    (JsPath \ "viewParam").read[String](validAction) and
-    (JsPath \ "likeParam").read[String](validAction) and
-    (JsPath \ "dislikeParam").read[String](validAction) and
-    (JsPath \ "conversionParam").read[String](validAction) and
-    (JsPath \ "conflictParam").read[String](validConflict) and
-    (JsPath \ "tune").read[String](validTune) and
-    (JsPath \ "tuneMethod").read[String](validDataIn(List("random"))) 
+    (JsPath \ "numIterations").read[Int](Reads.min(1))
   )(Param)
 
   case class AutoTuneParam(
@@ -62,20 +48,24 @@ object MahoutALSWR extends AlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: Info,
+    info: GenericInfo,
+    tune: GenericTune,
+    actionParam: GenericActionParam,
     param: Param,
     autoTuneParam: AutoTuneParam
   ) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
-      caseClassToMap(param) ++ caseClassToMap(autoTuneParam)
+      paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
     }
 
     override def getAlgoid: Int = info.id
   }
 
   implicit val allDataReads = (
-    JsPath.read[Info] and
+    JsPath.read[GenericInfo] and
+    JsPath.read[GenericTune] and
+    JsPath.read[GenericActionParam] and
     JsPath.read[Param] and
     JsPath.read[AutoTuneParam]
   )(AllData)

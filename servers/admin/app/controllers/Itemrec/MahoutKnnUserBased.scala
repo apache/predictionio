@@ -13,7 +13,7 @@ import play.api.data.validation.ValidationError
 
 //import controllers.Application.{algos, withUser, algoInfos}
 
-object MahoutKnnUserBased extends AlgoSetting {
+object MahoutKnnUserBased extends GenericAlgoSetting {
   
   case class Param(
     userSimilarity: String,
@@ -21,16 +21,7 @@ object MahoutKnnUserBased extends AlgoSetting {
     booleanData: Boolean,
     minSimilarity: Double,
     weighted: Boolean,
-    samplingRate: Double,
-    //
-    viewParam: String,
-    likeParam: String,
-    dislikeParam: String,
-    conversionParam: String,
-    conflictParam: String,
-    //
-    tune: String, // auto or manual
-    tuneMethod: String // random
+    samplingRate: Double
   )
 
   def validSamplingRate(implicit r: Reads[Double]): Reads[Double] = 
@@ -42,16 +33,7 @@ object MahoutKnnUserBased extends AlgoSetting {
     (JsPath \ "booleanData").read[Boolean] and
     (JsPath \ "minSimilarity").read[Double] and
     (JsPath \ "weighted").read[Boolean] and
-    (JsPath \ "samplingRate").read[Double](validSamplingRate) and
-    //
-    (JsPath \ "viewParam").read[String](validAction) and
-    (JsPath \ "likeParam").read[String](validAction) and
-    (JsPath \ "dislikeParam").read[String](validAction) and
-    (JsPath \ "conversionParam").read[String](validAction) and
-    (JsPath \ "conflictParam").read[String](validConflict) and
-    //
-    (JsPath \ "tune").read[String](validTune) and
-    (JsPath \ "tuneMethod").read[String](validDataIn(List("random"))) 
+    (JsPath \ "samplingRate").read[Double](validSamplingRate)
   )(Param)
 
   case class AutoTuneParam(
@@ -74,20 +56,24 @@ object MahoutKnnUserBased extends AlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: Info, // from AlgoSetting
+    info: GenericInfo,
+    tune: GenericTune,
+    actionParam: GenericActionParam,
     param: Param,
     autoTuneParam: AutoTuneParam
   ) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
-      caseClassToMap(param) ++ caseClassToMap(autoTuneParam)
+      paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
     }
 
     override def getAlgoid: Int = info.id
   }
 
   implicit val allDataReads = (
-    JsPath.read[Info] and
+    JsPath.read[GenericInfo] and
+    JsPath.read[GenericTune] and
+    JsPath.read[GenericActionParam] and
     JsPath.read[Param] and
     JsPath.read[AutoTuneParam]
   )(AllData)
