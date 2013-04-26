@@ -225,7 +225,15 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "nearestNMin" -> 5,
+        "nearestNMax" -> 15,
+        "minSimilarityMin" -> -1.0,
+        "minSimilarityMax" -> 0.0,
+        "samplingRateMin" -> 0.5,
+        "samplingRateMax" -> 1.0
+        ),
       paramdescription = Map(
         "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
         "nearestN" -> ("Nearest K", "K-nearest neighbors to a given user."),
