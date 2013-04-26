@@ -124,9 +124,9 @@ if $mingw ; then
 fi
 
 
-PROG_NAME=conncheck
+PROG_NAME=settingsinit
 
-JARS="${PROG_HOME}/lib/predictionio-connection-check-tool_2.10-0.4-SNAPSHOT.jar:"
+JARS="${PROG_HOME}/lib/predictionio-settings-initialization_2.10-0.4-SNAPSHOT.jar:"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-commons_2.10-2.5.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-core_2.10-2.5.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-gridfs_2.10-2.5.0.jar"
@@ -148,5 +148,5 @@ JARS="${JARS}:${PROG_HOME}/lib/specs2_2.10-1.13.jar"
 
 JVM_OPT="$JVM_OPT -Dconfig.file=${PROG_HOME}/conf/predictionio.conf -Dio.prediction.base=$PROG_HOME"
 
-exec "$JAVACMD" ${JVM_OPT} -cp "$JARS" -Dprog.home="${PROG_HOME}" io.prediction.tools.conncheck.ConnCheck $@
+exec "$JAVACMD" ${JVM_OPT} -cp "$JARS" -Dprog.home="${PROG_HOME}" io.prediction.tools.settingsinit.SettingsInit $@
 

@@ -79,6 +79,11 @@ cd $BASE/tools/conncheck
 $SBT $CLEAN update pack
 
 # Build user tool
+echo "Going to build PredictionIO Settings Initialization Tool..."
+cd $BASE/tools/settingsinit
+$SBT $CLEAN update pack
+
+# Build user tool
 echo "Going to build PredictionIO User Tool..."
 cd $BASE/tools/users
 $SBT $CLEAN update pack
