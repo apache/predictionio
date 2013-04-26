@@ -94,7 +94,19 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "thresholdMin" -> Double.MinPositiveValue,
+        "thresholdMax" -> 0.15,
+        "maxPrefsPerUserMin" -> 10,
+        "maxPrefsPerUserMax" -> 50,
+        "minPrefsPerUserMin" -> 1,
+        "minPrefsPerUserMax" -> 5,
+        "maxSimilaritiesPerItemMin" -> 50,
+        "maxSimilaritiesPerItemMax" -> 150,
+        "maxPrefsPerUserInItemSimilarityMin" -> 500,
+        "maxPrefsPerUserInItemSimilarityMax" -> 1500
+        ),
       paramdescription = Map(
         "booleanData" -> ("Boolean Data", "Treat input data as having no preference values."),
         "maxPrefsPerUser" -> ("Max Num of Preferences per User", "Maximum number of preferences considered per user in final recommendation phase."),
@@ -363,7 +375,15 @@ class CodeAlgoInfos extends AlgoInfos {
         "likeParam" -> 5,
         "dislikeParam" -> 1,
         "conversionParam" -> 4,
-        "conflictParam" -> "latest"), // latest, highest, lowest
+        "conflictParam" -> "latest", // latest, highest, lowest
+        // autotune
+        "numFeaturesMin" -> 2,
+        "numFeaturesMax" -> 10,
+        "lambdaMin" -> 0.01,
+        "lambdaMax" -> 0.10,
+        "numIterationsMin" -> 1,
+        "numIterationsMax" -> 20
+        ),
       paramdescription = Map(
         "numFeatures" -> ("Num of Factorized Features", "Dimension of the factorized feature space."),
         "lambda" -> ("Lambda", "Regularization param to avoid overfitting."),
