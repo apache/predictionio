@@ -450,6 +450,7 @@ body {
 #dataSplitBar .selection span{
     width:100%;
     height:15px;
+    top: -2px;
     position:relative;
     display:block;
     content:"";
@@ -478,7 +479,7 @@ body {
     background-position: 0px -45px;
     position:absolute;
     right:10px;
-    top:0px;
+    top:2px;
     display:block;
     content:"";
     height:15px;

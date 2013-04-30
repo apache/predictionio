@@ -30,11 +30,12 @@ install_mahout () {
 	echo "Going to download and build Apache Mahout 0.8 Build 1975..."
 	mkdir -p $LIB_MAHOUT
 	cd $LIB_MAHOUT
-	if [ ! -f mahout-core-0.8-SNAPSHOT.jar ] ; then
-		curl -o mahout-core-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT.jar
-	fi
-	if [ ! -f mahout-math-0.8-SNAPSHOT.jar ] ; then
-		curl -o mahout-math-0.8-SNAPSHOT.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/math/target/mahout-math-0.8-SNAPSHOT.jar
+	if [ ! -f mahout-core-0.8-SNAPSHOT-1975.jar -o ! -f mahout-math-0.8-SNAPSHOT-1975.jar ] ; then
+		rm -rf $LIB_MAHOUT
+		mkdir -p $LIB_MAHOUT
+		cd $LIB_MAHOUT
+		curl -o mahout-core-0.8-SNAPSHOT-1975.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT.jar
+		curl -o mahout-math-0.8-SNAPSHOT-1975.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/math/target/mahout-math-0.8-SNAPSHOT.jar
 	fi
 	mkdir -p $VENDOR_MAHOUT
 	cd $VENDOR_MAHOUT
