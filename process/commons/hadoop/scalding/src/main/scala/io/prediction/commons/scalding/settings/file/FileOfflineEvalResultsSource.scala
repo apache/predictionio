@@ -8,6 +8,13 @@ import cascading.flow.FlowDef
 //import io.prediction.commons.scalding.OfflineEvalDataFile
 import io.prediction.commons.scalding.settings.OfflineEvalResultsSource
 
+/**
+ * File Format:
+ * <eval id>\t<metric id>\t<algo id>\t<score>\t<iteration>
+ *
+ * Example:
+ * 8  4  5  0.123456  3
+ */
 class FileOfflineEvalResultsSource(path: String) extends Tsv(
     p = path + "/offlineEvalResults.tsv" //OfflineEvalDataFile(appId, engineId, evalId, metricId, algoId, name="offlineEvalResults.tsv")
 ) with OfflineEvalResultsSource {
