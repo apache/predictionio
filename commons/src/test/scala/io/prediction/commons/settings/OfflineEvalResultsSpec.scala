@@ -33,21 +33,24 @@ class OfflineEvalResultsSpec extends Specification { def is =
       evalid = 16,
       metricid = 2,
       algoid = 3,
-      score = 0.09876
+      score = 0.09876,
+      iteration = 1
     )
     val obj2 = OfflineEvalResult(
       id = "-1",
       evalid = 16,
       metricid = 3,
       algoid = 4,
-      score = 0.123
+      score = 0.123,
+      iteration = 2
     )
     val obj3 = OfflineEvalResult(
       id = "-1",
       evalid = 2,
       metricid = 3,
       algoid = 4,
-      score = 0.567
+      score = 0.567,
+      iteration = 3
     )
 
     val id1 = offlineEvalResults.save(obj1)
@@ -76,21 +79,24 @@ class OfflineEvalResultsSpec extends Specification { def is =
       evalid = 25,
       metricid = 6,
       algoid = 8,
-      score = 0.7601
+      score = 0.7601,
+      iteration = 1
     )
     val obj2 = OfflineEvalResult(
       id = "-1",
       evalid = 7,
       metricid = 1,
       algoid = 9,
-      score = 0.001
+      score = 0.001,
+      iteration = 2
     )
     val obj3 = OfflineEvalResult(
       id = "-1",
       evalid = 25,
       metricid = 33,
       algoid = 41,
-      score = 0.999
+      score = 0.999,
+      iteration = 1
     )
 
     val id1 = offlineEvalResults.save(obj1)

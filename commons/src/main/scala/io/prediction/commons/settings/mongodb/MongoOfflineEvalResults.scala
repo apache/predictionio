@@ -11,7 +11,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
     "evalid" -> 1,
     "metricid" -> 1,
     "algoid" -> 1,
-    "score" -> 1
+    "score" -> 1,
+    "iteration" -> 1
   )
 
   private def dbObjToOfflineEvalResult(dbObj: DBObject) = {
@@ -20,7 +21,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
       evalid = dbObj.as[Int]("evalid"),
       metricid = dbObj.as[Int]("metricid"),
       algoid = dbObj.as[Int]("algoid"),
-      score = dbObj.as[Double]("score")
+      score = dbObj.as[Double]("score"),
+      iteration = dbObj.as[Int]("iteration")
     )
   }
 
@@ -37,7 +39,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
       "evalid" -> result.evalid,
       "metricid" -> result.metricid,
       "algoid" -> result.algoid,
-      "score" -> result.score
+      "score" -> result.score,
+      "iteration" -> result.iteration
     ))
 
     id

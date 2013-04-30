@@ -14,7 +14,7 @@ trait OfflineEvalResultsSource {
   
   def getSource: Source
   
-  def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe
+  def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol, iterationField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe
   
 }
 
@@ -25,6 +25,7 @@ object OfflineEvalResultsSource {
     ("evalid" -> 'evalid),
     ("metricid" -> 'metricid),
     ("algoid" -> 'algoid),
-    ("score" -> 'score))
+    ("score" -> 'score),
+    ("iteration" -> 'iteration))
    
 }

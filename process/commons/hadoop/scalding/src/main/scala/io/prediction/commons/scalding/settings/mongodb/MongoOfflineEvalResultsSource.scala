@@ -24,6 +24,7 @@ class MongoOfflineEvalResultsSource(db: String, host: String, port: Int) extends
       offlineEvalResultsCols.add("metricid")
       offlineEvalResultsCols.add("algoid")
       offlineEvalResultsCols.add("score")
+      offlineEvalResultsCols.add("iteration")
       
       offlineEvalResultsCols
     },
@@ -34,6 +35,7 @@ class MongoOfflineEvalResultsSource(db: String, host: String, port: Int) extends
       offlineEvalResultsMappings.put("metricid", FIELD_SYMBOLS("metricid").name)
       offlineEvalResultsMappings.put("algoid", FIELD_SYMBOLS("algoid").name)
       offlineEvalResultsMappings.put("score", FIELD_SYMBOLS("score").name)
+      offlineEvalResultsMappings.put("iteration", FIELD_SYMBOLS("iteration").name)
       
       offlineEvalResultsMappings
     },
@@ -46,15 +48,15 @@ class MongoOfflineEvalResultsSource(db: String, host: String, port: Int) extends
   
   override def getSource: Source = this
   
-  override def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
-    val dataPipe = p.mapTo((evalidField, metricidField, algoidField, scoreField) ->
-      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("evalid"), FIELD_SYMBOLS("metricid"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("score"))) {
-        fields: (Int, Int, Int, Double) =>
-          val (evalid, metricid, algoid, score) = fields
+  override def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol, iterationField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    val dataPipe = p.mapTo((evalidField, metricidField, algoidField, scoreField, iterationField) ->
+      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("evalid"), FIELD_SYMBOLS("metricid"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("score"), FIELD_SYMBOLS("iteration"))) {
+        fields: (Int, Int, Int, Double, Int) =>
+          val (evalid, metricid, algoid, score, iteration) = fields
           
           val id = evalid + "_" + metricid + "_" + algoid
           
-          (id, evalid, metricid, algoid, score)
+          (id, evalid, metricid, algoid, score, iteration)
     }.write(this)
     
     dataPipe
