@@ -17,7 +17,6 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
 
   private def dbObjToOfflineEvalResult(dbObj: DBObject) = {
     OfflineEvalResult(
-      id = dbObj.as[String]("_id"),
       evalid = dbObj.as[Int]("evalid"),
       metricid = dbObj.as[Int]("metricid"),
       algoid = dbObj.as[Int]("algoid"),
@@ -47,7 +46,7 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
   }
 
   def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Iterator[OfflineEvalResult] = new MongoOfflineEvalResultIterator(
-    offlineEvalResultsColl.find(MongoDBObject("evalid " -> evalid, "metricid" -> metricid, "algoid" -> algoid), getFields)
+    offlineEvalResultsColl.find(MongoDBObject("evalid" -> evalid, "metricid" -> metricid, "algoid" -> algoid), getFields)
   )
 
   /** get results by OfflineEval ID */

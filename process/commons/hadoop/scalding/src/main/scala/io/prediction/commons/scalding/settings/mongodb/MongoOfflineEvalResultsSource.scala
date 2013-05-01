@@ -54,7 +54,7 @@ class MongoOfflineEvalResultsSource(db: String, host: String, port: Int) extends
         fields: (Int, Int, Int, Double, Int) =>
           val (evalid, metricid, algoid, score, iteration) = fields
           
-          val id = evalid + "_" + metricid + "_" + algoid
+          val id = evalid + "_" + metricid + "_" + algoid + "_" + iteration
           
           (id, evalid, metricid, algoid, score, iteration)
     }.write(this)

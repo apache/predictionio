@@ -2,7 +2,6 @@ package io.prediction.commons.settings
 
 /** OfflineEvalResult Object
  *
- * @param id ID. it's a String concatenated by evalid_metricid_algoid
  * @param evalid ID of the OfflineEval
  * @param metricid ID of the metric
  * @param algoid ID of the algo
@@ -10,7 +9,6 @@ package io.prediction.commons.settings
  * @param iteration The iteration number
  */
 case class OfflineEvalResult(
-  id: String,
   evalid: Int,
   metricid: Int,
   algoid: Int,
