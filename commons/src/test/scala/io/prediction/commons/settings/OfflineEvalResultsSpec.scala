@@ -39,8 +39,8 @@ class OfflineEvalResultsSpec extends Specification { def is =
     val obj2 = OfflineEvalResult(
       id = "-1",
       evalid = 16,
-      metricid = 3,
-      algoid = 4,
+      metricid = 2,
+      algoid = 3,
       score = 0.123,
       iteration = 2
     )
@@ -62,12 +62,18 @@ class OfflineEvalResultsSpec extends Specification { def is =
     val itData1 = it.next()
     val itData2 = it.next()
 
-    val itData3 = offlineEvalResults.getByEvalidAndMetricidAndAlgoid(2, 3, 4)
+    val it2 = offlineEvalResults.getByEvalidAndMetricidAndAlgoid(2, 3, 4)
+    //println(it2.hasNext)
+
+    //val it3 = offlineEvalResults.getByEvalid(2)
+    //println(it3.hasNext)
+    val it2Data1 = it2.next()
 
     itData1 must be equalTo(obj1.copy(id = id1)) and
       (itData2 must be equalTo(obj2.copy(id = id2))) and
       (it.hasNext must be_==(false)) and // make sure it has 2 only
-      (itData3 must beSome(obj3.copy(id = id3)))
+      (it2Data1 must equalTo(obj3.copy(id = id3))) and
+      (it2.hasNext must be_==(false))
   }
 
   /**

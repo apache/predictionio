@@ -24,7 +24,7 @@ trait OfflineEvalResults {
   def save(result: OfflineEvalResult): String
 
   /** Get a result by its OfflineEval ID, OfflineEvalMetric ID, and Algo ID. */
-  def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Option[OfflineEvalResult]
+  def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Iterator[OfflineEvalResult]
 
   /** get results by OfflineEval ID */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalResult]

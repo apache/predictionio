@@ -33,7 +33,7 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
 
   /** save(update existing or create a new one) a OfflineEvalResult and return id*/
   def save(result: OfflineEvalResult): String = {
-    val id = (result.evalid + "_" + result.metricid + "_" + result.algoid)
+    val id = (result.evalid + "_" + result.metricid + "_" + result.algoid + "_" + result.iteration)
     offlineEvalResultsColl.save(MongoDBObject(
       "_id" -> id,
       "evalid" -> result.evalid,
@@ -46,9 +46,9 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
     id
   }
 
-  def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Option[OfflineEvalResult] = {
-    offlineEvalResultsColl.findOne(MongoDBObject("_id" -> "%d_%d_%d".format(evalid, metricid, algoid)), getFields) map { dbObjToOfflineEvalResult(_) }
-  }
+  def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Iterator[OfflineEvalResult] = new MongoOfflineEvalResultIterator(
+    offlineEvalResultsColl.find(MongoDBObject("evalid " -> evalid, "metricid" -> metricid, "algoid" -> algoid), getFields)
+  )
 
   /** get results by OfflineEval ID */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalResult] = new MongoOfflineEvalResultIterator(
