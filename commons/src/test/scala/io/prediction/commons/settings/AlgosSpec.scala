@@ -44,7 +44,9 @@ class AlgosSpec extends Specification { def is =
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now.hour(4).minute(56).second(35),
-      offlineevalid = None
+      status = "apple",
+      offlineevalid = None,
+      iteration = None
     )
     val insertid = algos.insert(algo)
     algos.get(insertid) must beSome(algo.copy(id = insertid))
@@ -63,7 +65,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now.hour(1).minute(2).second(3),
-      offlineevalid = Some(2)
+      status = "orange",
+      offlineevalid = Some(2),
+      iteration = Some(4)
     )
     val algo2 = Algo(
       id       = 0,
@@ -77,7 +81,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now.hour(4).minute(5).second(6),
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "abcdef",
+      offlineevalid = None,
+      iteration = Some(5)
     )
     val id1 = algos.insert(algo1)
     val id2 = algos.insert(algo2)
@@ -101,7 +107,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = Some(2)
+      status = "good",
+      offlineevalid = Some(2),
+      iteration = None
     )
     val algo2 = Algo(
       id       = 0,
@@ -115,7 +123,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "done",
+      offlineevalid = None,
+      iteration = Some(3)
     )
     val id1 = algos.insert(algo1)
     val id2 = algos.insert(algo2)
@@ -137,7 +147,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = Some(20)
+      status = "sleep",
+      offlineevalid = Some(20),
+      iteration = None
     )
     val algo2 = Algo(
       id       = 0,
@@ -151,7 +163,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = Some(20)
+      status = "start",
+      offlineevalid = Some(20),
+      iteration = Some(14)
     )
     val id1 = algos.insert(algo1)
     val id2 = algos.insert(algo2)
@@ -175,7 +189,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "abc",
+      offlineevalid = None,
+      iteration = None
     )
     val updateid = algos.insert(algo)
     val updatedAlgo = algo.copy(
@@ -187,7 +203,9 @@ class AlgosSpec extends Specification { def is =
       params   = Map("def" -> "ghi"),
       settings = Map(),
       updatetime = DateTime.now.hour(2).minute(45).second(10),
-      offlineevalid = Some(3)
+      status = "ready",
+      offlineevalid = Some(3),
+      iteration = Some(10)
     )
     algos.update(updatedAlgo)
     algos.get(updateid) must beSome(updatedAlgo)
@@ -206,7 +224,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "ok",
+      offlineevalid = None,
+      iteration = None
     ))
     algos.delete(id)
     algos.get(id) must beNone
@@ -225,7 +245,9 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "food",
+      offlineevalid = None,
+      iteration = None
     ))
 
     algos.existsByEngineidAndName(456, "existsByEngineidAndName-1") must beTrue and

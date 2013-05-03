@@ -23,7 +23,9 @@ class MongoAlgos(db: MongoDB) extends Algos {
     "modelset" -> 1,
     "createtime" -> 1,
     "updatetime" -> 1,
-    "offlineevalid" -> 1
+    "status" -> 1,
+    "offlineevalid" -> 1,
+    "iteration" -> 1
   )
 
   RegisterJodaTimeConversionHelpers()
@@ -41,7 +43,9 @@ class MongoAlgos(db: MongoDB) extends Algos {
       modelset = dbObj.as[Boolean]("modelset"),
       createtime = dbObj.as[DateTime]("createtime"),
       updatetime = dbObj.as[DateTime]("updatetime"),
-      offlineevalid = dbObj.getAs[Int]("offlineevalid")
+      status = dbObj.as[String]("status"),
+      offlineevalid = dbObj.getAs[Int]("offlineevalid"),
+      iteration = dbObj.getAs[Int]("iteration")
     )
   }
 
@@ -60,11 +64,13 @@ class MongoAlgos(db: MongoDB) extends Algos {
       "settings" -> algo.settings,
       "modelset" -> algo.modelset,
       "createtime" -> algo.createtime,
-      "updatetime" -> algo.updatetime
+      "updatetime" -> algo.updatetime,
+      "status" -> algo.status
     )
 
     // optional fields
-    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj)
+    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj) ++
+      algo.iteration.map(x => MongoDBObject("iteration" -> x)).getOrElse(emptyObj)
 
     algoColl.insert(obj ++ optObj)
 
@@ -98,11 +104,13 @@ class MongoAlgos(db: MongoDB) extends Algos {
       "settings" -> algo.settings,
       "modelset" -> algo.modelset,
       "createtime" -> algo.createtime,
-      "updatetime" -> algo.updatetime
+      "updatetime" -> algo.updatetime,
+      "status" -> algo.status
     )
 
     // optional fields
-    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj)
+    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj) ++
+      algo.iteration.map(x => MongoDBObject("iteration" -> x)).getOrElse(emptyObj)
 
     algoColl.update(MongoDBObject("_id" -> algo.id), obj ++ optObj)
   }

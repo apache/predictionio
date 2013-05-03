@@ -13,7 +13,9 @@ import com.github.nscala_time.time.Imports._
   * @param params Algo parameters as key-value pairs.
   * @param settings Algo settings as key-value pairs.
   * @param modelset Indicates which model output set to be used by the API.
-  * @param evalid The id of OfflineEval which uses this algo for offline evaluation
+  * @param status The status of the algo. eg "ready", "tuning".
+  * @param offlineevalid The id of OfflineEval which uses this algo for offline evaluation
+  * @param iteration The iteration number used by auto tuning
   */
 case class Algo(
   id: Int,
@@ -27,7 +29,9 @@ case class Algo(
   modelset: Boolean,
   createtime: DateTime,
   updatetime: DateTime,
-  offlineevalid: Option[Int]
+  status: String = "",
+  offlineevalid: Option[Int],
+  iteration: Option[Int] = None
 )
 
 /** Base trait for implementations that interact with algos in the backend data store. */

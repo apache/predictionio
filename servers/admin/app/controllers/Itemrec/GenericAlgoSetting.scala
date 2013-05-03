@@ -132,6 +132,9 @@ trait GenericAlgoSetting extends Controller {
             )
             
             algos.update(updatedAlgo)
+
+            // TODO: if auto tune, create offline eval with autotune flag set
+            
             Ok
           } getOrElse {
             NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))

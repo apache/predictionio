@@ -541,7 +541,9 @@ object Application extends Controller {
           modelset = false, // init value
           createtime = DateTime.now,
           updatetime = DateTime.now,
-          offlineevalid = None
+          status = "ready",
+          offlineevalid = None,
+          iteration = None
         )
 
         val algoId = algos.insert(defaultAlgo)
@@ -749,7 +751,9 @@ object Application extends Controller {
             modelset = false, // init value
             createtime = DateTime.now,
             updatetime = DateTime.now,
-            offlineevalid = None
+            status = "ready",
+            offlineevalid = None,
+            iteration = None
           )
 
           val algoId = algos.insert(newAlgo)
@@ -1181,6 +1185,7 @@ object Application extends Controller {
           trainingsize = 8, // TODO: remove
           testsize = 2, // TODO: remove
           timeorder = false, // TODO: remove
+          autotune = false,
           createtime = None, // NOTE: no createtime yet
           starttime = None,
           endtime = None

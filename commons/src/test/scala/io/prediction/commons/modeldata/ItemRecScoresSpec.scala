@@ -63,7 +63,9 @@ class ItemRecScoresSpec extends Specification {
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "ok",
+      offlineevalid = None,
+      iteration = None
     )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
@@ -134,7 +136,9 @@ class ItemRecScoresSpec extends Specification {
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "ok",
+      offlineevalid = None,
+      iteration = None
     )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
@@ -273,7 +277,9 @@ class ItemRecScoresSpec extends Specification {
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      offlineevalid = None
+      status = "ok",
+      offlineevalid = None,
+      iteration = None
     )
 
     val algo2 = algo1.copy(id = 2) // NOTE: different id
@@ -420,7 +426,9 @@ class ItemRecScoresSpec extends Specification {
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
+      status = "ok",
       offlineevalid = None,
+      iteration = None,
       infoid = "dummy"
     )
     val algo2 = algo1.copy(id = 3456)
