@@ -1379,10 +1379,10 @@ object Application extends Controller {
 
       // TODO: add assertion that eval.starttime, eval.endtime can't be None
 
-      val evalAlgos = algos.getByOfflineEvalid(eval.id)
+      val evalAlgos = algos.getByOfflineEvalid(eval.id).toArray
 
       val algolist =
-        if (!evalAlgos.hasNext) // TODO: shouldn't expect this happen
+        if (evalAlgos.isEmpty) // TODO: shouldn't expect this happen
           JsNull
         else {
           toJson(
@@ -1402,10 +1402,10 @@ object Application extends Controller {
           )
         }
 
-      val evalMetrics = offlineEvalMetrics.getByEvalid(eval.id)
+      val evalMetrics = offlineEvalMetrics.getByEvalid(eval.id).toArray
 
       val metricslist =
-        if (!evalMetrics.hasNext) // TODO: shouldn't expect this happen
+        if (evalMetrics.isEmpty) // TODO: shouldn't expect this happen
           JsNull
         else {
           toJson(
@@ -1421,22 +1421,26 @@ object Application extends Controller {
           )
         }
 
-      val evalResults = offlineEvalResults.getByEvalid(eval.id)
+      val evalResults = offlineEvalResults.getByEvalid(eval.id).toArray
 
-      val metricscorelist =
-        if (!evalResults.hasNext) // TODO: shouldn't expect this happen
-          JsNull
-        else {
-          toJson(
-            evalResults.map { result =>
-              Map("algo_id" -> toJson(result.algoid),
-                  "metrics_id" -> toJson(result.metricid),
-                  "score" -> toJson(result.score.toString)
-                  )
-            }.toSeq
-          )
-        }
-		 
+      val metricscorelist = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
+        
+        val results = evalResults
+          .filter( x => ((x.metricid == metric.id) && (x.algoid == algo.id)) )
+          .map(x => x.score)
+        
+        val num = results.length
+        val avg = if (results.isEmpty) "N/A" else (results.reduceLeft( _ + _ ) / num).toString
+
+        Map("algo_id" -> algo.id.toString,
+            "metrics_id" -> metric.id.toString,
+            "score" -> avg.toString
+            )
+      }).toSeq 
+
+      val metricscoreiterationlist = evalResults.groupBy(x => x.iteration).toSeq.sortBy(_._1).map{ case (it, m) =>
+        m.map( r => Map("algo_id" -> r.algoid.toString, "metrics_id" -> r.metricid.toString, "score" -> r.score.toString) ).toSeq}
+
       val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
       val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
 
@@ -1461,12 +1465,12 @@ object Application extends Controller {
            "engine_id" -> toJson(eval.engineid),
            "algolist" -> algolist,
            "metricslist" -> metricslist,
-           "metricscorelist" -> metricscorelist,   // TODO: change to average score at PDIO-150
-           "metricscoreiterationlist" -> JsNull, // TODO: this is a placeholder for PDIO-150. Example: "metricscoreiterationlist" -> toJson(Seq(metricscorelist, metricscorelist)) 
+           "metricscorelist" -> toJson(metricscorelist),
+           "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
            "splitTrain" -> toJson(splitTrain),
            "splitTest" -> toJson(splitTest),
            "splitMethod" -> toJson(splitMethod),
-           "evalIteration" -> toJson(3), // TODO: this is a placeholder for PDIO-150
+           "evalIteration" -> toJson(eval.iterations),
            "status" -> toJson(status),
            "startTime" -> toJson(starttime),
            "endTime" -> toJson(endtime)
