@@ -534,14 +534,14 @@ object Application extends Controller {
           engineid = engineId,
           name = "Default-Algo", // TODO: get it from engineInfo
           infoid = defaultAlgoType,
-          deployed = true, // default true
+          deployed = true, // default true // TODO: remove
           command = "",
           params = algoInfos.get(defaultAlgoType).get.paramdefaults,
           settings = Map(), // no use for now
           modelset = false, // init value
           createtime = DateTime.now,
           updatetime = DateTime.now,
-          status = "ready",
+          status = "deployed", // this is default deployed algo
           offlineevalid = None,
           iteration = None
         )
@@ -628,14 +628,16 @@ object Application extends Controller {
      if (!engineAlgos.hasNext) NoContent
      else
        Ok(toJson( // NOTE: only display undeployed algo without offlinevalid
-         (engineAlgos filter { algo => (algo.deployed == false) && (algo.offlineevalid == None) } map { algo =>
+         // TODO: check status != eval
+         //(engineAlgos filter { algo => (algo.deployed == false) && (algo.offlineevalid == None)  } map { algo =>
+          (engineAlgos filter { algo => !((algo.status == "deployed") || (algo.status == "simeval")) } map { algo =>
            Map("id" -> algo.id.toString,
                "algoName" -> algo.name,
                "app_id" -> app_id, // TODO: should algo db store appid and get it from there?
                "engine_id" -> algo.engineid.toString,
                "algotype_id" -> algo.infoid,
                "algotypeName" -> algoInfos.get(algo.infoid).get.name,
-               "status" -> "ready", // TODO
+               "status" -> algo.status,
                "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
                )
          }).toSeq
@@ -744,14 +746,14 @@ object Application extends Controller {
             engineid = engineId,
             name = algoName,
             infoid = algoType,
-            deployed = false,
+            deployed = false, // TODO: remove
             command = "",
             params = algoInfo.paramdefaults,
             settings = Map(), // no use for now
             modelset = false, // init value
             createtime = DateTime.now,
             updatetime = DateTime.now,
-            status = "ready",
+            status = "ready", // default status
             offlineevalid = None,
             iteration = None
           )
@@ -765,7 +767,7 @@ object Application extends Controller {
             "engine_id" -> newAlgo.engineid.toString,
             "algotype_id" -> algoType,
             "algotypeName" -> algoInfos.get(algoType).get.name,
-            "status" -> "ready", // default status
+            "status" -> newAlgo.status,
             "createdTime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
             "updatedTime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
           )))
@@ -948,7 +950,7 @@ object Application extends Controller {
 	         "engine_id" -> algo.engineid.toString,
 	         "algotype_id" -> algo.infoid,
 	         "algotypeName" -> algoInfos.get(algo.infoid).get.name,
-	         "status" -> "deployed",
+	         "status" -> algo.status,
 	         "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
        }.toSeq)
       )))
@@ -1176,6 +1178,17 @@ object Application extends Controller {
       formData => {
         val (appId, engineId, algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
 
+        if(SimEval.createSimEval(engineId, algoIds, metricTypes, metricSettings,
+          splitTrain, 0, splitTest, splitMethod, evalIteration, false)) {
+
+          WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+
+          Ok
+
+        } else {
+          BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
+        }
+        /*
         // insert offlineeval record without create time
         val newOfflineEval = OfflineEval(
           id = -1,
@@ -1249,7 +1262,7 @@ object Application extends Controller {
 
           BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
         }
-
+        */
       }
     )
   }
@@ -1498,11 +1511,11 @@ object Application extends Controller {
       formWithErrors => Ok,
       form => {
         algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
-          algos.update(algo.copy(deployed = false))
+          algos.update(algo.copy(status = "ready"))
         }
         form foreach { id =>
           algos.get(id) foreach { algo =>
-            algos.update(algo.copy(deployed = true))
+            algos.update(algo.copy(status = "deployed"))
           }
         }
         WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
@@ -1515,7 +1528,7 @@ object Application extends Controller {
   def algoUndeploy(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // No extra param required
     algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
-      algos.update(algo.copy(deployed = false))
+      algos.update(algo.copy(status = "ready"))
     }
     WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
     Ok

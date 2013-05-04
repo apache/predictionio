@@ -15,14 +15,14 @@ import com.github.nscala_time.time.Imports._
   * @param modelset Indicates which model output set to be used by the API.
   * @param status The status of the algo. eg "ready", "tuning".
   * @param offlineevalid The id of OfflineEval which uses this algo for offline evaluation
-  * @param iteration The iteration number used by auto tuning
+  * @param iteration The iteration number used by auto tune
   */
 case class Algo(
   id: Int,
   engineid: Int,
   name: String,
   infoid: String,
-  deployed: Boolean,
+  deployed: Boolean, // TODO: remove
   command: String,
   params: Map[String, Any],
   settings: Map[String, Any],

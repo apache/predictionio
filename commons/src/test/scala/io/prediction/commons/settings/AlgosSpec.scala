@@ -123,7 +123,7 @@ class AlgosSpec extends Specification { def is =
       modelset = false,
       createtime = DateTime.now,
       updatetime = DateTime.now,
-      status = "done",
+      status = "deployed", // NOTE!
       offlineevalid = None,
       iteration = Some(3)
     )

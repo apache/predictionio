@@ -20,9 +20,9 @@ case class OfflineEval(
   engineid: Int,
   name: String,
   iterations: Int = 1,
-  trainingsize: Int,
-  testsize: Int,
-  timeorder: Boolean,
+  trainingsize: Int, // TODO: remove
+  testsize: Int, // TODO: remove
+  timeorder: Boolean, // TODO: remove
   autotune: Boolean = false,
   createtime: Option[DateTime],
   starttime: Option[DateTime],

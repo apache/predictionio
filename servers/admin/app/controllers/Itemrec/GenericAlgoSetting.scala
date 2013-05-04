@@ -13,6 +13,7 @@ import play.api.libs.functional.syntax._
 import play.api.data.validation.ValidationError
 
 import controllers.Application.{algos, withUser, algoInfos}
+import controllers.SimEval
 
 trait GenericAlgoSetting extends Controller {
 
@@ -133,9 +134,17 @@ trait GenericAlgoSetting extends Controller {
             
             algos.update(updatedAlgo)
 
-            // TODO: if auto tune, create offline eval with autotune flag set
-            
-            Ok
+            //if auto tune, create offline eval with autotune flag set
+            if (updatedParams("tune") == "auto") {
+              if (SimEval.createSimEval(updatedAlgo.engineid, List(updatedAlgo.id), List("map_k"), List("20"),
+              60, 10, 20, "random", 3, true)) { // TODO get metric and eval param from UI
+                Ok
+              } else {
+                NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))
+              }
+            } else {
+              Ok
+            }
           } getOrElse {
             NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))
           }

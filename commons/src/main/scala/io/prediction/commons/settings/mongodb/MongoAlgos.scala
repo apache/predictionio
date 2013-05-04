@@ -84,7 +84,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
   )
 
   def getDeployedByEngineid(engineid: Int) = new MongoAlgoIterator(
-    algoColl.find(MongoDBObject("engineid" -> engineid, "deployed" -> true), getFields).sort(MongoDBObject("name" -> 1))
+    algoColl.find(MongoDBObject("engineid" -> engineid, "status" -> "deployed"), getFields).sort(MongoDBObject("name" -> 1))
   )
 
   def getByOfflineEvalid(evalid: Int) = new MongoAlgoIterator(
