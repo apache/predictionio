@@ -71,6 +71,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
+      status = "deployed",
       offlineevalid = None
     )
     val algoid = mongoAlgos.insert(algo)
@@ -131,6 +132,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
+      status = "deployed",
       offlineevalid = None
     )
     val algoid = mongoAlgos.insert(algo)
@@ -243,6 +245,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
+      status = "deployed",
       offlineevalid = None
     )
     val algoid = mongoAlgos.insert(algo)
@@ -300,6 +303,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
+      status = "deployed",
       offlineevalid = None
     )
     val algoid = mongoAlgos.insert(algo)
@@ -330,6 +334,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       modelset = true,
       createtime = DateTime.now,
       updatetime = DateTime.now,
+      status = "deployed",
       offlineevalid = None
     )
     val algoid = mongoAlgos.insert(algo)
