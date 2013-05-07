@@ -28,6 +28,9 @@ trait Users {
   /** Finds a user by ID. */
   def get(id: Int): Option[User]
 
+  /** Finds all users. */
+  def getAll(): Iterator[User]
+
   /** Finds a user by e-mail. */
   def getByEmail(email: String): Option[User]
 

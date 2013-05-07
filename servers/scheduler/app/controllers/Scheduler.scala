@@ -18,6 +18,7 @@ import org.quartz.UnableToInterruptJobException
 object Scheduler extends Controller {
   /** Get settings. */
   val config = new Config
+  val users = config.getSettingsUsers
   val apps = config.getSettingsApps
   val engines = config.getSettingsEngines
   val engineInfos = config.getSettingsEngineInfos
@@ -38,49 +39,60 @@ object Scheduler extends Controller {
   /** Try search path if hadoop home is not set. */
   val hadoopCommand = config.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
 
+  /** Sync the scheduler once against settings database. */
+  def syncAllUsers() = {
+    users.getAll foreach { user =>
+      syncUserJobs(user.id)
+    }
+  }
+
   def online() = Action { Ok("PredictionIO Scheduler is online.") }
 
   def userSync(userid: Int) = Action {
     try {
-      /** Remove jobs that do not correspond to an algo. */
-      scheduler.getJobKeys(groupEquals(Jobs.algoJobGroup)) foreach { jobKey =>
-        val algoid = jobKey.getName().toInt
-        algos.get(algoid) getOrElse {
-          Logger.info("Found job for algo ID " + algoid + " in scheduler but not in settings. Removing job from scheduler.")
-          scheduler.deleteJob(jobKey)
-        }
-      }
-
-      /** Synchronize every app of the user. */
-      apps.getByUserid(userid) foreach { app =>
-        engines.getByAppid(app.id) foreach { engine =>
-          /** Algos. */
-          syncAlgoJobs(app, engine, false)
-
-          /** Offline evaluations. */
-          offlineEvals.getByEngineid(engine.id) foreach { offlineEval =>
-            val offlineEvalid = offlineEval.id.toString
-            val triggerkey = triggerKey(offlineEvalid, Jobs.offlineEvalJobGroup)
-            offlineEval.createtime foreach { ct =>
-              if (scheduler.checkExists(triggerkey) == false) {
-                offlineEval.endtime getOrElse {
-                  val offlineEvalJob = Jobs.offlineEvalJob(config, app, engine, offlineEval)
-                  scheduler.addJob(offlineEvalJob, true)
-
-                  val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
-                  scheduler.scheduleJob(trigger)
-                }
-              }
-            }
-          }
-        }
-      }
-
+      syncUserJobs(userid)
       /** Complete synchronization. */
       Ok(Json.obj("message" -> "Synchronized algorithms settings with scheduler successfully."))
     } catch {
       case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
       case e: Exception => InternalServerError(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
+    }
+  }
+
+  def syncUserJobs(userid: Int) = {
+    /** Remove jobs that do not correspond to an algo. */
+    scheduler.getJobKeys(groupEquals(Jobs.algoJobGroup)) foreach { jobKey =>
+      val algoid = jobKey.getName().toInt
+      algos.get(algoid) getOrElse {
+        Logger.info("Found job for algo ID " + algoid + " in scheduler but not in settings. Removing job from scheduler.")
+        scheduler.deleteJob(jobKey)
+      }
+    }
+
+    /** Synchronize every app of the user. */
+    Logger.info(s"User ID ${userid}: Synchronizing settings")
+    apps.getByUserid(userid) foreach { app =>
+      engines.getByAppid(app.id) foreach { engine =>
+        /** Algos. */
+        syncAlgoJobs(app, engine, false)
+
+        /** Offline evaluations. */
+        offlineEvals.getByEngineid(engine.id) foreach { offlineEval =>
+          val offlineEvalid = offlineEval.id.toString
+          val triggerkey = triggerKey(offlineEvalid, Jobs.offlineEvalJobGroup)
+          offlineEval.createtime foreach { ct =>
+            if (scheduler.checkExists(triggerkey) == false) {
+              offlineEval.endtime getOrElse {
+                val offlineEvalJob = Jobs.offlineEvalJob(config, app, engine, offlineEval)
+                scheduler.addJob(offlineEvalJob, true)
+
+                val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
+                scheduler.scheduleJob(trigger)
+              }
+            }
+          }
+        }
+      }
     }
   }
 

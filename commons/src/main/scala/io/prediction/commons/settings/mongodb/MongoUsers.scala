@@ -39,6 +39,8 @@ class MongoUsers(db: MongoDB) extends Users {
     getByResult(userColl.findOne(MongoDBObject("_id" -> id), getFields))
   }
 
+  def getAll() = new MongoUserIterator(userColl.find())
+
   def getByEmail(email: String) = {
     getByResult(userColl.findOne(MongoDBObject("email" -> email), getFields))
   }
@@ -92,5 +94,10 @@ class MongoUsers(db: MongoDB) extends Users {
       lastName  = dbObj.getAs[String]("lastname"),
       email     = dbObj.as[String]("email")
     )
+  }
+
+  class MongoUserIterator(it: MongoCursor) extends Iterator[User] {
+    def next = dbObjToUser(it.next)
+    def hasNext = it.hasNext
   }
 }
