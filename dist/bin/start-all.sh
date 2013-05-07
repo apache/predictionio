@@ -22,43 +22,59 @@ $BASE/bin/conncheck
 
 mkdir -p "$LOGDIR"
 
-SERVER_WAIT=3
+SERVER_WAIT=1
+SERVER_RETRY=20
 
 # Admin server
 echo -n "Trying to start admin server... "
 echo "Trying to start admin server at: `date`" >>"$ADMIN_OUT"
 $BASE/bin/start-admin.sh $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT -Dlogger.file=$BASE/conf/admin-logger.xml >>"$ADMIN_OUT" 2>>"$ADMIN_ERR" &
-sleep $SERVER_WAIT
-if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$ADMIN_PORT") -eq 303 ] ; then
-    echo "started"
-else
-    echo "failed ($ADMIN_PORT unreachable)"
-    exit 1
-fi
+SERVER_TRY=1
+while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
+	sleep $SERVER_WAIT
+	if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$ADMIN_PORT") -eq 303 ] ; then
+	    echo "started"
+	    SERVER_TRY=$SERVER_RETRY
+	elif [ $SERVER_TRY -eq $SERVER_RETRY ] ; then
+	    echo "failed ($ADMIN_PORT unreachable)"
+	    exit 1
+	fi
+	SERVER_TRY=$((SERVER_TRY+1))
+done
 
 # API server
 echo -n "Trying to start API server... "
 echo "Trying to start API server at: `date`" >>"$API_OUT"
 $BASE/bin/start-api.sh $PLAY_START_OPTS -Dhttp.port=$API_PORT -Dlogger.file=$BASE/conf/api-logger.xml >>"$API_OUT" 2>>"$API_ERR" &
-sleep $SERVER_WAIT
-if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$API_PORT") -eq 200 ] ; then
-    echo "started"
-else
-    echo "failed ($API_PORT unreachable)"
-    exit 1
-fi
+SERVER_TRY=1
+while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
+	sleep $SERVER_WAIT
+	if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$API_PORT") -eq 200 ] ; then
+	    echo "started"
+	    SERVER_TRY=$SERVER_RETRY
+	elif [ $SERVER_TRY -eq $SERVER_RETRY ] ; then
+	    echo "failed ($API_PORT unreachable)"
+	    exit 1
+	fi
+	SERVER_TRY=$((SERVER_TRY+1))
+done
 
 # Scheduler server
 echo -n "Trying to start scheduler server... "
 echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_OUT"
 $BASE/bin/start-scheduler.sh $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
-sleep $SERVER_WAIT
-if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$SCHEDULER_PORT") -eq 200 ] ; then
-    echo "started"
-else
-    echo "failed ($SCHEDULER_PORT unreachable)"
-    exit 1
-fi
+SERVER_TRY=1
+while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
+	sleep $SERVER_WAIT
+	if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$SCHEDULER_PORT") -eq 200 ] ; then
+	    echo "started"
+	    SERVER_TRY=$SERVER_RETRY
+	elif [ $SERVER_TRY -eq $SERVER_RETRY ] ; then
+	    echo "failed ($SCHEDULER_PORT unreachable)"
+	    exit 1
+	fi
+	SERVER_TRY=$((SERVER_TRY+1))
+done
 
 # MongoDB
 if vendor_mongodb_exists ; then
