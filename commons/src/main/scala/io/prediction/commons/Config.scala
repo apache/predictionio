@@ -465,6 +465,16 @@ class Config {
     }
   }
 
+  /** Obtains a ParamGenInfos object with configured backend type. */
+  def getSettingsParamGenInfos(): settings.ParamGenInfos = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoParamGenInfos(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
   /** Obtains a Users object with configured backend type. */
   def getAppdataUsers(): appdata.Users = {
     appdataDbType match {

@@ -60,5 +60,26 @@
             	"kParam": 20
             }
         }
+    },
+    "paramgeninfos": {
+        "random": {
+            "name": "Random Search",
+            "description": "Random search within specified interval",
+            "commands": [
+                "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -jar $paramgenJar$"
+            ],
+            "paramorder": [
+                "kParam"
+            ],
+            "paramnames": {
+                "kParam": "k"
+            },
+            "paramdescription": {
+                "kParam": "k"
+            },
+            "paramdefaults": {
+                "kParam": 20
+            }
+        }
     }
 }

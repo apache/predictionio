@@ -1,7 +1,7 @@
 package io.prediction.tools.settingsinit
 
 import io.prediction.commons._
-import io.prediction.commons.settings.{OfflineEvalMetricInfo, OfflineEvalSplitterInfo}
+import io.prediction.commons.settings.{OfflineEvalMetricInfo, OfflineEvalSplitterInfo, ParamGenInfo}
 
 import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
@@ -26,6 +26,7 @@ object SettingsInit {
   def main(args: Array[String]) {
     val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos
     val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
+    val paramGenInfos = config.getSettingsParamGenInfos
 
     val settingsFile = try { args(0) } catch { case e: Throwable =>
       println("Please specify the location of the initial settings file in the command line. Aborting.")
@@ -113,6 +114,39 @@ object SettingsInit {
           }
         }
       } getOrElse println("Cannot find any OfflineEvalMetricInfo information. Skipping.")
+
+      M.unapply(settings("paramgeninfos")) map { infos =>
+        println("Populating ParamGenInfos...")
+        for {
+          id <- infos.keys
+          M(info) = infos(id)
+          S(name) = info("name")
+          OS(description) = info.get("description")
+          OSS(commands) = info.get("commands")
+          SS(paramorder) = info("paramorder")
+          MSS(paramnames) = info("paramnames")
+          MSS(paramdescription) = info("paramdescription")
+          MSS(paramdefaults) = info("paramdefaults")
+        } yield {
+          val mi = ParamGenInfo(
+            id = id,
+            name = name,
+            description = description,
+            commands = commands,
+            paramorder = paramorder,
+            paramnames = paramnames,
+            paramdescription = paramdescription,
+            paramdefaults = paramdefaults)
+
+          paramGenInfos.get(id) map { m =>
+            println(s"Updating ParamGenInfo ID: ${id}")
+            paramGenInfos.update(mi)
+          } getOrElse {
+            println(s"Adding ParamGenInfo ID: ${id}")
+            paramGenInfos.insert(mi)
+          }
+        }
+      } getOrElse println("Cannot find any ParamGenInfo information. Skipping.")
     } getOrElse println("Root level is not an object. Aborting.")
 
     println("PredictionIO settings initialization finished")
