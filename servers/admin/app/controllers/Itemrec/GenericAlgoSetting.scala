@@ -1,6 +1,6 @@
 package controllers.Itemrec
 
-import io.prediction.commons.settings.Algo
+import io.prediction.commons.settings.{Algo, OfflineTune, ParamGen}
 
 import play.api._
 import play.api.mvc._
@@ -12,7 +12,9 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.data.validation.ValidationError
 
-import controllers.Application.{algos, withUser, algoInfos}
+import com.github.nscala_time.time.Imports._
+
+import controllers.Application.{algos, withUser, algoInfos, offlineTunes, paramGens}
 import controllers.SimEval
 
 trait GenericAlgoSetting extends Controller {
@@ -134,17 +136,74 @@ trait GenericAlgoSetting extends Controller {
             
             algos.update(updatedAlgo)
 
-            //if auto tune, create offline eval with autotune flag set
+            /** auto tune */
             if (updatedParams("tune") == "auto") {
-              if (SimEval.createSimEval(updatedAlgo.engineid, List(updatedAlgo.id), List("map_k"), List("20"),
-              60, 10, 20, "random", 3, true)) { // TODO get metric and eval param from UI
-                Ok
-              } else {
-                NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))
+
+
+              // create an OfflineTune and paramGen
+              val offlineTune = OfflineTune(
+                id = -1,
+                engineid = updatedAlgo.engineid,
+                loops = 5, // TODO: default 5 now
+                createtime = None, // NOTE: no createtime yet
+                starttime = None,
+                endtime = None
+              )
+              
+              val tuneid = offlineTunes.insert(offlineTune)
+
+              paramGens.insert(ParamGen(
+                id = -1,
+                infoid = "random", // TODO: default random scan param gen now
+                tuneid = tuneid,
+                params = Map() // TODO: param for param gen
+              ))
+
+              // update original algo status to tuning
+
+              algos.update(updatedAlgo.copy(
+                offlinetuneid = Some(tuneid),
+                status = "tuning"
+              ))
+
+              // create offline eval with baseline algo
+              val defaultBaseLineAlgoType = "pdio-randomrank" // TODO: get from UI
+              val defaultBaseLineAlgo = Algo(
+                id = -1,
+                engineid = updatedAlgo.engineid,
+                name = "Default-BasedLine-Algo-for-OfflineTune-"+tuneid,
+                infoid = defaultBaseLineAlgoType, 
+                deployed = false, // TODO: remove
+                command = "",
+                params = algoInfos.get(defaultBaseLineAlgoType).get.paramdefaults,
+                settings = Map(), // no use for now
+                modelset = false, // init value
+                createtime = DateTime.now,
+                updatetime = DateTime.now,
+                status = "simeval",
+                offlineevalid = None,
+                offlinetuneid = Some(tuneid),
+                loop = Some(0), // loop=0 reserved for autotune baseline
+                paramset = None
+              )
+
+              // TODO: get iterations, metric info, etc from UI, now hardcode to 3.
+              for ( i <- 1 to 3) {
+                SimEval.createSimEval(updatedAlgo.engineid, List(defaultBaseLineAlgo), List("map_k"), List("20"),
+                  60, 20, 20, "random", 1, Some(tuneid))
               }
-            } else {
-              Ok
+
+              // after everything has setup,
+              // update with createtime, so scheduler can know it's ready to be picked up
+              offlineTunes.update(offlineTune.copy(
+                id = tuneid,
+                createtime = Some(DateTime.now)
+              ))
+
+              // TODO: call sync to scheduler here
             }
+              
+            Ok
           } getOrElse {
             NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))
           }

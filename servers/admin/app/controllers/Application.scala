@@ -48,6 +48,8 @@ object Application extends Controller {
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
   val offlineEvalSplitters = config.getSettingsOfflineEvalSplitters()
+  val offlineTunes = config.getSettingsOfflineTunes()
+  val paramGens = config.getSettingsParamGens()
 
   /** PredictionIO Commons modeldata */
   val itemRecScores = config.getModeldataItemRecScores()
@@ -1090,7 +1092,7 @@ object Application extends Controller {
     // TODO: check if the user owns this engine
 
     // get offlineeval for this engine
-    val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt)
+    val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt) filter { e => (e.tuneid == None) }
 
     if (!engineOfflineEvals.hasNext) NoContent
     else {
@@ -1183,16 +1185,22 @@ object Application extends Controller {
       formData => {
         val (appId, engineId, algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
 
-        if(SimEval.createSimEval(engineId, algoIds, metricTypes, metricSettings,
-          splitTrain, 0, splitTest, splitMethod, evalIteration, false)) {
+        // get list of algo obj
+        val optAlgos: List[Option[Algo]] = algoIds map {algoId => algos.get(algoId)}
+
+        if (!optAlgos.contains(None)) {
+          val listOfAlgos: List[Algo] = optAlgos map (x => x.get)
+
+          SimEval.createSimEval(engineId, listOfAlgos, metricTypes, metricSettings,
+          splitTrain, 0, splitTest, splitMethod, evalIteration, None)
 
           WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
 
           Ok
-
         } else {
           BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
         }
+
         /*
         // insert offlineeval record without create time
         val newOfflineEval = OfflineEval(

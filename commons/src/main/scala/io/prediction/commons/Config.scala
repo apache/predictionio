@@ -445,6 +445,26 @@ class Config {
     }
   }
 
+  /** Obtains an OfflineTunes object with configured backend type. */
+  def getSettingsOfflineTunes(): settings.OfflineTunes = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoOfflineTunes(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
+  /** Obtains an ParamGens object with configured backend type. */
+  def getSettingsParamGens(): settings.ParamGens = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoParamGens(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
   /** Obtains a Users object with configured backend type. */
   def getAppdataUsers(): appdata.Users = {
     appdataDbType match {
