@@ -12,7 +12,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
     "metricid" -> 1,
     "algoid" -> 1,
     "score" -> 1,
-    "iteration" -> 1
+    "iteration" -> 1,
+    "splitset" -> 1
   )
 
   private def dbObjToOfflineEvalResult(dbObj: DBObject) = {
@@ -21,7 +22,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
       metricid = dbObj.as[Int]("metricid"),
       algoid = dbObj.as[Int]("algoid"),
       score = dbObj.as[Double]("score"),
-      iteration = dbObj.as[Int]("iteration")
+      iteration = dbObj.as[Int]("iteration"),
+      splitset = dbObj.as[String]("splitset")
     )
   }
 
@@ -32,14 +34,15 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
 
   /** save(update existing or create a new one) a OfflineEvalResult and return id*/
   def save(result: OfflineEvalResult): String = {
-    val id = (result.evalid + "_" + result.metricid + "_" + result.algoid + "_" + result.iteration)
+    val id = (result.evalid + "_" + result.metricid + "_" + result.algoid + "_" + result.iteration + "_" + result.splitset)
     offlineEvalResultsColl.save(MongoDBObject(
       "_id" -> id,
       "evalid" -> result.evalid,
       "metricid" -> result.metricid,
       "algoid" -> result.algoid,
       "score" -> result.score,
-      "iteration" -> result.iteration
+      "iteration" -> result.iteration,
+      "splitset" -> result.splitset
     ))
 
     id

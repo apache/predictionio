@@ -23,8 +23,8 @@ class FileOfflineEvalResultsSource(path: String) extends Tsv(
   
   override def getSource: Source = this
   
-  override def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol, iterationField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
-    val dataPipe = p.project(evalidField, metricidField, algoidField, scoreField, iterationField)
+  override def writeData(evalidField: Symbol, metricidField: Symbol, algoidField: Symbol, scoreField: Symbol, iterationField: Symbol, splitsetField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    val dataPipe = p.project(evalidField, metricidField, algoidField, scoreField, iterationField, splitsetField)
                     .write(this)
 
     dataPipe

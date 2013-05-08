@@ -33,31 +33,44 @@ class OfflineEvalResultsSpec extends Specification { def is =
       metricid = 2,
       algoid = 3,
       score = 0.09876,
-      iteration = 1
+      iteration = 1,
+      splitset = "test"
     )
     val obj2 = OfflineEvalResult(
       evalid = 16,
       metricid = 2,
       algoid = 3,
       score = 0.123,
-      iteration = 2
+      iteration = 2, // only this is diff from obj1
+      splitset = "test"
     )
     val obj3 = OfflineEvalResult(
+      evalid = 16,
+      metricid = 2,
+      algoid = 3,
+      score = 0.123,
+      iteration = 2,
+      splitset = "validation" // only this is diff from obj2
+    )
+    val obj4 = OfflineEvalResult(
       evalid = 2,
       metricid = 3,
       algoid = 4,
       score = 0.567,
-      iteration = 3
+      iteration = 3,
+      splitset = ""
     )
 
     val id1 = offlineEvalResults.save(obj1)
     val id2 = offlineEvalResults.save(obj2)
     val id3 = offlineEvalResults.save(obj3)
+    val id4 = offlineEvalResults.save(obj4)
 
     val it = offlineEvalResults.getByEvalid(16)
 
     val itData1 = it.next()
     val itData2 = it.next()
+    val itData3 = it.next()
 
     val it2 = offlineEvalResults.getByEvalidAndMetricidAndAlgoid(2, 3, 4)
 
@@ -65,8 +78,9 @@ class OfflineEvalResultsSpec extends Specification { def is =
 
     itData1 must be equalTo(obj1) and
       (itData2 must be equalTo(obj2)) and
+      (itData3 must be equalTo(obj3)) and
       (it.hasNext must be_==(false)) and // make sure it has 2 only
-      (it2Data1 must equalTo(obj3)) and
+      (it2Data1 must equalTo(obj4)) and
       (it2.hasNext must be_==(false))
   }
 
@@ -79,21 +93,24 @@ class OfflineEvalResultsSpec extends Specification { def is =
       metricid = 6,
       algoid = 8,
       score = 0.7601,
-      iteration = 1
+      iteration = 1,
+      splitset = "abc"
     )
     val obj2 = OfflineEvalResult(
       evalid = 7,
       metricid = 1,
       algoid = 9,
       score = 0.001,
-      iteration = 2
+      iteration = 2,
+      splitset = ""
     )
     val obj3 = OfflineEvalResult(
       evalid = 25,
       metricid = 33,
       algoid = 41,
       score = 0.999,
-      iteration = 1
+      iteration = 1,
+      splitset = "efg"
     )
 
     val id1 = offlineEvalResults.save(obj1)

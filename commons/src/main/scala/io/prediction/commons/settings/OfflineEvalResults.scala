@@ -7,13 +7,15 @@ package io.prediction.commons.settings
  * @param algoid ID of the algo
  * @param score The offline evaluation score
  * @param iteration The iteration number
+ * @param splitset The name of the set used as test data (eg. "test", "validation")
  */
 case class OfflineEvalResult(
   evalid: Int,
   metricid: Int,
   algoid: Int,
   score: Double,
-  iteration: Int
+  iteration: Int,
+  splitset: String = ""
 )
 
 trait OfflineEvalResults {

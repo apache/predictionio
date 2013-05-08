@@ -33,6 +33,7 @@ import io.prediction.commons.scalding.settings.OfflineEvalResults
  * --metricid: <int>
  * --algoid: <int>
  * --iteration: <int>
+ * --splitset: <string>
  *
  * --kParam: <int>
  * 
@@ -64,7 +65,8 @@ class MAPAtK(args: Args) extends Job(args) {
   val algoidArg = args("algoid").toInt
   //val iterationArg = args("iteration").toInt
   val iterationArg = args.getOrElse("iteration", "1").toInt
-  
+  val splitsetArg = args.getOrElse("splitset", "")
+
   val kParamArg = args("kParam").toInt
   
   val debugArg = args.list("debug")
@@ -140,16 +142,16 @@ class MAPAtK(args: Args) extends Job(args) {
       .sum('avgPreAtK -> 'avgPreAtKSum)
       .sum('zeroAP -> 'numOfZeroAP)
     }
-    .mapTo(('num, 'avgPreAtKSum, 'numOfZeroAP) -> ('evalid, 'metricid, 'algoid, 'score, 'iteration, 'num, 'numOfZeroAP)) { fields: (Int, Double, Int) => 
+    .mapTo(('num, 'avgPreAtKSum, 'numOfZeroAP) -> ('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset, 'num, 'numOfZeroAP)) { fields: (Int, Double, Int) => 
         
       val (num, avgPreAtKSum, numOfZeroAP) = fields
       
       val meanAveragePrecision = avgPreAtKSum/num
       
-      (evalidArg, metricidArg, algoidArg, meanAveragePrecision, iterationArg, num, numOfZeroAP) 
+      (evalidArg, metricidArg, algoidArg, meanAveragePrecision, iterationArg, splitsetArg, num, numOfZeroAP) 
     }
   
-  results.then( offlineEvalResultsSink.writeData('evalid, 'metricid, 'algoid, 'score, 'iteration) _ )
+  results.then( offlineEvalResultsSink.writeData('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset) _ )
   
   /** 
    * Calculate the average precision @ k

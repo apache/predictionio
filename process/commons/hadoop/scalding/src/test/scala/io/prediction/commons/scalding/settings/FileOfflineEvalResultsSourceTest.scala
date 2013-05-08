@@ -9,22 +9,24 @@ class FileOfflineEvalResultsSourceWriteTestJob(args: Args) extends Job(args) {
   val resultsSink = new FileOfflineEvalResultsSource("testpath")
 
   Tsv("FileOfflineEvalResultsSourceTestInput").read
-    .mapTo((0,1,2,3,4) -> ('evalid, 'metricid, 'algoid, 'score, 'iteration)) { 
-      fields: (Int, Int, Int, Double, Int) =>
+    .mapTo((0,1,2,3,4,5) -> ('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset)) { 
+      fields: (Int, Int, Int, Double, Int, String) =>
 
       fields
     }
-    .then ( resultsSink.writeData('evalid, 'metricid, 'algoid, 'score, 'iteration) )
+    .then ( resultsSink.writeData('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset) )
 
 }
 
 class FileOfflineEvalResultsSourceTest extends Specification with TupleConversions {
   
-  def test(testInput: List[(Int, Int, Int, Double, Int)]) = {
+  type resultTuples = (Int, Int, Int, Double, Int, String)
+
+  def test(testInput: List[resultTuples]) = {
 
     JobTest("io.prediction.commons.scalding.settings.file.FileOfflineEvalResultsSourceWriteTestJob")
       .source(Tsv("FileOfflineEvalResultsSourceTestInput"), testInput)
-      .sink[(Int, Int, Int, Double, Int)](new FileOfflineEvalResultsSource("testpath")) { outputBuffer =>
+      .sink[resultTuples](new FileOfflineEvalResultsSource("testpath")) { outputBuffer =>
         "correctly write to FileOfflineEvalResultsSource" in {
           outputBuffer.toList must containTheSameElementsAs(testInput)
         }
@@ -34,10 +36,10 @@ class FileOfflineEvalResultsSourceTest extends Specification with TupleConversio
   }
 
   "FileOfflineEvalResultsSourceWriteTestJob" should {
-    val test1Input = List((6, 2, 3, 0.123, 5))
+    val test1Input = List((6, 2, 3, 0.123, 5, "test"))
     test(test1Input)
 
-    val test2Input = List((11, 2, 5, 0.444, 6))
+    val test2Input = List((11, 2, 5, 0.444, 6, "validation"))
     test(test2Input)
   }
 }
