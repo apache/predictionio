@@ -25,7 +25,9 @@ class MongoAlgos(db: MongoDB) extends Algos {
     "updatetime" -> 1,
     "status" -> 1,
     "offlineevalid" -> 1,
-    "iteration" -> 1
+    "offlinetuneid" -> 1,
+    "loop" -> 1,
+    "paramset" -> 1
   )
 
   RegisterJodaTimeConversionHelpers()
@@ -45,7 +47,9 @@ class MongoAlgos(db: MongoDB) extends Algos {
       updatetime = dbObj.as[DateTime]("updatetime"),
       status = dbObj.as[String]("status"),
       offlineevalid = dbObj.getAs[Int]("offlineevalid"),
-      iteration = dbObj.getAs[Int]("iteration")
+      offlinetuneid = dbObj.getAs[Int]("offlinetuneid"),
+      loop = dbObj.getAs[Int]("loop"),
+      paramset = dbObj.getAs[Int]("paramset")
     )
   }
 
@@ -70,7 +74,9 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
     // optional fields
     val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj) ++
-      algo.iteration.map(x => MongoDBObject("iteration" -> x)).getOrElse(emptyObj)
+      algo.offlinetuneid.map(x => MongoDBObject("offlinetuneid" -> x)).getOrElse(emptyObj) ++
+      algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(emptyObj) ++
+      algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(emptyObj)
 
     algoColl.insert(obj ++ optObj)
 
@@ -110,7 +116,9 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
     // optional fields
     val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj) ++
-      algo.iteration.map(x => MongoDBObject("iteration" -> x)).getOrElse(emptyObj)
+      algo.offlinetuneid.map(x => MongoDBObject("offlinetuneid" -> x)).getOrElse(emptyObj) ++
+      algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(emptyObj) ++
+      algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(emptyObj)
 
     algoColl.update(MongoDBObject("_id" -> algo.id), obj ++ optObj)
   }

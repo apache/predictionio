@@ -65,7 +65,9 @@ class ItemRecScoresSpec extends Specification {
       updatetime = DateTime.now,
       status = "ok",
       offlineevalid = None,
-      iteration = None
+      offlinetuneid = None,
+      loop = None,
+      paramset = None
     )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
@@ -138,7 +140,9 @@ class ItemRecScoresSpec extends Specification {
       updatetime = DateTime.now,
       status = "ok",
       offlineevalid = None,
-      iteration = None
+      offlinetuneid = None,
+      loop = None,
+      paramset = None
     )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
@@ -279,7 +283,9 @@ class ItemRecScoresSpec extends Specification {
       updatetime = DateTime.now,
       status = "ok",
       offlineevalid = None,
-      iteration = None
+      offlinetuneid = None,
+      loop = None,
+      paramset = None
     )
 
     val algo2 = algo1.copy(id = 2) // NOTE: different id
@@ -419,6 +425,7 @@ class ItemRecScoresSpec extends Specification {
       id = 345,
       engineid = 0,
       name = "",
+      infoid = "dummy",
       deployed = true,
       command = "",
       params = Map(),
@@ -428,8 +435,9 @@ class ItemRecScoresSpec extends Specification {
       updatetime = DateTime.now,
       status = "ok",
       offlineevalid = None,
-      iteration = None,
-      infoid = "dummy"
+      offlinetuneid = None,
+      loop = None,
+      paramset = None
     )
     val algo2 = algo1.copy(id = 3456)
     itemRecScores.insert(ItemRecScore(

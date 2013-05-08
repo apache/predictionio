@@ -543,7 +543,7 @@ object Application extends Controller {
           updatetime = DateTime.now,
           status = "deployed", // this is default deployed algo
           offlineevalid = None,
-          iteration = None
+          loop = None
         )
 
         val algoId = algos.insert(defaultAlgo)
@@ -755,7 +755,7 @@ object Application extends Controller {
             updatetime = DateTime.now,
             status = "ready", // default status
             offlineevalid = None,
-            iteration = None
+            loop = None
           )
 
           val algoId = algos.insert(newAlgo)
@@ -1009,6 +1009,11 @@ object Application extends Controller {
         "endTime" -> toJson("04-25-2012 13:21:23")
       )
     ))
+
+    // TODO
+    // get the evalid id of this algo
+    // get all algos of this evalid
+    // get the offline eval result of these algos
 
   }
   

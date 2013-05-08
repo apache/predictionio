@@ -24,7 +24,7 @@ object SimEval extends Controller {
       trainingsize = 8, // TODO: remove
       testsize = 2, // TODO: remove
       timeorder = false, // TODO: remove
-      autotune = autoTune,
+      tuneid = None, // TODO: create tune record first and put id here
       createtime = None, // NOTE: no createtime yet
       starttime = None,
       endtime = None

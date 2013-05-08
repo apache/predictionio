@@ -10,7 +10,7 @@ import com.github.nscala_time.time.Imports._
  * @param trainingsize The percentage of training set (1 - 10)
  * @param testsize The percentage of test set (1 - 10). NOTE: trainingsize + testsize must be <= 10
  * @param timeorder Enable flag of random in time order. Allowed only if trainingsize + testsize < 10
- * @param autotune auto tune flag
+ * @param tuneid The OfflineTune ID
  * @param createtime The Creation time of the evaluation
  * @param starttime The Starting time of the evaluation
  * @param endtime The End time of the the evaluation. It's still running if it's None.
@@ -24,7 +24,7 @@ case class OfflineEval(
   trainingsize: Int, // TODO: remove
   testsize: Int, // TODO: remove
   timeorder: Boolean, // TODO: remove
-  autotune: Boolean = false,
+  tuneid: Option[Int],
   createtime: Option[DateTime],
   starttime: Option[DateTime],
   endtime: Option[DateTime]

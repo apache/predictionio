@@ -19,7 +19,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
     "trainingsize" -> 1,
     "testsize" -> 1,
     "timeorder" -> 1,
-    "autotune" -> 1,
+    "tuneid" -> 1,
     "createtime" -> 1,
     "starttime" -> 1,
     "endtime" -> 1
@@ -36,7 +36,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       trainingsize = dbObj.as[Int]("trainingsize"),
       testsize = dbObj.as[Int]("testsize"),
       timeorder = dbObj.as[Boolean]("timeorder"),
-      autotune = dbObj.as[Boolean]("autotune"),
+      tuneid = dbObj.getAs[Int]("tuneid"),
       createtime = dbObj.getAs[DateTime]("createtime"),
       starttime = dbObj.getAs[DateTime]("starttime"),
       endtime = dbObj.getAs[DateTime]("endtime")
@@ -61,7 +61,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       "trainingsize" -> offlineEval.trainingsize,
       "testsize" -> offlineEval.testsize,
       "timeorder" -> offlineEval.timeorder,
-      "autotune" -> offlineEval.autotune)
+      "tuneid" -> offlineEval.tuneid)
 
     // option fields
     val createtimeObj = offlineEval.createtime.map(x => MongoDBObject("createtime" -> x)).getOrElse(emptyObj)
@@ -93,7 +93,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       "trainingsize" -> offlineEval.trainingsize,
       "testsize" -> offlineEval.testsize,
       "timeorder" -> offlineEval.timeorder,
-      "autotune" -> offlineEval.autotune)
+      "tuneid" -> offlineEval.tuneid)
 
     // option fields
     val createtimeObj = offlineEval.createtime.map(x => MongoDBObject("createtime" -> x)).getOrElse(emptyObj)
