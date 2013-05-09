@@ -78,16 +78,19 @@ object Scheduler extends Controller {
 
         /** Offline evaluations. */
         offlineEvals.getByEngineid(engine.id) foreach { offlineEval =>
-          val offlineEvalid = offlineEval.id.toString
-          val triggerkey = triggerKey(offlineEvalid, Jobs.offlineEvalJobGroup)
-          offlineEval.createtime foreach { ct =>
-            if (scheduler.checkExists(triggerkey) == false) {
-              offlineEval.endtime getOrElse {
-                val offlineEvalJob = Jobs.offlineEvalJob(config, app, engine, offlineEval)
-                scheduler.addJob(offlineEvalJob, true)
+          /** Work on those that is not part of auto tuning */
+          offlineEval.tuneid getOrElse {
+            val offlineEvalid = offlineEval.id.toString
+            val triggerkey = triggerKey(offlineEvalid, Jobs.offlineEvalJobGroup)
+            offlineEval.createtime foreach { ct =>
+              if (scheduler.checkExists(triggerkey) == false) {
+                offlineEval.endtime getOrElse {
+                  val offlineEvalJob = Jobs.offlineEvalJob(config, app, engine, offlineEval)
+                  scheduler.addJob(offlineEvalJob, true)
 
-                val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
-                scheduler.scheduleJob(trigger)
+                  val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
+                  scheduler.scheduleJob(trigger)
+                }
               }
             }
           }
