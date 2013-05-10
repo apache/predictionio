@@ -10,8 +10,9 @@ import controllers.Application.{offlineEvals, algos, offlineEvalSplitters, offli
 
 object SimEval extends Controller {
 
-//appId, engineId, algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration)
-
+  /** common function to create Offline Eval
+   * @param tuneid specify offline tune id if this Offine Eval is for auto tune 
+   */
   def createSimEval(engineId: Int, listOfAlgos: List[Algo], metricTypes: List[String], metricSettings: List[String],
     splitTrain: Int, splitValidation: Int, splitTest: Int, splitMethod: String, evalIteration: Int, tuneid: Option[Int]) = {
 

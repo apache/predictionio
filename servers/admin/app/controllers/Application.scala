@@ -629,9 +629,7 @@ object Application extends Controller {
 
      if (!engineAlgos.hasNext) NoContent
      else
-       Ok(toJson( // NOTE: only display undeployed algo without offlinevalid
-         // TODO: check status != eval
-         //(engineAlgos filter { algo => (algo.deployed == false) && (algo.offlineevalid == None)  } map { algo =>
+       Ok(toJson( // NOTE: only display algos which are not "deployed", nor "simeval"
           (engineAlgos filter { algo => !((algo.status == "deployed") || (algo.status == "simeval")) } map { algo =>
            Map("id" -> algo.id.toString,
                "algoName" -> algo.name,
@@ -1090,11 +1088,7 @@ object Application extends Controller {
           val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String)] = tuneAlgosGroup.map{ case (index, arrayOfAlgos) => 
             val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
             val algoInfo = algoInfos.get(algo.infoid).get
-            val settings = Itemrec.Algorithms.displayParams(algoInfo, algo.params) /*index match {
-              // print algo info name for loop 0 base line algo
-              case (Some(0), _) => algoInfo.name + " " + Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-              case _ => Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-            }*/
+            val settings = Itemrec.Algorithms.displayParams(algoInfo, algo.params)
             
             (index -> (algo.id, settings))
 
@@ -1201,7 +1195,6 @@ object Application extends Controller {
             )
           ))
 
-          //Ok
         } getOrElse {
           NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
         }
@@ -1216,7 +1209,7 @@ object Application extends Controller {
   
   // Apply the selected params to the algo
   def algoAutotuningSelect(app_id: String, engine_id: String, algo_id: String, algoautotune_id: String) = withUser { user => implicit request =>
-    // TODO: PDIO-148: sample output
+
     // Apply params of algoautotune_id to algo_id
     // update the status of algo_id from 'tuning' or 'tuned' to 'ready'
     
@@ -1409,82 +1402,6 @@ object Application extends Controller {
         } else {
           BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
         }
-
-        /*
-        // insert offlineeval record without create time
-        val newOfflineEval = OfflineEval(
-          id = -1,
-          engineid = engineId,
-          name = "",
-          iterations = evalIteration,
-          trainingsize = 8, // TODO: remove
-          testsize = 2, // TODO: remove
-          timeorder = false, // TODO: remove
-          autotune = false,
-          createtime = None, // NOTE: no createtime yet
-          starttime = None,
-          endtime = None
-        )
-
-        val evalid = offlineEvals.insert(newOfflineEval)
-
-        val optAlgos: List[Option[Algo]] = algoIds map {algoId => algos.get(algoId)}
-
-        if (!optAlgos.contains(None)) {
-
-          // duplicate algo with evalid
-          for ( optAlgo <- optAlgos ) {
-            val dupAlgo = optAlgo.get.copy(
-              id = -1,
-              offlineevalid = Option(evalid)
-            )
-            val dupAlgoId = algos.insert(dupAlgo)
-
-          }
-
-          // create metric record with evalid
-          for ((metricType, metricSetting) <- (metricTypes zip metricSettings)) {
-            val metricId = offlineEvalMetrics.insert(OfflineEvalMetric(
-              id = -1,
-              infoid = "map_k",
-              evalid = evalid,
-              params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
-            ))
-          }
-
-          // create splitter record
-          offlineEvalSplitters.insert(OfflineEvalSplitter(
-            id = -1,
-            evalid = evalid,
-            name = ("sim-eval-" + evalid + "-splitter"), // auto generate name now
-            infoid = "trainingtestsplit", // TODO: support different splitter
-            settings = Map(
-              "trainingPercent" -> (splitTrain.toDouble/100),
-              "validationPercent" -> 0, // no validatoin set for sim eval
-              "testPercent" -> (splitTest.toDouble/100),
-              "timeorder" -> (splitMethod != "random")
-              )
-          ))
-
-          // after all algo and metric info is stored.
-          // update offlineeval record with createtime, so scheduler can know it's ready to be picked up
-          offlineEvals.update(newOfflineEval.copy(
-            id = evalid,
-            name = ("sim-eval-" + evalid), // TODO: auto generate name now
-            createtime = Option(DateTime.now)
-          ))
-
-          WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
-
-          Ok
-
-        } else {
-          // there is error in getting algos, delete the offline eval record inserted.
-          offlineEvals.delete(evalid)
-
-          BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
-        }
-        */
       }
     )
   }
