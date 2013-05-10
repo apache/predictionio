@@ -23,16 +23,19 @@ case class OfflineTune(
 
 trait OfflineTunes {
 
-  /** Insert an OfflineTune and return id */
+  /** Insert an OfflineTune and return its ID. */
   def insert(offlineTune: OfflineTune): Int
 
-  /** Get OfflineTune by its id */
+  /** Get OfflineTune by its ID. */
   def get(id: Int): Option[OfflineTune]
 
-  /** Update OfflineTune (create new one if the it doesn't exist) */
+  /** Get OfflineTune's by Engine ID. */
+  def getByEngineid(engineid: Int): Iterator[OfflineTune]
+
+  /** Update OfflineTune (create new one if the it doesn't exist). */
   def update(offlineTune: OfflineTune)
 
-  /** delete OfflineTune by it's id) */
+  /** Delete OfflineTune by its ID. */
   def delete(id: Int)
 
 }
