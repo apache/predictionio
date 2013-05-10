@@ -18,6 +18,7 @@ class ParamGensSpec extends Specification { def is =
   def paramGensTest(paramGens: ParamGens) = {    t^
     "create an ParamGen"                                           ! insert(paramGens)^
     "update an ParamGen"                                           ! update(paramGens)^
+    "get two ParamGens by Tuneid"                                  ! getByTuneid(paramGens)^
     "delete an ParamGen"                                           ! delete(paramGens)^
                                                                             bt
   }
@@ -67,6 +68,45 @@ class ParamGensSpec extends Specification { def is =
 
     data1 must beSome(obj1.copy(id = updateid)) and
       (data2 must beSome(obj2))
+
+  }
+
+ /**
+   * insert a few and get by offline tune id
+   */
+  def getByTuneid(paramGens: ParamGens) = {
+    val obj1 = ParamGen(
+      id = -1,
+      infoid = "paramGen-update1",
+      tuneid = 121,
+      params = Map(("def" -> "a1 a2 a3"), ("def2" -> 1), ("def3" -> "food"))
+    )
+    val obj2 = ParamGen(
+      id = -1,
+      infoid = "paramGen-update1",
+      tuneid = 121,
+      params = Map(("def" -> "a1 a3 a4"), ("def2" -> 1), ("def3" -> "food"))
+    )
+    val obj3 = ParamGen(
+      id = -1,
+      infoid = "paramGen-update1",
+      tuneid = 122, // diff tuneid
+      params = Map(("def" -> "a1 a2 a3"), ("def2" -> 1), ("def3" -> "food"))
+    )
+
+    val id1 = paramGens.insert(obj1)
+    val id2 = paramGens.insert(obj2)
+    val id3 = paramGens.insert(obj3)
+
+    val it = paramGens.getByTuneid(121)
+
+    val it1 = it.next()
+    val it2 = it.next()
+    val left = it.hasNext // make sure it has 2 only
+
+    it1 must be equalTo(obj1.copy(id = id1)) and
+      (it2 must be equalTo(obj2.copy(id = id2))) and
+      (left must be_==(false))
 
   }
 

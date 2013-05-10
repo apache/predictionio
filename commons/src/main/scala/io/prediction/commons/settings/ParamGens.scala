@@ -22,6 +22,9 @@ trait ParamGens {
   /** Get a paramGen by its ID */
   def get(id: Int): Option[ParamGen]
 
+  /** Get paramGen by offline tune ID */
+  def getByTuneid(tuneid: Int): Iterator[ParamGen]
+
   /** Update paramGen */
   def update(paramGen: ParamGen)
 

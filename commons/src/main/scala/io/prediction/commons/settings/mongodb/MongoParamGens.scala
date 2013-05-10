@@ -52,6 +52,10 @@ class MongoParamGens(db: MongoDB) extends ParamGens {
     paramGensColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToParamGen(_) }
   }
 
+  def getByTuneid(tuneid: Int): Iterator[ParamGen] = new MongoParamGenIterator(
+    paramGensColl.find(MongoDBObject("tuneid" -> tuneid), getFields).sort(MongoDBObject("_id" -> 1))
+  )
+
   /** Update paramGen */
   def update(paramGen: ParamGen) = {
     paramGensColl.update(MongoDBObject("_id" -> paramGen.id), MongoDBObject(
