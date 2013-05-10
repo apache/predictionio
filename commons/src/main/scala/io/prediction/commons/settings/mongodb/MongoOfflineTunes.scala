@@ -38,7 +38,6 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
     def hasNext = it.hasNext
   }
 
-  /** Insert an OfflineTune and return id */
   def insert(offlineTune: OfflineTune): Int = {
     val id = genNextId
 
@@ -60,12 +59,12 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
     id
   }
 
-  /** Get OfflineTune by its id */
   def get(id: Int): Option[OfflineTune] = {
     offlineTuneColl.findOne(MongoDBObject("_id" -> id), getFields) map {dbObjToOfflineTune(_)}
   }
 
-  /** Update OfflineTune (create new one if the it doesn't exist) */
+  def getByEngineid(engineid: Int): Iterator[OfflineTune] = new MongoOfflineTuneIterator(offlineTuneColl.find(MongoDBObject("engineid" -> engineid), getFields))
+
   def update(offlineTune: OfflineTune) = {
 
     val obj = MongoDBObject(
@@ -84,9 +83,7 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
     offlineTuneColl.update(MongoDBObject("_id" -> offlineTune.id), obj ++ optObj)
   }
 
-  /** delete OfflineTune by it's id) */
   def delete(id: Int) = {
     offlineTuneColl.remove(MongoDBObject("_id" -> id))
   }
-
 }
