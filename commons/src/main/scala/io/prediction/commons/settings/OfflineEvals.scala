@@ -44,6 +44,9 @@ trait OfflineEvals {
   /** Get OfflineEval by engine id */
   def getByEngineid(engineid: Int): Iterator[OfflineEval]
 
+  /** Get OfflineEval by offline tune id */
+  def getByTuneid(tuneid: Int): Iterator[OfflineEval]
+
   /** Update OfflineEval (create new one if the it doesn't exist) */
   def update(offlineEval: OfflineEval)
 

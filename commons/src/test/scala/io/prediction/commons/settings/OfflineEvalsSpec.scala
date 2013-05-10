@@ -19,7 +19,8 @@ class OfflineEvalsSpec extends Specification { def is =
 
   def offlineEvalsTest(offlineEvals: OfflineEvals) = {    t^
     "create an OfflineEval"                               ! insert(offlineEvals)^
-    "get two OfflineEvals"                                ! getByEngineid(offlineEvals)^
+    "get two OfflineEvals by Engineid"                    ! getByEngineid(offlineEvals)^
+    "get two OfflineEvals by Tuneid"                      ! getByTuneid(offlineEvals)^
     "update an OfflineEval"                               ! update(offlineEvals)^
     "delete an OfflineEval"                               ! delete(offlineEvals)^
                                                           bt
@@ -92,6 +93,64 @@ class OfflineEvalsSpec extends Specification { def is =
       (left must be_==(false))
 
   }
+
+  /**
+   * insert a few and get by offline tune id
+   */
+  def getByTuneid(offlineEvals: OfflineEvals) = {
+    val eval1 = OfflineEval(
+      id = -1,
+      engineid = 12,
+      name = "offline-eval-getByEngineid1",
+      trainingsize = 70,
+      testsize = 20,
+      timeorder = true,
+      tuneid = Some(31),
+      createtime = None,
+      starttime = None,
+      endtime = None
+    )
+   val eval2 = OfflineEval(
+      id = -1,
+      engineid = 12,
+      name = "offline-eval-getByEngineid2",
+      trainingsize = 65,
+      testsize = 35,
+      timeorder = false,
+      tuneid = Some(31),
+      createtime = Some(DateTime.now.hour(1).minute(12).second(34)),
+      starttime = Some(DateTime.now.hour(2).minute(45).second(10)),
+      endtime = Some(DateTime.now.hour(4).minute(56).second(35))
+    )
+    val eval3 = OfflineEval(
+      id = -1,
+      engineid = 12,
+      name = "offline-eval-getByEngineid2",
+      trainingsize = 65,
+      testsize = 35,
+      timeorder = false,
+      tuneid = Some(32), // note: this one has different tuneid
+      createtime = Some(DateTime.now.hour(1).minute(12).second(34)),
+      starttime = Some(DateTime.now.hour(2).minute(45).second(10)),
+      endtime = Some(DateTime.now.hour(4).minute(56).second(35))
+    )
+
+    val id1 = offlineEvals.insert(eval1)
+    val id2 = offlineEvals.insert(eval2)
+    val id3 = offlineEvals.insert(eval3)
+
+    val it = offlineEvals.getByTuneid(31)
+
+    val it1 = it.next()
+    val it2 = it.next()
+    val left = it.hasNext // make sure it has 2 only
+
+    it1 must be equalTo(eval1.copy(id = id1)) and
+      (it2 must be equalTo(eval2.copy(id = id2))) and
+      (left must be_==(false))
+
+  }
+
 
   /**
    * insert one and then update with new data and get back

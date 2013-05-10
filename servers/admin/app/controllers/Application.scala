@@ -990,9 +990,9 @@ object Application extends Controller {
 		 )),
 		"metricscoreiterationlist" -> toJson(Seq(
 		    Seq(
-		    		Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.1)),
-		    		Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
-		    		Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.6))
+            Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.6)),
+		    		Map("algoautotune_id" -> toJson("algotuneid1231"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.1)),
+		    		Map("algoautotune_id" -> toJson("algotuneid1235"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2))
 		    ),
 		    Seq(
 		    		Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
@@ -1013,10 +1013,167 @@ object Application extends Controller {
     ))
 
     // TODO
-    // get the evalid id of this algo
-    // get all algos of this evalid
-    // get the offline eval result of these algos
+    // get the offlinetuneid of this algo
+    algos.get(algo_id.toInt) map { algo =>
+      algo.offlinetuneid map { tuneid =>
+        offlineTunes.get(tuneid) map { tune =>
 
+          //val tuneid = tune.id
+
+          // get all offlineeval of this offlinetuneid
+          val tuneOfflineEvals: Array[OfflineEval] = offlineEvals.getByTuneid(tuneid).toArray.sortBy(_.id)
+
+          val tuneMetrics: Array[OfflineEvalMetric] = tuneOfflineEvals.flatMap{ e => offlineEvalMetrics.getByEvalid(e.id) }
+
+          val tuneSplitters: Array[OfflineEvalSplitter] = tuneOfflineEvals.flatMap{ e => offlineEvalSplitters.getByEvalid(e.id) }
+
+          // get all offlineeavlresults of each offlineevalid
+          val tuneOfflineEvalResults: Array[OfflineEvalResult] = tuneOfflineEvals.flatMap{ e => offlineEvalResults.getByEvalid(e.id) }
+          
+          // test set score
+          val tuneOfflineEvalResultsTestSet: Array[OfflineEvalResult] = tuneOfflineEvalResults.filter( x => (x.splitset == "test") )
+
+          val tuneOfflineEvalResultsTestSetAlgoidMap: Map[Int, Double] = tuneOfflineEvalResultsTestSet.map(x => (x.algoid -> x.score)).toMap
+
+          // get all algos of each offlineevalid
+          // note: this happen after getting all available offlineEvalResults, 
+          // so these retrieved algos may have more algo than those used in offlineEvalResults.
+          val tuneAlgos: Array[Algo] = tuneOfflineEvals flatMap { e => algos.getByOfflineEvalid(e.id) } 
+
+          println(tuneAlgos.mkString(","))
+          println("")
+
+          val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map{ a => (a.id -> a) }.toMap
+
+          // group by (loop, paramset)
+          type AlgoGroupIndex = (Option[Int], Option[Int])
+
+          val tuneAlgosGroup: Map[AlgoGroupIndex, Array[Algo]] = tuneAlgos.groupBy( a => (a.loop, a.paramset) )
+
+          // get param of each group
+          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String)] = tuneAlgosGroup.map{ case (index, arrayOfAlgos) => 
+            val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
+            val algoInfo = algoInfos.get(algo.infoid).get
+            val settings = Itemrec.Algorithms.displayParams(algoInfo, algo.params) /*index match {
+              // print algo info name for loop 0 base line algo
+              case (Some(0), _) => algoInfo.name + " " + Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+              case _ => Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+            }*/
+            
+            (index -> (algo.id, settings))
+
+          }
+
+          /* debug */
+          println(tune)
+          println(tuneOfflineEvals.mkString(","))
+          println(tuneMetrics.mkString(","))
+          println(tuneSplitters.mkString(","))
+          println(tuneOfflineEvalResults.mkString(","))
+          println(tuneAlgosGroupParams)
+
+          // calculate avg
+          val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues{ arrayOfAlgos => 
+            // check if all scores available
+            val allAvailable = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap.contains(algo.id)).reduceLeft( _ && _ )
+
+            if (allAvailable) {
+              val scores: Array[Double] = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap(algo.id))
+
+              (scores.sum / scores.size).toString
+            } else {
+              "N/A"
+            }
+          }
+
+          val metricscorelist = avgScores.toSeq.sortBy(_._1).map{ case (k,v) =>
+             Map(
+              "algoautotune_id" -> toJson(tuneAlgosGroupParams(k)._1), 
+              "settingsString"-> toJson(tuneAlgosGroupParams(k)._2), 
+              "score"-> toJson(v))
+          }
+
+          
+          val metricscoreiterationlist = tuneOfflineEvals.map{ e =>
+            tuneOfflineEvalResultsTestSet.filter( x => (x.evalid == e.id) ).sortBy(_.algoid).map{ r =>
+              
+              val algo = tuneAlgosMap(r.algoid)
+              val algoInfo = algoInfos.get(algo.infoid).get
+
+              Map(
+                "algoautotune_id" -> toJson(r.algoid.toString), 
+                "settingsString"-> toJson(Itemrec.Algorithms.displayParams(algoInfo, algo.params)), 
+                "score"-> toJson(r.score))
+              
+            }.toSeq
+          }.toSeq
+          
+          val algoInfo = algoInfos.get(algo.infoid).get
+          val metric = tuneMetrics(0)
+          val splitter = tuneSplitters(0)
+          val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double])*100).toInt
+          val splitValidation = ((splitter.settings("validationPercent").asInstanceOf[Double])*100).toInt
+          val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
+          val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
+          val evalIteration = tuneOfflineEvals.size // NOTE: for autotune, number of offline eval is the iteration
+
+          val status: String = (tune.starttime, tune.endtime) match {
+            case (Some(x), Some(y)) => "completed"
+            case (None, None) => "pending"
+            case (Some(x), None) => "running"
+            case _ => "error"
+          }
+          val starttime = tune.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
+          val endtime = tune.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
+
+          Ok(toJson(
+            Map(
+              "id" -> toJson(algo_id),
+              "app_id" -> toJson(app_id),
+              "engine_id" -> toJson(engine_id),
+              "algo" -> toJson(Map(
+                          "id" -> algo.id.toString,
+                          "algoName" -> algo.name.toString,
+                          "app_id" -> app_id,
+                          "engine_id" -> algo.engineid.toString,
+                          "algotype_id" -> algo.infoid,
+                          "algotypeName" -> algoInfo.name,
+                          "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                        )),
+              "metric" -> toJson(Map(
+                          "id" -> metric.id.toString,
+                          "engine_id" -> engine_id,
+                          "enginetype_id" -> "itemrec", // TODO: hardcode now, should get this from enginedb
+                          "metricstype_id" -> metric.infoid,
+                          "metricsName" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
+                          "settingsString" -> map_k_displayAllParams(metric.params)
+                        )),
+              "metricscorelist" -> toJson(metricscorelist),
+              "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
+
+              "splitTrain" -> toJson(splitTrain), // TODO: engine-level setting
+              "splitValidation" -> toJson(splitValidation), // TODO: engine-level setting
+              "splitTest" -> toJson(splitTest), // TODO: engine-level setting
+              "splitMethod" -> toJson(splitMethod), // TODO: engine-level setting
+              "evalIteration" -> toJson(evalIteration), // TODO: engine-level setting
+
+              "status" -> toJson(status),
+              "startTime" -> toJson(starttime),
+              "endTime" -> toJson(endtime)
+            )
+          ))
+
+          //Ok
+        } getOrElse {
+          NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+        }
+      } getOrElse {
+        NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+      }
+    } getOrElse {
+      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+    }
+    
   }
   
   // Apply the selected params to the algo

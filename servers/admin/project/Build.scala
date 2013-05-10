@@ -17,7 +17,8 @@ object ApplicationBuild extends Build {
       playAssetsDirectories <+= baseDirectory / "enginebase",
       resolvers += (
         "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-      )
+      ),
+      scalacOptions ++= Seq("-deprecation","-unchecked","-feature")
     )
 
 }

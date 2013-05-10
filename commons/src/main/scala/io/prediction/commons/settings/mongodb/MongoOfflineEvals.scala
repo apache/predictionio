@@ -84,6 +84,10 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
     offlineEvalColl.find(MongoDBObject("engineid" -> engineid), getFields).sort(MongoDBObject("name" -> 1))
   )
 
+  def getByTuneid(tuneid: Int): Iterator[OfflineEval] = new MongoOfflineEvalIterator(
+    offlineEvalColl.find(MongoDBObject("tuneid" -> tuneid), getFields).sort(MongoDBObject("name" -> 1))
+  )
+
   def update(offlineEval: OfflineEval) = {
     val obj = MongoDBObject(
       "_id" -> offlineEval.id,
