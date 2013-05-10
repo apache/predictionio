@@ -861,6 +861,16 @@ object Application extends Controller {
       }
     }
 
+    val engineOfflineTunes = offlineTunes.getByEngineid(engineid)
+
+    engineOfflineTunes foreach { tune =>
+      deleteOfflineTune(tune.id, keepSettings)
+      if (!keepSettings) {
+        Logger.info("Delete offline tune ID "+tune.id)
+        offlineTunes.delete(tune.id)
+      }
+    }
+
   }
 
 
@@ -877,6 +887,7 @@ object Application extends Controller {
     evalAlgos foreach { algo =>
       deleteModelData(algo.id)
       if (!keepSettings) {
+        Logger.info("Delete algo ID "+algo.id)
         algos.delete(algo.id)
       }
     }
@@ -885,12 +896,40 @@ object Application extends Controller {
       val evalMetrics = offlineEvalMetrics.getByEvalid(evalid)
 
       evalMetrics foreach { metric =>
+        Logger.info("Delete metric ID "+metric.id)
         offlineEvalMetrics.delete(metric.id)
       }
 
+      Logger.info("Delete offline eval results of offline eval ID "+evalid)
       offlineEvalResults.deleteByEvalid(evalid)
     }
 
+  }
+
+  /**
+   * delete DB data under this tuneid
+   */
+  def deleteOfflineTune(tuneid: Int, keepSettings: Boolean) = {
+    
+    // delete paramGen
+    if (!keepSettings) {
+      val tuneParamGens = paramGens.getByTuneid(tuneid)
+      tuneParamGens foreach { gen =>
+        Logger.info("Delete ParamGen ID "+gen.id)
+        paramGens.delete(gen.id)
+      }
+    }
+
+    // delete OfflineEval
+    val tuneOfflineEvals = offlineEvals.getByTuneid(tuneid)
+
+    tuneOfflineEvals foreach { eval =>
+      deleteOfflineEval(eval.id, keepSettings)
+      if (!keepSettings) {
+        Logger.info("Delete offline eval ID "+eval.id)
+        offlineEvals.delete(eval.id)
+      }
+    }
   }
 
 
@@ -960,7 +999,7 @@ object Application extends Controller {
   }
 
   def getAlgoAutotuningReport(app_id: String, engine_id: String, algo_id: String) = withUser { user => implicit request =>
-    // TODO: PDIO-148: sample output
+    /* sample output
     Ok(toJson(
       Map(
         "id" -> toJson("algo_id123"),
@@ -1010,15 +1049,12 @@ object Application extends Controller {
         "startTime" -> toJson("04-23-2012 12:21:23"),
         "endTime" -> toJson("04-25-2012 13:21:23")
       )
-    ))
+    )) */
 
-    // TODO
     // get the offlinetuneid of this algo
     algos.get(algo_id.toInt) map { algo =>
       algo.offlinetuneid map { tuneid =>
         offlineTunes.get(tuneid) map { tune =>
-
-          //val tuneid = tune.id
 
           // get all offlineeval of this offlinetuneid
           val tuneOfflineEvals: Array[OfflineEval] = offlineEvals.getByTuneid(tuneid).toArray.sortBy(_.id)
@@ -1040,8 +1076,8 @@ object Application extends Controller {
           // so these retrieved algos may have more algo than those used in offlineEvalResults.
           val tuneAlgos: Array[Algo] = tuneOfflineEvals flatMap { e => algos.getByOfflineEvalid(e.id) } 
 
-          println(tuneAlgos.mkString(","))
-          println("")
+          //println(tuneAlgos.mkString(",")) // TODO: remove
+          //println("")
 
           val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map{ a => (a.id -> a) }.toMap
 
@@ -1065,12 +1101,14 @@ object Application extends Controller {
           }
 
           /* debug */
+          /* TODO remove
           println(tune)
           println(tuneOfflineEvals.mkString(","))
           println(tuneMetrics.mkString(","))
           println(tuneSplitters.mkString(","))
           println(tuneOfflineEvalResults.mkString(","))
           println(tuneAlgosGroupParams)
+          */
 
           // calculate avg
           val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues{ arrayOfAlgos => 
@@ -1151,11 +1189,11 @@ object Application extends Controller {
               "metricscorelist" -> toJson(metricscorelist),
               "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
 
-              "splitTrain" -> toJson(splitTrain), // TODO: engine-level setting
-              "splitValidation" -> toJson(splitValidation), // TODO: engine-level setting
-              "splitTest" -> toJson(splitTest), // TODO: engine-level setting
-              "splitMethod" -> toJson(splitMethod), // TODO: engine-level setting
-              "evalIteration" -> toJson(evalIteration), // TODO: engine-level setting
+              "splitTrain" -> toJson(splitTrain),
+              "splitValidation" -> toJson(splitValidation),
+              "splitTest" -> toJson(splitTest),
+              "splitMethod" -> toJson(splitMethod),
+              "evalIteration" -> toJson(evalIteration),
 
               "status" -> toJson(status),
               "startTime" -> toJson(starttime),
@@ -1181,7 +1219,21 @@ object Application extends Controller {
     // TODO: PDIO-148: sample output
     // Apply params of algoautotune_id to algo_id
     // update the status of algo_id from 'tuning' or 'tuned' to 'ready'
-    Ok
+    
+    val orgAlgo = algos.get(algo_id.toInt)
+    val tunedAlgo = algos.get(algoautotune_id.toInt)
+
+    if ((orgAlgo == None) || (tunedAlgo == None)) {
+      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+    } else {
+
+      algos.update(orgAlgo.get.copy(
+        params = tunedAlgo.get.params,
+        status = "ready"
+      ))
+
+      Ok
+    }
   }
 
   
