@@ -15,8 +15,6 @@ DIR=`dirname $SCRIPT`/..
 cd $DIR
 BASE=`pwd`
 
-$BASE/bin/conncheck
-
 . "$BASE/bin/common.sh"
 . "$BASE/bin/vendors.sh"
 
@@ -24,6 +22,20 @@ mkdir -p "$LOGDIR"
 
 SERVER_WAIT=1
 SERVER_RETRY=20
+
+# MongoDB
+if vendor_mongodb_exists ; then
+	while true; do
+		read -p "Found MongoDB in vendors area. Do you want to start it? [y/n] " yn
+		case $yn in
+			[Yy]* ) start_mongodb; break;;
+			[Nn]* ) break;;
+			* ) echo "Please answer 'y' or 'n'.";;
+		esac
+	done
+fi
+
+$BASE/bin/conncheck
 
 # Admin server
 echo -n "Trying to start admin server... "
@@ -75,18 +87,6 @@ while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
 	fi
 	SERVER_TRY=$((SERVER_TRY+1))
 done
-
-# MongoDB
-if vendor_mongodb_exists ; then
-	while true; do
-		read -p "Found MongoDB in vendors area. Do you want to start it? [y/n] " yn
-		case $yn in
-			[Yy]* ) start_mongodb; break;;
-			[Nn]* ) break;;
-			* ) echo "Please answer 'y' or 'n'.";;
-		esac
-	done
-fi
 
 # Apache Hadoop
 if vendor_hadoop_exists ; then
