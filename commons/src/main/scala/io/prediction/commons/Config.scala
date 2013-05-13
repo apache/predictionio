@@ -221,6 +221,13 @@ class Config {
     Some(db)
   } else None
 
+  /** If appdataValidationDbType is "mongodb", this will contain a Some[MongoDB] object. */
+  val appdataValidationMongoDb: Option[MongoDB] = if (appdataValidationDbType == "mongodb") {
+    val db = MongoClient(appdataValidationDbHost, appdataValidationDbPort)(appdataValidationDbName)
+    appdataValidationDbUser map { db.authenticate(_, appdataValidationDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
+
   /** If modeldataDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val modeldataMongoDb: Option[MongoDB] = if (modeldataDbType == "mongodb") {
     val db = MongoClient(modeldataDbHost, modeldataDbPort)(modeldataDbName)
@@ -562,6 +569,36 @@ class Config {
         new appdata.mongodb.MongoU2IActions(appdataTestMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid appdata database type: " + appdataTestDbType)
+    }
+  }
+
+  /** Obtains a Users object of the validation set with configured backend type. */
+  def getAppdataValidationUsers(): appdata.Users = {
+    appdataValidationDbType match {
+      case "mongodb" => {
+        new appdata.mongodb.MongoUsers(appdataValidationMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataValidationDbType)
+    }
+  }
+
+  /** Obtains an Items object of the validation set with configured backend type. */
+  def getAppdataValidationItems(): appdata.Items = {
+    appdataValidationDbType match {
+      case "mongodb" => {
+        new appdata.mongodb.MongoItems(appdataValidationMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataValidationDbType)
+    }
+  }
+
+  /** Obtains a U2IActions object of the validation set with configured backend type. */
+  def getAppdataValidationU2IActions(): appdata.U2IActions = {
+    appdataValidationDbType match {
+      case "mongodb" => {
+        new appdata.mongodb.MongoU2IActions(appdataValidationMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataValidationDbType)
     }
   }
 

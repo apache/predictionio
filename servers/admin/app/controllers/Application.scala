@@ -1219,9 +1219,9 @@ object Application extends Controller {
     if ((orgAlgo == None) || (tunedAlgo == None)) {
       NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
     } else {
-
+      val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
       algos.update(orgAlgo.get.copy(
-        params = tunedAlgo.get.params,
+        params = tunedAlgoParams,
         status = "ready"
       ))
 

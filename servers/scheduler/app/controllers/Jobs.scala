@@ -2,7 +2,7 @@ package io.prediction.scheduler
 
 import io.prediction.commons._
 import io.prediction.commons.filepath._
-import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval, OfflineEvalMetric}
+import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval, OfflineEvalMetric, OfflineTune}
 
 import com.github.nscala_time.time.Imports._
 import org.clapper.scalasti.StringTemplate
@@ -22,6 +22,7 @@ import scala.sys.process._
 object Jobs {
   val algoJobGroup = "predictionio-algo"
   val offlineEvalJobGroup = "predictionio-offlineeval"
+  val offlineTuneJobGroup = "predictionio-offlinetune"
 
   def algoJob(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
     /** Build command from template. */
@@ -59,6 +60,25 @@ object Jobs {
     job
   }
 
+  /** Offline Tuning Flow
+    *
+    * 1. Perform multiple set of data splitting
+    * 2. Train and evaluate baseline algo against data sets from 1.
+    * 3. For a specified number of iterations:
+    *    1. Parameter generator generates new parameters based on previous evaluation results.
+    *    2. Train algo and run metrics against both validation and test sets.
+    * 4. Mark offline evaluation as finished
+    */
+  def offlineTuneJob(config: Config, app: App, engine: Engine, offlineTune: OfflineTune) = {
+    /** Add a job, then build a trigger for it.
+      * This is necessary for updating any existing job,
+      * and make sure the trigger will fire.
+      */
+    val job = newJob(classOf[OfflineTuneJob]) withIdentity(offlineTune.id.toString, offlineTuneJobGroup) storeDurably(true) build()
+    job.getJobDataMap().put("tuneid", offlineTune.id)
+    job
+  }
+
   def setSharedAttributes(command: StringTemplate, config: Config, app: App, engine: Engine, algo: Option[Algo], offlineEval: Option[OfflineEval], metric: Option[OfflineEvalMetric], params: Option[collection.immutable.Map[String, Any]] = None) = {
     /** Custom attributes */
     params map { command.setAttributes(_) }
@@ -67,6 +87,8 @@ object Jobs {
     metric map { met =>
       command.setAttributes(command.attributes ++ met.params)
       command.setAttribute("metricid", met.id)
+      command.attributes.get("iteration").getOrElse(command.setAttribute("iteration", 0))
+      command.attributes.get("splitset").getOrElse(command.setAttribute("splitset", ""))
     }
 
     /** OfflineEval-specific attributes */
@@ -104,8 +126,9 @@ object Jobs {
     command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
     command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
     command.setAttribute("trainingTestSplitTimeJar", config.getJar("io.prediction.evaluations.itemrec.trainingtestsplit").getOrElse(""))
+    command.setAttribute("paramgenJar", config.getJar("io.prediction.evaluations.itemrec.paramgen").getOrElse(""))
 
-    command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse(""))
+    command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse("-Dconfig.file=conf/application.conf"))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
@@ -126,10 +149,10 @@ object Jobs {
     command.setAttribute("appdataValidationDbName", config.appdataValidationDbName)
     command.setAttribute("appdataValidationDbHost", config.appdataValidationDbHost)
     command.setAttribute("appdataValidationDbPort", config.appdataValidationDbPort)
-    command.setAttribute("appdataTestDbType", config.appdataTestDbType)
-    command.setAttribute("appdataTestDbName", config.appdataTestDbName)
-    command.setAttribute("appdataTestDbHost", config.appdataTestDbHost)
-    command.setAttribute("appdataTestDbPort", config.appdataTestDbPort)
+    command.attributes.get("appdataTestDbType").getOrElse(command.setAttribute("appdataTestDbType", config.appdataTestDbType))
+    command.attributes.get("appdataTestDbName").getOrElse(command.setAttribute("appdataTestDbName", config.appdataTestDbName))
+    command.attributes.get("appdataTestDbHost").getOrElse(command.setAttribute("appdataTestDbHost", config.appdataTestDbHost))
+    command.attributes.get("appdataTestDbPort").getOrElse(command.setAttribute("appdataTestDbPort", config.appdataTestDbPort))
     command.setAttribute("modeldataDbType", config.modeldataDbType)
     command.setAttribute("modeldataDbName", config.modeldataDbName)
     command.setAttribute("modeldataDbHost", config.modeldataDbHost)
@@ -298,16 +321,16 @@ class OfflineEvalJob extends InterruptableJob {
           /** Mark the start time */
           offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
 
-          /** Delete old model data, if any (usually recovering from an incomplete run) */
-          engine.infoid match {
-            case "itemrec" => algosToRun foreach { algo =>
-              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
-              Scheduler.itemRecScores.deleteByAlgoid(algo.id)
-            }
-          }
-
           for (currentIteration <- 1 to totalIterations) {
             val iterationParam = collection.immutable.Map("iteration" -> currentIteration)
+
+            /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
+            engine.infoid match {
+              case "itemrec" => algosToRun foreach { algo =>
+                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+                Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+              }
+            }
 
             /** Spiltters setup (support 1 splitter for now) */
             if (splittersToRun.length > 0) {
@@ -318,7 +341,7 @@ class OfflineEvalJob extends InterruptableJob {
               val splitter = splittersToRun(0)
               offlineEvalSplitterInfos.get(splitter.infoid) map { splitterInfo =>
                 splitterInfo.commands map { commands =>
-                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.paramdefaults ++ iterationParam)).toString }
+                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.paramdefaults ++ splitter.settings ++ iterationParam)).toString }
                   step(evalid, currentIteration, "split", splitterCommands)
                 } getOrElse {
                   Logger.warn(s"${logPrefix}Not doing data split because splitter information for ${splitter.infoid} contains no command")
@@ -383,15 +406,15 @@ class OfflineEvalJob extends InterruptableJob {
           }
 
           /** Check for errors from metric */
-          println(s"${logPrefix}Exit code summary:")
+          Logger.info(s"${logPrefix}Exit code summary:")
 
           for (currentIteration <- 1 to totalIterations) {
-            println(s"${logPrefix}Iteration ${currentIteration}:")
-            println(s"${logPrefix}  Split: "+exitCodes(s"split-${currentIteration}"))
+            Logger.info(s"${logPrefix}Iteration ${currentIteration}:")
+            Logger.info(s"${logPrefix}  Split: "+exitCodes(s"split-${currentIteration}"))
             algoids foreach { algoid =>
-              println(s"${logPrefix}  Algo ID ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
+              Logger.info(s"${logPrefix}  Algo ID ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
               metricids foreach { metricid =>
-                println(s"${logPrefix}    Metric ID ${metricid}: "+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
+                Logger.info(s"${logPrefix}    Metric ID ${metricid}: "+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
               }
             }
           }
@@ -412,6 +435,417 @@ class OfflineEvalJob extends InterruptableJob {
       }
     } getOrElse {
       Logger.warn(s"${logPrefix}Not starting offline evaluation because the offline evaluation cannot be found from the database")
+    }
+  }
+
+  override def interrupt() = {
+    this.synchronized {
+      kill = true
+      procs.values map { _.destroy }
+    }
+  }
+}
+
+@DisallowConcurrentExecution
+@PersistJobDataAfterExecution
+class OfflineTuneJob extends InterruptableJob {
+  @volatile
+  var kill = false
+
+  val exitCodes: Map[String, Int] = new HashMap[String, Int] with SynchronizedMap[String, Int]
+  val finishFlags: Map[String, Boolean] = new HashMap[String, Boolean] with SynchronizedMap[String, Boolean]
+  val procs: Map[String, Process] = new HashMap[String, Process] with SynchronizedMap[String, Process]
+
+  def step(tuneid: Int, evalid: Int, iteration: Int, steptype: String, commands: Seq[String], algoid: Option[Int] = None, metricid: Option[Int] = None, algoids: Option[Seq[Int]] = None, metricids: Option[Seq[Int]] = None) = future {
+    val logPrefix = s"OfflineTune ID $tuneid: OfflineEval ID $evalid: Iteration ${iteration}: " + algoid.map(id => s"Algo ID ${id}: ").getOrElse("") + metricid.map(id => s"Metric ID ${id}: ").getOrElse("")
+    val key = s"${steptype}-${evalid}-${iteration}" + algoid.map(id => s"-${id}").getOrElse("") + metricid.map(id => s"-${id}").getOrElse("")
+    var abort = false
+
+    steptype match {
+      case "split" => {
+        /**
+        if (iteration > 1) {
+          val iterationkey = s"iteration-${iteration-1}"
+          while (!finishFlags(iterationkey)) {
+            Thread.sleep(1000)
+          }
+        }
+        */
+      }
+      case "paramgen" => {
+        val keys = Scheduler.offlineEvals.getByTuneid(tuneid).toSeq.map(oe => s"iteration-${oe.id}-${iteration-1}")
+        while (!finishFlags.filterKeys(keys.contains(_)).values.reduce((a, b) => a && b)) {
+          Thread.sleep(1000)
+        }
+      }
+      case "training" => {
+        if (iteration == 0) {
+          val splitkey = s"split-${evalid}-${iteration}"
+          while (!finishFlags(splitkey)) {
+            Thread.sleep(1000)
+          }
+          if (exitCodes(splitkey) != 0) {
+            abort = true
+            Logger.info(s"${logPrefix}(${steptype}) Aborted due to split error")
+          }
+        }
+      }
+      case "metric" => {
+        val trainingkey = s"training-${evalid}-${iteration}-${algoid.get}"
+        while (!finishFlags(trainingkey)) {
+          Thread.sleep(1000)
+        }
+        if (exitCodes(trainingkey) != 0) {
+          abort = true
+          Logger.info(s"${logPrefix}(${steptype}) Aborted due to training error")
+        }
+      }
+      case "iteration" => {
+        val keys = for {
+          aid <- algoids.get
+          mid <- metricids.get
+        } yield s"metric-${evalid}-${iteration}-${aid}-${mid}"
+
+        while (!finishFlags.filterKeys(keys.contains(_)).values.reduce((a, b) => a && b)) {
+          Thread.sleep(1000)
+        }
+
+        Logger.info(s"${logPrefix}(${steptype}) Finished iteration")
+      }
+    }
+
+    //val scommands = if (steptype == "iteration" || steptype == "paramgen") commands else Seq("sleep 3")
+    commands map { _.trim } foreach { c =>
+      this.synchronized {
+        if (!kill && !abort && !c.isEmpty && exitCodes(key) == 0) {
+          Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
+          procs(key) = Process(c).run
+          Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+        }
+      }
+
+      procs.get(key) map { p =>
+        val exitCode = p.exitValue
+
+        /** Save completion information for global access */
+        exitCodes(key) = exitCode
+
+        Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+      }
+    }
+
+    finishFlags(key) = true
+
+    /** Display completion information */
+    if (kill) Logger.info(s"${logPrefix}(${steptype}) Sub-process was killed upon request")
+  }
+
+  override def execute(context: JobExecutionContext): Unit = {
+    val jobDataMap = context.getMergedJobDataMap
+    val tuneid = jobDataMap.getInt("tuneid")
+
+    val config = Scheduler.config
+    val apps = Scheduler.apps
+    val engines = Scheduler.engines
+    val algos = Scheduler.algos
+    val algoInfos = Scheduler.algoInfos
+    val offlineEvals = Scheduler.offlineEvals
+    val offlineEvalSplitters = Scheduler.offlineEvalSplitters
+    val offlineEvalSplitterInfos = Scheduler.offlineEvalSplitterInfos
+    val offlineEvalMetrics = Scheduler.offlineEvalMetrics
+    val offlineEvalMetricInfos = Scheduler.offlineEvalMetricInfos
+    val offlineTunes = Scheduler.offlineTunes
+    val paramGens = Scheduler.paramGens
+    val paramGenInfos = Scheduler.paramGenInfos
+
+    val logPrefix = s"OfflineTune ID $tuneid: "
+
+    val testMetricParams = collection.immutable.Map("splitset" -> "test")
+    val validationMetricParams = collection.immutable.Map(
+      "splitset" -> "validation",
+      "appdataTestDbType" -> config.appdataValidationDbType,
+      "appdataTestDbName" -> config.appdataValidationDbName,
+      "appdataTestDbHost" -> config.appdataValidationDbHost,
+      "appdataTestDbPort" -> config.appdataValidationDbPort)
+
+    offlineTunes.get(tuneid) map { offlineTune =>
+      engines.get(offlineTune.engineid) map { engine =>
+        apps.get(engine.appid) map {app =>
+          val totalLoops = offlineTune.loops
+          val offlineEvalsToRun = offlineEvals.getByTuneid(offlineTune.id).toSeq
+
+          Logger.info(s"${logPrefix}Starting offline tuning with ${offlineEvalsToRun.size} data set(s) and ${totalLoops} iteration(s) of parameter generation")
+
+          /** Mark the start time */
+          offlineTunes.update(offlineTune.copy(starttime = Some(DateTime.now)))
+
+          /** Data splitting (done only once for each evaluation), and baseline algo evaluation */
+          offlineEvalsToRun foreach { offlineEval =>
+            val splittersToRun = offlineEvalSplitters.getByEvalid(offlineEval.id).toSeq
+            val algosToRun = algos.getByOfflineEvalid(offlineEval.id).toSeq.filter(_.loop.map(_ == 0).getOrElse(false))
+            val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toSeq
+            val algoids = algosToRun map { _.id }
+            val metricids = metricsToRun map { _.id }
+
+            /** Delete old model data, if any (usually recovering from an incomplete run) */
+            val algosToClean = algos.getByOfflineEvalid(offlineEval.id).toSeq.filter(_.loop.map(_ != 0).getOrElse(false))
+            engine.infoid match {
+              case "itemrec" => algosToClean foreach { algo =>
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting any old model data")
+                Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+                algos.delete(algo.id)
+              }
+            }
+
+            val currentIteration = 0
+            val iterationParam = collection.immutable.Map("iteration" -> currentIteration)
+            val splitIterationParam = collection.immutable.Map("iteration" -> 1)
+
+            /** Spiltters setup (support 1 splitter for now) */
+            if (splittersToRun.length > 0) {
+              val splitter = splittersToRun(0)
+              val splitkey = s"split-${offlineEval.id}-${currentIteration}"
+              exitCodes(splitkey) = 0
+              finishFlags(splitkey) = false
+
+              offlineEvalSplitterInfos.get(splitter.infoid) map { splitterInfo =>
+                splitterInfo.commands map { commands =>
+                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.paramdefaults ++ splitter.settings ++ splitIterationParam)).toString }
+                  step(tuneid, offlineEval.id, currentIteration, "split", splitterCommands)
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Not doing data split because splitter information for ${splitter.infoid} contains no command")
+                  step(tuneid, offlineEval.id, currentIteration, "split", Seq())
+                }
+              } getOrElse {
+                Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Not doing data split because splitter information for ${splitter.infoid} is missing")
+                step(tuneid, offlineEval.id, currentIteration, "split", Seq())
+              }
+            }
+
+            algosToRun foreach { algo =>
+              val trainingkey = s"training-${offlineEval.id}-${currentIteration}-${algo.id}"
+
+              exitCodes(trainingkey) = 0
+              finishFlags(trainingkey) = false
+
+              algoInfos.get(algo.infoid) map { algoInfo =>
+                algoInfo.offlineevalcommands map { commands =>
+                  val trainingCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), None, Some(iterationParam)).toString }
+                  step(tuneid, offlineEval.id, currentIteration, "training", trainingCommands, Some(algo.id))
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
+                  step(tuneid, offlineEval.id, currentIteration, "training", Seq(), Some(algo.id))
+                }
+              } getOrElse {
+                Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Not doing training because algo information for ${algo.infoid} is missing")
+                step(tuneid, offlineEval.id, currentIteration, "training", Seq(), Some(algo.id))
+              }
+
+              /** Run metrics */
+              metricsToRun foreach { metric =>
+                val metrickey = s"metric-${offlineEval.id}-${currentIteration}-${algo.id}-${metric.id}"
+
+                exitCodes(metrickey) = 0
+                finishFlags(metrickey) = false
+
+                offlineEvalMetricInfos.get(metric.infoid) map { metricInfo =>
+                  metricInfo.commands map { commands =>
+                    val metricCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), Some(metric), Some(iterationParam)).toString }
+                    step(tuneid, offlineEval.id, currentIteration, "metric", metricCommands, Some(algo.id), Some(metric.id))
+                  } getOrElse {
+                    Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
+                    step(tuneid, offlineEval.id, currentIteration, "metric", Seq(), Some(algo.id), Some(metric.id))
+                  }
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} is missing")
+                  step(tuneid, offlineEval.id, currentIteration, "metric", Seq(), Some(algo.id), Some(metric.id))
+                }
+              }
+            }
+
+            /** Block on baseline training and metric */
+            val iterationkey = s"iteration-${offlineEval.id}-${currentIteration}"
+            exitCodes(iterationkey) = 0
+            finishFlags(iterationkey) = false
+
+            step(tuneid, offlineEval.id, currentIteration, "iteration", Seq(), None, None, Some(algoids), Some(metricids))
+          }
+
+          /** Start iterative tuning */
+
+          /** Parameter generator setup (support 1 param gen for now) */
+          /** Parameter generator is run once for all offline evaluations */
+          val tuneSubject = algos.getTuneSubjectByOfflineTuneid(tuneid).get
+          val paramGensToRun = paramGens.getByTuneid(tuneid).toSeq
+          val paramGen = paramGensToRun(0)
+          val paramGenInfo = paramGenInfos.get(paramGen.infoid)
+          val paramGenParams = collection.immutable.Map("algoid" -> tuneSubject.id, "paramsets" -> 1, "evalids" -> offlineEvalsToRun.map(_.id.toString).reduce((a, b) => s"${a},${b}"))
+
+          for (currentLoop <- 1 to totalLoops) {
+            val iterationParam = collection.immutable.Map("iteration" -> currentLoop)
+            val loopParam = collection.immutable.Map("loop" -> currentLoop)
+
+            val paramGenKey = s"paramgen-0-${currentLoop}"
+            if (paramGensToRun.length > 0) {
+              val paramGen = paramGensToRun(0)
+              exitCodes(paramGenKey) = 0
+              finishFlags(paramGenKey) = false
+
+              paramGenInfo map { paramGenInfo =>
+                paramGenInfo.commands map { commands =>
+                  val paramGenCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, None, None, Some(paramGenInfo.paramdefaults ++ paramGen.params ++ loopParam ++ paramGenParams)).toString }
+                  step(tuneid, 0, currentLoop, "paramgen", paramGenCommands)
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}: Not generating parameters because generator information for ${paramGen.infoid} contains no command")
+                  step(tuneid, 0, currentLoop, "paramgen", Seq())
+                }
+              } getOrElse {
+                Logger.warn(s"${logPrefix}: Not generating parameters because generator information for ${paramGen.infoid} is missing")
+                step(tuneid, 0, currentLoop, "paramgen", Seq())
+              }
+            }
+
+            /** Block on param gen */
+            while (!finishFlags(paramGenKey)) {
+              Thread.sleep(1000)
+            }
+
+            /** Evaluate generated algos */
+            offlineEvalsToRun foreach { offlineEval =>
+              /** Only 1 param set for now */
+              val algosToRun = algos.getByOfflineEvalid(offlineEval.id, Some(currentLoop), Some(1)).toSeq
+              val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toSeq
+              val algoids = algosToRun map { _.id }
+              val metricids = metricsToRun map { _.id }
+
+              algosToRun foreach { algo =>
+                val trainingkey = s"training-${offlineEval.id}-${currentLoop}-${algo.id}"
+
+                exitCodes(trainingkey) = 0
+                finishFlags(trainingkey) = false
+
+                algoInfos.get(algo.infoid) map { algoInfo =>
+                  algoInfo.offlineevalcommands map { commands =>
+                    val trainingCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), None, Some(loopParam)).toString }
+                    step(tuneid, offlineEval.id, currentLoop, "training", trainingCommands, Some(algo.id))
+                  } getOrElse {
+                    Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
+                    step(tuneid, offlineEval.id, currentLoop, "training", Seq(), Some(algo.id))
+                  }
+                } getOrElse {
+                  Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Not doing training because algo information for ${algo.infoid} is missing")
+                  step(tuneid, offlineEval.id, currentLoop, "training", Seq(), Some(algo.id))
+                }
+
+                /** Run metrics */
+                metricsToRun foreach { metric =>
+                  val metrickey = s"metric-${offlineEval.id}-${currentLoop}-${algo.id}-${metric.id}"
+
+                  exitCodes(metrickey) = 0
+                  finishFlags(metrickey) = false
+
+                  offlineEvalMetricInfos.get(metric.infoid) map { metricInfo =>
+                    metricInfo.commands map { commands =>
+                      val validationMetricCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), Some(metric), Some(validationMetricParams ++ iterationParam)).toString }
+                      val testMetricCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), Some(metric), Some(testMetricParams ++ iterationParam)).toString }
+                      step(tuneid, offlineEval.id, currentLoop, "metric", validationMetricCommands ++ testMetricCommands, Some(algo.id), Some(metric.id))
+                    } getOrElse {
+                      Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
+                      step(tuneid, offlineEval.id, currentLoop, "metric", Seq(), Some(algo.id), Some(metric.id))
+                    }
+                  } getOrElse {
+                    Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} is missing")
+                    step(tuneid, offlineEval.id, currentLoop, "metric", Seq(), Some(algo.id), Some(metric.id))
+                  }
+                }
+              }
+
+              /** Block on training and metric */
+              val iterationkey = s"iteration-${offlineEval.id}-${currentLoop}"
+              exitCodes(iterationkey) = 0
+              finishFlags(iterationkey) = false
+
+              step(tuneid, offlineEval.id, currentLoop, "iteration", Seq(), None, None, Some(algoids), Some(metricids))
+            }
+          }
+
+          /** Block on last iterations of all offline evaluations */
+          val offlineEvalKeys = offlineEvalsToRun map { o => s"iteration-${o.id}-${totalLoops}" }
+
+          while (!finishFlags.filterKeys(offlineEvalKeys.contains(_)).values.reduce((a, b) => a && b)) {
+            Thread.sleep(1000)
+          }
+
+          /** Check for errors from metric */
+          Logger.info(s"${logPrefix}Exit code summary:")
+
+          Logger.info(s"${logPrefix}Iteration 0:")
+          offlineEvalsToRun foreach { offlineEval =>
+            val currentIteration = 0
+            val algosToRun = algos.getByOfflineEvalid(offlineEval.id).toSeq.filter(_.loop.map(_ == currentIteration).getOrElse(false))
+            val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toSeq
+            val algoids = algosToRun map { _.id }
+            val metricids = metricsToRun map { _.id }
+            Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Split: "+exitCodes(s"split-${offlineEval.id}-${currentIteration}"))
+            algoids foreach { algoid =>
+              Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Algo ID ${algoid}: "+exitCodes(s"training-${offlineEval.id}-${currentIteration}-${algoid}"))
+              metricids foreach { metricid =>
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:     Metric ID ${metricid}: "+exitCodes(s"metric-${offlineEval.id}-${currentIteration}-${algoid}-${metricid}"))
+              }
+            }
+          }
+          for (currentLoop <- 1 to totalLoops) {
+            Logger.info(s"${logPrefix}Iteration ${currentLoop}:")
+            offlineEvalsToRun foreach { offlineEval =>
+              val algosToRun = algos.getByOfflineEvalid(offlineEval.id, Some(currentLoop), Some(1)).toSeq
+              val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toSeq
+              val algoids = algosToRun map { _.id }
+              val metricids = metricsToRun map { _.id }
+              algoids foreach { algoid =>
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Algo ID ${algoid}: "+exitCodes(s"training-${offlineEval.id}-${currentLoop}-${algoid}"))
+                metricids foreach { metricid =>
+                  Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:     Metric ID ${metricid}: "+exitCodes(s"metric-${offlineEval.id}-${currentLoop}-${algoid}-${metricid}"))
+                }
+              }
+            }
+          }
+
+          if (exitCodes.values.sum != 0)
+            Logger.warn(s"${logPrefix}Offline tuning completed with error(s)")
+          else
+            Logger.info(s"${logPrefix}Offline tuning completed")
+
+          /** Mark the end time since this is used to determine whether the run has finished */
+          offlineTunes.update(offlineTune.copy(endtime = Some(DateTime.now)))
+
+          /** Clean up */
+          offlineEvalsToRun foreach { offlineEval =>
+            val algosToClean = algos.getByOfflineEvalid(offlineEval.id).toSeq.filter(_.loop.map(_ != 0).getOrElse(false))
+            engine.infoid match {
+              case "itemrec" => algosToClean foreach { algo =>
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting used model data")
+                Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+              }
+            }
+            Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Deleting used app data")
+            Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataValidationUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataValidationItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataValidationU2IActions.deleteByAppid(offlineEval.id)
+          }
+        } getOrElse {
+          Logger.warn(s"${logPrefix}Not starting offline tuning because the app that owns this offline tuning cannot be found from the database")
+        }
+      } getOrElse {
+        Logger.warn(s"${logPrefix}Not starting offline tuning because the engine that owns this offline tuning cannot be found from the database")
+      }
+    } getOrElse {
+      Logger.warn(s"${logPrefix}Not starting offline tuning because the offline tuning cannot be found from the database")
     }
   }
 

@@ -9,7 +9,6 @@ import com.github.nscala_time.time.Imports._
 
 /** MongoDB implementation of Algos. */
 class MongoAlgos(db: MongoDB) extends Algos {
-  private val emptyObj = MongoDBObject()
   private val algoColl = db("algos")
   private val seq = new MongoSequences(db)
   private val getFields = MongoDBObject(
@@ -73,10 +72,10 @@ class MongoAlgos(db: MongoDB) extends Algos {
     )
 
     // optional fields
-    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj) ++
-      algo.offlinetuneid.map(x => MongoDBObject("offlinetuneid" -> x)).getOrElse(emptyObj) ++
-      algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(emptyObj) ++
-      algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(emptyObj)
+    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      algo.offlinetuneid.map(x => MongoDBObject("offlinetuneid" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(MongoUtils.emptyObj)
 
     algoColl.insert(obj ++ optObj)
 
@@ -93,9 +92,12 @@ class MongoAlgos(db: MongoDB) extends Algos {
     algoColl.find(MongoDBObject("engineid" -> engineid, "status" -> "deployed"), getFields).sort(MongoDBObject("name" -> 1))
   )
 
-  def getByOfflineEvalid(evalid: Int) = new MongoAlgoIterator(
-    algoColl.find(MongoDBObject("offlineevalid" -> evalid), getFields).sort(MongoDBObject("name" -> 1))
-  )
+  def getByOfflineEvalid(evalid: Int, loop: Option[Int] = None, paramset: Option[Int] = None) = {
+    val q = MongoDBObject("offlineevalid" -> evalid) ++ loop.map(l => MongoDBObject("loop" -> l)).getOrElse(MongoUtils.emptyObj) ++ paramset.map(p => MongoDBObject("paramset" -> p)).getOrElse(MongoUtils.emptyObj)
+    new MongoAlgoIterator(algoColl.find(q, getFields).sort(MongoDBObject("name" -> 1)))
+  }
+
+  def getTuneSubjectByOfflineTuneid(tuneid: Int) = algoColl.findOne(MongoDBObject("offlinetuneid" -> tuneid, "loop" -> null, "paramset" -> null)) map { dbObjToAlgo(_) }
 
   def update(algo: Algo) = {
 
@@ -115,17 +117,17 @@ class MongoAlgos(db: MongoDB) extends Algos {
     )
 
     // optional fields
-    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(emptyObj) ++
-      algo.offlinetuneid.map(x => MongoDBObject("offlinetuneid" -> x)).getOrElse(emptyObj) ++
-      algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(emptyObj) ++
-      algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(emptyObj)
+    val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      algo.offlinetuneid.map(x => MongoDBObject("offlinetuneid" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(MongoUtils.emptyObj)
 
     algoColl.update(MongoDBObject("_id" -> algo.id), obj ++ optObj)
   }
 
   def delete(id: Int) = algoColl.remove(MongoDBObject("_id" -> id))
 
-  def existsByEngineidAndName(engineid: Int, name: String) = algoColl.findOne(MongoDBObject("name" -> name, "engineid" -> engineid)) map { _ => true } getOrElse false
+  def existsByEngineidAndName(engineid: Int, name: String) = algoColl.findOne(MongoDBObject("name" -> name, "engineid" -> engineid, "offlineevalid" -> null, "offlinetuneid" -> null)) map { _ => true } getOrElse false
 
   class MongoAlgoIterator(it: MongoCursor) extends Iterator[Algo] {
     def next = dbObjToAlgo(it.next)
