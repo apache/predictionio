@@ -63,7 +63,7 @@ install_mahout () {
 	echo "Going to download and install $VENDOR_MAHOUT_NAME..."
 	mkdir -p $VENDOR_MAHOUT_PATH
 	cd $VENDOR_MAHOUT_PATH
-	curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
+	curl -o mahout-core-0.8-SNAPSHOT-job.jar http://download.prediction.io/mahout-snapshots/1993/mahout-core-0.8-SNAPSHOT-job.jar
 }
 
 start_mongodb () {

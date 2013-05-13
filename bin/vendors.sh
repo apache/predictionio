@@ -27,20 +27,20 @@ install_play () {
 }
 
 install_mahout () {
-	echo "Going to download and build Apache Mahout 0.8 Build 1975..."
+	echo "Going to download and build Apache Mahout 0.8 Build 1993..."
 	mkdir -p $LIB_MAHOUT
 	cd $LIB_MAHOUT
-	if [ ! -f mahout-core-0.8-SNAPSHOT-1975.jar -o ! -f mahout-math-0.8-SNAPSHOT-1975.jar ] ; then
+	if [ ! -f mahout-core-0.8-SNAPSHOT.jar -o ! -f mahout-math-0.8-SNAPSHOT.jar ] ; then
 		rm -rf $LIB_MAHOUT
 		mkdir -p $LIB_MAHOUT
 		cd $LIB_MAHOUT
-		curl -o mahout-core-0.8-SNAPSHOT-1975.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT.jar
-		curl -o mahout-math-0.8-SNAPSHOT-1975.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/math/target/mahout-math-0.8-SNAPSHOT.jar
+		curl -o mahout-core-0.8-SNAPSHOT.jar http://download.prediction.io/mahout-snapshots/1993/mahout-core-0.8-SNAPSHOT.jar
+		curl -o mahout-math-0.8-SNAPSHOT.jar http://download.prediction.io/mahout-snapshots/1993/mahout-math-0.8-SNAPSHOT.jar
 	fi
 	mkdir -p $VENDOR_MAHOUT
 	cd $VENDOR_MAHOUT
 	if [ ! -f mahout-core-0.8-SNAPSHOT-job.jar ] ; then
-		curl -o mahout-core-0.8-SNAPSHOT-job.jar https://builds.apache.org/job/Mahout-Quality/1975/artifact/trunk/core/target/mahout-core-0.8-SNAPSHOT-job.jar
+		curl -o mahout-core-0.8-SNAPSHOT-job.jar http://download.prediction.io/mahout-snapshots/1993/mahout-core-0.8-SNAPSHOT-job.jar
 	fi
 }
 
