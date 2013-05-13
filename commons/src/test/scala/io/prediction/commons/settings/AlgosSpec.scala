@@ -22,6 +22,7 @@ class AlgosSpec extends Specification { def is =
     "get two algos by engineid"                                               ! getByEngineid(algos)^
     "get a deployed algo by engineid"                                         ! getDeployedByEngineid(algos)^
     "get two algos by offlineevalid"                                          ! getByOfflineEvalid(algos)^
+    "get an auto tune subject"                                                ! getTuneSubjectByOfflineTuneid(algos)^
     "update an algo"                                                          ! update(algos)^
     "delete an algo"                                                          ! delete(algos)^
     "checking existence of algo"                                              ! existsByEngineidAndName(algos)^
@@ -190,6 +191,48 @@ class AlgosSpec extends Specification { def is =
       (algo122 must be equalTo(algo2.copy(id = id2)))
   }
 
+  def getTuneSubjectByOfflineTuneid(algos: Algos) = {
+    val algo1 = Algo(
+      id       = 0,
+      engineid = 567,
+      name     = "getTuneSubjectByTuneid1",
+      infoid   = "def",
+      deployed = false,
+      command  = "getTuneSubjectByTuneid1",
+      params   = Map("baz" -> "bah"),
+      settings = Map("qwe" -> "rty"),
+      modelset = false,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "good",
+      offlineevalid = Some(2),
+      offlinetuneid = Some(567),
+      loop = None,
+      paramset = Some(6)
+    )
+    val algo2 = Algo(
+      id       = 0,
+      engineid = 567,
+      name     = "getTuneSubjectByTuneid2",
+      infoid   = "id3",
+      deployed = true,
+      command  = "getTuneSubjectByTuneid2",
+      params   = Map("az" -> "ba"),
+      settings = Map("we" -> "rt"),
+      modelset = false,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed", // NOTE!
+      offlineevalid = None,
+      offlinetuneid = Some(567),
+      loop = None,
+      paramset = None
+    )
+    val id1 = algos.insert(algo1)
+    val id2 = algos.insert(algo2)
+    algos.getTuneSubjectByOfflineTuneid(567) must beSome(algo2.copy(id = id2))
+  }
+
   def update(algos: Algos) = {
     val algo = Algo(
       id       = 0,
@@ -267,7 +310,7 @@ class AlgosSpec extends Specification { def is =
       updatetime = DateTime.now,
       status = "food",
       offlineevalid = None,
-      offlinetuneid = Some(1),
+      offlinetuneid = None,
       loop = None,
       paramset = None
     ))

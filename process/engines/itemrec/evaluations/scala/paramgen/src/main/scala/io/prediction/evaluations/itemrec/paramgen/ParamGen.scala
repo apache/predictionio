@@ -13,42 +13,42 @@ object ParamGen {
 
     val config = ConfigFactory.load
 
-    val evalid = config.getInt("evalid")
+    val evalids = config.getString("evalids")
     val algoid = config.getInt("algoid")
-    val iteration = config.getInt("iteration")
-    val n = config.getInt("n")
+    val loop = config.getInt("loop")
+    val paramsets = config.getInt("paramsets")
 
     val commonsConfig = new Config
 
     val algos = commonsConfig.getSettingsAlgos
-    val algoinfos = commonsConfig.getSettingsAlgoInfos
-    //val offlineEvals = commonsConfig.getSettingsOfflineEvals
 
     val algo = algos.get(algoid).get
-    val algoinfo = algoinfos.get(algo.infoid).get
-    //val offlineEval = offlineEvals.get(evalid).get
 
     /** Figure out what parameters can be tuned */
-    val paramsToTune = algoinfo.paramdefaults.keySet filter { k =>
-      algoinfo.paramdefaults.keySet.exists(e => s"${k}Min" == e) &&
-        algoinfo.paramdefaults.keySet.exists(e => s"${k}Max" == e)
+    val paramsToTune = algo.params.keySet filter { k =>
+      algo.params.keySet.exists(e => s"${k}Min" == e) &&
+        algo.params.keySet.exists(e => s"${k}Max" == e)
     }
 
-    for (i <- 1 to n) {
+    for (i <- 1 to paramsets) {
       /** Pick a random value between intervals */
       val paramsValues = paramsToTune map { p =>
-        val minValue = algoinfo.paramdefaults(s"${p}Min")
-        val maxValue = algoinfo.paramdefaults(s"${p}Max")
-        algoinfo.paramdefaults(s"${p}Min") match {
+        val minValue = algo.params(s"${p}Min")
+        val maxValue = algo.params(s"${p}Max")
+        algo.params(s"${p}Min") match {
           case n: Int => p -> (minValue.asInstanceOf[Int] + scala.util.Random.nextInt(maxValue.asInstanceOf[Int] - minValue.asInstanceOf[Int]))
           case n: Double => p -> (minValue.asInstanceOf[Double] + scala.util.Random.nextDouble() * (maxValue.asInstanceOf[Double] - minValue.asInstanceOf[Double]))
         }
       }
-      val algoToTune = algo.copy(
-        offlineevalid = Some(evalid),
-        iteration = Some(iteration),
-        params = algo.params ++ paramsValues.toMap)
-      println(algoToTune)
+      evalids.split(",") foreach { evalid =>
+        val algoToTune = algo.copy(
+          offlineevalid = Some(evalid.toInt),
+          loop = Some(loop),
+          params = algo.params ++ paramsValues.toMap,
+          paramset = Some(i),
+          status = "simeval")
+        algos.insert(algoToTune)
+      }
     }
   }
 }

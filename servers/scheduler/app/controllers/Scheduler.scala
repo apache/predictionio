@@ -30,7 +30,21 @@ object Scheduler extends Controller {
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
   val offlineEvalResults = config.getSettingsOfflineEvalResults
+  val offlineTunes = config.getSettingsOfflineTunes
+  val paramGens = config.getSettingsParamGens
+  val paramGenInfos = config.getSettingsParamGenInfos
   val itemRecScores = config.getModeldataItemRecScores
+  val trainingItemRecScores = config.getModeldataTrainingItemRecScores
+
+  val appdataTrainingUsers = config.getAppdataTrainingUsers()
+  val appdataTrainingItems = config.getAppdataTrainingItems()
+  val appdataTrainingU2IActions = config.getAppdataTrainingU2IActions()
+  val appdataTestUsers = config.getAppdataTestUsers()
+  val appdataTestItems = config.getAppdataTestItems()
+  val appdataTestU2IActions = config.getAppdataTestU2IActions()
+  val appdataValidationUsers = config.getAppdataValidationUsers()
+  val appdataValidationItems = config.getAppdataValidationItems()
+  val appdataValidationU2IActions = config.getAppdataValidationU2IActions()
 
   val scheduler = StdSchedulerFactory.getDefaultScheduler()
   val jobTree = new JobTreeJobListener("predictionio-algo")
@@ -91,6 +105,24 @@ object Scheduler extends Controller {
                   val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
                   scheduler.scheduleJob(trigger)
                 }
+              }
+            }
+          }
+        }
+
+        /** Auto tunings. */
+        offlineTunes.getByEngineid(engine.id) foreach { offlineTune =>
+          /** Work on those that is not part of auto tuning */
+          val offlineTuneid = offlineTune.id.toString
+          val triggerkey = triggerKey(offlineTuneid, Jobs.offlineTuneJobGroup)
+          offlineTune.createtime foreach { ct =>
+            if (scheduler.checkExists(triggerkey) == false) {
+              offlineTune.endtime getOrElse {
+                val offlineTuneJob = Jobs.offlineTuneJob(config, app, engine, offlineTune)
+                scheduler.addJob(offlineTuneJob, true)
+
+                val trigger = newTrigger() forJob(jobKey(offlineTuneid, Jobs.offlineTuneJobGroup)) withIdentity(offlineTuneid, Jobs.offlineTuneJobGroup) startNow() build()
+                scheduler.scheduleJob(trigger)
               }
             }
           }

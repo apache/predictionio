@@ -52,8 +52,11 @@ trait Algos {
   /** Get deployed algos by engine ID. */
   def getDeployedByEngineid(engineid: Int): Iterator[Algo]
 
-  /** Get by OfflineEval ID */
-  def getByOfflineEvalid(evalid: Int): Iterator[Algo]
+  /** Get by OfflineEval ID. */
+  def getByOfflineEvalid(evalid: Int, loop: Option[Int] = None, paramset: Option[Int] = None): Iterator[Algo]
+
+  /** Get the auto tune subject by OfflineTune ID. */
+  def getTuneSubjectByOfflineTuneid(tuneid: Int): Option[Algo]
 
   /** Update an algo. */
   def update(algo: Algo)
@@ -61,6 +64,8 @@ trait Algos {
   /** Delete an algo by its ID. */
   def delete(id: Int)
 
-  /** Check existence of an algo by its engine ID and name. */
+  /** Check existence of an algo by its engine ID and name.
+    * Algos that are part of an offline evaluation or tuning are not counted.
+    */
   def existsByEngineidAndName(engineid: Int, name: String): Boolean
 }
