@@ -48,7 +48,7 @@ install_mahout () {
 VENDORS_PATH="$BASE/vendors"
 VENDOR_SBT="$VENDORS_PATH/sbt-0.12.2/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.1.0/play"
-VENDOR_MAHOUT="$VENDORS_PATH/mahout-0.8-snapshot-1975"
+VENDOR_MAHOUT="$VENDORS_PATH/mahout-0.8-snapshot"
 LIB_MAHOUT="$BASE/process/engines/itemrec/algorithms/scala/mahout/commons/lib"
 
 # Detect existing installations in search path
@@ -80,10 +80,10 @@ else
 fi
 
 if [ -r "$LIB_MAHOUT/mahout-core-0.8-SNAPSHOT.jar" -a -r "$LIB_MAHOUT/mahout-math-0.8-SNAPSHOT.jar" -a -r "$VENDOR_MAHOUT/mahout-core-0.8-SNAPSHOT-job.jar" ] ; then
-	echo "Using Apache Mahout 0.8 Build 1975 in vendors."
+	echo "Using Apache Mahout 0.8 Build 1993 in vendors."
 elif install_mahout ; then
 	echo ""
 else
-	echo "Unable to locate Apache Mahout 0.8 Build 1975 and automatic installation failed. Aborting." >&2
+	echo "Unable to locate Apache Mahout 0.8 Build 1993 and automatic installation failed. Aborting." >&2
 	exit 1
 fi
