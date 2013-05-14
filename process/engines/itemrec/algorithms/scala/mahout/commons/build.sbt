@@ -16,5 +16,5 @@ libraryDependencies ++= Seq(
   "org.apache.lucene" % "lucene-core" % "4.2.0",
   "org.apache.lucene" % "lucene-analyzers-common" % "4.2.0",
   "org.apache.mahout.commons" % "commons-cli" % "2.0-mahout",
-  "org.apache.commons" % "commons-math3" % "3.1.1"
+  "org.apache.commons" % "commons-math3" % "3.2"
 )
