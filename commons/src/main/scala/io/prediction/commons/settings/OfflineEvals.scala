@@ -7,9 +7,6 @@ import com.github.nscala_time.time.Imports._
  * @param id ID.
  * @param engineid The id of Engine object which owns this OfflineEval.
  * @param name The name of the this Offline Evaluation.
- * @param trainingsize The percentage of training set (1 - 10)
- * @param testsize The percentage of test set (1 - 10). NOTE: trainingsize + testsize must be <= 10
- * @param timeorder Enable flag of random in time order. Allowed only if trainingsize + testsize < 10
  * @param tuneid The OfflineTune ID
  * @param createtime The Creation time of the evaluation
  * @param starttime The Starting time of the evaluation
@@ -21,9 +18,6 @@ case class OfflineEval(
   engineid: Int,
   name: String,
   iterations: Int = 1,
-  trainingsize: Int, // TODO: remove
-  testsize: Int, // TODO: remove
-  timeorder: Boolean, // TODO: remove
   tuneid: Option[Int],
   createtime: Option[DateTime],
   starttime: Option[DateTime],

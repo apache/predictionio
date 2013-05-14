@@ -16,9 +16,6 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
     "engineid" -> 1,
     "name" -> 1,
     "iterations" -> 1,
-    "trainingsize" -> 1,
-    "testsize" -> 1,
-    "timeorder" -> 1,
     "tuneid" -> 1,
     "createtime" -> 1,
     "starttime" -> 1,
@@ -33,9 +30,6 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       engineid = dbObj.as[Int]("engineid"),
       name = dbObj.as[String]("name"),
       iterations = dbObj.as[Int]("iterations"),
-      trainingsize = dbObj.as[Int]("trainingsize"),
-      testsize = dbObj.as[Int]("testsize"),
-      timeorder = dbObj.as[Boolean]("timeorder"),
       tuneid = dbObj.getAs[Int]("tuneid"),
       createtime = dbObj.getAs[DateTime]("createtime"),
       starttime = dbObj.getAs[DateTime]("starttime"),
@@ -58,9 +52,6 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       "engineid" -> offlineEval.engineid,
       "name" -> offlineEval.name,
       "iterations" -> offlineEval.iterations,
-      "trainingsize" -> offlineEval.trainingsize,
-      "testsize" -> offlineEval.testsize,
-      "timeorder" -> offlineEval.timeorder,
       "tuneid" -> offlineEval.tuneid)
 
     // option fields
@@ -94,9 +85,6 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
       "engineid" -> offlineEval.engineid,
       "name" -> offlineEval.name,
       "iterations" -> offlineEval.iterations,
-      "trainingsize" -> offlineEval.trainingsize,
-      "testsize" -> offlineEval.testsize,
-      "timeorder" -> offlineEval.timeorder,
       "tuneid" -> offlineEval.tuneid)
 
     // option fields

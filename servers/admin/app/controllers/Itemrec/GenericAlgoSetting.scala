@@ -5,6 +5,7 @@ import io.prediction.commons.settings.{Algo, OfflineTune, ParamGen}
 import play.api._
 import play.api.mvc._
 import play.api.data._
+import play.api.libs.ws.WS
 //import play.api.data.Forms.{tuple, number, text, list, boolean, nonEmptyText}
 import play.api.libs.json.Json._
 import play.api.libs.json._
@@ -14,7 +15,7 @@ import play.api.data.validation.ValidationError
 
 import com.github.nscala_time.time.Imports._
 
-import controllers.Application.{algos, withUser, algoInfos, offlineTunes, paramGens, deleteOfflineTune}
+import controllers.Application.{algos, withUser, algoInfos, offlineTunes, paramGens, deleteOfflineTune, settingsSchedulerUrl}
 import controllers.SimEval
 
 trait GenericAlgoSetting extends Controller {
@@ -207,7 +208,8 @@ trait GenericAlgoSetting extends Controller {
                 createtime = Some(DateTime.now)
               ))
 
-              // TODO: call sync to scheduler here
+              // call sync to scheduler here
+              WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
             }
               
             Ok
