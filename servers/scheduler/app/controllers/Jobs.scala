@@ -650,7 +650,7 @@ class OfflineTuneJob extends InterruptableJob {
 
                 offlineEvalMetricInfos.get(metric.infoid) map { metricInfo =>
                   metricInfo.commands map { commands =>
-                    val metricCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), Some(metric), Some(iterationParam)).toString }
+                    val metricCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), Some(offlineEval), Some(metric), Some(testMetricParams ++ iterationParam)).toString }
                     step(tuneid, offlineEval.id, currentIteration, "metric", metricCommands, Some(algo.id), Some(metric.id))
                   } getOrElse {
                     Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} contains no command for offline evaluation")
