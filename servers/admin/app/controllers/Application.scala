@@ -69,6 +69,9 @@ object Application extends Controller {
   val testSetItems = config.getAppdataTestItems()
   val testSetU2IActions = config.getAppdataTestU2IActions()
 
+  /** Scheduler setting */
+  val settingsSchedulerUrl = config.settingsSchedulerUrl
+  
   /** PredictionIO Output */
   val algoOutputSelector = new AlgoOutputSelector(algos)
 
@@ -306,7 +309,7 @@ object Application extends Controller {
     deleteApp(appid, keepSettings=false)
 
     //send deleteAppDir(appid) request to scheduler
-    WS.url(config.settingsSchedulerUrl+"/apps/"+id+"/delete").get()
+    WS.url(settingsSchedulerUrl+"/apps/"+id+"/delete").get()
 
     Logger.info("Delete app ID "+appid)
     apps.deleteByIdAndUserid(appid, user.id)
@@ -330,7 +333,7 @@ object Application extends Controller {
     deleteApp(appid, keepSettings=true)
 
     //send deleteAppDir(appid) request to scheduler
-    WS.url(config.settingsSchedulerUrl+"/apps/"+id+"/delete").get()
+    WS.url(settingsSchedulerUrl+"/apps/"+id+"/delete").get()
 
     Ok
     //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
@@ -453,7 +456,7 @@ object Application extends Controller {
           "nodeployedalgo"
         else if (!modelDataExist)
           try {
-            (Await.result(WS.url(s"${config.settingsSchedulerUrl}/apps/${eng.appid}/engines/${eng.id}/algos/${algo.get.id}/status").get(), scala.concurrent.duration.Duration(5, SECONDS)).json \ "status").as[String] match {
+            (Await.result(WS.url(s"${settingsSchedulerUrl}/apps/${eng.appid}/engines/${eng.id}/algos/${algo.get.id}/status").get(), scala.concurrent.duration.Duration(5, SECONDS)).json \ "status").as[String] match {
               case "jobrunning" => "firsttraining"
               case _ => "nomodeldata"
             }
@@ -462,7 +465,7 @@ object Application extends Controller {
           }
         else
           try {
-            (Await.result(WS.url(s"${config.settingsSchedulerUrl}/apps/${eng.appid}/engines/${eng.id}/algos/${algo.get.id}/status").get(), scala.concurrent.duration.Duration(5, SECONDS)).json \ "status").as[String] match {
+            (Await.result(WS.url(s"${settingsSchedulerUrl}/apps/${eng.appid}/engines/${eng.id}/algos/${algo.get.id}/status").get(), scala.concurrent.duration.Duration(5, SECONDS)).json \ "status").as[String] match {
               case "jobrunning" => "training"
               case _ => "running"
             }
@@ -550,7 +553,7 @@ object Application extends Controller {
 
         val algoId = algos.insert(defaultAlgo)
 
-        WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+        WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
 
         Ok(toJson(Map(
           "id" -> engineId.toString, // engine id
@@ -579,7 +582,7 @@ object Application extends Controller {
     deleteEngine(engineid, keepSettings=false)
 
     //send deleteAppDir(appid) request to scheduler
-    WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/delete").get()
+    WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/delete").get()
 
     Logger.info("Delete Engine ID "+engine_id)
     engines.deleteByIdAndAppid(engineid, appid)
@@ -935,7 +938,7 @@ object Application extends Controller {
 
     deleteModelData(id.toInt)
     // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
-    WS.url(config.settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
+    WS.url(settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
     algos.delete(id.toInt)
     Ok
 
@@ -1074,9 +1077,6 @@ object Application extends Controller {
           // so these retrieved algos may have more algo than those used in offlineEvalResults.
           val tuneAlgos: Array[Algo] = tuneOfflineEvals flatMap { e => algos.getByOfflineEvalid(e.id) } 
 
-          //println(tuneAlgos.mkString(",")) // TODO: remove
-          //println("")
-
           val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map{ a => (a.id -> a) }.toMap
 
           // group by (loop, paramset)
@@ -1093,16 +1093,6 @@ object Application extends Controller {
             (index -> (algo.id, settings))
 
           }
-
-          /* debug */
-          /* TODO remove
-          println(tune)
-          println(tuneOfflineEvals.mkString(","))
-          println(tuneMetrics.mkString(","))
-          println(tuneSplitters.mkString(","))
-          println(tuneOfflineEvalResults.mkString(","))
-          println(tuneAlgosGroupParams)
-          */
 
           // calculate avg
           val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues{ arrayOfAlgos => 
@@ -1396,7 +1386,7 @@ object Application extends Controller {
           SimEval.createSimEval(engineId, listOfAlgos, metricTypes, metricSettings,
           splitTrain, 0, splitTest, splitMethod, evalIteration, None)
 
-          WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+          WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
 
           Ok
         } else {
@@ -1426,9 +1416,9 @@ object Application extends Controller {
       offlineEvals.update(oe.copy(createtime = None))
 
       /** Stop any possible running jobs */
-      val stop = WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/stop").get()
+      val stop = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/stop").get()
       /** Clean up intermediate data files */
-      val delete = WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/delete").get()
+      val delete = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/delete").get()
       /** Synchronize on both scheduler actions */
       val remove = for {
         s <- stop
@@ -1657,7 +1647,7 @@ object Application extends Controller {
             algos.update(algo.copy(status = "deployed"))
           }
         }
-        WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+        WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
         Ok
       }
     )
@@ -1669,7 +1659,7 @@ object Application extends Controller {
     algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
       algos.update(algo.copy(status = "ready"))
     }
-    WS.url(config.settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+    WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
     Ok
   }
 
@@ -1677,7 +1667,7 @@ object Application extends Controller {
   def algoTrainNow(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // No extra param required
     val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
-    val request = WS.url(s"${config.settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/trainoncenow").get() map { r =>
+    val request = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/trainoncenow").get() map { r =>
       Ok(obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(obj("message" -> e.getMessage()))
