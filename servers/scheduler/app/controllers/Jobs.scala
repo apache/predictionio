@@ -221,6 +221,18 @@ class OfflineEvalJob extends InterruptableJob {
 
     Some(steptype) collect {
       case "split" => {
+        /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
+        Scheduler.offlineEvals.get(evalid) map { offlineEval =>
+          Scheduler.engines.get(offlineEval.engineid) map { engine =>
+            val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
+            engine.infoid match {
+              case "itemrec" => algosToRun foreach { algo =>
+                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+                Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+              }
+            }
+          }
+        }
         if (iteration > 1) {
           val iterationkey = s"iteration-${iteration-1}"
           while (!finishFlags(iterationkey)) {
@@ -324,14 +336,6 @@ class OfflineEvalJob extends InterruptableJob {
           for (currentIteration <- 1 to totalIterations) {
             val iterationParam = collection.immutable.Map("iteration" -> currentIteration)
 
-            /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
-            engine.infoid match {
-              case "itemrec" => algosToRun foreach { algo =>
-                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
-                Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
-              }
-            }
-
             /** Spiltters setup (support 1 splitter for now) */
             if (splittersToRun.length > 0) {
               val splitkey = s"split-${currentIteration}"
@@ -404,6 +408,21 @@ class OfflineEvalJob extends InterruptableJob {
           while (!finishFlags(s"iteration-${totalIterations}")) {
             Thread.sleep(1000)
           }
+
+          /** Clean up */
+          engine.infoid match {
+            case "itemrec" => algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
+              Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+            }
+          }
+          Logger.info(s"${logPrefix}Deleting used app data")
+          Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
+          Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
+          Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+          Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
+          Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
+          Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
 
           /** Check for errors from metric */
           Logger.info(s"${logPrefix}Exit code summary:")
