@@ -94,8 +94,6 @@ object Jobs {
     /** OfflineEval-specific attributes */
     offlineEval map { oe =>
       command.setAttribute("evalid", oe.id)
-      command.setAttribute("trainingsize", oe.trainingsize)
-      command.setAttribute("testsize", oe.testsize)
       command.setAttribute("modelset", "false")
     }
 

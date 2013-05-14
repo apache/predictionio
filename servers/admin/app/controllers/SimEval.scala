@@ -22,9 +22,6 @@ object SimEval extends Controller {
       engineid = engineId,
       name = "",
       iterations = evalIteration,
-      trainingsize = 8, // TODO: remove
-      testsize = 2, // TODO: remove
-      timeorder = false, // TODO: remove
       tuneid = tuneid,
       createtime = None, // NOTE: no createtime yet
       starttime = None,
