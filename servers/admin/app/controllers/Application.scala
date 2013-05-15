@@ -64,6 +64,11 @@ object Application extends Controller {
   val trainingSetItems = config.getAppdataTrainingItems()
   val trainingSetU2IActions = config.getAppdataTrainingU2IActions()
 
+  /** PredictionIO Commons validation set appdata */
+  val validationSetUsers = config.getAppdataValidationUsers()
+  val validationSetItems = config.getAppdataValidationItems()
+  val validationSetU2IActions = config.getAppdataValidationU2IActions()
+
   /** PredictionIO Commons test set appdata */
   val testSetUsers = config.getAppdataTestUsers()
   val testSetItems = config.getAppdataTestItems()
@@ -798,6 +803,13 @@ object Application extends Controller {
     trainingSetU2IActions.deleteByAppid(evalid)
   }
 
+  def deleteValidationSetData(evalid: Int) = {
+    Logger.info("Delete validation set for offline eval ID "+evalid)
+    validationSetUsers.deleteByAppid(evalid)
+    validationSetItems.deleteByAppid(evalid)
+    validationSetU2IActions.deleteByAppid(evalid)
+  }
+
   def deleteTestSetData(evalid: Int) = {
     Logger.info("Delete test set for offline eval ID "+evalid)
     testSetUsers.deleteByAppid(evalid)
@@ -881,6 +893,7 @@ object Application extends Controller {
   def deleteOfflineEval(evalid: Int, keepSettings: Boolean) = {
 
     deleteTrainingSetData(evalid)
+    deleteValidationSetData(evalid)
     deleteTestSetData(evalid)
 
     val evalAlgos = algos.getByOfflineEvalid(evalid)
@@ -903,6 +916,12 @@ object Application extends Controller {
 
       Logger.info("Delete offline eval results of offline eval ID "+evalid)
       offlineEvalResults.deleteByEvalid(evalid)
+
+      val evalSplitters = offlineEvalSplitters.getByEvalid(evalid)
+      evalSplitters foreach { splitter =>
+        Logger.info("Delete Offline Eval Splitter ID "+splitter.id)
+        offlineEvalSplitters.delete(splitter.id)
+      }
     }
 
   }
