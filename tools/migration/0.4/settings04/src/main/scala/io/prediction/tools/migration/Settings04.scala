@@ -150,53 +150,59 @@ object Settings04 {
     println("Looking for OfflineEvalResults without iteration or splitset...")
     val offlineEvalResultsAll = offlineEvalResultsColl.find()
 
-    if (offlineEvalResultsAll.length > 0) {
-      println(s"Found ${offlineEvalResultsAll.length} OfflineEvalResults. Will check each of them...")
+    val offlineEvalResultsSelected = (offlineEvalResultsAll filter { result =>
+      val iteration: Option[Int] = result.getAs[Int]("iteration")
+      val splitset: Option[String] = result.getAs[String]("splitset")
 
-      offlineEvalResultsAll foreach { result =>
-        val resultid = result.as[String]("_id")
-        val evalid = result.as[Int]("evalid")
-        val metricid = result.as[Int]("metricid")
-        val algoid = result.as[Int]("algoid")
-        val score = result.as[Double]("score")
-        val iteration: Option[Int] = result.getAs[Int]("iteration")
-        val splitset: Option[String] = result.getAs[String]("splitset")
+      ((iteration == None) || ((splitset != Some("test")) && (splitset != Some("validation"))) )}).toStream
 
-        if ((iteration == None) || ((splitset != Some("test")) && (splitset != Some("validation"))) ) {
+    val offlineEvalResultsSelectedSize = offlineEvalResultsSelected.size
+    if (offlineEvalResultsSelectedSize > 0) {
+      println(s"Found ${offlineEvalResultsSelectedSize} OfflineEvalResults without proper iteration or splitset field. Proceed to update?")
 
-          val newIteration: Int = iteration match {
-            case None => 1
-            case Some(x) => x
-          }
-          val newSplitset: String = splitset match {
-            case Some("test") => "test"
-            case Some("validation") => "validation"
-            case _ => "test"
-          }
+      val choice = readLine("Enter 'YES' to proceed: ")
+      choice match {
+        case "YES" => {
+          offlineEvalResultsSelected foreach { result =>
 
-          println(s"Found OfflineEval ID = $resultid without proper iteration or splitset field. Proceed to update this one?")
-          val choice = readLine("Enter 'YES' to proceed: ")
-          choice match {
-            case "YES" => {
-              val newResultid = (evalid + "_" + metricid + "_" + algoid + "_" + newIteration + "_" + newSplitset)
-              offlineEvalResultsColl.save(MongoDBObject(
-                "_id" -> newResultid,
-                "evalid" -> evalid,
-                "metricid" -> metricid,
-                "algoid" -> algoid,
-                "score" -> score,
-                "iteration" -> newIteration,
-                "splitset" -> newSplitset
-              ))
-              offlineEvalResultsColl.remove(MongoDBObject("_id" -> resultid))
-              println("Done")
+            val resultid = result.as[String]("_id")
+            val evalid = result.as[Int]("evalid")
+            val metricid = result.as[Int]("metricid")
+            val algoid = result.as[Int]("algoid")
+            val score = result.as[Double]("score")
+            val iteration: Option[Int] = result.getAs[Int]("iteration")
+            val splitset: Option[String] = result.getAs[String]("splitset")
+
+            val newIteration: Int = iteration match {
+              case None => 1
+              case Some(x) => x
             }
-            case _ => println("Aborted")
+            val newSplitset: String = splitset match {
+              case Some("test") => "test"
+              case Some("validation") => "validation"
+              case _ => "test"
+            }
+                      
+            val newResultid = (evalid + "_" + metricid + "_" + algoid + "_" + newIteration + "_" + newSplitset)
+            println(s"Update OfflineEvalResult ID = $resultid. New ID = $newResultid")
+            
+            offlineEvalResultsColl.save(MongoDBObject(
+              "_id" -> newResultid,
+              "evalid" -> evalid,
+              "metricid" -> metricid,
+              "algoid" -> algoid,
+              "score" -> score,
+              "iteration" -> newIteration,
+              "splitset" -> newSplitset
+            ))
+            offlineEvalResultsColl.remove(MongoDBObject("_id" -> resultid))
+              
           }
-
+          println("Done")
         }
-
+        case _ => println("Aborted")
       }
+
     } else {
       println("None Found")
     }
