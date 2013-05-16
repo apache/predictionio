@@ -615,6 +615,16 @@ class OfflineTuneJob extends InterruptableJob {
                 Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
                 algos.delete(algo.id)
               }
+              Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Deleting any old app data")
+              Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
+              Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
+              Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+              Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
+              Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
+              Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
+              Scheduler.appdataValidationUsers.deleteByAppid(offlineEval.id)
+              Scheduler.appdataValidationItems.deleteByAppid(offlineEval.id)
+              Scheduler.appdataValidationU2IActions.deleteByAppid(offlineEval.id)
             }
 
             val currentIteration = 0
