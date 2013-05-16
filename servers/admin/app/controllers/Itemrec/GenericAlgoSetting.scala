@@ -181,7 +181,6 @@ trait GenericAlgoSetting extends Controller {
                 engineid = updatedAlgo.engineid,
                 name = "Default-BasedLine-Algo-for-OfflineTune-"+tuneid,
                 infoid = defaultBaseLineAlgoType, 
-                deployed = false, // TODO: remove
                 command = "",
                 params = algoInfos.get(defaultBaseLineAlgoType).get.paramdefaults,
                 settings = Map(), // no use for now

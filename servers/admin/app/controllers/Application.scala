@@ -544,7 +544,6 @@ object Application extends Controller {
           engineid = engineId,
           name = "Default-Algo", // TODO: get it from engineInfo
           infoid = defaultAlgoType,
-          deployed = true, // default true // TODO: remove
           command = "",
           params = algoInfos.get(defaultAlgoType).get.paramdefaults,
           settings = Map(), // no use for now
@@ -754,7 +753,6 @@ object Application extends Controller {
             engineid = engineId,
             name = algoName,
             infoid = algoType,
-            deployed = false, // TODO: remove
             command = "",
             params = algoInfo.paramdefaults,
             settings = Map(), // no use for now

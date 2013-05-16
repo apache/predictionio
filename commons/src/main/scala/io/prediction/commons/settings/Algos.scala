@@ -8,7 +8,6 @@ import com.github.nscala_time.time.Imports._
   * @param engineid App ID that owns this engine.
   * @param name Algo name.
   * @param infoid AlgoInfo ID
-  * @param deployed Indicates whether the algo is deployed and alive.
   * @param command Command template for running the algo.
   * @param params Algo parameters as key-value pairs.
   * @param settings Algo settings as key-value pairs.
@@ -24,7 +23,6 @@ case class Algo(
   engineid: Int,
   name: String,
   infoid: String,
-  deployed: Boolean, // TODO: remove
   command: String,
   params: Map[String, Any],
   settings: Map[String, Any],

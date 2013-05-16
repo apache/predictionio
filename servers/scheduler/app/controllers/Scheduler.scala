@@ -139,7 +139,7 @@ object Scheduler extends Controller {
       algoInfos.get(algo.infoid) map { algoinfo =>
         val algoid = algo.id.toString
         val triggerkey = triggerKey(algoid, Jobs.algoJobGroup)
-        if (algo.deployed == true) {
+        if (algo.status == "deployed") {
           /** Running once now is independent of whether the trigger exist or not */
           if (runoncenow) {
             Logger.info(s"${logPrefix}Setting up batch algo job (run once now)")
