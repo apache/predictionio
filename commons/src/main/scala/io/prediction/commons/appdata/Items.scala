@@ -20,7 +20,7 @@ case class Item(
   id: String,
   appid: Int,
   ct: DateTime,
-  itypes: List[String],
+  itypes: Seq[String],
   starttime: Option[DateTime],
   endtime: Option[DateTime],
   price: Option[Double],
@@ -38,8 +38,11 @@ trait Items {
   /** Get an item by ID. */
   def get(appid: Int, id: String): Option[Item]
 
+  /** Get items by IDs. */
+  def getByIds(appid: Int, ids: Seq[String]): Seq[Item]
+
   /** Get items by IDs sorted by their start time in descending order. */
-  def getRecentByIds(appid: Int, ids: List[String]): List[Item]
+  def getRecentByIds(appid: Int, ids: Seq[String]): Seq[Item]
 
   /** Update an item. */
   def update(item: Item): Unit

@@ -19,6 +19,7 @@ class ItemsSpec extends Specification { def is =
 
   def items(items: Items) = {                                                 t ^
     "inserting and getting an item"                                           ! insert(items) ^
+    "getting items by IDs"                                                    ! getByIds(items) ^
     "getting items by IDs sorted by start time"                               ! getRecentByIds(items) ^
     "updating an item"                                                        ! update(items) ^
     "deleting an item"                                                        ! delete(items) ^
@@ -48,6 +49,63 @@ class ItemsSpec extends Specification { def is =
     )
     items.insert(item)
     items.get(appid, id) must beSome(item)
+  }
+
+  def getByIds(items: Items) = {
+    val id = "getByIds"
+    val appid = 4
+    val someItems = List(Item(
+      id         = id + "foo",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(14).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ), Item(
+      id         = id + "bar",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ), Item(
+      id         = id + "baz",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(17).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ), Item(
+      id         = id + "pub",
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(3).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = None,
+      attributes = Some(Map("foo" -> "bar"))
+    ))
+    someItems foreach { items.insert(_) }
+    val setOfItems = items.getByIds(appid, List(id + "pub", id + "bar", id + "baz")).toSet
+    setOfItems.contains(someItems(1)) and setOfItems.contains(someItems(2)) and setOfItems.contains(someItems(3))
   }
 
   def getRecentByIds(items: Items) = {

@@ -36,7 +36,11 @@ class MongoItems(db: MongoDB) extends Items {
     itemColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToItem(_) }
   }
 
-  def getRecentByIds(appid: Int, ids: List[String]) = {
+  def getByIds(appid: Int, ids: Seq[String]) = {
+    itemColl.find(MongoDBObject("_id" -> MongoDBObject("$in" -> ids.map(idWithAppid(appid, _))))).toList map { dbObjToItem(_) }
+  }
+
+  def getRecentByIds(appid: Int, ids: Seq[String]) = {
     itemColl.find(MongoDBObject("_id" -> MongoDBObject("$in" -> ids.map(idWithAppid(appid, _))))).sort(starttimeIndex).toList map { dbObjToItem(_) }
   }
 

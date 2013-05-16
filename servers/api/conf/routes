@@ -18,4 +18,13 @@ POST    /actions/u2i/dislike.:format              io.prediction.api.API.userToIt
 POST    /actions/u2i/view.:format                 io.prediction.api.API.userToItemView(format)
 POST    /actions/u2i/conversion.:format           io.prediction.api.API.userToItemConversion(format)
 
+# For pixel tracking
+GET     /p/users.:format                          io.prediction.api.API.createUser(format)
+GET     /p/items.:format                          io.prediction.api.API.createItem(format)
+GET     /p/actions/u2i/rate.:format               io.prediction.api.API.userToItemRate(format)
+GET     /p/actions/u2i/like.:format               io.prediction.api.API.userToItemLike(format)
+GET     /p/actions/u2i/dislike.:format            io.prediction.api.API.userToItemDislike(format)
+GET     /p/actions/u2i/view.:format               io.prediction.api.API.userToItemView(format)
+GET     /p/actions/u2i/conversion.:format         io.prediction.api.API.userToItemConversion(format)
+
 GET     /engines/itemrec/:engine/topn.:format     io.prediction.api.API.itemRecTopN(format, engine)
