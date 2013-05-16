@@ -229,6 +229,9 @@ class OfflineEvalJob extends InterruptableJob {
                 Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
               }
             }
+            Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
+            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
           }
         }
         if (iteration > 1) {
