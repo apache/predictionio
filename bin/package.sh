@@ -55,6 +55,7 @@ cp "$BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit/target/Pre
 cp "$BASE/process/engines/itemrec/evaluations/scala/paramgen/target/PredictionIO-Process-ItemRec-Evaluations-ParamGen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/migration/0.4/settings04/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 

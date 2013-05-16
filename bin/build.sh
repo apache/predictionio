@@ -78,7 +78,7 @@ echo "Going to build PredictionIO Connection Check Tool..."
 cd $BASE/tools/conncheck
 $SBT $CLEAN update pack
 
-# Build user tool
+# Build settings initialization tool
 echo "Going to build PredictionIO Settings Initialization Tool..."
 cd $BASE/tools/settingsinit
 $SBT $CLEAN update pack
@@ -86,6 +86,11 @@ $SBT $CLEAN update pack
 # Build user tool
 echo "Going to build PredictionIO User Tool..."
 cd $BASE/tools/users
+$SBT $CLEAN update pack
+
+# Build migration tools
+echo "Going to build PredictionIO Migration Tools..."
+cd $BASE/tools/migration/0.4/settings04
 $SBT $CLEAN update pack
 
 # Build admin server
