@@ -88,7 +88,7 @@ object Jobs {
       command.setAttributes(command.attributes ++ met.params)
       command.setAttribute("metricid", met.id)
       command.attributes.get("iteration").getOrElse(command.setAttribute("iteration", 0))
-      command.attributes.get("splitset").getOrElse(command.setAttribute("splitset", ""))
+      command.attributes.get("splitset").getOrElse(command.setAttribute("splitset", "test"))
     }
 
     /** OfflineEval-specific attributes */
