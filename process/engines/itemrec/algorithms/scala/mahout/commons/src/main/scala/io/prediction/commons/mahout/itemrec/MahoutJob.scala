@@ -118,7 +118,13 @@ abstract class MahoutJob {
     if (localPredictedFile.exists()) localPredictedFile.delete() // delete existing file first
 
     val hdfsPredictedPath = AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv")
+    val hdfsPredictedDir = AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "")
 
+    // create hdfs directory for hdfsPredictedPath
+    val createHdfsDirCmd = s"$hadoopCommand fs -mkdir -p $hdfsPredictedDir"
+    println("Executing '%s'...".format(createHdfsDirCmd))
+    createHdfsDirCmd.!
+    
     args ++ Map("input" -> localRatingsPath, "output" -> localPredictedPath, "hdfsOutput" -> hdfsPredictedPath)
   }
 
