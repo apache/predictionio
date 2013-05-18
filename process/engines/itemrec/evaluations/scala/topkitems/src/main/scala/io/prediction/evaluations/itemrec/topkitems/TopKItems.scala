@@ -38,7 +38,7 @@ object TopKItems {
     val engine = engines.get(offlineEval.engineid).get
     val app = apps.get(engine.appid).get.copy(id = evalid)
 
-    val tmpFile = File.createTempFile("pdio-", ".topk")
+    val tmpFile = File.createTempFile("pdio-", ".topk", new File(commonsConfig.settingsLocalTempRoot))
     tmpFile.deleteOnExit
     val output: Output = Resource.fromFile(tmpFile)
     logger.info("Dumping data to temporary file %s...".format(tmpFile))
