@@ -332,7 +332,8 @@ class OfflineEvalJob extends InterruptableJob {
           Logger.info(s"${logPrefix}Starting offline evaluation with ${totalIterations} iteration(s)")
 
           /** Mark the start time */
-          offlineEvals.update(offlineEval.copy(starttime = Some(DateTime.now)))
+          val offlineEvalWithStartTime = offlineEval.copy(starttime = Some(DateTime.now))
+          offlineEvals.update(offlineEvalWithStartTime)
 
           for (currentIteration <- 1 to totalIterations) {
             val iterationParam = collection.immutable.Map("iteration" -> currentIteration)
@@ -445,7 +446,7 @@ class OfflineEvalJob extends InterruptableJob {
             Logger.info(s"${logPrefix}Offline evaluation completed")
 
           /** Mark the end time since this is used to determine whether the run has finished */
-          offlineEvals.update(offlineEval.copy(endtime = Some(DateTime.now)))
+          offlineEvals.update(offlineEvalWithStartTime.copy(endtime = Some(DateTime.now)))
 
         } getOrElse {
           Logger.warn(s"${logPrefix}Not starting offline evaluation because the app that owns this offline evaluation cannot be found from the database")
@@ -597,7 +598,8 @@ class OfflineTuneJob extends InterruptableJob {
           Logger.info(s"${logPrefix}Starting offline tuning with ${offlineEvalsToRun.size} data set(s) and ${totalLoops} iteration(s) of parameter generation")
 
           /** Mark the start time */
-          offlineTunes.update(offlineTune.copy(starttime = Some(DateTime.now)))
+          val offlineTuneWithStartTime = offlineTune.copy(starttime = Some(DateTime.now))
+          offlineTunes.update(offlineTuneWithStartTime)
 
           /** Data splitting (done only once for each evaluation), and baseline algo evaluation */
           offlineEvalsToRun foreach { offlineEval =>
@@ -846,7 +848,7 @@ class OfflineTuneJob extends InterruptableJob {
             Logger.info(s"${logPrefix}Offline tuning completed")
 
           /** Mark the end time since this is used to determine whether the run has finished */
-          offlineTunes.update(offlineTune.copy(endtime = Some(DateTime.now)))
+          offlineTunes.update(offlineTuneWithStartTime.copy(endtime = Some(DateTime.now)))
 
           /** Clean up */
           offlineEvalsToRun foreach { offlineEval =>
