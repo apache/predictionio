@@ -8,22 +8,22 @@ command_exists () {
 }
 
 install_sbt () {
-	echo "Going to download and install sbt 0.12.2..."
-	local VENDORS_PATH=$1/sbt-0.12.2
+	echo "Going to download and install sbt 0.12.3..."
+	local VENDORS_PATH=$1/sbt-0.12.3
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -o sbt-launch.jar http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.2/sbt-launch.jar
+	curl -o sbt-launch.jar http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.3/sbt-launch.jar
 	echo 'java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=512M -jar `dirname $0`/sbt-launch.jar "$@"' > sbt
 	chmod a+x sbt
 }
 
 install_play () {
-	echo "Going to download and install Play Framework 2.1.0..."
+	echo "Going to download and install Play Framework 2.1.1..."
 	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -o play-2.1.0.zip http://downloads.typesafe.com/play/2.1.0/play-2.1.0.zip
-	unzip play-2.1.0.zip
+	curl -o play-2.1.1.zip http://downloads.typesafe.com/play/2.1.1/play-2.1.1.zip
+	unzip play-2.1.1.zip
 }
 
 install_mahout () {
@@ -46,8 +46,8 @@ install_mahout () {
 
 # Third party software
 VENDORS_PATH="$BASE/vendors"
-VENDOR_SBT="$VENDORS_PATH/sbt-0.12.2/sbt"
-VENDOR_PLAY="$VENDORS_PATH/play-2.1.0/play"
+VENDOR_SBT="$VENDORS_PATH/sbt-0.12.3/sbt"
+VENDOR_PLAY="$VENDORS_PATH/play-2.1.1/play"
 VENDOR_MAHOUT="$VENDORS_PATH/mahout-0.8-snapshot"
 LIB_MAHOUT="$BASE/process/engines/itemrec/algorithms/scala/mahout/commons/lib"
 
