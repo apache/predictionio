@@ -850,6 +850,9 @@ class OfflineTuneJob extends InterruptableJob {
           /** Mark the end time since this is used to determine whether the run has finished */
           offlineTunes.update(offlineTuneWithStartTime.copy(endtime = Some(DateTime.now)))
 
+          /** Mark subject algo as tuned */
+          algos.update(tuneSubject.copy(status = "tuned"))
+
           /** Clean up */
           offlineEvalsToRun foreach { offlineEval =>
             val algosToClean = algos.getByOfflineEvalid(offlineEval.id).toSeq.filter(_.loop.map(_ != 0).getOrElse(false))
