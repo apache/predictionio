@@ -514,7 +514,7 @@ object API extends Controller {
                   val attributesToGet = attributes map { _.split(",").toSeq } getOrElse Seq()
 
                   if (attributesToGet.length > 0) {
-                    val attributedItems = items.getByIds(app.id, res) map { i => (i.id, i) } toMap
+                    val attributedItems = items.getByIds(app.id, res).map(i => (i.id, i)).toMap
                     val ar = attributesToGet map { atg =>
                       Map(atg -> res.map(ri =>
                         attributedItems(ri).attributes map { attribs =>
