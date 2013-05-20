@@ -126,7 +126,7 @@ fi
 
 PROG_NAME=settings04
 
-JARS="${PROG_HOME}/lib/predictionio-0.3-to-0.4-settings-migration_2.10-0.4-SNAPSHOT.jar:"
+JARS="${PROG_HOME}/lib/predictionio-0.3-to-0.4-settings-migration_2.10-0.4.jar:"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-commons_2.10-2.5.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-core_2.10-2.5.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-gridfs_2.10-2.5.0.jar"

@@ -1,6 +1,6 @@
 name := "PredictionIO 0.3 to 0.4 Settings Migration"
 
-version := "0.4-SNAPSHOT"
+version := "0.4"
 
 organization := "io.prediction"
 

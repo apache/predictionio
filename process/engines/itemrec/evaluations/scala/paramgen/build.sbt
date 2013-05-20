@@ -4,12 +4,12 @@ assemblySettings
 
 name := "PredictionIO-Process-ItemRec-Evaluations-ParamGen"
 
-version := "0.4-SNAPSHOT"
+version := "0.4"
 
 scalaVersion := "2.10.0"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4-SNAPSHOT",
+  "io.prediction" %% "predictionio-commons" % "0.4",
   "ch.qos.logback" % "logback-classic" % "1.0.9",
   "ch.qos.logback" % "logback-core" % "1.0.9",
   "com.typesafe" % "config" % "1.0.0",
