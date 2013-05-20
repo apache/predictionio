@@ -1,13 +1,13 @@
 name := "PredictionIO Connection Check Tool"
 
-version := "0.4"
+version := "0.5-SNAPSHOT"
 
 organization := "io.prediction"
 
 scalaVersion := "2.10.0"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4"
+  "io.prediction" %% "predictionio-commons" % "0.5-SNAPSHOT"
 )
 
 resolvers ++= Seq(

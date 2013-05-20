@@ -1,7 +1,7 @@
 name := "PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout-Commons"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4"
+  "io.prediction" %% "predictionio-commons" % "0.5-SNAPSHOT"
 )
 
 // Mahout's dependencies
