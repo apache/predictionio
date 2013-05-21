@@ -1594,54 +1594,68 @@ object Application extends Controller {
           .map(x => x.score)
         
         val num = results.length
-        val avg = if (results.isEmpty) "N/A" else (results.reduceLeft( _ + _ ) / num).toString
+        val avg = if ((results.isEmpty) || (num != eval.iterations)) "N/A" else ((results.reduceLeft( _ + _ ) / num).toString)
 
         Map("algo_id" -> algo.id.toString,
             "metrics_id" -> metric.id.toString,
             "score" -> avg.toString
             )
-      }).toSeq 
+      }).toSeq
 
-      val metricscoreiterationlist = evalResults.groupBy(x => x.iteration).toSeq.sortBy(_._1).map{ case (it, m) =>
-        m.map( r => Map("algo_id" -> r.algoid.toString, "metrics_id" -> r.metricid.toString, "score" -> r.score.toString) ).toSeq}
+      val metricscoreiterationlist = (for (i <- 1 to eval.iterations) yield {
+        val defaultScore = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
+          ((algo.id, metric.id) -> "N/A") // default score
+        }).toMap
+
+        val evalScore = evalResults.filter( x => (x.iteration == i) ).map(r =>
+          ((r.algoid, r.metricid) -> r.score.toString)).toMap
+      
+        // overwrite defaultScore with evalScore
+        (defaultScore ++ evalScore).map{ case ((algoid, metricid), score) => 
+          Map("algo_id" -> algoid.toString, "metrics_id" -> metricid.toString, "score" -> score)
+        }
+      }).toSeq
 
       val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
       val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
 
       // get splitter data
       val splitters = offlineEvalSplitters.getByEvalid(eval.id)
-      if (!splitters.hasNext)
-        throw new RuntimeException("No splitter found for this Offline Eval ID:" + eval.id)
 
-      val splitter = splitters.next
+      if (splitters.hasNext) {
+        val splitter = splitters.next
 
-      val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double])*100).toInt
-      val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
-      val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
+        val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double])*100).toInt
+        val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
+        val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
 
-      if (splitters.hasNext)
-        throw new RuntimeException("More than one splitter found for this Offline Eval ID:" + eval.id)
-
-      Ok(toJson(
-        Map(
-          "id" -> toJson(eval.id),
-           "app_id" -> toJson(app_id),
-           "engine_id" -> toJson(eval.engineid),
-           "algolist" -> algolist,
-           "metricslist" -> metricslist,
-           "metricscorelist" -> toJson(metricscorelist),
-           "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
-           "splitTrain" -> toJson(splitTrain),
-           "splitTest" -> toJson(splitTest),
-           "splitMethod" -> toJson(splitMethod),
-           "evalIteration" -> toJson(eval.iterations),
-           "status" -> toJson(status),
-           "startTime" -> toJson(starttime),
-           "endTime" -> toJson(endtime)
-           )
-
-      ))
-
+        if (splitters.hasNext) {
+          val message = "More than one splitter found for this Offline Eval ID:" + eval.id
+          NotFound(toJson(Map("message" -> toJson(message))))
+        } else {
+          Ok(toJson(
+            Map(
+              "id" -> toJson(eval.id),
+               "app_id" -> toJson(app_id),
+               "engine_id" -> toJson(eval.engineid),
+               "algolist" -> algolist,
+               "metricslist" -> metricslist,
+               "metricscorelist" -> toJson(metricscorelist),
+               "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
+               "splitTrain" -> toJson(splitTrain),
+               "splitTest" -> toJson(splitTest),
+               "splitMethod" -> toJson(splitMethod),
+               "evalIteration" -> toJson(eval.iterations),
+               "status" -> toJson(status),
+               "startTime" -> toJson(starttime),
+               "endTime" -> toJson(endtime)
+               )
+          ))
+        }
+      } else {
+        val message = "No splitter found for this Offline Eval ID:" + eval.id 
+        NotFound(toJson(Map("message" -> toJson(message))))
+      }
     } getOrElse {
       NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or simeval id."))))
     }
