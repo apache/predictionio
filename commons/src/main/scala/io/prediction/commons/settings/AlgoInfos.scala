@@ -8,7 +8,8 @@ package io.prediction.commons.settings
   * @param batchcommands Command templates for running the algorithm in batch mode.
   * @param offlineevalcommands Command templates for running the algorithm in offline evaluation mode.
   * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramdescription Key value paris of (parameter -> (display name, description)).
+  * @param paramnames Key value pairs of (parameter -> display name).
+  * @param paramdescription Key value pairs of (parameter -> description).
   * @param paramorder The display order of parameters.
   * @param engineinfoid The EngineInfo ID of the engine that can run this algorithm.
   * @param techreq Technology requirement for this algorithm to run.
@@ -21,7 +22,8 @@ case class AlgoInfo(
   batchcommands: Option[Seq[String]],
   offlineevalcommands: Option[Seq[String]],
   paramdefaults: Map[String, Any],
-  paramdescription: Map[String, (String, String)],
+  paramnames: Map[String, String],
+  paramdescription: Map[String, String],
   paramorder: Seq[String],
   engineinfoid: String,
   techreq: Seq[String],
@@ -30,9 +32,18 @@ case class AlgoInfo(
 
 /** Base trait for implementations that interact with algo info in the backend data store. */
 trait AlgoInfos {
+  /** Insert an algo info. */
+  def insert(algoInfo: AlgoInfo): Unit
+
   /** Get algo info by its ID. */
   def get(id: String): Option[AlgoInfo]
 
   /** Get algo info by their engine type. */
   def getByEngineInfoId(engineinfoid: String): Seq[AlgoInfo]
+
+  /** Update an algo info. */
+  def update(algoInfo: AlgoInfo): Unit
+
+  /** Delete an algo info by its ID. */
+  def delete(id: String): Unit
 }

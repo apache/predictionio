@@ -384,7 +384,12 @@ class Config {
 
   /** Obtains an AlgoInfos object with configured backend type. */
   def getSettingsAlgoInfos(): settings.AlgoInfos = {
-    new settings.code.CodeAlgoInfos()
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoAlgoInfos(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
   }
 
   /** Obtains a OfflineEvalSplitterInfos object with configured backend type. */
