@@ -369,7 +369,7 @@ class AlgoInfosSpec extends Specification { def is =
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
     algoinfos.insert(u1)
 
-    val u2 = algoinfos.get(u1.id).get.copy(techreq = Seq("GraphLab"))
+    val u2 = u1.copy(techreq = Seq("GraphLab"))
     algoinfos.update(u2)
     algoinfos.get(u2.id) must beSome(u2)
   }

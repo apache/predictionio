@@ -18,6 +18,8 @@ object MongoUtils {
     builder.result()
   }
 
+  def dbObjToMapOfString(dbObj: DBObject): Map[String, String] = dbObjToMap(dbObj) mapValues { _.asInstanceOf[String] }
+
   /** Converts MongoDBList to List of String. */
   def mongoDbListToListOfString(dbList: MongoDBList): List[String] = {
     dbList.toList.map(_.asInstanceOf[String])

@@ -1,7 +1,7 @@
 package io.prediction.tools.settingsinit
 
 import io.prediction.commons._
-import io.prediction.commons.settings.{OfflineEvalMetricInfo, OfflineEvalSplitterInfo, ParamGenInfo}
+import io.prediction.commons.settings.{AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, ParamGenInfo}
 
 import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
@@ -24,6 +24,7 @@ object SettingsInit {
   val config = new Config()
 
   def main(args: Array[String]) {
+    val algoInfos = config.getSettingsAlgoInfos
     val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos
     val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
     val paramGenInfos = config.getSettingsParamGenInfos
@@ -45,6 +46,47 @@ object SettingsInit {
     println("PredictionIO settings initialization starting")
 
     M.unapply(settingsJson) map { settings =>
+      M.unapply(settings("algoinfos")) map { infos =>
+        println("Populating AlgoInfos...")
+        for {
+          id <- infos.keys
+          M(info) = infos(id)
+          S(name) = info("name")
+          OS(description) = info.get("description")
+          OSS(batchcommands) = info.get("batchcommands")
+          OSS(offlineevalcommands) = info.get("offlineevalcommands")
+          SS(paramorder) = info("paramorder")
+          MSS(paramnames) = info("paramnames")
+          MSS(paramdescription) = info("paramdescription")
+          MSS(paramdefaults) = info("paramdefaults")
+          S(engineinfoid) = info("engineinfoid")
+          SS(techreq) = info("techreq")
+          SS(datareq) = info("datareq")
+        } yield {
+          val ai = AlgoInfo(
+            id = id,
+            name = name,
+            description = description,
+            batchcommands = batchcommands,
+            offlineevalcommands = offlineevalcommands,
+            paramdefaults = paramdefaults,
+            paramnames = paramnames,
+            paramdescription = paramdescription,
+            paramorder = paramorder,
+            engineinfoid = engineinfoid,
+            techreq = techreq,
+            datareq = datareq)
+
+          algoInfos.get(id) map { a =>
+            println(s"Updating AlgoInfo ID: ${id}")
+            algoInfos.update(ai)
+          } getOrElse {
+            println(s"Adding AlgoInfo ID: ${id}")
+            algoInfos.insert(ai)
+          }
+        }
+      } getOrElse println("Cannot find any OfflineEvalSplitterInfo information. Skipping.")
+
       M.unapply(settings("offlineevalsplitterinfos")) map { infos =>
         println("Populating OfflineEvalSplitterInfos...")
         for {
