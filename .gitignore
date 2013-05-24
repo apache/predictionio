@@ -4,7 +4,9 @@ logs/
 project/*
 !project/Build.scala
 target/
+build/
 dist/target/
 vendors
 .DS_Store
 .idea
+.gradle
