@@ -122,6 +122,7 @@ object Jobs {
     command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("mahoutCoreJobJar", config.getJar("io.prediction.algorithms.mahout-core-job").getOrElse(""))
     command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
+    command.setAttribute("scaldingGenericJar", config.getJar("io.prediction.algorithms.scalding.itemrec.generic").getOrElse(""))
     command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
     command.setAttribute("trainingTestSplitTimeJar", config.getJar("io.prediction.evaluations.itemrec.trainingtestsplit").getOrElse(""))
     command.setAttribute("paramgenJar", config.getJar("io.prediction.evaluations.itemrec.paramgen").getOrElse(""))
