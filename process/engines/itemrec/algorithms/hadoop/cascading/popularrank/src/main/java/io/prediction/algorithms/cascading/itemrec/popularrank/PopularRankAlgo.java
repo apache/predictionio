@@ -1,4 +1,4 @@
-package io.prediction.algorithms.cascading.itemrec.custom;
+package io.prediction.algorithms.cascading.itemrec.popularrank;
 
 import java.util.Properties;
 
@@ -41,7 +41,7 @@ import org.apache.commons.cli.ParseException;
  *
  * This examlpe algo simply recommends items based on popularity, which is determined by summing of all ratings.
  */
-public class CustomAlgo {
+public class PopularRankAlgo {
 
   private static Option createRequiredArgOption(String optName, String argName, Object argType, String desc) {
     Option opt = OptionBuilder.withArgName(argName)
@@ -124,7 +124,7 @@ public class CustomAlgo {
 
     /* cascading job */
     Properties properties = new Properties();
-    AppProps.setApplicationJarClass( properties, CustomAlgo.class );
+    AppProps.setApplicationJarClass( properties, PopularRankAlgo.class );
     HadoopFlowConnector flowConnector = new HadoopFlowConnector( properties );
 
     Fields ratingsFields = new Fields( "uid", "iid", "rating" );

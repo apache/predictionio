@@ -24,6 +24,6 @@ jar {
   }
 
   manifest {
-    attributes( "Main-Class": "io/prediction/algorithms/cascading/itemrec/custom/CustomAlgo" )
+    attributes( "Main-Class": "io/prediction/algorithms/cascading/itemrec/popularrank/PopularRankAlgo" )
   }
 }
