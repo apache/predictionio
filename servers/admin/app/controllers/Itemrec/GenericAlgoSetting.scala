@@ -53,7 +53,7 @@ trait GenericAlgoSetting extends Controller {
     }
   }
 
-  def validDataIn(list: List[String])(implicit r: Reads[String]): Reads[String] = 
+  def validDataIn(list: List[String])(implicit r: Reads[String]): Reads[String] =
     r.filter(ValidationError("Must be one of these values: " + list.mkString(", ") +".")) (list.contains(_))
 
   // verify action to score conversion
@@ -115,7 +115,7 @@ trait GenericAlgoSetting extends Controller {
       //println(json)
 
       json.validate[T].fold(
-        invalid = { e => 
+        invalid = { e =>
           //println(e.toString)
           //val msg = e(0)._2(0).message + " Update Failed." // extract 1st error message only
           BadRequest(toJson(Map("message" -> toJson(e.toString))))
@@ -124,7 +124,7 @@ trait GenericAlgoSetting extends Controller {
 
           // get original Algo first
           val optAlgo: Option[Algo] = algos.get(data.getAlgoid)
-          
+
           optAlgo map { algo =>
             // NOTE: read-modify-write the original param
             val updatedParams = algo.params ++ data.getParams
@@ -134,7 +134,7 @@ trait GenericAlgoSetting extends Controller {
             val updatedAlgo = algo.copy(
               params = updatedParams
             )
-            
+
             algos.update(updatedAlgo)
 
             /** auto tune */
@@ -147,7 +147,7 @@ trait GenericAlgoSetting extends Controller {
                 Logger.info("Delete offline tune ID "+tuneid)
                 offlineTunes.delete(tuneid)
               }
-              
+
               // create an OfflineTune and paramGen
               val offlineTune = OfflineTune(
                 id = -1,
@@ -157,7 +157,7 @@ trait GenericAlgoSetting extends Controller {
                 starttime = None,
                 endtime = None
               )
-              
+
               val tuneid = offlineTunes.insert(offlineTune)
 
               paramGens.insert(ParamGen(
@@ -180,9 +180,9 @@ trait GenericAlgoSetting extends Controller {
                 id = -1,
                 engineid = updatedAlgo.engineid,
                 name = "Default-BasedLine-Algo-for-OfflineTune-"+tuneid,
-                infoid = defaultBaseLineAlgoType, 
+                infoid = defaultBaseLineAlgoType,
                 command = "",
-                params = algoInfos.get(defaultBaseLineAlgoType).get.paramdefaults,
+                params = algoInfos.get(defaultBaseLineAlgoType).get.params.mapValues(_.defaultvalue),
                 settings = Map(), // no use for now
                 modelset = false, // init value
                 createtime = DateTime.now,
@@ -210,7 +210,7 @@ trait GenericAlgoSetting extends Controller {
               // call sync to scheduler here
               WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
             }
-              
+
             Ok
           } getOrElse {
             NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id. Update failed."))))
@@ -226,18 +226,18 @@ trait GenericAlgoSetting extends Controller {
   /** common getSettings for all algo
   Return default value if nothing has been set */
   def getSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
-    
+
     // TODO: check user owns this app + engine + aglo
-    
+
     // TODO: check algo_id is int
     val optAlgo: Option[Algo] = algos.get(algo_id.toInt)
-    
+
     optAlgo map { algo =>
 
       algoInfos.get(algo.infoid) map { algoInfo =>
 
         // get default params from algoinfo and combined with existing params
-        val params = algoInfo.paramdefaults ++ algo.params
+        val params = algoInfo.params.mapValues(_.defaultvalue) ++ algo.params
 
         Ok(toJson(Map(
           "id" -> toJson(algo.id),
@@ -261,7 +261,7 @@ trait AlgoData {
 
   /** convert case class to Map */
   def paramToMap(obj: AnyRef): Map[String, Any] = {
-    obj.getClass.getDeclaredFields.filterNot( _.isSynthetic ).map { field => 
+    obj.getClass.getDeclaredFields.filterNot( _.isSynthetic ).map { field =>
       field.setAccessible(true)
       (field.getName -> field.get(obj))
     }.toMap

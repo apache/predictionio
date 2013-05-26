@@ -99,7 +99,7 @@ object Jobs {
 
     /** Algo-specific attributes */
     algo map { alg =>
-      val defaultParams = Scheduler.algoInfos.get(alg.infoid) map { _.paramdefaults } getOrElse Map[String, String]()
+      val defaultParams = Scheduler.algoInfos.get(alg.infoid) map { _.params.mapValues(_.defaultvalue) } getOrElse Map[String, String]()
       command.setAttributes(command.attributes ++ defaultParams ++ alg.params)
       command.setAttribute("jar", config.getJar(alg.infoid).getOrElse(""))
       command.setAttribute("algoid", alg.id)

@@ -1,7 +1,7 @@
 package io.prediction.tools.settingsinit
 
 import io.prediction.commons._
-import io.prediction.commons.settings.{AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, ParamGenInfo}
+import io.prediction.commons.settings.{AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, Param, ParamGenInfo}
 
 import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
@@ -56,34 +56,47 @@ object SettingsInit {
           OSS(batchcommands) = info.get("batchcommands")
           OSS(offlineevalcommands) = info.get("offlineevalcommands")
           SS(paramorder) = info("paramorder")
-          MSS(paramnames) = info("paramnames")
-          MSS(paramdescription) = info("paramdescription")
-          MSS(paramdefaults) = info("paramdefaults")
+          M(params) = info("params")
           S(engineinfoid) = info("engineinfoid")
           SS(techreq) = info("techreq")
           SS(datareq) = info("datareq")
         } yield {
+          /** Take care of integers that are parsed as double from JSON
+            * http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
+            */
+          val castedparams = params map { p =>
+            val param = p._2.asInstanceOf[Map[String, Any]]
+            val constraint = param("constraint").asInstanceOf[String]
+            val casteddefault = constraint match {
+              case "integer" => param("defaultvalue").asInstanceOf[Double].toInt
+              case _ => param("defaultvalue")
+            }
+            (p._1, Param(
+              id = p._1,
+              name = param("name").asInstanceOf[String],
+              description = param.get("description") map { _.asInstanceOf[String] },
+              defaultvalue = casteddefault,
+              constraint = param("constraint").asInstanceOf[String]))
+          }
+
           val ai = AlgoInfo(
             id = id,
             name = name,
             description = description,
             batchcommands = batchcommands,
             offlineevalcommands = offlineevalcommands,
-            paramdefaults = paramdefaults,
-            paramnames = paramnames,
-            paramdescription = paramdescription,
+            params = castedparams,
             paramorder = paramorder,
             engineinfoid = engineinfoid,
             techreq = techreq,
             datareq = datareq)
 
           algoInfos.get(id) map { a =>
-            println(s"Updating AlgoInfo ID: ${id}")
-            algoInfos.update(ai)
-          } getOrElse {
-            println(s"Adding AlgoInfo ID: ${id}")
-            algoInfos.insert(ai)
+            println(s"Deleting old AlgoInfo ID: ${id}")
+            algoInfos.delete(id)
           }
+          println(s"Adding AlgoInfo ID: ${id}")
+          algoInfos.insert(ai)
         }
       } getOrElse println("Cannot find any OfflineEvalSplitterInfo information. Skipping.")
 

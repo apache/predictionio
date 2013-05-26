@@ -187,7 +187,7 @@ class AlgosSpec extends Specification { def is =
   def getTuneSubjectByOfflineTuneid(algos: Algos) = {
     val algo1 = Algo(
       id       = 0,
-      engineid = 567,
+      engineid = 678,
       name     = "getTuneSubjectByTuneid1",
       infoid   = "def",
       command  = "getTuneSubjectByTuneid1",
@@ -204,7 +204,7 @@ class AlgosSpec extends Specification { def is =
     )
     val algo2 = Algo(
       id       = 0,
-      engineid = 567,
+      engineid = 678,
       name     = "getTuneSubjectByTuneid2",
       infoid   = "id3",
       command  = "getTuneSubjectByTuneid2",

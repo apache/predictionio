@@ -7,9 +7,7 @@ package io.prediction.commons.settings
   * @param description A long description of the algorithm.
   * @param batchcommands Command templates for running the algorithm in batch mode.
   * @param offlineevalcommands Command templates for running the algorithm in offline evaluation mode.
-  * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramnames Key value pairs of (parameter -> display name).
-  * @param paramdescription Key value pairs of (parameter -> description).
+  * @param params Map of Param objects, with keys equal to IDs of Param objects it contains.
   * @param paramorder The display order of parameters.
   * @param engineinfoid The EngineInfo ID of the engine that can run this algorithm.
   * @param techreq Technology requirement for this algorithm to run.
@@ -21,9 +19,7 @@ case class AlgoInfo(
   description: Option[String],
   batchcommands: Option[Seq[String]],
   offlineevalcommands: Option[Seq[String]],
-  paramdefaults: Map[String, Any],
-  paramnames: Map[String, String],
-  paramdescription: Map[String, String],
+  params: Map[String, Param],
   paramorder: Seq[String],
   engineinfoid: String,
   techreq: Seq[String],
