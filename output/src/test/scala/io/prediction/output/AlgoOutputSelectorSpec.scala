@@ -18,7 +18,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
                                                                               p ^
     "get itemrec output from a valid engine"                                  ! itemRecOutputSelection(algoOutputSelector) ^
     "get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
-    "get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
+    //"get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
     "get itemrec output from a valid engine with no algorithm"                ! itemRecOutputSelectionNoAlgo(algoOutputSelector) ^
     "get itemrec output from an invalid engine"                               ! itemRecOutputSelectionBadEngine(algoOutputSelector) ^
     "get itemsim output from a valid engine"                                  ! itemSimOutputSelection(algoOutputSelector) ^

@@ -84,6 +84,7 @@ object ItemRecAlgoOutput {
 
   /** Private method just to get items. */
   private def more(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore] = {
+    /**
     algo.infoid match {
       case "pdio-knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case "pdio-randomrank" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
@@ -98,5 +99,10 @@ object ItemRecAlgoOutput {
       case "mahout-thresholduserbased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
       case _ => throw new RuntimeException("Unsupported itemrec algorithm package: %s" format algo.infoid)
     }
+    */
+
+    /** To be refactored with real time algorithms.
+      * Temporarily enable any batch algorithms.  */
+    knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
   }
 }
