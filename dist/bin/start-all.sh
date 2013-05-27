@@ -38,7 +38,7 @@ fi
 $BASE/bin/conncheck
 
 # Admin server
-echo -n "Trying to start admin server... "
+echo "Trying to start admin server... \c"
 echo "Trying to start admin server at: `date`" >>"$ADMIN_OUT"
 $BASE/bin/start-admin.sh $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT -Dlogger.file=$BASE/conf/admin-logger.xml >>"$ADMIN_OUT" 2>>"$ADMIN_ERR" &
 SERVER_TRY=1
@@ -55,7 +55,7 @@ while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
 done
 
 # API server
-echo -n "Trying to start API server... "
+echo "Trying to start API server... \c"
 echo "Trying to start API server at: `date`" >>"$API_OUT"
 $BASE/bin/start-api.sh $PLAY_START_OPTS -Dhttp.port=$API_PORT -Dlogger.file=$BASE/conf/api-logger.xml >>"$API_OUT" 2>>"$API_ERR" &
 SERVER_TRY=1
@@ -72,7 +72,7 @@ while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
 done
 
 # Scheduler server
-echo -n "Trying to start scheduler server... "
+echo "Trying to start scheduler server... \c"
 echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_OUT"
 $BASE/bin/start-scheduler.sh $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
 SERVER_TRY=1
