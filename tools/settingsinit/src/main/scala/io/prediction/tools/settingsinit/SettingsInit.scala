@@ -91,10 +91,8 @@ object SettingsInit {
             techreq = techreq,
             datareq = datareq)
 
-          algoInfos.get(id) map { a =>
-            println(s"Deleting old AlgoInfo ID: ${id}")
-            algoInfos.delete(id)
-          }
+          println(s"Deleting any old AlgoInfo ID: ${id}")
+          algoInfos.delete(id)
           println(s"Adding AlgoInfo ID: ${id}")
           algoInfos.insert(ai)
         }
