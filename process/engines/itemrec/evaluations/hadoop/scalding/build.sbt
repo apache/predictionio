@@ -4,7 +4,7 @@ name := "PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding"
 
 packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "com.twitter.scalding.Tool")
 
-version in ThisBuild := "0.4.1"
+version in ThisBuild := "0.5-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.9.2"
 
