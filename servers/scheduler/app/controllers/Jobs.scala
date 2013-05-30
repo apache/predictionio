@@ -107,10 +107,6 @@ object Jobs {
       command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("dataFilePrefix", DataFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
       command.setAttribute("algoFilePrefix", AlgoFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
-      /** Attributes that only apply to batch algo run that are NOT offline evaluations */
-      offlineEval getOrElse {
-        command.setAttribute("modelset", "$modelset$")
-      }
     }
 
     /** Common attributes */
@@ -170,36 +166,95 @@ object Jobs {
 
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
-class AlgoJob extends Job {
+class AlgoJob extends InterruptableJob {
+  @volatile
+  var kill = false
+
+  var exitCode: Int = 0
+  var finishFlag: Boolean = false
+
+  @volatile
+  var proc: Option[Process] = None
+  
   override def execute(context: JobExecutionContext) = {
     val jobDataMap = context.getMergedJobDataMap
     val algoid = jobDataMap.getInt("algoid")
     val engineinfoid = jobDataMap.getString("engineinfoid")
     val template = new StringTemplate(jobDataMap.getString("template"))
+    val config = Scheduler.config
+    val apps = Scheduler.apps
+    val engines = Scheduler.engines
     val algos = Scheduler.algos
+    val algoInfos = Scheduler.algoInfos
     val itemRecScores = Scheduler.itemRecScores
+    val logPrefix = s"Algo ID ${algoid}: "
+
     algos.get(algoid) map { algo =>
-      Logger.info("Algo ID %d: Current model set for is %s".format(algo.id, algo.modelset))
-      Logger.info("Algo ID %d: Launching algo job for model set %s".format(algo.id, !algo.modelset))
-      template.setAttribute("modelset", !algo.modelset)
-      val command = template.toString
-      Logger.info("Algo ID %d: Going to run: %s".format(algo.id, command))
-      val code = command.split("&&").map(c => Process(c.trim)).reduceLeft((a, b) => a #&& b).!
-      if (code == 0) {
-        Logger.info("Algo ID %d: Flipping model set flag to %s".format(algo.id, !algo.modelset))
-        algos.update(algo.copy(modelset = !algo.modelset))
-        engineinfoid match {
-          case "itemrec" => {
-            Logger.info("Algo ID %d: Deleting data of model set %s".format(algo.id, algo.modelset))
-            itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
-            Logger.info("Algo ID %d: Deletion completed".format(algo.id))
+      engines.get(algo.engineid) map { engine =>
+        apps.get(engine.appid) map {app =>
+          algoInfos.get(algo.infoid) map { info =>
+            info.batchcommands map { batchcommands =>
+              Logger.info(s"${logPrefix}Current model set for is ${algo.modelset}")
+              Logger.info(s"${logPrefix}Launching algo job for model set ${algo.modelset}")
+              val commands = batchcommands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), None, None, Some(collection.immutable.Map("modelset" -> !algo.modelset))).toString }
+
+              commands map { _.trim } foreach { c =>
+                this.synchronized {
+                  if (!kill && !c.isEmpty && exitCode == 0) {
+                    Logger.info(s"${logPrefix}Going to run: $c")
+                    proc = Some(Process(c).run)
+                    Logger.info(s"${logPrefix}Scheduler waiting for sub-process to finish")
+                  }
+                }
+
+                if (!kill && !c.isEmpty && exitCode == 0) {
+                  exitCode = proc.get.exitValue
+                  Logger.info(s"${logPrefix}Sub-process has finished with exit code ${exitCode}")
+                }
+              }
+
+              finishFlag = true
+
+              /** Display completion information */
+              if (kill) {
+                Logger.info(s"${logPrefix}Sub-process was killed upon request")
+                Logger.info(s"${logPrefix}Not flipping model set flag because the algo job was killed")
+              } else if (exitCode == 0) {
+                Logger.info(s"${logPrefix}Flipping model set flag to ${!algo.modelset}")
+                algos.update(algo.copy(modelset = !algo.modelset))
+                engineinfoid match {
+                  case "itemrec" => {
+                    Logger.info(s"${logPrefix}Deleting data of model set ${algo.modelset}")
+                    itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
+                    Logger.info(s"${logPrefix}Deletion completed")
+                  }
+                }
+                Logger.info(s"${logPrefix}Job completed")
+              } else {
+                Logger.warn(s"${logPrefix}Not flipping model set flag because the algo job returned non-zero exit code")
+              }
+            } getOrElse {
+              Logger.warn(s"${logPrefix}Not starting algorithm training because this algorithm has no command")
+            }
+          } getOrElse {
+            Logger.warn(s"${logPrefix}Not starting algorithm training because information of this algorithm cannot be found from the database")
           }
+        } getOrElse {
+          Logger.warn(s"${logPrefix}Not starting algorithm training because the app that owns this algorithm cannot be found from the database")
         }
-        Logger.info("Algo ID %d: Job completed".format(algo.id))
-      } else {
-        Logger.warn("Algo ID %d: Not flipping model set flag because the algo job returned non-zero exit code".format(algo.id))
+      } getOrElse {
+        Logger.warn(s"${logPrefix}Not starting algorithm training because the engine that owns this algorithm cannot be found from the database")
       }
-    } getOrElse Logger.warn("Algo ID %d: No job to run because the algo cannot be found from the database".format(algoid))
+    } getOrElse {
+      Logger.warn(s"${logPrefix}Not starting algorithm training because the algorithm cannot be found from the database")
+    }
+  }
+
+  override def interrupt() = {
+    this.synchronized {
+      kill = true
+      proc map { _.destroy }
+    }
   }
 }
 

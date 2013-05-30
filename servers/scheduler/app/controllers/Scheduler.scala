@@ -163,6 +163,30 @@ object Scheduler extends Controller {
             }
           }
         } else {
+          /** Stop any algo job if it is undeployed */
+          val algoJobKey = jobKey(algoid, Jobs.algoJobGroup)
+          if (scheduler.checkExists(algoJobKey)) {
+            /** The following checks only jobs in this particular scheduler node. */
+            /** TODO: Clustering support. */
+            try {
+              val running = scheduler.getCurrentlyExecutingJobs() map { context =>
+                val jobDetail = context.getJobDetail()
+                val jobKey = jobDetail.getKey()
+                jobKey.getName() == algoid
+              } reduce { (a, b) => a || b }
+              if (running) {
+                try {
+                  scheduler.interrupt(algoJobKey)
+                  Logger.info(s"${logPrefix}Stopping training")
+                } catch {
+                  case e: UnableToInterruptJobException => Logger.warn(s"${logPrefix}Unable to stop training")
+                }
+              }
+            } catch {
+              case e: UnsupportedOperationException => Logger.info(s"${logPrefix}No training is running")
+            }
+          }
+
           if (scheduler.checkExists(triggerkey) == true) {
             scheduler.unscheduleJob(triggerkey)
           }
