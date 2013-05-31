@@ -23,10 +23,10 @@ import io.prediction.commons.filepath.DataFile
  * --engineid: <int>
  * --algoid: <int>
  *
- * --viewParam: <int>
- * --likeParam: <int>
- * --dislikeParam: <int>
- * --conversionParam: <int>
+ * --viewParam: <string>. (number 1 to 5, or "ignore")
+ * --likeParam: <string>
+ * --dislikeParam: <string>
+ * --conversionParam: <string>
  * --conflictParam: <string>. (latest/highest/lowest)
  * 
  * Optional args:
@@ -61,11 +61,18 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
   
   // determin how to map actions to rating values
-  val viewParamArg: Int = args("viewParam").toInt
-  val likeParamArg: Int = args("likeParam").toInt
-  val dislikeParamArg: Int = args("dislikeParam").toInt
-  val conversionParamArg: Int = args("conversionParam").toInt
-  //val othersParamArg: Int = args.getOrElse("othersParam", "2").toInt
+  def getActionParam(name: String): Option[Int] = {
+    val actionParam: Option[Int] = args(name) match {
+      case "ignore" => None
+      case x => Some(x.toInt)
+    }
+    actionParam
+  }
+
+  val viewParamArg: Option[Int] = getActionParam("viewParam")
+  val likeParamArg: Option[Int] = getActionParam("likeParam")
+  val dislikeParamArg: Option[Int] = getActionParam("dislikeParam")
+  val conversionParamArg: Option[Int] = getActionParam("conversionParam")
   
   // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
   // determine which action will be considered as final preference.
@@ -172,19 +179,47 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // filter and pre-process actions
   u2i.joinWithSmaller('iid -> 'iidx, itemsIndex) // only select actions of these items
+    .filter('action, 'v) { fields: (String, String) =>
+      val (action, v) = fields
+
+      val keepThis: Boolean = action.toInt match {
+        case ACTION_RATE => true
+        case ACTION_LIKEDISLIKE => if (v.toInt == 1) (likeParamArg != None) else (dislikeParamArg != None)
+        case ACTION_VIEW => (viewParamArg != None)
+        case ACTION_CONVERSION => (conversionParamArg != None)
+        case _ => false // all other unsupported actions
+      }
+      keepThis
+    }
     .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
       val (action, v, t) = fields
       
       // convert actions into rating value based on "action" and "v" fields
       val rating: Int = action.toInt match {
-        case ACTION_RATE => v.toInt // rate
-        case ACTION_LIKEDISLIKE => if (v.toInt == 1) likeParamArg else dislikeParamArg
-        case ACTION_VIEW => viewParamArg // view
-        case ACTION_CONVERSION => conversionParamArg // conversion
-        case _ => {
+        case ACTION_RATE => v.toInt
+        case ACTION_LIKEDISLIKE => if (v.toInt == 1) { 
+          likeParamArg.getOrElse{
+            assert(false, "Action type " + action.toInt + " should have been filtered out!")
+            1
+          }
+        } else {
+          dislikeParamArg.getOrElse{
+            assert(false, "Action type " + action.toInt + " should have been filtered out!")
+            1
+          }
+        } 
+        case ACTION_VIEW => viewParamArg.getOrElse{
+          assert(false, "Action type " + action.toInt + " should have been filtered out!")
+          1
+        }
+        case ACTION_CONVERSION => conversionParamArg.getOrElse{
+          assert(false, "Action type " + action.toInt + " should have been filtered out!")
+          1
+        }
+        case _ => { // all other unsupported actions
           assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported!")
           1
-          } //othersParamArg // all other unsupported actions
+        }
       }
       
       (rating, t.toLong)

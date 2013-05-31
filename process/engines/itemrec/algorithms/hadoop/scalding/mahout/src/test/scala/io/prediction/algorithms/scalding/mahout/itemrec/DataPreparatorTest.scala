@@ -140,11 +140,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test1Params: Map[String, String] = Map("viewParam" -> "3", "likeParam" -> "4", "dislikeParam" -> "1", "conversionParam" -> "5",
       "conflictParam" -> "latest") 
   
-  "mahout.itemrec.itembased DataPreparator with only rate actions, all itypes, no conflict" should {
+  "DataPreparator with only rate actions, all itypes, no conflict" should {
     test(test1AllItypes, test1Params, test1Items, test1Users, test1U2i, test1Ratings, test1Items, test1ItemsIndexer, test1UsersIndexer)
   }
   
-  "mahout.itemrec.itembased DataPreparator with only rate actions, no itypes specified, no conflict" should {
+  "DataPreparator with only rate actions, no itypes specified, no conflict" should {
     test(List(), test1Params, test1Items, test1Users, test1U2i, test1Ratings, test1Items, test1ItemsIndexer, test1UsersIndexer)
   }
   
@@ -216,19 +216,19 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test2ParamsHighest = test2Params + ("conflictParam" -> "highest")
   val test2ParamsLowest = test2Params + ("conflictParam" -> "lowest")
       
-  "mahout.itemrec.itembased DataPreparator with only rate actions, all itypes, conflict=latest" should {
+  "DataPreparator with only rate actions, all itypes, conflict=latest" should {
     test(test2AllItypes, test2Params, test2Items, test2Users, test2U2i, test2RatingsLatest, test2Items, test2ItemsIndexer, test2UsersIndexer)
   }
   
-  "mahout.itemrec.itembased DataPreparator with only rate actions, all itypes, conflict=highest" should {
+  "DataPreparator with only rate actions, all itypes, conflict=highest" should {
     test(test2AllItypes, test2ParamsHighest, test2Items, test2Users, test2U2i, test2RatingsHighest, test2Items, test2ItemsIndexer, test2UsersIndexer)
   }
   
-  "mahout.itemrec.itembased DataPreparator with only rate actions, all itypes, conflict=lowest" should {
+  "DataPreparator with only rate actions, all itypes, conflict=lowest" should {
     test(test2AllItypes, test2ParamsLowest, test2Items, test2Users, test2U2i, test2RatingsLowest, test2Items, test2ItemsIndexer, test2UsersIndexer)
   }
   
-  "mahout.itemrec.itembased DataPreparator with only rate actions, some itypes, conflict=highest" should {
+  "DataPreparator with only rate actions, some itypes, conflict=highest" should {
     test(test2Itypes_t1t4, test2ParamsHighest, test2Items, test2Users, test2U2i, test2RatingsHighest_t1t4, test2Items_t1t4, test2ItemsIndexer, test2UsersIndexer)
   }
   
@@ -262,7 +262,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test3Params: Map[String, String] = Map("viewParam" -> "1", "likeParam" -> "4", "dislikeParam" -> "2", "conversionParam" -> "5",
       "conflictParam" -> "latest") 
   
-  "mahout.itemrec.itembased DataPreparator with only all actions, all itypes, no conflict" should {
+  "DataPreparator with only all actions, all itypes, no conflict" should {
     test(test3AllItypes, test3Params, test3Items, test3Users, test3U2i, test3Ratings, test3Items, test3ItemsIndexer, test3UsersIndexer)
   }
     
@@ -271,8 +271,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
    */
   val test4Params: Map[String, String] = Map("viewParam" -> "2", "likeParam" -> "5", "dislikeParam" -> "1", "conversionParam" -> "4",
       "conflictParam" -> "latest")
-  val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
-      
+
   val test4AllItypes = List("t1", "t2", "t3", "t4")
   val test4Items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
 
@@ -309,7 +308,55 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u0", "i3", "2"),
       ("u1", "i0", "2"),
       ("u1", "i1", "1"))
-  
+
+  "DataPreparator with all actions, all itypes, and conflicts=latest" should {
+    test(test4AllItypes, test4Params, test4Items, test4Users, test4U2i, test4RatingsLatest, test4Items, test4ItemsIndexer, test4UsersIndexer)
+  }
+
+  val test4ParamsIgnoreView = test4Params + ("viewParam" -> "ignore")
+
+  val test4RatingsIgnoreViewLatest = List(
+      ("u0", "i0", "5"), 
+      ("u0", "i1", "4"),
+      ("u0", "i2", "4"),
+      ("u0", "i3", "2"),
+      ("u1", "i1", "1"))
+
+  "DataPreparator with all actions, all itypes, ignore View actions and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreView, test4Items, test4Users, test4U2i, test4RatingsIgnoreViewLatest, test4Items, test4ItemsIndexer, test4UsersIndexer)
+  }
+
+  // note: currently rate action can't be ignored
+  val test4ParamsIgnoreAllExceptView = test4Params + ("viewParam" -> "1", "likeParam" -> "ignore", "dislikeParam" -> "ignore", "conversionParam" -> "ignore")
+
+  val test4RatingsIgnoreAllExceptViewLatest = List(
+      ("u0", "i0", "1"), 
+      ("u0", "i1", "1"),
+      ("u0", "i2", "1"),
+      ("u0", "i3", "2"),
+      ("u1", "i0", "1"),
+      ("u1", "i1", "5"))
+
+  "DataPreparator with all actions, all itypes, ignore all actions except View (and Rate) and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreAllExceptView, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllExceptViewLatest, test4Items, test4ItemsIndexer, test4UsersIndexer)
+  }
+
+  // note: meaning rate action only
+  val test4ParamsIgnoreAll = test4Params + ("viewParam" -> "ignore", "likeParam" -> "ignore", "dislikeParam" -> "ignore", "conversionParam" -> "ignore")
+
+  val test4RatingsIgnoreAllLatest = List(
+      ("u0", "i0", "3"), 
+      ("u0", "i1", "4"),
+      ("u0", "i2", "3"),
+      ("u0", "i3", "2"),
+      ("u1", "i1", "5"))
+
+  "DataPreparator with all actions, all itypes, ignore all actions (except Rate) and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreAll, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllLatest, test4Items, test4ItemsIndexer, test4UsersIndexer)
+  }
+
+  val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
+
   val test4Itypes_t3 = List("t3")
   val test4Items_t3 = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i3", "t3,t4"))
   val test4RatingsLowest_t3 = List(
@@ -318,12 +365,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u0", "i3", "2"),
       ("u1", "i0", "2"),
       ("u1", "i1", "1"))
-      
-  "mahout.itemrec.itembased DataPreparator with only all actions, all itypes, and conflicts=latest" should {
-    test(test4AllItypes, test4Params, test4Items, test4Users, test4U2i, test4RatingsLatest, test4Items, test4ItemsIndexer, test4UsersIndexer)
-  }
-  
-  "mahout.itemrec.itembased DataPreparator with only all actions, some itypes, and conflicts=lowest" should {
+    
+  "DataPreparator with only all actions, some itypes, and conflicts=lowest" should {
     test(test4Itypes_t3, test4ParamsLowest, test4Items, test4Users, test4U2i, test4RatingsLowest_t3, test4Items_t3, test4ItemsIndexer, test4UsersIndexer)
   }
 
