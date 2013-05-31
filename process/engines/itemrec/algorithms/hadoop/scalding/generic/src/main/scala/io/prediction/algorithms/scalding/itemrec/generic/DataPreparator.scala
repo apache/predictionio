@@ -140,7 +140,10 @@ class DataPreparator(args: Args) extends Job(args) {
         case ACTION_LIKEDISLIKE => if (v.toInt == 1) (likeParamArg != None) else (dislikeParamArg != None)
         case ACTION_VIEW => (viewParamArg != None)
         case ACTION_CONVERSION => (conversionParamArg != None)
-        case _ => false // all other unsupported actions
+        case _ => {
+          assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported!")
+          false // all other unsupported actions
+        }
       }
       keepThis
     }
@@ -170,7 +173,7 @@ class DataPreparator(args: Args) extends Job(args) {
           1
         }
         case _ => { // all other unsupported actions
-          assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported in itemrec.generic.DataPreparator!")
+          assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported!")
           1
         }
       }
