@@ -246,7 +246,6 @@ class DataPreparatorTest extends Specification with TupleConversions {
    */
   val test4Params: Map[String, String] = Map("viewParam" -> "2", "likeParam" -> "5", "dislikeParam" -> "1", "conversionParam" -> "4",
       "conflictParam" -> "latest")
-  val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
       
   val test4AllItypes = List("t1", "t2", "t3", "t4")
   val test4Items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
@@ -279,6 +278,54 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u1", "i0", 2),
       ("u1", "i1", 1))
   
+  "itemrec.knnitembased DataPreparator with all actions, all itypes, and conflicts=latest" should {
+    test(test4AllItypes, test4Params, test4Items, test4U2i, test4RatingsLatest, test4Items)
+  }
+
+  val test4ParamsIgnoreView = test4Params + ("viewParam" -> "ignore")
+
+  val test4RatingsIgnoreViewLatest = List(
+      ("u0", "i0", 5), 
+      ("u0", "i1", 4),
+      ("u0", "i2", 4),
+      ("u0", "i3", 2),
+      ("u1", "i1", 1))
+
+  "itemrec.knnitembased DataPreparator with all actions, all itypes, ignore View actions and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreView, test4Items, test4U2i, test4RatingsIgnoreViewLatest, test4Items)
+  }
+
+  // note: currently rate action can't be ignored
+  val test4ParamsIgnoreAllExceptView = test4Params + ("viewParam" -> "1", "likeParam" -> "ignore", "dislikeParam" -> "ignore", "conversionParam" -> "ignore")
+
+  val test4RatingsIgnoreAllExceptViewLatest = List(
+      ("u0", "i0", 1), 
+      ("u0", "i1", 1),
+      ("u0", "i2", 1),
+      ("u0", "i3", 2),
+      ("u1", "i0", 1),
+      ("u1", "i1", 5))
+
+  "itemrec.knnitembased DataPreparator with all actions, all itypes, ignore all actions except View (and Rate) and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreAllExceptView, test4Items, test4U2i, test4RatingsIgnoreAllExceptViewLatest, test4Items)
+  }
+
+  // note: meaning rate action only
+  val test4ParamsIgnoreAll = test4Params + ("viewParam" -> "ignore", "likeParam" -> "ignore", "dislikeParam" -> "ignore", "conversionParam" -> "ignore")
+
+  val test4RatingsIgnoreAllLatest = List(
+      ("u0", "i0", 3), 
+      ("u0", "i1", 4),
+      ("u0", "i2", 3),
+      ("u0", "i3", 2),
+      ("u1", "i1", 5))
+
+  "itemrec.knnitembased DataPreparator with all actions, all itypes, ignore all actions (except Rate) and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreAll, test4Items, test4U2i, test4RatingsIgnoreAllLatest, test4Items)
+  }
+
+  val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
+
   val test4Itypes_t3 = List("t3")
   val test4Items_t3 = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i3", "t3,t4"))
   val test4RatingsLowest_t3 = List(
@@ -287,14 +334,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u0", "i3", 2),
       ("u1", "i0", 2),
       ("u1", "i1", 1))
-      
-  "itemrec.knnitembased DataPreparator with only all actions, all itypes, and conflicts=latest" should {
-    test(test4AllItypes, test4Params, test4Items, test4U2i, test4RatingsLatest, test4Items)
-  }
-  
-  "itemrec.knnitembased DataPreparator with only all actions, some itypes, and conflicts=lowest" should {
+        
+  "itemrec.knnitembased DataPreparator with all actions, some itypes, and conflicts=lowest" should {
     test(test4Itypes_t3, test4ParamsLowest, test4Items, test4U2i, test4RatingsLowest_t3, test4Items_t3)
   }
+
 
 }
  
