@@ -83,7 +83,7 @@
                 "priorCountParam": {
                     "name": "Virtual Count",
                     "description": "Suggested range: 0 to 100.",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 20
                 },
                 "priorCorrelParam": {
@@ -95,55 +95,55 @@
                 "minNumRatersParam": {
                     "name": "Minimum Number of Raters",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "maxNumRatersParam": {
                     "name": "Maximum Number of Raters",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 10000
                 },
                 "minIntersectionParam": {
                     "name": "Minimum Intersection",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "minNumRatedSimParam": {
                     "name": "Minimum Number of Rated Similar Items",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 4
                 },
                 "conflictParam": {
@@ -154,52 +154,52 @@
                 },
                 "priorCountParamMin": {
                     "name": "priorCountParamMin",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 10
                 },
                 "priorCountParamMax": {
                     "name": "priorCountParamMax",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 30
                 },
                 "minNumRatersParamMin": {
                     "name": "minNumRatersParamMin",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "minNumRatersParamMax": {
                     "name": "minNumRatersParamMax",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 5
                 },
                 "maxNumRatersParamMin": {
                     "name": "maxNumRatersParamMin",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 10000
                 },
                 "maxNumRatersParamMax": {
                     "name": "maxNumRatersParamMax",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 10000
                 },
                 "minIntersectionParamMin": {
                     "name": "minIntersectionParamMin",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "minIntersectionParamMax": {
                     "name": "minIntersectionParamMax",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 5
                 },
                 "minNumRatedSimParamMin": {
                     "name": "minNumRatedSimParamMin",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 1
                 },
                 "minNumRatedSimParamMax": {
                     "name": "minNumRatedSimParamMax",
-                    "constraint": "int",
+                    "constraint": "integer",
                     "defaultvalue": 5
                 },
                 "priorCorrelParamMin": {
