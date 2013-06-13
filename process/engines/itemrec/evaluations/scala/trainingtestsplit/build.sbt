@@ -4,12 +4,12 @@ assemblySettings
 
 name := "PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime"
 
-version := "0.4.2"
+version := "0.4.3-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.9.2"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4.2"
+  "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT"
 )
 
 libraryDependencies += "com.twitter" % "scalding-args_2.9.2" % "0.8.4"
