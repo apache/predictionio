@@ -332,6 +332,16 @@ class Config {
     }
   }
 
+  /** Obtains a SystemInfos object with configured backend type. */
+  def getSettingsSystemInfos(): settings.SystemInfos = {
+    settingsDbType match {
+      case "mongodb" => {
+        new settings.mongodb.MongoSystemInfos(settingsMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid settings database type: " + settingsDbType)
+    }
+  }
+
   /** Obtains a Users object with configured backend type. */
   def getSettingsUsers(): settings.Users = {
     settingsDbType match {

@@ -1,7 +1,7 @@
 package io.prediction.tools.settingsinit
 
 import io.prediction.commons._
-import io.prediction.commons.settings.{AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, Param, ParamGenInfo}
+import io.prediction.commons.settings.{AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, Param, ParamGenInfo, SystemInfo}
 
 import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
@@ -28,6 +28,7 @@ object SettingsInit {
     val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos
     val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
     val paramGenInfos = config.getSettingsParamGenInfos
+    val systemInfos = config.getSettingsSystemInfos
 
     val settingsFile = try { args(0) } catch { case e: Throwable =>
       println("Please specify the location of the initial settings file in the command line. Aborting.")
@@ -46,6 +47,26 @@ object SettingsInit {
     println("PredictionIO settings initialization starting")
 
     M.unapply(settingsJson) map { settings =>
+      M.unapply(settings("systeminfos")) map { infos =>
+        println("Populating SystemInfos...")
+        for {
+          id <- infos.keys
+          M(info) = infos(id)
+          S(value) = info("value")
+          OS(description) = info.get("description")
+        } yield {
+          val si = SystemInfo(
+            id = id,
+            value = value,
+            description = description)
+
+          println(s"Deleting any old SystemInfo ID: ${id}")
+          systemInfos.delete(id)
+          println(s"Adding SystemInfo ID: ${id}")
+          systemInfos.insert(si)
+        }
+      } getOrElse println("Cannot find any SystemInfo information. Skipping.")
+
       M.unapply(settings("algoinfos")) map { infos =>
         println("Populating AlgoInfos...")
         for {
@@ -96,7 +117,7 @@ object SettingsInit {
           println(s"Adding AlgoInfo ID: ${id}")
           algoInfos.insert(ai)
         }
-      } getOrElse println("Cannot find any OfflineEvalSplitterInfo information. Skipping.")
+      } getOrElse println("Cannot find any AlgoInfo information. Skipping.")
 
       M.unapply(settings("offlineevalsplitterinfos")) map { infos =>
         println("Populating OfflineEvalSplitterInfos...")
