@@ -12,6 +12,7 @@ scalacOptions in (Compile, doc) ++= Opts.doc.title("PredictionIO Commons API Doc
 
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "0.2.0",
+  "com.twitter" %% "chill" % "0.2.3",
   "com.typesafe" % "config" % "1.0.0",
   "commons-codec" % "commons-codec" % "1.7",
   "org.mongodb" %% "casbah" % "2.5.0",

@@ -81,6 +81,8 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   def get(id: Int) = algoColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToAlgo(_) }
 
+  def getAll() = new MongoAlgoIterator(algoColl.find())
+
   def getByEngineid(engineid: Int) = new MongoAlgoIterator(
     algoColl.find(MongoDBObject("engineid" -> engineid), getFields).sort(MongoDBObject("name" -> 1))
   )

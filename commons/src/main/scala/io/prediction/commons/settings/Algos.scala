@@ -1,6 +1,7 @@
 package io.prediction.commons.settings
 
 import com.github.nscala_time.time.Imports._
+import com.twitter.chill.KryoInjection
 
 /** Algo object.
   *
@@ -44,6 +45,9 @@ trait Algos {
   /** Get an algo by its ID. */
   def get(id: Int): Option[Algo]
 
+  /** Get all algos. */
+  def getAll(): Iterator[Algo]
+
   /** Get algos by engine ID. */
   def getByEngineid(engineid: Int): Iterator[Algo]
 
@@ -66,4 +70,49 @@ trait Algos {
     * Algos that are part of an offline evaluation or tuning are not counted.
     */
   def existsByEngineidAndName(engineid: Int, name: String): Boolean
+
+  def backup(): Array[Byte] = {
+    val algos = getAll().toSeq.map { algo =>
+      Map(
+        "id" -> algo.id,
+        "engineid" -> algo.engineid,
+        "name" -> algo.name,
+        "infoid" -> algo.infoid,
+        "command" -> algo.command,
+        "params" -> algo.params,
+        "settings" -> algo.settings,
+        "modelset" -> algo.modelset,
+        "createtime" -> algo.createtime,
+        "updatetime" -> algo.updatetime,
+        "status" -> algo.status,
+        "offlineevalid" -> algo.offlineevalid,
+        "offlinetuneid" -> algo.offlinetuneid,
+        "loop" -> algo.loop,
+        "paramset" -> algo.paramset)
+    }
+    KryoInjection(algos)
+  }
+
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[Algo]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { stuff =>
+        Algo(
+          id = stuff("id").asInstanceOf[Int],
+          engineid = stuff("engineid").asInstanceOf[Int],
+          name = stuff("name").asInstanceOf[String],
+          infoid = stuff("infoid").asInstanceOf[String],
+          command = stuff("command").asInstanceOf[String],
+          params = stuff("params").asInstanceOf[Map[String, Any]],
+          settings = stuff("settings").asInstanceOf[Map[String, Any]],
+          modelset = stuff("modelset").asInstanceOf[Boolean],
+          createtime = stuff("createtime").asInstanceOf[DateTime],
+          updatetime = stuff("updatetime").asInstanceOf[DateTime],
+          status = stuff("status").asInstanceOf[String],
+          offlineevalid = stuff("offlineevalid").asInstanceOf[Option[Int]],
+          offlinetuneid = stuff("offlinetuneid").asInstanceOf[Option[Int]],
+          loop = stuff("loop").asInstanceOf[Option[Int]],
+          paramset = stuff("paramset").asInstanceOf[Option[Int]])
+      }
+    }
+  }
 }
