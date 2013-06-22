@@ -32,6 +32,8 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToEngineInfo(_) }
 
+  def getAll() = coll.find().toSeq map { dbObjToEngineInfo(_) }
+
   def update(EngineInfo: EngineInfo) = {
     val idObj = MongoDBObject("_id" -> EngineInfo.id)
     val requiredObj = MongoDBObject(

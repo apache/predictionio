@@ -21,6 +21,7 @@ class EnginesSpec extends Specification { def is =
     "update an engine"                                                        ! update(engines)^
     "delete an engine"                                                        ! deleteByIdAndAppid(engines)^
     "checking existence of engines"                                           ! existsByAppidAndName(engines)^
+    "backup and restore existing engines"                                     ! backuprestore(engines)^
                                                                               bt
   }
 
@@ -72,7 +73,7 @@ class EnginesSpec extends Specification { def is =
       appid = 345,
       name = "update",
       infoid = "update",
-      itypes = Option(List("foo", "bar")),
+      itypes = Some(List("foo", "bar")),
       settings = Map()
     ))
     val updatedEngine = Engine(
@@ -80,7 +81,7 @@ class EnginesSpec extends Specification { def is =
       appid = 345,
       name = "updated",
       infoid = "updated",
-      itypes = Option(List("foo", "baz")),
+      itypes = Some(List("foo", "baz")),
       settings = Map("set1" -> "dat1", "set2" -> "dat2")
     )
     engines.update(updatedEngine)
@@ -93,7 +94,7 @@ class EnginesSpec extends Specification { def is =
       appid = 456,
       name = "deleteByIdAndAppid",
       infoid = "deleteByIdAndAppid",
-      itypes = Option(List("foo", "bar")),
+      itypes = Some(List("foo", "bar")),
       settings = Map("x" -> "y")
     ))
     engines.deleteByIdAndAppid(id, 456)
@@ -111,5 +112,26 @@ class EnginesSpec extends Specification { def is =
     ))
     engines.existsByAppidAndName(567, "existsByAppidAndName") must beTrue and
       (engines.existsByAppidAndName(568, "foobar") must beFalse)
+  }
+
+  def backuprestore(engines: Engines) = {
+    val eng = Engine(
+      id = 0,
+      appid = 678,
+      name = "backuprestore",
+      infoid = "backuprestore",
+      itypes = Some(Seq("dead", "beef")),
+      settings = Map("foo" -> "bar")
+    )
+    val eid = engines.insert(eng)
+    val fos = new java.io.FileOutputStream("engines.bin")
+    try {
+      fos.write(engines.backup())
+    } finally {
+      fos.close()
+    }
+    engines.restore(scala.io.Source.fromFile("engines.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { rengines =>
+      rengines must contain(eng.copy(id = eid))
+    } getOrElse 1 === 2
   }
 }

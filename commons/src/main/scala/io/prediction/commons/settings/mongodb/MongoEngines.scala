@@ -49,6 +49,8 @@ class MongoEngines(db: MongoDB) extends Engines {
 
   def get(id: Int) = engineColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToEngine(_) }
 
+  def getAll() = new MongoEngineIterator(engineColl.find())
+
   def getByAppid(appid: Int) = new MongoEngineIterator(engineColl.find(MongoDBObject("appid" -> appid)).sort(MongoDBObject("name" -> 1)))
 
   def getByAppidAndName(appid: Int, name: String) = engineColl.findOne(MongoDBObject("appid" -> appid, "name" -> name)) map { dbObjToEngine(_) }

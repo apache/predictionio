@@ -61,6 +61,8 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToAlgoInfo(_) }
 
+  def getAll() = coll.find().toSeq map { dbObjToAlgoInfo(_) }
+
   def getByEngineInfoId(engineinfoid: String) = coll.find(MongoDBObject("engineinfoid" -> engineinfoid)).sort(MongoDBObject("_id" -> 1)).toSeq map { dbObjToAlgoInfo(_) }
 
   def update(algoInfo: AlgoInfo) = {

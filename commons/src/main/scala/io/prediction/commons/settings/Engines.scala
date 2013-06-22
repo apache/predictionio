@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import com.twitter.chill.KryoInjection
+
 /** Engine object.
   *
   * @param id ID.
@@ -14,7 +16,7 @@ case class Engine(
   appid: Int,
   name: String,
   infoid: String,
-  itypes: Option[List[String]],
+  itypes: Option[Seq[String]],
   settings: Map[String, Any]
 )
 
@@ -25,6 +27,9 @@ trait Engines {
 
   /** Get an engine by its ID. */
   def get(id: Int): Option[Engine]
+
+  /** Get all engines. */
+  def getAll(): Iterator[Engine]
 
   /** Get engines by app ID. */
   def getByAppid(appid: Int): Iterator[Engine]
@@ -40,4 +45,33 @@ trait Engines {
 
   /** Check existence of an engine by its app ID and name. */
   def existsByAppidAndName(appid: Int, name: String): Boolean
+
+  /** Backup all Engines as a byte array. */
+  def backup(): Array[Byte] = {
+    val engines = getAll().toSeq.map { engine =>
+      Map(
+        "id" -> engine.id,
+        "appid" -> engine.appid,
+        "name" -> engine.name,
+        "infoid" -> engine.infoid,
+        "itypes" -> engine.itypes,
+        "settings" -> engine.settings)
+    }
+    KryoInjection(engines)
+  }
+
+  /** Restore Engines from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[Engine]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        Engine(
+          id = data("id").asInstanceOf[Int],
+          appid = data("appid").asInstanceOf[Int],
+          name = data("name").asInstanceOf[String],
+          infoid = data("infoid").asInstanceOf[String],
+          itypes = data("itypes").asInstanceOf[Option[List[String]]],
+          settings = data("settings").asInstanceOf[Map[String, Any]])
+      }
+    }
+  }
 }

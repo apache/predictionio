@@ -71,6 +71,7 @@ trait Algos {
     */
   def existsByEngineidAndName(engineid: Int, name: String): Boolean
 
+  /** Backup all Algos as a byte array. */
   def backup(): Array[Byte] = {
     val algos = getAll().toSeq.map { algo =>
       Map(
@@ -93,6 +94,7 @@ trait Algos {
     KryoInjection(algos)
   }
 
+  /** Restore Algos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[Algo]] = {
     KryoInjection.invert(bytes) map { r =>
       r.asInstanceOf[Seq[Map[String, Any]]] map { stuff =>
