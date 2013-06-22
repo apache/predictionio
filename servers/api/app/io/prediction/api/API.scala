@@ -63,26 +63,28 @@ object API extends Controller {
   implicit object UserToJson extends Writes[User] {
     def writes(user: User) =
       Json.obj(
-        "uid" -> user.id,
-        "ct" -> user.ct) ++
-        (user.latlng map { l => Json.obj("latlng" -> Json.arr(l._1, l._2)) } getOrElse emptyJsonObj) ++
-        (user.inactive map { i => Json.obj("inactive" -> i) } getOrElse emptyJsonObj) ++
-        (user.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
+        "pio_uid" -> user.id,
+        "pio_ct" -> user.ct) ++
+        (user.latlng map { l => Json.obj("pio_latlng" -> Json.arr(l._1, l._2)) } getOrElse emptyJsonObj) ++
+        (user.inactive map { i => Json.obj("pio_inactive" -> i) } getOrElse emptyJsonObj) ++
+        (user.attributes.map { a => JsObject((a mapValues { anyToJsValue(_) }).toSeq) } getOrElse emptyJsonObj)
+        //(user.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
   }
 
   implicit object ItemToJson extends Writes[Item] {
     def writes(item: Item) =
       Json.obj(
-        "iid" -> item.id,
-        "ct" -> item.ct,
-        "itypes" -> item.itypes) ++
-        (item.starttime map { v => Json.obj("startT" -> v) } getOrElse emptyJsonObj) ++
-        (item.endtime map { v => Json.obj("endT" -> v) } getOrElse emptyJsonObj) ++
-        (item.price map { v => Json.obj("price" -> v) } getOrElse emptyJsonObj) ++
-        (item.profit map { v => Json.obj("profit" -> v) } getOrElse emptyJsonObj) ++
-        (item.latlng map { v => Json.obj("latlng" -> latlngToList(v)) } getOrElse emptyJsonObj) ++
-        (item.inactive map { v => Json.obj("inactive" -> v) } getOrElse emptyJsonObj) ++
-        (item.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
+        "pio_iid" -> item.id,
+        "pio_ct" -> item.ct,
+        "pio_itypes" -> item.itypes) ++
+        (item.starttime map { v => Json.obj("pio_startT" -> v) } getOrElse emptyJsonObj) ++
+        (item.endtime map { v => Json.obj("pio_endT" -> v) } getOrElse emptyJsonObj) ++
+        (item.price map { v => Json.obj("pio_price" -> v) } getOrElse emptyJsonObj) ++
+        (item.profit map { v => Json.obj("pio_profit" -> v) } getOrElse emptyJsonObj) ++
+        (item.latlng map { v => Json.obj("pio_latlng" -> latlngToList(v)) } getOrElse emptyJsonObj) ++
+        (item.inactive map { v => Json.obj("pio_inactive" -> v) } getOrElse emptyJsonObj) ++
+        (item.attributes.map { a => JsObject((a mapValues { anyToJsValue(_) }).toSeq) } getOrElse emptyJsonObj)
+        //(item.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
   }
 
   def anyToJsValue(v: Any): JsValue = v match {
@@ -217,16 +219,16 @@ object API extends Controller {
   def createUser(format: String) = Action { implicit request =>
     FormattedResponse(format) {
       Attributes(tuple(
-        "appkey" -> nonEmptyText,
-        "uid" -> nonEmptyText,
-        "latlng" -> optional(latlng),
-        "inactive" -> optional(boolean)
-      ), Set(
-        "appkey",
-        "ct",
-        "uid",
-        "latlng",
-        "inactive"
+        "pio_appkey" -> nonEmptyText,
+        "pio_uid" -> nonEmptyText,
+        "pio_latlng" -> optional(latlng),
+        "pio_inactive" -> optional(boolean)
+      ), Set( // all reserved attributes
+        "pio_appkey", 
+        "pio_ct",
+        "pio_uid",
+        "pio_latlng",
+        "pio_inactive"
       )).bindFromRequestAndFold(
         f => bindFailed(f.errors),
         (t, attributes) => {
@@ -249,7 +251,7 @@ object API extends Controller {
 
   def getUser(format: String, uid: String) = Action { implicit request =>
     FormattedResponse(format) {
-      Form("appkey" -> nonEmptyText).bindFromRequest.fold(
+      Form("pio_appkey" -> nonEmptyText).bindFromRequest.fold(
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           users.get(app.id, uid) map { user =>
@@ -262,7 +264,7 @@ object API extends Controller {
 
   def deleteUser(format: String, uid: String) = Action { implicit request =>
     FormattedResponse(format) {
-      Form("appkey" -> nonEmptyText).bindFromRequest.fold(
+      Form("pio_appkey" -> nonEmptyText).bindFromRequest.fold(
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           users.delete(app.id, uid)
@@ -275,26 +277,26 @@ object API extends Controller {
   def createItem(format: String) = Action { implicit request =>
     FormattedResponse(format) {
       Attributes(tuple(
-        "appkey" -> nonEmptyText,
-        "iid" -> nonEmptyText,
-        "itypes" -> nonEmptyText,
-        "price" -> optional(numeric),
-        "profit" -> optional(numeric),
-        "startT" -> optional(timestamp),
-        "endT" -> optional(timestamp),
-        "latlng" -> optional(latlng),
-        "inactive" -> optional(boolean)
-      ), Set(
-        "appkey",
-        "ct",
-        "iid",
-        "itypes",
-        "price",
-        "profit",
-        "startT",
-        "endT",
-        "latlng",
-        "inactive"
+        "pio_appkey" -> nonEmptyText,
+        "pio_iid" -> nonEmptyText,
+        "pio_itypes" -> nonEmptyText,
+        "pio_price" -> optional(numeric),
+        "pio_profit" -> optional(numeric),
+        "pio_startT" -> optional(timestamp),
+        "pio_endT" -> optional(timestamp),
+        "pio_latlng" -> optional(latlng),
+        "pio_inactive" -> optional(boolean)
+      ), Set( // all reserved attributes
+        "pio_appkey",
+        "pio_ct",
+        "pio_iid",
+        "pio_itypes",
+        "pio_price",
+        "pio_profit",
+        "pio_startT",
+        "pio_endT",
+        "pio_latlng",
+        "pio_inactive"
       )).bindFromRequestAndFold(
         f => bindFailed(f.errors),
         (t, attributes) => {
@@ -322,7 +324,7 @@ object API extends Controller {
 
   def getItem(format: String, iid: String) = Action { implicit request =>
     FormattedResponse(format) {
-      Form("appkey" -> nonEmptyText).bindFromRequest.fold(
+      Form("pio_appkey" -> nonEmptyText).bindFromRequest.fold(
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           items.get(app.id, iid) map { item =>
@@ -335,7 +337,7 @@ object API extends Controller {
 
   def deleteItem(format: String, iid: String) = Action { implicit request =>
     FormattedResponse(format) {
-      Form("appkey" -> nonEmptyText).bindFromRequest.fold(
+      Form("pio_appkey" -> nonEmptyText).bindFromRequest.fold(
         f => bindFailed(f.errors),
         t => AuthenticatedApp(t) { app =>
           items.delete(app.id, iid)
