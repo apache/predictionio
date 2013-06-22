@@ -347,6 +347,61 @@ object API extends Controller {
     }
   }
 
+  def userToItemAction(format: String) = Action { implicit request =>
+    FormattedResponse(format) {
+      Form(tuple(
+        "pio_appkey" -> nonEmptyText,
+        "pio_action" -> nonEmptyText,
+        "pio_uid" -> nonEmptyText,
+        "pio_tiid" -> nonEmptyText,
+        "pio_t" -> optional(timestamp),
+        "pio_latlng" -> optional(latlng),
+        "pio_rate" -> optional(number(1, 5)),
+        "pio_price" -> optional(numeric)
+      )).bindFromRequest.fold(
+        f => bindFailed(f.errors),
+        fdata => AuthenticatedApp(fdata._1) { implicit app =>
+          val (appkey, action, uid, tiid, t, latlng, rate, price) = fdata
+          
+          val actionCode =  action match { // TODO: change this when change common for action name PDIO-189
+            case "rate" => u2iActions.rate
+            case "like" => u2iActions.likeDislike
+            case "dislike" => u2iActions.likeDislike
+            case "view" => u2iActions.view
+            case "conversion" => u2iActions.conversion
+            case _ => -1
+          }
+          val vValue: Option[Int] = action match { // TODO: change this when change common for action name PDIO-189
+            case "rate" => rate
+            case "like" => Some(1)
+            case "dislike" => Some(0)
+            case _ => None
+          }
+
+          if ((action == "rate") && (vValue == None)) { // additional user input checking
+            APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_rate", "message" -> "Required for rate action.")))))
+          } else if (actionCode == -1) { // TODO: change this when change common for action name PDIO-189
+            APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_action", "message" -> "Custom action is not supported yet.")))))
+          } else {
+
+            u2iActions.insert(U2IAction(
+              appid = app.id,
+              action = actionCode, // TODO: change this when change common for action name PDIO-189
+              uid = uid,
+              iid = tiid,
+              t = t map { parseDateTimeFromString(_) } getOrElse DateTime.now,
+              latlng = latlng map { parseLatlng(_) },
+              v = vValue,
+              price = price map { _.toDouble },
+              evalid = None
+            ))
+            APIMessageResponse(CREATED, Map("message" -> ("Action " + action + " recorded.")))
+          }
+        }
+      )
+    }
+  }
+
   def userToItemRate(format: String) = Action { implicit request =>
     FormattedResponse(format) {
       Form(tuple(

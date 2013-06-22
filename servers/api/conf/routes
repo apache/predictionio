@@ -12,6 +12,9 @@ POST    /items.:format                            io.prediction.api.API.createIt
 GET     /items/:iid.:format                       io.prediction.api.API.getItem(format, iid)
 DELETE  /items/:iid.:format                       io.prediction.api.API.deleteItem(format, iid)
 
+POST    /actions/u2i.:format                      io.prediction.api.API.userToItemAction(format)
+
+# TODO: delete following when PDIO-188 is finished                      
 POST    /actions/u2i/rate.:format                 io.prediction.api.API.userToItemRate(format)
 POST    /actions/u2i/like.:format                 io.prediction.api.API.userToItemLike(format)
 POST    /actions/u2i/dislike.:format              io.prediction.api.API.userToItemDislike(format)
