@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import com.twitter.chill.KryoInjection
+
 /** OfflineEvalMetric Object
  *
  * @param id ID
@@ -16,19 +18,46 @@ case class OfflineEvalMetric(
 
 trait OfflineEvalMetrics {
 
-  /** Insert a metric and return ID */
+  /** Insert a metric and return ID. */
   def insert(metric: OfflineEvalMetric): Int
 
-  /** Get a metric by its ID */
+  /** Get a metric by its ID. */
   def get(id: Int): Option[OfflineEvalMetric]
 
-  /** Get metrics by OfflineEval ID */
+  /** Get all metrics. */
+  def getAll(): Iterator[OfflineEvalMetric]
+
+  /** Get metrics by OfflineEval ID. */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalMetric]
 
-  /** Update metric */
+  /** Update metric. */
   def update(metric: OfflineEvalMetric)
 
-  /** Delete metric by its ID */
+  /** Delete metric by its ID. */
   def delete(id: Int)
 
+  /** Backup all OfflineEvalMetrics as a byte array. */
+  def backup(): Array[Byte] = {
+    val metrics = getAll().toSeq.map { metric =>
+      Map(
+        "id" -> metric.id,
+        "infoid" -> metric.infoid,
+        "evalid" -> metric.evalid,
+        "params" -> metric.params)
+    }
+    KryoInjection(metrics)
+  }
+
+  /** Restore OfflineEvalMetrics from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[OfflineEvalMetric]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        OfflineEvalMetric(
+          id = data("id").asInstanceOf[Int],
+          infoid = data("infoid").asInstanceOf[String],
+          evalid = data("evalid").asInstanceOf[Int],
+          params = data("params").asInstanceOf[Map[String, Any]])
+      }
+    }
+  }
 }

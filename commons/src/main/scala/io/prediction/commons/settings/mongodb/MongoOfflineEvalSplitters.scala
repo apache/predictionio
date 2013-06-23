@@ -44,6 +44,8 @@ class MongoOfflineEvalSplitters(db: MongoDB) extends OfflineEvalSplitters {
 
   def get(id: Int) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToOfflineEvalSplitter(_) }
 
+  def getAll() = new MongoOfflineEvalSplitterIterator(coll.find())
+
   def getByEvalid(evalid: Int): Iterator[OfflineEvalSplitter] = new MongoOfflineEvalSplitterIterator(
     coll.find(MongoDBObject("evalid" -> evalid)).sort(MongoDBObject("infoid" -> 1))
   )

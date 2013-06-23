@@ -1,8 +1,8 @@
 package io.prediction.commons.settings.mongodb
 
+import io.prediction.commons.MongoUtils
 import io.prediction.commons.settings.{User, Users}
 import com.mongodb.casbah.Imports._
-import org.apache.commons.codec.digest.DigestUtils
 
 /** MongoDB implementation of Users. */
 class MongoUsers(db: MongoDB) extends Users {
@@ -10,14 +10,12 @@ class MongoUsers(db: MongoDB) extends Users {
   private val userColl = db("users")
   private val seq = new MongoSequences(db)
 
-  private def md5password(password: String) = DigestUtils.md5Hex(password)
-
   def authenticate(id: Int, password: String) = {
-    userColl.findOne(MongoDBObject("_id" -> id, "password" -> md5password(password)) ++ ("confirm" $exists false)) map { _ => true } getOrElse false
+    userColl.findOne(MongoDBObject("_id" -> id, "password" -> password) ++ ("confirm" $exists false)) map { _ => true } getOrElse false
   }
 
   def authenticateByEmail(email: String, password: String) = {
-    userColl.findOne(MongoDBObject("email" -> email, "password" -> md5password(password)) ++ ("confirm" $exists false)) map { _.as[Int]("_id") }
+    userColl.findOne(MongoDBObject("email" -> email, "password" -> password) ++ ("confirm" $exists false)) map { _.as[Int]("_id") }
   }
 
   def insert(email: String, password: String, firstname: String, lastname: Option[String], confirm: String) = {
@@ -25,7 +23,7 @@ class MongoUsers(db: MongoDB) extends Users {
     val userObj = MongoDBObject(
       "_id" -> id,
       "email" -> email,
-      "password" -> md5password(password),
+      "password" -> password,
       "firstname" -> firstname,
       "confirm" -> confirm)
     val lastnameObj = lastname.map(ln => MongoDBObject("lastname" -> ln)).getOrElse(emptyObj)
@@ -33,34 +31,24 @@ class MongoUsers(db: MongoDB) extends Users {
     id
   }
 
-  private val getFields = MongoDBObject("firstname" -> 1, "lastname" -> 1, "email" -> 1)
-
   def get(id: Int) = {
-    getByResult(userColl.findOne(MongoDBObject("_id" -> id), getFields))
+    userColl.findOne(MongoDBObject("_id" -> id)) map { dbObjToUser(_) }
   }
 
   def getAll() = new MongoUserIterator(userColl.find())
 
   def getByEmail(email: String) = {
-    getByResult(userColl.findOne(MongoDBObject("email" -> email), getFields))
-  }
-
-  private def getByResult(result: Option[DBObject]) = {
-    result map { dbObjToUser(_) }
+    userColl.findOne(MongoDBObject("email" -> email)) map { dbObjToUser(_) }
   }
 
   def update(user: User) = {
-    val setFirstname  = MongoDBObject("firstname" -> user.firstName)
-    val setLastname   = user.lastName.map { ln => MongoDBObject("lastname" -> ln) } getOrElse(emptyObj)
-    val unsetLastname = user.lastName.map { _ => emptyObj } getOrElse MongoDBObject("lastname" -> 1)
-    val setEmail      = MongoDBObject("email" -> user.email)
-
-    val setObj = setFirstname ++ setLastname ++ setEmail
-    val unsetObj = unsetLastname
-
-    val modObj = MongoDBObject("$set" -> setObj) ++ MongoDBObject("$unset" -> unsetObj)
-
-    userColl.update(MongoDBObject("_id" -> user.id), modObj)
+    val requiredObj = MongoDBObject(
+      "email" -> user.email,
+      "password" -> user.password,
+      "firstname" -> user.firstName)
+    val lastnameObj = user.lastName map { x => MongoDBObject("lastname" -> x) } getOrElse { MongoUtils.emptyObj }
+    val confirmObj = user.confirm map { x => MongoDBObject("confirm" -> x) } getOrElse { MongoUtils.emptyObj }
+    userColl.update(MongoDBObject("_id" -> user.id), requiredObj ++ lastnameObj ++ confirmObj)
   }
 
   def updateEmail(id: Int, email: String) = {
@@ -68,11 +56,11 @@ class MongoUsers(db: MongoDB) extends Users {
   }
 
   def updatePassword(userid: Int, password: String) = {
-    userColl.update(MongoDBObject("_id" -> userid), MongoDBObject("$set" -> MongoDBObject("password" -> md5password(password))))
+    userColl.update(MongoDBObject("_id" -> userid), MongoDBObject("$set" -> MongoDBObject("password" -> password)))
   }
 
   def updatePasswordByEmail(email: String, password: String) = {
-    userColl.update(MongoDBObject("email" -> email), MongoDBObject("$set" -> MongoDBObject("password" -> md5password(password))))
+    userColl.update(MongoDBObject("email" -> email), MongoDBObject("$set" -> MongoDBObject("password" -> password)))
   }
 
   def confirm(confirm: String) = {
@@ -87,12 +75,14 @@ class MongoUsers(db: MongoDB) extends Users {
     userColl.findOne(MongoDBObject("_id" -> userid, "email" -> email)).map(_ => true).getOrElse(false)
   }
 
-  private def dbObjToUser(dbObj: DBObject) = {
+  private def dbObjToUser(dbObj: DBObject): User = {
     User(
       id        = dbObj.as[Int]("_id"),
       firstName = dbObj.as[String]("firstname"),
       lastName  = dbObj.getAs[String]("lastname"),
-      email     = dbObj.as[String]("email")
+      email     = dbObj.as[String]("email"),
+      password  = dbObj.as[String]("password"),
+      confirm   = dbObj.getAs[String]("confirm")
     )
   }
 

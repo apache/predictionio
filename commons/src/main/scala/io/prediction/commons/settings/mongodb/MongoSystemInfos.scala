@@ -30,6 +30,8 @@ class MongoSystemInfos(db: MongoDB) extends SystemInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToSystemInfo(_) }
 
+  def getAll = coll.find().toSeq map { dbObjToSystemInfo(_) }
+
   def update(systemInfo: SystemInfo) = {
     val idObj = MongoDBObject("_id" -> systemInfo.id)
     val valueObj = MongoDBObject("value" -> systemInfo.value)

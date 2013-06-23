@@ -52,6 +52,8 @@ class MongoParamGenInfos(db: MongoDB) extends ParamGenInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToParamGenInfo(_) }
 
+  def getAll = coll.find().toSeq map { dbObjToParamGenInfo(_) }
+
   def update(ParamGenInfo: ParamGenInfo) = {
     val idObj = MongoDBObject("_id" -> ParamGenInfo.id)
     val requiredObj = MongoDBObject(

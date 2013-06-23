@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import com.twitter.chill.KryoInjection
+
 /** SystemInfo object.
   *
   * @param id Unique identifier of the info entry.
@@ -20,9 +22,35 @@ trait SystemInfos {
   /** Get system info entry by its ID. */
   def get(id: String): Option[SystemInfo]
 
+  /** Get all system info entries. */
+  def getAll(): Seq[SystemInfo]
+
   /** Updates a system info entry. */
   def update(systemInfo: SystemInfo): Unit
 
   /** Delete a system info entry by its ID. */
   def delete(id: String): Unit
+
+  /** Backup all data as a byte array. */
+  def backup(): Array[Byte] = {
+    val backup = getAll().map { b =>
+      Map(
+        "id" -> b.id,
+        "value" -> b.value,
+        "description" -> b.description)
+    }
+    KryoInjection(backup)
+  }
+
+  /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[SystemInfo]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        SystemInfo(
+          id = data("id").asInstanceOf[String],
+          value = data("value").asInstanceOf[String],
+          description = data("description").asInstanceOf[Option[String]])
+      }
+    }
+  }
 }

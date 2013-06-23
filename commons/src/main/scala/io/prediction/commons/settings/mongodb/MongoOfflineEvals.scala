@@ -71,6 +71,8 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
     offlineEvalColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToOfflineEval(_) }
   }
 
+  def getAll() = new MongoOfflineEvalIterator(offlineEvalColl.find())
+
   def getByEngineid(engineid: Int): Iterator[OfflineEval] = new MongoOfflineEvalIterator(
     offlineEvalColl.find(MongoDBObject("engineid" -> engineid), getFields).sort(MongoDBObject("name" -> 1))
   )

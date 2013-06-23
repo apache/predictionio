@@ -54,6 +54,8 @@ class MongoOfflineEvalSplitterInfos(db: MongoDB) extends OfflineEvalSplitterInfo
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToOfflineEvalSplitterInfo(_) }
 
+  def getAll() = coll.find().toSeq map { dbObjToOfflineEvalSplitterInfo(_) }
+
   def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo) = {
     val idObj = MongoDBObject("_id" -> offlineEvalSplitterInfo.id)
     val requiredObj = MongoDBObject(

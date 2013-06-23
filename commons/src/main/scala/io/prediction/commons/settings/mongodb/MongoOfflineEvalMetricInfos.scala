@@ -54,6 +54,8 @@ class MongoOfflineEvalMetricInfos(db: MongoDB) extends OfflineEvalMetricInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToOfflineEvalMetricInfo(_) }
 
+  def getAll() = coll.find().toSeq map { dbObjToOfflineEvalMetricInfo(_) }
+
   def update(OfflineEvalMetricInfo: OfflineEvalMetricInfo) = {
     val idObj = MongoDBObject("_id" -> OfflineEvalMetricInfo.id)
     val requiredObj = MongoDBObject(

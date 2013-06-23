@@ -52,6 +52,8 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
     offlineEvalMetricsColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToOfflineEvalMetric(_) }
   }
 
+  def getAll() = new MongoOfflineEvalMetricIterator(offlineEvalMetricsColl.find())
+
   /** Get metrics by OfflineEval id */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalMetric] = new MongoOfflineEvalMetricIterator(
     offlineEvalMetricsColl.find(MongoDBObject("evalid" -> evalid), getFields).sort(MongoDBObject("infoid" -> 1))

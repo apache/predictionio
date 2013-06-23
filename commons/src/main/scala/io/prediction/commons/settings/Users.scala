@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import com.twitter.chill.KryoInjection
+
 /** User object.
   *
   * @param id ID.
@@ -11,8 +13,9 @@ case class User(
   id: Int,
   firstName: String,
   lastName: Option[String],
-  email: String
-)
+  email: String,
+  password: String = "",
+  confirm: Option[String] = None)
 
 /** Base trait for implementations that interact with users in the backend data store. */
 trait Users {
@@ -57,4 +60,33 @@ trait Users {
 
   /** Check if an ID and e-mail combination exists. */
   def idAndEmailExists(userid: Int, email: String): Boolean
+
+  /** Backup all data as a byte array. */
+  def backup(): Array[Byte] = {
+    val backup = getAll().toSeq.map { b =>
+      Map(
+        "id" -> b.id,
+        "firstName" -> b.firstName,
+        "lastName" -> b.lastName,
+        "email" -> b.email,
+        "password" -> b.password,
+        "confirm" -> b.confirm)
+    }
+    KryoInjection(backup)
+  }
+
+  /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[User]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        User(
+          id = data("id").asInstanceOf[Int],
+          firstName = data("firstName").asInstanceOf[String],
+          lastName = data("lastName").asInstanceOf[Option[String]],
+          email = data("email").asInstanceOf[String],
+          password = data("password").asInstanceOf[String],
+          confirm = data("confirm").asInstanceOf[Option[String]])
+      }
+    }
+  }
 }

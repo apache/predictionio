@@ -63,6 +63,8 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
     offlineTuneColl.findOne(MongoDBObject("_id" -> id), getFields) map {dbObjToOfflineTune(_)}
   }
 
+  def getAll() = new MongoOfflineTuneIterator(offlineTuneColl.find())
+
   def getByEngineid(engineid: Int): Iterator[OfflineTune] = new MongoOfflineTuneIterator(offlineTuneColl.find(MongoDBObject("engineid" -> engineid), getFields))
 
   def update(offlineTune: OfflineTune) = {

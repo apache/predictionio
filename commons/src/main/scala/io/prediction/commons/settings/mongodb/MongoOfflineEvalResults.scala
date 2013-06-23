@@ -48,6 +48,8 @@ class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {
     id
   }
 
+  def getAll() = new MongoOfflineEvalResultIterator(offlineEvalResultsColl.find())
+
   def getByEvalidAndMetricidAndAlgoid(evalid: Int, metricid: Int, algoid: Int): Iterator[OfflineEvalResult] = new MongoOfflineEvalResultIterator(
     offlineEvalResultsColl.find(MongoDBObject("evalid" -> evalid, "metricid" -> metricid, "algoid" -> algoid), getFields)
   )

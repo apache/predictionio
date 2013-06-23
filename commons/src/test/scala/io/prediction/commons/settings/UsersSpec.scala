@@ -62,7 +62,7 @@ class UsersSpec extends Specification { def is =
       lastname = Option(name),
       confirm = name
     )
-    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io"))
+    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io", name, Some(name)))
   }
 
   def getByEmail(users: Users) = {
@@ -74,7 +74,7 @@ class UsersSpec extends Specification { def is =
       lastname = None,
       confirm = name
     )
-    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io"))
+    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io", name, Some(name)))
   }
 
   def emailExists(users: Users) = {
@@ -181,7 +181,7 @@ class UsersSpec extends Specification { def is =
       lastname = None,
       confirm = name
     )
-    users.confirm(name) must beSome(User(id, name, None, name + "@prediction.io"))
+    users.confirm(name) must beSome(User(id, name, None, name + "@prediction.io", name, Some(name)))
   }
 
   def updateEmail(users: Users) = {
@@ -193,7 +193,7 @@ class UsersSpec extends Specification { def is =
       confirm = "updateEmail"
     )
     users.updateEmail(id, "updateEmailUpdated@prediction.io")
-    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io"))
+    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io", "updateEmail", Some("updateEmail")))
   }
 
   def updatePassword(users: Users) = {

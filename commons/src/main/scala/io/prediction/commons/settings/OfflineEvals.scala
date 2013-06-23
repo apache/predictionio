@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import com.twitter.chill.KryoInjection
+
 import com.github.nscala_time.time.Imports._
 
 /** OfflineEval object
@@ -35,6 +37,9 @@ trait OfflineEvals {
   /** Get OfflineEval by its id */
   def get(id: Int): Option[OfflineEval]
 
+  /** Get all OfflineEvals. */
+  def getAll(): Iterator[OfflineEval]
+
   /** Get OfflineEval by engine id */
   def getByEngineid(engineid: Int): Iterator[OfflineEval]
 
@@ -47,4 +52,36 @@ trait OfflineEvals {
   /** delete OfflineEval by it's id) */
   def delete(id: Int)
 
+  /** Backup all data as a byte array. */
+  def backup(): Array[Byte] = {
+    val backup = getAll().toSeq.map { b =>
+      Map(
+        "id" -> b.id,
+        "engineid" -> b.engineid,
+        "name" -> b.name,
+        "iterations" -> b.iterations,
+        "tuneid" -> b.tuneid,
+        "createtime" -> b.createtime,
+        "starttime" -> b.starttime,
+        "endtime" -> b.endtime)
+    }
+    KryoInjection(backup)
+  }
+
+  /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[OfflineEval]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        OfflineEval(
+          id = data("id").asInstanceOf[Int],
+          engineid = data("engineid").asInstanceOf[Int],
+          name = data("name").asInstanceOf[String],
+          iterations = data("iterations").asInstanceOf[Int],
+          tuneid = data("tuneid").asInstanceOf[Option[Int]],
+          createtime = data("createtime").asInstanceOf[Option[DateTime]],
+          starttime = data("starttime").asInstanceOf[Option[DateTime]],
+          endtime = data("endtime").asInstanceOf[Option[DateTime]])
+      }
+    }
+  }
 }

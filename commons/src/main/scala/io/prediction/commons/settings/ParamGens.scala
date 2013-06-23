@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import com.twitter.chill.KryoInjection
+
 /** ParamGen Object
  *
  * @param id ID
@@ -22,6 +24,9 @@ trait ParamGens {
   /** Get a paramGen by its ID */
   def get(id: Int): Option[ParamGen]
 
+  /** Get all parameter generators. */
+  def getAll(): Iterator[ParamGen]
+
   /** Get paramGen by offline tune ID */
   def getByTuneid(tuneid: Int): Iterator[ParamGen]
 
@@ -30,4 +35,29 @@ trait ParamGens {
 
   /** Delete paramGen by its ID */
   def delete(id: Int)
+
+  /** Backup all data as a byte array. */
+  def backup(): Array[Byte] = {
+    val backup = getAll().map { b =>
+      Map(
+        "id" -> b.id,
+        "infoid" -> b.infoid,
+        "tuneid" -> b.tuneid,
+        "params" -> b.params)
+    }
+    KryoInjection(backup)
+  }
+
+  /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[ParamGen]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        ParamGen(
+          id = data("id").asInstanceOf[Int],
+          infoid = data("infoid").asInstanceOf[String],
+          tuneid = data("tuneid").asInstanceOf[Int],
+          params = data("params").asInstanceOf[Map[String, Any]])
+      }
+    }
+  }
 }
