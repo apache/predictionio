@@ -63,8 +63,8 @@ object API extends Controller {
   implicit object UserToJson extends Writes[User] {
     def writes(user: User) =
       Json.obj(
-        "pio_uid" -> user.id,
-        "pio_ct" -> user.ct) ++
+        "pio_uid" -> user.id) ++
+        //"pio_ct" -> user.ct) ++
         (user.latlng map { l => Json.obj("pio_latlng" -> Json.arr(l._1, l._2)) } getOrElse emptyJsonObj) ++
         (user.inactive map { i => Json.obj("pio_inactive" -> i) } getOrElse emptyJsonObj) ++
         (user.attributes.map { a => JsObject((a mapValues { anyToJsValue(_) }).toSeq) } getOrElse emptyJsonObj)
@@ -75,7 +75,7 @@ object API extends Controller {
     def writes(item: Item) =
       Json.obj(
         "pio_iid" -> item.id,
-        "pio_ct" -> item.ct,
+        //"pio_ct" -> item.ct,
         "pio_itypes" -> item.itypes) ++
         (item.starttime map { v => Json.obj("pio_startT" -> v) } getOrElse emptyJsonObj) ++
         (item.endtime map { v => Json.obj("pio_endT" -> v) } getOrElse emptyJsonObj) ++
