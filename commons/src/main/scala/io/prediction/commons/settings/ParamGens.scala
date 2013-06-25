@@ -38,7 +38,7 @@ trait ParamGens {
 
   /** Backup all data as a byte array. */
   def backup(): Array[Byte] = {
-    val backup = getAll().map { b =>
+    val backup = getAll().toSeq.map { b =>
       Map(
         "id" -> b.id,
         "infoid" -> b.infoid,

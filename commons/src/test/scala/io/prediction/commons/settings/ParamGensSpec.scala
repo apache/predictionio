@@ -5,22 +5,23 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class ParamGensSpec extends Specification { def is =
-  "PredictionIO ParamGens Specification"               ^
-                                                                p^
-  "ParamGens can be implemented by:"                   ^ endp^
-    "1. MongoParamGens"                                ^ mongoParamGens^end
+  "PredictionIO ParamGens Specification"                ^
+                                                        p^
+  "ParamGens can be implemented by:"                    ^ endp^
+    "1. MongoParamGens"                                 ^ mongoParamGens^end
 
-  def mongoParamGens =                                 p^
-    "MongoParamGens should"                            ^
-      "behave like any ParamGens implementation"       ^ paramGensTest(newMongoParamGens)^
-                                                                Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoParamGens =                                  p^
+    "MongoParamGens should"                             ^
+      "behave like any ParamGens implementation"        ^ paramGensTest(newMongoParamGens)^
+                                                        Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def paramGensTest(paramGens: ParamGens) = {    t^
-    "create an ParamGen"                                           ! insert(paramGens)^
-    "update an ParamGen"                                           ! update(paramGens)^
-    "get two ParamGens by Tuneid"                                  ! getByTuneid(paramGens)^
-    "delete an ParamGen"                                           ! delete(paramGens)^
-                                                                            bt
+  def paramGensTest(paramGens: ParamGens) = {           t^
+    "create an ParamGen"                                ! insert(paramGens)^
+    "update an ParamGen"                                ! update(paramGens)^
+    "get two ParamGens by Tuneid"                       ! getByTuneid(paramGens)^
+    "delete an ParamGen"                                ! delete(paramGens)^
+    "backup and restore ParamGens"                      ! backuprestore(paramGens)^
+                                                        bt
   }
 
   val mongoDbName = "predictionio_mongoparamgens_test"
@@ -132,4 +133,24 @@ class ParamGensSpec extends Specification { def is =
 
   }
 
+  def backuprestore(paramGens: ParamGens) = {
+    val obj1 = ParamGen(
+      id = -1,
+      infoid = "paramGen-backuprestore",
+      tuneid = 345,
+      params = Map("dead" -> "beef")
+    )
+
+    val id1 = paramGens.insert(obj1)
+    val fn = "paramgens.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(paramGens.backup())
+    } finally {
+      fos.close()
+    }
+    paramGens.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      data must contain(obj1.copy(id = id1))
+    } getOrElse 1 === 2
+  }
 }

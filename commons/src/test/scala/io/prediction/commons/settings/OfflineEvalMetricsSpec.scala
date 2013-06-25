@@ -20,6 +20,7 @@ class OfflineEvalMetricsSpec extends Specification { def is =
     "get two OfflineEvalMetrics"                                            ! getByEvalid(offlineEvalMetrics)^
     "update an OfflineEvalMetric"                                           ! update(offlineEvalMetrics)^
     "delete an OfflineEvalMetric"                                           ! delete(offlineEvalMetrics)^
+    "backup and restore OfflineEvalMetrics"                                 ! backuprestore(offlineEvalMetrics)^
                                                                             bt
   }
 
@@ -123,6 +124,25 @@ class OfflineEvalMetricsSpec extends Specification { def is =
     data1 must beSome(obj1.copy(id = id1)) and
       (data2 must beNone)
 
+  }
+
+  def backuprestore(offlineEvalMetrics: OfflineEvalMetrics) = {
+    val obj1 = OfflineEvalMetric(
+      id = -1,
+      infoid = "metric-backuprestore",
+      evalid = 45,
+      params = Map("foo" -> "bar", "pi" -> 3.14))
+    val id1 = offlineEvalMetrics.insert(obj1)
+    val fn = "metrics.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(offlineEvalMetrics.backup())
+    } finally {
+      fos.close()
+    }
+    offlineEvalMetrics.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      data must contain(obj1.copy(id = id1))
+    } getOrElse 1 === 2
   }
 
 }

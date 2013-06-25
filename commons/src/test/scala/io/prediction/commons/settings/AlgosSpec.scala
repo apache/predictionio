@@ -354,8 +354,8 @@ class AlgosSpec extends Specification { def is =
     algos.restore(scala.io.Source.fromFile("algos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { ralgos =>
       val falgo1 = ralgos.find(_.id == id1).get
       val falgo2 = ralgos.find(_.id == id2).get
-      algos.insert(falgo1)
-      algos.insert(falgo2)
+      algos.update(falgo1)
+      algos.update(falgo2)
       (algos.get(id1) must beSome(ralgo1)) and (algos.get(id2) must beSome(ralgo2))
     } getOrElse 1 === 2
   }
