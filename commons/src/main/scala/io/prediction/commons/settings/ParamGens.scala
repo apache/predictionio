@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** ParamGen Object
@@ -16,7 +18,7 @@ case class ParamGen(
   params: Map[String, Any]
 )
 
-trait ParamGens {
+trait ParamGens extends Common {
 
   /** Insert a paramGen and return ID */
   def insert(paramGen: ParamGen): Int

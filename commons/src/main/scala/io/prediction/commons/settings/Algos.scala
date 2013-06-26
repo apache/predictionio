@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.github.nscala_time.time.Imports._
 import com.twitter.chill.KryoInjection
 
@@ -38,7 +40,7 @@ case class Algo(
 )
 
 /** Base trait for implementations that interact with algos in the backend data store. */
-trait Algos {
+trait Algos extends Common {
   /** Inserts an algo. */
   def insert(algo: Algo): Int
 

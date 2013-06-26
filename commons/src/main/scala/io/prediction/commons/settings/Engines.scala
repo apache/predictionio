@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** Engine object.
@@ -21,7 +23,7 @@ case class Engine(
 )
 
 /** Base trait for implementations that interact with engines in the backend data store. */
-trait Engines {
+trait Engines extends Common {
   /** Inserts an engine. */
   def insert(engine: Engine): Int
 

@@ -47,6 +47,8 @@ class MongoApps(db: MongoDB) extends Apps {
 
   def get(id: Int) = appColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToApp(_) }
 
+  def getAll() = new MongoAppIterator(appColl.find())
+
   def getByUserid(userid: Int) = new MongoAppIterator(appColl.find(MongoDBObject("userid" -> userid), getFields))
 
   def getByAppkey(appkey: String) = appColl.findOne(MongoDBObject("appkey" -> appkey), getFields) map { dbObjToApp(_) }

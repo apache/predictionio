@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 import com.github.nscala_time.time.Imports._
@@ -26,7 +28,7 @@ case class OfflineEval(
   endtime: Option[DateTime]
 )
 
-trait OfflineEvals {
+trait OfflineEvals extends Common {
 
   /** Insert an OfflineEval and return id
    *

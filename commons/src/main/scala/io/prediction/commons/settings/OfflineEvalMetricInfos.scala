@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** OfflineEvalMetricInfo object.
@@ -27,7 +29,7 @@ case class OfflineEvalMetricInfo(
 )
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
-trait OfflineEvalMetricInfos {
+trait OfflineEvalMetricInfos extends Common {
   /** Inserts a metric info. */
   def insert(metricInfo: OfflineEvalMetricInfo): Unit
 

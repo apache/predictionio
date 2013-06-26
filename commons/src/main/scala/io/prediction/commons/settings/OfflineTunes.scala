@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.github.nscala_time.time.Imports._
 import com.twitter.chill.KryoInjection
 
@@ -21,7 +23,7 @@ case class OfflineTune(
   endtime: Option[DateTime]
 )
 
-trait OfflineTunes {
+trait OfflineTunes extends Common {
 
   /** Insert an OfflineTune and return its ID. */
   def insert(offlineTune: OfflineTune): Int

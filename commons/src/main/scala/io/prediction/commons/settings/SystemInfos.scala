@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** SystemInfo object.
@@ -15,7 +17,7 @@ case class SystemInfo(
 )
 
 /** Base trait for implementations that interact with system info in the backend data store. */
-trait SystemInfos {
+trait SystemInfos extends Common {
   /** Inserts a system info entry. */
   def insert(systemInfo: SystemInfo): Unit
 

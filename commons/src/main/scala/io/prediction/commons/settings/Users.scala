@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** User object.
@@ -18,7 +20,7 @@ case class User(
   confirm: Option[String] = None)
 
 /** Base trait for implementations that interact with users in the backend data store. */
-trait Users {
+trait Users extends Common {
   /** Authenticate a user by ID and password. */
   def authenticate(id: Int, password: String): Boolean
 

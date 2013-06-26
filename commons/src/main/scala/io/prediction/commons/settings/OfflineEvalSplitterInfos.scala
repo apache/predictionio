@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** OfflineEvalSplitterInfo object.
@@ -27,7 +29,7 @@ case class OfflineEvalSplitterInfo(
 )
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
-trait OfflineEvalSplitterInfos {
+trait OfflineEvalSplitterInfos extends Common {
   /** Inserts a splitter info. */
   def insert(offlineEvalSplitterInfo: OfflineEvalSplitterInfo): Unit
 

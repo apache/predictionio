@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** AlgoInfo object.
@@ -29,7 +31,7 @@ case class AlgoInfo(
 )
 
 /** Base trait for implementations that interact with algo info in the backend data store. */
-trait AlgoInfos {
+trait AlgoInfos extends Common {
   /** Insert an algo info. */
   def insert(algoInfo: AlgoInfo): Unit
 

@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** OfflineEvalResult Object
@@ -20,7 +22,7 @@ case class OfflineEvalResult(
   splitset: String = ""
 )
 
-trait OfflineEvalResults {
+trait OfflineEvalResults extends Common {
 
   /** save(update existing or create a new one) a OfflineEvalResult and return id */
   def save(result: OfflineEvalResult): String

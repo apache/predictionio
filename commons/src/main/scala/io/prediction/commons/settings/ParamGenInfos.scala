@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** ParamGenInfo object.
@@ -25,7 +27,7 @@ case class ParamGenInfo(
 )
 
 /** Base trait for implementations that interact with parameter generator info in the backend data store. */
-trait ParamGenInfos {
+trait ParamGenInfos extends Common {
   /** Inserts a parameter generator info. */
   def insert(paramGenInfo: ParamGenInfo): Unit
 

@@ -1,5 +1,9 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
+import com.twitter.chill.KryoInjection
+
 /** App object.
   *
   * @param id ID.
@@ -23,7 +27,7 @@ case class App(
 )
 
 /** Base trait for implementations that interact with apps in the backend data store. */
-trait Apps {
+trait Apps extends Common {
   /** Insert a new App with basic fields defined.
     *
     * @param app An App object to be inserted. The ID will be ignored and replaced by an implementation of this trait.
@@ -32,6 +36,9 @@ trait Apps {
 
   /** Get an App by its ID. */
   def get(id: Int): Option[App]
+
+  /** Get all Apps. */
+  def getAll(): Iterator[App]
 
   /** Get Apps by user ID. */
   def getByUserid(userid: Int): Iterator[App]
@@ -63,4 +70,37 @@ trait Apps {
     * user ID.
     */
   def existsByIdAndAppkeyAndUserid(id: Int, appkey: String, userid: Int): Boolean
+
+  /** Backup all data as a byte array. */
+  def backup(): Array[Byte] = {
+    val backup = getAll().toSeq.map { b =>
+      Map(
+        "id" -> b.id,
+        "userid" -> b.userid,
+        "appkey" -> b.appkey,
+        "display" -> b.display,
+        "url" -> b.url,
+        "cat" -> b.cat,
+        "desc" -> b.desc,
+        "timezone" -> b.timezone)
+    }
+    KryoInjection(backup)
+  }
+
+  /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[App]] = {
+    KryoInjection.invert(bytes) map { r =>
+      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        App(
+          id = data("id").asInstanceOf[Int],
+          userid = data("userid").asInstanceOf[Int],
+          appkey = data("appkey").asInstanceOf[String],
+          display = data("display").asInstanceOf[String],
+          url = data("url").asInstanceOf[Option[String]],
+          cat = data("cat").asInstanceOf[Option[String]],
+          desc = data("desc").asInstanceOf[Option[String]],
+          timezone = data("timezone").asInstanceOf[String])
+      }
+    }
+  }
 }

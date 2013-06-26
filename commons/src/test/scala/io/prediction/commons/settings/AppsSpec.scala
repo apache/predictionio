@@ -28,6 +28,7 @@ class AppsSpec extends Specification { def is =
     "updating an app"                                                         ! update(apps)^
     "updating an app's appkey"                                                ! updateAppkeyByAppkeyAndUserid(apps)^
     "updating an app's timezone"                                              ! updateTimezoneByAppkeyAndUserid(apps)^
+    "backup and restore apps"                                                 ! backuprestore(apps)^
                                                                               bt
   }
 
@@ -147,5 +148,22 @@ class AppsSpec extends Specification { def is =
     )
     apps.updateTimezoneByAppkeyAndUserid(name, userid, "US/Pacific")
     apps.getByAppkey(name) must beSome(updated)
+  }
+
+  def backuprestore(apps: Apps) = {
+    val name = "backuprestore"
+    val userid = 90
+    val app1 = dummyApp(0, userid, name)
+    val id1 = apps.insert(app1)
+    val fn = "apps.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(apps.backup())
+    } finally {
+      fos.close()
+    }
+    apps.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      data must contain(app1.copy(id = id1))
+    } getOrElse 1 === 2
   }
 }

@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
 import com.twitter.chill.KryoInjection
 
 /** OfflineEvalMetric Object
@@ -16,7 +18,7 @@ case class OfflineEvalMetric(
   params: Map[String, Any]
 )
 
-trait OfflineEvalMetrics {
+trait OfflineEvalMetrics extends Common {
 
   /** Insert a metric and return ID. */
   def insert(metric: OfflineEvalMetric): Int
