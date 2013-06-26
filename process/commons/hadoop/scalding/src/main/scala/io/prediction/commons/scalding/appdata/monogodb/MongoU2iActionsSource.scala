@@ -30,7 +30,6 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
       u2iCols.add("iid") // 2
       u2iCols.add("t") // 3
       u2iCols.add("v") // 4 optional
-      //u2iCols.add("evalid")
       u2iCols.add("appid")
       
       u2iCols
@@ -43,7 +42,6 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
       u2iMappings.put("iid", FIELD_SYMBOLS("iid").name)
       u2iMappings.put("t", FIELD_SYMBOLS("t").name)
       u2iMappings.put("v", FIELD_SYMBOLS("v").name)
-      //u2iMappings.put("evalid", FIELD_SYMBOLS("evalid").name)
       u2iMappings.put("appid", FIELD_SYMBOLS("appid").name)
       
       u2iMappings
@@ -104,7 +102,7 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
         fields: (String, String, String, String, String) =>
           val (action, uid, iid, t, v) = fields
                     
-          (action.toInt, uid, iid, new java.util.Date(t.toLong), v.toInt, appid)
+          (action, uid, iid, new java.util.Date(t.toLong), v.toInt, appid)
     }.write(this)
     
     dbData
