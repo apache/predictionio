@@ -23,8 +23,7 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     val lnglat = u2iAction.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val v = u2iAction.v map { v => MongoDBObject("v" -> v) } getOrElse emptyObj
     val price = u2iAction.price map { p => MongoDBObject("price" -> p) } getOrElse emptyObj
-    val evalid = u2iAction.evalid map { e => MongoDBObject("evalid" -> e) } getOrElse emptyObj
-    u2iActionColl.insert(appid ++ action ++ uid ++ iid ++ t ++ lnglat ++ v ++ price ++ evalid)
+    u2iActionColl.insert(appid ++ action ++ uid ++ iid ++ t ++ lnglat ++ v ++ price)
   }
 
   def getAllByAppid(appid: Int) = new MongoU2IActionIterator(u2iActionColl.find(MongoDBObject("appid" -> appid)))
@@ -43,14 +42,13 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     val appid = dbObj.as[Int]("appid")
     U2IAction(
       appid  = appid,
-      action = dbObj.as[Int]("action"),
+      action = dbObj.as[String]("action"),
       uid    = dbObj.as[String]("uid").drop(appid.toString.length + 1),
       iid    = dbObj.as[String]("iid").drop(appid.toString.length + 1),
       t      = dbObj.as[DateTime]("t"),
       latlng = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
       v      = dbObj.getAs[Int]("v"),
-      price  = dbObj.getAs[Double]("price"),
-      evalid = dbObj.getAs[Int]("evalid")
+      price  = dbObj.getAs[Double]("price")
     )
   }
 

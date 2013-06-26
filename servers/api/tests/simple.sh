@@ -21,7 +21,15 @@ echo ""
 
 ### form-urlencoded
 
-# user
+echo "user without custom attributes"
+curl --request POST http://localhost:9124/users.json --header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
+--data-urlencode "pio_uid=testuid3" \
+--data-urlencode "pio_latlng=12.34,5.678" \
+--data-urlencode "pio_inactive=true"
+echo ""
+
+echo "user with custom attributes"
 curl --request POST http://localhost:9124/users.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_uid=testuid2" \
@@ -30,13 +38,16 @@ curl --request POST http://localhost:9124/users.json --header 'Content-Type: app
 --data-urlencode "pio_inactive=true"
 echo ""
 
+echo "get user"
 curl --request GET http://localhost:9124/users/testuid2.json?pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO
 echo ""
 
-curl --request DELETE http://localhost:9124/users/testuid2.json?pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO
+echo "delete user"
+curl --request DELETE http://localhost:9124/users/testuid3.json?pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO
 echo ""
 
 # item
+echo "create item"
 curl --request POST http://localhost:9124/items.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_iid=testiid2" \
@@ -51,15 +62,31 @@ curl --request POST http://localhost:9124/items.json --header 'Content-Type: app
 --data-urlencode "custom2=2.34"
 echo ""
 
+curl --request POST http://localhost:9124/items.json --header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
+--data-urlencode "pio_iid=testiid3" \
+--data-urlencode "pio_itypes=type1,type2" \
+--data-urlencode "pio_price=1.23" \
+--data-urlencode "pio_profit=9.87" \
+--data-urlencode "pio_startT=123456789" \
+--data-urlencode "pio_endT=2013-02-12T05:43:21.4" \
+--data-urlencode "pio_latlng=12.34,5.678" \
+--data-urlencode "pio_inactive=true" \
+--data-urlencode "custom1=value1" \
+--data-urlencode "custom2=2.34"
+echo ""
+
+echo "get item"
 curl --request GET http://localhost:9124/items/testiid2.json?pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO
 echo ""
 
+echo "delete item"
 curl --request DELETE http://localhost:9124/items/testiid2.json?pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO
 echo ""
 
 # u2iactions
 
-# rate
+echo "rate action"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=rate" \
@@ -68,7 +95,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_rate=3"
 echo ""
 
-# rate with latlng and t
+echo "rate with latlng and t"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=rate" \
@@ -79,7 +106,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_t=2012-09-10T12:34:56.6"
 echo ""
 
-# missing rate field in rate action
+echo "missing rate field in rate action"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=rate" \
@@ -87,7 +114,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_tiid=item4"
 echo ""
 
-# like
+echo "like action"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=like" \
@@ -95,7 +122,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_tiid=item4"
 echo ""
 
-# dislike
+echo "dislike"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=dislike" \
@@ -103,7 +130,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_tiid=item5"
 echo ""
 
-# view
+echo "view"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=view" \
@@ -112,7 +139,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 echo ""
 
 
-# conversion
+echo "conversion"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=conversion" \
@@ -120,7 +147,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_tiid=item8"
 echo ""
 
-# conversion with price
+echo "conversion with price"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=conversion" \
@@ -129,7 +156,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_price=5.99"
 echo ""
 
-# custom action
+echo "custom action"
 curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=custom_action" \

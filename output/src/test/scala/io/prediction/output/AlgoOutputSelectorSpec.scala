@@ -213,8 +213,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       t = DateTime.now,
       latlng = None,
       v = None,
-      price = None,
-      evalid = None
+      price = None
     ))
 
     algoOutputSelector.itemRecSelection("user1", 5, Some(List("bar", "foo")))(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y", "item_z", "item_c", "item_a"))

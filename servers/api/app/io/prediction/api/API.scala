@@ -363,37 +363,28 @@ object API extends Controller {
         fdata => AuthenticatedApp(fdata._1) { implicit app =>
           val (appkey, action, uid, tiid, t, latlng, rate, price) = fdata
           
-          val actionCode =  action match { // TODO: change this when change common for action name PDIO-189
-            case "rate" => u2iActions.rate
-            case "like" => u2iActions.likeDislike
-            case "dislike" => u2iActions.likeDislike
-            case "view" => u2iActions.view
-            case "conversion" => u2iActions.conversion
-            case _ => -1
-          }
-          val vValue: Option[Int] = action match { // TODO: change this when change common for action name PDIO-189
+          val vValue: Option[Int] = action match {
             case "rate" => rate
-            case "like" => Some(1)
-            case "dislike" => Some(0)
             case _ => None
           }
+          val validActions = List(u2iActions.rate, u2iActions.like, u2iActions.dislike, u2iActions.view, u2iActions.conversion)
 
-          if ((action == "rate") && (vValue == None)) { // additional user input checking
+          // additional user input checking
+          if ((action == u2iActions.rate) && (vValue == None)) { 
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_rate", "message" -> "Required for rate action.")))))
-          } else if (actionCode == -1) { // TODO: change this when change common for action name PDIO-189
+          } else if (!validActions.contains(action)) {
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_action", "message" -> "Custom action is not supported yet.")))))
           } else {
 
             u2iActions.insert(U2IAction(
               appid = app.id,
-              action = actionCode, // TODO: change this when change common for action name PDIO-189
+              action = action,
               uid = uid,
               iid = tiid,
               t = t map { parseDateTimeFromString(_) } getOrElse DateTime.now,
               latlng = latlng map { parseLatlng(_) },
               v = vValue,
-              price = price map { _.toDouble },
-              evalid = None
+              price = price map { _.toDouble }
             ))
             APIMessageResponse(CREATED, Map("message" -> ("Action " + action + " recorded.")))
           }
@@ -422,8 +413,7 @@ object API extends Controller {
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
             v = Some(t._6),
-            price = None,
-            evalid = None
+            price = None
           ))
           APIMessageResponse(CREATED, Map("message" -> "Rating recorded."))
         }
@@ -444,14 +434,13 @@ object API extends Controller {
         t => AuthenticatedApp(t._1) { implicit app =>
           u2iActions.insert(U2IAction(
             appid = app.id,
-            action = u2iActions.likeDislike,
+            action = u2iActions.like,
             uid = t._2,
             iid = t._3,
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
             v = Some(1),
-            price = None,
-            evalid = None
+            price = None
           ))
           APIMessageResponse(CREATED, Map("message" -> "Like recorded."))
         }
@@ -472,14 +461,13 @@ object API extends Controller {
         t => AuthenticatedApp(t._1) { implicit app =>
           u2iActions.insert(U2IAction(
             appid = app.id,
-            action = u2iActions.likeDislike,
+            action = u2iActions.dislike,
             uid = t._2,
             iid = t._3,
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
             v = Some(0),
-            price = None,
-            evalid = None
+            price = None
           ))
           APIMessageResponse(CREATED, Map("message" -> "Dislike recorded."))
         }
@@ -506,8 +494,7 @@ object API extends Controller {
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
             v = None,
-            price = None,
-            evalid = None
+            price = None
           ))
           APIMessageResponse(CREATED, Map("message" -> "View recorded."))
         }
@@ -535,8 +522,7 @@ object API extends Controller {
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
             v = None,
-            price = t._6 map { _.toDouble },
-            evalid = None
+            price = t._6 map { _.toDouble }
           ))
           APIMessageResponse(CREATED, Map("message" -> "Conversion recorded."))
         }

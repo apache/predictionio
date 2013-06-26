@@ -15,32 +15,33 @@ import com.github.nscala_time.time.Imports._
   */
 case class U2IAction(
   appid: Int,
-  action: Int,
+  action: String,
   uid: String,
   iid: String,
   t: DateTime,
   latlng: Option[Tuple2[Double, Double]],
   v: Option[Int],
-  price: Option[Double],
-  evalid: Option[Int]
+  price: Option[Double]
 )
 
 /** Base trait for implementations that interact with user-to-item actions in the backend app data store. */
 trait U2IActions {
   /** Represents a user-rate-item action. */
-  val rate = 0
+  val rate = "rate"
 
   /** Represents a user-like/dislike-item action. */
-  val likeDislike = 1
+  val like = "like"
+
+  val dislike = "dislike"
 
   /** Represents a user-view-item action. */
-  val view = 2
+  val view = "view"
 
   /** Represents a user-view-item's details action. */
-  val viewDetails = 3
+  val viewDetails = "viewDetails"
 
   /** Represents a user-item conversion (e.g. buy) action. */
-  val conversion = 4
+  val conversion = "conversion"
 
   /** Inserts a user-to-item action. */
   def insert(u2iAction: U2IAction): Unit
