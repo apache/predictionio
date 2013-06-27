@@ -439,7 +439,7 @@ object API extends Controller {
             iid = t._3,
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
-            v = Some(1),
+            v = None,
             price = None
           ))
           APIMessageResponse(CREATED, Map("message" -> "Like recorded."))
@@ -466,7 +466,7 @@ object API extends Controller {
             iid = t._3,
             t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
             latlng = t._5 map { parseLatlng(_) },
-            v = Some(0),
+            v = None,
             price = None
           ))
           APIMessageResponse(CREATED, Map("message" -> "Dislike recorded."))
@@ -533,14 +533,14 @@ object API extends Controller {
   def itemRecTopN(format: String, enginename: String) = Action { implicit request =>
     FormattedResponse(format) {
       Form(tuple(
-        "appkey" -> nonEmptyText,
-        "uid" -> nonEmptyText,
-        "n" -> number(1, 100),
-        "itypes" -> optional(text),
-        "latlng" -> optional(latlng),
-        "within" -> optional(numeric),
-        "unit" -> optional(text),
-        "attributes" -> optional(text)
+        "pio_appkey" -> nonEmptyText,
+        "pio_uid" -> nonEmptyText,
+        "pio_n" -> number(1, 100),
+        "pio_itypes" -> optional(text),
+        "pio_latlng" -> optional(latlng),
+        "pio_within" -> optional(numeric),
+        "pio_unit" -> optional(text),
+        "pio_attributes" -> optional(text)
       )).bindFromRequest.fold(
         f => bindFailed(f.errors),
         t => {
@@ -566,9 +566,9 @@ object API extends Controller {
                       ))
                     }
 
-                    APIMessageResponse(OK, Map("iids" -> res) ++ ar.reduceLeft((a, b) => a ++ b))
+                    APIMessageResponse(OK, Map("pio_iids" -> res) ++ ar.reduceLeft((a, b) => a ++ b))
                   } else {
-                    APIMessageResponse(OK, Map("iids" -> res))
+                    APIMessageResponse(OK, Map("pio_iids" -> res))
                   }
                 } else {
                   APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find recommendation for user."))
