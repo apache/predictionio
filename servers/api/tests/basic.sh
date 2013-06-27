@@ -91,7 +91,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=rate" \
 --data-urlencode "pio_uid=user2" \
---data-urlencode "pio_tiid=item3" \
+--data-urlencode "pio_iid=item3" \
 --data-urlencode "pio_rate=3"
 echo ""
 
@@ -100,7 +100,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=rate" \
 --data-urlencode "pio_uid=user2" \
---data-urlencode "pio_tiid=item3" \
+--data-urlencode "pio_iid=item3" \
 --data-urlencode "pio_rate=3" \
 --data-urlencode "pio_latlng=1.234,5.678" \
 --data-urlencode "pio_t=2012-09-10T12:34:56.6"
@@ -111,7 +111,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=rate" \
 --data-urlencode "pio_uid=user2" \
---data-urlencode "pio_tiid=item4"
+--data-urlencode "pio_iid=item4"
 echo ""
 
 echo "like action"
@@ -119,7 +119,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=like" \
 --data-urlencode "pio_uid=user3" \
---data-urlencode "pio_tiid=item4"
+--data-urlencode "pio_iid=item4"
 echo ""
 
 echo "dislike"
@@ -127,7 +127,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=dislike" \
 --data-urlencode "pio_uid=user4" \
---data-urlencode "pio_tiid=item5"
+--data-urlencode "pio_iid=item5"
 echo ""
 
 echo "view"
@@ -135,7 +135,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=view" \
 --data-urlencode "pio_uid=user6" \
---data-urlencode "pio_tiid=item7"
+--data-urlencode "pio_iid=item7"
 echo ""
 
 
@@ -144,7 +144,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=conversion" \
 --data-urlencode "pio_uid=user7" \
---data-urlencode "pio_tiid=item8"
+--data-urlencode "pio_iid=item8"
 echo ""
 
 echo "conversion with price"
@@ -152,7 +152,7 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=conversion" \
 --data-urlencode "pio_uid=user8" \
---data-urlencode "pio_tiid=item9" \
+--data-urlencode "pio_iid=item9" \
 --data-urlencode "pio_price=5.99"
 echo ""
 
@@ -161,5 +161,5 @@ curl --request POST http://localhost:9124/actions/u2i.json --header 'Content-Typ
 --data-urlencode "pio_appkey=jLIvMU9FNydsJHpO7otA4Dh4FQTDDyP3hFA9DltuyAdadcxXdtpMXYLnOLtCTsWO" \
 --data-urlencode "pio_action=custom_action" \
 --data-urlencode "pio_uid=user2" \
---data-urlencode "pio_tiid=item4"
+--data-urlencode "pio_iid=item4"
 echo ""

@@ -353,7 +353,7 @@ object API extends Controller {
         "pio_appkey" -> nonEmptyText,
         "pio_action" -> nonEmptyText,
         "pio_uid" -> nonEmptyText,
-        "pio_tiid" -> nonEmptyText,
+        "pio_iid" -> nonEmptyText,
         "pio_t" -> optional(timestamp),
         "pio_latlng" -> optional(latlng),
         "pio_rate" -> optional(number(1, 5)),
