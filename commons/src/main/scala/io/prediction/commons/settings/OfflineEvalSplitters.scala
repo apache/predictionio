@@ -35,7 +35,7 @@ trait OfflineEvalSplitters extends Common {
   def getByEvalid(evalid: Int): Iterator[OfflineEvalSplitter]
 
   /** Update an offline evaluation splitter. */
-  def update(splitter: OfflineEvalSplitter)
+  def update(splitter: OfflineEvalSplitter, upsert: Boolean = false)
 
   /** Delete an offline evaluation splitter by its ID. */
   def delete(id: Int)

@@ -53,7 +53,7 @@ trait Apps extends Common {
   def getByIdAndUserid(id: Int, userid: Int): Option[App]
 
   /** Update app information. */
-  def update(app: App)
+  def update(app: App, upsert: Boolean = false)
 
   /** Update app's appkey by its appkey and user ID. */
   def updateAppkeyByAppkeyAndUserid(appkey: String, userid: Int, newAppkey: String): Option[App]

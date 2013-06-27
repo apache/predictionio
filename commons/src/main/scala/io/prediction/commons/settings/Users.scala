@@ -40,7 +40,7 @@ trait Users extends Common {
   def getByEmail(email: String): Option[User]
 
   /** Update a user. */
-  def update(user: User)
+  def update(user: User, upsert: Boolean = false)
 
   /** Update email address by ID. */
   def updateEmail(id: Int, email: String)

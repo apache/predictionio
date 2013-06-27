@@ -65,7 +65,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
 
   def getByEngineInfoId(engineinfoid: String) = coll.find(MongoDBObject("engineinfoid" -> engineinfoid)).sort(MongoDBObject("_id" -> 1)).toSeq map { dbObjToAlgoInfo(_) }
 
-  def update(algoInfo: AlgoInfo) = {
+  def update(algoInfo: AlgoInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> algoInfo.id)
     val requiredObj = MongoDBObject(
       "name"             -> algoInfo.name,

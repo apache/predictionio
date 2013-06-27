@@ -63,7 +63,7 @@ trait Algos extends Common {
   def getTuneSubjectByOfflineTuneid(tuneid: Int): Option[Algo]
 
   /** Update an algo. */
-  def update(algo: Algo)
+  def update(algo: Algo, upsert: Boolean = false)
 
   /** Delete an algo by its ID. */
   def delete(id: Int)

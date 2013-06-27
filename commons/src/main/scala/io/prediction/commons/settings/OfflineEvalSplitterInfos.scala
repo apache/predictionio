@@ -40,7 +40,7 @@ trait OfflineEvalSplitterInfos extends Common {
   def getAll(): Seq[OfflineEvalSplitterInfo]
 
   /** Updates a splitter info. */
-  def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo): Unit
+  def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo, upsert: Boolean = false): Unit
 
   /** Delete a splitter info by its ID. */
   def delete(id: String): Unit

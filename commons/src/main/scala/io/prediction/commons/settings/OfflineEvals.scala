@@ -49,7 +49,7 @@ trait OfflineEvals extends Common {
   def getByTuneid(tuneid: Int): Iterator[OfflineEval]
 
   /** Update OfflineEval (create new one if the it doesn't exist) */
-  def update(offlineEval: OfflineEval)
+  def update(offlineEval: OfflineEval, upsert: Boolean = false)
 
   /** delete OfflineEval by it's id) */
   def delete(id: Int)

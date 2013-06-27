@@ -57,7 +57,7 @@ class MongoApps(db: MongoDB) extends Apps {
 
   def getByIdAndUserid(id: Int, userid: Int) = appColl.findOne(MongoDBObject("_id" -> id, "userid" -> userid), getFields) map { dbObjToApp(_) }
 
-  def update(app: App) = {
+  def update(app: App, upsert: Boolean = false) = {
     val must = MongoDBObject(
       "userid" -> app.userid,
       "appkey" -> app.appkey,
@@ -68,7 +68,7 @@ class MongoApps(db: MongoDB) extends Apps {
     val cat  = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
     val desc = app.desc map { desc => MongoDBObject("desc" -> desc) } getOrElse emptyObj
 
-    appColl.update(MongoDBObject("_id" -> app.id), must ++ url ++ cat ++ desc)
+    appColl.update(MongoDBObject("_id" -> app.id), must ++ url ++ cat ++ desc, upsert)
   }
 
   def updateAppkeyByAppkeyAndUserid(appkey: String, userid: Int, newAppkey: String) = {

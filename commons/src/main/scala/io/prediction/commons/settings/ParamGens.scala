@@ -33,7 +33,7 @@ trait ParamGens extends Common {
   def getByTuneid(tuneid: Int): Iterator[ParamGen]
 
   /** Update paramGen */
-  def update(paramGen: ParamGen)
+  def update(paramGen: ParamGen, upsert: Boolean = false)
 
   /** Delete paramGen by its ID */
   def delete(id: Int)

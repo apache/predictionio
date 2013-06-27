@@ -56,7 +56,7 @@ class MongoOfflineEvalSplitterInfos(db: MongoDB) extends OfflineEvalSplitterInfo
 
   def getAll() = coll.find().toSeq map { dbObjToOfflineEvalSplitterInfo(_) }
 
-  def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo) = {
+  def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> offlineEvalSplitterInfo.id)
     val requiredObj = MongoDBObject(
       "name"             -> offlineEvalSplitterInfo.name,
@@ -65,7 +65,7 @@ class MongoOfflineEvalSplitterInfos(db: MongoDB) extends OfflineEvalSplitterInfo
     val descriptionObj = offlineEvalSplitterInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
     val commandsObj = offlineEvalSplitterInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
 
-    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ commandsObj)
+    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ commandsObj, upsert)
   }
 
   def delete(id: String) = coll.remove(MongoDBObject("_id" -> id))

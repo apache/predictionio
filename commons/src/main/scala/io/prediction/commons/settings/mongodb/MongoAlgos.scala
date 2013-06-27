@@ -98,7 +98,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   def getTuneSubjectByOfflineTuneid(tuneid: Int) = algoColl.findOne(MongoDBObject("offlinetuneid" -> tuneid, "loop" -> null, "paramset" -> null)) map { dbObjToAlgo(_) }
 
-  def update(algo: Algo) = {
+  def update(algo: Algo, upsert: Boolean = false) = {
 
     // required fields
     val obj = MongoDBObject(
@@ -120,7 +120,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
       algo.loop.map(x => MongoDBObject("loop" -> x)).getOrElse(MongoUtils.emptyObj) ++
       algo.paramset.map(x => MongoDBObject("paramset" -> x)).getOrElse(MongoUtils.emptyObj)
 
-    algoColl.update(MongoDBObject("_id" -> algo.id), obj ++ optObj)
+    algoColl.update(MongoDBObject("_id" -> algo.id), obj ++ optObj, upsert)
   }
 
   def delete(id: Int) = algoColl.remove(MongoDBObject("_id" -> id))

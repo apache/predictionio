@@ -40,7 +40,7 @@ trait OfflineEvalMetricInfos extends Common {
   def getAll(): Seq[OfflineEvalMetricInfo]
 
   /** Updates a metric info. */
-  def update(metricInfo: OfflineEvalMetricInfo): Unit
+  def update(metricInfo: OfflineEvalMetricInfo, upsert: Boolean = false): Unit
 
   /** Delete a metric info by its ID. */
   def delete(id: String): Unit

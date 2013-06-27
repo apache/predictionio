@@ -32,7 +32,7 @@ trait EngineInfos extends Common {
   def getAll(): Seq[EngineInfo]
 
   /** Updates an engine info. */
-  def update(engineInfo: EngineInfo): Unit
+  def update(engineInfo: EngineInfo, upsert: Boolean = false): Unit
 
   /** Delete an engine info by its ID. */
   def delete(id: String): Unit

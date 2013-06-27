@@ -45,7 +45,7 @@ trait AlgoInfos extends Common {
   def getByEngineInfoId(engineinfoid: String): Seq[AlgoInfo]
 
   /** Update an algo info. */
-  def update(algoInfo: AlgoInfo): Unit
+  def update(algoInfo: AlgoInfo, upsert: Boolean = false): Unit
 
   /** Delete an algo info by its ID. */
   def delete(id: String): Unit

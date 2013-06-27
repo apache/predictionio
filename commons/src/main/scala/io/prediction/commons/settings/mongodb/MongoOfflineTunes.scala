@@ -67,7 +67,7 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
 
   def getByEngineid(engineid: Int): Iterator[OfflineTune] = new MongoOfflineTuneIterator(offlineTuneColl.find(MongoDBObject("engineid" -> engineid), getFields))
 
-  def update(offlineTune: OfflineTune) = {
+  def update(offlineTune: OfflineTune, upsert: Boolean = false) = {
 
     val obj = MongoDBObject(
       "_id" -> offlineTune.id,
@@ -82,7 +82,7 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
 
     val optObj = createtimeObj ++ starttimeObj ++ endtimeObj
 
-    offlineTuneColl.update(MongoDBObject("_id" -> offlineTune.id), obj ++ optObj)
+    offlineTuneColl.update(MongoDBObject("_id" -> offlineTune.id), obj ++ optObj, upsert)
   }
 
   def delete(id: Int) = {

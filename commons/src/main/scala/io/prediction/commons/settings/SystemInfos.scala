@@ -28,7 +28,7 @@ trait SystemInfos extends Common {
   def getAll(): Seq[SystemInfo]
 
   /** Updates a system info entry. */
-  def update(systemInfo: SystemInfo): Unit
+  def update(systemInfo: SystemInfo, upsert: Boolean = false): Unit
 
   /** Delete a system info entry by its ID. */
   def delete(id: String): Unit

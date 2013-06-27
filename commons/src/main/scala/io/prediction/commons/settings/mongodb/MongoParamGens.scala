@@ -59,12 +59,12 @@ class MongoParamGens(db: MongoDB) extends ParamGens {
   )
 
   /** Update paramGen */
-  def update(paramGen: ParamGen) = {
+  def update(paramGen: ParamGen, upsert: Boolean = false) = {
     paramGensColl.update(MongoDBObject("_id" -> paramGen.id), MongoDBObject(
       "infoid" -> paramGen.infoid,
       "tuneid" -> paramGen.tuneid,
       "params" -> paramGen.params
-    ))
+    ), upsert)
   }
 
   /** Delete paramGen by its ID */

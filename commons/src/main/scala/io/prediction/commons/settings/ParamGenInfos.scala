@@ -38,7 +38,7 @@ trait ParamGenInfos extends Common {
   def getAll(): Seq[ParamGenInfo]
 
   /** Updates a parameter generator info. */
-  def update(paramGenInfo: ParamGenInfo): Unit
+  def update(paramGenInfo: ParamGenInfo, upsert: Boolean = false): Unit
 
   /** Delete a parameter generator info by its ID. */
   def delete(id: String): Unit

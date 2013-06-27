@@ -41,14 +41,14 @@ class MongoUsers(db: MongoDB) extends Users {
     userColl.findOne(MongoDBObject("email" -> email)) map { dbObjToUser(_) }
   }
 
-  def update(user: User) = {
+  def update(user: User, upsert: Boolean = false) = {
     val requiredObj = MongoDBObject(
       "email" -> user.email,
       "password" -> user.password,
       "firstname" -> user.firstName)
     val lastnameObj = user.lastName map { x => MongoDBObject("lastname" -> x) } getOrElse { MongoUtils.emptyObj }
     val confirmObj = user.confirm map { x => MongoDBObject("confirm" -> x) } getOrElse { MongoUtils.emptyObj }
-    userColl.update(MongoDBObject("_id" -> user.id), requiredObj ++ lastnameObj ++ confirmObj)
+    userColl.update(MongoDBObject("_id" -> user.id), requiredObj ++ lastnameObj ++ confirmObj, upsert)
   }
 
   def updateEmail(id: Int, email: String) = {

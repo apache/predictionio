@@ -50,7 +50,7 @@ class MongoOfflineEvalSplitters(db: MongoDB) extends OfflineEvalSplitters {
     coll.find(MongoDBObject("evalid" -> evalid)).sort(MongoDBObject("infoid" -> 1))
   )
 
-  def update(splitter: OfflineEvalSplitter) = {
+  def update(splitter: OfflineEvalSplitter, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> splitter.id)
     val evalidObj = MongoDBObject("evalid" -> splitter.evalid)
     val nameObj = MongoDBObject("name" -> splitter.name)
@@ -59,8 +59,8 @@ class MongoOfflineEvalSplitters(db: MongoDB) extends OfflineEvalSplitters {
 
     coll.update(
       idObj,
-      evalidObj ++ nameObj ++ infoidObj ++ settingsObj
-    )
+      evalidObj ++ nameObj ++ infoidObj ++ settingsObj,
+      upsert)
   }
 
   def delete(id: Int) = coll.remove(MongoDBObject("_id" -> id))

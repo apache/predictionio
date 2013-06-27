@@ -40,7 +40,7 @@ trait Engines extends Common {
   def getByAppidAndName(appid: Int, name: String): Option[Engine]
 
   /** Update an engine. */
-  def update(engine: Engine)
+  def update(engine: Engine, upsert: Boolean = false)
 
   /** Delete an engine by its ID and app ID. */
   def deleteByIdAndAppid(id: Int, appid: Int)

@@ -60,12 +60,12 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
   )
 
   /** Update metric */
-  def update(metric: OfflineEvalMetric) = {
+  def update(metric: OfflineEvalMetric, upsert: Boolean = false) = {
     offlineEvalMetricsColl.update(MongoDBObject("_id" -> metric.id), MongoDBObject(
       "infoid" -> metric.infoid,
       "evalid" -> metric.evalid,
       "params" -> metric.params
-    ))
+    ), upsert)
   }
 
   /** Delete metric by its ID */

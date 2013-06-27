@@ -38,7 +38,7 @@ trait OfflineTunes extends Common {
   def getByEngineid(engineid: Int): Iterator[OfflineTune]
 
   /** Update OfflineTune (create new one if the it doesn't exist). */
-  def update(offlineTune: OfflineTune)
+  def update(offlineTune: OfflineTune, upsert: Boolean = false)
 
   /** Delete OfflineTune by its ID. */
   def delete(id: Int)

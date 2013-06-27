@@ -33,7 +33,7 @@ trait OfflineEvalMetrics extends Common {
   def getByEvalid(evalid: Int): Iterator[OfflineEvalMetric]
 
   /** Update metric. */
-  def update(metric: OfflineEvalMetric)
+  def update(metric: OfflineEvalMetric, upsert: Boolean = false)
 
   /** Delete metric by its ID. */
   def delete(id: Int)
