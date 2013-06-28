@@ -347,6 +347,7 @@ object API extends Controller {
     }
   }
 
+  /** unified user to item action handler */
   def userToItemAction(format: String) = Action { implicit request =>
     FormattedResponse(format) {
       Form(tuple(
@@ -361,7 +362,7 @@ object API extends Controller {
       )).bindFromRequest.fold(
         f => bindFailed(f.errors),
         fdata => AuthenticatedApp(fdata._1) { implicit app =>
-          val (appkey, action, uid, tiid, t, latlng, rate, price) = fdata
+          val (appkey, action, uid, iid, t, latlng, rate, price) = fdata
           
           val vValue: Option[Int] = action match {
             case "rate" => rate
@@ -380,7 +381,7 @@ object API extends Controller {
               appid = app.id,
               action = action,
               uid = uid,
-              iid = tiid,
+              iid = iid,
               t = t map { parseDateTimeFromString(_) } getOrElse DateTime.now,
               latlng = latlng map { parseLatlng(_) },
               v = vValue,
@@ -393,143 +394,135 @@ object API extends Controller {
     }
   }
 
-  def userToItemRate(format: String) = Action { implicit request =>
+  /** legacy API for pixel tracking, no prefix pio_ */
+  def createUserLegacy(format: String) = Action { implicit request =>
+    FormattedResponse(format) {
+      Attributes(tuple(
+        "appkey" -> nonEmptyText,
+        "uid" -> nonEmptyText,
+        "latlng" -> optional(latlng),
+        "inactive" -> optional(boolean)
+      ), Set( // all reserved attributes
+        "appkey", 
+        "ct",
+        "uid",
+        "latlng",
+        "inactive"
+      )).bindFromRequestAndFold(
+        f => bindFailed(f.errors),
+        (t, attributes) => {
+          val (appkey, uid, latlng, inactive) = t
+          AuthenticatedApp(t._1) { app =>
+            users.insert(User(
+              id = uid,
+              appid = app.id,
+              ct = DateTime.now,
+              latlng = latlng map { parseLatlng(_) },
+              inactive = inactive,
+              attributes = if (attributes.isEmpty) None else Some(attributes)
+            ))
+            APIMessageResponse(CREATED, Map("message" -> "User created."))
+          }
+        }
+      )
+    }
+  }
+
+  def createItemLegacy(format: String) = Action { implicit request =>
+    FormattedResponse(format) {
+      Attributes(tuple(
+        "appkey" -> nonEmptyText,
+        "iid" -> nonEmptyText,
+        "itypes" -> nonEmptyText,
+        "price" -> optional(numeric),
+        "profit" -> optional(numeric),
+        "startT" -> optional(timestamp),
+        "endT" -> optional(timestamp),
+        "latlng" -> optional(latlng),
+        "inactive" -> optional(boolean)
+      ), Set( // all reserved attributes
+        "appkey",
+        "ct",
+        "iid",
+        "itypes",
+        "price",
+        "profit",
+        "startT",
+        "endT",
+        "latlng",
+        "inactive"
+      )).bindFromRequestAndFold(
+        f => bindFailed(f.errors),
+        (t, attributes) => {
+          val (appkey, iid, itypes, price, profit, startT, endT, latlng, inactive) = t
+          AuthenticatedApp(appkey) { implicit app =>
+            items.insert(Item(
+              id = iid,
+              appid = app.id,
+              ct = DateTime.now,
+              itypes = itypes.split(",").toList,
+              starttime = startT map { t => Some(parseDateTimeFromString(t)) } getOrElse Some(DateTime.now),
+              endtime = endT map { parseDateTimeFromString(_) },
+              price = price map { _.toDouble },
+              profit = profit map { _.toDouble },
+              latlng = latlng map { parseLatlng(_) },
+              inactive = inactive,
+              attributes = if (attributes.isEmpty) None else Some(attributes)
+            ))
+            APIMessageResponse(CREATED, Map("message" -> "Item created."))
+          }
+        }
+      )
+    }
+  }
+
+  def userToItemActionLegacy(format: String, action: String) = Action { implicit request =>
     FormattedResponse(format) {
       Form(tuple(
         "appkey" -> nonEmptyText,
+        //"action" -> nonEmptyText,
         "uid" -> nonEmptyText,
         "iid" -> nonEmptyText,
         "t" -> optional(timestamp),
         "latlng" -> optional(latlng),
-        "rate" -> number(1, 5)
-      )).bindFromRequest.fold(
-        f => bindFailed(f.errors),
-        t => AuthenticatedApp(t._1) { implicit app =>
-          u2iActions.insert(U2IAction(
-            appid = app.id,
-            action = u2iActions.rate,
-            uid = t._2,
-            iid = t._3,
-            t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
-            latlng = t._5 map { parseLatlng(_) },
-            v = Some(t._6),
-            price = None
-          ))
-          APIMessageResponse(CREATED, Map("message" -> "Rating recorded."))
-        }
-      )
-    }
-  }
-
-  def userToItemLike(format: String) = Action { implicit request =>
-    FormattedResponse(format) {
-      Form(tuple(
-        "appkey" -> nonEmptyText,
-        "uid" -> nonEmptyText,
-        "iid" -> nonEmptyText,
-        "t" -> optional(timestamp),
-        "latlng" -> optional(latlng)
-      )).bindFromRequest.fold(
-        f => bindFailed(f.errors),
-        t => AuthenticatedApp(t._1) { implicit app =>
-          u2iActions.insert(U2IAction(
-            appid = app.id,
-            action = u2iActions.like,
-            uid = t._2,
-            iid = t._3,
-            t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
-            latlng = t._5 map { parseLatlng(_) },
-            v = None,
-            price = None
-          ))
-          APIMessageResponse(CREATED, Map("message" -> "Like recorded."))
-        }
-      )
-    }
-  }
-
-  def userToItemDislike(format: String) = Action { implicit request =>
-    FormattedResponse(format) {
-      Form(tuple(
-        "appkey" -> nonEmptyText,
-        "uid" -> nonEmptyText,
-        "iid" -> nonEmptyText,
-        "t" -> optional(timestamp),
-        "latlng" -> optional(latlng)
-      )).bindFromRequest.fold(
-        f => bindFailed(f.errors),
-        t => AuthenticatedApp(t._1) { implicit app =>
-          u2iActions.insert(U2IAction(
-            appid = app.id,
-            action = u2iActions.dislike,
-            uid = t._2,
-            iid = t._3,
-            t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
-            latlng = t._5 map { parseLatlng(_) },
-            v = None,
-            price = None
-          ))
-          APIMessageResponse(CREATED, Map("message" -> "Dislike recorded."))
-        }
-      )
-    }
-  }
-
-  def userToItemView(format: String) = Action { implicit request =>
-    FormattedResponse(format) {
-      Form(tuple(
-        "appkey" -> nonEmptyText,
-        "uid" -> nonEmptyText,
-        "iid" -> nonEmptyText,
-        "t" -> optional(timestamp),
-        "latlng" -> optional(latlng)
-      )).bindFromRequest.fold(
-        f => bindFailed(f.errors),
-        t => AuthenticatedApp(t._1) { implicit app =>
-          u2iActions.insert(U2IAction(
-            appid = app.id,
-            action = u2iActions.view,
-            uid = t._2,
-            iid = t._3,
-            t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
-            latlng = t._5 map { parseLatlng(_) },
-            v = None,
-            price = None
-          ))
-          APIMessageResponse(CREATED, Map("message" -> "View recorded."))
-        }
-      )
-    }
-  }
-
-  def userToItemConversion(format: String) = Action { implicit request =>
-    FormattedResponse(format) {
-      Form(tuple(
-        "appkey" -> nonEmptyText,
-        "uid" -> nonEmptyText,
-        "iid" -> nonEmptyText,
-        "t" -> optional(timestamp),
-        "latlng" -> optional(latlng),
+        "rate" -> optional(number(1, 5)),
         "price" -> optional(numeric)
       )).bindFromRequest.fold(
         f => bindFailed(f.errors),
-        t => AuthenticatedApp(t._1) { implicit app =>
-          u2iActions.insert(U2IAction(
-            appid = app.id,
-            action = u2iActions.conversion,
-            uid = t._2,
-            iid = t._3,
-            t = t._4 map { parseDateTimeFromString(_) } getOrElse DateTime.now,
-            latlng = t._5 map { parseLatlng(_) },
-            v = None,
-            price = t._6 map { _.toDouble }
-          ))
-          APIMessageResponse(CREATED, Map("message" -> "Conversion recorded."))
+        fdata => AuthenticatedApp(fdata._1) { implicit app =>
+          val (appkey, uid, iid, t, latlng, rate, price) = fdata
+          
+          val vValue: Option[Int] = action match {
+            case "rate" => rate
+            case _ => None
+          }
+          val validActions = List(u2iActions.rate, u2iActions.like, u2iActions.dislike, u2iActions.view, u2iActions.conversion)
+
+          // additional user input checking
+          if ((action == u2iActions.rate) && (vValue == None)) { 
+            APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "rate", "message" -> "Required for rate action.")))))
+          } else if (!validActions.contains(action)) {
+            APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "action", "message" -> "Custom action is not supported yet.")))))
+          } else {
+
+            u2iActions.insert(U2IAction(
+              appid = app.id,
+              action = action,
+              uid = uid,
+              iid = iid,
+              t = t map { parseDateTimeFromString(_) } getOrElse DateTime.now,
+              latlng = latlng map { parseLatlng(_) },
+              v = vValue,
+              price = price map { _.toDouble }
+            ))
+            APIMessageResponse(CREATED, Map("message" -> ("Action " + action + " recorded.")))
+          }
         }
       )
     }
   }
 
+  /** item rec topN */
   def itemRecTopN(format: String, enginename: String) = Action { implicit request =>
     FormattedResponse(format) {
       Form(tuple(
