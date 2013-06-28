@@ -10,7 +10,8 @@ object ApplicationBuild extends Build {
     val appDependencies = Seq(
       "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT",
       "io.prediction" %% "predictionio-output" % "0.4.3-SNAPSHOT",
-      "com.github.nscala-time" %% "nscala-time" % "0.2.0"
+      "com.github.nscala-time" %% "nscala-time" % "0.2.0",
+      "commons-codec" % "commons-codec" % "1.8"
     )
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
