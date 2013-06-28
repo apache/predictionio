@@ -2,7 +2,7 @@ package io.prediction.tools.softwaremanager
 
 import io.prediction.commons._
 
-object Backup {
+object Restore {
   val config = new Config()
 
   val settingsMap = Map(
@@ -24,32 +24,28 @@ object Backup {
     "users" -> config.getSettingsUsers)
 
   def main(args: Array[String]) {
-    println("PredictionIO Backup Utility")
+    println("PredictionIO Restore Utility")
     println()
 
     val backupDir = try {
       args(0)
     } catch {
       case e: ArrayIndexOutOfBoundsException => {
-      	println("Usage: backup <directory_of_backup_files>")
+      	println("Usage: restore <directory_of_backup_files>")
       	sys.exit(1)
       }
     }
 
-    val backupDirFile = new java.io.File(backupDir)
-    if (!backupDirFile.exists && !backupDirFile.mkdirs) {
-      println(s"Unable to create directory ${backupDir}. Aborting...")
-      sys.exit(1)
-  	}
-
   	settingsMap map { s =>
       val fn = s"${backupDir}/${s._1}.bin"
-      val fos = new java.io.FileOutputStream(fn)
       try {
-        fos.write(s._2.backup())
-        println(s"Backed up to ${fn}")
-      } finally {
-        fos.close()
+        s._2.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray, true) map { x =>
+          println(s"Restored from ${fn}")
+        } getOrElse {
+          println(s"Cannot restore from ${fn}. Skipping...")
+        }
+      } catch {
+        case e: java.io.FileNotFoundException => println(s"Error: ${e.getMessage}. Skipping...")
       }
     }
 
@@ -57,18 +53,20 @@ object Backup {
       case "mongodb" => {
         val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
         val fn = s"${backupDir}/metadata.bin"
-        val fos = new java.io.FileOutputStream(fn)
         try {
-          fos.write(metadata.backup())
-          println(s"Metadata backed up to ${fn}")
-        } finally {
-          fos.close()
+          metadata.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray, true) map { x =>
+            println(s"Restored metadata from ${fn}")
+          } getOrElse {
+            println(s"Cannot restore metadata from ${fn}. Skipping...")
+          }
+        } catch {
+          case e: java.io.FileNotFoundException => println(s"Error: ${e.getMessage}. Skipping...")
         }
       }
-      case _ => println(s"Unknown settings database type ${config.settingsDbType}. Skipping metadata backup.")
+      case _ => println(s"Unknown settings database type ${config.settingsDbType}. Skipping metadata restore.")
     }
 
     println()
-  	println("Backup completed.")
+  	println("Restore finished.")
   }
 }

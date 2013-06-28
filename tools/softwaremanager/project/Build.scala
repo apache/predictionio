@@ -12,6 +12,7 @@ object Build extends sbt.Build {
       // Specify mappings from program name -> Main class (full package path)
       packMain := Map(
         "backup"      -> "io.prediction.tools.softwaremanager.Backup",
+        "restore"     -> "io.prediction.tools.softwaremanager.Restore",
         "updatecheck" -> "io.prediction.tools.softwaremanager.UpdateCheck")
       // Add custom settings here
       // [Optional] JVM options of scripts (program name -> Seq(JVM option, ...))
