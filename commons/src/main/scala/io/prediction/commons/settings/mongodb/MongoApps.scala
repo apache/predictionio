@@ -59,11 +59,11 @@ class MongoApps(db: MongoDB) extends Apps {
 
   def update(app: App, upsert: Boolean = false) = {
     val must = MongoDBObject(
-      "userid" -> app.userid,
-      "appkey" -> app.appkey,
-      "display" -> app.display,
-      "timezone" -> app.timezone
-    )
+      "_id"      -> app.id,
+      "userid"   -> app.userid,
+      "appkey"   -> app.appkey,
+      "display"  -> app.display,
+      "timezone" -> app.timezone)
     val url  = app.url map { url => MongoDBObject("url" -> url) } getOrElse emptyObj
     val cat  = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
     val desc = app.desc map { desc => MongoDBObject("desc" -> desc) } getOrElse emptyObj

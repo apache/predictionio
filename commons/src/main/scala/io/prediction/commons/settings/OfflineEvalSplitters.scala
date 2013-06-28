@@ -54,9 +54,9 @@ trait OfflineEvalSplitters extends Common {
   }
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[OfflineEvalSplitter]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalSplitter]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         OfflineEvalSplitter(
           id = data("id").asInstanceOf[Int],
           evalid = data("evalid").asInstanceOf[Int],
@@ -64,6 +64,10 @@ trait OfflineEvalSplitters extends Common {
           infoid = data("infoid").asInstanceOf[String],
           settings = data("settings").asInstanceOf[Map[String, Any]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

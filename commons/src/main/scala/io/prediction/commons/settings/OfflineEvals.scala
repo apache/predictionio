@@ -71,9 +71,9 @@ trait OfflineEvals extends Common {
   }
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[OfflineEval]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEval]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         OfflineEval(
           id = data("id").asInstanceOf[Int],
           engineid = data("engineid").asInstanceOf[Int],
@@ -84,6 +84,10 @@ trait OfflineEvals extends Common {
           starttime = data("starttime").asInstanceOf[Option[DateTime]],
           endtime = data("endtime").asInstanceOf[Option[DateTime]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

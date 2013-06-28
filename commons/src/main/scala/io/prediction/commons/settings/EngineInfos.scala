@@ -51,9 +51,9 @@ trait EngineInfos extends Common {
   }
 
   /** Restore EngineInfos from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[EngineInfo]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[EngineInfo]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         EngineInfo(
           id = data("id").asInstanceOf[String],
           name = data("name").asInstanceOf[String],
@@ -61,6 +61,10 @@ trait EngineInfos extends Common {
           defaultsettings = data("defaultsettings").asInstanceOf[Map[String, Any]],
           defaultalgoinfoid = data("defaultalgoinfoid").asInstanceOf[String])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

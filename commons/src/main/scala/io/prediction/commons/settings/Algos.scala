@@ -97,9 +97,9 @@ trait Algos extends Common {
   }
 
   /** Restore Algos from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[Algo]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[Algo]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { stuff =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { stuff =>
         Algo(
           id = stuff("id").asInstanceOf[Int],
           engineid = stuff("engineid").asInstanceOf[Int],
@@ -117,6 +117,10 @@ trait Algos extends Common {
           loop = stuff("loop").asInstanceOf[Option[Int]],
           paramset = stuff("paramset").asInstanceOf[Option[Int]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

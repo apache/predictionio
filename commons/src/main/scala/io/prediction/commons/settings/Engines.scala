@@ -63,9 +63,9 @@ trait Engines extends Common {
   }
 
   /** Restore Engines from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[Engine]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[Engine]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         Engine(
           id = data("id").asInstanceOf[Int],
           appid = data("appid").asInstanceOf[Int],
@@ -74,6 +74,10 @@ trait Engines extends Common {
           itypes = data("itypes").asInstanceOf[Option[List[String]]],
           settings = data("settings").asInstanceOf[Map[String, Any]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

@@ -69,9 +69,9 @@ trait AlgoInfos extends Common {
   }
 
   /** Restore AlgoInfos from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[AlgoInfo]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[AlgoInfo]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         AlgoInfo(
           id = data("id").asInstanceOf[String],
           name = data("name").asInstanceOf[String],
@@ -84,6 +84,10 @@ trait AlgoInfos extends Common {
           techreq = data("techreq").asInstanceOf[Seq[String]],
           datareq = data("datareq").asInstanceOf[Seq[String]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

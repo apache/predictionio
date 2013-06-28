@@ -65,7 +65,7 @@ class MongoEngines(db: MongoDB) extends Engines {
 
     engineColl.update(
       idObj,
-      appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ settingsObj,
+      idObj ++ appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ settingsObj,
       upsert
     )
   }

@@ -5,5 +5,5 @@ trait Common {
   def backup(): Array[Byte]
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[Any]]
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[Any]]
 }

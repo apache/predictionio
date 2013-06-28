@@ -51,15 +51,19 @@ trait OfflineEvalMetrics extends Common {
   }
 
   /** Restore OfflineEvalMetrics from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[OfflineEvalMetric]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalMetric]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         OfflineEvalMetric(
           id = data("id").asInstanceOf[Int],
           infoid = data("infoid").asInstanceOf[String],
           evalid = data("evalid").asInstanceOf[Int],
           params = data("params").asInstanceOf[Map[String, Any]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

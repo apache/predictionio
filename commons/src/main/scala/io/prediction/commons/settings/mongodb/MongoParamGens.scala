@@ -61,6 +61,7 @@ class MongoParamGens(db: MongoDB) extends ParamGens {
   /** Update paramGen */
   def update(paramGen: ParamGen, upsert: Boolean = false) = {
     paramGensColl.update(MongoDBObject("_id" -> paramGen.id), MongoDBObject(
+      "_id"    -> paramGen.id,
       "infoid" -> paramGen.infoid,
       "tuneid" -> paramGen.tuneid,
       "params" -> paramGen.params

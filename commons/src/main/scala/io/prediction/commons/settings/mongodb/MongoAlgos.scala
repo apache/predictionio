@@ -102,17 +102,17 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
     // required fields
     val obj = MongoDBObject(
-      "engineid" -> algo.engineid,
-      "name"     -> algo.name,
-      "infoid"   -> algo.infoid,
-      "command"  -> algo.command,
-      "params"   -> algo.params,
-      "settings" -> algo.settings,
-      "modelset" -> algo.modelset,
+      "_id"        -> algo.id,
+      "engineid"   -> algo.engineid,
+      "name"       -> algo.name,
+      "infoid"     -> algo.infoid,
+      "command"    -> algo.command,
+      "params"     -> algo.params,
+      "settings"   -> algo.settings,
+      "modelset"   -> algo.modelset,
       "createtime" -> algo.createtime,
       "updatetime" -> algo.updatetime,
-      "status" -> algo.status
-    )
+      "status"     -> algo.status)
 
     // optional fields
     val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(MongoUtils.emptyObj) ++

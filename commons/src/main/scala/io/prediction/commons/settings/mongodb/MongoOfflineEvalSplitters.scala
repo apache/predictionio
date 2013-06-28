@@ -59,7 +59,7 @@ class MongoOfflineEvalSplitters(db: MongoDB) extends OfflineEvalSplitters {
 
     coll.update(
       idObj,
-      evalidObj ++ nameObj ++ infoidObj ++ settingsObj,
+      idObj ++ evalidObj ++ nameObj ++ infoidObj ++ settingsObj,
       upsert)
   }
 

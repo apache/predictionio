@@ -88,9 +88,9 @@ trait Apps extends Common {
   }
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[App]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[App]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         App(
           id = data("id").asInstanceOf[Int],
           userid = data("userid").asInstanceOf[Int],
@@ -101,6 +101,10 @@ trait Apps extends Common {
           desc = data("desc").asInstanceOf[Option[String]],
           timezone = data("timezone").asInstanceOf[String])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }

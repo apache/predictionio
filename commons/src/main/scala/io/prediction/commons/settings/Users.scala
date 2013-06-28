@@ -78,9 +78,9 @@ trait Users extends Common {
   }
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
-  def restore(bytes: Array[Byte], upgrade: Boolean = false): Option[Seq[User]] = {
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[User]] = {
     KryoInjection.invert(bytes) map { r =>
-      r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         User(
           id = data("id").asInstanceOf[Int],
           firstName = data("firstName").asInstanceOf[String],
@@ -89,6 +89,10 @@ trait Users extends Common {
           password = data("password").asInstanceOf[String],
           confirm = data("confirm").asInstanceOf[Option[String]])
       }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
     }
   }
 }
