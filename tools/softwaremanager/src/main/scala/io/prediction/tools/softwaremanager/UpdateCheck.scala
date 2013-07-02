@@ -6,6 +6,8 @@ import scala.reflect.ClassTag
 import scala.sys.process._
 import scala.util.parsing.json.JSON
 
+import com.twitter.scalding.Args
+
 /** Extractors: http://stackoverflow.com/questions/4170949/how-to-parse-json-in-scala-using-standard-scala-classes */
 class CC[T : ClassTag] { def unapply(a: Any)(implicit e: ClassTag[T]): Option[T] = {
   try { Some(e.runtimeClass.cast(a).asInstanceOf[T]) } catch { case _: Throwable => None } }
@@ -22,7 +24,9 @@ object UpdateCheck {
   val config = new Config()
   val systemInfos = config.getSettingsSystemInfos
 
-  def main(args: Array[String]) {
+  def main(cargs: Array[String]) {
+    val args = Args(cargs)
+
     println("PredictionIO Update Checker")
     println()
 
@@ -36,16 +40,19 @@ object UpdateCheck {
       sys.exit(1)
     }
 
-    val versionsString = try {
-      println(s"Using local version file ${args(0)}...")
+    val versionsString = args.optional("localVersion") map { lv =>
+      println(s"Using local version file ${lv}...")
       println()
-      scala.io.Source.fromFile(args(0)).mkString
-    } catch {
-      case e: java.io.FileNotFoundException => {
-        println(s"Error: ${e.getMessage}. Aborting.")
-        sys.exit(1)
+      try {
+        scala.io.Source.fromFile(lv).mkString
+      } catch {
+        case e: java.io.FileNotFoundException => {
+          println(s"Error: ${e.getMessage}. Aborting.")
+          sys.exit(1)
+        }
       }
-      case e: Throwable => try {
+    } getOrElse {
+      try {
         println(s"Using http://download.prediction.io/versions.json...")
         println()
         scala.io.Source.fromURL("http://download.prediction.io/versions.json").mkString
@@ -66,10 +73,16 @@ object UpdateCheck {
         println()
 
         if (latest != installed) {
-          println("Your PredictionIO is not the latest version. Do you want to download the latest binaries?")
-          val choice = readLine("Enter 'YES' to proceed: ")
+          val choice = args.optional("answer") getOrElse {
+            println("Your PredictionIO is not the latest version. Do you want to download the latest binaries?")
+            val input = readLine("Enter 'YES' to proceed: ")
+            input match {
+              case "YES" => "y"
+              case _ => "a"
+            }
+          }
           choice match {
-            case "YES" => {
+            case "y" =>
               M.unapply(meta("versions")) map { versions =>
                 MSS.unapply(versions(latest)) map { latestVersion =>
                   val binaries = latestVersion("binaries")
@@ -77,8 +90,8 @@ object UpdateCheck {
                   s"curl -O ${binaries}".!
                 }
               }
-            }
-            case _ => println("Aborting.")
+            case "n" => println(s"Your PredictionIO is not the latest version. A new version ${latest} is available.")
+            case "a" => println("Aborting.")
           }
         } else {
           println("Your PredictionIO version is already the latest.")

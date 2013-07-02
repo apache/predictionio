@@ -9,7 +9,8 @@ scalaVersion := "2.10.0"
 scalacOptions ++= Seq("-deprecation")
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT",
+  "com.twitter" %% "scalding-args" % "0.8.5"
 )
 
 resolvers ++= Seq(
