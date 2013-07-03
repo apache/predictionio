@@ -53,9 +53,9 @@ object UpdateCheck {
       }
     } getOrElse {
       try {
-        println(s"Using http://download.prediction.io/versions.json...")
+        println(s"Using http://direct.prediction.io/versions.json...")
         println()
-        scala.io.Source.fromURL("http://download.prediction.io/versions.json").mkString
+        scala.io.Source.fromURL("http://direct.prediction.io/versions.json").mkString
       } catch { case e: Throwable =>
         println(s"Error: ${e.getMessage}. Aborting.")
         sys.exit(1)
