@@ -9,14 +9,15 @@ import io.prediction.commons.filepath.DataFile
 
 class DataPreparatorTest extends Specification with TupleConversions {
   
-  val Rate = 0
-  val LikeDislike = 1
-  val View = 2
-  //val ViewDetails = 3
-  val Conversion = 4
+  val Rate = "rate"
+  val Like = "like"
+  val Dislike = "dislike"
+  val View = "view"
+  //val ViewDetails = "viewDetails"
+  val Conversion = "conversion"
   
   def test(itypes: List[String], params: Map[String, String],
-      items: List[(String, String)], u2iActions: List[(Int, String, String, String, String)],
+      items: List[(String, String)], u2iActions: List[(String, String, String, String, String)],
       ratings: List[(String, String, Int)], selectedItems: List[(String, String)]) = {
     
     val dbType = "file"
@@ -60,7 +61,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   
   /** no itypes specified */
   def testWithoutItypes(params: Map[String, String],
-      items: List[(String, String)], u2iActions: List[(Int, String, String, String, String)],
+      items: List[(String, String)], u2iActions: List[(String, String, String, String, String)],
       ratings: List[(String, String, Int)], selectedItems: List[(String, String)]) = {
     
     val dbType = "file"
@@ -220,8 +221,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test3Items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
   val test3U2i = List(
       (Rate, "u0", "i0", "123450", "4"), 
-      (LikeDislike, "u0", "i1", "123457", "1"),
-      (LikeDislike, "u0", "i2", "123458", "0"),
+      (Like, "u0", "i1", "123457", "3"),
+      (Dislike, "u0", "i2", "123458", "3"),
       (View, "u0", "i3", "123459", "0"), // NOTE: assume v field won't be missing
       (Rate, "u1", "i0", "123457", "2"),
       (Conversion, "u1", "i1", "123458", "0"))
@@ -252,7 +253,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test4U2i = List(
       (Rate, "u0", "i0", "123448", "3"),
       (View, "u0", "i0", "123449", "4"), // lowest (2)
-      (LikeDislike, "u0", "i0", "123451", "1"), // latest, highest (5)
+      (Like, "u0", "i0", "123451", "0"), // latest, highest (5)
       (Conversion, "u0", "i0", "123450", "1"), 
       
       (Rate, "u0", "i1", "123456", "1"), // lowest
@@ -268,7 +269,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
       
       (Rate, "u1", "i1", "123458", "5"), // highest
       (Conversion, "u1", "i1", "123459", "4"), // (4)
-      (LikeDislike, "u1", "i1", "123460", "0")) // latest, lowest (1)
+      (Dislike, "u1", "i1", "123460", "1")) // latest, lowest (1)
       
   val test4RatingsLatest = List(
       ("u0", "i0", 5), 

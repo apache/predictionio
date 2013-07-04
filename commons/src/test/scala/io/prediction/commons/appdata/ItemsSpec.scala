@@ -33,9 +33,9 @@ class ItemsSpec extends Specification { def is =
 
   def insert(items: Items) = {
     val appid = 0
-    val id = "insert"
-    val item = Item(
-      id         = id,
+    val id1 = "insert1"
+    val item1 = Item(
+      id         = id1,
       appid      = appid,
       ct         = DateTime.now,
       itypes     = List("fresh", "meat"),
@@ -47,8 +47,24 @@ class ItemsSpec extends Specification { def is =
       inactive   = None,
       attributes = Some(Map("foo" -> "bar"))
     )
-    items.insert(item)
-    items.get(appid, id) must beSome(item)
+    val id2 = "insert2"
+    val item2 = Item(
+      id         = id2,
+      appid      = appid,
+      ct         = DateTime.now,
+      itypes     = List("fresh", "meat"),
+      starttime  = Some(DateTime.now.hour(23).minute(13)),
+      endtime    = None,
+      price      = Some(49.394),
+      profit     = None,
+      latlng     = Some((47.8948, -29.79783)),
+      inactive   = Some(true),
+      attributes = None
+    )
+    items.insert(item1)
+    items.insert(item2)
+    (items.get(appid, id1) must beSome(item1)) and
+      (items.get(appid, id2) must beSome(item2))
   }
 
   def getByIds(items: Items) = {
@@ -65,7 +81,7 @@ class ItemsSpec extends Specification { def is =
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
       inactive   = None,
-      attributes = Some(Map("foo" -> "bar"))
+      attributes = Some(Map("foo" -> "bar", "foo2" -> "bar2"))
     ), Item(
       id         = id + "bar",
       appid      = appid,
@@ -77,7 +93,7 @@ class ItemsSpec extends Specification { def is =
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
       inactive   = None,
-      attributes = Some(Map("foo" -> "bar"))
+      attributes = None
     ), Item(
       id         = id + "baz",
       appid      = appid,
@@ -89,7 +105,7 @@ class ItemsSpec extends Specification { def is =
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
       inactive   = None,
-      attributes = Some(Map("foo" -> "bar"))
+      attributes = Some(Map("foo3" -> "bar3"))
     ), Item(
       id         = id + "pub",
       appid      = appid,
@@ -101,7 +117,7 @@ class ItemsSpec extends Specification { def is =
       profit     = None,
       latlng     = Some((47.8948, -29.79783)),
       inactive   = None,
-      attributes = Some(Map("foo" -> "bar"))
+      attributes = Some(Map("foo4" -> "bar4", "foo5" -> "bar5"))
     ))
     someItems foreach { items.insert(_) }
     val setOfItems = items.getByIds(appid, List(id + "pub", id + "bar", id + "baz")).toSet

@@ -1,6 +1,7 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils._
+import io.prediction.commons.MongoUtils.{emptyObj, mongoDbListToListOfString, idWithAppid}
+import io.prediction.commons.MongoUtils.{attributesToMongoDBObject, getAttributesFromDBObject}
 import io.prediction.commons.appdata.{User, Users}
 
 import com.mongodb.casbah.Imports._
@@ -20,7 +21,9 @@ class MongoUsers(db: MongoDB) extends Users {
     val ct = MongoDBObject("ct" -> user.ct)
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = user.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    //val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    // add "ca_" prefix for custom attributes
+    val attributes = user.attributes map { a => attributesToMongoDBObject(a) } getOrElse emptyObj
     userColl.save(id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -34,7 +37,8 @@ class MongoUsers(db: MongoDB) extends Users {
     val ct = MongoDBObject("ct" -> user.ct)
     val lnglat = user.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = user.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    //val attributes = user.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    val attributes = user.attributes map { a => attributesToMongoDBObject(a) } getOrElse emptyObj
     userColl.update(id, id ++ appid ++ ct ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -55,7 +59,8 @@ class MongoUsers(db: MongoDB) extends Users {
       ct         = dbObj.as[DateTime]("ct"),
       latlng     = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
       inactive   = dbObj.getAs[Boolean]("inactive"),
-      attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
+      //attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
+      attributes = Option(getAttributesFromDBObject(dbObj)).filter(!_.isEmpty)
     )
   }
 

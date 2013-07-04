@@ -131,13 +131,12 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
   /**
    * constants
    */
-  // NOTE: this enum should match the assumption of appdata
-  // see api/model/U2iAction.scala
-  final val ACTION_RATE: Int = 0
-  final val ACTION_LIKEDISLIKE: Int = 1 // if field "v"==1, then Like. "v"==0, then Dislike
-  final val ACTION_VIEW: Int = 2
-  //final val ACTION_VIEWDETAILS: Int = 3
-  final val ACTION_CONVERSION: Int = 4
+  final val ACTION_RATE = "rate"
+  final val ACTION_LIKE = "like"
+  final val ACTION_DISLIKE = "dislike"
+  final val ACTION_VIEW = "view"
+  //final val ACTION_VIEWDETAILS = "viewDetails"
+  final val ACTION_CONVERSION = "conversion"
 
   /**
    * source
@@ -182,13 +181,14 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
     .filter('action, 'v) { fields: (String, String) =>
       val (action, v) = fields
 
-      val keepThis: Boolean = action.toInt match {
+      val keepThis: Boolean = action match {
         case ACTION_RATE => true
-        case ACTION_LIKEDISLIKE => if (v.toInt == 1) (likeParamArg != None) else (dislikeParamArg != None)
+        case ACTION_LIKE => (likeParamArg != None)
+        case ACTION_DISLIKE => (dislikeParamArg != None)
         case ACTION_VIEW => (viewParamArg != None)
         case ACTION_CONVERSION => (conversionParamArg != None)
         case _ => {
-          assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported!")
+          assert(false, "Action type " + action + " in u2iActions appdata is not supported!")
           false // all other unsupported actions
         }
       }
@@ -198,29 +198,26 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
       val (action, v, t) = fields
       
       // convert actions into rating value based on "action" and "v" fields
-      val rating: Int = action.toInt match {
+      val rating: Int = action match {
         case ACTION_RATE => v.toInt
-        case ACTION_LIKEDISLIKE => if (v.toInt == 1) { 
-          likeParamArg.getOrElse{
-            assert(false, "Action type " + action.toInt + " should have been filtered out!")
-            1
-          }
-        } else {
-          dislikeParamArg.getOrElse{
-            assert(false, "Action type " + action.toInt + " should have been filtered out!")
-            1
-          }
-        } 
+        case ACTION_LIKE => likeParamArg.getOrElse{
+          assert(false, "Action type " + action + " should have been filtered out!")
+          1
+        }
+        case ACTION_DISLIKE => dislikeParamArg.getOrElse{
+          assert(false, "Action type " + action + " should have been filtered out!")
+          1
+        }
         case ACTION_VIEW => viewParamArg.getOrElse{
-          assert(false, "Action type " + action.toInt + " should have been filtered out!")
+          assert(false, "Action type " + action + " should have been filtered out!")
           1
         }
         case ACTION_CONVERSION => conversionParamArg.getOrElse{
-          assert(false, "Action type " + action.toInt + " should have been filtered out!")
+          assert(false, "Action type " + action + " should have been filtered out!")
           1
         }
         case _ => { // all other unsupported actions
-          assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported!")
+          assert(false, "Action type " + action + " in u2iActions appdata is not supported!")
           1
         }
       }

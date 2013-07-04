@@ -12,19 +12,11 @@ POST    /items.:format                            io.prediction.api.API.createIt
 GET     /items/:iid.:format                       io.prediction.api.API.getItem(format, iid)
 DELETE  /items/:iid.:format                       io.prediction.api.API.deleteItem(format, iid)
 
-POST    /actions/u2i/rate.:format                 io.prediction.api.API.userToItemRate(format)
-POST    /actions/u2i/like.:format                 io.prediction.api.API.userToItemLike(format)
-POST    /actions/u2i/dislike.:format              io.prediction.api.API.userToItemDislike(format)
-POST    /actions/u2i/view.:format                 io.prediction.api.API.userToItemView(format)
-POST    /actions/u2i/conversion.:format           io.prediction.api.API.userToItemConversion(format)
+POST    /actions/u2i.:format                      io.prediction.api.API.userToItemAction(format)
 
-# For pixel tracking
-GET     /p/users.:format                          io.prediction.api.API.createUser(format)
-GET     /p/items.:format                          io.prediction.api.API.createItem(format)
-GET     /p/actions/u2i/rate.:format               io.prediction.api.API.userToItemRate(format)
-GET     /p/actions/u2i/like.:format               io.prediction.api.API.userToItemLike(format)
-GET     /p/actions/u2i/dislike.:format            io.prediction.api.API.userToItemDislike(format)
-GET     /p/actions/u2i/view.:format               io.prediction.api.API.userToItemView(format)
-GET     /p/actions/u2i/conversion.:format         io.prediction.api.API.userToItemConversion(format)
+# For pixel tracking (legacy version, no prefix pio_)
+GET     /p/users.:format                          io.prediction.api.API.createUserLegacy(format)
+GET     /p/items.:format                          io.prediction.api.API.createItemLegacy(format)
+GET     /p/actions/u2i/:action.:format            io.prediction.api.API.userToItemActionLegacy(format, action)
 
 GET     /engines/itemrec/:engine/topn.:format     io.prediction.api.API.itemRecTopN(format, engine)
