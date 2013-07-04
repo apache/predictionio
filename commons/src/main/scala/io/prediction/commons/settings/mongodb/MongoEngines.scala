@@ -49,11 +49,13 @@ class MongoEngines(db: MongoDB) extends Engines {
 
   def get(id: Int) = engineColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToEngine(_) }
 
+  def getAll() = new MongoEngineIterator(engineColl.find())
+
   def getByAppid(appid: Int) = new MongoEngineIterator(engineColl.find(MongoDBObject("appid" -> appid)).sort(MongoDBObject("name" -> 1)))
 
   def getByAppidAndName(appid: Int, name: String) = engineColl.findOne(MongoDBObject("appid" -> appid, "name" -> name)) map { dbObjToEngine(_) }
 
-  def update(engine: Engine) = {
+  def update(engine: Engine, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> engine.id)
     val nameObj = MongoDBObject("name" -> engine.name)
     val appidObj = MongoDBObject("appid" -> engine.appid)
@@ -63,7 +65,8 @@ class MongoEngines(db: MongoDB) extends Engines {
 
     engineColl.update(
       idObj,
-      appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ settingsObj
+      idObj ++ appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ settingsObj,
+      upsert
     )
   }
 

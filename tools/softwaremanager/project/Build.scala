@@ -10,7 +10,10 @@ object Build extends sbt.Build {
     settings = Defaults.defaultSettings ++ packSettings ++
     Seq(
       // Specify mappings from program name -> Main class (full package path)
-      packMain := Map("updatecheck" -> "io.prediction.tools.softwaremanager.UpdateCheck")
+      packMain := Map(
+        "backup"      -> "io.prediction.tools.softwaremanager.Backup",
+        "restore"     -> "io.prediction.tools.softwaremanager.Restore",
+        "updatecheck" -> "io.prediction.tools.softwaremanager.UpdateCheck")
       // Add custom settings here
       // [Optional] JVM options of scripts (program name -> Seq(JVM option, ...))
       // packJvmOpts := Map("hello" -> Seq("-Xmx512m")),

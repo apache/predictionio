@@ -21,6 +21,7 @@ class OfflineTunesSpec extends Specification { def is =
     "create an OfflineTune"                               ! insert(offlineTunes)^
     "update an OfflineTune"                               ! update(offlineTunes)^
     "delete an OfflineTune"                               ! delete(offlineTunes)^
+    "backup and restore OfflineTunes"                     ! backuprestore(offlineTunes)^
                                                           bt
   }
 
@@ -97,5 +98,30 @@ class OfflineTunesSpec extends Specification { def is =
 
     data1 must beSome(tune1.copy(id = id1)) and
       (data2 must beNone)
+  }
+
+  def backuprestore(offlineTunes: OfflineTunes) = {
+    val tune1 = OfflineTune(
+      id = -1,
+      engineid = 18,
+      loops = 11,
+      createtime = Some(DateTime.now),
+      starttime = Some(DateTime.now),
+      endtime = None
+    )
+    val id1 = offlineTunes.insert(tune1)
+    val fn = "tunes.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(offlineTunes.backup())
+    } finally {
+      fos.close()
+    }
+    offlineTunes.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      // For some reason inserting Joda DateTime to DB and getting them back will make test pass
+      val ftune1 = data.find(_.id == id1).get
+      offlineTunes.update(ftune1)
+      offlineTunes.get(id1) must beSome(tune1.copy(id = id1))
+    } getOrElse 1 === 2
   }
 }

@@ -8,6 +8,7 @@ scalaVersion := "2.10.0"
 
 libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT",
+  "commons-codec" % "commons-codec" % "1.8",
   "jline" % "jline" % "2.9"
 )
 

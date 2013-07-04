@@ -52,17 +52,20 @@ class MongoParamGens(db: MongoDB) extends ParamGens {
     paramGensColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToParamGen(_) }
   }
 
+  def getAll() = new MongoParamGenIterator(paramGensColl.find())
+
   def getByTuneid(tuneid: Int): Iterator[ParamGen] = new MongoParamGenIterator(
     paramGensColl.find(MongoDBObject("tuneid" -> tuneid), getFields).sort(MongoDBObject("_id" -> 1))
   )
 
   /** Update paramGen */
-  def update(paramGen: ParamGen) = {
+  def update(paramGen: ParamGen, upsert: Boolean = false) = {
     paramGensColl.update(MongoDBObject("_id" -> paramGen.id), MongoDBObject(
+      "_id"    -> paramGen.id,
       "infoid" -> paramGen.infoid,
       "tuneid" -> paramGen.tuneid,
       "params" -> paramGen.params
-    ))
+    ), upsert)
   }
 
   /** Delete paramGen by its ID */

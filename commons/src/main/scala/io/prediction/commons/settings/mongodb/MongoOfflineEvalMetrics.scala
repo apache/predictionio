@@ -52,18 +52,21 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
     offlineEvalMetricsColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToOfflineEvalMetric(_) }
   }
 
+  def getAll() = new MongoOfflineEvalMetricIterator(offlineEvalMetricsColl.find())
+
   /** Get metrics by OfflineEval id */
   def getByEvalid(evalid: Int): Iterator[OfflineEvalMetric] = new MongoOfflineEvalMetricIterator(
     offlineEvalMetricsColl.find(MongoDBObject("evalid" -> evalid), getFields).sort(MongoDBObject("infoid" -> 1))
   )
 
   /** Update metric */
-  def update(metric: OfflineEvalMetric) = {
+  def update(metric: OfflineEvalMetric, upsert: Boolean = false) = {
     offlineEvalMetricsColl.update(MongoDBObject("_id" -> metric.id), MongoDBObject(
+      "_id"    -> metric.id,
       "infoid" -> metric.infoid,
       "evalid" -> metric.evalid,
       "params" -> metric.params
-    ))
+    ), upsert)
   }
 
   /** Delete metric by its ID */

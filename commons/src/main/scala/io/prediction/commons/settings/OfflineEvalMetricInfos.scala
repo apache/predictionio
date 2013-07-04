@@ -1,5 +1,9 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
+import com.twitter.chill.KryoInjection
+
 /** OfflineEvalMetricInfo object.
   *
   * @param id Unique identifier of a metric.
@@ -25,16 +29,58 @@ case class OfflineEvalMetricInfo(
 )
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
-trait OfflineEvalMetricInfos {
-  /** Inserts an metric info. */
+trait OfflineEvalMetricInfos extends Common {
+  /** Inserts a metric info. */
   def insert(metricInfo: OfflineEvalMetricInfo): Unit
 
-  /** Get an metric info by its ID. */
+  /** Get a metric info by its ID. */
   def get(id: String): Option[OfflineEvalMetricInfo]
 
-  /** Updates an metric info. */
-  def update(metricInfo: OfflineEvalMetricInfo): Unit
+  /** Get all metric info. */
+  def getAll(): Seq[OfflineEvalMetricInfo]
 
-  /** Delete an metric info by its ID. */
+  /** Updates a metric info. */
+  def update(metricInfo: OfflineEvalMetricInfo, upsert: Boolean = false): Unit
+
+  /** Delete a metric info by its ID. */
   def delete(id: String): Unit
+
+  /** Backup all OfflineEvalMetricInfos as a byte array. */
+  def backup(): Array[Byte] = {
+    val metricinfos = getAll().map { metricinfo =>
+      Map(
+        "id" -> metricinfo.id,
+        "name" -> metricinfo.name,
+        "description" -> metricinfo.description,
+        "engineinfoids" -> metricinfo.engineinfoids,
+        "commands" -> metricinfo.commands,
+        "paramdefaults" -> metricinfo.paramdefaults,
+        "paramnames" -> metricinfo.paramnames,
+        "paramdescription" -> metricinfo.paramdescription,
+        "paramorder" -> metricinfo.paramorder)
+    }
+    KryoInjection(metricinfos)
+  }
+
+  /** Restore OfflineEvalMetricInfos from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalMetricInfo]] = {
+    KryoInjection.invert(bytes) map { r =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        OfflineEvalMetricInfo(
+          id = data("id").asInstanceOf[String],
+          name = data("name").asInstanceOf[String],
+          description = data("description").asInstanceOf[Option[String]],
+          engineinfoids = data("engineinfoids").asInstanceOf[Seq[String]],
+          commands = data("commands").asInstanceOf[Option[Seq[String]]],
+          paramdefaults = data("paramdefaults").asInstanceOf[Map[String, Any]],
+          paramnames = data("paramnames").asInstanceOf[Map[String, String]],
+          paramdescription = data("paramdescription").asInstanceOf[Map[String, String]],
+          paramorder = data("paramorder").asInstanceOf[Seq[String]])
+      }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
+    }
+  }
 }

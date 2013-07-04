@@ -24,6 +24,7 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 import com.github.nscala_time.time.Imports._
+import org.apache.commons.codec.digest.DigestUtils
 
 /*
  * TODO:
@@ -100,6 +101,8 @@ object Application extends Controller {
     }.getOrElse(onUnauthorized(request))
   }
 
+  private def md5password(password: String) = DigestUtils.md5Hex(password)
+
   /** Appkey Generation */
   def randomAlphanumeric(n: Int): String = {
     Random.alphanumeric.take(n).mkString
@@ -134,7 +137,7 @@ object Application extends Controller {
         "adminPassword" -> text,
         "adminRemember" -> optional(text)
       ) verifying ("Invalid email or password", result => result match {
-        case (adminEmail, adminPassword, adminRemember) => users.authenticateByEmail(adminEmail, adminPassword) map { _ => true } getOrElse false
+        case (adminEmail, adminPassword, adminRemember) => users.authenticateByEmail(adminEmail, md5password(adminPassword)) map { _ => true } getOrElse false
       })
     )
 

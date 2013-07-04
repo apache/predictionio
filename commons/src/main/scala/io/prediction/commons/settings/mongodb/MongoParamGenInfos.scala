@@ -52,7 +52,9 @@ class MongoParamGenInfos(db: MongoDB) extends ParamGenInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToParamGenInfo(_) }
 
-  def update(ParamGenInfo: ParamGenInfo) = {
+  def getAll = coll.find().toSeq map { dbObjToParamGenInfo(_) }
+
+  def update(ParamGenInfo: ParamGenInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> ParamGenInfo.id)
     val requiredObj = MongoDBObject(
       "name"             -> ParamGenInfo.name,
@@ -60,7 +62,7 @@ class MongoParamGenInfos(db: MongoDB) extends ParamGenInfos {
     val descriptionObj = ParamGenInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
     val commandsObj = ParamGenInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
 
-    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ commandsObj)
+    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ commandsObj, upsert)
   }
 
   def delete(id: String) = coll.remove(MongoDBObject("_id" -> id))

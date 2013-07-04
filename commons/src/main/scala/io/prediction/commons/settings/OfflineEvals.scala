@@ -1,5 +1,9 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Common
+
+import com.twitter.chill.KryoInjection
+
 import com.github.nscala_time.time.Imports._
 
 /** OfflineEval object
@@ -24,7 +28,7 @@ case class OfflineEval(
   endtime: Option[DateTime]
 )
 
-trait OfflineEvals {
+trait OfflineEvals extends Common {
 
   /** Insert an OfflineEval and return id
    *
@@ -35,6 +39,9 @@ trait OfflineEvals {
   /** Get OfflineEval by its id */
   def get(id: Int): Option[OfflineEval]
 
+  /** Get all OfflineEvals. */
+  def getAll(): Iterator[OfflineEval]
+
   /** Get OfflineEval by engine id */
   def getByEngineid(engineid: Int): Iterator[OfflineEval]
 
@@ -42,9 +49,45 @@ trait OfflineEvals {
   def getByTuneid(tuneid: Int): Iterator[OfflineEval]
 
   /** Update OfflineEval (create new one if the it doesn't exist) */
-  def update(offlineEval: OfflineEval)
+  def update(offlineEval: OfflineEval, upsert: Boolean = false)
 
   /** delete OfflineEval by it's id) */
   def delete(id: Int)
 
+  /** Backup all data as a byte array. */
+  def backup(): Array[Byte] = {
+    val backup = getAll().toSeq.map { b =>
+      Map(
+        "id" -> b.id,
+        "engineid" -> b.engineid,
+        "name" -> b.name,
+        "iterations" -> b.iterations,
+        "tuneid" -> b.tuneid,
+        "createtime" -> b.createtime,
+        "starttime" -> b.starttime,
+        "endtime" -> b.endtime)
+    }
+    KryoInjection(backup)
+  }
+
+  /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEval]] = {
+    KryoInjection.invert(bytes) map { r =>
+      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
+        OfflineEval(
+          id = data("id").asInstanceOf[Int],
+          engineid = data("engineid").asInstanceOf[Int],
+          name = data("name").asInstanceOf[String],
+          iterations = data("iterations").asInstanceOf[Int],
+          tuneid = data("tuneid").asInstanceOf[Option[Int]],
+          createtime = data("createtime").asInstanceOf[Option[DateTime]],
+          starttime = data("starttime").asInstanceOf[Option[DateTime]],
+          endtime = data("endtime").asInstanceOf[Option[DateTime]])
+      }
+
+      if (inplace) rdata foreach { update(_, true) }
+
+      rdata
+    }
+  }
 }

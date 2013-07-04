@@ -30,12 +30,14 @@ class MongoSystemInfos(db: MongoDB) extends SystemInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToSystemInfo(_) }
 
-  def update(systemInfo: SystemInfo) = {
+  def getAll = coll.find().toSeq map { dbObjToSystemInfo(_) }
+
+  def update(systemInfo: SystemInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> systemInfo.id)
     val valueObj = MongoDBObject("value" -> systemInfo.value)
     val descriptionObj = systemInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
 
-    coll.update(idObj, idObj ++ valueObj ++ descriptionObj)
+    coll.update(idObj, idObj ++ valueObj ++ descriptionObj, upsert)
   }
 
   def delete(id: String) = coll.remove(MongoDBObject("_id" -> id))

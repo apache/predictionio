@@ -51,31 +51,31 @@ else
     echo "Going to build PredictionIO Process ItemRec Hadoop Scalding Algorithms Assembly..."
     cd $BASE/process/engines/itemrec/algorithms/hadoop/scalding
     $SBT $CLEAN update assembly
-    
+
     echo "Going to build PredictionIO Process ItemRec Scala Mahout Algorithms Assembly..."
     cd $BASE/process/engines/itemrec/algorithms/scala/mahout
     $SBT $CLEAN update assembly
-    
+
     # Build process itemrec eval assembly
     echo "Going to build PredictionIO Process ItemRec Evaluations Assembly..."
     cd $BASE/process/engines/itemrec/evaluations/hadoop/scalding
     $SBT $CLEAN update assembly
-    
+
     # Build process itemrec parameter generator
     echo "Going to build PredictionIO Parameter Generator Assembly..."
     cd $BASE/process/engines/itemrec/evaluations/scala/paramgen
     $SBT $CLEAN update assembly
-    
+
     # Build process itemrec training test split assembly
     echo "Going to build PredictionIO Training-Test Split Assembly..."
     cd $BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit
     $SBT $CLEAN update assembly
-    
+
     # Build process itemrec Top-k Items Collector
     echo "Going to build PredictionIO Top-k Items Collector Assembly..."
     cd $BASE/process/engines/itemrec/evaluations/scala/topkitems
     $SBT $CLEAN update assembly
-    
+
     # Build process itemsim algo assembly
     echo "Going to build PredictionIO Process ItemRec Algorithms Assembly..."
     cd $BASE/process/engines/itemsim/algorithms/hadoop/scalding
@@ -90,6 +90,11 @@ $SBT $CLEAN update pack
 # Build settings initialization tool
 echo "Going to build PredictionIO Settings Initialization Tool..."
 cd $BASE/tools/settingsinit
+$SBT $CLEAN update pack
+
+# Build software manager
+echo "Going to build PredictionIO Software Manager..."
+cd $BASE/tools/softwaremanager
 $SBT $CLEAN update pack
 
 # Build user tool

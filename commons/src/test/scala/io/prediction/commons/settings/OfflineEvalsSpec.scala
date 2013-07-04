@@ -14,7 +14,7 @@ class OfflineEvalsSpec extends Specification { def is =
 
   def mongoOfflineEvals =                                 p^
     "MongoOfflineEvals should"                            ^
-      "behave like any OfflinEvals implementation"        ^ offlineEvalsTest(newMongoOfflineEvals)^
+      "behave like any OfflineEvals implementation"       ^ offlineEvalsTest(newMongoOfflineEvals)^
                                                           Step(MongoConnection()(mongoDbName).dropDatabase())
 
   def offlineEvalsTest(offlineEvals: OfflineEvals) = {    t^
@@ -23,6 +23,7 @@ class OfflineEvalsSpec extends Specification { def is =
     "get two OfflineEvals by Tuneid"                      ! getByTuneid(offlineEvals)^
     "update an OfflineEval"                               ! update(offlineEvals)^
     "delete an OfflineEval"                               ! delete(offlineEvals)^
+    "backup and restore OfflineEvals"                     ! backuprestore(offlineEvals)^
                                                           bt
   }
 
@@ -190,5 +191,31 @@ class OfflineEvalsSpec extends Specification { def is =
 
     data1 must beSome(eval1.copy(id = id1)) and
       (data2 must beNone)
+  }
+
+  def backuprestore(offlineEvals: OfflineEvals) = {
+    val eval1 = OfflineEval(
+      id = -1,
+      engineid = 20,
+      name = "backuprestore",
+      tuneid = None,
+      createtime = Some(DateTime.now),
+      starttime = Some(DateTime.now),
+      endtime = None
+    )
+    val id1 = offlineEvals.insert(eval1)
+    val fn = "evals.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(offlineEvals.backup())
+    } finally {
+      fos.close()
+    }
+    offlineEvals.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      // For some reason inserting Joda DateTime to DB and getting them back will make test pass
+      val feval1 = data.find(_.id == id1).get
+      offlineEvals.update(feval1)
+      offlineEvals.get(id1) must beSome(eval1.copy(id = id1))
+    } getOrElse 1 === 2
   }
 }

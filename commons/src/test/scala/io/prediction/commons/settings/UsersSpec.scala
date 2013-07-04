@@ -35,6 +35,7 @@ class UsersSpec extends Specification { def is =
     "updating a user's password by ID"                                        ! updatePassword(users)^
     "updating a user's password by e-mail"                                    ! updatePasswordByEmail(users)^
     "updating a user"                                                         ! update(users)^
+    "backup and restore users"                                                ! backuprestore(users)^
                                                                               bt
   }
 
@@ -62,7 +63,7 @@ class UsersSpec extends Specification { def is =
       lastname = Option(name),
       confirm = name
     )
-    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io"))
+    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io", name, Some(name)))
   }
 
   def getByEmail(users: Users) = {
@@ -74,7 +75,7 @@ class UsersSpec extends Specification { def is =
       lastname = None,
       confirm = name
     )
-    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io"))
+    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io", name, Some(name)))
   }
 
   def emailExists(users: Users) = {
@@ -181,7 +182,7 @@ class UsersSpec extends Specification { def is =
       lastname = None,
       confirm = name
     )
-    users.confirm(name) must beSome(User(id, name, None, name + "@prediction.io"))
+    users.confirm(name) must beSome(User(id, name, None, name + "@prediction.io", name, Some(name)))
   }
 
   def updateEmail(users: Users) = {
@@ -193,7 +194,7 @@ class UsersSpec extends Specification { def is =
       confirm = "updateEmail"
     )
     users.updateEmail(id, "updateEmailUpdated@prediction.io")
-    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io"))
+    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io", "updateEmail", Some("updateEmail")))
   }
 
   def updatePassword(users: Users) = {
@@ -233,5 +234,26 @@ class UsersSpec extends Specification { def is =
     val updatedUser = User(id, "updated", None, "updated@prediction.io")
     users.update(updatedUser)
     users.get(id) must beSome(updatedUser)
+  }
+
+  def backuprestore(users: Users) = {
+    val user1 = User(0, "backuprestore", None, "backuprestore@prediction.io", "password", Some("confirm"))
+    val id1 = users.insert(
+      email = user1.email,
+      password = user1.password,
+      firstname = user1.firstName,
+      lastname = user1.lastName,
+      confirm = user1.confirm.get
+    )
+    val fn = "users.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(users.backup())
+    } finally {
+      fos.close()
+    }
+    users.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      data must contain(user1.copy(id = id1))
+    } getOrElse 1 === 2
   }
 }
