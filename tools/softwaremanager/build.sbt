@@ -11,7 +11,7 @@ scalacOptions ++= Seq("-deprecation")
 libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT",
   "com.twitter" %% "scalding-args" % "0.8.5",
-  "org.slf4j" % "slf4j-nop" % "1.7.5"
+  "org.slf4j" % "slf4j-nop" % "1.6.0"
 )
 
 resolvers ++= Seq(
