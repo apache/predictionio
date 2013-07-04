@@ -164,6 +164,13 @@ object Jobs {
   }
 }
 
+class UpdateCheckJob extends Job {
+  override def execute(context: JobExecutionContext) = {
+    Logger.info("Checking for new release...")
+    "bin/updatecheck --answer n".!
+  }
+}
+
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
 class AlgoJob extends InterruptableJob {
@@ -175,7 +182,7 @@ class AlgoJob extends InterruptableJob {
 
   @volatile
   var proc: Option[Process] = None
-  
+
   override def execute(context: JobExecutionContext) = {
     val jobDataMap = context.getMergedJobDataMap
     val algoid = jobDataMap.getInt("algoid")

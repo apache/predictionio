@@ -43,6 +43,9 @@ class Config {
   /** PredictionIO Scheduler base URL. */
   val settingsSchedulerUrl: String = try { config.getString("io.prediction.commons.settings.scheduler.url") } catch { case _: Throwable => "http://localhost:7000" }
 
+  /** Whether the scheduler should check for new releases regularly. */
+  val settingsSchedulerUpdatecheck: Boolean = try { config.getBoolean("io.prediction.commons.settings.scheduler.updatecheck") } catch { case _: Throwable => true }
+
   /** The database user that stores PredictionIO settings. */
   val settingsDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.settings.db.user")) } catch { case _: Throwable => None }
 
