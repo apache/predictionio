@@ -8,18 +8,6 @@ import scala.util.parsing.json.JSON
 
 import com.twitter.scalding.Args
 
-/** Extractors: http://stackoverflow.com/questions/4170949/how-to-parse-json-in-scala-using-standard-scala-classes */
-class CC[T : ClassTag] { def unapply(a: Any)(implicit e: ClassTag[T]): Option[T] = {
-  try { Some(e.runtimeClass.cast(a).asInstanceOf[T]) } catch { case _: Throwable => None } }
-}
-
-object M extends CC[Map[String, Any]]
-object MSS extends CC[Map[String, String]]
-object SS extends CC[Seq[String]]
-object OSS extends CC[Option[Seq[String]]]
-object S extends CC[String]
-object OS extends CC[Option[String]]
-
 object UpdateCheck {
   val config = new Config()
   val systemInfos = config.getSettingsSystemInfos
@@ -40,11 +28,11 @@ object UpdateCheck {
       sys.exit(1)
     }
 
-    val versionsString = args.optional("localVersion") map { lv =>
+    val versions = args.optional("localVersion") map { lv =>
       println(s"Using local version file ${lv}...")
       println()
       try {
-        scala.io.Source.fromFile(lv).mkString
+        Versions(lv)
       } catch {
         case e: java.io.FileNotFoundException => {
           println(s"Error: ${e.getMessage}. Aborting.")
@@ -53,50 +41,47 @@ object UpdateCheck {
       }
     } getOrElse {
       try {
-        println(s"Using http://direct.prediction.io/versions.json...")
+        println(s"Using ${Versions.versionsUrl}...")
         println()
-        scala.io.Source.fromURL("http://direct.prediction.io/versions.json").mkString
-      } catch { case e: Throwable =>
-        println(s"Error: ${e.getMessage}. Aborting.")
-        sys.exit(1)
+        Versions()
+      } catch {
+        case e: java.net.UnknownHostException => {
+          println(s"Error: Unknown host: ${e.getMessage}. Aborting.")
+          sys.exit(1)
+        }
+        case e: java.io.FileNotFoundException => {
+          println(s"Error: File not found: ${e.getMessage}. Aborting.")
+          sys.exit(1)
+        }
       }
     }
 
-    val versionsJson = JSON.parseFull(versionsString) getOrElse {
-      println(s"Unable to parse version file. Aborting.")
-    }
+    val latest = versions.latestVersion
+    println(s"   Latest version: ${latest}")
+    println(s"Installed version: ${installed}")
+    println()
 
-    M.unapply(versionsJson) map { meta =>
-      S.unapply(meta("latest")) map { latest =>
-        println(s"   Latest version: ${latest}")
-        println(s"Installed version: ${installed}")
-        println()
-
-        if (latest != installed) {
-          val choice = args.optional("answer") getOrElse {
-            println("Your PredictionIO is not the latest version. Do you want to download the latest binaries?")
-            val input = readLine("Enter 'YES' to proceed: ")
-            input match {
-              case "YES" => "y"
-              case _ => "a"
-            }
-          }
-          choice match {
-            case "y" =>
-              M.unapply(meta("versions")) map { versions =>
-                MSS.unapply(versions(latest)) map { latestVersion =>
-                  val binaries = latestVersion("binaries")
-                  println(s"Retrieving ${binaries}...")
-                  s"curl -O ${binaries}".!
-                }
-              }
-            case "n" => println(s"Your PredictionIO is not the latest version. A new version ${latest} is available.")
-            case "a" => println("Aborting.")
-          }
-        } else {
-          println("Your PredictionIO version is already the latest.")
+    if (latest != installed) {
+      val choice = args.optional("answer") getOrElse {
+        println("Your PredictionIO is not the latest version. Do you want to download the latest binaries?")
+        val input = readLine("Enter 'YES' to proceed: ")
+        input match {
+          case "YES" => "y"
+          case _ => "a"
         }
-      } getOrElse println("Cannot find the latest version. Aborting.")
-    } getOrElse println("Root level is not a valid JSON object. Aborting.")
+      }
+      choice match {
+        case "y" => {
+          val binaries = versions.binaries(latest) map { b =>
+            println(s"Retrieving ${b}...")
+            s"curl -O ${b}".!
+          }
+        }
+        case "n" => println(s"Your PredictionIO is not the latest version. A new version ${latest} is available.")
+        case "a" => println("Aborting.")
+      }
+    } else {
+      println("Your PredictionIO version is already the latest.")
+    }
   }
 }
