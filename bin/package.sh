@@ -56,6 +56,7 @@ cp "$BASE/process/engines/itemrec/evaluations/scala/paramgen/target/scala-2.10/P
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.9.2/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/migration/0.4/settings04/target/pack/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/migration/0.5/appdata/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
