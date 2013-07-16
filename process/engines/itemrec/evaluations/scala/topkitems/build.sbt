@@ -22,11 +22,3 @@ libraryDependencies ++= Seq(
 resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 )
-
-mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
-  {
-    case "com/esotericsoftware/minlog/Log$Logger.class" => MergeStrategy.last
-    case "com/esotericsoftware/minlog/Log.class" => MergeStrategy.last
-    case x => old(x)
-  }
-}

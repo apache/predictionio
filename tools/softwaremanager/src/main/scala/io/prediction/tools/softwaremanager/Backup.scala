@@ -2,6 +2,8 @@ package io.prediction.tools.softwaremanager
 
 import io.prediction.commons._
 
+case class BackupConfig(backupDir: String = "")
+
 object Backup {
   val config = new Config()
 
@@ -24,51 +26,54 @@ object Backup {
     "users" -> config.getSettingsUsers)
 
   def main(args: Array[String]) {
-    println("PredictionIO Backup Utility")
-    println()
-
-    val backupDir = try {
-      args(0)
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => {
-      	println("Usage: backup <directory_of_backup_files>")
-      	sys.exit(1)
-      }
+    val parser = new scopt.OptionParser[BackupConfig]("backup") {
+      head("PredictionIO Backup Utility", "0.4.3-SNAPSHOT")
+      help("help") text("prints this usage text")
+      arg[String]("<backup directory>") action { (x, c) =>
+        c.copy(backupDir = x)
+      } text("directory containing backup files")
     }
 
-    val backupDirFile = new java.io.File(backupDir)
-    if (!backupDirFile.exists && !backupDirFile.mkdirs) {
-      println(s"Unable to create directory ${backupDir}. Aborting...")
-      sys.exit(1)
-  	}
+    parser.parse(args, BackupConfig()) map { backupConfig =>
+      println("PredictionIO Backup Utility")
+      println()
 
-  	settingsMap map { s =>
-      val fn = s"${backupDir}/${s._1}.bin"
-      val fos = new java.io.FileOutputStream(fn)
-      try {
-        fos.write(s._2.backup())
-        println(s"Backed up to ${fn}")
-      } finally {
-        fos.close()
-      }
-    }
+      val backupDir = backupConfig.backupDir
 
-    config.settingsDbType match {
-      case "mongodb" => {
-        val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
-        val fn = s"${backupDir}/metadata.bin"
+      val backupDirFile = new java.io.File(backupDir)
+      if (!backupDirFile.exists && !backupDirFile.mkdirs) {
+        println(s"Unable to create directory ${backupDir}. Aborting...")
+        sys.exit(1)
+    	}
+
+    	settingsMap map { s =>
+        val fn = s"${backupDir}/${s._1}.bin"
         val fos = new java.io.FileOutputStream(fn)
         try {
-          fos.write(metadata.backup())
-          println(s"Metadata backed up to ${fn}")
+          fos.write(s._2.backup())
+          println(s"Backed up to ${fn}")
         } finally {
           fos.close()
         }
       }
-      case _ => println(s"Unknown settings database type ${config.settingsDbType}. Skipping metadata backup.")
-    }
 
-    println()
-  	println("Backup completed.")
+      config.settingsDbType match {
+        case "mongodb" => {
+          val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
+          val fn = s"${backupDir}/metadata.bin"
+          val fos = new java.io.FileOutputStream(fn)
+          try {
+            fos.write(metadata.backup())
+            println(s"Metadata backed up to ${fn}")
+          } finally {
+            fos.close()
+          }
+        }
+        case _ => println(s"Unknown settings database type ${config.settingsDbType}. Skipping metadata backup.")
+      }
+
+      println()
+    	println("Backup completed.")
+    }
   }
 }

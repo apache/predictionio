@@ -124,7 +124,7 @@ if $mingw ; then
 fi
 
 
-PROG_NAME=updatecheck
+PROG_NAME=restore
 
 JARS="${JARS}:${PROG_HOME}/lib/asm-4.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/asm-commons-4.0.jar"
@@ -136,6 +136,7 @@ JARS="${JARS}:${PROG_HOME}/lib/casbah-gridfs_2.10-2.6.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/casbah-query_2.10-2.6.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/chill_2.10-0.2.3.jar"
 JARS="${JARS}:${PROG_HOME}/lib/commons-codec-1.7.jar"
+JARS="${JARS}:${PROG_HOME}/lib/commons-io-2.4.jar"
 JARS="${JARS}:${PROG_HOME}/lib/config-1.0.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/joda-convert-1.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/joda-time-2.1.jar"
@@ -154,4 +155,4 @@ JARS="${JARS}:${PROG_HOME}/lib/slf4j-nop-1.6.0.jar"
 
 JVM_OPT="$JVM_OPT -Dconfig.file=${PROG_HOME}/conf/predictionio.conf -Dio.prediction.base=$PROG_HOME"
 
-exec "$JAVACMD" ${JVM_OPT}  -cp "${JARS}" -Dprog.home="${PROG_HOME}" io.prediction.tools.softwaremanager.UpdateCheck $@
+exec "$JAVACMD" ${JVM_OPT}  -cp "${JARS}" -Dprog.home="${PROG_HOME}" io.prediction.tools.softwaremanager.Restore $@

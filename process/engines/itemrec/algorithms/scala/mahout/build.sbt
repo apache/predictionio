@@ -23,8 +23,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case ("org/xmlpull/v1/XmlPullParser.class") => MergeStrategy.rename
     case ("org/xmlpull/v1/XmlPullParserException.class") => MergeStrategy.rename
-    case "com/esotericsoftware/minlog/Log$Logger.class" => MergeStrategy.last
-    case "com/esotericsoftware/minlog/Log.class" => MergeStrategy.last
     case x => old(x)
   }
 }

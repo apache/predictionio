@@ -13,7 +13,8 @@ object Build extends sbt.Build {
       packMain := Map(
         "backup"      -> "io.prediction.tools.softwaremanager.Backup",
         "restore"     -> "io.prediction.tools.softwaremanager.Restore",
-        "updatecheck" -> "io.prediction.tools.softwaremanager.UpdateCheck")
+        "updatecheck" -> "io.prediction.tools.softwaremanager.UpdateCheck",
+        "upgrade"     -> "io.prediction.tools.softwaremanager.Upgrade")
       // Add custom settings here
       // [Optional] JVM options of scripts (program name -> Seq(JVM option, ...))
       // packJvmOpts := Map("hello" -> Seq("-Xmx512m")),

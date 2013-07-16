@@ -27,7 +27,7 @@ object Appdata {
     appdataTestDbName -> testDb )
 
   def main(args: Array[String]) {
-    println("PredictionIO 0.4 to 0.4.3 Migration")
+    println("PredictionIO 0.4 to 0.5 appdata Migration")
     println()
     println()
 
