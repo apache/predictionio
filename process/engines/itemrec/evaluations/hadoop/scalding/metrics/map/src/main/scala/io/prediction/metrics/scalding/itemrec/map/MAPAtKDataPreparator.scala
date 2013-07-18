@@ -100,13 +100,12 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
   /**
    * constants
    */
-  // NOTE: this enum should match the assumption of appdata
-  // see api/model/U2iAction.scala
-  final val ACTION_RATE: Int = 0
-  final val ACTION_LIKEDISLIKE: Int = 1 // if field "v"==1, then Like. "v"==0, then Dislike
-  final val ACTION_VIEW: Int = 2
-  //final val ACTION_VIEWDETAILS: Int = 3
-  final val ACTION_CONVERSION: Int = 4
+  final val ACTION_RATE = "rate"
+  final val ACTION_LIKE = "like"
+  final val ACTION_DISLIKE = "dislike"
+  final val ACTION_VIEW = "view"
+  //final val ACTION_VIEWDETAILS = "viewDetails"
+  final val ACTION_CONVERSION = "conversion"
 
   /**
    * source
@@ -132,12 +131,12 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
       val (action, v) = fields
 
       val cond: Boolean = goalParamArg match {
-        case GOAL_VIEW => (action.toInt == ACTION_VIEW)
-        case GOAL_BUY => (action.toInt == ACTION_CONVERSION)
-        case GOAL_LIKE => (action.toInt == ACTION_LIKEDISLIKE) && (v.toInt == 1)
-        case GOAL_RATE3 => (action.toInt == ACTION_RATE) && (v.toInt >= 3)
-        case GOAL_RATE4 => (action.toInt == ACTION_RATE) && (v.toInt >= 4)
-        case GOAL_RATE5 => (action.toInt == ACTION_RATE) && (v.toInt >= 5)
+        case GOAL_VIEW => (action == ACTION_VIEW)
+        case GOAL_BUY => (action == ACTION_CONVERSION)
+        case GOAL_LIKE => (action == ACTION_LIKE)
+        case GOAL_RATE3 => (action == ACTION_RATE) && (v.toInt >= 3)
+        case GOAL_RATE4 => (action == ACTION_RATE) && (v.toInt >= 4)
+        case GOAL_RATE5 => (action == ACTION_RATE) && (v.toInt >= 5)
         case _ => {
           assert(false, "Invalid goalParam " + goalParamArg + ".")
           false
