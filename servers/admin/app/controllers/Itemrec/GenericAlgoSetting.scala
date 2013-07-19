@@ -15,7 +15,7 @@ import play.api.data.validation.ValidationError
 
 import com.github.nscala_time.time.Imports._
 
-import controllers.Application.{algos, withUser, algoInfos, offlineTunes, paramGens, deleteOfflineTune, settingsSchedulerUrl}
+import controllers.Application.{algos, withUser, algoInfos, offlineTunes, paramGens, removeOfflineTune, settingsSchedulerUrl}
 import controllers.SimEval
 
 trait GenericAlgoSetting extends Controller {
@@ -143,9 +143,9 @@ trait GenericAlgoSetting extends Controller {
               // delete previous offlinetune stuff if the algo's offlinetuneid != None
               if (updatedAlgo.offlinetuneid != None) {
                 val tuneid = updatedAlgo.offlinetuneid.get
-                deleteOfflineTune(tuneid, false)
-                Logger.info("Delete offline tune ID "+tuneid)
-                offlineTunes.delete(tuneid)
+
+                removeOfflineTune(app_id.toInt, engine_id.toInt, tuneid)
+                
               }
 
               // create an OfflineTune and paramGen
