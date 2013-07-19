@@ -39,7 +39,7 @@ DELETE  /app/:app_id/engine/:engine_id       controllers.Application.removeEngin
 GET     /app/:app_id/engine/:engine_id/algo_available_list      controllers.Application.getAvailableAlgoList(app_id, engine_id)
 GET    /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.getAvailableAlgo(app_id, engine_id, id)
 POST    /app/:app_id/engine/:engine_id/algo_available       controllers.Application.createAvailableAlgo(app_id, engine_id)
-DELETE  /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.removeAvailableAlgo(app_id, engine_id, id)
+DELETE  /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.removeAvailableAlgo(app_id: Int, engine_id: Int, id: Int)
 GET     /app/:app_id/engine/:engine_id/algoautotuning_report/:algo_id   controllers.Application.getAlgoAutotuningReport(app_id, engine_id, algo_id)
 
 POST    /app/:app_id/engine/:engine_id/algo/:algo_id/algoautotuning_select/:algoautotune_id      controllers.Application.algoAutotuningSelect(app_id, engine_id, algo_id, algoautotune_id)
