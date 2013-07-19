@@ -14,6 +14,7 @@ import com.mongodb.DBObject;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.fs.Path;
 
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -103,7 +104,6 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
    */
   @Override
   public void sourceConfInit(FlowProcess<JobConf> process, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
-    MongoConfigUtil.setReadSplitsFromShards(conf, true);
     MongoConfigUtil.setInputURI( conf, this.mongoUri );
     FileInputFormat.setInputPaths(conf, this.getIdentifier());
     conf.setInputFormat(MongoInputFormat.class);
@@ -162,7 +162,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
     }
 
     for (String columnFieldName : columnFieldNames) {
-      Object tupleEntry= value.get(columnFieldName);
+      Object tupleEntry= value.getDoc().get(columnFieldName);
       if (tupleEntry != null) {
         result.add(tupleEntry);
       } else if (columnFieldName != this.keyColumnName) {
@@ -190,9 +190,9 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
     
     // if fieldMappings doesn't have keyColumnName ("_id") field, then use new ObjectId() as key
     if (keyFieldName == null) {
-      key = new ObjectId();
+	key = null;
     } else {
-      key = tupleEntry.selectTuple(new Fields(keyFieldName)).get(0);
+	key = new Text((String)(tupleEntry.selectTuple(new Fields(keyFieldName)).get(0)));
     }
     //Object key = tupleEntry.selectTuple(new Fields(this.fieldMappings.get(this.keyColumnName))).get(0);
 
@@ -218,8 +218,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
       }
     }
     logger.info("Putting key for output: {} {}", key, dbObject);
-    //outputCollector.collect(new ObjectId(), dbObject);
-    outputCollector.collect(key, dbObject);
+    outputCollector.collect(key, new BSONWritable(dbObject));
   }
 
 }

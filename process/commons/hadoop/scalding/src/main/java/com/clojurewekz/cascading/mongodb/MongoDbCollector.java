@@ -104,9 +104,6 @@ public class MongoDbCollector extends TupleEntrySchemeCollector<JobConf, OutputC
     if (hadoopFlowProcess instanceof HadoopFlowProcess)
       ((HadoopFlowProcess) hadoopFlowProcess).getReporter().progress();
 
-    //CascadingMongoOutput output = new CascadingMongoOutput((ObjectId) writableComparable, (BSONObject) writable);
-    CascadingMongoOutput output = new CascadingMongoOutput(writableComparable, (BSONObject) writable);
-
-    ((MongoRecordWriter) writer).write(output, output);
+    ((MongoRecordWriter) writer).write(writableComparable, writable);
   }
 }
