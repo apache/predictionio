@@ -1,13 +1,13 @@
 name := "PredictionIO Users Tool"
 
-version := "0.4.2"
+version := "0.4.3"
 
 organization := "io.prediction"
 
 scalaVersion := "2.10.0"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4.2",
+  "io.prediction" %% "predictionio-commons" % "0.4.3",
   "jline" % "jline" % "2.9"
 )
 
