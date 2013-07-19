@@ -1,6 +1,6 @@
 name := "PredictionIO Settings Initialization"
 
-version := "0.4.3-SNAPSHOT"
+version := "0.5.0-SNAPSHOT"
 
 organization := "io.prediction"
 
@@ -9,7 +9,7 @@ scalaVersion := "2.10.0"
 scalacOptions ++= Seq("-deprecation")
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.4.3-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.5.0-SNAPSHOT"
 )
 
 resolvers ++= Seq(
