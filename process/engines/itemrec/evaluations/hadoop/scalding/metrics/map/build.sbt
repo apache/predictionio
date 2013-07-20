@@ -18,8 +18,8 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.5.0-SNAPSHOT",
-  "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.5.0-SNAPSHOT"
+  "io.prediction" %% "predictionio-commons" % "0.5.0",
+  "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.5.0"
 )
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
