@@ -47,7 +47,8 @@ files = [
     'servers/*/project/Build.scala',
     'servers/scheduler/conf/application.conf',
     'tools/*/build.sbt',
-    'tools/migration/*/*/build.sbt'
+    'tools/migration/*/*/build.sbt',
+    'tools/softwaremanager/src/main/scala/io/prediction/tools/softwaremanager/*.scala'
 ]
 
 for f in files:

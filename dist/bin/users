@@ -144,6 +144,7 @@ JARS="${JARS}:${PROG_HOME}/lib/scalaz-concurrent_2.10-7.0.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scalaz-core_2.10-7.0.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scalaz-effect_2.10-7.0.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/slf4j-api-1.6.0.jar"
+JARS="${JARS}:${PROG_HOME}/lib/slf4j-nop-1.6.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/specs2_2.10-1.13.jar"
 
 JVM_OPT="$JVM_OPT -Dconfig.file=${PROG_HOME}/conf/predictionio.conf -Dio.prediction.base=$PROG_HOME"

@@ -16,7 +16,7 @@ case class UpgradeConfig(current: File = new File("."), latest: File = new File(
 object Upgrade {
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[UpgradeConfig]("upgrade") {
-      head("PredictionIO Software Upgrade Utility", "0.4.3-SNAPSHOT")
+      head("PredictionIO Software Upgrade Utility", "0.5.0")
       help("help") text("prints this usage text")
       opt[Unit]("nomigrate") action { (_, c) =>
         c.copy(nomigrate = true)
