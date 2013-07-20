@@ -19,6 +19,7 @@ class EngineInfosSpec extends Specification { def is =
     "create and get an engine info"                                           ! insertAndGet(engineInfos)^
     "update an engine info"                                                   ! update(engineInfos)^
     "delete an engine info"                                                   ! delete(engineInfos)^
+    "backup and restore existing engine info"                                 ! backuprestore(engineInfos)^
                                                                               bt
   }
 
@@ -59,5 +60,24 @@ class EngineInfosSpec extends Specification { def is =
     engineInfos.insert(foo)
     engineInfos.delete("foo")
     engineInfos.get("foo") must beNone
+  }
+
+  def backuprestore(engineInfos: EngineInfos) = {
+    val baz = EngineInfo(
+      id = "baz",
+      name = "beef",
+      description = Some("dead"),
+      defaultsettings = Map[String, Any]("abc" -> 123.4),
+      defaultalgoinfoid = "bar")
+    engineInfos.insert(baz)
+    val fos = new java.io.FileOutputStream("engineinfos.bin")
+    try {
+      fos.write(engineInfos.backup())
+    } finally {
+      fos.close()
+    }
+    engineInfos.restore(scala.io.Source.fromFile("engineinfos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { rengineinfos =>
+      rengineinfos must contain(baz)
+    } getOrElse 1 === 2
   }
 }

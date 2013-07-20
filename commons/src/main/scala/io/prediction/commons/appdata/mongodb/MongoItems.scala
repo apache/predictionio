@@ -1,6 +1,7 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils._
+import io.prediction.commons.MongoUtils.{emptyObj, mongoDbListToListOfString, idWithAppid}
+import io.prediction.commons.MongoUtils.{attributesToMongoDBObject, getAttributesFromDBObject}
 import io.prediction.commons.appdata.{Item, Items}
 
 import com.mongodb.casbah.Imports._
@@ -28,7 +29,9 @@ class MongoItems(db: MongoDB) extends Items {
     val profit = item.profit map { p => MongoDBObject("profit" -> p) } getOrElse emptyObj
     val lnglat = item.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = item.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    //val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    // add "ca_" prefix for custom attributes
+    val attributes = item.attributes map { a => attributesToMongoDBObject(a) } getOrElse emptyObj
     itemColl.save(id ++ appid ++ ct ++ itypes ++ starttime ++ endtime ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -55,7 +58,9 @@ class MongoItems(db: MongoDB) extends Items {
     val profit = item.profit map { p => MongoDBObject("profit" -> p) } getOrElse emptyObj
     val lnglat = item.latlng map { l => MongoDBObject("lnglat" -> MongoDBList(l._2, l._1)) } getOrElse emptyObj
     val inactive = item.inactive map { i => MongoDBObject("inactive" -> i) } getOrElse emptyObj
-    val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    //val attributes = item.attributes map { a => MongoDBObject("attributes" -> a) } getOrElse emptyObj
+    // add "ca_" prefix for custom attributes
+    val attributes = item.attributes map { a => attributesToMongoDBObject(a) } getOrElse emptyObj
     itemColl.update(id, id ++ appid ++ ct ++ itypes ++ starttime ++ endtime ++ price ++ profit ++ lnglat ++ inactive ++ attributes)
   }
 
@@ -81,7 +86,8 @@ class MongoItems(db: MongoDB) extends Items {
       profit     = dbObj.getAs[Double]("profit"),
       latlng     = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
       inactive   = dbObj.getAs[Boolean]("inactive"),
-      attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
+      //attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
+      attributes = Option(getAttributesFromDBObject(dbObj)).filter(!_.isEmpty)
     )
   }
 }

@@ -38,8 +38,7 @@ class U2IActionsSpec extends Specification { def is =
       t      = DateTime.now,
       latlng = None,
       v      = Some(3),
-      price  = None,
-      evalid = None
+      price  = None
     ), U2IAction(
       appid  = appid,
       action = u2iActions.view,
@@ -48,18 +47,16 @@ class U2IActionsSpec extends Specification { def is =
       t      = DateTime.now,
       latlng = Some((94.3904, -29.4839)),
       v      = None,
-      price  = None,
-      evalid = Some(1)
+      price  = None
     ), U2IAction(
       appid  = appid,
-      action = u2iActions.likeDislike,
+      action = u2iActions.like,
       uid    = "pub",
       iid    = "sub",
       t      = DateTime.now,
       latlng = None,
       v      = Some(1),
-      price  = Some(49.40),
-      evalid = Some(100)
+      price  = Some(49.40)
     ))
     actions foreach { u2iActions.insert(_) }
     val results = u2iActions.getAllByAppid(appid)
@@ -82,8 +79,7 @@ class U2IActionsSpec extends Specification { def is =
       t      = DateTime.now,
       latlng = None,
       v      = Some(3),
-      price  = None,
-      evalid = None
+      price  = None
     ), U2IAction(
       appid  = appid,
       action = u2iActions.view,
@@ -92,18 +88,16 @@ class U2IActionsSpec extends Specification { def is =
       t      = DateTime.now,
       latlng = Some((94.3904, -29.4839)),
       v      = None,
-      price  = None,
-      evalid = Some(1)
+      price  = None
     ), U2IAction(
       appid  = appid,
-      action = u2iActions.likeDislike,
+      action = u2iActions.like,
       uid    = "dead",
       iid    = "sub",
       t      = DateTime.now,
       latlng = None,
       v      = Some(1),
-      price  = Some(49.40),
-      evalid = Some(100)
+      price  = Some(49.40)
     ))
     actions foreach { u2iActions.insert(_) }
     val results = u2iActions.getAllByAppidAndUidAndIids(appid, "dead", List("sub", "meat")).toList.sortWith((s, t) => s.iid < t.iid)
@@ -134,8 +128,7 @@ class U2IActionsSpec extends Specification { def is =
       t      = DateTime.now,
       latlng = None,
       v      = Some(3),
-      price  = None,
-      evalid = None
+      price  = None
     )
     val u2iActionsApp1 = List(
         u2iAction1a,
@@ -187,8 +180,7 @@ class U2IActionsSpec extends Specification { def is =
       t      = DateTime.now,
       latlng = None,
       v      = Some(3),
-      price  = None,
-      evalid = None
+      price  = None
     )
     val u2iAction1b = u2iAction1a.copy(
       appid  = appid1

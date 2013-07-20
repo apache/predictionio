@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import glob
+import os
 import shutil
 import sys
 
@@ -29,6 +30,7 @@ files = [
     'bin/common.sh',
     'commons/build.sbt',
     'dist/bin/*',
+    'dist/bin/*/*',
     'dist/conf/predictionio.conf',
     'output/build.sbt',
     'process/commons/hadoop/scalding/build.sbt',
@@ -50,4 +52,5 @@ files = [
 
 for f in files:
     for rf in glob.glob(f):
-        change(rf, oldversion, newversion)
+        if os.path.isfile(rf):
+            change(rf, oldversion, newversion)

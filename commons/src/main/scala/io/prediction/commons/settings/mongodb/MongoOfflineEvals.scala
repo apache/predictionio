@@ -71,6 +71,8 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
     offlineEvalColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToOfflineEval(_) }
   }
 
+  def getAll() = new MongoOfflineEvalIterator(offlineEvalColl.find())
+
   def getByEngineid(engineid: Int): Iterator[OfflineEval] = new MongoOfflineEvalIterator(
     offlineEvalColl.find(MongoDBObject("engineid" -> engineid), getFields).sort(MongoDBObject("name" -> 1))
   )
@@ -79,7 +81,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
     offlineEvalColl.find(MongoDBObject("tuneid" -> tuneid), getFields).sort(MongoDBObject("name" -> 1))
   )
 
-  def update(offlineEval: OfflineEval) = {
+  def update(offlineEval: OfflineEval, upsert: Boolean = false) = {
     val obj = MongoDBObject(
       "_id" -> offlineEval.id,
       "engineid" -> offlineEval.engineid,
@@ -94,7 +96,7 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
 
     val optObj = createtimeObj ++ starttimeObj ++ endtimeObj
 
-    offlineEvalColl.update(MongoDBObject("_id" -> offlineEval.id), obj ++ optObj)
+    offlineEvalColl.update(MongoDBObject("_id" -> offlineEval.id), obj ++ optObj, upsert)
   }
 
   def delete(id: Int) = {

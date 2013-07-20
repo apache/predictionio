@@ -26,6 +26,7 @@ class AlgosSpec extends Specification { def is =
     "update an algo"                                                          ! update(algos)^
     "delete an algo"                                                          ! delete(algos)^
     "checking existence of algo"                                              ! existsByEngineidAndName(algos)^
+    "backup and restore existing algos"                                       ! backuprestore(algos)^
                                                                               bt
   }
 
@@ -305,5 +306,57 @@ class AlgosSpec extends Specification { def is =
     algos.existsByEngineidAndName(456, "existsByEngineidAndName-1") must beTrue and
       (algos.existsByEngineidAndName(456, "existsByEngineidAndName-2") must beFalse) and
       (algos.existsByEngineidAndName(457, "existsByEngineidAndName-1") must beFalse)
+  }
+
+  def backuprestore(algos: Algos) = {
+    val algo1 = Algo(
+      id       = 0,
+      engineid = 456,
+      name     = "backuprestore-1",
+      infoid   = "abcdef",
+      command  = "delete",
+      params   = Map("az" -> "ba"),
+      settings = Map("we" -> "rt"),
+      modelset = false,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "food",
+      offlineevalid = None,
+      offlinetuneid = Some(3),
+      loop = None,
+      paramset = None)
+    val algo2 = Algo(
+      id       = 0,
+      engineid = 5839,
+      name     = "backuprestore-2",
+      infoid   = "abcdef",
+      command  = "delete",
+      params   = Map("az" -> "ba"),
+      settings = Map(),
+      modelset = false,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "tuned",
+      offlineevalid = Some(43),
+      offlinetuneid = Some(3),
+      loop = None,
+      paramset = Some(5))
+    val id1 = algos.insert(algo1)
+    val id2 = algos.insert(algo2)
+    val ralgo1 = algo1.copy(id = id1)
+    val ralgo2 = algo2.copy(id = id2)
+    val fos = new java.io.FileOutputStream("algos.bin")
+    try {
+      fos.write(algos.backup())
+    } finally {
+      fos.close()
+    }
+    algos.restore(scala.io.Source.fromFile("algos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { ralgos =>
+      val falgo1 = ralgos.find(_.id == id1).get
+      val falgo2 = ralgos.find(_.id == id2).get
+      algos.update(falgo1)
+      algos.update(falgo2)
+      (algos.get(id1) must beSome(ralgo1)) and (algos.get(id2) must beSome(ralgo2))
+    } getOrElse 1 === 2
   }
 }

@@ -61,9 +61,11 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToAlgoInfo(_) }
 
+  def getAll() = coll.find().toSeq map { dbObjToAlgoInfo(_) }
+
   def getByEngineInfoId(engineinfoid: String) = coll.find(MongoDBObject("engineinfoid" -> engineinfoid)).sort(MongoDBObject("_id" -> 1)).toSeq map { dbObjToAlgoInfo(_) }
 
-  def update(algoInfo: AlgoInfo) = {
+  def update(algoInfo: AlgoInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> algoInfo.id)
     val requiredObj = MongoDBObject(
       "name"             -> algoInfo.name,
@@ -76,7 +78,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
     val batchcommandsObj = algoInfo.batchcommands.map { c => MongoDBObject("batchcommands" -> c) } getOrElse MongoUtils.emptyObj
     val offlineevalcommandsObj = algoInfo.offlineevalcommands.map { c => MongoDBObject("offlineevalcommands" -> c) } getOrElse MongoUtils.emptyObj
 
-    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ batchcommandsObj ++ offlineevalcommandsObj)
+    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj ++ batchcommandsObj ++ offlineevalcommandsObj, upsert)
   }
 
   def delete(id: String) = coll.remove(MongoDBObject("_id" -> id))

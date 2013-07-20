@@ -32,17 +32,29 @@ class UsersSpec extends Specification { def is =
 
   def insert(users: Users) = {
     val appid = 0
-    val id = "insert"
-    val user = User(
-      id = id,
+    val id1 = "insert1"
+    val user1 = User(
+      id = id1,
       appid = appid,
       ct = DateTime.now,
       latlng = Some((47.8948, -29.79783)),
       inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     )
-    users.insert(user)
-    users.get(appid, id) must beSome(user)
+    val id2 = "insert2"
+    val user2 = User(
+      id = id2,
+      appid = appid,
+      ct = DateTime.now,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = Some(true),
+      attributes = None
+    )
+    users.insert(user1)
+    users.insert(user2)
+    users.get(appid, id1) must beSome(user1) and
+      (users.get(appid, id2) must beSome(user2))
+
   }
 
   def getByAppid(users: Users) = {

@@ -19,6 +19,7 @@ class SystemInfosSpec extends Specification { def is =
     "create and get a system info entry"                                      ! insertAndGet(systemInfos)^
     "update a system info entry"                                              ! update(systemInfos)^
     "delete a system info entry"                                              ! delete(systemInfos)^
+    "backup and restore system info entries"                                  ! backuprestore(systemInfos)^
                                                                               bt
   }
 
@@ -53,5 +54,23 @@ class SystemInfosSpec extends Specification { def is =
     systemInfos.insert(foo)
     systemInfos.delete("foo")
     systemInfos.get("foo") must beNone
+  }
+
+  def backuprestore(systemInfos: SystemInfos) = {
+    val rev = SystemInfo(
+      id = "rev",
+      value = "321",
+      description = Some("software revision"))
+    systemInfos.insert(rev)
+    val fn = "systeminfos.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(systemInfos.backup())
+    } finally {
+      fos.close()
+    }
+    systemInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      data must contain(rev)
+    } getOrElse 1 === 2
   }
 }

@@ -2,10 +2,13 @@ package io.prediction.tools.users
 
 import io.prediction.commons._
 import jline.console._
+import org.apache.commons.codec.digest.DigestUtils
 
 object Users {
   val config = new Config()
   val users = config.getSettingsUsers()
+
+  private def md5password(password: String) = DigestUtils.md5Hex(password)
 
   def main(args: Array[String]) {
     if (!config.settingsDbConnectable()) {
@@ -33,7 +36,7 @@ object Users {
     } else {
       users.insert(
         email = email,
-        password = password,
+        password = md5password(password),
         firstname = firstName,
         lastname = lastName match {
           case "" => None

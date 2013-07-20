@@ -29,7 +29,7 @@ class FileU2iActionsSourceTest extends Specification with TupleConversions {
   // t: String // 3
   // v: String // 4
   
-  val test1Input = List(("4", "uid3", "iid5", "12345", "5"), ("1", "uid2", "iid6", "12346", "2"))
+  val test1Input = List(("rate", "uid3", "iid5", "12345", "5"), ("view", "uid2", "iid6", "12346", "2"))
   
   "ReadU2iActionsTest" should {
     JobTest("io.prediction.commons.scalding.appdata.file.ReadU2iActionsTestJob")

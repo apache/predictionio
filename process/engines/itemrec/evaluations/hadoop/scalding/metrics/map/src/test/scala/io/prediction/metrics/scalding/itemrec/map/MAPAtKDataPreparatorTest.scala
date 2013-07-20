@@ -10,11 +10,12 @@ import io.prediction.commons.scalding.modeldata.ItemRecScores
 
 class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
   
-  val Rate = "0"
-  val LikeDislike = "1"
-  val View = "2"
-  //val ViewDetails = 3
-  val Conversion = "4"
+  val Rate = "rate"
+  val Like = "like"
+  val Dislike = "dislike"
+  val View = "view"
+  //val ViewDetails = "viewDetails"
+  val Conversion = "conversion"
   
   def test(params: Map[String, String], 
       testU2i: List[(String, String, String, String, String)],
@@ -92,7 +93,7 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
       // u0
       (Rate, "u0", "i0", "123450", "4"), 
       (View, "u0", "i1", "123457", "1"),
-      (LikeDislike, "u0", "i2", "123458", "0"),
+      (Dislike, "u0", "i2", "123458", "0"),
       (View, "u0", "i3", "123459", "0"),
       (View, "u0", "i7", "123460", "0"),
       

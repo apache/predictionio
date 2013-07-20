@@ -53,6 +53,13 @@ object Scheduler extends Controller {
   /** Try search path if hadoop home is not set. */
   val hadoopCommand = config.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
 
+  /** Schedule update check if enabled. */
+  if (config.settingsSchedulerUpdatecheck) {
+    val updateCheckJob = newJob(classOf[UpdateCheckJob]) withIdentity("updatecheck", "updatecheck") build()
+    val updateCheckTrigger = newTrigger() forJob(jobKey("updatecheck", "updatecheck")) withIdentity("updatecheck", "updatecheck") startNow() withSchedule(simpleSchedule() withIntervalInHours(24) repeatForever()) build()
+    scheduler.scheduleJob(updateCheckJob, updateCheckTrigger)
+  }
+
   /** Sync the scheduler once against settings database. */
   def syncAllUsers() = {
     users.getAll foreach { user =>
@@ -264,4 +271,15 @@ object Scheduler extends Controller {
       Ok(Json.obj("offlineevalid" -> offlineevalid, "status" -> "jobnotexist"))
     }
   }
+
+  def stopOfflineTune(appid: Int, engineid: Int, offlinetuneid: Int) = Action {
+    val offlineTuneJobKey = jobKey(offlinetuneid.toString(), Jobs.offlineTuneJobGroup)
+    try {
+      scheduler.interrupt(offlineTuneJobKey)
+      Ok(Json.obj("offlinetuneid" -> offlinetuneid, "status" -> "jobkilled"))
+    } catch {
+      case e: UnableToInterruptJobException => Ok(Json.obj("offlinetuneid" -> offlinetuneid, "status" -> "jobnotkilled"))
+    }
+  }
+
 }

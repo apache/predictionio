@@ -32,7 +32,9 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
 
   def get(id: String) = coll.findOne(MongoDBObject("_id" -> id)) map { dbObjToEngineInfo(_) }
 
-  def update(EngineInfo: EngineInfo) = {
+  def getAll() = coll.find().toSeq map { dbObjToEngineInfo(_) }
+
+  def update(EngineInfo: EngineInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> EngineInfo.id)
     val requiredObj = MongoDBObject(
       "name"              -> EngineInfo.name,
@@ -40,7 +42,7 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
       "defaultalgoinfoid" -> EngineInfo.defaultalgoinfoid)
     val descriptionObj = EngineInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
 
-    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj)
+    coll.update(idObj, idObj ++ requiredObj ++ descriptionObj, upsert)
   }
 
   def delete(id: String) = coll.remove(MongoDBObject("_id" -> id))

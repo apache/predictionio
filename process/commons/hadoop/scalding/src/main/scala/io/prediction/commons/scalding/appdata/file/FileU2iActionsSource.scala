@@ -14,7 +14,7 @@ import io.prediction.commons.scalding.appdata.U2iActionsSource.{FIELD_SYMBOLS}
  * <action>\t<uid>\t<iid>\t<t>\t<v>
  *
  * Example:
- * 3  u2  i13  123456  4
+ * rate  u2  i13  123456  4
  */
 class FileU2iActionsSource(path: String, appId: Int) extends Tsv (
   p = path + "u2iActions.tsv"
@@ -40,7 +40,7 @@ class FileU2iActionsSource(path: String, appId: Int) extends Tsv (
         fields: (String, String, String, String, String) =>
           val (action, uid, iid, t, v) = fields
                     
-          (action.toInt, uid, iid, t, v.toInt, appid)
+          (action, uid, iid, t, v.toInt, appid)
     }.write(this)
     
     writtenData

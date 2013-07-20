@@ -1,4 +1,10 @@
 {
+    "systeminfos": {
+        "version": {
+            "value": "0.4.3",
+            "description": "PredictionIO version"
+        }
+    },
     "algoinfos": {
         "pdio-randomrank": {
             "name": "Random Rank",

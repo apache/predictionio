@@ -47,6 +47,8 @@ class MongoApps(db: MongoDB) extends Apps {
 
   def get(id: Int) = appColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToApp(_) }
 
+  def getAll() = new MongoAppIterator(appColl.find())
+
   def getByUserid(userid: Int) = new MongoAppIterator(appColl.find(MongoDBObject("userid" -> userid), getFields))
 
   def getByAppkey(appkey: String) = appColl.findOne(MongoDBObject("appkey" -> appkey), getFields) map { dbObjToApp(_) }
@@ -55,18 +57,18 @@ class MongoApps(db: MongoDB) extends Apps {
 
   def getByIdAndUserid(id: Int, userid: Int) = appColl.findOne(MongoDBObject("_id" -> id, "userid" -> userid), getFields) map { dbObjToApp(_) }
 
-  def update(app: App) = {
+  def update(app: App, upsert: Boolean = false) = {
     val must = MongoDBObject(
-      "userid" -> app.userid,
-      "appkey" -> app.appkey,
-      "display" -> app.display,
-      "timezone" -> app.timezone
-    )
+      "_id"      -> app.id,
+      "userid"   -> app.userid,
+      "appkey"   -> app.appkey,
+      "display"  -> app.display,
+      "timezone" -> app.timezone)
     val url  = app.url map { url => MongoDBObject("url" -> url) } getOrElse emptyObj
     val cat  = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
     val desc = app.desc map { desc => MongoDBObject("desc" -> desc) } getOrElse emptyObj
 
-    appColl.update(MongoDBObject("_id" -> app.id), must ++ url ++ cat ++ desc)
+    appColl.update(MongoDBObject("_id" -> app.id), must ++ url ++ cat ++ desc, upsert)
   }
 
   def updateAppkeyByAppkeyAndUserid(appkey: String, userid: Int, newAppkey: String) = {

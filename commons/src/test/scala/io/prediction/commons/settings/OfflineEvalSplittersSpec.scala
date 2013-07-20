@@ -20,6 +20,7 @@ class OfflineEvalSplittersSpec extends Specification { def is =
     "get two OfflineEvalSplitters"                                            ! getByEvalid(splitters)^
     "update an OfflineEvalSplitter"                                           ! update(splitters)^
     "delete an OfflineEvalSplitter"                                           ! delete(splitters)^
+    "backup and restore OfflineEvalSplitters"                                 ! backuprestore(splitters)^
                                                                               bt
   }
 
@@ -101,5 +102,25 @@ class OfflineEvalSplittersSpec extends Specification { def is =
     ))
     splitters.delete(id)
     splitters.get(id) must beNone
+  }
+
+  def backuprestore(splitters: OfflineEvalSplitters) = {
+    val obj = OfflineEvalSplitter(
+      id = 0,
+      evalid = 567,
+      name = "backuprestore",
+      infoid = "backuprestore",
+      settings = Map("x" -> "y"))
+    val sid = splitters.insert(obj)
+    val fn = "splitters.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(splitters.backup())
+    } finally {
+      fos.close()
+    }
+    splitters.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      data must contain(obj.copy(id = sid))
+    } getOrElse 1 === 2
   }
 }

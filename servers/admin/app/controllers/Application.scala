@@ -24,6 +24,7 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 import com.github.nscala_time.time.Imports._
+import org.apache.commons.codec.digest.DigestUtils
 
 /*
  * TODO:
@@ -100,6 +101,8 @@ object Application extends Controller {
     }.getOrElse(onUnauthorized(request))
   }
 
+  private def md5password(password: String) = DigestUtils.md5Hex(password)
+
   /** Appkey Generation */
   def randomAlphanumeric(n: Int): String = {
     Random.alphanumeric.take(n).mkString
@@ -134,7 +137,7 @@ object Application extends Controller {
         "adminPassword" -> text,
         "adminRemember" -> optional(text)
       ) verifying ("Invalid email or password", result => result match {
-        case (adminEmail, adminPassword, adminRemember) => users.authenticateByEmail(adminEmail, adminPassword) map { _ => true } getOrElse false
+        case (adminEmail, adminPassword, adminRemember) => users.authenticateByEmail(adminEmail, md5password(adminPassword)) map { _ => true } getOrElse false
       })
     )
 
@@ -950,13 +953,41 @@ object Application extends Controller {
     }
   }
 
+  /**
+   * stop offline tune job and remove both HDFS and DB of this OfflineTune
+   */
+  def removeOfflineTune(appid: Int, engineid: Int, id: Int) = {
 
-  def removeAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
+    offlineTunes.get(id) map { tune => 
+      /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
+      offlineTunes.update(tune.copy(createtime = None))
 
-    deleteModelData(id.toInt)
+      WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlinetunes/${id}/stop").get()
+
+      offlineEvals.getByTuneid(id) foreach { eval =>
+        WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${eval.id}/delete").get()
+      }
+
+      deleteOfflineTune(id, false)
+      Logger.info("Delete offline tune ID "+id)
+      offlineTunes.delete(id)
+
+    }
+
+  }
+
+  def removeAvailableAlgo(app_id: Int, engine_id: Int, id: Int) = withUser { user => implicit request =>
+
+    algos.get(id) map { algo =>
+      algo.offlinetuneid map { tuneid =>
+        removeOfflineTune(app_id, engine_id, tuneid)
+      }
+    }
+    
+    deleteModelData(id)
     // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
     WS.url(settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
-    algos.delete(id.toInt)
+    algos.delete(id)
     Ok
 
   }

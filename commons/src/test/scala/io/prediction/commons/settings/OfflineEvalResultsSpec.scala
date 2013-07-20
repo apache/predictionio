@@ -18,6 +18,7 @@ class OfflineEvalResultsSpec extends Specification { def is =
   def offlineEvalResultsTest(offlineEvalResults: OfflineEvalResults) = {    t^
     "get two OfflineEvalResults by evalid"                                  ! getByEvalid(offlineEvalResults)^
     "delete two OfflineEvalResults by evalid"                               ! deleteByEvalid(offlineEvalResults)^
+    "backup and restore OfflineEvalResults"                                 ! backuprestore(offlineEvalResults)^
                                                                             bt
   }
 
@@ -137,4 +138,34 @@ class OfflineEvalResultsSpec extends Specification { def is =
 
   }
 
+  def backuprestore(offlineEvalResults: OfflineEvalResults) = {
+    val obj1 = OfflineEvalResult(
+      evalid = 26,
+      metricid = 6,
+      algoid = 10,
+      score = 0.7601,
+      iteration = 1,
+      splitset = "abc"
+    )
+    val obj2 = OfflineEvalResult(
+      evalid = 8,
+      metricid = 1,
+      algoid = 11,
+      score = 0.001,
+      iteration = 2,
+      splitset = ""
+    )
+    offlineEvalResults.save(obj1)
+    offlineEvalResults.save(obj2)
+    val fn = "results.bin"
+    val fos = new java.io.FileOutputStream(fn)
+    try {
+      fos.write(offlineEvalResults.backup())
+    } finally {
+      fos.close()
+    }
+    offlineEvalResults.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+      (data must contain(obj1)) and (data must contain(obj2))
+    } getOrElse 1 === 2
+  }
 }
