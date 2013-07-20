@@ -1,6 +1,6 @@
 name := "PredictionIO Process ItemRec Evaluations Hadoop Scalding Metrics MAP"
 
-version := "0.4.3-SNAPSHOT"
+version := "0.5.0"
 
 scalaVersion := "2.9.2"
 

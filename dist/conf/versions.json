@@ -1,17 +1,9 @@
 {
-    "latest": "0.4.2",
+    "latest": "0.5.0",
     "versions": {
-        "0.4.2": {
-            "binaries": "http://download.prediction.io/PredictionIO-0.4.2.zip",
-            "sources": "http://download.prediction.io/PredictionIO-0.4.2-sources.zip",
-            "updater": "http://download.prediction.io/PredictionIO-0.4.2-updater.zip"
-        },
-        "0.4.3-SNAPSHOT": {
-            "binaries": "http://download.prediction.io/PredictionIO-0.4.3-SNAPSHOT.zip",
-            "sources": "http://download.prediction.io/PredictionIO-0.4.3-SNAPSHOT-sources.zip",
-            "updater": "http://download.prediction.io/PredictionIO-0.4.3-SNAPSHOT-updater.zip",
-            "from": "0.4.2",
-            "via": "bin/settings043"
+        "0.5.0": {
+            "binaries": "http://download.prediction.io/PredictionIO-0.5.0.zip",
+            "sources": "http://download.prediction.io/PredictionIO-0.5.0-sources.zip"
         }
     }
 }
