@@ -12,7 +12,8 @@ libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.5.1",
   "com.github.scopt" %% "scopt" % "3.1.0",
   "commons-io" % "commons-io" % "2.4",
-  "org.slf4j" % "slf4j-nop" % "1.6.0"
+  "org.slf4j" % "slf4j-nop" % "1.6.0",
+  "org.specs2" %% "specs2" % "2.1.1"
 )
 
 resolvers ++= Seq(
