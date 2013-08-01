@@ -1,7 +1,5 @@
 package io.prediction.tools.softwaremanager
 
-import io.prediction.commons._
-
 import scala.collection.JavaConversions._
 import scala.sys.process._
 
@@ -15,8 +13,9 @@ case class UpgradeConfig(current: File = new File("."), latest: File = new File(
 /** Upgrades previous version to current version. */
 object Upgrade {
   def main(args: Array[String]) {
+    val thisVersion = "0.5.1"
     val parser = new scopt.OptionParser[UpgradeConfig]("upgrade") {
-      head("PredictionIO Software Upgrade Utility", "0.5.1")
+      head("PredictionIO Software Upgrade Utility", thisVersion)
       help("help") text("prints this usage text")
       opt[Unit]("nomigrate") action { (_, c) =>
         c.copy(nomigrate = true)
@@ -36,7 +35,7 @@ object Upgrade {
       val latestDir = upgradeConfig.latest
       val current = currentDir.getCanonicalPath
       val latest = latestDir.getCanonicalPath
-      val nomigrate = upgradeConfig.nomigrate
+      var nomigrate = upgradeConfig.nomigrate
 
       println("PredictionIO Software Upgrade Utility")
       println()
@@ -51,7 +50,62 @@ object Upgrade {
         sys.exit(1)
       }
 
+      if ((getFile(currentDir, "backup")).exists) {
+        println(s"${current}/backup already exists. Please move away any previous backups and try again.")
+        sys.exit(1)
+      }
+
       val dirs = Seq("bin", "conf", "lib")
+
+      /** Determine current version */
+      System.setProperty("config.file", s"${current}/conf/predictionio.conf")
+      val config = new io.prediction.commons.Config()
+      val systemInfos = config.getSettingsSystemInfos
+      val installed = systemInfos.get("version") map { _.value }
+      installed getOrElse {
+        println("Cannot detect any previous version. Possible causes:")
+        println("- PredictionIO version <= 0.4.2")
+        println("- misconfiguration (wrong settings database pointers)")
+        println("- settings database has been corrupted")
+        println()
+        println("No migration of settings will be performed if you choose to continue the upgrade.")
+        val input = readLine("Enter 'YES' to proceed: ")
+        val interrupt = input match {
+          case "YES" => false
+          case _ => true
+        }
+        if (interrupt) { sys.exit(1) } else { nomigrate = true }
+      }
+      val installedVersion = installed.get
+
+      /** Determine updaters to download. */
+      println(s"Step ${stepcount} of ${steps}: Downloading any additional settings updaters...")
+      println()
+
+      val versions = Versions()
+      val updateSequence = versions.updateSequence(installedVersion, thisVersion)
+
+      if (updateSequence.size == 0) {
+        println(s"Upgrading from ${installedVersion} to ${thisVersion} requires no additional updaters.")
+        println("Disabling settings migration...")
+        println()
+        nomigrate = true
+      } else {
+        val updaterDirFile = new java.io.File(s"${current}/updaters")
+        if (!updaterDirFile.exists && !updaterDirFile.mkdirs) {
+          println(s"Unable to create directory ${updaterDirFile}. Aborting...")
+          sys.exit(1)
+        }
+        updateSequence foreach { v =>
+          versions.updater(v) map { u =>
+            println(s"Downloading ${u}...")
+            val dlProc = Process(s"curl -O ${u}", updaterDirFile)
+            dlProc.!
+          }
+        }
+      }
+
+      stepcount += 1
 
       /** Make a backup. */
       println(s"Step ${stepcount} of ${steps}: Creating backup of PredictionIO settings...")
