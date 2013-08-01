@@ -33,6 +33,23 @@ class Versions(localVersion: Option[String]) {
 
   private val versions = M.unapply(meta("versions")) getOrElse { throw new VersionsFormatException("Cannot find versions information.") }
 
+  private def versionToParts(version: String): Seq[Int] = version.split('.').map(_.toInt)
+
+  private def versionLessThan(x: String, y: String): Boolean = {
+    val versionX = versionToParts(x)
+    val versionY = versionToParts(y)
+
+    if (versionX(0) == versionY(0))
+      if (versionX(1) == versionY(1))
+        versionX(2) < versionY(2)
+      else
+        versionX(1) < versionY(1)
+    else
+      versionX(0) < versionY(0)
+  }
+
+  val sequence = versions.keys.toSeq.sortWith { (x, y) => versionLessThan(x, y) }
+
   def version(version: String): Option[Map[String, String]] = versions.get(version) map { MSS.unapply(_) map { Some(_) } getOrElse None } getOrElse None
 
   def binaries(ver: String): Option[String] = version(ver) map { _.get("binaries") map { Some(_) } getOrElse None } getOrElse None
@@ -41,9 +58,18 @@ class Versions(localVersion: Option[String]) {
 
   def updater(ver: String): Option[String] = version(ver) map { _.get("updater") map { Some(_) } getOrElse None } getOrElse None
 
-  def from(ver: String): Option[String] = version(ver) map { _.get("from") map { Some(_) } getOrElse None } getOrElse None
+  def updateRequired(ver: String): Boolean = updater(ver) map { _ => true } getOrElse false
 
-  def via(ver: String): Option[String] = version(ver) map { _.get("via") map { Some(_) } getOrElse None } getOrElse None
+  def updateSequence(fromVersion: String, toVersion: String): Seq[String] = {
+    val seqWithAllUpdates = sequence filter { updateRequired(_) }
+    val seqWithUpdatesUntilTo = seqWithAllUpdates filter { v =>
+      versionLessThan(v, toVersion) || v == toVersion
+    }
+    val seqWithUpdates = seqWithUpdatesUntilTo filterNot { v =>
+      versionLessThan(v, fromVersion) || v == fromVersion
+    }
+    seqWithUpdates
+  }
 }
 
 object Versions {
