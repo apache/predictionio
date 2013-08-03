@@ -68,7 +68,7 @@ class Versions(localVersion: Option[String]) {
     val seqWithUpdates = seqWithUpdatesUntilTo filterNot { v =>
       versionLessThan(v, fromVersion) || v == fromVersion
     }
-    seqWithUpdates
+    seqWithUpdates.dropRight(1)
   }
 }
 

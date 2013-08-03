@@ -30,7 +30,7 @@ object UpdateCheck {
 
       val installed = systemInfos.get("version") map { _.value } getOrElse {
         println("Cannot detect any previous version. Possible causes:")
-        println("- PredictionIO version <= 0.4.2")
+        println("- PredictionIO version < 0.5.0")
         println("- misconfiguration (wrong settings database pointers)")
         println("- settings database has been corrupted")
         println()

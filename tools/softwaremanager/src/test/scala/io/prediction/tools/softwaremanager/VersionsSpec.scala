@@ -33,7 +33,7 @@ class VersionsSpec extends Specification { def is =
   def updateRequired() = versions.updateRequired("0.6.1") must_== true
 
   def updateSequence() = {
-    (versions.updateSequence("0.5.0", "0.20.1") must_== Seq("0.6.1", "0.7.0", "0.20.0")) and
-      (versions.updateSequence("0.6.0", "1.0.0") must_== Seq("0.6.1", "0.7.0", "0.20.0", "1.0.0"))
+    (versions.updateSequence("0.5.0", "0.20.1") must_== Seq("0.6.1", "0.7.0")) and
+      (versions.updateSequence("0.6.0", "1.0.0") must_== Seq("0.6.1", "0.7.0", "0.20.0"))
   }
 }

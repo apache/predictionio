@@ -17,7 +17,7 @@ BASE=`pwd`
 
 . "$BASE/bin/common.sh"
 
-UPDATER_NAME="updater-$VERSION"
+UPDATER_NAME="PredictionIO-$VERSION-updater"
 
 cd "$BASE/tools/softwaremanager/target"
 rm -rf $UPDATER_NAME
