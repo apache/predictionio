@@ -104,8 +104,6 @@ $SBT $CLEAN update pack
 
 # Build migration tools
 echo "Going to build PredictionIO Migration Tools..."
-cd $BASE/tools/migration/0.4/settings04
-$SBT $CLEAN update pack
 cd $BASE/tools/migration/0.5/appdata
 $SBT $CLEAN update pack
 

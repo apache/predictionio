@@ -1,6 +1,6 @@
 name := "PredictionIO Process ItemRec Algorithms Hadoop Scalding Generic"
 
-version := "0.5.0"
+version := "0.5.1"
 
 scalaVersion := "2.9.2"
 
@@ -18,8 +18,8 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.5.0",
-  "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.5.0"
+  "io.prediction" %% "predictionio-commons" % "0.5.1",
+  "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.5.1"
 )
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"

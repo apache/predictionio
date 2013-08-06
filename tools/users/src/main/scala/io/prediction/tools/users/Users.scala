@@ -16,12 +16,10 @@ object Users {
       sys.exit(1)
     }
     println("PredictionIO CLI User Management")
-    println("1. Add a confirmed user")
-    val choice = readLine("Enter a choice: ")
-    choice match {
-      case "1" => adduser()
-      case _ => println("Unknown choice")
-    }
+    println()
+    println("This utility currently only support adding users.")
+    println()
+    adduser()
   }
 
   def adduser() = {

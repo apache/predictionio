@@ -6,6 +6,8 @@ import scala.reflect.ClassTag
 import scala.sys.process._
 import scala.util.parsing.json.JSON
 
+import org.apache.commons.io.FileUtils._
+
 case class UpdateCheckConfig(localVersion: String = "", answer: String = "")
 
 object UpdateCheck {
@@ -14,7 +16,7 @@ object UpdateCheck {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[UpdateCheckConfig]("updatecheck") {
-      head("PredictionIO Update Checker", "0.5.0")
+      head("PredictionIO Update Checker", "0.5.1")
       help("help") text("prints this usage text")
       opt[String]("localVersion") action { (x, c) =>
         c.copy(localVersion = x)
@@ -30,7 +32,7 @@ object UpdateCheck {
 
       val installed = systemInfos.get("version") map { _.value } getOrElse {
         println("Cannot detect any previous version. Possible causes:")
-        println("- PredictionIO version <= 0.4.2")
+        println("- PredictionIO version < 0.5.0")
         println("- misconfiguration (wrong settings database pointers)")
         println("- settings database has been corrupted")
         println()
@@ -75,7 +77,7 @@ object UpdateCheck {
       if (latest != installed) {
         val answer = updateCheckConfig.answer
         val choice = if (answer == "") {
-          println("Your PredictionIO is not the latest version. Do you want to download the latest binaries?")
+          println("Your PredictionIO is not the latest version. Do you want to download and install the latest binaries?")
           val input = readLine("Enter 'YES' to proceed: ")
           input match {
             case "YES" => "y"
@@ -87,6 +89,15 @@ object UpdateCheck {
             val binaries = versions.binaries(latest) map { b =>
               println(s"Retrieving ${b}...")
               s"curl -O ${b}".!
+              val filename = b.split('/').reverse.head
+              val dirname = filename.split('.').dropRight(1).mkString(".")
+              val extractedDir = getFile(dirname)
+              if (extractedDir.exists) { deleteDirectory(extractedDir) }
+              s"unzip ${filename}".!
+              if (localVersion != "")
+                s"${dirname}/bin/upgrade --localVersion ${localVersion} ${config.base} ${dirname}".!
+              else
+                s"${dirname}/bin/upgrade ${config.base} ${dirname}".!
             }
           }
           case "n" => println(s"Your PredictionIO is not the latest version. A new version ${latest} is available.")

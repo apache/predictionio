@@ -31,6 +31,7 @@ files = [
     'commons/build.sbt',
     'dist/bin/*',
     'dist/bin/*/*',
+    'dist/conf/init.json',
     'dist/conf/predictionio.conf',
     'output/build.sbt',
     'process/commons/hadoop/scalding/build.sbt',

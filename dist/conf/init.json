@@ -1,7 +1,7 @@
 {
     "systeminfos": {
         "version": {
-            "value": "0.5.0",
+            "value": "0.5.1",
             "description": "PredictionIO version"
         }
     },
