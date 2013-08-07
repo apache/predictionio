@@ -16,7 +16,7 @@ object UpdateCheck {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[UpdateCheckConfig]("updatecheck") {
-      head("PredictionIO Update Checker", "0.5.1")
+      head("PredictionIO Update Checker", "0.6.0")
       help("help") text("prints this usage text")
       opt[String]("localVersion") action { (x, c) =>
         c.copy(localVersion = x)
