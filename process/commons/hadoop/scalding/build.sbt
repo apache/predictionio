@@ -4,9 +4,11 @@ organization := "io.prediction"
 
 version := "0.6.0"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.2"
 
-javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
+javacOptions ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:deprecation", "-Xlint:unchecked")
+
+scalacOptions ++= Seq("-deprecation")
 
 parallelExecution in Test := false
 

@@ -6,7 +6,7 @@ name := "PredictionIO-Process-ItemRec-Evaluations-TopKItems"
 
 version := "0.6.0"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.2"
 
 libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-commons" % "0.6.0",

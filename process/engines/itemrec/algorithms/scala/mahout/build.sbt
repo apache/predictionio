@@ -6,7 +6,7 @@ packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_
 
 version in ThisBuild:= "0.6.0"
 
-scalaVersion in ThisBuild:= "2.10.0"
+scalaVersion in ThisBuild:= "2.10.2"
 
 parallelExecution in Test := false
 

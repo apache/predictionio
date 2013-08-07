@@ -4,9 +4,7 @@ version := "0.6.0"
 
 organization := "io.prediction"
 
-scalaVersion := "2.10.0"
-
-//crossScalaVersions := Seq("2.9.2", "2.10.0")
+scalaVersion := "2.10.2"
 
 scalacOptions in (Compile, doc) ++= Opts.doc.title("PredictionIO Commons API Documentation")
 

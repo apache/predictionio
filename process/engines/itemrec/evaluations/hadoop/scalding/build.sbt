@@ -6,7 +6,9 @@ packageOptions in ThisBuild += Package.ManifestAttributes(java.util.jar.Attribut
 
 version in ThisBuild := "0.6.0"
 
-scalaVersion in ThisBuild := "2.10.0"
+scalaVersion in ThisBuild := "2.10.2"
+
+scalacOptions in ThisBuild ++= Seq("-deprecation")
 
 parallelExecution in (ThisBuild, Test) := false
 

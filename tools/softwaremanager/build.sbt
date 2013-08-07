@@ -4,7 +4,7 @@ version := "0.6.0"
 
 organization := "io.prediction"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.2"
 
 scalacOptions ++= Seq("-deprecation")
 
