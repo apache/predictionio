@@ -47,13 +47,13 @@ cp -R $DIST_DIR/bin $PACKAGE_DIR
 cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
-cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.9.2/PredictionIO-Process-ItemRec-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemRec-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/scala-2.9.2/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit/target/scala-2.9.2/PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/paramgen/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-ParamGen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.9.2/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/migration/0.5/appdata/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
