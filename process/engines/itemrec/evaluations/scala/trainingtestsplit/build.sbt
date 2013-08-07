@@ -18,3 +18,7 @@ resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 )
 
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+  val excludes = Set("minlog-1.2.jar")
+  cp filter { jar => excludes(jar.data.getName)}
+}

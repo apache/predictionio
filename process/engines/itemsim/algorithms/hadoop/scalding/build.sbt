@@ -29,8 +29,13 @@ test in assembly := {}
 assembleArtifact in packageScala := true
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-  val excludes = Set("jsp-api-2.1-6.1.14.jar", "jsp-2.1-6.1.14.jar",
-    "jasper-compiler-5.5.12.jar", "janino-2.5.16.jar", "hadoop-core-1.0.4.jar")
+  val excludes = Set(
+    "jsp-api-2.1-6.1.14.jar",
+    "jsp-2.1-6.1.14.jar",
+    "jasper-compiler-5.5.12.jar",
+    "janino-2.5.16.jar",
+    "minlog-1.2.jar",
+    "hadoop-core-1.0.4.jar")
   cp filter { jar => excludes(jar.data.getName)}
 }
 
