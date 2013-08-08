@@ -60,6 +60,9 @@ cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
+mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.8
+cp $VENDOR_MAHOUT/mahout-core-0.8-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.8
+
 cd $DIST_DIR/target
 rm "$PACKAGE_NAME.zip"
 zip -q -r "$PACKAGE_NAME.zip" "$PACKAGE_NAME"

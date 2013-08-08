@@ -5,11 +5,9 @@
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.1.2"
-VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-0.8-snapshot"
 VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.3"
 
 VENDOR_HADOOP_NAME="Apache Hadoop 1.1.2"
-VENDOR_MAHOUT_NAME="Apache Mahout 0.8-SNAPSHOT Build 1993"
 VENDOR_MONGODB_NAME="MongoDB 2.4.3 (64-bit Linux)"
 
 # Utilities
@@ -59,13 +57,6 @@ install_hadoop () {
 	$VENDOR_HADOOP_PATH/bin/hadoop namenode -format
 }
 
-install_mahout () {
-	echo "Going to download and install $VENDOR_MAHOUT_NAME..."
-	mkdir -p $VENDOR_MAHOUT_PATH
-	cd $VENDOR_MAHOUT_PATH
-	curl -o mahout-core-0.8-SNAPSHOT-job.jar http://download.prediction.io/mahout-snapshots/1993/mahout-core-0.8-SNAPSHOT-job.jar
-}
-
 start_mongodb () {
 	echo "Going to start MongoDB..."
 	mkdir -p "$VENDORS_PATH/mongodb/data"
@@ -84,8 +75,4 @@ vendor_mongodb_exists () {
 
 vendor_hadoop_exists () {
 	[ -e "$VENDOR_HADOOP_PATH/bin/hadoop" ]
-}
-
-vendor_mahout_exists () {
-	[ -e "$VENDOR_MAHOUT_PATH/mahout-core-0.8-SNAPSHOT-job.jar" ]
 }
