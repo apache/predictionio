@@ -5,6 +5,20 @@
             "description": "PredictionIO version"
         }
     },
+    "engineinfos": {
+        "itemrec": {
+            "name": "Item Recommendation Engine",
+            "description": "Recommend interesting items to each user personally",
+            "defaultalgoinfoid": "mahout-itembased",
+            "defaultsettings": {
+                "serendipity": 0,
+                "freshness": 0,
+                "unseenonly": false,
+                "goal": "rate3",
+                "numRecommendations": 500
+            }
+        }
+    },
     "algoinfos": {
         "pdio-randomrank": {
             "name": "Random Rank",

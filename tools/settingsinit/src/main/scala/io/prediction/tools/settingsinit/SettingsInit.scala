@@ -1,7 +1,7 @@
 package io.prediction.tools.settingsinit
 
 import io.prediction.commons._
-import io.prediction.commons.settings.{AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, Param, ParamGenInfo, SystemInfo}
+import io.prediction.commons.settings.{AlgoInfo, EngineInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo, Param, ParamGenInfo, SystemInfo}
 
 import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
@@ -25,6 +25,7 @@ object SettingsInit {
 
   def main(args: Array[String]) {
     val algoInfos = config.getSettingsAlgoInfos
+    val engineInfos = config.getSettingsEngineInfos
     val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos
     val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos
     val paramGenInfos = config.getSettingsParamGenInfos
@@ -66,6 +67,30 @@ object SettingsInit {
           systemInfos.insert(si)
         }
       } getOrElse println("Cannot find any SystemInfo information. Skipping.")
+
+      M.unapply(settings("engineinfos")) map { infos =>
+        println("Populating EngineInfos...")
+        for {
+          id <- infos.keys
+          M(info) = infos(id)
+          S(name) = info("name")
+          OS(description) = info.get("description")
+          M(defaultsettings) = info("defaultsettings")
+          S(defaultalgoinfoid) = info("defaultalgoinfoid")
+        } yield {
+          val ei = EngineInfo(
+            id = id,
+            name = name,
+            description = description,
+            defaultsettings = defaultsettings,
+            defaultalgoinfoid = defaultalgoinfoid)
+
+          println(s"Deleting any old EngineInfo ID: ${id}")
+          engineInfos.delete(id)
+          println(s"Adding EngineInfo ID: ${id}")
+          engineInfos.insert(ei)
+        }
+      } getOrElse println("Cannot find any EngineInfo information. Skipping.")
 
       M.unapply(settings("algoinfos")) map { infos =>
         println("Populating AlgoInfos...")
