@@ -8,6 +8,8 @@ version in ThisBuild:= "0.6.0"
 
 scalaVersion in ThisBuild:= "2.10.2"
 
+scalacOptions in ThisBuild ++= Seq("-deprecation")
+
 parallelExecution in Test := false
 
 resolvers in ThisBuild ++= Seq(
@@ -26,6 +28,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
     "jasper-compiler-5.5.12.jar",
     "janino-2.5.16.jar",
     "minlog-1.2.jar",
+    "mockito-all-1.8.5.jar",
     "hadoop-core-1.0.4.jar")
   cp filter { jar => excludes(jar.data.getName)}
 }

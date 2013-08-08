@@ -79,11 +79,11 @@ else
 	exit 1
 fi
 
-if [ -r "$LIB_MAHOUT/mahout-core-0.8-SNAPSHOT.jar" -a -r "$LIB_MAHOUT/mahout-math-0.8-SNAPSHOT.jar" -a -r "$VENDOR_MAHOUT/mahout-core-0.8-SNAPSHOT-job.jar" ] ; then
-	echo "Using Apache Mahout 0.8 Build 1993 in vendors."
-elif install_mahout ; then
-	echo ""
-else
-	echo "Unable to locate Apache Mahout 0.8 Build 1993 and automatic installation failed. Aborting." >&2
-	exit 1
-fi
+#if [ -r "$LIB_MAHOUT/mahout-core-0.8-SNAPSHOT.jar" -a -r "$LIB_MAHOUT/mahout-math-0.8-SNAPSHOT.jar" -a -r "$VENDOR_MAHOUT/mahout-core-0.8-SNAPSHOT-job.jar" ] ; then
+#	echo "Using Apache Mahout 0.8 Build 1993 in vendors."
+#elif install_mahout ; then
+#	echo ""
+#else
+#	echo "Unable to locate Apache Mahout 0.8 Build 1993 and automatic installation failed. Aborting." >&2
+#	exit 1
+#fi
