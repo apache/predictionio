@@ -543,7 +543,7 @@ object Application extends Controller {
         ))
 
         // automatically create default algo
-        val defaultAlgoType = "mahout-itembased" // TODO: get it from engineInfo
+        val defaultAlgoType = engineInfo.defaultalgoinfoid
         val defaultAlgo = Algo(
           id = -1,
           engineid = engineId,
