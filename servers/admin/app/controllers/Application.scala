@@ -42,6 +42,7 @@ object Application extends Controller {
   val users = config.getSettingsUsers()
   val apps = config.getSettingsApps()
   val engines = config.getSettingsEngines()
+  val engineInfos = config.getSettingsEngineInfos()
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
@@ -494,7 +495,7 @@ object Application extends Controller {
   }
 
 
-  val supportedEngineTypes: List[String] = List("itemrec") // TODO: only itemrec is supported for now...
+  val supportedEngineTypes: List[String] = List("itemrec", "itemsim") // TODO: only itemrec is supported for now...
   val enginenameConstraint = Constraints.pattern("""\b[a-zA-Z][a-zA-Z0-9_-]*\b""".r, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
   /*
    * createEngine
@@ -509,7 +510,8 @@ object Application extends Controller {
       "enginetype_id" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
       "engineName" -> (text verifying("Please name your engine.", enginename => enginename.length > 0)
                           verifying enginenameConstraint)
-    ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3)))
+    ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3))
+    verifying("Engine type is invalid.", f => engineInfos.get(f._2).map(_ => true).getOrElse(false)))
 
     // If NOT authenticated
     /*
@@ -530,14 +532,14 @@ object Application extends Controller {
       },
       formData => {
         val (fappid, enginetype, enginename) = formData
-
+        val engineInfo = engineInfos.get(enginetype).get
         val engineId = engines.insert(Engine(
           id = -1,
           appid = fappid,
           name = enginename,
           infoid = enginetype,
           itypes = None, // NOTE: default None (means all itypes)
-          settings = Itemrec.Engine.defaultSettings // TODO: depends on enginetype
+          settings = engineInfo.defaultsettings.map(s => (s._2.id, s._2.defaultvalue)) // TODO: depends on enginetype
         ))
 
         // automatically create default algo
@@ -958,7 +960,7 @@ object Application extends Controller {
    */
   def removeOfflineTune(appid: Int, engineid: Int, id: Int) = {
 
-    offlineTunes.get(id) map { tune => 
+    offlineTunes.get(id) map { tune =>
       /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
       offlineTunes.update(tune.copy(createtime = None))
 
@@ -983,7 +985,7 @@ object Application extends Controller {
         removeOfflineTune(app_id, engine_id, tuneid)
       }
     }
-    
+
     deleteModelData(id)
     // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
     WS.url(settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
