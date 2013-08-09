@@ -78,11 +78,29 @@ object SettingsInit {
           M(defaultsettings) = info("defaultsettings")
           S(defaultalgoinfoid) = info("defaultalgoinfoid")
         } yield {
+          /** Take care of integers that are parsed as double from JSON
+            * http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
+            */
+          val castedsettings = defaultsettings map { p =>
+            val param = p._2.asInstanceOf[Map[String, Any]]
+            val constraint = param("constraint").asInstanceOf[String]
+            val casteddefault = constraint match {
+              case "integer" => param("defaultvalue").asInstanceOf[Double].toInt
+              case _ => param("defaultvalue")
+            }
+            (p._1, Param(
+              id = p._1,
+              name = param("name").asInstanceOf[String],
+              description = param.get("description") map { _.asInstanceOf[String] },
+              defaultvalue = casteddefault,
+              constraint = param("constraint").asInstanceOf[String]))
+          }
+
           val ei = EngineInfo(
             id = id,
             name = name,
             description = description,
-            defaultsettings = defaultsettings,
+            defaultsettings = castedsettings,
             defaultalgoinfoid = defaultalgoinfoid)
 
           println(s"Deleting any old EngineInfo ID: ${id}")

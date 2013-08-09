@@ -16,7 +16,7 @@ case class EngineInfo(
   id: String,
   name: String,
   description: Option[String],
-  defaultsettings: Map[String, Any],
+  defaultsettings: Map[String, Param],
   defaultalgoinfoid: String
 )
 
@@ -58,7 +58,7 @@ trait EngineInfos extends Common {
           id = data("id").asInstanceOf[String],
           name = data("name").asInstanceOf[String],
           description = data("description").asInstanceOf[Option[String]],
-          defaultsettings = data("defaultsettings").asInstanceOf[Map[String, Any]],
+          defaultsettings = data("defaultsettings").asInstanceOf[Map[String, Param]],
           defaultalgoinfoid = data("defaultalgoinfoid").asInstanceOf[String])
       }
 

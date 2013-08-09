@@ -11,11 +11,36 @@
             "description": "Recommend interesting items to each user personally",
             "defaultalgoinfoid": "mahout-itembased",
             "defaultsettings": {
-                "serendipity": 0,
-                "freshness": 0,
-                "unseenonly": false,
-                "goal": "rate3",
-                "numRecommendations": 500
+                "serendipity": {
+                    "name": "Serendipity",
+                    "description": "Preference for surprising discovery",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "freshness": {
+                    "name": "Freshness",
+                    "description": "Preference for newer items",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "unseenonly": {
+                    "name": "Unseen Items Only",
+                    "description": "",
+                    "constraint": "boolean",
+                    "defaultvalue": false
+                },
+                "goal": {
+                    "name": "Recommendation Goal",
+                    "description": "Goal to be maximized",
+                    "constraint": "string",
+                    "defaultvalue": "rate3"
+                },
+                "numRecommendations": {
+                    "name": "Number of Recommendations",
+                    "description": "Number of recommendations to be generated for each user",
+                    "constraint": "integer",
+                    "defaultvalue": 500
+                }
             }
         }
     },
