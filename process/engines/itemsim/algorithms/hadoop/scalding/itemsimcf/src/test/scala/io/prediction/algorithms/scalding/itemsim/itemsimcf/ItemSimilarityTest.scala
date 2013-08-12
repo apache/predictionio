@@ -25,7 +25,11 @@ class ItemSimilarityTest extends Specification with TupleConversions {
   // simple test1
   val test1args = Map[String, String]("measureParam" -> "correl",
       "priorCountParam" -> "10",
-      "priorCorrelParam" -> "0"
+      "priorCorrelParam" -> "0",
+      "minNumRatersParam" -> "1",
+      "maxNumRatersParam" -> "10000",
+      "minIntersectionParam" -> "1",
+      "numSimilarItems" -> "500"
   )
   
   val test1Input = List(
@@ -67,6 +71,10 @@ class ItemSimilarityTest extends Specification with TupleConversions {
       arg("measureParam", test1args("measureParam")).
       arg("priorCountParam", test1args("priorCountParam")).
       arg("priorCorrelParam", test1args("priorCorrelParam")).
+      arg("minNumRatersParam", test1args("minNumRatersParam")).
+      arg("maxNumRatersParam", test1args("maxNumRatersParam")).
+      arg("minIntersectionParam", test1args("minIntersectionParam")).
+      arg("numSimilarItems", test1args("numSimilarItems")).
       source(Tsv(DataFile(hdfsRoot, 8, 2, 3, None, "ratings.tsv")), test1Input).
        sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8, 2,3,None,"itemSimScores.tsv"))) { outputBuffer =>
          "correctly calculate similarity score" in {
@@ -81,7 +89,11 @@ class ItemSimilarityTest extends Specification with TupleConversions {
   // simple test2
   val test2args = Map[String, String]("measureParam" -> "correl",
       "priorCountParam" -> "20",
-      "priorCorrelParam" -> "0.5"
+      "priorCorrelParam" -> "0.5",
+      "minNumRatersParam" -> "1",
+      "maxNumRatersParam" -> "10000",
+      "minIntersectionParam" -> "1",
+      "numSimilarItems" -> "500"
   )
   
   val test2Input = List(
@@ -121,6 +133,10 @@ class ItemSimilarityTest extends Specification with TupleConversions {
       arg("measureParam", test2args("measureParam")).
       arg("priorCountParam", test2args("priorCountParam")).
       arg("priorCorrelParam", test2args("priorCorrelParam")).
+      arg("minNumRatersParam", test2args("minNumRatersParam")).
+      arg("maxNumRatersParam", test2args("maxNumRatersParam")).
+      arg("minIntersectionParam", test2args("minIntersectionParam")).
+      arg("numSimilarItems", test2args("numSimilarItems")).
       source(Tsv(DataFile(hdfsRoot, 8, 3, 1, None, "ratings.tsv")), test2Input).
        sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8,3,1,None,"itemSimScores.tsv"))) { outputBuffer =>
          "correctly calculate similarity score" in {
@@ -137,7 +153,11 @@ class ItemSimilarityTest extends Specification with TupleConversions {
   // simple test3
   val test3args = Map[String, String]("measureParam" -> "cosine",
       "priorCountParam" -> "0",
-      "priorCorrelParam" -> "0"
+      "priorCorrelParam" -> "0",
+      "minNumRatersParam" -> "1",
+      "maxNumRatersParam" -> "10000",
+      "minIntersectionParam" -> "1",
+      "numSimilarItems" -> "500"
   )
   
   val test3Input = List(
@@ -177,6 +197,10 @@ class ItemSimilarityTest extends Specification with TupleConversions {
       arg("measureParam", test3args("measureParam")).
       arg("priorCountParam", test3args("priorCountParam")).
       arg("priorCorrelParam", test3args("priorCorrelParam")).
+      arg("minNumRatersParam", test3args("minNumRatersParam")).
+      arg("maxNumRatersParam", test3args("maxNumRatersParam")).
+      arg("minIntersectionParam", test3args("minIntersectionParam")).
+      arg("numSimilarItems", test3args("numSimilarItems")).
       source(Tsv(DataFile(hdfsRoot, 8, 3, 1, None, "ratings.tsv")), test3Input).
        sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8,3,1,None,"itemSimScores.tsv"))) { outputBuffer =>
          "correctly calculate similarity score" in {
@@ -189,4 +213,60 @@ class ItemSimilarityTest extends Specification with TupleConversions {
        .finish
        
   }
+
+  // test4 - test numSimilarItems smaller than existing
+  val test4args = Map[String, String]("measureParam" -> "cosine",
+      "priorCountParam" -> "0",
+      "priorCorrelParam" -> "0",
+      "minNumRatersParam" -> "1",
+      "maxNumRatersParam" -> "10000",
+      "minIntersectionParam" -> "1",
+      "numSimilarItems" -> "1"
+  )
+  
+  val test4Input = List(
+      ("u0","i0",1),
+      ("u0","i1",2),
+      ("u0","i2",3),
+      ("u1","i1",4),
+      ("u1","i2",4),
+      ("u1","i3",2),
+      ("u2","i0",3),
+      ("u2","i1",2),
+      ("u2","i3",1),
+      ("u3","i0",2),
+      ("u3","i2",1),
+      ("u3","i3",5))
+
+  val test4Output = List[(String, String, Double)](
+      ("i0","i1",0.894427190999916),
+      ("i2","i1",0.983869910099907),
+      ("i1","i3",1.0), // NOTE: (use HALF_UP to work around 1.0 vs 0.999999999)
+      ("i3","i1",1.0))
+      
+  "ItemSimilarity Cosine with smaller numSimilarItems" should {
+    JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity").
+      arg("hdfsRoot", hdfsRoot).
+      arg("appid", "8").
+      arg("engineid", "3").
+      arg("algoid", "1").
+      arg("measureParam", test4args("measureParam")).
+      arg("priorCountParam", test4args("priorCountParam")).
+      arg("priorCorrelParam", test4args("priorCorrelParam")).
+      arg("minNumRatersParam", test4args("minNumRatersParam")).
+      arg("maxNumRatersParam", test4args("maxNumRatersParam")).
+      arg("minIntersectionParam", test4args("minIntersectionParam")).
+      arg("numSimilarItems", test4args("numSimilarItems")).
+      source(Tsv(DataFile(hdfsRoot, 8, 3, 1, None, "ratings.tsv")), test4Input).
+       sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8,3,1,None,"itemSimScores.tsv"))) { outputBuffer =>
+         "correctly calculate similarity score" in {
+           
+           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test4Output))
+           
+         }
+       }
+      .run
+      .finish
+  }
+
 }

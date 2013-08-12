@@ -9,14 +9,15 @@ import io.prediction.commons.filepath.DataFile
 
 class DataPreparatorTest extends Specification with TupleConversions {
   
-  val Rate = 0
-  val LikeDislike = 1
-  val View = 2
-  //val ViewDetails = 3
-  val Conversion = 4
+  val Rate = "rate"
+  val Like = "like"
+  val Dislike = "dislike"
+  val View = "view"
+  //val ViewDetails = "viewDetails"
+  val Conversion = "conversion"
   
   def test(itypes: List[String], params: Map[String, String],
-      items: List[(String, String)], u2iActions: List[(Int, String, String, String, String)],
+      items: List[(String, String)], u2iActions: List[(String, String, String, String, String)],
       ratings: List[(String, String, Int)], selectedItems: List[(String, String)]) = {
     
     val dbType = "file"
@@ -24,7 +25,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     val dbHost = None //Option("testhost")
     val dbPort = None //Option(27017)
     val hdfsRoot = "testroot/"
-  
+    
     JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator")
       .arg("dbType", dbType)
       .arg("dbName", dbName)
@@ -60,7 +61,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   
   /** no itypes specified */
   def testWithoutItypes(params: Map[String, String],
-      items: List[(String, String)], u2iActions: List[(Int, String, String, String, String)],
+      items: List[(String, String)], u2iActions: List[(String, String, String, String, String)],
       ratings: List[(String, String, Int)], selectedItems: List[(String, String)]) = {
     
     val dbType = "file"
@@ -68,7 +69,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     val dbHost = None //Option("testhost")
     val dbPort = None //Option(27017)
     val hdfsRoot = "testroot/"
-  
+    
     JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator")
       .arg("dbType", dbType)
       .arg("dbName", dbName)
@@ -125,13 +126,13 @@ class DataPreparatorTest extends Specification with TupleConversions {
   
   val test1Params: Map[String, String] = Map("viewParam" -> "3", "likeParam" -> "4", "dislikeParam" -> "1", "conversionParam" -> "5",
       "conflictParam" -> "latest") 
-        
+  
   "itemsim.itemsimcf DataPreparator with only rate actions, all itypes, no conflict" should {
-    test(test1AllItypes, test1Params, test1Items, test1U2i, test1Ratings, test1Items) 
+    test(test1AllItypes, test1Params, test1Items, test1U2i, test1Ratings, test1Items)
   }
   
   "itemsim.itemsimcf DataPreparator with only rate actions, no itypes specified, no conflict" should {
-    testWithoutItypes(test1Params, test1Items, test1U2i, test1Ratings, test1Items) 
+    testWithoutItypes(test1Params, test1Items, test1U2i, test1Ratings, test1Items)
   }
   
   /**
@@ -191,12 +192,12 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u0", "i2", 5),
       ("u0", "i3", 2),
       ("u1", "i0", 5))
-      
+   
   val test2Params: Map[String, String] = Map("viewParam" -> "3", "likeParam" -> "4", "dislikeParam" -> "1", "conversionParam" -> "5",
       "conflictParam" -> "latest")
   val test2ParamsHighest = test2Params + ("conflictParam" -> "highest")
   val test2ParamsLowest = test2Params + ("conflictParam" -> "lowest")
-  
+      
   "itemsim.itemsimcf DataPreparator with only rate actions, all itypes, conflict=latest" should {
     test(test2AllItypes, test2Params, test2Items, test2U2i, test2RatingsLatest, test2Items)
   }
@@ -220,8 +221,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test3Items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
   val test3U2i = List(
       (Rate, "u0", "i0", "123450", "4"), 
-      (LikeDislike, "u0", "i1", "123457", "1"),
-      (LikeDislike, "u0", "i2", "123458", "0"),
+      (Like, "u0", "i1", "123457", "3"),
+      (Dislike, "u0", "i2", "123458", "3"),
       (View, "u0", "i3", "123459", "0"), // NOTE: assume v field won't be missing
       (Rate, "u1", "i0", "123457", "2"),
       (Conversion, "u1", "i1", "123458", "0"))
@@ -236,7 +237,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   
   val test3Params: Map[String, String] = Map("viewParam" -> "1", "likeParam" -> "4", "dislikeParam" -> "2", "conversionParam" -> "5",
       "conflictParam" -> "latest") 
-      
+  
   "itemsim.itemsimcf DataPreparator with only all actions, all itypes, no conflict" should {
     test(test3AllItypes, test3Params, test3Items, test3U2i, test3Ratings, test3Items)
   }
@@ -246,14 +247,13 @@ class DataPreparatorTest extends Specification with TupleConversions {
    */
   val test4Params: Map[String, String] = Map("viewParam" -> "2", "likeParam" -> "5", "dislikeParam" -> "1", "conversionParam" -> "4",
       "conflictParam" -> "latest")
-  val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
       
   val test4AllItypes = List("t1", "t2", "t3", "t4")
   val test4Items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
   val test4U2i = List(
       (Rate, "u0", "i0", "123448", "3"),
       (View, "u0", "i0", "123449", "4"), // lowest (2)
-      (LikeDislike, "u0", "i0", "123451", "1"), // latest, highest (5)
+      (Like, "u0", "i0", "123451", "0"), // latest, highest (5)
       (Conversion, "u0", "i0", "123450", "1"), 
       
       (Rate, "u0", "i1", "123456", "1"), // lowest
@@ -269,7 +269,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
       
       (Rate, "u1", "i1", "123458", "5"), // highest
       (Conversion, "u1", "i1", "123459", "4"), // (4)
-      (LikeDislike, "u1", "i1", "123460", "0")) // latest, lowest (1)
+      (Dislike, "u1", "i1", "123460", "1")) // latest, lowest (1)
       
   val test4RatingsLatest = List(
       ("u0", "i0", 5), 
@@ -279,6 +279,54 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u1", "i0", 2),
       ("u1", "i1", 1))
   
+  "itemsim.itemsimcf DataPreparator with all actions, all itypes, and conflicts=latest" should {
+    test(test4AllItypes, test4Params, test4Items, test4U2i, test4RatingsLatest, test4Items)
+  }
+
+  val test4ParamsIgnoreView = test4Params + ("viewParam" -> "ignore")
+
+  val test4RatingsIgnoreViewLatest = List(
+      ("u0", "i0", 5), 
+      ("u0", "i1", 4),
+      ("u0", "i2", 4),
+      ("u0", "i3", 2),
+      ("u1", "i1", 1))
+
+  "itemsim.itemsimcf DataPreparator with all actions, all itypes, ignore View actions and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreView, test4Items, test4U2i, test4RatingsIgnoreViewLatest, test4Items)
+  }
+
+  // note: currently rate action can't be ignored
+  val test4ParamsIgnoreAllExceptView = test4Params + ("viewParam" -> "1", "likeParam" -> "ignore", "dislikeParam" -> "ignore", "conversionParam" -> "ignore")
+
+  val test4RatingsIgnoreAllExceptViewLatest = List(
+      ("u0", "i0", 1), 
+      ("u0", "i1", 1),
+      ("u0", "i2", 1),
+      ("u0", "i3", 2),
+      ("u1", "i0", 1),
+      ("u1", "i1", 5))
+
+  "itemsim.itemsimcf DataPreparator with all actions, all itypes, ignore all actions except View (and Rate) and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreAllExceptView, test4Items, test4U2i, test4RatingsIgnoreAllExceptViewLatest, test4Items)
+  }
+
+  // note: meaning rate action only
+  val test4ParamsIgnoreAll = test4Params + ("viewParam" -> "ignore", "likeParam" -> "ignore", "dislikeParam" -> "ignore", "conversionParam" -> "ignore")
+
+  val test4RatingsIgnoreAllLatest = List(
+      ("u0", "i0", 3), 
+      ("u0", "i1", 4),
+      ("u0", "i2", 3),
+      ("u0", "i3", 2),
+      ("u1", "i1", 5))
+
+  "itemsim.itemsimcf DataPreparator with all actions, all itypes, ignore all actions (except Rate) and conflicts=latest" should {
+    test(test4AllItypes, test4ParamsIgnoreAll, test4Items, test4U2i, test4RatingsIgnoreAllLatest, test4Items)
+  }
+
+  val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
+
   val test4Itypes_t3 = List("t3")
   val test4Items_t3 = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i3", "t3,t4"))
   val test4RatingsLowest_t3 = List(
@@ -287,14 +335,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
       ("u0", "i3", 2),
       ("u1", "i0", 2),
       ("u1", "i1", 1))
-  
-  "itemsim.itemsimcf DataPreparator with only all actions, all itypes, and conflicts=latest" should {
-    test(test4AllItypes, test4Params, test4Items, test4U2i, test4RatingsLatest, test4Items)
-  }
-  
-  "itemsim.itemsimcf DataPreparator with only all actions, some itypes, and conflicts=lowest" should {
+        
+  "itemsim.itemsimcf DataPreparator with all actions, some itypes, and conflicts=lowest" should {
     test(test4Itypes_t3, test4ParamsLowest, test4Items, test4U2i, test4RatingsLowest_t3, test4Items_t3)
   }
+
 
 }
  

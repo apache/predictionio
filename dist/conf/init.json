@@ -1411,6 +1411,164 @@
                 "testPercent": 0.2,
                 "timeorder": false
             }
+        },
+        "pdio-itemsimcf": {
+            "name": "Item Simiarlity Collaborative Filtering",
+            "description": "This algorithm predicts similar items which the user may also like.",
+            "batchcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --numSimilarItems $numSimilarItems$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$"
+            ],
+            "offlineevalcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --numSimilarItems $numSimilarItems$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false"
+            ],
+            "paramorder": [
+                "measureParam",
+                "priorCountParam",
+                "priorCorrelParam",
+                "minNumRatersParam",
+                "maxNumRatersParam",
+                "minIntersectionParam",
+                "viewParam",
+                "likeParam",
+                "dislikeParam",
+                "conversionParam",
+                "conflictParam"
+            ],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+            ],
+            "params": {
+                "measureParam": {
+                    "name": "Distance Function",
+                    "description": "",
+                    "constraint": "string",
+                    "defaultvalue": "correl"
+                },
+                "priorCountParam": {
+                    "name": "Virtual Count",
+                    "description": "Suggested range: 0 to 100.",
+                    "constraint": "integer",
+                    "defaultvalue": 20
+                },
+                "priorCorrelParam": {
+                    "name": "Prior Correlation",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "minNumRatersParam": {
+                    "name": "Minimum Number of Raters",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "maxNumRatersParam": {
+                    "name": "Maximum Number of Raters",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 10000
+                },
+                "minIntersectionParam": {
+                    "name": "Minimum Intersection",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "viewParam": {
+                    "name": "View Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 3
+                },
+                "viewmoreParam": {
+                    "name": "View More Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 3
+                },
+                "likeParam": {
+                    "name": "Like Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "dislikeParam": {
+                    "name": "Dislike Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "conversionParam": {
+                    "name": "Buy Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 4
+                },
+                "conflictParam": {
+                    "name": "Override",
+                    "description": "",
+                    "constraint": "string",
+                    "defaultvalue": "latest"
+                },
+                "priorCountParamMin": {
+                    "name": "priorCountParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 10
+                },
+                "priorCountParamMax": {
+                    "name": "priorCountParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 30
+                },
+                "minNumRatersParamMin": {
+                    "name": "minNumRatersParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "minNumRatersParamMax": {
+                    "name": "minNumRatersParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "maxNumRatersParamMin": {
+                    "name": "maxNumRatersParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 10000
+                },
+                "maxNumRatersParamMax": {
+                    "name": "maxNumRatersParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 10000
+                },
+                "minIntersectionParamMin": {
+                    "name": "minIntersectionParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "minIntersectionParamMax": {
+                    "name": "minIntersectionParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "priorCorrelParamMin": {
+                    "name": "priorCorrelParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "priorCorrelParamMax": {
+                    "name": "priorCorrelParamMax",
+                    "constraint": "double",
+                    "defaultvalue": 0.1
+                }
+            }
         }
     },
     "offlineevalmetricinfos": {

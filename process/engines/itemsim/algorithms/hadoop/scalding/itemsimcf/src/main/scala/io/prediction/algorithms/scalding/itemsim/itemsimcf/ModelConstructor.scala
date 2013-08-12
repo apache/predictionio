@@ -17,7 +17,7 @@ import io.prediction.commons.scalding.modeldata.ItemSimScores
  *   
  * Required args:
  * --dbType: <string> modeldata DB type (eg. mongodb) (see --dbHost, --dbPort)
- * --dbName: <string>
+ * --dbName: <string> (eg. predictionio_modeldata)
  * 
  * --hdfsRoot: <string>. Root directory of the HDFS
  * 
@@ -30,6 +30,7 @@ import io.prediction.commons.scalding.modeldata.ItemSimScores
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
  * 
+ * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
  * 
  * Example:
@@ -50,7 +51,7 @@ class ModelConstructor(args: Args) extends Job(args) {
   val appidArg = args("appid").toInt
   val engineidArg = args("engineid").toInt
   val algoidArg = args("algoid").toInt
-  val evalidArg = None //args.optional("evalid") map (x => x.toInt)
+  val evalidArg = args.optional("evalid") map (x => x.toInt)
   val OFFLINE_EVAL = (evalidArg != None) // offline eval mode
   
   val debugArg = args.list("debug")
