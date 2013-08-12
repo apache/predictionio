@@ -22,6 +22,36 @@ class ItemSimilarityTest extends Specification with TupleConversions {
     }
   }
 
+
+  def test(testArgs: Map[String, String],
+    testInput: List[(String, String, Int)],
+    testOutput: List[(String, String, Double)]
+    ) = {
+
+    val hdfsRoot = "testroot/"
+
+    JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity").
+      arg("hdfsRoot", hdfsRoot).
+      arg("appid", "8").
+      arg("engineid", "2").
+      arg("algoid", "3").
+      arg("measureParam", testArgs("measureParam")).
+      arg("priorCountParam", testArgs("priorCountParam")).
+      arg("priorCorrelParam", testArgs("priorCorrelParam")).
+      arg("minNumRatersParam", testArgs("minNumRatersParam")).
+      arg("maxNumRatersParam", testArgs("maxNumRatersParam")).
+      arg("minIntersectionParam", testArgs("minIntersectionParam")).
+      arg("numSimilarItems", testArgs("numSimilarItems")).
+      source(Tsv(DataFile(hdfsRoot, 8, 2, 3, None, "ratings.tsv")), testInput).
+       sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8, 2, 3, None, "itemSimScores.tsv"))) { outputBuffer =>
+         "correctly calculate similarity score" in {
+           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(testOutput))
+         }
+       }
+      .run
+      .finish  
+  }
+
   // simple test1
   val test1args = Map[String, String]("measureParam" -> "correl",
       "priorCountParam" -> "10",
@@ -63,27 +93,7 @@ class ItemSimilarityTest extends Specification with TupleConversions {
   val hdfsRoot = "testroot/"
   
   "ItemSimilarity Correlation" should {
-    JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity").
-      arg("hdfsRoot", hdfsRoot).
-      arg("appid", "8").
-      arg("engineid", "2").
-      arg("algoid", "3").
-      arg("measureParam", test1args("measureParam")).
-      arg("priorCountParam", test1args("priorCountParam")).
-      arg("priorCorrelParam", test1args("priorCorrelParam")).
-      arg("minNumRatersParam", test1args("minNumRatersParam")).
-      arg("maxNumRatersParam", test1args("maxNumRatersParam")).
-      arg("minIntersectionParam", test1args("minIntersectionParam")).
-      arg("numSimilarItems", test1args("numSimilarItems")).
-      source(Tsv(DataFile(hdfsRoot, 8, 2, 3, None, "ratings.tsv")), test1Input).
-       sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8, 2,3,None,"itemSimScores.tsv"))) { outputBuffer =>
-         "correctly calculate similarity score" in {
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test1Output))
-         }
-       }
-       .run
-       .finish
-       
+    test(test1args, test1Input, test1Output)   
   }
   
   // simple test2
@@ -125,29 +135,7 @@ class ItemSimilarityTest extends Specification with TupleConversions {
       ("i3","i2",0.363636363636364))
   
   "ItemSimilarity Correlation with different regularization" should {
-    JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity").
-      arg("hdfsRoot", hdfsRoot).
-      arg("appid", "8").
-      arg("engineid", "3").
-      arg("algoid", "1").
-      arg("measureParam", test2args("measureParam")).
-      arg("priorCountParam", test2args("priorCountParam")).
-      arg("priorCorrelParam", test2args("priorCorrelParam")).
-      arg("minNumRatersParam", test2args("minNumRatersParam")).
-      arg("maxNumRatersParam", test2args("maxNumRatersParam")).
-      arg("minIntersectionParam", test2args("minIntersectionParam")).
-      arg("numSimilarItems", test2args("numSimilarItems")).
-      source(Tsv(DataFile(hdfsRoot, 8, 3, 1, None, "ratings.tsv")), test2Input).
-       sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8,3,1,None,"itemSimScores.tsv"))) { outputBuffer =>
-         "correctly calculate similarity score" in {
-           
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test2Output))
-           
-         }
-       }
-       .run
-       .finish
-       
+    test(test2args, test2Input, test2Output)   
   }
   
   // simple test3
@@ -189,29 +177,7 @@ class ItemSimilarityTest extends Specification with TupleConversions {
       ("i3","i2",0.585490553844358))
   
   "ItemSimilarity Cosine" should {
-    JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity").
-      arg("hdfsRoot", hdfsRoot).
-      arg("appid", "8").
-      arg("engineid", "3").
-      arg("algoid", "1").
-      arg("measureParam", test3args("measureParam")).
-      arg("priorCountParam", test3args("priorCountParam")).
-      arg("priorCorrelParam", test3args("priorCorrelParam")).
-      arg("minNumRatersParam", test3args("minNumRatersParam")).
-      arg("maxNumRatersParam", test3args("maxNumRatersParam")).
-      arg("minIntersectionParam", test3args("minIntersectionParam")).
-      arg("numSimilarItems", test3args("numSimilarItems")).
-      source(Tsv(DataFile(hdfsRoot, 8, 3, 1, None, "ratings.tsv")), test3Input).
-       sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8,3,1,None,"itemSimScores.tsv"))) { outputBuffer =>
-         "correctly calculate similarity score" in {
-           
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test3Output))
-           
-         }
-       }
-       .run
-       .finish
-       
+    test(test3args, test3Input, test3Output)   
   }
 
   // test4 - test numSimilarItems smaller than existing
@@ -245,28 +211,7 @@ class ItemSimilarityTest extends Specification with TupleConversions {
       ("i3","i1",1.0))
       
   "ItemSimilarity Cosine with smaller numSimilarItems" should {
-    JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity").
-      arg("hdfsRoot", hdfsRoot).
-      arg("appid", "8").
-      arg("engineid", "3").
-      arg("algoid", "1").
-      arg("measureParam", test4args("measureParam")).
-      arg("priorCountParam", test4args("priorCountParam")).
-      arg("priorCorrelParam", test4args("priorCorrelParam")).
-      arg("minNumRatersParam", test4args("minNumRatersParam")).
-      arg("maxNumRatersParam", test4args("maxNumRatersParam")).
-      arg("minIntersectionParam", test4args("minIntersectionParam")).
-      arg("numSimilarItems", test4args("numSimilarItems")).
-      source(Tsv(DataFile(hdfsRoot, 8, 3, 1, None, "ratings.tsv")), test4Input).
-       sink[(String, String, Double)](Tsv(AlgoFile(hdfsRoot, 8,3,1,None,"itemSimScores.tsv"))) { outputBuffer =>
-         "correctly calculate similarity score" in {
-           
-           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(test4Output))
-           
-         }
-       }
-      .run
-      .finish
+    test(test4args, test4Input, test4Output)
   }
 
 }
