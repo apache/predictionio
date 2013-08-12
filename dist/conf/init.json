@@ -42,6 +42,37 @@
                     "defaultvalue": 500
                 }
             }
+        },
+        "itemsim": {
+            "name": "Item Similarity Prediction Engine",
+            "description": "Discover similar items",
+            "defaultalgoinfoid": "mahout-itembased",
+            "defaultsettings": {
+                "serendipity": {
+                    "name": "Serendipity",
+                    "description": "Preference for surprising discovery",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "freshness": {
+                    "name": "Freshness",
+                    "description": "Preference for newer items",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "goal": {
+                    "name": "Recommendation Goal",
+                    "description": "Goal to be maximized",
+                    "constraint": "string",
+                    "defaultvalue": "rate3"
+                },
+                "numSimItems": {
+                    "name": "Number of Similar Items",
+                    "description": "Number of similar items to be generated for each item",
+                    "constraint": "integer",
+                    "defaultvalue": 500
+                }
+            }
         }
     },
     "algoinfos": {
@@ -1375,42 +1406,6 @@
                     "defaultvalue": 1
                 }
             }
-        }
-    },
-    "offlineevalsplitterinfos": {
-        "trainingtestsplit": {
-            "name": "Training/Test Data Splitter With Time Order Option",
-            "description": "Split data into training, validation and test sets",
-            "engineinfoids": [
-                "itemrec"
-            ],
-            "commands": [
-                "java -jar $trainingTestSplitTimeJar$ --hadoop $hadoop$ --pdioEvalJar $pdioEvalJar$ --sequenceNum $iteration$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
-            ],
-            "paramorder": [
-                "trainingPercent",
-                "validationPercent",
-                "testPercent",
-                "timeorder"
-            ],
-            "paramnames": {
-                "trainingPercent": "Training Percentage",
-                "validationPercent": "Validation Percentage",
-                "testPercent": "Test Percentage",
-                "timeorder": "Time Order"
-            },
-            "paramdescription": {
-                "trainingPercent": "Percentage of data as training set",
-                "validationPercent": "Percentage of data as validation set",
-                "testPercent": "Percentage of data as test set",
-                "timeorder": "Random with time order."
-            },
-            "paramdefaults": {
-                "trainingPercent": 0.8,
-                "validationPercent": 0,
-                "testPercent": 0.2,
-                "timeorder": false
-            }
         },
         "pdio-itemsimcf": {
             "name": "Item Simiarlity Collaborative Filtering",
@@ -1568,6 +1563,42 @@
                     "constraint": "double",
                     "defaultvalue": 0.1
                 }
+            }
+        }
+    },
+    "offlineevalsplitterinfos": {
+        "trainingtestsplit": {
+            "name": "Training/Test Data Splitter With Time Order Option",
+            "description": "Split data into training, validation and test sets",
+            "engineinfoids": [
+                "itemrec"
+            ],
+            "commands": [
+                "java -jar $trainingTestSplitTimeJar$ --hadoop $hadoop$ --pdioEvalJar $pdioEvalJar$ --sequenceNum $iteration$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
+            ],
+            "paramorder": [
+                "trainingPercent",
+                "validationPercent",
+                "testPercent",
+                "timeorder"
+            ],
+            "paramnames": {
+                "trainingPercent": "Training Percentage",
+                "validationPercent": "Validation Percentage",
+                "testPercent": "Test Percentage",
+                "timeorder": "Time Order"
+            },
+            "paramdescription": {
+                "trainingPercent": "Percentage of data as training set",
+                "validationPercent": "Percentage of data as validation set",
+                "testPercent": "Percentage of data as test set",
+                "timeorder": "Random with time order."
+            },
+            "paramdefaults": {
+                "trainingPercent": 0.8,
+                "validationPercent": 0,
+                "testPercent": 0.2,
+                "timeorder": false
             }
         }
     },

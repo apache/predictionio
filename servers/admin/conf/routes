@@ -60,6 +60,10 @@ POST     /app/:app_id/engine/:engine_id/algo_trainnow      controllers.Applicati
 # Engine Module
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.getSettings(app_id, engine_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.updateSettings(app_id, engine_id)
+
+GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id     controllers.Itemsim.Engine.getSettings(app_id, engine_id)
+PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id     controllers.Itemsim.Engine.updateSettings(app_id, engine_id)
+
 # Algo Module
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.PdioKnnItemBased.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.PdioKnnItemBased.updateSettings(app_id, engine_id, algo_id)
@@ -80,3 +84,9 @@ GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdsgd/:a
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdsgd/:algo_id     controllers.Itemrec.MahoutSVDSGD.updateSettings(app_id, engine_id, algo_id)
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdplusplus/:algo_id     controllers.Itemrec.MahoutSVDPlusPlus.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdplusplus/:algo_id     controllers.Itemrec.MahoutSVDPlusPlus.updateSettings(app_id, engine_id, algo_id)
+
+GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/pdio-itemsimcf/:algo_id     controllers.Itemsim.ItemSimCF.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/pdio-itemsimcf/:algo_id     controllers.Itemsim.ItemSimCF.updateSettings(app_id, engine_id, algo_id)
+
+GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemsim.MahoutItemBased.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemsim.MahoutItemBased.updateSettings(app_id, engine_id, algo_id)

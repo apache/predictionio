@@ -383,31 +383,33 @@ object Application extends Controller {
    * Required param: id  (i.e. enginetype_id)
    *  */
   def getEngineTypeAlgoList(id: String) = Action {
-    Ok(toJson(
-      Map(
-        "enginetypeName" -> toJson("Item Recommendation Engine"),
-       /* "algotypelist" -> toJson(Seq(
-          Map(
-            "id" -> "pdio-knnitembased",
-            "algotypeName" -> algoTypeNames("pdio-knnitembased"), //"Item-based Similarity (kNN) ",
-            "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
-            "req" -> "Hadoop",
-            "datareq" -> "U2I Actions such as Like, Buy and Rate.")
-            )) */
-        "algotypelist" -> toJson(
-          (algoInfos.getByEngineInfoId("itemrec") map { algoInfo =>
+    engineInfos.get(id) map { engineInfo =>
+      Ok(toJson(
+        Map(
+          "enginetypeName" -> toJson(engineInfo.name),
+         /* "algotypelist" -> toJson(Seq(
             Map(
-              "id" -> toJson(algoInfo.id),
-              "algotypeName" -> toJson(algoInfo.name),
-              "description" -> toJson(algoInfo.description.getOrElse("")),
-              "req" -> toJson(algoInfo.techreq),
-              "datareq" -> toJson(algoInfo.datareq)
-              )
+              "id" -> "pdio-knnitembased",
+              "algotypeName" -> algoTypeNames("pdio-knnitembased"), //"Item-based Similarity (kNN) ",
+              "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
+              "req" -> "Hadoop",
+              "datareq" -> "U2I Actions such as Like, Buy and Rate.")
+              )) */
+          "algotypelist" -> toJson(
+            (algoInfos.getByEngineInfoId(id) map { algoInfo =>
+              Map(
+                "id" -> toJson(algoInfo.id),
+                "algotypeName" -> toJson(algoInfo.name),
+                "description" -> toJson(algoInfo.description.getOrElse("")),
+                "req" -> toJson(algoInfo.techreq),
+                "datareq" -> toJson(algoInfo.datareq)
+                )
 
-          }).toSeq )
-         )
+            }).toSeq )
+           )
 
-     ))
+       ))
+    } getOrElse InternalServerError(obj("message" -> "Invalid EngineInfo ID"))
   }
 
    /* List all metrics type of a specific engine type
@@ -495,7 +497,7 @@ object Application extends Controller {
   }
 
 
-  val supportedEngineTypes: List[String] = List("itemrec", "itemsim") // TODO: only itemrec is supported for now...
+  val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
   val enginenameConstraint = Constraints.pattern("""\b[a-zA-Z][a-zA-Z0-9_-]*\b""".r, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
   /*
    * createEngine
@@ -566,7 +568,7 @@ object Application extends Controller {
 
         Ok(toJson(Map(
           "id" -> engineId.toString, // engine id
-          "enginetype_id" -> "itemrec",
+          "enginetype_id" -> enginetype,
           "app_id" -> fappid.toString,
           "engineName" -> enginename)))
       }
@@ -695,19 +697,7 @@ object Application extends Controller {
     }
   }
 
-  val supportedAlgoTypes: List[String] = List(
-      "pdio-knnitembased",
-      "pdio-latestrank",
-      "pdio-randomrank",
-      "mahout-itembased",
-      "mahout-parallelals",
-      "mahout-knnuserbased",
-      "mahout-thresholduserbased",
-      "mahout-slopeone",
-      "mahout-alswr",
-      "mahout-svdsgd",
-      "mahout-svdplusplus"
-  )
+  val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // request payload
