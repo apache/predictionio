@@ -42,12 +42,8 @@ install_hadoop () {
 	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	echo "Retrieving Apache mirror list..."
-	curl -o apache_hadoop_mirrors.txt http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-1.1.2/hadoop-1.1.2.tar.gz
-	HADOOP_URL=$(cat apache_hadoop_mirrors.txt | grep -m 1 "<strong>.*</strong>" | sed 's/.*<strong>//' | sed 's/<\/strong>.*//')
-	echo "Found mirror: $HADOOP_URL"
-	curl -o hadoop-1.1.2.tar.gz $HADOOP_URL
-	tar zxvf hadoop-1.1.2.tar.gz
+	curl -O http://archive.apache.org/dist/hadoop/common/hadoop-1.1.2/hadoop-1.1.2-bin.tar.gz
+	tar zxvf hadoop-1.1.2-bin.tar.gz
 	echo "Configuring Hadoop in pseudo-distributed mode..."
 	cp ../conf/hadoop/* $VENDOR_HADOOP_PATH/conf
 	echo "export JAVA_HOME=$JAVA_HOME" >> $VENDOR_HADOOP_PATH/conf/hadoop-env.sh
