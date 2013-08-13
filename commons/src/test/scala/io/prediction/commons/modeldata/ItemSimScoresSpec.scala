@@ -7,32 +7,32 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class ItemRecScoresSpec extends Specification {
+class ItemSimScoresSpec extends Specification {
   def is =
-    "PredictionIO Model Data Item Recommendation Scores Specification" ^
+    "PredictionIO Model Data Item Similarity Scores Specification" ^
       p ^
-      "ItemRecScores can be implemented by:" ^ endp ^
-      "1. MongoItemRecScores" ^ mongoItemRecScores ^ end
+      "ItemSimScores can be implemented by:" ^ endp ^
+      "1. MongoItemSimScores" ^ mongoItemSimScores ^ end
 
-  def mongoItemRecScores = p ^
-    "MongoItemRecScores should" ^
-    "behave like any ItemRecScores implementation" ^ itemRecScores(newMongoItemRecScores) ^
+  def mongoItemSimScores = p ^
+    "MongoItemSimScores should" ^
+    "behave like any ItemSimScores implementation" ^ itemSimScores(newMongoItemSimScores) ^
     Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def itemRecScores(itemRecScores: ItemRecScores) = {
+  def itemSimScores(itemSimScores: ItemSimScores) = {
     t ^
-      "inserting and getting 3 ItemRecScores"     ! insert(itemRecScores) ^
-      "getting 4+4+2 ItemRecScores"               ! getTopN(itemRecScores) ^
-      "delete ItemRecScores by algoid"            ! deleteByAlgoid(itemRecScores) ^
-      "existence by Algo"                         ! existByAlgo(itemRecScores) ^
+      "inserting and getting 3 ItemSimScores"     ! insert(itemSimScores) ^
+      "getting 4+4+2 ItemSimScores"               ! getTopN(itemSimScores) ^
+      "delete ItemSimScores by algoid"            ! deleteByAlgoid(itemSimScores) ^
+      "existence by Algo"                         ! existByAlgo(itemSimScores) ^
       bt
   }
 
-  val mongoDbName = "predictionio_modeldata_mongoitemrecscore_test"
+  val mongoDbName = "predictionio_modeldata_mongoitemsimscore_test"
 
-  def newMongoItemRecScores = new mongodb.MongoItemRecScores(MongoConnection()(mongoDbName))
+  def newMongoItemSimScores = new mongodb.MongoItemSimScores(MongoConnection()(mongoDbName))
 
-  def insert(itemRecScores: ItemRecScores) = {
+  def insert(itemSimScores: ItemSimScores) = {
     implicit val app = App(
       id = 0,
       userid = 0,
@@ -60,33 +60,33 @@ class ItemRecScoresSpec extends Specification {
       loop = None,
       paramset = None
     )
-    val itemScores = List(ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem1",
+    val itemScores = List(ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem1",
       score = -5.6,
       itypes = List("1","2","3"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem2",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem2",
       score = 10,
       itypes = List("4","5","6"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem3",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem3",
       score = 124.678,
       itypes = List("7","8","9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem4",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem4",
       score = 999,
       itypes = List("invalid"),
       appid = app.id,
@@ -94,9 +94,9 @@ class ItemRecScoresSpec extends Specification {
       modelset = true
     ))
     val dbItemScores = itemScores map {
-      itemRecScores.insert(_)
+      itemSimScores.insert(_)
     }
-    val results = itemRecScores.getTopN("testUser", 4, Some(List("1", "5", "9")), None)
+    val results = itemSimScores.getTopN("testUser", 4, Some(List("1", "5", "9")), None)
     val r1 = results.next
     val r2 = results.next
     val r3 = results.next()
@@ -106,7 +106,7 @@ class ItemRecScoresSpec extends Specification {
       (r3 must beEqualTo(dbItemScores(0)))
   }
 
-  def getTopN(itemRecScores: ItemRecScores) = {
+  def getTopN(itemSimScores: ItemSimScores) = {
     implicit val app = App(
       id = 234,
       userid = 0,
@@ -134,81 +134,81 @@ class ItemRecScoresSpec extends Specification {
       loop = None,
       paramset = None
     )
-    val itemScores = List(ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem1",
+    val itemScores = List(ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem1",
       score = -5.6,
       itypes = List("1","2","3"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem2",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem2",
       score = 10,
       itypes = List("4","5","6"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem3",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem3",
       score = 124.678,
       itypes = List("7","8","9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem4",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem4",
       score = 999,
       itypes = List("invalid"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem5",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem5",
       score = -5.6,
       itypes = List("1","2","3"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem6",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem6",
       score = 10,
       itypes = List("4","5","6"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem7",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem7",
       score = 124.678,
       itypes = List("7","8","9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem8",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem8",
       score = 999,
       itypes = List("invalid"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem9",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem9",
       score = 124.678,
       itypes = List("7","8","9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
-    ), ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem10",
+    ), ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem10",
       score = 999,
       itypes = List("invalid"),
       appid = app.id,
@@ -216,19 +216,19 @@ class ItemRecScoresSpec extends Specification {
       modelset = true
     ))
     val dbItemScores = itemScores map {
-      itemRecScores.insert(_)
+      itemSimScores.insert(_)
     }
-    val results1234 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), None)
+    val results1234 = itemSimScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), None)
     val r1 = results1234.next
     val r2 = results1234.next
     val r3 = results1234.next
     val r4 = results1234.next
-    val results5678 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r4))
+    val results5678 = itemSimScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r4))
     val r5 = results5678.next
     val r6 = results5678.next
     val r7 = results5678.next
     val r8 = results5678.next
-    val results910 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r8))
+    val results910 = itemSimScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r8))
     val r9 = results910.next
     val r10 = results910.next
     results1234.hasNext must beFalse and
@@ -246,7 +246,7 @@ class ItemRecScoresSpec extends Specification {
       (r10 must beEqualTo(dbItemScores(4)))
   }
 
-  def deleteByAlgoid(itemRecScores: ItemRecScores) = {
+  def deleteByAlgoid(itemSimScores: ItemSimScores) = {
 
     implicit val app = App(
       id = 0,
@@ -279,33 +279,33 @@ class ItemRecScoresSpec extends Specification {
 
     val algo2 = algo1.copy(id = 2) // NOTE: different id
 
-    val itemScores1 = List(ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem1",
+    val itemScores1 = List(ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem1",
       score = -5.6,
       itypes = List("1","2","3"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
-    ), ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem2",
+    ), ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem2",
       score = 10,
       itypes = List("4","5","6"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
-    ), ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem3",
+    ), ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem3",
       score = 124.678,
       itypes = List("7","8","9"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
-    ), ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem4",
+    ), ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem4",
       score = 999,
       itypes = List("invalid"),
       appid = app.id,
@@ -313,33 +313,33 @@ class ItemRecScoresSpec extends Specification {
       modelset = algo1.modelset
     ))
 
-    val itemScores2 = List(ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem1",
+    val itemScores2 = List(ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem1",
       score = 3,
       itypes = List("1","2","3"),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
-    ), ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem2",
+    ), ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem2",
       score = 2,
       itypes = List("4","5","6"),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
-    ), ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem3",
+    ), ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem3",
       score = 1,
       itypes = List("7","8","9"),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
-    ), ItemRecScore(
-      uid = "deleteByAlgoidUser",
-      iid = "testUserItem4",
+    ), ItemSimScore(
+      iid = "deleteByAlgoidUser",
+      simiid = "testUserItem4",
       score = 0,
       itypes = List("invalid"),
       appid = app.id,
@@ -348,37 +348,37 @@ class ItemRecScoresSpec extends Specification {
     ))
 
     val dbItemScores1 = itemScores1 map {
-      itemRecScores.insert(_)
+      itemSimScores.insert(_)
     }
 
     val dbItemScores2 = itemScores2 map {
-      itemRecScores.insert(_)
+      itemSimScores.insert(_)
     }
 
-    val results1 = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo1)
+    val results1 = itemSimScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo1)
     val r1r1 = results1.next
     val r1r2 = results1.next
     val r1r3 = results1.next
     val r1r4 = results1.next
 
-    val results2 = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
+    val results2 = itemSimScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
     val r2r1 = results2.next
     val r2r2 = results2.next
     val r2r3 = results2.next
     val r2r4 = results2.next
 
-    itemRecScores.deleteByAlgoid(algo1.id)
+    itemSimScores.deleteByAlgoid(algo1.id)
 
-    val results1b = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo1)
+    val results1b = itemSimScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo1)
 
-    val results2b = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
+    val results2b = itemSimScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
     val r2br1 = results2b.next
     val r2br2 = results2b.next
     val r2br3 = results2b.next
     val r2br4 = results2b.next
 
-    itemRecScores.deleteByAlgoid(algo2.id)
-    val results2c = itemRecScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
+    itemSimScores.deleteByAlgoid(algo2.id)
+    val results2c = itemSimScores.getTopN("deleteByAlgoidUser", 4, None, None)(app, algo2)
 
     results1.hasNext must beFalse and
       (r1r1 must beEqualTo(dbItemScores1(3))) and
@@ -399,7 +399,7 @@ class ItemRecScoresSpec extends Specification {
       (results2c.hasNext must beFalse)
   }
 
-  def existByAlgo(itemRecScores: ItemRecScores) = {
+  def existByAlgo(itemSimScores: ItemSimScores) = {
     implicit val app = App(
       id = 345,
       userid = 0,
@@ -428,16 +428,16 @@ class ItemRecScoresSpec extends Specification {
       paramset = None
     )
     val algo2 = algo1.copy(id = 3456)
-    itemRecScores.insert(ItemRecScore(
-      uid = "testUser",
-      iid = "testUserItem4",
+    itemSimScores.insert(ItemSimScore(
+      iid = "testUser",
+      simiid = "testUserItem4",
       score = 999,
       itypes = List("invalid"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
     ))
-    itemRecScores.existByAlgo(algo1) must beTrue and
-      (itemRecScores.existByAlgo(algo2) must beFalse)
+    itemSimScores.existByAlgo(algo1) must beTrue and
+      (itemSimScores.existByAlgo(algo2) must beFalse)
   }
 }

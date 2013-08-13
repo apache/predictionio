@@ -15,7 +15,7 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores {
   itemRecScoreColl.ensureIndex(scoreIdIndex)
   itemRecScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
 
-  def getTopN(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
+  def getTopN(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
     val query = MongoDBObject("algoid" -> algo.id, "uid" -> idWithAppid(app.id, uid), "modelset" -> modelset) ++
       (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
