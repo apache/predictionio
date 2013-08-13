@@ -160,6 +160,7 @@ object Jobs {
       command.setAttribute("itypes", "--itypes" + it.mkString(" "))
     }
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
+    command.setAttribute("numSimilarItems", engine.settings.getOrElse("numSimilarItems", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
   }
 }

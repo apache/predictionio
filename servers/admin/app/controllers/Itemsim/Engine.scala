@@ -17,7 +17,7 @@ object Engine extends Controller {
     "serendipity" -> 0,
     "freshness" -> 0,
     "goal" -> "rate3",
-    "numSimItems" -> 500)
+    "numSimilarItems" -> 500)
 
   def updateSettings(app_id:String, engine_id:String) = withUser { user => implicit request =>
     /*
@@ -35,7 +35,7 @@ object Engine extends Controller {
       "freshness" -> number(min=0, max=10),
       "allitemtypes" -> boolean,
       "itemtypelist" -> list(text), // TODO verifying
-      "numSimItems" -> number
+      "numSimilarItems" -> number
     ))
 
     // TODO: check this user owns this appid
@@ -49,7 +49,7 @@ object Engine extends Controller {
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (app_id, id, goal, serendipity, freshness, allitemtypes, itemtypelist, numSimItems) = formData
+        val (app_id, id, goal, serendipity, freshness, allitemtypes, itemtypelist, numSimilarItems) = formData
 
         // get original engine first
         val engine = engines.get(id.toInt)
@@ -61,7 +61,7 @@ object Engine extends Controller {
               "serendipity" -> serendipity,
               "freshness" -> freshness,
               "goal" -> goal,
-              "numSimItems" -> numSimItems)
+              "numSimilarItems" -> numSimilarItems)
           )
 
           engines.update(updatedEngine)
@@ -113,7 +113,7 @@ object Engine extends Controller {
         "freshness" -> toJson(settings("freshness").toString),
         "serendipity" -> toJson(settings("serendipity").toString),
         "goal" -> toJson(settings("goal").toString),
-        "numSimItems" -> toJson(settings("numSimItems").toString)
+        "numSimilarItems" -> toJson(settings("numSimilarItems").toString)
         )))
     } getOrElse {
       // if No such app id

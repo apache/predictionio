@@ -39,8 +39,8 @@ var ItemsimSettingsView = Backbone.View.extend({
 				var goal = self.model.get('goal');
 				self.$el.find('#itemsimGoal').val(goal);
 
-				var numSimItems = self.model.get('numSimItems')
-				self.$el.find('#itemsimNumSimItems').val(numSimItems);
+				var numSimilarItems = self.model.get('numSimilarItems')
+				self.$el.find('#itemsimNumSimilarItems').val(numSimilarItems);
 			}
 		});
 	},
@@ -48,7 +48,7 @@ var ItemsimSettingsView = Backbone.View.extend({
 		"click #itemsimAddItemTypeBtn" : "addItemType",
 		'keypress #itemsimAddItemTypeInput': 'onEnterAddItemType',
 		"change #itemsimGoal": "goalSelected",
-		"change #itemsimNumSimItems" : "changeNumSimItems",
+		"change #itemsimNumSimilarItems" : "changeNumSimilarItems",
 		"change #itemsimAllItemTypes" : "toggleAllItemTypes"
 	},
 	onEnterAddItemType : function(e) {
@@ -125,9 +125,9 @@ var ItemsimSettingsView = Backbone.View.extend({
 		this.model.save();
 		return false;
 	},
-	changeNumSimItems: function(e) {
-		var numSimItems = this.$el.find('#itemsimNumSimItems').val();
-		this.model.set({numSimItems: numSimItems});
+	changeNumSimilarItems: function(e) {
+		var numSimilarItems = this.$el.find('#itemsimNumSimilarItems').val();
+		this.model.set({numSimilarItems: numSimilarItems});
 		this.model.save();
 	},
 	render : function() {
