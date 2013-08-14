@@ -819,6 +819,7 @@ object Application extends Controller {
         Logger.info("Delete model data for algo ID "+algoid)
         algoInfo.engineinfoid match {
           case "itemrec" => itemRecScores.deleteByAlgoid(algoid)
+          case "itemsim" => itemSimScores.deleteByAlgoid(algoid)
           case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.engineinfoid)
         }
       } getOrElse { throw new RuntimeException("Try to delete algo of non-existing algotype: " + algo.infoid) }
