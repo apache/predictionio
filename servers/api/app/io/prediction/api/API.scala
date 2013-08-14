@@ -90,7 +90,7 @@ object API extends Controller {
   def anyToJsValue(v: Any): JsValue = v match {
     case x: Int => Json.toJson(v.asInstanceOf[Int])
     case x: String => Json.toJson(v.asInstanceOf[String])
-    case x: List[_] => Json.toJson(v.asInstanceOf[List[String]])
+    case x: Seq[_] => Json.toJson(v.asInstanceOf[Seq[String]])
     case x: APIErrors => Json.toJson(v.asInstanceOf[APIErrors])
     case _ => JsNull
   }

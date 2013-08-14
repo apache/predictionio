@@ -18,7 +18,7 @@ class MongoItemSimScores(db: MongoDB) extends ItemSimScores {
   def getTopN(iid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemSimScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
     val query = MongoDBObject("algoid" -> algo.id, "iid" -> idWithAppid(app.id, iid), "modelset" -> modelset) ++
-      (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
+      (itypes map { loi => MongoDBObject("simitypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
     after map { iss =>
       new MongoItemSimScoreIterator(
         itemSimScoreColl.find(query).
@@ -40,7 +40,7 @@ class MongoItemSimScores(db: MongoDB) extends ItemSimScores {
       "iid" -> idWithAppid(itemSimScore.appid, itemSimScore.iid),
       "simiid" -> idWithAppid(itemSimScore.appid, itemSimScore.simiid),
       "score" -> itemSimScore.score,
-      "itypes" -> itemSimScore.itypes,
+      "simitypes" -> itemSimScore.itypes,
       "algoid" -> itemSimScore.algoid,
       "modelset" -> itemSimScore.modelset
     )
@@ -66,7 +66,7 @@ class MongoItemSimScores(db: MongoDB) extends ItemSimScores {
       iid = dbObj.as[String]("iid").drop(appid.toString.length+1),
       simiid = dbObj.as[String]("simiid").drop(appid.toString.length+1),
       score = dbObj.as[Double]("score"),
-      itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("itypes")),
+      itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("simitypes")),
       appid = appid,
       algoid = dbObj.as[Int]("algoid"),
       modelset = dbObj.as[Boolean]("modelset"),

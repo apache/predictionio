@@ -55,6 +55,7 @@ object Application extends Controller {
 
   /** PredictionIO Commons modeldata */
   val itemRecScores = config.getModeldataItemRecScores()
+  val itemSimScores = config.getModeldataItemSimScores()
 
   /** PredictionIO Commons appdata */
   val appDataUsers = config.getAppdataUsers()
@@ -455,6 +456,7 @@ object Application extends Controller {
     engine map { eng: Engine =>
       val modelDataExist: Boolean = eng.infoid match {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
+        case "itemsim" => try { itemSimScores.existByAlgo(algoOutputSelector.itemSimAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case _ => false
       }
       val deployedAlgos = algos.getDeployedByEngineid(eng.id)
