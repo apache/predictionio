@@ -7,14 +7,14 @@ import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval}
 import scala.util.Random
 
 trait ItemRecAlgoOutput {
-  def output(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore]
+  def output(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore]
 }
 
 object ItemRecAlgoOutput {
   val config = new Config
   val items = config.getAppdataItems
 
-  def output(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
+  def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
     /** Serendipity settings. */
     val serendipity = engine.settings.get("serendipity") map { _.asInstanceOf[Int] }
 
@@ -54,7 +54,7 @@ object ItemRecAlgoOutput {
   }
 
   /** Private method just to get items. */
-  private def more(uid: String, n: Int, itypes: Option[List[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore] = {
+  private def more(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore] = {
     /**
     algo.infoid match {
       case "pdio-knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)

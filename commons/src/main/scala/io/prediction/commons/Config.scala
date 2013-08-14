@@ -630,11 +630,31 @@ class Config {
     }
   }
 
+  /** Obtains an ItemSimScores object with configured backend type. */
+  def getModeldataItemSimScores(): modeldata.ItemSimScores = {
+    modeldataDbType match {
+      case "mongodb" => {
+        new modeldata.mongodb.MongoItemSimScores(modeldataMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataDbType)
+    }
+  }
+
   /** Obtains an ItemRecScores object with configured backend type. */
   def getModeldataTrainingItemRecScores(): modeldata.ItemRecScores = {
     modeldataDbType match {
       case "mongodb" => {
         new modeldata.mongodb.MongoItemRecScores(modeldataTrainingMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataTrainingDbType)
+    }
+  }
+
+  /** Obtains an ItemSimScores object with configured backend type. */
+  def getModeldataTrainingItemSimScores(): modeldata.ItemSimScores = {
+    modeldataDbType match {
+      case "mongodb" => {
+        new modeldata.mongodb.MongoItemSimScores(modeldataTrainingMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataTrainingDbType)
     }

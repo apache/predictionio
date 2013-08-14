@@ -5,7 +5,7 @@ import io.prediction.commons.settings._
 class AlgoOutputSelector(algos: Algos) {
   val multipleAlgoErrorMsg = "Deploying multiple algorithms is not yet supported. No results can be returned."
 
-  def itemRecSelection(uid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine): Seq[String] = {
+  def itemRecSelection(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine): Seq[String] = {
     implicit val algo = itemRecAlgoSelection(engine)
 
     itemrec.ItemRecAlgoOutput.output(uid, n, itypes)
@@ -27,7 +27,13 @@ class AlgoOutputSelector(algos: Algos) {
     algo
   }
 
-  def itemSimSelection(iid: String, n: Int, itypes: Option[List[String]])(implicit app: App, engine: Engine): Seq[String] = {
+  def itemSimSelection(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine): Seq[String] = {
+    implicit val algo = itemSimAlgoSelection(engine)
+
+    itemsim.ItemSimAlgoOutput.output(uid, n, itypes)
+  }
+
+  def itemSimAlgoSelection(engine: Engine): Algo = {
     /** Check engine type. */
     if (engine.infoid != "itemsim") throw new RuntimeException("Not an itemsim engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
@@ -35,11 +41,11 @@ class AlgoOutputSelector(algos: Algos) {
 
     if (!itemSimAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
-    implicit val algo = itemSimAlgos.next()
+    val algo = itemSimAlgos.next()
 
     /** Multiple deployment not yet supported. */
     if (itemSimAlgos.hasNext) throw new RuntimeException(multipleAlgoErrorMsg)
 
-    ItemSimAlgoOutput.output(iid, itypes)
+    algo
   }
 }
