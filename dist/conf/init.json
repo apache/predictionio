@@ -46,7 +46,7 @@
         "itemsim": {
             "name": "Item Similarity Prediction Engine",
             "description": "Discover similar items",
-            "defaultalgoinfoid": "mahout-itembased",
+            "defaultalgoinfoid": "pdio-itemsimcf",
             "defaultsettings": {
                 "serendipity": {
                     "name": "Serendipity",
