@@ -224,7 +224,7 @@ object API extends Controller {
         "pio_latlng" -> optional(latlng),
         "pio_inactive" -> optional(boolean)
       ), Set( // all reserved attributes
-        "pio_appkey", 
+        "pio_appkey",
         "pio_ct",
         "pio_uid",
         "pio_latlng",
@@ -363,7 +363,7 @@ object API extends Controller {
         f => bindFailed(f.errors),
         fdata => AuthenticatedApp(fdata._1) { implicit app =>
           val (appkey, action, uid, iid, t, latlng, rate, price) = fdata
-          
+
           val vValue: Option[Int] = action match {
             case "rate" => rate
             case _ => None
@@ -371,7 +371,7 @@ object API extends Controller {
           val validActions = List(u2iActions.rate, u2iActions.like, u2iActions.dislike, u2iActions.view, u2iActions.conversion)
 
           // additional user input checking
-          if ((action == u2iActions.rate) && (vValue == None)) { 
+          if ((action == u2iActions.rate) && (vValue == None)) {
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_rate", "message" -> "Required for rate action.")))))
           } else if (!validActions.contains(action)) {
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_action", "message" -> "Custom action is not supported yet.")))))
@@ -403,7 +403,7 @@ object API extends Controller {
         "latlng" -> optional(latlng),
         "inactive" -> optional(boolean)
       ), Set( // all reserved attributes
-        "appkey", 
+        "appkey",
         "ct",
         "uid",
         "latlng",
@@ -491,7 +491,7 @@ object API extends Controller {
         f => bindFailed(f.errors),
         fdata => AuthenticatedApp(fdata._1) { implicit app =>
           val (appkey, uid, iid, t, latlng, rate, price) = fdata
-          
+
           val vValue: Option[Int] = action match {
             case "rate" => rate
             case _ => None
@@ -499,7 +499,7 @@ object API extends Controller {
           val validActions = List(u2iActions.rate, u2iActions.like, u2iActions.dislike, u2iActions.view, u2iActions.conversion)
 
           // additional user input checking
-          if ((action == u2iActions.rate) && (vValue == None)) { 
+          if ((action == u2iActions.rate) && (vValue == None)) {
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "rate", "message" -> "Required for rate action.")))))
           } else if (!validActions.contains(action)) {
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "action", "message" -> "Custom action is not supported yet.")))))
@@ -544,10 +544,10 @@ object API extends Controller {
                 val res = algoOutputSelector.itemRecSelection(
                   uid = uid,
                   n = n,
-                  itypes = itypes map { _.split(",").toList }
+                  itypes = itypes map { _.split(",") }
                 )
                 if (res.length > 0) {
-                  val attributesToGet = attributes map { _.split(",").toSeq } getOrElse Seq()
+                  val attributesToGet: Seq[String] = attributes map { _.split(",").toSeq } getOrElse Seq()
 
                   if (attributesToGet.length > 0) {
                     val attributedItems = items.getByIds(app.id, res).map(i => (i.id, i)).toMap
@@ -565,6 +565,60 @@ object API extends Controller {
                   }
                 } else {
                   APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find recommendation for user."))
+                }
+              } catch {
+                case e: Exception =>
+                  APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage()))
+              }
+            }
+          }
+        }
+      )
+    }
+  }
+
+  def itemSimTopN(format: String, enginename: String) = Action { implicit request =>
+    FormattedResponse(format) {
+      Form(tuple(
+        "pio_appkey" -> nonEmptyText,
+        "pio_iid" -> nonEmptyText,
+        "pio_n" -> number(1, 100),
+        "pio_itypes" -> optional(text),
+        "pio_latlng" -> optional(latlng),
+        "pio_within" -> optional(numeric),
+        "pio_unit" -> optional(text),
+        "pio_attributes" -> optional(text)
+      )).bindFromRequest.fold(
+        f => bindFailed(f.errors),
+        t => {
+          val (appkey, iid, n, itypes, latlng, within, unit, attributes) = t
+          AuthenticatedApp(appkey) { implicit app =>
+            ValidEngine(enginename) { implicit engine =>
+              try {
+                val res = algoOutputSelector.itemSimSelection(
+                  iid = iid,
+                  n = n,
+                  itypes = itypes map { _.split(",") }
+                )
+                if (res.length > 0) {
+                  val attributesToGet: Seq[String] = attributes map { _.split(",").toSeq } getOrElse Seq()
+
+                  if (attributesToGet.length > 0) {
+                    val attributedItems = items.getByIds(app.id, res).map(i => (i.id, i)).toMap
+                    val ar = attributesToGet map { atg =>
+                      Map(atg -> res.map(ri =>
+                        attributedItems(ri).attributes map { attribs =>
+                          attribs.get(atg) getOrElse null
+                        } getOrElse null
+                      ))
+                    }
+
+                    APIMessageResponse(OK, Map("pio_iids" -> res) ++ ar.reduceLeft((a, b) => a ++ b))
+                  } else {
+                    APIMessageResponse(OK, Map("pio_iids" -> res))
+                  }
+                } else {
+                  APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find similar items for item."))
                 }
               } catch {
                 case e: Exception =>

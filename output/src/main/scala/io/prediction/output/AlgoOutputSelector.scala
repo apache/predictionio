@@ -27,10 +27,10 @@ class AlgoOutputSelector(algos: Algos) {
     algo
   }
 
-  def itemSimSelection(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine): Seq[String] = {
+  def itemSimSelection(iid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine): Seq[String] = {
     implicit val algo = itemSimAlgoSelection(engine)
 
-    itemsim.ItemSimAlgoOutput.output(uid, n, itypes)
+    itemsim.ItemSimAlgoOutput.output(iid, n, itypes)
   }
 
   def itemSimAlgoSelection(engine: Engine): Algo = {
