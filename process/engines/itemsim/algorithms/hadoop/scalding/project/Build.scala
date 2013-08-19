@@ -6,10 +6,14 @@ object PredictionIOAlgorithmsHadoopScaldingBuild extends Build {
     id = "itemsim-algo-scalding",
     base = file(".")).aggregate(
     algo_itemsimcf,
-    algo_mahout
+    algo_mahout,
+    algo_randomrank,
+    algo_latestrank
   ).dependsOn(
     algo_itemsimcf,
-    algo_mahout
+    algo_mahout,
+    algo_randomrank,
+    algo_latestrank
   )
 
   lazy val algo_itemsimcf = Project(
@@ -19,4 +23,12 @@ object PredictionIOAlgorithmsHadoopScaldingBuild extends Build {
   lazy val algo_mahout = Project(
     id = "algo-mahout",
     base = file("mahout"))
+
+  lazy val algo_randomrank = Project(
+    id = "algo-randomrank",
+    base = file("randomrank"))
+
+  lazy val algo_latestrank = Project(
+    id = "algo-latestrank",
+    base = file("latestrank"))
 }
