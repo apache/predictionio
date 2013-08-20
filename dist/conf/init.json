@@ -96,7 +96,6 @@
             "params": {}
         },
         "pdio-latestrank": {
-            "id": "pdio-latestrank",
             "name": "Latest Rank",
             "description": "Recommend latest items to users.",
             "batchcommands": [
@@ -1406,6 +1405,44 @@
                     "defaultvalue": 1
                 }
             }
+        },
+        "pdio-itemsimrandomrank": {
+            "name": "Random Rank",
+            "description": "Predict item similarities randomly.",
+            "batchcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.randomrank.RandomRank --hdfs --training_dbType $appdataDbType$ --training_dbName $appdataDbName$ --training_dbHost $appdataDbHost$ --training_dbPort $appdataDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet $modelset$"
+            ],
+            "offlineevalcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.randomrank.RandomRank --hdfs --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet false --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Items."
+            ],
+            "params": {}
+        },
+        "pdio-itemsimlatestrank": {
+            "name": "Latest Rank",
+            "description": "Consider latest items as most similar.",
+            "batchcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.latestrank.LatestRank --hdfs --training_dbType $appdataDbType$ --training_dbName $appdataDbName$ --training_dbHost $appdataDbHost$ --training_dbPort $appdataDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet $modelset$"
+            ],
+            "offlineevalcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.latestrank.LatestRank --hdfs --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet false --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Items with starttime."
+            ],
+            "params": {}
         },
         "pdio-itemsimcf": {
             "name": "Item Simiarlity Collaborative Filtering",
