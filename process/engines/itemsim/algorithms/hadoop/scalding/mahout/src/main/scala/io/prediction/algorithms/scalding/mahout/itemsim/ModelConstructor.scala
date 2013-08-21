@@ -3,7 +3,7 @@ package io.prediction.algorithms.scalding.mahout.itemsim
 import com.twitter.scalding._
 
 import io.prediction.commons.filepath.{DataFile, AlgoFile}
-import io.prediction.commons.scalding.modeldata.ItemRecScores
+import io.prediction.commons.scalding.modeldata.ItemSimScores
 
 /**
  * Source:
@@ -23,8 +23,7 @@ import io.prediction.commons.scalding.modeldata.ItemRecScores
  * --algoid: <int>
  * --modelSet: <boolean> (true/false). flag to indicate which set
  *
- * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true. 
- * --numRecommendations: <int>. number of recommendations to be generated
+ * --numSimilarItems: <int>. number of similar items to be generated
  *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -59,16 +58,12 @@ class ModelConstructor(args: Args) extends Job(args) {
   
   val modelSetArg = args("modelSet").toBoolean
   
-  val unseenOnlyArg = args("unseenOnly").toBoolean
-  val numRecommendationsArg = args("numRecommendations").toInt
+  val numSimilarItems = args("numSimilarItems").toInt
 
   /**
    * source
    */
-  // TODO: get mahout itemsim algo output
-  val predicted = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "predicted.tsv"), ('uindex, 'predicted)).read
-
-  val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindex, 'iindex, 'rating))
+  val similarities = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "similarities.tsv"), ('iindex, 'simiindex, 'score)).read
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
     .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
@@ -77,49 +72,26 @@ class ModelConstructor(args: Args) extends Job(args) {
       (iindex, iid, itypes.split(",").toList) 
     }
   
-  val usersIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "usersIndex.tsv")).read
-    .mapTo((0, 1) -> ('uindexU, 'uidU)) { fields: (String, String) =>
-
-    fields
-  }
-
   /**
    * sink
    */
 
-  val itemRecScoresSink = ItemRecScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg)
+  val ItemSimScoresSink = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg)
 
   /**
    * computation
    */
+  val sim = similarities.joinWithSmaller('iindex -> 'iindexI, itemsIndex)
+    .discard('iindex, 'iindexI)
+    .rename(('iidI, 'itypesI) -> ('iid, 'itypes))
+    .joinWithSmaller('simiindex -> 'iindexI, itemsIndex)
 
-  val predictedRating = predicted.flatMap('predicted -> ('iindex, 'rating)) { data: String => parsePredictedData(data) }
-    .project('uindex, 'iindex, 'rating)
+  val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score)
+  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score) -> ('iid, 'iidI, 'itypesI, 'score)) { fields: (String, String, List[String], String) => fields }
 
-  val combinedRating = if (unseenOnlyArg) predictedRating else (predictedRating ++ (ratingSource.read))
+  val combinedSimilarities = sim1 ++ sim2
+
+  combinedSimilarities
+    .then ( ItemSimScoresSink.writeData('iid, 'iidI, 'score, 'itypesI, algoidArg, modelSetArg) _ )
   
-  combinedRating
-    // just in case, if there are duplicates for the same u-i pair, simply take 1
-    // But note this is not supposed to happen anyway, because
-    // Mahout only recommends items which are not in ratings set.
-    .groupBy('uindex, 'iindex) { _.take(1) }
-    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
-    .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
-    .joinWithSmaller('uindex -> 'uindexU, usersIndex)
-    .then( itemRecScoresSink.writeData('uidU, 'iidI, 'rating, 'itypesI, algoidArg, modelSetArg) _ )
-  
-  /*
-  Mahout ItemRec output format
-  [24:3.2] => (24, 3.2)
-  [8:2.5,0:2.5]  => (8, 2.5), (0, 2.5)
-  [0:2.0]
-  [16:3.0]
-  */
-  def parsePredictedData(data: String) : List[(String, String)] = {
-    val dataLen = data.length
-    data.take(dataLen-1).tail.split(",").toList.map{ ratingData => 
-      val ratingDataArray = ratingData.split(":")
-      (ratingDataArray(0), ratingDataArray(1))
-    }
-  }
 }

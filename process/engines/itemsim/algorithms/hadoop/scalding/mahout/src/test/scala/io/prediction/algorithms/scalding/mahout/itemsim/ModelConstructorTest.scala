@@ -5,16 +5,14 @@ import org.specs2.mutable._
 import com.twitter.scalding._
 
 import io.prediction.commons.filepath.{AlgoFile, DataFile}
-import io.prediction.commons.scalding.modeldata.ItemRecScores
+import io.prediction.commons.scalding.modeldata.ItemSimScores
 import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
 
 class ModelConstructorTest extends Specification with TupleConversions {
 
-  def test(unseenOnly: Boolean, numRecommendations: Int,
+  def test(numSimilarItems: Int,
     items: List[(String, String, String)],
-    users: List[(String, String)],
-    predicted: List[(String, String)],
-    ratings: List[(String, String, String)],
+    similarities: List[(String, String, String)],
     output: List[(String, String, String, String)]) = {
 
     val appid = 3
@@ -29,8 +27,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
     val dbPort = None
     val hdfsRoot = "testroot/"
     
-    // TODO: modify test for itemsim
-    val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet)} 
+    val itemSimScores = output map { case (iid, simiid, score, simitypes) => (iid, simiid, score, simitypes, algoid, modelSet)} 
 
     JobTest("io.prediction.algorithms.scalding.mahout.itemsim.ModelConstructor")
       .arg("dbType", dbType)
@@ -40,15 +37,12 @@ class ModelConstructorTest extends Specification with TupleConversions {
       .arg("engineid", engineid.toString)
       .arg("algoid", algoid.toString)
       .arg("modelSet", modelSet.toString)
-      .arg("unseenOnly", unseenOnly.toString)
-      .arg("numRecommendations", numRecommendations.toString)
-      .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv"), new Fields("uindex", "predicted")), predicted)
-      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindex", "iindex", "rating")), ratings)
+      .arg("numSimilarItems", numSimilarItems.toString)
+      .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "similarities.tsv"), new Fields("iindex", "simiindex", "score")), similarities)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
-      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "usersIndex.tsv")), users)
-      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort).getSource) { outputBuffer =>
         "correctly write model data to a file" in {
-          outputBuffer.toList must containTheSameElementsAs(itemRecScores)
+          outputBuffer.toList must containTheSameElementsAs(itemSimScores)
         }
     }
     .run
@@ -58,54 +52,31 @@ class ModelConstructorTest extends Specification with TupleConversions {
 
   val test1Items = List(("0", "i0", "t1,t2,t3"), ("1", "i1", "t1,t2"), ("2", "i2", "t2,t3"), ("3", "i3", "t2"))
     
-  val test1Users = List(("0", "u0"), ("1", "u1"), ("2", "u2"), ("3", "u3"))
+  val test1Similarities = List( 
+    ("0", "1", "0.83"),
+    ("0", "2", "0.25"),
+    ("0", "3", "0.49"),
+    ("1", "2", "0.51"),
+    ("1", "3", "0.68"),
+    ("2", "3", "0.32"))
 
-  val test1Predicted = List(("0", "[1:0.123,2:0.456]"), ("1", "[0:1.2]"))
+  val test1Output = List(
+    ("i0", "i1", "0.83", "t1,t2"),
+    ("i0", "i2", "0.25", "t2,t3"),
+    ("i0", "i3", "0.49", "t2"),
+    ("i1", "i0", "0.83", "t1,t2,t3"),
+    ("i1", "i2", "0.51", "t2,t3"),
+    ("i1", "i3", "0.68", "t2"),
+    ("i2", "i3", "0.32", "t2"),
+    ("i2", "i1", "0.51", "t1,t2"),
+    ("i2", "i0", "0.25", "t1,t2,t3"),
+    ("i3", "i0", "0.49", "t1,t2,t3"),
+    ("i3", "i1", "0.68", "t1,t2"),
+    ("i3", "i2", "0.32", "t2,t3"))
 
-  val test1Ratings = List(("0", "0", "2.3"), ("0", "3", "4.56"))
-    
-  val test1Output = List(("u0", "i0", "2.3", "t1,t2,t3"), 
-    ("u0", "i3", "4.56", "t2"), 
-    ("u0", "i1", "0.123", "t1,t2"), 
-    ("u0", "i2", "0.456", "t2,t3"),
-    ("u1", "i0", "1.2", "t1,t2,t3"))
+  "mahout.itemsim ModelConstructor" should {
 
-  // only output 2 recommendations
-  val test1Output2 = List(("u0", "i0", "2.3", "t1,t2,t3"), 
-    ("u0", "i3", "4.56", "t2"), 
-    ("u1", "i0", "1.2", "t1,t2,t3"))
-
-  val test1OutputUnseenOnly = List(
-    ("u0", "i1", "0.123", "t1,t2"), 
-    ("u0", "i2", "0.456", "t2,t3"),
-    ("u1", "i0", "1.2", "t1,t2,t3"))
-
-  // only output 1 recommendation
-  val test1OutputUnseenOnly1 = List(
-    ("u0", "i2", "0.456", "t2,t3"),
-    ("u1", "i0", "1.2", "t1,t2,t3"))
-
-  "mahout.itemsim.itembased ModelConstructor with unseenOnly=false and numRecommendations=100" should {
-
-    test(false, 100, test1Items, test1Users, test1Predicted, test1Ratings, test1Output)
-
-  }
-
-  "mahout.itemsim.itembased ModelConstructor with unseenOnly=false and numRecommendations=2" should {
-
-    test(false, 2, test1Items, test1Users, test1Predicted, test1Ratings, test1Output2)
-
-  }
-
-  "mahout.itemsim.itembased ModelConstructor with unseenOnly=true and numRecommendations=100" should {
-
-    test(true, 100, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly)
-
-  }
-
-  "mahout.itemsim.itembased ModelConstructor with unseenOnly=true and numRecommendations=1" should {
-
-    test(true, 1, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly1)
+    test(100, test1Items, test1Similarities, test1Output)
 
   }
 
