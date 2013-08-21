@@ -14,16 +14,14 @@ import play.api.data.validation.ValidationError
 
 //import controllers.Application.{algos, withUser, algoInfos}
 
-object MahoutItemBased extends GenericAlgoSetting {
+object MahoutItemSimCF extends GenericAlgoSetting {
 
   case class Param (
     similarityClassname: String,
     threshold: Double,
     booleanData: Boolean,
     maxPrefsPerUser: Int, // min 1
-    minPrefsPerUser: Int, // min 1
-    maxSimilaritiesPerItem: Int, // min 1
-    maxPrefsPerUserInItemSimilarity: Int // min 1
+    minPrefsPerUser: Int // min 1
   )
 
   implicit val paramReads = (
@@ -31,9 +29,7 @@ object MahoutItemBased extends GenericAlgoSetting {
     (JsPath \ "threshold").read[Double] and
     (JsPath \ "booleanData").read[Boolean] and
     (JsPath \ "maxPrefsPerUser").read[Int](Reads.min(1)) and
-    (JsPath \ "minPrefsPerUser").read[Int](Reads.min(1)) and
-    (JsPath \ "maxSimilaritiesPerItem").read[Int](Reads.min(1)) and
-    (JsPath \ "maxPrefsPerUserInItemSimilarity").read[Int](Reads.min(1))
+    (JsPath \ "minPrefsPerUser").read[Int](Reads.min(1))
   )(Param)
 
   case class AutoTuneParam(
@@ -42,11 +38,7 @@ object MahoutItemBased extends GenericAlgoSetting {
     maxPrefsPerUserMin: Int, // min 1
     maxPrefsPerUserMax: Int, // min 1
     minPrefsPerUserMin: Int, // min 1
-    minPrefsPerUserMax: Int, // min 1
-    maxSimilaritiesPerItemMin: Int,
-    maxSimilaritiesPerItemMax: Int,
-    maxPrefsPerUserInItemSimilarityMin: Int,
-    maxPrefsPerUserInItemSimilarityMax: Int
+    minPrefsPerUserMax: Int // min 1
   )
 
   implicit val autoTuneParamReads = (
@@ -55,11 +47,7 @@ object MahoutItemBased extends GenericAlgoSetting {
     (JsPath \ "maxPrefsPerUserMin").read[Int](Reads.min(1)) and
     (JsPath \ "maxPrefsPerUserMax").read[Int](Reads.min(1)) and
     (JsPath \ "minPrefsPerUserMin").read[Int](Reads.min(1)) and
-    (JsPath \ "minPrefsPerUserMax").read[Int](Reads.min(1)) and
-    (JsPath \ "maxSimilaritiesPerItemMin").read[Int](Reads.min(1)) and
-    (JsPath \ "maxSimilaritiesPerItemMax").read[Int](Reads.min(1)) and
-    (JsPath \ "maxPrefsPerUserInItemSimilarityMin").read[Int](Reads.min(1)) and
-    (JsPath \ "maxPrefsPerUserInItemSimilarityMax").read[Int](Reads.min(1))
+    (JsPath \ "minPrefsPerUserMax").read[Int](Reads.min(1))
   )(AutoTuneParam)
 
   // aggregate all data into one class

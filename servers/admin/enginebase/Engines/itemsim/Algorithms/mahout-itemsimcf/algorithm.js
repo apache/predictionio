@@ -1,7 +1,7 @@
 var AlgoSettingsModel = Backbone.Model.extend({
 	/* Required params: app_id, engine_id, id (algo_id) */
 	urlRoot: function(){
-		return '/modules/itemsim/settings/app/'+ this.get("app_id") +'/engine/' + this.get("engine_id") + '/mahout-itembased';
+		return '/modules/itemsim/settings/app/'+ this.get("app_id") +'/engine/' + this.get("engine_id") + '/mahout-itemsimcf';
 	}
 });
 
@@ -24,8 +24,6 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('booleanData');
 				self.initValue('maxPrefsPerUser');
 				self.initValue('minPrefsPerUser');
-				self.initValue('maxSimilaritiesPerItem');
-				self.initValue('maxPrefsPerUserInItemSimilarity')
 				self.initValue('viewParam');
 				self.initValue('likeParam');
 				self.initValue('dislikeParam');
@@ -40,10 +38,6 @@ var AlgoSettingsView = Backbone.View.extend({
 				self.initValue('maxPrefsPerUserMax');
 				self.initValue('minPrefsPerUserMin');
 				self.initValue('minPrefsPerUserMax');
-				self.initValue('maxSimilaritiesPerItemMin');
-				self.initValue('maxSimilaritiesPerItemMax');
-				self.initValue('maxPrefsPerUserInItemSimilarityMin');
-				self.initValue('maxPrefsPerUserInItemSimilarityMax');
 				//
 				if (self.model.get('tune') == 'auto') {
 					self.tuneAuto();

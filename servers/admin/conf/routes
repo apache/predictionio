@@ -88,5 +88,5 @@ PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdpluspl
 GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/pdio-itemsimcf/:algo_id     controllers.Itemsim.ItemSimCF.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/pdio-itemsimcf/:algo_id     controllers.Itemsim.ItemSimCF.updateSettings(app_id, engine_id, algo_id)
 
-GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemsim.MahoutItemBased.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemsim.MahoutItemBased.updateSettings(app_id, engine_id, algo_id)
+GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itemsimcf/:algo_id     controllers.Itemsim.MahoutItemSimCF.getSettings(app_id, engine_id, algo_id)
+PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itemsimcf/:algo_id     controllers.Itemsim.MahoutItemSimCF.updateSettings(app_id, engine_id, algo_id)
