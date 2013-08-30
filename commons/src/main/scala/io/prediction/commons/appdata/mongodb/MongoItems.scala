@@ -39,6 +39,8 @@ class MongoItems(db: MongoDB) extends Items {
     itemColl.findOne(MongoDBObject("_id" -> idWithAppid(appid, id))) map { dbObjToItem(_) }
   }
 
+  def getByAppid(appid: Int) = new MongoItemsIterator(itemColl.find(MongoDBObject("appid" -> appid)))
+
   def getByIds(appid: Int, ids: Seq[String]) = {
     itemColl.find(MongoDBObject("_id" -> MongoDBObject("$in" -> ids.map(idWithAppid(appid, _))))).toList map { dbObjToItem(_) }
   }
@@ -89,5 +91,10 @@ class MongoItems(db: MongoDB) extends Items {
       //attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
       attributes = Option(getAttributesFromDBObject(dbObj)).filter(!_.isEmpty)
     )
+  }
+
+  class MongoItemsIterator(it: MongoCursor) extends Iterator[Item] {
+    def next = dbObjToItem(it.next)
+    def hasNext = it.hasNext
   }
 }
