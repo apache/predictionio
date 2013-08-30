@@ -77,8 +77,13 @@ else
     $SBT $CLEAN update assembly
 
     # Build process itemsim algo assembly
-    echo "Going to build PredictionIO Process ItemRec Algorithms Assembly..."
+    echo "Going to build PredictionIO Process ItemSim Algorithms Assembly..."
     cd $BASE/process/engines/itemsim/algorithms/hadoop/scalding
+    $SBT $CLEAN update assembly
+
+    # Build process itemsim eval assembly
+    echo "Going to build PredictionIO Process ItemSim Evaluations Assembly..."
+    cd $BASE/process/engines/itemsim/evaluations/hadoop/scalding
     $SBT $CLEAN update assembly
 fi
 
