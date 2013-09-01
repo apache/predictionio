@@ -120,6 +120,7 @@ object Jobs {
     command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
     command.setAttribute("scaldingGenericJar", config.getJar("io.prediction.algorithms.scalding.itemrec.generic").getOrElse(""))
     command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
+    command.setAttribute("istopkJar", config.getJar("io.prediction.evaluations.itemsim.topkitems").getOrElse(""))
     command.setAttribute("trainingTestSplitTimeJar", config.getJar("io.prediction.evaluations.itemrec.trainingtestsplit").getOrElse(""))
     command.setAttribute("paramgenJar", config.getJar("io.prediction.evaluations.itemrec.paramgen").getOrElse(""))
 
