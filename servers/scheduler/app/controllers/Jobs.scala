@@ -116,6 +116,7 @@ object Jobs {
 
     /** TODO: These JAR naming and locations must be generalized */
     command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
+    command.setAttribute("pdioISEvalJar", config.getJar("io.prediction.evaluations.scalding.itemsim").getOrElse(""))
     command.setAttribute("mahoutCoreJobJar", config.getJar("io.prediction.algorithms.mahout-core-job").getOrElse(""))
     command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
     command.setAttribute("scaldingGenericJar", config.getJar("io.prediction.algorithms.scalding.itemrec.generic").getOrElse(""))
