@@ -43,7 +43,7 @@ object TopKItems {
     val output: Output = Resource.fromFile(tmpFile)
     logger.info(s"Dumping data to temporary file ${tmpFile}...")
 
-    val scores = Seq.range(1, k, 1).reverse
+    val scores = Seq.range(1, k + 1).reverse
 
     var itemCount = 0
     items.getByAppid(evalid) foreach { i =>

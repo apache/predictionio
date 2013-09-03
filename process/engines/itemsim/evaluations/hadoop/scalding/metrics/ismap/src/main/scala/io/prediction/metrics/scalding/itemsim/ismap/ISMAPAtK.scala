@@ -98,21 +98,24 @@ class ISMAPAtK(args: Args) extends Job(args) {
     .joinWithSmaller('iid -> 'ruiid, relevantUsers)
     .joinWithSmaller('ruuid -> 'riuid, relevantItemsAsList, joiner = new LeftJoin)
     .groupBy('iid, 'ruuid) {
-      _.sortBy('score).reverse.scanLeft(('iid, 'simiid, 'ruuid, 'riiids) -> ('apiid, 'apsimiid, 'apruuid, 'precision, 'hit, 'count))(("", "", "", 0.0, 0, 0)) {
-        (newFields: (String, String, String, Double, Int, Int), fields: (String, String, String, List[String])) =>
-        val (iid, simiid, ruuid, riiids) = fields
-        val (newIid, newSimiid, newRuuid, precision, hit, count) = newFields
-        if (riiids.contains(simiid)) {
-          (iid, simiid, ruuid, (hit+1).toDouble/(count+1).toDouble, hit+1, count+1)
-        } else {
-          (iid, simiid, ruuid, 0, hit, count+1)
+      _.sortBy('score).reverse.scanLeft(('simiid, 'riiids) -> ('precision, 'hit, 'count))((0.0, 0, 0)) {
+        (newFields: (Double, Int, Int), fields: (String, List[String])) =>
+        val (simiid, riiids) = fields
+        val (precision, hit, count) = newFields
+        Option(riiids) map { r =>
+          if (r.contains(simiid)) {
+            ((hit+1).toDouble/(count+1).toDouble, hit+1, count+1)
+          } else {
+            (0.0, hit, count+1)
+          }
+        } getOrElse {
+          (0.0, hit, count+1)
         }
       }
     }
-    .project('apiid, 'apsimiid, 'apruuid, 'precision, 'hit, 'count)
     .filter('count) { count: Int => count > 0 }
-    .groupBy('apiid, 'apruuid) { _.average('precision) }
-    .groupBy('apiid) { _.average('precision) }
+    .groupBy('iid, 'ruuid) { _.average('precision) }
+    .groupBy('iid) { _.average('precision) }
 
   itemsMapAtK.write(averagePrecisionSink)
 
