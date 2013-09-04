@@ -4,7 +4,7 @@ name := "PredictionIO-Process-ItemRec-Algorithms-Hadoop-Scalding"
 
 packageOptions in ThisBuild += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "com.twitter.scalding.Tool")
 
-version in ThisBuild := "0.6.0-SNAPSHOT"
+version in ThisBuild := "0.6.0"
 
 scalaVersion in ThisBuild := "2.10.2"
 
@@ -16,8 +16,8 @@ libraryDependencies in ThisBuild ++= Seq(
   "org.apache.hadoop" % "hadoop-core" % "1.0.4",
   "com.twitter" %% "scalding-core" % "0.8.6",
   "org.specs2" %% "specs2" % "1.14" % "test",
-  "io.prediction" %% "predictionio-commons" % "0.6.0-SNAPSHOT",
-  "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.6.0-SNAPSHOT",
+  "io.prediction" %% "predictionio-commons" % "0.6.0",
+  "io.prediction" %% "predictionio-process-commons-hadoop-scalding" % "0.6.0",
   "org.slf4j" % "slf4j-log4j12" % "1.6.6")
 
 resolvers in ThisBuild ++= Seq(
