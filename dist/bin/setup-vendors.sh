@@ -49,16 +49,3 @@ else
 		esac
 	done
 fi
-
-if vendor_mahout_exists ; then
-	echo "Found $VENDOR_MAHOUT_NAME in vendors area. Assuming $VENDOR_MAHOUT_NAME has been installed."
-else
-	while true; do
-		read -p "Cannot find $VENDOR_MAHOUT_NAME from vendors area. Do you want to automatically install $VENDOR_MAHOUT_NAME? [y/n] " yn
-		case $yn in
-			[Yy]* ) install_mahout "$VENDORS_PATH"; break;;
-			[Nn]* ) break;;
-			* ) echo "Please answer 'y' or 'n'.";;
-		esac
-	done
-fi

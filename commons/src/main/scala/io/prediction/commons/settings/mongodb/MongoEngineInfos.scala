@@ -13,19 +13,19 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
     id                = dbObj.as[String]("_id"),
     name              = dbObj.as[String]("name"),
     description       = dbObj.getAs[String]("description"),
-    defaultsettings   = MongoUtils.dbObjToMap(dbObj.as[DBObject]("defaultsettings")),
+    defaultsettings   = (dbObj.as[DBObject]("defaultsettings") map { p => (p._1, MongoParam.dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
     defaultalgoinfoid = dbObj.as[String]("defaultalgoinfoid"))
 
-  def insert(EngineInfo: EngineInfo) = {
+  def insert(engineInfo: EngineInfo) = {
     // required fields
     val obj = MongoDBObject(
-      "_id"               -> EngineInfo.id,
-      "name"              -> EngineInfo.name,
-      "defaultsettings"   -> EngineInfo.defaultsettings,
-      "defaultalgoinfoid" -> EngineInfo.defaultalgoinfoid)
+      "_id"               -> engineInfo.id,
+      "name"              -> engineInfo.name,
+      "defaultsettings"   -> (engineInfo.defaultsettings mapValues { MongoParam.paramToDBObj(_) }),
+      "defaultalgoinfoid" -> engineInfo.defaultalgoinfoid)
 
     // optional fields
-    val optObj = EngineInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
+    val optObj = engineInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
 
     coll.insert(obj ++ optObj)
   }
@@ -34,13 +34,13 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
 
   def getAll() = coll.find().toSeq map { dbObjToEngineInfo(_) }
 
-  def update(EngineInfo: EngineInfo, upsert: Boolean = false) = {
-    val idObj = MongoDBObject("_id" -> EngineInfo.id)
+  def update(engineInfo: EngineInfo, upsert: Boolean = false) = {
+    val idObj = MongoDBObject("_id" -> engineInfo.id)
     val requiredObj = MongoDBObject(
-      "name"              -> EngineInfo.name,
-      "defaultsettings"   -> EngineInfo.defaultsettings,
-      "defaultalgoinfoid" -> EngineInfo.defaultalgoinfoid)
-    val descriptionObj = EngineInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
+      "name"              -> engineInfo.name,
+      "defaultsettings"   -> (engineInfo.defaultsettings mapValues { MongoParam.paramToDBObj(_) }),
+      "defaultalgoinfoid" -> engineInfo.defaultalgoinfoid)
+    val descriptionObj = engineInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
 
     coll.update(idObj, idObj ++ requiredObj ++ descriptionObj, upsert)
   }

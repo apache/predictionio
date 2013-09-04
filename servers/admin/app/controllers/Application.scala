@@ -42,6 +42,7 @@ object Application extends Controller {
   val users = config.getSettingsUsers()
   val apps = config.getSettingsApps()
   val engines = config.getSettingsEngines()
+  val engineInfos = config.getSettingsEngineInfos()
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
@@ -54,6 +55,7 @@ object Application extends Controller {
 
   /** PredictionIO Commons modeldata */
   val itemRecScores = config.getModeldataItemRecScores()
+  val itemSimScores = config.getModeldataItemSimScores()
 
   /** PredictionIO Commons appdata */
   val appDataUsers = config.getAppdataUsers()
@@ -382,31 +384,33 @@ object Application extends Controller {
    * Required param: id  (i.e. enginetype_id)
    *  */
   def getEngineTypeAlgoList(id: String) = Action {
-    Ok(toJson(
-      Map(
-        "enginetypeName" -> toJson("Item Recommendation Engine"),
-       /* "algotypelist" -> toJson(Seq(
-          Map(
-            "id" -> "pdio-knnitembased",
-            "algotypeName" -> algoTypeNames("pdio-knnitembased"), //"Item-based Similarity (kNN) ",
-            "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
-            "req" -> "Hadoop",
-            "datareq" -> "U2I Actions such as Like, Buy and Rate.")
-            )) */
-        "algotypelist" -> toJson(
-          (algoInfos.getByEngineInfoId("itemrec") map { algoInfo =>
+    engineInfos.get(id) map { engineInfo =>
+      Ok(toJson(
+        Map(
+          "enginetypeName" -> toJson(engineInfo.name),
+         /* "algotypelist" -> toJson(Seq(
             Map(
-              "id" -> toJson(algoInfo.id),
-              "algotypeName" -> toJson(algoInfo.name),
-              "description" -> toJson(algoInfo.description.getOrElse("")),
-              "req" -> toJson(algoInfo.techreq),
-              "datareq" -> toJson(algoInfo.datareq)
-              )
+              "id" -> "pdio-knnitembased",
+              "algotypeName" -> algoTypeNames("pdio-knnitembased"), //"Item-based Similarity (kNN) ",
+              "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
+              "req" -> "Hadoop",
+              "datareq" -> "U2I Actions such as Like, Buy and Rate.")
+              )) */
+          "algotypelist" -> toJson(
+            (algoInfos.getByEngineInfoId(id) map { algoInfo =>
+              Map(
+                "id" -> toJson(algoInfo.id),
+                "algotypeName" -> toJson(algoInfo.name),
+                "description" -> toJson(algoInfo.description.getOrElse("")),
+                "req" -> toJson(algoInfo.techreq),
+                "datareq" -> toJson(algoInfo.datareq)
+                )
 
-          }).toSeq )
-         )
+            }).toSeq )
+           )
 
-     ))
+       ))
+    } getOrElse InternalServerError(obj("message" -> "Invalid EngineInfo ID"))
   }
 
    /* List all metrics type of a specific engine type
@@ -452,6 +456,7 @@ object Application extends Controller {
     engine map { eng: Engine =>
       val modelDataExist: Boolean = eng.infoid match {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
+        case "itemsim" => try { itemSimScores.existByAlgo(algoOutputSelector.itemSimAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case _ => false
       }
       val deployedAlgos = algos.getDeployedByEngineid(eng.id)
@@ -494,7 +499,7 @@ object Application extends Controller {
   }
 
 
-  val supportedEngineTypes: List[String] = List("itemrec") // TODO: only itemrec is supported for now...
+  val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
   val enginenameConstraint = Constraints.pattern("""\b[a-zA-Z][a-zA-Z0-9_-]*\b""".r, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
   /*
    * createEngine
@@ -509,7 +514,8 @@ object Application extends Controller {
       "enginetype_id" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
       "engineName" -> (text verifying("Please name your engine.", enginename => enginename.length > 0)
                           verifying enginenameConstraint)
-    ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3)))
+    ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3))
+    verifying("Engine type is invalid.", f => engineInfos.get(f._2).map(_ => true).getOrElse(false)))
 
     // If NOT authenticated
     /*
@@ -530,18 +536,18 @@ object Application extends Controller {
       },
       formData => {
         val (fappid, enginetype, enginename) = formData
-
+        val engineInfo = engineInfos.get(enginetype).get
         val engineId = engines.insert(Engine(
           id = -1,
           appid = fappid,
           name = enginename,
           infoid = enginetype,
           itypes = None, // NOTE: default None (means all itypes)
-          settings = Itemrec.Engine.defaultSettings // TODO: depends on enginetype
+          settings = engineInfo.defaultsettings.map(s => (s._2.id, s._2.defaultvalue)) // TODO: depends on enginetype
         ))
 
         // automatically create default algo
-        val defaultAlgoType = "mahout-itembased" // TODO: get it from engineInfo
+        val defaultAlgoType = engineInfo.defaultalgoinfoid
         val defaultAlgo = Algo(
           id = -1,
           engineid = engineId,
@@ -564,7 +570,7 @@ object Application extends Controller {
 
         Ok(toJson(Map(
           "id" -> engineId.toString, // engine id
-          "enginetype_id" -> "itemrec",
+          "enginetype_id" -> enginetype,
           "app_id" -> fappid.toString,
           "engineName" -> enginename)))
       }
@@ -693,19 +699,7 @@ object Application extends Controller {
     }
   }
 
-  val supportedAlgoTypes: List[String] = List(
-      "pdio-knnitembased",
-      "pdio-latestrank",
-      "pdio-randomrank",
-      "mahout-itembased",
-      "mahout-parallelals",
-      "mahout-knnuserbased",
-      "mahout-thresholduserbased",
-      "mahout-slopeone",
-      "mahout-alswr",
-      "mahout-svdsgd",
-      "mahout-svdplusplus"
-  )
+  val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
 
   def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
     // request payload
@@ -825,6 +819,7 @@ object Application extends Controller {
         Logger.info("Delete model data for algo ID "+algoid)
         algoInfo.engineinfoid match {
           case "itemrec" => itemRecScores.deleteByAlgoid(algoid)
+          case "itemsim" => itemSimScores.deleteByAlgoid(algoid)
           case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.engineinfoid)
         }
       } getOrElse { throw new RuntimeException("Try to delete algo of non-existing algotype: " + algo.infoid) }
@@ -958,7 +953,7 @@ object Application extends Controller {
    */
   def removeOfflineTune(appid: Int, engineid: Int, id: Int) = {
 
-    offlineTunes.get(id) map { tune => 
+    offlineTunes.get(id) map { tune =>
       /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
       offlineTunes.update(tune.copy(createtime = None))
 
@@ -983,7 +978,7 @@ object Application extends Controller {
         removeOfflineTune(app_id, engine_id, tuneid)
       }
     }
-    
+
     deleteModelData(id)
     // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
     WS.url(settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()

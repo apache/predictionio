@@ -20,3 +20,4 @@ GET     /p/items.:format                          io.prediction.api.API.createIt
 GET     /p/actions/u2i/:action.:format            io.prediction.api.API.userToItemActionLegacy(format, action)
 
 GET     /engines/itemrec/:engine/topn.:format     io.prediction.api.API.itemRecTopN(format, engine)
+GET     /engines/itemsim/:engine/topn.:format     io.prediction.api.API.itemSimTopN(format, engine)

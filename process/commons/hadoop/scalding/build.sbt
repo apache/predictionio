@@ -2,21 +2,23 @@ name := "PredictionIO Process Commons Hadoop Scalding"
 
 organization := "io.prediction"
 
-version := "0.5.2"
+version := "0.6.0"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.2"
 
-javacOptions ++= Seq("-source", "1.6", "-target", "1.6")
+javacOptions ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:deprecation", "-Xlint:unchecked")
+
+scalacOptions ++= Seq("-deprecation")
 
 parallelExecution in Test := false
 
-libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.3"
+libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.4"
 
-libraryDependencies += "com.twitter" %% "scalding" % "0.8.1"
+libraryDependencies += "com.twitter" %% "scalding-core" % "0.8.6"
 
 libraryDependencies ++= Seq(
-  "joda-time" % "joda-time" % "2.1",
-  "org.joda" % "joda-convert" % "1.2"
+  "joda-time" % "joda-time" % "2.2",
+  "org.joda" % "joda-convert" % "1.3.1"
 )
 
 // for compiling mongotap
@@ -26,12 +28,12 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "1.12.3" % "test",
-  "com.github.nscala-time" %% "nscala-time" % "0.2.0"
+  "org.specs2" %% "specs2" % "1.14" % "test",
+  "com.github.nscala-time" %% "nscala-time" % "0.4.2"
 )
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.5.2"
+  "io.prediction" %% "predictionio-commons" % "0.6.0"
 )
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"

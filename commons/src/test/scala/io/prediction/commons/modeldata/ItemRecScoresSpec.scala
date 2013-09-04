@@ -6,15 +6,7 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
-import scala.Some
 
-/**
- * Created with IntelliJ IDEA.
- * User: Cong
- * Date: 1/29/13
- * Time: 10:15 PM
- * To change this template use File | Settings | File Templates.
- */
 class ItemRecScoresSpec extends Specification {
   def is =
     "PredictionIO Model Data Item Recommendation Scores Specification" ^

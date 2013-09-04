@@ -16,28 +16,11 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
       description         = dbObj.getAs[String]("description"),
       batchcommands       = dbObj.getAs[MongoDBList]("batchcommands") map { MongoUtils.mongoDbListToListOfString(_) },
       offlineevalcommands = dbObj.getAs[MongoDBList]("offlineevalcommands") map { MongoUtils.mongoDbListToListOfString(_) },
-      params              = (dbObj.as[DBObject]("params") map { p => (p._1, dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
+      params              = (dbObj.as[DBObject]("params") map { p => (p._1, MongoParam.dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
       paramorder          = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("paramorder")),
       engineinfoid        = dbObj.as[String]("engineinfoid"),
       techreq             = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("techreq")),
       datareq             = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("datareq")))
-  }
-
-  private def dbObjToParam(id: String, dbObj: DBObject) = {
-    Param(
-      id = id,
-      name = dbObj.as[String]("name"),
-      description = dbObj.getAs[String]("description"),
-      defaultvalue = dbObj("defaultvalue"),
-      constraint = dbObj.as[String]("constraint"))
-  }
-
-  private def paramToDBObj(param: Param) = {
-    MongoDBObject(
-      "name" -> param.name,
-      "defaultvalue" -> param.defaultvalue,
-      "constraint" -> param.constraint) ++
-      (param.description map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj)
   }
 
   def insert(algoInfo: AlgoInfo) = {
@@ -45,7 +28,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
     val obj = MongoDBObject(
       "_id"              -> algoInfo.id,
       "name"             -> algoInfo.name,
-      "params"           -> (algoInfo.params mapValues { paramToDBObj(_) }),
+      "params"           -> (algoInfo.params mapValues { MongoParam.paramToDBObj(_) }),
       "paramorder"       -> algoInfo.paramorder,
       "engineinfoid"     -> algoInfo.engineinfoid,
       "techreq"          -> algoInfo.techreq,
@@ -69,7 +52,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
     val idObj = MongoDBObject("_id" -> algoInfo.id)
     val requiredObj = MongoDBObject(
       "name"             -> algoInfo.name,
-      "params"           -> (algoInfo.params mapValues { paramToDBObj(_) }),
+      "params"           -> (algoInfo.params mapValues { MongoParam.paramToDBObj(_) }),
       "paramorder"       -> algoInfo.paramorder,
       "engineinfoid"     -> algoInfo.engineinfoid,
       "techreq"          -> algoInfo.techreq,

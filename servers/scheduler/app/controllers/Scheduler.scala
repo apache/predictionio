@@ -35,6 +35,8 @@ object Scheduler extends Controller {
   val paramGenInfos = config.getSettingsParamGenInfos
   val itemRecScores = config.getModeldataItemRecScores
   val trainingItemRecScores = config.getModeldataTrainingItemRecScores
+  val itemSimScores = config.getModeldataItemSimScores
+  val trainingItemSimScores = config.getModeldataTrainingItemSimScores
 
   val appdataTrainingUsers = config.getAppdataTrainingUsers()
   val appdataTrainingItems = config.getAppdataTrainingItems()

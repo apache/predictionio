@@ -116,10 +116,12 @@ object Jobs {
 
     /** TODO: These JAR naming and locations must be generalized */
     command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
+    command.setAttribute("pdioISEvalJar", config.getJar("io.prediction.evaluations.scalding.itemsim").getOrElse(""))
     command.setAttribute("mahoutCoreJobJar", config.getJar("io.prediction.algorithms.mahout-core-job").getOrElse(""))
     command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
     command.setAttribute("scaldingGenericJar", config.getJar("io.prediction.algorithms.scalding.itemrec.generic").getOrElse(""))
     command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
+    command.setAttribute("istopkJar", config.getJar("io.prediction.evaluations.itemsim.topkitems").getOrElse(""))
     command.setAttribute("trainingTestSplitTimeJar", config.getJar("io.prediction.evaluations.itemrec.trainingtestsplit").getOrElse(""))
     command.setAttribute("paramgenJar", config.getJar("io.prediction.evaluations.itemrec.paramgen").getOrElse(""))
 
@@ -160,6 +162,7 @@ object Jobs {
       command.setAttribute("itypes", "--itypes" + it.mkString(" "))
     }
     command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
+    command.setAttribute("numSimilarItems", engine.settings.getOrElse("numSimilarItems", 500))
     command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
   }
 }
@@ -194,6 +197,7 @@ class AlgoJob extends InterruptableJob {
     val algos = Scheduler.algos
     val algoInfos = Scheduler.algoInfos
     val itemRecScores = Scheduler.itemRecScores
+    val itemSimScores = Scheduler.itemSimScores
     val logPrefix = s"Algo ID ${algoid}: "
 
     algos.get(algoid) map { algo =>
@@ -233,6 +237,11 @@ class AlgoJob extends InterruptableJob {
                   case "itemrec" => {
                     Logger.info(s"${logPrefix}Deleting data of model set ${algo.modelset}")
                     itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
+                    Logger.info(s"${logPrefix}Deletion completed")
+                  }
+                  case "itemsim" => {
+                    Logger.info(s"${logPrefix}Deleting data of model set ${algo.modelset}")
+                    itemSimScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
                     Logger.info(s"${logPrefix}Deletion completed")
                   }
                 }
@@ -290,6 +299,10 @@ class OfflineEvalJob extends InterruptableJob {
               case "itemrec" => algosToRun foreach { algo =>
                 Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
                 Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+              }
+              case "itemsim" => algosToRun foreach { algo =>
+                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+                Scheduler.trainingItemSimScores.deleteByAlgoid(algo.id)
               }
             }
             Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
@@ -479,6 +492,10 @@ class OfflineEvalJob extends InterruptableJob {
             case "itemrec" => algosToRun foreach { algo =>
               Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
               Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+            }
+            case "itemsim" => algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
+              Scheduler.trainingItemSimScores.deleteByAlgoid(algo.id)
             }
           }
           Logger.info(s"${logPrefix}Deleting used app data")
@@ -678,6 +695,11 @@ class OfflineTuneJob extends InterruptableJob {
               case "itemrec" => algosToClean foreach { algo =>
                 Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting any old model data")
                 Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+                algos.delete(algo.id)
+              }
+              case "itemsim" => algosToClean foreach { algo =>
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting any old model data")
+                Scheduler.trainingItemSimScores.deleteByAlgoid(algo.id)
                 algos.delete(algo.id)
               }
               Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Deleting any old app data")
@@ -923,6 +945,10 @@ class OfflineTuneJob extends InterruptableJob {
               case "itemrec" => algosToClean foreach { algo =>
                 Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting used model data")
                 Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
+              }
+              case "itemsim" => algosToClean foreach { algo =>
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting used model data")
+                Scheduler.trainingItemSimScores.deleteByAlgoid(algo.id)
               }
             }
             Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Deleting used app data")

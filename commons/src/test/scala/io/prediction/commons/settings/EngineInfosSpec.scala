@@ -31,7 +31,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Recommend interesting items to each user personally."),
-      defaultsettings = Map[String, Any]("numRecs" -> 500),
+      defaultsettings = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = "integer")),
       defaultalgoinfoid = "mahout-itembased")
     engineInfos.insert(itemrec)
     engineInfos.get("itemrec") must beSome(itemrec)
@@ -42,7 +42,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemsim",
       name = "Items Similarity Prediction Engine",
       description = Some("Discover similar items."),
-      defaultsettings = Map[String, Any](),
+      defaultsettings = Map[String, Param](),
       defaultalgoinfoid = "knnitembased")
     engineInfos.insert(itemsim)
     val updatedItemsim = itemsim.copy(defaultalgoinfoid = "mahout-itembasedcf")
@@ -55,7 +55,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "foo",
       name = "bar",
       description = None,
-      defaultsettings = Map[String, Any](),
+      defaultsettings = Map[String, Param](),
       defaultalgoinfoid = "baz")
     engineInfos.insert(foo)
     engineInfos.delete("foo")
@@ -67,7 +67,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "baz",
       name = "beef",
       description = Some("dead"),
-      defaultsettings = Map[String, Any]("abc" -> 123.4),
+      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = "double")),
       defaultalgoinfoid = "bar")
     engineInfos.insert(baz)
     val fos = new java.io.FileOutputStream("engineinfos.bin")

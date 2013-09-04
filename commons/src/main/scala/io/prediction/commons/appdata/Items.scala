@@ -38,6 +38,9 @@ trait Items {
   /** Get an item by ID. */
   def get(appid: Int, id: String): Option[Item]
 
+  /** Find all items by App ID. */
+  def getByAppid(appid: Int): Iterator[Item]
+
   /** Get items by IDs. */
   def getByIds(appid: Int, ids: Seq[String]): Seq[Item]
 

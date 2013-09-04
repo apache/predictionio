@@ -4,13 +4,11 @@
 
 # Third party software
 VENDORS_PATH="$BASE/vendors"
-VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.1.2"
-VENDOR_MAHOUT_PATH="$VENDORS_PATH/mahout-0.8-snapshot"
-VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.3"
+VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.2.1"
+VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.6"
 
-VENDOR_HADOOP_NAME="Apache Hadoop 1.1.2"
-VENDOR_MAHOUT_NAME="Apache Mahout 0.8-SNAPSHOT Build 1993"
-VENDOR_MONGODB_NAME="MongoDB 2.4.3 (64-bit Linux)"
+VENDOR_HADOOP_NAME="Apache Hadoop 1.2.1"
+VENDOR_MONGODB_NAME="MongoDB 2.4.6 (64-bit Linux)"
 
 # Utilities
 command_exists () {
@@ -26,8 +24,8 @@ install_mongodb () {
 	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -o mongodb-linux-x86_64-2.4.3.tgz http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.4.3.tgz
-	tar zxvf mongodb-linux-x86_64-2.4.3.tgz
+	curl -O http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.4.6.tgz
+	tar zxvf mongodb-linux-x86_64-2.4.6.tgz
 }
 
 install_hadoop () {
@@ -44,8 +42,8 @@ install_hadoop () {
 	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -O http://archive.apache.org/dist/hadoop/common/hadoop-1.1.2/hadoop-1.1.2-bin.tar.gz
-	tar zxvf hadoop-1.1.2-bin.tar.gz
+	curl -O http://archive.apache.org/dist/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
+	tar zxvf hadoop-1.2.1-bin.tar.gz
 	echo "Configuring Hadoop in pseudo-distributed mode..."
 	cp ../conf/hadoop/* $VENDOR_HADOOP_PATH/conf
 	echo "export JAVA_HOME=$JAVA_HOME" >> $VENDOR_HADOOP_PATH/conf/hadoop-env.sh
@@ -53,13 +51,6 @@ install_hadoop () {
 	echo "io.prediction.commons.settings.hadoop.home=$VENDOR_HADOOP_PATH" >> ../conf/predictionio.conf
 	echo "Trying to format HDFS..."
 	$VENDOR_HADOOP_PATH/bin/hadoop namenode -format
-}
-
-install_mahout () {
-	echo "Going to download and install $VENDOR_MAHOUT_NAME..."
-	mkdir -p $VENDOR_MAHOUT_PATH
-	cd $VENDOR_MAHOUT_PATH
-	curl -o mahout-core-0.8-SNAPSHOT-job.jar http://download.prediction.io/mahout-snapshots/1993/mahout-core-0.8-SNAPSHOT-job.jar
 }
 
 start_mongodb () {
@@ -80,8 +71,4 @@ vendor_mongodb_exists () {
 
 vendor_hadoop_exists () {
 	[ -e "$VENDOR_HADOOP_PATH/bin/hadoop" ]
-}
-
-vendor_mahout_exists () {
-	[ -e "$VENDOR_MAHOUT_PATH/mahout-core-0.8-SNAPSHOT-job.jar" ]
 }

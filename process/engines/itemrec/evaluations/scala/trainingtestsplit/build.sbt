@@ -4,17 +4,21 @@ assemblySettings
 
 name := "PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime"
 
-version := "0.5.2"
+version := "0.6.0"
 
-scalaVersion in ThisBuild := "2.9.2"
+scalaVersion in ThisBuild := "2.10.2"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.5.2"
+  "io.prediction" %% "predictionio-commons" % "0.6.0"
 )
 
-libraryDependencies += "com.twitter" % "scalding-args_2.9.2" % "0.8.4"
+libraryDependencies += "com.twitter" %% "scalding-args" % "0.8.6"
 
 resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 )
 
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+  val excludes = Set("minlog-1.2.jar")
+  cp filter { jar => excludes(jar.data.getName)}
+}

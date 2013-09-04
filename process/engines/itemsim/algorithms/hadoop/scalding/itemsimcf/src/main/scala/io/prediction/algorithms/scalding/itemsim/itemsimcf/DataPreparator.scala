@@ -9,13 +9,13 @@ import io.prediction.commons.filepath.DataFile
  * Source: appdata DB (items, u2iActions)
  * Sink: selectedItems.tsv, ratings.tsv
  * Descripton:
- *   Prepare data for ItemSimilarity algo. Read from appdata DB and store selected items 
+ *   Prepare data for itemsim.itemsimcf algo. Read from appdata DB and store selected items 
  *   and ratings into a file.
  *   (appdata store -> DataPreparator -> HDFS)
  * 
  * Required args:
  * --dbType: <string> (eg. mongodb) (see --dbHost, --dbPort)
- * --dbName: <string> database name. (eg predictionio_appdata, or predictionio_training_appdata)
+ * --dbName: <string> appdata database name. (eg predictionio_appdata, or predictionio_training_appdata)
  * 
  * --hdfsRoot: <string>. Root directory of the HDFS
  * 
@@ -23,21 +23,27 @@ import io.prediction.commons.filepath.DataFile
  * --engineid: <int>
  * --algoid: <int>
  *
- * --viewParam: <int>
- * --likeParam: <int>
- * --dislikeParam: <int>
- * --conversionParam: <int>
+ * --viewParam: <string>. (number 1 to 5, or "ignore")
+ * --likeParam: <string>
+ * --dislikeParam: <string>
+ * --conversionParam: <string>
  * --conflictParam: <string>. (latest/highest/lowest)
  * 
  * Optional args:
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
  * 
- * --itypesArg: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
+ * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
+ * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
  * 
  * Example:
- * scald.rb --hdfs-local io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --dbType mongodb --dbName appdata --dbHost 127.0.0.1 --dbPort 27017 --hdfsRoot hdfs/predictionio/ --appid 34 --engineid 2 --algoid 8 --itypes t2 --viewParam 2 --likeParam 5 --dislikeParam 1 --conversionParam 4 --conflictParam latest
+ * Batch:
+ * scald.rb --hdfs-local io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --dbType mongodb --dbName appdata --dbHost 127.0.0.1 --dbPort 27017 --hdfsRoot hdfs/predictionio/ --appid 34 --engineid 3 --algoid 9 --itypes t2 --viewParam 2 --likeParam 5 --dislikeParam 1 --conversionParam 4 --conflictParam latest
+ * 
+ * Offline Eval:
+ * scald.rb --hdfs-local io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --dbType mongodb --dbName training_appdata --dbHost 127.0.0.1 --dbPort 27017 --hdfsRoot hdfs/predictionio/ --appid 34 --engineid 3 --algoid 9 --itypes t2 --viewParam 2 --likeParam 5 --dislikeParam 1 --conversionParam 4 --conflictParam latest --evalid 15
+ * 
  */
 class DataPreparator(args: Args) extends Job(args) {
 
@@ -54,18 +60,25 @@ class DataPreparator(args: Args) extends Job(args) {
   val appidArg = args("appid").toInt
   val engineidArg = args("engineid").toInt
   val algoidArg = args("algoid").toInt
-  val evalidArg = None//args.optional("evalid") map (x => x.toInt)
+  val evalidArg = args.optional("evalid") map (x => x.toInt)
   val OFFLINE_EVAL = (evalidArg != None) // offline eval mode
   
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
-    
-  // determin how to map actions to rating values
-  val viewParamArg: Int = args("viewParam").toInt
-  val likeParamArg: Int = args("likeParam").toInt
-  val dislikeParamArg: Int = args("dislikeParam").toInt
-  val conversionParamArg: Int = args("conversionParam").toInt
-  //val othersParamArg: Int = args.getOrElse("othersParam", "2").toInt
+  
+  // determine how to map actions to rating values
+  def getActionParam(name: String): Option[Int] = {
+    val actionParam: Option[Int] = args(name) match {
+      case "ignore" => None
+      case x => Some(x.toInt)
+    }
+    actionParam
+  }
+
+  val viewParamArg: Option[Int] = getActionParam("viewParam")
+  val likeParamArg: Option[Int] = getActionParam("likeParam")
+  val dislikeParamArg: Option[Int] = getActionParam("dislikeParam")
+  val conversionParamArg: Option[Int] = getActionParam("conversionParam")
   
   // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
   // determine which action will be considered as final preference.
@@ -84,13 +97,13 @@ class DataPreparator(args: Args) extends Job(args) {
   /**
    * constants
    */
-  // NOTE: this enum should match the assumption of appdata
-  // see api/model/U2iAction.scala
-  final val ACTION_RATE: Int = 0
-  final val ACTION_LIKEDISLIKE: Int = 1 // if field "v"==1, then Like. "v"==0, then Dislike
-  final val ACTION_VIEW: Int = 2
-  //final val ACTION_VIEWDETAILS: Int = 3
-  final val ACTION_CONVERSION: Int = 4
+
+  final val ACTION_RATE = "rate"
+  final val ACTION_LIKE = "like"
+  final val ACTION_DISLIKE = "dislike"
+  final val ACTION_VIEW = "view"
+  //final val ACTION_VIEWDETAILS = "viewDetails"
+  final val ACTION_CONVERSION = "conversion"
 
   /**
    * source
@@ -102,41 +115,79 @@ class DataPreparator(args: Args) extends Job(args) {
   // get items data
   val items = Items(appId=trainingAppid, itypes=itypesArg, 
       dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('iidx, 'itypes)
-   
+  
   val u2i = U2iActions(appId=trainingAppid, 
       dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('action, 'uid, 'iid, 't, 'v)
+
+  /**
+   * sink
+   */
+
+  // write ratings to a file
+  val ratingsSink = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.tsv"))
+
+  val selectedItemsSink = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv"))
 
   /**
    * computation
    */
   u2i.joinWithSmaller('iid -> 'iidx, items) // only select actions of these items
+    .filter('action, 'v) { fields: (String, String) =>
+      val (action, v) = fields
+
+      val keepThis: Boolean = action match {
+        case ACTION_RATE => true
+        case ACTION_LIKE => (likeParamArg != None)
+        case ACTION_DISLIKE => (dislikeParamArg != None)
+        case ACTION_VIEW => (viewParamArg != None)
+        case ACTION_CONVERSION => (conversionParamArg != None)
+        case _ => {
+          assert(false, "Action type " + action + " in u2iActions appdata is not supported!")
+          false // all other unsupported actions
+        }
+      }
+      keepThis
+    }
     .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
       val (action, v, t) = fields
       
       // convert actions into rating value based on "action" and "v" fields
-      val rating: Int = action.toInt match {
-        case ACTION_RATE => v.toInt // rate
-        case ACTION_LIKEDISLIKE => if (v.toInt == 1) likeParamArg else dislikeParamArg
-        case ACTION_VIEW => viewParamArg // view
-        case ACTION_CONVERSION => conversionParamArg // conversion
-        case _ => {
-          assert(false, "Action type " + action.toInt + " in u2iActions appdata is not supported in io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator!")
+      val rating: Int = action match {
+        case ACTION_RATE => v.toInt
+        case ACTION_LIKE => likeParamArg.getOrElse{
+          assert(false, "Action type " + action + " should have been filtered out!")
           1
-          } //othersParamArg // all other unsupported actions
+        }
+        case ACTION_DISLIKE => dislikeParamArg.getOrElse{
+          assert(false, "Action type " + action + " should have been filtered out!")
+          1
+        }
+        case ACTION_VIEW => viewParamArg.getOrElse{
+          assert(false, "Action type " + action + " should have been filtered out!")
+          1
+        }
+        case ACTION_CONVERSION => conversionParamArg.getOrElse{
+          assert(false, "Action type " + action + " should have been filtered out!")
+          1
+        }
+        case _ => { // all other unsupported actions
+          assert(false, "Action type " + action + " in u2iActions appdata is not supported!")
+          1
+        }
       }
       
       (rating, t.toLong)
     } 
     .then( resolveConflict('uid, 'iid, 'tLong, 'rating, conflictParamArg) _ )
     .project('uid, 'iid, 'rating)
-    .write(Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.tsv"))) // write ratings to a file
+    .write(ratingsSink)
  
   // Also store the selected items into DataFile for later model construction usage.
   items.mapTo(('iidx, 'itypes) -> ('iidx, 'itypes)) { fields: (String, List[String]) =>
     val (iidx, itypes) = fields
     
     (iidx, itypes.mkString(",")) // NOTE: convert List[String] into comma-separated String
-    }.write(Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")))
+    }.write(selectedItemsSink)
   
   /**
    * function to resolve conflicting actions of same uid-iid pair.

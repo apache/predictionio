@@ -6,12 +6,12 @@ import play.api.mvc._
 import com.github.nscala_time.time.Imports._
 
 import io.prediction.commons.settings.{OfflineEval, Algo, OfflineEvalSplitter, OfflineEvalMetric}
-import controllers.Application.{offlineEvals, algos, offlineEvalSplitters, offlineEvalMetrics}
+import controllers.Application.{offlineEvals, algos, engines, offlineEvalSplitters, offlineEvalMetrics}
 
 object SimEval extends Controller {
 
   /** common function to create Offline Eval
-   * @param tuneid specify offline tune id if this Offine Eval is for auto tune 
+   * @param tuneid specify offline tune id if this Offine Eval is for auto tune
    */
   def createSimEval(engineId: Int, listOfAlgos: List[Algo], metricTypes: List[String], metricSettings: List[String],
     splitTrain: Int, splitValidation: Int, splitTest: Int, splitMethod: String, evalIteration: Int, tuneid: Option[Int]) = {
@@ -40,11 +40,18 @@ object SimEval extends Controller {
       ))
     }
 
+    val engine = engines.get(engineId).get
+    val metricInfoId = engine.infoid match {
+      case "itemrec" => "map_k"
+      case "itemsim" => "ismap_k"
+      case _ => ""
+    }
+
     // create metric record with evalid
     for ((metricType, metricSetting) <- (metricTypes zip metricSettings)) {
       val metricId = offlineEvalMetrics.insert(OfflineEvalMetric(
         id = -1,
-        infoid = "map_k",
+        infoid = metricInfoId,
         evalid = evalid,
         params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
       ))
@@ -71,7 +78,5 @@ object SimEval extends Controller {
       name = ("sim-eval-" + evalid), // TODO: auto generate name now
       createtime = Option(DateTime.now)
     ))
-
   }
-
 }

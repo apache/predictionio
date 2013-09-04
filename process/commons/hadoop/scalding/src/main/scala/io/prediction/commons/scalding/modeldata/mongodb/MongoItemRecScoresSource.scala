@@ -9,8 +9,7 @@ import cascading.tuple.Tuple
 import java.util.ArrayList
 import java.util.HashMap
 
-import com.mongodb.BasicDBList
-import com.mongodb.casbah.Imports.MongoDBObject
+import com.mongodb.casbah.Imports._
 
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.modeldata.ItemRecScoresSource

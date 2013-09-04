@@ -1,8 +1,78 @@
 {
     "systeminfos": {
         "version": {
-            "value": "0.5.2",
+            "value": "0.6.0",
             "description": "PredictionIO version"
+        }
+    },
+    "engineinfos": {
+        "itemrec": {
+            "name": "Item Recommendation Engine",
+            "description": "Recommend interesting items to each user personally",
+            "defaultalgoinfoid": "mahout-itembased",
+            "defaultsettings": {
+                "serendipity": {
+                    "name": "Serendipity",
+                    "description": "Preference for surprising discovery",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "freshness": {
+                    "name": "Freshness",
+                    "description": "Preference for newer items",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "unseenonly": {
+                    "name": "Unseen Items Only",
+                    "description": "",
+                    "constraint": "boolean",
+                    "defaultvalue": false
+                },
+                "goal": {
+                    "name": "Recommendation Goal",
+                    "description": "Goal to be maximized",
+                    "constraint": "string",
+                    "defaultvalue": "rate3"
+                },
+                "numRecommendations": {
+                    "name": "Number of Recommendations",
+                    "description": "Number of recommendations to be generated for each user",
+                    "constraint": "integer",
+                    "defaultvalue": 500
+                }
+            }
+        },
+        "itemsim": {
+            "name": "Item Similarity Prediction Engine",
+            "description": "Discover similar items",
+            "defaultalgoinfoid": "mahout-itemsimcf",
+            "defaultsettings": {
+                "serendipity": {
+                    "name": "Serendipity",
+                    "description": "Preference for surprising discovery",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "freshness": {
+                    "name": "Freshness",
+                    "description": "Preference for newer items",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "goal": {
+                    "name": "Recommendation Goal",
+                    "description": "Goal to be maximized",
+                    "constraint": "string",
+                    "defaultvalue": "rate3"
+                },
+                "numSimilarItems": {
+                    "name": "Number of Similar Items",
+                    "description": "Number of similar items to be generated for each item",
+                    "constraint": "integer",
+                    "defaultvalue": 500
+                }
+            }
         }
     },
     "algoinfos": {
@@ -26,7 +96,6 @@
             "params": {}
         },
         "pdio-latestrank": {
-            "id": "pdio-latestrank",
             "name": "Latest Rank",
             "description": "Recommend latest items to users.",
             "batchcommands": [
@@ -1336,6 +1405,339 @@
                     "defaultvalue": 1
                 }
             }
+        },
+        "pdio-itemsimrandomrank": {
+            "name": "Random Rank",
+            "description": "Predict item similarities randomly.",
+            "batchcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.randomrank.RandomRank --hdfs --training_dbType $appdataDbType$ --training_dbName $appdataDbName$ --training_dbHost $appdataDbHost$ --training_dbPort $appdataDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet $modelset$"
+            ],
+            "offlineevalcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.randomrank.RandomRank --hdfs --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet false --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Items."
+            ],
+            "params": {}
+        },
+        "pdio-itemsimlatestrank": {
+            "name": "Latest Rank",
+            "description": "Consider latest items as most similar.",
+            "batchcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.latestrank.LatestRank --hdfs --training_dbType $appdataDbType$ --training_dbName $appdataDbName$ --training_dbHost $appdataDbHost$ --training_dbPort $appdataDbPort$ --modeldata_dbType $modeldataDbType$ --modeldata_dbName $modeldataDbName$ --modeldata_dbHost $modeldataDbHost$ --modeldata_dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet $modelset$"
+            ],
+            "offlineevalcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.latestrank.LatestRank --hdfs --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numSimilarItems $numSimilarItems$ --modelSet false --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Items with starttime."
+            ],
+            "params": {}
+        },
+        "pdio-itemsimcf": {
+            "name": "Item Simiarlity Collaborative Filtering",
+            "description": "This algorithm predicts similar items which the user may also like.",
+            "batchcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --numSimilarItems $numSimilarItems$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$"
+            ],
+            "offlineevalcommands": [
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --numSimilarItems $numSimilarItems$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false"
+            ],
+            "paramorder": [
+                "measureParam",
+                "priorCountParam",
+                "priorCorrelParam",
+                "minNumRatersParam",
+                "maxNumRatersParam",
+                "minIntersectionParam",
+                "viewParam",
+                "likeParam",
+                "dislikeParam",
+                "conversionParam",
+                "conflictParam"
+            ],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+            ],
+            "params": {
+                "measureParam": {
+                    "name": "Distance Function",
+                    "description": "",
+                    "constraint": "string",
+                    "defaultvalue": "correl"
+                },
+                "priorCountParam": {
+                    "name": "Virtual Count",
+                    "description": "Suggested range: 0 to 100.",
+                    "constraint": "integer",
+                    "defaultvalue": 20
+                },
+                "priorCorrelParam": {
+                    "name": "Prior Correlation",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "minNumRatersParam": {
+                    "name": "Minimum Number of Raters",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "maxNumRatersParam": {
+                    "name": "Maximum Number of Raters",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 10000
+                },
+                "minIntersectionParam": {
+                    "name": "Minimum Intersection",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "viewParam": {
+                    "name": "View Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 3
+                },
+                "viewmoreParam": {
+                    "name": "View More Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 3
+                },
+                "likeParam": {
+                    "name": "Like Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "dislikeParam": {
+                    "name": "Dislike Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "conversionParam": {
+                    "name": "Buy Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 4
+                },
+                "conflictParam": {
+                    "name": "Override",
+                    "description": "",
+                    "constraint": "string",
+                    "defaultvalue": "latest"
+                },
+                "priorCountParamMin": {
+                    "name": "priorCountParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 10
+                },
+                "priorCountParamMax": {
+                    "name": "priorCountParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 30
+                },
+                "minNumRatersParamMin": {
+                    "name": "minNumRatersParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "minNumRatersParamMax": {
+                    "name": "minNumRatersParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "maxNumRatersParamMin": {
+                    "name": "maxNumRatersParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 10000
+                },
+                "maxNumRatersParamMax": {
+                    "name": "maxNumRatersParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 10000
+                },
+                "minIntersectionParamMin": {
+                    "name": "minIntersectionParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "minIntersectionParamMax": {
+                    "name": "minIntersectionParamMax",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "priorCorrelParamMin": {
+                    "name": "priorCorrelParamMin",
+                    "constraint": "integer",
+                    "defaultvalue": 0
+                },
+                "priorCorrelParamMax": {
+                    "name": "priorCorrelParamMax",
+                    "constraint": "double",
+                    "defaultvalue": 0.1
+                }
+            }
+        },
+        "mahout-itemsimcf": {
+            "name": "Mahout's Item Similarity Collaborative Filtering",
+            "description": "This algorithm predicts similar items which the user may also like.",
+            "batchcommands": [
+                "$base$/bin/quiet.sh $hadoop$ fs -rmr $mahoutTempDir$",
+                "$base$/bin/quiet.sh $hadoop$ fs -rmr $algoDir$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemsim.DataCopy --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemsim.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $mahoutCoreJobJar$ org.apache.mahout.cf.taste.hadoop.similarity.item.ItemSimilarityJob --input $dataFilePrefix$ratings.csv --output $algoFilePrefix$similarities.tsv --tempDir $mahoutTempDir$ --maxSimilaritiesPerItem $numSimilarItems$ --booleanData $booleanData$ --maxPrefsPerUser $maxPrefsPerUser$ --minPrefsPerUser $minPrefsPerUser$ --similarityClassname $similarityClassname$ --threshold $threshold$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemsim.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --numSimilarItems $numSimilarItems$"
+            ],
+            "offlineevalcommands": [
+                "$base$/bin/quiet.sh $hadoop$ fs -rmr $mahoutTempDir$",
+                "$base$/bin/quiet.sh $hadoop$ fs -rmr $algoDir$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemsim.DataCopy --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemsim.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$hadoop$ jar $mahoutCoreJobJar$ org.apache.mahout.cf.taste.hadoop.similarity.item.ItemSimilarityJob --input $dataFilePrefix$ratings.csv --output $algoFilePrefix$similarities.tsv --tempDir $mahoutTempDir$ --maxSimilaritiesPerItem $numSimilarItems$ --booleanData $booleanData$ --maxPrefsPerUser $maxPrefsPerUser$ --minPrefsPerUser $minPrefsPerUser$ --similarityClassname $similarityClassname$ --threshold $threshold$",
+                "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.mahout.itemsim.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --numSimilarItems $numSimilarItems$"
+            ],
+            "paramorder": [
+                "booleanData",
+                "maxPrefsPerUser",
+                "minPrefsPerUser",
+                "similarityClassname",
+                "threshold",
+                "viewParam",
+                "likeParam",
+                "dislikeParam",
+                "conversionParam",
+                "conflictParam"
+            ],
+            "engineinfoid": "itemsim",
+            "techreq": [
+                "Hadoop"
+            ],
+            "datareq": [
+                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+            ],
+            "params": {
+                "booleanData": {
+                    "name": "Boolean Data",
+                    "description": "Treat input data as having no preference values.",
+                    "constraint": "boolean",
+                    "defaultvalue": false
+                },
+                "maxPrefsPerUser": {
+                    "name": "Max Num of Preferences per User",
+                    "description": "Maximum number of preferences considered per user in final recommendation phase.",
+                    "constraint": "integer",
+                    "defaultvalue": 10
+                },
+                "minPrefsPerUser": {
+                    "name": "Min Num of Preferences per User",
+                    "description": "Ignore users with less preferences than this.",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "similarityClassname": {
+                    "name": "Distance Function",
+                    "description": "",
+                    "constraint": "string",
+                    "defaultvalue": "SIMILARITY_COOCCURRENCE"
+                },
+                "threshold": {
+                    "name": "Threshold",
+                    "description": "Discard item pairs with a similarity value below this.",
+                    "constraint": "double",
+                    "defaultvalue": 5e-324
+                },
+                "viewParam": {
+                    "name": "View Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 3
+                },
+                "viewmoreParam": {
+                    "name": "View More Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 3
+                },
+                "likeParam": {
+                    "name": "Like Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                },
+                "dislikeParam": {
+                    "name": "Dislike Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "conversionParam": {
+                    "name": "Buy Score",
+                    "description": "",
+                    "constraint": "integer",
+                    "defaultvalue": 4
+                },
+                "conflictParam": {
+                    "name": "Override",
+                    "description": "",
+                    "constraint": "string",
+                    "defaultvalue": "latest"
+                },
+                "thresholdMin": {
+                    "name": "thresholdMin",
+                    "constraint": "double",
+                    "defaultvalue": 5e-324
+                },
+                "thresholdMax": {
+                    "name": "thresholdMax",
+                    "constraint": "double",
+                    "defaultvalue": 0.15
+                },
+                "maxPrefsPerUserMin": {
+                    "name": "maxPrefsPerUserMin",
+                    "constraint": "integer",
+                    "defaultvalue": 10
+                },
+                "maxPrefsPerUserMax": {
+                    "name": "maxPrefsPerUserMax",
+                    "constraint": "integer",
+                    "defaultvalue": 50
+                },
+                "minPrefsPerUserMin": {
+                    "name": "minPrefsPerUserMin",
+                    "constraint": "integer",
+                    "defaultvalue": 1
+                },
+                "minPrefsPerUserMax": {
+                    "name": "minPrefsPerUserMax",
+                    "constraint": "integer",
+                    "defaultvalue": 5
+                }
+            }
         }
     },
     "offlineevalsplitterinfos": {
@@ -1385,6 +1787,30 @@
                 "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
                 "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
                 "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --kParam $kParam$"
+            ],
+            "paramorder": [
+                "kParam"
+            ],
+            "paramnames": {
+                "kParam": "k"
+            },
+            "paramdescription": {
+                "kParam": "k"
+            },
+            "paramdefaults": {
+                "kParam": 20
+            }
+        },
+        "ismap_k": {
+            "name": "ISMAP@k",
+            "description": "Item Similarity Mean Average Precision at k",
+            "engineinfoids": [
+                "itemsim"
+            ],
+            "commands": [
+                "$hadoop$ jar $pdioISEvalJar$ io.prediction.metrics.scalding.itemsim.ismap.ISMAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
+                "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $istopkJar$",
+                "$hadoop$ jar $pdioISEvalJar$ io.prediction.metrics.scalding.itemsim.ismap.ISMAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --kParam $kParam$"
             ],
             "paramorder": [
                 "kParam"
