@@ -1,7 +1,7 @@
 {
     "systeminfos": {
         "version": {
-            "value": "0.6.0",
+            "value": "0.6.1",
             "description": "PredictionIO version"
         }
     },
@@ -1651,7 +1651,7 @@
                     "name": "Max Num of Preferences per User",
                     "description": "Maximum number of preferences considered per user in final recommendation phase.",
                     "constraint": "integer",
-                    "defaultvalue": 10
+                    "defaultvalue": 1000
                 },
                 "minPrefsPerUser": {
                     "name": "Min Num of Preferences per User",
@@ -1720,12 +1720,12 @@
                 "maxPrefsPerUserMin": {
                     "name": "maxPrefsPerUserMin",
                     "constraint": "integer",
-                    "defaultvalue": 10
+                    "defaultvalue": 500
                 },
                 "maxPrefsPerUserMax": {
                     "name": "maxPrefsPerUserMax",
                     "constraint": "integer",
-                    "defaultvalue": 50
+                    "defaultvalue": 1500
                 },
                 "minPrefsPerUserMin": {
                     "name": "minPrefsPerUserMin",
