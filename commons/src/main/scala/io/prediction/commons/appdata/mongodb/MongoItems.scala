@@ -14,7 +14,9 @@ class MongoItems(db: MongoDB) extends Items {
 
   /** Indices and hints. */
   val starttimeIndex = MongoDBObject("starttime" -> -1)
+  val lnglatIndex = MongoDBObject("lnglat" -> "2d")
   itemColl.ensureIndex(starttimeIndex)
+  itemColl.ensureIndex(lnglatIndex)
 
   RegisterJodaTimeConversionHelpers()
 
@@ -40,6 +42,22 @@ class MongoItems(db: MongoDB) extends Items {
   }
 
   def getByAppid(appid: Int) = new MongoItemsIterator(itemColl.find(MongoDBObject("appid" -> appid)))
+
+  def getByAppidAndLatlng(appid: Int, latlng: Tuple2[Double, Double], within: Option[Double], unit: Option[String]) = {
+    val earthRadiusInKm = 6371
+    val earthRadiusInMiles = 3959
+
+    val nearSphereObj = MongoDBObject("$nearSphere" -> MongoDBList(latlng._2, latlng._1))
+    val maxDistObj = within map { maxDist =>
+      unit match {
+        case Some("km") => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInKm)
+        case Some("mi") => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInMiles)
+        case _ => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInKm)
+      }
+    } getOrElse emptyObj
+
+    new MongoItemsIterator(itemColl.find(MongoDBObject("appid" -> appid, "lnglat" -> (nearSphereObj ++ maxDistObj))))
+  }
 
   def getByIds(appid: Int, ids: Seq[String]) = {
     itemColl.find(MongoDBObject("_id" -> MongoDBObject("$in" -> ids.map(idWithAppid(appid, _))))).toList map { dbObjToItem(_) }
