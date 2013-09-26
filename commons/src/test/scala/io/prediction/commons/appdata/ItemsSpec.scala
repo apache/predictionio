@@ -123,7 +123,8 @@ class ItemsSpec extends Specification { def is =
     allItems foreach { items.insert(_) }
     (items.getByAppidAndLatlng(appid, (37.336402, -122.040467), None, None).toSeq must beEqualTo(Seq(hsh, dac, mvh, lbh))) and
       (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), None, None).toSeq must beEqualTo(Seq(dac, hsh, mvh, lbh))) and
-      (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), Some(4.0), None).toSeq must beEqualTo(Seq(dac, hsh, mvh, lbh)))
+      (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), Some(2.2), None).toSeq must beEqualTo(Seq(dac, hsh))) and
+      (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), Some(2.2), Some("mi")).toSeq must beEqualTo(Seq(dac, hsh, mvh)))
   }
 
   def getByIds(items: Items) = {
