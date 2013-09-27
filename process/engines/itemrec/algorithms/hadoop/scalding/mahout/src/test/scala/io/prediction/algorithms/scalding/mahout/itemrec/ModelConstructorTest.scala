@@ -42,7 +42,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
       .arg("unseenOnly", unseenOnly.toString)
       .arg("numRecommendations", numRecommendations.toString)
       .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv"), new Fields("uindex", "predicted")), predicted)
-      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindex", "iindex", "rating")), ratings)
+      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindexR", "iindexR", "ratingR")), ratings)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "usersIndex.tsv")), users)
       .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort).getSource) { outputBuffer =>
@@ -60,6 +60,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
   val test1Users = List(("0", "u0"), ("1", "u1"), ("2", "u2"), ("3", "u3"))
 
   val test1Predicted = List(("0", "[1:0.123,2:0.456]"), ("1", "[0:1.2]"))
+  val test1PredictedWithSeenItems = List(("0", "[1:0.123,2:0.456,0:4.321,3:1.234]"), ("1", "[0:1.2]"))
 
   val test1Ratings = List(("0", "0", "2.3"), ("0", "3", "4.56"))
     
@@ -107,5 +108,18 @@ class ModelConstructorTest extends Specification with TupleConversions {
     test(true, 1, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly1)
 
   }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false, numRecommendations=100 and seen items in predicted results" should {
+
+    test(false, 100, test1Items, test1Users, test1PredictedWithSeenItems, test1Ratings, test1Output)
+
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true, numRecommendations=100 and seen items in predicted results" should {
+
+    test(true, 100, test1Items, test1Users, test1PredictedWithSeenItems, test1Ratings, test1OutputUnseenOnly)
+
+  }
+
 
 }

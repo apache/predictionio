@@ -4,6 +4,7 @@ import com.twitter.scalding._
 
 import io.prediction.commons.filepath.{DataFile, AlgoFile}
 import io.prediction.commons.scalding.modeldata.ItemRecScores
+import cascading.pipe.joiner.LeftJoin
 
 /**
  * Source:
@@ -68,7 +69,7 @@ class ModelConstructor(args: Args) extends Job(args) {
  
   val predicted = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "predicted.tsv"), ('uindex, 'predicted)).read
 
-  val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindex, 'iindex, 'rating))
+  val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindexR, 'iindexR, 'ratingR))
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
     .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
@@ -93,16 +94,24 @@ class ModelConstructor(args: Args) extends Job(args) {
    * computation
    */
 
+  val seenRatings = ratingSource.read
+
+  // convert to (uindex, iindex, rating) format
+  // and filter seen items from predicted
   val predictedRating = predicted.flatMap('predicted -> ('iindex, 'rating)) { data: String => parsePredictedData(data) }
+    .joinWithSmaller(('uindex, 'iindex) -> ('uindexR, 'iindexR), seenRatings, joiner = new LeftJoin )
+    .filter('ratingR) { r: Double => (r == 0) } // if ratingR == 0, means unseen rating
     .project('uindex, 'iindex, 'rating)
 
-  val combinedRating = if (unseenOnlyArg) predictedRating else (predictedRating ++ (ratingSource.read))
+  val combinedRating = if (unseenOnlyArg) predictedRating else {
+
+    // rename for concatenation
+    val seenRatings2 = seenRatings.rename(('uindexR, 'iindexR, 'ratingR) -> ('uindex, 'iindex, 'rating))
+
+    predictedRating ++ seenRatings2
+  }
   
   combinedRating
-    // just in case, if there are duplicates for the same u-i pair, simply take 1
-    // But note this is not supposed to happen anyway, because
-    // Mahout only recommends items which are not in ratings set.
-    .groupBy('uindex, 'iindex) { _.take(1) }
     .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)

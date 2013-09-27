@@ -368,7 +368,7 @@ object Application extends Controller {
     						"""),
       Map(
         "id" -> "itemsim",
-        "enginetypeName" -> "Items Similarity Prediction Engine",
+        "enginetypeName" -> "Item Similarity Engine",
         "description" -> """
     		            	<h6>Discover similar items.</h6>
 				            <p>Sample Use Cases</p>
