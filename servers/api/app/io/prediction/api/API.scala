@@ -544,7 +544,13 @@ object API extends Controller {
                 val res = algoOutputSelector.itemRecSelection(
                   uid = uid,
                   n = n,
-                  itypes = itypes map { _.split(",") }
+                  itypes = itypes map { _.split(",") },
+                  latlng = latlng map { latlng =>
+                    val ll = latlng.split(",")
+                    (ll(0).toDouble, ll(1).toDouble)
+                  },
+                  within = within map { _.toDouble},
+                  unit = unit
                 )
                 if (res.length > 0) {
                   val attributesToGet: Seq[String] = attributes map { _.split(",").toSeq } getOrElse Seq()
@@ -598,7 +604,13 @@ object API extends Controller {
                 val res = algoOutputSelector.itemSimSelection(
                   iid = iid,
                   n = n,
-                  itypes = itypes map { _.split(",") }
+                  itypes = itypes map { _.split(",") },
+                  latlng = latlng map { latlng =>
+                    val ll = latlng.split(",")
+                    (ll(0).toDouble, ll(1).toDouble)
+                  },
+                  within = within map { _.toDouble },
+                  unit = unit
                 )
                 if (res.length > 0) {
                   val attributesToGet: Seq[String] = attributes map { _.split(",").toSeq } getOrElse Seq()

@@ -14,7 +14,7 @@ object ItemRecAlgoOutput {
   val config = new Config
   val items = config.getAppdataItems
 
-  def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
+  def output(uid: String, n: Int, itypes: Option[Seq[String]], latlng: Option[Tuple2[Double, Double]], within: Option[Double], unit: Option[String])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
     /** Serendipity settings. */
     val serendipity = engine.settings.get("serendipity") map { _.asInstanceOf[Int] }
 
@@ -23,8 +23,36 @@ object ItemRecAlgoOutput {
       */
     val finalN = serendipity map { s => n*(s+1) } getOrElse n
 
+    /** At the moment, PredictionIO depends only on MongoDB for its model data storage.
+      * Since we are still using the legacy longitude-latitude format, the maximum number
+      * of documents that can be returned from a query with geospatial constraint is 100.
+      * A "manual join" is still feasible with this size.
+      */
+    val outputBuffer = collection.mutable.ListBuffer[String]()
+
+    latlng map { ll =>
+      val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
+      var stopMore = false
+      var after: Option[ItemRecScore] = None
+
+      while (outputBuffer.length < finalN && !stopMore) {
+        val moreItemRecScores = more(uid, finalN, itypes, after)
+        val moreIids = moreItemRecScores.map(_.iid).toSeq
+
+        /** Stop the loop if no more scores can be found. */
+        if (moreItemRecScores.length == 0)
+          stopMore = true
+        else {
+          outputBuffer ++= moreIids filter { geoItems(_) }
+          after = Some(moreItemRecScores.last)
+        }
+      }
+    } getOrElse {
+      outputBuffer ++= more(uid, finalN, itypes, None) map { _.iid }
+    }
+
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
-    val output = more(uid, finalN, itypes, None) map { _.iid }
+    val output = outputBuffer.toSeq.take(finalN)
 
     /** Serendipity output. */
     val serendipityOutput = serendipity map { s =>

@@ -44,7 +44,7 @@
             }
         },
         "itemsim": {
-            "name": "Item Similarity Prediction Engine",
+            "name": "Item Similarity Engine",
             "description": "Discover similar items",
             "defaultalgoinfoid": "mahout-itemsimcf",
             "defaultsettings": {

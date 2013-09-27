@@ -65,6 +65,11 @@ start_hadoop () {
 	$VENDOR_HADOOP_PATH/bin/start-all.sh
 }
 
+stop_hadoop () {
+	echo "Going to stop Hadoop..."
+	$VENDOR_HADOOP_PATH/bin/stop-all.sh
+}
+
 vendor_mongodb_exists () {
 	[ -e "$VENDOR_MONGODB_PATH/bin/mongod" ]
 }

@@ -5,10 +5,10 @@ import io.prediction.commons.settings._
 class AlgoOutputSelector(algos: Algos) {
   val multipleAlgoErrorMsg = "Deploying multiple algorithms is not yet supported. No results can be returned."
 
-  def itemRecSelection(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine): Seq[String] = {
+  def itemRecSelection(uid: String, n: Int, itypes: Option[Seq[String]], latlng: Option[Tuple2[Double, Double]], within: Option[Double], unit: Option[String])(implicit app: App, engine: Engine): Seq[String] = {
     implicit val algo = itemRecAlgoSelection(engine)
 
-    itemrec.ItemRecAlgoOutput.output(uid, n, itypes)
+    itemrec.ItemRecAlgoOutput.output(uid, n, itypes, latlng, within, unit)
   }
 
   def itemRecAlgoSelection(engine: Engine): Algo = {
@@ -27,10 +27,10 @@ class AlgoOutputSelector(algos: Algos) {
     algo
   }
 
-  def itemSimSelection(iid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, engine: Engine): Seq[String] = {
+  def itemSimSelection(iid: String, n: Int, itypes: Option[Seq[String]], latlng: Option[Tuple2[Double, Double]], within: Option[Double], unit: Option[String])(implicit app: App, engine: Engine): Seq[String] = {
     implicit val algo = itemSimAlgoSelection(engine)
 
-    itemsim.ItemSimAlgoOutput.output(iid, n, itypes)
+    itemsim.ItemSimAlgoOutput.output(iid, n, itypes, latlng, within, unit)
   }
 
   def itemSimAlgoSelection(engine: Engine): Algo = {
