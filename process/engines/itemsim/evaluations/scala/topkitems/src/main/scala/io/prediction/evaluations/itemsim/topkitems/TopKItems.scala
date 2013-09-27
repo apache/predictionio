@@ -47,7 +47,7 @@ object TopKItems {
 
     var itemCount = 0
     items.getByAppid(evalid) foreach { i =>
-      val topKItems = ItemSimAlgoOutput.output(i.id, k, None)(app, engine, algo, Some(offlineEval))
+      val topKItems = ItemSimAlgoOutput.output(i.id, k, None, None, None, None)(app, engine, algo, Some(offlineEval))
       if (topKItems.length > 0) {
         itemCount += 1
         topKItems.zip(scores) foreach { tuple =>

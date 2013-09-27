@@ -45,7 +45,7 @@ object TopKItems {
 
     var userCount = 0
     users.getByAppid(evalid) foreach { u =>
-      val topKItems = ItemRecAlgoOutput.output(u.id, k, None)(app, engine, algo, Some(offlineEval))
+      val topKItems = ItemRecAlgoOutput.output(u.id, k, None, None, None, None)(app, engine, algo, Some(offlineEval))
       if (topKItems.length > 0) {
         userCount += 1
         output.write("%d_%s\t%s\n".format(evalid, u.id, topKItems.map(iid => "%d_%s".format(evalid, iid)).mkString(",")))
