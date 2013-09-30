@@ -8,11 +8,11 @@ command_exists () {
 }
 
 install_sbt () {
-	echo "Going to download and install sbt 0.12.3..."
-	local VENDORS_PATH=$1/sbt-0.12.3
+	echo "Going to download and install sbt 0.13.0..."
+	local VENDORS_PATH=$1/sbt-0.13.0
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -o sbt-launch.jar http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.3/sbt-launch.jar
+	curl -O http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.0/sbt-launch.jar
 	echo 'java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=512M -jar `dirname $0`/sbt-launch.jar "$@"' > sbt
 	chmod a+x sbt
 }
@@ -40,7 +40,7 @@ install_mahout () {
 
 # Third party software
 VENDORS_PATH="$BASE/vendors"
-VENDOR_SBT="$VENDORS_PATH/sbt-0.12.3/sbt"
+VENDOR_SBT="$VENDORS_PATH/sbt-0.13.0/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.1.1/play"
 VENDOR_MAHOUT="$VENDORS_PATH/mahout-distribution-0.8"
 

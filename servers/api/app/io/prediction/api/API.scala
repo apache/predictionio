@@ -12,6 +12,7 @@ import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation._
 import play.api.i18n._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.libs.iteratee.Enumerator
 import play.api.Play.current

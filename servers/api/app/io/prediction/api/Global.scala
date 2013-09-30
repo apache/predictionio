@@ -1,15 +1,16 @@
 import play.api._
 import play.api.mvc._
 import play.api.mvc.Results._
+import scala.concurrent.Future
 
 object Global extends GlobalSettings {
   val notFound = NotFound("Your request is not supported.")
 
-  override def onHandlerNotFound(request: RequestHeader): Result = {
-    notFound
+  override def onHandlerNotFound(request: RequestHeader) = {
+    Future.successful(notFound)
   }
 
   override def onBadRequest(request: RequestHeader, error: String) = {
-    notFound
+    Future.successful(notFound)
   }
 }

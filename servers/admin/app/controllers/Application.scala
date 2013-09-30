@@ -1482,7 +1482,7 @@ object Application extends Controller {
       /** Detect timeout (10 minutes by default) */
       Async {
         concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
-          case r: SimpleResult[_] => r
+          case r: SimpleResult => r
           case t: String => InternalServerError(obj("message" -> t))
         }
       }
@@ -1733,7 +1733,7 @@ object Application extends Controller {
     /** Detect timeout (10 minutes by default) */
     Async {
       concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
-        case r: SimpleResult[_] => r
+        case r: SimpleResult => r
         case t: String => InternalServerError(obj("message" -> t))
       }
     }
