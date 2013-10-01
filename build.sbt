@@ -2,24 +2,57 @@ import play.Project._
 
 name := "predictionio"
 
-version := "0.7.0-SNAPSHOT"
+version in ThisBuild := "0.7.0-SNAPSHOT"
 
-organization := "io.prediction"
+organization in ThisBuild := "io.prediction"
 
-scalaVersion := "2.10.2"
+scalaVersion in ThisBuild := "2.10.2"
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "0.4.2")
 
-lazy val root = project.in(file("."))
-  .aggregate(commons, output, admin, api, scheduler)
+lazy val root = project.in(file(".")).aggregate(
+  commons,
+  output,
+  processCommonsHadoopScalding,
+  processItemRecAlgoHadoopScalding,
+  admin,
+  api,
+  scheduler)
 
 lazy val commons = project in file("commons")
 
 lazy val output = project.in(file("output"))
   .dependsOn(commons)
+
+lazy val processCommonsHadoopScalding = project.in(file("process/commons/hadoop/scalding"))
+  .dependsOn(commons)
+
+lazy val processItemRecAlgoHadoopScalding = project.in(file("process/engines/itemrec/algorithms/hadoop/scalding"))
+  .aggregate(
+    processItemRecAlgoHadoopScaldingGeneric,
+    processItemRecAlgoHadoopScaldingKnnitembased,
+    processItemRecAlgoHadoopScaldingRandomrank,
+    processItemRecAlgoHadoopScaldingLatestrank,
+    processItemRecAlgoHadoopScaldingMahout)
+  .dependsOn(commons, processCommonsHadoopScalding)
+
+lazy val processItemRecAlgoHadoopScaldingGeneric = project.in(file("process/engines/itemrec/algorithms/hadoop/scalding/generic"))
+  .dependsOn(commons, processCommonsHadoopScalding)
+
+lazy val processItemRecAlgoHadoopScaldingKnnitembased = project.in(file("process/engines/itemrec/algorithms/hadoop/scalding/knnitembased"))
+  .dependsOn(commons, processCommonsHadoopScalding)
+
+lazy val processItemRecAlgoHadoopScaldingRandomrank = project.in(file("process/engines/itemrec/algorithms/hadoop/scalding/randomrank"))
+  .dependsOn(commons, processCommonsHadoopScalding)
+
+lazy val processItemRecAlgoHadoopScaldingLatestrank = project.in(file("process/engines/itemrec/algorithms/hadoop/scalding/latestrank"))
+  .dependsOn(commons, processCommonsHadoopScalding)
+
+lazy val processItemRecAlgoHadoopScaldingMahout = project.in(file("process/engines/itemrec/algorithms/hadoop/scalding/mahout"))
+  .dependsOn(commons, processCommonsHadoopScalding)
 
 lazy val admin = project.in(file("servers/admin"))
 	.dependsOn(commons, output)

@@ -1,14 +1,6 @@
-name := "PredictionIO Process Commons Hadoop Scalding"
-
-organization := "io.prediction"
-
-version := "0.7.0-SNAPSHOT"
-
-scalaVersion := "2.10.2"
+name := "predictionio-process-commons-hadoop-scalding"
 
 javacOptions ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:deprecation", "-Xlint:unchecked")
-
-scalacOptions ++= Seq("-deprecation")
 
 parallelExecution in Test := false
 
@@ -32,14 +24,4 @@ libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "0.4.2"
 )
 
-libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.7.0-SNAPSHOT"
-)
-
-resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
-
-publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
-
-publishMavenStyle := true
