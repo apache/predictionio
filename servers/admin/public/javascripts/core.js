@@ -384,11 +384,11 @@ var AppsDashboardView = Backbone.View.extend({
 });
 
 var AppModel = Backbone.Model.extend({
-	urlRoot: getAPIUrl('app')
+	urlRoot: getAPIUrl('apps')
 });
 var AppListModel = Backbone.Collection.extend({
 	model: AppModel,
-	url: getAPIUrl('app_list')
+	url: getAPIUrl('apps')
 });
 var AppListView = Backbone.View.extend({
     initialize: function(){
@@ -475,7 +475,7 @@ var AppView = Backbone.View.extend({
 		      buttons: {
 		        "Erase All Data": function() {
 		        	var erasingInfo = notifyInfo('Erasing All Application Data...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
-		    		$.post(getAPIUrl("app/erasedata/"+self.id), function() {
+		    		$.post(getAPIUrl("apps/"+self.id+"/erase_data"), function() {
 		    			self.appDetailsView.model.fetch(); // refresh data
 		    			notifyClear(erasingInfo);
 		    			notifyInfo('Data Erased.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
@@ -524,7 +524,9 @@ var AppView = Backbone.View.extend({
 });
 
 var AppDetailsModel = Backbone.Model.extend({
-	urlRoot: getAPIUrl('app_details')
+	url: function() {
+		return getAPIUrl('apps/' + this.id + "/details");
+	}
 });
 var AppDetailsView = Backbone.View.extend({
 	/*
@@ -554,7 +556,9 @@ var AppDetailsView = Backbone.View.extend({
 
 
 var AppEnginelistModel = Backbone.Model.extend({
-	urlRoot: getAPIUrl('app_engine_list')
+	url: function() {
+		return getAPIUrl('apps/' + this.id + '/engines');
+	}
 });
 var AppEnginelistView = Backbone.View.extend({
 	/*
@@ -812,12 +816,12 @@ var onDataSplitPercentChange = function(e){
 
 
 var EngineTypeListModel = Backbone.Model.extend({
-	urlRoot: getAPIUrl('enginetype_list')
+	urlRoot: getAPIUrl('engineinfos')
 });
 var EngineModel = Backbone.Model.extend({
 	/* Required param: app_id */
 	urlRoot: function(){
-		return getAPIUrl("app/" +this.get("app_id") + "/engine");
+		return getAPIUrl("apps/" +this.get("app_id") + "/engines");
 	}
 });
 var AddEngineView = Backbone.View.extend({
@@ -937,7 +941,7 @@ var EngineAlgorithmsView = Backbone.View.extend({
 /* Required param: app_id, engine_id */
 var DeployedAlgoModel = Backbone.Model.extend({
 	urlRoot: function() {
-		var path ='app/' + this.get('app_id') + '/engine/' + this.get('engine_id') +'/algo_deployed';
+		var path ='apps/' + this.get('app_id') + '/engines/' + this.get('engine_id') +'/algos_deployed';
 		return getAPIUrl(path);
 	}
 });
@@ -962,7 +966,7 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	},
 	undeploy: function() {
     	var self = this;
-    	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo_undeploy';
+    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_undeploy';
     	$.post(getAPIUrl(path), function() {
     		var app_id = self.model.get('app_id');
     		var engine_id = self.model.get('engine_id');
@@ -976,7 +980,7 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	},
 	trainnow: function() {
     	var self = this;
-    	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo_trainnow';
+    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_trainnow';
         var info = notifyInfo('Requesting to train data model immediately...', '', {positionClass: 'toast-bottom-right', fadeOut: 1});
     	$.post(getAPIUrl(path), function(res) {
             notifyClear(info);
@@ -1002,7 +1006,7 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 /* Required param: app_id, engine_id */
 var AvailableAlgoModel = Backbone.Model.extend({
 	urlRoot: function() {
-		var path ='app/' + this.get('app_id') + '/engine/' + this.get('engine_id') +'/algo_available';
+		var path ='apps/' + this.get('app_id') + '/engines/' + this.get('engine_id') +'/algos_available';
 		return getAPIUrl(path);
 	}
 });
@@ -1010,7 +1014,7 @@ var AvailableAlgoModel = Backbone.Model.extend({
 var AvailableAlgoListCollection = Backbone.Collection.extend({
 	model: AvailableAlgoModel,
 	initialize: function(models, options) {
-		this.url = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/algo_available_list');
+		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/algos_available');
 	}
 });
 var EngineAlgorithmsAvailableAlgoListView = Backbone.View.extend({
@@ -1065,7 +1069,7 @@ var EngineAlgorithmsAvailableAlgoListView = Backbone.View.extend({
     },
     deploy: function(algo_id_list) { // common func for deploying single/multiple algo(s)
     	var self = this;
-    	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo_deploy';
+    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_deploy';
     	$.ajax({
     		type: "POST",
     		url: getAPIUrl(path),
@@ -1145,7 +1149,7 @@ var EngineAlgorithmsAvailableAlgoView = Backbone.View.extend({
 /* Required param: app_id, engine_id */
 var SimEvalModel = Backbone.Model.extend({
 	urlRoot: function() {
-		var path ='app/' + this.get('app_id') + '/engine/' + this.get('engine_id') +'/simeval';
+		var path ='apps/' + this.get('app_id') + '/engines/' + this.get('engine_id') +'/simevals';
 		return getAPIUrl(path);
 	}
 });
@@ -1153,7 +1157,7 @@ var SimEvalModel = Backbone.Model.extend({
 var SimEvalListCollection = Backbone.Collection.extend({
 	model: SimEvalModel,
 	initialize: function(models, options) {
-		this.url = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/simeval_list');
+		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/simevals');
 	}
 });
 var EngineAlgorithmsSimEvalListView = Backbone.View.extend({
@@ -1231,7 +1235,9 @@ var EngineAlgorithmsSimEvalView = Backbone.View.extend({
 
 
 var EnginetypeAlgorithmListModel = Backbone.Model.extend({
-	urlRoot: getAPIUrl('enginetype_algolist')
+	url: function() {
+		return getAPIUrl('engineinfos/' + this.id + '/algoinfos');
+	}
 });
 var EngineAddAlgorithmView = Backbone.View.extend({
 	initialize : function() {
@@ -1276,7 +1282,8 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 
 var EngineAlgoAutotuningReportModel = Backbone.Model.extend({
 	initialize: function(model, options) {
-		this.urlRoot = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/algoautotuning_report');
+		//this.urlRoot = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/algoautotuning_report'); # TODO: remove
+		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/algos_available/' + this.id + '/autotune_report');
 	}
 });
 var EngineAlgoAutotuningReportView = Backbone.View.extend({
@@ -1313,7 +1320,8 @@ var EngineAlgoAutotuningReportView = Backbone.View.extend({
 
 var EngineSimEvalReportModel = Backbone.Model.extend({
 	initialize: function(model, options) {
-		this.urlRoot = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/simeval_report');
+		//this.urlRoot = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/simeval_report');
+		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/simevals/' + this.id + '/report');
 	}
 });
 /* Required Param: id  (simulated eval report id) */
@@ -1339,7 +1347,9 @@ var EngineSimEvalReportView = Backbone.View.extend({
 
 
 var EnginetypeMetricsTypeListModel = Backbone.Model.extend({
-	urlRoot: getAPIUrl('enginetype_metricstype_list')
+	url: function() {
+		return getAPIUrl('engineinfos/' + this.id + "/metricinfos");
+	}
 });
 /* Required Param: algo_id_list  (algo ids to be evaluated) */
 var EngineSimEvalSettingsView = Backbone.View.extend({
