@@ -1307,10 +1307,16 @@ var EngineAlgoAutotuningReportView = Backbone.View.extend({
 		return this;
 	},
 	selectAutotune: function(e) {
-		var algoautotune_id = $(e.target).data('autotuneid');
-    	var path ='app/' + this.app_id + '/engine/' + this.engine_id +'/algo/' + this.algo_id + '/algoautotuning_select/' + algoautotune_id;
-    	$.post(getAPIUrl(path), function() {
-    		window.location.hash = 'engineTabAlgorithms';
+		var tuned_algo_id = $(e.target).data('autotuneid');
+    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_available/' + this.algo_id + '/autotune_apply';
+    	$.ajax({
+    		type: "POST",
+    		url: getAPIUrl(path),
+    		data: JSON.stringify({tuned_algo_id: tuned_algo_id}),
+    		contentType: "application/json; charset=utf-8",
+    		success: function() {
+	    		window.location.hash = 'engineTabAlgorithms';
+	    	}
     	}).error(function(res) {
     		alert("An error has occured:" + res.status);
     	});

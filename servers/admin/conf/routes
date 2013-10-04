@@ -8,10 +8,11 @@ GET     /web/                        controllers.Application.showWeb
 GET     /web/assets/*file               controllers.Assets.at(path="/public", file)
 
 ### During development, use enginebase controller instead to avoid cache problems
+# TODO: remove these new routes when work on PDIO-235
 GET     /web/enginebase/*file               controllers.Assets.at(path="/enginebase", file)
 # GET     /web/enginebase/*file                controllers.Application.enginebase(file)
 
-# TODO: use these new routes
+# TODO: use these new routes when work on PDIO-235
 #GET    /engineinfos/:engineinfoid/:filename   controllers.engineinfo.getFile(engineinfoid, filename)
 #GET    /algoinfos/:algoinfoid/:filename       controllers.algoinfo.getFile(algoinfoid, filename)
 
@@ -55,22 +56,16 @@ POST    /apps/:app_id/engines/:engine_id/algos_trainnow       controllers.Applic
 GET     /apps/:app_id/engines/:engine_id/simevals             controllers.Application.getSimEvalList(app_id, engine_id)
 POST    /apps/:app_id/engines/:engine_id/simevals             controllers.Application.createSimEval(app_id, engine_id)
 DELETE  /apps/:app_id/engines/:engine_id/simevals/:id         controllers.Application.removeSimEval(app_id: Int, engine_id: Int, id: Int)
-#GET     /app/:app_id/engine/:engine_id/simeval_report/:id    controllers.Application.getSimEvalReport(app_id, engine_id, id) # TODO: remove
 GET     /apps/:app_id/engines/:engine_id/simevals/:id/report  controllers.Application.getSimEvalReport(app_id, engine_id, id)
 
-#GET     /apps/:app_id/engines/:engine_id/algoautotuning_report/:algo_id   controllers.Application.getAlgoAutotuningReport(app_id, engine_id, algo_id) # TODO: remove
 GET     /apps/:app_id/engines/:engine_id/algos_available/:algo_id/autotune_report   controllers.Application.getAlgoAutotuningReport(app_id, engine_id, algo_id)
-
-# TODO remove
-POST    /app/:app_id/engine/:engine_id/algo/:algo_id/algoautotuning_select/:algoautotune_id  controllers.Application.algoAutotuningSelect(app_id, engine_id, algo_id, algoautotune_id)
-
-#POST   /app/:app_id/engine/:engine_id/algos_available/:algo_id/autotune_apply  controllers.Application.algoAutotuningSelect(app_id, engine_id, algo_id) # TODO use this (tuned_algo_id convert to POST param)
+POST    /apps/:app_id/engines/:engine_id/algos_available/:algo_id/autotune_apply    controllers.Application.algoAutotuningSelect(app_id, engine_id, algo_id)
 
 # Engine Module
-#GET    /apps/:app_id/engines/:engine_id/settings        controllers.Application.getEngineSettings(app_id, engine_id) # TODO: use this
-#PUT    /apps/:app_id/engines/:engine_id/settings        controllers.Application.updateEngineSettings(app_id, engine_id) # TODO: use this
+#GET    /apps/:app_id/engines/:engine_id/settings        controllers.Application.getEngineSettings(app_id, engine_id) # TODO: use this when work on PDIO-227
+#PUT    /apps/:app_id/engines/:engine_id/settings        controllers.Application.updateEngineSettings(app_id, engine_id) # TODO: use this when work on PDIO-227
 
-# TODO remove the following
+# TODO remove the following when work on PDIO-227
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.getSettings(app_id, engine_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.updateSettings(app_id, engine_id)
 
@@ -78,10 +73,10 @@ GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id     controllers.
 PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id     controllers.Itemsim.Engine.updateSettings(app_id, engine_id)
 
 # Algo Module
-#GET     /apps/:app_id/engines/:engine_id/algos/:algo_id/settings    controllers.Application.getAlgoSettings(app_id, engine_id, algo_id) # TODO use this
-#PUT     /apps/:app_id/engines/:engine_id/algos/:algo_id/settings    controllers.Application.updateAlgoSettings(app_id, engine_id, algo_id) # TODO use this
+#GET     /apps/:app_id/engines/:engine_id/algos/:algo_id/settings    controllers.Application.getAlgoSettings(app_id, engine_id, algo_id) # TODO use this when work on PDIO-227
+#PUT     /apps/:app_id/engines/:engine_id/algos/:algo_id/settings    controllers.Application.updateAlgoSettings(app_id, engine_id, algo_id) # TODO use this when work on PDIO-227
 
-# TODO remove the following
+# TODO remove the following when work on PDIO-227
 GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.PdioKnnItemBased.getSettings(app_id, engine_id, algo_id)
 PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.PdioKnnItemBased.updateSettings(app_id, engine_id, algo_id)
 

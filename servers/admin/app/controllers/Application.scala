@@ -1241,25 +1241,37 @@ object Application extends Controller {
   }
 
   // Apply the selected params to the algo
-  def algoAutotuningSelect(app_id: String, engine_id: String, algo_id: String, algoautotune_id: String) = withUser { user => implicit request =>
+  def algoAutotuningSelect(app_id: String, engine_id: String, algo_id: String) = withUser { user => implicit request =>
 
-    // Apply params of algoautotune_id to algo_id
+    // Apply POST request params of tuned_algo_id to algo_id
     // update the status of algo_id from 'tuning' or 'tuned' to 'ready'
 
-    val orgAlgo = algos.get(algo_id.toInt)
-    val tunedAlgo = algos.get(algoautotune_id.toInt)
+    val form = Form("tuned_algo_id" -> number)
 
-    if ((orgAlgo == None) || (tunedAlgo == None)) {
-      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
-    } else {
-      val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
-      algos.update(orgAlgo.get.copy(
-        params = tunedAlgoParams,
-        status = "ready"
-      ))
+    form.bindFromRequest.fold(
+      formWithError => {
+        val msg = formWithError.errors(0).message // extract 1st error message only
+        BadRequest(toJson(Map("message" -> toJson(msg))))
+      },
+      formData => {
+        val tunedAlgoid = formData
 
-      Ok
-    }
+        val orgAlgo = algos.get(algo_id.toInt)
+        val tunedAlgo = algos.get(tunedAlgoid)
+
+        if ((orgAlgo == None) || (tunedAlgo == None)) {
+          NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+        } else {
+          val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
+          algos.update(orgAlgo.get.copy(
+            params = tunedAlgoParams,
+            status = "ready"
+          ))
+
+          Ok
+        }
+      }
+    )
   }
 
 
