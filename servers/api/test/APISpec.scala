@@ -10,7 +10,6 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import org.specs2.mutable._
-//import org.specs2.specification.Step
 
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
@@ -152,7 +151,7 @@ class APISpec extends Specification {
       modelset = true))
 
     "get top N" in new WithServer {
-      val response = await(wsUrl(s"/engines/itemrec/${enginename}/topn.json")
+      val response = Helpers.await(wsUrl(s"/engines/itemrec/${enginename}/topn.json")
         .withQueryString(
           "pio_appkey" -> "appkey",
           "pio_uid"    -> "user1",
@@ -163,7 +162,7 @@ class APISpec extends Specification {
     }
 
     "get top N with geo" in new WithServer {
-      val response = await(wsUrl(s"/engines/itemrec/${enginename}/topn.json")
+      val response = Helpers.await(wsUrl(s"/engines/itemrec/${enginename}/topn.json")
         .withQueryString(
           "pio_appkey" -> "appkey",
           "pio_uid"    -> "user1",
@@ -238,7 +237,7 @@ class APISpec extends Specification {
       modelset = true))
 
     "get top N" in new WithServer {
-      val response = await(wsUrl(s"/engines/itemsim/${enginename}/topn.json")
+      val response = Helpers.await(wsUrl(s"/engines/itemsim/${enginename}/topn.json")
         .withQueryString(
           "pio_appkey" -> "appkey",
           "pio_iid"    -> "user1",
@@ -249,7 +248,7 @@ class APISpec extends Specification {
     }
 
     "get top N with geo" in new WithServer {
-      val response = await(wsUrl(s"/engines/itemsim/${enginename}/topn.json")
+      val response = Helpers.await(wsUrl(s"/engines/itemsim/${enginename}/topn.json")
         .withQueryString(
           "pio_appkey" -> "appkey",
           "pio_iid"    -> "user1",
