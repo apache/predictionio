@@ -17,11 +17,11 @@ GET     /web/enginebase/*file               controllers.Assets.at(path="/engineb
 #GET    /algoinfos/:algoinfoid/:filename       controllers.algoinfo.getFile(algoinfoid, filename)
 
 
-POST    /signin                       controllers.Application.signin
-POST    /signout                    controllers.Application.signout
+POST    /signin                        controllers.Application.signin
+POST    /signout                       controllers.Application.signout
 
 # Admin User
-GET     /auth                       controllers.Application.getAuth
+GET     /auth                          controllers.Application.getAuth
 
 # An App
 GET     /apps                          controllers.Application.getApplist
