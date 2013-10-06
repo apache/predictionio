@@ -785,7 +785,7 @@ var onSimEvalDataSplitPercentChange = function(e){
 	var trainPercent = Math.round(ranges[0]);
 	var testPercent = Math.round(ranges[1]);
 	var unusedPercent = 100 - trainPercent - testPercent;
-	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitTest').val(testPercent).end();
+	$('#simEvalSettingsForm').find('#splittrain').val(trainPercent).end().find('#splittest').val(testPercent).end();
 };
 /*
 var onDataSplitPercentChange = function(e){
@@ -810,7 +810,7 @@ var onDataSplitPercentChange = function(e){
 	var validationPercent = Math.round(ranges[1]);
 	var unusedPercent = Math.round(ranges[3]);
 	var testPercent = 100 - trainPercent - validationPercent - unusedPercent;
-	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitValidation').val(validationPercent).end().find('#splitTest').val(testPercent).end();
+	$('#simEvalSettingsForm').find('#splittrain').val(trainPercent).end().find('#splitvalidation').val(validationPercent).end().find('#splittest').val(testPercent).end();
 };
 */
 

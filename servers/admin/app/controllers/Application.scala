@@ -1086,11 +1086,11 @@ object Application extends Controller {
 		    		Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.5))
 		    )
 		 )),
-		"splitTrain" -> toJson(55), // TODO: engine-level setting
-        "splitValidation" -> toJson(20), // TODO: engine-level setting
-        "splitTest" -> toJson(15), // TODO: engine-level setting
-        "splitMethod" -> toJson("random"), // TODO: engine-level setting
-        "evalIteration" -> toJson(2), // TODO: engine-level setting
+		"splittrain" -> toJson(55), // TODO: engine-level setting
+        "splitvalidation" -> toJson(20), // TODO: engine-level setting
+        "splittest" -> toJson(15), // TODO: engine-level setting
+        "splitmethod" -> toJson("random"), // TODO: engine-level setting
+        "evaliteration" -> toJson(2), // TODO: engine-level setting
 
         "status" -> toJson("completed"),
         "starttime" -> toJson("04-23-2012 12:21:23"),
@@ -1219,11 +1219,11 @@ object Application extends Controller {
               "metricscorelist" -> toJson(metricscorelist),
               "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
 
-              "splitTrain" -> toJson(splitTrain),
-              "splitValidation" -> toJson(splitValidation),
-              "splitTest" -> toJson(splitTest),
-              "splitMethod" -> toJson(splitMethod),
-              "evalIteration" -> toJson(evalIteration),
+              "splittrain" -> toJson(splitTrain),
+              "splitvalidation" -> toJson(splitValidation),
+              "splittest" -> toJson(splitTest),
+              "splitmethod" -> toJson(splitMethod),
+              "evaliteration" -> toJson(evalIteration),
 
               "status" -> toJson(status),
               "starttime" -> toJson(starttime),
@@ -1413,17 +1413,17 @@ object Application extends Controller {
     /* request payload
      * {"app_id":"1","engine_id":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
      */
-     //{"app_id":"17","engine_id":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splitTrain":"71","splitTest":"24","splitMethod":"time","evalIteration":"3"}
+     //{"app_id":"17","engine_id":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splittrain":"71","splittest":"24","splitmethod":"time","evaliteration":"3"}
     val simEvalForm = Form(tuple(
       "app_id" -> number,
       "engine_id" -> number,
       "algo" -> list(number), // algo id
       "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
       "metricsSettings" -> list(text),
-      "splitTrain" -> number(1, 100),
-      "splitTest" -> number(1, 100),
-      "splitMethod" -> text,
-      "evalIteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
+      "splittrain" -> number(1, 100),
+      "splittest" -> number(1, 100),
+      "splitmethod" -> text,
+      "evaliteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
     )) // TODO: verifying this user owns this app_id and engine_id, and the engine_id owns the algo ids
 
     simEvalForm.bindFromRequest.fold(
@@ -1683,10 +1683,10 @@ object Application extends Controller {
                "metricslist" -> metricslist,
                "metricscorelist" -> toJson(metricscorelist),
                "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
-               "splitTrain" -> toJson(splitTrain),
-               "splitTest" -> toJson(splitTest),
-               "splitMethod" -> toJson(splitMethod),
-               "evalIteration" -> toJson(eval.iterations),
+               "splittrain" -> toJson(splitTrain),
+               "splittest" -> toJson(splitTest),
+               "splitmethod" -> toJson(splitMethod),
+               "evaliteration" -> toJson(eval.iterations),
                "status" -> toJson(status),
                "starttime" -> toJson(starttime),
                "endtime" -> toJson(endtime)

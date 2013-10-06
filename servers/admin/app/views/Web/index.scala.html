@@ -619,12 +619,12 @@
                         <span class="leftMargin">Algo Type: <%= algo.algoinfoname %></span>
 
                         <h5 class="topMargin">Data Split Settings</h5>
-                        <span>Train Set: <%= data.splitTrain %>%</span>
-                        <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
-                        <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
+                        <span>Train Set: <%= data.splittrain %>%</span>
+                        <span class="leftMargin">Validation Set: <%= data.splitvalidation %>%</span>
+                        <span class="leftMargin">Test Set: <%= data.splittest %>%</span>
                         <div>
                             Data Selection: 
-                            <% if(data.splitMethod == "random") { %>
+                            <% if(data.splitmethod == "random") { %>
                                 Random Sampling
                             <% } else { %>
                                 Random with Time Order
@@ -632,7 +632,7 @@
                         </div>
                         <h5 class="topMargin">Metric</h5>
                         <span>Name: <%= metric.metricsname %> (<%= metric.settingsString %>)</span>
-                        <span class="leftMargin">Number of Iteration: <%= data.evalIteration %></span>
+                        <span class="leftMargin">Number of Iteration: <%= data.evaliteration %></span>
                     </div>
                    
                     <h4 class="topMargin-large">Average Results</h4>
@@ -700,14 +700,14 @@
                     <div class="bottomMargin">
                         <p>Start Time: <%= data.starttime %></p>
                         <h5>Data Split Settings:</h5>
-                        <span>Train Set: <%= data.splitTrain %>%</span>
+                        <span>Train Set: <%= data.splittrain %>%</span>
                         <!-- 3-part split
-                        <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
+                        <span class="leftMargin">Validation Set: <%= data.splitvalidation %>%</span>
                         -->
-                        <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
+                        <span class="leftMargin">Test Set: <%= data.splittest %>%</span>
                         <div>
                             Data Selection: 
-                            <% if(data.splitMethod == "random") { %>
+                            <% if(data.splitmethod == "random") { %>
                                 Random Sampling
                             <% } else { %>
                                 Random with Time Order
@@ -860,16 +860,16 @@
                                         </table>
                                         <div class="topMargin">
                                             <!-- 3-part split
-                                            <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="55">%
-                                            <span class="leftMargin">Validation: </span><input class="span1" readonly type="text" id="splitValidation" name="splitValidation" value="20">%
-                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="15">%
+                                            <span>Train: </span><input class="span1" readonly type="text" id="splittrain" name="splittrain" value="55">%
+                                            <span class="leftMargin">Validation: </span><input class="span1" readonly type="text" id="splitvalidation" name="splitvalidation" value="20">%
+                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splittest" name="splittest" value="15">%
                                             -->
-                                            <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="60">%
-                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="20">%
+                                            <span>Train: </span><input class="span1" readonly type="text" id="splittrain" name="splittrain" value="60">%
+                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splittest" name="splittest" value="20">%
                                         </div>
                                         <div class="topMargin-large">
                                             <span>Data Selection: </span>
-                                            <select id="splitMethod" name="splitMethod">
+                                            <select id="splitmethod" name="splitmethod">
                                                 <option value="random">Random Sampling</option>
                                                 <option value="time">Random with Time Order</option>
                                             </select>
@@ -884,7 +884,7 @@
                                         <h5 class="topMargin-large">Iteration</h5>
                                         <p>You may want to repeat the evaluation for a few times with different sampling. An average score will be reported.</p>
                                         <div class="topMargin">
-                                            <span>Number of Iteration:  </span><input class="span1" type="text" name="evalIteration" value="3">
+                                            <span>Number of Iteration:  </span><input class="span1" type="text" name="evaliteration" value="3">
                                         </div>                                        
 
                                     </div>
