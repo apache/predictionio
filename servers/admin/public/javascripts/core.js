@@ -268,7 +268,7 @@ var BreadcrumbView = Backbone.View.extend({
 			var appModel = new AppModel({id: this.app_id});
 			appModel.fetch({
 				success: function() {
-					data['appName'] = appModel.get('appName');
+					data['appname'] = appModel.get('appname');
 				}
 			});
 		}
@@ -277,7 +277,7 @@ var BreadcrumbView = Backbone.View.extend({
 			var engineModel = new EngineModel({app_id: this.app_id, id: this.engine_id});
 			engineModel.fetch({
 				success: function() {
-					data['engineName'] = engineModel.get('engineName');
+					data['enginename'] = engineModel.get('enginename');
 				}
 			});
 
@@ -364,7 +364,7 @@ var AppsDashboardView = Backbone.View.extend({
 		var appName = this.$el.find("#addAppInput").val();
 		var self= this;
 		this.appListView.collection.create({
-			"appName": appName
+			"appname": appName
 		}, {
 			wait: true, // wait for server to return the new app info
 			success: function() {
@@ -785,7 +785,7 @@ var onSimEvalDataSplitPercentChange = function(e){
 	var trainPercent = Math.round(ranges[0]);
 	var testPercent = Math.round(ranges[1]);
 	var unusedPercent = 100 - trainPercent - testPercent;
-	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitTest').val(testPercent).end();
+	$('#simEvalSettingsForm').find('#splittrain').val(trainPercent).end().find('#splittest').val(testPercent).end();
 };
 /*
 var onDataSplitPercentChange = function(e){
@@ -810,7 +810,7 @@ var onDataSplitPercentChange = function(e){
 	var validationPercent = Math.round(ranges[1]);
 	var unusedPercent = Math.round(ranges[3]);
 	var testPercent = 100 - trainPercent - validationPercent - unusedPercent;
-	$('#simEvalSettingsForm').find('#splitTrain').val(trainPercent).end().find('#splitValidation').val(validationPercent).end().find('#splitTest').val(testPercent).end();
+	$('#simEvalSettingsForm').find('#splittrain').val(trainPercent).end().find('#splitvalidation').val(validationPercent).end().find('#splittest').val(testPercent).end();
 };
 */
 
@@ -1265,7 +1265,7 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 		var algoModel = new AvailableAlgoModel();
 		algoModel.save(algoData, {
 	        success: function(model, resData) { // success, go to algo settings
-	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algotype_id) + '/'+ decodeURIComponent(resData.algoName) + '/' + decodeURIComponent(resData.id);
+	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algotype_id) + '/'+ decodeURIComponent(resData.algoname) + '/' + decodeURIComponent(resData.id);
 	        },
 	        error: function(model, res) {
 	        	try { // show error message if fail
@@ -1391,7 +1391,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 			var algo_id = decodeURIComponent(algo_id_encoded);
 			var algoModel = new AvailableAlgoModel({app_id: self.app_id, engine_id: self.engine_id, id: algo_id});
 			algoModel.fetch();
-			return {algoName: algoModel.get('algoName'), id: algoModel.get('id')};
+			return {algoname: algoModel.get('algoname'), id: algoModel.get('id')};
 		});
 
 		// render metrics options

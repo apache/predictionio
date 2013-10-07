@@ -21,9 +21,9 @@
 <link rel="stylesheet" href="assets/stylesheets/vendors/toggle-switch.css">
 
 <script type="text/template" id="auth_template">
-        <% if (data.adminName) { %>
+        <% if (data.username) { %>
             <div id="navAuth" class="btn-group pull-right">
-                <a class="btn btn-inverse btn-small dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user icon-white"></i> <%= data.adminName %> <span class="caret"></span></a>
+                <a class="btn btn-inverse btn-small dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user icon-white"></i> <%= data.username %> <span class="caret"></span></a>
                 <ul class="dropdown-menu">
                     <!-- TODO
                     <li><a href="#">Edit Account</a></li>
@@ -46,20 +46,20 @@
                         </div>
                         <div class="modal-body">
                             <div class="control-group">
-                                <label class="control-label" for="adminEmail">Email</label>
+                                <label class="control-label" for="email">Email</label>
                                 <div class="controls">
-                                    <input type="text" name="adminEmail" required="required" placeholder="your email">
+                                    <input type="text" name="email" required="required" placeholder="your email">
                                 </div>
                             </div>
                             <div class="control-group">
-                                <label class="control-label" for="adminPassword">Password</label>
+                                <label class="control-label" for="password">Password</label>
                                 <div class="controls">
-                                    <input type="password" name="adminPassword" required="required" placeholder="your password">
+                                    <input type="password" name="password" required="required" placeholder="your password">
                                 </div>
                             </div>
                             <div class="control-group">
                                 <div class="controls">
-                                    <label class="checkbox"> <input name="adminRemember" type="checkbox">
+                                    <label class="checkbox"> <input name="remember" type="checkbox">
                                         Remember me
                                     </label>
                                 </div>
@@ -129,7 +129,7 @@
         <div class="clearfix">
             <div class="pull-left">
                 <h5>
-                    <a class="toggleAppDetailsAction" href="#"><%= data.appName %></a>
+                    <a class="toggleAppDetailsAction" href="#"><%= data.appname %></a>
                 </h5>
             </div>
             <div class="modal-item-panel pull-right">
@@ -165,14 +165,14 @@
                                     <div class="row-fluid">
                                         <div class="span8">
                                             <p>
-                                                Last Updated: <%= data.updatedTime %> <a class="detailsRefreshAction" href="#"><i class="icon-refresh"></i></a>
-                                                <br /> Number of Users: <%= data.nUsers %>
-                                                <br /> Number of Items: <%= data.nItems %>
-                                                <br /> Number of U2I Actions: <%= data.nU2IActions %>
+                                                Last Updated: <%= data.updatedtime %> <a class="detailsRefreshAction" href="#"><i class="icon-refresh"></i></a>
+                                                <br /> Number of Users: <%= data.userscount %>
+                                                <br /> Number of Items: <%= data.itemscount %>
+                                                <br /> Number of U2I Actions: <%= data.u2icount %>
                                             </p>
 <!--
                                             <strong>API Endpoint</strong> &nbsp;[<a href="#">?</a>]
-                                            <input class="span12" type="text" readonly required="" value="<%= data.apiEndPoint %>" name="apiEndPoint">
+                                            <input class="span12" type="text" readonly required="" value="<%= data.apiurl %>" name="apiurl">
 -->
                                             <strong>App Key</strong> &nbsp;<!-- TODO [<a href="#">?</a>] -->
                                             <input class="span12" type="text" readonly required="" value="<%= data.appkey %>" name="appkey">
@@ -200,7 +200,7 @@
                                                 <tbody id="appdetails_engines">
                                                 <% _.each(data.enginelist, function(engine) { %>
                                                     <tr>
-                                                        <td><%= engine.engineName %></td>
+                                                        <td><%= engine.enginename %></td>
                                                         <td><%= engine.enginetype_id %></td>
                                                         <td><a href="?app_id=<%= data.id %>&engine_id=<%= engine.id %>&enginetype_id=<%= engine.enginetype_id %>#engine" class="btn btn-small">Manage</a></td>
                                                     </tr>
@@ -213,12 +213,12 @@
 </script>
 <script type="text/template" id="breadcrumb_template">
         <ul class="breadcrumb">
-            <% if(data.appName != null) { %>
-                <li><strong><a href="#appsDashboard"><%= data.appName %></a></strong>
+            <% if(data.appname != null) { %>
+                <li><strong><a href="#appsDashboard"><%= data.appname %></a></strong>
             <% } %>
-            <% if(data.engineName != null) { %>
+            <% if(data.enginename != null) { %>
                 <span class="divider">/</span></li>
-                <li class="active"><%= data.engineName %></li>
+                <li class="active"><%= data.enginename %></li>
             <% } %>
         </ul>
 </script>
@@ -235,7 +235,7 @@
                     <% } %>
                         <div class="span6 boxBlock">
                             <div class="boxtitle">
-                                <strong><i class="icon-cog icon-white"></i> <%= enginetype.enginetypeName%></strong>
+                                <strong><i class="icon-cog icon-white"></i> <%= enginetype.engineinfoname%></strong>
                             </div>
                             <div class="boxContent">
                                 <%= enginetype.description%>
@@ -248,7 +248,7 @@
                                     <div class="pull-right">
                                         <div class="input-append">
                                             <input type="hidden" name="enginetype_id" value="<%= enginetype.id%>"/>
-                                            <input class="btn-input" name="engineName" type="text" placeholder="type engine name..."/>
+                                            <input class="btn-input" name="enginename" type="text" placeholder="type engine name..."/>
                                             <button class="btn btn-inverse" type="submit">Create</button>
                                         </div>
                                     </div>
@@ -334,12 +334,12 @@
                                         </table>
 </script>
 <script type="text/template" id="engine_simeval_template">
-    <td><%= data.startTime %></td>
+    <td><%= data.starttime %></td>
     <td>
         <%
             var algoArray = [];
             _.each(data.algolist, function(algo, index) {
-                algoArray.push(algo.algoName);
+                algoArray.push(algo.algoname);
             });
         %>
         <%= algoArray.join(', ') %>
@@ -373,8 +373,8 @@
 	<tbody>
         <% _.each(data.algolist, function(algo, index) { %>
 		<tr>
-			<td><%= algo.algoName %></td>
-			<td><%= algo.algotypeName %></td>
+			<td><%= algo.algoname %></td>
+			<td><%= algo.algoinfoname %></td>
 			<td span="2">
                 <% if(index == 0) { %>
 				<div class="btn-group">
@@ -398,7 +398,7 @@
 <!-- TODO
 			<td span="2" class="smallContent">
                 <% if(index == 0) { %>
-                    <%= data.updatedTime %>
+                    <%= data.updatedtime %>
                 <% } %>
             </td>
 -->
@@ -431,8 +431,8 @@
                                                         <input type="checkbox" name="avaalgoSelect" value="<%= data.id %>" />
                                                         <% } %>
                                                     </td>
-                                                    <td><%= data.algoName %></td>
-                                                    <td><%= data.algotypeName %></td>
+                                                    <td><%= data.algoname %></td>
+                                                    <td><%= data.algoinfoname %></td>
                                                     <td>
                                                         <% if ( data.status == "ready") {%>
                                                         <div class="btn-group dropup">
@@ -442,7 +442,7 @@
                                                             </button>
                                                             <ul class="dropdown-menu pull-right">
                                                                 <li><a class="algoDeployBtn" href="#">Deploy</a></li> 
-                                                                <li><a href="#algoSettings/<%= data.algotype_id %>/<%= data.algoName %>/<%= encodeURIComponent(data.id) %>">View/Edit Algorithm Settings</a></li>
+                                                                <li><a href="#algoSettings/<%= data.algotype_id %>/<%= data.algoname %>/<%= encodeURIComponent(data.id) %>">View/Edit Algorithm Settings</a></li>
                                                                 <li><a href="#simEvalSettings/<%= encodeURIComponent(data.id) %>">Run Simulated Evaluation</a></li>
                                                                 <li class="divider"></li>
                                                                 <li><a class="algoDeleteBtn" href="#">Delete</a></li>
@@ -466,14 +466,14 @@
                                                         </div>
                                                         <% } %>
                                                     </td>
-                                                    <td class="smallContent"><%= data.updatedTime %></td>
+                                                    <td class="smallContent"><%= data.updatedtime %></td>
 </script>
 <script type="text/template" id="engine_addAlgorithm_template">
     <div class="row-fluid bottomMargin">
         <div class="span12">
             <div class="boxContainer">
                 <div class="boxBlock">
-                    <div class="boxtitle">Available Algorithms for <%= data.enginetypeName %></div>
+                    <div class="boxtitle">Available Algorithms for <%= data.engineinfoname %></div>
                     <div class="boxContent">
                         <table class="table">
                             <thead>
@@ -488,7 +488,7 @@
                             <tbody>
                                 <% _.each(data.algotypelist, function(algotype) { %>
                                 <tr>
-                                    <td><%= algotype.algotypeName %></td>
+                                    <td><%= algotype.algoinfoname %></td>
                                     <td><%= algotype.description %></td>
                                     <td><%= algotype.req %></td>
                                     <td><%= algotype.datareq %></td>
@@ -496,7 +496,7 @@
                                         <form>
                                         <div class="input-append">
                                             <input type="hidden" name="algotype_id" value="<%= algotype.id%>"/>
-                                            <input class="btn-input span9" name="algoName" type="text" placeholder="type algo name..."/>
+                                            <input class="btn-input span9" name="algoname" type="text" placeholder="type algo name..."/>
                                             <button class="btn btn-primary" type="submit">Add</button>
                                         </div>
                                         <div class="addAlgoError text-error displayNone">Error text here</div>
@@ -516,21 +516,21 @@
         <div class="row-fluid bottomMargin">
             <div class="span12">
                 Engine Status: &nbsp;
-                    <% if (data.engineStatus == "noappdata") { %>
+                    <% if (data.enginestatus == "noappdata") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: No Data. Please import some data.</span>
-                    <% } else if (data.engineStatus == "nodeployedalgo") { %>
+                    <% } else if (data.enginestatus == "nodeployedalgo") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Please deploy an algorithm.</span>
-                    <% } else if (data.engineStatus == "nomodeldata") { %>
+                    <% } else if (data.enginestatus == "nomodeldata") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Waiting for the the first-time data model training.</span>
-                    <% } else if (data.engineStatus == "nomodeldatanoscheduler") { %>
+                    <% } else if (data.enginestatus == "nomodeldatanoscheduler") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Waiting for the the first-time data model training. (Scheduler is unreachable)</span>
-                    <% } else if (data.engineStatus == "firsttraining") { %>
+                    <% } else if (data.enginestatus == "firsttraining") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Training the first data model.</span>
-                    <% } else if (data.engineStatus == "training") { %>
+                    <% } else if (data.enginestatus == "training") { %>
                         <span class="label label-info">Running (training data model) <i class="icon-ok icon-white"></i></span>
-                    <% } else if (data.engineStatus == "runningnoscheduler") { %>
+                    <% } else if (data.enginestatus == "runningnoscheduler") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Running (Scheduler is unreachable)</span>
-                    <% } else if (data.engineStatus == "running") { %>
+                    <% } else if (data.enginestatus == "running") { %>
                         <span class="label label-info">Running <i class="icon-ok icon-white"></i></span>
                     <% } else { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Undetermined error</span>
@@ -606,33 +606,33 @@
         <form class="form-horizontal">
             <div class="modal modal-visible">
                 <div class="modal-header">
-                    <h4>Algorithm Autotuning Report for <%= algo.algoName%></h4>
+                    <h4>Algorithm Autotuning Report for <%= algo.algoname%></h4>
                 </div>
                 <div class="modal-body">
                     <div class="bottomMargin">
                         <p>Auto-tuning Status: <%= data.status %></p>
-                        <p>Start Time: <%= data.startTime %></p>
-                        <p>End Time: <%= data.endTime %></p>
+                        <p>Start Time: <%= data.starttime %></p>
+                        <p>End Time: <%= data.endtime %></p>
 
                         <h5 class="topMargin">Targeted Algorithm</h5>
-                        <span>Algo Name: <%= algo.algoName %></span>
-                        <span class="leftMargin">Algo Type: <%= algo.algotypeName %></span>
+                        <span>Algo Name: <%= algo.algoname %></span>
+                        <span class="leftMargin">Algo Type: <%= algo.algoinfoname %></span>
 
                         <h5 class="topMargin">Data Split Settings</h5>
-                        <span>Train Set: <%= data.splitTrain %>%</span>
-                        <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
-                        <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
+                        <span>Train Set: <%= data.splittrain %>%</span>
+                        <span class="leftMargin">Validation Set: <%= data.splitvalidation %>%</span>
+                        <span class="leftMargin">Test Set: <%= data.splittest %>%</span>
                         <div>
                             Data Selection: 
-                            <% if(data.splitMethod == "random") { %>
+                            <% if(data.splitmethod == "random") { %>
                                 Random Sampling
                             <% } else { %>
                                 Random with Time Order
                             <% } %>
                         </div>
                         <h5 class="topMargin">Metric</h5>
-                        <span>Name: <%= metric.metricsName %> (<%= metric.settingsString %>)</span>
-                        <span class="leftMargin">Number of Iteration: <%= data.evalIteration %></span>
+                        <span>Name: <%= metric.metricsname %> (<%= metric.settingsString %>)</span>
+                        <span class="leftMargin">Number of Iteration: <%= data.evaliteration %></span>
                     </div>
                    
                     <h4 class="topMargin-large">Average Results</h4>
@@ -698,16 +698,16 @@
                 </div>
                 <div class="modal-body">
                     <div class="bottomMargin">
-                        <p>Start Time: <%= data.startTime %></p>
+                        <p>Start Time: <%= data.starttime %></p>
                         <h5>Data Split Settings:</h5>
-                        <span>Train Set: <%= data.splitTrain %>%</span>
+                        <span>Train Set: <%= data.splittrain %>%</span>
                         <!-- 3-part split
-                        <span class="leftMargin">Validation Set: <%= data.splitValidation %>%</span>
+                        <span class="leftMargin">Validation Set: <%= data.splitvalidation %>%</span>
                         -->
-                        <span class="leftMargin">Test Set: <%= data.splitTest %>%</span>
+                        <span class="leftMargin">Test Set: <%= data.splittest %>%</span>
                         <div>
                             Data Selection: 
-                            <% if(data.splitMethod == "random") { %>
+                            <% if(data.splitmethod == "random") { %>
                                 Random Sampling
                             <% } else { %>
                                 Random with Time Order
@@ -719,7 +719,7 @@
                     <div class="well">
                         <ul>
                             <% _.each(data.algolist, function(algo) { %>
-                            <li><%= algo.algoName %>
+                            <li><%= algo.algoname %>
                                 <p>(<%= algo.settingsString %>)</p>
                             </li>
                             <% }); %>
@@ -741,14 +741,14 @@
                             <tr>
                                 <th>Algorithm ID</th>
                                 <% _.each(data.metricslist, function(metrics) { %>
-                                <th><%= metrics.metricsName%> (<%= metrics.settingsString%>)</th>
+                                <th><%= metrics.metricsname%> (<%= metrics.settingsString%>)</th>
                                 <% }); %>
                             </tr>
                         </thead>
                         <tbody>
                             <% _.each(data.algolist, function(algo) { %>
                             <tr>
-                                <td><%= algo.algoName %></td>
+                                <td><%= algo.algoname %></td>
                                 <% _.each(data.metricslist, function(metrics) { %>
                                     <td><%= result[algo.id][metrics.id] %></td>
                                 <% }); %>
@@ -773,14 +773,14 @@
                                 <tr>
                                     <th>Algorithm ID</th>
                                     <% _.each(data.metricslist, function(metrics) { %>
-                                    <th><%= metrics.metricsName%> (<%= metrics.settingsString%>)</th>
+                                    <th><%= metrics.metricsname%> (<%= metrics.settingsString%>)</th>
                                     <% }); %>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% _.each(data.algolist, function(algo) { %>
                                 <tr>
-                                    <td><%= algo.algoName %></td>
+                                    <td><%= algo.algoname %></td>
                                     <% _.each(data.metricslist, function(metrics) { %>
                                         <td><%= result[algo.id][metrics.id] %></td>
                                     <% }); %>
@@ -801,7 +801,7 @@
                                             <li class="bottomMargin">
                                                 <select name="metrics[<%= data.index %>]" class="span6">
                                                     <% _.each(data.metricslist, function(metrics) { %>
-                                                        <option value="<%= metrics.id %>"><%= metrics.metricsLongName %> (<%= metrics.metricsName %>)</option>
+                                                        <option value="<%= metrics.id %>"><%= metrics.metricslongname %> (<%= metrics.metricsname %>)</option>
                                                     <% }); %>
                                                 </select>
                                                 <!-- TODO: support dynamic settings fields -->
@@ -824,7 +824,7 @@
                                         <div class="well">
                                             <ul>
                                                 <% _.each(data.algoList, function(algo, index) { %>
-                                                    <li><%= algo.algoName %><input type="hidden" value="<%= algo.id %>" name="algo[<%= index %>]"/></li>
+                                                    <li><%= algo.algoname %><input type="hidden" value="<%= algo.id %>" name="algo[<%= index %>]"/></li>
                                                 <% }); %>
                                             </ul>
                                         </div>
@@ -860,16 +860,16 @@
                                         </table>
                                         <div class="topMargin">
                                             <!-- 3-part split
-                                            <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="55">%
-                                            <span class="leftMargin">Validation: </span><input class="span1" readonly type="text" id="splitValidation" name="splitValidation" value="20">%
-                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="15">%
+                                            <span>Train: </span><input class="span1" readonly type="text" id="splittrain" name="splittrain" value="55">%
+                                            <span class="leftMargin">Validation: </span><input class="span1" readonly type="text" id="splitvalidation" name="splitvalidation" value="20">%
+                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splittest" name="splittest" value="15">%
                                             -->
-                                            <span>Train: </span><input class="span1" readonly type="text" id="splitTrain" name="splitTrain" value="60">%
-                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splitTest" name="splitTest" value="20">%
+                                            <span>Train: </span><input class="span1" readonly type="text" id="splittrain" name="splittrain" value="60">%
+                                            <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splittest" name="splittest" value="20">%
                                         </div>
                                         <div class="topMargin-large">
                                             <span>Data Selection: </span>
-                                            <select id="splitMethod" name="splitMethod">
+                                            <select id="splitmethod" name="splitmethod">
                                                 <option value="random">Random Sampling</option>
                                                 <option value="time">Random with Time Order</option>
                                             </select>
@@ -884,7 +884,7 @@
                                         <h5 class="topMargin-large">Iteration</h5>
                                         <p>You may want to repeat the evaluation for a few times with different sampling. An average score will be reported.</p>
                                         <div class="topMargin">
-                                            <span>Number of Iteration:  </span><input class="span1" type="text" name="evalIteration" value="3">
+                                            <span>Number of Iteration:  </span><input class="span1" type="text" name="evaliteration" value="3">
                                         </div>                                        
 
                                     </div>
