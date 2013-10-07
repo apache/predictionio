@@ -40,7 +40,7 @@ $BASE/bin/conncheck
 # Admin server
 echo "Trying to start admin server... \c"
 echo "Trying to start admin server at: `date`" >>"$ADMIN_OUT"
-$BASE/bin/start-admin.sh $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT -Dlogger.file=$BASE/conf/admin-logger.xml >>"$ADMIN_OUT" 2>>"$ADMIN_ERR" &
+$BASE/bin/predictionio-admin $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT -Dlogger.file=$BASE/conf/admin-logger.xml -Dpidfile.path=$BASE/admin.pid >>"$ADMIN_OUT" 2>>"$ADMIN_ERR" &
 SERVER_TRY=1
 while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
 	sleep $SERVER_WAIT
@@ -57,7 +57,7 @@ done
 # API server
 echo "Trying to start API server... \c"
 echo "Trying to start API server at: `date`" >>"$API_OUT"
-$BASE/bin/start-api.sh $PLAY_START_OPTS -Dhttp.port=$API_PORT -Dlogger.file=$BASE/conf/api-logger.xml >>"$API_OUT" 2>>"$API_ERR" &
+$BASE/bin/predictionio-api $PLAY_START_OPTS -Dhttp.port=$API_PORT -Dlogger.file=$BASE/conf/api-logger.xml -Dpidfile.path=$BASE/api.pid >>"$API_OUT" 2>>"$API_ERR" &
 SERVER_TRY=1
 while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
 	sleep $SERVER_WAIT
@@ -74,7 +74,7 @@ done
 # Scheduler server
 echo "Trying to start scheduler server... \c"
 echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_OUT"
-$BASE/bin/start-scheduler.sh $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
+$BASE/bin/predictionio-scheduler $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml -Dpidfile.path=$BASE/scheduler.pid >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
 SERVER_TRY=1
 while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
 	sleep $SERVER_WAIT

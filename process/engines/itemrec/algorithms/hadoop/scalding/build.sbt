@@ -2,17 +2,17 @@ import AssemblyKeys._ // put this at the top of the file
 
 name := "predictionio-process-itemrec-algorithms-hadoop-scalding"
 
-packageOptions in ThisBuild += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "com.twitter.scalding.Tool")
+packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "com.twitter.scalding.Tool")
 
-parallelExecution in (ThisBuild, Test) := false
+parallelExecution in Test := false
 
-libraryDependencies in ThisBuild ++= Seq(
+libraryDependencies ++= Seq(
   "org.apache.hadoop" % "hadoop-core" % "1.0.4",
   "com.twitter" %% "scalding-core" % "0.8.6",
   "org.specs2" %% "specs2" % "1.14" % "test",
   "org.slf4j" % "slf4j-log4j12" % "1.6.6")
 
-resolvers in ThisBuild ++= Seq("Concurrent Maven Repo" at "http://conjars.org/repo")
+resolvers ++= Seq("Concurrent Maven Repo" at "http://conjars.org/repo")
 
 assemblySettings
 

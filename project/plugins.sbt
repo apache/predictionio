@@ -1,10 +1,3 @@
-// Comment to get more information during initialization
-logLevel := Level.Warn
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.0")
 
-// The Typesafe repository
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-
-// Use the Play sbt plugin for Play projects
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
-
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.0")
+addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.3.1")

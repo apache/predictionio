@@ -1,22 +1,18 @@
-name := "PredictionIO Software Manager"
+import xerial.sbt.Pack._
 
-version := "0.7.0-SNAPSHOT"
-
-organization := "io.prediction"
-
-scalaVersion := "2.10.2"
-
-scalacOptions ++= Seq("-deprecation")
+name := "predictionio-software-manager"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.7.0-SNAPSHOT",
   "com.github.scopt" %% "scopt" % "3.1.0",
   "commons-io" % "commons-io" % "2.4",
-  "org.slf4j" % "slf4j-nop" % "1.6.0"
+  "org.slf4j" % "slf4j-nop" % "1.6.0",
+  "org.specs2" %% "specs2" % "2.1.1" % "test"
 )
 
-libraryDependencies += "org.specs2" %% "specs2" % "2.1.1" % "test"
+packSettings
 
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+packMain := Map(
+  "backup"      -> "io.prediction.tools.softwaremanager.Backup",
+  "restore"     -> "io.prediction.tools.softwaremanager.Restore",
+  "updatecheck" -> "io.prediction.tools.softwaremanager.UpdateCheck",
+  "upgrade"     -> "io.prediction.tools.softwaremanager.Upgrade")

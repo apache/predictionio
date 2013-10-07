@@ -39,10 +39,14 @@ stop_play () {
 	mkdir -p `dirname $PLAY_OUT`
 	echo "Trying to stop ${PLAY_NAME} server... \c"
 	echo "Trying to stop ${PLAY_NAME} server at: `date`" >>"$PLAY_OUT"
-	if [ -e $PLAY_DIR/RUNNING_PID ] ; then
-		kill -TERM `cat ${PLAY_DIR}/RUNNING_PID`
+	PID_FILE="${BASE}/${PLAY_NAME}.pid"
+	#if [ -e $PLAY_DIR/RUNNING_PID ] ; then
+	if [ -e $PID_FILE ] ; then
+		#kill -TERM `cat ${PLAY_DIR}/RUNNING_PID`
+		kill -TERM `cat $PID_FILE`
 		echo "stopped"
 	else
-		echo "cannot find ${PLAY_DIR}/RUNNING_PID (server may not be running)"
+		#echo "cannot find ${PLAY_DIR}/RUNNING_PID (server may not be running)"
+		echo "cannot find $PID_FILE (server may not be running)"
 	fi
 }

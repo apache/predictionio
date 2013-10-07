@@ -1,16 +1,11 @@
-name := "PredictionIO Connection Check Tool"
+import xerial.sbt.Pack._
 
-version := "0.7.0-SNAPSHOT"
-
-organization := "io.prediction"
-
-scalaVersion := "2.10.2"
+name := "predictionio-connection-check-tool"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.7.0-SNAPSHOT",
   "org.slf4j" % "slf4j-nop" % "1.6.0"
 )
 
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+packSettings
+
+packMain := Map("conncheck" -> "io.prediction.tools.conncheck.ConnCheck")

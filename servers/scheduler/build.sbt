@@ -1,6 +1,12 @@
 name := "predictionio-scheduler"
 
+version := "0.7.0-SNAPSHOT"
+
+organization := "io.prediction"
+
 libraryDependencies ++= Seq(
+  "io.prediction" %% "predictionio-commons" % version.value,
+  "io.prediction" %% "predictionio-output" % version.value,
   "commons-io" % "commons-io" % "2.4",
   "mysql" % "mysql-connector-java" % "5.1.22",
   "org.clapper" %% "scalasti" % "1.0.0",
