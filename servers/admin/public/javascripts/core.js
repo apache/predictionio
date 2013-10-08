@@ -87,7 +87,7 @@ Backbone.View.prototype.close = function() {
 
 /* abstract function for engine and algo modules */
 var createAlgorithmView = function() { return null; };
-var createEngineView = function(app_id, engine_id) { return null; };
+var createEngineView = function(appid, engineid) { return null; };
 
 var CoreRouter = Backbone.Router.extend({
 	initialize : function() {
@@ -106,9 +106,9 @@ var CoreRouter = Backbone.Router.extend({
 		engineTabAlgorithms : 'engineTabAlgorithms',
 		engineAddAlgorithm : 'engineExtraTabAddAlgorithm',
 		addEngine : 'addEnginePage',
-		'algoSettings/:algotype_id/:algoName/:algo_id' : 'engineExtraTabAlgorithmSettings',
-		'algoAutotuningReport/:algo_id' : 'engineExtraTabAlgoAutotuningReport',
-		'simEvalSettings/:algo_id_list' : 'engineExtraTabSimEvalSettings',
+		'algoSettings/:algoinfoid/:algoName/:algoid' : 'engineExtraTabAlgorithmSettings',
+		'algoAutotuningReport/:algoid' : 'engineExtraTabAlgoAutotuningReport',
+		'simEvalSettings/:algoidlist' : 'engineExtraTabSimEvalSettings',
 		'simEvalReport/:id' : 'engineExtraTabSimEvalReport',
 		'*actions' : 'defaultRoute' // default -- exception
 	},
@@ -172,23 +172,23 @@ var CoreRouter = Backbone.Router.extend({
 		this.currentView = new AddEngineView();
 		$(this.target_el).html(this.currentView.el);
 	},
-	engineExtraTabAlgorithmSettings: function(algotype_id, algoName, algo_id) {
+	engineExtraTabAlgorithmSettings: function(algoinfoid, algoName, algoid) {
 		this.authView.ensureAuth();
 		if (!this.currentView || !this.currentView.isEngineView) { // if not currently Engine view
 			if (this.currentView) {this.currentView.close();}
 			this.currentView = new EngineView();
 			$(this.target_el).html(this.currentView.render().el);
 		}
-		this.currentView.showExtraTabAlgorithmSettings(algotype_id, algoName, algo_id);
+		this.currentView.showExtraTabAlgorithmSettings(algoinfoid, algoName, algoid);
 	},
-	engineExtraTabAlgoAutotuningReport: function(algo_id) {
+	engineExtraTabAlgoAutotuningReport: function(algoid) {
 		this.authView.ensureAuth();
 		if (!this.currentView || !this.currentView.isEngineView) { // if not currently Engine view
 			if (this.currentView) {this.currentView.close();}
 			this.currentView = new EngineView();
 			$(this.target_el).html(this.currentView.render().el);
 		}
-		this.currentView.showExtraTabAlgoAutotuningReport(algo_id);
+		this.currentView.showExtraTabAlgoAutotuningReport(algoid);
 	},
 	engineExtraTabSimEvalReport : function(simeval_id) {
 		this.authView.ensureAuth();
@@ -199,15 +199,15 @@ var CoreRouter = Backbone.Router.extend({
 		}
 		this.currentView.showExtraTabSimEvalReport(simeval_id);
 	},
-	engineExtraTabSimEvalSettings : function(algo_id_list) {
-		// TODO: encodeURIComponent each element in the comma-separated algo_id_list
+	engineExtraTabSimEvalSettings : function(algoidlist) {
+		// TODO: encodeURIComponent each element in the comma-separated algoidlist
 		this.authView.ensureAuth();
 		if (!this.currentView || !this.currentView.isEngineView) { // if not currently Engine view
 			if (this.currentView) {this.currentView.close();}
 			this.currentView = new EngineView();
 			$(this.target_el).html(this.currentView.render().el);
 		}
-		this.currentView.showExtraTabSimEvalSettings(algo_id_list);
+		this.currentView.showExtraTabSimEvalSettings(algoidlist);
 	}
 });
 
@@ -256,25 +256,25 @@ var BreadcrumbView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#breadcrumb_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 	},
 	render : function() {
 		var data = {};
 		$.ajaxSetup({async:false});
-		if (this.app_id) {
-			data['app_id'] = this.app_id;
-			var appModel = new AppModel({id: this.app_id});
+		if (this.appid) {
+			data['appid'] = this.appid;
+			var appModel = new AppModel({id: this.appid});
 			appModel.fetch({
 				success: function() {
 					data['appname'] = appModel.get('appname');
 				}
 			});
 		}
-		if (this.engine_id) {
-			data['engine_id'] = this.engine_id;
-			var engineModel = new EngineModel({app_id: this.app_id, id: this.engine_id});
+		if (this.engineid) {
+			data['engineid'] = this.engineid;
+			var engineModel = new EngineModel({appid: this.appid, id: this.engineid});
 			engineModel.fetch({
 				success: function() {
 					data['enginename'] = engineModel.get('enginename');
@@ -282,8 +282,8 @@ var BreadcrumbView = Backbone.View.extend({
 			});
 
 		}
-		if (this.enginetype_id)
-			data['enginetype_id'] = this.enginetype_id;
+		if (this.engineinfoid)
+			data['engineinfoid'] = this.engineinfoid;
 		$.ajaxSetup({async:true});
 
 		this.$el.slideUp().html(this.template({"data": data})).slideDown();
@@ -582,10 +582,10 @@ var EngineStatusView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engineStatus_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
-		this.model = new EngineModel({app_id: this.app_id, id: this.engine_id});
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
+		this.model = new EngineModel({appid: this.appid, id: this.engineid});
 	},
 	events: {
 		"click #engineStatusReloadBtn" : "render"
@@ -611,9 +611,9 @@ var EngineView = Backbone.View.extend({
 		this.template_el = '#engine_template';
 		this.template = _.template($(this.template_el).html());
 		// TODO: Error checking for IDs
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 		this.tabSettingsView == null;
 		this.tabAlgorithmsView == null;
 		this.tabExtraTabView == null;
@@ -652,11 +652,11 @@ var EngineView = Backbone.View.extend({
 		this.$el.find("#engineTabSettingsBtn").tab('show');
        	if (!this.tabSettingsView) {
 	        $.ajaxSetup({async:false}); // make jquery sync temporary to ensure it's loaded before we move on
-	        this.$el.find("#engineTabSettingsContentHolder").load("enginebase/Engines/" + this.enginetype_id + "/engine.template.html");
-	       	$.getScript("enginebase/Engines/" + this.enginetype_id + "/engine.js");
+	        this.$el.find("#engineTabSettingsContentHolder").load("enginebase/Engines/" + this.engineinfoid + "/engine.template.html");
+	       	$.getScript("enginebase/Engines/" + this.engineinfoid + "/engine.js");
 	       	$.ajaxSetup({async:true});
 	       	// engine template and js should be ready by now
-	       	this.tabSettingsView = createEngineView(this.app_id, this.engine_id);
+	       	this.tabSettingsView = createEngineView(this.appid, this.engineid);
 	       	this.subViews.push(this.tabSettingsView);
 	    } else {
 	    	this.tabSettingsView.reloadData();
@@ -686,25 +686,25 @@ var EngineView = Backbone.View.extend({
 		this.subViews.push(this.tabExtraTabView);
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
 	},
-	showExtraTabAlgorithmSettings : function(algotype_id, algoName, algo_id) {
+	showExtraTabAlgorithmSettings : function(algoinfoid, algoName, algoid) {
 		this.closeExtraTab();
 		this.$el.find('#engineExtraTabBtn').html("Algorithm Settings: "+algoName).tab('show');
 		this.$el.find('#engineExtraTabTitle').show();
 
         $.ajaxSetup({async:false}); // make jquery sync temporary to ensure it's loaded before we move on
-        this.$el.find("#engineExtraTabContentHolder").load("enginebase/Engines/" + this.enginetype_id + "/Algorithms/" + algotype_id + "/algorithm.template.html");
-       	$.getScript("enginebase/Engines/" + this.enginetype_id + "/Algorithms/" + algotype_id + "/algorithm.js");
+        this.$el.find("#engineExtraTabContentHolder").load("enginebase/Engines/" + this.engineinfoid + "/Algorithms/" + algoinfoid + "/algorithm.template.html");
+       	$.getScript("enginebase/Engines/" + this.engineinfoid + "/Algorithms/" + algoinfoid + "/algorithm.js");
        	$.ajaxSetup({async:true});
        	// algorithm template and js should be ready by now
-       	this.tabExtraTabView = createAlgorithmView(this.app_id, this.engine_id, algo_id, algotype_id);
+       	this.tabExtraTabView = createAlgorithmView(this.appid, this.engineid, algoid, algoinfoid);
        	this.subViews.push(this.tabExtraTabView);
 	},
-	showExtraTabAlgoAutotuningReport : function(algo_id) {
+	showExtraTabAlgoAutotuningReport : function(algoid) {
 		this.closeExtraTab();
 		this.$el.find('#engineExtraTabBtn').html("Algo Auto-tuning Report").tab('show');
 		this.$el.find('#engineExtraTabTitle').show();
 
-		this.tabExtraTabView = new EngineAlgoAutotuningReportView({id: algo_id});
+		this.tabExtraTabView = new EngineAlgoAutotuningReportView({id: algoid});
 		this.subViews.push(this.tabExtraTabView);
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
 	},
@@ -717,12 +717,12 @@ var EngineView = Backbone.View.extend({
 		this.subViews.push(this.tabExtraTabView);
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el);
 	},
-	showExtraTabSimEvalSettings : function(algo_id_list) {
+	showExtraTabSimEvalSettings : function(algoidlist) {
 		this.closeExtraTab();
 		this.$el.find('#engineExtraTabBtn').html("Simulated Evaluation Settings").tab('show');
 		this.$el.find('#engineExtraTabTitle').show();
 
-		this.tabExtraTabView = new EngineSimEvalSettingsView({algo_id_list: algo_id_list});
+		this.tabExtraTabView = new EngineSimEvalSettingsView({algoidlist: algoidlist});
 		this.subViews.push(this.tabExtraTabView);
 
 		this.$el.find("#engineExtraTabContentHolder").html(this.tabExtraTabView.render().el).promise().done(function(){
@@ -743,7 +743,7 @@ var EngineView = Backbone.View.extend({
 		      modal: true,
 		      buttons: {
 		        "Delete Engine": function() {
-					var engineModel = new EngineModel({app_id: self.app_id, id: self.engine_id});
+					var engineModel = new EngineModel({appid: self.appid, id: self.engineid});
 					engineModel.destroy({
 						success: function() {
 							window.location = '/';
@@ -819,9 +819,9 @@ var EngineTypeListModel = Backbone.Model.extend({
 	urlRoot: getAPIUrl('engineinfos')
 });
 var EngineModel = Backbone.Model.extend({
-	/* Required param: app_id */
+	/* Required param: appid */
 	urlRoot: function(){
-		return getAPIUrl("apps/" +this.get("app_id") + "/engines");
+		return getAPIUrl("apps/" +this.get("appid") + "/engines");
 	}
 });
 var AddEngineView = Backbone.View.extend({
@@ -829,7 +829,7 @@ var AddEngineView = Backbone.View.extend({
 		this.subViews = [];
 		this.template_el = '#app_addEngine_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
+		this.appid = getUrlParam("appid");
 
 		this.model = new EngineTypeListModel();
 		this.model.bind('change', this.render, this);
@@ -844,11 +844,11 @@ var AddEngineView = Backbone.View.extend({
 	createEngine: function(e) {
 		$(e.target).find(".createEngineError").slideUp("fast").html(""); // clear error msg
 		var engineData = formToJSON($(e.target)); // convert targeted form fields' names/values into key/value pairs
-		engineData.app_id = this.app_id;
+		engineData.appid = this.appid;
 		var engineModel = new EngineModel();
 		engineModel.save(engineData, {
 	        success: function(model, resData) { // success, go to engine settings
-	        	window.location = '?app_id=' + resData.app_id + '&engine_id=' + resData.id + '&enginetype_id=' + resData.enginetype_id + '#engine';
+	        	window.location = '?appid=' + resData.appid + '&engineid=' + resData.id + '&engineinfoid=' + resData.engineinfoid + '#engine';
 	        },
 	        error: function(model, res) {
 	        	try { // show error message if fail
@@ -875,9 +875,9 @@ var EngineAlgorithmsView = Backbone.View.extend({
 		this.subViews = [];
 		this.template_el = '#engineTabAlgorithms_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 		this.availableAlgoListView = new EngineAlgorithmsAvailableAlgoListView();
 		this.listenTo(this.availableAlgoListView, 'changeSelected', this.changeAvailableAlgoSelected);
 		this.subViews.push(this.availableAlgoListView);
@@ -938,10 +938,10 @@ var EngineAlgorithmsView = Backbone.View.extend({
 	}
 });
 
-/* Required param: app_id, engine_id */
+/* Required param: appid, engineid */
 var DeployedAlgoModel = Backbone.Model.extend({
 	urlRoot: function() {
-		var path ='apps/' + this.get('app_id') + '/engines/' + this.get('engine_id') +'/algos_deployed';
+		var path ='apps/' + this.get('appid') + '/engines/' + this.get('engineid') +'/algos_deployed';
 		return getAPIUrl(path);
 	}
 });
@@ -949,10 +949,10 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engine_deployedAlgo_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id")
-		this.model = new DeployedAlgoModel({app_id: this.app_id, engine_id: this.engine_id});
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid")
+		this.model = new DeployedAlgoModel({appid: this.appid, engineid: this.engineid});
 		this.model.bind('change', this.render, this);
     	this.model.fetch();
 	},
@@ -966,12 +966,12 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	},
 	undeploy: function() {
     	var self = this;
-    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_undeploy';
+    	var path ='apps/' + this.appid + '/engines/' + this.engineid +'/algos_undeploy';
     	$.post(getAPIUrl(path), function() {
-    		var app_id = self.model.get('app_id');
-    		var engine_id = self.model.get('engine_id');
+    		var appid = self.model.get('appid');
+    		var engineid = self.model.get('engineid');
     		self.model.clear(); // empty display
-    		self.model.set({app_id: app_id, engine_id: engine_id}); // put these back
+    		self.model.set({appid: appid, engineid: engineid}); // put these back
     		self.trigger('undeployDone');
     	}).error(function(res) {
     		alert("An error has occured:" + res.status);
@@ -980,7 +980,7 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	},
 	trainnow: function() {
     	var self = this;
-    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_trainnow';
+    	var path ='apps/' + this.appid + '/engines/' + this.engineid +'/algos_trainnow';
         var info = notifyInfo('Requesting to train data model immediately...', '', {positionClass: 'toast-bottom-right', fadeOut: 1});
     	$.post(getAPIUrl(path), function(res) {
             notifyClear(info);
@@ -1003,33 +1003,33 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
 	}
 });
 
-/* Required param: app_id, engine_id */
+/* Required param: appid, engineid */
 var AvailableAlgoModel = Backbone.Model.extend({
 	urlRoot: function() {
-		var path ='apps/' + this.get('app_id') + '/engines/' + this.get('engine_id') +'/algos_available';
+		var path ='apps/' + this.get('appid') + '/engines/' + this.get('engineid') +'/algos_available';
 		return getAPIUrl(path);
 	}
 });
-/* Required param: app_id, engine_id */
+/* Required param: appid, engineid */
 var AvailableAlgoListCollection = Backbone.Collection.extend({
 	model: AvailableAlgoModel,
 	initialize: function(models, options) {
-		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/algos_available');
+		this.url = getAPIUrl('apps/' + options.appid + '/engines/' + options.engineid +'/algos_available');
 	}
 });
 var EngineAlgorithmsAvailableAlgoListView = Backbone.View.extend({
 	initialize : function() {
 		this.subViews = [];
 		this.selectedAlgos = {};
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 
 		this.template_el = '#engine_availableAlgoList_template';
 		this.template = _.template($(this.template_el).html());
 		this.$el.html(this.template());
 
-    	this.collection = new AvailableAlgoListCollection([], {app_id: this.app_id, engine_id: this.engine_id});
+    	this.collection = new AvailableAlgoListCollection([], {appid: this.appid, engineid: this.engineid});
     	this.collection.bind('add', this.addOne, this);
     	this.collection.bind('reset', this.render, this);
     	this.collection.fetch();
@@ -1049,31 +1049,31 @@ var EngineAlgorithmsAvailableAlgoListView = Backbone.View.extend({
         this.subViews.push(avaAlgoView);
         this.$el.find('tbody').append( avaAlgoView.render().el );
     },
-    algoSelect: function(algo_id) {
-    	this.selectedAlgos[algo_id] = true;
+    algoSelect: function(algoid) {
+    	this.selectedAlgos[algoid] = true;
     	this.trigger('changeSelected', this.selectedAlgos);
     },
-    algoUnselect: function(algo_id) {
-    	if (this.selectedAlgos[algo_id]) {
-    		delete this.selectedAlgos[algo_id];
+    algoUnselect: function(algoid) {
+    	if (this.selectedAlgos[algoid]) {
+    		delete this.selectedAlgos[algoid];
     		this.trigger('changeSelected', this.selectedAlgos);
     	}
     },
-    deploySingleAlgo: function(algo_id) {
-    	this.deploy([algo_id]);
+    deploySingleAlgo: function(algoid) {
+    	this.deploy([algoid]);
     },
     deploySelectedAlgos: function() {
     	if(!$.isEmptyObject(this.selectedAlgos)) { // if selectedAlgos is not empty
     		this.deploy(MapKeyToArray(this.selectedAlgos));
     	}
     },
-    deploy: function(algo_id_list) { // common func for deploying single/multiple algo(s)
+    deploy: function(algoidlist) { // common func for deploying single/multiple algo(s)
     	var self = this;
-    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_deploy';
+    	var path ='apps/' + this.appid + '/engines/' + this.engineid +'/algos_deploy';
     	$.ajax({
     		type: "POST",
     		url: getAPIUrl(path),
-    		data: JSON.stringify({algo_id_list: algo_id_list}),
+    		data: JSON.stringify({algoidlist: algoidlist}),
     		contentType: "application/json; charset=utf-8",
     		success: function() {
 	    		self.collection.fetch();
@@ -1105,9 +1105,9 @@ var EngineAlgorithmsAvailableAlgoView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engine_availableAlgo_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 		//this.model.bind('change', this.render, this);
     	//this.model.fetch();
 	},
@@ -1146,32 +1146,32 @@ var EngineAlgorithmsAvailableAlgoView = Backbone.View.extend({
 	}
 });
 
-/* Required param: app_id, engine_id */
+/* Required param: appid, engineid */
 var SimEvalModel = Backbone.Model.extend({
 	urlRoot: function() {
-		var path ='apps/' + this.get('app_id') + '/engines/' + this.get('engine_id') +'/simevals';
+		var path ='apps/' + this.get('appid') + '/engines/' + this.get('engineid') +'/simevals';
 		return getAPIUrl(path);
 	}
 });
-/* Required param: app_id, engine_id */
+/* Required param: appid, engineid */
 var SimEvalListCollection = Backbone.Collection.extend({
 	model: SimEvalModel,
 	initialize: function(models, options) {
-		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/simevals');
+		this.url = getAPIUrl('apps/' + options.appid + '/engines/' + options.engineid +'/simevals');
 	}
 });
 var EngineAlgorithmsSimEvalListView = Backbone.View.extend({
 	initialize : function() {
 		this.subViews = [];
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 
 		this.template_el = '#engine_simevalList_template';
 		this.template = _.template($(this.template_el).html());
 		this.$el.html(this.template());
 
-    	this.collection = new SimEvalListCollection([], {app_id: this.app_id, engine_id: this.engine_id});
+    	this.collection = new SimEvalListCollection([], {appid: this.appid, engineid: this.engineid});
     	this.collection.bind('add', this.addOne, this);
     	this.collection.bind('reset', this.render, this);
     	this.collection.fetch();
@@ -1198,9 +1198,9 @@ var EngineAlgorithmsSimEvalView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engine_simeval_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 		//this.model.bind('change', this.render, this);
     	//this.model.fetch();
 	},
@@ -1243,10 +1243,10 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engine_addAlgorithm_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
-		this.model = new EnginetypeAlgorithmListModel({"id": this.enginetype_id});
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
+		this.model = new EnginetypeAlgorithmListModel({"id": this.engineinfoid});
 		this.model.bind('change', this.render, this);
     	this.model.fetch();
 	},
@@ -1260,12 +1260,12 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 	addAlgorithm: function(e) {
 		$(e.target).find(".addAlgoError").slideUp("fast").html(""); // clear error msg
 		var algoData = formToJSON($(e.target)); // convert targeted form fields' names/values into key/value pairs
-		algoData.app_id = this.app_id;
-		algoData.engine_id = this.engine_id;
+		algoData.appid = this.appid;
+		algoData.engineid = this.engineid;
 		var algoModel = new AvailableAlgoModel();
 		algoModel.save(algoData, {
 	        success: function(model, resData) { // success, go to algo settings
-	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algotype_id) + '/'+ decodeURIComponent(resData.algoname) + '/' + decodeURIComponent(resData.id);
+	        	window.location.hash = 'algoSettings/' + decodeURIComponent(resData.algoinfoid) + '/'+ decodeURIComponent(resData.algoname) + '/' + decodeURIComponent(resData.id);
 	        },
 	        error: function(model, res) {
 	        	try { // show error message if fail
@@ -1282,19 +1282,19 @@ var EngineAddAlgorithmView = Backbone.View.extend({
 
 var EngineAlgoAutotuningReportModel = Backbone.Model.extend({
 	initialize: function(model, options) {
-		//this.urlRoot = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/algoautotuning_report'); # TODO: remove
-		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/algos_available/' + this.id + '/autotune_report');
+		//this.urlRoot = getAPIUrl('apps/' + options.appid + '/engines/' + options.engineid +'/algoautotuning_report'); # TODO: remove
+		this.url = getAPIUrl('apps/' + options.appid + '/engines/' + options.engineid +'/algos_available/' + this.id + '/autotune_report');
 	}
 });
 var EngineAlgoAutotuningReportView = Backbone.View.extend({
 	initialize : function() {
 		this.template_el = '#engine_algoAutotuningReport_template';
 		this.template = _.template($(this.template_el).html()); // define template function
-		this.algo_id = this.options.id;		
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
-		this.model = new EngineAlgoAutotuningReportModel({"id": this.algo_id}, {app_id: this.app_id, engine_id: this.engine_id});
+		this.algoid = this.options.id;		
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
+		this.model = new EngineAlgoAutotuningReportModel({"id": this.algoid}, {appid: this.appid, engineid: this.engineid});
 		this.model.bind('change', this.render, this);
     	this.model.fetch();
 	},
@@ -1307,12 +1307,12 @@ var EngineAlgoAutotuningReportView = Backbone.View.extend({
 		return this;
 	},
 	selectAutotune: function(e) {
-		var tuned_algo_id = $(e.target).data('autotuneid');
-    	var path ='apps/' + this.app_id + '/engines/' + this.engine_id +'/algos_available/' + this.algo_id + '/autotune_apply';
+		var tunedalgoid = $(e.target).data('autotuneid');
+    	var path ='apps/' + this.appid + '/engines/' + this.engineid +'/algos_available/' + this.algoid + '/autotune_apply';
     	$.ajax({
     		type: "POST",
     		url: getAPIUrl(path),
-    		data: JSON.stringify({tuned_algo_id: tuned_algo_id}),
+    		data: JSON.stringify({tunedalgoid: tunedalgoid}),
     		contentType: "application/json; charset=utf-8",
     		success: function() {
 	    		window.location.hash = 'engineTabAlgorithms';
@@ -1326,8 +1326,8 @@ var EngineAlgoAutotuningReportView = Backbone.View.extend({
 
 var EngineSimEvalReportModel = Backbone.Model.extend({
 	initialize: function(model, options) {
-		//this.urlRoot = getAPIUrl('app/' + options.app_id + '/engine/' + options.engine_id +'/simeval_report');
-		this.url = getAPIUrl('apps/' + options.app_id + '/engines/' + options.engine_id +'/simevals/' + this.id + '/report');
+		//this.urlRoot = getAPIUrl('app/' + options.appid + '/engine/' + options.engineid +'/simeval_report');
+		this.url = getAPIUrl('apps/' + options.appid + '/engines/' + options.engineid +'/simevals/' + this.id + '/report');
 	}
 });
 /* Required Param: id  (simulated eval report id) */
@@ -1336,10 +1336,10 @@ var EngineSimEvalReportView = Backbone.View.extend({
 		this.template_el = '#engine_simEvalReport_template';
 		this.template = _.template($(this.template_el).html()); // define template function
 		this.simeval_id = this.options.id;
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
-		this.model = new EngineSimEvalReportModel({"id": this.simeval_id}, {app_id: this.app_id, engine_id: this.engine_id});
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
+		this.model = new EngineSimEvalReportModel({"id": this.simeval_id}, {appid: this.appid, engineid: this.engineid});
 		this.model.bind('change', this.render, this);
     	this.model.fetch();
 	},
@@ -1357,7 +1357,7 @@ var EnginetypeMetricsTypeListModel = Backbone.Model.extend({
 		return getAPIUrl('engineinfos/' + this.id + "/metricinfos");
 	}
 });
-/* Required Param: algo_id_list  (algo ids to be evaluated) */
+/* Required Param: algoidlist  (algo ids to be evaluated) */
 var EngineSimEvalSettingsView = Backbone.View.extend({
 	initialize : function() {
 		this.isEngineSimEvalSettingsView = true;
@@ -1365,11 +1365,11 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 		this.template_el = '#engine_simEvalSettings_template';
 		this.template = _.template($(this.template_el).html()); // define template function
 		this.simeval_id = this.options.id;
-		this.algo_id_list = this.options.algo_id_list;
+		this.algoidlist = this.options.algoidlist;
 		this.form_el = '#simEvalSettingsForm';
-		this.app_id = getUrlParam("app_id");
-		this.engine_id = getUrlParam("engine_id");
-		this.enginetype_id = getUrlParam("enginetype_id");
+		this.appid = getUrlParam("appid");
+		this.engineid = getUrlParam("engineid");
+		this.engineinfoid = getUrlParam("engineinfoid");
 		this.indexCount = 0;
 //		this.model = new EngineSimEvalSettingsModel({"id": this.simeval_id});
 //		this.model.bind('change', this.render, this);
@@ -1386,16 +1386,16 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 		var self = this;
 
 		// construct algo name list (this.algoName_list) from inputted algo id list
-		var algoArrayRaw = this.algo_id_list.split(',');
-		this.algoList = algoArrayRaw.map(function(algo_id_encoded){
-			var algo_id = decodeURIComponent(algo_id_encoded);
-			var algoModel = new AvailableAlgoModel({app_id: self.app_id, engine_id: self.engine_id, id: algo_id});
+		var algoArrayRaw = this.algoidlist.split(',');
+		this.algoList = algoArrayRaw.map(function(algoid_encoded){
+			var algoid = decodeURIComponent(algoid_encoded);
+			var algoModel = new AvailableAlgoModel({appid: self.appid, engineid: self.engineid, id: algoid});
 			algoModel.fetch();
 			return {algoname: algoModel.get('algoname'), id: algoModel.get('id')};
 		});
 
 		// render metrics options
-		metricstypeListModel = new EnginetypeMetricsTypeListModel({id: this.enginetype_id});
+		metricstypeListModel = new EnginetypeMetricsTypeListModel({id: this.engineinfoid});
 		metricstypeListModel.fetch({
 				success: function(model, res) {
 					self.metricslist = res.metricslist;
@@ -1424,7 +1424,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 	save: function() {
 		$(this.error_el).slideUp().html(""); // reset/clear all error msg
 		var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs
-		var simEvalModel = new SimEvalModel({app_id: this.app_id, engine_id: this.engine_id});
+		var simEvalModel = new SimEvalModel({appid: this.appid, engineid: this.engineid});
 		var self = this;
 		simEvalModel.save(data, {
 			wait: true,
