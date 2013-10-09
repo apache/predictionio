@@ -235,11 +235,11 @@ object Application extends Controller {
    *     Map(
    *       "id" -> "e1234",
    *       "enginename" -> "Engine Name 1",
-   *       "enginetype_id" -> "itemrec"),
+   *       "engineinfoid" -> "itemrec"),
    *     Map(
    *       "id" -> "e2234",
    *       "enginename" -> "Engine Name 2",
-   *       "enginetype_id" -> "itemsim"))))))
+   *       "engineinfoid" -> "itemsim"))))))
    */
   def getAppEnginelist(id: String) = withUser { user => implicit request =>
 
@@ -253,13 +253,13 @@ object Application extends Controller {
       Ok(toJson(Map(
         "id" -> toJson(id),
         "enginelist" -> toJson((appEngines map { eng =>
-          Map("id" -> eng.id.toString, "enginename" -> eng.name,"enginetype_id" -> eng.infoid)
+          Map("id" -> eng.id.toString, "enginename" -> eng.name,"engineinfoid" -> eng.infoid)
         }).toSeq)
       )))
 
   }
 
-  /* Required param: id (app_id) */
+  /* Required param: id (appid) */
   def getApp(id: String) = withUser { user => implicit request =>
     val app = apps.getByIdAndUserid(id.toInt, user.id).get
     Ok(toJson(Map(
@@ -384,7 +384,7 @@ object Application extends Controller {
   }
 
   /* List all available/installable algorithm type of a specific engine type
-   * Required param: id  (i.e. enginetype_id)
+   * Required param: id  (i.e. engineinfoid)
    *  */
   def getEngineTypeAlgoList(id: String) = Action {
     engineInfos.get(id) map { engineInfo =>
@@ -417,7 +417,7 @@ object Application extends Controller {
   }
 
    /* List all metrics type of a specific engine type
-   * Required param: id  (i.e. enginetype_id)
+   * Required param: id  (i.e. engineinfoid)
    *  */
   def getEngineTypeMetricsTypeList(id: String) = Action {
    Ok(toJson(
@@ -428,7 +428,7 @@ object Application extends Controller {
 								            "id" -> toJson("map_k"),
 								            "metricsname" -> toJson("MAP@k"),
 								            "metricslongname" -> toJson("Mean Average Precision"),
-								            "settingFields" -> toJson(Map(
+								            "settingfields" -> toJson(Map(
 								            					"k" -> "int"
 								            					))
 								          ))
@@ -445,7 +445,7 @@ object Application extends Controller {
       )))
   }
 
-  def getEngine(app_id: String, id: String) = withUser { user => implicit request =>
+  def getEngine(appid: String, id: String) = withUser { user => implicit request =>
     // If NOT authenticated
     /*
      * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
@@ -453,7 +453,7 @@ object Application extends Controller {
 
     // TODO: check this user owns this app
 
-    // TODO: check app_id and id is int
+    // TODO: check appid and id is int
     val engine = engines.get(id.toInt)
 
     engine map { eng: Engine =>
@@ -490,8 +490,8 @@ object Application extends Controller {
           }
       Ok(obj(
         "id" -> eng.id.toString, // engine id
-        "enginetype_id" -> eng.infoid,
-        "app_id" -> eng.appid.toString,
+        "engineinfoid" -> eng.infoid,
+        "appid" -> eng.appid.toString,
         "enginename" -> eng.name,
         "enginestatus" -> engineStatus))
     } getOrElse {
@@ -507,14 +507,14 @@ object Application extends Controller {
   /*
    * createEngine
    * JSON request params:
-   * 	app_id - app id
-   * 	enginetype_id - engine type
+   * 	appid - app id
+   * 	engineinfoid - engine type
    * 	enginename - inputted engine name
    */
-  def createEngine(app_id: String) = withUser { user => implicit request =>
+  def createEngine(appid: String) = withUser { user => implicit request =>
     val engineForm = Form(tuple(
-      "app_id" -> number,
-      "enginetype_id" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
+      "appid" -> number,
+      "engineinfoid" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
       "enginename" -> (text verifying("Please name your engine.", enginename => enginename.length > 0)
                           verifying enginenameConstraint)
     ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3))
@@ -573,15 +573,15 @@ object Application extends Controller {
 
         Ok(toJson(Map(
           "id" -> engineId.toString, // engine id
-          "enginetype_id" -> enginetype,
-          "app_id" -> fappid.toString,
+          "engineinfoid" -> enginetype,
+          "appid" -> fappid.toString,
           "enginename" -> enginename)))
       }
     )
 
   }
 
-  def removeEngine(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def removeEngine(appid: Int, engineid: Int) = withUser { user => implicit request =>
     // If NOT authenticated
     /*
      * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
@@ -592,29 +592,26 @@ object Application extends Controller {
      *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
      */
 
-    val appid = app_id.toInt
-    val engineid = engine_id.toInt
-
     deleteEngine(engineid, keepSettings=false)
 
     //send deleteAppDir(appid) request to scheduler
-    WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/delete").get()
+    WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/delete").get()
 
-    Logger.info("Delete Engine ID "+engine_id)
+    Logger.info("Delete Engine ID "+engineid)
     engines.deleteByIdAndAppid(engineid, appid)
 
     Ok    // Ok
   }
 
-  def getAvailableAlgoList(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def getAvailableAlgoList(appid: String, engineid: String) = withUser { user => implicit request =>
     /* sample output
     Ok(toJson(Seq(
       Map(
         "id" -> "algoid_13213",
         "algoname" -> "algo-test-sim-correl=12",
-        "app_id" -> "appid1234",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
+        "appid" -> "appid1234",
+        "engineid" -> "engid33333",
+        "algoinfoid" -> "pdio-knnitembased",
         "algoinfoname" -> "Item-based Similarity (kNN) ",
         "status" -> "ready",
         "updatedtime" -> "04-23-2012 12:21:33"),
@@ -622,9 +619,9 @@ object Application extends Controller {
       Map(
       	"id" -> "algoid_13213",
         "algoname" -> "algo-test-mf-gamma=0.1,sigma=8",
-        "app_id" -> "appid1234",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
+        "appid" -> "appid1234",
+        "engineid" -> "engid33333",
+        "algoinfoid" -> "pdio-knnitembased",
         "algoinfoname" -> "Non-negative Matrix Factorization",
         "status" -> "autotuning",
         "updatedtime" -> "04-23-2012 12:21:23"),
@@ -632,19 +629,19 @@ object Application extends Controller {
       Map(
         "id" -> "algoid_3213",
         "algoname" -> "algo-test-mf-gamma=0.5,sigma=4",
-        "app_id" -> "appid765",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
+        "appid" -> "appid765",
+        "engineid" -> "engid33333",
+        "algoinfoid" -> "pdio-knnitembased",
         "algoinfoname" -> "Non-negative Matrix Factorization",
         "status" -> "ready",
         "updatedtime" -> "04-23-2012 12:21:23")
      )))
     */
 
-     // TODO: verifying this user owns app_id and engine_id
+     // TODO: verifying this user owns appid and engineid
 
-     // TODO: check engine_id is int
-     val engineAlgos = algos.getByEngineid(engine_id.toInt)
+     // TODO: check engineid is int
+     val engineAlgos = algos.getByEngineid(engineid.toInt)
 
      if (!engineAlgos.hasNext) NoContent
      else
@@ -652,9 +649,9 @@ object Application extends Controller {
           (engineAlgos filter { algo => !((algo.status == "deployed") || (algo.status == "simeval")) } map { algo =>
            Map("id" -> algo.id.toString,
                "algoname" -> algo.name,
-               "app_id" -> app_id, // TODO: should algo db store appid and get it from there?
-               "engine_id" -> algo.engineid.toString,
-               "algotype_id" -> algo.infoid,
+               "appid" -> appid, // TODO: should algo db store appid and get it from there?
+               "engineid" -> algo.engineid.toString,
+               "algoinfoid" -> algo.infoid,
                "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
                "status" -> algo.status,
                "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
@@ -665,15 +662,15 @@ object Application extends Controller {
 
   }
 
-  def getAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
+  def getAvailableAlgo(appid: String, engineid: String, id: String) = withUser { user => implicit request =>
     /* sample output
     Ok(toJson(
       Map(
         "id" -> "algoid_13213",
         "algoname" -> "algo-test-sim-correl=12",
-        "app_id" -> "appid1234",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
+        "appid" -> "appid1234",
+        "engineid" -> "engid33333",
+        "algoinfoid" -> "pdio-knnitembased",
         "algoinfoname" -> "Item-based Similarity (kNN) ",
         "status" -> "ready",
         "createdtime" -> "04-23-2012 12:21:33",
@@ -689,9 +686,9 @@ object Application extends Controller {
       Ok(toJson(Map(
           "id" -> algo.id.toString, // algo id
           "algoname" -> algo.name,
-          "app_id" -> app_id, // TODO
-          "engine_id" -> algo.engineid.toString,
-          "algotype_id" -> algo.infoid,
+          "appid" -> appid, // TODO
+          "engineid" -> algo.engineid.toString,
+          "algoinfoid" -> algo.infoid,
           "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
           "status" -> "ready", // default status
           "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
@@ -704,9 +701,9 @@ object Application extends Controller {
 
   val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
 
-  def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def createAvailableAlgo(appid: String, engineid: String) = withUser { user => implicit request =>
     // request payload
-    //{"algotype_id":"pdio-knnitembased","algoname":"test","app_id":"1","engine_id":"12"}
+    //{"algoinfoid":"pdio-knnitembased","algoname":"test","appid":"1","engineid":"12"}
 
     // If NOT authenticated
     /*
@@ -724,11 +721,11 @@ object Application extends Controller {
      */
 
     val createAlgoForm = Form(tuple(
-      "algotype_id" -> (nonEmptyText verifying("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
+      "algoinfoid" -> (nonEmptyText verifying("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
       "algoname" -> (text verifying("Please name your algo.", name => name.length > 0)
                           verifying enginenameConstraint), // same name constraint as engine
-      "app_id" -> number,
-      "engine_id" -> number
+      "appid" -> number,
+      "engineid" -> number
     ) verifying("Algo name must be unique.", f => !algos.existsByEngineidAndName(f._4, f._2)))
 
     createAlgoForm.bindFromRequest.fold(
@@ -769,9 +766,9 @@ object Application extends Controller {
           Ok(toJson(Map(
             "id" -> algoId.toString, // algo id
             "algoname" -> newAlgo.name,
-            "app_id" -> appId.toString,
-            "engine_id" -> newAlgo.engineid.toString,
-            "algotype_id" -> algoType,
+            "appid" -> appId.toString,
+            "engineid" -> newAlgo.engineid.toString,
+            "algoinfoid" -> algoType,
             "algoinfoname" -> algoInfos.get(algoType).get.name,
             "status" -> newAlgo.status,
             "createdtime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
@@ -974,23 +971,23 @@ object Application extends Controller {
 
   }
 
-  def removeAvailableAlgo(app_id: Int, engine_id: Int, id: Int) = withUser { user => implicit request =>
+  def removeAvailableAlgo(appid: Int, engineid: Int, id: Int) = withUser { user => implicit request =>
 
     algos.get(id) map { algo =>
       algo.offlinetuneid map { tuneid =>
-        removeOfflineTune(app_id, engine_id, tuneid)
+        removeOfflineTune(appid, engineid, tuneid)
       }
     }
 
     deleteModelData(id)
-    // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
-    WS.url(settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
+    // send the deleteAlgoDir(appid, engineid, id) request to scheduler here
+    WS.url(settingsSchedulerUrl+"/apps/"+appid+"/engines/"+engineid+"/algos/"+id+"/delete").get()
     algos.delete(id)
     Ok
 
   }
 
-  def getDeployedAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def getDeployedAlgo(appid: String, engineid: String) = withUser { user => implicit request =>
     /* sample output
     Ok(toJson(Map(
        "updatedtime" -> toJson("12-03-2012 12:32:12"),
@@ -999,9 +996,9 @@ object Application extends Controller {
 	      Map(
 	        "id" -> "algoid1234",
 	        "algoname" -> "algo-test-sim1",
-	        "app_id" -> "appid1234",
-	        "engine_id" -> "engid33333",
-	        "algotype_id" -> "pdio-knnitembased",
+	        "appid" -> "appid1234",
+	        "engineid" -> "engid33333",
+	        "algoinfoid" -> "pdio-knnitembased",
 	        "algoinfoname" -> "kNN Item-Based CF",
 	        "status" -> "deployed",
 	        "updatedtime" -> "04-23-2012 12:21:23"
@@ -1009,9 +1006,9 @@ object Application extends Controller {
 	      Map(
 	        "id" -> "algoid531",
 	        "algoname" -> "algo-test-sim-correl=12",
-	        "app_id" -> "appid765",
-	        "engine_id" -> "engid33333",
-	        "algotype_id" -> "pdio-knnitembased",
+	        "appid" -> "appid765",
+	        "engineid" -> "engid33333",
+	        "algoinfoid" -> "pdio-knnitembased",
 	        "algoinfoname" -> "kNN Item-Based CF",
 	        "status" -> "deployed",
 	        "updatedtime" -> "04-23-2012 12:21:23"
@@ -1022,9 +1019,9 @@ object Application extends Controller {
 
     // TODO: verifying this user owns this app id and engine id
 
-    // TODO: check engine_id is int
+    // TODO: check engineid is int
 
-    val deployedAlgos = algos.getDeployedByEngineid(engine_id.toInt)
+    val deployedAlgos = algos.getDeployedByEngineid(engineid.toInt)
 
     if (!deployedAlgos.hasNext) NoContent
     else
@@ -1034,9 +1031,9 @@ object Application extends Controller {
        "algolist" -> toJson(deployedAlgos.map { algo =>
          Map("id" -> algo.id.toString,
 	         "algoname" -> algo.name,
-	         "app_id" -> app_id, // // TODO: should algo db store appid and get it from there?
-	         "engine_id" -> algo.engineid.toString,
-	         "algotype_id" -> algo.infoid,
+	         "appid" -> appid, // // TODO: should algo db store appid and get it from there?
+	         "engineid" -> algo.engineid.toString,
+	         "algoinfoid" -> algo.infoid,
 	         "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
 	         "status" -> algo.status,
 	         "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
@@ -1045,45 +1042,45 @@ object Application extends Controller {
 
   }
 
-  def getAlgoAutotuningReport(app_id: String, engine_id: String, algo_id: String) = withUser { user => implicit request =>
+  def getAlgoAutotuningReport(appid: String, engineid: String, algoid: String) = withUser { user => implicit request =>
     /* sample output
     Ok(toJson(
       Map(
-        "id" -> toJson("algo_id123"),
-        "app_id" -> toJson("appid1234"),
-        "engine_id" -> toJson("engid33333"),
+        "id" -> toJson("algoid123"),
+        "appid" -> toJson("appid1234"),
+        "engineid" -> toJson("engid33333"),
         "algo" -> toJson(Map(
 						        "id" -> "algoid1234",
 						        "algoname" -> "algo-test-sim1",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "appid" -> "appid1234",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )),
 		"metric" -> toJson(Map(
 						        "id" -> "metricid_123",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
+						        "engineid" -> "engid33333",
+						        "engineinfoid" -> "itemrec",
+						        "metricsinfoid" -> "map_k",
 						        "metricsname" -> "MAP@k",
-						        "settingsString" -> "k=5"
+						        "settingsstring" -> "k=5"
 						      )),
 		"metricscorelist" -> toJson(Seq(
-		    Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.12341)),
-		    Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.32341)),
-		    Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.52341))
+		    Map("algoautotuneid" -> toJson("algotuneid1234"), "settingsstring"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.12341)),
+		    Map("algoautotuneid" -> toJson("algotuneid222"), "settingsstring"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.32341)),
+		    Map("algoautotuneid" -> toJson("algotuneid333"), "settingsstring"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.52341))
 		 )),
 		"metricscoreiterationlist" -> toJson(Seq(
 		    Seq(
-            Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.6)),
-		    		Map("algoautotune_id" -> toJson("algotuneid1231"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.1)),
-		    		Map("algoautotune_id" -> toJson("algotuneid1235"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2))
+            Map("algoautotuneid" -> toJson("algotuneid333"), "settingsstring"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.6)),
+		    		Map("algoautotuneid" -> toJson("algotuneid1231"), "settingsstring"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.1)),
+		    		Map("algoautotuneid" -> toJson("algotuneid1235"), "settingsstring"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2))
 		    ),
 		    Seq(
-		    		Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
-		    		Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.23)),
-		    		Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.5))
+		    		Map("algoautotuneid" -> toJson("algotuneid1234"), "settingsstring"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
+		    		Map("algoautotuneid" -> toJson("algotuneid222"), "settingsstring"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.23)),
+		    		Map("algoautotuneid" -> toJson("algotuneid333"), "settingsstring"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.5))
 		    )
 		 )),
 		"splittrain" -> toJson(55), // TODO: engine-level setting
@@ -1099,7 +1096,7 @@ object Application extends Controller {
     )) */
 
     // get the offlinetuneid of this algo
-    algos.get(algo_id.toInt) map { algo =>
+    algos.get(algoid.toInt) map { algo =>
       algo.offlinetuneid map { tuneid =>
         offlineTunes.get(tuneid) map { tune =>
 
@@ -1156,8 +1153,8 @@ object Application extends Controller {
 
           val metricscorelist = avgScores.toSeq.sortBy(_._1).map{ case (k,v) =>
              Map(
-              "algoautotune_id" -> toJson(tuneAlgosGroupParams(k)._1),
-              "settingsString"-> toJson(tuneAlgosGroupParams(k)._2),
+              "algoautotuneid" -> toJson(tuneAlgosGroupParams(k)._1),
+              "settingsstring"-> toJson(tuneAlgosGroupParams(k)._2),
               "score"-> toJson(v))
           }
 
@@ -1169,8 +1166,8 @@ object Application extends Controller {
               val algoInfo = algoInfos.get(algo.infoid).get
 
               Map(
-                "algoautotune_id" -> toJson(r.algoid.toString),
-                "settingsString"-> toJson(Itemrec.Algorithms.displayParams(algoInfo, algo.params)),
+                "algoautotuneid" -> toJson(r.algoid.toString),
+                "settingsstring"-> toJson(Itemrec.Algorithms.displayParams(algoInfo, algo.params)),
                 "score"-> toJson(r.score))
 
             }.toSeq
@@ -1196,25 +1193,25 @@ object Application extends Controller {
 
           Ok(toJson(
             Map(
-              "id" -> toJson(algo_id),
-              "app_id" -> toJson(app_id),
-              "engine_id" -> toJson(engine_id),
+              "id" -> toJson(algoid),
+              "appid" -> toJson(appid),
+              "engineid" -> toJson(engineid),
               "algo" -> toJson(Map(
                           "id" -> algo.id.toString,
                           "algoname" -> algo.name.toString,
-                          "app_id" -> app_id,
-                          "engine_id" -> algo.engineid.toString,
-                          "algotype_id" -> algo.infoid,
+                          "appid" -> appid,
+                          "engineid" -> algo.engineid.toString,
+                          "algoinfoid" -> algo.infoid,
                           "algoinfoname" -> algoInfo.name,
-                          "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                          "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
                         )),
               "metric" -> toJson(Map(
                           "id" -> metric.id.toString,
-                          "engine_id" -> engine_id,
-                          "enginetype_id" -> "itemrec", // TODO: hardcode now, should get this from enginedb
-                          "metricstype_id" -> metric.infoid,
+                          "engineid" -> engineid,
+                          "engineinfoid" -> "itemrec", // TODO: hardcode now, should get this from enginedb
+                          "metricsinfoid" -> metric.infoid,
                           "metricsname" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
-                          "settingsString" -> map_k_displayAllParams(metric.params)
+                          "settingsstring" -> map_k_displayAllParams(metric.params)
                         )),
               "metricscorelist" -> toJson(metricscorelist),
               "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
@@ -1244,12 +1241,12 @@ object Application extends Controller {
   }
 
   // Apply the selected params to the algo
-  def algoAutotuningSelect(app_id: String, engine_id: String, algo_id: String) = withUser { user => implicit request =>
+  def algoAutotuningSelect(appid: String, engineid: String, algoid: String) = withUser { user => implicit request =>
 
-    // Apply POST request params of tuned_algo_id to algo_id
-    // update the status of algo_id from 'tuning' or 'tuned' to 'ready'
+    // Apply POST request params of tunedalgoid to algoid
+    // update the status of algoid from 'tuning' or 'tuned' to 'ready'
 
-    val form = Form("tuned_algo_id" -> number)
+    val form = Form("tunedalgoid" -> number)
 
     form.bindFromRequest.fold(
       formWithError => {
@@ -1259,7 +1256,7 @@ object Application extends Controller {
       formData => {
         val tunedAlgoid = formData
 
-        val orgAlgo = algos.get(algo_id.toInt)
+        val orgAlgo = algos.get(algoid.toInt)
         val tunedAlgo = algos.get(tunedAlgoid)
 
         if ((orgAlgo == None) || (tunedAlgo == None)) {
@@ -1278,32 +1275,32 @@ object Application extends Controller {
   }
 
 
-  def getSimEvalList(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def getSimEvalList(appid: String, engineid: String) = withUser { user => implicit request =>
     /* sample output */
     /*
     Ok(toJson(Seq(
       Map(
         "id" -> toJson("simeval_id123"),
-        "app_id" -> toJson("appid1234"),
-        "engine_id" -> toJson("engid33333"),
+        "appid" -> toJson("appid1234"),
+        "engineid" -> toJson("engid33333"),
         "algolist" -> toJson(Seq(
 						      Map(
 						        "id" -> "algoid1234",
 						        "algoname" -> "algo-test-sim1",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "appid" -> "appid1234",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      ),
 						      Map(
 						        "id" -> "algoid56456",
 						        "algoname" -> "algo-test-mf-gamma=0.1,sigma=8 ",
-						        "app_id" -> "appid765",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
+						        "appid" -> "appid765",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "pdio-knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )
 					       )),
         "status" -> toJson("pending"),
@@ -1311,26 +1308,26 @@ object Application extends Controller {
       ),
       Map(
         "id" -> toJson("simeval_id321"),
-        "app_id" -> toJson("appid765"),
-        "engine_id" -> toJson("engid33333"),
+        "appid" -> toJson("appid765"),
+        "engineid" -> toJson("engid33333"),
         "algolist" -> toJson(Seq(
 						      Map(
 						        "id" -> "algoid1234",
 						        "algoname" -> "algo-test-sim2",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
+						        "appid" -> "appid1234",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "pdio-knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      ),
 						      Map(
 						        "id" -> "algoid888",
 						        "algoname" -> "second_algo-test-mf-gamma=0.1,sigma=8 ",
-						        "app_id" -> "appid765",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
+						        "appid" -> "appid765",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "pdio-knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )
 					       )),
         "status" -> toJson("completed"),
@@ -1342,7 +1339,7 @@ object Application extends Controller {
     // TODO: check if the user owns this engine
 
     // get offlineeval for this engine
-    val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt) filter { e => (e.tuneid == None) }
+    val engineOfflineEvals = offlineEvals.getByEngineid(engineid.toInt) filter { e => (e.tuneid == None) }
 
     if (!engineOfflineEvals.hasNext) NoContent
     else {
@@ -1365,11 +1362,11 @@ object Application extends Controller {
 
                 Map("id" -> algo.id.toString,
                      "algoname" -> algo.name,
-                     "app_id" -> app_id,
-                     "engine_id" -> algo.engineid.toString,
-                     "algotype_id" -> algo.infoid,
+                     "appid" -> appid,
+                     "engineid" -> algo.engineid.toString,
+                     "algoinfoid" -> algo.infoid,
                      "algoinfoname" -> algoInfo.name,
-                     "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                     "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
                      )
               }.toSeq
               )
@@ -1380,8 +1377,8 @@ object Application extends Controller {
 
           Map(
            "id" -> toJson(eval.id),
-           "app_id" -> toJson(app_id),
-           "engine_id" -> toJson(eval.engineid),
+           "appid" -> toJson(appid),
+           "engineid" -> toJson(eval.engineid),
            "algolist" -> algolist,
            "status" -> toJson(status),
            "starttime" -> toJson(createtime), // NOTE: use createtime here for test date
@@ -1409,14 +1406,14 @@ object Application extends Controller {
     displayNames map (x => x + " = " + params(displayToParamNames(x))) mkString(", ")
   }
 
-  def createSimEval(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def createSimEval(appid: String, engineid: String) = withUser { user => implicit request =>
     /* request payload
-     * {"app_id":"1","engine_id":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
+     * {"appid":"1","engineid":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
      */
-     //{"app_id":"17","engine_id":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splittrain":"71","splittest":"24","splitmethod":"time","evaliteration":"3"}
+     //{"appid":"17","engineid":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splittrain":"71","splittest":"24","splitmethod":"time","evaliteration":"3"}
     val simEvalForm = Form(tuple(
-      "app_id" -> number,
-      "engine_id" -> number,
+      "appid" -> number,
+      "engineid" -> number,
       "algo" -> list(number), // algo id
       "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
       "metricsSettings" -> list(text),
@@ -1424,7 +1421,7 @@ object Application extends Controller {
       "splittest" -> number(1, 100),
       "splitmethod" -> text,
       "evaliteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
-    )) // TODO: verifying this user owns this app_id and engine_id, and the engine_id owns the algo ids
+    )) // TODO: verifying this user owns this appid and engineid, and the engineid owns the algo ids
 
     simEvalForm.bindFromRequest.fold(
       formWithError => {
@@ -1458,7 +1455,7 @@ object Application extends Controller {
    * Stop the simulated evaluation job if it's still running/pending
    * Then delete it
    */
-  def removeSimEval(app_id: Int, engine_id: Int, id: Int) = withUser { user => implicit request =>
+  def removeSimEval(appid: Int, engineid: Int, id: Int) = withUser { user => implicit request =>
 
     // TODO: check if user owns this app + enigne + simeval
 
@@ -1474,9 +1471,9 @@ object Application extends Controller {
       offlineEvals.update(oe.copy(createtime = None))
 
       /** Stop any possible running jobs */
-      val stop = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/stop").get()
+      val stop = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${id}/stop").get()
       /** Clean up intermediate data files */
-      val delete = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/delete").get()
+      val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${id}/delete").get()
       /** Synchronize on both scheduler actions */
       val remove = for {
         s <- stop
@@ -1506,67 +1503,67 @@ object Application extends Controller {
     }
   }
 
-  def getSimEvalReport(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
+  def getSimEvalReport(appid: String, engineid: String, id: String) = withUser { user => implicit request =>
     /* sample output */
     /*
     Ok(toJson(
       Map(
         "id" -> toJson("simeval_id123"),
-        "app_id" -> toJson("appid1234"),
-        "engine_id" -> toJson("engid33333"),
+        "appid" -> toJson("appid1234"),
+        "engineid" -> toJson("engid33333"),
         "algolist" -> toJson(Seq(
 						      Map(
 						        "id" -> "algoid1234",
 						        "algoname" -> "algo-test-sim1",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
+						        "appid" -> "appid1234",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      ),
 						      Map(
 						        "id" -> "algoid876",
 						        "algoname" -> "algo-test-mf-gamma=0.1,sigma=8",
-						        "app_id" -> "appid765",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
+						        "appid" -> "appid765",
+						        "engineid" -> "engid33333",
+						        "algoinfoid" -> "pdio-knnitembased",
 						        "algoinfoname" -> "kNN Item-Based CF",
-						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
+						        "settingsstring" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
 						      )
 					       )),
 		"metricslist" -> toJson(Seq(
 						      Map(
 						        "id" -> "metricid_123",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
+						        "engineid" -> "engid33333",
+						        "engineinfoid" -> "itemrec",
+						        "metricsinfoid" -> "map_k",
 						        "metricsname" -> "MAP@k",
-						        "settingsString" -> "k=5"
+						        "settingsstring" -> "k=5"
 						      ),
 						      Map(
 						        "id" -> "metricid_888",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
+						        "engineid" -> "engid33333",
+						        "engineinfoid" -> "itemrec",
+						        "metricsinfoid" -> "map_k",
 						        "metricsname" -> "MAP@k",
-						        "settingsString" -> "k=10"
+						        "settingsstring" -> "k=10"
 						      ),
 						      Map(
 						        "id" -> "metricid_811",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
+						        "engineid" -> "engid33333",
+						        "engineinfoid" -> "itemrec",
+						        "metricsinfoid" -> "map_k",
 						        "metricsname" -> "MAP@k",
-						        "settingsString" -> "k=20"
+						        "settingsstring" -> "k=20"
 						      )
 					       )),
 		"metricscorelist" -> toJson(Seq(
-		    Map("algo_id" -> toJson("algoid1234"), "metrics_id"-> toJson("metricid_123"), "score"-> toJson(0.12341)),
-		    Map("algo_id"-> toJson("algoid1234"), "metrics_id"-> toJson("metricid_888"), "score"-> toJson(0.832)),
-		    Map("algo_id"-> toJson("algoid1234"), "metrics_id"-> toJson("metricid_811"), "score"-> toJson(0.341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_123"), "score"-> toJson(0.2341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_888"), "score"-> toJson(0.9341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_811"), "score"-> toJson(0.1241))
+		    Map("algoid" -> toJson("algoid1234"), "metricsid"-> toJson("metricid_123"), "score"-> toJson(0.12341)),
+		    Map("algoid"-> toJson("algoid1234"), "metricsid"-> toJson("metricid_888"), "score"-> toJson(0.832)),
+		    Map("algoid"-> toJson("algoid1234"), "metricsid"-> toJson("metricid_811"), "score"-> toJson(0.341)),
+		    Map("algoid"-> toJson("algoid876"), "metricsid"-> toJson("metricid_123"), "score"-> toJson(0.2341)),
+		    Map("algoid"-> toJson("algoid876"), "metricsid"-> toJson("metricid_888"), "score"-> toJson(0.9341)),
+		    Map("algoid"-> toJson("algoid876"), "metricsid"-> toJson("metricid_811"), "score"-> toJson(0.1241))
 		 )),
         "status" -> toJson("completed"),
         "starttime" -> toJson("04-23-2012 12:21:23"),
@@ -1597,11 +1594,11 @@ object Application extends Controller {
 
               Map("id" -> algo.id.toString,
                   "algoname" -> algo.name,
-                  "app_id" -> app_id,
-                  "engine_id" -> algo.engineid.toString,
-                  "algotype_id" -> algo.infoid,
+                  "appid" -> appid,
+                  "engineid" -> algo.engineid.toString,
+                  "algoinfoid" -> algo.infoid,
                   "algoinfoname" -> algoInfo.name,
-                  "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                  "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
                   )
             }.toSeq
           )
@@ -1616,11 +1613,11 @@ object Application extends Controller {
           toJson(
             evalMetrics.map { metric =>
               Map("id" -> metric.id.toString,
-                  "engine_id" -> engine_id,
-                  "enginetype_id" -> "itemrec", // TODO: hardcode now, should get it from engine db
-                  "metricstype_id" -> metric.infoid,
+                  "engineid" -> engineid,
+                  "engineinfoid" -> "itemrec", // TODO: hardcode now, should get it from engine db
+                  "metricsinfoid" -> metric.infoid,
                   "metricsname" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
-                  "settingsString" -> map_k_displayAllParams(metric.params)
+                  "settingsstring" -> map_k_displayAllParams(metric.params)
                   )
             }.toSeq
           )
@@ -1637,8 +1634,8 @@ object Application extends Controller {
         val num = results.length
         val avg = if ((results.isEmpty) || (num != eval.iterations)) "N/A" else ((results.reduceLeft( _ + _ ) / num).toString)
 
-        Map("algo_id" -> algo.id.toString,
-            "metrics_id" -> metric.id.toString,
+        Map("algoid" -> algo.id.toString,
+            "metricsid" -> metric.id.toString,
             "score" -> avg.toString
             )
       }).toSeq
@@ -1653,7 +1650,7 @@ object Application extends Controller {
 
         // overwrite defaultScore with evalScore
         (defaultScore ++ evalScore).map{ case ((algoid, metricid), score) =>
-          Map("algo_id" -> algoid.toString, "metrics_id" -> metricid.toString, "score" -> score)
+          Map("algoid" -> algoid.toString, "metricsid" -> metricid.toString, "score" -> score)
         }
       }).toSeq
 
@@ -1677,8 +1674,8 @@ object Application extends Controller {
           Ok(toJson(
             Map(
               "id" -> toJson(eval.id),
-               "app_id" -> toJson(app_id),
-               "engine_id" -> toJson(eval.engineid),
+               "appid" -> toJson(appid),
+               "engineid" -> toJson(eval.engineid),
                "algolist" -> algolist,
                "metricslist" -> metricslist,
                "metricscorelist" -> toJson(metricscorelist),
@@ -1703,15 +1700,15 @@ object Application extends Controller {
 
   }
   // Deploy an array of algo -- set availableAlgo's status to deployed? also, undeploy existing, if any
-  def algoDeploy(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // REQUIRED Post Param: algo_id_list (array of availableAlgo ids)
+  def algoDeploy(appid: String, engineid: String) = withUser { user => implicit request =>
+    // REQUIRED Post Param: algoidlist (array of availableAlgo ids)
     val deployForm = Form(
-      "algo_id_list" -> list(number)
+      "algoidlist" -> list(number)
     )
     deployForm.bindFromRequest.fold(
       formWithErrors => Ok,
       form => {
-        algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
+        algos.getDeployedByEngineid(engineid.toInt) foreach { algo =>
           algos.update(algo.copy(status = "ready"))
         }
         form foreach { id =>
@@ -1726,9 +1723,9 @@ object Application extends Controller {
   }
 
   // Undeploy all deployed algo/algo(s) -- set availableAlgo's status back to undeploy?
-  def algoUndeploy(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def algoUndeploy(appid: String, engineid: String) = withUser { user => implicit request =>
     // No extra param required
-    algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
+    algos.getDeployedByEngineid(engineid.toInt) foreach { algo =>
       algos.update(algo.copy(status = "ready"))
     }
     WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
@@ -1736,10 +1733,10 @@ object Application extends Controller {
   }
 
   // Add model training of the currently deployed algo(s) to queue.
-  def algoTrainNow(app_id: String, engine_id: String) = withUser { user => implicit request =>
+  def algoTrainNow(appid: String, engineid: String) = withUser { user => implicit request =>
     // No extra param required
     val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
-    val request = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/trainoncenow").get() map { r =>
+    val request = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/trainoncenow").get() map { r =>
       Ok(obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(obj("message" -> e.getMessage()))

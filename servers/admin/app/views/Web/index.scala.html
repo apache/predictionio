@@ -180,7 +180,7 @@
 
                                             <div class="clearfix">
                                                 <strong>Prediction Engines</strong>
-                                                <a href="?app_id=<%= data.id %>#addEngine" class="pull-right btn btn-small">Add an Engine &raquo;</a>
+                                                <a href="?appid=<%= data.id %>#addEngine" class="pull-right btn btn-small">Add an Engine &raquo;</a>
                                             </div>
 
                                         </div>
@@ -201,8 +201,8 @@
                                                 <% _.each(data.enginelist, function(engine) { %>
                                                     <tr>
                                                         <td><%= engine.enginename %></td>
-                                                        <td><%= engine.enginetype_id %></td>
-                                                        <td><a href="?app_id=<%= data.id %>&engine_id=<%= engine.id %>&enginetype_id=<%= engine.enginetype_id %>#engine" class="btn btn-small">Manage</a></td>
+                                                        <td><%= engine.engineinfoid %></td>
+                                                        <td><a href="?appid=<%= data.id %>&engineid=<%= engine.id %>&engineinfoid=<%= engine.engineinfoid %>#engine" class="btn btn-small">Manage</a></td>
                                                     </tr>
                                                 <% }); %>
 
@@ -247,7 +247,7 @@
                                     </div>
                                     <div class="pull-right">
                                         <div class="input-append">
-                                            <input type="hidden" name="enginetype_id" value="<%= enginetype.id%>"/>
+                                            <input type="hidden" name="engineinfoid" value="<%= enginetype.id%>"/>
                                             <input class="btn-input" name="enginename" type="text" placeholder="type engine name..."/>
                                             <button class="btn btn-inverse" type="submit">Create</button>
                                         </div>
@@ -442,7 +442,7 @@
                                                             </button>
                                                             <ul class="dropdown-menu pull-right">
                                                                 <li><a class="algoDeployBtn" href="#">Deploy</a></li> 
-                                                                <li><a href="#algoSettings/<%= data.algotype_id %>/<%= data.algoname %>/<%= encodeURIComponent(data.id) %>">View/Edit Algorithm Settings</a></li>
+                                                                <li><a href="#algoSettings/<%= data.algoinfoid %>/<%= data.algoname %>/<%= encodeURIComponent(data.id) %>">View/Edit Algorithm Settings</a></li>
                                                                 <li><a href="#simEvalSettings/<%= encodeURIComponent(data.id) %>">Run Simulated Evaluation</a></li>
                                                                 <li class="divider"></li>
                                                                 <li><a class="algoDeleteBtn" href="#">Delete</a></li>
@@ -495,7 +495,7 @@
                                     <td>
                                         <form>
                                         <div class="input-append">
-                                            <input type="hidden" name="algotype_id" value="<%= algotype.id%>"/>
+                                            <input type="hidden" name="algoinfoid" value="<%= algotype.id%>"/>
                                             <input class="btn-input span9" name="algoname" type="text" placeholder="type algo name..."/>
                                             <button class="btn btn-primary" type="submit">Add</button>
                                         </div>
@@ -631,7 +631,7 @@
                             <% } %>
                         </div>
                         <h5 class="topMargin">Metric</h5>
-                        <span>Name: <%= metric.metricsname %> (<%= metric.settingsString %>)</span>
+                        <span>Name: <%= metric.metricsname %> (<%= metric.settingsstring %>)</span>
                         <span class="leftMargin">Number of Iteration: <%= data.evaliteration %></span>
                     </div>
                    
@@ -647,12 +647,12 @@
                         <tbody>
                             <% _.each(data.metricscorelist, function(m, index) { %>
                             <tr>
-                                <td><%= m.settingsString %></td>
+                                <td><%= m.settingsstring %></td>
                                 <td><%= m.score %></td>
                                 <td>
                                     <!-- NOTE: index 0 is baseline algo -->
                                 <% if(index != 0) { %>
-                                    <a href="#" data-autotuneid="<%= m.algoautotune_id %>" class="algoAutotuneSelectBtn btn btn-primary btn-small">Use It</a>
+                                    <a href="#" data-autotuneid="<%= m.algoautotuneid %>" class="algoAutotuneSelectBtn btn btn-primary btn-small">Use It</a>
                                 <% } %>
                                 </td>
                             </tr>
@@ -673,7 +673,7 @@
                             <tbody>
                                 <% _.each(iterationscorelist, function(m) { %>
                                 <tr>
-                                    <td><%= m.settingsString %></td>
+                                    <td><%= m.settingsstring %></td>
                                     <td><%= m.score %></td>
                                     <td></td>
                                 </tr>
@@ -720,7 +720,7 @@
                         <ul>
                             <% _.each(data.algolist, function(algo) { %>
                             <li><%= algo.algoname %>
-                                <p>(<%= algo.settingsString %>)</p>
+                                <p>(<%= algo.settingsstring %>)</p>
                             </li>
                             <% }); %>
                         </ul>
@@ -733,7 +733,7 @@
                             result[algo.id] = {};
                         });
                         _.each(data.metricscorelist, function(s) {
-                            result[s.algo_id][s.metrics_id] = s.score;
+                            result[s.algoid][s.metricsid] = s.score;
                         });
                     %>
                     <table class="table bottomMargin-large">
@@ -741,7 +741,7 @@
                             <tr>
                                 <th>Algorithm ID</th>
                                 <% _.each(data.metricslist, function(metrics) { %>
-                                <th><%= metrics.metricsname%> (<%= metrics.settingsString%>)</th>
+                                <th><%= metrics.metricsname%> (<%= metrics.settingsstring%>)</th>
                                 <% }); %>
                             </tr>
                         </thead>
@@ -765,7 +765,7 @@
                                 result[algo.id] = {};
                             });
                             _.each(iterationscorelist, function(s) {
-                                result[s.algo_id][s.metrics_id] = s.score;
+                                result[s.algoid][s.metricsid] = s.score;
                             });
                         %>
                         <table class="table">
@@ -773,7 +773,7 @@
                                 <tr>
                                     <th>Algorithm ID</th>
                                     <% _.each(data.metricslist, function(metrics) { %>
-                                    <th><%= metrics.metricsname%> (<%= metrics.settingsString%>)</th>
+                                    <th><%= metrics.metricsname%> (<%= metrics.settingsstring%>)</th>
                                     <% }); %>
                                 </tr>
                             </thead>

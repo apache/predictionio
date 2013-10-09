@@ -74,8 +74,8 @@ trait GenericAlgoSetting extends Controller {
 
   implicit val genericInfoReads = (
     (JsPath \ "id").read[Int] and
-    (JsPath \ "app_id").read[Int] and
-    (JsPath \ "engine_id").read[Int]
+    (JsPath \ "appid").read[Int] and
+    (JsPath \ "engineid").read[Int]
   )(GenericInfo)
 
   /** generic action conversion param for all algo */
@@ -109,7 +109,7 @@ trait GenericAlgoSetting extends Controller {
   )(GenericTune)
 
   /** generic updateSettings for all algo */
-  def updateGenericSettings[T <: AlgoData](app_id:String, engine_id:String, algo_id:String)(implicit rds: Reads[T]) = withUser { user => implicit request =>
+  def updateGenericSettings[T <: AlgoData](appid:String, engineid:String, algoid:String)(implicit rds: Reads[T]) = withUser { user => implicit request =>
 
     request.body.asJson.map { json =>
       //println(json)
@@ -144,7 +144,7 @@ trait GenericAlgoSetting extends Controller {
               if (updatedAlgo.offlinetuneid != None) {
                 val tuneid = updatedAlgo.offlinetuneid.get
 
-                removeOfflineTune(app_id.toInt, engine_id.toInt, tuneid)
+                removeOfflineTune(appid.toInt, engineid.toInt, tuneid)
                 
               }
 
@@ -225,12 +225,12 @@ trait GenericAlgoSetting extends Controller {
 
   /** common getSettings for all algo
   Return default value if nothing has been set */
-  def getSettings(app_id:String, engine_id:String, algo_id:String) = withUser { user => implicit request =>
+  def getSettings(appid:String, engineid:String, algoid:String) = withUser { user => implicit request =>
 
     // TODO: check user owns this app + engine + aglo
 
-    // TODO: check algo_id is int
-    val optAlgo: Option[Algo] = algos.get(algo_id.toInt)
+    // TODO: check algoid is int
+    val optAlgo: Option[Algo] = algos.get(algoid.toInt)
 
     optAlgo map { algo =>
 
@@ -241,8 +241,8 @@ trait GenericAlgoSetting extends Controller {
 
         Ok(toJson(Map(
           "id" -> toJson(algo.id),
-          "app_id" -> toJson(app_id),
-          "engine_id" -> toJson(engine_id)
+          "appid" -> toJson(appid),
+          "engineid" -> toJson(engineid)
           ) ++ (params map { case (k,v) => (k, toJson(v.toString))})
         ))
 

@@ -19,16 +19,16 @@ object Engine extends Controller {
     "goal" -> "rate3",
     "numSimilarItems" -> 500)
 
-  def updateSettings(app_id:String, engine_id:String) = withUser { user => implicit request =>
+  def updateSettings(appid:String, engineid:String) = withUser { user => implicit request =>
     /*
-    {"app_id":"appid1234","id":"engineid2","goal":"rate3","serendipity":0,"freshness":2,"allitemtypes":true,"itemtypelist":null}
+    {"appid":"appid1234","id":"engineid2","goal":"rate3","serendipity":0,"freshness":2,"allitemtypes":true,"itemtypelist":null}
 
     */
 
     val supportedGoals: List[String] = List("view", "viewmore", "buy", "like", "rate3", "rate4", "rate5")
 
     val engineSettingForm = Form(tuple(
-      "app_id" -> number,
+      "appid" -> number,
       "id" -> number,
       "goal" -> (text verifying("Invalid recommendation goal.", goal => supportedGoals.contains(goal))),
       "serendipity" -> number(min=0, max=10),
@@ -40,7 +40,7 @@ object Engine extends Controller {
 
     // TODO: check this user owns this appid
 
-    // TODO: check app_id, engine_id is Int
+    // TODO: check appid, engineid is Int
 
     engineSettingForm.bindFromRequest.fold(
       formWithError => {
@@ -49,7 +49,7 @@ object Engine extends Controller {
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (app_id, id, goal, serendipity, freshness, allitemtypes, itemtypelist, numSimilarItems) = formData
+        val (appid, id, goal, serendipity, freshness, allitemtypes, itemtypelist, numSimilarItems) = formData
 
         // get original engine first
         val engine = engines.get(id.toInt)
@@ -80,7 +80,7 @@ object Engine extends Controller {
   /**
    * Ok(toJson(Map(
    *   "id" -> toJson("engineid2"), // engine id
-   *   "app_id" -> toJson("appid1234"),
+   *   "appid" -> toJson("appid1234"),
    *   "allitemtypes" -> toJson(true),
    *   "itemtypelist" ->  JsNull, // toJson(Seq("book", "movie")),
    *   "freshness" -> toJson(0),
@@ -88,11 +88,11 @@ object Engine extends Controller {
    *   "goal" -> toJson("rate3")
    * )))
    */
-  def getSettings(app_id:String, engine_id:String) = withUser { user => implicit request =>
+  def getSettings(appid:String, engineid:String) = withUser { user => implicit request =>
     // TODO: check this user owns this appid
 
-    // TODO: check engine_id and app_id is int
-    val engine = engines.get(engine_id.toInt)
+    // TODO: check engineid and appid is int
+    val engine = engines.get(engineid.toInt)
 
     engine map { eng: Engine =>
 /*
@@ -107,7 +107,7 @@ object Engine extends Controller {
 
       Ok(toJson(Map(
         "id" -> toJson(eng.id), // engine id
-        "app_id" -> toJson(eng.appid),
+        "appid" -> toJson(eng.appid),
         "allitemtypes" -> toJson(eng.itypes == None),
         "itemtypelist" -> eng.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull), // TODO: better way?
         "freshness" -> toJson(settings("freshness").toString),
