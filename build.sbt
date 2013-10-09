@@ -40,9 +40,13 @@ lazy val processItemRecAlgoHadoopScalding = project
     processItemRecAlgoHadoopScaldingKnnitembased,
     processItemRecAlgoHadoopScaldingRandomrank,
     processItemRecAlgoHadoopScaldingLatestrank,
+    processItemRecAlgoHadoopScaldingMahout).dependsOn(
+    processItemRecAlgoHadoopScaldingGeneric,
+    processItemRecAlgoHadoopScaldingKnnitembased,
+    processItemRecAlgoHadoopScaldingRandomrank,
+    processItemRecAlgoHadoopScaldingLatestrank,
     processItemRecAlgoHadoopScaldingMahout)
-  .dependsOn(commons, processCommonsHadoopScalding)
-
+ 
 lazy val processItemRecAlgoHadoopScaldingGeneric = project
   .in(file("process/engines/itemrec/algorithms/hadoop/scalding/generic"))
   .dependsOn(commons, processCommonsHadoopScalding)
