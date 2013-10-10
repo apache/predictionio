@@ -22,7 +22,13 @@ lazy val root = project.in(file(".")).aggregate(
   processCommonsHadoopScalding,
   processItemRecAlgoHadoopScalding,
   processItemRecAlgoScalaMahout,
+  processItemRecEvalHadoopScalding,
+  processItemRecEvalScalaParamGen,
+  processItemRecEvalScalaTopKItems,
+  processItemRecEvalScalaTrainingTestSplit,
   processItemSimAlgoHadoopScalding,
+  processItemSimEvalHadoopScalding,
+  processItemSimEvalScalaTopKItems,
   toolsConncheck,
   toolsSettingsInit,
   toolsSoftwareManager,
@@ -121,6 +127,35 @@ lazy val processItemRecAlgoScalaMahoutThresholdUserBased = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/thresholduserbased"))
   .dependsOn(processItemRecAlgoScalaMahoutCommons)
 
+lazy val processItemRecEvalHadoopScalding = project
+  .in(file("process/engines/itemrec/evaluations/hadoop/scalding"))
+  .aggregate(
+    processItemRecEvalHadoopScaldingMetricsMAP,
+    processItemRecEvalHadoopScaldingTrainingTestSplit)
+  .dependsOn(
+    processItemRecEvalHadoopScaldingMetricsMAP,
+    processItemRecEvalHadoopScaldingTrainingTestSplit)
+
+lazy val processItemRecEvalHadoopScaldingMetricsMAP = project
+  .in(file("process/engines/itemrec/evaluations/hadoop/scalding/metrics/map"))
+  .dependsOn(processCommonsHadoopScalding)
+
+lazy val processItemRecEvalHadoopScaldingTrainingTestSplit = project
+  .in(file("process/engines/itemrec/evaluations/hadoop/scalding/trainingtestsplit"))
+  .dependsOn(processCommonsHadoopScalding)
+
+lazy val processItemRecEvalScalaParamGen = project
+  .in(file("process/engines/itemrec/evaluations/scala/paramgen"))
+  .dependsOn(commons)
+
+lazy val processItemRecEvalScalaTopKItems = project
+  .in(file("process/engines/itemrec/evaluations/scala/topkitems"))
+  .dependsOn(commons, output)
+
+lazy val processItemRecEvalScalaTrainingTestSplit = project
+  .in(file("process/engines/itemrec/evaluations/scala/trainingtestsplit"))
+  .dependsOn(commons)
+
 lazy val processItemSimAlgoHadoopScalding = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding"))
   .aggregate(
@@ -149,6 +184,21 @@ lazy val processItemSimAlgoHadoopScaldingMahout = project
 lazy val processItemSimAlgoHadoopScaldingRandomRank = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding/randomrank"))
   .dependsOn(processCommonsHadoopScalding)
+
+lazy val processItemSimEvalHadoopScalding = project
+  .in(file("process/engines/itemsim/evaluations/hadoop/scalding"))
+  .aggregate(
+    processItemSimEvalHadoopScaldingMetricsISMAP)
+  .dependsOn(
+    processItemSimEvalHadoopScaldingMetricsISMAP)
+
+lazy val processItemSimEvalHadoopScaldingMetricsISMAP = project
+  .in(file("process/engines/itemsim/evaluations/hadoop/scalding/metrics/ismap"))
+  .dependsOn(processCommonsHadoopScalding)
+
+lazy val processItemSimEvalScalaTopKItems = project
+  .in(file("process/engines/itemsim/evaluations/scala/topkitems"))
+  .dependsOn(commons, output)
 
 // Tools Section
 

@@ -33,46 +33,32 @@ BASE_TARGETS="update publish"
 if test "$SKIP_PROCESS" = "1" ; then
     echo "Skip building process assemblies."
 else
-    # Build process itemrec algo assembly
-    echo "+ Assemble Process ItemRec Hadoop Scalding Algorithms"
+    echo "+ Assemble Process ItemRec Algorithms Hadoop Scalding"
     BASE_TARGETS="$BASE_TARGETS processItemRecAlgoHadoopScalding/assembly"
 
-    echo "+ Assemble Process ItemRec Scala Mahout Algorithms"
+    echo "+ Assemble Process ItemRec Algorithms Scala Mahout"
     BASE_TARGETS="$BASE_TARGETS processItemRecAlgoScalaMahout/assembly"
 
-#    # Build process itemrec eval assembly
-#    echo "Going to build PredictionIO Process ItemRec Evaluations Assembly..."
-#    cd $BASE/process/engines/itemrec/evaluations/hadoop/scalding
-#    $SBT $CLEAN update assembly
-#
-#    # Build process itemrec parameter generator
-#    echo "Going to build PredictionIO Parameter Generator Assembly..."
-#    cd $BASE/process/engines/itemrec/evaluations/scala/paramgen
-#    $SBT $CLEAN update assembly
-#
-#    # Build process itemrec training test split assembly
-#    echo "Going to build PredictionIO Training-Test Split Assembly..."
-#    cd $BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit
-#    $SBT $CLEAN update assembly
-#
-#    # Build process itemrec Top-k Items Collector
-#    echo "Going to build PredictionIO ItemRec Top-k Items Collector Assembly..."
-#    cd $BASE/process/engines/itemrec/evaluations/scala/topkitems
-#    $SBT $CLEAN update assembly
-#
-    # Build process itemsim algo assembly
-    echo "+ Assemble Process ItemSim Hadoop Scalding Algorithms"
+    echo "+ Assemble Process ItemRec Evaluations Hadoop Scalding"
+    BASE_TARGETS="$BASE_TARGETS processItemRecEvalHadoopScalding/assembly"
+
+    echo "+ Assemble Process ItemRec Evaluations Scala Parameter Generator"
+    BASE_TARGETS="$BASE_TARGETS processItemRecEvalScalaParamGen/assembly"
+
+    echo "+ Assemble Process ItemRec Evaluations Scala Training-Test Splitter"
+    BASE_TARGETS="$BASE_TARGETS processItemRecEvalScalaTrainingTestSplit/assembly"
+
+    echo "+ Assemble Process ItemRec Evaluations Scala Top-k Items Collector"
+    BASE_TARGETS="$BASE_TARGETS processItemRecEvalScalaTopKItems/assembly"
+
+    echo "+ Assemble Process ItemSim Algorithms Hadoop Scalding"
     BASE_TARGETS="$BASE_TARGETS processItemSimAlgoHadoopScalding/assembly"
-#
-#    # Build process itemsim eval assembly
-#    echo "Going to build PredictionIO Process ItemSim Evaluations Assembly..."
-#    cd $BASE/process/engines/itemsim/evaluations/hadoop/scalding
-#    $SBT $CLEAN update assembly
-#
-#    # Build process itemsim Top-k Items Collector
-#    echo "Going to build PredictionIO ItemSim Top-k Items Collector Assembly..."
-#    cd $BASE/process/engines/itemsim/evaluations/scala/topkitems
-#    $SBT $CLEAN update assembly
+
+    echo "+ Assemble Process ItemSim Evaluations Hadoop Scalding"
+    BASE_TARGETS="$BASE_TARGETS processItemSimEvalHadoopScalding/assembly"
+
+    echo "+ Assemble Process ItemSim Evaluations Scala Top-k Items Collector"
+    BASE_TARGETS="$BASE_TARGETS processItemSimEvalScalaTopKItems/assembly"
 fi
 
 # Build connection check tool
