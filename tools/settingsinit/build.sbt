@@ -1,17 +1,7 @@
-name := "PredictionIO Settings Initialization"
+import xerial.sbt.Pack._
 
-version := "0.7.0-SNAPSHOT"
+name := "predictionio-settings-initialization"
 
-organization := "io.prediction"
+packSettings
 
-scalaVersion := "2.10.2"
-
-scalacOptions ++= Seq("-deprecation")
-
-libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.7.0-SNAPSHOT"
-)
-
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+packMain := Map("settingsinit" -> "io.prediction.tools.settingsinit.SettingsInit")

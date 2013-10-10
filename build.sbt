@@ -22,10 +22,9 @@ lazy val root = project.in(file(".")).aggregate(
   processCommonsHadoopScalding,
   processItemRecAlgoHadoopScalding,
   toolsConncheck,
-  toolsSoftwareManager)
-  //admin,
-  //api,
-  //scheduler)
+  toolsSettingsInit,
+  toolsSoftwareManager,
+  toolsUsers)
 
 lazy val commons = project in file("commons")
 
@@ -46,38 +45,35 @@ lazy val processItemRecAlgoHadoopScalding = project
     processItemRecAlgoHadoopScaldingRandomrank,
     processItemRecAlgoHadoopScaldingLatestrank,
     processItemRecAlgoHadoopScaldingMahout)
- 
+
 lazy val processItemRecAlgoHadoopScaldingGeneric = project
   .in(file("process/engines/itemrec/algorithms/hadoop/scalding/generic"))
-  .dependsOn(commons, processCommonsHadoopScalding)
+  .dependsOn(processCommonsHadoopScalding)
 
 lazy val processItemRecAlgoHadoopScaldingKnnitembased = project
   .in(file("process/engines/itemrec/algorithms/hadoop/scalding/knnitembased"))
-  .dependsOn(commons, processCommonsHadoopScalding)
+  .dependsOn(processCommonsHadoopScalding)
 
 lazy val processItemRecAlgoHadoopScaldingRandomrank = project
   .in(file("process/engines/itemrec/algorithms/hadoop/scalding/randomrank"))
-  .dependsOn(commons, processCommonsHadoopScalding)
+  .dependsOn(processCommonsHadoopScalding)
 
 lazy val processItemRecAlgoHadoopScaldingLatestrank = project
   .in(file("process/engines/itemrec/algorithms/hadoop/scalding/latestrank"))
-  .dependsOn(commons, processCommonsHadoopScalding)
+  .dependsOn(processCommonsHadoopScalding)
 
 lazy val processItemRecAlgoHadoopScaldingMahout = project
   .in(file("process/engines/itemrec/algorithms/hadoop/scalding/mahout"))
-  .dependsOn(commons, processCommonsHadoopScalding)
+  .dependsOn(processCommonsHadoopScalding)
 
 lazy val toolsConncheck = project.in(file("tools/conncheck"))
+  .dependsOn(commons)
+
+lazy val toolsSettingsInit = project.in(file("tools/settingsinit"))
   .dependsOn(commons)
 
 lazy val toolsSoftwareManager = project.in(file("tools/softwaremanager"))
   .dependsOn(commons)
 
-//lazy val admin = project.in(file("servers/admin"))
-//	.dependsOn(commons, output)
-
-//lazy val api = project.in(file("servers/api"))
-//	.dependsOn(commons, output)
-
-//lazy val scheduler = project.in(file("servers/scheduler"))
-//	.dependsOn(commons)
+lazy val toolsUsers = project.in(file("tools/users"))
+  .dependsOn(commons)

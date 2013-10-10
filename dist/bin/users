@@ -123,6 +123,7 @@ if $mingw ; then
   # TODO classpath?
 fi
 
+. "${PROG_HOME}/bin/common.sh"
 
 PROG_NAME=users
 
@@ -139,15 +140,15 @@ JARS="${JARS}:${PROG_HOME}/lib/commons-codec-1.8.jar"
 JARS="${JARS}:${PROG_HOME}/lib/config-1.0.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/jline-2.9.jar"
 JARS="${JARS}:${PROG_HOME}/lib/joda-convert-1.2.jar"
-JARS="${JARS}:${PROG_HOME}/lib/joda-time-2.2.jar"
+JARS="${JARS}:${PROG_HOME}/lib/joda-time-2.3.jar"
 JARS="${JARS}:${PROG_HOME}/lib/kryo-2.21.jar"
 JARS="${JARS}:${PROG_HOME}/lib/minlog-1.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/mongo-java-driver-2.11.2.jar"
-JARS="${JARS}:${PROG_HOME}/lib/nscala-time_2.10-0.4.2.jar"
+JARS="${JARS}:${PROG_HOME}/lib/nscala-time_2.10-0.6.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/objenesis-1.2.jar"
-JARS="${JARS}:${PROG_HOME}/lib/predictionio-commons_2.10-0.7.0-SNAPSHOT.jar"
-JARS="${JARS}:${PROG_HOME}/lib/predictionio-users-tool_2.10-0.7.0-SNAPSHOT.jar"
-JARS="${JARS}:${PROG_HOME}/lib/reflectasm-1.07.jar"
+JARS="${JARS}:${PROG_HOME}/lib/predictionio-commons_2.10-${VERSION}.jar"
+JARS="${JARS}:${PROG_HOME}/lib/predictionio-users-tool_2.10-${VERSION}.jar"
+JARS="${JARS}:${PROG_HOME}/lib/reflectasm-1.07-shaded.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scala-library-2.10.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/slf4j-api-1.6.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/slf4j-nop-1.6.0.jar"

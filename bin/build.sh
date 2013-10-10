@@ -97,30 +97,19 @@ fi
 
 # Build connection check tool
 echo "+ Pack Connection Check Tool"
-#cd $BASE/tools/conncheck
-#$SBT $CLEAN toolsConncheck/pack
 BASE_TARGETS="$BASE_TARGETS toolsConncheck/pack"
 
 # Build settings initialization tool
-#echo "Going to build PredictionIO Settings Initialization Tool..."
-#cd $BASE/tools/settingsinit
-#$SBT $CLEAN update pack
+echo "+ Pack Settings Initialization Tool"
+BASE_TARGETS="$BASE_TARGETS toolsSettingsInit/pack"
 
 # Build software manager
 echo "+ Pack Software Manager"
-#cd $BASE/tools/softwaremanager
-#$SBT $CLEAN update pack
 BASE_TARGETS="$BASE_TARGETS toolsSoftwareManager/pack"
 
 # Build user tool
-#echo "Going to build PredictionIO User Tool..."
-#cd $BASE/tools/users
-#$SBT $CLEAN update pack
-
-# Build migration tools
-#echo "Going to build PredictionIO Migration Tools..."
-#cd $BASE/tools/migration/0.5/appdata
-#$SBT $CLEAN update pack
+echo "+ Pack User Tool"
+BASE_TARGETS="$BASE_TARGETS toolsUsers/pack"
 
 $SBT $CLEAN $BASE_TARGETS
 

@@ -61,10 +61,9 @@ cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.10/p
 #cp "$BASE/process/engines/itemsim/evaluations/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemSim-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/PredictionIO-Process-ItemSim-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
-#cp -n $BASE/tools/migration/0.5/appdata/target/pack/lib/* $PACKAGE_DIR/lib
-#cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
 cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
-#cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
 mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.8
 cp $VENDOR_MAHOUT/mahout-core-0.8-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.8

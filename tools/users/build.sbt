@@ -1,21 +1,12 @@
-name := "PredictionIO Users Tool"
+import xerial.sbt.Pack._
 
-version := "0.7.0-SNAPSHOT"
-
-organization := "io.prediction"
-
-scalaVersion := "2.10.2"
+name := "predictionio-users-tool"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.7.0-SNAPSHOT",
   "commons-codec" % "commons-codec" % "1.8",
   "jline" % "jline" % "2.9"
 )
 
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+packSettings
 
-publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.m2/repository")))
-
-publishMavenStyle := true
+packMain := Map("users" -> "io.prediction.tools.users.Users")
