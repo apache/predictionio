@@ -52,12 +52,12 @@ cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
 cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.10/predictionio-process-itemrec-algorithms-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-#cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/predictionio-process-itemrec-algorithms-scala-mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemrec/evaluations/scala/paramgen/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-ParamGen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-#cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.10/predictionio-process-itemsim-algorithms-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemsim/evaluations/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemSim-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 #cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/PredictionIO-Process-ItemSim-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib

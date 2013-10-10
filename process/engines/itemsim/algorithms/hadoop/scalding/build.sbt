@@ -1,6 +1,6 @@
-import AssemblyKeys._ // put this at the top of the file
+import AssemblyKeys._
 
-name := "PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding"
+name := "predictionio-process-itemsim-algorithms-hadoop-scalding"
 
 packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "com.twitter.scalding.Tool")
 
