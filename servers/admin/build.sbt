@@ -9,6 +9,6 @@ libraryDependencies ++= Seq(
   "io.prediction" %% "predictionio-output" % version.value,
   "commons-codec" % "commons-codec" % "1.8")
 
-playAssetsDirectories <+= baseDirectory / "enginebase"
-
 play.Project.playScalaSettings
+
+playAssetsDirectories <+= baseDirectory / "enginebase"
