@@ -28,7 +28,7 @@ else
 fi
 
 echo "Going to build PredictionIO..."
-BASE_TARGETS="update publish"
+BASE_TARGETS="update compile commons/publish output/publish"
 
 if test "$SKIP_PROCESS" = "1" ; then
     echo "Skip building process assemblies."
