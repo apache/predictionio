@@ -10,6 +10,7 @@ With PredictionIO, you can write apps
 
 Detailed documentation is available on our [documentation site](http://docs.prediction.io).
 
+PredictionIO Project Website: [http://prediction.io/](http://prediction.io/).
 
 SUPPORT
 ===========
