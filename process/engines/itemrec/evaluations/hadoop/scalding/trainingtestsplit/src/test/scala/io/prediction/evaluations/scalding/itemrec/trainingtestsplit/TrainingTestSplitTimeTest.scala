@@ -251,7 +251,9 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
     ("4", appid+"_u3", appid+"_i3", "1234503", "3"),
     ("4", appid+"_u2", appid+"_i3", "1234504", "3"),
     ("4", appid+"_u1", appid+"_i3", "1234505", "3"),
-    ("4", appid+"_u0", appid+"_i3", "1234509", "3"))
+    ("4", appid+"_u0", appid+"_i3", "1234509", "3"),
+    ("view", appid+"_u0", appid+"_i0", "1234509", ""), // test missing v field case (non-rate action)
+    ("like", appid+"_u1", appid+"_i2", "1234509", "")) // test missing v field case (non-rate action)
 
   val selectedUsers = List(
     (evalid+"_u0", evalid.toString, "123456"), 
@@ -279,7 +281,9 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
     ("4", evalid+"_u3", evalid+"_i3", "1234503", "3"),
     ("4", evalid+"_u2", evalid+"_i3", "1234504", "3"),
     ("4", evalid+"_u1", evalid+"_i3", "1234505", "3"),
-    ("4", evalid+"_u0", evalid+"_i3", "1234509", "3"))
+    ("4", evalid+"_u0", evalid+"_i3", "1234509", "3"),
+    ("view", evalid+"_u0", evalid+"_i0", "1234509", "0"),
+    ("like", evalid+"_u1", evalid+"_i2", "1234509", "0"))
 
   "TrainingTestSplitTimeTest with timeorder=true" should {
       test(List(""), 0.4, 0.3, 0.2, true, appid, evalid,
@@ -305,7 +309,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
   }
 
   "TrainingTestSplitTimeTest with timeorder=true and validation=0" should {
-      test(List(""), 0.6, 0, 0.2, true, appid, evalid,
+      test(List(""), 0.6, 0, 0.1, true, appid, evalid,
         items,
         users,
         u2iActions,

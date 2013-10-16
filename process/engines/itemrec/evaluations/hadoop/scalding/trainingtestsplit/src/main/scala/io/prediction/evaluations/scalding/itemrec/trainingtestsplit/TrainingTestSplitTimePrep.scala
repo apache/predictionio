@@ -79,17 +79,21 @@ class TrainingTestSplitTimePrep(args: Args) extends TrainingTestSplitCommon(args
   
   val selectedU2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
     .joinWithSmaller('iid -> 'iidx, itemsIidx) // only select actions of these items
-    .map(('uid, 'iid) -> ('newUid, 'newIid)) { fields: (String, String) =>
+    .map(('uid, 'iid, 'action, 'v) -> ('newUid, 'newIid, 'newV)) { fields: (String, String, String, String) =>
       
       // NOTE: replace appid prefix by evalid
-      val (uid, iid) = fields
+      val (uid, iid, action, v) = fields
       val newUid = replacePrefix(uid)
       val newIid = replacePrefix(iid)
+
+      // NOTE: add default value 0 for non-rate acitons to work around the optional v field issue 
+      //       (cascading-mongo tap can't take optional field yet). 
+      val newV = if (v == "") "0" else v
       
-      (newUid, newIid)
+      (newUid, newIid, newV)
     }
 
-  selectedU2i.then( u2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _ ) // NOTE: appid is replaced by evalid 
+  selectedU2i.then( u2iSink.writeData('action, 'newUid, 'newIid, 't, 'newV, evalidArg) _ ) // NOTE: appid is replaced by evalid 
   
   // count number of u2i
   selectedU2i.groupAll( _.size('count) )
