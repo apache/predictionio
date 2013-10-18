@@ -24,4 +24,5 @@ https://groups.google.com/group/predictionio-user
 LICENSE
 =======
 
-PredictionIO source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL).
+PredictionIO Server source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL).
+PredictionIO SDKs source files are made available under the terms of the [Apache License Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
