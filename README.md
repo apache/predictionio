@@ -24,5 +24,19 @@ https://groups.google.com/group/predictionio-user
 LICENSE
 =======
 
-PredictionIO Server source files are made available under the terms of the [GNU Affero General Public License](http://www.gnu.org/licenses/agpl-3.0.html) (AGPL).
-PredictionIO SDKs source files are made available under the terms of the [Apache License Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+The goal of the server license is to require that enhancements to PredictionIO core be released to the community. Our SDK license promises that your client application, which connects PredictionIO through SDKs or APIs, is a separate work.
+
+PredictionIO SDKs
+-----------------
+
+PredictionIO supported SDKs: [Apache License v2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+PredictionIO Server
+-------------------
+Free Software Foundation’s [GNU AGPL v3.0](http://www.gnu.org/licenses/agpl-3.0.html).
+
+Documentation
+-------------
+
+Creative Commons.
+
