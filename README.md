@@ -24,7 +24,7 @@ https://groups.google.com/group/predictionio-user
 LICENSE
 =======
 
-The goal of the server license is to require that enhancements to PredictionIO core be released to the community. Our SDK license promises that your client application, which connects PredictionIO through SDKs or APIs, is a separate work.
+The goal of the server license is to require that enhancements to PredictionIO core be released to the community. We promises that your client application, which connects PredictionIO through SDKs or APIs, is a separate work. Official PredictionIO SDKs are released under Apache license, which is copyleft free.
 
 PredictionIO SDKs
 -----------------
