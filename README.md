@@ -12,6 +12,12 @@ Detailed documentation is available on our [documentation site](http://docs.pred
 
 PredictionIO Project Website: [http://prediction.io/](http://prediction.io/).
 
+INSTALLATION
+============
+
+Install PredictionIO from Source Code: http://docs.prediction.io/current/installation/index.html
+
+
 SUPPORT
 ===========
 
