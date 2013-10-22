@@ -73,7 +73,9 @@ object ItemSimAlgoOutput {
         val freshnessN = scala.math.round(n*f/10)
         val otherN = n-freshnessN
         val freshnessOutput = items.getRecentByIds(app.id, output).map(_.id)
-        freshnessOutput.take(freshnessN) ++ serendipityOutput.take(otherN)
+        val finalFreshnessOutput = freshnessOutput.take(freshnessN)
+        val finalFreshnessOutputSet = finalFreshnessOutput.toSet
+        finalFreshnessOutput ++ (serendipityOutput filterNot { finalFreshnessOutputSet(_) }).take(otherN)
       } else
         serendipityOutput
     } getOrElse serendipityOutput
