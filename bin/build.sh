@@ -7,7 +7,7 @@ set -e
 # Get the absolute path of the build script
 SCRIPT="$0"
 while [ -h "$SCRIPT" ] ; do
-	SCRIPT=`readlink "$SCRIPT"`
+    SCRIPT=`readlink "$SCRIPT"`
 done
 
 # Get the base directory of the repo
@@ -20,11 +20,11 @@ BASE=`pwd`
 
 # Full rebuild?
 if test "$REBUILD" = "1" ; then
-	echo "Rebuild set."
-	CLEAN=clean
+    echo "Rebuild set."
+    CLEAN=clean
 else
-	echo "Incremental build set. Use \"REBUILD=1 $0\" for clean rebuild."
-	CLEAN=
+    echo "Incremental build set. Use \"REBUILD=1 $0\" for clean rebuild."
+    CLEAN=
 fi
 
 echo "Going to build PredictionIO..."
@@ -33,32 +33,35 @@ BASE_TARGETS="update compile commons/publish output/publish"
 if test "$SKIP_PROCESS" = "1" ; then
     echo "Skip building process assemblies."
 else
+    echo "+ Assemble Process Commons Evaluations Hadoop Scalding"
+    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalHadoopScalding/assembly"
+
+    echo "+ Assemble Process Commons Evaluations Scala Parameter Generator"
+    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaParamGen/assembly"
+
+    echo "+ Assemble Process Commons Evaluations Scala Training-Test Splitter"
+    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaTrainingTestSplit/assembly"
+
     echo "+ Assemble Process ItemRec Algorithms Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processItemRecAlgoHadoopScalding/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoHadoopScalding/assembly"
 
     echo "+ Assemble Process ItemRec Algorithms Scala Mahout"
-    BASE_TARGETS="$BASE_TARGETS processItemRecAlgoScalaMahout/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaMahout/assembly"
 
     echo "+ Assemble Process ItemRec Evaluations Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processItemRecEvalHadoopScalding/assembly"
-
-    echo "+ Assemble Process ItemRec Evaluations Scala Parameter Generator"
-    BASE_TARGETS="$BASE_TARGETS processItemRecEvalScalaParamGen/assembly"
-
-    echo "+ Assemble Process ItemRec Evaluations Scala Training-Test Splitter"
-    BASE_TARGETS="$BASE_TARGETS processItemRecEvalScalaTrainingTestSplit/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalHadoopScalding/assembly"
 
     echo "+ Assemble Process ItemRec Evaluations Scala Top-k Items Collector"
-    BASE_TARGETS="$BASE_TARGETS processItemRecEvalScalaTopKItems/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaTopKItems/assembly"
 
     echo "+ Assemble Process ItemSim Algorithms Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processItemSimAlgoHadoopScalding/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoHadoopScalding/assembly"
 
     echo "+ Assemble Process ItemSim Evaluations Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processItemSimEvalHadoopScalding/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalHadoopScalding/assembly"
 
     echo "+ Assemble Process ItemSim Evaluations Scala Top-k Items Collector"
-    BASE_TARGETS="$BASE_TARGETS processItemSimEvalScalaTopKItems/assembly"
+    BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalScalaTopKItems/assembly"
 fi
 
 # Build connection check tool

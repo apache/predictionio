@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "predictionio-process-itemrec-evaluations-scala-trainingtestsplittime"
+name := "predictionio-process-commons-evaluations-scala-trainingtestsplittime"
 
 libraryDependencies += "com.twitter" %% "scalding-args" % "0.8.6"
 

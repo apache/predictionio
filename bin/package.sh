@@ -51,12 +51,13 @@ cp -R $DIST_DIR/bin/* $PACKAGE_DIR/bin
 cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
+cp "$BASE/process/engines/commons/evaluations/hadoop/scalding/target/scala-2.10/predictionio-process-commons-evaluations-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/commons/evaluations/scala/paramgen/target/scala-2.10/predictionio-process-commons-evaluations-paramgen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/commons/evaluations/scala/trainingtestsplit/target/scala-2.10/predictionio-process-commons-evaluations-scala-trainingtestsplittime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.10/predictionio-process-itemrec-algorithms-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/predictionio-process-itemrec-algorithms-scala-mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/scala-2.10/predictionio-process-itemrec-evaluations-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemrec-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit/target/scala-2.10/predictionio-process-itemrec-evaluations-scala-trainingtestsplittime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/scala/paramgen/target/scala-2.10/predictionio-process-itemrec-evaluations-paramgen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.10/predictionio-process-itemsim-algorithms-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/evaluations/hadoop/scalding/target/scala-2.10/predictionio-process-itemsim-evaluations-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemsim-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"

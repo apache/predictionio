@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "predictionio-process-itemrec-evaluations-paramgen"
+name := "predictionio-process-commons-evaluations-paramgen"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.0.9",
