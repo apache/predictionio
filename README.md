@@ -1,9 +1,8 @@
 PredictionIO
 ============
 
-PredictionIO is a prediction server for building smart applications. While
-you search data through a database server, you can make prediction through
-PredictionIO.
+PredictionIO is a prediction server for building smart applications. You can make
+predictions through PredictionIO just as you would filter data using a database server.
 
 With PredictionIO, you can write apps
 * that predict user behaviors based on solid data science
