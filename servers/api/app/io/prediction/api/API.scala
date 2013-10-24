@@ -148,6 +148,7 @@ object API extends Controller {
       }
     }
   }
+  val itypes: Mapping[String] = of[String] verifying Constraints.pattern("""[^\t]+""".r, "itypes", "Must not contain \t.")
   val latlngRegex = """-?\d+(\.\d*)?,-?\d+(\.\d*)?""".r
   val latlng: Mapping[String] = of[String] verifying Constraint[String]("latlng", () => latlngRegex) {
     o => latlngRegex.unapplySeq(o).map(_ => {
@@ -280,7 +281,7 @@ object API extends Controller {
       Attributes(tuple(
         "pio_appkey" -> nonEmptyText,
         "pio_iid" -> nonEmptyText,
-        "pio_itypes" -> nonEmptyText,
+        "pio_itypes" -> itypes,
         "pio_price" -> optional(numeric),
         "pio_profit" -> optional(numeric),
         "pio_startT" -> optional(timestamp),
@@ -434,7 +435,7 @@ object API extends Controller {
       Attributes(tuple(
         "appkey" -> nonEmptyText,
         "iid" -> nonEmptyText,
-        "itypes" -> nonEmptyText,
+        "itypes" -> itypes,
         "price" -> optional(numeric),
         "profit" -> optional(numeric),
         "startT" -> optional(timestamp),
@@ -530,7 +531,7 @@ object API extends Controller {
         "pio_appkey" -> nonEmptyText,
         "pio_uid" -> nonEmptyText,
         "pio_n" -> number(1, 100),
-        "pio_itypes" -> optional(text),
+        "pio_itypes" -> optional(itypes),
         "pio_latlng" -> optional(latlng),
         "pio_within" -> optional(numeric),
         "pio_unit" -> optional(text),
@@ -590,7 +591,7 @@ object API extends Controller {
         "pio_appkey" -> nonEmptyText,
         "pio_iid" -> nonEmptyText,
         "pio_n" -> number(1, 100),
-        "pio_itypes" -> optional(text),
+        "pio_itypes" -> optional(itypes),
         "pio_latlng" -> optional(latlng),
         "pio_within" -> optional(numeric),
         "pio_unit" -> optional(text),

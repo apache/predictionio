@@ -261,6 +261,16 @@ class APISpec extends Specification {
     }
   }
 
+  "Items" should {
+    "fail creation with tabs in itypes" in new WithServer {
+      val response = Helpers.await(wsUrl(s"/items.json").post(Map(
+        "pio_appkey" -> Seq("appkey"),
+        "pio_iid"    -> Seq("fooitem"),
+        "pio_itypes" -> Seq("footype\tbartype"))))
+      response.status must beEqualTo(BAD_REQUEST)
+    }
+  }
+
   step {
     MongoConnection()(config.settingsDbName).dropDatabase()
     MongoConnection()(config.appdataDbName).dropDatabase()
