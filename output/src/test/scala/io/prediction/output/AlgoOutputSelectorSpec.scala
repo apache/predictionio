@@ -51,15 +51,129 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     timezone = "UTC"
   )
 
+  val items = Seq(Item(
+    id = "item_x",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(2)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_y",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(8)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_a",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(5)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_b",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(3)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_c",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(10)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_d",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(7)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_e",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(1)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_f",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(10)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_g",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(4)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None), Item(
+    id = "item_h",
+    appid = dummyApp.id,
+    ct = DateTime.now,
+    itypes = Seq("bar"),
+    starttime = Some(DateTime.now.minusHours(6)),
+    endtime = None,
+    price = None,
+    profit = None,
+    latlng = None,
+    inactive = None,
+    attributes = None))
+
+  items foreach { mongoItems.insert(_) }
+
   /** ItemRec engine. */
   def itemRecOutputSelection(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
-      id         = 0,
-      appid      = 123,
-      name       = "itemRecOutputSelection",
-      infoid = "itemrec",
-      itypes     = Some(Seq("foo", "bar")),
-      settings   = Map()
+      id       = 0,
+      appid    = dummyApp.id,
+      name     = "itemRecOutputSelection",
+      infoid   = "itemrec",
+      itypes   = Some(Seq("foo", "bar")),
+      settings = Map("serendipity" -> 5, "freshness" -> 5)
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -79,37 +193,100 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     )
     val algoid = mongoAlgos.insert(algo)
 
-    mongoItemRecScores.insert(ItemRecScore(
+    val scores = Seq(ItemRecScore(
       uid = "user1",
       iid = "item_x",
       score = 5,
       itypes = Seq("bar"),
       appid = dummyApp.id,
       algoid = algoid,
-      modelset = true
-    ))
-
-    mongoItemRecScores.insert(ItemRecScore(
+      modelset = true), ItemRecScore(
       uid = "user1",
       iid = "item_y",
       score = 4,
       itypes = Seq("foo"),
       appid = dummyApp.id,
       algoid = algoid,
-      modelset = true
-    ))
-
-    mongoItemRecScores.insert(ItemRecScore(
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_a",
+      score = 1,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_b",
+      score = 3,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_c",
+      score = 2,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_d",
+      score = 9,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_e",
+      score = 7,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_f",
+      score = 6,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_g",
+      score = 8,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
+      uid = "user1",
+      iid = "item_h",
+      score = 10,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemRecScore(
       uid = "user1",
       iid = "item_z",
-      score = 3,
+      score = 11,
       itypes = Seq("unrelated"),
       appid = dummyApp.id,
       algoid = algoid,
       modelset = true
     ))
 
-    algoOutputSelector.itemRecSelection("user1", 10, Some(Seq("bar", "foo")), None, None, None)(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y"))
+    scores foreach { mongoItemRecScores.insert(_) }
+
+    val result = algoOutputSelector.itemRecSelection("user1", 10, Some(Seq("bar", "foo")), None, None, None)(dummyApp, engine.copy(id = engineid))
+    result must contain(
+      "item_x",
+      "item_y",
+      "item_a",
+      "item_b",
+      "item_c",
+      "item_d",
+      "item_e",
+      "item_f",
+      "item_g",
+      "item_h")
   }
 
   def itemRecOutputSelectionWithLatlng(algoOutputSelector: AlgoOutputSelector) = {
@@ -411,8 +588,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemSimOutputSelection",
       infoid = "itemsim",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map()
-    )
+      settings = Map("freshness" -> 4, "serendipity" -> 6))
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
@@ -431,37 +607,99 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     )
     val algoid = mongoAlgos.insert(algo)
 
-    mongoItemSimScores.insert(ItemSimScore(
+    val scores = Seq(ItemSimScore(
       iid = "user1",
       simiid = "item_x",
       score = 5,
       itypes = Seq("bar"),
       appid = dummyApp.id,
       algoid = algoid,
-      modelset = true
-    ))
-
-    mongoItemSimScores.insert(ItemSimScore(
+      modelset = true), ItemSimScore(
       iid = "user1",
       simiid = "item_y",
       score = 4,
       itypes = Seq("foo"),
       appid = dummyApp.id,
       algoid = algoid,
-      modelset = true
-    ))
-
-    mongoItemSimScores.insert(ItemSimScore(
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_a",
+      score = 3,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_b",
+      score = 2,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_c",
+      score = 1,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_d",
+      score = 10,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_e",
+      score = 9,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_f",
+      score = 8,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_g",
+      score = 7,
+      itypes = Seq("bar"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
+      iid = "user1",
+      simiid = "item_h",
+      score = 6,
+      itypes = Seq("foo"),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true), ItemSimScore(
       iid = "user1",
       simiid = "item_z",
       score = 3,
       itypes = Seq("unrelated"),
       appid = dummyApp.id,
       algoid = algoid,
-      modelset = true
-    ))
+      modelset = true))
 
-    algoOutputSelector.itemSimSelection("user1", 10, Some(Seq("bar", "foo")), None, None, None)(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y"))
+    scores foreach { mongoItemSimScores.insert(_) }
+
+    val result = algoOutputSelector.itemSimSelection("user1", 10, Some(Seq("bar", "foo")), None, None, None)(dummyApp, engine.copy(id = engineid))
+    result must contain(
+      "item_x",
+      "item_y",
+      "item_a",
+      "item_b",
+      "item_c",
+      "item_d",
+      "item_e",
+      "item_f",
+      "item_g",
+      "item_h")
   }
 
   def itemSimOutputSelectionWithLatlng(algoOutputSelector: AlgoOutputSelector) = {

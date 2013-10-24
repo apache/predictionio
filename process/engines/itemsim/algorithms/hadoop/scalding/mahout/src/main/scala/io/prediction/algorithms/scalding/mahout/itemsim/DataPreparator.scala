@@ -152,7 +152,16 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
       val lineArray = line.split("\t")
 
-      (offset, lineArray(0), lineArray(1))
+      val (iidx, itypes) = try {
+          (lineArray(0), lineArray(1))
+        } catch {
+          case e: Exception => {
+            assert(false, "Failed to extract iidx and itypes from the line: " + line + ". Exception: " + e)
+            (0, "dummy")
+          }
+        }
+        
+      (offset, iidx, itypes)
     }
 
   val usersIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "userIds.tsv")).read
