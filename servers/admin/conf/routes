@@ -25,41 +25,41 @@ GET     /auth                          controllers.Application.getAuth
 
 # An App
 GET     /apps                          controllers.Application.getApplist
-GET     /apps/:id                      controllers.Application.getApp(id)
+GET     /apps/:id                      controllers.Application.getApp(id: Int)
 POST    /apps                          controllers.Application.createApp
-DELETE  /apps/:id                      controllers.Application.removeApp(id)
-#PUT    /apps/:id                      controllers.Application.updateApp(id)
-GET     /apps/:id/details              controllers.Application.getAppDetails(id)
-GET     /apps/:id/engines              controllers.Application.getAppEnginelist(id)
-POST    /apps/:id/erase_data           controllers.Application.eraseAppData(id)
+DELETE  /apps/:id                      controllers.Application.removeApp(id: Int)
+#PUT    /apps/:id                      controllers.Application.updateApp(id: Int)
+GET     /apps/:id/details              controllers.Application.getAppDetails(id: Int)
+GET     /apps/:id/engines              controllers.Application.getAppEnginelist(id: Int)
+POST    /apps/:id/erase_data           controllers.Application.eraseAppData(id: Int)
 
 # System Level
-GET     /engineinfos                   controllers.Application.getEngineTypeList
-GET     /engineinfos/:id/algoinfos     controllers.Application.getEngineTypeAlgoList(id)
-GET     /engineinfos/:id/metricinfos   controllers.Application.getEngineTypeMetricsTypeList(id)
+GET     /engineinfos                   controllers.Application.getEngineInfoList
+GET     /engineinfos/:id/algoinfos     controllers.Application.getEngineInfoAlgoList(id: String)
+GET     /engineinfos/:id/metricinfos   controllers.Application.getEngineInfoMetricsTypeList(id: String)
 
 # An Engine of an App
-GET     /apps/:appid/engines/:id      controllers.Application.getEngine(appid, id)
-POST    /apps/:appid/engines          controllers.Application.createEngine(appid)
+GET     /apps/:appid/engines/:id      controllers.Application.getEngine(appid: Int, id: Int)
+POST    /apps/:appid/engines          controllers.Application.createEngine(appid: Int)
 DELETE  /apps/:appid/engines/:id      controllers.Application.removeEngine(appid: Int, id: Int)
 
-GET     /apps/:appid/engines/:engineid/algos_available      controllers.Application.getAvailableAlgoList(appid, engineid)
-GET     /apps/:appid/engines/:engineid/algos_available/:id  controllers.Application.getAvailableAlgo(appid, engineid, id)
-POST    /apps/:appid/engines/:engineid/algos_available      controllers.Application.createAvailableAlgo(appid, engineid)
+GET     /apps/:appid/engines/:engineid/algos_available      controllers.Application.getAvailableAlgoList(appid: Int, engineid: Int)
+GET     /apps/:appid/engines/:engineid/algos_available/:id  controllers.Application.getAvailableAlgo(appid: Int, engineid: Int, id: Int)
+POST    /apps/:appid/engines/:engineid/algos_available      controllers.Application.createAvailableAlgo(appid: Int, engineid: Int)
 DELETE  /apps/:appid/engines/:engineid/algos_available/:id  controllers.Application.removeAvailableAlgo(appid: Int, engineid: Int, id: Int)
 
-GET     /apps/:appid/engines/:engineid/algos_deployed       controllers.Application.getDeployedAlgo(appid, engineid)
-POST    /apps/:appid/engines/:engineid/algos_deploy         controllers.Application.algoDeploy(appid, engineid)
-POST    /apps/:appid/engines/:engineid/algos_undeploy       controllers.Application.algoUndeploy(appid, engineid)
-POST    /apps/:appid/engines/:engineid/algos_trainnow       controllers.Application.algoTrainNow(appid, engineid)
+GET     /apps/:appid/engines/:engineid/algos_deployed       controllers.Application.getDeployedAlgo(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/algos_deploy         controllers.Application.algoDeploy(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/algos_undeploy       controllers.Application.algoUndeploy(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/algos_trainnow       controllers.Application.algoTrainNow(appid: Int, engineid: Int)
 
-GET     /apps/:appid/engines/:engineid/simevals             controllers.Application.getSimEvalList(appid, engineid)
-POST    /apps/:appid/engines/:engineid/simevals             controllers.Application.createSimEval(appid, engineid)
+GET     /apps/:appid/engines/:engineid/simevals             controllers.Application.getSimEvalList(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/simevals             controllers.Application.createSimEval(appid: Int, engineid: Int)
 DELETE  /apps/:appid/engines/:engineid/simevals/:id         controllers.Application.removeSimEval(appid: Int, engineid: Int, id: Int)
-GET     /apps/:appid/engines/:engineid/simevals/:id/report  controllers.Application.getSimEvalReport(appid, engineid, id)
+GET     /apps/:appid/engines/:engineid/simevals/:id/report  controllers.Application.getSimEvalReport(appid: Int, engineid: Int, id: Int)
 
-GET     /apps/:appid/engines/:engineid/algos_available/:algoid/autotune_report   controllers.Application.getAlgoAutotuningReport(appid, engineid, algoid)
-POST    /apps/:appid/engines/:engineid/algos_available/:algoid/autotune_apply    controllers.Application.algoAutotuningSelect(appid, engineid, algoid)
+GET     /apps/:appid/engines/:engineid/algos_available/:algoid/autotune_report   controllers.Application.getAlgoAutotuningReport(appid: Int, engineid: Int, algoid: Int)
+POST    /apps/:appid/engines/:engineid/algos_available/:algoid/autotune_apply    controllers.Application.algoAutotuningSelect(appid: Int, engineid: Int, algoid: Int)
 
 # Engine Module
 #GET    /apps/:appid/engines/:engineid/settings        controllers.Application.getEngineSettings(appid, engineid) # TODO: use this when work on PDIO-227
