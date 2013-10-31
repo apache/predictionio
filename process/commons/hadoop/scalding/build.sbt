@@ -19,9 +19,4 @@ libraryDependencies ++= Seq(
   "org.mongodb" % "mongo-hadoop-core" % "1.1.0"
 )
 
-libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "1.14" % "test",
-  "com.github.nscala-time" %% "nscala-time" % "0.4.2"
-)
-
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"

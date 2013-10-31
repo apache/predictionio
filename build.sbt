@@ -8,8 +8,13 @@ scalaVersion in ThisBuild := "2.10.2"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
+scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
+
+javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:deprecation", "-Xlint:unchecked")
+
 libraryDependencies in ThisBuild ++= Seq(
-  "com.github.nscala-time" %% "nscala-time" % "0.6.0")
+  "com.github.nscala-time" %% "nscala-time" % "0.6.0",
+  "org.specs2" %% "specs2" % "2.3" % "test")
 
 publishTo in ThisBuild := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
 
