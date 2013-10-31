@@ -1,9 +1,9 @@
-package io.prediction.evaluations.scalding.itemrec.trainingtestsplit
+package io.prediction.evaluations.scalding.commons.u2itrainingtestsplit
 
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
-import io.prediction.commons.filepath.TrainingTestSplitFile
+import io.prediction.commons.filepath.U2ITrainingTestSplitFile
 import io.prediction.commons.appdata.{User, Item}
 
 /**
@@ -45,7 +45,7 @@ import io.prediction.commons.appdata.{User, Item}
  *
  * --timeorder: <boolean>. Require total percentage < 1
  */
-abstract class TrainingTestSplitCommon(args: Args) extends Job(args) {
+abstract class U2ITrainingTestSplitCommon(args: Args) extends Job(args) {
 
   /**
    * parse arguments

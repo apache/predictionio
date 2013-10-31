@@ -27,7 +27,7 @@ lazy val root = project.in(file(".")).aggregate(
   processCommonsHadoopScalding,
   processEnginesCommonsEvalHadoopScalding,
   processEnginesCommonsEvalScalaParamGen,
-  processEnginesCommonsEvalScalaTrainingTestSplit,
+  processEnginesCommonsEvalScalaU2ITrainingTestSplit,
   processEnginesItemRecAlgoHadoopScalding,
   processEnginesItemRecAlgoScalaMahout,
   processEnginesItemRecEvalHadoopScalding,
@@ -53,19 +53,19 @@ lazy val processCommonsHadoopScalding = project
 
 lazy val processEnginesCommonsEvalHadoopScalding = project
   .in(file("process/engines/commons/evaluations/hadoop/scalding"))
-  .aggregate(processEnginesCommonsEvalHadoopScaldingTrainingTestSplit)
-  .dependsOn(processEnginesCommonsEvalHadoopScaldingTrainingTestSplit)
+  .aggregate(processEnginesCommonsEvalHadoopScaldingU2ITrainingTestSplit)
+  .dependsOn(processEnginesCommonsEvalHadoopScaldingU2ITrainingTestSplit)
 
-lazy val processEnginesCommonsEvalHadoopScaldingTrainingTestSplit = project
-  .in(file("process/engines/commons/evaluations/hadoop/scalding/trainingtestsplit"))
+lazy val processEnginesCommonsEvalHadoopScaldingU2ITrainingTestSplit = project
+  .in(file("process/engines/commons/evaluations/hadoop/scalding/u2itrainingtestsplit"))
   .dependsOn(processCommonsHadoopScalding)
 
 lazy val processEnginesCommonsEvalScalaParamGen = project
   .in(file("process/engines/commons/evaluations/scala/paramgen"))
   .dependsOn(commons)
 
-lazy val processEnginesCommonsEvalScalaTrainingTestSplit = project
-  .in(file("process/engines/commons/evaluations/scala/trainingtestsplit"))
+lazy val processEnginesCommonsEvalScalaU2ITrainingTestSplit = project
+  .in(file("process/engines/commons/evaluations/scala/u2itrainingtestsplit"))
   .dependsOn(commons)
 
 lazy val processEnginesItemRecAlgoHadoopScalding = project

@@ -1,9 +1,9 @@
-package io.prediction.evaluations.scalding.itemrec.trainingtestsplit
+package io.prediction.evaluations.scalding.commons.u2itrainingtestsplit
 
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
-import io.prediction.commons.filepath.TrainingTestSplitFile
+import io.prediction.commons.filepath.U2ITrainingTestSplitFile
 import io.prediction.commons.appdata.{User, Item}
 
 /**
@@ -14,7 +14,7 @@ import io.prediction.commons.appdata.{User, Item}
  * same as TrainingtestsplitCommon, plus additional args:
  * --totalCount <int> total u2i actions count
  */
-class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
+class U2ITrainingTestSplitTime(args: Args) extends U2ITrainingTestSplitCommon(args) {
 
   val totalCountArg = args("totalCount").toInt // total u2i count
 
@@ -39,7 +39,7 @@ class TrainingTestSplitTime(args: Args) extends TrainingTestSplitCommon(args) {
 
   // data generated at prep stage
   val u2iSource = U2iActions(appId=evalidArg,
-      dbType="file", dbName=TrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost=None, dbPort=None)
+      dbType="file", dbName=U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost=None, dbPort=None)
 
   /**
    * sink

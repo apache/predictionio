@@ -1,19 +1,19 @@
-package io.prediction.evaluations.itemrec.trainingtestsplit
+package io.prediction.evaluations.commons.trainingtestsplit
 
 import com.twitter.scalding.Args
 
-import io.prediction.commons.filepath.{TrainingTestSplitFile}
+import io.prediction.commons.filepath.{U2ITrainingTestSplitFile}
 
 import java.io.File
 import scala.io.Source
 import scala.sys.process._
 
 /**
- * Wrapper for Scalding TrainingTestSplitTime job
+ * Wrapper for Scalding U2ITrainingTestSplitTime job
  *
  * Args:
  * --hadoop <string> hadoop command
- * --pdioEvalJar <string> the name of the Scalding TrainingTestSplit job jar
+ * --pdioEvalJar <string> the name of the Scalding U2ITrainingTestSplit job jar
  * --sequenceNum. <int>. the sequence number (starts from 1 for the 1st iteration and then increment for later iterations)
  * 
  * --dbType: <string> appdata DB type
@@ -50,7 +50,7 @@ import scala.sys.process._
  * --timeorder: <boolean>. Require total percentage < 1
  *
  */
-object TrainingTestSplitTime {
+object U2ITrainingTestSplitTime {
 
   def main(mainArgs: Array[String]) {
 
@@ -77,13 +77,13 @@ object TrainingTestSplitTime {
     /** command */
     if (!resplit) {
       // prep
-      val splitPrepCmd = hadoop + " jar " + pdioEvalJar + " io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplitTimePrep " + argsString
+      val splitPrepCmd = hadoop + " jar " + pdioEvalJar + " io.prediction.evaluations.scalding.commons.u2itrainingtestsplit.U2ITrainingTestSplitTimePrep " + argsString
       executeCommandAndCheck(splitPrepCmd)
 
     }
 
     // copy the count to local tmp
-    val hdfsCountPath = TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, "u2iCount.tsv")
+    val hdfsCountPath = U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, "u2iCount.tsv")
     val localCountPath = localTempRoot + "eval-" + evalid + "-u2iCount.tsv"
     
     val localCountFile = new File(localCountPath)
@@ -106,7 +106,7 @@ object TrainingTestSplitTime {
     val count = lines.next
 
     // split
-    val splitCmd = hadoop +" jar " + pdioEvalJar + " io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplitTime " + argsString + " --totalCount " + count
+    val splitCmd = hadoop +" jar " + pdioEvalJar + " io.prediction.evaluations.scalding.commons.u2itrainingtestsplit.U2ITrainingTestSplitTime " + argsString + " --totalCount " + count
     executeCommandAndCheck(splitCmd)
 
     // delete local tmp file

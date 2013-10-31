@@ -53,7 +53,7 @@ cp -R $DIST_DIR/conf $PACKAGE_DIR
 
 cp "$BASE/process/engines/commons/evaluations/hadoop/scalding/target/scala-2.10/predictionio-process-commons-evaluations-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/commons/evaluations/scala/paramgen/target/scala-2.10/predictionio-process-commons-evaluations-paramgen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/commons/evaluations/scala/trainingtestsplit/target/scala-2.10/predictionio-process-commons-evaluations-scala-trainingtestsplittime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/commons/evaluations/scala/u2itrainingtestsplit/target/scala-2.10/predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.10/predictionio-process-itemrec-algorithms-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/predictionio-process-itemrec-algorithms-scala-mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/scala-2.10/predictionio-process-itemrec-evaluations-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"

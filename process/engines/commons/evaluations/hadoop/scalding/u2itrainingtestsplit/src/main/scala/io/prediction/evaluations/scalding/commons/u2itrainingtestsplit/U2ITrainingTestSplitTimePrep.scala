@@ -1,9 +1,9 @@
-package io.prediction.evaluations.scalding.itemrec.trainingtestsplit
+package io.prediction.evaluations.scalding.commons.u2itrainingtestsplit
 
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
-import io.prediction.commons.filepath.TrainingTestSplitFile
+import io.prediction.commons.filepath.U2ITrainingTestSplitFile
 import io.prediction.commons.appdata.{User, Item}
 
 /**
@@ -13,9 +13,9 @@ import io.prediction.commons.appdata.{User, Item}
  *   note: appid is replaced by evalid.
  * 
  * Args:
- * same as TrainingTestSplitCommon
+ * same as U2ITrainingTestSplitCommon
  */
-class TrainingTestSplitTimePrep(args: Args) extends TrainingTestSplitCommon(args) {
+class U2ITrainingTestSplitTimePrep(args: Args) extends U2ITrainingTestSplitCommon(args) {
 
   /**
    * source
@@ -41,9 +41,9 @@ class TrainingTestSplitTimePrep(args: Args) extends TrainingTestSplitCommon(args
 
   // NOTE: sink to temporary hdfs first
   val u2iSink = U2iActions(appId=evalidArg,
-      dbType="file", dbName=TrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost=None, dbPort=None)
+      dbType="file", dbName=U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost=None, dbPort=None)
 
-  val countSink = Tsv(TrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, "u2iCount.tsv"))
+  val countSink = Tsv(U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, "u2iCount.tsv"))
   
   /**
    * computation

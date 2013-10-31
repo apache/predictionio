@@ -39,8 +39,8 @@ else
     echo "+ Assemble Process Commons Evaluations Scala Parameter Generator"
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaParamGen/assembly"
 
-    echo "+ Assemble Process Commons Evaluations Scala Training-Test Splitter"
-    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaTrainingTestSplit/assembly"
+    echo "+ Assemble Process Commons Evaluations Scala U2I Training-Test Splitter"
+    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ITrainingTestSplit/assembly"
 
     echo "+ Assemble Process ItemRec Algorithms Hadoop Scalding"
     BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoHadoopScalding/assembly"

@@ -1,4 +1,4 @@
-package io.prediction.evaluations.scalding.itemrec.trainingtestsplit
+package io.prediction.evaluations.scalding.commons.u2itrainingtestsplit
 
 import com.twitter.scalding._
 
@@ -16,7 +16,7 @@ import io.prediction.commons.appdata.{User, Item}
  *   test_appdata.u2iAcions
  *   
  * Description:
- *   Split the appata u2iActions into Training and Test set for ItemRec engine
+ *   Split the appata u2iActions into Training and Test set
  *   
  * Args:
  * --dbType: <string> appdata DB type
@@ -43,10 +43,10 @@ import io.prediction.commons.appdata.{User, Item}
  * --testsize: <int> (1 - 10)
  * 
  * Example:
- * scald.rb --hdfs-local io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplit --dbType mongodb --dbName appdata --dbHost 127.0.0.1 --dbPort 27017 --appid 34 --engineid 3 --evalid 15 --itypes t2 --trainingsize 8 --testsize 2  --training_dbType mongodb --training_dbName training_appdata --training_dbHost 127.0.0.1 --training_dbPort 27017 --test_dbType mongodb --test_dbName test_appdata --test_dbHost 127.0.0.1 --test_dbPort 27017
+ * scald.rb --hdfs-local io.prediction.evaluations.scalding.commons.u2itrainingtestsplit.U2ITrainingTestSplit --dbType mongodb --dbName appdata --dbHost 127.0.0.1 --dbPort 27017 --appid 34 --engineid 3 --evalid 15 --itypes t2 --trainingsize 8 --testsize 2  --training_dbType mongodb --training_dbName training_appdata --training_dbHost 127.0.0.1 --training_dbPort 27017 --test_dbType mongodb --test_dbName test_appdata --test_dbHost 127.0.0.1 --test_dbPort 27017
  * 
  */
-class TrainingTestSplit(args: Args) extends Job(args) {
+class U2ITrainingTestSplit(args: Args) extends Job(args) {
   
   /**
    * parse arguments
