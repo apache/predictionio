@@ -14,7 +14,8 @@ javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:de
 
 libraryDependencies in ThisBuild ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "0.6.0",
-  "org.specs2" %% "specs2" % "2.3" % "test")
+  "org.slf4j" % "slf4j-log4j12" % "1.7.5" % "test",
+  "org.specs2" %% "specs2" % "1.14" % "test")
 
 publishTo in ThisBuild := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
 

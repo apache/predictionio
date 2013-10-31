@@ -6,9 +6,6 @@ packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_
 
 parallelExecution in Test := false
 
-libraryDependencies ++= Seq(
-  "org.slf4j" % "slf4j-log4j12" % "1.6.6")
-
 resolvers ++= Seq("Concurrent Maven Repo" at "http://conjars.org/repo")
 
 assemblySettings
