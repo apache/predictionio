@@ -50,9 +50,9 @@ class EngineFileTest extends Specification {
     }
   }
 
-  "TrainingTestSplitFile" should {
+  "U2ITrainingTestSplitFile" should {
     "correctly return path" in {
-      TrainingTestSplitFile("hdfs/predictionio/", 2, 4, 6, "test8.tsv") must be_==("hdfs/predictionio/apps/2/engines/4/offlineeval/6/trainingtestsplit/test8.tsv")
+      U2ITrainingTestSplitFile("hdfs/predictionio/", 2, 4, 6, "test8.tsv") must be_==("hdfs/predictionio/apps/2/engines/4/offlineeval/6/u2itrainingtestsplit/test8.tsv")
     }
   }
   

@@ -21,6 +21,8 @@ publishTo in ThisBuild := Some(Resolver.file("file",  new File(Path.userHome.abs
 
 publishMavenStyle in ThisBuild := true
 
+parallelExecution in (ThisBuild, Test) := false
+
 lazy val root = project.in(file(".")).aggregate(
   commons,
   output,

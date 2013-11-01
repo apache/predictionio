@@ -1,14 +1,14 @@
-package io.prediction.evaluations.scalding.itemrec.trainingtestsplit
+package io.prediction.evaluations.scalding.commons.u2itrainingtestsplit
 
 import org.specs2.mutable._
 
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
-import io.prediction.commons.filepath.TrainingTestSplitFile
+import io.prediction.commons.filepath.U2ITrainingTestSplitFile
 import io.prediction.commons.appdata.{User, Item}
 
-class TrainingTestSplitTimeTest extends Specification with TupleConversions {
+class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
 
   def test(itypes: List[String], trainingPercent: Double, validationPercent: Double, testPercent: Double, timeorder: Boolean, 
       appid: Int, evalid: Int,
@@ -60,7 +60,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
     println("testCount="+testCount)
     */
 
-    JobTest("io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplitTimePrep")
+    JobTest("io.prediction.evaluations.scalding.commons.u2itrainingtestsplit.U2ITrainingTestSplitTimePrep")
       .arg("dbType", dbType)
       .arg("dbName", dbName)
       .arg("training_dbType", training_dbType)
@@ -91,12 +91,12 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
         }
       }
       .sink[(String, String, String, String, String)](U2iActions(appId=evalid,
-        dbType="file", dbName=TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost=None, dbPort=None).getSource) { outputBuffer =>
+        dbType="file", dbName=U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost=None, dbPort=None).getSource) { outputBuffer =>
         "correctly write u2iActions" in {
           outputBuffer must containTheSameElementsAs(selectedU2iActions)
         }
       }
-      .sink[(Int)](Tsv(TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, "u2iCount.tsv"))) { outputBuffer =>
+      .sink[(Int)](Tsv(U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, "u2iCount.tsv"))) { outputBuffer =>
         "correctly write u2iActions count" in {
           outputBuffer must containTheSameElementsAs(List(originalCount))
         }
@@ -108,7 +108,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
 
       val results = scala.collection.mutable.Map[String, List[(String, String, String, String, String)]]()
 
-      JobTest("io.prediction.evaluations.scalding.itemrec.trainingtestsplit.TrainingTestSplitTime")
+      JobTest("io.prediction.evaluations.scalding.commons.u2itrainingtestsplit.U2ITrainingTestSplitTime")
         .arg("dbType", dbType)
         .arg("dbName", dbName)
         .arg("training_dbType", training_dbType)
@@ -127,7 +127,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
         .arg("timeorder", timeorder.toString)
         .arg("totalCount", originalCount.toString)
         .source(U2iActions(appId=evalid,
-          dbType="file", dbName=TrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost=None, dbPort=None).getSource, selectedU2iActions)
+          dbType="file", dbName=U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost=None, dbPort=None).getSource, selectedU2iActions)
         .sink[(String, String, String, String, String)](U2iActions(appId=evalid,
           dbType=training_dbType, dbName=training_dbName, dbHost=training_dbHost, dbPort=training_dbPort).getSource) { outputBuffer =>
           "generate training set" in {
@@ -285,7 +285,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
     ("view", evalid+"_u0", evalid+"_i0", "1234509", "0"),
     ("like", evalid+"_u1", evalid+"_i2", "1234509", "0"))
 
-  "TrainingTestSplitTimeTest with timeorder=true" should {
+  "U2ITrainingTestSplitTimeTest with timeorder=true" should {
       test(List(""), 0.4, 0.3, 0.2, true, appid, evalid,
         items,
         users,
@@ -297,7 +297,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
     
   }
 
-  "TrainingTestSplitTimeTest with timeorder=false" should {
+  "U2ITrainingTestSplitTimeTest with timeorder=false" should {
       test(List(""), 0.3, 0.2, 0.3, false, appid, evalid,
         items,
         users,
@@ -308,7 +308,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
       ) 
   }
 
-  "TrainingTestSplitTimeTest with timeorder=true and validation=0" should {
+  "U2ITrainingTestSplitTimeTest with timeorder=true and validation=0" should {
       test(List(""), 0.6, 0, 0.1, true, appid, evalid,
         items,
         users,
@@ -319,7 +319,7 @@ class TrainingTestSplitTimeTest extends Specification with TupleConversions {
       )
   }
 
-  "TrainingTestSplitTimeTest with timeorder=false and validation=0" should {
+  "U2ITrainingTestSplitTimeTest with timeorder=false and validation=0" should {
       test(List(""), 0.6, 0, 0.4, false, appid, evalid,
         items,
         users,
