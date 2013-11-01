@@ -13,4 +13,6 @@ libraryDependencies ++= Seq(
   "org.quartz-scheduler" % "quartz" % "2.1.7",
   "org.specs2" %% "specs2" % "1.14" % "test")
 
+javaOptions in Test += "-Dconfig.file=conf/test.conf"
+
 play.Project.playScalaSettings
