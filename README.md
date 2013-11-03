@@ -25,10 +25,19 @@ http://docs.prediction.io/current/installation/index.html
 SUPPORT
 =======
 
+
 Forum
 -----
 
 https://groups.google.com/group/predictionio-user
+
+
+Issue Tracker
+-------------
+
+https://predictionio.atlassian.net
+
+If you are unsure whether a behavior is an issue, bringing it up in the forum is highly encouraged.
 
 
 LICENSE
