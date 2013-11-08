@@ -114,6 +114,18 @@ object Jobs {
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
 
+    /** Locate JAR names
+      * Use those from config file first, then override with SystemInfos.
+      */
+    config.jars foreach { kv => command.setAttribute(kv._1, kv._2) }
+    val systemInfosJarsR = """^jars\.(.*)""".r
+    Scheduler.systemInfos.getAll map { e =>
+      systemInfosJarsR findFirstIn e.id match {
+	case Some(systemInfosJarsR(jarKey)) => command.setAttribute(jarKey, e.value)
+	case None => Unit
+      }
+    }
+
     /** TODO: These JAR naming and locations must be generalized */
     command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
     command.setAttribute("pdioISEvalJar", config.getJar("io.prediction.evaluations.scalding.itemsim").getOrElse(""))

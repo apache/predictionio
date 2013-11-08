@@ -33,6 +33,7 @@ object Scheduler extends Controller {
   val offlineTunes = config.getSettingsOfflineTunes
   val paramGens = config.getSettingsParamGens
   val paramGenInfos = config.getSettingsParamGenInfos
+  val systemInfos = config.getSettingsSystemInfos
   val itemRecScores = config.getModeldataItemRecScores
   val trainingItemRecScores = config.getModeldataTrainingItemRecScores
   val itemSimScores = config.getModeldataItemSimScores

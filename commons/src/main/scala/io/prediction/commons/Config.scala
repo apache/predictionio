@@ -1,5 +1,7 @@
 package io.prediction.commons
 
+import scala.collection.JavaConversions._
+
 import com.mongodb.casbah.Imports._
 import com.typesafe.config._
 
@@ -244,6 +246,15 @@ class Config {
     modeldataTrainingDbUser map { db.authenticate(_, modeldataTrainingDbPassword.getOrElse("")) }
     Some(db)
   } else None
+
+  private val jarsR = """^io\.prediction\.jars\.(.*)""".r
+
+  /** Returns all PredictionIO job JARs found in the configuration object. */
+  val jars: Map[String, String] = (Map[String, String]() /: (config.entrySet filter { e =>
+    jarsR findPrefixOf e.getKey map { _ => true } getOrElse { false } })) { (x, y) =>
+      val jarsR(key) = y.getKey
+      x + (key -> config.getString(y.getKey))
+    }
 
   /** Check whether settings database can be connected. */
   def settingsDbConnectable() = {
