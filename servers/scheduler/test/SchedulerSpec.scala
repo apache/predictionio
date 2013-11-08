@@ -103,6 +103,11 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
     value = "my.jar",
     description = None))
 
+  systemInfos.insert(SystemInfo(
+    id = "jars.foobar",
+    value = "foobar.jar",
+    description = None))
+
   def userSync = {
     running(TestServer(5555), HTMLUNIT) { browser =>
       browser.goTo("http://localhost:5555/users/" + userid + "/sync")
@@ -114,7 +119,7 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
   }
 
   def setSharedAttributes = {
-    val template = new StringTemplate("hadoop jar $mahout_core_job$ and $mahout_itemrec$ and $my_custom_algo$")
+    val template = new StringTemplate("hadoop jar $mahout_core_job$ and $mahout_itemrec$ and $base$/$my_custom_algo$ plus $foobar$")
     val result = Jobs.setSharedAttributes(
       template,
       config,
@@ -126,6 +131,6 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
       Some(Map(
 	"modelset" -> !algo.modelset))).toString
 
-    result must beEqualTo("hadoop jar ../../vendors/mahout-distribution-0.8/mahout-core-0.8-job.jar and ../../lib/predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.7.0-SNAPSHOT.jar and my.jar")
+    result must beEqualTo("hadoop jar ../../vendors/mahout-distribution-0.8/mahout-core-0.8-job.jar and ../../lib/predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.7.0-SNAPSHOT.jar and ../../my.jar plus foobar.jar")
   }
 }

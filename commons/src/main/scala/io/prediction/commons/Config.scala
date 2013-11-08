@@ -436,11 +436,6 @@ class Config {
     }
   }
 
-  /** Obtains the JAR filename for a specific algorithm package name. */
-  def getJar(pkgname: String): Option[String] = {
-    try { Some(config.getString(pkgname + ".jar")) } catch { case _: Throwable => None }
-  }
-
   /** Obtains an OfflineEvals object with configured backend type. */
   def getSettingsOfflineEvals(): settings.OfflineEvals = {
     settingsDbType match {
