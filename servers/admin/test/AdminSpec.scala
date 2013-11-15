@@ -12,7 +12,7 @@ import org.specs2.mutable._
 
 import com.mongodb.casbah.Imports._
 
-import PredictionIOForms._
+import Forms._
 
 class AdminSpec extends Specification {
   "PredictionIO Admin Specification".txt
@@ -20,6 +20,7 @@ class AdminSpec extends Specification {
   /** Setup test data. */
   val config = new Config
   val algoInfos = config.getSettingsAlgoInfos()
+  val engineInfos = config.getSettingsEngineInfos()
 
   algoInfos.insert(AlgoInfo(
     id = "dummy",
@@ -57,11 +58,31 @@ class AdminSpec extends Specification {
     techreq = Seq(),
     datareq = Seq()))
 
+  engineInfos.insert(EngineInfo(
+    id = "v12",
+    name = "v12",
+    description = None,
+    defaultsettings = Map(
+      "similarityFunction" -> Param(
+        id = "similarityFunction",
+        name = "similarityFunction",
+        description = None,
+        defaultvalue = "coocurrence",
+        constraint = "string"),
+      "freshness" -> Param(
+        id = "freshness",
+        name = "freshness",
+        description = None,
+        defaultvalue = 0,
+        constraint = "integer")),
+    defaultalgoinfoid = "dummy"))
+
   "PredictionIO Forms" should {
-    "bind from good request" in new WithApplication {
+    "bind from good request 1" in new WithApplication {
       val f = Form(single("algoinfoid" -> mapOfStringToAny))
       val bf = f.bind(Map(
         "algoinfoid" -> "dummy",
+        "infotype" -> "algo",
         "ab" -> "123",
         "cd" -> "false",
         "ef" -> "deadbeef",
@@ -71,9 +92,26 @@ class AdminSpec extends Specification {
           f => 1 must be_==(2),
           params => {
             params("ef") must be_==("deadbeef") and
-              (params("ab") must be_==(123))
-              (params("cd") must be_==(false))
+              (params("ab") must be_==(123)) and
+              (params("cd") must be_==(false)) and
               (params("gh") must be_==(456.789))
+          }
+        ))
+    }
+
+    "bind from good request 2" in new WithApplication {
+      val f = Form(single("anyid" -> mapOfStringToAny))
+      val bf = f.bind(Map(
+        "anyid" -> "v12",
+        "infotype" -> "engine",
+        "freshness" -> "4",
+        "similarityFunction" -> "tanimoto"))
+      bf.hasErrors must beFalse and
+        (bf.fold(
+          f => 1 must be_==(2),
+          params => {
+            params("freshness") must be_==(4) and
+              (params("similarityFunction") must be_==("tanimoto"))
           }
         ))
     }
@@ -91,6 +129,7 @@ class AdminSpec extends Specification {
       val f = Form(single("algoinfoid" -> mapOfStringToAny))
       val bf = f.bind(Map(
         "algoinfoid" -> "dummy",
+        "infotype" -> "algo",
         "ab" -> "123asdf",
         "cd" -> "false",
         "ef" -> "deadbeef",
@@ -103,6 +142,7 @@ class AdminSpec extends Specification {
       val f = Form(single("algoinfoid" -> mapOfStringToAny))
       val bf = f.bind(Map(
         "algoinfoid" -> "dummy",
+        "infotype" -> "algo",
         "ab" -> "123",
         "cd" -> "fals",
         "ef" -> "deadbeef",
@@ -115,12 +155,51 @@ class AdminSpec extends Specification {
       val f = Form(single("algoinfoid" -> mapOfStringToAny))
       val bf = f.bind(Map(
         "algoinfoid" -> "dummy",
+        "infotype" -> "algo",
         "ab" -> "123",
         "cd" -> "false",
         "ef" -> "deadbeef",
         "gh" -> "d456.789d"))
       bf.hasErrors must beTrue and
         (bf.errors(0).key must be_==("gh"))
+    }
+
+    "bind from bad request 5" in new WithApplication {
+      val f = Form(single("algoinfoid" -> mapOfStringToAny))
+      val bf = f.bind(Map(
+        "algoinfoid" -> "dummy",
+        "ab" -> "123",
+        "cd" -> "false",
+        "ef" -> "deadbeef",
+        "gh" -> "d456.789d"))
+      bf.hasErrors must beTrue and
+        (bf.errors(0).key must be_==("infotype"))
+    }
+
+    "bind from bad request 6" in new WithApplication {
+      val f = Form(single("algoinfoid" -> mapOfStringToAny))
+      val bf = f.bind(Map(
+        "algoinfoid" -> "dummy",
+        "infotype" -> "bad",
+        "ab" -> "123",
+        "cd" -> "false",
+        "ef" -> "deadbeef",
+        "gh" -> "d456.789d"))
+      bf.hasErrors must beTrue and
+        (bf.errors(0).key must be_==("infotype"))
+    }
+
+    "bind from bad request 7" in new WithApplication {
+      val f = Form(single("engineinfoid" -> mapOfStringToAny))
+      val bf = f.bind(Map(
+        "engineinfoid" -> "bad",
+        "infotype" -> "engine",
+        "ab" -> "123",
+        "cd" -> "false",
+        "ef" -> "deadbeef",
+        "gh" -> "d456.789d"))
+      bf.hasErrors must beTrue and
+        (bf.errors(0).key must be_==("engineinfoid"))
     }
   }
 
