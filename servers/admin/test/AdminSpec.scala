@@ -40,7 +40,8 @@ class AdminSpec extends Specification {
         name = "cd",
         description = None,
         defaultvalue = "cd",
-        constraint = "boolean"),
+        constraint = "boolean",
+        scopes = Some(Set("manual"))),
       "ef" -> Param(
         id = "ef",
         name = "ef",
@@ -52,7 +53,8 @@ class AdminSpec extends Specification {
         name = "gh",
         description = None,
         defaultvalue = "gh",
-        constraint = "double")),
+        constraint = "double",
+        scopes = Some(Set("auto", "manual")))),
     paramorder = Seq("ab", "cd", "ef", "gh", "ij"),
     engineinfoid = "dummy",
     techreq = Seq(),
@@ -116,6 +118,21 @@ class AdminSpec extends Specification {
         ))
     }
 
+    "bind from good request 3" in new WithApplication {
+      val f = Form(single("anyid" -> mapOfStringToAny))
+      val bf = f.bind(Map(
+        "anyid" -> "v12",
+        "infotype" -> "engine",
+        "freshness" -> "4"))
+      bf.hasErrors must beFalse and
+        (bf.fold(
+          f => 1 must be_==(2),
+          params => {
+            params("freshness") must be_==(4)
+          }
+        ))
+    }
+
     "bind from bad request 1" in new WithApplication {
       val f = Form(tuple(
         "algoinfoid" -> mapOfStringToAny,
@@ -134,8 +151,9 @@ class AdminSpec extends Specification {
         "cd" -> "false",
         "ef" -> "deadbeef",
         "gh" -> "456.789"))
-      bf.hasErrors must beTrue and
-        (bf.errors(0).key must be_==("ab"))
+      val params = bf.get
+      bf.hasErrors must beFalse and
+        (params.get("ab") must beNone)
     }
 
     "bind from bad request 3" in new WithApplication {
@@ -143,6 +161,7 @@ class AdminSpec extends Specification {
       val bf = f.bind(Map(
         "algoinfoid" -> "dummy",
         "infotype" -> "algo",
+        "scope" -> "manual",
         "ab" -> "123",
         "cd" -> "fals",
         "ef" -> "deadbeef",
@@ -156,6 +175,7 @@ class AdminSpec extends Specification {
       val bf = f.bind(Map(
         "algoinfoid" -> "dummy",
         "infotype" -> "algo",
+        "scope" -> "auto",
         "ab" -> "123",
         "cd" -> "false",
         "ef" -> "deadbeef",

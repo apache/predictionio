@@ -10,9 +10,20 @@ import play.api.data.format._
 object Forms {
   def mapOfStringToAny: Mapping[Map[String, Any]] = of[Map[String, Any]]
 
-  private val AlgoInfoIdR = """(.+)AlgoInfo$""".r
-  private val EngineInfoIdR = """(.+)EngineInfo$""".r
   private val infotypeKey = "infotype"
+  private val scopeKey = "scope"
+
+  private def scoped(scope: Option[String], scopes: Option[Set[String]], result: Either[Seq[FormError], Map[String, Any]]): Either[Seq[FormError], Map[String, Any]] = {
+    val resultOrEmpty = result match {
+      case Right(s) => Right(s)
+      case Left(s)  => Right(Map[String, Any]())
+    }
+
+    (scope, scopes) match {
+      case (Some(s), Some(ss)) => if (ss(s)) result else resultOrEmpty
+      case _ => resultOrEmpty
+    }
+  }
 
   implicit def mapOfStringToAnyFormat: Formatter[Map[String, Any]] = new Formatter[Map[String, Any]] {
     def bind(key: String, data: Map[String, String]) = {
@@ -29,11 +40,11 @@ object Forms {
             someParams map { params =>
               val allErrorsOrItems: Seq[Either[Seq[FormError], Map[String, Any]]] = params.toSeq map { param =>
                 param._2.constraint match {
-                  case "integer" => Formats.intFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d))
-                  case "boolean" => Formats.booleanFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d))
-                  case "string" =>  Formats.stringFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d))
-                  case "double" =>  Formats.doubleFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d))
-                  case _ =>         Left(Seq(FormError(param._1, "error.invalidconstraint", Nil)))
+                  case "integer" => scoped(data.get(scopeKey), param._2.scopes, Formats.intFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
+                  case "boolean" => scoped(data.get(scopeKey), param._2.scopes, Formats.booleanFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
+                  case "string" =>  scoped(data.get(scopeKey), param._2.scopes, Formats.stringFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
+                  case "double" =>  scoped(data.get(scopeKey), param._2.scopes, Formats.doubleFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
+                  case _ =>         scoped(data.get(scopeKey), param._2.scopes, Left(Seq(FormError(param._1, "error.invalidconstraint", Nil))))
                 }
               }
               if (allErrorsOrItems.forall(_.isRight)) {
