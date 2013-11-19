@@ -41,6 +41,20 @@ function createDialog(title, content, params) {
 	$('#dialog_template').attr('title',title).find('#dialog_text').text(content).end().dialog(params);
 }
 
+function createDialogErrorResponse(res) {
+	var message = "HTTP " + res.status + ". ";
+	try { // show error message if fail
+		var resData = $.parseJSON(res.responseText);
+		message = message + resData.message;
+	} catch (err) {
+		message = message + "An error has occured.";
+	}
+	createDialog("", message, {
+    	width: 400,
+    	modal: true
+	});
+}
+
 /* Notification functions */
 function notifyInfo(message, title, optionsOverride) {
 	return toastr.info(message, title, optionsOverride);
@@ -54,8 +68,31 @@ function notifyError(message, title, optionsOverride) {
 	return toastr.error(message, title, optionsOverride);
 }
 
+function notifyErrorSticky(message, title) {
+	return toastr.error(message, title, {positionClass: 'toast-bottom-right', timeOut: 0, extendedTimeOut: 0});
+}
+
+function notifyInfoDefault(message, title) {
+	return toastr.info(message, title, {positionClass: 'toast-bottom-right', timeOut: 4000});
+}
+
+function notifyInfoSticky(message, title) {
+	return toastr.info(message, title, {positionClass: 'toast-bottom-right', timeOut: 0, extendedTimeOut: 0, fadeOut: 1});
+}
+
 function notifyClear(element) {
 	return toastr.clear(element);
+}
+
+function notifyErrorResponse(res) {
+	var message = "HTTP " + res.status + ". ";
+	try { // show error message if fail
+		var resData = $.parseJSON(res.responseText);
+		message = message + resData.message;
+	} catch (err) {
+		message = message + "An error has occured.";
+	}
+	notifyErrorSticky(message, "");
 }
 
 $(function() {
@@ -474,14 +511,14 @@ var AppView = Backbone.View.extend({
 		      modal: true,
 		      buttons: {
 		        "Erase All Data": function() {
-		        	var erasingInfo = notifyInfo('Erasing All Application Data...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
+		        	var erasingInfo = notifyInfoSticky('Erasing All Application Data...','');
 		    		$.post(getAPIUrl("apps/"+self.id+"/erase_data"), function() {
 		    			self.appDetailsView.model.fetch(); // refresh data
 		    			notifyClear(erasingInfo);
-		    			notifyInfo('Data Erased.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
+		    			notifyInfoDefault('Data Erased.','');
 		    		}).error(function(res) {
 		    			notifyClear(erasingInfo);
-		    			alert("An error has occured: "+res.status);
+		    			notifyErrorResponse(res);
 		    		});
 		    		$( this ).dialog( "close" );
 		        },
@@ -500,16 +537,16 @@ var AppView = Backbone.View.extend({
 		      modal: true,
 		      buttons: {
 		        "Delete Application": function() {
-		        	var deletingInfo = notifyInfo('Deleting Application...','', {positionClass: 'toast-bottom-right', fadeOut: 1});
+		        	var deletingInfo = notifyInfoSticky('Deleting Application...','');
 		    		self.model.destroy({
 		    			success: function(model, res) {
 		    				notifyClear(deletingInfo);
-		    				notifyInfo('Application Deleted.','', {positionClass: 'toast-bottom-right', timeOut: 2800});
+		    				notifyInfoDefault('Application Deleted.','');
 		    				self.close();
 		    			},
 		    			error: function(model, res) {
 		    				notifyClear(deletingInfo);
-		    				alert("An error has occured. HTTP Status Code: " + res.status);
+		    				notifyErrorResponse(res);
 		    			}
 		    		});
 		    		$( this ).dialog( "close" );
@@ -744,12 +781,16 @@ var EngineView = Backbone.View.extend({
 		      buttons: {
 		        "Delete Engine": function() {
 					var engineModel = new EngineModel({appid: self.appid, id: self.engineid});
+					var erasingInfo = notifyInfoSticky('Removing engine. Please wait...','');
 					engineModel.destroy({
 						success: function() {
+							notifyClear(erasingInfo);
+							notifyInfoDefault('Engine removed.','');
 							window.location = '/';
 						},
 		    			error: function(model, res) {
-		    				alert("An error has occured. HTTP Status Code: " + res.status);
+		    				notifyClear(erasingInfo);
+		    				notifyErrorResponse(res);
 		    			}
 					});
 		    		$( this ).dialog( "close" );
@@ -989,7 +1030,7 @@ var EngineAlgorithmsDeployedAlgoView = Backbone.View.extend({
         	try { // show error message if fail
         		var resData = $.parseJSON(res.responseText);
 	            notifyClear(info);
-	            notifyError("HTTP " + res.status + ": " + resData.message, '', {positionClass: 'toast-bottom-right', timeOut: 5000});
+	            notifyErrorSticky("HTTP " + res.status + ": " + resData.message, '');
         	} catch(err) {
         		alert("An error has occured. HTTP Status Code: " + res.status);
         	}
@@ -1134,13 +1175,17 @@ var EngineAlgorithmsAvailableAlgoView = Backbone.View.extend({
 	},
 	delete: function() {
 		var self = this;
+		var erasingInfo = notifyInfoSticky('Removing algorithm. Please wait...','');
 		this.model.destroy({
 			success: function(model, res) {
+				notifyClear(erasingInfo);
+				notifyInfoDefault('Algorithm removed.','');
 				self.close();
 			},
 			error: function(model, res) {
-				alert("An error has occured. HTTP Status Code: " + res.status);
-			}
+				notifyClear(erasingInfo);
+				notifyErrorResponse(res);
+			},
 		});
 		return false;
 	}
@@ -1213,21 +1258,16 @@ var EngineAlgorithmsSimEvalView = Backbone.View.extend({
 	},
 	delete: function() {
 		var self = this;
+		var erasingInfo = notifyInfoSticky('Removing simulated evaluation. Please wait...','');
 		this.model.destroy({
 			success: function(model, res) {
+				notifyClear(erasingInfo);
+				notifyInfoDefault('Simulated evaluation removed.','');
 				self.close();
 			},
 			error: function(model, res) {
-	        	try { // show error message if fail
-	        		var resData = $.parseJSON(res.responseText);
-	        		//alert("An HTTP error (" + res.status + ") has occured: " + resData.message);
-					createDialog("HTTP " + res.status, "An has occured: " + resData.message, {
-				    	width: 400,
-				    	modal: true
-					});
-	        	} catch(err) {
-	        		alert("An error has occured. HTTP Status Code: " + res.status);
-	        	}
+				notifyClear(erasingInfo);
+				notifyErrorResponse(res);
 			}
 		});
 	}
@@ -1432,8 +1472,10 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
 				window.location.hash = 'engineTabAlgorithms';
 			},
 			error: function(model, res){
+				notifyErrorResponse(res);
+				/*
 				alert("An error has occured. HTTP Status Code: "
-						+ res.status);
+						+ res.status);*/
 			}
 		});
 		return false;

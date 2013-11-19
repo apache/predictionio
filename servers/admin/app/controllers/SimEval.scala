@@ -29,15 +29,17 @@ object SimEval extends Controller {
     )
 
     val evalid = offlineEvals.insert(newOfflineEval)
+    Logger.info("Create offline eval ID " + evalid)
 
     // duplicate algo with evalid
     for ( algo <- listOfAlgos ) {
       // duplicate algo for sim eval
-      algos.insert(algo.copy(
+      val algoid = algos.insert(algo.copy(
         id = -1,
         offlineevalid = Option(evalid),
         status = "simeval"
       ))
+      Logger.info("Create sim eval algo ID " + algoid)
     }
 
     val engine = engines.get(engineId).get
@@ -55,10 +57,11 @@ object SimEval extends Controller {
         evalid = evalid,
         params = Map("kParam" -> metricSetting) // TODO: hardcode param index name for now, should depend on metrictype
       ))
+      Logger.info("Create metric ID " + metricId)
     }
 
     // create splitter record
-    offlineEvalSplitters.insert(OfflineEvalSplitter(
+    val splitterId = offlineEvalSplitters.insert(OfflineEvalSplitter(
       id = -1,
       evalid = evalid,
       name = ("sim-eval-" + evalid + "-splitter"), // auto generate name now
@@ -70,6 +73,7 @@ object SimEval extends Controller {
         "timeorder" -> (splitMethod != "random")
         )
     ))
+    Logger.info("Create offline eval splitter ID " + splitterId)
 
     // after all algo and metric info is stored.
     // update offlineeval record with createtime, so scheduler can know it's ready to be picked up
