@@ -13,7 +13,8 @@ object MongoParam {
       name = dbObj.as[String]("name"),
       description = dbObj.getAs[String]("description"),
       defaultvalue = dbObj("defaultvalue"),
-      constraint = dbObj.as[String]("constraint"))
+      constraint = dbObj.as[String]("constraint"),
+      scopes = dbObj.getAs[MongoDBList]("scopes") map { MongoUtils.mongoDbListToListOfString(_).toSet })
   }
 
   def paramToDBObj(param: Param) = {
@@ -21,6 +22,7 @@ object MongoParam {
       "name" -> param.name,
       "defaultvalue" -> param.defaultvalue,
       "constraint" -> param.constraint) ++
-      (param.description map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj)
+        (param.description map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj) ++
+        (param.scopes map { s => MongoDBObject("scopes" -> s.toSeq) } getOrElse MongoUtils.emptyObj)
   }
 }

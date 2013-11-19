@@ -25,16 +25,11 @@ object Jobs {
   val offlineTuneJobGroup = "predictionio-offlinetune"
 
   def algoJob(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
-    /** Build command from template. */
-    val command = new StringTemplate(batchcommands.mkString(" && "))
-    setSharedAttributes(command, config, app, engine, Some(algo), None, None)
-
     /** Add a job, then build a trigger for it.
       * This is necessary for updating any existing job,
       * and make sure the trigger will fire.
       */
     val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) storeDurably(true) build()
-    job.getJobDataMap().put("template", command.toString)
     job.getJobDataMap().put("algoid", algo.id)
     job.getJobDataMap().put("engineinfoid", engine.infoid)
 
@@ -101,7 +96,6 @@ object Jobs {
     algo map { alg =>
       val defaultParams = Scheduler.algoInfos.get(alg.infoid) map { _.params.mapValues(_.defaultvalue) } getOrElse Map[String, String]()
       command.setAttributes(command.attributes ++ defaultParams ++ alg.params)
-      command.setAttribute("jar", config.getJar(alg.infoid).getOrElse(""))
       command.setAttribute("algoid", alg.id)
       command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id)))
@@ -114,16 +108,17 @@ object Jobs {
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.settings("goal"))
 
-    /** TODO: These JAR naming and locations must be generalized */
-    command.setAttribute("pdioEvalJar", config.getJar("io.prediction.evaluations.scalding.itemrec").getOrElse(""))
-    command.setAttribute("pdioISEvalJar", config.getJar("io.prediction.evaluations.scalding.itemsim").getOrElse(""))
-    command.setAttribute("mahoutCoreJobJar", config.getJar("io.prediction.algorithms.mahout-core-job").getOrElse(""))
-    command.setAttribute("itemrecScalaMahoutJar", config.getJar("io.prediction.algorithms.mahout.itemrec").getOrElse(""))
-    command.setAttribute("scaldingGenericJar", config.getJar("io.prediction.algorithms.scalding.itemrec.generic").getOrElse(""))
-    command.setAttribute("topkJar", config.getJar("io.prediction.evaluations.itemrec.topkitems").getOrElse(""))
-    command.setAttribute("istopkJar", config.getJar("io.prediction.evaluations.itemsim.topkitems").getOrElse(""))
-    command.setAttribute("trainingTestSplitTimeJar", config.getJar("io.prediction.evaluations.itemrec.trainingtestsplit").getOrElse(""))
-    command.setAttribute("paramgenJar", config.getJar("io.prediction.evaluations.itemrec.paramgen").getOrElse(""))
+    /** Locate JAR names
+      * Use those from config file first, then override with SystemInfos.
+      */
+    config.jars foreach { kv => command.setAttribute(kv._1, kv._2) }
+    val systemInfosJarsR = """^jars\.(.*)""".r
+    config.getSettingsSystemInfos.getAll foreach { e =>
+      systemInfosJarsR findFirstIn e.id match {
+	case Some(systemInfosJarsR(jarKey)) => command.setAttribute(jarKey, e.value)
+	case None => Unit
+      }
+    }
 
     command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse("-Dconfig.file=conf/application.conf"))
     command.setAttribute("appid", app.id)
@@ -190,7 +185,6 @@ class AlgoJob extends InterruptableJob {
     val jobDataMap = context.getMergedJobDataMap
     val algoid = jobDataMap.getInt("algoid")
     val engineinfoid = jobDataMap.getString("engineinfoid")
-    val template = new StringTemplate(jobDataMap.getString("template"))
     val config = Scheduler.config
     val apps = Scheduler.apps
     val engines = Scheduler.engines
