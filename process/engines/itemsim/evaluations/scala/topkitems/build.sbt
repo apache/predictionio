@@ -4,13 +4,13 @@ assemblySettings
 
 name := "PredictionIO-Process-ItemSim-Evaluations-TopKItems"
 
-version := "0.6.3"
+version := "0.6.4-SNAPSHOT"
 
 scalaVersion := "2.10.2"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.6.3",
-  "io.prediction" %% "predictionio-output" % "0.6.3",
+  "io.prediction" %% "predictionio-commons" % "0.6.4-SNAPSHOT",
+  "io.prediction" %% "predictionio-output" % "0.6.4-SNAPSHOT",
   "ch.qos.logback" % "logback-classic" % "1.0.9",
   "ch.qos.logback" % "logback-core" % "1.0.9",
   "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2",
