@@ -126,7 +126,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
     conf.setOutputFormat(MongoOutputFormat.class);
     MongoConfigUtil.setOutputURI(conf, this.mongoUri);
 
-    FileOutputFormat.setOutputPath(conf, getPath());
+    //FileOutputFormat.setOutputPath(conf, getPath());
   }
 
   /**
