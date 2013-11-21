@@ -285,7 +285,8 @@ class AlgosSpec extends Specification { def is =
   }
 
   def existsByEngineidAndName(algos: Algos) = {
-    val id = algos.insert(Algo(
+
+    val algo1 = Algo(
       id       = 0,
       engineid = 456,
       name     = "existsByEngineidAndName-1",
@@ -301,11 +302,25 @@ class AlgosSpec extends Specification { def is =
       offlinetuneid = None,
       loop = None,
       paramset = None
-    ))
+    )
 
-    algos.existsByEngineidAndName(456, "existsByEngineidAndName-1") must beTrue and
-      (algos.existsByEngineidAndName(456, "existsByEngineidAndName-2") must beFalse) and
-      (algos.existsByEngineidAndName(457, "existsByEngineidAndName-1") must beFalse)
+    val id1 = algos.insert(algo1)
+
+    // algo with offlineevalid, existence is ignored
+    algos.insert(algo1.copy(
+      name = "existsByEngineidAndName-1a",
+      offlineevalid = Some(5)
+    ))
+    // algo with offlinetuneid, existence is not ignored
+    algos.insert(algo1.copy(
+      name = "existsByEngineidAndName-1b",
+      offlinetuneid = Some(6)
+    ))
+    algos.existsByEngineidAndName(456, "existsByEngineidAndName-1") must beTrue and // match engineid and name
+      (algos.existsByEngineidAndName(456, "existsByEngineidAndName-2") must beFalse) and // same engineid, diff name
+      (algos.existsByEngineidAndName(457, "existsByEngineidAndName-1") must beFalse) and // diff engineid, same name
+      (algos.existsByEngineidAndName(456, "existsByEngineidAndName-1a") must beFalse) and // algo with offlineevalid
+      (algos.existsByEngineidAndName(456, "existsByEngineidAndName-1b") must beTrue) // algo with offlinetuneid
   }
 
   def backuprestore(algos: Algos) = {
