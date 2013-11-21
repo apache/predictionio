@@ -14,8 +14,8 @@ import play.api.data.format.Formats._
 import play.api.data.validation.{Constraints}
 import play.api.i18n.{Messages, Lang}
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.libs.json.Json._
-import play.api.libs.json.{JsNull}
+import play.api.libs.json.Json.toJson
+import play.api.libs.json.{JsNull, JsArray, Json}
 import play.api.libs.ws.WS
 import play.api.Play.current
 import play.api.http
@@ -492,12 +492,12 @@ object Application extends Controller {
         }
 
         if (deployedAlgos.size != 0) {
-          concurrent.Future(Forbidden(obj("message" -> s"There are deployed algorithms. Please undeploy them before delete this app.")))
+          concurrent.Future(Forbidden(Json.obj("message" -> s"There are deployed algorithms. Please undeploy them before delete this app.")))
         } else if (pendingSimEvals.size != 0) {
-          concurrent.Future(Forbidden(obj("message" -> 
+          concurrent.Future(Forbidden(Json.obj("message" -> 
             "There are running simulated evaluations. Please stop and delete them before delete this app.")))
         } else if (pendingOfflineTunes.size != 0) {
-          concurrent.Future(Forbidden(obj("message" -> 
+          concurrent.Future(Forbidden(Json.obj("message" -> 
             "There are auto-tuning algorithms. Please stop and delete them before delete this app.")))
         } else {
 
@@ -512,7 +512,7 @@ object Application extends Controller {
               }
               r
             }
-            case t: String => InternalServerError(obj("message" -> t))
+            case t: String => InternalServerError(Json.obj("message" -> t))
 
           }
         }
@@ -558,7 +558,7 @@ object Application extends Controller {
             }
             r
           }
-          case t: String => InternalServerError(obj("message" -> t))
+          case t: String => InternalServerError(Json.obj("message" -> t))
 
         }
         
@@ -585,34 +585,13 @@ object Application extends Controller {
     * }}}
     */
   def getEngineInfoList = Action {
-    // TODO: get these from engine info DB
-    Ok(toJson(Seq(
-      Map(
-        "id" -> "itemrec",
-        "engineinfoname" -> "Item Recommendation Engine",
-        "description" -> """
-    						<h6>Recommend interesting items to each user personally.</h6>
-				            <p>Sample Use Cases</p>
-				            <ul>
-				                <li>recommend top N items to users personally</li>
-				                <li>predict users' future preferences</li>
-				                <li>help users to discover new topics they may be interested in</li>
-				                <li>personalize content</li>
-				                <li>optimize sales</li>
-				            </ul>
-    						"""),
-      Map(
-        "id" -> "itemsim",
-        "engineinfoname" -> "Item Similarity Engine",
-        "description" -> """
-    		            	<h6>Discover similar items.</h6>
-				            <p>Sample Use Cases</p>
-				            <ul>
-				                <li>predict what else would a user like if this user likes a,
-				                    i.e. "People who like this also like...."</li>
-				                <li>automatic item grouping</li>
-				            </ul>
-    						"""))))
+    Ok(JsArray(engineInfos.getAll() map {
+      eng => Json.obj( 
+        "id" -> eng.id,
+        "engineinfoname" -> eng.name,
+        "description" -> eng.description
+        )
+    }))
   }
 
   /** Returns a list of available algo infos of a specific engine info
@@ -662,7 +641,7 @@ object Application extends Controller {
            )
 
        ))
-    } getOrElse InternalServerError(obj("message" -> "Invalid EngineInfo ID."))
+    } getOrElse InternalServerError(Json.obj("message" -> "Invalid EngineInfo ID."))
   }
 
   /** Returns a list of available metric infos of a specific engine info
@@ -783,7 +762,7 @@ object Application extends Controller {
           } catch {
             case e: java.net.ConnectException => "runningnoscheduler"
           }
-      Ok(obj(
+      Ok(Json.obj(
         "id" -> eng.id.toString, // engine id
         "engineinfoid" -> eng.infoid,
         "appid" -> eng.appid.toString,
@@ -934,11 +913,11 @@ object Application extends Controller {
 
       if (deployedAlgos.size != 0) {
         val names = deployedAlgos map ( x => x.name ) mkString(",")
-        Forbidden(obj("message" -> s"This engine has deployed algorithms (${names}). Please undeploy them before delete this engine."))
+        Forbidden(Json.obj("message" -> s"This engine has deployed algorithms (${names}). Please undeploy them before delete this engine."))
       } else if (pendingSimEvals.size != 0) {
-        Forbidden(obj("message" -> "There are running simulated evaluations. Please stop and delete them before delete this engine."))
+        Forbidden(Json.obj("message" -> "There are running simulated evaluations. Please stop and delete them before delete this engine."))
       } else if (pendingOfflineTunes.size != 0) {
-        Forbidden(obj("message" -> "There are auto-tuning algorithms. Please stop and delete them before delete this engine."))
+        Forbidden(Json.obj("message" -> "There are auto-tuning algorithms. Please stop and delete them before delete this engine."))
       } else {
         /** Deletion could take a while */
         val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
@@ -954,13 +933,13 @@ object Application extends Controller {
               }
               r
             }
-            case t: String => InternalServerError(obj("message" -> t))
+            case t: String => InternalServerError(Json.obj("message" -> t))
           }
         }
       }
 
     } getOrElse {
-      NotFound(obj("message" -> s"Engine ID $engineid does not exist."))    
+      NotFound(Json.obj("message" -> s"Engine ID $engineid does not exist."))    
     }
 
   }
@@ -1251,11 +1230,11 @@ object Application extends Controller {
             }
             r
           }
-          case t: String => InternalServerError(obj("message" -> t))
+          case t: String => InternalServerError(Json.obj("message" -> t))
         }
       }
     } getOrElse {
-      NotFound(obj("message" -> s"Algo ID $id does not exist."))
+      NotFound(Json.obj("message" -> s"Algo ID $id does not exist."))
     }
 
   }
@@ -1369,23 +1348,23 @@ object Application extends Controller {
     *                         ],
     *     "metricscoreiterationlist" : [
     *                                    [ { 
-    *                                        "algoautotuneid" : <tuneid algo id>,
+    *                                        "algoautotuneid" : <tuneid algo id 1>,
     *                                        "settingsstring" : <algo setting string>,
     *                                        "score" : <score of 1st iteration for this ituned algo id>
     *                                      },
     *                                      { 
-    *                                        "algoautotuneid" : <another tuneid algo id>,
+    *                                        "algoautotuneid" : <tuneid algo id 2>,
     *                                        "settingsstring" : <algo setting string>,
     *                                        "score" : <score of 1st iteration for this ituned algo id>
     *                                      }, ...
     *                                    ],
     *                                    [ { 
-    *                                        "algoautotuneid" : <tuneid algo id>,
+    *                                        "algoautotuneid" : <tuneid algo id 1>,
     *                                        "settingsstring" : <algo setting string>,
-    *                                        "score" : <score of 2n iteration for this ituned algo id>
+    *                                        "score" : <score of 2nd iteration for this ituned algo id>
     *                                      },
     *                                      { 
-    *                                        "algoautotuneid" : <another tuneid algo id>,
+    *                                        "algoautotuneid" : <tuneid algo id 2>,
     *                                        "settingsstring" : <algo setting string>,
     *                                        "score" : <score of 2nd iteration for this ituned algo id>
     *                                      }, ...
@@ -1494,6 +1473,7 @@ object Application extends Controller {
           val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
           val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
           val evalIteration = tuneOfflineEvals.size // NOTE: for autotune, number of offline eval is the iteration
+          val engineinfoid = engines.get(engineid) map { _.infoid } getOrElse { "unkown-engine" }
 
           val status: String = (tune.starttime, tune.endtime) match {
             case (Some(x), Some(y)) => "completed"
@@ -1521,7 +1501,7 @@ object Application extends Controller {
               "metric" -> toJson(Map(
                           "id" -> metric.id.toString,
                           "engineid" -> engineid.toString,
-                          "engineinfoid" -> "itemrec", // TODO: hardcode now, should get this from enginedb
+                          "engineinfoid" -> engineinfoid,
                           "metricsinfoid" -> metric.infoid,
                           "metricsname" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
                           "settingsstring" -> map_k_displayAllParams(metric.params)
@@ -1873,11 +1853,11 @@ object Application extends Controller {
             }
             r
           }
-          case t: String => InternalServerError(obj("message" -> t))
+          case t: String => InternalServerError(Json.obj("message" -> t))
         }
       }
     } getOrElse {
-      NotFound(obj("message" -> s"Offline evaluation ID $id does not exist"))
+      NotFound(Json.obj("message" -> s"Offline evaluation ID $id does not exist"))
     }
   }
 
@@ -2188,16 +2168,16 @@ object Application extends Controller {
     // No extra param required
     val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
     val request = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/trainoncenow").get() map { r =>
-      Ok(obj("message" -> (r.json \ "message").as[String]))
+      Ok(Json.obj("message" -> (r.json \ "message").as[String]))
     } recover {
-      case e: Exception => InternalServerError(obj("message" -> e.getMessage()))
+      case e: Exception => InternalServerError(Json.obj("message" -> e.getMessage()))
     }
 
     /** Detect timeout (10 minutes by default) */
     Async {
       concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
         case r: SimpleResult => r
-        case t: String => InternalServerError(obj("message" -> t))
+        case t: String => InternalServerError(Json.obj("message" -> t))
       }
     }
   }

@@ -38,7 +38,7 @@
     "engineinfos": {
         "itemrec": {
             "name": "Item Recommendation Engine",
-            "description": "Recommend interesting items to each user personally",
+            "description": "<h6>Recommend interesting items to each user personally.</h6><p>Sample Use Cases</p><ul><li>recommend top N items to users personally</li><li>predict users' future preferences</li><li>help users to discover new topics they may be interested in</li><li>personalize content</li><li>optimize sales</li></ul>",
             "defaultalgoinfoid": "mahout-itembased",
             "defaultsettings": {
                 "serendipity": {
@@ -75,7 +75,7 @@
         },
         "itemsim": {
             "name": "Item Similarity Engine",
-            "description": "Discover similar items",
+            "description": "<h6>Discover similar items.</h6><p>Sample Use Cases</p><ul><li>predict what else would a user like if this user likes a, i.e. \"People who like this also like....\"</li><li>automatic item grouping</li></ul>",
             "defaultalgoinfoid": "mahout-itemsimcf",
             "defaultsettings": {
                 "serendipity": {
