@@ -18,7 +18,7 @@ import io.prediction.commons.settings.{OfflineEval, OfflineTune, Algo}
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.WS
 import play.api.mvc.Controller
-import play.api.libs.json.Json._
+import play.api.libs.json.{Json}
 import play.api.http
 
 /** helper functions */
@@ -259,11 +259,11 @@ object Helper extends Controller {
     /** Handle any error that might occur within the Future */
     val complete = remove map { r =>
       if (r.status == http.Status.OK)
-        Ok(obj("message" -> s"Offline evaluation ID ${evalid} has been deleted"))
+        Ok(Json.obj("message" -> s"Offline evaluation ID ${evalid} has been deleted"))
       else
-        InternalServerError(obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
     } recover {
-      case e: Exception => InternalServerError(obj("message" ->
+      case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete simulated evaluation. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
 
@@ -290,11 +290,11 @@ object Helper extends Controller {
 
     val complete = remove map { r =>
       if (r.status == http.Status.OK)
-        Ok(obj("message" -> s"Offline Tune ID ${tuneid} has been deleted"))
+        Ok(Json.obj("message" -> s"Offline Tune ID ${tuneid} has been deleted"))
       else
-        InternalServerError(obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
     } recover {
-      case e: Exception => InternalServerError(obj("message" ->
+      case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete autotuning algorithm. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
     
@@ -312,9 +312,9 @@ object Helper extends Controller {
       if (r.status == http.Status.OK)
         Ok
       else
-        InternalServerError(obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
     } recover {
-      case e: Exception => InternalServerError(obj("message" ->
+      case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete algorithm. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
   }
@@ -329,9 +329,9 @@ object Helper extends Controller {
       if (r.status == http.Status.OK)
         Ok
       else
-        InternalServerError(obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
     } recover {
-      case e: Exception => InternalServerError(obj("message" ->
+      case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete engine. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
   }
@@ -346,9 +346,9 @@ object Helper extends Controller {
       if (r.status == http.Status.OK)
         Ok
       else
-        InternalServerError(obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
     } recover {
-      case e: Exception => InternalServerError(obj("message" ->
+      case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete app. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
   }
