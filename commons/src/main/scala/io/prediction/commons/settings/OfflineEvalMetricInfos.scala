@@ -39,6 +39,9 @@ trait OfflineEvalMetricInfos extends Common {
   /** Get all metric info. */
   def getAll(): Seq[OfflineEvalMetricInfo]
 
+  /** Get all metric info by engineinfo ID */
+  def getByEngineinfoid(engineinfoid: String): Seq[OfflineEvalMetricInfo]
+
   /** Updates a metric info. */
   def update(metricInfo: OfflineEvalMetricInfo, upsert: Boolean = false): Unit
 

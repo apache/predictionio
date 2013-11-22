@@ -651,6 +651,12 @@ object Application extends Controller {
     * JSON Parameters:
     *   None
     * JSON Response:
+    *   If the engine info id is not found:
+    *   InternalServerError
+    *   {
+    *     "message" : "Invalid EngineInfo ID."
+    *   }
+    *
     *   If found:
     *   Ok
     *   { "engineinfoname" : <the name of the engine info>,
@@ -665,24 +671,27 @@ object Application extends Controller {
     *
     * @param id the engine info id
     */
-  def getEngineInfoMetricsTypeList(id: String) = Action {
-    // TODO: return InternalServerError and error message("Invalid EngineInfo ID") 
-    //   if engine info id not found.
-    // TODO: read from DB instead of hardcode
-    Ok(toJson(
-      Map(
-        "engineinfoname" -> toJson("Item Recommendation Engine"),
-        "metricslist" -> toJson(Seq(
-								          toJson(Map(
-								            "id" -> toJson("map_k"),
-								            "metricsname" -> toJson("MAP@k"),
-								            "metricslongname" -> toJson("Mean Average Precision"),
-								            "settingfields" -> toJson(Map(
-								            					"k" -> "int"
-								            					))
-								          ))
-        						))
-      )))
+  def getEngineInfoMetricsTypeList(id: String) = Action {    
+    engineInfos.get(id) map { engInfo =>
+      val metrics = offlineEvalMetricInfos.getByEngineinfoid(engInfo.id) map { m =>
+        Json.obj(
+          "id" -> m.id,
+          "metricsname" -> m.name,
+          "metricslongname" -> m.description,
+          "settingfields" -> Json.toJson(
+            m.paramorder.map( p =>
+              (m.paramnames(p) -> "int") // TODO: param constraint type, hardcode to int now
+            ).toMap
+          )
+        )
+      }
+      Ok(Json.obj(
+        "engineinfoname" -> engInfo.name,
+        "metricslist" -> JsArray(metrics)
+      ))
+    } getOrElse {
+      InternalServerError(Json.obj("message" -> s"Invalid engineinfo ID: ${id}."))
+    }
   }
 
   /** Returns a list of available metric infos of a specific engine info
