@@ -55,6 +55,8 @@ class MongoEngines(db: MongoDB) extends Engines {
 
   def getByAppidAndName(appid: Int, name: String) = engineColl.findOne(MongoDBObject("appid" -> appid, "name" -> name)) map { dbObjToEngine(_) }
 
+  def getByIdAndAppid(id: Int, appid: Int): Option[Engine] = engineColl.findOne(MongoDBObject("_id" -> id, "appid" -> appid)) map { dbObjToEngine(_) }
+
   def update(engine: Engine, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> engine.id)
     val nameObj = MongoDBObject("name" -> engine.name)

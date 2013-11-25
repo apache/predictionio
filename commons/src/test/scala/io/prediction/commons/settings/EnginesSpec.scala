@@ -18,6 +18,7 @@ class EnginesSpec extends Specification { def is =
   def engines(engines: Engines) = {                                           t^
     "create an engine"                                                        ! insert(engines)^
     "get two engines"                                                         ! getByAppid(engines)^
+    "get by id and appid"                                                     ! getByIdAndAppid(engines)^
     "update an engine"                                                        ! update(engines)^
     "delete an engine"                                                        ! deleteByIdAndAppid(engines)^
     "checking existence of engines"                                           ! existsByAppidAndName(engines)^
@@ -65,6 +66,36 @@ class EnginesSpec extends Specification { def is =
     val engine2 = engine12.next()
     engine1 must be equalTo(obj1.copy(id = id1)) and
       (engine2 must be equalTo(obj2.copy(id = id2)))
+  }
+
+  def getByIdAndAppid(engines: Engines) = {
+    val obj1 = Engine(
+      id = 0,
+      appid = 2345,
+      name = "getByAppid1",
+      infoid = "getByAppid1",
+      itypes = Option(List("foo", "bar")),
+      settings = Map("apple" -> "red")
+    )
+    val obj2 = Engine(
+      id = 0,
+      appid = 2345,
+      name = "getByAppid2",
+      infoid = "getByAppid2",
+      itypes = None,
+      settings = Map("foo2" -> "bar2")
+    )
+    val id1 = engines.insert(obj1)
+    val id2 = engines.insert(obj2)
+    val engine1 = engines.getByIdAndAppid(id1, 2345)
+    val engine1b = engines.getByIdAndAppid(id1, 2344)
+    val engine2 = engines.getByIdAndAppid(id2, 2345)
+    val engine2b = engines.getByIdAndAppid(id2, 2346)
+
+    engine1 must beSome(obj1.copy(id = id1)) and
+      (engine1b must beNone) and
+      (engine2 must beSome(obj2.copy(id = id2))) and
+      (engine2b must beNone)
   }
 
   def update(engines: Engines) = {

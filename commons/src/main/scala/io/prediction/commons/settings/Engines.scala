@@ -36,8 +36,11 @@ trait Engines extends Common {
   /** Get engines by app ID. */
   def getByAppid(appid: Int): Iterator[Engine]
 
-  /** Get an engine by its ID and app ID. */
+  /** Get an engine by app ID and name. */
   def getByAppidAndName(appid: Int, name: String): Option[Engine]
+
+  /** Get an engine by its ID and app ID. */
+  def getByIdAndAppid(id: Int, appid: Int): Option[Engine]
 
   /** Update an engine. */
   def update(engine: Engine, upsert: Boolean = false)

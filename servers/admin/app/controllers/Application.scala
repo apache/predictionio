@@ -790,7 +790,6 @@ object Application extends Controller {
     * POST
     * JSON parameters:
     *   {
-    *     "appid" : <app id>,
     *     "engineinfoid" : <engine info id>,
     *     "enginename" : <engine name>
     *   }
@@ -799,6 +798,12 @@ object Application extends Controller {
     *   Forbidden
     *   {
     *     "message" : "Haven't signed in yet."
+    *   }
+    *
+    *   if invalid appid:
+    *   NotFound
+    *   {
+    *     "message" : <error message>
     *   }
     *
     *   If bad param:
@@ -821,73 +826,70 @@ object Application extends Controller {
     * @param appid the App ID
     */
   def createEngine(appid: Int) = withUser { user => implicit request =>
-    val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
-    val enginenameConstraint = Constraints.pattern(nameRegex, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
 
-    val engineForm = Form(tuple(
-      "appid" -> number,
-      "engineinfoid" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
-      "enginename" -> (text verifying("Please name your engine.", enginename => enginename.length > 0)
-                          verifying enginenameConstraint)
-    ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3))
-    verifying("Engine type is invalid.", f => engineInfos.get(f._2).map(_ => true).getOrElse(false)))
+    apps.getByIdAndUserid(appid, user.id) map { app =>
 
-    // TODO: if No such app id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-     */
+      val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
+      val enginenameConstraint = Constraints.pattern(nameRegex, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
 
-    engineForm.bindFromRequest.fold(
-      formWithError => {
-        //println(formWithError.errors)
-        val msg = formWithError.errors(0).message // extract 1st error message only
-        //BadRequest(toJson(Map("message" -> toJson("invalid engine name"))))
-        BadRequest(toJson(Map("message" -> toJson(msg))))
-      },
-      formData => {
-        val (fappid, enginetype, enginename) = formData
-        val engineInfo = engineInfos.get(enginetype).get
-        val engineId = engines.insert(Engine(
-          id = -1,
-          appid = fappid,
-          name = enginename,
-          infoid = enginetype,
-          itypes = None, // NOTE: default None (means all itypes)
-          settings = engineInfo.defaultsettings.map(s => (s._2.id, s._2.defaultvalue)) // TODO: depends on enginetype
-        ))
-        Logger.info("Create engine ID " + engineId)
+      val engineForm = Form(tuple(
+        "engineinfoid" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
+        "enginename" -> (text verifying("Please name your engine.", enginename => enginename.length > 0)
+                            verifying enginenameConstraint)
+      ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(appid, f._2))
+      verifying("Engine type is invalid.", f => engineInfos.get(f._1).map(_ => true).getOrElse(false)))
 
-        // automatically create default algo
-        val defaultAlgoType = engineInfo.defaultalgoinfoid
-        val defaultAlgo = Algo(
-          id = -1,
-          engineid = engineId,
-          name = "Default-Algo", // TODO: get it from engineInfo
-          infoid = defaultAlgoType,
-          command = "",
-          params = algoInfos.get(defaultAlgoType).get.params.mapValues(_.defaultvalue),
-          settings = Map(), // no use for now
-          modelset = false, // init value
-          createtime = DateTime.now,
-          updatetime = DateTime.now,
-          status = "deployed", // this is default deployed algo
-          offlineevalid = None,
-          loop = None
-        )
+      engineForm.bindFromRequest.fold(
+        formWithError => {
+          val msg = formWithError.errors(0).message // extract 1st error message only
+          BadRequest(toJson(Map("message" -> toJson(msg))))
+        },
+        formData => {
+          val (enginetype, enginename) = formData
+          val engineInfo = engineInfos.get(enginetype).get
+          val engineId = engines.insert(Engine(
+            id = -1,
+            appid = appid,
+            name = enginename,
+            infoid = enginetype,
+            itypes = None, // NOTE: default None (means all itypes)
+            settings = engineInfo.defaultsettings.map(s => (s._2.id, s._2.defaultvalue))
+          ))
+          Logger.info("Create engine ID " + engineId)
 
-        val algoId = algos.insert(defaultAlgo)
-        Logger.info("Create algo ID " + algoId)
+          // automatically create default algo
+          val defaultAlgoType = engineInfo.defaultalgoinfoid
+          val defaultAlgo = Algo(
+            id = -1,
+            engineid = engineId,
+            name = "Default-Algo",
+            infoid = defaultAlgoType,
+            command = "",
+            params = algoInfos.get(defaultAlgoType).get.params.mapValues(_.defaultvalue),
+            settings = Map(), // no use for now
+            modelset = false, // init value
+            createtime = DateTime.now,
+            updatetime = DateTime.now,
+            status = "deployed", // this is default deployed algo
+            offlineevalid = None,
+            loop = None
+          )
 
-        WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
+          val algoId = algos.insert(defaultAlgo)
+          Logger.info("Create algo ID " + algoId)
 
-        Ok(toJson(Map(
-          "id" -> engineId.toString, // engine id
-          "engineinfoid" -> enginetype,
-          "appid" -> fappid.toString,
-          "enginename" -> enginename)))
-      }
-    )
+          WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
 
+          Ok(toJson(Map(
+            "id" -> engineId.toString, // engine id
+            "engineinfoid" -> enginetype,
+            "appid" -> appid.toString,
+            "enginename" -> enginename)))
+        }
+      )
+    } getOrElse {
+      NotFound(toJson(Map("message" -> toJson("Invalid app id ${appid}."))))
+    }
   }
 
   /** Removes an engine
@@ -1074,14 +1076,18 @@ object Application extends Controller {
     *   {
     *     "algoinfoid" : <algo info id>,
     *     "algoname" : <algo name>,
-    *     "appid" : <app id>,
-    *     "engineid" : <engine id>
     *   }
     * JSON response:
     *   If not authenticated:
     *   Forbidden
     *   {
     *     "message" : "Haven't signed in yet."
+    *   }
+    *
+    *   If invalid appid or engineid:
+    *   NotFound
+    *   {
+    *     "message" : <error message>
     *   }
     *
     *   If creation failed:
@@ -1110,72 +1116,74 @@ object Application extends Controller {
     * @param engineid the engine ID
     */
   def createAvailableAlgo(appid: Int, engineid: Int) = withUser { user => implicit request =>
-    // TODO: if No such app id or engine id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id or engine id"))))
-     */
-    val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
-    val algonameConstraint = Constraints.pattern(nameRegex, "constraint.algoname", "Algorithm names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
 
-    val createAlgoForm = Form(tuple(
-      "algoinfoid" -> (nonEmptyText verifying("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
-      "algoname" -> (text verifying("Please name your algo.", name => name.length > 0)
-                          verifying algonameConstraint), // same name constraint as engine
-      "appid" -> number,
-      "engineid" -> number
-    ) verifying("Algo name must be unique.", f => !algos.existsByEngineidAndName(f._4, f._2)))
+    apps.getByIdAndUserid(appid, user.id) map { app =>
 
-    createAlgoForm.bindFromRequest.fold(
-      formWithError => {
-        //println(formWithError.errors)
-        val msg = formWithError.errors(0).message // extract 1st error message only
-        BadRequest(toJson(Map("message" -> toJson(msg))))
-      },
-      formData => {
-        val (algoType, algoName, appId, engineId) = formData
+      engines.getByIdAndAppid(engineid, appid) map { eng => 
 
-        // TODO: store algotype into algos db?
-        val algoInfoOpt = algoInfos.get(algoType)
+        val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
+        val algonameConstraint = Constraints.pattern(nameRegex, "constraint.algoname", "Algorithm names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
 
-        if (algoInfoOpt == None) {
-          BadRequest(toJson(Map("message" -> toJson("Invalid AlgoType."))))
-        } else {
-          val algoInfo = algoInfoOpt.get
+        val createAlgoForm = Form(tuple(
+          "algoinfoid" -> (nonEmptyText verifying("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
+          "algoname" -> (text verifying("Please name your algo.", name => name.length > 0)
+                              verifying algonameConstraint) // same name constraint as engine
+        ) verifying("Algo name must be unique.", f => !algos.existsByEngineidAndName(engineid, f._2)))
 
-          val newAlgo = Algo(
-            id = -1,
-            engineid = engineId,
-            name = algoName,
-            infoid = algoType,
-            command = "",
-            params = algoInfo.params.mapValues(_.defaultvalue),
-            settings = Map(), // no use for now
-            modelset = false, // init value
-            createtime = DateTime.now,
-            updatetime = DateTime.now,
-            status = "ready", // default status
-            offlineevalid = None,
-            loop = None
-          )
+        createAlgoForm.bindFromRequest.fold(
+          formWithError => {
+            val msg = formWithError.errors(0).message // extract 1st error message only
+            BadRequest(toJson(Map("message" -> toJson(msg))))
+          },
+          formData => {
+            val (algoType, algoName) = formData
 
-          val algoId = algos.insert(newAlgo)
-          Logger.info("Create algo ID " + algoId)
+            val algoInfoOpt = algoInfos.get(algoType)
 
-          Ok(toJson(Map(
-            "id" -> algoId.toString, // algo id
-            "algoname" -> newAlgo.name,
-            "appid" -> appId.toString,
-            "engineid" -> newAlgo.engineid.toString,
-            "algoinfoid" -> algoType,
-            "algoinfoname" -> algoInfos.get(algoType).get.name,
-            "status" -> newAlgo.status,
-            "createdtime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
-            "updatedtime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
-          )))
-        }
+            if (algoInfoOpt == None) {
+              BadRequest(toJson(Map("message" -> toJson("Invalid AlgoType."))))
+            } else {
+              val algoInfo = algoInfoOpt.get
 
+              val newAlgo = Algo(
+                id = -1,
+                engineid = engineid,
+                name = algoName,
+                infoid = algoType,
+                command = "",
+                params = algoInfo.params.mapValues(_.defaultvalue),
+                settings = Map(), // no use for now
+                modelset = false, // init value
+                createtime = DateTime.now,
+                updatetime = DateTime.now,
+                status = "ready", // default status
+                offlineevalid = None,
+                loop = None
+              )
+
+              val algoId = algos.insert(newAlgo)
+              Logger.info("Create algo ID " + algoId)
+
+              Ok(toJson(Map(
+                "id" -> algoId.toString, // algo id
+                "algoname" -> newAlgo.name,
+                "appid" -> appid.toString,
+                "engineid" -> newAlgo.engineid.toString,
+                "algoinfoid" -> algoType,
+                "algoinfoname" -> algoInfos.get(algoType).get.name,
+                "status" -> newAlgo.status,
+                "createdtime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
+                "updatedtime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
+              )))
+            }
+          }
+        )
+      } getOrElse {
+        NotFound(toJson(Map("message" -> toJson("Invalid engine id ${engineid}."))))
       }
-    )
+    } getOrElse {
+      NotFound(toJson(Map("message" -> toJson("Invalid app id ${appid}."))))
+    }
 
   }
 
@@ -1728,8 +1736,6 @@ object Application extends Controller {
     * POST
     * JSON parameters:
     *   {
-    *     "appid" : <app id>,
-    *     "engineid" : <engine id>,
     *     "algo[i]" : <algo id>,
     *     "metrics[i]" : <metric info id>,
     *     "metricsSettings[i]" : <metric setting>,
@@ -1763,8 +1769,6 @@ object Application extends Controller {
     // {"appid":"1","engineid":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
     // {"appid":"17","engineid":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splittrain":"71","splittest":"24","splitmethod":"time","evaliteration":"3"}
     val simEvalForm = Form(tuple(
-      "appid" -> number,
-      "engineid" -> number,
       "algo" -> list(number), // algo id
       "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
       "metricsSettings" -> list(text),
@@ -1776,12 +1780,11 @@ object Application extends Controller {
 
     simEvalForm.bindFromRequest.fold(
       formWithError => {
-        //println(formWithError.errors)
         val msg = formWithError.errors(0).message // extract 1st error message only
         BadRequest(toJson(Map("message" -> toJson(msg))))
       },
       formData => {
-        val (appId, engineId, algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
+        val (algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
 
         // get list of algo obj
         val optAlgos: List[Option[Algo]] = algoIds map {algoId => algos.get(algoId)}
@@ -1789,7 +1792,7 @@ object Application extends Controller {
         if (!optAlgos.contains(None)) {
           val listOfAlgos: List[Algo] = optAlgos map (x => x.get)
 
-          SimEval.createSimEval(engineId, listOfAlgos, metricTypes, metricSettings,
+          SimEval.createSimEval(engineid, listOfAlgos, metricTypes, metricSettings,
           splitTrain, 0, splitTest, splitMethod, evalIteration, None)
 
           WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
