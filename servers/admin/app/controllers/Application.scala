@@ -1060,7 +1060,7 @@ object Application extends Controller {
           "engineid" -> algo.engineid.toString,
           "algoinfoid" -> algo.infoid,
           "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
-          "status" -> "ready", // default status TODO: what status allowed here?
+          "status" -> algo.status,
           "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
           "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
         )))
