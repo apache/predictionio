@@ -98,6 +98,8 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   def getTuneSubjectByOfflineTuneid(tuneid: Int) = algoColl.findOne(MongoDBObject("offlinetuneid" -> tuneid, "loop" -> null, "paramset" -> null)) map { dbObjToAlgo(_) }
 
+  def getByIdAndEngineid(id: Int, engineid: Int): Option[Algo] = algoColl.findOne(MongoDBObject("_id" -> id, "engineid" -> engineid)) map { dbObjToAlgo(_) }
+
   def update(algo: Algo, upsert: Boolean = false) = {
 
     // required fields

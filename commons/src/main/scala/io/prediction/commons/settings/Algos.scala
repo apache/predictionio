@@ -62,6 +62,9 @@ trait Algos extends Common {
   /** Get the auto tune subject by OfflineTune ID. */
   def getTuneSubjectByOfflineTuneid(tuneid: Int): Option[Algo]
 
+  /** Get the algo by its ID and engine ID. */
+  def getByIdAndEngineid(id: Int, engineid: Int): Option[Algo]
+
   /** Update an algo. */
   def update(algo: Algo, upsert: Boolean = false)
 

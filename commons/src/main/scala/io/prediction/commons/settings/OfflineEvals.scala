@@ -48,6 +48,9 @@ trait OfflineEvals extends Common {
   /** Get OfflineEval by offline tune id */
   def getByTuneid(tuneid: Int): Iterator[OfflineEval]
 
+  /** Get OfflineEval by its ID and engine ID */
+  def getByIdAndEngineid(id: Int, engineid: Int): Option[OfflineEval]
+
   /** Update OfflineEval (create new one if the it doesn't exist) */
   def update(offlineEval: OfflineEval, upsert: Boolean = false)
 

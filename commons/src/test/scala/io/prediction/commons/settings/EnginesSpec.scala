@@ -72,30 +72,31 @@ class EnginesSpec extends Specification { def is =
     val obj1 = Engine(
       id = 0,
       appid = 2345,
-      name = "getByAppid1",
-      infoid = "getByAppid1",
+      name = "getByIdAndAppid",
+      infoid = "getByIdAndAppid",
       itypes = Option(List("foo", "bar")),
       settings = Map("apple" -> "red")
     )
-    val obj2 = Engine(
-      id = 0,
-      appid = 2345,
-      name = "getByAppid2",
-      infoid = "getByAppid2",
-      itypes = None,
-      settings = Map("foo2" -> "bar2")
-    )
+    val obj2 = obj1.copy()
+
+    val obj3 = obj1.copy(appid = 2346, name="getByIdAndAppid3")
+
     val id1 = engines.insert(obj1)
     val id2 = engines.insert(obj2)
+    val id3 = engines.insert(obj3)
     val engine1 = engines.getByIdAndAppid(id1, 2345)
-    val engine1b = engines.getByIdAndAppid(id1, 2344)
+    val engine1b = engines.getByIdAndAppid(id1, 2346)
     val engine2 = engines.getByIdAndAppid(id2, 2345)
     val engine2b = engines.getByIdAndAppid(id2, 2346)
+    val engine3b = engines.getByIdAndAppid(id3, 2345)
+    val engine3 = engines.getByIdAndAppid(id3, 2346)
 
     engine1 must beSome(obj1.copy(id = id1)) and
       (engine1b must beNone) and
       (engine2 must beSome(obj2.copy(id = id2))) and
-      (engine2b must beNone)
+      (engine2b must beNone) and
+      (engine3 must beSome(obj3.copy(id = id3))) and
+      (engine3b must beNone)
   }
 
   def update(engines: Engines) = {

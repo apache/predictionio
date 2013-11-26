@@ -23,6 +23,7 @@ class AlgosSpec extends Specification { def is =
     "get a deployed algo by engineid"                                         ! getDeployedByEngineid(algos)^
     "get two algos by offlineevalid"                                          ! getByOfflineEvalid(algos)^
     "get an auto tune subject"                                                ! getTuneSubjectByOfflineTuneid(algos)^
+    "get by id and engineid"                                                  ! getByIdAndEngineid(algos)^
     "update an algo"                                                          ! update(algos)^
     "delete an algo"                                                          ! delete(algos)^
     "checking existence of algo"                                              ! existsByEngineidAndName(algos)^
@@ -223,6 +224,45 @@ class AlgosSpec extends Specification { def is =
     val id1 = algos.insert(algo1)
     val id2 = algos.insert(algo2)
     algos.getTuneSubjectByOfflineTuneid(567) must beSome(algo2.copy(id = id2))
+  }
+
+  def getByIdAndEngineid(algos: Algos) = {
+    val obj1 = Algo(
+      id       = 0,
+      engineid = 2345,
+      name     = "getByIdAndEngineid",
+      infoid   = "apple",
+      command  = "getByIdAndEngineid",
+      params   = Map("baz" -> "bah"),
+      settings = Map("qwe" -> "rty"),
+      modelset = false,
+      createtime = DateTime.now,
+      updatetime = DateTime.now.hour(1).minute(2).second(3),
+      status = "orange",
+      offlineevalid = Some(2),
+      offlinetuneid = None,
+      loop = Some(4),
+      paramset = Some(123)
+    )
+    val obj2 = obj1.copy()
+    val obj3 = obj1.copy(engineid = 2346, name = "getByIdAndEngineid3")
+
+    val id1 = algos.insert(obj1)
+    val id2 = algos.insert(obj2)
+    val id3 = algos.insert(obj3)
+    val algo1 = algos.getByIdAndEngineid(id1, 2345)
+    val algo1b = algos.getByIdAndEngineid(id1, 2346)
+    val algo2 = algos.getByIdAndEngineid(id2, 2345)
+    val algo2b = algos.getByIdAndEngineid(id2, 2346)
+    val algo3b = algos.getByIdAndEngineid(id3, 2345)
+    val algo3 = algos.getByIdAndEngineid(id3, 2346)
+
+    algo1 must beSome(obj1.copy(id = id1)) and
+      (algo1b must beNone) and
+      (algo2 must beSome(obj2.copy(id = id2))) and
+      (algo2b must beNone) and
+      (algo3 must beSome(obj3.copy(id = id3))) and
+      (algo3b must beNone)
   }
 
   def update(algos: Algos) = {
