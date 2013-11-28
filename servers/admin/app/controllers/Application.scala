@@ -20,7 +20,7 @@ import play.api.libs.ws.WS
 import play.api.Play.current
 import play.api.http
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -103,18 +103,65 @@ object Application extends Controller {
     }
   }
 
+  def withAuthAsync(f: => String => Request[AnyContent] => Future[SimpleResult]) = {
+    Security.Authenticated(username, onUnauthorized) { user =>
+      Action.async(request => f(user)(request))
+    }
+  }
+
+  object WithUser {
+    def apply(f: User => Request[AnyContent] => SimpleResult) = async { user => implicit request =>
+      Future.successful(f(user)(request))
+    }
+
+    def async(f: User => Request[AnyContent] => Future[SimpleResult]) = withAuthAsync { username => implicit request =>
+      users.getByEmail(username).map { user =>
+        f(user)(request)
+      }.getOrElse(Future.successful(onUnauthorized(request)))
+    }
+  }
+
+  // TODO: remove
   def withUser(f: User => Request[AnyContent] => Result) = withAuth { username => implicit request =>
     users.getByEmail(username).map { user =>
       f(user)(request)
     }.getOrElse(onUnauthorized(request))
   }
 
+  object WithApp {
+    def apply(appid: Int)(f: (User, App) => Request[AnyContent] => SimpleResult) = async(appid) { (user, app) => implicit request =>
+      Future.successful(f(user, app)(request))
+    }
+
+    def async(appid: Int)(f: (User, App) => Request[AnyContent] => Future[SimpleResult]) = WithUser.async { user => implicit request => 
+      apps.getByIdAndUserid(appid, user.id).map { app =>
+        f(user, app)(request)
+      }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid appid ${appid}."))))
+    }
+  }
+
+  // TODO: remove
   def withApp(appid: Int)(f: (User, App) => Request[AnyContent] => Result) = withUser { user => implicit request => 
     apps.getByIdAndUserid(appid, user.id).map { app =>
       f(user, app)(request)
     }.getOrElse(NotFound(Json.obj("message" -> s"Invalid appid ${appid}.")))
   }
 
+  object WithEngine {
+    def apply(appid: Int, engineid: Int)(f: (User, App, Engine) => Request[AnyContent] => SimpleResult) = async(appid, engineid) {
+      (user, app, eng) => implicit request =>
+        Future.successful(f(user, app, eng)(request))
+    }
+
+    def async(appid: Int, engineid: Int)(f: (User, App, Engine) => Request[AnyContent] => Future[SimpleResult]) = WithApp.async(appid) {
+      (user, app) => implicit request =>
+        engines.getByIdAndAppid(engineid, appid).map { eng =>
+          f(user, app, eng)(request)
+        }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid engineid ${engineid}."))))
+    }
+  }
+
+  // TODO: remove
   def withEngine(appid: Int, engineid: Int)(f: (User, App, Engine) => Request[AnyContent] => Result) = withApp(appid) { 
     (user, app) => implicit request =>
       engines.getByIdAndAppid(engineid, appid).map { eng =>
@@ -122,6 +169,21 @@ object Application extends Controller {
       }.getOrElse(NotFound(Json.obj("message" -> s"Invalid engineid ${engineid}.")))
   }
 
+  object WithAlgo {
+    def apply(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => SimpleResult) = async(appid, engineid, algoid) {
+      (user, app, eng, algo) => implicit request =>
+        Future.successful(f(user, app, eng, algo)(request))
+    }
+
+    def async(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => Future[SimpleResult]) = WithEngine.async(appid, engineid) {
+      (user, app, eng) => implicit request =>
+        algos.getByIdAndEngineid(algoid, engineid).map { algo =>
+          f(user, app, eng, algo)(request)
+        }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid algoid ${algoid}."))))
+    }
+  }
+
+  // TODO: remove
   def withAlgo(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => Result) = withEngine(appid, engineid) {
     (user, app, eng) => implicit request =>
       algos.getByIdAndEngineid(algoid, engineid).map { algo =>
@@ -129,6 +191,21 @@ object Application extends Controller {
       }.getOrElse(NotFound(Json.obj("message" -> s"Invalid algoid ${algoid}.")))
   }
 
+  object WithOfflineEval {
+    def apply(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => SimpleResult) = async(appid, engineid, offlineevalid) {
+      (user, app, eng, eval) => implicit request =>
+        Future.successful(f(user, app, eng, eval)(request))
+    }
+
+    def async(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => Future[SimpleResult]) = WithEngine.async(appid, engineid) {
+      (user, app, eng) => implicit request =>
+        offlineEvals.getByIdAndEngineid(offlineevalid, engineid).map { eval =>
+          f(user, app, eng, eval)(request)
+        }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid offlineevalid ${offlineevalid}."))))
+    }
+  }
+
+  // TODO: remove
   def withOfflineEval(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => Result) = withEngine(appid, engineid) {
     (user, app, eng) => implicit request =>
       offlineEvals.getByIdAndEngineid(offlineevalid, engineid).map { eval =>
@@ -248,7 +325,7 @@ object Application extends Controller {
     *   }
     * }}}
     */
-  def getAuth = withUser { user => implicit request =>
+  def getAuth = WithUser { user => implicit request =>
     Ok(Json.toJson(user))
   }
 
@@ -276,7 +353,7 @@ object Application extends Controller {
     *
     * }}} 
     */
-  def getApplist = withUser { user => implicit request =>
+  def getApplist = WithUser { user => implicit request =>
 
     val userApps = apps.getByUserid(user.id)
     if (!userApps.hasNext) NoContent
@@ -321,7 +398,7 @@ object Application extends Controller {
     *
     * @param id the App ID
     */
-  def getAppDetails(id: Int) = withApp(id) { (user, app) => implicit request =>
+  def getAppDetails(id: Int) = WithApp(id) { (user, app) => implicit request =>
     val numUsers = appDataUsers.countByAppid(app.id)
     val numItems = appDataItems.countByAppid(app.id)
     val numU2IActions = appDataU2IActions.countByAppid(app.id)
@@ -360,7 +437,7 @@ object Application extends Controller {
     *
     * @param id the App ID
     */
-  def getApp(id: Int) = withApp(id) { (user, app) => implicit request =>
+  def getApp(id: Int) = WithApp(id) { (user, app) => implicit request =>
     Ok(Json.obj(
       "id" -> app.id,
       "appname" -> app.display
@@ -397,7 +474,7 @@ object Application extends Controller {
     * }}}
     *
     */
-  def createApp = withUser { user => implicit request =>
+  def createApp = WithUser { user => implicit request =>
 
     val appForm = Form(single(
       "appname" -> nonEmptyText
@@ -461,48 +538,48 @@ object Application extends Controller {
     *
     * @param id the App ID
     */
-  def removeApp(id: Int) = withApp(id) { (user, app) => implicit request =>
+  def removeApp(id: Int) = WithApp.async(id) { (user, app) => implicit request =>
 
-    Async {
+    // don't delete if there is any deployed aglo, sim eval or offline tune pending
+    val appEngines = engines.getByAppid(app.id).toList
 
-      // don't delete if there is any sim eval and offline tune pending
-      val pendingSimEvals = engines.getByAppid(app.id) flatMap { eng => 
-        Helper.getSimEvalsByEngineid(eng.id).filter( x => Helper.isPendingSimEval(x) ).toList
-      }
-      //Logger.info("Pending sim evals "+ pendingSimEvals.map(x => x.id).mkString(","))
+    val enginesDeployed = appEngines.filter( eng =>
+      !(algos.getDeployedByEngineid(eng.id).isEmpty)
+    )
+    val msgDeployed = "There are deployed algorithms in engines: " + enginesDeployed.map( _.name ).mkString(", ") + ". Please undeploy them before delete this app."
 
-      val pendingOfflineTunes = engines.getByAppid(app.id) flatMap { eng =>
-        offlineTunes.getByEngineid(eng.id).filter( x => Helper.isPendingOfflineTune(x) ).toList
-      }
+    val enginesSimEvals = appEngines.filter( eng =>
+      !(Helper.getSimEvalsByEngineid(eng.id).filter( Helper.isPendingSimEval(_) ).isEmpty)
+    )
+    val msgSimEvals = "There are running simulated evaluations in engines: " + enginesSimEvals.map( _.name ).mkString(", ") + ". Please stop and delete them before delete this app."
 
-      val deployedAlgos = engines.getByAppid(app.id) flatMap { eng =>
-        algos.getDeployedByEngineid(eng.id).toList
-      }
+    val enginesOfflineTunes = appEngines.filter( eng =>
+      !(offlineTunes.getByEngineid(eng.id).filter( Helper.isPendingOfflineTune(_) ).isEmpty)
+    )
+    val msgOfflineTunes = "There are auto-tuning algorithms in engines: " + enginesOfflineTunes.map( _.name ).mkString(", ") + ". Please stop and delete them before delete this app."
 
-      if (deployedAlgos.size != 0) {
-        concurrent.Future(Forbidden(Json.obj("message" -> s"There are deployed algorithms. Please undeploy them before delete this app.")))
-      } else if (pendingSimEvals.size != 0) {
-        concurrent.Future(Forbidden(Json.obj("message" -> 
-          "There are running simulated evaluations. Please stop and delete them before delete this app.")))
-      } else if (pendingOfflineTunes.size != 0) {
-        concurrent.Future(Forbidden(Json.obj("message" -> 
-          "There are auto-tuning algorithms. Please stop and delete them before delete this app.")))
-      } else {
+    val runningEngines = List(
+      (enginesDeployed, msgDeployed), 
+      (enginesSimEvals, msgSimEvals),
+      (enginesOfflineTunes, msgOfflineTunes)
+    ).filter{ case (x,y) => (!x.isEmpty) }
 
-        val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+    if (!runningEngines.isEmpty) {
+      val msg = runningEngines.map{ case (x,y) => y }.mkString(" ")    
+      concurrent.Future(Forbidden(Json.obj("message" -> msg)))
+    } else {
 
-        val delete = Helper.deleteAppScheduler(app.id)
+      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+      val delete = Helper.deleteAppScheduler(app.id)
 
-        concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
-          case r: SimpleResult => {
-            if (r.header.status == http.Status.OK) {
-              Helper.deleteApp(id, user.id, keepSettings=false)
-            }
-            r
+      concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
+        case r: SimpleResult => {
+          if (r.header.status == http.Status.OK) {
+            Helper.deleteApp(id, user.id, keepSettings=false)
           }
-          case t: String => InternalServerError(Json.obj("message" -> t))
-
+          r
         }
+        case t: String => InternalServerError(Json.obj("message" -> t))
       }
     }
   }
@@ -526,23 +603,19 @@ object Application extends Controller {
     *
     * @param id the App ID
     */
-  def eraseAppData(id: Int) = withApp(id) { (user, app) => implicit request =>
+  def eraseAppData(id: Int) = WithApp.async(id) { (user, app) => implicit request =>
 
-    Async {
+    val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+    val delete = Helper.deleteAppScheduler(app.id)
 
-      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
-      val delete = Helper.deleteAppScheduler(app.id)
-
-      concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
-        case r: SimpleResult => {
-          if (r.header.status == http.Status.OK) {
-            Helper.deleteApp(id, user.id, keepSettings=true)
-          }
-          r
+    concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
+      case r: SimpleResult => {
+        if (r.header.status == http.Status.OK) {
+          Helper.deleteApp(id, user.id, keepSettings=true)
         }
-        case t: String => InternalServerError(Json.obj("message" -> t))
+        r
       }
-
+      case t: String => InternalServerError(Json.obj("message" -> t))
     }
   }
 
