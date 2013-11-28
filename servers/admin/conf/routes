@@ -30,7 +30,6 @@ POST    /apps                          controllers.Application.createApp
 DELETE  /apps/:id                      controllers.Application.removeApp(id: Int)
 #PUT    /apps/:id                      controllers.Application.updateApp(id: Int)
 GET     /apps/:id/details              controllers.Application.getAppDetails(id: Int)
-GET     /apps/:id/engines              controllers.Application.getAppEnginelist(id: Int)
 POST    /apps/:id/erase_data           controllers.Application.eraseAppData(id: Int)
 
 # System Level
@@ -39,6 +38,7 @@ GET     /engineinfos/:id/algoinfos     controllers.Application.getEngineInfoAlgo
 GET     /engineinfos/:id/metricinfos   controllers.Application.getEngineInfoMetricsTypeList(id: String)
 
 # An Engine of an App
+GET     /apps/:appid/engines          controllers.Application.getAppEnginelist(appid: Int)
 GET     /apps/:appid/engines/:id      controllers.Application.getEngine(appid: Int, id: Int)
 POST    /apps/:appid/engines          controllers.Application.createEngine(appid: Int)
 DELETE  /apps/:appid/engines/:id      controllers.Application.removeEngine(appid: Int, id: Int)

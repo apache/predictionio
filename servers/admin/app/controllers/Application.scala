@@ -281,8 +281,8 @@ object Application extends Controller {
     val userApps = apps.getByUserid(user.id)
     if (!userApps.hasNext) NoContent
     else {
-      Ok(toJson(userApps.map { app =>
-        Map("id" -> app.id.toString, "appname" -> app.display)
+      Ok(JsArray(userApps.map { app =>
+        Json.obj("id" -> app.id, "appname" -> app.display)
       }.toSeq))
     }
   }
@@ -325,58 +325,15 @@ object Application extends Controller {
     val numUsers = appDataUsers.countByAppid(app.id)
     val numItems = appDataItems.countByAppid(app.id)
     val numU2IActions = appDataU2IActions.countByAppid(app.id)
-    Ok(toJson(Map(
-      "id" -> toJson(app.id), // app id
-      "updatedtime" -> toJson(timeFormat.print(DateTime.now.withZone(DateTimeZone.forID("UTC")))),
-      "userscount" -> toJson(numUsers),
-      "itemscount" -> toJson(numItems),
-      "u2icount" -> toJson(numU2IActions),
-      "apiurl" -> toJson("http://yourhost.com:123/appid12"),
-      "appkey" -> toJson(app.appkey))))
-  }
-
-  /** Returns list of engines of this appid
-    *
-    * {{{
-    * GET
-    * JSON parameters:
-    *   None
-    * JSON response:
-    *   If not authenticated:
-    *   Forbidden
-    *   {
-    *     "message" : "Haven't signed in yet."
-    *   }
-    *
-    *   If no engine:
-    *   NoContent
-    *
-    *   If engines found:
-    *   Ok
-    *   {
-    *     "id" : <appid int>,
-    *     "enginelist" : [ { "id" : <engineid int>, "enginename" : <string>, "engineinfoid" : <string> },
-    *                       ....,
-    *                      { "id" : <engineid int>, "enginename" : <string>, "engineinfoid" : <string> } ]
-    *
-    *   }
-    * }}}
-    *
-    * @param id the App ID
-    */
-  def getAppEnginelist(id: Int) = withApp(id) { (user, app) => implicit request =>
-
-    val appEngines = engines.getByAppid(id)
-
-    if (!appEngines.hasNext) NoContent
-    else
-      Ok(toJson(Map(
-        "id" -> toJson(id),
-        "enginelist" -> toJson((appEngines map { eng =>
-          Map("id" -> eng.id.toString, "enginename" -> eng.name,"engineinfoid" -> eng.infoid)
-        }).toSeq)
-      )))
-
+    Ok(Json.obj(
+      "id" -> app.id,
+      "updatedtime" -> timeFormat.print(DateTime.now.withZone(DateTimeZone.forID("UTC"))),
+      "userscount" -> numUsers,
+      "itemscount" -> numItems,
+      "u2icount" -> numU2IActions,
+      "apiurl" -> "http://yourhost.com:123/appid12",
+      "appkey" -> app.appkey
+    ))
   }
 
   /** Returns an app
@@ -404,9 +361,10 @@ object Application extends Controller {
     * @param id the App ID
     */
   def getApp(id: Int) = withApp(id) { (user, app) => implicit request =>
-    Ok(toJson(Map(
-      "id" -> app.id.toString, // app id
-      "appname" -> app.display)))
+    Ok(Json.obj(
+      "id" -> app.id,
+      "appname" -> app.display
+    ))
   }
 
   /** Create an app
@@ -441,14 +399,18 @@ object Application extends Controller {
     */
   def createApp = withUser { user => implicit request =>
 
-    val bad = BadRequest(toJson(Map("message" -> toJson("Invalid character for app name."))))
+    val appForm = Form(single(
+      "appname" -> nonEmptyText
+    ))
 
-    request.body.asJson map { js =>
-      val appName = (js \ "appname").asOpt[String]
-      appName map { an =>
-        if (an == "") bad
-        else {
-          val appid = apps.insert(App(
+    appForm.bindFromRequest.fold(
+      formWithError => {
+        val msg = formWithError.errors(0).message // extract 1st error message only
+        BadRequest(toJson(Map("message" -> toJson(msg)))) 
+      },
+      formData => {
+        val an = formData
+        val appid = apps.insert(App(
             id = 0,
             userid = user.id,
             appkey = randomAlphanumeric(64),
@@ -458,15 +420,14 @@ object Application extends Controller {
             desc = None,
             timezone = "UTC"
           ))
-          Logger.info("Create app ID " + appid)
+        Logger.info("Create app ID " + appid)
 
-          Ok(toJson(Map(
-            "id" -> appid.toString,
-            "appname" -> an
-          )))
-        }
-      } getOrElse bad
-    } getOrElse bad
+        Ok(Json.obj(
+          "id" -> appid,
+          "appname" -> an
+        ))
+      }
+    )
   }
 
   /** Remove an app
@@ -709,6 +670,50 @@ object Application extends Controller {
     } getOrElse {
       InternalServerError(Json.obj("message" -> s"Invalid engineinfo ID: ${id}."))
     }
+  }
+
+  /** Returns list of engines of this appid
+    *
+    * {{{
+    * GET
+    * JSON parameters:
+    *   None
+    * JSON response:
+    *   If not authenticated:
+    *   Forbidden
+    *   {
+    *     "message" : "Haven't signed in yet."
+    *   }
+    *
+    *   If no engine:
+    *   NoContent
+    *
+    *   If engines found:
+    *   Ok
+    *   {
+    *     "id" : <appid int>,
+    *     "enginelist" : [ { "id" : <engineid int>, "enginename" : <string>, "engineinfoid" : <string> },
+    *                       ....,
+    *                      { "id" : <engineid int>, "enginename" : <string>, "engineinfoid" : <string> } ]
+    *
+    *   }
+    * }}}
+    *
+    * @param id the App ID
+    */
+  def getAppEnginelist(appid: Int) = withApp(appid) { (user, app) => implicit request =>
+
+    val appEngines = engines.getByAppid(appid)
+
+    if (!appEngines.hasNext) NoContent
+    else
+      Ok(toJson(Map(
+        "id" -> toJson(appid),
+        "enginelist" -> toJson((appEngines map { eng =>
+          Map("id" -> eng.id.toString, "enginename" -> eng.name,"engineinfoid" -> eng.infoid)
+        }).toSeq)
+      )))
+
   }
 
   /** Returns a list of available metric infos of a specific engine info
