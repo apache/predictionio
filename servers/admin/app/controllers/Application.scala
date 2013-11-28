@@ -15,7 +15,7 @@ import play.api.data.validation.{Constraints}
 import play.api.i18n.{Messages, Lang}
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json.toJson
-import play.api.libs.json.{JsNull, JsArray, Json}
+import play.api.libs.json.{JsNull, JsArray, Json, JsValue, Writes}
 import play.api.libs.ws.WS
 import play.api.Play.current
 import play.api.http
@@ -157,6 +157,17 @@ object Application extends Controller {
     Redirect("web/")
   }
 
+  /* case class to json conversion */
+  implicit val userWrites = new Writes[User] {
+    /* note: do not return password */
+    def writes(u: User): JsValue = {
+      Json.obj(
+        "id" -> u.id,
+        "username" -> (u.firstName + u.lastName.map(" "+_).getOrElse("")),
+        "email" -> u.email
+      )
+    }
+  }
 
   /** Authenticates user
     *
@@ -170,6 +181,7 @@ object Application extends Controller {
     *   }
     * JSON response:
     *   {
+    *     "id" : <string>,
     *     "username" : <string>,
     *     "email" : <string>
     *   }
@@ -190,11 +202,11 @@ object Application extends Controller {
     loginForm.bindFromRequest.fold(
       formWithErrors => Forbidden(toJson(Map("message" -> toJson("Incorrect Email or Password.")))),
       form => {
-        val user = users.getByEmail(form._1).get
-        Ok(toJson(Map(
-          "username" -> "%s %s".format(user.firstName, user.lastName.getOrElse("")),
-          "email" -> user.email
-        ))).withSession(Security.username -> user.email)
+        users.getByEmail(form._1).map ( user => 
+          Ok(Json.toJson(user)).withSession(Security.username -> user.email)
+        ).getOrElse(
+          InternalServerError(Json.obj("message" -> "Could not find your user account."))
+        )
       }
     )
   }
@@ -237,12 +249,7 @@ object Application extends Controller {
     * }}}
     */
   def getAuth = withUser { user => implicit request =>
-    
-    Ok(toJson(Map(
-      "id" -> user.id.toString,
-      "username" -> (user.firstName + user.lastName.map(" "+_).getOrElse("")),
-      "email" -> user.email
-    )))
+    Ok(Json.toJson(user))
   }
 
   /** Returns list of apps of the authenticated user
