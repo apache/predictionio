@@ -664,8 +664,8 @@ object Application extends Controller {
     *     "algotypelist" : [ { "id" : <algo info id>, 
     *                          "algoinfoname" : <name of the algo info>, 
     *                          "description" : <string>,
-    *                          "req" : <technology requirement string>,
-    *                          "datareq" : <data requirement string>
+    *                          "req" : [<technology requirement string>],
+    *                          "datareq" : [<data requirement string>]
     *                        }, ... 
     *                      ] 
     *   }
@@ -675,24 +675,21 @@ object Application extends Controller {
     */
   def getEngineInfoAlgoList(id: String) = Action {
     engineInfos.get(id) map { engineInfo =>
-      Ok(toJson(
-        Map(
-          "engineinfoname" -> toJson(engineInfo.name),
-          "algotypelist" -> toJson(
-            (algoInfos.getByEngineInfoId(id) map { algoInfo =>
-              Map(
-                "id" -> toJson(algoInfo.id),
-                "algoinfoname" -> toJson(algoInfo.name),
-                "description" -> toJson(algoInfo.description.getOrElse("")),
-                "req" -> toJson(algoInfo.techreq),
-                "datareq" -> toJson(algoInfo.datareq)
-                )
-
-            }).toSeq )
-           )
-
-       ))
-    } getOrElse InternalServerError(Json.obj("message" -> "Invalid EngineInfo ID."))
+      Ok(Json.obj(
+        "engineinfoname" -> engineInfo.name,
+        "algotypelist" -> JsArray(
+          algoInfos.getByEngineInfoId(id).map { algoInfo =>
+            Json.obj(
+              "id" -> algoInfo.id,
+              "algoinfoname" -> algoInfo.name,
+              "description" -> algoInfo.description.getOrElse[String](""),
+              "req" -> Json.toJson(algoInfo.techreq),
+              "datareq" -> Json.toJson(algoInfo.datareq)
+            )
+          }
+        )
+      ))
+    } getOrElse InternalServerError(Json.obj("message" -> "Invalid EngineInfo ID: ${id}."))
   }
 
   /** Returns a list of available metric infos of a specific engine info
@@ -724,7 +721,7 @@ object Application extends Controller {
     */
   def getEngineInfoMetricsTypeList(id: String) = Action {    
     engineInfos.get(id) map { engInfo =>
-      val metrics = offlineEvalMetricInfos.getByEngineinfoid(engInfo.id) map { m =>
+      val metrics = offlineEvalMetricInfos.getByEngineinfoid(engInfo.id).map { m =>
         Json.obj(
           "id" -> m.id,
           "metricsname" -> m.name,

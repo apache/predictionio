@@ -12,15 +12,18 @@ import org.apache.commons.codec.digest.DigestUtils
 import com.mongodb.casbah.Imports._
 
 import io.prediction.commons.Config
-import io.prediction.commons.settings.{Users, Apps}
-import io.prediction.commons.settings.{App}
+import io.prediction.commons.settings.{App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, Param}
 
 class AdminServerSpec extends Specification with JsonMatchers {
   private def md5password(password: String) = DigestUtils.md5Hex(password)
 
   val config = new Config
-  val users: Users = config.getSettingsUsers()
-  val apps: Apps = config.getSettingsApps()
+  val users = config.getSettingsUsers()
+  val apps = config.getSettingsApps()
+  val engineInfos = config.getSettingsEngineInfos()
+  val algoInfos = config.getSettingsAlgoInfos()
+  val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
+  
 
   /* create test user account */
   val testUserid = users.insert(
@@ -202,7 +205,106 @@ class AdminServerSpec extends Specification with JsonMatchers {
       new Pending("TODO")
     }
   }
-  
+
+  "GET /engineinfos" should {
+
+    val itemrecEngine = EngineInfo(
+      id = "itemrec",
+      name = "Item Recommendation Engine",
+      description = Some("Description 1"),
+      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = "double")),
+      defaultalgoinfoid = "cf-algo"
+    )
+
+    engineInfos.insert(itemrecEngine)
+
+    val knnAlgo = AlgoInfo(
+      id = "knn",
+      name = "kNN Item Based Collaborative Filtering",
+      description = Some("This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items."),
+      batchcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$")),
+      offlineevalcommands = Some(Seq(
+        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
+        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
+      params = Map(),
+      paramorder = Seq(
+        "measureParam",
+        "priorCountParam",
+        "priorCorrelParam",
+        "minNumRatersParam",
+        "maxNumRatersParam",
+        "minIntersectionParam",
+        "minNumRatedSimParam",
+        "viewParam",
+        "likeParam",
+        "dislikeParam",
+        "conversionParam",
+        "conflictParam"),
+      engineinfoid = "itemrec",
+      techreq = Seq("Hadoop"),
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
+
+    algoInfos.insert(knnAlgo)
+
+    val mapMetric = OfflineEvalMetricInfo(
+      id = "map",
+      name = "Mean Average Precision A",
+      description = Some("metric description"),
+      engineinfoids = Seq("itemrec"),
+      commands = Some(Seq(
+        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
+        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
+      paramdefaults = Map("k" -> 20),
+      paramnames = Map("k" -> "k"),
+      paramdescription = Map("k" -> "Averaging window size"),
+      paramorder = Seq("k"))
+
+    offlineEvalMetricInfos.insert(mapMetric)
+
+    "return all engine infos" in new WithServer {
+      val r = HelperAwait(wsUrl(s"/engineinfos").get())
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(JsArray(Seq(Json.obj("id" -> "itemrec", "engineinfoname" -> "Item Recommendation Engine", "description" -> "Description 1")))))
+    }
+
+    "return all algo infos of a engineinfoid" in new WithServer {
+      val r = HelperAwait(wsUrl(s"/engineinfos/itemrec/algoinfos").get())
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(Json.obj(
+          "engineinfoname" -> "Item Recommendation Engine",
+          "algotypelist" -> JsArray(Seq(Json.obj(
+              "id" -> "knn",
+              "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+              "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
+              "req" -> Json.toJson(Seq("Hadoop")),
+              "datareq" -> Json.toJson(Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
+            )))
+          )))
+    }
+
+    "return all metric infos of a engineinfoid" in new WithServer {
+      val r = HelperAwait(wsUrl(s"/engineinfos/itemrec/metricinfos").get())
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(Json.obj(
+          "engineinfoname" -> "Item Recommendation Engine",
+          "metricslist" -> JsArray(Seq(Json.obj(
+              "id" -> "map",
+              "metricsname" -> "Mean Average Precision A",
+              "metricslongname" -> "metric description",
+              "settingfields" -> Json.obj("k" -> "int")
+            )))
+          )))
+    }
+  }
+
 
   step {
     MongoConnection()(config.settingsDbName).dropDatabase()
