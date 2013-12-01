@@ -12,7 +12,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import com.mongodb.casbah.Imports._
 
 import io.prediction.commons.Config
-import io.prediction.commons.settings.{App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, Param}
+import io.prediction.commons.settings.{App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, Param, ParamDoubleConstraint, ParamUI}
 
 class AdminServerSpec extends Specification with JsonMatchers {
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -23,7 +23,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
   val engineInfos = config.getSettingsEngineInfos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
-  
+
 
   /* create test user account */
   val testUserid = users.insert(
@@ -115,7 +115,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
   }
 
   "GET /apps" should {
-    
+
     val testApp = App(
       id = 0,
       userid = testUserid,
@@ -128,7 +128,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     )
 
     val testApp2 = testApp.copy(
-      userid = 12345 // other userid  
+      userid = 12345 // other userid
     )
 
     val testApp3 = testApp.copy(display = "Get App Name 3")
@@ -189,7 +189,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
         (r.body must /("itemscount" -> 0)) and
         (r.body must /("u2icount" -> 0)) and
         (r.body must /("apiurl" -> """.*""".r)) and
-        (r.body must /("appkey" -> "appkeystring")) 
+        (r.body must /("appkey" -> "appkeystring"))
     }
 
   }
@@ -212,7 +212,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Description 1"),
-      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = "double")),
+      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI())),
       defaultalgoinfoid = "cf-algo"
     )
 
@@ -244,6 +244,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "dislikeParam",
         "conversionParam",
         "conflictParam"),
+      paramsections = Seq(),
       engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))

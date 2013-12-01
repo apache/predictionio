@@ -31,7 +31,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Recommend interesting items to each user personally."),
-      defaultsettings = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = "integer")),
+      defaultsettings = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
       defaultalgoinfoid = "mahout-itembased")
     engineInfos.insert(itemrec)
     engineInfos.get("itemrec") must beSome(itemrec)
@@ -67,7 +67,7 @@ class EngineInfosSpec extends Specification { def is =
       id = "baz",
       name = "beef",
       description = Some("dead"),
-      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = "double")),
+      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
       defaultalgoinfoid = "bar")
     engineInfos.insert(baz)
     val fos = new java.io.FileOutputStream("engineinfos.bin")

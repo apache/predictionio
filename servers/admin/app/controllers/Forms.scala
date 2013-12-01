@@ -30,16 +30,16 @@ object Forms {
 
       data.get(infotypeKey) map { infotype =>
         data.get(key) map { id =>
-          val params = infotype match {
+          val infoParams = infotype match {
             case "algo"   => Some(Application.algoInfos.get(id) map { _.params })
             case "engine" => Some(Application.engineInfos.get(id) map { _.defaultsettings })
             case _        => None
           }
 
-          params map { someParams =>
+          infoParams map { someParams =>
             someParams map { params =>
               val allErrorsOrItems: Seq[Either[Seq[FormError], Map[String, Any]]] = params.toSeq map { param =>
-                param._2.constraint match {
+                param._2.constraint.paramtype match {
                   case "integer" => scoped(data.get(scopeKey), param._2.scopes, Formats.intFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
                   case "boolean" => scoped(data.get(scopeKey), param._2.scopes, Formats.booleanFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
                   case "string" =>  scoped(data.get(scopeKey), param._2.scopes, Formats.stringFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))

@@ -17,6 +17,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
       batchcommands       = dbObj.getAs[MongoDBList]("batchcommands") map { MongoUtils.mongoDbListToListOfString(_) },
       offlineevalcommands = dbObj.getAs[MongoDBList]("offlineevalcommands") map { MongoUtils.mongoDbListToListOfString(_) },
       params              = (dbObj.as[DBObject]("params") map { p => (p._1, MongoParam.dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
+      paramsections       = dbObj.as[Seq[DBObject]]("paramsections") map { MongoParam.dbObjToParamSection(_) },
       paramorder          = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("paramorder")),
       engineinfoid        = dbObj.as[String]("engineinfoid"),
       techreq             = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("techreq")),
@@ -29,6 +30,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
       "_id"              -> algoInfo.id,
       "name"             -> algoInfo.name,
       "params"           -> (algoInfo.params mapValues { MongoParam.paramToDBObj(_) }),
+      "paramsections"    -> (algoInfo.paramsections map { MongoParam.paramSectionToDBObj(_) }),
       "paramorder"       -> algoInfo.paramorder,
       "engineinfoid"     -> algoInfo.engineinfoid,
       "techreq"          -> algoInfo.techreq,
@@ -53,6 +55,7 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
     val requiredObj = MongoDBObject(
       "name"             -> algoInfo.name,
       "params"           -> (algoInfo.params mapValues { MongoParam.paramToDBObj(_) }),
+      "paramsections"    -> (algoInfo.paramsections map { MongoParam.paramSectionToDBObj(_) }),
       "paramorder"       -> algoInfo.paramorder,
       "engineinfoid"     -> algoInfo.engineinfoid,
       "techreq"          -> algoInfo.techreq,

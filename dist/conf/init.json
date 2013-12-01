@@ -44,32 +44,93 @@
                 "serendipity": {
                     "name": "Serendipity",
                     "description": "Preference for surprising discovery",
-                    "constraint": "integer",
-                    "defaultvalue": 0
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 0,
+                    "ui": {
+                        "uitype": "text"
+                    }
                 },
                 "freshness": {
                     "name": "Freshness",
                     "description": "Preference for newer items",
-                    "constraint": "integer",
-                    "defaultvalue": 0
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 0,
+                    "ui": {
+                        "uitype": "text"
+                    }
                 },
                 "unseenonly": {
                     "name": "Unseen Items Only",
                     "description": "",
-                    "constraint": "boolean",
-                    "defaultvalue": false
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "defaultvalue": false,
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Recommend Unseen Only",
+                                "value": "true"
+                            },
+                            {
+                                "name": "Recommend Any Items",
+                                "value": "false"
+                            }
+                        ]
+                    }
                 },
                 "goal": {
                     "name": "Recommendation Goal",
                     "description": "Goal to be maximized",
-                    "constraint": "string",
-                    "defaultvalue": "rate3"
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "defaultvalue": "rate3",
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "rate = 5",
+                                "value": "rate5"
+                            },
+                            {
+                                "name": "rate >= 4",
+                                "value": "rate4"
+                            },
+                            {
+                                "name": "rate >= 3",
+                                "value": "rate3"
+                            },
+                            {
+                                "name": "like",
+                                "value": "like"
+                            },
+                            {
+                                "name": "buy",
+                                "value": "buy"
+                            },
+                            {
+                                "name": "view",
+                                "value": "view"
+                            }
+                        ]
+                    }
                 },
                 "numRecommendations": {
                     "name": "Number of Recommendations",
                     "description": "Number of recommendations to be generated for each user",
-                    "constraint": "integer",
-                    "defaultvalue": 500
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 500,
+                    "ui": {
+                        "uitype": "text"
+                    }
                 }
             }
         },
@@ -81,26 +142,93 @@
                 "serendipity": {
                     "name": "Serendipity",
                     "description": "Preference for surprising discovery",
-                    "constraint": "integer",
-                    "defaultvalue": 0
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 0,
+                    "ui": {
+                        "uitype": "text"
+                    }
                 },
                 "freshness": {
                     "name": "Freshness",
                     "description": "Preference for newer items",
-                    "constraint": "integer",
-                    "defaultvalue": 0
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 0,
+                    "ui": {
+                        "uitype": "text"
+                    }
+                },
+                "unseenonly": {
+                    "name": "Unseen Items Only",
+                    "description": "",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "defaultvalue": false,
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Recommend Unseen Only",
+                                "value": "true"
+                            },
+                            {
+                                "name": "Recommend Any Items",
+                                "value": "false"
+                            }
+                        ]
+                    }
                 },
                 "goal": {
                     "name": "Recommendation Goal",
                     "description": "Goal to be maximized",
-                    "constraint": "string",
-                    "defaultvalue": "rate3"
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "defaultvalue": "rate3",
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "rate = 5",
+                                "value": "rate5"
+                            },
+                            {
+                                "name": "rate >= 4",
+                                "value": "rate4"
+                            },
+                            {
+                                "name": "rate >= 3",
+                                "value": "rate3"
+                            },
+                            {
+                                "name": "like",
+                                "value": "like"
+                            },
+                            {
+                                "name": "buy",
+                                "value": "buy"
+                            },
+                            {
+                                "name": "view",
+                                "value": "view"
+                            }
+                        ]
+                    }
                 },
-                "numSimilarItems": {
-                    "name": "Number of Similar Items",
-                    "description": "Number of similar items to be generated for each item",
-                    "constraint": "integer",
-                    "defaultvalue": 500
+                "numRecommendations": {
+                    "name": "Number of Recommendations",
+                    "description": "Number of recommendations to be generated for each user",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 500,
+                    "ui": {
+                        "uitype": "text"
+                    }
                 }
             }
         }
@@ -123,7 +251,8 @@
             "datareq": [
                 "Users and Items."
             ],
-            "params": {}
+            "params": {},
+            "paramsections": []
         },
         "pdio-latestrank": {
             "name": "Latest Rank",
@@ -142,7 +271,8 @@
             "datareq": [
                 "Users and Items with starttime."
             ],
-            "params": {}
+            "params": {},
+            "paramsections": []
         },
         "pdio-knnitembased": {
             "name": "kNN Item Based Collaborative Filtering",
@@ -182,142 +312,294 @@
                 "measureParam": {
                     "name": "Distance Function",
                     "description": "",
-                    "constraint": "string",
-                    "defaultvalue": "correl"
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "defaultvalue": "correl",
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Pearson Correlation Similarity",
+                                "value": "correl"
+                            },
+                            {
+                                "name": "Cosine Similarity",
+                                "value": "cosine"
+                            },
+                            {
+                                "name": "Jaccard Similarity",
+                                "value": "jaccard"
+                            }
+                        ]
+                    }
                 },
                 "priorCountParam": {
                     "name": "Virtual Count",
                     "description": "Suggested range: 0 to 100.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 20
                 },
                 "priorCorrelParam": {
                     "name": "Prior Correlation",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0
                 },
                 "minNumRatersParam": {
                     "name": "Minimum Number of Raters",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "maxNumRatersParam": {
                     "name": "Maximum Number of Raters",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10000
                 },
                 "minIntersectionParam": {
                     "name": "Minimum Intersection",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minNumRatedSimParam": {
                     "name": "Minimum Number of Rated Similar Items",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "priorCountParamMin": {
                     "name": "priorCountParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "priorCountParamMax": {
                     "name": "priorCountParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 30
                 },
                 "minNumRatersParamMin": {
                     "name": "minNumRatersParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minNumRatersParamMax": {
                     "name": "minNumRatersParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "maxNumRatersParamMin": {
                     "name": "maxNumRatersParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10000
                 },
                 "maxNumRatersParamMax": {
                     "name": "maxNumRatersParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10000
                 },
                 "minIntersectionParamMin": {
                     "name": "minIntersectionParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minIntersectionParamMax": {
                     "name": "minIntersectionParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "minNumRatedSimParamMin": {
                     "name": "minNumRatedSimParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minNumRatedSimParamMax": {
                     "name": "minNumRatedSimParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "priorCorrelParamMin": {
                     "name": "priorCorrelParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0
                 },
                 "priorCorrelParamMax": {
                     "name": "priorCorrelParamMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 }
-            }
+            },
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "subsections": [
+                        {
+                            "name": "Item Similarity Measurement",
+                            "params": [
+                                "measureParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-itembased": {
             "name": "Mahout's Threshold Item Based Collaborative Filtering",
@@ -363,132 +645,248 @@
                 "booleanData": {
                     "name": "Boolean Data",
                     "description": "Treat input data as having no preference values.",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "maxPrefsPerUser": {
                     "name": "Max Num of Preferences per User",
                     "description": "Maximum number of preferences considered per user in final recommendation phase.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "minPrefsPerUser": {
                     "name": "Min Num of Preferences per User",
                     "description": "Ignore users with less preferences than this.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "maxSimilaritiesPerItem": {
                     "name": "Max Num of Similarities per Item",
                     "description": "Maximum number of similarities considered per item.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 100
                 },
                 "maxPrefsPerUserInItemSimilarity": {
                     "name": "Max Num of Preferences per User in Item Similarity",
                     "description": "Max number of preferences to consider per user in the item similarity computation phase, users with more preferences will be sampled down.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1000
                 },
                 "similarityClassname": {
                     "name": "Distance Function",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "SIMILARITY_COOCCURRENCE"
                 },
                 "threshold": {
                     "name": "Threshold",
                     "description": "Discard item pairs with a similarity value below this.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "thresholdMin": {
                     "name": "thresholdMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "thresholdMax": {
                     "name": "thresholdMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.15
                 },
                 "maxPrefsPerUserMin": {
                     "name": "maxPrefsPerUserMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "maxPrefsPerUserMax": {
                     "name": "maxPrefsPerUserMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 50
                 },
                 "minPrefsPerUserMin": {
                     "name": "minPrefsPerUserMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minPrefsPerUserMax": {
                     "name": "minPrefsPerUserMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "maxSimilaritiesPerItemMin": {
                     "name": "maxSimilaritiesPerItemMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 50
                 },
                 "maxSimilaritiesPerItemMax": {
                     "name": "maxSimilaritiesPerItemMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 150
                 },
                 "maxPrefsPerUserInItemSimilarityMin": {
                     "name": "maxPrefsPerUserInItemSimilarityMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 500
                 },
                 "maxPrefsPerUserInItemSimilarityMax": {
                     "name": "maxPrefsPerUserInItemSimilarityMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1500
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-parallelals": {
             "name": "Mahout's Parallel ALS-WR",
@@ -534,110 +932,206 @@
                 "lambda": {
                     "name": "Lambda",
                     "description": "Regularization param to avoid overfitting.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.03
                 },
                 "implicitFeedback": {
                     "name": "Implicit Feedback",
                     "description": "Whether data consists of implicit data.",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "alpha": {
                     "name": "Alpha",
                     "description": "Confidence param will be ignored if Implicit Feedback is false.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 40
                 },
                 "numFeatures": {
                     "name": "Num of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "numIterations": {
                     "name": "Number of Iterations",
                     "description": "Number of training iteration.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "lambdaMin": {
                     "name": "lambdaMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "lambdaMax": {
                     "name": "lambdaMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 },
                 "alphaMin": {
                     "name": "alphaMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "alphaMax": {
                     "name": "alphaMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 50
                 },
                 "numFeaturesMin": {
                     "name": "numFeaturesMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 2
                 },
                 "numFeaturesMax": {
                     "name": "numFeaturesMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "numIterationsMin": {
                     "name": "numIterationsMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "numIterationsMax": {
                     "name": "numIterationsMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 20
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-knnuserbased": {
             "name": "Mahout's kNN User Based Collaborative Filtering (Non-distributed)",
@@ -678,106 +1172,197 @@
                 "booleanData": {
                     "name": "Boolean Data",
                     "description": "Treat input data as having no preference values.",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "nearestN": {
                     "name": "Nearest K",
                     "description": "K-nearest neighbors to a given user.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "userSimilarity": {
                     "name": "User Similarity",
                     "description": "User Similarity Measure.",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "PearsonCorrelationSimilarity"
                 },
                 "weighted": {
                     "name": "Weighted",
                     "description": "The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine user similarity).",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "minSimilarity": {
                     "name": "Minimal Similarity",
                     "description": "Minimal similarity required for neighbors.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "samplingRate": {
                     "name": "Sampling Rate",
                     "description": "Must be greater > 0 and <= 1. Percentage of users to consider when building neighborhood. Decrease to trade quality for performance.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "nearestNMin": {
                     "name": "nearestNMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "nearestNMax": {
                     "name": "nearestNMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 15
                 },
                 "minSimilarityMin": {
                     "name": "minSimilarityMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "minSimilarityMax": {
                     "name": "minSimilarityMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.2
                 },
                 "samplingRateMin": {
                     "name": "samplingRateMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.5
                 },
                 "samplingRateMax": {
                     "name": "samplingRateMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-thresholduserbased": {
             "name": "Mahout's Threshold User Based Collaborative Filtering (Non-distributed)",
@@ -817,90 +1402,166 @@
                 "booleanData": {
                     "name": "Boolean Data",
                     "description": "Treat input data as having no preference values.",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "threshold": {
                     "name": "Threshold",
                     "description": "Similarity threshold.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "userSimilarity": {
                     "name": "User Similarity",
                     "description": "User Similarity Measure.",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "PearsonCorrelationSimilarity"
                 },
                 "weighted": {
                     "name": "Weighted",
                     "description": "The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine user similarity).",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "samplingRate": {
                     "name": "Sampling Rate",
                     "description": "Must be greater > 0 and <= 1. Percentage of users to consider when building neighborhood. Decrease to trade quality for performance.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "thresholdMin": {
                     "name": "thresholdMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "thresholdMax": {
                     "name": "thresholdMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.2
                 },
                 "samplingRateMin": {
                     "name": "samplingRateMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.5
                 },
                 "samplingRateMax": {
                     "name": "samplingRateMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-slopeone": {
             "name": "Mahout's SlopeOne Rating Based Collaborative Filtering (Non-distributed)",
@@ -936,46 +1597,82 @@
                 "weighting": {
                     "name": "Weighting",
                     "description": "Weighted preference difference.",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "Standard_Deviation"
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-alswr": {
             "name": "Mahout's ALS-WR (Non-distributed)",
@@ -1013,88 +1710,164 @@
                 "numFeatures": {
                     "name": "Num of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "lambda": {
                     "name": "Lambda",
                     "description": "Regularization param to avoid overfitting.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.03
                 },
                 "numIterations": {
                     "name": "Number of Iterations",
                     "description": "Number of training iteration.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "numFeaturesMin": {
                     "name": "numFeaturesMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 2
                 },
                 "numFeaturesMax": {
                     "name": "numFeaturesMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "lambdaMin": {
                     "name": "lambdaMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "lambdaMax": {
                     "name": "lambdaMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 },
                 "numIterationsMin": {
                     "name": "numIterationsMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "numIterationsMax": {
                     "name": "numIterationsMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 20
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-svdsgd": {
             "name": "Mahout's SVD-RatingSGD Recommender (Non-distributed)",
@@ -1135,136 +1908,257 @@
                 "numFeatures": {
                     "name": "Num of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "learningRate": {
                     "name": "Learning Rate",
                     "description": "Learning rate (step size).",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "preventOverfitting": {
                     "name": "Prevent Overfitting",
                     "description": "Parameter used to prevent overfitting.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 },
                 "randomNoise": {
                     "name": "Random Noise",
                     "description": "Standard deviation for random initialization of feature.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "numIterations": {
                     "name": "Number of Iterations",
                     "description": "Number of training iteration.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "learningRateDecay": {
                     "name": "Learning Rate Decay",
                     "description": "Multiplicative decay factor for Learning Rate.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "numFeaturesMin": {
                     "name": "numFeaturesMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 2
                 },
                 "numFeaturesMax": {
                     "name": "numFeaturesMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "learningRateMin": {
                     "name": "learningRateMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "learningRateMax": {
                     "name": "learningRateMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.05
                 },
                 "preventOverfittingMin": {
                     "name": "preventOverfittingMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 },
                 "preventOverfittingMax": {
                     "name": "preventOverfittingMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.5
                 },
                 "randomNoiseMin": {
                     "name": "randomNoiseMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "randomNoiseMax": {
                     "name": "randomNoiseMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.05
                 },
                 "numIterationsMin": {
                     "name": "numIterationsMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "numIterationsMax": {
                     "name": "numIterationsMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "learningRateDecayMin": {
                     "name": "learningRateDecayMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "learningRateDecayMax": {
                     "name": "learningRateDecayMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-svdplusplus": {
             "name": "Mahout's SVDPlusPlus Recommender (Non-distributed)",
@@ -1305,136 +2199,257 @@
                 "numFeatures": {
                     "name": "Num of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "learningRate": {
                     "name": "Learning Rate",
                     "description": "Learning rate (step size).",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "preventOverfitting": {
                     "name": "Prevent Overfitting",
                     "description": "Parameter used to prevent overfitting.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 },
                 "randomNoise": {
                     "name": "Random Noise",
                     "description": "Standard deviation for random initialization of feature.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "numIterations": {
                     "name": "Number of Iterations",
                     "description": "Number of training iteration.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "learningRateDecay": {
                     "name": "Learning Rate Decay",
                     "description": "Multiplicative decay factor for Learning Rate.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "numFeaturesMin": {
                     "name": "numFeaturesMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 2
                 },
                 "numFeaturesMax": {
                     "name": "numFeaturesMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "learningRateMin": {
                     "name": "learningRateMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "learningRateMax": {
                     "name": "learningRateMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.05
                 },
                 "preventOverfittingMin": {
                     "name": "preventOverfittingMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 },
                 "preventOverfittingMax": {
                     "name": "preventOverfittingMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.5
                 },
                 "randomNoiseMin": {
                     "name": "randomNoiseMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.01
                 },
                 "randomNoiseMax": {
                     "name": "randomNoiseMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.05
                 },
                 "numIterationsMin": {
                     "name": "numIterationsMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "numIterationsMax": {
                     "name": "numIterationsMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "learningRateDecayMin": {
                     "name": "learningRateDecayMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "learningRateDecayMax": {
                     "name": "learningRateDecayMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 }
-            }
+            },
+            "paramsections": []
         },
         "pdio-itemsimrandomrank": {
             "name": "Random Rank",
@@ -1453,7 +2468,8 @@
             "datareq": [
                 "Items."
             ],
-            "params": {}
+            "params": {},
+            "paramsections": []
         },
         "pdio-itemsimlatestrank": {
             "name": "Latest Rank",
@@ -1472,7 +2488,8 @@
             "datareq": [
                 "Items with starttime."
             ],
-            "params": {}
+            "params": {},
+            "paramsections": []
         },
         "pdio-itemsimcf": {
             "name": "Item Simiarlity Collaborative Filtering",
@@ -1511,126 +2528,237 @@
                 "measureParam": {
                     "name": "Distance Function",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "correl"
                 },
                 "priorCountParam": {
                     "name": "Virtual Count",
                     "description": "Suggested range: 0 to 100.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 20
                 },
                 "priorCorrelParam": {
                     "name": "Prior Correlation",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0
                 },
                 "minNumRatersParam": {
                     "name": "Minimum Number of Raters",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "maxNumRatersParam": {
                     "name": "Maximum Number of Raters",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10000
                 },
                 "minIntersectionParam": {
                     "name": "Minimum Intersection",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "priorCountParamMin": {
                     "name": "priorCountParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10
                 },
                 "priorCountParamMax": {
                     "name": "priorCountParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 30
                 },
                 "minNumRatersParamMin": {
                     "name": "minNumRatersParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minNumRatersParamMax": {
                     "name": "minNumRatersParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "maxNumRatersParamMin": {
                     "name": "maxNumRatersParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10000
                 },
                 "maxNumRatersParamMax": {
                     "name": "maxNumRatersParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 10000
                 },
                 "minIntersectionParamMin": {
                     "name": "minIntersectionParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minIntersectionParamMax": {
                     "name": "minIntersectionParamMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "priorCorrelParamMin": {
                     "name": "priorCorrelParamMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0
                 },
                 "priorCorrelParamMax": {
                     "name": "priorCorrelParamMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.1
                 }
-            }
+            },
+            "paramsections": []
         },
         "mahout-itemsimcf": {
             "name": "Mahout's Item Similarity Collaborative Filtering",
@@ -1674,100 +2802,186 @@
                 "booleanData": {
                     "name": "Boolean Data",
                     "description": "Treat input data as having no preference values.",
-                    "constraint": "boolean",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": false
                 },
                 "maxPrefsPerUser": {
                     "name": "Max Num of Preferences per User",
                     "description": "Maximum number of preferences considered per user in final recommendation phase.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1000
                 },
                 "minPrefsPerUser": {
                     "name": "Min Num of Preferences per User",
                     "description": "Ignore users with less preferences than this.",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "similarityClassname": {
                     "name": "Distance Function",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "SIMILARITY_COOCCURRENCE"
                 },
                 "threshold": {
                     "name": "Threshold",
                     "description": "Discard item pairs with a similarity value below this.",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "viewParam": {
                     "name": "View Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "viewmoreParam": {
                     "name": "View More Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 3
                 },
                 "likeParam": {
                     "name": "Like Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
                     "name": "Buy Score",
                     "description": "",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 4
                 },
                 "conflictParam": {
                     "name": "Override",
                     "description": "",
-                    "constraint": "string",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": "latest"
                 },
                 "thresholdMin": {
                     "name": "thresholdMin",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5e-324
                 },
                 "thresholdMax": {
                     "name": "thresholdMax",
-                    "constraint": "double",
+                    "constraint": {
+                        "paramtype": "double"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 0.15
                 },
                 "maxPrefsPerUserMin": {
                     "name": "maxPrefsPerUserMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 500
                 },
                 "maxPrefsPerUserMax": {
                     "name": "maxPrefsPerUserMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1500
                 },
                 "minPrefsPerUserMin": {
                     "name": "minPrefsPerUserMin",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 1
                 },
                 "minPrefsPerUserMax": {
                     "name": "minPrefsPerUserMax",
-                    "constraint": "integer",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
                     "defaultvalue": 5
                 }
-            }
+            },
+            "paramsections": []
         }
     },
     "offlineevalsplitterinfos": {

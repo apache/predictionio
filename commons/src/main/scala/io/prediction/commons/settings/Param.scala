@@ -6,7 +6,8 @@ package io.prediction.commons.settings
   * @param name Parameter name.
   * @param description Parameter description.
   * @param defaultvalue Default value of the parameter.
-  * @param constraint Constraint of the parameter. Valid values are integer, double, string, boolean, and regular expression.
+  * @param constraint Constraint of the parameter.
+  * @param ui UI information of the parameter.
   * @param scopes Scopes where this parameter is required.
   */
 case class Param(
@@ -14,5 +15,38 @@ case class Param(
   name: String,
   description: Option[String],
   defaultvalue: Any,
-  constraint: String,
+  constraint: ParamConstraint,
+  ui: ParamUI,
   scopes: Option[Set[String]] = None)
+
+trait ParamConstraint {
+  def paramtype: String
+}
+
+case class ParamBooleanConstraint(paramtype: String = "boolean") extends ParamConstraint
+
+case class ParamDoubleConstraint(
+  paramtype: String = "double",
+  min: Option[Double] = None,
+  max: Option[Double] = None)
+  extends ParamConstraint
+
+case class ParamIntegerConstraint(
+  paramtype: String = "integer",
+  min: Option[Int] = None,
+  max: Option[Int] = None)
+  extends ParamConstraint
+
+case class ParamStringConstraint(paramtype: String = "string") extends ParamConstraint
+
+case class ParamUI(
+  uitype: String = "text",
+  selections: Option[Seq[ParamSelectionUI]] = None)
+
+case class ParamSelectionUI(value: String, name: String)
+
+case class ParamSection(
+  name: String,
+  description: Option[String] = None,
+  subsections: Option[Seq[ParamSection]] = None,
+  params: Option[Seq[String]] = None)

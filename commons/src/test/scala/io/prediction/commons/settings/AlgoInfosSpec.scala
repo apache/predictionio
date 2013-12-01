@@ -28,7 +28,7 @@ class AlgoInfosSpec extends Specification { def is =
   def newMongoAlgoInfos = new mongodb.MongoAlgoInfos(MongoConnection()(mongoDbName))
 
   def insertAndGet(algoinfos: AlgoInfos) = {
-    algoinfos.insert(AlgoInfo(
+    val ai = AlgoInfo(
       id = "pdio-knnitembased",
       name = "kNN Item Based Collaborative Filtering",
       description = Some("This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items."),
@@ -40,7 +40,36 @@ class AlgoInfosSpec extends Specification { def is =
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
-      params = Map(),
+      params = Map(
+        "foo" -> Param(
+          id = "foo",
+          name = "foo",
+          description = None,
+          defaultvalue = 0,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(10)),
+          ui = ParamUI(
+            uitype = "selection",
+            selections = Some(Seq(
+              ParamSelectionUI("0", "0"),
+              ParamSelectionUI("2", "2"),
+              ParamSelectionUI("4", "4"),
+              ParamSelectionUI("6", "6"),
+              ParamSelectionUI("8", "8"),
+              ParamSelectionUI("10", "10")))),
+          scopes = Some(Set("dead", "beef")))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          description = None,
+          subsections = None,
+          params = None),
+        ParamSection(
+          name = "bar",
+          description = Some("deadbeef"),
+          subsections = Some(Seq(
+            ParamSection("baz", None, None, None),
+            ParamSection("jack", None, None, None))),
+          params = Some(Seq("this", "that")))),
       paramorder = Seq(
         "measureParam",
         "priorCountParam",
@@ -56,8 +85,9 @@ class AlgoInfosSpec extends Specification { def is =
         "conflictParam"),
       engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
-      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate.")))
-    algoinfos.get("pdio-knnitembased").get.name must beEqualTo("kNN Item Based Collaborative Filtering")
+      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
+    algoinfos.insert(ai)
+    algoinfos.get(ai.id) must beSome(ai)
   }
 
   def getByEngineInfoId(algoinfos: AlgoInfos) = {
@@ -74,6 +104,7 @@ class AlgoInfosSpec extends Specification { def is =
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
       params = Map(),
+      paramsections = Seq(),
       paramorder = Seq(
         "measureParam",
         "priorCountParam",
@@ -103,6 +134,7 @@ class AlgoInfosSpec extends Specification { def is =
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
       params = Map(),
+      paramsections = Seq(),
       paramorder = Seq(
         "measureParam",
         "priorCountParam",
@@ -136,6 +168,7 @@ class AlgoInfosSpec extends Specification { def is =
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
       params = Map(),
+      paramsections = Seq(),
       paramorder = Seq(
         "measureParam",
         "priorCountParam",
@@ -173,6 +206,7 @@ class AlgoInfosSpec extends Specification { def is =
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
       params = Map(),
+      paramsections = Seq(),
       paramorder = Seq(
         "measureParam",
         "priorCountParam",
@@ -209,10 +243,33 @@ class AlgoInfosSpec extends Specification { def is =
       params = Map(
         "foo" -> Param(
           id = "foo",
-          name = "bar",
+          name = "foo",
           description = None,
-          defaultvalue = 123,
-          constraint = "baz")),
+          defaultvalue = 0,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(10)),
+          ui = ParamUI(
+            uitype = "selection",
+            selections = Some(Seq(
+              ParamSelectionUI("0", "0"),
+              ParamSelectionUI("2", "2"),
+              ParamSelectionUI("4", "4"),
+              ParamSelectionUI("6", "6"),
+              ParamSelectionUI("8", "8"),
+              ParamSelectionUI("10", "10")))),
+          scopes = Some(Set("dead", "beef")))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          description = None,
+          subsections = None,
+          params = None),
+        ParamSection(
+          name = "bar",
+          description = Some("deadbeef"),
+          subsections = Some(Seq(
+            ParamSection("baz", None, None, None),
+            ParamSection("jack", None, None, None))),
+          params = Some(Seq("this", "that")))),
       paramorder = Seq(
         "measureParam",
         "priorCountParam",
