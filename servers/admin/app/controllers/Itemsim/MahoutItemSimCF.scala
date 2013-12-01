@@ -16,13 +16,13 @@ import play.api.data.validation.ValidationError
 
 object MahoutItemSimCF extends GenericAlgoSetting {
 
-  case class Param (
+  case class Param(
     similarityClassname: String,
     threshold: Double,
     booleanData: Boolean,
     maxPrefsPerUser: Int, // min 1
     minPrefsPerUser: Int // min 1
-  )
+    )
 
   implicit val paramReads = (
     (JsPath \ "similarityClassname").read[String] and
@@ -39,7 +39,7 @@ object MahoutItemSimCF extends GenericAlgoSetting {
     maxPrefsPerUserMax: Int, // min 1
     minPrefsPerUserMin: Int, // min 1
     minPrefsPerUserMax: Int // min 1
-  )
+    )
 
   implicit val autoTuneParamReads = (
     (JsPath \ "thresholdMin").read[Double] and
@@ -52,12 +52,11 @@ object MahoutItemSimCF extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -74,6 +73,6 @@ object MahoutItemSimCF extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

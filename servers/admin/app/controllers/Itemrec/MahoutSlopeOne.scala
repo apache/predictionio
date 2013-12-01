@@ -15,13 +15,12 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object MahoutSlopeOne extends GenericAlgoSetting {
-  
+
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    actionParam: GenericActionParam,
-    weighting: String
-  ) extends AlgoData {
+      info: GenericInfo,
+      actionParam: GenericActionParam,
+      weighting: String) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(actionParam) ++ Map("weighting" -> weighting)
@@ -36,6 +35,6 @@ object MahoutSlopeOne extends GenericAlgoSetting {
     (JsPath \ "weighting").read[String]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

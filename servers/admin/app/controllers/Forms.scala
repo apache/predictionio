@@ -1,6 +1,6 @@
 package controllers
 
-import io.prediction.commons.settings.{AlgoInfo, AlgoInfos, EngineInfo, EngineInfos, Param}
+import io.prediction.commons.settings.{ AlgoInfo, AlgoInfos, EngineInfo, EngineInfos, Param }
 
 import play.api.data._
 import play.api.data.Forms._
@@ -16,7 +16,7 @@ object Forms {
   private def scoped(scope: Option[String], scopes: Option[Set[String]], result: Either[Seq[FormError], Map[String, Any]]): Either[Seq[FormError], Map[String, Any]] = {
     val resultOrEmpty = result match {
       case Right(s) => Right(s)
-      case Left(s)  => Right(Map[String, Any]())
+      case Left(s) => Right(Map[String, Any]())
     }
 
     (scope, scopes) match {
@@ -31,9 +31,9 @@ object Forms {
       data.get(infotypeKey) map { infotype =>
         data.get(key) map { id =>
           val infoParams = infotype match {
-            case "algo"   => Some(Application.algoInfos.get(id) map { _.params })
+            case "algo" => Some(Application.algoInfos.get(id) map { _.params })
             case "engine" => Some(Application.engineInfos.get(id) map { _.defaultsettings })
-            case _        => None
+            case _ => None
           }
 
           infoParams map { someParams =>
@@ -42,9 +42,9 @@ object Forms {
                 param._2.constraint.paramtype match {
                   case "integer" => scoped(data.get(scopeKey), param._2.scopes, Formats.intFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
                   case "boolean" => scoped(data.get(scopeKey), param._2.scopes, Formats.booleanFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
-                  case "string" =>  scoped(data.get(scopeKey), param._2.scopes, Formats.stringFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
-                  case "double" =>  scoped(data.get(scopeKey), param._2.scopes, Formats.doubleFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
-                  case _ =>         scoped(data.get(scopeKey), param._2.scopes, Left(Seq(FormError(param._1, "error.invalidconstraint", Nil))))
+                  case "string" => scoped(data.get(scopeKey), param._2.scopes, Formats.stringFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
+                  case "double" => scoped(data.get(scopeKey), param._2.scopes, Formats.doubleFormat.bind(param._1, data).right.map(d => Map[String, Any](param._1 -> d)))
+                  case _ => scoped(data.get(scopeKey), param._2.scopes, Left(Seq(FormError(param._1, "error.invalidconstraint", Nil))))
                 }
               }
               if (allErrorsOrItems.forall(_.isRight)) {

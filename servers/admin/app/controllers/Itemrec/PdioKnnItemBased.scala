@@ -15,7 +15,7 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object PdioKnnItemBased extends GenericAlgoSetting {
-  
+
   case class Param(
     measureParam: String,
     priorCountParam: Int,
@@ -23,8 +23,7 @@ object PdioKnnItemBased extends GenericAlgoSetting {
     minNumRatersParam: Int,
     maxNumRatersParam: Int,
     minIntersectionParam: Int,
-    minNumRatedSimParam: Int
-  )
+    minNumRatedSimParam: Int)
 
   implicit val paramReads = (
     (JsPath \ "measureParam").read[String] and
@@ -36,7 +35,7 @@ object PdioKnnItemBased extends GenericAlgoSetting {
     (JsPath \ "minNumRatedSimParam").read[Int](Reads.min(1))
   )(Param)
 
-  case class AutoTuneParam (
+  case class AutoTuneParam(
     priorCountParamMin: Int,
     priorCountParamMax: Int,
     priorCorrelParamMin: Double,
@@ -48,8 +47,7 @@ object PdioKnnItemBased extends GenericAlgoSetting {
     minIntersectionParamMin: Int,
     minIntersectionParamMax: Int,
     minNumRatedSimParamMin: Int,
-    minNumRatedSimParamMax: Int
-  )
+    minNumRatedSimParamMax: Int)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "priorCountParamMin").read[Int](Reads.min(0)) and
@@ -68,12 +66,11 @@ object PdioKnnItemBased extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -90,6 +87,6 @@ object PdioKnnItemBased extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

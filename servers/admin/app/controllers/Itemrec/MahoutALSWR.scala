@@ -15,12 +15,12 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object MahoutALSWR extends GenericAlgoSetting {
-   
-  case class Param (
+
+  case class Param(
     numFeatures: Int, // min 1
     lambda: Double, // min 0
     numIterations: Int // min 1
-  )
+    )
 
   implicit val paramReads = (
     (JsPath \ "numFeatures").read[Int](Reads.min(1)) and
@@ -34,8 +34,7 @@ object MahoutALSWR extends GenericAlgoSetting {
     lambdaMin: Double,
     lambdaMax: Double,
     numIterationsMin: Int,
-    numIterationsMax: Int
-  )
+    numIterationsMax: Int)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "numFeaturesMin").read[Int](Reads.min(1)) and
@@ -48,12 +47,11 @@ object MahoutALSWR extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -70,6 +68,6 @@ object MahoutALSWR extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

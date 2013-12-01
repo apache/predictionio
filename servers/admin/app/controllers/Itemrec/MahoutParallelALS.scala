@@ -15,14 +15,13 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object MahoutParallelALS extends GenericAlgoSetting {
-  
-  case class Param (
+
+  case class Param(
     lambda: Double,
     implicitFeedback: Boolean,
     alpha: Double,
     numFeatures: Int,
-    numIterations: Int
-  )
+    numIterations: Int)
 
   implicit val paramReads = (
     (JsPath \ "lambda").read[Double](minDouble(0)) and
@@ -40,8 +39,7 @@ object MahoutParallelALS extends GenericAlgoSetting {
     numFeaturesMin: Int,
     numFeaturesMax: Int,
     numIterationsMin: Int,
-    numIterationsMax: Int
-  )
+    numIterationsMax: Int)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "lambdaMin").read[Double](minDouble(0)) and
@@ -54,14 +52,13 @@ object MahoutParallelALS extends GenericAlgoSetting {
     (JsPath \ "numIterationsMax").read[Int](Reads.min(1))
   )(AutoTuneParam)
 
-   // aggregate all data into one class
+  // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -78,6 +75,6 @@ object MahoutParallelALS extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

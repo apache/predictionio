@@ -15,8 +15,8 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object MahoutItemBased extends GenericAlgoSetting {
-   
-  case class Param (
+
+  case class Param(
     similarityClassname: String,
     threshold: Double,
     booleanData: Boolean,
@@ -24,8 +24,8 @@ object MahoutItemBased extends GenericAlgoSetting {
     minPrefsPerUser: Int, // min 1 
     maxSimilaritiesPerItem: Int, // min 1
     maxPrefsPerUserInItemSimilarity: Int // min 1
-  )
-  
+    )
+
   implicit val paramReads = (
     (JsPath \ "similarityClassname").read[String] and
     (JsPath \ "threshold").read[Double] and
@@ -46,8 +46,7 @@ object MahoutItemBased extends GenericAlgoSetting {
     maxSimilaritiesPerItemMin: Int,
     maxSimilaritiesPerItemMax: Int,
     maxPrefsPerUserInItemSimilarityMin: Int,
-    maxPrefsPerUserInItemSimilarityMax: Int
-  )
+    maxPrefsPerUserInItemSimilarityMax: Int)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "thresholdMin").read[Double] and
@@ -64,12 +63,11 @@ object MahoutItemBased extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -86,6 +84,6 @@ object MahoutItemBased extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

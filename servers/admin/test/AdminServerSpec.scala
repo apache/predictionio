@@ -3,16 +3,16 @@ package controllers
 import org.specs2.mutable.Specification
 import org.specs2.matcher.JsonMatchers
 import org.specs2.execute.Pending
-import play.api.test.{WithServer, Port}
-import play.api.test.Helpers.{OK, FORBIDDEN, BAD_REQUEST, NOT_FOUND}
-import play.api.test.Helpers.{await => HelperAwait, wsUrl, defaultAwaitTimeout}
-import play.api.libs.json.{JsNull, JsArray, Json}
+import play.api.test.{ WithServer, Port }
+import play.api.test.Helpers.{ OK, FORBIDDEN, BAD_REQUEST, NOT_FOUND }
+import play.api.test.Helpers.{ await => HelperAwait, wsUrl, defaultAwaitTimeout }
+import play.api.libs.json.{ JsNull, JsArray, Json }
 import org.apache.commons.codec.digest.DigestUtils
 
 import com.mongodb.casbah.Imports._
 
 import io.prediction.commons.Config
-import io.prediction.commons.settings.{App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, Param, ParamDoubleConstraint, ParamUI}
+import io.prediction.commons.settings.{ App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, Param, ParamDoubleConstraint, ParamUI }
 
 class AdminServerSpec extends Specification with JsonMatchers {
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -23,7 +23,6 @@ class AdminServerSpec extends Specification with JsonMatchers {
   val engineInfos = config.getSettingsEngineInfos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
-
 
   /* create test user account */
   val testUserid = users.insert(
@@ -92,7 +91,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       r.status must equalTo(BAD_REQUEST)
     }
 
-    "create an app and write to database" in new WithServer  {
+    "create an app and write to database" in new WithServer {
       val appname = "My Test App"
       val r = HelperAwait(wsUrl("/apps").
         withHeaders("Cookie" -> signinCookie).
@@ -281,13 +280,13 @@ class AdminServerSpec extends Specification with JsonMatchers {
         (r.json must equalTo(Json.obj(
           "engineinfoname" -> "Item Recommendation Engine",
           "algotypelist" -> JsArray(Seq(Json.obj(
-              "id" -> "knn",
-              "algoinfoname" -> "kNN Item Based Collaborative Filtering",
-              "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
-              "req" -> Json.toJson(Seq("Hadoop")),
-              "datareq" -> Json.toJson(Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
-            )))
+            "id" -> "knn",
+            "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+            "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
+            "req" -> Json.toJson(Seq("Hadoop")),
+            "datareq" -> Json.toJson(Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
           )))
+        )))
     }
 
     "return all metric infos of a engineinfoid" in new WithServer {
@@ -297,15 +296,14 @@ class AdminServerSpec extends Specification with JsonMatchers {
         (r.json must equalTo(Json.obj(
           "engineinfoname" -> "Item Recommendation Engine",
           "metricslist" -> JsArray(Seq(Json.obj(
-              "id" -> "map",
-              "metricsname" -> "Mean Average Precision A",
-              "metricslongname" -> "metric description",
-              "settingfields" -> Json.obj("k" -> "int")
-            )))
+            "id" -> "map",
+            "metricsname" -> "Mean Average Precision A",
+            "metricslongname" -> "metric description",
+            "settingfields" -> Json.obj("k" -> "int")
           )))
+        )))
     }
   }
-
 
   step {
     MongoConnection()(config.settingsDbName).dropDatabase()

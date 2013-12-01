@@ -5,12 +5,13 @@ import play.api.mvc._
 
 import com.github.nscala_time.time.Imports._
 
-import io.prediction.commons.settings.{OfflineEval, Algo, OfflineEvalSplitter, OfflineEvalMetric}
-import controllers.Application.{offlineEvals, algos, engines, offlineEvalSplitters, offlineEvalMetrics}
+import io.prediction.commons.settings.{ OfflineEval, Algo, OfflineEvalSplitter, OfflineEvalMetric }
+import controllers.Application.{ offlineEvals, algos, engines, offlineEvalSplitters, offlineEvalMetrics }
 
 object SimEval extends Controller {
 
-  /** common function to create Offline Eval
+  /**
+   * common function to create Offline Eval
    * @param tuneid specify offline tune id if this Offine Eval is for auto tune
    */
   def createSimEval(engineId: Int, listOfAlgos: List[Algo], metricTypes: List[String], metricSettings: List[String],
@@ -32,7 +33,7 @@ object SimEval extends Controller {
     Logger.info("Create offline eval ID " + evalid)
 
     // duplicate algo with evalid
-    for ( algo <- listOfAlgos ) {
+    for (algo <- listOfAlgos) {
       // duplicate algo for sim eval
       val algoid = algos.insert(algo.copy(
         id = -1,
@@ -67,11 +68,11 @@ object SimEval extends Controller {
       name = ("sim-eval-" + evalid + "-splitter"), // auto generate name now
       infoid = "trainingtestsplit", // TODO: support different splitter
       settings = Map(
-        "trainingPercent" -> (splitTrain.toDouble/100),
-        "validationPercent" -> (splitValidation.toDouble/100), // no validatoin set for sim eval
-        "testPercent" -> (splitTest.toDouble/100),
+        "trainingPercent" -> (splitTrain.toDouble / 100),
+        "validationPercent" -> (splitValidation.toDouble / 100), // no validatoin set for sim eval
+        "testPercent" -> (splitTest.toDouble / 100),
         "timeorder" -> (splitMethod != "random")
-        )
+      )
     ))
     Logger.info("Create offline eval splitter ID " + splitterId)
 

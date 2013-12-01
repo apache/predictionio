@@ -2,23 +2,23 @@ package controllers
 
 import play.api.Logger
 
-import Application.{users, apps, engines, engineInfos, algos, algoInfos}
-import Application.{offlineEvalMetricInfos, offlineEvals, offlineEvalMetrics, offlineEvalResults}
-import Application.{offlineEvalSplitters, offlineTunes, paramGens}
-import Application.{appDataUsers, appDataItems, appDataU2IActions}
-import Application.{trainingSetUsers, trainingSetItems, trainingSetU2IActions}
-import Application.{validationSetUsers, validationSetItems, validationSetU2IActions}
-import Application.{testSetUsers, testSetItems, testSetU2IActions}
-import Application.{itemRecScores, itemSimScores}
-import Application.{trainingItemRecScores, trainingItemSimScores}
+import Application.{ users, apps, engines, engineInfos, algos, algoInfos }
+import Application.{ offlineEvalMetricInfos, offlineEvals, offlineEvalMetrics, offlineEvalResults }
+import Application.{ offlineEvalSplitters, offlineTunes, paramGens }
+import Application.{ appDataUsers, appDataItems, appDataU2IActions }
+import Application.{ trainingSetUsers, trainingSetItems, trainingSetU2IActions }
+import Application.{ validationSetUsers, validationSetItems, validationSetU2IActions }
+import Application.{ testSetUsers, testSetItems, testSetU2IActions }
+import Application.{ itemRecScores, itemSimScores }
+import Application.{ trainingItemRecScores, trainingItemSimScores }
 import Application.settingsSchedulerUrl
 
-import io.prediction.commons.settings.{OfflineEval, OfflineTune, Algo}
+import io.prediction.commons.settings.{ OfflineEval, OfflineTune, Algo }
 
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.WS
 import play.api.mvc.Controller
-import play.api.libs.json.{Json}
+import play.api.libs.json.{ Json }
 import play.api.http
 
 /** helper functions */
@@ -26,7 +26,7 @@ object Helper extends Controller {
 
   /** check if this simeval is pending */
   def isPendingSimEval(eval: OfflineEval): Boolean = (eval.createtime != None) && (eval.endtime == None)
-  
+
   /** Check if this offline tune is pending */
   def isPendingOfflineTune(tune: OfflineTune): Boolean = (tune.createtime != None) && (tune.endtime == None)
 
@@ -36,49 +36,51 @@ object Helper extends Controller {
   def isSimEvalAlgo(algo: Algo): Boolean = (algo.status == "simeval")
 
   /** Return sim evals of this engine */
-  def getSimEvalsByEngineid(engineid: Int): Iterator[OfflineEval] = offlineEvals.getByEngineid(engineid).filter( _.tuneid == None )
+  def getSimEvalsByEngineid(engineid: Int): Iterator[OfflineEval] = offlineEvals.getByEngineid(engineid).filter(_.tuneid == None)
 
-  /** Delete appdata DB of this appid
-    */
+  /**
+   * Delete appdata DB of this appid
+   */
   def deleteAppData(appid: Int) = {
-    Logger.info("Delete appdata for app ID "+appid)
+    Logger.info("Delete appdata for app ID " + appid)
     appDataUsers.deleteByAppid(appid)
     appDataItems.deleteByAppid(appid)
     appDataU2IActions.deleteByAppid(appid)
   }
 
-  /** Delete training set data of this evalid
-    */
+  /**
+   * Delete training set data of this evalid
+   */
   def deleteTrainingSetData(evalid: Int) = {
-    Logger.info("Delete training set for offline eval ID "+evalid)
+    Logger.info("Delete training set for offline eval ID " + evalid)
     trainingSetUsers.deleteByAppid(evalid)
     trainingSetItems.deleteByAppid(evalid)
     trainingSetU2IActions.deleteByAppid(evalid)
   }
 
   /**
-    * Delete validation set data of this evalid
-    */
+   * Delete validation set data of this evalid
+   */
   def deleteValidationSetData(evalid: Int) = {
-    Logger.info("Delete validation set for offline eval ID "+evalid)
+    Logger.info("Delete validation set for offline eval ID " + evalid)
     validationSetUsers.deleteByAppid(evalid)
     validationSetItems.deleteByAppid(evalid)
     validationSetU2IActions.deleteByAppid(evalid)
   }
 
   /**
-    * Delete test set data of this evalid
-    */
+   * Delete test set data of this evalid
+   */
   def deleteTestSetData(evalid: Int) = {
-    Logger.info("Delete test set for offline eval ID "+evalid)
+    Logger.info("Delete test set for offline eval ID " + evalid)
     testSetUsers.deleteByAppid(evalid)
     testSetItems.deleteByAppid(evalid)
     testSetU2IActions.deleteByAppid(evalid)
   }
 
   /**
-    * Delete modeldata of this algoid
-    */
+   * Delete modeldata of this algoid
+   */
   def deleteModelData(algoid: Int) = {
     val algoOpt = algos.get(algoid)
     algoOpt map { algo =>
@@ -102,12 +104,12 @@ object Helper extends Controller {
     } getOrElse { throw new RuntimeException("Try to delete non-existing algo: " + algoid) }
   }
 
-
-  /** Delete this app and the assoicated engines and appdata
-    * @param appid the appid
-    * @param userid the userid
-    * @param keepSettings keepSettings flag. If this is true, keep all settings record (ie. only delete the appdata, modeldata)
-    */
+  /**
+   * Delete this app and the assoicated engines and appdata
+   * @param appid the appid
+   * @param userid the userid
+   * @param keepSettings keepSettings flag. If this is true, keep all settings record (ie. only delete the appdata, modeldata)
+   */
   def deleteApp(appid: Int, userid: Int, keepSettings: Boolean) = {
 
     val appEngines = engines.getByAppid(appid)
@@ -124,12 +126,13 @@ object Helper extends Controller {
     }
   }
 
-  /** Delete engine and the associated algos and simevals.
+  /**
+   * Delete engine and the associated algos and simevals.
    */
   def deleteEngine(engineid: Int, appid: Int, keepSettings: Boolean) = {
 
     // delete non-sim eval algos, "simeval" algo is deleted when delete sim eval later
-    val engineAlgos = algos.getByEngineid(engineid).filter( !isSimEvalAlgo(_) )
+    val engineAlgos = algos.getByEngineid(engineid).filter(!isSimEvalAlgo(_))
 
     engineAlgos foreach { algo =>
       deleteAlgo(algo.id, keepSettings)
@@ -147,8 +150,9 @@ object Helper extends Controller {
     }
   }
 
-  /** Delete non-simeval algo and associated modeldata, offlineTune
-    */
+  /**
+   * Delete non-simeval algo and associated modeldata, offlineTune
+   */
   def deleteAlgo(algoid: Int, keepSettings: Boolean) = {
     deleteModelData(algoid)
 
@@ -163,7 +167,7 @@ object Helper extends Controller {
       algos.delete(algoid)
     }
   }
-  
+
   /** Delete "simeval" algo and assoicated modeldata */
   def deleteSimEvalAlgo(algoid: Int, keepSettings: Boolean) = {
     deleteModelData(algoid)
@@ -174,7 +178,8 @@ object Helper extends Controller {
     }
   }
 
-  /** Delete offline tune and associated trainig/validation/test set data, evaluated algos, metrics, eval results, and splitters
+  /**
+   * Delete offline tune and associated trainig/validation/test set data, evaluated algos, metrics, eval results, and splitters
    */
   def deleteOfflineEval(evalid: Int, keepSettings: Boolean) = {
 
@@ -192,16 +197,16 @@ object Helper extends Controller {
       val evalMetrics = offlineEvalMetrics.getByEvalid(evalid)
 
       evalMetrics foreach { metric =>
-        Logger.info("Delete metric ID "+metric.id)
+        Logger.info("Delete metric ID " + metric.id)
         offlineEvalMetrics.delete(metric.id)
       }
 
-      Logger.info("Delete offline eval results of offline eval ID "+evalid)
+      Logger.info("Delete offline eval results of offline eval ID " + evalid)
       offlineEvalResults.deleteByEvalid(evalid)
 
       val evalSplitters = offlineEvalSplitters.getByEvalid(evalid)
       evalSplitters foreach { splitter =>
-        Logger.info("Delete Offline Eval Splitter ID "+splitter.id)
+        Logger.info("Delete Offline Eval Splitter ID " + splitter.id)
         offlineEvalSplitters.delete(splitter.id)
       }
     }
@@ -213,7 +218,8 @@ object Helper extends Controller {
 
   }
 
-  /** Delete offline tune and associated param gens and offline evals
+  /**
+   * Delete offline tune and associated param gens and offline evals
    */
   def deleteOfflineTune(tuneid: Int, keepSettings: Boolean) = {
 
@@ -221,7 +227,7 @@ object Helper extends Controller {
     if (!keepSettings) {
       val tuneParamGens = paramGens.getByTuneid(tuneid)
       tuneParamGens foreach { gen =>
-        Logger.info("Delete ParamGen ID "+gen.id)
+        Logger.info("Delete ParamGen ID " + gen.id)
         paramGens.delete(gen.id)
       }
     }
@@ -232,16 +238,17 @@ object Helper extends Controller {
     tuneOfflineEvals foreach { eval =>
       deleteOfflineEval(eval.id, keepSettings)
     }
-    
+
     if (!keepSettings) {
       Logger.info("Delete offline tune ID " + tuneid)
       offlineTunes.delete(tuneid)
     }
   }
 
-  /** Request scheduler to stop and delete sim eval
-    * @return Future[SimpleResult]
-    */
+  /**
+   * Request scheduler to stop and delete sim eval
+   * @return Future[SimpleResult]
+   */
   def stopAndDeleteSimEvalScheduler(appid: Int, engineid: Int, evalid: Int) = {
 
     /** Stop any possible running jobs */
@@ -249,10 +256,10 @@ object Helper extends Controller {
     /** Clean up intermediate data files */
     val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${evalid}/delete").get()
     /** Synchronize on both scheduler actions */
-    val remove = concurrent.Future.reduce(Seq(stop, delete)) { (a, b) => 
+    val remove = concurrent.Future.reduce(Seq(stop, delete)) { (a, b) =>
       if (a.status != http.Status.OK) // keep the 1st error
         a
-      else 
+      else
         b
     }
 
@@ -261,7 +268,7 @@ object Helper extends Controller {
       if (r.status == http.Status.OK)
         Ok(Json.obj("message" -> s"Offline evaluation ID ${evalid} has been deleted"))
       else
-        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete simulated evaluation. Please check if the scheduler server is running properly. " + e.getMessage())))
@@ -270,9 +277,10 @@ object Helper extends Controller {
     complete
   }
 
-  /** Request scheduler to stop and delete offline Tune
-    * @return Future[SimpleResult]
-    */
+  /**
+   * Request scheduler to stop and delete offline Tune
+   * @return Future[SimpleResult]
+   */
   def stopAndDeleteOfflineTuneScheduler(appid: Int, engineid: Int, tuneid: Int) = {
 
     val stop = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlinetunes/${tuneid}/stop").get()
@@ -281,10 +289,10 @@ object Helper extends Controller {
       WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${eval.id}/delete").get()
     }
 
-    val remove = concurrent.Future.reduce(Seq(stop) ++ deletes) { (a, b) => 
+    val remove = concurrent.Future.reduce(Seq(stop) ++ deletes) { (a, b) =>
       if (a.status != http.Status.OK) // keep the 1st error
         a
-      else 
+      else
         b
     }
 
@@ -292,36 +300,38 @@ object Helper extends Controller {
       if (r.status == http.Status.OK)
         Ok(Json.obj("message" -> s"Offline Tune ID ${tuneid} has been deleted"))
       else
-        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete autotuning algorithm. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
-    
+
     complete
 
-}
+  }
 
-  /** Request scheduler to delete algo file 
-    * @return Future[SimpleResult]
-    */
+  /**
+   * Request scheduler to delete algo file
+   * @return Future[SimpleResult]
+   */
   def deleteAlgoScheduler(appid: Int, engineid: Int, id: Int) = {
-    val delete = WS.url(settingsSchedulerUrl+"/apps/"+appid+"/engines/"+engineid+"/algos/"+id+"/delete").get()
+    val delete = WS.url(settingsSchedulerUrl + "/apps/" + appid + "/engines/" + engineid + "/algos/" + id + "/delete").get()
 
     delete map { r =>
       if (r.status == http.Status.OK)
         Ok
       else
-        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete algorithm. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
   }
 
-  /** Request scheduler to delete engine file
-    * @return Future[SimpleResult]
-    */
+  /**
+   * Request scheduler to delete engine file
+   * @return Future[SimpleResult]
+   */
   def deleteEngineScheduler(appid: Int, engineid: Int) = {
     val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/delete").get()
 
@@ -329,24 +339,25 @@ object Helper extends Controller {
       if (r.status == http.Status.OK)
         Ok
       else
-        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete engine. Please check if the scheduler server is running properly. " + e.getMessage())))
     }
   }
 
-  /** Request scheduler to delete app file
-    * @return Future[SimpleResult]
-    */
+  /**
+   * Request scheduler to delete app file
+   * @return Future[SimpleResult]
+   */
   def deleteAppScheduler(appid: Int) = {
-    val delete = WS.url(settingsSchedulerUrl+"/apps/"+appid+"/delete").get()
+    val delete = WS.url(settingsSchedulerUrl + "/apps/" + appid + "/delete").get()
 
     delete map { r =>
       if (r.status == http.Status.OK)
         Ok
       else
-        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String] ))
+        InternalServerError(Json.obj("message" -> (r.json \ "message").as[String]))
     } recover {
       case e: Exception => InternalServerError(Json.obj("message" ->
         ("Failed to delete app. Please check if the scheduler server is running properly. " + e.getMessage())))

@@ -22,8 +22,7 @@ object ItemSimCF extends GenericAlgoSetting {
     priorCorrelParam: Double,
     minNumRatersParam: Int,
     maxNumRatersParam: Int,
-    minIntersectionParam: Int
-  )
+    minIntersectionParam: Int)
 
   implicit val paramReads = (
     (JsPath \ "measureParam").read[String] and
@@ -34,7 +33,7 @@ object ItemSimCF extends GenericAlgoSetting {
     (JsPath \ "minIntersectionParam").read[Int](Reads.min(1))
   )(Param)
 
-  case class AutoTuneParam (
+  case class AutoTuneParam(
     priorCountParamMin: Int,
     priorCountParamMax: Int,
     priorCorrelParamMin: Double,
@@ -44,8 +43,7 @@ object ItemSimCF extends GenericAlgoSetting {
     maxNumRatersParamMin: Int,
     maxNumRatersParamMax: Int,
     minIntersectionParamMin: Int,
-    minIntersectionParamMax: Int
-  )
+    minIntersectionParamMax: Int)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "priorCountParamMin").read[Int](Reads.min(0)) and
@@ -62,12 +60,11 @@ object ItemSimCF extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -84,6 +81,6 @@ object ItemSimCF extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

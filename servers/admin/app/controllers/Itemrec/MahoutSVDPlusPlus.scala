@@ -15,15 +15,14 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object MahoutSVDPlusPlus extends GenericAlgoSetting {
-  
+
   case class Param(
     numFeatures: Int,
     learningRate: Double,
     preventOverfitting: Double,
     randomNoise: Double,
     numIterations: Int,
-    learningRateDecay: Double
-  )
+    learningRateDecay: Double)
 
   implicit val paramReads = (
     (JsPath \ "numFeatures").read[Int](Reads.min(1)) and
@@ -34,7 +33,7 @@ object MahoutSVDPlusPlus extends GenericAlgoSetting {
     (JsPath \ "learningRateDecay").read[Double](minDouble(Double.MinPositiveValue))
   )(Param)
 
-  case class AutoTuneParam (
+  case class AutoTuneParam(
     numFeaturesMin: Int,
     numFeaturesMax: Int,
     learningRateMin: Double,
@@ -46,8 +45,7 @@ object MahoutSVDPlusPlus extends GenericAlgoSetting {
     numIterationsMin: Int,
     numIterationsMax: Int,
     learningRateDecayMin: Double,
-    learningRateDecayMax: Double
-  )
+    learningRateDecayMax: Double)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "numFeaturesMin").read[Int](Reads.min(1)) and
@@ -66,12 +64,11 @@ object MahoutSVDPlusPlus extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -88,6 +85,6 @@ object MahoutSVDPlusPlus extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }

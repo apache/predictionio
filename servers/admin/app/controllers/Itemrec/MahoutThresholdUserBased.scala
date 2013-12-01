@@ -15,17 +15,16 @@ import play.api.data.validation.ValidationError
 //import controllers.Application.{algos, withUser, algoInfos}
 
 object MahoutThresholdUserBased extends GenericAlgoSetting {
-  
+
   case class Param(
     userSimilarity: String,
     threshold: Double,
     booleanData: Boolean,
     weighted: Boolean,
-    samplingRate: Double
-  )
+    samplingRate: Double)
 
-  def validSamplingRate(implicit r: Reads[Double]): Reads[Double] = 
-    ( Reads.filter(ValidationError("Must be > 0 and <= 1."))(x => (x > 0.0) && (x <= 1.0)) ) 
+  def validSamplingRate(implicit r: Reads[Double]): Reads[Double] =
+    (Reads.filter(ValidationError("Must be > 0 and <= 1."))(x => (x > 0.0) && (x <= 1.0)))
 
   implicit val paramReads = (
     (JsPath \ "userSimilarity").read[String] and
@@ -39,8 +38,7 @@ object MahoutThresholdUserBased extends GenericAlgoSetting {
     thresholdMin: Double,
     thresholdMax: Double,
     samplingRateMin: Double,
-    samplingRateMax: Double
-  )
+    samplingRateMax: Double)
 
   implicit val autoTuneParamReads = (
     (JsPath \ "thresholdMin").read[Double] and
@@ -51,12 +49,11 @@ object MahoutThresholdUserBased extends GenericAlgoSetting {
 
   // aggregate all data into one class
   case class AllData(
-    info: GenericInfo,
-    tune: GenericTune,
-    actionParam: GenericActionParam,
-    param: Param,
-    autoTuneParam: AutoTuneParam
-  ) extends AlgoData {
+      info: GenericInfo,
+      tune: GenericTune,
+      actionParam: GenericActionParam,
+      param: Param,
+      autoTuneParam: AutoTuneParam) extends AlgoData {
 
     override def getParams: Map[String, Any] = {
       paramToMap(tune) ++ paramToMap(actionParam) ++ paramToMap(param) ++ paramToMap(autoTuneParam)
@@ -73,6 +70,6 @@ object MahoutThresholdUserBased extends GenericAlgoSetting {
     JsPath.read[AutoTuneParam]
   )(AllData)
 
-  def updateSettings(appid:String, engineid:String, algoid:String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
+  def updateSettings(appid: String, engineid: String, algoid: String) = updateGenericSettings[AllData](appid, engineid, algoid)(allDataReads)
 
 }
