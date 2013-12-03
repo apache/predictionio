@@ -806,24 +806,23 @@ object Application extends Controller {
    *
    * @param id the App ID
    */
-  def getAppEnginelist(appid: Int) = withApp(appid) { (user, app) =>
+  def getAppEnginelist(appid: Int) = WithApp(appid) { (user, app) =>
     implicit request =>
 
       val appEngines = engines.getByAppid(appid)
 
       if (!appEngines.hasNext) NoContent
       else
-        Ok(toJson(Map(
-          "id" -> toJson(appid),
-          "enginelist" -> toJson((appEngines map { eng =>
-            Map("id" -> eng.id.toString, "enginename" -> eng.name, "engineinfoid" -> eng.infoid)
-          }).toSeq)
-        )))
-
+        Ok(Json.obj(
+          "id" -> appid,
+          "enginelist" -> JsArray(appEngines.map { eng =>
+            Json.obj("id" -> eng.id, "enginename" -> eng.name, "engineinfoid" -> eng.infoid)
+          }.toSeq)
+        ))
   }
 
   /**
-   * Returns a list of available metric infos of a specific engine info
+   * Returns the engine of this engineid
    *
    * {{{
    * GET
@@ -864,7 +863,7 @@ object Application extends Controller {
    * @param appid the App ID
    * @param id the engine ID
    */
-  def getEngine(appid: Int, id: Int) = withEngine(appid, id) { (user, app, eng) =>
+  def getEngine(appid: Int, id: Int) = WithEngine(appid, id) { (user, app, eng) =>
     implicit request =>
 
       val modelDataExist: Boolean = eng.infoid match {
@@ -899,9 +898,9 @@ object Application extends Controller {
             case e: java.net.ConnectException => "runningnoscheduler"
           }
       Ok(Json.obj(
-        "id" -> eng.id.toString, // engine id
+        "id" -> eng.id, // engine id
         "engineinfoid" -> eng.infoid,
-        "appid" -> eng.appid.toString,
+        "appid" -> eng.appid,
         "enginename" -> eng.name,
         "enginestatus" -> engineStatus))
   }
@@ -948,7 +947,7 @@ object Application extends Controller {
    *
    * @param appid the App ID
    */
-  def createEngine(appid: Int) = withApp(appid) { (user, app) =>
+  def createEngine(appid: Int) = WithApp(appid) { (user, app) =>
     implicit request =>
 
       val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
@@ -981,13 +980,15 @@ object Application extends Controller {
 
           // automatically create default algo
           val defaultAlgoType = engineInfo.defaultalgoinfoid
+          val params = algoInfos.get(defaultAlgoType).get.params.mapValues(_.defaultvalue)
+
           val defaultAlgo = Algo(
             id = -1,
             engineid = engineId,
             name = "Default-Algo",
             infoid = defaultAlgoType,
             command = "",
-            params = algoInfos.get(defaultAlgoType).get.params.mapValues(_.defaultvalue),
+            params = params,
             settings = Map(), // no use for now
             modelset = false, // init value
             createtime = DateTime.now,
@@ -1002,11 +1003,11 @@ object Application extends Controller {
 
           WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
 
-          Ok(toJson(Map(
-            "id" -> engineId.toString, // engine id
+          Ok(Json.obj(
+            "id" -> engineId, // engine id
             "engineinfoid" -> enginetype,
-            "appid" -> appid.toString,
-            "enginename" -> enginename)))
+            "appid" -> appid,
+            "enginename" -> enginename))
         }
       )
 
@@ -1034,7 +1035,7 @@ object Application extends Controller {
    * @param appid the App ID
    * @param engineid the engine ID
    */
-  def removeEngine(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
+  def removeEngine(appid: Int, engineid: Int) = WithEngine.async(appid, engineid) { (user, app, eng) =>
     implicit request =>
       // don't delete if there is any sim eval and offline tune pending, or deployed algorithm
       val pendingSimEvals = Helper.getSimEvalsByEngineid(eng.id).filter(x => Helper.isPendingSimEval(x)).toList
@@ -1043,11 +1044,11 @@ object Application extends Controller {
 
       if (deployedAlgos.size != 0) {
         val names = deployedAlgos map (x => x.name) mkString (",")
-        Forbidden(Json.obj("message" -> s"This engine has deployed algorithms (${names}). Please undeploy them before delete this engine."))
+        Future.successful(Forbidden(Json.obj("message" -> s"This engine has deployed algorithms (${names}). Please undeploy them before delete this engine.")))
       } else if (pendingSimEvals.size != 0) {
-        Forbidden(Json.obj("message" -> "There are running simulated evaluations. Please stop and delete them before delete this engine."))
+        Future.successful(Forbidden(Json.obj("message" -> "There are running simulated evaluations. Please stop and delete them before delete this engine.")))
       } else if (pendingOfflineTunes.size != 0) {
-        Forbidden(Json.obj("message" -> "There are auto-tuning algorithms. Please stop and delete them before delete this engine."))
+        Future.successful(Forbidden(Json.obj("message" -> "There are auto-tuning algorithms. Please stop and delete them before delete this engine.")))
       } else {
         /** Deletion could take a while */
         val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
@@ -1055,16 +1056,14 @@ object Application extends Controller {
         // to scheduler: delete engine
         val delete = Helper.deleteEngineScheduler(appid, engineid)
 
-        Async {
-          concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
-            case r: SimpleResult => {
-              if (r.header.status == http.Status.OK) {
-                Helper.deleteEngine(engineid, appid, keepSettings = false)
-              }
-              r
+        concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
+          case r: SimpleResult => {
+            if (r.header.status == http.Status.OK) {
+              Helper.deleteEngine(engineid, appid, keepSettings = false)
             }
-            case t: String => InternalServerError(Json.obj("message" -> t))
+            r
           }
+          case t: String => InternalServerError(Json.obj("message" -> t))
         }
       }
   }
