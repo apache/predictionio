@@ -98,7 +98,7 @@ class APISpec extends Specification {
       name     = "itemrec",
       infoid   = "itemrec",
       itypes   = None,
-      settings = Map()))
+      params   = Map()))
 
     val algoid = algos.insert(Algo(
       id       = 0,
@@ -184,7 +184,7 @@ class APISpec extends Specification {
       name     = "itemsim",
       infoid   = "itemsim",
       itypes   = None,
-      settings = Map()))
+      params   = Map()))
 
     val algoid = algos.insert(Algo(
       id       = 0,

@@ -55,14 +55,15 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
     name = "myengine",
     infoid = "itemrec",
     itypes = Some(Seq("movies")),
-    settings = Map("goal" -> "foobar"))
+    params = Map("goal" -> "foobar"))
   val engineid = engines.insert(engine)
 
   engineInfos.insert(EngineInfo(
     id = "itemrec",
     name = "myengine",
     description = None,
-    defaultsettings = Map(),
+    params = Map(),
+    paramsections = Seq(),
     defaultalgoinfoid = "mypkg"))
 
   val algo = Algo(
@@ -93,6 +94,7 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
     batchcommands = Some(Seq("test/echo.sh $appid$ $engineid$ $algoid$ $conflictParam$ "+helloFilename)),
     offlineevalcommands = None,
     params = Map(),
+    paramsections = Seq(),
     paramorder = Seq(),
     engineinfoid = "itemrec",
     techreq = Seq(),

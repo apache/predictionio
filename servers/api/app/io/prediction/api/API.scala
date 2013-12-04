@@ -636,7 +636,7 @@ object API extends Controller {
                 }
               } catch {
                 case e: Exception =>
-                  APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage()))
+                  APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage(), "trace" -> e.getStackTrace().map(_.toString).mkString("\n")))
               }
             }
           }
