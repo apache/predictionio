@@ -48,7 +48,7 @@ GET     /apps/:appid/engines/:engineid/algos_available/:id  controllers.Applicat
 POST    /apps/:appid/engines/:engineid/algos_available      controllers.Application.createAvailableAlgo(appid: Int, engineid: Int)
 DELETE  /apps/:appid/engines/:engineid/algos_available/:id  controllers.Application.removeAvailableAlgo(appid: Int, engineid: Int, id: Int)
 
-GET     /apps/:appid/engines/:engineid/algos_deployed       controllers.Application.getDeployedAlgo(appid: Int, engineid: Int)
+GET     /apps/:appid/engines/:engineid/algos_deployed       controllers.Application.getDeployedAlgoList(appid: Int, engineid: Int)
 POST    /apps/:appid/engines/:engineid/algos_deploy         controllers.Application.algoDeploy(appid: Int, engineid: Int)
 POST    /apps/:appid/engines/:engineid/algos_undeploy       controllers.Application.algoUndeploy(appid: Int, engineid: Int)
 POST    /apps/:appid/engines/:engineid/algos_trainnow       controllers.Application.algoTrainNow(appid: Int, engineid: Int)

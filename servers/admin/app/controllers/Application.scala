@@ -15,7 +15,7 @@ import play.api.data.validation.{ Constraints }
 import play.api.i18n.{ Messages, Lang }
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.json.Json.toJson
-import play.api.libs.json.{ JsNull, JsArray, Json, JsValue, Writes }
+import play.api.libs.json.{ JsNull, JsArray, Json, JsValue, Writes, JsObject }
 import play.api.libs.ws.WS
 import play.api.Play.current
 import play.api.http
@@ -1071,6 +1071,42 @@ object Application extends Controller {
   }
 
   /**
+   * Convert algo data to JsObject
+   *   {
+   *     "id" : <algo id>,
+   *     "algoname" : <algo name>,
+   *     "appid" : <app id>,
+   *     "engineid" : <engine id>,
+   *     "algoinfoid" : <algo info id>,
+   *     "algoinfoname" : <algo info name>,
+   *     "status" : <algo status>,
+   *     "createdtime" : <algo creation time>,
+   *     "updatedtime" : <algo last updated time>
+   *   }
+   * @note status: ready, deployed, tuning, tuned, simeval
+   * @param algo the algo
+   * @param appid the App ID
+   * @param algoinfoname the algo info name. If None, get info name from algoinfo db using algo's infoid.
+   *        Use "NOT FOUND" if the algo info is not found
+   */
+  def algoToJson(algo: Algo, appid: Int, algoinfoname: Option[String]): JsObject = {
+    val infoname = algoinfoname.getOrElse {
+      algoInfos.get(algo.infoid).map { _.name }.getOrElse[String]("NOT FOUND")
+    }
+    Json.obj(
+      "id" -> algo.id,
+      "algoname" -> algo.name,
+      "appid" -> appid,
+      "engineid" -> algo.engineid,
+      "algoinfoid" -> algo.infoid,
+      "algoinfoname" -> infoname,
+      "status" -> algo.status,
+      "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
+      "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
+    )
+  }
+
+  /**
    * Returns a list of available (added but not deployed) algorithms of this engine
    * {{{
    * GET
@@ -1087,14 +1123,7 @@ object Application extends Controller {
    *   NoContent
    *
    *   If algos found:
-   *   [ { "id" : <algo id>,
-   *       "algoname" : <algo name>,
-   *       "appid" : <app id>,
-   *       "engineid" : <engine id>,
-   *       "algoinfoid" : <algo info id>,
-   *       "algoinfoname" : <algo info name>,
-   *       "status" : <algo status>,
-   *       "updatedtime" : <algo last updated time>
+   *   [ { see algoToJson
    *     }, ...
    *   ]
    * }}}
@@ -1104,27 +1133,18 @@ object Application extends Controller {
    * @param appid the App ID
    * @param engineid the engine ID
    */
-  def getAvailableAlgoList(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
+  def getAvailableAlgoList(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
     implicit request =>
 
-      val engineAlgos = algos.getByEngineid(engineid)
+      val engineAlgos = algos.getByEngineid(engineid).filter { Helper.isAvailableAlgo(_) }
 
       if (!engineAlgos.hasNext) NoContent
       else
-        Ok(toJson( // NOTE: only display algos which are not "deployed", nor "simeval"
-          (engineAlgos filter { Helper.isAvailableAlgo(_) } map { algo =>
-            Map("id" -> algo.id.toString,
-              "algoname" -> algo.name,
-              "appid" -> appid.toString,
-              "engineid" -> algo.engineid.toString,
-              "algoinfoid" -> algo.infoid,
-              "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
-              "status" -> algo.status,
-              "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
-            )
-          }).toSeq
+        Ok(Json.toJson( // NOTE: only display algos which are not "deployed", nor "simeval"
+          engineAlgos.map { algo =>
+            algoToJson(algo, appid, None)
+          }.toSeq
         ))
-
   }
 
   /**
@@ -1149,15 +1169,7 @@ object Application extends Controller {
    *   If found:
    *   Ok
    *   {
-   *     "id" : <algo id>,
-   *     "algoname" : <algo name>,
-   *     "appid" : <app id>,
-   *     "engineid" : <engine id>,
-   *     "algoinfoid" : <algo info id>,
-   *     "algoinfoname" : <algo info name>,
-   *     "status" : <algo status>,
-   *     "createdtime" : <algo creation time>,
-   *     "updatedtime" : <algo last updated time>
+   *     see algoToJson
    *   }
    * }}}
    *
@@ -1165,19 +1177,13 @@ object Application extends Controller {
    * @param engineid the engine ID
    * @param id the algo ID
    */
-  def getAvailableAlgo(appid: Int, engineid: Int, id: Int) = withAlgo(appid, engineid, id) { (user, app, eng, algo) =>
+  def getAvailableAlgo(appid: Int, engineid: Int, id: Int) = WithAlgo(appid, engineid, id) { (user, app, eng, algo) =>
     implicit request =>
-      Ok(toJson(Map(
-        "id" -> algo.id.toString,
-        "algoname" -> algo.name,
-        "appid" -> appid.toString,
-        "engineid" -> algo.engineid.toString,
-        "algoinfoid" -> algo.infoid,
-        "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
-        "status" -> algo.status,
-        "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
-        "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
-      )))
+      algoInfos.get(algo.infoid).map { info =>
+        Ok(algoToJson(algo, appid, Some(info.name)))
+      }.getOrElse {
+        InternalServerError(Json.obj("message" -> "Algoinfo ${algo.infoid} not found."))
+      }
   }
 
   /**
@@ -1211,15 +1217,7 @@ object Application extends Controller {
    *   If created:
    *   Ok
    *   {
-   *     "id" : <algo id>,
-   *     "algoname" : <algo name>,
-   *     "appid" : <app id>,
-   *     "engineid" : <engine id>,
-   *     "algoinfoid" : <algo info id>,
-   *     "algoinfoname" : <algo info name>,
-   *     "status" : <algo status>,
-   *     "createdtime" : <algo creation time>,
-   *     "updatedtime" : <algo last updated time>
+   *     see algoToJson
    *   }
    *
    * }}}
@@ -1227,7 +1225,7 @@ object Application extends Controller {
    * @param appid the App ID
    * @param engineid the engine ID
    */
-  def createAvailableAlgo(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
+  def createAvailableAlgo(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
     implicit request =>
 
       val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
@@ -1247,12 +1245,7 @@ object Application extends Controller {
         formData => {
           val (algoType, algoName) = formData
 
-          val algoInfoOpt = algoInfos.get(algoType)
-
-          if (algoInfoOpt == None) {
-            BadRequest(toJson(Map("message" -> toJson("Invalid AlgoType."))))
-          } else {
-            val algoInfo = algoInfoOpt.get
+          algoInfos.get(algoType).map { algoInfo =>
 
             val newAlgo = Algo(
               id = -1,
@@ -1273,17 +1266,9 @@ object Application extends Controller {
             val algoId = algos.insert(newAlgo)
             Logger.info("Create algo ID " + algoId)
 
-            Ok(toJson(Map(
-              "id" -> algoId.toString, // algo id
-              "algoname" -> newAlgo.name,
-              "appid" -> appid.toString,
-              "engineid" -> newAlgo.engineid.toString,
-              "algoinfoid" -> algoType,
-              "algoinfoname" -> algoInfos.get(algoType).get.name,
-              "status" -> newAlgo.status,
-              "createdtime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
-              "updatedtime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
-            )))
+            Ok(algoToJson(newAlgo.copy(id = algoId), appid, Some(algoInfo.name)))
+          }.getOrElse {
+            InternalServerError(Json.obj("message" -> "Algoinfo ${algoType} not found."))
           }
         }
       )
@@ -1310,7 +1295,7 @@ object Application extends Controller {
    * @param engineid the engine ID
    * @param id the algo ID
    */
-  def removeAvailableAlgo(appid: Int, engineid: Int, id: Int) = withAlgo(appid, engineid, id) { (user, app, eng, algo) =>
+  def removeAvailableAlgo(appid: Int, engineid: Int, id: Int) = WithAlgo.async(appid, engineid, id) { (user, app, eng, algo) =>
     implicit request =>
       /** Deletion could take a while */
       val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
@@ -1337,19 +1322,17 @@ object Application extends Controller {
           b
       }
 
-      Async {
-        concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
-          case r: SimpleResult => {
-            if (r.header.status == http.Status.OK) {
-              algo.offlinetuneid map { tuneid =>
-                Helper.deleteOfflineTune(tuneid, keepSettings = false)
-              }
-              Helper.deleteAlgo(algo.id, keepSettings = false)
+      concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
+        case r: SimpleResult => {
+          if (r.header.status == http.Status.OK) {
+            algo.offlinetuneid map { tuneid =>
+              Helper.deleteOfflineTune(tuneid, keepSettings = false)
             }
-            r
+            Helper.deleteAlgo(algo.id, keepSettings = false)
           }
-          case t: String => InternalServerError(Json.obj("message" -> t))
+          r
         }
+        case t: String => InternalServerError(Json.obj("message" -> t))
       }
   }
 
@@ -1373,14 +1356,7 @@ object Application extends Controller {
    *   {
    *     "updatedtime" : <TODO>,
    *     "status" : <TODO>,
-   *     "algolist" : [ { "id" : <algo id>,
-   *                      "algoname" : <algo name>,
-   *                      "appid" : <app id>,
-   *                      "engineid" : <engine id>,
-   *                      "algoinfoid" : <algo info id>,
-   *                      "algoinfoname" : <algo info name>,
-   *                      "status" : <algo status>,
-   *                      "updatedtime" : <algo last updated time>
+   *     "algolist" : [ { see algoToJson
    *                    }, ...
    *                  ]
    *   }
@@ -1389,28 +1365,20 @@ object Application extends Controller {
    * @param appid the App ID
    * @param engineid the engine ID
    */
-  def getDeployedAlgo(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
+  def getDeployedAlgoList(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
     implicit request =>
 
       val deployedAlgos = algos.getDeployedByEngineid(engineid)
 
       if (!deployedAlgos.hasNext) NoContent
       else
-        Ok(toJson(Map(
-          "updatedtime" -> toJson("12-03-2012 12:32:12"), // TODO: what's this time for?
-          "status" -> toJson("Running"),
-          "algolist" -> toJson(deployedAlgos.map { algo =>
-            Map("id" -> algo.id.toString,
-              "algoname" -> algo.name,
-              "appid" -> appid.toString,
-              "engineid" -> algo.engineid.toString,
-              "algoinfoid" -> algo.infoid,
-              "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
-              "status" -> algo.status,
-              "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
+        Ok(Json.obj(
+          "updatedtime" -> "12-03-2012 12:32:12", // TODO: what's this time for?
+          "status" -> "Running",
+          "algolist" -> Json.toJson(deployedAlgos.map { algo =>
+            algoToJson(algo, appid, None)
           }.toSeq)
-        )))
-
+        ))
   }
 
   /**
