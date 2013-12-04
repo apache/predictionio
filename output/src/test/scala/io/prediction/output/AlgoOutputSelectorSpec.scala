@@ -173,7 +173,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name     = "itemRecOutputSelection",
       infoid   = "itemrec",
       itypes   = Some(Seq("foo", "bar")),
-      settings = Map("serendipity" -> 5, "freshness" -> 5)
+      params   = Map("serendipity" -> 5, "freshness" -> 5)
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -297,7 +297,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name     = "itemRecOutputSelectionWithLatlng",
       infoid   = "itemrec",
       itypes   = Some(Seq("foo", "bar")),
-      settings = Map()
+      params   = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -420,7 +420,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name       = "itemRecOutputSelection",
       infoid = "itemrec",
       itypes     = Some(Seq("foo", "bar")),
-      settings   = Map("unseenonly" -> true)
+      params     = Map("unseenonly" -> true)
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -531,7 +531,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name       = "itemRecOutputSelection",
       infoid = "itemrec",
       itypes     = Some(Seq("foo", "bar")),
-      settings   = Map()
+      params     = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -561,7 +561,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemRecOutputSelectionNoAlgo",
       infoid = "itemrec",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map()
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
     algoOutputSelector.itemRecSelection("", 10, None, None, None, None)(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
@@ -574,7 +574,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemRecOutputSelectionBadEngine",
       infoid = "itemRecOutputSelectionBadEngine",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map()
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
     algoOutputSelector.itemRecSelection("", 10, None, None, None, None)(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
@@ -588,7 +588,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemSimOutputSelection",
       infoid = "itemsim",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map("freshness" -> 4, "serendipity" -> 6))
+      params = Map("freshness" -> 4, "serendipity" -> 6))
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
@@ -710,7 +710,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name     = "itemSimOutputSelectionWithLatlng",
       infoid   = "itemsim",
       itypes   = Some(Seq("foo", "bar")),
-      settings = Map()
+      params   = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -833,7 +833,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemSimOutputSelection",
       infoid = "itemsim",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map()
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
@@ -863,7 +863,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemSimOutputSelectionNoAlgo",
       infoid = "itemsim",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map()
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
     algoOutputSelector.itemSimSelection("", 10, None, None, None, None)(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
@@ -876,7 +876,7 @@ class AlgoOutputSelectorSpec extends Specification { def is =
       name = "itemSimOutputSelectionBadEngine",
       infoid = "itemSimOutputSelectionBadEngine",
       itypes = Some(Seq("foo", "bar")),
-      settings = Map()
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
     algoOutputSelector.itemSimSelection("", 10, None, None, None, None)(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
