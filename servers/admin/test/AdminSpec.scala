@@ -69,7 +69,7 @@ class AdminSpec extends Specification {
     id = "v12",
     name = "v12",
     description = None,
-    defaultsettings = Map(
+    params = Map(
       "similarityFunction" -> Param(
         id = "similarityFunction",
         name = "similarityFunction",
@@ -84,6 +84,7 @@ class AdminSpec extends Specification {
         defaultvalue = 0,
         ui = ParamUI(),
         constraint = ParamIntegerConstraint())),
+    paramsections = Seq(),
     defaultalgoinfoid = "dummy"))
 
   "PredictionIO Forms" should {

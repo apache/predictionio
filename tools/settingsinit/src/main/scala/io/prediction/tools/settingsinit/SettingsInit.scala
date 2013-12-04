@@ -80,49 +80,19 @@ object SettingsInit {
           M(info) = infos(id)
           S(name) = info("name")
           OS(description) = info.get("description")
-          M(defaultsettings) = info("defaultsettings")
+          M(params) = info("params")
+          SM(paramsections) = info("paramsections")
           S(defaultalgoinfoid) = info("defaultalgoinfoid")
         } yield {
-          /**
-           * Take care of integers that are parsed as double from JSON
-           * http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
-           */
-          val castedsettings = defaultsettings map { p =>
-            val param = p._2.asInstanceOf[Map[String, Any]]
-            val paramconstraint = param("constraint").asInstanceOf[Map[String, Any]]
-            val paramui = param("ui").asInstanceOf[Map[String, Any]]
-            val constraint = paramconstraint("paramtype").asInstanceOf[String] match {
-              case "boolean" => ParamBooleanConstraint()
-              case "double" => ParamDoubleConstraint(min = paramconstraint.get("min").map(_.asInstanceOf[Double]), max = paramconstraint.get("max").map(_.asInstanceOf[Double]))
-              case "integer" => ParamIntegerConstraint(min = paramconstraint.get("min").map(_.asInstanceOf[Int]), max = paramconstraint.get("max").map(_.asInstanceOf[Int]))
-              case "string" => ParamStringConstraint()
-              case _ => ParamStringConstraint()
-            }
-            val ui = paramui("uitype").asInstanceOf[String] match {
-              case "text" => ParamUI(uitype = "text")
-              case "selection" => {
-                val selectionsSeq = paramui("selections").asInstanceOf[Seq[Map[String, String]]]
-                ParamUI(uitype = "selection", selections = Some(selectionsSeq.map(s => ParamSelectionUI(name = s("name"), value = s("value")))))
-              }
-            }
-            val casteddefault = constraint.paramtype match {
-              case "integer" => param("defaultvalue").asInstanceOf[Double].toInt
-              case _ => param("defaultvalue")
-            }
-            (p._1, Param(
-              id = p._1,
-              name = param("name").asInstanceOf[String],
-              description = param.get("description") map { _.asInstanceOf[String] },
-              defaultvalue = casteddefault,
-              constraint = constraint,
-              ui = ui))
-          }
-
+          println(s"Processing EngineInfo ID: ${id}")
+          val castedparams = mapToParams(params)
+          val castedparamsections = mapToParamSections(paramsections.asInstanceOf[Seq[Map[String, Any]]])
           val ei = EngineInfo(
             id = id,
             name = name,
             description = description,
-            defaultsettings = castedsettings,
+            params = castedparams,
+            paramsections = castedparamsections,
             defaultalgoinfoid = defaultalgoinfoid)
 
           println(s"Deleting any old EngineInfo ID: ${id}")
@@ -149,43 +119,8 @@ object SettingsInit {
           SS(datareq) = info("datareq")
         } yield {
           println(s"Processing AlgoInfo ID: ${id}")
-          /**
-           * Take care of integers that are parsed as double from JSON
-           * http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
-           */
-          val castedparams = params map { p =>
-            val param = p._2.asInstanceOf[Map[String, Any]]
-            val paramconstraint = param("constraint").asInstanceOf[Map[String, Any]]
-            val paramui = param("ui").asInstanceOf[Map[String, Any]]
-            val constraint = paramconstraint("paramtype").asInstanceOf[String] match {
-              case "boolean" => ParamBooleanConstraint()
-              case "double" => ParamDoubleConstraint(min = paramconstraint.get("min").map(_.asInstanceOf[Double]), max = paramconstraint.get("max").map(_.asInstanceOf[Double]))
-              case "integer" => ParamIntegerConstraint(min = paramconstraint.get("min").map(_.asInstanceOf[Int]), max = paramconstraint.get("max").map(_.asInstanceOf[Int]))
-              case "string" => ParamStringConstraint()
-              case _ => ParamStringConstraint()
-            }
-            val ui = paramui("uitype").asInstanceOf[String] match {
-              case "text" => ParamUI(uitype = "text")
-              case "selection" => {
-                val selectionsSeq = paramui("selections").asInstanceOf[Seq[Map[String, String]]]
-                ParamUI(uitype = "selection", selections = Some(selectionsSeq.map(s => ParamSelectionUI(name = s("name"), value = s("value")))))
-              }
-            }
-            val casteddefault = constraint.paramtype match {
-              case "integer" => param("defaultvalue").asInstanceOf[Double].toInt
-              case _ => param("defaultvalue")
-            }
-            (p._1, Param(
-              id = p._1,
-              name = param("name").asInstanceOf[String],
-              description = param.get("description") map { _.asInstanceOf[String] },
-              defaultvalue = casteddefault,
-              constraint = constraint,
-              ui = ui))
-          }
-
-          val castedparamsections = mapToParamSection(paramsections.asInstanceOf[Seq[Map[String, Any]]])
-
+          val castedparams = mapToParams(params)
+          val castedparamsections = mapToParamSections(paramsections.asInstanceOf[Seq[Map[String, Any]]])
           val ai = AlgoInfo(
             id = id,
             name = name,
@@ -313,12 +248,57 @@ object SettingsInit {
     println("PredictionIO settings initialization finished")
   }
 
-  def mapToParamSection(paramsections: Seq[Map[String, Any]]): Seq[ParamSection] = {
+  def mapToParams(params: Map[String, Any]): Map[String, Param] = {
+    /**
+     * Take care of integers that are parsed as double from JSON
+     * http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.19
+     */
+    params map { p =>
+      val param = p._2.asInstanceOf[Map[String, Any]]
+      val paramconstraint = param("constraint").asInstanceOf[Map[String, Any]]
+      val paramui = param("ui").asInstanceOf[Map[String, Any]]
+      val constraint = paramconstraint("paramtype").asInstanceOf[String] match {
+        case "boolean" => ParamBooleanConstraint()
+        case "double" => ParamDoubleConstraint(min = paramconstraint.get("min").map(_.asInstanceOf[Double]), max = paramconstraint.get("max").map(_.asInstanceOf[Double]))
+        case "integer" => ParamIntegerConstraint(min = paramconstraint.get("min").map(_.asInstanceOf[Int]), max = paramconstraint.get("max").map(_.asInstanceOf[Int]))
+        case "string" => ParamStringConstraint()
+        case _ => ParamStringConstraint()
+      }
+      val uitype = paramui("uitype").asInstanceOf[String]
+      val ui = uitype match {
+        case "selection" => {
+          val selectionsSeq = paramui("selections").asInstanceOf[Seq[Map[String, String]]]
+          ParamUI(uitype = "selection", selections = Some(selectionsSeq.map(s => ParamSelectionUI(name = s("name"), value = s("value")))))
+        }
+        case "slider" =>
+          ParamUI(
+            uitype = "slider",
+            slidermin = paramui.get("slidermin").map(_.asInstanceOf[Double].toInt),
+            slidermax = paramui.get("slidermax").map(_.asInstanceOf[Double].toInt),
+            sliderstep = paramui.get("sliderstep").map(_.asInstanceOf[Double].toInt))
+        case _ => ParamUI(uitype = uitype)
+      }
+      val casteddefault = constraint.paramtype match {
+        case "integer" => param("defaultvalue").asInstanceOf[Double].toInt
+        case _ => param("defaultvalue")
+      }
+      (p._1, Param(
+        id = p._1,
+        name = param("name").asInstanceOf[String],
+        description = param.get("description") map { _.asInstanceOf[String] },
+        defaultvalue = casteddefault,
+        constraint = constraint,
+        ui = ui))
+    }
+  }
+
+  def mapToParamSections(paramsections: Seq[Map[String, Any]]): Seq[ParamSection] = {
     paramsections map { paramsection =>
       ParamSection(
         name = paramsection("name").asInstanceOf[String],
+        sectiontype = paramsection("sectiontype").asInstanceOf[String],
         description = paramsection.get("description").map(_.asInstanceOf[String]),
-        subsections = paramsection.get("subsections").map(ss => mapToParamSection(ss.asInstanceOf[Seq[Map[String, Any]]])),
+        subsections = paramsection.get("subsections").map(ss => mapToParamSections(ss.asInstanceOf[Seq[Map[String, Any]]])),
         params = paramsection.get("params").map(_.asInstanceOf[Seq[String]]))
     }
   }

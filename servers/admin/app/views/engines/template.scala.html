@@ -1,0 +1,58 @@
+@(content: String, emptySection: Boolean)
+<script type="text/template" id="engineItemTypeList_template">
+    <td><%= data.itemtype_id %> <input type="hidden" name="engineItemType[<%= data.index %>]" value="<%= data.itemtype_id %>" /></td>
+    <td><a class="removeItemTypeBtn" href="#">[ x ]</a></td>
+</script>
+<script type="text/template" id="engineTemplate">
+    <form>
+            <div class="row-fluid">
+                <div class="span9">
+                    <!-- Prediction Settings -->
+                    <div class="boxContainer">
+                        <div class="boxBlock">
+                            <div class="boxtitle">Item Types Settings</div>
+                            <div class="boxContent">
+                                <p>In your app, you may have more than one type of items,
+                                    e.g. photos, news and jobs. For better prediction accuracy, one
+                                    engine should handle only: One item type (e.g. News), or A set
+                                    of related item types (e.g. World News, Sport News,
+                                    Entertainment News) Please name the item type(s) to be
+                                    recommended by this engine. You will use these names in
+                                    API/SDKs.</p>
+                                <div class="bottomMargin">
+                                    <label class="checkbox">
+                                        <input id="engineAllItemTypes" <% if (data.allitemtypes == true){ %> checked <%} %> name="engineAllItemTypes" type="checkbox" /> Include ALL item types
+                                    </label>
+                                </div>
+                                <div class="row-fluid">
+                                    <div class="span5">
+                                        <table class="table table-condensed">
+                                            <thead>
+                                                <tr>
+                                                    <th>Selected Item Types</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="engineItemTypeList_ContentHolder">
+                                                <!-- engineItemTypeList_template here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="span5 offset1">
+                                        <div class="input-append">
+                                            <input class="span8" id="engineAddItemTypeInput" type="text" placeholder="item type name"/>
+                                            <a href="#" id="engineAddItemTypeBtn" class="btn btn-primary">Add</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+@Html(content)
+                    </div>
+                    <!-- End of Prediction Settings -->
+                </div>
+            </div>
+    </form>
+</script>
+
+<div id="engineContentHolder"></div>

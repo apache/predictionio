@@ -31,7 +31,8 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Recommend interesting items to each user personally."),
-      defaultsettings = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
+      params = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
+      paramsections = Seq(),
       defaultalgoinfoid = "mahout-itembased")
     engineInfos.insert(itemrec)
     engineInfos.get("itemrec") must beSome(itemrec)
@@ -42,7 +43,8 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemsim",
       name = "Items Similarity Prediction Engine",
       description = Some("Discover similar items."),
-      defaultsettings = Map[String, Param](),
+      params = Map[String, Param](),
+      paramsections = Seq(),
       defaultalgoinfoid = "knnitembased")
     engineInfos.insert(itemsim)
     val updatedItemsim = itemsim.copy(defaultalgoinfoid = "mahout-itembasedcf")
@@ -55,7 +57,8 @@ class EngineInfosSpec extends Specification { def is =
       id = "foo",
       name = "bar",
       description = None,
-      defaultsettings = Map[String, Param](),
+      params = Map[String, Param](),
+      paramsections = Seq(),
       defaultalgoinfoid = "baz")
     engineInfos.insert(foo)
     engineInfos.delete("foo")
@@ -67,7 +70,8 @@ class EngineInfosSpec extends Specification { def is =
       id = "baz",
       name = "beef",
       description = Some("dead"),
-      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
+      params = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
+      paramsections = Seq(),
       defaultalgoinfoid = "bar")
     engineInfos.insert(baz)
     val fos = new java.io.FileOutputStream("engineinfos.bin")

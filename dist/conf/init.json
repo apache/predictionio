@@ -40,7 +40,7 @@
             "name": "Item Recommendation Engine",
             "description": "<h6>Recommend interesting items to each user personally.</h6><p>Sample Use Cases</p><ul><li>recommend top N items to users personally</li><li>predict users' future preferences</li><li>help users to discover new topics they may be interested in</li><li>personalize content</li><li>optimize sales</li></ul>",
             "defaultalgoinfoid": "mahout-itembased",
-            "defaultsettings": {
+            "params": {
                 "serendipity": {
                     "name": "Serendipity",
                     "description": "Preference for surprising discovery",
@@ -49,7 +49,10 @@
                     },
                     "defaultvalue": 0,
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "slider",
+                        "slidermin": 0,
+                        "slidermax": 10,
+                        "sliderstep": 1
                     }
                 },
                 "freshness": {
@@ -60,11 +63,14 @@
                     },
                     "defaultvalue": 0,
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "slider",
+                        "slidermin": 0,
+                        "slidermax": 10,
+                        "sliderstep": 1
                     }
                 },
                 "unseenonly": {
-                    "name": "Unseen Items Only",
+                    "name": "",
                     "description": "",
                     "constraint": {
                         "paramtype": "boolean"
@@ -85,8 +91,7 @@
                     }
                 },
                 "goal": {
-                    "name": "Recommendation Goal",
-                    "description": "Goal to be maximized",
+                    "name": "Recommend items that users will",
                     "constraint": {
                         "paramtype": "string"
                     },
@@ -111,8 +116,8 @@
                                 "value": "like"
                             },
                             {
-                                "name": "buy",
-                                "value": "buy"
+                                "name": "conversion",
+                                "value": "conversion"
                             },
                             {
                                 "name": "view",
@@ -122,7 +127,7 @@
                     }
                 },
                 "numRecommendations": {
-                    "name": "Number of Recommendations",
+                    "name": "",
                     "description": "Number of recommendations to be generated for each user",
                     "constraint": {
                         "paramtype": "integer"
@@ -132,13 +137,49 @@
                         "uitype": "text"
                     }
                 }
-            }
+            },
+            "paramsections": [
+                {
+                    "name": "Recommendation Preferences",
+                    "sectiontype": "normal",
+                    "description": "You could adjust the following parameters using the sliders. Higher value means more important to your App.",
+                    "params": [
+                        "freshness",
+                        "serendipity"
+                    ],
+                    "subsections": [
+                        {
+                            "name": "Unseen Items Only",
+                            "sectiontype": "normal",
+                            "description": "Should the system recommend items that users have seen before?",
+                            "params": [
+                                "unseenonly"
+                            ]
+                        },
+                        {
+                            "name": "Number of Recommendations",
+                            "sectiontype": "normal",
+                            "params": [
+                                "numRecommendations"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Recommendation Goal",
+                    "sectiontype": "normal",
+                    "description": "Please define the goal to be maximized. Algorithms will be evaluated based on the goal defined here.",
+                    "params": [
+                        "goal"
+                    ]
+                }
+            ]
         },
         "itemsim": {
             "name": "Item Similarity Engine",
             "description": "<h6>Discover similar items.</h6><p>Sample Use Cases</p><ul><li>predict what else would a user like if this user likes a, i.e. \"People who like this also like....\"</li><li>automatic item grouping</li></ul>",
             "defaultalgoinfoid": "mahout-itemsimcf",
-            "defaultsettings": {
+            "params": {
                 "serendipity": {
                     "name": "Serendipity",
                     "description": "Preference for surprising discovery",
@@ -147,7 +188,10 @@
                     },
                     "defaultvalue": 0,
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "slider",
+                        "slidermin": 0,
+                        "slidermax": 10,
+                        "sliderstep": 1
                     }
                 },
                 "freshness": {
@@ -158,11 +202,14 @@
                     },
                     "defaultvalue": 0,
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "slider",
+                        "slidermin": 0,
+                        "slidermax": 10,
+                        "sliderstep": 1
                     }
                 },
                 "unseenonly": {
-                    "name": "Unseen Items Only",
+                    "name": "",
                     "description": "",
                     "constraint": {
                         "paramtype": "boolean"
@@ -209,8 +256,8 @@
                                 "value": "like"
                             },
                             {
-                                "name": "buy",
-                                "value": "buy"
+                                "name": "conversion",
+                                "value": "conversion"
                             },
                             {
                                 "name": "view",
@@ -219,9 +266,9 @@
                         ]
                     }
                 },
-                "numRecommendations": {
-                    "name": "Number of Recommendations",
-                    "description": "Number of recommendations to be generated for each user",
+                "numSimilarItems": {
+                    "name": "Number of Similar Items",
+                    "description": "Number of similar items to be generated for each item.",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -230,7 +277,43 @@
                         "uitype": "text"
                     }
                 }
-            }
+            },
+            "paramsections": [
+                {
+                    "name": "Prediction Preferences",
+                    "sectiontype": "normal",
+                    "description": "You could adjust the following parameters using the sliders. Higher value means more important to your App.",
+                    "params": [
+                        "freshness",
+                        "serendipity"
+                    ],
+                    "subsections": [
+                        {
+                            "name": "Unseen Items Only",
+                            "sectiontype": "normal",
+                            "description": "Should the system recommend items that users have seen before?",
+                            "params": [
+                                "unseenonly"
+                            ]
+                        },
+                        {
+                            "name": "Number of Similar Items",
+                            "sectiontype": "normal",
+                            "params": [
+                                "numSimilarItems"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Prediction Goal",
+                    "sectiontype": "normal",
+                    "description": "Please define the goal to be maximized. Algorithms will be evaluated based on the goal defined here.",
+                    "params": [
+                        "goal"
+                    ]
+                }
+            ]
         }
     },
     "algoinfos": {
@@ -306,7 +389,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "measureParam": {
@@ -404,21 +487,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -426,10 +524,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -437,21 +561,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -462,7 +638,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -590,11 +780,64 @@
             "paramsections": [
                 {
                     "name": "Parameter Settings",
+                    "sectiontype": "normal",
                     "subsections": [
                         {
                             "name": "Item Similarity Measurement",
+                            "sectiontype": "normal",
                             "params": [
                                 "measureParam"
+                            ]
+                        },
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "subsections": [
+                                {
+                                    "name": "Regularization",
+                                    "sectiontype": "normal",
+                                    "description": "Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.",
+                                    "params": [
+                                        "priorCountParam",
+                                        "priorCorrelParam"
+                                    ]
+                                },
+                                {
+                                    "name": "Other Parameters",
+                                    "sectiontype": "normal",
+                                    "description": "Filters to speed up computation and reduce noise.",
+                                    "params": [
+                                        "minNumRatersParam",
+                                        "maxNumRatersParam",
+                                        "minIntersectionParam",
+                                        "minNumRatedSimParam"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
                             ]
                         }
                     ]
@@ -639,7 +882,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "booleanData": {
@@ -649,7 +892,17 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
@@ -704,7 +957,37 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Co-occurrence",
+                                "value": "SIMILARITY_COOCCURRENCE"
+                            },
+                            {
+                                "name": "Log-Likelihood",
+                                "value": "SIMILARITY_LOGLIKELIHOOD"
+                            },
+                            {
+                                "name": "Tanimoto Coefficient",
+                                "value": "SIMILARITY_TANIMOTO_COEFFICIENT"
+                            },
+                            {
+                                "name": "City Block",
+                                "value": "SIMILARITY_CITY_BLOCK"
+                            },
+                            {
+                                "name": "Cosine Similarity",
+                                "value": "SIMILARITY_COSINE"
+                            },
+                            {
+                                "name": "Pearson Correlation",
+                                "value": "SIMILARITY_PEARSON_CORRELATION"
+                            },
+                            {
+                                "name": "Euclidean Distance",
+                                "value": "SIMILARITY_EUCLIDEAN_DISTANCE"
+                            }
+                        ]
                     },
                     "defaultvalue": "SIMILARITY_COOCCURRENCE"
                 },
@@ -723,21 +1006,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -745,10 +1043,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -756,21 +1080,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -781,7 +1157,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -886,7 +1276,64 @@
                     "defaultvalue": 1500
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "Item Similarity Measurement",
+                            "sectiontype": "normal",
+                            "params": [
+                                "similarityClassname"
+                            ]
+                        },
+                        {
+                            "name": "Advanced Parameters",
+                            "sectiontype": "normal",
+                            "params": [
+                                "booleanData"
+                            ]
+                        },
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "threshold",
+                                "maxPrefsPerUser",
+                                "minPrefsPerUser",
+                                "maxSimilaritiesPerItem",
+                                "maxPrefsPerUserInItemSimilarity"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-parallelals": {
             "name": "Mahout's Parallel ALS-WR",
@@ -926,12 +1373,12 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "lambda": {
                     "name": "Lambda",
-                    "description": "Regularization param to avoid overfitting.",
+                    "description": "Regularization parameter to avoid overfitting.",
                     "constraint": {
                         "paramtype": "double"
                     },
@@ -947,13 +1394,23 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
                 "alpha": {
                     "name": "Alpha",
-                    "description": "Confidence param will be ignored if Implicit Feedback is false.",
+                    "description": "Confidence parameter will be ignored if Implicit Feedback is false.",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -963,7 +1420,7 @@
                     "defaultvalue": 40
                 },
                 "numFeatures": {
-                    "name": "Num of Factorized Features",
+                    "name": "Number of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
                     "constraint": {
                         "paramtype": "integer"
@@ -988,21 +1445,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -1010,10 +1482,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -1021,21 +1519,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -1046,7 +1596,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -1131,7 +1695,52 @@
                     "defaultvalue": 20
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "params": [
+                        "implicitFeedback"
+                    ],
+                    "subsections": [
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "lambda",
+                                "alpha",
+                                "numFeatures",
+                                "numIterations"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-knnuserbased": {
             "name": "Mahout's kNN User Based Collaborative Filtering (Non-distributed)",
@@ -1166,7 +1775,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "booleanData": {
@@ -1176,7 +1785,17 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
@@ -1198,7 +1817,37 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "City Block",
+                                "value": "CityBlockSimilarity"
+                            },
+                            {
+                                "name": "Euclidean Distance",
+                                "value": "EuclideanDistanceSimilarity"
+                            },
+                            {
+                                "name": "Log-Likelihood",
+                                "value": "LogLikelihoodSimilarity"
+                            },
+                            {
+                                "name": "Pearson Correlation",
+                                "value": "PearsonCorrelationSimilarity"
+                            },
+                            {
+                                "name": "Spearman Correlation",
+                                "value": "SpearmanCorrelationSimilarity"
+                            },
+                            {
+                                "name": "Tanimoto Coefficient",
+                                "value": "TanimotoCoefficientSimilarity"
+                            },
+                            {
+                                "name": "Uncentered Cosine",
+                                "value": "UncenteredCosineSimilarity"
+                            }
+                        ]
                     },
                     "defaultvalue": "PearsonCorrelationSimilarity"
                 },
@@ -1209,7 +1858,17 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
@@ -1239,21 +1898,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -1261,10 +1935,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -1272,21 +1972,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -1297,7 +2049,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -1362,7 +2128,63 @@
                     "defaultvalue": 1
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Similarity Measurement",
+                            "sectiontype": "normal",
+                            "params": [
+                                "userSimilarity"
+                            ]
+                        },
+                        {
+                            "name": "Advanced Parameters",
+                            "sectiontype": "normal",
+                            "params": [
+                                "booleanData",
+                                "weighted"
+                            ]
+                        },
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "nearestN",
+                                "minSimilarity",
+                                "samplingRate"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-thresholduserbased": {
             "name": "Mahout's Threshold User Based Collaborative Filtering (Non-distributed)",
@@ -1396,7 +2218,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "booleanData": {
@@ -1406,7 +2228,17 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
@@ -1428,7 +2260,37 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "City Block",
+                                "value": "CityBlockSimilarity"
+                            },
+                            {
+                                "name": "Euclidean Distance",
+                                "value": "EuclideanDistanceSimilarity"
+                            },
+                            {
+                                "name": "Log-Likelihood",
+                                "value": "LogLikelihoodSimilarity"
+                            },
+                            {
+                                "name": "Pearson Correlation",
+                                "value": "PearsonCorrelationSimilarity"
+                            },
+                            {
+                                "name": "Spearman Correlation",
+                                "value": "SpearmanCorrelationSimilarity"
+                            },
+                            {
+                                "name": "Tanimoto Coefficient",
+                                "value": "TanimotoCoefficientSimilarity"
+                            },
+                            {
+                                "name": "Uncentered Cosine",
+                                "value": "UncenteredCosineSimilarity"
+                            }
+                        ]
                     },
                     "defaultvalue": "PearsonCorrelationSimilarity"
                 },
@@ -1439,7 +2301,17 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
@@ -1458,21 +2330,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -1480,10 +2367,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -1491,21 +2404,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -1516,7 +2481,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -1561,7 +2540,62 @@
                     "defaultvalue": 1
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Similarity Measurement",
+                            "sectiontype": "normal",
+                            "params": [
+                                "userSimilarity"
+                            ]
+                        },
+                        {
+                            "name": "Advanced Parameters",
+                            "sectiontype": "normal",
+                            "params": [
+                                "booleanData",
+                                "weighted"
+                            ]
+                        },
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "threshold",
+                                "samplingRate"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-slopeone": {
             "name": "Mahout's SlopeOne Rating Based Collaborative Filtering (Non-distributed)",
@@ -1591,7 +2625,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "weighting": {
@@ -1601,7 +2635,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "No Weighting",
+                                "value": "No_Weighting"
+                            },
+                            {
+                                "name": "Count",
+                                "value": "Count"
+                            },
+                            {
+                                "name": "Standard Deviation",
+                                "value": "Standard_Deviation"
+                            }
+                        ]
                     },
                     "defaultvalue": "Standard_Deviation"
                 },
@@ -1609,21 +2657,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -1631,10 +2694,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -1642,21 +2731,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -1667,12 +2808,65 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "Weighting Settings",
+                            "sectiontype": "normal",
+                            "params": [
+                                "weighting"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-alswr": {
             "name": "Mahout's ALS-WR (Non-distributed)",
@@ -1704,11 +2898,11 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "numFeatures": {
-                    "name": "Num of Factorized Features",
+                    "name": "Number of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
                     "constraint": {
                         "paramtype": "integer"
@@ -1744,21 +2938,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -1766,10 +2975,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -1777,21 +3012,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -1802,7 +3089,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -1867,7 +3168,48 @@
                     "defaultvalue": 20
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "numFeatures",
+                                "lambda",
+                                "numIterations"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-svdsgd": {
             "name": "Mahout's SVD-RatingSGD Recommender (Non-distributed)",
@@ -1902,11 +3244,11 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "numFeatures": {
-                    "name": "Num of Factorized Features",
+                    "name": "Number of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
                     "constraint": {
                         "paramtype": "integer"
@@ -1951,7 +3293,7 @@
                 },
                 "numIterations": {
                     "name": "Number of Iterations",
-                    "description": "Number of training iteration.",
+                    "description": "Number of training iterations.",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -1975,21 +3317,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -1997,10 +3354,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -2008,21 +3391,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -2033,7 +3468,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -2158,7 +3607,51 @@
                     "defaultvalue": 1
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "numFeatures",
+                                "learningRate",
+                                "preventOverfitting",
+                                "randomNoise",
+                                "numIterations",
+                                "learningRateDecay"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-svdplusplus": {
             "name": "Mahout's SVDPlusPlus Recommender (Non-distributed)",
@@ -2193,11 +3686,11 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "numFeatures": {
-                    "name": "Num of Factorized Features",
+                    "name": "Number of Factorized Features",
                     "description": "Dimension of the factorized feature space.",
                     "constraint": {
                         "paramtype": "integer"
@@ -2242,7 +3735,7 @@
                 },
                 "numIterations": {
                     "name": "Number of Iterations",
-                    "description": "Number of training iteration.",
+                    "description": "Number of training iterations.",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -2266,21 +3759,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -2288,10 +3796,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -2299,21 +3833,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -2324,7 +3910,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -2449,7 +4049,51 @@
                     "defaultvalue": 1
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "numFeatures",
+                                "learningRate",
+                                "preventOverfitting",
+                                "randomNoise",
+                                "numIterations",
+                                "learningRateDecay"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "pdio-itemsimrandomrank": {
             "name": "Random Rank",
@@ -2522,7 +4166,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "measureParam": {
@@ -2532,7 +4176,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Pearson Correlation Similarity",
+                                "value": "correl"
+                            },
+                            {
+                                "name": "Cosine Similarity",
+                                "value": "cosine"
+                            },
+                            {
+                                "name": "Jaccard Similarity",
+                                "value": "jaccard"
+                            }
+                        ]
                     },
                     "defaultvalue": "correl"
                 },
@@ -2595,21 +4253,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -2617,10 +4290,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -2628,21 +4327,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -2653,7 +4404,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -2758,7 +4523,71 @@
                     "defaultvalue": 0.1
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "Item Similarity Measurement",
+                            "sectiontype": "normal",
+                            "params": [
+                                "measureParam"
+                            ]
+                        },
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "subsections": [
+                                {
+                                    "name": "Regularization",
+                                    "sectiontype": "normal",
+                                    "description": "Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.",
+                                    "params": [
+                                        "priorCountParam",
+                                        "priorCorrelParam"
+                                    ]
+                                },
+                                {
+                                    "name": "Other Parameters",
+                                    "sectiontype": "normal",
+                                    "description": "Filters to speed up computation and reduce noise.",
+                                    "params": [
+                                        "minNumRatersParam",
+                                        "maxNumRatersParam",
+                                        "minIntersectionParam"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "mahout-itemsimcf": {
             "name": "Mahout's Item Similarity Collaborative Filtering",
@@ -2796,7 +4625,7 @@
                 "Hadoop"
             ],
             "datareq": [
-                "Users, Items, and U2I Actions such as Like, Buy and Rate."
+                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
                 "booleanData": {
@@ -2806,7 +4635,17 @@
                         "paramtype": "boolean"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
                     },
                     "defaultvalue": false
                 },
@@ -2839,7 +4678,37 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Co-occurrence",
+                                "value": "SIMILARITY_COOCCURRENCE"
+                            },
+                            {
+                                "name": "Log-Likelihood",
+                                "value": "SIMILARITY_LOGLIKELIHOOD"
+                            },
+                            {
+                                "name": "Tanimoto Coefficient",
+                                "value": "SIMILARITY_TANIMOTO_COEFFICIENT"
+                            },
+                            {
+                                "name": "City Block",
+                                "value": "SIMILARITY_CITY_BLOCK"
+                            },
+                            {
+                                "name": "Cosine Similarity",
+                                "value": "SIMILARITY_COSINE"
+                            },
+                            {
+                                "name": "Pearson Correlation",
+                                "value": "SIMILARITY_PEARSON_CORRELATION"
+                            },
+                            {
+                                "name": "Euclidean Distance",
+                                "value": "SIMILARITY_EUCLIDEAN_DISTANCE"
+                            }
+                        ]
                     },
                     "defaultvalue": "SIMILARITY_COOCCURRENCE"
                 },
@@ -2858,21 +4727,36 @@
                     "name": "View Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 3
-                },
-                "viewmoreParam": {
-                    "name": "View More Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 3
                 },
@@ -2880,10 +4764,36 @@
                     "name": "Like Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 5
                 },
@@ -2891,21 +4801,73 @@
                     "name": "Dislike Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 1
                 },
                 "conversionParam": {
-                    "name": "Buy Score",
+                    "name": "Conversion Score",
                     "description": "",
                     "constraint": {
-                        "paramtype": "integer"
+                        "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "1",
+                                "value": "1"
+                            },
+                            {
+                                "name": "2",
+                                "value": "2"
+                            },
+                            {
+                                "name": "3",
+                                "value": "3"
+                            },
+                            {
+                                "name": "4",
+                                "value": "4"
+                            },
+                            {
+                                "name": "5",
+                                "value": "5"
+                            },
+                            {
+                                "name": "Ignore",
+                                "value": "ignore"
+                            }
+                        ]
                     },
                     "defaultvalue": 4
                 },
@@ -2916,7 +4878,21 @@
                         "paramtype": "string"
                     },
                     "ui": {
-                        "uitype": "text"
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Use the latest action",
+                                "value": "latest"
+                            },
+                            {
+                                "name": "Use the highest preference score one",
+                                "value": "highest"
+                            },
+                            {
+                                "name": "Use the lowest preference score one",
+                                "value": "lowest"
+                            }
+                        ]
                     },
                     "defaultvalue": "latest"
                 },
@@ -2981,7 +4957,62 @@
                     "defaultvalue": 5
                 }
             },
-            "paramsections": []
+            "paramsections": [
+                {
+                    "name": "Parameter Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "Item Similarity Measurement",
+                            "sectiontype": "normal",
+                            "params": [
+                                "similarityClassname"
+                            ]
+                        },
+                        {
+                            "name": "Advanced Parameters",
+                            "sectiontype": "normal",
+                            "params": [
+                                "booleanData"
+                            ]
+                        },
+                        {
+                            "name": "Numeric Parameters",
+                            "sectiontype": "tuning",
+                            "params": [
+                                "threshold",
+                                "maxPrefsPerUser",
+                                "minPrefsPerUser"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "User Actions Representation Settings",
+                    "sectiontype": "normal",
+                    "subsections": [
+                        {
+                            "name": "User Action Scores",
+                            "sectiontype": "normal",
+                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
+                            "params": [
+                                "viewParam",
+                                "likeParam",
+                                "dislikeParam",
+                                "conversionParam"
+                            ]
+                        },
+                        {
+                            "name": "Overriding",
+                            "sectiontype": "normal",
+                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
+                            "params": [
+                                "conflictParam"
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     },
     "offlineevalsplitterinfos": {

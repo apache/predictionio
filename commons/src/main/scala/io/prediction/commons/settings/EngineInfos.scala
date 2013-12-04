@@ -16,9 +16,10 @@ case class EngineInfo(
   id: String,
   name: String,
   description: Option[String],
-  defaultsettings: Map[String, Param],
+  params: Map[String, Param],
+  paramsections: Seq[ParamSection],
   defaultalgoinfoid: String
-)
+) extends Info
 
 /** Base trait for implementations that interact with engine info in the backend data store. */
 trait EngineInfos extends Common {
@@ -44,7 +45,8 @@ trait EngineInfos extends Common {
         "id" -> engineinfo.id,
         "name" -> engineinfo.name,
         "description" -> engineinfo.description,
-        "defaultsettings" -> engineinfo.defaultsettings,
+        "params" -> engineinfo.params,
+        "paramsections" -> engineinfo.paramsections,
         "defaultalgoinfoid" -> engineinfo.defaultalgoinfoid)
     }
     KryoInjection(engineinfos)
@@ -58,7 +60,8 @@ trait EngineInfos extends Common {
           id = data("id").asInstanceOf[String],
           name = data("name").asInstanceOf[String],
           description = data("description").asInstanceOf[Option[String]],
-          defaultsettings = data("defaultsettings").asInstanceOf[Map[String, Param]],
+          params = data("params").asInstanceOf[Map[String, Param]],
+          paramsections = data("paramsections").asInstanceOf[Seq[ParamSection]],
           defaultalgoinfoid = data("defaultalgoinfoid").asInstanceOf[String])
       }
 

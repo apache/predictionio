@@ -32,7 +32,7 @@ object Forms {
         data.get(key) map { id =>
           val infoParams = infotype match {
             case "algo" => Some(Application.algoInfos.get(id) map { _.params })
-            case "engine" => Some(Application.engineInfos.get(id) map { _.defaultsettings })
+            case "engine" => Some(Application.engineInfos.get(id) map { _.params })
             case _ => None
           }
 

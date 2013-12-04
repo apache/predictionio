@@ -16,7 +16,7 @@ object ItemSimAlgoOutput {
 
   def output(iid: String, n: Int, itypes: Option[Seq[String]], latlng: Option[Tuple2[Double, Double]], within: Option[Double], unit: Option[String])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
     /** Serendipity settings. */
-    val serendipity = engine.settings.get("serendipity") map { _.asInstanceOf[Int] }
+    val serendipity = engine.params.get("serendipity") map { _.asInstanceOf[Int] }
 
     /** Serendipity value (s) from 0-10 in engine settings.
       * Implemented as randomly picking items from top n*(s+1) results.
@@ -65,7 +65,7 @@ object ItemSimAlgoOutput {
     /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
       * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
       */
-    val freshness = engine.settings.get("freshness") map { _.asInstanceOf[Int] }
+    val freshness = engine.params.get("freshness") map { _.asInstanceOf[Int] }
 
     /** Freshness output. */
     val finalOutput = freshness map { f =>

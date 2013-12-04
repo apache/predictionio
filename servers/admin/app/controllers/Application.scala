@@ -27,6 +27,8 @@ import scala.util.Random
 import com.github.nscala_time.time.Imports._
 import org.apache.commons.codec.digest.DigestUtils
 
+import Forms._
+
 /*
  * TODO:
  * - decodeURIComponent any GET custom param
@@ -974,7 +976,7 @@ object Application extends Controller {
             name = enginename,
             infoid = enginetype,
             itypes = None, // NOTE: default None (means all itypes)
-            settings = engineInfo.defaultsettings.map(s => (s._2.id, s._2.defaultvalue))
+            params = engineInfo.params.map(s => (s._2.id, s._2.defaultvalue))
           ))
           Logger.info("Create engine ID " + engineId)
 
@@ -2287,5 +2289,214 @@ object Application extends Controller {
           case t: String => InternalServerError(Json.obj("message" -> t))
         }
       }
+  }
+
+  def getEngineSettings(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      engineInfos.get(engine.infoid) map { engineInfo =>
+        val params = engineInfo.params.mapValues(_.defaultvalue) ++ engine.params
+
+        Ok(toJson(Map(
+          "id" -> toJson(engine.id), // engine id
+          "appid" -> toJson(engine.appid),
+          "allitemtypes" -> toJson(engine.itypes == None),
+          "itemtypelist" -> engine.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull)) ++
+          (params map { case (k, v) => (k, toJson(v.toString)) })))
+      } getOrElse {
+        NotFound(toJson(Map("message" -> toJson(s"Invalid EngineInfo ID: ${engine.infoid}"))))
+      }
+  }
+
+  def updateEngineSettings(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      val f = Form(tuple(
+        "infoid" -> mapOfStringToAny,
+        "allitemtypes" -> boolean,
+        "itemtypelist" -> list(text)))
+      f.bindFromRequest.fold(
+        e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
+        f => {
+          val (params, allitemtypes, itemtypelist) = f
+          // NOTE: read-modify-write the original param
+          val itypes = if (itemtypelist.isEmpty) None else Option(itemtypelist)
+          val updatedParams = engine.params ++ params - "infoid"
+          val updatedEngine = engine.copy(itypes = itypes, params = updatedParams)
+          engines.update(updatedEngine)
+          Ok
+        })
+  }
+
+  def getEngineTemplateHtml(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      //Ok(views.html.engines.template(engine.infoid))
+      engineInfos.get(engine.infoid) map { engineInfo =>
+        if (engineInfo.paramsections.isEmpty)
+          Ok(views.html.engines.template(handleParamSections[EngineInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this engine."))), engineInfo, 1), true))
+        else
+          Ok(views.html.engines.template(handleParamSections[EngineInfo](engineInfo.paramsections, engineInfo, 1), false))
+      } getOrElse {
+        NotFound(s"EngineInfo ID ${engine.infoid} not found")
+      }
+  }
+
+  def getEngineTemplateJs(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      Ok(views.js.engines.template(engine.infoid, Seq()))
+      engineInfos.get(engine.infoid) map { engineInfo =>
+        Ok(views.js.engines.template(
+          engineInfo.id,
+          engineInfo.paramsections.map(collectParams(engineInfo, _)).foldLeft(Set[Param]())(_ ++ _).toSeq))
+      } getOrElse {
+        NotFound(s"EngineInfo ID ${engine.infoid} not found")
+      }
+  }
+
+  def getAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      // TODO: check user owns this app + engine + aglo
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        // get default params from algoinfo and combined with existing params
+        val params = algoInfo.params.mapValues(_.defaultvalue) ++ algo.params
+
+        Ok(toJson(Map(
+          "id" -> toJson(algo.id),
+          "appid" -> toJson(appid),
+          "engineid" -> toJson(engineid)) ++
+          (params map { case (k, v) => (k, toJson(v.toString)) })))
+      } getOrElse {
+        NotFound(toJson(Map("message" -> toJson(s"Invalid AlgoInfo ID: ${algo.infoid}"))))
+      }
+  }
+
+  def updateAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      val f = Form(single("infoid" -> mapOfStringToAny))
+      f.bindFromRequest.fold(
+        e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
+        params => {
+          // NOTE: read-modify-write the original param
+          val updatedParams = algo.params ++ params - "infoid"
+          val updatedAlgo = algo.copy(params = updatedParams)
+          algos.update(updatedAlgo)
+          Ok
+        })
+  }
+
+  def getAlgoTemplateHtml(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        if (algoInfo.paramsections.isEmpty)
+          Ok(views.html.algos.template(handleParamSections[AlgoInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this algorithm."))), algoInfo, 1), true))
+        else
+          Ok(views.html.algos.template(handleParamSections[AlgoInfo](algoInfo.paramsections, algoInfo, 1), false))
+      } getOrElse {
+        NotFound(s"AlgoInfo ID ${algo.infoid} not found")
+      }
+  }
+
+  def getAlgoTemplateJs(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        Ok(views.js.algos.template(
+          algoInfo.id,
+          algoInfo.paramsections.map(collectParams(algoInfo, _)).foldLeft(Set[Param]())(_ ++ _).toSeq,
+          algoInfo.paramsections.map(collectParams(algoInfo, _, true)).foldLeft(Set[Param]())(_ ++ _).toSeq))
+      } getOrElse {
+        NotFound(s"AlgoInfo ID ${algo.infoid} not found")
+      }
+  }
+
+  def collectParams[T <: Info](info: T, paramsection: ParamSection, tuning: Boolean = false): Set[Param] = {
+    if (tuning)
+      if (paramsection.sectiontype == "tuning")
+        paramsection.params.map(_.map(info.params(_)).toSet).getOrElse(Set()) ++
+          paramsection.subsections.map(_.map(collectParams(info, _, false)).reduce(_ ++ _)).getOrElse(Set())
+      else
+        paramsection.subsections.map(_.map(collectParams(info, _, tuning)).reduce(_ ++ _)).getOrElse(Set())
+    else
+      paramsection.params.map(_.map(info.params(_)).toSet).getOrElse(Set()) ++
+        paramsection.subsections.map(_.map(collectParams(info, _, tuning)).reduce(_ ++ _)).getOrElse(Set())
+  }
+
+  def handleParam[T <: Info](param: Param, info: T, tuning: Boolean = false): String = {
+    val content = param.ui.uitype match {
+      case "selection" =>
+        uiSelection[T](info, param.id, param.name, param.description, param.ui.selections.map(_.map(s => (s.name, s.value))).get)
+      case "slider" =>
+        uiSlider[T](info, param.id, param.name, param.description)
+      case _ =>
+        if (tuning)
+          uiTextPair[T](info, param.id + "Min", param.id + "Max", param.name, param.description)
+        else
+          uiText[T](info, param.id, param.name, param.description)
+    }
+    content.toString
+  }
+
+  def handleParamSections[T <: Info](paramsections: Seq[ParamSection], info: T, level: Int, tuning: Boolean = false): String = {
+    paramsections map { paramsection =>
+      if (paramsection.sectiontype == "tuning")
+        views.html.algos.sectionmanualauto(
+          paramsection.name,
+          handleParamSectionContent[T](paramsection, info, level),
+          handleParamSectionContent[T](paramsection, info, level, true))
+      else if (level > 1)
+        uiSection2[T](info, paramsection.name, paramsection.description, handleParamSectionContent[T](paramsection, info, level, tuning))
+      else
+        uiSection1[T](info, paramsection.name, paramsection.description, handleParamSectionContent[T](paramsection, info, level, tuning))
+    } mkString ""
+  }
+
+  def handleParamSectionContent[T <: Info](paramsection: ParamSection, info: T, level: Int, tuning: Boolean = false) = {
+    paramsection.params.map(_.map(p => handleParam[T](info.params(p), info, tuning)).mkString).getOrElse("") +
+      paramsection.subsections.map(handleParamSections[T](_, info, level + 1, tuning)).getOrElse("")
+  }
+
+  def uiText[T <: Info](info: T, id: String, name: String, description: Option[String]) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.text(id, name, description)
+      case _: EngineInfo =>
+        views.html.engines.text(id, name, description)
+    }
+  }
+
+  def uiTextPair[T <: Info](info: T, id1: String, id2: String, name: String, description: Option[String]) = {
+    views.html.algos.textpair(id1, id2, name, description)
+  }
+
+  def uiSlider[T <: Info](info: T, id: String, name: String, description: Option[String]) = {
+    views.html.engines.slider(id, name, description)
+  }
+
+  def uiSelection[T <: Info](info: T, id: String, name: String, description: Option[String], selections: Seq[(String, String)]) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.selection(id, name, description, selections)
+      case _: EngineInfo =>
+        views.html.engines.selection(id, name, description, selections)
+    }
+  }
+
+  def uiSection1[T <: Info](info: T, name: String, description: Option[String], content: String) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.section1(name, description, content)
+      case _: EngineInfo =>
+        views.html.engines.section1(name, description, content)
+    }
+  }
+
+  def uiSection2[T <: Info](info: T, name: String, description: Option[String], content: String) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.section2(name, description, content)
+      case _: EngineInfo =>
+        views.html.engines.section2(name, description, content)
+    }
   }
 }
