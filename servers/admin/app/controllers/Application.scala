@@ -1508,7 +1508,7 @@ object Application extends Controller {
             case (index, arrayOfAlgos) =>
               val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
               val algoInfo = algoInfos.get(algo.infoid).get
-              val settings = Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+              val settings = Helper.displayParams(algoInfo, algo.params)
 
               (index -> (algo.id, settings))
 
@@ -1544,7 +1544,7 @@ object Application extends Controller {
 
               Map(
                 "algoautotuneid" -> toJson(r.algoid.toString),
-                "settingsstring" -> toJson(Itemrec.Algorithms.displayParams(algoInfo, algo.params)), // TODO: refactor display param
+                "settingsstring" -> toJson(Helper.displayParams(algoInfo, algo.params)), // TODO: refactor display param
                 "score" -> toJson(r.score))
 
             }.toSeq
@@ -1581,7 +1581,7 @@ object Application extends Controller {
                 "engineid" -> algo.engineid.toString,
                 "algoinfoid" -> algo.infoid,
                 "algoinfoname" -> algoInfo.name,
-                "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                "settingsstring" -> Helper.displayParams(algoInfo, algo.params)
               )),
               "metric" -> toJson(Map(
                 "id" -> metric.id.toString,
@@ -1758,7 +1758,7 @@ object Application extends Controller {
                     "engineid" -> algo.engineid.toString,
                     "algoinfoid" -> algo.infoid,
                     "algoinfoname" -> algoInfo.name,
-                    "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                    "settingsstring" -> Helper.displayParams(algoInfo, algo.params)
                   )
                 }.toSeq
               )
@@ -2035,7 +2035,7 @@ object Application extends Controller {
                 "engineid" -> algo.engineid.toString,
                 "algoinfoid" -> algo.infoid,
                 "algoinfoname" -> algoInfo.name,
-                "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+                "settingsstring" -> Helper.displayParams(algoInfo, algo.params)
               )
             }.toSeq
           )

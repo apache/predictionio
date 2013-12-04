@@ -13,7 +13,7 @@ import Application.{ itemRecScores, itemSimScores }
 import Application.{ trainingItemRecScores, trainingItemSimScores }
 import Application.settingsSchedulerUrl
 
-import io.prediction.commons.settings.{ OfflineEval, OfflineTune, Algo }
+import io.prediction.commons.settings.{ OfflineEval, OfflineTune, Algo, AlgoInfo }
 
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.WS
@@ -364,4 +364,12 @@ object Helper extends Controller {
     }
   }
 
+  def displayParams(algoInfo: AlgoInfo, params: Map[String, Any]): String = {
+    // return default value if the param doesn't exist in algo's params field
+    // (eg. new param added later).
+    algoInfo.name + ": " + (algoInfo.paramorder map { paramName =>
+      algoInfo.params(paramName).name + " = " +
+        params.getOrElse(paramName, algoInfo.params(paramName).defaultvalue)
+    } mkString (", "))
+  }
 }

@@ -68,43 +68,9 @@ PUT     /apps/:appid/engine_settings/:engineid         controllers.Application.u
 GET     /apps/:appid/engines/:engineid/template.html   controllers.Application.getEngineTemplateHtml(appid: Int, engineid: Int)
 GET     /apps/:appid/engines/:engineid/template.js     controllers.Application.getEngineTemplateJs(appid: Int, engineid: Int)
 
-# TODO remove the following when work on PDIO-227
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid     controllers.Itemrec.Engine.getSettings(appid, engineid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid     controllers.Itemrec.Engine.updateSettings(appid, engineid)
-
-GET     /modules/itemsim/settings/app/:appid/engine/:engineid     controllers.Itemsim.Engine.getSettings(appid, engineid)
-PUT     /modules/itemsim/settings/app/:appid/engine/:engineid     controllers.Itemsim.Engine.updateSettings(appid, engineid)
-
 # Algo Module
 GET     /apps/:appid/engines/:engineid/algo_settings/:algoid    controllers.Application.getAlgoSettings(appid: Int, engineid: Int, algoid: Int)
 PUT     /apps/:appid/engines/:engineid/algo_settings/:algoid    controllers.Application.updateAlgoSettings(appid: Int, engineid: Int, algoid: Int)
 
 GET     /apps/:appid/engines/:engineid/algos/:algoid/template.html   controllers.Application.getAlgoTemplateHtml(appid: Int, engineid: Int, algoid: Int)
 GET     /apps/:appid/engines/:engineid/algos/:algoid/template.js     controllers.Application.getAlgoTemplateJs(appid: Int, engineid: Int, algoid: Int)
-
-# TODO remove the following when work on PDIO-227
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/pdio-knnitembased/:algoid     controllers.Itemrec.PdioKnnItemBased.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/pdio-knnitembased/:algoid     controllers.Itemrec.PdioKnnItemBased.updateSettings(appid, engineid, algoid)
-
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-itembased/:algoid     controllers.Itemrec.MahoutItemBased.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-itembased/:algoid     controllers.Itemrec.MahoutItemBased.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-parallelals/:algoid     controllers.Itemrec.MahoutParallelALS.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-parallelals/:algoid     controllers.Itemrec.MahoutParallelALS.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-knnuserbased/:algoid     controllers.Itemrec.MahoutKnnUserBased.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-knnuserbased/:algoid     controllers.Itemrec.MahoutKnnUserBased.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-thresholduserbased/:algoid     controllers.Itemrec.MahoutThresholdUserBased.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-thresholduserbased/:algoid     controllers.Itemrec.MahoutThresholdUserBased.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-slopeone/:algoid     controllers.Itemrec.MahoutSlopeOne.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-slopeone/:algoid     controllers.Itemrec.MahoutSlopeOne.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-alswr/:algoid     controllers.Itemrec.MahoutALSWR.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-alswr/:algoid     controllers.Itemrec.MahoutALSWR.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-svdsgd/:algoid     controllers.Itemrec.MahoutSVDSGD.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-svdsgd/:algoid     controllers.Itemrec.MahoutSVDSGD.updateSettings(appid, engineid, algoid)
-GET     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-svdplusplus/:algoid     controllers.Itemrec.MahoutSVDPlusPlus.getSettings(appid, engineid, algoid)
-PUT     /modules/itemrec/settings/app/:appid/engine/:engineid/mahout-svdplusplus/:algoid     controllers.Itemrec.MahoutSVDPlusPlus.updateSettings(appid, engineid, algoid)
-
-GET     /modules/itemsim/settings/app/:appid/engine/:engineid/pdio-itemsimcf/:algoid     controllers.Itemsim.ItemSimCF.getSettings(appid, engineid, algoid)
-PUT     /modules/itemsim/settings/app/:appid/engine/:engineid/pdio-itemsimcf/:algoid     controllers.Itemsim.ItemSimCF.updateSettings(appid, engineid, algoid)
-
-GET     /modules/itemsim/settings/app/:appid/engine/:engineid/mahout-itemsimcf/:algoid     controllers.Itemsim.MahoutItemSimCF.getSettings(appid, engineid, algoid)
-PUT     /modules/itemsim/settings/app/:appid/engine/:engineid/mahout-itemsimcf/:algoid     controllers.Itemsim.MahoutItemSimCF.updateSettings(appid, engineid, algoid)

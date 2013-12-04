@@ -64,7 +64,8 @@ class AdminServerSpec extends Specification with JsonMatchers {
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Description 1"),
-      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI())),
+      params = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI())),
+      paramsections = Seq(),
       defaultalgoinfoid = "knn"
     )
 
@@ -500,7 +501,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       name = "get-engine",
       infoid = "itemrec",
       itypes = None, // NOTE: default None (means all itypes)
-      settings = Map("a" -> "b")
+      params = Map("a" -> "b")
     )
     val testEngine2 = testEngine.copy(appid = appid2, name = "get-engine2") // diff app
     val testEngine3 = testEngine.copy(name = "get-engine3") // diff name
@@ -625,7 +626,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       name = "test-engine",
       infoid = "itemrec",
       itypes = None, // NOTE: default None (means all itypes)
-      settings = Map("a" -> "b")
+      params = Map("a" -> "b")
     )
     val engineid = engines.insert(testEngine)
 
@@ -758,7 +759,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       name = "test-engine",
       infoid = "itemrec",
       itypes = None, // NOTE: default None (means all itypes)
-      settings = Map("a" -> "b")
+      params = Map("a" -> "b")
     )
 
     val testEngine2 = testEngine.copy(
@@ -980,7 +981,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       name = "test-engine",
       infoid = "itemrec",
       itypes = None, // NOTE: default None (means all itypes)
-      settings = Map("a" -> "b")
+      params = Map("a" -> "b")
     )
 
     val engineid = engines.insert(testEngine)
@@ -1068,7 +1069,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       name = "test-engine",
       infoid = "itemrec",
       itypes = None, // NOTE: default None (means all itypes)
-      settings = Map("a" -> "b")
+      params = Map("a" -> "b")
     )
 
     val testEngine2 = testEngine.copy(
