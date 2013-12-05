@@ -1202,31 +1202,321 @@ class AdminServerSpec extends Specification with JsonMatchers {
   }
 
   "POST /apps/:appid/engines/:engineid/algos_deploy" should {
-    "Change algo status to deployed and deployed algo status to ready" in new WithServer {
-      new Pending("TODO")
+
+    val email = "postalgosdeploy@test.com"
+    val password = "postalgosdeploypassword"
+    val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
+
+    val testApp = App(
+      id = 0,
+      userid = testUserid,
+      appkey = "postalgosdeployappkeystring",
+      display = "postalgosdeploy App Name",
+      url = None,
+      cat = None,
+      desc = None,
+      timezone = "UTC"
+    )
+
+    val appid = apps.insert(testApp)
+
+    val testEngine = Engine(
+      id = 0,
+      appid = appid,
+      name = "test-engine",
+      infoid = "itemrec",
+      itypes = None, // NOTE: default None (means all itypes)
+      settings = Map("a" -> "b")
+    )
+
+    val algoInfo = algoInfos.get("knn").get
+
+    val testAlgo = Algo(
+      id = -1,
+      engineid = -1,
+      name = "post-algos-deploy",
+      infoid = "knn",
+      command = "",
+      params = algoInfo.params.mapValues(_.defaultvalue),
+      settings = Map(), // no use for now
+      modelset = false, // init value
+      createtime = DateTime.now.hour(4).minute(56).second(35),
+      updatetime = DateTime.now.hour(5).minute(6).second(7),
+      status = "ready", // default status
+      offlineevalid = None,
+      loop = None
+    )
+
+    "change the specified 1 algo status to deployed" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-1"))
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val myalgo2 = testAlgo.copy(name = "post-algs-deploy-2", status = "ready", engineid = engineid)
+      val myalgo3 = testAlgo.copy(name = "post-algs-deploy-3", status = "ready", engineid = engineid)
+      val myalgo4 = testAlgo.copy(name = "post-algs-deploy-4", status = "ready", engineid = engineid)
+
+      val algoid = algos.insert(myalgo)
+      val algoid2 = algos.insert(myalgo2)
+      val algoid3 = algos.insert(myalgo3)
+      val algoid4 = algos.insert(myalgo4)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid))))) // only 1 algo
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+      val updatedAlgo2 = algos.get(algoid2)
+      val updatedAlgo3 = algos.get(algoid3)
+      val updatedAlgo4 = algos.get(algoid4)
+
+      r.status must equalTo(OK) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid, status = "deployed"))) and
+        (updatedAlgo2 must beSome(myalgo2.copy(id = algoid2, status = "ready"))) and
+        (updatedAlgo3 must beSome(myalgo3.copy(id = algoid3, status = "ready"))) and
+        (updatedAlgo4 must beSome(myalgo4.copy(id = algoid4, status = "ready")))
+    }
+
+    "change the specified multiple algos' status to deployed" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-2"))
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val myalgo2 = testAlgo.copy(name = "post-algs-deploy-2", status = "ready", engineid = engineid)
+      val myalgo3 = testAlgo.copy(name = "post-algs-deploy-3", status = "ready", engineid = engineid)
+      val myalgo4 = testAlgo.copy(name = "post-algs-deploy-4", status = "ready", engineid = engineid)
+
+      val algoid = algos.insert(myalgo)
+      val algoid2 = algos.insert(myalgo2)
+      val algoid3 = algos.insert(myalgo3)
+      val algoid4 = algos.insert(myalgo4)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid, algoid2, algoid3))))) // multiple algos
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+      val updatedAlgo2 = algos.get(algoid2)
+      val updatedAlgo3 = algos.get(algoid3)
+      val updatedAlgo4 = algos.get(algoid4)
+
+      r.status must equalTo(OK) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid, status = "deployed"))) and
+        (updatedAlgo2 must beSome(myalgo2.copy(id = algoid2, status = "deployed"))) and
+        (updatedAlgo3 must beSome(myalgo3.copy(id = algoid3, status = "deployed"))) and
+        (updatedAlgo4 must beSome(myalgo4.copy(id = algoid4, status = "ready")))
+    }
+
+    "also change deployed algos of this engine to ready" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-2"))
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val myalgo2 = testAlgo.copy(name = "post-algs-deploy-2", status = "deployed", engineid = engineid)
+      val myalgo3 = testAlgo.copy(name = "post-algs-deploy-3", status = "deployed", engineid = engineid)
+      val myalgo4 = testAlgo.copy(name = "post-algs-deploy-4", status = "ready", engineid = engineid)
+
+      val algoid = algos.insert(myalgo)
+      val algoid2 = algos.insert(myalgo2)
+      val algoid3 = algos.insert(myalgo3)
+      val algoid4 = algos.insert(myalgo4)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid)))))
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+      val updatedAlgo2 = algos.get(algoid2)
+      val updatedAlgo3 = algos.get(algoid3)
+      val updatedAlgo4 = algos.get(algoid4)
+
+      r.status must equalTo(OK) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid, status = "deployed"))) and
+        (updatedAlgo2 must beSome(myalgo2.copy(id = algoid2, status = "ready"))) and
+        (updatedAlgo3 must beSome(myalgo3.copy(id = algoid3, status = "ready"))) and
+        (updatedAlgo4 must beSome(myalgo4.copy(id = algoid4, status = "ready")))
     }
 
     "return NOT_FOUND if invalid appid" in new WithServer {
-      new Pending("TODO")
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-invalidappid"))
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val algoid = algos.insert(myalgo)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/99999/engines/${engineid}/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid)))))
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+
+      r.status must equalTo(NOT_FOUND) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid)))
     }
 
-    "return NOT_FOUND if invali engineid" in new WithServer {
-      new Pending("TODO")
+    "return NOT_FOUND if invalid engineid" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-invalidengineid"))
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val algoid = algos.insert(myalgo)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/9999/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid)))))
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+
+      r.status must equalTo(NOT_FOUND) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid)))
+    }
+
+    "return BAD_REQUEST if any of the algo ids is invalid (not belong to this engine)" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-invalidengine1"))
+      val engineid2 = engines.insert(testEngine.copy(name = "test-engine-invalidengine2"))
+
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val myalgo2 = testAlgo.copy(name = "post-algs-deploy-2", status = "ready", engineid = engineid2) // NOTE: other engineid
+      val myalgo3 = testAlgo.copy(name = "post-algs-deploy-3", status = "ready", engineid = engineid)
+      val myalgo4 = testAlgo.copy(name = "post-algs-deploy-4", status = "ready", engineid = engineid)
+
+      val algoid = algos.insert(myalgo)
+      val algoid2 = algos.insert(myalgo2)
+      val algoid3 = algos.insert(myalgo3)
+      val algoid4 = algos.insert(myalgo4)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid, algoid2, algoid3)))))
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+      val updatedAlgo2 = algos.get(algoid2)
+      val updatedAlgo3 = algos.get(algoid3)
+      val updatedAlgo4 = algos.get(algoid4)
+
+      r.status must equalTo(BAD_REQUEST) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid, status = "ready"))) and
+        (updatedAlgo2 must beSome(myalgo2.copy(id = algoid2, status = "ready"))) and
+        (updatedAlgo3 must beSome(myalgo3.copy(id = algoid3, status = "ready"))) and
+        (updatedAlgo4 must beSome(myalgo4.copy(id = algoid4, status = "ready")))
+    }
+
+    "return BAD_REQUEST if any of the algo ids is invalid (not ready)" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-notready1"))
+
+      val myalgo = testAlgo.copy(name = "post-algs-deploy-1", status = "ready", engineid = engineid)
+      val myalgo2 = testAlgo.copy(name = "post-algs-deploy-2", status = "tuning", engineid = engineid) // NOTE: not ready status
+      val myalgo3 = testAlgo.copy(name = "post-algs-deploy-3", status = "ready", engineid = engineid)
+      val myalgo4 = testAlgo.copy(name = "post-algs-deploy-4", status = "ready", engineid = engineid)
+
+      val algoid = algos.insert(myalgo)
+      val algoid2 = algos.insert(myalgo2)
+      val algoid3 = algos.insert(myalgo3)
+      val algoid4 = algos.insert(myalgo4)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_deploy"), email, password).
+        post(Json.obj("algoidlist" -> Json.toJson(Seq(algoid, algoid2, algoid3)))))
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+      val updatedAlgo2 = algos.get(algoid2)
+      val updatedAlgo3 = algos.get(algoid3)
+      val updatedAlgo4 = algos.get(algoid4)
+
+      r.status must equalTo(BAD_REQUEST) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid, status = "ready"))) and
+        (updatedAlgo2 must beSome(myalgo2.copy(id = algoid2, status = "tuning"))) and
+        (updatedAlgo3 must beSome(myalgo3.copy(id = algoid3, status = "ready"))) and
+        (updatedAlgo4 must beSome(myalgo4.copy(id = algoid4, status = "ready")))
     }
   }
 
   "POST /apps/:appid/engines/:engineid/algos_undeploy" should {
 
-    "Change algo status to ready" in new WithServer {
-      new Pending("TODO")
+    val email = "postalgosundeploy@test.com"
+    val password = "postalgosundeploypassword"
+    val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
+
+    val testApp = App(
+      id = 0,
+      userid = testUserid,
+      appkey = "postalgosundeployappkeystring",
+      display = "postalgosundeploy App Name",
+      url = None,
+      cat = None,
+      desc = None,
+      timezone = "UTC"
+    )
+
+    val appid = apps.insert(testApp)
+
+    val testEngine = Engine(
+      id = 0,
+      appid = appid,
+      name = "test-engine",
+      infoid = "itemrec",
+      itypes = None, // NOTE: default None (means all itypes)
+      settings = Map("a" -> "b")
+    )
+
+    val algoInfo = algoInfos.get("knn").get
+
+    val testAlgo = Algo(
+      id = -1,
+      engineid = -1,
+      name = "post-algos-undeploy",
+      infoid = "knn",
+      command = "",
+      params = algoInfo.params.mapValues(_.defaultvalue),
+      settings = Map(), // no use for now
+      modelset = false, // init value
+      createtime = DateTime.now.hour(4).minute(56).second(35),
+      updatetime = DateTime.now.hour(5).minute(6).second(7),
+      status = "ready", // default status
+      offlineevalid = None,
+      loop = None
+    )
+
+    "change deployed algos of this engine to ready" in new WithServer {
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-undeploy1"))
+      val engineid2 = engines.insert(testEngine.copy(name = "test-engine-undeploy2"))
+
+      val myalgo = testAlgo.copy(name = "post-algs-undeploy-1", status = "deployed", engineid = engineid)
+      val myalgo2 = testAlgo.copy(name = "post-algs-undeploy-2", status = "ready", engineid = engineid)
+      val myalgo3 = testAlgo.copy(name = "post-algs-undeploy-3", status = "simeval", engineid = engineid)
+      val myalgo4 = testAlgo.copy(name = "post-algs-undeploy-4", status = "deployed", engineid = engineid2) // diff engine
+      val myalgo5 = testAlgo.copy(name = "post-algs-undeploy-5", status = "deployed", engineid = engineid)
+
+      val algoid = algos.insert(myalgo)
+      val algoid2 = algos.insert(myalgo2)
+      val algoid3 = algos.insert(myalgo3)
+      val algoid4 = algos.insert(myalgo4)
+      val algoid5 = algos.insert(myalgo5)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_undeploy"), email, password).
+        post(Json.obj()))
+
+      // read back and check
+      val updatedAlgo = algos.get(algoid)
+      val updatedAlgo2 = algos.get(algoid2)
+      val updatedAlgo3 = algos.get(algoid3)
+      val updatedAlgo4 = algos.get(algoid4)
+      val updatedAlgo5 = algos.get(algoid5)
+
+      r.status must equalTo(OK) and
+        (updatedAlgo must beSome(myalgo.copy(id = algoid, status = "ready"))) and
+        (updatedAlgo2 must beSome(myalgo2.copy(id = algoid2, status = "ready"))) and
+        (updatedAlgo3 must beSome(myalgo3.copy(id = algoid3, status = "simeval"))) and
+        (updatedAlgo4 must beSome(myalgo4.copy(id = algoid4, status = "deployed"))) and
+        (updatedAlgo5 must beSome(myalgo5.copy(id = algoid5, status = "ready")))
     }
 
     "return NOT_FOUND if invalid appid" in new WithServer {
-      new Pending("TODO")
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-invalidappid"))
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/9999/engines/${engineid}/algos_undeploy"), email, password).
+        post(Json.obj()))
+
+      r.status must equalTo(NOT_FOUND)
     }
 
     "return NOT_FOUND if invalid engineid" in new WithServer {
-      new Pending("TOOD")
+      val engineid = engines.insert(testEngine.copy(name = "test-engine-invalidengineid"))
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/9999/algos_undeploy"), email, password).
+        post(Json.obj()))
+
+      r.status must equalTo(NOT_FOUND)
     }
   }
 

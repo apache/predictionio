@@ -1380,6 +1380,151 @@ object Application extends Controller {
   }
 
   /**
+   * Deploys a list of algorithms (also undeploys any existing deployed algorithms)
+   * The status of deployed algorithms change to "deployed"
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "algoidlist" : [ array of algo ids ]
+   *   }
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If any of the algo id is not valid:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If done:
+   *   Ok
+   *
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def algoDeploy(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+      val deployForm = Form(
+        "algoidlist" -> list(number)
+      )
+      deployForm.bindFromRequest.fold(
+        formWithErrors => Ok,
+        form => {
+          val algoidList = form
+
+          val algoList = algoidList.map(id => (id, algos.getByIdAndEngineid(id, engineid)))
+          val invalidAlgos = algoList.filter {
+            case (id, algoOpt) => algoOpt match {
+              case None => true // not exist
+              case Some(x) => (x.status != "ready") // not ready
+            }
+          }
+
+          // make sure all algoids are valid
+          if (!invalidAlgos.isEmpty) {
+            val ids = invalidAlgos.map { case (id, algoOpt) => id }.mkString(", ")
+            BadRequest(Json.obj("message" -> s"Invalid algo ids: ${ids}."))
+          } else {
+            algos.getDeployedByEngineid(engineid).foreach { algo =>
+              algos.update(algo.copy(status = "ready"))
+            }
+            algoList.foreach {
+              case (id, algoOpt) =>
+                // algoOpt can't be None because of invalidAlgos check
+                algos.update(algoOpt.get.copy(status = "deployed"))
+            }
+            WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+            Ok
+          }
+        }
+      )
+  }
+
+  /**
+   * Undeploys all deployed algorithms
+   * {{{
+   * POST
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If done:
+   *   Ok
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def algoUndeploy(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+
+      algos.getDeployedByEngineid(engineid) foreach { algo =>
+        algos.update(algo.copy(status = "ready"))
+      }
+      WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+      Ok
+  }
+
+  /**
+   * Requests to train model now
+   * {{{
+   * POST
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If error:
+   *   InternalServerError
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If done:
+   *   Ok
+   *   {
+   *     "message" : <message from scheduler>
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def algoTrainNow(appid: Int, engineid: Int) = WithEngine.async(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+      // No extra param required
+      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+      val request = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/trainoncenow").get() map { r =>
+        Ok(Json.obj("message" -> (r.json \ "message").as[String]))
+      } recover {
+        case e: Exception => InternalServerError(Json.obj("message" -> e.getMessage()))
+      }
+
+      /** Detect timeout (10 minutes by default) */
+      concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
+        case r: SimpleResult => r
+        case t: String => InternalServerError(Json.obj("message" -> t))
+      }
+  }
+
+  /**
    * Returns the algorithm auto tune report
    *
    * {{{
@@ -2130,130 +2275,5 @@ object Application extends Controller {
         InternalServerError(Json.obj("message" -> s"No splitter found fo this Offline Eval ID ${eval.id}."))
       }
 
-  }
-
-  /**
-   * Deploys a list of algorithms (also undeploys any existing deployed algorithms)
-   * The status of deployed algorithms change to "deployed"
-   *
-   * {{{
-   * POST
-   * JSON parameters:
-   *   {
-   *     "algoidlist" : [ array of algo ids ]
-   *   }
-   * JSON response:
-   *   If not authenticated:
-   *   Forbidden
-   *   {
-   *     "message" : "Haven't signed in yet."
-   *   }
-   *
-   *   If done:
-   *   Ok
-   *
-   * }}}
-   *
-   * @param appid the App ID
-   * @param engineid the engine ID
-   */
-  def algoDeploy(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
-    implicit request =>
-      val deployForm = Form(
-        "algoidlist" -> list(number)
-      )
-      deployForm.bindFromRequest.fold(
-        formWithErrors => Ok,
-        form => {
-          algos.getDeployedByEngineid(engineid) foreach { algo =>
-            algos.update(algo.copy(status = "ready"))
-          }
-          form foreach { id =>
-            algos.get(id) foreach { algo =>
-              algos.update(algo.copy(status = "deployed"))
-            }
-          }
-          WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
-          Ok
-        }
-      )
-  }
-
-  /**
-   * Undeploys all deployed algorithms
-   * {{{
-   * POST
-   * JSON parameters:
-   *   None
-   * JSON response:
-   *   If not authenticated:
-   *   Forbidden
-   *   {
-   *     "message" : "Haven't signed in yet."
-   *   }
-   *
-   *   If done:
-   *   Ok
-   * }}}
-   *
-   * @param appid the App ID
-   * @param engineid the engine ID
-   */
-  def algoUndeploy(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
-    implicit request =>
-
-      algos.getDeployedByEngineid(engineid) foreach { algo =>
-        algos.update(algo.copy(status = "ready"))
-      }
-      WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
-      Ok
-  }
-
-  /**
-   * Requests to train model now
-   * {{{
-   * POST
-   * JSON parameters:
-   *   None
-   * JSON response:
-   *   If not authenticated:
-   *   Forbidden
-   *   {
-   *     "message" : "Haven't signed in yet."
-   *   }
-   *
-   *   If error:
-   *   InternalServerError
-   *   {
-   *     "message" : <error message>
-   *   }
-   *
-   *   If done:
-   *   Ok
-   *   {
-   *     "message" : <message from scheduler>
-   *   }
-   * }}}
-   *
-   * @param appid the App ID
-   * @param engineid the engine ID
-   */
-  def algoTrainNow(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
-    implicit request =>
-      // No extra param required
-      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
-      val request = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/trainoncenow").get() map { r =>
-        Ok(Json.obj("message" -> (r.json \ "message").as[String]))
-      } recover {
-        case e: Exception => InternalServerError(Json.obj("message" -> e.getMessage()))
-      }
-
-      /** Detect timeout (10 minutes by default) */
-      Async {
-        concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
-          case r: SimpleResult => r
-          case t: String => InternalServerError(Json.obj("message" -> t))
-        }
-      }
   }
 }
