@@ -41,12 +41,16 @@ case class ParamStringConstraint(paramtype: String = "string") extends ParamCons
 
 case class ParamUI(
   uitype: String = "text",
-  selections: Option[Seq[ParamSelectionUI]] = None)
+  selections: Option[Seq[ParamSelectionUI]] = None,
+  slidermin: Option[Int] = None,
+  slidermax: Option[Int] = None,
+  sliderstep: Option[Int] = None)
 
 case class ParamSelectionUI(value: String, name: String)
 
 case class ParamSection(
   name: String,
+  sectiontype: String = "normal",
   description: Option[String] = None,
   subsections: Option[Seq[ParamSection]] = None,
   params: Option[Seq[String]] = None)

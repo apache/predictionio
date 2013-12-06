@@ -36,7 +36,7 @@ class EnginesSpec extends Specification { def is =
       name = "insert",
       infoid = "insert",
       itypes = Option(List("foo", "bar")),
-      settings = Map()
+      params = Map()
     )
     val engineid = engines.insert(engine)
     engines.get(engineid) must beSome(engine.copy(id = engineid))
@@ -49,7 +49,7 @@ class EnginesSpec extends Specification { def is =
       name = "getByAppid1",
       infoid = "getByAppid1",
       itypes = Option(List("foo", "bar")),
-      settings = Map("apple" -> "red")
+      params = Map("apple" -> "red")
     )
     val obj2 = Engine(
       id = 0,
@@ -57,7 +57,7 @@ class EnginesSpec extends Specification { def is =
       name = "getByAppid2",
       infoid = "getByAppid2",
       itypes = None,
-      settings = Map("foo2" -> "bar2")
+      params = Map("foo2" -> "bar2")
     )
     val id1 = engines.insert(obj1)
     val id2 = engines.insert(obj2)
@@ -75,7 +75,7 @@ class EnginesSpec extends Specification { def is =
       name = "getByIdAndAppid",
       infoid = "getByIdAndAppid",
       itypes = Option(List("foo", "bar")),
-      settings = Map("apple" -> "red")
+      params = Map("apple" -> "red")
     )
     val obj2 = obj1.copy()
 
@@ -106,7 +106,7 @@ class EnginesSpec extends Specification { def is =
       name = "update",
       infoid = "update",
       itypes = Some(List("foo", "bar")),
-      settings = Map()
+      params = Map()
     ))
     val updatedEngine = Engine(
       id = id,
@@ -114,7 +114,7 @@ class EnginesSpec extends Specification { def is =
       name = "updated",
       infoid = "updated",
       itypes = Some(List("foo", "baz")),
-      settings = Map("set1" -> "dat1", "set2" -> "dat2")
+      params = Map("set1" -> "dat1", "set2" -> "dat2")
     )
     engines.update(updatedEngine)
     engines.getByAppidAndName(345, "updated") must beSome(updatedEngine)
@@ -127,7 +127,7 @@ class EnginesSpec extends Specification { def is =
       name = "deleteByIdAndAppid",
       infoid = "deleteByIdAndAppid",
       itypes = Some(List("foo", "bar")),
-      settings = Map("x" -> "y")
+      params = Map("x" -> "y")
     ))
     engines.deleteByIdAndAppid(id, 456)
     engines.getByAppidAndName(456, "deleteByIdAndAppid") must beNone
@@ -140,7 +140,7 @@ class EnginesSpec extends Specification { def is =
       name = "existsByAppidAndName",
       infoid = "existsByAppidAndName",
       itypes = None,
-      settings = Map()
+      params = Map()
     ))
     engines.existsByAppidAndName(567, "existsByAppidAndName") must beTrue and
       (engines.existsByAppidAndName(568, "foobar") must beFalse)
@@ -153,7 +153,7 @@ class EnginesSpec extends Specification { def is =
       name = "backuprestore",
       infoid = "backuprestore",
       itypes = Some(Seq("dead", "beef")),
-      settings = Map("foo" -> "bar")
+      params = Map("foo" -> "bar")
     )
     val eid = engines.insert(eng)
     val fos = new java.io.FileOutputStream("engines.bin")

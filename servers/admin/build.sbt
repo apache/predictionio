@@ -13,6 +13,4 @@ javaOptions in Test += "-Dconfig.file=conf/test.conf"
 
 play.Project.playScalaSettings
 
-playAssetsDirectories <+= baseDirectory / "enginebase"
-
 scalariformSettings

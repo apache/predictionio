@@ -9,17 +9,29 @@ import com.mongodb.casbah.Imports._
 class MongoEngines(db: MongoDB) extends Engines {
   private val engineColl = db("engines")
   private val seq = new MongoSequences(db)
-  private val getFields = MongoDBObject("appid" -> 1, "name" -> 1, "infoid" -> 1, "itypes" -> 1, "settings" -> 1)
+  private val getFields = MongoDBObject("appid" -> 1, "name" -> 1, "infoid" -> 1, "itypes" -> 1, "params" -> 1)
 
   private def dbObjToEngine(dbObj: DBObject) = {
-    Engine(
-      id         = dbObj.as[Int]("_id"),
-      appid      = dbObj.as[Int]("appid"),
-      name       = dbObj.as[String]("name"),
-      infoid = dbObj.as[String]("infoid"),
-      itypes     = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
-      settings   = MongoUtils.dbObjToMap(dbObj.as[DBObject]("settings"))
-    )
+    /** Transparent upgrade. Remove in next minor version. */
+    dbObj.getAs[DBObject]("settings") map { settings =>
+      val e = Engine(
+        id     = dbObj.as[Int]("_id"),
+        appid  = dbObj.as[Int]("appid"),
+        name   = dbObj.as[String]("name"),
+        infoid = dbObj.as[String]("infoid"),
+        itypes = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
+        params = MongoUtils.dbObjToMap(settings))
+      update(e)
+      e
+    } getOrElse {
+      Engine(
+        id     = dbObj.as[Int]("_id"),
+        appid  = dbObj.as[Int]("appid"),
+        name   = dbObj.as[String]("name"),
+        infoid = dbObj.as[String]("infoid"),
+        itypes = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
+        params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params")))
+    }
   }
 
   class MongoEngineIterator(it: MongoCursor) extends Iterator[Engine] {
@@ -36,7 +48,7 @@ class MongoEngines(db: MongoDB) extends Engines {
       "appid"      -> engine.appid,
       "name"       -> engine.name,
       "infoid" -> engine.infoid,
-      "settings"   -> engine.settings
+      "params"   -> engine.params
     )
 
     // optional fields
@@ -63,11 +75,11 @@ class MongoEngines(db: MongoDB) extends Engines {
     val appidObj = MongoDBObject("appid" -> engine.appid)
     val infoidObj = MongoDBObject("infoid" -> engine.infoid)
     val itypesObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
-    val settingsObj = MongoDBObject("settings" -> engine.settings)
+    val paramsObj = MongoDBObject("params" -> engine.params)
 
     engineColl.update(
       idObj,
-      idObj ++ appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ settingsObj,
+      idObj ++ appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ paramsObj,
       upsert
     )
   }

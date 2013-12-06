@@ -11,7 +11,7 @@ import com.twitter.chill.KryoInjection
   * @param name Engine name.
   * @param infoid EngineInfo ID.
   * @param itypes List of item types.
-  * @param settings Engine settings as key-value pairs.
+  * @param params Engine parameters as key-value pairs.
   */
 case class Engine(
   id: Int,
@@ -19,7 +19,7 @@ case class Engine(
   name: String,
   infoid: String,
   itypes: Option[Seq[String]],
-  settings: Map[String, Any]
+  params: Map[String, Any]
 )
 
 /** Base trait for implementations that interact with engines in the backend data store. */
@@ -60,7 +60,7 @@ trait Engines extends Common {
         "name" -> engine.name,
         "infoid" -> engine.infoid,
         "itypes" -> engine.itypes,
-        "settings" -> engine.settings)
+        "params" -> engine.params)
     }
     KryoInjection(engines)
   }
@@ -75,7 +75,7 @@ trait Engines extends Common {
           name = data("name").asInstanceOf[String],
           infoid = data("infoid").asInstanceOf[String],
           itypes = data("itypes").asInstanceOf[Option[List[String]]],
-          settings = data("settings").asInstanceOf[Map[String, Any]])
+          params = data("params").asInstanceOf[Map[String, Any]])
       }
 
       if (inplace) rdata foreach { update(_, true) }

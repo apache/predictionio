@@ -106,7 +106,7 @@ object Jobs {
     /** Common attributes */
     command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
-    command.setAttribute("goalParam", engine.settings("goal"))
+    command.setAttribute("goalParam", engine.params("goal"))
 
     /** Locate JAR names
       * Use those from config file first, then override with SystemInfos.
@@ -156,9 +156,9 @@ object Jobs {
     engine.itypes foreach { it =>
       command.setAttribute("itypes", "--itypes" + it.mkString(" "))
     }
-    command.setAttribute("numRecommendations", engine.settings.getOrElse("numRecommendations", 500))
-    command.setAttribute("numSimilarItems", engine.settings.getOrElse("numSimilarItems", 500))
-    command.setAttribute("unseenOnly", engine.settings.getOrElse("unseenonly", false))
+    command.setAttribute("numRecommendations", engine.params.getOrElse("numRecommendations", 500))
+    command.setAttribute("numSimilarItems", engine.params.getOrElse("numSimilarItems", 500))
+    command.setAttribute("unseenOnly", engine.params.getOrElse("unseenonly", false))
   }
 }
 

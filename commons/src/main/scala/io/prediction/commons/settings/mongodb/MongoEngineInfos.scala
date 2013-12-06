@@ -13,7 +13,8 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
     id                = dbObj.as[String]("_id"),
     name              = dbObj.as[String]("name"),
     description       = dbObj.getAs[String]("description"),
-    defaultsettings   = (dbObj.as[DBObject]("defaultsettings") map { p => (p._1, MongoParam.dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
+    params            = (dbObj.as[DBObject]("params") map { p => (p._1, MongoParam.dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
+    paramsections     = dbObj.as[Seq[DBObject]]("paramsections") map { MongoParam.dbObjToParamSection(_) },
     defaultalgoinfoid = dbObj.as[String]("defaultalgoinfoid"))
 
   def insert(engineInfo: EngineInfo) = {
@@ -21,7 +22,8 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
     val obj = MongoDBObject(
       "_id"               -> engineInfo.id,
       "name"              -> engineInfo.name,
-      "defaultsettings"   -> (engineInfo.defaultsettings mapValues { MongoParam.paramToDBObj(_) }),
+      "params"            -> (engineInfo.params mapValues { MongoParam.paramToDBObj(_) }),
+      "paramsections"     -> (engineInfo.paramsections map { MongoParam.paramSectionToDBObj(_) }),
       "defaultalgoinfoid" -> engineInfo.defaultalgoinfoid)
 
     // optional fields
@@ -38,7 +40,8 @@ class MongoEngineInfos(db: MongoDB) extends EngineInfos {
     val idObj = MongoDBObject("_id" -> engineInfo.id)
     val requiredObj = MongoDBObject(
       "name"              -> engineInfo.name,
-      "defaultsettings"   -> (engineInfo.defaultsettings mapValues { MongoParam.paramToDBObj(_) }),
+      "params"            -> (engineInfo.params mapValues { MongoParam.paramToDBObj(_) }),
+      "paramsections"     -> (engineInfo.paramsections map { MongoParam.paramSectionToDBObj(_) }),
       "defaultalgoinfoid" -> engineInfo.defaultalgoinfoid)
     val descriptionObj = engineInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
 

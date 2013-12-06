@@ -29,7 +29,7 @@ case class AlgoInfo(
   engineinfoid: String,
   techreq: Seq[String],
   datareq: Seq[String]
-)
+) extends Info
 
 /** Base trait for implementations that interact with algo info in the backend data store. */
 trait AlgoInfos extends Common {

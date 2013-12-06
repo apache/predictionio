@@ -42,6 +42,9 @@ object MongoParam {
           case _ => MongoUtils.emptyObj
         })),
       "ui" -> (MongoDBObject("uitype" -> param.ui.uitype) ++
+        param.ui.slidermin.map(m => MongoDBObject("slidermin" -> m)).getOrElse(MongoUtils.emptyObj) ++
+        param.ui.slidermax.map(m => MongoDBObject("slidermax" -> m)).getOrElse(MongoUtils.emptyObj) ++
+        param.ui.sliderstep.map(m => MongoDBObject("sliderstep" -> m)).getOrElse(MongoUtils.emptyObj) ++
         (param.ui.selections map { selections =>
           MongoDBObject("selections" -> (selections map { selection =>
             MongoDBObject("value" -> selection.value, "name" -> selection.name)
@@ -53,12 +56,13 @@ object MongoParam {
 
   def dbObjToParamSection(dbObj: DBObject): ParamSection = ParamSection(
     name = dbObj.as[String]("name"),
+    sectiontype = dbObj.as[String]("sectiontype"),
     description = dbObj.getAs[String]("description"),
     subsections = dbObj.getAs[Seq[DBObject]]("subsections").map(_.map(dbObjToParamSection(_))),
     params = dbObj.getAs[Seq[String]]("params"))
 
   def paramSectionToDBObj(paramsection: ParamSection): MongoDBObject = {
-    MongoDBObject("name" -> paramsection.name) ++
+    MongoDBObject("name" -> paramsection.name, "sectiontype" -> paramsection.sectiontype) ++
       (paramsection.description map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj) ++
       (paramsection.subsections map { ss => MongoDBObject("subsections" -> ss.map(s => paramSectionToDBObj(s))) } getOrElse MongoUtils.emptyObj) ++
       (paramsection.params map { ps => MongoDBObject("params" -> ps) } getOrElse MongoUtils.emptyObj)
@@ -72,6 +76,9 @@ object MongoParam {
           val selection = s.asInstanceOf[DBObject]
           ParamSelectionUI(selection.as[String]("value"), selection.as[String]("name"))
         }
-      })
+      },
+      slidermin = uiObj.getAs[Int]("slidermin"),
+      slidermax = uiObj.getAs[Int]("slidermax"),
+      sliderstep = uiObj.getAs[Int]("sliderstep"))
   }
 }

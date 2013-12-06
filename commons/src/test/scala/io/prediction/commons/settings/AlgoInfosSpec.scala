@@ -67,8 +67,8 @@ class AlgoInfosSpec extends Specification { def is =
           name = "bar",
           description = Some("deadbeef"),
           subsections = Some(Seq(
-            ParamSection("baz", None, None, None),
-            ParamSection("jack", None, None, None))),
+            ParamSection("baz", "norma", None, None, None),
+            ParamSection("jack", "normal", None, None, None))),
           params = Some(Seq("this", "that")))),
       paramorder = Seq(
         "measureParam",
@@ -267,8 +267,8 @@ class AlgoInfosSpec extends Specification { def is =
           name = "bar",
           description = Some("deadbeef"),
           subsections = Some(Seq(
-            ParamSection("baz", None, None, None),
-            ParamSection("jack", None, None, None))),
+            ParamSection("baz", "normal", None, None, None),
+            ParamSection("jack", "normal", None, None, None))),
           params = Some(Seq("this", "that")))),
       paramorder = Seq(
         "measureParam",
