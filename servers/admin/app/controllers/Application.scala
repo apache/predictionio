@@ -6,6 +6,10 @@ import io.prediction.commons.modeldata.ItemRecScores
 import io.prediction.commons.appdata.{ Users, Items, U2IActions }
 import io.prediction.output.AlgoOutputSelector
 
+import Helper.{ algoToJson, offlineEvalMetricToJson }
+import Helper.{ dateTimeToString, algoParamToString }
+import Helper.{ getSimEvalStatus, getOfflineTuneStatus }
+
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -88,7 +92,6 @@ object Application extends Controller {
   val algoOutputSelector = new AlgoOutputSelector(algos)
 
   /** misc */
-  val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
   val nameRegex = """\b[a-zA-Z][a-zA-Z0-9_-]*\b""".r
 
   /** Play Framework security */
@@ -426,7 +429,7 @@ object Application extends Controller {
       val numU2IActions = appDataU2IActions.countByAppid(app.id)
       Ok(Json.obj(
         "id" -> app.id,
-        "updatedtime" -> timeFormat.print(DateTime.now.withZone(DateTimeZone.forID("UTC"))),
+        "updatedtime" -> dateTimeToString(DateTime.now),
         "userscount" -> numUsers,
         "itemscount" -> numItems,
         "u2icount" -> numU2IActions,
@@ -722,7 +725,7 @@ object Application extends Controller {
           }
         )
       ))
-    } getOrElse InternalServerError(Json.obj("message" -> "Invalid EngineInfo ID: ${id}."))
+    } getOrElse InternalServerError(Json.obj("message" -> s"Invalid EngineInfo ID: ${id}."))
   }
 
   /**
@@ -1069,42 +1072,6 @@ object Application extends Controller {
   }
 
   /**
-   * Convert algo data to JsObject
-   *   {
-   *     "id" : <algo id>,
-   *     "algoname" : <algo name>,
-   *     "appid" : <app id>,
-   *     "engineid" : <engine id>,
-   *     "algoinfoid" : <algo info id>,
-   *     "algoinfoname" : <algo info name>,
-   *     "status" : <algo status>,
-   *     "createdtime" : <algo creation time>,
-   *     "updatedtime" : <algo last updated time>
-   *   }
-   * @note status: ready, deployed, tuning, tuned, simeval
-   * @param algo the algo
-   * @param appid the App ID
-   * @param algoinfoname the algo info name. If None, get info name from algoinfo db using algo's infoid.
-   *        Use "NOT FOUND" if the algo info is not found
-   */
-  def algoToJson(algo: Algo, appid: Int, algoinfoname: Option[String]): JsObject = {
-    val infoname = algoinfoname.getOrElse {
-      algoInfos.get(algo.infoid).map { _.name }.getOrElse[String]("NOT FOUND")
-    }
-    Json.obj(
-      "id" -> algo.id,
-      "algoname" -> algo.name,
-      "appid" -> appid,
-      "engineid" -> algo.engineid,
-      "algoinfoid" -> algo.infoid,
-      "algoinfoname" -> infoname,
-      "status" -> algo.status,
-      "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
-      "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
-    )
-  }
-
-  /**
    * Returns a list of available (added but not deployed) algorithms of this engine
    * {{{
    * GET
@@ -1140,7 +1107,8 @@ object Application extends Controller {
       else
         Ok(Json.toJson( // NOTE: only display algos which are not "deployed", nor "simeval"
           engineAlgos.map { algo =>
-            algoToJson(algo, appid, None)
+            val algoInfo = algoInfos.get(algo.infoid)
+            algoToJson(algo, appid, algoInfo)
           }.toSeq
         ))
   }
@@ -1178,9 +1146,9 @@ object Application extends Controller {
   def getAvailableAlgo(appid: Int, engineid: Int, id: Int) = WithAlgo(appid, engineid, id) { (user, app, eng, algo) =>
     implicit request =>
       algoInfos.get(algo.infoid).map { info =>
-        Ok(algoToJson(algo, appid, Some(info.name)))
+        Ok(algoToJson(algo, appid, Some(info)))
       }.getOrElse {
-        InternalServerError(Json.obj("message" -> "Algoinfo ${algo.infoid} not found."))
+        InternalServerError(Json.obj("message" -> s"Algoinfo ${algo.infoid} not found."))
       }
   }
 
@@ -1264,9 +1232,9 @@ object Application extends Controller {
             val algoId = algos.insert(newAlgo)
             Logger.info("Create algo ID " + algoId)
 
-            Ok(algoToJson(newAlgo.copy(id = algoId), appid, Some(algoInfo.name)))
+            Ok(algoToJson(newAlgo.copy(id = algoId), appid, Some(algoInfo)))
           }.getOrElse {
-            InternalServerError(Json.obj("message" -> "Algoinfo ${algoType} not found."))
+            InternalServerError(Json.obj("message" -> s"Algoinfo ${algoType} not found."))
           }
         }
       )
@@ -1374,7 +1342,8 @@ object Application extends Controller {
           "updatedtime" -> "12-03-2012 12:32:12", // TODO: what's this time for?
           "status" -> "Running",
           "algolist" -> Json.toJson(deployedAlgos.map { algo =>
-            algoToJson(algo, appid, None)
+            val algoInfo = algoInfos.get(algo.infoid)
+            algoToJson(algo, appid, algoInfo)
           }.toSeq)
         ))
   }
@@ -1525,309 +1494,6 @@ object Application extends Controller {
   }
 
   /**
-   * Returns the algorithm auto tune report
-   *
-   * {{{
-   * GET
-   * JSON parameters:
-   *   None
-   * JSON response:
-   *   If not authenticated:
-   *   Forbidden
-   *   {
-   *     "message" : "Haven't signed in yet."
-   *   }
-   *
-   *   If not found:
-   *   NotFound
-   *   {
-   *     "message" : <error message>
-   *   }
-   *
-   *   If found:
-   *   Ok
-   *   {
-   *     "id" : <algo id>,
-   *     "appid" : <app id>,
-   *     "engineid" : <engine id>,
-   *     "algo" : {
-   *                "id" : <original algo id>,
-   *                "algoname" : <algo name>,
-   *                "appid" : <app id>,
-   *                "engineid" : <engine id>,
-   *                "algoinfoid" : <algo info id>,
-   *                "algoinfoname" : <algo info name>,
-   *                "settingsstring" : <algo setting string>
-   *              },
-   *     "metric" : {
-   *                  "id" : <metric id>,
-   *                  "engineid" : <engine id>,
-   *                  "engineinfoid" : <engine info id>,
-   *                  "metricsinfoid" : <metric info id>,
-   *                  "metricsname" : <metric name>,
-   *                  "settingsstring" : <metric setting string>
-   *                },
-   *     "metricscorelist" : [
-   *                           {
-   *                             "algoautotuneid" : <tuned algo id>,
-   *                             "settingsstring" : <algo setting string>,
-   *                             "score" : <average score>
-   *                           }, ...
-   *                         ],
-   *     "metricscoreiterationlist" : [
-   *                                    [ {
-   *                                        "algoautotuneid" : <tuneid algo id 1>,
-   *                                        "settingsstring" : <algo setting string>,
-   *                                        "score" : <score of 1st iteration for this ituned algo id>
-   *                                      },
-   *                                      {
-   *                                        "algoautotuneid" : <tuneid algo id 2>,
-   *                                        "settingsstring" : <algo setting string>,
-   *                                        "score" : <score of 1st iteration for this ituned algo id>
-   *                                      }, ...
-   *                                    ],
-   *                                    [ {
-   *                                        "algoautotuneid" : <tuneid algo id 1>,
-   *                                        "settingsstring" : <algo setting string>,
-   *                                        "score" : <score of 2nd iteration for this ituned algo id>
-   *                                      },
-   *                                      {
-   *                                        "algoautotuneid" : <tuneid algo id 2>,
-   *                                        "settingsstring" : <algo setting string>,
-   *                                        "score" : <score of 2nd iteration for this ituned algo id>
-   *                                      }, ...
-   *                                    ], ...
-   *                                  ],
-   *     "splittrain" : <training set split percentage 1 to 100>,
-   *     "splitvalidation" : <validation set split percentage 1 to 100>,
-   *     "splittest" : <test set split percentage 1 to 100>,
-   *     "splitmethod" : <split method string: randome, time>
-   *     "evaliteration" : <number of iterations>,
-   *     "status" : <auto tune status>,
-   *     "starttime" : <start time>,
-   *     "endtime" : <end time>
-   *   }
-   * }}}
-   *
-   * @param appid the App ID
-   * @param engineid the engine ID
-   * @param algoid the algo ID
-   */
-  def getAlgoAutotuningReport(appid: Int, engineid: Int, algoid: Int) = withAlgo(appid, engineid, algoid) { (user, app, eng, algo) =>
-    implicit request =>
-
-      algo.offlinetuneid map { tuneid =>
-        offlineTunes.get(tuneid) map { tune =>
-
-          // get all offlineeval of this offlinetuneid
-          val tuneOfflineEvals: Array[OfflineEval] = offlineEvals.getByTuneid(tuneid).toArray.sortBy(_.id)
-
-          val tuneMetrics: Array[OfflineEvalMetric] = tuneOfflineEvals.flatMap { e => offlineEvalMetrics.getByEvalid(e.id) }
-
-          val tuneSplitters: Array[OfflineEvalSplitter] = tuneOfflineEvals.flatMap { e => offlineEvalSplitters.getByEvalid(e.id) }
-
-          // get all offlineeavlresults of each offlineevalid
-          val tuneOfflineEvalResults: Array[OfflineEvalResult] = tuneOfflineEvals.flatMap { e => offlineEvalResults.getByEvalid(e.id) }
-
-          // test set score
-          val tuneOfflineEvalResultsTestSet: Array[OfflineEvalResult] = tuneOfflineEvalResults.filter(x => (x.splitset == "test"))
-
-          val tuneOfflineEvalResultsTestSetAlgoidMap: Map[Int, Double] = tuneOfflineEvalResultsTestSet.map(x => (x.algoid -> x.score)).toMap
-
-          // get all algos of each offlineevalid
-          // note: this happen after getting all available offlineEvalResults,
-          // so these retrieved algos may have more algo than those used in offlineEvalResults.
-          val tuneAlgos: Array[Algo] = tuneOfflineEvals flatMap { e => algos.getByOfflineEvalid(e.id) }
-
-          val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map { a => (a.id -> a) }.toMap
-
-          // group by (loop, paramset)
-          type AlgoGroupIndex = (Option[Int], Option[Int])
-
-          val tuneAlgosGroup: Map[AlgoGroupIndex, Array[Algo]] = tuneAlgos.groupBy(a => (a.loop, a.paramset))
-
-          // get param of each group
-          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String)] = tuneAlgosGroup.map {
-            case (index, arrayOfAlgos) =>
-              val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
-              val algoInfo = algoInfos.get(algo.infoid).get
-              val settings = Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-
-              (index -> (algo.id, settings))
-
-          }
-
-          // calculate avg
-          val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues { arrayOfAlgos =>
-            // check if all scores available
-            val allAvailable = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap.contains(algo.id)).reduceLeft(_ && _)
-
-            if (allAvailable) {
-              val scores: Array[Double] = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap(algo.id))
-
-              (scores.sum / scores.size).toString
-            } else {
-              "N/A"
-            }
-          }
-
-          val metricscorelist = avgScores.toSeq.sortBy(_._1).map {
-            case (k, v) =>
-              Map(
-                "algoautotuneid" -> toJson(tuneAlgosGroupParams(k)._1),
-                "settingsstring" -> toJson(tuneAlgosGroupParams(k)._2),
-                "score" -> toJson(v))
-          }
-
-          val metricscoreiterationlist = tuneOfflineEvals.map { e =>
-            tuneOfflineEvalResultsTestSet.filter(x => (x.evalid == e.id)).sortBy(_.algoid).map { r =>
-
-              val algo = tuneAlgosMap(r.algoid)
-              val algoInfo = algoInfos.get(algo.infoid).get
-
-              Map(
-                "algoautotuneid" -> toJson(r.algoid.toString),
-                "settingsstring" -> toJson(Itemrec.Algorithms.displayParams(algoInfo, algo.params)), // TODO: refactor display param
-                "score" -> toJson(r.score))
-
-            }.toSeq
-          }.toSeq
-
-          val algoInfo = algoInfos.get(algo.infoid).get
-          val metric = tuneMetrics(0)
-          val splitter = tuneSplitters(0)
-          val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double]) * 100).toInt
-          val splitValidation = ((splitter.settings("validationPercent").asInstanceOf[Double]) * 100).toInt
-          val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double]) * 100).toInt
-          val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
-          val evalIteration = tuneOfflineEvals.size // NOTE: for autotune, number of offline eval is the iteration
-          val engineinfoid = engines.get(engineid) map { _.infoid } getOrElse { "unkown-engine" }
-
-          val status: String = (tune.starttime, tune.endtime) match {
-            case (Some(x), Some(y)) => "completed"
-            case (None, None) => "pending"
-            case (Some(x), None) => "running"
-            case _ => "error"
-          }
-          val starttime = tune.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-          val endtime = tune.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-
-          Ok(toJson(
-            Map(
-              "id" -> toJson(algoid.toString),
-              "appid" -> toJson(appid.toString),
-              "engineid" -> toJson(engineid.toString),
-              "algo" -> toJson(Map(
-                "id" -> algo.id.toString,
-                "algoname" -> algo.name.toString,
-                "appid" -> appid.toString,
-                "engineid" -> algo.engineid.toString,
-                "algoinfoid" -> algo.infoid,
-                "algoinfoname" -> algoInfo.name,
-                "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-              )),
-              "metric" -> toJson(Map(
-                "id" -> metric.id.toString,
-                "engineid" -> engineid.toString,
-                "engineinfoid" -> engineinfoid,
-                "metricsinfoid" -> metric.infoid,
-                "metricsname" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
-                "settingsstring" -> map_k_displayAllParams(metric.params)
-              )),
-              "metricscorelist" -> toJson(metricscorelist),
-              "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
-
-              "splittrain" -> toJson(splitTrain),
-              "splitvalidation" -> toJson(splitValidation),
-              "splittest" -> toJson(splitTest),
-              "splitmethod" -> toJson(splitMethod),
-              "evaliteration" -> toJson(evalIteration),
-
-              "status" -> toJson(status),
-              "starttime" -> toJson(starttime),
-              "endtime" -> toJson(endtime)
-            )
-          ))
-
-        } getOrElse {
-          InternalServerError(Json.obj("message" -> "The offline tune id ${tuneid} does not exist."))
-        }
-      } getOrElse {
-        InternalServerError(Json.obj("message" -> "This algo does not have offline tune."))
-      }
-  }
-
-  /**
-   * Applies the selected tuned algo's params to this algo
-   *
-   * {{{
-   * POST
-   * JSON parameters:
-   *   {
-   *     "tunedalgoid" : <the tuned algo id. This algo's parameters will be used>
-   *   }
-   * JSON response:
-   *   If not authenticated:
-   *   Forbidden
-   *   {
-   *     "message" : "Haven't signed in yet."
-   *   }
-   *
-   *   If error:
-   *   BadRequest
-   *   {
-   *     "message" : <error message>
-   *   }
-   *
-   *   If algo not found:
-   *   NotFound
-   *   {
-   *     "message" : <error message>
-   *   }
-   *   If applied:
-   *   Ok
-   *
-   * }}}
-   *
-   * @param appid the App ID
-   * @param engineid the engine ID
-   * @param algoid the algo ID to which the tuned parameters are applied
-   */
-  def algoAutotuningSelect(appid: Int, engineid: Int, algoid: Int) = withAlgo(appid, engineid, algoid) { (user, app, eng, algo) =>
-    implicit request =>
-
-      // Apply POST request params of tunedalgoid to algoid
-      // update the status of algoid from 'tuning' or 'tuned' to 'ready'
-
-      val form = Form("tunedalgoid" -> number)
-
-      form.bindFromRequest.fold(
-        formWithError => {
-          val msg = formWithError.errors(0).message // extract 1st error message only
-          BadRequest(toJson(Map("message" -> toJson(msg))))
-        },
-        formData => {
-          val tunedAlgoid = formData
-
-          val orgAlgo = algos.get(algoid)
-          val tunedAlgo = algos.get(tunedAlgoid)
-
-          if ((orgAlgo == None) || (tunedAlgo == None)) {
-            NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
-          } else {
-            val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
-            algos.update(orgAlgo.get.copy(
-              params = tunedAlgoParams,
-              status = "ready"
-            ))
-
-            Ok
-          }
-        }
-      )
-  }
-
-  /**
    * Returns a list of simulated evalulation for this engine
    *
    * {{{
@@ -1861,7 +1527,7 @@ object Application extends Controller {
    *                      }, ...
    *                    ],
    *       "status" : <sim eval status>,
-   *       "starttime" : <sim eval create time>,
+   *       "createtime" : <sim eval create time>,
    *       "endtime" : <sim eval end time>
    *     }, ...
    *   ]
@@ -1870,74 +1536,42 @@ object Application extends Controller {
    * @param appid the App ID
    * @param engineid the engine ID
    */
-  def getSimEvalList(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
+  def getSimEvalList(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
     implicit request =>
 
       // get offlineeval for this engine
-      val engineOfflineEvals = offlineEvals.getByEngineid(engineid) filter { e => (e.tuneid == None) }
+      val engineOfflineEvals = Helper.getSimEvalsByEngineid(engineid)
 
       if (!engineOfflineEvals.hasNext) NoContent
       else {
-        val resp = toJson(
+        val resp = Json.toJson(
 
           engineOfflineEvals.map { eval =>
 
-            val status = (eval.starttime, eval.endtime) match {
-              case (Some(x), Some(y)) => "completed"
-              case (_, _) => "pending"
-            }
+            val algolist = Json.toJson(
+              algos.getByOfflineEvalid(eval.id).map { algo =>
+                val algoInfo = algoInfos.get(algo.infoid)
+                algoToJson(algo, appid, algoInfo, withParam = true)
+              }.toSeq
+            )
 
-            val evalAlgos = algos.getByOfflineEvalid(eval.id)
+            val createtime = eval.createtime.map(dateTimeToString(_)).getOrElse("-")
+            val starttime = eval.starttime.map(dateTimeToString(_)).getOrElse("-")
+            val endtime = eval.endtime.map(dateTimeToString(_)).getOrElse("-")
 
-            val algolist = if (!evalAlgos.hasNext) JsNull
-            else
-              toJson(
-                evalAlgos.map { algo =>
-                  val algoInfo = algoInfos.get(algo.infoid).get // TODO: what if couldn't get the algoInfo here?
-
-                  Map("id" -> algo.id.toString,
-                    "algoname" -> algo.name,
-                    "appid" -> appid.toString,
-                    "engineid" -> algo.engineid.toString,
-                    "algoinfoid" -> algo.infoid,
-                    "algoinfoname" -> algoInfo.name,
-                    "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-                  )
-                }.toSeq
-              )
-
-            val createtime = eval.createtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-            val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-            val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-
-            Map(
-              "id" -> toJson(eval.id),
-              "appid" -> toJson(appid),
-              "engineid" -> toJson(eval.engineid),
+            Json.obj(
+              "id" -> eval.id,
+              "appid" -> appid,
+              "engineid" -> eval.engineid,
               "algolist" -> algolist,
-              "status" -> toJson(status),
-              "starttime" -> toJson(createtime), // NOTE: use createtime here for test date
-              "endtime" -> toJson(endtime)
+              "status" -> getSimEvalStatus(eval),
+              "createtime" -> createtime, // NOTE: use createtime here for test date
+              "endtime" -> endtime
             )
           }.toSeq
-
         )
-
         Ok(resp)
-
       }
-
-  }
-
-  val supportedMetricTypes = Set("map_k")
-  // metrictype -> metrictypename
-  val metricTypeNames = Map("map_k" -> "MAP@k")
-
-  def map_k_displayAllParams(params: Map[String, Any]): String = {
-    val displayNames: List[String] = List("k")
-    val displayToParamNames: Map[String, String] = Map("k" -> "kParam")
-
-    displayNames map (x => x + " = " + params(displayToParamNames(x))) mkString (", ")
   }
 
   /**
@@ -1975,11 +1609,12 @@ object Application extends Controller {
    * @param appid the App ID
    * @param engineid the engine ID
    */
-  def createSimEval(appid: Int, engineid: Int) = withEngine(appid, engineid) { (user, app, eng) =>
+  def createSimEval(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
     implicit request =>
       // request payload example
       // {"appid":"1","engineid":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
       // {"appid":"17","engineid":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splittrain":"71","splittest":"24","splitmethod":"time","evaliteration":"3"}
+      val supportedMetricTypes = offlineEvalMetricInfos.getByEngineinfoid(eng.infoid).map(_.id).toSet
       val simEvalForm = Form(tuple(
         "algo" -> list(number), // algo id
         "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
@@ -2055,7 +1690,7 @@ object Application extends Controller {
    * @param id the offline evaluation ID
    *
    */
-  def removeSimEval(appid: Int, engineid: Int, id: Int) = withOfflineEval(appid, engineid, id) { (user, app, eng, oe) =>
+  def removeSimEval(appid: Int, engineid: Int, id: Int) = WithOfflineEval.async(appid, engineid, id) { (user, app, eng, oe) =>
     implicit request =>
       // remove algo, remove metric, remove offline eval
       /** Make sure to unset offline eval's creation time to prevent scheduler from picking up */
@@ -2067,16 +1702,14 @@ object Application extends Controller {
       val complete = Helper.stopAndDeleteSimEvalScheduler(appid, engineid, oe.id)
 
       /** Detect timeout (10 minutes by default) */
-      Async {
-        concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
-          case r: SimpleResult => {
-            if (r.header.status == http.Status.OK) {
-              Helper.deleteOfflineEval(oe.id, keepSettings = false)
-            }
-            r
+      concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
+        case r: SimpleResult => {
+          if (r.header.status == http.Status.OK) {
+            Helper.deleteOfflineEval(oe.id, keepSettings = false)
           }
-          case t: String => InternalServerError(Json.obj("message" -> t))
+          r
         }
+        case t: String => InternalServerError(Json.obj("message" -> t))
       }
   }
 
@@ -2119,8 +1752,6 @@ object Application extends Controller {
    *     "metricslist" : [
    *                       {
    *                         "id" : <metric id>,
-   *                         "engineid" : <engine id>,
-   *                         "engineinfoid" : <engine info id>,
    *                         "metricsinfoid" : <metric info id>,
    *                         "metricsname" : <metric name>,
    *                         "settingsstring" : <metric setting string>
@@ -2154,73 +1785,50 @@ object Application extends Controller {
    * @param engineid the engine ID
    * @param id the offline evaluation ID
    */
-  def getSimEvalReport(appid: Int, engineid: Int, id: Int) = withOfflineEval(appid, engineid, id) { (user, app, eng, eval) =>
+  def getSimEvalReport(appid: Int, engineid: Int, id: Int) = WithOfflineEval(appid, engineid, id) { (user, app, eng, eval) =>
     implicit request =>
 
-      val status = "completed"
-
-      // TODO: add assertion that eval.starttime, eval.endtime can't be None
+      val status = getSimEvalStatus(eval)
 
       val evalAlgos = algos.getByOfflineEvalid(eval.id).toArray
 
-      val algolist =
-        if (evalAlgos.isEmpty) // TODO: shouldn't expect this happen
-          JsNull
-        else {
-          toJson(
-            evalAlgos.map { algo =>
-
-              val algoInfo = algoInfos.get(algo.infoid).get // TODO: what if couldn't get the algoInfo here?
-
-              Map("id" -> algo.id.toString,
-                "algoname" -> algo.name,
-                "appid" -> appid.toString,
-                "engineid" -> algo.engineid.toString,
-                "algoinfoid" -> algo.infoid,
-                "algoinfoname" -> algoInfo.name,
-                "settingsstring" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-              )
-            }.toSeq
-          )
-        }
+      val algolist = Json.toJson(
+        evalAlgos.map { algo =>
+          val algoInfo = algoInfos.get(algo.infoid)
+          algoToJson(algo, appid, algoInfo, withParam = true)
+        }.toSeq
+      )
 
       val evalMetrics = offlineEvalMetrics.getByEvalid(eval.id).toArray
 
-      val metricslist =
-        if (evalMetrics.isEmpty) // TODO: shouldn't expect this happen
-          JsNull
-        else {
-          toJson(
-            evalMetrics.map { metric =>
-              Map("id" -> metric.id.toString,
-                "engineid" -> engineid.toString,
-                "engineinfoid" -> "itemrec", // TODO: hardcode now, should get it from engine db
-                "metricsinfoid" -> metric.infoid,
-                "metricsname" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
-                "settingsstring" -> map_k_displayAllParams(metric.params)
-              )
-            }.toSeq
-          )
-        }
+      val metricslist = Json.toJson(
+        evalMetrics.map { metric =>
+          val metricInfo = offlineEvalMetricInfos.get(metric.infoid)
+          offlineEvalMetricToJson(metric, metricInfo, withParam = true)
+        }.toSeq
+      )
 
       val evalResults = offlineEvalResults.getByEvalid(eval.id).toArray
 
-      val metricscorelist = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
+      val metricscorelist = Json.toJson(
+        (for (algo <- evalAlgos; metric <- evalMetrics) yield {
 
-        val results = evalResults
-          .filter(x => ((x.metricid == metric.id) && (x.algoid == algo.id)))
-          .map(x => x.score)
+          val results = evalResults
+            .filter(x => ((x.metricid == metric.id) && (x.algoid == algo.id)))
+            .map(x => x.score)
 
-        val num = results.length
-        val avg = if ((results.isEmpty) || (num != eval.iterations)) "N/A" else ((results.reduceLeft(_ + _) / num).toString)
+          val num = results.length
+          val avg = if ((results.isEmpty) || (num != eval.iterations)) "N/A" else ((results.reduceLeft(_ + _) / num).toString)
 
-        Map("algoid" -> algo.id.toString,
-          "metricsid" -> metric.id.toString,
-          "score" -> avg.toString
-        )
-      }).toSeq
+          Json.obj(
+            "algoid" -> algo.id,
+            "metricsid" -> metric.id,
+            "score" -> avg
+          )
+        }).toSeq
+      )
 
-      val metricscoreiterationlist = (for (i <- 1 to eval.iterations) yield {
+      val metricscoreiterationlist = Json.toJson((for (i <- 1 to eval.iterations) yield {
         val defaultScore = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
           ((algo.id, metric.id) -> "N/A") // default score
         }).toMap
@@ -2231,12 +1839,12 @@ object Application extends Controller {
         // overwrite defaultScore with evalScore
         (defaultScore ++ evalScore).map {
           case ((algoid, metricid), score) =>
-            Map("algoid" -> algoid.toString, "metricsid" -> metricid.toString, "score" -> score)
+            Json.obj("algoid" -> algoid, "metricsid" -> metricid, "score" -> score)
         }
-      }).toSeq
+      }).toSeq)
 
-      val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-      val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
+      val starttime = eval.starttime map (dateTimeToString(_)) getOrElse ("-")
+      val endtime = eval.endtime map (dateTimeToString(_)) getOrElse ("-")
 
       // get splitter data
       val splitters = offlineEvalSplitters.getByEvalid(eval.id)
@@ -2249,26 +1857,23 @@ object Application extends Controller {
         val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
 
         if (splitters.hasNext) {
-          val message = "More than one splitter found for this Offline Eval ID:" + eval.id
-          NotFound(toJson(Map("message" -> toJson(message))))
+          InternalServerError(Json.obj("message" -> s"More than one splitter found for this Offline Eval ID: ${eval.id}"))
         } else {
-          Ok(toJson(
-            Map(
-              "id" -> toJson(eval.id),
-              "appid" -> toJson(appid.toString),
-              "engineid" -> toJson(eval.engineid),
-              "algolist" -> algolist,
-              "metricslist" -> metricslist,
-              "metricscorelist" -> toJson(metricscorelist),
-              "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
-              "splittrain" -> toJson(splitTrain),
-              "splittest" -> toJson(splitTest),
-              "splitmethod" -> toJson(splitMethod),
-              "evaliteration" -> toJson(eval.iterations),
-              "status" -> toJson(status),
-              "starttime" -> toJson(starttime),
-              "endtime" -> toJson(endtime)
-            )
+          Ok(Json.obj(
+            "id" -> eval.id,
+            "appid" -> appid,
+            "engineid" -> eval.engineid,
+            "algolist" -> algolist,
+            "metricslist" -> metricslist,
+            "metricscorelist" -> metricscorelist,
+            "metricscoreiterationlist" -> metricscoreiterationlist,
+            "splittrain" -> splitTrain,
+            "splittest" -> splitTest,
+            "splitmethod" -> splitMethod,
+            "evaliteration" -> eval.iterations,
+            "status" -> status,
+            "starttime" -> starttime,
+            "endtime" -> endtime
           ))
         }
       } else {
@@ -2276,4 +1881,278 @@ object Application extends Controller {
       }
 
   }
+
+  /**
+   * Returns the algorithm auto tune report
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If not found:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   {
+   *     "id" : <original algo id>,
+   *     "appid" : <app id>,
+   *     "engineid" : <engine id>,
+   *     "algo" : {
+   *                "id" : <original algo id>,
+   *                "algoname" : <algo name>,
+   *                "appid" : <app id>,
+   *                "engineid" : <engine id>,
+   *                "algoinfoid" : <algo info id>,
+   *                "algoinfoname" : <algo info name>,
+   *                "settingsstring" : <algo setting string>
+   *              },
+   *     "metric" : {
+   *                  "id" : <metric id>,
+   *                  "metricsinfoid" : <metric info id>,
+   *                  "metricsname" : <metric name>,
+   *                  "settingsstring" : <metric setting string>
+   *                },
+   *     "metricscorelist" : [
+   *                           {
+   *                             "algoautotuneid" : <tuned algo id>,
+   *                             "settingsstring" : <algo setting string>,
+   *                             "score" : <average score>
+   *                           }, ...
+   *                         ],
+   *     "metricscoreiterationlist" : [
+   *                                    [ {
+   *                                        "algoautotuneid" : <tuned algo id 1>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 1st iteration for this tuned algo id>
+   *                                      },
+   *                                      {
+   *                                        "algoautotuneid" : <tuned algo id 2>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 1st iteration for this tuned algo id>
+   *                                      }, ...
+   *                                    ],
+   *                                    [ {
+   *                                        "algoautotuneid" : <tuned algo id 1>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 2nd iteration for this tuned algo id>
+   *                                      },
+   *                                      {
+   *                                        "algoautotuneid" : <tuned algo id 2>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 2nd iteration for this tuned algo id>
+   *                                      }, ...
+   *                                    ], ...
+   *                                  ],
+   *     "splittrain" : <training set split percentage 1 to 100>,
+   *     "splitvalidation" : <validation set split percentage 1 to 100>,
+   *     "splittest" : <test set split percentage 1 to 100>,
+   *     "splitmethod" : <split method string: randome, time>
+   *     "evaliteration" : <number of iterations>,
+   *     "status" : <auto tune status>,
+   *     "starttime" : <start time>,
+   *     "endtime" : <end time>
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param algoid the algo ID
+   */
+  def getAlgoAutotuningReport(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, eng, algo) =>
+    implicit request =>
+
+      algo.offlinetuneid map { tuneid =>
+        offlineTunes.get(tuneid) map { tune =>
+
+          val algoInfo = algoInfos.get(algo.infoid)
+
+          // get all offlineeval of this offlinetuneid
+          val tuneOfflineEvals: Array[OfflineEval] = offlineEvals.getByTuneid(tuneid).toArray.sortBy(_.id)
+
+          val tuneMetrics: Array[OfflineEvalMetric] = tuneOfflineEvals.flatMap { e => offlineEvalMetrics.getByEvalid(e.id) }
+
+          val tuneSplitters: Array[OfflineEvalSplitter] = tuneOfflineEvals.flatMap { e => offlineEvalSplitters.getByEvalid(e.id) }
+
+          // get all offlineeavlresults of each offlineevalid
+          val tuneOfflineEvalResults: Array[OfflineEvalResult] = tuneOfflineEvals.flatMap { e => offlineEvalResults.getByEvalid(e.id) }
+
+          // test set score
+          val tuneOfflineEvalResultsTestSet: Array[OfflineEvalResult] = tuneOfflineEvalResults.filter(x => (x.splitset == "test"))
+
+          val tuneOfflineEvalResultsTestSetAlgoidMap: Map[Int, Double] = tuneOfflineEvalResultsTestSet.map(x => (x.algoid -> x.score)).toMap
+
+          // get all algos of each offlineevalid
+          // note: this happen after getting all available offlineEvalResults,
+          // so these retrieved algos may have more algo than those used in offlineEvalResults.
+          val tuneAlgos: Array[Algo] = tuneOfflineEvals flatMap { e => algos.getByOfflineEvalid(e.id) }
+
+          val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map { a => (a.id -> a) }.toMap
+
+          // group by (loop, paramset)
+          type AlgoGroupIndex = (Option[Int], Option[Int])
+
+          val tuneAlgosGroup: Map[AlgoGroupIndex, Array[Algo]] = tuneAlgos.groupBy(a => (a.loop, a.paramset))
+
+          // get param of each group
+          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String)] = tuneAlgosGroup.map {
+            case (index, arrayOfAlgos) =>
+              val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
+              val settings = algoParamToString(algo, algoInfo)
+
+              (index -> (algo.id, settings))
+          }
+
+          // calculate avg
+          val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues { arrayOfAlgos =>
+            // check if all scores available
+            val allAvailable = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap.contains(algo.id)).reduceLeft(_ && _)
+
+            if (allAvailable) {
+              val scores: Array[Double] = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap(algo.id))
+
+              (scores.sum / scores.size).toString
+            } else {
+              "N/A"
+            }
+          }
+
+          val metricscorelist = avgScores.toSeq.sortBy(_._1).map {
+            case (k, v) =>
+              Json.obj(
+                "algoautotuneid" -> tuneAlgosGroupParams(k)._1,
+                "settingsstring" -> tuneAlgosGroupParams(k)._2,
+                "score" -> v)
+          }
+
+          val metricscoreiterationlist = tuneOfflineEvals.map { e =>
+            tuneOfflineEvalResultsTestSet.filter(x => (x.evalid == e.id)).sortBy(_.algoid).map { r =>
+
+              val algo = tuneAlgosMap(r.algoid)
+
+              Json.obj(
+                "algoautotuneid" -> r.algoid,
+                "settingsstring" -> algoParamToString(algo, algoInfo),
+                "score" -> r.score)
+            }.toSeq
+          }.toSeq
+
+          val metric = tuneMetrics(0)
+          val metricInfo = offlineEvalMetricInfos.get(metric.infoid)
+          val splitter = tuneSplitters(0)
+          val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double]) * 100).toInt
+          val splitValidation = ((splitter.settings("validationPercent").asInstanceOf[Double]) * 100).toInt
+          val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double]) * 100).toInt
+          val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
+          val evalIteration = tuneOfflineEvals.size // NOTE: for autotune, number of offline eval is the iteration
+          val engineinfoid = engines.get(engineid) map { _.infoid } getOrElse { "unkown-engine" }
+
+          val starttime = tune.starttime map (dateTimeToString(_)) getOrElse ("-")
+          val endtime = tune.endtime map (dateTimeToString(_)) getOrElse ("-")
+
+          Ok(Json.obj(
+            "id" -> algoid,
+            "appid" -> appid,
+            "engineid" -> engineid,
+            "algo" -> algoToJson(algo, appid, algoInfo, withParam = true),
+            "metric" -> offlineEvalMetricToJson(metric, metricInfo, withParam = true),
+            "metricscorelist" -> Json.toJson(metricscorelist),
+            "metricscoreiterationlist" -> Json.toJson(metricscoreiterationlist),
+            "splittrain" -> splitTrain,
+            "splitvalidation" -> splitValidation,
+            "splittest" -> splitTest,
+            "splitmethod" -> splitMethod,
+            "evaliteration" -> evalIteration,
+            "status" -> getOfflineTuneStatus(tune),
+            "starttime" -> starttime,
+            "endtime" -> endtime
+          ))
+        } getOrElse {
+          InternalServerError(Json.obj("message" -> s"The offline tune id ${tuneid} does not exist."))
+        }
+      } getOrElse {
+        InternalServerError(Json.obj("message" -> "This algo does not have offline tune."))
+      }
+  }
+
+  /**
+   * Applies the selected tuned algo's params to this algo
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "tunedalgoid" : <the tuned algo id. This algo's parameters will be used>
+   *   }
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If error:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If algo not found:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *   If applied:
+   *   Ok
+   *
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param algoid the algo ID to which the tuned parameters are applied
+   */
+  def algoAutotuningSelect(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, eng, algo) =>
+    implicit request =>
+
+      // Apply POST request params of tunedalgoid to algoid
+      // update the status of algoid from 'tuning' or 'tuned' to 'ready'
+
+      val form = Form("tunedalgoid" -> number)
+
+      form.bindFromRequest.fold(
+        formWithError => {
+          val msg = formWithError.errors(0).message // extract 1st error message only
+          BadRequest(toJson(Map("message" -> toJson(msg))))
+        },
+        formData => {
+          val tunedAlgoid = formData
+
+          val orgAlgo = algos.get(algoid)
+          val tunedAlgo = algos.get(tunedAlgoid)
+
+          if ((orgAlgo == None) || (tunedAlgo == None)) {
+            NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+          } else {
+            val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
+            algos.update(orgAlgo.get.copy(
+              params = tunedAlgoParams,
+              status = "ready"
+            ))
+
+            Ok
+          }
+        }
+      )
+  }
+
 }

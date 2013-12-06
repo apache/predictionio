@@ -13,19 +13,24 @@ import Application.{ itemRecScores, itemSimScores }
 import Application.{ trainingItemRecScores, trainingItemSimScores }
 import Application.settingsSchedulerUrl
 
-import io.prediction.commons.settings.{ OfflineEval, OfflineTune, Algo }
+import io.prediction.commons.settings.{ OfflineEval, OfflineTune, Algo, AlgoInfo, OfflineEvalMetric, OfflineEvalMetricInfo }
 
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.WS
 import play.api.mvc.Controller
-import play.api.libs.json.{ Json }
+import play.api.libs.json.{ JsNull, JsArray, Json, JsValue, Writes, JsObject }
 import play.api.http
+
+import com.github.nscala_time.time.Imports._
 
 /** helper functions */
 object Helper extends Controller {
 
+  /** Check if the offlineEval is simeval */
+  def isSimEval(eval: OfflineEval): Boolean = (eval.tuneid == None)
+
   /** check if this simeval is pending */
-  def isPendingSimEval(eval: OfflineEval): Boolean = (eval.createtime != None) && (eval.endtime == None)
+  def isPendingSimEval(eval: OfflineEval): Boolean = isSimEval(eval) && (eval.createtime != None) && (eval.endtime == None)
 
   /** Check if this offline tune is pending */
   def isPendingOfflineTune(tune: OfflineTune): Boolean = (tune.createtime != None) && (tune.endtime == None)
@@ -36,7 +41,110 @@ object Helper extends Controller {
   def isSimEvalAlgo(algo: Algo): Boolean = (algo.status == "simeval")
 
   /** Return sim evals of this engine */
-  def getSimEvalsByEngineid(engineid: Int): Iterator[OfflineEval] = offlineEvals.getByEngineid(engineid).filter(_.tuneid == None)
+  def getSimEvalsByEngineid(engineid: Int): Iterator[OfflineEval] = offlineEvals.getByEngineid(engineid).filter(isSimEval(_))
+
+  def getSimEvalStatus(eval: OfflineEval): String = {
+    val status = (eval.createtime, eval.starttime, eval.endtime) match {
+      case (Some(x), Some(y), Some(z)) => "completed"
+      case (Some(x), Some(y), _) => "running"
+      case (Some(x), _, _) => "pending"
+      case (_, _, _) => "canceled"
+    }
+    status
+  }
+
+  def getOfflineTuneStatus(tune: OfflineTune): String = {
+    val status: String = (tune.starttime, tune.endtime) match {
+      case (Some(x), Some(y)) => "completed"
+      case (None, None) => "pending"
+      case (Some(x), None) => "running"
+      case _ => "error"
+    }
+    status
+  }
+  /**
+   * Convert algo data to JsObject
+   *   {
+   *     "id" : <algo id>,
+   *     "algoname" : <algo name>,
+   *     "appid" : <app id>,
+   *     "engineid" : <engine id>,
+   *     "algoinfoid" : <algo info id>,
+   *     "algoinfoname" : <algo info name>,
+   *     "status" : <algo status>,
+   *     "createdtime" : <algo creation time>,
+   *     "updatedtime" : <algo last updated time>
+   *   }
+   * @note status: ready, deployed, tuning, tuned, simeval
+   * @param algo the algo
+   * @param appid the App ID
+   * @param algoinfo AlgoInfo
+   */
+  def algoToJson(algo: Algo, appid: Int, algoinfoOpt: Option[AlgoInfo], withParam: Boolean = false): JsObject = {
+    val infoname = algoinfoOpt.map(_.name).getOrElse[String](s"algoinfo ${algo.infoid} not found")
+
+    if (withParam)
+      Json.obj(
+        "id" -> algo.id,
+        "algoname" -> algo.name,
+        "appid" -> appid,
+        "engineid" -> algo.engineid,
+        "algoinfoid" -> algo.infoid,
+        "algoinfoname" -> infoname,
+        "settingsstring" -> algoParamToString(algo, algoinfoOpt)
+      )
+    else
+      Json.obj(
+        "id" -> algo.id,
+        "algoname" -> algo.name,
+        "appid" -> appid,
+        "engineid" -> algo.engineid,
+        "algoinfoid" -> algo.infoid,
+        "algoinfoname" -> infoname,
+        "status" -> algo.status,
+        "createdtime" -> dateTimeToString(algo.createtime),
+        "updatedtime" -> dateTimeToString(algo.updatetime)
+      )
+  }
+
+  def offlineEvalMetricToJson(metric: OfflineEvalMetric, metricinfoOpt: Option[OfflineEvalMetricInfo], withParam: Boolean = false): JsObject = {
+    val infoname = metricinfoOpt.map(_.name).getOrElse[String](s"offlineevalmetricinfo ${metric.infoid} not found")
+    if (withParam)
+      Json.obj(
+        "id" -> metric.id,
+        "metricsinfoid" -> metric.infoid,
+        "metricsname" -> infoname,
+        "settingsstring" -> offlineEvalMetricParamToString(metric, metricinfoOpt)
+      )
+    else
+      Json.obj(
+        "id" -> metric.id,
+        "metricsinfoid" -> metric.infoid,
+        "metricsname" -> infoname
+      )
+  }
+
+  def algoParamToString(algo: Algo, algoinfoOpt: Option[AlgoInfo]): String = {
+    algoinfoOpt.map { algoInfo =>
+      algoInfo.paramorder.map { paramName =>
+        algoInfo.params(paramName).name + " = " +
+          algo.params.getOrElse(paramName, algoInfo.params(paramName).defaultvalue)
+      }.mkString(", ")
+    }.getOrElse(s"algoinfo ${algo.infoid} not found")
+  }
+
+  def offlineEvalMetricParamToString(metric: OfflineEvalMetric, metricinfoOpt: Option[OfflineEvalMetricInfo]): String = {
+    // TODO: hard code for now
+    val displayNames: List[String] = List("k")
+    val displayToParamNames: Map[String, String] = Map("k" -> "kParam")
+
+    displayNames map (x => x + " = " + metric.params(displayToParamNames(x))) mkString (", ")
+  }
+
+  val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
+
+  def dateTimeToString(t: DateTime, zoneName: String = "UTC"): String =
+    timeFormat.print(t.withZone(DateTimeZone.forID(zoneName)))
 
   /**
    * Delete appdata DB of this appid

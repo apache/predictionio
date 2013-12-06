@@ -17,8 +17,9 @@ import com.mongodb.casbah.Imports._
 import java.net.URLEncoder
 
 import io.prediction.commons.Config
-import io.prediction.commons.settings.{ App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, Param, ParamDoubleConstraint, ParamUI }
-import io.prediction.commons.settings.{ Engine, Algo }
+import io.prediction.commons.settings.{ App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, OfflineEvalResult }
+import io.prediction.commons.settings.{ Param, ParamDoubleConstraint, ParamIntegerConstraint, ParamUI }
+import io.prediction.commons.settings.{ Engine, Algo, OfflineEval, OfflineEvalMetric, OfflineEvalSplitter }
 
 class AdminServerSpec extends Specification with JsonMatchers {
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -31,6 +32,10 @@ class AdminServerSpec extends Specification with JsonMatchers {
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
   val engines = config.getSettingsEngines()
   val algos = config.getSettingsAlgos()
+  val offlineEvals = config.getSettingsOfflineEvals()
+  val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
+  val offlineEvalSplitters = config.getSettingsOfflineEvalSplitters()
+  val offlineEvalResults = config.getSettingsOfflineEvalResults()
 
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
 
@@ -58,6 +63,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     req.withHeaders("Cookie" -> signinCookie)
   }
 
+  /* setup system info (engineinfo, algoinfo, etc) */
   def setupInfo() = {
 
     val itemrecEngine = EngineInfo(
@@ -82,20 +88,25 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
         "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
-      params = Map(),
+      params = Map(
+        "aParam" -> Param(
+          id = "aParam",
+          name = "A Parameter",
+          description = Some("A parameter description"),
+          defaultvalue = 4,
+          constraint = ParamIntegerConstraint(),
+          ui = ParamUI()),
+        "bParam" -> Param(
+          id = "bParam",
+          name = "B Parameter",
+          description = Some("B parameter description"),
+          defaultvalue = 55,
+          constraint = ParamIntegerConstraint(),
+          ui = ParamUI())
+      ),
       paramorder = Seq(
-        "measureParam",
-        "priorCountParam",
-        "priorCorrelParam",
-        "minNumRatersParam",
-        "maxNumRatersParam",
-        "minIntersectionParam",
-        "minNumRatedSimParam",
-        "viewParam",
-        "likeParam",
-        "dislikeParam",
-        "conversionParam",
-        "conflictParam"),
+        "aParam",
+        "bParam"),
       paramsections = Seq(),
       engineinfoid = "itemrec",
       techreq = Seq("Hadoop"),
@@ -121,6 +132,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
   }
 
+  /* convert algo to Json */
   def algoToJson(algo: Algo, appid: Int) = {
     Json.obj(
       "id" -> algo.id,
@@ -128,10 +140,97 @@ class AdminServerSpec extends Specification with JsonMatchers {
       "appid" -> appid,
       "engineid" -> algo.engineid,
       "algoinfoid" -> algo.infoid,
-      "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+      "algoinfoname" -> "kNN Item Based Collaborative Filtering", // TODO: hard code for now
       "status" -> algo.status,
       "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
       "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
+    )
+  }
+
+  def offlineEvalMetricToJson(metric: OfflineEvalMetric, engineid: Int) = {
+    Json.obj(
+      "id" -> metric.id,
+      "engineid" -> engineid,
+      "engineinfoid" -> "itemrec", // TODO: hard code now
+      "metricsinfoid" -> metric.infoid,
+      "metricsname" -> "Mean Average Precision A" // TODO: hard code now
+    )
+  }
+
+  def appTemplate(testUserid: Int) = App(
+    id = 0,
+    userid = testUserid,
+    appkey = "appkeystring",
+    display = "App Name",
+    url = None,
+    cat = None,
+    desc = None,
+    timezone = "UTC"
+  )
+
+  def engineTemplate(appid: Int) = Engine(
+    id = 0,
+    appid = appid,
+    name = "test-engine",
+    infoid = "itemrec",
+    itypes = None, // NOTE: default None (means all itypes)
+    settings = Map("a" -> "b")
+  )
+
+  def algoTemplate(engineid: Int) = {
+    val algoInfo = algoInfos.get("knn").get
+    Algo(
+      id = 0,
+      engineid = 0,
+      name = "test-algo",
+      infoid = "knn",
+      command = "",
+      params = algoInfo.params.mapValues(_.defaultvalue),
+      settings = Map(), // no use for now
+      modelset = false, // init value
+      createtime = DateTime.now.hour(4).minute(56).second(35),
+      updatetime = DateTime.now.hour(5).minute(6).second(7),
+      status = "ready", // default status
+      offlineevalid = None,
+      loop = None
+    )
+  }
+
+  def offlineEvalTemplate(engineid: Int) = {
+    OfflineEval(
+      id = -1,
+      engineid = engineid,
+      name = "",
+      iterations = 3,
+      tuneid = None,
+      createtime = Some(DateTime.now.hour(9).minute(12).second(5)),
+      starttime = None,
+      endtime = None
+    )
+  }
+
+  def offlineEvalSplitterTemplate(evalid: Int) = {
+    OfflineEvalSplitter(
+      id = -1,
+      evalid = evalid,
+      name = ("sim-eval-" + evalid + "-splitter"),
+      infoid = "trainingtestsplit",
+      settings = Map(
+        "trainingPercent" -> 0.5,
+        "validationPercent" -> 0.2,
+        "testPercent" -> 0.2,
+        "timeorder" -> false
+      )
+    )
+  }
+
+  def offlineEvalMetricTemplate(evalid: Int) = {
+    val metricInfo = offlineEvalMetricInfos.get("map").get
+    OfflineEvalMetric(
+      id = -1,
+      infoid = "map",
+      evalid = evalid,
+      params = Map("k" -> 20) //TODO metricInfo.params.mapValues(_.defaultvalue)
     )
   }
 
@@ -1522,6 +1621,436 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
   "POST /apps/:appid/engines/:engineid/algos_trainnow" should {
     "return OK" in new WithServer {
+      new Pending("TODO")
+    }
+  }
+
+  "POST /apps/:appid/engines/:engineid/simevals" should {
+
+    val testName = "postsimevals"
+    val email = s"${testName}@test.com"
+    val password = s"${testName}password"
+    val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
+    val appid = apps.insert(appTemplate(testUserid).copy(appkey = s"{testName}appkeystring", display = s"{testName} App Name"))
+
+    "create simeval with 1 algo 1 metric and write to database" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-1algo1metric"))
+      val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1")
+      val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2")
+      val myAlgo3 = algoTemplate(engineid).copy(name = "test-algo-3")
+
+      val algoid = algos.insert(myAlgo)
+      val algoid2 = algos.insert(myAlgo2)
+      val algoid3 = algos.insert(myAlgo3)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).
+        post(Json.obj(
+          "algo" -> Json.toJson(Seq(algoid)),
+          "metrics" -> Json.toJson(Seq("map")),
+          "metricsSettings" -> Json.toJson(Seq(20)),
+          "splittrain" -> 66,
+          "splittest" -> 13,
+          "splitmethod" -> "random",
+          "evaliteration" -> 4))
+      )
+
+      // check offlineEval, metric, splitter, shadow algo
+      // this engine should only have this offline eval
+      val evals = offlineEvals.getByEngineid(engineid).toSeq
+
+      val evalOpt: Option[OfflineEval] = if (evals.size == 1) {
+        Some(evals.head)
+      } else {
+        None
+      }
+
+      val metricsList: List[OfflineEvalMetric] = evalOpt.map { e => offlineEvalMetrics.getByEvalid(e.id).toList }.getOrElse(List())
+      val splittersList: List[OfflineEvalSplitter] = evalOpt.map { e => offlineEvalSplitters.getByEvalid(e.id).toList }.getOrElse(List())
+      val algosList: List[Algo] = evalOpt.map { e => algos.getByOfflineEvalid(e.id).toList }.getOrElse(List())
+
+      val evalOK = evalOpt.map { e => (e.iterations == 4) }.getOrElse[Boolean](false)
+      // only number of records created for now
+      val metricOK = (metricsList.size == 1)
+      val splitterOK = (splittersList.size == 1)
+      val algoOK = (algosList.size == 1)
+
+      r.status must equalTo(OK) and
+        (evalOK must beTrue) and
+        (metricOK must beTrue) and
+        (splitterOK must beTrue) and
+        (algoOK must beTrue)
+    }
+
+    "create simeval with multiple algos mutliple metrics and write to database" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-malgommetric"))
+      val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1")
+      val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2")
+      val myAlgo3 = algoTemplate(engineid).copy(name = "test-algo-3")
+
+      val algoid = algos.insert(myAlgo)
+      val algoid2 = algos.insert(myAlgo2)
+      val algoid3 = algos.insert(myAlgo3)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).
+        post(Json.obj(
+          "algo" -> Json.toJson(Seq(algoid, algoid2, algoid3)),
+          "metrics" -> Json.toJson(Seq("map", "map")),
+          "metricsSettings" -> Json.toJson(Seq(20, 40)),
+          "splittrain" -> 66,
+          "splittest" -> 13,
+          "splitmethod" -> "random",
+          "evaliteration" -> 4))
+      )
+
+      // check offlineEval, metric, splitter, shadow algo
+      // this engine should only have this offline eval
+      val evals = offlineEvals.getByEngineid(engineid).toSeq
+
+      val evalOpt: Option[OfflineEval] = if (evals.size == 1) {
+        Some(evals.head)
+      } else {
+        None
+      }
+
+      val metricsList: List[OfflineEvalMetric] = evalOpt.map { e => offlineEvalMetrics.getByEvalid(e.id).toList }.getOrElse(List())
+      val splittersList: List[OfflineEvalSplitter] = evalOpt.map { e => offlineEvalSplitters.getByEvalid(e.id).toList }.getOrElse(List())
+      val algosList: List[Algo] = evalOpt.map { e => algos.getByOfflineEvalid(e.id).toList }.getOrElse(List())
+
+      val evalOK = evalOpt.map { e => (e.iterations == 4) }.getOrElse[Boolean](false)
+      // only number of records created for now
+      val metricOK = (metricsList.size == 2)
+      val splitterOK = (splittersList.size == 1)
+      val algoOK = (algosList.size == 3)
+
+      r.status must equalTo(OK) and
+        (evalOK must beTrue) and
+        (metricOK must beTrue) and
+        (splitterOK must beTrue) and
+        (algoOK must beTrue)
+    }
+
+    "return BAD_REQUEST if invalid algoid in param" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if invalid metricinfoid in param" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if splittrain is not within 1-100" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if splittest is not within 1-100" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if splitmethod is not supported (random, time)" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if evaliteration is <= 0" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid appid" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid engineid" in new WithServer {
+      new Pending("TODO")
+    }
+
+  }
+
+  "GET /apps/:appid/engines/:engineid/simevals" should {
+
+    val testName = "getsimevals"
+    val email = s"${testName}@test.com"
+    val password = s"${testName}password"
+    val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
+    val appid = apps.insert(appTemplate(testUserid).copy(appkey = s"{testName}appkeystring", display = s"{testName} App Name"))
+
+    "return NO_CONTENT if 0 simeval" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-0simeval"))
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
+
+      r.status must equalTo(NO_CONTENT)
+    }
+
+    "return list of 1 simeval of 1 algo" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-1simeval-1"))
+      val engineid2 = engines.insert(engineTemplate(appid).copy(name = "test-engine-1simeval-2"))
+
+      val simEval = offlineEvalTemplate(engineid)
+      val simEval2 = offlineEvalTemplate(engineid2) // note: diff engine
+      val evalid = offlineEvals.insert(simEval)
+      val evalid2 = offlineEvals.insert(simEval2)
+
+      val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo2 = algoTemplate(engineid2).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid2))
+      val algoid = algos.insert(myAlgo)
+      val algoid2 = algos.insert(myAlgo2)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
+
+      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+
+      val simEvalJson = Json.obj(
+        "id" -> evalid,
+        "appid" -> appid,
+        "engineid" -> engineid,
+        "algolist" -> Json.arr(algoJson),
+        "status" -> "pending",
+        "createtime" -> simEval.createtime.map(x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
+        "endtime" -> "-"
+      )
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(Json.arr(simEvalJson)))
+    }
+
+    "return list of 1 simeval of multiple algos" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-1simevalmalgos-1"))
+
+      val simEval = offlineEvalTemplate(engineid)
+      val evalid = offlineEvals.insert(simEval)
+
+      val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo3 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))
+      val algoid = algos.insert(myAlgo)
+      val algoid2 = algos.insert(myAlgo2)
+      val algoid3 = algos.insert(myAlgo3)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
+
+      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson2 = algoToJson(myAlgo2.copy(id = algoid2), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson3 = algoToJson(myAlgo3.copy(id = algoid3), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+
+      val simEvalJson = Json.obj(
+        "id" -> evalid,
+        "appid" -> appid,
+        "engineid" -> engineid,
+        "algolist" -> Json.arr(algoJson, algoJson2, algoJson3),
+        "status" -> "pending",
+        "createtime" -> simEval.createtime.map(x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
+        "endtime" -> "-"
+      )
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(Json.arr(simEvalJson)))
+    }
+
+    "return list of simevals" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-simevals"))
+
+      // TODO: check eval status 
+      val simEval = offlineEvalTemplate(engineid)
+      val evalid = offlineEvals.insert(simEval)
+      val evalid2 = offlineEvals.insert(simEval)
+      val evalid3 = offlineEvals.insert(simEval)
+
+      val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo3 = algoTemplate(engineid).copy(name = "test-algo-3", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo4 = algoTemplate(engineid).copy(name = "test-algo-4", status = "simeval", offlineevalid = Some(evalid2))
+      val myAlgo5 = algoTemplate(engineid).copy(name = "test-algo-5", status = "simeval", offlineevalid = Some(evalid2))
+      val myAlgo6 = algoTemplate(engineid).copy(name = "test-algo-6", status = "simeval", offlineevalid = Some(evalid3))
+
+      val algoid = algos.insert(myAlgo)
+      val algoid2 = algos.insert(myAlgo2)
+      val algoid3 = algos.insert(myAlgo3)
+      val algoid4 = algos.insert(myAlgo4)
+      val algoid5 = algos.insert(myAlgo5)
+      val algoid6 = algos.insert(myAlgo6)
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
+
+      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson2 = algoToJson(myAlgo2.copy(id = algoid2), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson3 = algoToJson(myAlgo3.copy(id = algoid3), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson4 = algoToJson(myAlgo4.copy(id = algoid4), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson5 = algoToJson(myAlgo5.copy(id = algoid5), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson6 = algoToJson(myAlgo6.copy(id = algoid6), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+
+      val simEvalJson = Json.obj(
+        "id" -> evalid,
+        "appid" -> appid,
+        "engineid" -> engineid,
+        "algolist" -> Json.arr(algoJson, algoJson2, algoJson3),
+        "status" -> "pending",
+        "createtime" -> simEval.createtime.map(x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
+        "endtime" -> "-"
+      )
+      val simEvalJson2 = Json.obj(
+        "id" -> evalid2,
+        "appid" -> appid,
+        "engineid" -> engineid,
+        "algolist" -> Json.arr(algoJson4, algoJson5),
+        "status" -> "pending",
+        "createtime" -> simEval.createtime.map(x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
+        "endtime" -> "-"
+      )
+      val simEvalJson3 = Json.obj(
+        "id" -> evalid3,
+        "appid" -> appid,
+        "engineid" -> engineid,
+        "algolist" -> Json.arr(algoJson6),
+        "status" -> "pending",
+        "createtime" -> simEval.createtime.map(x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
+        "endtime" -> "-"
+      )
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(Json.arr(simEvalJson, simEvalJson2, simEvalJson3)))
+    }
+
+    "return NOT_FOUND if invalid appid" in new WithServer {
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/9999/simevals"), email, password).get)
+
+      r.status must equalTo(NOT_FOUND)
+    }
+
+    "return NOT_FOUND if invalid engineid" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-invalidappid"))
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/9999/engines/${engineid}/simevals"), email, password).get)
+
+      r.status must equalTo(NOT_FOUND)
+    }
+  }
+
+  "DELETE /apps/:appid/engines/:engineid/simevals/:id " should {
+    "delete the simeval" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid appid" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid engineid" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid simevalid" in new WithServer {
+      new Pending("TODO")
+    }
+  }
+
+  "GET /apps/:appid/engines/:engineid/simevals/:id/report" should {
+
+    val testName = "getsimevalsreport"
+    val email = s"${testName}@test.com"
+    val password = s"${testName}password"
+    val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
+    val appid = apps.insert(appTemplate(testUserid).copy(appkey = s"{testName}appkeystring", display = s"{testName} App Name"))
+
+    "return the report of the simeval" in new WithServer {
+      val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-1simevalmalgos-1"))
+
+      val simEval = offlineEvalTemplate(engineid)
+      val evalid = offlineEvals.insert(simEval)
+
+      val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1", status = "simeval", offlineevalid = Some(evalid))
+      /*
+      val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))
+      val myAlgo3 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))*/
+      val algoid = algos.insert(myAlgo)
+      /*
+      val algoid2 = algos.insert(myAlgo2)
+      val algoid3 = algos.insert(myAlgo3)*/
+
+      val metric = offlineEvalMetricTemplate(evalid)
+      val metricid = offlineEvalMetrics.insert(metric)
+
+      offlineEvalResults.save(OfflineEvalResult(
+        evalid = evalid,
+        metricid = metricid,
+        algoid = algoid,
+        score = 1.23,
+        iteration = 1,
+        splitset = "test"
+      ))
+
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals/:evalid/report"), email, password).get)
+
+      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      /*
+      val algoJson2 = algoToJson(myAlgo2.copy(id = algoid2), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson3 = algoToJson(myAlgo3.copy(id = algoid3), appid) ++ Json.obj(
+        // TODO: hardcode for now
+        "settingsstring" -> "A Parameter = 4, B Parameter = 55")*/
+
+      val metricJson = offlineEvalMetricToJson(metric.copy(id = metricid), engineid) ++ Json.obj(
+        "settingstring" -> "k = 20" // TODO: hard code for now
+      )
+
+      val scoreJson = Json.obj(
+        "algoid" -> algoid,
+        "metricsid" -> metricid,
+        "score" -> 1.23
+      )
+
+      val scoreIterationJson = Json.obj(
+        "algoid" -> algoid,
+        "metricsid" -> metricid,
+        "score" -> 1.23
+      )
+
+      val reportJson = Json.obj(
+        "id" -> evalid,
+        "appid" -> appid,
+        "engineid" -> engineid,
+        "algolist" -> Json.arr(algoJson),
+        "metricslist" -> Json.arr(metricJson),
+        "metricscorelist" -> Json.arr(scoreJson),
+        "metricscoreiterationlist" -> Json.arr(scoreIterationJson),
+        "status" -> "pending",
+        "starttime" -> "-",
+        "endtime" -> "-"
+      )
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(reportJson))
+    }
+
+    "return NOT_FOUND if invalid appid" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid engineid" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return NOT_FOUND if invalid simevalid" in new WithServer {
       new Pending("TODO")
     }
   }
