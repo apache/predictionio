@@ -6,27 +6,29 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class ItemsSpec extends Specification { def is =
-  "PredictionIO App Data Items Specification"                                 ^
-                                                                              p ^
-  "Items can be implemented by:"                                              ^ endp ^
-    "1. MongoItems"                                                           ^ mongoItems ^ end
+class ItemsSpec extends Specification {
+  def is =
+    "PredictionIO App Data Items Specification" ^
+      p ^
+      "Items can be implemented by:" ^ endp ^
+      "1. MongoItems" ^ mongoItems ^ end
 
-  def mongoItems =                                                            p ^
-    "MongoItems should"                                                       ^
-      "behave like any Items implementation"                                  ^ items(newMongoItems) ^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoItems = p ^
+    "MongoItems should" ^
+    "behave like any Items implementation" ^ items(newMongoItems) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def items(items: Items) = {                                                 t ^
-    "inserting and getting an item"                                           ! insert(items) ^
-    "getting items by App ID and geo data"                                    ! getByAppidAndLatlng(items) ^
-    "getting items by IDs"                                                    ! getByIds(items) ^
-    "getting items by IDs sorted by start time"                               ! getRecentByIds(items) ^
-    "updating an item"                                                        ! update(items) ^
-    "deleting an item"                                                        ! delete(items) ^
-    "deleting items by appid"                                                 ! deleteByAppid(items) ^
-    "count items by appid"                                                    ! countByAppid(items) ^
-                                                                              bt
+  def items(items: Items) = {
+    t ^
+      "inserting and getting an item" ! insert(items) ^
+      "getting items by App ID and geo data" ! getByAppidAndLatlng(items) ^
+      "getting items by IDs" ! getByIds(items) ^
+      "getting items by IDs sorted by start time" ! getRecentByIds(items) ^
+      "updating an item" ! update(items) ^
+      "deleting an item" ! delete(items) ^
+      "deleting items by appid" ! deleteByAppid(items) ^
+      "count items by appid" ! countByAppid(items) ^
+      bt
   }
 
   val mongoDbName = "predictionio_appdata_mongoitems_test"
@@ -36,30 +38,30 @@ class ItemsSpec extends Specification { def is =
     val appid = 0
     val id1 = "insert1"
     val item1 = Item(
-      id         = id1,
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id1,
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     )
     val id2 = "insert2"
     val item2 = Item(
-      id         = id2,
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = Some(true),
+      id = id2,
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = Some(true),
       attributes = None
     )
     items.insert(item1)
@@ -72,52 +74,52 @@ class ItemsSpec extends Specification { def is =
     val id = "getByAppidAndLatlng"
     val appid = 5
     val dac = Item(
-      id         = id + "dac",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(14).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3197611, -122.0466141)),
-      inactive   = None,
+      id = id + "dac",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(14).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3197611, -122.0466141)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar", "foo2" -> "bar2")))
     val hsh = Item(
-      id         = id + "hsh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3370801, -122.0493201)),
-      inactive   = None,
+      id = id + "hsh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3370801, -122.0493201)),
+      inactive = None,
       attributes = None)
     val mvh = Item(
-      id         = id + "mvh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(17).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3154153, -122.0566829)),
-      inactive   = None,
+      id = id + "mvh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(17).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3154153, -122.0566829)),
+      inactive = None,
       attributes = Some(Map("foo3" -> "bar3")))
     val lbh = Item(
-      id         = id + "lbh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(3).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.2997029, -122.0034684)),
-      inactive   = None,
+      id = id + "lbh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(3).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.2997029, -122.0034684)),
+      inactive = None,
       attributes = Some(Map("foo4" -> "bar4", "foo5" -> "bar5")))
     val allItems = Seq(dac, hsh, lbh, mvh)
     allItems foreach { items.insert(_) }
@@ -131,52 +133,52 @@ class ItemsSpec extends Specification { def is =
     val id = "getByIds"
     val appid = 4
     val someItems = List(Item(
-      id         = id + "foo",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(14).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "foo",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(14).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar", "foo2" -> "bar2"))
     ), Item(
-      id         = id + "bar",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "bar",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = None
     ), Item(
-      id         = id + "baz",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(17).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "baz",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(17).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo3" -> "bar3"))
     ), Item(
-      id         = id + "pub",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(3).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "pub",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(3).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo4" -> "bar4", "foo5" -> "bar5"))
     ))
     someItems foreach { items.insert(_) }
@@ -188,52 +190,52 @@ class ItemsSpec extends Specification { def is =
     val id = "getRecentByIds"
     val appid = 3
     val timedItems = List(Item(
-      id         = id + "foo",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(14).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "foo",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(14).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     ), Item(
-      id         = id + "bar",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "bar",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     ), Item(
-      id         = id + "baz",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(17).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "baz",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(17).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     ), Item(
-      id         = id + "pub",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(3).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id + "pub",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(3).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     ))
     timedItems foreach { items.insert(_) }
@@ -244,23 +246,23 @@ class ItemsSpec extends Specification { def is =
     val appid = 1
     val id = "update"
     val item = Item(
-      id         = id,
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("slash", "dot"),
-      starttime  = None,
-      endtime    = None,
-      price      = None,
-      profit     = None,
-      latlng     = None,
-      inactive   = None,
+      id = id,
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("slash", "dot"),
+      starttime = None,
+      endtime = None,
+      price = None,
+      profit = None,
+      latlng = None,
+      inactive = None,
       attributes = Some(Map("foo" -> "baz"))
     )
 
     val updatedItem = item.copy(
-      endtime    = Some(DateTime.now.minute(47)),
-      price      = Some(99.99),
-      latlng     = Some((43, 48.378)),
+      endtime = Some(DateTime.now.minute(47)),
+      price = Some(99.99),
+      latlng = Some((43, 48.378)),
       attributes = Some(Map("raw" -> "beef"))
     )
     items.insert(item)
@@ -272,16 +274,16 @@ class ItemsSpec extends Specification { def is =
     val appid = 2
     val id = "delete"
     val item = Item(
-      id         = id,
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = id,
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     )
     items.delete(item)
@@ -303,35 +305,35 @@ class ItemsSpec extends Specification { def is =
     val idc = "deleteByAppid-idc"
 
     val item1a = Item(
-      id         = ida,
-      appid      = appid1,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = ida,
+      appid = appid1,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     )
     val item1b = item1a.copy(
-      id         = idb,
-      price      = Some(1.23)
+      id = idb,
+      price = Some(1.23)
     )
     val item1c = item1a.copy(
-      id         = idc,
-      price      = Some(2.45)
+      id = idc,
+      price = Some(2.45)
     )
 
     val item2a = item1a.copy(
-      appid      = appid2
+      appid = appid2
     )
     val item2b = item1b.copy(
-      appid      = appid2
+      appid = appid2
     )
     val item2c = item1c.copy(
-      appid      = appid2
+      appid = appid2
     )
 
     items.insert(item1a)
@@ -382,23 +384,23 @@ class ItemsSpec extends Specification { def is =
     val idb = "countByAppid-idb"
 
     val item1a = Item(
-      id         = ida,
-      appid      = appid1,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((47.8948, -29.79783)),
-      inactive   = None,
+      id = ida,
+      appid = appid1,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((47.8948, -29.79783)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar"))
     )
     val item1b = item1a.copy(
-      id         = idb
+      id = idb
     )
     val item2a = item1a.copy(
-      appid      = appid2
+      appid = appid2
     )
 
     items.insert(item1a)

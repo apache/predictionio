@@ -4,13 +4,14 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** User object.
-  *
-  * @param id ID.
-  * @param firstName First name.
-  * @param lastName Last name.
-  * @param email E-mail.
-  */
+/**
+ * User object.
+ *
+ * @param id ID.
+ * @param firstName First name.
+ * @param lastName Last name.
+ * @param email E-mail.
+ */
 case class User(
   id: Int,
   firstName: String,
@@ -48,10 +49,11 @@ trait Users extends Common {
   /** Update password by ID. */
   def updatePassword(id: Int, password: String)
 
-  /** Update password by e-mail.
-    *
-    * Note: For reset password requests.
-    */
+  /**
+   * Update password by e-mail.
+   *
+   * Note: For reset password requests.
+   */
   def updatePasswordByEmail(email: String, password: String)
 
   /** Confirms a new user. */

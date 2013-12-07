@@ -4,23 +4,25 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class EngineInfosSpec extends Specification { def is =
-  "PredictionIO EngineInfos Specification"                                    ^
-                                                                              p^
-  "EngineInfos can be implemented by:"                                        ^ endp^
-    "1. MongoEngineInfos"                                                     ^ mongoEngineInfos^end
+class EngineInfosSpec extends Specification {
+  def is =
+    "PredictionIO EngineInfos Specification" ^
+      p ^
+      "EngineInfos can be implemented by:" ^ endp ^
+      "1. MongoEngineInfos" ^ mongoEngineInfos ^ end
 
-  def mongoEngineInfos =                                                      p^
-    "MongoEngineInfos should"                                                 ^
-      "behave like any EngineInfos implementation"                            ^ engineInfos(newMongoEngineInfos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoEngineInfos = p ^
+    "MongoEngineInfos should" ^
+    "behave like any EngineInfos implementation" ^ engineInfos(newMongoEngineInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def engineInfos(engineInfos: EngineInfos) = {                               t^
-    "create and get an engine info"                                           ! insertAndGet(engineInfos)^
-    "update an engine info"                                                   ! update(engineInfos)^
-    "delete an engine info"                                                   ! delete(engineInfos)^
-    "backup and restore existing engine info"                                 ! backuprestore(engineInfos)^
-                                                                              bt
+  def engineInfos(engineInfos: EngineInfos) = {
+    t ^
+      "create and get an engine info" ! insertAndGet(engineInfos) ^
+      "update an engine info" ! update(engineInfos) ^
+      "delete an engine info" ! delete(engineInfos) ^
+      "backup and restore existing engine info" ! backuprestore(engineInfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoengineinfos_test"

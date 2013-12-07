@@ -5,22 +5,23 @@ import io.prediction.commons.Common
 import com.github.nscala_time.time.Imports._
 import com.twitter.chill.KryoInjection
 
-/** Algo object.
-  *
-  * @param id ID.
-  * @param engineid App ID that owns this engine.
-  * @param name Algo name.
-  * @param infoid AlgoInfo ID
-  * @param command Command template for running the algo.
-  * @param params Algo parameters as key-value pairs.
-  * @param settings Algo settings as key-value pairs.
-  * @param modelset Indicates which model output set to be used by the API.
-  * @param status The status of the algo. eg "ready", "tuning".
-  * @param offlineevalid The id of OfflineEval which uses this algo for offline evaluation
-  * @param offlinetuneid The id of OfflineTune
-  * @param loop The iteration number used by auto tune. (NOTE: loop=0 reserved for baseline algo)
-  * @param paramset The param generation set number
-  */
+/**
+ * Algo object.
+ *
+ * @param id ID.
+ * @param engineid App ID that owns this engine.
+ * @param name Algo name.
+ * @param infoid AlgoInfo ID
+ * @param command Command template for running the algo.
+ * @param params Algo parameters as key-value pairs.
+ * @param settings Algo settings as key-value pairs.
+ * @param modelset Indicates which model output set to be used by the API.
+ * @param status The status of the algo. eg "ready", "tuning".
+ * @param offlineevalid The id of OfflineEval which uses this algo for offline evaluation
+ * @param offlinetuneid The id of OfflineTune
+ * @param loop The iteration number used by auto tune. (NOTE: loop=0 reserved for baseline algo)
+ * @param paramset The param generation set number
+ */
 case class Algo(
   id: Int,
   engineid: Int,
@@ -36,8 +37,7 @@ case class Algo(
   offlineevalid: Option[Int],
   offlinetuneid: Option[Int] = None,
   loop: Option[Int] = None,
-  paramset: Option[Int] = None
-)
+  paramset: Option[Int] = None)
 
 /** Base trait for implementations that interact with algos in the backend data store. */
 trait Algos extends Common {
@@ -71,9 +71,10 @@ trait Algos extends Common {
   /** Delete an algo by its ID. */
   def delete(id: Int)
 
-  /** Check existence of an algo by its engine ID and name.
-    * Algos that are part of an offline evaluation or tuning are not counted.
-    */
+  /**
+   * Check existence of an algo by its engine ID and name.
+   * Algos that are part of an offline evaluation or tuning are not counted.
+   */
   def existsByEngineidAndName(engineid: Int, name: String): Boolean
 
   /** Backup all Algos as a byte array. */

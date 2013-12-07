@@ -4,7 +4,8 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** OfflineEvalMetric Object
+/**
+ * OfflineEvalMetric Object
  *
  * @param id ID
  * @param infoid MetricInfo ID
@@ -15,8 +16,7 @@ case class OfflineEvalMetric(
   id: Int,
   infoid: String,
   evalid: Int,
-  params: Map[String, Any]
-)
+  params: Map[String, Any])
 
 trait OfflineEvalMetrics extends Common {
 

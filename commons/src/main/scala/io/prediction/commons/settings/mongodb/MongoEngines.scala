@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{Engine, Engines}
+import io.prediction.commons.settings.{ Engine, Engines }
 
 import com.mongodb.casbah.Imports._
 
@@ -15,9 +15,9 @@ class MongoEngines(db: MongoDB) extends Engines {
     /** Transparent upgrade. Remove in next minor version. */
     dbObj.getAs[DBObject]("settings") map { settings =>
       val e = Engine(
-        id     = dbObj.as[Int]("_id"),
-        appid  = dbObj.as[Int]("appid"),
-        name   = dbObj.as[String]("name"),
+        id = dbObj.as[Int]("_id"),
+        appid = dbObj.as[Int]("appid"),
+        name = dbObj.as[String]("name"),
         infoid = dbObj.as[String]("infoid"),
         itypes = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
         params = MongoUtils.dbObjToMap(settings))
@@ -25,9 +25,9 @@ class MongoEngines(db: MongoDB) extends Engines {
       e
     } getOrElse {
       Engine(
-        id     = dbObj.as[Int]("_id"),
-        appid  = dbObj.as[Int]("appid"),
-        name   = dbObj.as[String]("name"),
+        id = dbObj.as[Int]("_id"),
+        appid = dbObj.as[Int]("appid"),
+        name = dbObj.as[String]("name"),
         infoid = dbObj.as[String]("infoid"),
         itypes = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
         params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params")))
@@ -44,17 +44,17 @@ class MongoEngines(db: MongoDB) extends Engines {
 
     // required fields
     val obj = MongoDBObject(
-      "_id"        -> id,
-      "appid"      -> engine.appid,
-      "name"       -> engine.name,
+      "_id" -> id,
+      "appid" -> engine.appid,
+      "name" -> engine.name,
       "infoid" -> engine.infoid,
-      "params"   -> engine.params
+      "params" -> engine.params
     )
 
     // optional fields
-    val optObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
+    val optObj = engine.itypes.map(x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
 
-    engineColl.insert( obj ++ optObj )
+    engineColl.insert(obj ++ optObj)
 
     id
   }
@@ -74,7 +74,7 @@ class MongoEngines(db: MongoDB) extends Engines {
     val nameObj = MongoDBObject("name" -> engine.name)
     val appidObj = MongoDBObject("appid" -> engine.appid)
     val infoidObj = MongoDBObject("infoid" -> engine.infoid)
-    val itypesObj = engine.itypes.map (x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
+    val itypesObj = engine.itypes.map(x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
     val paramsObj = MongoDBObject("params" -> engine.params)
 
     engineColl.update(

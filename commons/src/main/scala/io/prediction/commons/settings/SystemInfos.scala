@@ -4,17 +4,17 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** SystemInfo object.
-  *
-  * @param id Unique identifier of the info entry.
-  * @param value Value of the info entry.
-  * @param description A long description of the info entry.
-  */
+/**
+ * SystemInfo object.
+ *
+ * @param id Unique identifier of the info entry.
+ * @param value Value of the info entry.
+ * @param description A long description of the info entry.
+ */
 case class SystemInfo(
   id: String,
   value: String,
-  description: Option[String]
-)
+  description: Option[String])
 
 /** Base trait for implementations that interact with system info in the backend data store. */
 trait SystemInfos extends Common {

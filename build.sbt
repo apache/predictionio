@@ -44,9 +44,9 @@ lazy val root = project.in(file(".")).aggregate(
 
 // Commons and Output
 
-lazy val commons = project in file("commons")
+lazy val commons = project in file("commons") settings(scalariformSettings: _*)
 
-lazy val output = project.in(file("output")).dependsOn(commons)
+lazy val output = project.in(file("output")).dependsOn(commons).settings(scalariformSettings: _*)
 
 // Process Assemblies
 

@@ -6,23 +6,25 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class OfflineTunesSpec extends Specification { def is =
-  "PredictionIO OfflineTunes Specification"               ^
-                                                          p^
-  "OfflineTunes can be implemented by:"                   ^ endp^
-    "1. MongoOfflineTunes"                                ^ mongoOfflineTunes^end
+class OfflineTunesSpec extends Specification {
+  def is =
+    "PredictionIO OfflineTunes Specification" ^
+      p ^
+      "OfflineTunes can be implemented by:" ^ endp ^
+      "1. MongoOfflineTunes" ^ mongoOfflineTunes ^ end
 
-  def mongoOfflineTunes =                                 p^
-    "MongoOfflineTunes should"                            ^
-      "behave like any OfflinTunes implementation"        ^ offlineTunesTest(newMongoOfflineTunes)^
-                                                          Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineTunes = p ^
+    "MongoOfflineTunes should" ^
+    "behave like any OfflinTunes implementation" ^ offlineTunesTest(newMongoOfflineTunes) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineTunesTest(offlineTunes: OfflineTunes) = {    t^
-    "create an OfflineTune"                               ! insert(offlineTunes)^
-    "update an OfflineTune"                               ! update(offlineTunes)^
-    "delete an OfflineTune"                               ! delete(offlineTunes)^
-    "backup and restore OfflineTunes"                     ! backuprestore(offlineTunes)^
-                                                          bt
+  def offlineTunesTest(offlineTunes: OfflineTunes) = {
+    t ^
+      "create an OfflineTune" ! insert(offlineTunes) ^
+      "update an OfflineTune" ! update(offlineTunes) ^
+      "delete an OfflineTune" ! delete(offlineTunes) ^
+      "backup and restore OfflineTunes" ! backuprestore(offlineTunes) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflinetunes_test"

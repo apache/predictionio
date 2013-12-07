@@ -4,23 +4,23 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** Engine object.
-  *
-  * @param id ID.
-  * @param appid App ID that owns this engine.
-  * @param name Engine name.
-  * @param infoid EngineInfo ID.
-  * @param itypes List of item types.
-  * @param params Engine parameters as key-value pairs.
-  */
+/**
+ * Engine object.
+ *
+ * @param id ID.
+ * @param appid App ID that owns this engine.
+ * @param name Engine name.
+ * @param infoid EngineInfo ID.
+ * @param itypes List of item types.
+ * @param params Engine parameters as key-value pairs.
+ */
 case class Engine(
   id: Int,
   appid: Int,
   name: String,
   infoid: String,
   itypes: Option[Seq[String]],
-  params: Map[String, Any]
-)
+  params: Map[String, Any])
 
 /** Base trait for implementations that interact with engines in the backend data store. */
 trait Engines extends Common {

@@ -1,8 +1,8 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils.{emptyObj, mongoDbListToListOfString, idWithAppid}
-import io.prediction.commons.MongoUtils.{attributesToMongoDBObject, getAttributesFromDBObject}
-import io.prediction.commons.appdata.{Item, Items}
+import io.prediction.commons.MongoUtils.{ emptyObj, mongoDbListToListOfString, idWithAppid }
+import io.prediction.commons.MongoUtils.{ attributesToMongoDBObject, getAttributesFromDBObject }
+import io.prediction.commons.appdata.{ Item, Items }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
@@ -96,16 +96,16 @@ class MongoItems(db: MongoDB) extends Items {
   private def dbObjToItem(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     Item(
-      id         = dbObj.as[String]("_id").drop(appid.toString.length + 1),
-      appid      = appid,
-      ct         = dbObj.as[DateTime]("ct"),
-      itypes     = mongoDbListToListOfString(dbObj.as[MongoDBList]("itypes")),
-      starttime  = dbObj.getAs[DateTime]("starttime"),
-      endtime    = dbObj.getAs[DateTime]("endtime"),
-      price      = dbObj.getAs[Double]("price"),
-      profit     = dbObj.getAs[Double]("profit"),
-      latlng     = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
-      inactive   = dbObj.getAs[Boolean]("inactive"),
+      id = dbObj.as[String]("_id").drop(appid.toString.length + 1),
+      appid = appid,
+      ct = dbObj.as[DateTime]("ct"),
+      itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("itypes")),
+      starttime = dbObj.getAs[DateTime]("starttime"),
+      endtime = dbObj.getAs[DateTime]("endtime"),
+      price = dbObj.getAs[Double]("price"),
+      profit = dbObj.getAs[Double]("profit"),
+      latlng = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
+      inactive = dbObj.getAs[Boolean]("inactive"),
       //attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
       attributes = Option(getAttributesFromDBObject(dbObj)).filter(!_.isEmpty)
     )

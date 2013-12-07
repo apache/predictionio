@@ -13,22 +13,23 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class AlgoOutputSelectorSpec extends Specification { def is =
-  "PredictionIO AlgoOutputSelector Specification"                             ^
-                                                                              p ^
-    "get itemrec output from a valid engine"                                  ! itemRecOutputSelection(algoOutputSelector) ^
-    "get itemrec output with geo from a valid engine"                         ! itemRecOutputSelectionWithLatlng(algoOutputSelector) ^
-    //"get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
-    //"get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
-    "get itemrec output from a valid engine with no algorithm"                ! itemRecOutputSelectionNoAlgo(algoOutputSelector) ^
-    "get itemrec output from an invalid engine"                               ! itemRecOutputSelectionBadEngine(algoOutputSelector) ^
-    "get itemsim output from a valid engine"                                  ! itemSimOutputSelection(algoOutputSelector) ^
-    "get itemsim output with geo from a valid engine"                         ! itemSimOutputSelectionWithLatlng(algoOutputSelector) ^
-    //"get itemsim output from a valid engine with an unsupported algorithm"    ! itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
-    "get itemsim output from a valid engine with no algorithm"                ! itemSimOutputSelectionNoAlgo(algoOutputSelector) ^
-    "get itemsim output from an invalid engine"                               ! itemSimOutputSelectionBadEngine(algoOutputSelector) ^
-                                                                              Step(mongoDb.dropDatabase()) ^
-                                                                              end
+class AlgoOutputSelectorSpec extends Specification {
+  def is =
+    "PredictionIO AlgoOutputSelector Specification" ^
+      p ^
+      "get itemrec output from a valid engine" ! itemRecOutputSelection(algoOutputSelector) ^
+      "get itemrec output with geo from a valid engine" ! itemRecOutputSelectionWithLatlng(algoOutputSelector) ^
+      //"get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
+      //"get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
+      "get itemrec output from a valid engine with no algorithm" ! itemRecOutputSelectionNoAlgo(algoOutputSelector) ^
+      "get itemrec output from an invalid engine" ! itemRecOutputSelectionBadEngine(algoOutputSelector) ^
+      "get itemsim output from a valid engine" ! itemSimOutputSelection(algoOutputSelector) ^
+      "get itemsim output with geo from a valid engine" ! itemSimOutputSelectionWithLatlng(algoOutputSelector) ^
+      //"get itemsim output from a valid engine with an unsupported algorithm"    ! itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
+      "get itemsim output from a valid engine with no algorithm" ! itemSimOutputSelectionNoAlgo(algoOutputSelector) ^
+      "get itemsim output from an invalid engine" ! itemSimOutputSelectionBadEngine(algoOutputSelector) ^
+      Step(mongoDb.dropDatabase()) ^
+      end
 
   val mongoDbName = "predictionio_algooutputselection_test"
   val mongoDb = MongoConnection()(mongoDbName)
@@ -168,22 +169,22 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   /** ItemRec engine. */
   def itemRecOutputSelection(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
-      id       = 0,
-      appid    = dummyApp.id,
-      name     = "itemRecOutputSelection",
-      infoid   = "itemrec",
-      itypes   = Some(Seq("foo", "bar")),
-      params   = Map("serendipity" -> 5, "freshness" -> 5)
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemRecOutputSelection",
+      infoid = "itemrec",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map("serendipity" -> 5, "freshness" -> 5)
     )
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemRecOutputSelection",
-      infoid   = "pdio-knnitembased",
-      command  = "itemRecOutputSelection",
-      params   = Map("foo" -> "bar"),
+      name = "itemRecOutputSelection",
+      infoid = "pdio-knnitembased",
+      command = "itemRecOutputSelection",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -292,22 +293,22 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemRecOutputSelectionWithLatlng(algoOutputSelector: AlgoOutputSelector) = {
     val appid = dummyApp.id
     val engine = Engine(
-      id       = 0,
-      appid    = appid,
-      name     = "itemRecOutputSelectionWithLatlng",
-      infoid   = "itemrec",
-      itypes   = Some(Seq("foo", "bar")),
-      params   = Map()
+      id = 0,
+      appid = appid,
+      name = "itemRecOutputSelectionWithLatlng",
+      infoid = "itemrec",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemRecOutputSelectionWithLatlng",
-      infoid   = "pdio-knnitembased",
-      command  = "itemRecOutputSelectionWithLatlng",
-      params   = Map("foo" -> "bar"),
+      name = "itemRecOutputSelectionWithLatlng",
+      infoid = "pdio-knnitembased",
+      command = "itemRecOutputSelectionWithLatlng",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -320,52 +321,52 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     val id = "itemRecOutputSelectionWithLatlng"
 
     val dac = Item(
-      id         = id + "dac",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(14).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3197611, -122.0466141)),
-      inactive   = None,
+      id = id + "dac",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(14).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3197611, -122.0466141)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar", "foo2" -> "bar2")))
     val hsh = Item(
-      id         = id + "hsh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3370801, -122.0493201)),
-      inactive   = None,
+      id = id + "hsh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3370801, -122.0493201)),
+      inactive = None,
       attributes = None)
     val mvh = Item(
-      id         = id + "mvh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(17).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3154153, -122.0566829)),
-      inactive   = None,
+      id = id + "mvh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(17).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3154153, -122.0566829)),
+      inactive = None,
       attributes = Some(Map("foo3" -> "bar3")))
     val lbh = Item(
-      id         = id + "lbh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(3).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.2997029, -122.0034684)),
-      inactive   = None,
+      id = id + "lbh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(3).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.2997029, -122.0034684)),
+      inactive = None,
       attributes = Some(Map("foo4" -> "bar4", "foo5" -> "bar5")))
     val allItems = Seq(dac, hsh, lbh, mvh)
     allItems foreach { mongoItems.insert(_) }
@@ -415,22 +416,22 @@ class AlgoOutputSelectorSpec extends Specification { def is =
 
   def itemRecOutputSelectionUnseenOnly(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
-      id         = 0,
-      appid      = dummyApp.id,
-      name       = "itemRecOutputSelection",
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemRecOutputSelection",
       infoid = "itemrec",
-      itypes     = Some(Seq("foo", "bar")),
-      params     = Map("unseenonly" -> true)
+      itypes = Some(Seq("foo", "bar")),
+      params = Map("unseenonly" -> true)
     )
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemRecOutputSelection",
-      infoid   = "pdio-knnitembased",
-      command  = "itemRecOutputSelection",
-      params   = Map("foo" -> "bar"),
+      name = "itemRecOutputSelection",
+      infoid = "pdio-knnitembased",
+      command = "itemRecOutputSelection",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -526,22 +527,22 @@ class AlgoOutputSelectorSpec extends Specification { def is =
 
   def itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
-      id         = 0,
-      appid      = dummyApp.id,
-      name       = "itemRecOutputSelection",
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemRecOutputSelection",
       infoid = "itemrec",
-      itypes     = Some(Seq("foo", "bar")),
-      params     = Map()
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemRecOutputSelection",
-      infoid   = "abc4",
-      command  = "itemRecOutputSelection",
-      params   = Map("foo" -> "bar"),
+      name = "itemRecOutputSelection",
+      infoid = "abc4",
+      command = "itemRecOutputSelection",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -592,12 +593,12 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemSimOutputSelection",
-      infoid  = "io.prediction.algorithms.scalding.itemsim.itemsimcf",
-      command  = "itemSimOutputSelection",
-      params   = Map("foo" -> "bar"),
+      name = "itemSimOutputSelection",
+      infoid = "io.prediction.algorithms.scalding.itemsim.itemsimcf",
+      command = "itemSimOutputSelection",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -705,22 +706,22 @@ class AlgoOutputSelectorSpec extends Specification { def is =
   def itemSimOutputSelectionWithLatlng(algoOutputSelector: AlgoOutputSelector) = {
     val appid = dummyApp.id
     val engine = Engine(
-      id       = 0,
-      appid    = appid,
-      name     = "itemSimOutputSelectionWithLatlng",
-      infoid   = "itemsim",
-      itypes   = Some(Seq("foo", "bar")),
-      params   = Map()
+      id = 0,
+      appid = appid,
+      name = "itemSimOutputSelectionWithLatlng",
+      infoid = "itemsim",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
     )
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemRecOutputSelectionWithLatlng",
-      infoid   = "pdio-knnitembased",
-      command  = "itemRecOutputSelectionWithLatlng",
-      params   = Map("foo" -> "bar"),
+      name = "itemRecOutputSelectionWithLatlng",
+      infoid = "pdio-knnitembased",
+      command = "itemRecOutputSelectionWithLatlng",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -733,52 +734,52 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     val id = "itemRecOutputSelectionWithLatlng"
 
     val dac = Item(
-      id         = id + "dac",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(14).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3197611, -122.0466141)),
-      inactive   = None,
+      id = id + "dac",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(14).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3197611, -122.0466141)),
+      inactive = None,
       attributes = Some(Map("foo" -> "bar", "foo2" -> "bar2")))
     val hsh = Item(
-      id         = id + "hsh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(23).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3370801, -122.0493201)),
-      inactive   = None,
+      id = id + "hsh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3370801, -122.0493201)),
+      inactive = None,
       attributes = None)
     val mvh = Item(
-      id         = id + "mvh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(17).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.3154153, -122.0566829)),
-      inactive   = None,
+      id = id + "mvh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(17).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3154153, -122.0566829)),
+      inactive = None,
       attributes = Some(Map("foo3" -> "bar3")))
     val lbh = Item(
-      id         = id + "lbh",
-      appid      = appid,
-      ct         = DateTime.now,
-      itypes     = List("fresh", "meat"),
-      starttime  = Some(DateTime.now.hour(3).minute(13)),
-      endtime    = None,
-      price      = Some(49.394),
-      profit     = None,
-      latlng     = Some((37.2997029, -122.0034684)),
-      inactive   = None,
+      id = id + "lbh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now.hour(3).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.2997029, -122.0034684)),
+      inactive = None,
       attributes = Some(Map("foo4" -> "bar4", "foo5" -> "bar5")))
     val allItems = Seq(dac, hsh, lbh, mvh)
     allItems foreach { mongoItems.insert(_) }
@@ -838,12 +839,12 @@ class AlgoOutputSelectorSpec extends Specification { def is =
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = engineid,
-      name     = "itemSimOutputSelection",
-      infoid   = "abc",
-      command  = "itemSimOutputSelection",
-      params   = Map("foo" -> "bar"),
+      name = "itemSimOutputSelection",
+      infoid = "abc",
+      command = "itemSimOutputSelection",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,

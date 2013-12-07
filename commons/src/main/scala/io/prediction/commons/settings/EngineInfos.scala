@@ -4,22 +4,22 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** EngineInfo object.
-  *
-  * @param id Unique identifier of an engine type.
-  * @param name Engine name.
-  * @param description A long description of the engine.
-  * @param defaultsettings Default engine settings.
-  * @param defaultalgoinfoid Default AlgoInfo ID for this engine.
-  */
+/**
+ * EngineInfo object.
+ *
+ * @param id Unique identifier of an engine type.
+ * @param name Engine name.
+ * @param description A long description of the engine.
+ * @param defaultsettings Default engine settings.
+ * @param defaultalgoinfoid Default AlgoInfo ID for this engine.
+ */
 case class EngineInfo(
   id: String,
   name: String,
   description: Option[String],
   params: Map[String, Param],
   paramsections: Seq[ParamSection],
-  defaultalgoinfoid: String
-) extends Info
+  defaultalgoinfoid: String) extends Info
 
 /** Base trait for implementations that interact with engine info in the backend data store. */
 trait EngineInfos extends Common {

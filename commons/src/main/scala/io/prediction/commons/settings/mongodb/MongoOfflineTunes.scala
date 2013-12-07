@@ -1,6 +1,6 @@
 package io.prediction.commons.settings.mongodb
 
-import io.prediction.commons.settings.{OfflineTune, OfflineTunes}
+import io.prediction.commons.settings.{ OfflineTune, OfflineTunes }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
@@ -60,7 +60,7 @@ class MongoOfflineTunes(db: MongoDB) extends OfflineTunes {
   }
 
   def get(id: Int): Option[OfflineTune] = {
-    offlineTuneColl.findOne(MongoDBObject("_id" -> id), getFields) map {dbObjToOfflineTune(_)}
+    offlineTuneColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToOfflineTune(_) }
   }
 
   def getAll() = new MongoOfflineTuneIterator(offlineTuneColl.find())

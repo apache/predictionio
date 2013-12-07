@@ -1,7 +1,7 @@
 package io.prediction.commons.appdata.mongodb
 
 import io.prediction.commons.MongoUtils._
-import io.prediction.commons.appdata.{U2IAction, U2IActions}
+import io.prediction.commons.appdata.{ U2IAction, U2IActions }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
@@ -41,14 +41,14 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
   private def dbObjToU2IAction(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     U2IAction(
-      appid  = appid,
+      appid = appid,
       action = dbObj.as[String]("action"),
-      uid    = dbObj.as[String]("uid").drop(appid.toString.length + 1),
-      iid    = dbObj.as[String]("iid").drop(appid.toString.length + 1),
-      t      = dbObj.as[DateTime]("t"),
+      uid = dbObj.as[String]("uid").drop(appid.toString.length + 1),
+      iid = dbObj.as[String]("iid").drop(appid.toString.length + 1),
+      t = dbObj.as[DateTime]("t"),
       latlng = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
-      v      = dbObj.getAs[Int]("v"),
-      price  = dbObj.getAs[Double]("price")
+      v = dbObj.getAs[Int]("v"),
+      price = dbObj.getAs[Double]("price")
     )
   }
 

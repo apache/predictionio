@@ -4,21 +4,21 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** OfflineEvalSplitter object.
-  *
-  * @param id ID.
-  * @param evalid Eval ID that owns this split.
-  * @param name Split name.
-  * @param infoid OfflineEvalSplitInfo ID.
-  * @param settings Split settings as key-value pairs.
-  */
+/**
+ * OfflineEvalSplitter object.
+ *
+ * @param id ID.
+ * @param evalid Eval ID that owns this split.
+ * @param name Split name.
+ * @param infoid OfflineEvalSplitInfo ID.
+ * @param settings Split settings as key-value pairs.
+ */
 case class OfflineEvalSplitter(
   id: Int,
   evalid: Int,
   name: String,
   infoid: String,
-  settings: Map[String, Any]
-)
+  settings: Map[String, Any])
 
 /** Base trait for implementations that interact with engines in the backend data store. */
 trait OfflineEvalSplitters extends Common {

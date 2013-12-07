@@ -4,7 +4,8 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** OfflineEvalResult Object
+/**
+ * OfflineEvalResult Object
  *
  * @param evalid ID of the OfflineEval
  * @param metricid ID of the metric
@@ -19,8 +20,7 @@ case class OfflineEvalResult(
   algoid: Int,
   score: Double,
   iteration: Int,
-  splitset: String = ""
-)
+  splitset: String = "")
 
 trait OfflineEvalResults extends Common {
 

@@ -4,17 +4,18 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** ParamGenInfo object.
-  *
-  * @param id Unique identifier of a parameter generator.
-  * @param name Generator name.
-  * @param description A long description of the generator.
-  * @param commands A sequence of commands to run this generator.
-  * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramnames Key value paris of (parameter -> display name).
-  * @param paramdescription Key value paris of (parameter -> description).
-  * @param paramorder The display order of parameters.
-  */
+/**
+ * ParamGenInfo object.
+ *
+ * @param id Unique identifier of a parameter generator.
+ * @param name Generator name.
+ * @param description A long description of the generator.
+ * @param commands A sequence of commands to run this generator.
+ * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
+ * @param paramnames Key value paris of (parameter -> display name).
+ * @param paramdescription Key value paris of (parameter -> description).
+ * @param paramorder The display order of parameters.
+ */
 case class ParamGenInfo(
   id: String,
   name: String,
@@ -23,8 +24,7 @@ case class ParamGenInfo(
   paramdefaults: Map[String, Any],
   paramnames: Map[String, String],
   paramdescription: Map[String, String],
-  paramorder: Seq[String]
-)
+  paramorder: Seq[String])
 
 /** Base trait for implementations that interact with parameter generator info in the backend data store. */
 trait ParamGenInfos extends Common {

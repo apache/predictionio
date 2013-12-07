@@ -4,19 +4,20 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** AlgoInfo object.
-  *
-  * @param id Unique identifier. Usually identical to the algorithm's namespace.
-  * @param name Algorithm name.
-  * @param description A long description of the algorithm.
-  * @param batchcommands Command templates for running the algorithm in batch mode.
-  * @param offlineevalcommands Command templates for running the algorithm in offline evaluation mode.
-  * @param params Map of Param objects, with keys equal to IDs of Param objects it contains.
-  * @param paramorder The display order of parameters.
-  * @param engineinfoid The EngineInfo ID of the engine that can run this algorithm.
-  * @param techreq Technology requirement for this algorithm to run.
-  * @param datareq Data requirement for this algorithm to run.
-  */
+/**
+ * AlgoInfo object.
+ *
+ * @param id Unique identifier. Usually identical to the algorithm's namespace.
+ * @param name Algorithm name.
+ * @param description A long description of the algorithm.
+ * @param batchcommands Command templates for running the algorithm in batch mode.
+ * @param offlineevalcommands Command templates for running the algorithm in offline evaluation mode.
+ * @param params Map of Param objects, with keys equal to IDs of Param objects it contains.
+ * @param paramorder The display order of parameters.
+ * @param engineinfoid The EngineInfo ID of the engine that can run this algorithm.
+ * @param techreq Technology requirement for this algorithm to run.
+ * @param datareq Data requirement for this algorithm to run.
+ */
 case class AlgoInfo(
   id: String,
   name: String,
@@ -28,8 +29,7 @@ case class AlgoInfo(
   paramorder: Seq[String],
   engineinfoid: String,
   techreq: Seq[String],
-  datareq: Seq[String]
-) extends Info
+  datareq: Seq[String]) extends Info
 
 /** Base trait for implementations that interact with algo info in the backend data store. */
 trait AlgoInfos extends Common {

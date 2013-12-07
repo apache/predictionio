@@ -6,29 +6,31 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class AlgosSpec extends Specification { def is =
-  "PredictionIO Algos Specification"                                          ^
-                                                                              p^
-  "Algos can be implemented by:"                                              ^ endp^
-    "1. MongoAlgos"                                                           ^ mongoAlgos^end
+class AlgosSpec extends Specification {
+  def is =
+    "PredictionIO Algos Specification" ^
+      p ^
+      "Algos can be implemented by:" ^ endp ^
+      "1. MongoAlgos" ^ mongoAlgos ^ end
 
-  def mongoAlgos =                                                            p^
-    "MongoAlgos should"                                                       ^
-      "behave like any Algos implementation"                                  ^ algos(newMongoAlgos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoAlgos = p ^
+    "MongoAlgos should" ^
+    "behave like any Algos implementation" ^ algos(newMongoAlgos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def algos(algos: Algos) = {                                                 t^
-    "create an algo"                                                          ! insert(algos)^
-    "get two algos by engineid"                                               ! getByEngineid(algos)^
-    "get a deployed algo by engineid"                                         ! getDeployedByEngineid(algos)^
-    "get two algos by offlineevalid"                                          ! getByOfflineEvalid(algos)^
-    "get an auto tune subject"                                                ! getTuneSubjectByOfflineTuneid(algos)^
-    "get by id and engineid"                                                  ! getByIdAndEngineid(algos)^
-    "update an algo"                                                          ! update(algos)^
-    "delete an algo"                                                          ! delete(algos)^
-    "checking existence of algo"                                              ! existsByEngineidAndName(algos)^
-    "backup and restore existing algos"                                       ! backuprestore(algos)^
-                                                                              bt
+  def algos(algos: Algos) = {
+    t ^
+      "create an algo" ! insert(algos) ^
+      "get two algos by engineid" ! getByEngineid(algos) ^
+      "get a deployed algo by engineid" ! getDeployedByEngineid(algos) ^
+      "get two algos by offlineevalid" ! getByOfflineEvalid(algos) ^
+      "get an auto tune subject" ! getTuneSubjectByOfflineTuneid(algos) ^
+      "get by id and engineid" ! getByIdAndEngineid(algos) ^
+      "update an algo" ! update(algos) ^
+      "delete an algo" ! delete(algos) ^
+      "checking existence of algo" ! existsByEngineidAndName(algos) ^
+      "backup and restore existing algos" ! backuprestore(algos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoalgos_test"
@@ -36,12 +38,12 @@ class AlgosSpec extends Specification { def is =
 
   def insert(algos: Algos) = {
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = 123,
-      name     = "insert",
-      infoid   = "abc",
-      command  = "insert",
-      params   = Map("foo" -> "bar"),
+      name = "insert",
+      infoid = "abc",
+      command = "insert",
+      params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
       modelset = true,
       createtime = DateTime.now,
@@ -58,12 +60,12 @@ class AlgosSpec extends Specification { def is =
 
   def getByEngineid(algos: Algos) = {
     val algo1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 234,
-      name     = "getByEngineid1",
-      infoid   = "apple",
-      command  = "getByEngineid1",
-      params   = Map("baz" -> "bah"),
+      name = "getByEngineid1",
+      infoid = "apple",
+      command = "getByEngineid1",
+      params = Map("baz" -> "bah"),
       settings = Map("qwe" -> "rty"),
       modelset = false,
       createtime = DateTime.now,
@@ -75,12 +77,12 @@ class AlgosSpec extends Specification { def is =
       paramset = Some(123)
     )
     val algo2 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 234,
-      name     = "getByEngineid2",
-      infoid   = "abc2",
-      command  = "getByEngineid2",
-      params   = Map("az" -> "ba"),
+      name = "getByEngineid2",
+      infoid = "abc2",
+      command = "getByEngineid2",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now.hour(4).minute(5).second(6),
@@ -96,18 +98,18 @@ class AlgosSpec extends Specification { def is =
     val algo12 = algos.getByEngineid(234)
     val algo121 = algo12.next()
     val algo122 = algo12.next()
-    algo121 must be equalTo(algo1.copy(id = id1)) and
-      (algo122 must be equalTo(algo2.copy(id = id2)))
+    algo121 must be equalTo (algo1.copy(id = id1)) and
+      (algo122 must be equalTo (algo2.copy(id = id2)))
   }
 
   def getDeployedByEngineid(algos: Algos) = {
     val algo1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 567,
-      name     = "getDeployedByEngineid1",
-      infoid   = "def",
-      command  = "getDeployedByEngineid1",
-      params   = Map("baz" -> "bah"),
+      name = "getDeployedByEngineid1",
+      infoid = "def",
+      command = "getDeployedByEngineid1",
+      params = Map("baz" -> "bah"),
       settings = Map("qwe" -> "rty"),
       modelset = false,
       createtime = DateTime.now,
@@ -119,12 +121,12 @@ class AlgosSpec extends Specification { def is =
       paramset = Some(6)
     )
     val algo2 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 567,
-      name     = "getDeployedByEngineid2",
-      infoid   = "id3",
-      command  = "getDeployedByEngineid2",
-      params   = Map("az" -> "ba"),
+      name = "getDeployedByEngineid2",
+      infoid = "id3",
+      command = "getDeployedByEngineid2",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now,
@@ -138,18 +140,18 @@ class AlgosSpec extends Specification { def is =
     val id1 = algos.insert(algo1)
     val id2 = algos.insert(algo2)
     val algo12 = algos.getDeployedByEngineid(567)
-    algo12.next must be equalTo(algo2.copy(id = id2)) and
+    algo12.next must be equalTo (algo2.copy(id = id2)) and
       (algo12.hasNext must beFalse)
   }
 
   def getByOfflineEvalid(algos: Algos) = {
     val algo1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 234,
-      name     = "getByOfflineEvalid1",
-      infoid   = "banana",
-      command  = "getByOfflineEvalid1",
-      params   = Map("baz1" -> "bah1"),
+      name = "getByOfflineEvalid1",
+      infoid = "banana",
+      command = "getByOfflineEvalid1",
+      params = Map("baz1" -> "bah1"),
       settings = Map("qwe1" -> "rty1"),
       modelset = false,
       createtime = DateTime.now,
@@ -161,12 +163,12 @@ class AlgosSpec extends Specification { def is =
       paramset = Some(155)
     )
     val algo2 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 233,
-      name     = "getByOfflineEvalid2",
-      infoid   = "banana2",
-      command  = "getByOfflineEvalid2",
-      params   = Map("az2" -> "ba2"),
+      name = "getByOfflineEvalid2",
+      infoid = "banana2",
+      command = "getByOfflineEvalid2",
+      params = Map("az2" -> "ba2"),
       settings = Map("we2" -> "rt2"),
       modelset = false,
       createtime = DateTime.now,
@@ -182,18 +184,18 @@ class AlgosSpec extends Specification { def is =
     val algo12 = algos.getByOfflineEvalid(20)
     val algo121 = algo12.next()
     val algo122 = algo12.next()
-    algo121 must be equalTo(algo1.copy(id = id1)) and
-      (algo122 must be equalTo(algo2.copy(id = id2)))
+    algo121 must be equalTo (algo1.copy(id = id1)) and
+      (algo122 must be equalTo (algo2.copy(id = id2)))
   }
 
   def getTuneSubjectByOfflineTuneid(algos: Algos) = {
     val algo1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 678,
-      name     = "getTuneSubjectByTuneid1",
-      infoid   = "def",
-      command  = "getTuneSubjectByTuneid1",
-      params   = Map("baz" -> "bah"),
+      name = "getTuneSubjectByTuneid1",
+      infoid = "def",
+      command = "getTuneSubjectByTuneid1",
+      params = Map("baz" -> "bah"),
       settings = Map("qwe" -> "rty"),
       modelset = false,
       createtime = DateTime.now,
@@ -205,12 +207,12 @@ class AlgosSpec extends Specification { def is =
       paramset = Some(6)
     )
     val algo2 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 678,
-      name     = "getTuneSubjectByTuneid2",
-      infoid   = "id3",
-      command  = "getTuneSubjectByTuneid2",
-      params   = Map("az" -> "ba"),
+      name = "getTuneSubjectByTuneid2",
+      infoid = "id3",
+      command = "getTuneSubjectByTuneid2",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now,
@@ -228,12 +230,12 @@ class AlgosSpec extends Specification { def is =
 
   def getByIdAndEngineid(algos: Algos) = {
     val obj1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 2345,
-      name     = "getByIdAndEngineid",
-      infoid   = "apple",
-      command  = "getByIdAndEngineid",
-      params   = Map("baz" -> "bah"),
+      name = "getByIdAndEngineid",
+      infoid = "apple",
+      command = "getByIdAndEngineid",
+      params = Map("baz" -> "bah"),
       settings = Map("qwe" -> "rty"),
       modelset = false,
       createtime = DateTime.now,
@@ -267,12 +269,12 @@ class AlgosSpec extends Specification { def is =
 
   def update(algos: Algos) = {
     val algo = Algo(
-      id       = 0,
+      id = 0,
       engineid = 345,
-      name     = "update",
-      infoid   = "food",
-      command  = "update",
-      params   = Map("az" -> "ba"),
+      name = "update",
+      infoid = "food",
+      command = "update",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now,
@@ -285,11 +287,11 @@ class AlgosSpec extends Specification { def is =
     )
     val updateid = algos.insert(algo)
     val updatedAlgo = algo.copy(
-      id       = updateid,
-      name     = "updated",
-      infoid   = "food2",
-      command  = "updated",
-      params   = Map("def" -> "ghi"),
+      id = updateid,
+      name = "updated",
+      infoid = "food2",
+      command = "updated",
+      params = Map("def" -> "ghi"),
       settings = Map(),
       updatetime = DateTime.now.hour(2).minute(45).second(10),
       status = "ready",
@@ -304,12 +306,12 @@ class AlgosSpec extends Specification { def is =
 
   def delete(algos: Algos) = {
     val id = algos.insert(Algo(
-      id       = 0,
+      id = 0,
       engineid = 456,
-      name     = "delete",
-      infoid   = "abc4",
-      command  = "delete",
-      params   = Map("az" -> "ba"),
+      name = "delete",
+      infoid = "abc4",
+      command = "delete",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now,
@@ -327,12 +329,12 @@ class AlgosSpec extends Specification { def is =
   def existsByEngineidAndName(algos: Algos) = {
 
     val algo1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 456,
-      name     = "existsByEngineidAndName-1",
-      infoid   = "abcdef",
-      command  = "delete",
-      params   = Map("az" -> "ba"),
+      name = "existsByEngineidAndName-1",
+      infoid = "abcdef",
+      command = "delete",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now,
@@ -365,12 +367,12 @@ class AlgosSpec extends Specification { def is =
 
   def backuprestore(algos: Algos) = {
     val algo1 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 456,
-      name     = "backuprestore-1",
-      infoid   = "abcdef",
-      command  = "delete",
-      params   = Map("az" -> "ba"),
+      name = "backuprestore-1",
+      infoid = "abcdef",
+      command = "delete",
+      params = Map("az" -> "ba"),
       settings = Map("we" -> "rt"),
       modelset = false,
       createtime = DateTime.now,
@@ -381,12 +383,12 @@ class AlgosSpec extends Specification { def is =
       loop = None,
       paramset = None)
     val algo2 = Algo(
-      id       = 0,
+      id = 0,
       engineid = 5839,
-      name     = "backuprestore-2",
-      infoid   = "abcdef",
-      command  = "delete",
-      params   = Map("az" -> "ba"),
+      name = "backuprestore-2",
+      infoid = "abcdef",
+      command = "delete",
+      params = Map("az" -> "ba"),
       settings = Map(),
       modelset = false,
       createtime = DateTime.now,

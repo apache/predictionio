@@ -4,24 +4,26 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class OfflineEvalSplittersSpec extends Specification { def is =
-  "PredictionIO OfflineEvalSplitters Specification"                           ^
-                                                                              p^
-  "OfflineEvalSplitters can be implemented by:"                               ^ endp^
-    "1. MongoOfflineEvalSplitters"                                            ^ mongoOfflineEvalSplitters^end
+class OfflineEvalSplittersSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvalSplitters Specification" ^
+      p ^
+      "OfflineEvalSplitters can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvalSplitters" ^ mongoOfflineEvalSplitters ^ end
 
-  def mongoOfflineEvalSplitters =                                             p^
-    "MongoOfflineEvalSplitters should"                                        ^
-      "behave like any OfflineEvalSplitters implementation"                   ^ offlineEvalSplitters(newMongoOfflineEvalSplitters)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvalSplitters = p ^
+    "MongoOfflineEvalSplitters should" ^
+    "behave like any OfflineEvalSplitters implementation" ^ offlineEvalSplitters(newMongoOfflineEvalSplitters) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineEvalSplitters(splitters: OfflineEvalSplitters) = {               t^
-    "create an OfflineEvalSplitter"                                           ! insert(splitters)^
-    "get two OfflineEvalSplitters"                                            ! getByEvalid(splitters)^
-    "update an OfflineEvalSplitter"                                           ! update(splitters)^
-    "delete an OfflineEvalSplitter"                                           ! delete(splitters)^
-    "backup and restore OfflineEvalSplitters"                                 ! backuprestore(splitters)^
-                                                                              bt
+  def offlineEvalSplitters(splitters: OfflineEvalSplitters) = {
+    t ^
+      "create an OfflineEvalSplitter" ! insert(splitters) ^
+      "get two OfflineEvalSplitters" ! getByEvalid(splitters) ^
+      "update an OfflineEvalSplitter" ! update(splitters) ^
+      "delete an OfflineEvalSplitter" ! delete(splitters) ^
+      "backup and restore OfflineEvalSplitters" ! backuprestore(splitters) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflineevalsplitters_test"
@@ -66,12 +68,11 @@ class OfflineEvalSplittersSpec extends Specification { def is =
     val it2 = it.next()
     val left = it.hasNext // make sure it has 2 only
 
-    it1 must be equalTo(obj1.copy(id = id1)) and
-      (it2 must be equalTo(obj2.copy(id = id2))) and
+    it1 must be equalTo (obj1.copy(id = id1)) and
+      (it2 must be equalTo (obj2.copy(id = id2))) and
       (left must be_==(false))
 
   }
-
 
   def update(splitters: OfflineEvalSplitters) = {
     val id = splitters.insert(OfflineEvalSplitter(

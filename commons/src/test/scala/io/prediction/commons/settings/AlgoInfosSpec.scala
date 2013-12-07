@@ -4,24 +4,26 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class AlgoInfosSpec extends Specification { def is =
-  "PredictionIO AlgoInfos Specification"                                      ^
-                                                                              p ^
-  "Algos can be implemented by:"                                              ^ endp ^
-    "1. MongoAlgoInfos"                                                       ^ mongoAlgoInfos^end
+class AlgoInfosSpec extends Specification {
+  def is =
+    "PredictionIO AlgoInfos Specification" ^
+      p ^
+      "Algos can be implemented by:" ^ endp ^
+      "1. MongoAlgoInfos" ^ mongoAlgoInfos ^ end
 
-  def mongoAlgoInfos =                                                        p ^
-    "MongoAlgoInfos should"                                                   ^
-      "behave like any AlgoInfos implementation"                              ^ algoinfos(newMongoAlgoInfos) ^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoAlgoInfos = p ^
+    "MongoAlgoInfos should" ^
+    "behave like any AlgoInfos implementation" ^ algoinfos(newMongoAlgoInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def algoinfos(algoinfos: AlgoInfos) = {                                     t ^
-    "insert and get info of an algo"                                          ! insertAndGet(algoinfos) ^
-    "get info of algos by their engine type"                                  ! getByEngineInfoId(algoinfos) ^
-    "update info of an algo"                                                  ! update(algoinfos) ^
-    "delete info of an algo"                                                  ! delete(algoinfos) ^
-    "backup and restore existing algoinfos"                                   ! backuprestore(algoinfos) ^
-                                                                              bt
+  def algoinfos(algoinfos: AlgoInfos) = {
+    t ^
+      "insert and get info of an algo" ! insertAndGet(algoinfos) ^
+      "get info of algos by their engine type" ! getByEngineInfoId(algoinfos) ^
+      "update info of an algo" ! update(algoinfos) ^
+      "delete info of an algo" ! delete(algoinfos) ^
+      "backup and restore existing algoinfos" ! backuprestore(algoinfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoalgoinfos_test"

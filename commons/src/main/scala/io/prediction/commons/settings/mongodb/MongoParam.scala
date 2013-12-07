@@ -34,10 +34,10 @@ object MongoParam {
           case "boolean" => MongoUtils.emptyObj
           case "double" =>
             (param.constraint.asInstanceOf[ParamDoubleConstraint].min map { x => MongoDBObject("min" -> x) } getOrElse MongoUtils.emptyObj) ++
-            (param.constraint.asInstanceOf[ParamDoubleConstraint].max map { x => MongoDBObject("max" -> x) } getOrElse MongoUtils.emptyObj)
+              (param.constraint.asInstanceOf[ParamDoubleConstraint].max map { x => MongoDBObject("max" -> x) } getOrElse MongoUtils.emptyObj)
           case "integer" =>
             (param.constraint.asInstanceOf[ParamIntegerConstraint].min map { x => MongoDBObject("min" -> x) } getOrElse MongoUtils.emptyObj) ++
-            (param.constraint.asInstanceOf[ParamIntegerConstraint].max map { x => MongoDBObject("max" -> x) } getOrElse MongoUtils.emptyObj)
+              (param.constraint.asInstanceOf[ParamIntegerConstraint].max map { x => MongoDBObject("max" -> x) } getOrElse MongoUtils.emptyObj)
           case "string" => MongoUtils.emptyObj
           case _ => MongoUtils.emptyObj
         })),

@@ -4,18 +4,19 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** OfflineEvalSplitterInfo object.
-  *
-  * @param id Unique identifier of a splitter.
-  * @param name Splitter name.
-  * @param description A long description of the splitter.
-  * @param engineinfoids A list of EngineInfo IDs that this splitter can apply to.
-  * @param commands A sequence of commands to run this metric.
-  * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramnames Key value paris of (parameter -> display name).
-  * @param paramdescription Key value paris of (parameter -> description).
-  * @param paramorder The display order of parameters.
-  */
+/**
+ * OfflineEvalSplitterInfo object.
+ *
+ * @param id Unique identifier of a splitter.
+ * @param name Splitter name.
+ * @param description A long description of the splitter.
+ * @param engineinfoids A list of EngineInfo IDs that this splitter can apply to.
+ * @param commands A sequence of commands to run this metric.
+ * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
+ * @param paramnames Key value paris of (parameter -> display name).
+ * @param paramdescription Key value paris of (parameter -> description).
+ * @param paramorder The display order of parameters.
+ */
 case class OfflineEvalSplitterInfo(
   id: String,
   name: String,
@@ -25,8 +26,7 @@ case class OfflineEvalSplitterInfo(
   paramdefaults: Map[String, Any],
   paramnames: Map[String, String],
   paramdescription: Map[String, String],
-  paramorder: Seq[String]
-)
+  paramorder: Seq[String])
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
 trait OfflineEvalSplitterInfos extends Common {

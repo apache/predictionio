@@ -6,7 +6,8 @@ import com.twitter.chill.KryoInjection
 
 import com.github.nscala_time.time.Imports._
 
-/** OfflineEval object
+/**
+ * OfflineEval object
  *
  * @param id ID.
  * @param engineid The id of Engine object which owns this OfflineEval.
@@ -25,12 +26,12 @@ case class OfflineEval(
   tuneid: Option[Int],
   createtime: Option[DateTime],
   starttime: Option[DateTime],
-  endtime: Option[DateTime]
-)
+  endtime: Option[DateTime])
 
 trait OfflineEvals extends Common {
 
-  /** Insert an OfflineEval and return id
+  /**
+   * Insert an OfflineEval and return id
    *
    * NOTE: can't use id of the offlineEval parameter
    */

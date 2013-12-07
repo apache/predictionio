@@ -12,7 +12,7 @@ class MongoMetadata(db: MongoDB) extends Metadata {
   def backup(): Array[Byte] = {
     val backup = seqColl.find().toSeq.map { b =>
       Map(
-        "id"   -> b.as[String]("_id"),
+        "id" -> b.as[String]("_id"),
         "next" -> b.as[Int]("next"))
     }
     KryoInjection(backup)
@@ -22,7 +22,7 @@ class MongoMetadata(db: MongoDB) extends Metadata {
     KryoInjection.invert(bytes) map { r =>
       val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
         Map(
-          "id"   -> data("id").asInstanceOf[String],
+          "id" -> data("id").asInstanceOf[String],
           "next" -> data("next").asInstanceOf[Int])
       }
 

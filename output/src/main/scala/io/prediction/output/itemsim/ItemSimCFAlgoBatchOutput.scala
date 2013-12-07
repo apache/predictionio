@@ -2,7 +2,7 @@ package io.prediction.output.itemsim
 
 import io.prediction.commons.Config
 import io.prediction.commons.modeldata.ItemSimScore
-import io.prediction.commons.settings.{Algo, App, OfflineEval}
+import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 
 object ItemSimCFAlgoBatchOutput {
   private val config = new Config

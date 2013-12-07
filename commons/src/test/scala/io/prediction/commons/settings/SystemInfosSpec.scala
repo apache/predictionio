@@ -4,23 +4,25 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class SystemInfosSpec extends Specification { def is =
-  "PredictionIO SystemInfos Specification"                                    ^
-                                                                              p^
-  "SystemInfos can be implemented by:"                                        ^ endp^
-    "1. MongoSystemInfos"                                                     ^ mongoSystemInfos^end
+class SystemInfosSpec extends Specification {
+  def is =
+    "PredictionIO SystemInfos Specification" ^
+      p ^
+      "SystemInfos can be implemented by:" ^ endp ^
+      "1. MongoSystemInfos" ^ mongoSystemInfos ^ end
 
-  def mongoSystemInfos =                                                      p^
-    "MongoSystemInfos should"                                                 ^
-      "behave like any SystemInfos implementation"                            ^ systemInfos(newMongoSystemInfos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoSystemInfos = p ^
+    "MongoSystemInfos should" ^
+    "behave like any SystemInfos implementation" ^ systemInfos(newMongoSystemInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def systemInfos(systemInfos: SystemInfos) = {                               t^
-    "create and get a system info entry"                                      ! insertAndGet(systemInfos)^
-    "update a system info entry"                                              ! update(systemInfos)^
-    "delete a system info entry"                                              ! delete(systemInfos)^
-    "backup and restore system info entries"                                  ! backuprestore(systemInfos)^
-                                                                              bt
+  def systemInfos(systemInfos: SystemInfos) = {
+    t ^
+      "create and get a system info entry" ! insertAndGet(systemInfos) ^
+      "update a system info entry" ! update(systemInfos) ^
+      "delete a system info entry" ! delete(systemInfos) ^
+      "backup and restore system info entries" ! backuprestore(systemInfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongosysteminfos_test"

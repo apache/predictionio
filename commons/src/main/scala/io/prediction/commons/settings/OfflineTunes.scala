@@ -5,7 +5,8 @@ import io.prediction.commons.Common
 import com.github.nscala_time.time.Imports._
 import com.twitter.chill.KryoInjection
 
-/** OfflineTune Object
+/**
+ * OfflineTune Object
  *
  * @param id Id
  * @param engineid The Engine ID
@@ -20,8 +21,7 @@ case class OfflineTune(
   loops: Int,
   createtime: Option[DateTime],
   starttime: Option[DateTime],
-  endtime: Option[DateTime]
-)
+  endtime: Option[DateTime])
 
 trait OfflineTunes extends Common {
 

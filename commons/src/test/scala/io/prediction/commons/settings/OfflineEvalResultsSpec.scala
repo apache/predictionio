@@ -4,22 +4,24 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class OfflineEvalResultsSpec extends Specification { def is =
-  "PredictionIO OfflineEvalResults Specification"               ^
-                                                                p^
-  "OfflineEvalResults can be implemented by:"                   ^ endp^
-    "1. MongoOfflineEvalResults"                                ^ mongoOfflineEvalResults^end
+class OfflineEvalResultsSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvalResults Specification" ^
+      p ^
+      "OfflineEvalResults can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvalResults" ^ mongoOfflineEvalResults ^ end
 
-  def mongoOfflineEvalResults =                                 p^
-    "MongoOfflineEvalResults should"                            ^
-      "behave like any OfflineEvalResults implementation"       ^ offlineEvalResultsTest(newMongoOfflineEvalResults)^
-                                                                Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvalResults = p ^
+    "MongoOfflineEvalResults should" ^
+    "behave like any OfflineEvalResults implementation" ^ offlineEvalResultsTest(newMongoOfflineEvalResults) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineEvalResultsTest(offlineEvalResults: OfflineEvalResults) = {    t^
-    "get two OfflineEvalResults by evalid"                                  ! getByEvalid(offlineEvalResults)^
-    "delete two OfflineEvalResults by evalid"                               ! deleteByEvalid(offlineEvalResults)^
-    "backup and restore OfflineEvalResults"                                 ! backuprestore(offlineEvalResults)^
-                                                                            bt
+  def offlineEvalResultsTest(offlineEvalResults: OfflineEvalResults) = {
+    t ^
+      "get two OfflineEvalResults by evalid" ! getByEvalid(offlineEvalResults) ^
+      "delete two OfflineEvalResults by evalid" ! deleteByEvalid(offlineEvalResults) ^
+      "backup and restore OfflineEvalResults" ! backuprestore(offlineEvalResults) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflineevalresults_test"
@@ -77,9 +79,9 @@ class OfflineEvalResultsSpec extends Specification { def is =
 
     val it2Data1 = it2.next()
 
-    itData1 must be equalTo(obj1) and
-      (itData2 must be equalTo(obj2)) and
-      (itData3 must be equalTo(obj3)) and
+    itData1 must be equalTo (obj1) and
+      (itData2 must be equalTo (obj2)) and
+      (itData3 must be equalTo (obj3)) and
       (it.hasNext must be_==(false)) and // make sure it has 2 only
       (it2Data1 must equalTo(obj4)) and
       (it2.hasNext must be_==(false))
@@ -129,11 +131,11 @@ class OfflineEvalResultsSpec extends Specification { def is =
     val it3 = offlineEvalResults.getByEvalid(7) // others shouldn't be deleted
     val it3Data1 = it3.next()
 
-    it1Data1 must be equalTo(obj1) and
-      (it1Data2 must be equalTo(obj3)) and
+    it1Data1 must be equalTo (obj1) and
+      (it1Data2 must be equalTo (obj3)) and
       (it1.hasNext must be_==(false)) and //make sure it has 2 only
       (it2.hasNext must be_==(false))
-      (it3Data1 must be equalTo(obj2)) and
+    (it3Data1 must be equalTo (obj2)) and
       (it3.hasNext must be_==(false))
 
   }

@@ -1,8 +1,8 @@
 package io.prediction.commons.appdata.mongodb
 
-import io.prediction.commons.MongoUtils.{emptyObj, mongoDbListToListOfString, idWithAppid}
-import io.prediction.commons.MongoUtils.{attributesToMongoDBObject, getAttributesFromDBObject}
-import io.prediction.commons.appdata.{User, Users}
+import io.prediction.commons.MongoUtils.{ emptyObj, mongoDbListToListOfString, idWithAppid }
+import io.prediction.commons.MongoUtils.{ attributesToMongoDBObject, getAttributesFromDBObject }
+import io.prediction.commons.appdata.{ User, Users }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
@@ -54,11 +54,11 @@ class MongoUsers(db: MongoDB) extends Users {
   private def dbObjToUser(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     User(
-      id         = dbObj.as[String]("_id").drop(appid.toString.length + 1),
-      appid      = appid,
-      ct         = dbObj.as[DateTime]("ct"),
-      latlng     = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
-      inactive   = dbObj.getAs[Boolean]("inactive"),
+      id = dbObj.as[String]("_id").drop(appid.toString.length + 1),
+      appid = appid,
+      ct = dbObj.as[DateTime]("ct"),
+      latlng = dbObj.getAs[MongoDBList]("lnglat") map { lnglat => (lnglat(1).asInstanceOf[Double], lnglat(0).asInstanceOf[Double]) },
+      inactive = dbObj.getAs[Boolean]("inactive"),
       //attributes = dbObj.getAs[DBObject]("attributes") map { dbObjToMap(_) }
       attributes = Option(getAttributesFromDBObject(dbObj)).filter(!_.isEmpty)
     )

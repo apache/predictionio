@@ -1,15 +1,16 @@
 package io.prediction.commons.settings
 
-/** Param object.
-  *
-  * @param id ID.
-  * @param name Parameter name.
-  * @param description Parameter description.
-  * @param defaultvalue Default value of the parameter.
-  * @param constraint Constraint of the parameter.
-  * @param ui UI information of the parameter.
-  * @param scopes Scopes where this parameter is required.
-  */
+/**
+ * Param object.
+ *
+ * @param id ID.
+ * @param name Parameter name.
+ * @param description Parameter description.
+ * @param defaultvalue Default value of the parameter.
+ * @param constraint Constraint of the parameter.
+ * @param ui UI information of the parameter.
+ * @param scopes Scopes where this parameter is required.
+ */
 case class Param(
   id: String,
   name: String,
@@ -29,13 +30,13 @@ case class ParamDoubleConstraint(
   paramtype: String = "double",
   min: Option[Double] = None,
   max: Option[Double] = None)
-  extends ParamConstraint
+    extends ParamConstraint
 
 case class ParamIntegerConstraint(
   paramtype: String = "integer",
   min: Option[Int] = None,
   max: Option[Int] = None)
-  extends ParamConstraint
+    extends ParamConstraint
 
 case class ParamStringConstraint(paramtype: String = "string") extends ParamConstraint
 

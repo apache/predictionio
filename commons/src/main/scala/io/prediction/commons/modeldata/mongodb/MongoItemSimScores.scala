@@ -1,8 +1,8 @@
 package io.prediction.commons.modeldata.mongodb
 
 import io.prediction.commons.MongoUtils._
-import io.prediction.commons.modeldata.{ItemSimScore, ItemSimScores}
-import io.prediction.commons.settings.{Algo, App, OfflineEval}
+import io.prediction.commons.modeldata.{ ItemSimScore, ItemSimScores }
+import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 
 import com.mongodb.casbah.Imports._
 
@@ -63,8 +63,8 @@ class MongoItemSimScores(db: MongoDB) extends ItemSimScores {
   /** Private mapping function to map DB Object to ItemSimScore object */
   private def dbObjToItemSimScore(dbObj: DBObject, appid: Int) = {
     ItemSimScore(
-      iid = dbObj.as[String]("iid").drop(appid.toString.length+1),
-      simiid = dbObj.as[String]("simiid").drop(appid.toString.length+1),
+      iid = dbObj.as[String]("iid").drop(appid.toString.length + 1),
+      simiid = dbObj.as[String]("simiid").drop(appid.toString.length + 1),
       score = dbObj.as[Double]("score"),
       itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("simitypes")),
       appid = appid,

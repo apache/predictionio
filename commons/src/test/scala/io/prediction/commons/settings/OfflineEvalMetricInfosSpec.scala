@@ -4,24 +4,26 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class OfflineEvalMetricInfosSpec extends Specification { def is =
-  "PredictionIO OfflineEvalMetricInfos Specification"                         ^
-                                                                              p^
-  "OfflineEvalMetricInfos can be implemented by:"                             ^ endp^
-    "1. MongoOfflineEvalMetricInfos"                                          ^ mongoOfflineEvalMetricInfos^end
+class OfflineEvalMetricInfosSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvalMetricInfos Specification" ^
+      p ^
+      "OfflineEvalMetricInfos can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvalMetricInfos" ^ mongoOfflineEvalMetricInfos ^ end
 
-  def mongoOfflineEvalMetricInfos =                                           p^
-    "MongoOfflineEvalMetricInfos should"                                      ^
-      "behave like any OfflineEvalMetricInfos implementation"                 ^ metricInfos(newMongoOfflineEvalMetricInfos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvalMetricInfos = p ^
+    "MongoOfflineEvalMetricInfos should" ^
+    "behave like any OfflineEvalMetricInfos implementation" ^ metricInfos(newMongoOfflineEvalMetricInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def metricInfos(metricInfos: OfflineEvalMetricInfos) = {                    t^
-    "create and get an metric info"                                           ! insertAndGet(metricInfos)^
-    "get metric info by engine info id"                                       ! getByEngineinfoid(metricInfos)^
-    "update an metric info"                                                   ! update(metricInfos)^
-    "delete an metric info"                                                   ! delete(metricInfos)^
-    "backup and restore metric infos"                                         ! backuprestore(metricInfos)^
-                                                                              bt
+  def metricInfos(metricInfos: OfflineEvalMetricInfos) = {
+    t ^
+      "create and get an metric info" ! insertAndGet(metricInfos) ^
+      "get metric info by engine info id" ! getByEngineinfoid(metricInfos) ^
+      "update an metric info" ! update(metricInfos) ^
+      "delete an metric info" ! delete(metricInfos) ^
+      "backup and restore metric infos" ! backuprestore(metricInfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongometricinfos_test"
@@ -69,13 +71,13 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
     val mapkC = mapkA.copy(
       id = "map-k-c",
       name = "Mean Average Precision C",
-      engineinfoids = Seq("engine2")  
+      engineinfoids = Seq("engine2")
     )
 
     val mapkD = mapkA.copy(
       id = "map-k-D",
       name = "Mean Average Precision D",
-      engineinfoids = Seq("engine3", "engine1")  
+      engineinfoids = Seq("engine3", "engine1")
     )
 
     metricInfos.insert(mapkA)
@@ -97,14 +99,14 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
 
     val engine3Metric1 = engine3Metrics(0)
 
-    engine1Metrics.length must be equalTo(3) and
-      (engine1Metric1 must be equalTo(mapkA)) and
-      (engine1Metric2 must be equalTo(mapkB)) and
-      (engine1Metric3 must be equalTo(mapkD)) and
-      (engine2Metrics.length must be equalTo(1)) and
-      (engine2Metric1 must be equalTo(mapkC)) and
-      (engine3Metrics.length must be equalTo(1)) and
-      (engine3Metric1 must be equalTo(mapkD))
+    engine1Metrics.length must be equalTo (3) and
+      (engine1Metric1 must be equalTo (mapkA)) and
+      (engine1Metric2 must be equalTo (mapkB)) and
+      (engine1Metric3 must be equalTo (mapkD)) and
+      (engine2Metrics.length must be equalTo (1)) and
+      (engine2Metric1 must be equalTo (mapkC)) and
+      (engine3Metrics.length must be equalTo (1)) and
+      (engine3Metric1 must be equalTo (mapkD))
 
   }
 

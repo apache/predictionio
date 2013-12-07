@@ -4,23 +4,25 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class OfflineEvalSplitterInfosSpec extends Specification { def is =
-  "PredictionIO OfflineEvalSplitterInfos Specification"                       ^
-                                                                              p^
-  "OfflineEvalSplitterInfos can be implemented by:"                           ^ endp^
-    "1. MongoOfflineEvalSplitterInfos"                                        ^ mongoOfflineEvalSplitterInfos^end
+class OfflineEvalSplitterInfosSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvalSplitterInfos Specification" ^
+      p ^
+      "OfflineEvalSplitterInfos can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvalSplitterInfos" ^ mongoOfflineEvalSplitterInfos ^ end
 
-  def mongoOfflineEvalSplitterInfos =                                         p^
-    "MongoOfflineEvalSplitterInfos should"                                    ^
-      "behave like any OfflineEvalSplitterInfos implementation"               ^ offlineEvalSplitterInfos(newMongoOfflineEvalSplitterInfos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvalSplitterInfos = p ^
+    "MongoOfflineEvalSplitterInfos should" ^
+    "behave like any OfflineEvalSplitterInfos implementation" ^ offlineEvalSplitterInfos(newMongoOfflineEvalSplitterInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineEvalSplitterInfos(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {                               t^
-    "create and get an metric info"                                           ! insertAndGet(offlineEvalSplitterInfos)^
-    "update an metric info"                                                   ! update(offlineEvalSplitterInfos)^
-    "delete an metric info"                                                   ! delete(offlineEvalSplitterInfos)^
-    "backup and restore metric info"                                          ! backuprestore(offlineEvalSplitterInfos)^
-                                                                              bt
+  def offlineEvalSplitterInfos(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
+    t ^
+      "create and get an metric info" ! insertAndGet(offlineEvalSplitterInfos) ^
+      "update an metric info" ! update(offlineEvalSplitterInfos) ^
+      "delete an metric info" ! delete(offlineEvalSplitterInfos) ^
+      "backup and restore metric info" ! backuprestore(offlineEvalSplitterInfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflineevalsplitterinfos_test"

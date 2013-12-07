@@ -4,7 +4,8 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** ParamGen Object
+/**
+ * ParamGen Object
  *
  * @param id ID
  * @param infoid param gen info id
@@ -15,8 +16,7 @@ case class ParamGen(
   id: Int,
   infoid: String,
   tuneid: Int,
-  params: Map[String, Any]
-)
+  params: Map[String, Any])
 
 trait ParamGens extends Common {
 

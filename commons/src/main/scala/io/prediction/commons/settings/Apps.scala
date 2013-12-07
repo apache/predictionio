@@ -4,17 +4,18 @@ import io.prediction.commons.Common
 
 import com.twitter.chill.KryoInjection
 
-/** App object.
-  *
-  * @param id ID.
-  * @param userid User ID that owns this app.
-  * @param appkey The appkey used to access this app via REST API.
-  * @param display The app's display name.
-  * @param url The URL where the app is used.
-  * @param cat The app's category.
-  * @param desc The app's description.
-  * @param timezone The app's timezone.
-  */
+/**
+ * App object.
+ *
+ * @param id ID.
+ * @param userid User ID that owns this app.
+ * @param appkey The appkey used to access this app via REST API.
+ * @param display The app's display name.
+ * @param url The URL where the app is used.
+ * @param cat The app's category.
+ * @param desc The app's description.
+ * @param timezone The app's timezone.
+ */
 case class App(
   id: Int,
   userid: Int,
@@ -23,15 +24,15 @@ case class App(
   url: Option[String],
   cat: Option[String],
   desc: Option[String],
-  timezone: String
-)
+  timezone: String)
 
 /** Base trait for implementations that interact with apps in the backend data store. */
 trait Apps extends Common {
-  /** Insert a new App with basic fields defined.
-    *
-    * @param app An App object to be inserted. The ID will be ignored and replaced by an implementation of this trait.
-    */
+  /**
+   * Insert a new App with basic fields defined.
+   *
+   * @param app An App object to be inserted. The ID will be ignored and replaced by an implementation of this trait.
+   */
   def insert(app: App): Int
 
   /** Get an App by its ID. */
@@ -64,11 +65,12 @@ trait Apps extends Common {
   /** Delete an App by ID and user ID. */
   def deleteByIdAndUserid(id: Int, userid: Int)
 
-  /** Check if this app exists by its ID, appkey and user ID.
-    *
-    * For purpose of making sure this app exists and belongs to the specified
-    * user ID.
-    */
+  /**
+   * Check if this app exists by its ID, appkey and user ID.
+   *
+   * For purpose of making sure this app exists and belongs to the specified
+   * user ID.
+   */
   def existsByIdAndAppkeyAndUserid(id: Int, appkey: String, userid: Int): Boolean
 
   /** Backup all data as a byte array. */

@@ -6,26 +6,28 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class OfflineEvalsSpec extends Specification { def is =
-  "PredictionIO OfflineEvals Specification"               ^
-                                                          p^
-  "OfflineEvals can be implemented by:"                   ^ endp^
-    "1. MongoOfflineEvals"                                ^ mongoOfflineEvals^end
+class OfflineEvalsSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvals Specification" ^
+      p ^
+      "OfflineEvals can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvals" ^ mongoOfflineEvals ^ end
 
-  def mongoOfflineEvals =                                 p^
-    "MongoOfflineEvals should"                            ^
-      "behave like any OfflineEvals implementation"       ^ offlineEvalsTest(newMongoOfflineEvals)^
-                                                          Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvals = p ^
+    "MongoOfflineEvals should" ^
+    "behave like any OfflineEvals implementation" ^ offlineEvalsTest(newMongoOfflineEvals) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineEvalsTest(offlineEvals: OfflineEvals) = {    t^
-    "create an OfflineEval"                               ! insert(offlineEvals)^
-    "get two OfflineEvals by Engineid"                    ! getByEngineid(offlineEvals)^
-    "get two OfflineEvals by Tuneid"                      ! getByTuneid(offlineEvals)^
-    "get by id and engineid"                              ! getByIdAndEngineid(offlineEvals)^
-    "update an OfflineEval"                               ! update(offlineEvals)^
-    "delete an OfflineEval"                               ! delete(offlineEvals)^
-    "backup and restore OfflineEvals"                     ! backuprestore(offlineEvals)^
-                                                          bt
+  def offlineEvalsTest(offlineEvals: OfflineEvals) = {
+    t ^
+      "create an OfflineEval" ! insert(offlineEvals) ^
+      "get two OfflineEvals by Engineid" ! getByEngineid(offlineEvals) ^
+      "get two OfflineEvals by Tuneid" ! getByTuneid(offlineEvals) ^
+      "get by id and engineid" ! getByIdAndEngineid(offlineEvals) ^
+      "update an OfflineEval" ! update(offlineEvals) ^
+      "delete an OfflineEval" ! delete(offlineEvals) ^
+      "backup and restore OfflineEvals" ! backuprestore(offlineEvals) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflineevals_test"
@@ -62,7 +64,7 @@ class OfflineEvalsSpec extends Specification { def is =
       starttime = None,
       endtime = None
     )
-   val eval2 = OfflineEval(
+    val eval2 = OfflineEval(
       id = -1,
       engineid = 11,
       name = "offline-eval-getByEngineid2",
@@ -81,8 +83,8 @@ class OfflineEvalsSpec extends Specification { def is =
     val it2 = it.next()
     val left = it.hasNext // make sure it has 2 only
 
-    it1 must be equalTo(eval1.copy(id = id1)) and
-      (it2 must be equalTo(eval2.copy(id = id2))) and
+    it1 must be equalTo (eval1.copy(id = id1)) and
+      (it2 must be equalTo (eval2.copy(id = id2))) and
       (left must be_==(false))
 
   }
@@ -100,7 +102,7 @@ class OfflineEvalsSpec extends Specification { def is =
       starttime = None,
       endtime = None
     )
-   val eval2 = OfflineEval(
+    val eval2 = OfflineEval(
       id = -1,
       engineid = 12,
       name = "offline-eval-getByEngineid2",
@@ -129,8 +131,8 @@ class OfflineEvalsSpec extends Specification { def is =
     val it2 = it.next()
     val left = it.hasNext // make sure it has 2 only
 
-    it1 must be equalTo(eval1.copy(id = id1)) and
-      (it2 must be equalTo(eval2.copy(id = id2))) and
+    it1 must be equalTo (eval1.copy(id = id1)) and
+      (it2 must be equalTo (eval2.copy(id = id2))) and
       (left must be_==(false))
 
   }
