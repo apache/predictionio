@@ -214,13 +214,13 @@ lazy val processEnginesItemSimEvalScalaTopKItems = project
 // Tools Section
 
 lazy val toolsConncheck = project.in(file("tools/conncheck"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
 
 lazy val toolsSettingsInit = project.in(file("tools/settingsinit"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
 
 lazy val toolsSoftwareManager = project.in(file("tools/softwaremanager"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
 
 lazy val toolsUsers = project.in(file("tools/users"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
