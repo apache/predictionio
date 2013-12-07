@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * Engine object.
@@ -51,36 +52,45 @@ trait Engines extends Common {
   /** Check existence of an engine by its app ID and name. */
   def existsByAppidAndName(appid: Int, name: String): Boolean
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new EngineSerializer
+
   /** Backup all Engines as a byte array. */
-  def backup(): Array[Byte] = {
-    val engines = getAll().toSeq.map { engine =>
-      Map(
-        "id" -> engine.id,
-        "appid" -> engine.appid,
-        "name" -> engine.name,
-        "infoid" -> engine.infoid,
-        "itypes" -> engine.itypes,
-        "params" -> engine.params)
-    }
-    KryoInjection(engines)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore Engines from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[Engine]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        Engine(
-          id = data("id").asInstanceOf[Int],
-          appid = data("appid").asInstanceOf[Int],
-          name = data("name").asInstanceOf[String],
-          infoid = data("infoid").asInstanceOf[String],
-          itypes = data("itypes").asInstanceOf[Option[List[String]]],
-          params = data("params").asInstanceOf[Map[String, Any]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[Engine]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => { println(e.getMessage()); None }
     }
   }
 }
+
+/** json4s serializer for the Algo class. */
+class EngineSerializer extends CustomSerializer[Engine](format => (
+  {
+    case x: JObject =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      Engine(
+        id = (x \ "id").extract[Int],
+        appid = (x \ "appid").extract[Int],
+        name = (x \ "name").extract[String],
+        infoid = (x \ "infoid").extract[String],
+        itypes = (x \ "itypes").extract[Option[Seq[String]]],
+        params = (x \ "params").asInstanceOf[JObject].values)
+  },
+  {
+    case x: Engine =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      JObject(
+        JField("id", Extraction.decompose(x.id)) ::
+          JField("appid", Extraction.decompose(x.appid)) ::
+          JField("name", Extraction.decompose(x.name)) ::
+          JField("infoid", Extraction.decompose(x.infoid)) ::
+          JField("itypes", Extraction.decompose(x.itypes)) ::
+          JField("params", Extraction.decompose(x.params)) :: Nil)
+  })
+)

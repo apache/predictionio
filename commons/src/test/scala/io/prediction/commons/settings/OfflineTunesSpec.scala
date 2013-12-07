@@ -112,14 +112,14 @@ class OfflineTunesSpec extends Specification {
       endtime = None
     )
     val id1 = offlineTunes.insert(tune1)
-    val fn = "tunes.bin"
+    val fn = "tunes.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineTunes.backup())
     } finally {
       fos.close()
     }
-    offlineTunes.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineTunes.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       // For some reason inserting Joda DateTime to DB and getting them back will make test pass
       val ftune1 = data.find(_.id == id1).get
       offlineTunes.update(ftune1)

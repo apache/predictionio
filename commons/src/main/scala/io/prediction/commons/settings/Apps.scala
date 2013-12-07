@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * App object.
@@ -73,40 +74,19 @@ trait Apps extends Common {
    */
   def existsByIdAndAppkeyAndUserid(id: Int, appkey: String, userid: Int): Boolean
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().toSeq.map { b =>
-      Map(
-        "id" -> b.id,
-        "userid" -> b.userid,
-        "appkey" -> b.appkey,
-        "display" -> b.display,
-        "url" -> b.url,
-        "cat" -> b.cat,
-        "desc" -> b.desc,
-        "timezone" -> b.timezone)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[App]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        App(
-          id = data("id").asInstanceOf[Int],
-          userid = data("userid").asInstanceOf[Int],
-          appkey = data("appkey").asInstanceOf[String],
-          display = data("display").asInstanceOf[String],
-          url = data("url").asInstanceOf[Option[String]],
-          cat = data("cat").asInstanceOf[Option[String]],
-          desc = data("desc").asInstanceOf[Option[String]],
-          timezone = data("timezone").asInstanceOf[String])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[App]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * EngineInfo object.
@@ -38,36 +39,19 @@ trait EngineInfos extends Common {
   /** Delete an engine info by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new ParamSerializer
+
   /** Backup all EngineInfos as a byte array. */
-  def backup(): Array[Byte] = {
-    val engineinfos = getAll().map { engineinfo =>
-      Map(
-        "id" -> engineinfo.id,
-        "name" -> engineinfo.name,
-        "description" -> engineinfo.description,
-        "params" -> engineinfo.params,
-        "paramsections" -> engineinfo.paramsections,
-        "defaultalgoinfoid" -> engineinfo.defaultalgoinfoid)
-    }
-    KryoInjection(engineinfos)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore EngineInfos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[EngineInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        EngineInfo(
-          id = data("id").asInstanceOf[String],
-          name = data("name").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]],
-          params = data("params").asInstanceOf[Map[String, Param]],
-          paramsections = data("paramsections").asInstanceOf[Seq[ParamSection]],
-          defaultalgoinfoid = data("defaultalgoinfoid").asInstanceOf[String])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[EngineInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

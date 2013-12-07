@@ -237,14 +237,14 @@ class OfflineEvalsSpec extends Specification {
       endtime = None
     )
     val id1 = offlineEvals.insert(eval1)
-    val fn = "evals.bin"
+    val fn = "evals.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineEvals.backup())
     } finally {
       fos.close()
     }
-    offlineEvals.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineEvals.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       // For some reason inserting Joda DateTime to DB and getting them back will make test pass
       val feval1 = data.find(_.id == id1).get
       offlineEvals.update(feval1)

@@ -388,7 +388,7 @@ class AlgosSpec extends Specification {
       name = "backuprestore-2",
       infoid = "abcdef",
       command = "delete",
-      params = Map("az" -> "ba"),
+      params = Map("az" -> "ba", "deadbeef" -> 3.14),
       settings = Map(),
       modelset = false,
       createtime = DateTime.now,
@@ -402,13 +402,14 @@ class AlgosSpec extends Specification {
     val id2 = algos.insert(algo2)
     val ralgo1 = algo1.copy(id = id1)
     val ralgo2 = algo2.copy(id = id2)
-    val fos = new java.io.FileOutputStream("algos.bin")
+    val fn = "algos.json"
+    val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(algos.backup())
     } finally {
       fos.close()
     }
-    algos.restore(scala.io.Source.fromFile("algos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { ralgos =>
+    algos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { ralgos =>
       val falgo1 = ralgos.find(_.id == id1).get
       val falgo2 = ralgos.find(_.id == id2).get
       algos.update(falgo1)

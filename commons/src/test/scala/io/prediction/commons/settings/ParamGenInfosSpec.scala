@@ -100,14 +100,14 @@ class ParamGenInfosSpec extends Specification {
       paramdescription = Map("k" -> "Averaging window size"),
       paramorder = Seq("k"))
     paramGenInfos.insert(mapkbk)
-    val fn = "paramgeninfos.bin"
+    val fn = "paramgeninfos.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(paramGenInfos.backup())
     } finally {
       fos.close()
     }
-    paramGenInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    paramGenInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(mapkbk)
     } getOrElse 1 === 2
   }

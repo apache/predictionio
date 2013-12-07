@@ -3,7 +3,8 @@ package io.prediction.commons.settings
 import io.prediction.commons.Common
 
 import com.github.nscala_time.time.Imports._
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * Algo object.
@@ -77,54 +78,63 @@ trait Algos extends Common {
    */
   def existsByEngineidAndName(engineid: Int, name: String): Boolean
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new AlgoSerializer
+
   /** Backup all Algos as a byte array. */
-  def backup(): Array[Byte] = {
-    val algos = getAll().toSeq.map { algo =>
-      Map(
-        "id" -> algo.id,
-        "engineid" -> algo.engineid,
-        "name" -> algo.name,
-        "infoid" -> algo.infoid,
-        "command" -> algo.command,
-        "params" -> algo.params,
-        "settings" -> algo.settings,
-        "modelset" -> algo.modelset,
-        "createtime" -> algo.createtime,
-        "updatetime" -> algo.updatetime,
-        "status" -> algo.status,
-        "offlineevalid" -> algo.offlineevalid,
-        "offlinetuneid" -> algo.offlinetuneid,
-        "loop" -> algo.loop,
-        "paramset" -> algo.paramset)
-    }
-    KryoInjection(algos)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore Algos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[Algo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { stuff =>
-        Algo(
-          id = stuff("id").asInstanceOf[Int],
-          engineid = stuff("engineid").asInstanceOf[Int],
-          name = stuff("name").asInstanceOf[String],
-          infoid = stuff("infoid").asInstanceOf[String],
-          command = stuff("command").asInstanceOf[String],
-          params = stuff("params").asInstanceOf[Map[String, Any]],
-          settings = stuff("settings").asInstanceOf[Map[String, Any]],
-          modelset = stuff("modelset").asInstanceOf[Boolean],
-          createtime = stuff("createtime").asInstanceOf[DateTime],
-          updatetime = stuff("updatetime").asInstanceOf[DateTime],
-          status = stuff("status").asInstanceOf[String],
-          offlineevalid = stuff("offlineevalid").asInstanceOf[Option[Int]],
-          offlinetuneid = stuff("offlinetuneid").asInstanceOf[Option[Int]],
-          loop = stuff("loop").asInstanceOf[Option[Int]],
-          paramset = stuff("paramset").asInstanceOf[Option[Int]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[Algo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => { println(e.getMessage()); None }
     }
   }
 }
+
+/** json4s serializer for the Algo class. */
+class AlgoSerializer extends CustomSerializer[Algo](format => (
+  {
+    case x: JObject =>
+      implicit val formats = Serialization.formats(NoTypeHints) ++ org.json4s.ext.JodaTimeSerializers.all
+      Algo(
+        id = (x \ "id").extract[Int],
+        engineid = (x \ "engineid").extract[Int],
+        name = (x \ "name").extract[String],
+        infoid = (x \ "infoid").extract[String],
+        command = (x \ "command").extract[String],
+        params = (x \ "params").asInstanceOf[JObject].values,
+        settings = (x \ "settings").asInstanceOf[JObject].values,
+        modelset = (x \ "modelset").extract[Boolean],
+        createtime = (x \ "createtime").extract[DateTime],
+        updatetime = (x \ "updatetime").extract[DateTime],
+        status = (x \ "status").extract[String],
+        offlineevalid = (x \ "offlineevalid").extract[Option[Int]],
+        offlinetuneid = (x \ "offlinetuneid").extract[Option[Int]],
+        loop = (x \ "loop").extract[Option[Int]],
+        paramset = (x \ "paramset").extract[Option[Int]])
+  },
+  {
+    case x: Algo =>
+      implicit val formats = Serialization.formats(NoTypeHints) ++ org.json4s.ext.JodaTimeSerializers.all
+      JObject(
+        JField("id", Extraction.decompose(x.id)) ::
+          JField("engineid", Extraction.decompose(x.engineid)) ::
+          JField("name", Extraction.decompose(x.name)) ::
+          JField("infoid", Extraction.decompose(x.infoid)) ::
+          JField("command", Extraction.decompose(x.command)) ::
+          JField("params", Extraction.decompose(x.params)) ::
+          JField("settings", Extraction.decompose(x.settings)) ::
+          JField("modelset", Extraction.decompose(x.modelset)) ::
+          JField("createtime", Extraction.decompose(x.createtime)) ::
+          JField("updatetime", Extraction.decompose(x.updatetime)) ::
+          JField("status", Extraction.decompose(x.status)) ::
+          JField("offlineevalid", Extraction.decompose(x.offlineevalid)) ::
+          JField("offlinetuneid", Extraction.decompose(x.offlinetuneid)) ::
+          JField("loop", Extraction.decompose(x.loop)) ::
+          JField("paramset", Extraction.decompose(x.paramset)) :: Nil)
+  })
+)

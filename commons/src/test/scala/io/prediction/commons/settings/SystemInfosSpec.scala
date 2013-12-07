@@ -64,14 +64,14 @@ class SystemInfosSpec extends Specification {
       value = "321",
       description = Some("software revision"))
     systemInfos.insert(rev)
-    val fn = "systeminfos.bin"
+    val fn = "systeminfos.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(systemInfos.backup())
     } finally {
       fos.close()
     }
-    systemInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    systemInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(rev)
     } getOrElse 1 === 2
   }

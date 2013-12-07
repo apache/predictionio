@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * AlgoInfo object.
@@ -51,46 +52,19 @@ trait AlgoInfos extends Common {
   /** Delete an algo info by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new ParamSerializer
+
   /** Backup all AlgoInfos as a byte array. */
-  def backup(): Array[Byte] = {
-    val algoinfos = getAll().map { algoinfo =>
-      Map(
-        "id" -> algoinfo.id,
-        "name" -> algoinfo.name,
-        "description" -> algoinfo.description,
-        "batchcommands" -> algoinfo.batchcommands,
-        "offlineevalcommands" -> algoinfo.offlineevalcommands,
-        "params" -> algoinfo.params,
-        "paramsections" -> algoinfo.paramsections,
-        "paramorder" -> algoinfo.paramorder,
-        "engineinfoid" -> algoinfo.engineinfoid,
-        "techreq" -> algoinfo.techreq,
-        "datareq" -> algoinfo.datareq)
-    }
-    KryoInjection(algoinfos)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore AlgoInfos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[AlgoInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        AlgoInfo(
-          id = data("id").asInstanceOf[String],
-          name = data("name").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]],
-          batchcommands = data("batchcommands").asInstanceOf[Option[Seq[String]]],
-          offlineevalcommands = data("offlineevalcommands").asInstanceOf[Option[Seq[String]]],
-          params = data("params").asInstanceOf[Map[String, Param]],
-          paramsections = data("paramsections").asInstanceOf[Seq[ParamSection]],
-          paramorder = data("paramorder").asInstanceOf[Seq[String]],
-          engineinfoid = data("engineinfoid").asInstanceOf[String],
-          techreq = data("techreq").asInstanceOf[Seq[String]],
-          datareq = data("datareq").asInstanceOf[Seq[String]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[AlgoInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

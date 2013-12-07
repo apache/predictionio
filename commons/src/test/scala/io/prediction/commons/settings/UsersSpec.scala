@@ -239,7 +239,7 @@ class UsersSpec extends Specification {
   }
 
   def backuprestore(users: Users) = {
-    val user1 = User(0, "backuprestore", None, "backuprestore@prediction.io", "password", Some("confirm"))
+    val user1 = User(0, "english中文", None, "backuprestore@prediction.io", "password", Some("confirm"))
     val id1 = users.insert(
       email = user1.email,
       password = user1.password,
@@ -247,14 +247,14 @@ class UsersSpec extends Specification {
       lastname = user1.lastName,
       confirm = user1.confirm.get
     )
-    val fn = "users.bin"
+    val fn = "users.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(users.backup())
     } finally {
       fos.close()
     }
-    users.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    users.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(user1.copy(id = id1))
     } getOrElse 1 === 2
   }

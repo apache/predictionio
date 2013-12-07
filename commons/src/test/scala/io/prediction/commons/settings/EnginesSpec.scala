@@ -158,13 +158,14 @@ class EnginesSpec extends Specification {
       params = Map("foo" -> "bar")
     )
     val eid = engines.insert(eng)
-    val fos = new java.io.FileOutputStream("engines.bin")
+    val fn = "engines.json"
+    val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(engines.backup())
     } finally {
       fos.close()
     }
-    engines.restore(scala.io.Source.fromFile("engines.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { rengines =>
+    engines.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { rengines =>
       rengines must contain(eng.copy(id = eid))
     } getOrElse 1 === 2
   }

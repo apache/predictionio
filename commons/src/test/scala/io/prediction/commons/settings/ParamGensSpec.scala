@@ -144,14 +144,14 @@ class ParamGensSpec extends Specification {
     )
 
     val id1 = paramGens.insert(obj1)
-    val fn = "paramgens.bin"
+    val fn = "paramgens.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(paramGens.backup())
     } finally {
       fos.close()
     }
-    paramGens.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    paramGens.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(obj1.copy(id = id1))
     } getOrElse 1 === 2
   }

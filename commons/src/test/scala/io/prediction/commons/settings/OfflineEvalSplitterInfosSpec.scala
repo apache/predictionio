@@ -104,14 +104,14 @@ class OfflineEvalSplitterInfosSpec extends Specification {
       paramdescription = Map("k" -> "Averaging window size"),
       paramorder = Seq("k"))
     offlineEvalSplitterInfos.insert(mapkbk)
-    val fn = "splitterinfos.bin"
+    val fn = "splitterinfos.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineEvalSplitterInfos.backup())
     } finally {
       fos.close()
     }
-    offlineEvalSplitterInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineEvalSplitterInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(mapkbk)
     } getOrElse 1 === 2
   }

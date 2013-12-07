@@ -258,7 +258,35 @@ class AlgoInfosSpec extends Specification {
               ParamSelectionUI("6", "6"),
               ParamSelectionUI("8", "8"),
               ParamSelectionUI("10", "10")))),
-          scopes = Some(Set("dead", "beef")))),
+          scopes = Some(Set("dead", "beef"))),
+        "bar" -> Param(
+          id = "bar",
+          name = "bar",
+          description = Some("random description"),
+          defaultvalue = false,
+          constraint = ParamBooleanConstraint(),
+          ui = ParamUI(
+            uitype = "slider",
+            slidermin = Some(10),
+            slidermax = Some(20),
+            sliderstep = Some(2)),
+          scopes = None),
+        "dead" -> Param(
+          id = "dead",
+          name = "dead",
+          description = None,
+          defaultvalue = "dead",
+          constraint = ParamStringConstraint(),
+          ui = ParamUI(),
+          scopes = None),
+        "beef" -> Param(
+          id = "beef",
+          name = "beef",
+          description = None,
+          defaultvalue = 3.14,
+          constraint = ParamDoubleConstraint(),
+          ui = ParamUI(),
+          scopes = None)),
       paramsections = Seq(
         ParamSection(
           name = "foo",
@@ -289,13 +317,14 @@ class AlgoInfosSpec extends Specification {
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
     algoinfos.insert(ai)
-    val fos = new java.io.FileOutputStream("algoinfos.bin")
+    val fn = "algoinfos.json"
+    val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(algoinfos.backup())
     } finally {
       fos.close()
     }
-    algoinfos.restore(scala.io.Source.fromFile("algoinfos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { ralgoinfos =>
+    algoinfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { ralgoinfos =>
       ralgoinfos must contain(ai)
     } getOrElse 1 === 2
   }

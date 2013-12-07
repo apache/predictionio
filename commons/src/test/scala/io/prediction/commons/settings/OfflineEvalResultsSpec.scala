@@ -159,14 +159,14 @@ class OfflineEvalResultsSpec extends Specification {
     )
     offlineEvalResults.save(obj1)
     offlineEvalResults.save(obj2)
-    val fn = "results.bin"
+    val fn = "results.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineEvalResults.backup())
     } finally {
       fos.close()
     }
-    offlineEvalResults.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineEvalResults.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       (data must contain(obj1)) and (data must contain(obj2))
     } getOrElse 1 === 2
   }
