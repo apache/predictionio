@@ -3,38 +3,35 @@ package io.prediction.commons.settings.mongodb
 import io.prediction.commons.settings.Metadata
 
 import com.mongodb.casbah.Imports._
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /** MongoDB implementation of AlgoInfos. */
 class MongoMetadata(db: MongoDB) extends Metadata {
   private val seqColl = db("seq")
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   def backup(): Array[Byte] = {
-    val backup = seqColl.find().toSeq.map { b =>
-      Map(
-        "id" -> b.as[String]("_id"),
-        "next" -> b.as[Int]("next"))
-    }
-    KryoInjection(backup)
+    val backup = seqColl.find().toSeq.map { b => MongoMetadataEntry(id = b.as[String]("_id"), next = b.as[Int]("next")) }
+    Serialization.write(backup).getBytes("UTF-8")
   }
 
-  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[Map[String, Any]]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        Map(
-          "id" -> data("id").asInstanceOf[String],
-          "next" -> data("next").asInstanceOf[Int])
-      }
-
+  def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[MongoMetadataEntry]] = {
+    try {
+      val rdata = Serialization.read[Seq[MongoMetadataEntry]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { data =>
-        val idObj = MongoDBObject("_id" -> data("id"))
+        val idObj = MongoDBObject("_id" -> data.id)
         seqColl.update(
           idObj,
-          idObj ++ MongoDBObject("next" -> data("next")),
+          idObj ++ MongoDBObject("next" -> data.next),
           true)
       }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }
+
+case class MongoMetadataEntry(id: String, next: Int)

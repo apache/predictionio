@@ -90,7 +90,7 @@ trait Algos extends Common {
       if (inplace) rdata foreach { update(_, true) }
       Some(rdata)
     } catch {
-      case e: MappingException => { println(e.getMessage()); None }
+      case e: MappingException => None
     }
   }
 }

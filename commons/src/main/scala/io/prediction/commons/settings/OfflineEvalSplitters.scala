@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * OfflineEvalSplitter object.
@@ -40,34 +41,43 @@ trait OfflineEvalSplitters extends Common {
   /** Delete an offline evaluation splitter by its ID. */
   def delete(id: Int)
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new OfflineEvalSplitterSerializer
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().toSeq.map { b =>
-      Map(
-        "id" -> b.id,
-        "evalid" -> b.evalid,
-        "name" -> b.name,
-        "infoid" -> b.infoid,
-        "settings" -> b.settings)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalSplitter]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEvalSplitter(
-          id = data("id").asInstanceOf[Int],
-          evalid = data("evalid").asInstanceOf[Int],
-          name = data("name").asInstanceOf[String],
-          infoid = data("infoid").asInstanceOf[String],
-          settings = data("settings").asInstanceOf[Map[String, Any]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEvalSplitter]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }
+
+/** json4s serializer for the OfflineEvalSplitter class. */
+class OfflineEvalSplitterSerializer extends CustomSerializer[OfflineEvalSplitter](format => (
+  {
+    case x: JObject =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      OfflineEvalSplitter(
+        id = (x \ "id").extract[Int],
+        evalid = (x \ "evalid").extract[Int],
+        name = (x \ "name").extract[String],
+        infoid = (x \ "infoid").extract[String],
+        settings = (x \ "settings").asInstanceOf[JObject].values)
+  },
+  {
+    case x: OfflineEvalSplitter =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      JObject(
+        JField("id", Extraction.decompose(x.id)) ::
+          JField("evalid", Extraction.decompose(x.evalid)) ::
+          JField("name", Extraction.decompose(x.name)) ::
+          JField("infoid", Extraction.decompose(x.infoid)) ::
+          JField("settings", Extraction.decompose(x.settings)) :: Nil)
+  })
+)

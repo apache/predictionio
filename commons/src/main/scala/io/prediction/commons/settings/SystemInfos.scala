@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * SystemInfo object.
@@ -33,30 +34,19 @@ trait SystemInfos extends Common {
   /** Delete a system info entry by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().map { b =>
-      Map(
-        "id" -> b.id,
-        "value" -> b.value,
-        "description" -> b.description)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[SystemInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        SystemInfo(
-          id = data("id").asInstanceOf[String],
-          value = data("value").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[SystemInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

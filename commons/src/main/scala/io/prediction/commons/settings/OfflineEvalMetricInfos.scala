@@ -2,7 +2,8 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
 /**
  * OfflineEvalMetricInfo object.
@@ -48,42 +49,51 @@ trait OfflineEvalMetricInfos extends Common {
   /** Delete a metric info by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new OfflineEvalMetricInfoSerializer
+
   /** Backup all OfflineEvalMetricInfos as a byte array. */
-  def backup(): Array[Byte] = {
-    val metricinfos = getAll().map { metricinfo =>
-      Map(
-        "id" -> metricinfo.id,
-        "name" -> metricinfo.name,
-        "description" -> metricinfo.description,
-        "engineinfoids" -> metricinfo.engineinfoids,
-        "commands" -> metricinfo.commands,
-        "paramdefaults" -> metricinfo.paramdefaults,
-        "paramnames" -> metricinfo.paramnames,
-        "paramdescription" -> metricinfo.paramdescription,
-        "paramorder" -> metricinfo.paramorder)
-    }
-    KryoInjection(metricinfos)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore OfflineEvalMetricInfos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalMetricInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEvalMetricInfo(
-          id = data("id").asInstanceOf[String],
-          name = data("name").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]],
-          engineinfoids = data("engineinfoids").asInstanceOf[Seq[String]],
-          commands = data("commands").asInstanceOf[Option[Seq[String]]],
-          paramdefaults = data("paramdefaults").asInstanceOf[Map[String, Any]],
-          paramnames = data("paramnames").asInstanceOf[Map[String, String]],
-          paramdescription = data("paramdescription").asInstanceOf[Map[String, String]],
-          paramorder = data("paramorder").asInstanceOf[Seq[String]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEvalMetricInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }
+
+/** json4s serializer for the OfflineEvalMetricInfo class. */
+class OfflineEvalMetricInfoSerializer extends CustomSerializer[OfflineEvalMetricInfo](format => (
+  {
+    case x: JObject =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      OfflineEvalMetricInfo(
+        id = (x \ "id").extract[String],
+        name = (x \ "name").extract[String],
+        description = (x \ "description").extract[Option[String]],
+        engineinfoids = (x \ "engineinfoids").extract[Seq[String]],
+        commands = (x \ "commands").extract[Option[Seq[String]]],
+        paramdefaults = (x \ "paramdefaults").asInstanceOf[JObject].values,
+        paramnames = (x \ "paramnames").extract[Map[String, String]],
+        paramdescription = (x \ "paramdescription").extract[Map[String, String]],
+        paramorder = (x \ "paramorder").extract[Seq[String]])
+  },
+  {
+    case x: OfflineEvalMetricInfo =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      JObject(
+        JField("id", Extraction.decompose(x.id)) ::
+          JField("name", Extraction.decompose(x.name)) ::
+          JField("description", Extraction.decompose(x.description)) ::
+          JField("engineinfoids", Extraction.decompose(x.engineinfoids)) ::
+          JField("commands", Extraction.decompose(x.commands)) ::
+          JField("paramdefaults", Extraction.decompose(x.paramdefaults)) ::
+          JField("paramnames", Extraction.decompose(x.paramnames)) ::
+          JField("paramdescription", Extraction.decompose(x.paramdescription)) ::
+          JField("paramorder", Extraction.decompose(x.paramorder)) :: Nil)
+  })
+)
