@@ -5063,18 +5063,32 @@
                 "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $base$/lib/$pdioItemrecTopK$",
                 "$hadoop$ jar $base$/lib/$pdioItemrecEval$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --kParam $kParam$"
             ],
+            "params": {
+                "kParam": {
+                    "name": "k",
+                    "description": "",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 20,
+                    "ui": {
+                        "uitype": "text"
+                    }
+                }
+            },
+            "paramsections": [
+                {
+                    "name": "Parameters",
+                    "sectiontype": "normal",
+                    "description": "",
+                    "params": [
+                        "kParam"
+                    ]
+                }
+            ],
             "paramorder": [
                 "kParam"
-            ],
-            "paramnames": {
-                "kParam": "k"
-            },
-            "paramdescription": {
-                "kParam": "k"
-            },
-            "paramdefaults": {
-                "kParam": 20
-            }
+            ]
         },
         "ismap_k": {
             "name": "ISMAP@k",
@@ -5087,18 +5101,32 @@
                 "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $base$/lib/$pdioItemsimTopK$",
                 "$hadoop$ jar $base$/lib/$pdioItemsimEval$ io.prediction.metrics.scalding.itemsim.ismap.ISMAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --kParam $kParam$"
             ],
+            "params": {
+                "kParam": {
+                    "name": "k",
+                    "description": "",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 20,
+                    "ui": {
+                        "uitype": "text"
+                    }
+                }
+            },
+            "paramsections": [
+                {
+                    "name": "Parameters",
+                    "sectiontype": "normal",
+                    "description": "",
+                    "params": [
+                        "kParam"
+                    ]
+                }
+            ],
             "paramorder": [
                 "kParam"
-            ],
-            "paramnames": {
-                "kParam": "k"
-            },
-            "paramdescription": {
-                "kParam": "k"
-            },
-            "paramdefaults": {
-                "kParam": 20
-            }
+            ]
         }
     },
     "paramgeninfos": {

@@ -1456,7 +1456,8 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
         var metricsView = new EngineSimEvalSettingsMetricsView({
             data: {
                 index: this.indexCount,
-                metricslist: this.metricslist
+                metricslist: this.metricslist,
+                engineinfoid: this.engineinfoid
             }
         });
         this.indexCount += 1; // increase count
@@ -1489,19 +1490,55 @@ var EngineSimEvalSettingsMetricsView = Backbone.View.extend({
         this.template_el = '#engine_simEvalSettingsMetrics_template';
         this.template = _.template($(this.template_el).html());
         this.data = this.options.data;
+        this.subViews = [];
     },
     events: {
-        'click .deleteMetricsBtn': 'delete'
+        'click .deleteMetricsBtn': 'delete',
+        'change .changeMetricsSelect': 'selectionChanged'
     },
     render : function() {
         //this.$el.html(this.template({"data": this.model.toJSON()}));
         this.$el.html(this.template({data: this.data}));
+        this.showSetting(this.data.metricslist[0].id); // show the 1st metric setting by default
         return this;
     },
     delete: function() {
         this.remove();
         this.close();
         return false;
+    },
+    showSetting: function(metricinfoid) {
+        var metricSettingView = new MetricSettingView({
+            data: {
+                index: this.data.index,
+                engineinfoid: this.data.engineinfoid,
+                metricinfoid: metricinfoid
+            }
+        });
+        this.subViews.push(metricSettingView);
+        this.$el.find('#metricSetting_Holder').html(metricSettingView.render().el);
+
+    },
+    selectionChanged: function(e) {
+        var value = $(e.currentTarget).val();
+        this.showSetting(value);
     }
 });
+
+var MetricSettingView = Backbone.View.extend({
+    initialize: function() {
+        this.data = this.options.data;
+    },
+    render: function() {
+        var that = this;
+        //$.ajaxSetup({async:false}); // make jquery sync temporary to ensure it's loaded before we move on
+        $.get(getAPIUrl('engineinfos/' + this.data.engineinfoid  + '/metricinfos/' + this.data.metricinfoid + '/template.html'), function(template_html) {
+            var template = _.template(template_html);
+            that.$el.html(template({data: that.data}));
+        });
+        //$.ajaxSetup({async:true});
+        return this;
+    }
+})
+
 

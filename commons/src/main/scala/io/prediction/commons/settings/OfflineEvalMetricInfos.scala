@@ -22,11 +22,10 @@ case class OfflineEvalMetricInfo(
   description: Option[String],
   engineinfoids: Seq[String],
   commands: Option[Seq[String]],
-  paramdefaults: Map[String, Any],
-  paramnames: Map[String, String],
-  paramdescription: Map[String, String],
+  params: Map[String, Param],
+  paramsections: Seq[ParamSection],
   paramorder: Seq[String]
-)
+) extends Info
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
 trait OfflineEvalMetricInfos extends Common {
@@ -57,9 +56,8 @@ trait OfflineEvalMetricInfos extends Common {
         "description" -> metricinfo.description,
         "engineinfoids" -> metricinfo.engineinfoids,
         "commands" -> metricinfo.commands,
-        "paramdefaults" -> metricinfo.paramdefaults,
-        "paramnames" -> metricinfo.paramnames,
-        "paramdescription" -> metricinfo.paramdescription,
+        "params" -> metricinfo.params,
+        "paramsections" -> metricinfo.paramsections,
         "paramorder" -> metricinfo.paramorder)
     }
     KryoInjection(metricinfos)
@@ -75,9 +73,8 @@ trait OfflineEvalMetricInfos extends Common {
           description = data("description").asInstanceOf[Option[String]],
           engineinfoids = data("engineinfoids").asInstanceOf[Seq[String]],
           commands = data("commands").asInstanceOf[Option[Seq[String]]],
-          paramdefaults = data("paramdefaults").asInstanceOf[Map[String, Any]],
-          paramnames = data("paramnames").asInstanceOf[Map[String, String]],
-          paramdescription = data("paramdescription").asInstanceOf[Map[String, String]],
+          params = data("params").asInstanceOf[Map[String, Param]],
+          paramsections = data("paramsections").asInstanceOf[Seq[ParamSection]],
           paramorder = data("paramorder").asInstanceOf[Seq[String]])
       }
 

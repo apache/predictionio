@@ -126,19 +126,20 @@ object Helper extends Controller {
 
   def algoParamToString(algo: Algo, algoinfoOpt: Option[AlgoInfo]): String = {
     algoinfoOpt.map { algoInfo =>
-      algoInfo.paramorder.map { paramName =>
-        algoInfo.params(paramName).name + " = " +
-          algo.params.getOrElse(paramName, algoInfo.params(paramName).defaultvalue)
+      algoInfo.paramorder.map { paramid =>
+        algoInfo.params(paramid).name + " = " +
+          algo.params.getOrElse(paramid, algoInfo.params(paramid).defaultvalue)
       }.mkString(", ")
     }.getOrElse(s"algoinfo ${algo.infoid} not found")
   }
 
   def offlineEvalMetricParamToString(metric: OfflineEvalMetric, metricinfoOpt: Option[OfflineEvalMetricInfo]): String = {
-    // TODO: hard code for now
-    val displayNames: List[String] = List("k")
-    val displayToParamNames: Map[String, String] = Map("k" -> "kParam")
-
-    displayNames map (x => x + " = " + metric.params(displayToParamNames(x))) mkString (", ")
+    metricinfoOpt.map { metricInfo =>
+      metricInfo.paramorder.map { paramid =>
+        metricInfo.params(paramid).name + " = " +
+          metric.params.getOrElse(paramid, metricInfo.params(paramid).defaultvalue)
+      }.mkString(", ")
+    }.getOrElse(s"offlineevalmetricinfo ${metric.infoid} not found")
   }
 
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")

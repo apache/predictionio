@@ -37,9 +37,19 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     metricInfos.insert(mapk)
     metricInfos.get("map-k") must beSome(mapk)
@@ -55,9 +65,19 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
 
     val mapkB = mapkA.copy(
@@ -118,16 +138,49 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     metricInfos.insert(mapk)
     val updatedMapk = mapk.copy(
-      paramdefaults = mapk.paramdefaults ++ Map("f" -> 20),
-      paramnames = mapk.paramnames ++ Map("f" -> "Foo"),
-      paramdescription = mapk.paramdescription ++ Map("f" -> "FooBar"),
+      commands = Some(Seq(
+        "cmd1",
+        "cmd2",
+        "cmd3")),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text")),
+        "f" -> Param(
+          id = "f",
+          name = "f parameter",
+          description = Some("FooBar"),
+          defaultvalue = 33,
+          constraint = ParamIntegerConstraint(min = Some(1), max = Some(2)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "apple section",
+          params = Some(Seq("f", "k")))),
       paramorder = Seq("f", "k"))
+
     metricInfos.update(updatedMapk)
     metricInfos.get("u-map-k") must beSome(updatedMapk)
   }
@@ -142,9 +195,18 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map("k" -> Param(
+        id = "k",
+        name = "k parameter",
+        description = Some("Averaging window size"),
+        defaultvalue = 20,
+        constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+        ui = ParamUI(
+          uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     metricInfos.insert(mapk)
     metricInfos.delete("foo")
@@ -161,9 +223,18 @@ class OfflineEvalMetricInfosSpec extends Specification { def is =
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map("k" -> Param(
+        id = "k",
+        name = "k parameter",
+        description = Some("Averaging window size"),
+        defaultvalue = 20,
+        constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+        ui = ParamUI(
+          uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     metricInfos.insert(mapkbk)
     val fn = "metricinfos.bin"

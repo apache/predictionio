@@ -166,13 +166,10 @@ object SettingsInit {
             paramdescription = paramdescription,
             paramdefaults = paramdefaults)
 
-          offlineEvalSplitterInfos.get(id) map { m =>
-            println(s"Updating OfflineEvalSplitterInfo ID: ${id}")
-            offlineEvalSplitterInfos.update(mi)
-          } getOrElse {
-            println(s"Adding OfflineEvalSplitterInfo ID: ${id}")
-            offlineEvalSplitterInfos.insert(mi)
-          }
+          println(s"Deleting any old OfflineEvalSplitterInfo ID: ${id}")
+          offlineEvalSplitterInfos.delete(id)
+          println(s"Adding OfflineEvalSplitterInfo ID: ${id}")
+          offlineEvalSplitterInfos.insert(mi)
         }
       } getOrElse println("Cannot find any OfflineEvalSplitterInfo information. Skipping.")
 
@@ -185,29 +182,27 @@ object SettingsInit {
           SS(engineinfoids) = info("engineinfoids")
           OS(description) = info.get("description")
           OSS(commands) = info.get("commands")
+          M(params) = info("params")
+          SM(paramsections) = info("paramsections")
           SS(paramorder) = info("paramorder")
-          MSS(paramnames) = info("paramnames")
-          MSS(paramdescription) = info("paramdescription")
-          MSS(paramdefaults) = info("paramdefaults")
         } yield {
+          println(s"Processing OfflineEvalMetricInfo ID: ${id}")
+          val castedparams = mapToParams(params)
+          val castedparamsections = mapToParamSections(paramsections.asInstanceOf[Seq[Map[String, Any]]])
           val mi = OfflineEvalMetricInfo(
             id = id,
             name = name,
             engineinfoids = engineinfoids,
             description = description,
             commands = commands,
-            paramorder = paramorder,
-            paramnames = paramnames,
-            paramdescription = paramdescription,
-            paramdefaults = paramdefaults)
-
-          offlineEvalMetricInfos.get(id) map { m =>
-            println(s"Updating OfflineEvalMetricInfo ID: ${id}")
-            offlineEvalMetricInfos.update(mi)
-          } getOrElse {
-            println(s"Adding OfflineEvalMetricInfo ID: ${id}")
-            offlineEvalMetricInfos.insert(mi)
-          }
+            params = castedparams,
+            paramsections = castedparamsections,
+            paramorder = paramorder)
+          
+          println(s"Deleting any old OfflineEvalMetricInfo ID: ${id}")
+          offlineEvalMetricInfos.delete(id)
+          println(s"Adding OfflineEvalMetricInfo ID: ${id}")
+          offlineEvalMetricInfos.insert(mi)
         }
       } getOrElse println("Cannot find any OfflineEvalMetricInfo information. Skipping.")
 

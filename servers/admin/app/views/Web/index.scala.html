@@ -799,15 +799,17 @@
 <script type="text/template" id="engine_simEvalSettingsMetrics_template">
 
                                             <li class="bottomMargin">
-                                                <select name="metrics[<%= data.index %>]" class="span6">
-                                                    <% _.each(data.metricslist, function(metrics) { %>
-                                                        <option value="<%= metrics.id %>"><%= metrics.metricslongname %> (<%= metrics.metricsname %>)</option>
-                                                    <% }); %>
-                                                </select>
-                                                <!-- TODO: support dynamic settings fields -->
-                                                <span>
-                                                k = <input name="metricsSettings[<%= data.index %>]" class="span1" value="20" type="text"></input>   &nbsp;&nbsp;&nbsp;&nbsp;[<a href="#" class="deleteMetricsBtn"> remove </a>]
-                                                </span>
+                                                <div class="bottomMargin">
+                                                    <select name="metrics[<%= data.index %>]" class="span6 changeMetricsSelect">
+                                                        <% _.each(data.metricslist, function(metrics) { %>
+                                                            <option value="<%= metrics.id %>"><%= metrics.metricslongname %> (<%= metrics.metricsname %>)</option>
+                                                        <% }); %>
+                                                    </select>
+                                                    <span>&nbsp;&nbsp;&nbsp;&nbsp;[<a href="#" class="deleteMetricsBtn"> remove </a>]
+                                                    </span>
+                                                </div>
+                                                <div id="metricSetting_Holder">
+                                                </div>
                                             </li>
 </script>
 

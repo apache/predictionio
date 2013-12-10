@@ -750,7 +750,6 @@ object Application extends Controller {
    *     "metricslist" : [ { "id" : <metric info id>,
    *                         "metricsname" : <short name of the metric info>,
    *                         "metricslongname" : <long name of the metric info>,
-   *                         "settingfields" : { "param1" : <param type in string>, ... }
    *                       }, ...
    *                     ]
    *   }
@@ -764,12 +763,7 @@ object Application extends Controller {
         Json.obj(
           "id" -> m.id,
           "metricsname" -> m.name,
-          "metricslongname" -> m.description,
-          "settingfields" -> Json.toJson(
-            m.paramorder.map(p =>
-              (m.paramnames(p) -> "int") // TODO: param constraint type, hardcode to int now
-            ).toMap
-          )
+          "metricslongname" -> m.description
         )
       }
       Ok(Json.obj(
@@ -2275,6 +2269,20 @@ object Application extends Controller {
       }
   }
 
+  def getMetricInfoTemplateHtml(engineinfoid: String, metricinfoid: String) = WithUser { user =>
+    implicit request =>
+      offlineEvalMetricInfos.get(metricinfoid) map { metricInfo =>
+        if (metricInfo.paramsections.isEmpty)
+          Ok(views.html.metrics.template(handleParamSections[OfflineEvalMetricInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this metric."))), metricInfo, 1), true))
+        else
+          Ok(views.html.metrics.template(handleParamSections[OfflineEvalMetricInfo](metricInfo.paramsections, metricInfo, 1), false))
+      } getOrElse {
+        NotFound(s"OfflineEvalMetricInifo ID ${metricinfoid} not found")
+      }
+  }
+
   def collectParams[T <: Info](info: T, paramsection: ParamSection, tuning: Boolean = false): Set[Param] = {
     if (tuning)
       if (paramsection.sectiontype == "tuning")
@@ -2297,7 +2305,7 @@ object Application extends Controller {
         if (tuning)
           uiTextPair[T](info, param.id + "Min", param.id + "Max", param.name, param.description)
         else
-          uiText[T](info, param.id, param.name, param.description)
+          uiText[T](info, param.id, param.name, param.description, Some(param.defaultvalue.toString))
     }
     content.toString
   }
@@ -2321,12 +2329,14 @@ object Application extends Controller {
       paramsection.subsections.map(handleParamSections[T](_, info, level + 1, tuning)).getOrElse("")
   }
 
-  def uiText[T <: Info](info: T, id: String, name: String, description: Option[String]) = {
+  def uiText[T <: Info](info: T, id: String, name: String, description: Option[String], defaultValue: Option[String] = None) = {
     info match {
       case _: AlgoInfo =>
         views.html.algos.text(id, name, description)
       case _: EngineInfo =>
         views.html.engines.text(id, name, description)
+      case _: OfflineEvalMetricInfo =>
+        views.html.metrics.text(id, name, description, defaultValue)
     }
   }
 
@@ -2344,6 +2354,8 @@ object Application extends Controller {
         views.html.algos.selection(id, name, description, selections)
       case _: EngineInfo =>
         views.html.engines.selection(id, name, description, selections)
+      case _: OfflineEvalMetricInfo =>
+        views.html.metrics.selection(id, name, description, selections)
     }
   }
 
@@ -2353,6 +2365,8 @@ object Application extends Controller {
         views.html.algos.section1(name, description, content)
       case _: EngineInfo =>
         views.html.engines.section1(name, description, content)
+      case _: OfflineEvalMetricInfo =>
+        views.html.metrics.section1(name, description, content)
     }
   }
 
@@ -2362,6 +2376,7 @@ object Application extends Controller {
         views.html.algos.section2(name, description, content)
       case _: EngineInfo =>
         views.html.engines.section2(name, description, content)
+      // OfflineEvalMetricInfo doesn't support section2
     }
   }
 }

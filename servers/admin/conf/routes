@@ -74,3 +74,8 @@ PUT     /apps/:appid/engines/:engineid/algo_settings/:algoid    controllers.Appl
 
 GET     /apps/:appid/engines/:engineid/algos/:algoid/template.html   controllers.Application.getAlgoTemplateHtml(appid: Int, engineid: Int, algoid: Int)
 GET     /apps/:appid/engines/:engineid/algos/:algoid/template.js     controllers.Application.getAlgoTemplateJs(appid: Int, engineid: Int, algoid: Int)
+
+# Metric Info template
+GET     /engineinfos/:engineinfoid/metricinfos/:metricinfoid/template.html    controllers.Application.getMetricInfoTemplateHtml(engineinfoid: String, metricinfoid: String)
+
+
