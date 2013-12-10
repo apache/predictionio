@@ -47,7 +47,7 @@ object Backup {
       }
 
       settingsMap map { s =>
-        val fn = s"${backupDir}/${s._1}.bin"
+        val fn = s"${backupDir}/${s._1}.json"
         val fos = new java.io.FileOutputStream(fn)
         try {
           fos.write(s._2.backup())
@@ -60,7 +60,7 @@ object Backup {
       config.settingsDbType match {
         case "mongodb" => {
           val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
-          val fn = s"${backupDir}/metadata.bin"
+          val fn = s"${backupDir}/metadata.json"
           val fos = new java.io.FileOutputStream(fn)
           try {
             fos.write(metadata.backup())

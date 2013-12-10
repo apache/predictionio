@@ -62,9 +62,9 @@ class ParamGenSerializer extends CustomSerializer[ParamGen](format => (
     case x: JObject =>
       implicit val formats = Serialization.formats(NoTypeHints)
       ParamGen(
-        id = (x \ "id").extract[Int],
+        id = (x \ "id").extract[Int].toInt,
         infoid = (x \ "infoid").extract[String],
-        tuneid = (x \ "tuneid").extract[Int],
+        tuneid = (x \ "tuneid").extract[Int].toInt,
         params = (x \ "params").asInstanceOf[JObject].values)
   },
   {

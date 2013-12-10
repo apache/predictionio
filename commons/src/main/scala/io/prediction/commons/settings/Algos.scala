@@ -101,8 +101,8 @@ class AlgoSerializer extends CustomSerializer[Algo](format => (
     case x: JObject =>
       implicit val formats = Serialization.formats(NoTypeHints) ++ org.json4s.ext.JodaTimeSerializers.all
       Algo(
-        id = (x \ "id").extract[Int],
-        engineid = (x \ "engineid").extract[Int],
+        id = (x \ "id").extract[Int].toInt,
+        engineid = (x \ "engineid").extract[Int].toInt,
         name = (x \ "name").extract[String],
         infoid = (x \ "infoid").extract[String],
         command = (x \ "command").extract[String],
@@ -112,10 +112,10 @@ class AlgoSerializer extends CustomSerializer[Algo](format => (
         createtime = (x \ "createtime").extract[DateTime],
         updatetime = (x \ "updatetime").extract[DateTime],
         status = (x \ "status").extract[String],
-        offlineevalid = (x \ "offlineevalid").extract[Option[Int]],
-        offlinetuneid = (x \ "offlinetuneid").extract[Option[Int]],
-        loop = (x \ "loop").extract[Option[Int]],
-        paramset = (x \ "paramset").extract[Option[Int]])
+        offlineevalid = (x \ "offlineevalid").extract[Option[Int]].map(_.toInt),
+        offlinetuneid = (x \ "offlinetuneid").extract[Option[Int]].map(_.toInt),
+        loop = (x \ "loop").extract[Option[Int]].map(_.toInt),
+        paramset = (x \ "paramset").extract[Option[Int]].map(_.toInt))
   },
   {
     case x: Algo =>

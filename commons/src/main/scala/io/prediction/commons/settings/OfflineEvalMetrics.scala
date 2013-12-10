@@ -62,9 +62,9 @@ class OfflineEvalMetricSerializer extends CustomSerializer[OfflineEvalMetric](fo
     case x: JObject =>
       implicit val formats = Serialization.formats(NoTypeHints)
       OfflineEvalMetric(
-        id = (x \ "id").extract[Int],
+        id = (x \ "id").extract[Int].toInt,
         infoid = (x \ "infoid").extract[String],
-        evalid = (x \ "evalid").extract[Int],
+        evalid = (x \ "evalid").extract[Int].toInt,
         params = (x \ "params").asInstanceOf[JObject].values)
   },
   {

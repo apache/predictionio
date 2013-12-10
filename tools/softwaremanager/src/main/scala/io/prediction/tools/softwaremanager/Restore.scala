@@ -50,7 +50,7 @@ object Restore {
       }
 
       settingsMap map { s =>
-        val fn = s"${backupDir}/${s._1}.bin"
+        val fn = s"${backupDir}/${s._1}.json"
         try {
           s._2.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray, true, upgrade) map { x =>
             println(s"Restored from ${fn}")
@@ -65,7 +65,7 @@ object Restore {
       config.settingsDbType match {
         case "mongodb" => {
           val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
-          val fn = s"${backupDir}/metadata.bin"
+          val fn = s"${backupDir}/metadata.json"
           try {
             metadata.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray, true, upgrade) map { x =>
               println(s"Restored metadata from ${fn}")

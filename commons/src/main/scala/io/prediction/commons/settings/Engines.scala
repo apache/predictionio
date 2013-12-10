@@ -75,8 +75,8 @@ class EngineSerializer extends CustomSerializer[Engine](format => (
     case x: JObject =>
       implicit val formats = Serialization.formats(NoTypeHints)
       Engine(
-        id = (x \ "id").extract[Int],
-        appid = (x \ "appid").extract[Int],
+        id = (x \ "id").extract[Int].toInt,
+        appid = (x \ "appid").extract[Int].toInt,
         name = (x \ "name").extract[String],
         infoid = (x \ "infoid").extract[String],
         itypes = (x \ "itypes").extract[Option[Seq[String]]],

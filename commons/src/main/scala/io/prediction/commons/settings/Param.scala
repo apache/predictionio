@@ -120,7 +120,7 @@ class ParamSerializer extends CustomSerializer[Param](format => (
       val defaultvalue = constraint match {
         case c: ParamBooleanConstraint => dv.extract[Boolean]
         case c: ParamDoubleConstraint => dv.extract[Double]
-        case c: ParamIntegerConstraint => dv.extract[Int]
+        case c: ParamIntegerConstraint => dv.extract[Int].toInt
         case c: ParamStringConstraint => dv.extract[String]
       }
       Param(

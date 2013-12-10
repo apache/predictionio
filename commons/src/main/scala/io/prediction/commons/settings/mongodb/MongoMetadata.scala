@@ -13,7 +13,14 @@ class MongoMetadata(db: MongoDB) extends Metadata {
   implicit val formats = Serialization.formats(NoTypeHints)
 
   def backup(): Array[Byte] = {
-    val backup = seqColl.find().toSeq.map { b => MongoMetadataEntry(id = b.as[String]("_id"), next = b.as[Int]("next")) }
+    val backup = seqColl.find().toSeq.map { b =>
+      try {
+        MongoMetadataEntry(id = b.as[String]("_id"), next = b.as[Double]("next"))
+      } catch {
+        case e: ClassCastException =>
+          MongoMetadataEntry(id = b.as[String]("_id"), next = b.as[Int]("next").toDouble)
+      }
+    }
     Serialization.write(backup).getBytes("UTF-8")
   }
 
@@ -34,4 +41,4 @@ class MongoMetadata(db: MongoDB) extends Metadata {
   }
 }
 
-case class MongoMetadataEntry(id: String, next: Int)
+case class MongoMetadataEntry(id: String, next: Double)
