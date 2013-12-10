@@ -2,7 +2,7 @@ package io.prediction.output.itemrec.knnitembased
 
 import io.prediction.commons.Config
 import io.prediction.commons.modeldata.ItemRecScore
-import io.prediction.commons.settings.{Algo, App, OfflineEval}
+import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 
 object ItemRecKNNItemBasedAlgoBatchOutput {
   private val config = new Config

@@ -6,23 +6,25 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class OfflineTunesSpec extends Specification { def is =
-  "PredictionIO OfflineTunes Specification"               ^
-                                                          p^
-  "OfflineTunes can be implemented by:"                   ^ endp^
-    "1. MongoOfflineTunes"                                ^ mongoOfflineTunes^end
+class OfflineTunesSpec extends Specification {
+  def is =
+    "PredictionIO OfflineTunes Specification" ^
+      p ^
+      "OfflineTunes can be implemented by:" ^ endp ^
+      "1. MongoOfflineTunes" ^ mongoOfflineTunes ^ end
 
-  def mongoOfflineTunes =                                 p^
-    "MongoOfflineTunes should"                            ^
-      "behave like any OfflinTunes implementation"        ^ offlineTunesTest(newMongoOfflineTunes)^
-                                                          Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineTunes = p ^
+    "MongoOfflineTunes should" ^
+    "behave like any OfflinTunes implementation" ^ offlineTunesTest(newMongoOfflineTunes) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineTunesTest(offlineTunes: OfflineTunes) = {    t^
-    "create an OfflineTune"                               ! insert(offlineTunes)^
-    "update an OfflineTune"                               ! update(offlineTunes)^
-    "delete an OfflineTune"                               ! delete(offlineTunes)^
-    "backup and restore OfflineTunes"                     ! backuprestore(offlineTunes)^
-                                                          bt
+  def offlineTunesTest(offlineTunes: OfflineTunes) = {
+    t ^
+      "create an OfflineTune" ! insert(offlineTunes) ^
+      "update an OfflineTune" ! update(offlineTunes) ^
+      "delete an OfflineTune" ! delete(offlineTunes) ^
+      "backup and restore OfflineTunes" ! backuprestore(offlineTunes) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflinetunes_test"
@@ -110,14 +112,14 @@ class OfflineTunesSpec extends Specification { def is =
       endtime = None
     )
     val id1 = offlineTunes.insert(tune1)
-    val fn = "tunes.bin"
+    val fn = "tunes.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineTunes.backup())
     } finally {
       fos.close()
     }
-    offlineTunes.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineTunes.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       // For some reason inserting Joda DateTime to DB and getting them back will make test pass
       val ftune1 = data.find(_.id == id1).get
       offlineTunes.update(ftune1)

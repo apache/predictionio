@@ -2,19 +2,21 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** App object.
-  *
-  * @param id ID.
-  * @param userid User ID that owns this app.
-  * @param appkey The appkey used to access this app via REST API.
-  * @param display The app's display name.
-  * @param url The URL where the app is used.
-  * @param cat The app's category.
-  * @param desc The app's description.
-  * @param timezone The app's timezone.
-  */
+/**
+ * App object.
+ *
+ * @param id ID.
+ * @param userid User ID that owns this app.
+ * @param appkey The appkey used to access this app via REST API.
+ * @param display The app's display name.
+ * @param url The URL where the app is used.
+ * @param cat The app's category.
+ * @param desc The app's description.
+ * @param timezone The app's timezone.
+ */
 case class App(
   id: Int,
   userid: Int,
@@ -23,15 +25,15 @@ case class App(
   url: Option[String],
   cat: Option[String],
   desc: Option[String],
-  timezone: String
-)
+  timezone: String)
 
 /** Base trait for implementations that interact with apps in the backend data store. */
 trait Apps extends Common {
-  /** Insert a new App with basic fields defined.
-    *
-    * @param app An App object to be inserted. The ID will be ignored and replaced by an implementation of this trait.
-    */
+  /**
+   * Insert a new App with basic fields defined.
+   *
+   * @param app An App object to be inserted. The ID will be ignored and replaced by an implementation of this trait.
+   */
   def insert(app: App): Int
 
   /** Get an App by its ID. */
@@ -64,47 +66,27 @@ trait Apps extends Common {
   /** Delete an App by ID and user ID. */
   def deleteByIdAndUserid(id: Int, userid: Int)
 
-  /** Check if this app exists by its ID, appkey and user ID.
-    *
-    * For purpose of making sure this app exists and belongs to the specified
-    * user ID.
-    */
+  /**
+   * Check if this app exists by its ID, appkey and user ID.
+   *
+   * For purpose of making sure this app exists and belongs to the specified
+   * user ID.
+   */
   def existsByIdAndAppkeyAndUserid(id: Int, appkey: String, userid: Int): Boolean
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().toSeq.map { b =>
-      Map(
-        "id" -> b.id,
-        "userid" -> b.userid,
-        "appkey" -> b.appkey,
-        "display" -> b.display,
-        "url" -> b.url,
-        "cat" -> b.cat,
-        "desc" -> b.desc,
-        "timezone" -> b.timezone)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[App]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        App(
-          id = data("id").asInstanceOf[Int],
-          userid = data("userid").asInstanceOf[Int],
-          appkey = data("appkey").asInstanceOf[String],
-          display = data("display").asInstanceOf[String],
-          url = data("url").asInstanceOf[Option[String]],
-          cat = data("cat").asInstanceOf[Option[String]],
-          desc = data("desc").asInstanceOf[Option[String]],
-          timezone = data("timezone").asInstanceOf[String])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[App]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

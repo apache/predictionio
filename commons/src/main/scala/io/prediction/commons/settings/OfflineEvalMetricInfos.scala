@@ -2,20 +2,22 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** OfflineEvalMetricInfo object.
-  *
-  * @param id Unique identifier of a metric.
-  * @param name Metric name.
-  * @param description A long description of the metric.
-  * @param engineinfoids A list of EngineInfo IDs that this metric can apply to.
-  * @param commands A sequence of commands to run this metric.
-  * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramnames Key value pairs of (parameter -> display name).
-  * @param paramdescription Key value pairs of (parameter -> description).
-  * @param paramorder The display order of parameters.
-  */
+/**
+ * OfflineEvalMetricInfo object.
+ *
+ * @param id Unique identifier of a metric.
+ * @param name Metric name.
+ * @param description A long description of the metric.
+ * @param engineinfoids A list of EngineInfo IDs that this metric can apply to.
+ * @param commands A sequence of commands to run this metric.
+ * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
+ * @param paramnames Key value pairs of (parameter -> display name).
+ * @param paramdescription Key value pairs of (parameter -> description).
+ * @param paramorder The display order of parameters.
+ */
 case class OfflineEvalMetricInfo(
   id: String,
   name: String,
@@ -24,8 +26,7 @@ case class OfflineEvalMetricInfo(
   commands: Option[Seq[String]],
   params: Map[String, Param],
   paramsections: Seq[ParamSection],
-  paramorder: Seq[String]
-) extends Info
+  paramorder: Seq[String]) extends Info
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
 trait OfflineEvalMetricInfos extends Common {
@@ -47,40 +48,19 @@ trait OfflineEvalMetricInfos extends Common {
   /** Delete a metric info by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new ParamSerializer
+
   /** Backup all OfflineEvalMetricInfos as a byte array. */
-  def backup(): Array[Byte] = {
-    val metricinfos = getAll().map { metricinfo =>
-      Map(
-        "id" -> metricinfo.id,
-        "name" -> metricinfo.name,
-        "description" -> metricinfo.description,
-        "engineinfoids" -> metricinfo.engineinfoids,
-        "commands" -> metricinfo.commands,
-        "params" -> metricinfo.params,
-        "paramsections" -> metricinfo.paramsections,
-        "paramorder" -> metricinfo.paramorder)
-    }
-    KryoInjection(metricinfos)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore OfflineEvalMetricInfos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalMetricInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEvalMetricInfo(
-          id = data("id").asInstanceOf[String],
-          name = data("name").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]],
-          engineinfoids = data("engineinfoids").asInstanceOf[Seq[String]],
-          commands = data("commands").asInstanceOf[Option[Seq[String]]],
-          params = data("params").asInstanceOf[Map[String, Param]],
-          paramsections = data("paramsections").asInstanceOf[Seq[ParamSection]],
-          paramorder = data("paramorder").asInstanceOf[Seq[String]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEvalMetricInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

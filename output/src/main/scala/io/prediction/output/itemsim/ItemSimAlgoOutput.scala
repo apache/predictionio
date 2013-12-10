@@ -2,7 +2,7 @@ package io.prediction.output.itemsim
 
 import io.prediction.commons.Config
 import io.prediction.commons.modeldata.ItemSimScore
-import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval}
+import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval }
 
 import scala.util.Random
 
@@ -18,16 +18,18 @@ object ItemSimAlgoOutput {
     /** Serendipity settings. */
     val serendipity = engine.params.get("serendipity") map { _.asInstanceOf[Int] }
 
-    /** Serendipity value (s) from 0-10 in engine settings.
-      * Implemented as randomly picking items from top n*(s+1) results.
-      */
-    val finalN = serendipity map { s => n*(s+1) } getOrElse n
+    /**
+     * Serendipity value (s) from 0-10 in engine settings.
+     * Implemented as randomly picking items from top n*(s+1) results.
+     */
+    val finalN = serendipity map { s => n * (s + 1) } getOrElse n
 
-    /** At the moment, PredictionIO depends only on MongoDB for its model data storage.
-      * Since we are still using the legacy longitude-latitude format, the maximum number
-      * of documents that can be returned from a query with geospatial constraint is 100.
-      * A "manual join" is still feasible with this size.
-      */
+    /**
+     * At the moment, PredictionIO depends only on MongoDB for its model data storage.
+     * Since we are still using the legacy longitude-latitude format, the maximum number
+     * of documents that can be returned from a query with geospatial constraint is 100.
+     * A "manual join" is still feasible with this size.
+     */
     val outputBuffer = collection.mutable.ListBuffer[String]()
 
     latlng map { ll =>
@@ -62,16 +64,17 @@ object ItemSimAlgoOutput {
         output
     } getOrElse output
 
-    /** Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
-      * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
-      */
+    /**
+     * Freshness (0 <= f <= 10) is implemented as the ratio of final results being top N results re-sorted by start time.
+     * E.g. For f = 4, 40% of the final output will consist of top N results re-sorted by start time.
+     */
     val freshness = engine.params.get("freshness") map { _.asInstanceOf[Int] }
 
     /** Freshness output. */
     val finalOutput = freshness map { f =>
       if (f > 0) {
-        val freshnessN = scala.math.round(n*f/10)
-        val otherN = n-freshnessN
+        val freshnessN = scala.math.round(n * f / 10)
+        val otherN = n - freshnessN
         val freshnessOutput = items.getRecentByIds(app.id, output).map(_.id)
         val finalFreshnessOutput = freshnessOutput.take(freshnessN)
         val finalFreshnessOutputSet = finalFreshnessOutput.toSet
@@ -85,8 +88,10 @@ object ItemSimAlgoOutput {
 
   /** Private method just to get items. */
   private def more(iid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemSimScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemSimScore] = {
-    /** To be refactored with real time algorithms.
-      * Temporarily enable any batch algorithms.  */
+    /**
+     * To be refactored with real time algorithms.
+     * Temporarily enable any batch algorithms.
+     */
     ItemSimCFAlgoOutput.output(iid, n, itypes, after)
   }
 }

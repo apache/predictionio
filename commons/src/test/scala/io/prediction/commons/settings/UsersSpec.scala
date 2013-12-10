@@ -4,39 +4,41 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class UsersSpec extends Specification { def is =
-  "PredictionIO Users Specification"                                          ^
-                                                                              p^
-  "Users can be implemented by:"                                              ^ endp^
-    "1. MongoUsers"                                                           ^ mongoUsers^end
+class UsersSpec extends Specification {
+  def is =
+    "PredictionIO Users Specification" ^
+      p ^
+      "Users can be implemented by:" ^ endp ^
+      "1. MongoUsers" ^ mongoUsers ^ end
 
-  def mongoUsers =                                                            p^
-    "MongoUsers should"                                                       ^
-      "behave like any Users implementation"                                  ^ users(newMongoUsers)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoUsers = p ^
+    "MongoUsers should" ^
+    "behave like any Users implementation" ^ users(newMongoUsers) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def users(users: Users) = {                                                 t^
-    "inserting a user"                                                        ! insert(users)^
-    "looking up an existing e-mail"                                           ! emailExists(users)^
-    "looking up a non-existing e-mail should fail"                            ! emailExistsNonExist(users)^
-    "looking up an existing ID and e-mail combo"                              ! idAndEmailExists(users)^
-    "looking up a non-existing ID and e-mail combo should fail"               ! idAndEmailExistsNonExist(users)^
-    "getting a user by ID"                                                    ! get(users)^
-    "getting a user by e-mail"                                                ! getByEmail(users)^
-    "authenticating a non-existing user and fail"                             ! authenticateNonExist(users)^
-    "authenticating an unconfirmed user and fail"                             ! authenticateUnconfirmed(users)^
-    "authenticating a confirmed user"                                         ! authenticate(users)^
-    "authenticating by e-mail a non-existing user and fail"                   ! authenticateByEmailNonExist(users)^
-    "authenticating by e-mail an unconfirmed user and fail"                   ! authenticateByEmailUnconfirmed(users)^
-    "authenticating by e-mail a confirmed user"                               ! authenticateByEmail(users)^
-    "confirming a non-existing user and fail"                                 ! confirmNonExist(users)^
-    "confirming an unconfirmed user"                                          ! confirm(users)^
-    "updating a user's e-mail by ID"                                          ! updateEmail(users)^
-    "updating a user's password by ID"                                        ! updatePassword(users)^
-    "updating a user's password by e-mail"                                    ! updatePasswordByEmail(users)^
-    "updating a user"                                                         ! update(users)^
-    "backup and restore users"                                                ! backuprestore(users)^
-                                                                              bt
+  def users(users: Users) = {
+    t ^
+      "inserting a user" ! insert(users) ^
+      "looking up an existing e-mail" ! emailExists(users) ^
+      "looking up a non-existing e-mail should fail" ! emailExistsNonExist(users) ^
+      "looking up an existing ID and e-mail combo" ! idAndEmailExists(users) ^
+      "looking up a non-existing ID and e-mail combo should fail" ! idAndEmailExistsNonExist(users) ^
+      "getting a user by ID" ! get(users) ^
+      "getting a user by e-mail" ! getByEmail(users) ^
+      "authenticating a non-existing user and fail" ! authenticateNonExist(users) ^
+      "authenticating an unconfirmed user and fail" ! authenticateUnconfirmed(users) ^
+      "authenticating a confirmed user" ! authenticate(users) ^
+      "authenticating by e-mail a non-existing user and fail" ! authenticateByEmailNonExist(users) ^
+      "authenticating by e-mail an unconfirmed user and fail" ! authenticateByEmailUnconfirmed(users) ^
+      "authenticating by e-mail a confirmed user" ! authenticateByEmail(users) ^
+      "confirming a non-existing user and fail" ! confirmNonExist(users) ^
+      "confirming an unconfirmed user" ! confirm(users) ^
+      "updating a user's e-mail by ID" ! updateEmail(users) ^
+      "updating a user's password by ID" ! updatePassword(users) ^
+      "updating a user's password by e-mail" ! updatePasswordByEmail(users) ^
+      "updating a user" ! update(users) ^
+      "backup and restore users" ! backuprestore(users) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongousers_test"
@@ -237,7 +239,7 @@ class UsersSpec extends Specification { def is =
   }
 
   def backuprestore(users: Users) = {
-    val user1 = User(0, "backuprestore", None, "backuprestore@prediction.io", "password", Some("confirm"))
+    val user1 = User(0, "english中文", None, "backuprestore@prediction.io", "password", Some("confirm"))
     val id1 = users.insert(
       email = user1.email,
       password = user1.password,
@@ -245,14 +247,14 @@ class UsersSpec extends Specification { def is =
       lastname = user1.lastName,
       confirm = user1.confirm.get
     )
-    val fn = "users.bin"
+    val fn = "users.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(users.backup())
     } finally {
       fos.close()
     }
-    users.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    users.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(user1.copy(id = id1))
     } getOrElse 1 === 2
   }

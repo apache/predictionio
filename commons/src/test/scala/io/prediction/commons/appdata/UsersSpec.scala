@@ -6,25 +6,27 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class UsersSpec extends Specification { def is =
-  "PredictionIO App Data Users Specification"                                 ^
-                                                                              p ^
-  "Users can be implemented by:"                                              ^ endp ^
-    "1. MongoUsers"                                                           ^ mongoUsers ^ end
+class UsersSpec extends Specification {
+  def is =
+    "PredictionIO App Data Users Specification" ^
+      p ^
+      "Users can be implemented by:" ^ endp ^
+      "1. MongoUsers" ^ mongoUsers ^ end
 
-  def mongoUsers =                                                            p ^
-    "MongoUsers should"                                                       ^
-      "behave like any Users implementation"                                  ^ users(newMongoUsers) ^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoUsers = p ^
+    "MongoUsers should" ^
+    "behave like any Users implementation" ^ users(newMongoUsers) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def users(users: Users) = {                                                 t ^
-    "inserting and getting a user"                                            ! insert(users) ^
-    "getting all users by App ID"                                             ! getByAppid(users) ^
-    "updating a user"                                                         ! update(users) ^
-    "deleting a user"                                                         ! delete(users) ^
-    "deleting users by appid"                                                 ! deleteByAppid(users) ^
-    "count users by appid"                                                    ! countByAppid(users) ^
-                                                                              bt
+  def users(users: Users) = {
+    t ^
+      "inserting and getting a user" ! insert(users) ^
+      "getting all users by App ID" ! getByAppid(users) ^
+      "updating a user" ! update(users) ^
+      "deleting a user" ! delete(users) ^
+      "deleting users by appid" ! deleteByAppid(users) ^
+      "count users by appid" ! countByAppid(users) ^
+      bt
   }
 
   val mongoDbName = "predictionio_appdata_mongousers_test"
@@ -147,22 +149,22 @@ class UsersSpec extends Specification { def is =
       attributes = Some(Map("c" -> "d"))
     )
     val user1b = user1a.copy(
-      id         = idb,
+      id = idb,
       attributes = Some(Map("e" -> "f"))
     )
     val user1c = user1a.copy(
-      id         = idc,
+      id = idc,
       attributes = Some(Map("g" -> "h"))
     )
 
     val user2a = user1a.copy(
-      appid      = appid2
+      appid = appid2
     )
     val user2b = user1b.copy(
-      appid      = appid2
+      appid = appid2
     )
     val user2c = user1c.copy(
-      appid      = appid2
+      appid = appid2
     )
 
     users.insert(user1a)
@@ -221,12 +223,12 @@ class UsersSpec extends Specification { def is =
       attributes = Some(Map("c" -> "d"))
     )
     val user1b = user1a.copy(
-      id         = idb,
-      appid      = appid1,
+      id = idb,
+      appid = appid1,
       attributes = Some(Map("e" -> "f"))
     )
     val user2a = user1a.copy(
-      appid      = appid2
+      appid = appid2
     )
 
     users.insert(user1a)

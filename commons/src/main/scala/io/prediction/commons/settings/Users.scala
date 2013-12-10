@@ -2,15 +2,17 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** User object.
-  *
-  * @param id ID.
-  * @param firstName First name.
-  * @param lastName Last name.
-  * @param email E-mail.
-  */
+/**
+ * User object.
+ *
+ * @param id ID.
+ * @param firstName First name.
+ * @param lastName Last name.
+ * @param email E-mail.
+ */
 case class User(
   id: Int,
   firstName: String,
@@ -48,10 +50,11 @@ trait Users extends Common {
   /** Update password by ID. */
   def updatePassword(id: Int, password: String)
 
-  /** Update password by e-mail.
-    *
-    * Note: For reset password requests.
-    */
+  /**
+   * Update password by e-mail.
+   *
+   * Note: For reset password requests.
+   */
   def updatePasswordByEmail(email: String, password: String)
 
   /** Confirms a new user. */
@@ -63,36 +66,19 @@ trait Users extends Common {
   /** Check if an ID and e-mail combination exists. */
   def idAndEmailExists(userid: Int, email: String): Boolean
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().toSeq.map { b =>
-      Map(
-        "id" -> b.id,
-        "firstName" -> b.firstName,
-        "lastName" -> b.lastName,
-        "email" -> b.email,
-        "password" -> b.password,
-        "confirm" -> b.confirm)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[User]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        User(
-          id = data("id").asInstanceOf[Int],
-          firstName = data("firstName").asInstanceOf[String],
-          lastName = data("lastName").asInstanceOf[Option[String]],
-          email = data("email").asInstanceOf[String],
-          password = data("password").asInstanceOf[String],
-          confirm = data("confirm").asInstanceOf[Option[String]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[User]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

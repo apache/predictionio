@@ -4,26 +4,28 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class EnginesSpec extends Specification { def is =
-  "PredictionIO Engines Specification"                                        ^
-                                                                              p^
-  "Engines can be implemented by:"                                            ^ endp^
-    "1. MongoEngines"                                                         ^ mongoEngines^end
+class EnginesSpec extends Specification {
+  def is =
+    "PredictionIO Engines Specification" ^
+      p ^
+      "Engines can be implemented by:" ^ endp ^
+      "1. MongoEngines" ^ mongoEngines ^ end
 
-  def mongoEngines =                                                          p^
-    "MongoEngines should"                                                     ^
-      "behave like any Engines implementation"                                ^ engines(newMongoEngines)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoEngines = p ^
+    "MongoEngines should" ^
+    "behave like any Engines implementation" ^ engines(newMongoEngines) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def engines(engines: Engines) = {                                           t^
-    "create an engine"                                                        ! insert(engines)^
-    "get two engines"                                                         ! getByAppid(engines)^
-    "get by id and appid"                                                     ! getByIdAndAppid(engines)^
-    "update an engine"                                                        ! update(engines)^
-    "delete an engine"                                                        ! deleteByIdAndAppid(engines)^
-    "checking existence of engines"                                           ! existsByAppidAndName(engines)^
-    "backup and restore existing engines"                                     ! backuprestore(engines)^
-                                                                              bt
+  def engines(engines: Engines) = {
+    t ^
+      "create an engine" ! insert(engines) ^
+      "get two engines" ! getByAppid(engines) ^
+      "get by id and appid" ! getByIdAndAppid(engines) ^
+      "update an engine" ! update(engines) ^
+      "delete an engine" ! deleteByIdAndAppid(engines) ^
+      "checking existence of engines" ! existsByAppidAndName(engines) ^
+      "backup and restore existing engines" ! backuprestore(engines) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoengines_test"
@@ -64,8 +66,8 @@ class EnginesSpec extends Specification { def is =
     val engine12 = engines.getByAppid(234)
     val engine1 = engine12.next()
     val engine2 = engine12.next()
-    engine1 must be equalTo(obj1.copy(id = id1)) and
-      (engine2 must be equalTo(obj2.copy(id = id2)))
+    engine1 must be equalTo (obj1.copy(id = id1)) and
+      (engine2 must be equalTo (obj2.copy(id = id2)))
   }
 
   def getByIdAndAppid(engines: Engines) = {
@@ -79,7 +81,7 @@ class EnginesSpec extends Specification { def is =
     )
     val obj2 = obj1.copy()
 
-    val obj3 = obj1.copy(appid = 2346, name="getByIdAndAppid3")
+    val obj3 = obj1.copy(appid = 2346, name = "getByIdAndAppid3")
 
     val id1 = engines.insert(obj1)
     val id2 = engines.insert(obj2)
@@ -156,13 +158,14 @@ class EnginesSpec extends Specification { def is =
       params = Map("foo" -> "bar")
     )
     val eid = engines.insert(eng)
-    val fos = new java.io.FileOutputStream("engines.bin")
+    val fn = "engines.json"
+    val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(engines.backup())
     } finally {
       fos.close()
     }
-    engines.restore(scala.io.Source.fromFile("engines.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { rengines =>
+    engines.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { rengines =>
       rengines must contain(eng.copy(id = eid))
     } getOrElse 1 === 2
   }

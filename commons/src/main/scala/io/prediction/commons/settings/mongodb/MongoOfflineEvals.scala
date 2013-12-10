@@ -1,6 +1,6 @@
 package io.prediction.commons.settings.mongodb
 
-import io.prediction.commons.settings.{OfflineEval, OfflineEvals}
+import io.prediction.commons.settings.{ OfflineEval, OfflineEvals }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers

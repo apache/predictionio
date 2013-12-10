@@ -44,9 +44,9 @@ lazy val root = project.in(file(".")).aggregate(
 
 // Commons and Output
 
-lazy val commons = project in file("commons")
+lazy val commons = project in file("commons") settings(scalariformSettings: _*)
 
-lazy val output = project.in(file("output")).dependsOn(commons)
+lazy val output = project.in(file("output")).dependsOn(commons).settings(scalariformSettings: _*)
 
 // Process Assemblies
 
@@ -214,13 +214,13 @@ lazy val processEnginesItemSimEvalScalaTopKItems = project
 // Tools Section
 
 lazy val toolsConncheck = project.in(file("tools/conncheck"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
 
 lazy val toolsSettingsInit = project.in(file("tools/settingsinit"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
 
 lazy val toolsSoftwareManager = project.in(file("tools/softwaremanager"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)
 
 lazy val toolsUsers = project.in(file("tools/users"))
-  .dependsOn(commons)
+  .dependsOn(commons).settings(scalariformSettings: _*)

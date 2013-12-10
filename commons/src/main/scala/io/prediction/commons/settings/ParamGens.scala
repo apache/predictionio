@@ -2,9 +2,11 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** ParamGen Object
+/**
+ * ParamGen Object
  *
  * @param id ID
  * @param infoid param gen info id
@@ -15,8 +17,7 @@ case class ParamGen(
   id: Int,
   infoid: String,
   tuneid: Int,
-  params: Map[String, Any]
-)
+  params: Map[String, Any])
 
 trait ParamGens extends Common {
 
@@ -38,32 +39,41 @@ trait ParamGens extends Common {
   /** Delete paramGen by its ID */
   def delete(id: Int)
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new ParamGenSerializer
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().toSeq.map { b =>
-      Map(
-        "id" -> b.id,
-        "infoid" -> b.infoid,
-        "tuneid" -> b.tuneid,
-        "params" -> b.params)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[ParamGen]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        ParamGen(
-          id = data("id").asInstanceOf[Int],
-          infoid = data("infoid").asInstanceOf[String],
-          tuneid = data("tuneid").asInstanceOf[Int],
-          params = data("params").asInstanceOf[Map[String, Any]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[ParamGen]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }
+
+/** json4s serializer for the ParamGen class. */
+class ParamGenSerializer extends CustomSerializer[ParamGen](format => (
+  {
+    case x: JObject =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      ParamGen(
+        id = (x \ "id").extract[Int].toInt,
+        infoid = (x \ "infoid").extract[String],
+        tuneid = (x \ "tuneid").extract[Int].toInt,
+        params = (x \ "params").asInstanceOf[JObject].values)
+  },
+  {
+    case x: ParamGen =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      JObject(
+        JField("id", Extraction.decompose(x.id)) ::
+          JField("infoid", Extraction.decompose(x.infoid)) ::
+          JField("tuneid", Extraction.decompose(x.tuneid)) ::
+          JField("params", Extraction.decompose(x.params)) :: Nil)
+  })
+)

@@ -2,11 +2,12 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
-
 import com.github.nscala_time.time.Imports._
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** OfflineEval object
+/**
+ * OfflineEval object
  *
  * @param id ID.
  * @param engineid The id of Engine object which owns this OfflineEval.
@@ -25,12 +26,12 @@ case class OfflineEval(
   tuneid: Option[Int],
   createtime: Option[DateTime],
   starttime: Option[DateTime],
-  endtime: Option[DateTime]
-)
+  endtime: Option[DateTime])
 
 trait OfflineEvals extends Common {
 
-  /** Insert an OfflineEval and return id
+  /**
+   * Insert an OfflineEval and return id
    *
    * NOTE: can't use id of the offlineEval parameter
    */
@@ -57,40 +58,19 @@ trait OfflineEvals extends Common {
   /** delete OfflineEval by it's id) */
   def delete(id: Int)
 
+  implicit val formats = Serialization.formats(NoTypeHints) ++ org.json4s.ext.JodaTimeSerializers.all
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().toSeq.map { b =>
-      Map(
-        "id" -> b.id,
-        "engineid" -> b.engineid,
-        "name" -> b.name,
-        "iterations" -> b.iterations,
-        "tuneid" -> b.tuneid,
-        "createtime" -> b.createtime,
-        "starttime" -> b.starttime,
-        "endtime" -> b.endtime)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEval]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEval(
-          id = data("id").asInstanceOf[Int],
-          engineid = data("engineid").asInstanceOf[Int],
-          name = data("name").asInstanceOf[String],
-          iterations = data("iterations").asInstanceOf[Int],
-          tuneid = data("tuneid").asInstanceOf[Option[Int]],
-          createtime = data("createtime").asInstanceOf[Option[DateTime]],
-          starttime = data("starttime").asInstanceOf[Option[DateTime]],
-          endtime = data("endtime").asInstanceOf[Option[DateTime]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEval]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

@@ -4,24 +4,26 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class AlgoInfosSpec extends Specification { def is =
-  "PredictionIO AlgoInfos Specification"                                      ^
-                                                                              p ^
-  "Algos can be implemented by:"                                              ^ endp ^
-    "1. MongoAlgoInfos"                                                       ^ mongoAlgoInfos^end
+class AlgoInfosSpec extends Specification {
+  def is =
+    "PredictionIO AlgoInfos Specification" ^
+      p ^
+      "Algos can be implemented by:" ^ endp ^
+      "1. MongoAlgoInfos" ^ mongoAlgoInfos ^ end
 
-  def mongoAlgoInfos =                                                        p ^
-    "MongoAlgoInfos should"                                                   ^
-      "behave like any AlgoInfos implementation"                              ^ algoinfos(newMongoAlgoInfos) ^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoAlgoInfos = p ^
+    "MongoAlgoInfos should" ^
+    "behave like any AlgoInfos implementation" ^ algoinfos(newMongoAlgoInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def algoinfos(algoinfos: AlgoInfos) = {                                     t ^
-    "insert and get info of an algo"                                          ! insertAndGet(algoinfos) ^
-    "get info of algos by their engine type"                                  ! getByEngineInfoId(algoinfos) ^
-    "update info of an algo"                                                  ! update(algoinfos) ^
-    "delete info of an algo"                                                  ! delete(algoinfos) ^
-    "backup and restore existing algoinfos"                                   ! backuprestore(algoinfos) ^
-                                                                              bt
+  def algoinfos(algoinfos: AlgoInfos) = {
+    t ^
+      "insert and get info of an algo" ! insertAndGet(algoinfos) ^
+      "get info of algos by their engine type" ! getByEngineInfoId(algoinfos) ^
+      "update info of an algo" ! update(algoinfos) ^
+      "delete info of an algo" ! delete(algoinfos) ^
+      "backup and restore existing algoinfos" ! backuprestore(algoinfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoalgoinfos_test"
@@ -256,7 +258,35 @@ class AlgoInfosSpec extends Specification { def is =
               ParamSelectionUI("6", "6"),
               ParamSelectionUI("8", "8"),
               ParamSelectionUI("10", "10")))),
-          scopes = Some(Set("dead", "beef")))),
+          scopes = Some(Set("dead", "beef"))),
+        "bar" -> Param(
+          id = "bar",
+          name = "bar",
+          description = Some("random description"),
+          defaultvalue = false,
+          constraint = ParamBooleanConstraint(),
+          ui = ParamUI(
+            uitype = "slider",
+            slidermin = Some(10),
+            slidermax = Some(20),
+            sliderstep = Some(2)),
+          scopes = None),
+        "dead" -> Param(
+          id = "dead",
+          name = "dead",
+          description = None,
+          defaultvalue = "dead",
+          constraint = ParamStringConstraint(),
+          ui = ParamUI(),
+          scopes = None),
+        "beef" -> Param(
+          id = "beef",
+          name = "beef",
+          description = None,
+          defaultvalue = 3.14,
+          constraint = ParamDoubleConstraint(),
+          ui = ParamUI(),
+          scopes = None)),
       paramsections = Seq(
         ParamSection(
           name = "foo",
@@ -287,13 +317,14 @@ class AlgoInfosSpec extends Specification { def is =
       techreq = Seq("Hadoop"),
       datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
     algoinfos.insert(ai)
-    val fos = new java.io.FileOutputStream("algoinfos.bin")
+    val fn = "algoinfos.json"
+    val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(algoinfos.backup())
     } finally {
       fos.close()
     }
-    algoinfos.restore(scala.io.Source.fromFile("algoinfos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { ralgoinfos =>
+    algoinfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { ralgoinfos =>
       ralgoinfos must contain(ai)
     } getOrElse 1 === 2
   }

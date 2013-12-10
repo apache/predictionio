@@ -28,13 +28,13 @@ object Restore {
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[RestoreConfig]("restore") {
       head("PredictionIO Restore Utility", "0.7.0-SNAPSHOT")
-      help("help") text("prints this usage text")
+      help("help") text ("prints this usage text")
       opt[Unit]("upgrade") action { (_, c) =>
         c.copy(upgrade = true)
-      } text("upgrade from previous version backup data")
+      } text ("upgrade from previous version backup data")
       arg[String]("<backup directory>") action { (x, c) =>
         c.copy(backupDir = x)
-      } text("directory containing backup files")
+      } text ("directory containing backup files")
     }
 
     parser.parse(args, RestoreConfig()) map { restoreConfig =>
@@ -49,8 +49,8 @@ object Restore {
         println()
       }
 
-    	settingsMap map { s =>
-        val fn = s"${backupDir}/${s._1}.bin"
+      settingsMap map { s =>
+        val fn = s"${backupDir}/${s._1}.json"
         try {
           s._2.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray, true, upgrade) map { x =>
             println(s"Restored from ${fn}")
@@ -65,7 +65,7 @@ object Restore {
       config.settingsDbType match {
         case "mongodb" => {
           val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
-          val fn = s"${backupDir}/metadata.bin"
+          val fn = s"${backupDir}/metadata.json"
           try {
             metadata.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray, true, upgrade) map { x =>
               println(s"Restored metadata from ${fn}")
@@ -80,7 +80,7 @@ object Restore {
       }
 
       println()
-    	println("Restore finished.")
+      println("Restore finished.")
     }
   }
 }

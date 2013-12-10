@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{ParamGenInfo, ParamGenInfos}
+import io.prediction.commons.settings.{ ParamGenInfo, ParamGenInfos }
 
 import com.mongodb.casbah.Imports._
 
@@ -16,14 +16,14 @@ class MongoParamGenInfos(db: MongoDB) extends ParamGenInfos {
     val paramnames = params map { p => p.asInstanceOf[DBObject].as[String]("name") }
     val paramdescription = params map { p => p.asInstanceOf[DBObject].as[String]("description") }
     ParamGenInfo(
-      id               = dbObj.as[String]("_id"),
-      name             = dbObj.as[String]("name"),
-      description      = dbObj.getAs[String]("description"),
-      commands         = dbObj.getAs[MongoDBList]("commands") map { MongoUtils.mongoDbListToListOfString(_) },
-      paramdefaults    = Map() ++ (paramorder zip paramdefaults),
-      paramnames       = Map() ++ (paramorder zip paramnames),
+      id = dbObj.as[String]("_id"),
+      name = dbObj.as[String]("name"),
+      description = dbObj.getAs[String]("description"),
+      commands = dbObj.getAs[MongoDBList]("commands") map { MongoUtils.mongoDbListToListOfString(_) },
+      paramdefaults = Map() ++ (paramorder zip paramdefaults),
+      paramnames = Map() ++ (paramorder zip paramnames),
       paramdescription = Map() ++ (paramorder zip paramdescription),
-      paramorder       = paramorder)
+      paramorder = paramorder)
   }
 
   private def mergeParams(order: Seq[String], names: Map[String, String], defaults: Map[String, Any], description: Map[String, String]): Seq[Map[String, Any]] = {
@@ -39,9 +39,9 @@ class MongoParamGenInfos(db: MongoDB) extends ParamGenInfos {
   def insert(ParamGenInfo: ParamGenInfo) = {
     // required fields
     val obj = MongoDBObject(
-      "_id"              -> ParamGenInfo.id,
-      "name"             -> ParamGenInfo.name,
-      "params"           -> mergeParams(ParamGenInfo.paramorder, ParamGenInfo.paramnames, ParamGenInfo.paramdefaults, ParamGenInfo.paramdescription))
+      "_id" -> ParamGenInfo.id,
+      "name" -> ParamGenInfo.name,
+      "params" -> mergeParams(ParamGenInfo.paramorder, ParamGenInfo.paramnames, ParamGenInfo.paramdefaults, ParamGenInfo.paramdescription))
 
     // optional fields
     val descriptionObj = ParamGenInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
@@ -57,8 +57,8 @@ class MongoParamGenInfos(db: MongoDB) extends ParamGenInfos {
   def update(ParamGenInfo: ParamGenInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> ParamGenInfo.id)
     val requiredObj = MongoDBObject(
-      "name"             -> ParamGenInfo.name,
-      "params"           -> mergeParams(ParamGenInfo.paramorder, ParamGenInfo.paramnames, ParamGenInfo.paramdefaults, ParamGenInfo.paramdescription))
+      "name" -> ParamGenInfo.name,
+      "params" -> mergeParams(ParamGenInfo.paramorder, ParamGenInfo.paramnames, ParamGenInfo.paramdefaults, ParamGenInfo.paramdescription))
     val descriptionObj = ParamGenInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
     val commandsObj = ParamGenInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
 

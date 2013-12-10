@@ -6,23 +6,25 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class U2IActionsSpec extends Specification { def is =
-  "PredictionIO App Data User-to-item Actions Specification"                  ^
-                                                                              p ^
-  "U2IActions can be implemented by:"                                         ^ endp ^
-    "1. MongoU2IActions"                                                      ^ mongoU2IActions ^ end
+class U2IActionsSpec extends Specification {
+  def is =
+    "PredictionIO App Data User-to-item Actions Specification" ^
+      p ^
+      "U2IActions can be implemented by:" ^ endp ^
+      "1. MongoU2IActions" ^ mongoU2IActions ^ end
 
-  def mongoU2IActions =                                                       p ^
-    "MongoU2IActions should"                                                  ^
-      "behave like any U2IActions implementation"                             ^ u2iActions(newMongoU2IActions) ^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoU2IActions = p ^
+    "MongoU2IActions should" ^
+    "behave like any U2IActions implementation" ^ u2iActions(newMongoU2IActions) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def u2iActions(u2iActions: U2IActions) = {                                  t ^
-    "inserting and getting 3 U2IAction's"                                     ! insert(u2iActions) ^
-    "getting U2IActions by App ID, User ID, and Item IDs"                     ! getAllByAppidAndUidAndIids(u2iActions) ^
-    "delete U2IActions by appid"                                              ! deleteByAppid(u2iActions) ^
-    "count U2IActions by appid"                                               ! countByAppid(u2iActions) ^
-                                                                              bt
+  def u2iActions(u2iActions: U2IActions) = {
+    t ^
+      "inserting and getting 3 U2IAction's" ! insert(u2iActions) ^
+      "getting U2IActions by App ID, User ID, and Item IDs" ! getAllByAppidAndUidAndIids(u2iActions) ^
+      "delete U2IActions by appid" ! deleteByAppid(u2iActions) ^
+      "count U2IActions by appid" ! countByAppid(u2iActions) ^
+      bt
   }
 
   val mongoDbName = "predictionio_appdata_mongou2iactions_test"
@@ -31,32 +33,32 @@ class U2IActionsSpec extends Specification { def is =
   def insert(u2iActions: U2IActions) = {
     val appid = 0
     val actions = List(U2IAction(
-      appid  = appid,
+      appid = appid,
       action = u2iActions.rate,
-      uid    = "dead",
-      iid    = "meat",
-      t      = DateTime.now,
+      uid = "dead",
+      iid = "meat",
+      t = DateTime.now,
       latlng = None,
-      v      = Some(3),
-      price  = None
+      v = Some(3),
+      price = None
     ), U2IAction(
-      appid  = appid,
+      appid = appid,
       action = u2iActions.view,
-      uid    = "avatar",
-      iid    = "creeper",
-      t      = DateTime.now,
+      uid = "avatar",
+      iid = "creeper",
+      t = DateTime.now,
       latlng = Some((94.3904, -29.4839)),
-      v      = None,
-      price  = None
+      v = None,
+      price = None
     ), U2IAction(
-      appid  = appid,
+      appid = appid,
       action = u2iActions.like,
-      uid    = "pub",
-      iid    = "sub",
-      t      = DateTime.now,
+      uid = "pub",
+      iid = "sub",
+      t = DateTime.now,
       latlng = None,
-      v      = Some(1),
-      price  = Some(49.40)
+      v = Some(1),
+      price = Some(49.40)
     ))
     actions foreach { u2iActions.insert(_) }
     val results = u2iActions.getAllByAppid(appid)
@@ -72,32 +74,32 @@ class U2IActionsSpec extends Specification { def is =
   def getAllByAppidAndUidAndIids(u2iActions: U2IActions) = {
     val appid = 1
     val actions = List(U2IAction(
-      appid  = appid,
+      appid = appid,
       action = u2iActions.rate,
-      uid    = "dead",
-      iid    = "meat",
-      t      = DateTime.now,
+      uid = "dead",
+      iid = "meat",
+      t = DateTime.now,
       latlng = None,
-      v      = Some(3),
-      price  = None
+      v = Some(3),
+      price = None
     ), U2IAction(
-      appid  = appid,
+      appid = appid,
       action = u2iActions.view,
-      uid    = "dead",
-      iid    = "creeper",
-      t      = DateTime.now,
+      uid = "dead",
+      iid = "creeper",
+      t = DateTime.now,
       latlng = Some((94.3904, -29.4839)),
-      v      = None,
-      price  = None
+      v = None,
+      price = None
     ), U2IAction(
-      appid  = appid,
+      appid = appid,
       action = u2iActions.like,
-      uid    = "dead",
-      iid    = "sub",
-      t      = DateTime.now,
+      uid = "dead",
+      iid = "sub",
+      t = DateTime.now,
       latlng = None,
-      v      = Some(1),
-      price  = Some(49.40)
+      v = Some(1),
+      price = Some(49.40)
     ))
     actions foreach { u2iActions.insert(_) }
     val results = u2iActions.getAllByAppidAndUidAndIids(appid, "dead", List("sub", "meat")).toList.sortWith((s, t) => s.iid < t.iid)
@@ -121,23 +123,23 @@ class U2IActionsSpec extends Specification { def is =
     val idc = "deleteByAppid-idc"
 
     val u2iAction1a = U2IAction(
-      appid  = appid1,
+      appid = appid1,
       action = u2iActions.rate,
-      uid    = "dead",
-      iid    = "meat",
-      t      = DateTime.now,
+      uid = "dead",
+      iid = "meat",
+      t = DateTime.now,
       latlng = None,
-      v      = Some(3),
-      price  = None
+      v = Some(3),
+      price = None
     )
     val u2iActionsApp1 = List(
-        u2iAction1a,
-        u2iAction1a.copy(
-          v = Some(1)
-        ),
-        u2iAction1a.copy(
-          v = Some(2)
-        ))
+      u2iAction1a,
+      u2iAction1a.copy(
+        v = Some(1)
+      ),
+      u2iAction1a.copy(
+        v = Some(2)
+      ))
 
     val u2iActionsApp2 = u2iActionsApp1 map (x => x.copy(appid = appid2))
 
@@ -173,20 +175,20 @@ class U2IActionsSpec extends Specification { def is =
     val appid3 = 22
 
     val u2iAction1a = U2IAction(
-      appid  = appid1,
+      appid = appid1,
       action = u2iActions.rate,
-      uid    = "dead",
-      iid    = "meat",
-      t      = DateTime.now,
+      uid = "dead",
+      iid = "meat",
+      t = DateTime.now,
       latlng = None,
-      v      = Some(3),
-      price  = None
+      v = Some(3),
+      price = None
     )
     val u2iAction1b = u2iAction1a.copy(
-      appid  = appid1
+      appid = appid1
     )
     val u2iAction2a = u2iAction1a.copy(
-      appid  = appid2
+      appid = appid2
     )
 
     u2iActions.insert(u2iAction1a)

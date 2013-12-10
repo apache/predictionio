@@ -2,23 +2,23 @@ package io.prediction.commons.appdata
 
 import com.github.nscala_time.time.Imports._
 
-/** User object.
-  *
-  * @param id ID.
-  * @param appid App ID that this user belongs to.
-  * @param ct Creation time.
-  * @param latlng Geolocation of this user.
-  * @param inactive Whether to disregard this user during any computation.
-  * @param attributes Attributes associated with this user.
-  */
+/**
+ * User object.
+ *
+ * @param id ID.
+ * @param appid App ID that this user belongs to.
+ * @param ct Creation time.
+ * @param latlng Geolocation of this user.
+ * @param inactive Whether to disregard this user during any computation.
+ * @param attributes Attributes associated with this user.
+ */
 case class User(
   id: String,
   appid: Int,
   ct: DateTime,
   latlng: Option[Tuple2[Double, Double]],
   inactive: Option[Boolean],
-  attributes: Option[Map[String, Any]]
-)
+  attributes: Option[Map[String, Any]])
 
 /** Base trait for implementations that interact with users in the backend app data store. */
 trait Users {

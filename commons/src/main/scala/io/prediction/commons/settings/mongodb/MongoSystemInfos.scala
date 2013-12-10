@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{SystemInfo, SystemInfos}
+import io.prediction.commons.settings.{ SystemInfo, SystemInfos }
 
 import com.mongodb.casbah.Imports._
 
@@ -11,16 +11,16 @@ class MongoSystemInfos(db: MongoDB) extends SystemInfos {
 
   private def dbObjToSystemInfo(dbObj: DBObject) = {
     SystemInfo(
-      id          = dbObj.as[String]("_id"),
-      value       = dbObj.as[String]("value"),
+      id = dbObj.as[String]("_id"),
+      value = dbObj.as[String]("value"),
       description = dbObj.getAs[String]("description"))
   }
 
   def insert(systemInfo: SystemInfo) = {
     // required fields
     val obj = MongoDBObject(
-      "_id"        -> systemInfo.id,
-      "value"      -> systemInfo.value)
+      "_id" -> systemInfo.id,
+      "value" -> systemInfo.value)
 
     // optional fields
     val optObj = systemInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
