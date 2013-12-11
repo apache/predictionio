@@ -417,7 +417,7 @@ class OfflineEvalJob extends InterruptableJob {
               val splitter = splittersToRun(0)
               offlineEvalSplitterInfos.get(splitter.infoid) map { splitterInfo =>
                 splitterInfo.commands map { commands =>
-                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.paramdefaults ++ splitter.settings ++ iterationParam)).toString }
+                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.params.mapValues(_.defaultvalue) ++ splitter.settings ++ iterationParam)).toString }
                   step(evalid, currentIteration, "split", splitterCommands)
                 } getOrElse {
                   Logger.warn(s"${logPrefix}Not doing data split because splitter information for ${splitter.infoid} contains no command")
@@ -721,7 +721,7 @@ class OfflineTuneJob extends InterruptableJob {
 
               offlineEvalSplitterInfos.get(splitter.infoid) map { splitterInfo =>
                 splitterInfo.commands map { commands =>
-                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.paramdefaults ++ splitter.settings ++ splitIterationParam)).toString }
+                  val splitterCommands = commands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, None, Some(offlineEval), None, Some(splitterInfo.params.mapValues(_.defaultvalue) ++ splitter.settings ++ splitIterationParam)).toString }
                   step(tuneid, offlineEval.id, currentIteration, "split", splitterCommands)
                 } getOrElse {
                   Logger.warn(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Not doing data split because splitter information for ${splitter.infoid} contains no command")
