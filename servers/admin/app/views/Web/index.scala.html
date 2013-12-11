@@ -802,8 +802,12 @@
                                                 <div class="bottomMargin">
                                                     <select name="metrics[<%= data.index %>]" class="span6 changeMetricsSelect">
                                                         <% _.each(data.metricslist, function(metrics) { %>
-                                                            <option value="<%= metrics.id %>"><%= metrics.metricslongname %> (<%= metrics.metricsname %>)</option>
-                                                        <% }); %>
+                                                            <% if ( metrics.id == this.defaultmetric ) { %>
+                                                            <option value="<%= metrics.id %>" selected><%= metrics.description %> (<%= metrics.name %>)</option>
+                                                            <% } else { %>
+                                                            <option value="<%= metrics.id %>"><%= metrics.description %> (<%= metrics.name %>)</option>
+                                                            <% } %>
+                                                        <% }, data); %>
                                                     </select>
                                                     <span>&nbsp;&nbsp;&nbsp;&nbsp;[<a href="#" class="deleteMetricsBtn"> remove </a>]
                                                     </span>

@@ -748,9 +748,10 @@ object Application extends Controller {
    *   If found:
    *   Ok
    *   { "engineinfoname" : <the name of the engine info>,
+   *     "defaultmetric" : <default metric info id>,
    *     "metricslist" : [ { "id" : <metric info id>,
-   *                         "metricsname" : <short name of the metric info>,
-   *                         "metricslongname" : <long name of the metric info>,
+   *                         "name" : <short name of the metric info>,
+   *                         "description" : <long name of the metric info>,
    *                       }, ...
    *                     ]
    *   }
@@ -763,12 +764,13 @@ object Application extends Controller {
       val metrics = offlineEvalMetricInfos.getByEngineinfoid(engInfo.id).map { m =>
         Json.obj(
           "id" -> m.id,
-          "metricsname" -> m.name,
-          "metricslongname" -> m.description
+          "name" -> m.name,
+          "description" -> m.description
         )
       }
       Ok(Json.obj(
         "engineinfoname" -> engInfo.name,
+        "defaultmetric" -> engInfo.defaultofflineevalmetricinfoid,
         "metricslist" -> JsArray(metrics)
       ))
     } getOrElse {
@@ -793,6 +795,7 @@ object Application extends Controller {
    *   If found:
    *   Ok
    *   { "engineinfoname" : <the name of the engine info>,
+   *     "defaultsplitter": <default splitter info id>,
    *     "splitterlist" : [ { "id" : <splitter info id>,
    *                          "name" : <name of splitter>,
    *                          "description" : <splitter description>,
@@ -814,6 +817,7 @@ object Application extends Controller {
       }
       Ok(Json.obj(
         "engineinfoname" -> engInfo.name,
+        "defaultsplitter" -> engInfo.defaultofflineevalsplitterinfoid,
         "splitterlist" -> JsArray(splitters)
       ))
     }.getOrElse {

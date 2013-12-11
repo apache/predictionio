@@ -1447,6 +1447,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
         metricstypeListModel.fetch({
                 success: function(model, res) {
                     self.metricslist = res.metricslist;
+                    self.defaultmetric = res.defaultmetric;
                     self.$el.html(self.template({data: { algoList: self.algoList }}));
                     self.addOne();
                 }
@@ -1457,9 +1458,8 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
         splittertypeListModel.fetch({
                 success: function(model, res) {
                     self.splitterlist = res.splitterlist;
-                    console.log(self.splitterlist);
-                    console.log(self.splitterlist[0].id);
-                    self.addSplitter(self.splitterlist[0].id); // only support 1 splitter for now
+                    self.defaultsplitter = res.defaultsplitter;
+                    self.addSplitter(self.defaultsplitter); // note: only support using default splitter now
                 }
         });
 
@@ -1475,6 +1475,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
             data: {
                 index: this.indexCount,
                 metricslist: this.metricslist,
+                defaultmetric: this.defaultmetric,
                 engineinfoid: this.engineinfoid
             }
         });
@@ -1527,7 +1528,7 @@ var EngineSimEvalSettingsMetricsView = Backbone.View.extend({
     render : function() {
         //this.$el.html(this.template({"data": this.model.toJSON()}));
         this.$el.html(this.template({data: this.data}));
-        this.showSetting(this.data.metricslist[0].id); // show the 1st metric setting by default
+        this.showSetting(this.data.defaultmetric); // show setting of default metric
         return this;
     },
     delete: function() {

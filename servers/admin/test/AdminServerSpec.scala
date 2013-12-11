@@ -17,9 +17,10 @@ import com.mongodb.casbah.Imports._
 import java.net.URLEncoder
 
 import io.prediction.commons.Config
-import io.prediction.commons.settings.{ App, EngineInfo, AlgoInfo, OfflineEvalMetricInfo, OfflineEvalResult }
+import io.prediction.commons.settings.{ App, Engine, Algo }
 import io.prediction.commons.settings.{ Param, ParamDoubleConstraint, ParamIntegerConstraint, ParamUI }
-import io.prediction.commons.settings.{ Engine, Algo, OfflineEval, OfflineEvalMetric, OfflineEvalSplitter }
+import io.prediction.commons.settings.{ OfflineEval, OfflineEvalMetric, OfflineEvalSplitter, OfflineEvalResult }
+import io.prediction.commons.settings.{ EngineInfo, AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo }
 
 class AdminServerSpec extends Specification with JsonMatchers {
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -30,6 +31,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
   val engineInfos = config.getSettingsEngineInfos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
+  val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos()
   val engines = config.getSettingsEngines()
   val algos = config.getSettingsAlgos()
   val offlineEvals = config.getSettingsOfflineEvals()
@@ -72,7 +74,9 @@ class AdminServerSpec extends Specification with JsonMatchers {
       description = Some("Description 1"),
       params = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI())),
       paramsections = Seq(),
-      defaultalgoinfoid = "knn"
+      defaultalgoinfoid = "knn",
+      defaultofflineevalmetricinfoid = "map",
+      defaultofflineevalsplitterinfoid = "test-splitter"
     )
 
     engineInfos.insert(itemrecEngine)
@@ -124,13 +128,44 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
-      paramorder = Seq("k"))
+      params = Map(
+        "jParam" -> Param(
+          id = "jParam",
+          name = "J parameter",
+          description = Some("J parameter description"),
+          defaultvalue = 21,
+          constraint = ParamIntegerConstraint(),
+          ui = ParamUI())
+      ),
+      paramsections = Seq(),
+      paramorder = Seq("jParam")
+    )
 
     offlineEvalMetricInfos.insert(mapMetric)
 
+    val testSplitter = OfflineEvalSplitterInfo(
+      id = "test-splitter",
+      name = "Test Splitter Name",
+      description = Some("Test Splitter description"),
+      engineinfoids = Seq("itemrec"),
+      commands = Some(Seq(
+        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
+        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
+      params = Map(
+        "sParam" -> Param(
+          id = "sParam",
+          name = "S parameter",
+          description = Some("S parameter description"),
+          defaultvalue = 21,
+          constraint = ParamIntegerConstraint(),
+          ui = ParamUI())
+      ),
+      paramsections = Seq(),
+      paramorder = Seq("sParam")
+    )
+
+    offlineEvalSplitterInfos.insert(testSplitter)
   }
 
   /* convert algo to Json */
@@ -231,7 +266,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       id = -1,
       infoid = "map",
       evalid = evalid,
-      params = Map("k" -> 20) //TODO metricInfo.params.mapValues(_.defaultvalue)
+      params = metricInfo.params.mapValues(_.defaultvalue)
     )
   }
 
@@ -461,14 +496,30 @@ class AdminServerSpec extends Specification with JsonMatchers {
       r.status must equalTo(OK) and
         (r.json must equalTo(Json.obj(
           "engineinfoname" -> "Item Recommendation Engine",
+          "defaultmetric" -> "map",
           "metricslist" -> Json.arr(Json.obj(
             "id" -> "map",
-            "metricsname" -> "Mean Average Precision A",
-            "metricslongname" -> "metric description",
-            "settingfields" -> Json.obj("k" -> "int")
+            "name" -> "Mean Average Precision A",
+            "description" -> "metric description"
           ))
         )))
     }
+
+    "return all spitter infos of a engineinfoid" in new WithServer {
+      val r = HelperAwait(wsUrl(s"/engineinfos/itemrec/splitterinfos").get())
+
+      r.status must equalTo(OK) and
+        (r.json must equalTo(Json.obj(
+          "engineinfoname" -> "Item Recommendation Engine",
+          "defaultsplitter" -> "test-splitter",
+          "splitterlist" -> Json.arr(Json.obj(
+            "id" -> "test-splitter",
+            "name" -> "Test Splitter Name",
+            "description" -> "Test Splitter description"
+          ))
+        )))
+    }
+
   }
 
   "POST /apps/:appid/engines" should {

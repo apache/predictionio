@@ -85,7 +85,9 @@ class AdminSpec extends Specification {
         ui = ParamUI(),
         constraint = ParamIntegerConstraint())),
     paramsections = Seq(),
-    defaultalgoinfoid = "dummy"))
+    defaultalgoinfoid = "dummy",
+    defaultofflineevalmetricinfoid = "dummy-metric",
+    defaultofflineevalsplitterinfoid = "dummy-splitter"))
 
   "PredictionIO Forms" should {
     "bind from good request 1" in new WithApplication {
