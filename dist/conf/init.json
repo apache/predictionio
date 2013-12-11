@@ -5020,35 +5020,50 @@
             "name": "Training/Test Data Splitter With Time Order Option",
             "description": "Split data into training, validation and test sets",
             "engineinfoids": [
-                "itemrec"
+                "itemrec", "itemsim"
             ],
             "commands": [
                 "java -jar $base$/lib/$pdioCommonsU2ITrainingTestSplit$ --hadoop $hadoop$ --pdioEvalJar $base$/lib/$pdioCommonsEval$ --sequenceNum $iteration$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
+            ],
+            "params": {
+                "timeorder": {
+                    "name": "Data Selection",
+                    "description": "Random with Time Order means that data in Test Set is always newer than those in Train Set.",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "defaultvalue": false,
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "Random Sampling",
+                                "value": "false"
+                            },
+                            {
+                                "name": "Random with Time Order",
+                                "value": "true"
+                            }
+                        ]
+                    }
+                }
+            },
+            "paramsections": [
+                {
+                    "name": "Parameters",
+                    "sectiontype": "normal",
+                    "description": "",
+                    "params": [
+                        "timeorder"
+                    ]
+                }
             ],
             "paramorder": [
                 "trainingPercent",
                 "validationPercent",
                 "testPercent",
                 "timeorder"
-            ],
-            "paramnames": {
-                "trainingPercent": "Training Percentage",
-                "validationPercent": "Validation Percentage",
-                "testPercent": "Test Percentage",
-                "timeorder": "Time Order"
-            },
-            "paramdescription": {
-                "trainingPercent": "Percentage of data as training set",
-                "validationPercent": "Percentage of data as validation set",
-                "testPercent": "Percentage of data as test set",
-                "timeorder": "Random with time order."
-            },
-            "paramdefaults": {
-                "trainingPercent": 0.8,
-                "validationPercent": 0,
-                "testPercent": 0.2,
-                "timeorder": false
-            }
+            ]
         }
     },
     "offlineevalmetricinfos": {

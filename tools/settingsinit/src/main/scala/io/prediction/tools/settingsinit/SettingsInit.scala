@@ -150,21 +150,22 @@ object SettingsInit {
           SS(engineinfoids) = info("engineinfoids")
           OS(description) = info.get("description")
           OSS(commands) = info.get("commands")
+          M(params) = info("params")
+          SM(paramsections) = info("paramsections")
           SS(paramorder) = info("paramorder")
-          MSS(paramnames) = info("paramnames")
-          MSS(paramdescription) = info("paramdescription")
-          MSS(paramdefaults) = info("paramdefaults")
         } yield {
+          println(s"Processing OfflineEvalSplitterInfo ID: ${id}")
+          val castedparams = mapToParams(params)
+          val castedparamsections = mapToParamSections(paramsections.asInstanceOf[Seq[Map[String, Any]]])
           val mi = OfflineEvalSplitterInfo(
             id = id,
             name = name,
             engineinfoids = engineinfoids,
             description = description,
             commands = commands,
-            paramorder = paramorder,
-            paramnames = paramnames,
-            paramdescription = paramdescription,
-            paramdefaults = paramdefaults)
+            params = castedparams,
+            paramsections = castedparamsections,
+            paramorder = paramorder)
 
           println(s"Deleting any old OfflineEvalSplitterInfo ID: ${id}")
           offlineEvalSplitterInfos.delete(id)
@@ -198,7 +199,7 @@ object SettingsInit {
             params = castedparams,
             paramsections = castedparamsections,
             paramorder = paramorder)
-          
+
           println(s"Deleting any old OfflineEvalMetricInfo ID: ${id}")
           offlineEvalMetricInfos.delete(id)
           println(s"Adding OfflineEvalMetricInfo ID: ${id}")

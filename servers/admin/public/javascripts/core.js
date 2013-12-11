@@ -1399,6 +1399,12 @@ var EnginetypeMetricsTypeListModel = Backbone.Model.extend({
         return getAPIUrl('engineinfos/' + this.id + "/metricinfos");
     }
 });
+var EnginetypeSplitterTypeListModel = Backbone.Model.extend({
+    url: function() {
+        return getAPIUrl('engineinfos/' + this.id + "/splitterinfos");
+    }
+});
+
 /* Required Param: algoidlist  (algo ids to be evaluated) */
 var EngineSimEvalSettingsView = Backbone.View.extend({
     initialize : function() {
@@ -1445,6 +1451,18 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
                     self.addOne();
                 }
         });
+
+        // render splitter options
+        splittertypeListModel = new EnginetypeSplitterTypeListModel({id: this.engineinfoid});
+        splittertypeListModel.fetch({
+                success: function(model, res) {
+                    self.splitterlist = res.splitterlist;
+                    console.log(self.splitterlist);
+                    console.log(self.splitterlist[0].id);
+                    self.addSplitter(self.splitterlist[0].id); // only support 1 splitter for now
+                }
+        });
+
         $.ajaxSetup({async:true}); // end of ensure sync, necessary for Data Split Slider
         return this;
     },
@@ -1463,6 +1481,16 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
         this.indexCount += 1; // increase count
         this.subViews.push(metricsView);
         this.$el.find('#metrics_list_ContentHolder').append(metricsView.render().el);
+    },
+    addSplitter: function(splitterinfoid) {
+        var splitterSettingView = new SplitterSettingView({
+            data: {
+                engineinfoid: this.engineinfoid,
+                splitterinfoid: splitterinfoid
+            }
+        });
+        this.subViews.push(splitterSettingView);
+        this.$el.find('#splitterSetting_Holder').html(splitterSettingView.render().el);
     },
     save: function() {
         $(this.error_el).slideUp().html(""); // reset/clear all error msg
@@ -1533,6 +1561,22 @@ var MetricSettingView = Backbone.View.extend({
         var that = this;
         //$.ajaxSetup({async:false}); // make jquery sync temporary to ensure it's loaded before we move on
         $.get(getAPIUrl('engineinfos/' + this.data.engineinfoid  + '/metricinfos/' + this.data.metricinfoid + '/template.html'), function(template_html) {
+            var template = _.template(template_html);
+            that.$el.html(template({data: that.data}));
+        });
+        //$.ajaxSetup({async:true});
+        return this;
+    }
+})
+
+var SplitterSettingView = Backbone.View.extend({
+    initialize: function() {
+        this.data = this.options.data;
+    },
+    render: function() {
+        var that = this;
+        //$.ajaxSetup({async:false}); // make jquery sync temporary to ensure it's loaded before we move on
+        $.get(getAPIUrl('engineinfos/' + this.data.engineinfoid  + '/splitterinfos/' + this.data.splitterinfoid + '/template.html'), function(template_html) {
             var template = _.template(template_html);
             that.$el.html(template({data: that.data}));
         });

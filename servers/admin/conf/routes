@@ -34,8 +34,9 @@ POST    /apps/:id/erase_data           controllers.Application.eraseAppData(id: 
 
 # System Level
 GET     /engineinfos                   controllers.Application.getEngineInfoList
-GET     /engineinfos/:id/algoinfos     controllers.Application.getEngineInfoAlgoList(id: String)
-GET     /engineinfos/:id/metricinfos   controllers.Application.getEngineInfoMetricsTypeList(id: String)
+GET     /engineinfos/:id/algoinfos     controllers.Application.getEngineInfoAlgoInfoList(id: String)
+GET     /engineinfos/:id/metricinfos   controllers.Application.getEngineInfoMetricInfoList(id: String)
+GET     /engineinfos/:id/splitterinfos controllers.Application.getEngineInfoSplitterInfoList(id: String)
 
 # An Engine of an App
 GET     /apps/:appid/engines          controllers.Application.getAppEnginelist(appid: Int)
@@ -77,5 +78,5 @@ GET     /apps/:appid/engines/:engineid/algos/:algoid/template.js     controllers
 
 # Metric Info template
 GET     /engineinfos/:engineinfoid/metricinfos/:metricinfoid/template.html    controllers.Application.getMetricInfoTemplateHtml(engineinfoid: String, metricinfoid: String)
-
+GET     /engineinfos/:engineinfoid/splitterinfos/:splitterinfoid/template.html    controllers.Application.getSplitterInfoTemplateHtml(engineinfoid: String, splitterinfoid: String)
 

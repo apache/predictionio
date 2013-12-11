@@ -18,10 +18,11 @@ class OfflineEvalSplitterInfosSpec extends Specification {
 
   def offlineEvalSplitterInfos(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
     t ^
-      "create and get an metric info" ! insertAndGet(offlineEvalSplitterInfos) ^
-      "update an metric info" ! update(offlineEvalSplitterInfos) ^
-      "delete an metric info" ! delete(offlineEvalSplitterInfos) ^
-      "backup and restore metric info" ! backuprestore(offlineEvalSplitterInfos) ^
+      "create and get an splitter info" ! insertAndGet(offlineEvalSplitterInfos) ^
+      "get splitter info by engine info id" ! getByEngineinfoid(offlineEvalSplitterInfos) ^
+      "update an splitter info" ! update(offlineEvalSplitterInfos) ^
+      "delete an splitter info" ! delete(offlineEvalSplitterInfos) ^
+      "backup and restore splitter info" ! backuprestore(offlineEvalSplitterInfos) ^
       bt
   }
 
@@ -38,12 +39,95 @@ class OfflineEvalSplitterInfosSpec extends Specification {
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     offlineEvalSplitterInfos.insert(mapk)
     offlineEvalSplitterInfos.get("map-k") must beSome(mapk)
+  }
+
+  def getByEngineinfoid(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
+    val mapkA = OfflineEvalSplitterInfo(
+      id = "map-k-a",
+      name = "Mean Average Precision A",
+      description = None,
+      engineinfoids = Seq("engine1"),
+      commands = Some(Seq(
+        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
+        "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
+        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
+      paramorder = Seq("k"))
+
+    val mapkB = mapkA.copy(
+      id = "map-k-b",
+      name = "Mean Average Precision B",
+      engineinfoids = Seq("engine1")
+    )
+
+    val mapkC = mapkA.copy(
+      id = "map-k-c",
+      name = "Mean Average Precision C",
+      engineinfoids = Seq("engine2")
+    )
+
+    val mapkD = mapkA.copy(
+      id = "map-k-D",
+      name = "Mean Average Precision D",
+      engineinfoids = Seq("engine3", "engine1")
+    )
+
+    offlineEvalSplitterInfos.insert(mapkA)
+    offlineEvalSplitterInfos.insert(mapkB)
+    offlineEvalSplitterInfos.insert(mapkC)
+    offlineEvalSplitterInfos.insert(mapkD)
+
+    val engine1Splitters = offlineEvalSplitterInfos.getByEngineinfoid("engine1")
+
+    val engine1Splitter1 = engine1Splitters(0)
+    val engine1Splitter2 = engine1Splitters(1)
+    val engine1Splitter3 = engine1Splitters(2)
+
+    val engine2Splitters = offlineEvalSplitterInfos.getByEngineinfoid("engine2")
+
+    val engine2Splitter1 = engine2Splitters(0)
+
+    val engine3Splitters = offlineEvalSplitterInfos.getByEngineinfoid("engine3")
+
+    val engine3Splitter1 = engine3Splitters(0)
+
+    engine1Splitters.length must be equalTo (3) and
+      (engine1Splitter1 must be equalTo (mapkA)) and
+      (engine1Splitter2 must be equalTo (mapkB)) and
+      (engine1Splitter3 must be equalTo (mapkD)) and
+      (engine2Splitters.length must be equalTo (1)) and
+      (engine2Splitter1 must be equalTo (mapkC)) and
+      (engine3Splitters.length must be equalTo (1)) and
+      (engine3Splitter1 must be equalTo (mapkD))
+
   }
 
   def update(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
@@ -56,16 +140,49 @@ class OfflineEvalSplitterInfosSpec extends Specification {
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     offlineEvalSplitterInfos.insert(mapk)
     val updatedMapk = mapk.copy(
-      paramdefaults = mapk.paramdefaults ++ Map("f" -> 20),
-      paramnames = mapk.paramnames ++ Map("f" -> "Foo"),
-      paramdescription = mapk.paramdescription ++ Map("f" -> "FooBar"),
+      commands = Some(Seq(
+        "cmd1",
+        "cmd2",
+        "cmd3")),
+      params = Map(
+        "k" -> Param(
+          id = "k",
+          name = "k parameter",
+          description = Some("Averaging window size"),
+          defaultvalue = 20,
+          constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+          ui = ParamUI(
+            uitype = "text")),
+        "f" -> Param(
+          id = "f",
+          name = "f parameter",
+          description = Some("FooBar"),
+          defaultvalue = 33,
+          constraint = ParamIntegerConstraint(min = Some(1), max = Some(2)),
+          ui = ParamUI(
+            uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "apple section",
+          params = Some(Seq("f", "k")))),
       paramorder = Seq("f", "k"))
+
     offlineEvalSplitterInfos.update(updatedMapk)
     offlineEvalSplitterInfos.get("u-map-k") must beSome(updatedMapk)
   }
@@ -80,9 +197,18 @@ class OfflineEvalSplitterInfosSpec extends Specification {
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map("k" -> Param(
+        id = "k",
+        name = "k parameter",
+        description = Some("Averaging window size"),
+        defaultvalue = 20,
+        constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+        ui = ParamUI(
+          uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     offlineEvalSplitterInfos.insert(mapk)
     offlineEvalSplitterInfos.delete("foo")
@@ -99,9 +225,18 @@ class OfflineEvalSplitterInfosSpec extends Specification {
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
         "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
         "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      paramdefaults = Map("k" -> 20),
-      paramnames = Map("k" -> "k"),
-      paramdescription = Map("k" -> "Averaging window size"),
+      params = Map("k" -> Param(
+        id = "k",
+        name = "k parameter",
+        description = Some("Averaging window size"),
+        defaultvalue = 20,
+        constraint = ParamIntegerConstraint(min = Some(0), max = Some(100)),
+        ui = ParamUI(
+          uitype = "text"))),
+      paramsections = Seq(
+        ParamSection(
+          name = "foo",
+          params = Some(Seq("k")))),
       paramorder = Seq("k"))
     offlineEvalSplitterInfos.insert(mapkbk)
     val fn = "splitterinfos.json"

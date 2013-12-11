@@ -10,31 +10,15 @@ class MongoOfflineEvalSplitterInfos(db: MongoDB) extends OfflineEvalSplitterInfo
   private val coll = db("offlineEvalSplitterInfos")
 
   private def dbObjToOfflineEvalSplitterInfo(dbObj: DBObject) = {
-    val params = dbObj.as[MongoDBList]("params")
-    val paramorder = params map { p => p.asInstanceOf[DBObject].as[String]("param") }
-    val paramdefaults = params map { p => p.asInstanceOf[DBObject].as[Any]("default") }
-    val paramnames = params map { p => p.asInstanceOf[DBObject].as[String]("name") }
-    val paramdescription = params map { p => p.asInstanceOf[DBObject].as[String]("description") }
     OfflineEvalSplitterInfo(
       id = dbObj.as[String]("_id"),
       name = dbObj.as[String]("name"),
       description = dbObj.getAs[String]("description"),
       engineinfoids = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("engineinfoids")),
       commands = dbObj.getAs[MongoDBList]("commands") map { MongoUtils.mongoDbListToListOfString(_) },
-      paramdefaults = Map() ++ (paramorder zip paramdefaults),
-      paramnames = Map() ++ (paramorder zip paramnames),
-      paramdescription = Map() ++ (paramorder zip paramdescription),
-      paramorder = paramorder)
-  }
-
-  private def mergeParams(order: Seq[String], names: Map[String, String], defaults: Map[String, Any], description: Map[String, String]): Seq[Map[String, Any]] = {
-    val listBuffer = collection.mutable.ListBuffer[Map[String, Any]]()
-
-    order foreach { k =>
-      listBuffer += Map("param" -> k, "default" -> defaults(k), "name" -> names(k), "description" -> description(k))
-    }
-
-    listBuffer.toSeq
+      params = (dbObj.as[DBObject]("params") map { p => (p._1, MongoParam.dbObjToParam(p._1, p._2.asInstanceOf[DBObject])) }).toMap,
+      paramsections = dbObj.as[Seq[DBObject]]("paramsections") map { MongoParam.dbObjToParamSection(_) },
+      paramorder = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("paramorder")))
   }
 
   def insert(offlineEvalSplitterInfo: OfflineEvalSplitterInfo) = {
@@ -43,7 +27,9 @@ class MongoOfflineEvalSplitterInfos(db: MongoDB) extends OfflineEvalSplitterInfo
       "_id" -> offlineEvalSplitterInfo.id,
       "name" -> offlineEvalSplitterInfo.name,
       "engineinfoids" -> offlineEvalSplitterInfo.engineinfoids,
-      "params" -> mergeParams(offlineEvalSplitterInfo.paramorder, offlineEvalSplitterInfo.paramnames, offlineEvalSplitterInfo.paramdefaults, offlineEvalSplitterInfo.paramdescription))
+      "params" -> offlineEvalSplitterInfo.params.mapValues { MongoParam.paramToDBObj(_) },
+      "paramsections" -> offlineEvalSplitterInfo.paramsections.map { MongoParam.paramSectionToDBObj(_) },
+      "paramorder" -> offlineEvalSplitterInfo.paramorder)
 
     // optional fields
     val descriptionObj = offlineEvalSplitterInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
@@ -56,12 +42,19 @@ class MongoOfflineEvalSplitterInfos(db: MongoDB) extends OfflineEvalSplitterInfo
 
   def getAll() = coll.find().toSeq map { dbObjToOfflineEvalSplitterInfo(_) }
 
+  def getByEngineinfoid(engineinfoid: String): Seq[OfflineEvalSplitterInfo] = {
+    coll.find(MongoDBObject("engineinfoids" -> MongoDBObject("$in" -> Seq(engineinfoid)))).toSeq map { dbObjToOfflineEvalSplitterInfo(_) }
+  }
+
   def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo, upsert: Boolean = false) = {
     val idObj = MongoDBObject("_id" -> offlineEvalSplitterInfo.id)
     val requiredObj = MongoDBObject(
       "name" -> offlineEvalSplitterInfo.name,
       "engineinfoids" -> offlineEvalSplitterInfo.engineinfoids,
-      "params" -> mergeParams(offlineEvalSplitterInfo.paramorder, offlineEvalSplitterInfo.paramnames, offlineEvalSplitterInfo.paramdefaults, offlineEvalSplitterInfo.paramdescription))
+      "params" -> offlineEvalSplitterInfo.params.mapValues { MongoParam.paramToDBObj(_) },
+      "paramsections" -> offlineEvalSplitterInfo.paramsections.map { MongoParam.paramSectionToDBObj(_) },
+      "paramorder" -> offlineEvalSplitterInfo.paramorder)
+
     val descriptionObj = offlineEvalSplitterInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
     val commandsObj = offlineEvalSplitterInfo.commands.map { c => MongoDBObject("commands" -> c) } getOrElse MongoUtils.emptyObj
 

@@ -52,6 +52,7 @@ object Application extends Controller {
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
+  val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos()
   val offlineEvals = config.getSettingsOfflineEvals()
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
@@ -711,7 +712,7 @@ object Application extends Controller {
    *
    * @param id the engine info id
    */
-  def getEngineInfoAlgoList(id: String) = Action {
+  def getEngineInfoAlgoInfoList(id: String) = Action {
     engineInfos.get(id) map { engineInfo =>
       Ok(Json.obj(
         "engineinfoname" -> engineInfo.name,
@@ -757,7 +758,7 @@ object Application extends Controller {
    *
    * @param id the engine info id
    */
-  def getEngineInfoMetricsTypeList(id: String) = Action {
+  def getEngineInfoMetricInfoList(id: String) = Action {
     engineInfos.get(id) map { engInfo =>
       val metrics = offlineEvalMetricInfos.getByEngineinfoid(engInfo.id).map { m =>
         Json.obj(
@@ -771,6 +772,51 @@ object Application extends Controller {
         "metricslist" -> JsArray(metrics)
       ))
     } getOrElse {
+      InternalServerError(Json.obj("message" -> s"Invalid engineinfo ID: ${id}."))
+    }
+  }
+
+  /**
+   * Returns a list of available splitter infos of a specific engine info
+   *
+   * {{{
+   * GET
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If the engine info id is not found:
+   *   InternalServerError
+   *   {
+   *     "message" : "Invalid EngineInfo ID."
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   { "engineinfoname" : <the name of the engine info>,
+   *     "splitterlist" : [ { "id" : <splitter info id>,
+   *                          "name" : <name of splitter>,
+   *                          "description" : <splitter description>,
+   *                       }, ...
+   *                     ]
+   *   }
+   * }}}
+   *
+   * @param id the engine info id
+   */
+  def getEngineInfoSplitterInfoList(id: String) = Action {
+    engineInfos.get(id).map { engInfo =>
+      val splitters = offlineEvalSplitterInfos.getByEngineinfoid(engInfo.id).map { m =>
+        Json.obj(
+          "id" -> m.id,
+          "name" -> m.name,
+          "description" -> m.description
+        )
+      }
+      Ok(Json.obj(
+        "engineinfoname" -> engInfo.name,
+        "splitterlist" -> JsArray(splitters)
+      ))
+    }.getOrElse {
       InternalServerError(Json.obj("message" -> s"Invalid engineinfo ID: ${id}."))
     }
   }
@@ -2279,7 +2325,21 @@ object Application extends Controller {
         else
           Ok(views.html.metrics.template(handleParamSections[OfflineEvalMetricInfo](metricInfo.paramsections, metricInfo, 1), false))
       } getOrElse {
-        NotFound(s"OfflineEvalMetricInifo ID ${metricinfoid} not found")
+        NotFound(s"OfflineEvalMetricInfo ID ${metricinfoid} not found")
+      }
+  }
+
+  def getSplitterInfoTemplateHtml(engineinfoid: String, splitterinfoid: String) = WithUser { user =>
+    implicit request =>
+      offlineEvalSplitterInfos.get(splitterinfoid) map { splitterInfo =>
+        if (splitterInfo.paramsections.isEmpty)
+          Ok(views.html.splitters.template(handleParamSections[OfflineEvalSplitterInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this splitter."))), splitterInfo, 1), true))
+        else
+          Ok(views.html.splitters.template(handleParamSections[OfflineEvalSplitterInfo](splitterInfo.paramsections, splitterInfo, 1), false))
+      } getOrElse {
+        NotFound(s"OfflineEvalSplitterInfo ID ${splitterinfoid} not found")
       }
   }
 
@@ -2298,7 +2358,7 @@ object Application extends Controller {
   def handleParam[T <: Info](param: Param, info: T, tuning: Boolean = false): String = {
     val content = param.ui.uitype match {
       case "selection" =>
-        uiSelection[T](info, param.id, param.name, param.description, param.ui.selections.map(_.map(s => (s.name, s.value))).get)
+        uiSelection[T](info, param.id, param.name, param.description, param.ui.selections.map(_.map(s => (s.name, s.value))).get, Some(param.defaultvalue.toString))
       case "slider" =>
         uiSlider[T](info, param.id, param.name, param.description)
       case _ =>
@@ -2337,6 +2397,8 @@ object Application extends Controller {
         views.html.engines.text(id, name, description)
       case _: OfflineEvalMetricInfo =>
         views.html.metrics.text(id, name, description, defaultValue)
+      case _: OfflineEvalSplitterInfo =>
+        views.html.splitters.text(id, name, description, defaultValue)
     }
   }
 
@@ -2348,14 +2410,16 @@ object Application extends Controller {
     views.html.engines.slider(id, name, description)
   }
 
-  def uiSelection[T <: Info](info: T, id: String, name: String, description: Option[String], selections: Seq[(String, String)]) = {
+  def uiSelection[T <: Info](info: T, id: String, name: String, description: Option[String], selections: Seq[(String, String)], defaultValue: Option[String] = None) = {
     info match {
       case _: AlgoInfo =>
         views.html.algos.selection(id, name, description, selections)
       case _: EngineInfo =>
         views.html.engines.selection(id, name, description, selections)
       case _: OfflineEvalMetricInfo =>
-        views.html.metrics.selection(id, name, description, selections)
+        views.html.metrics.selection(id, name, description, selections, defaultValue)
+      case _: OfflineEvalSplitterInfo =>
+        views.html.splitters.selection(id, name, description, selections, defaultValue)
     }
   }
 
@@ -2367,6 +2431,8 @@ object Application extends Controller {
         views.html.engines.section1(name, description, content)
       case _: OfflineEvalMetricInfo =>
         views.html.metrics.section1(name, description, content)
+      case _: OfflineEvalSplitterInfo =>
+        views.html.splitters.section1(name, description, content)
     }
   }
 
@@ -2377,6 +2443,7 @@ object Application extends Controller {
       case _: EngineInfo =>
         views.html.engines.section2(name, description, content)
       // OfflineEvalMetricInfo doesn't support section2
+      // OfflineEvalSplitterInfo doesn't support section2
     }
   }
 }
