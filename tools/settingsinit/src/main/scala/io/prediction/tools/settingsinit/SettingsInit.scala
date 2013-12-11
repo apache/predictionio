@@ -83,6 +83,8 @@ object SettingsInit {
           M(params) = info("params")
           SM(paramsections) = info("paramsections")
           S(defaultalgoinfoid) = info("defaultalgoinfoid")
+          S(defaultofflineevalmetricinfoid) = info("defaultofflineevalmetricinfoid")
+          S(defaultofflineevalsplitterinfoid) = info("defaultofflineevalsplitterinfoid")
         } yield {
           println(s"Processing EngineInfo ID: ${id}")
           val castedparams = mapToParams(params)
@@ -93,7 +95,9 @@ object SettingsInit {
             description = description,
             params = castedparams,
             paramsections = castedparamsections,
-            defaultalgoinfoid = defaultalgoinfoid)
+            defaultalgoinfoid = defaultalgoinfoid,
+            defaultofflineevalmetricinfoid = defaultofflineevalmetricinfoid,
+            defaultofflineevalsplitterinfoid = defaultofflineevalsplitterinfoid)
 
           println(s"Deleting any old EngineInfo ID: ${id}")
           engineInfos.delete(id)

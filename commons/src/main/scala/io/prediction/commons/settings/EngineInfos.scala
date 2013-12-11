@@ -13,6 +13,8 @@ import org.json4s.native.Serialization
  * @param description A long description of the engine.
  * @param defaultsettings Default engine settings.
  * @param defaultalgoinfoid Default AlgoInfo ID for this engine.
+ * @param defaultofflineevalmetricinfoid Default OfflineEvalMetricInfo ID for this engine.
+ * @param defaultofflineevalsplitterinfoid Default OfflineEvalSplitter ID for this engine.
  */
 case class EngineInfo(
   id: String,
@@ -20,7 +22,9 @@ case class EngineInfo(
   description: Option[String],
   params: Map[String, Param],
   paramsections: Seq[ParamSection],
-  defaultalgoinfoid: String) extends Info
+  defaultalgoinfoid: String,
+  defaultofflineevalmetricinfoid: String,
+  defaultofflineevalsplitterinfoid: String) extends Info
 
 /** Base trait for implementations that interact with engine info in the backend data store. */
 trait EngineInfos extends Common {

@@ -35,7 +35,9 @@ class EngineInfosSpec extends Specification {
       description = Some("Recommend interesting items to each user personally."),
       params = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
       paramsections = Seq(),
-      defaultalgoinfoid = "mahout-itembased")
+      defaultalgoinfoid = "mahout-itembased",
+      defaultofflineevalmetricinfoid = "metric-x",
+      defaultofflineevalsplitterinfoid = "splitter-y")
     engineInfos.insert(itemrec)
     engineInfos.get("itemrec") must beSome(itemrec)
   }
@@ -47,9 +49,14 @@ class EngineInfosSpec extends Specification {
       description = Some("Discover similar items."),
       params = Map[String, Param](),
       paramsections = Seq(),
-      defaultalgoinfoid = "knnitembased")
+      defaultalgoinfoid = "knnitembased",
+      defaultofflineevalmetricinfoid = "metric-x",
+      defaultofflineevalsplitterinfoid = "splitter-y")
     engineInfos.insert(itemsim)
-    val updatedItemsim = itemsim.copy(defaultalgoinfoid = "mahout-itembasedcf")
+    val updatedItemsim = itemsim.copy(
+      defaultalgoinfoid = "mahout-itembasedcf",
+      defaultofflineevalmetricinfoid = "metric-apple",
+      defaultofflineevalsplitterinfoid = "splitter-orange")
     engineInfos.update(updatedItemsim)
     engineInfos.get("itemsim") must beSome(updatedItemsim)
   }
@@ -61,7 +68,9 @@ class EngineInfosSpec extends Specification {
       description = None,
       params = Map[String, Param](),
       paramsections = Seq(),
-      defaultalgoinfoid = "baz")
+      defaultalgoinfoid = "baz",
+      defaultofflineevalmetricinfoid = "food",
+      defaultofflineevalsplitterinfoid = "yummy")
     engineInfos.insert(foo)
     engineInfos.delete("foo")
     engineInfos.get("foo") must beNone
@@ -74,7 +83,9 @@ class EngineInfosSpec extends Specification {
       description = Some("dead"),
       params = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI(), scopes = None)),
       paramsections = Seq(),
-      defaultalgoinfoid = "bar")
+      defaultalgoinfoid = "bar",
+      defaultofflineevalmetricinfoid = "yummy",
+      defaultofflineevalsplitterinfoid = "food")
     engineInfos.insert(baz)
     val fn = "engineinfos.json"
     val fos = new java.io.FileOutputStream(fn)
