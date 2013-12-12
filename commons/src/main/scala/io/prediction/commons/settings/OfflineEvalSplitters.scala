@@ -64,11 +64,11 @@ class OfflineEvalSplitterSerializer extends CustomSerializer[OfflineEvalSplitter
     case x: JObject =>
       implicit val formats = Serialization.formats(NoTypeHints)
       OfflineEvalSplitter(
-        id = (x \ "id").extract[Int].toInt,
-        evalid = (x \ "evalid").extract[Int].toInt,
+        id = (x \ "id").extract[Int],
+        evalid = (x \ "evalid").extract[Int],
         name = (x \ "name").extract[String],
         infoid = (x \ "infoid").extract[String],
-        settings = (x \ "settings").asInstanceOf[JObject].values)
+        settings = Common.sanitize((x \ "settings").asInstanceOf[JObject].values))
   },
   {
     case x: OfflineEvalSplitter =>
