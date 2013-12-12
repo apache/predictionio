@@ -148,6 +148,7 @@ JARS="${JARS}:${PROG_HOME}/lib/scala-library-2.10.2.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scalap-2.10.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/scala-reflect-2.10.0.jar"
 JARS="${JARS}:${PROG_HOME}/lib/slf4j-api-1.6.0.jar"
+JARS="${JARS}:${PROG_HOME}/lib/slf4j-nop-1.6.0.jar"
 
 JVM_OPT="$JVM_OPT -Dconfig.file=${PROG_HOME}/conf/predictionio.conf -Dio.prediction.base=$PROG_HOME"
 
