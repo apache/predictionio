@@ -145,8 +145,8 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
       test(params, testU2i, itemRecScores, relevantItems, topKItems)
     }
     
-    "itemrec.map MAPAtKDataPreparator with goal = buy" should {
-      val params = Map("goalParam" -> "buy", "kParam" -> "8")
+    "itemrec.map MAPAtKDataPreparator with goal = conversion" should {
+      val params = Map("goalParam" -> "conversion", "kParam" -> "8")
       val relevantItems = List(
         ("u1", "i1,i4,i5"),
         ("u2", "i4,i5"))

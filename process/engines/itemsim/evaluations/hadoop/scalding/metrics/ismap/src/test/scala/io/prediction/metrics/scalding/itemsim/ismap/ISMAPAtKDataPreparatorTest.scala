@@ -126,8 +126,8 @@ class ISMAPAtKDataPreparatorTest extends Specification with TupleConversions {
     test(params, testU2i, relevantUsers, relevantItems)
   }
 
-  "itemsim.ismap ISMAPAtKDataPreparator with goal = buy" should {
-    val params = Map("goalParam" -> "buy", "kParam" -> "8")
+  "itemsim.ismap ISMAPAtKDataPreparator with goal = conversion" should {
+    val params = Map("goalParam" -> "conversion", "kParam" -> "8")
     val relevantUsers = List(
       ("i0", "u0"),
       ("i1", "u0"),
