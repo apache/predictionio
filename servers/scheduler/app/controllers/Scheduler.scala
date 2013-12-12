@@ -54,12 +54,12 @@ object Scheduler extends Controller {
   scheduler.getListenerManager.addJobListener(jobTree)
 
   /** Try search path if hadoop home is not set. */
-  val hadoopCommand = config.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+  val hadoopCommand = config.settingsHadoopHome map { h => h + "/bin/hadoop" } getOrElse { "hadoop" }
 
   /** Schedule update check if enabled. */
   if (config.settingsSchedulerUpdatecheck) {
-    val updateCheckJob = newJob(classOf[UpdateCheckJob]) withIdentity("updatecheck", "updatecheck") build()
-    val updateCheckTrigger = newTrigger() forJob(jobKey("updatecheck", "updatecheck")) withIdentity("updatecheck", "updatecheck") startNow() withSchedule(simpleSchedule() withIntervalInHours(24) repeatForever()) build()
+    val updateCheckJob = newJob(classOf[UpdateCheckJob]) withIdentity ("updatecheck", "updatecheck") build ()
+    val updateCheckTrigger = newTrigger() forJob (jobKey("updatecheck", "updatecheck")) withIdentity ("updatecheck", "updatecheck") startNow () withSchedule (simpleSchedule() withIntervalInHours (24) repeatForever ()) build ()
     scheduler.scheduleJob(updateCheckJob, updateCheckTrigger)
   }
 
@@ -78,7 +78,8 @@ object Scheduler extends Controller {
       /** Complete synchronization. */
       Ok(Json.obj("message" -> "Synchronized algorithms settings with scheduler successfully."))
     } catch {
-      case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
+      case e: RuntimeException =>
+        e.printStackTrace; NotFound(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
       case e: Exception => InternalServerError(Json.obj("message" -> ("Synchronization failed: " + e.getMessage())))
     }
   }
@@ -112,7 +113,7 @@ object Scheduler extends Controller {
                   val offlineEvalJob = Jobs.offlineEvalJob(config, app, engine, offlineEval)
                   scheduler.addJob(offlineEvalJob, true)
 
-                  val trigger = newTrigger() forJob(jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity(offlineEvalid, Jobs.offlineEvalJobGroup) startNow() build()
+                  val trigger = newTrigger() forJob (jobKey(offlineEvalid, Jobs.offlineEvalJobGroup)) withIdentity (offlineEvalid, Jobs.offlineEvalJobGroup) startNow () build ()
                   scheduler.scheduleJob(trigger)
                 }
               }
@@ -131,7 +132,7 @@ object Scheduler extends Controller {
                 val offlineTuneJob = Jobs.offlineTuneJob(config, app, engine, offlineTune)
                 scheduler.addJob(offlineTuneJob, true)
 
-                val trigger = newTrigger() forJob(jobKey(offlineTuneid, Jobs.offlineTuneJobGroup)) withIdentity(offlineTuneid, Jobs.offlineTuneJobGroup) startNow() build()
+                val trigger = newTrigger() forJob (jobKey(offlineTuneid, Jobs.offlineTuneJobGroup)) withIdentity (offlineTuneid, Jobs.offlineTuneJobGroup) startNow () build ()
                 scheduler.scheduleJob(trigger)
               }
             }
@@ -156,7 +157,7 @@ object Scheduler extends Controller {
             algoinfo.batchcommands map { batchcommands =>
               val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
               scheduler.addJob(job, true)
-              val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(s"${algoid}-runonce", Jobs.algoJobGroup) startNow() build()
+              val trigger = newTrigger() forJob (jobKey(algoid, Jobs.algoJobGroup)) withIdentity (s"${algoid}-runonce", Jobs.algoJobGroup) startNow () build ()
               scheduler.scheduleJob(trigger)
             } getOrElse {
               Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
@@ -166,7 +167,7 @@ object Scheduler extends Controller {
             algoinfo.batchcommands map { batchcommands =>
               val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
               scheduler.addJob(job, true)
-              val trigger = newTrigger() forJob(jobKey(algoid, Jobs.algoJobGroup)) withIdentity(algoid, Jobs.algoJobGroup) startNow() withSchedule(simpleSchedule() withIntervalInHours(1) repeatForever()) build()
+              val trigger = newTrigger() forJob (jobKey(algoid, Jobs.algoJobGroup)) withIdentity (algoid, Jobs.algoJobGroup) startNow () withSchedule (simpleSchedule() withIntervalInHours (1) repeatForever ()) build ()
               scheduler.scheduleJob(trigger)
             } getOrElse {
               Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
@@ -220,7 +221,8 @@ object Scheduler extends Controller {
         NotFound(Json.obj("message" -> s"App ID $appid is invalid"))
       }
     } catch {
-      case e: RuntimeException => e.printStackTrace; NotFound(Json.obj("message" -> ("Request failed: " + e.getMessage())))
+      case e: RuntimeException =>
+        e.printStackTrace; NotFound(Json.obj("message" -> ("Request failed: " + e.getMessage())))
       case e: Exception => InternalServerError(Json.obj("message" -> ("Request failed: " + e.getMessage())))
     }
   }

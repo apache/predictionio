@@ -16,3 +16,5 @@ libraryDependencies ++= Seq(
 javaOptions in Test += "-Dconfig.file=conf/test.conf"
 
 play.Project.playScalaSettings
+
+scalariformSettings

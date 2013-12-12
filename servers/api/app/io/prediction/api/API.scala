@@ -1,8 +1,8 @@
 package io.prediction.api
 
 import io.prediction.commons._
-import io.prediction.commons.appdata.{Item, U2IAction, User}
-import io.prediction.commons.settings.{App, Engine}
+import io.prediction.commons.appdata.{ Item, U2IAction, User }
+import io.prediction.commons.settings.{ App, Engine }
 import io.prediction.output.AlgoOutputSelector
 
 import play.api._
@@ -69,7 +69,7 @@ object API extends Controller {
         (user.latlng map { l => Json.obj("pio_latlng" -> Json.arr(l._1, l._2)) } getOrElse emptyJsonObj) ++
         (user.inactive map { i => Json.obj("pio_inactive" -> i) } getOrElse emptyJsonObj) ++
         (user.attributes.map { a => JsObject((a mapValues { anyToJsValue(_) }).toSeq) } getOrElse emptyJsonObj)
-        //(user.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
+    //(user.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
   }
 
   implicit object ItemToJson extends Writes[Item] {
@@ -85,7 +85,7 @@ object API extends Controller {
         (item.latlng map { v => Json.obj("pio_latlng" -> latlngToList(v)) } getOrElse emptyJsonObj) ++
         (item.inactive map { v => Json.obj("pio_inactive" -> v) } getOrElse emptyJsonObj) ++
         (item.attributes.map { a => JsObject((a mapValues { anyToJsValue(_) }).toSeq) } getOrElse emptyJsonObj)
-        //(item.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
+    //(item.attributes.map { a => Json.obj("attributes" -> Json.toJson(a mapValues { anyToJsValue(_) })) } getOrElse emptyJsonObj)
   }
 
   def anyToJsValue(v: Any): JsValue = v match {
@@ -123,11 +123,12 @@ object API extends Controller {
     )
   }
 
-  /** In order to override default error messages, use Lang("en") for
-    * Messages() to enforce framwork to use conf/messages.en because
-    * default messages cannot be overridden by simply using conf/messages
-    * without specifying a language.
-    */
+  /**
+   * In order to override default error messages, use Lang("en") for
+   * Messages() to enforce framwork to use conf/messages.en because
+   * default messages cannot be overridden by simply using conf/messages
+   * without specifying a language.
+   */
   def bindFailed(loe: Seq[FormError]) = APIMessageResponse(
     BAD_REQUEST,
     Map(
@@ -139,53 +140,57 @@ object API extends Controller {
   val numeric: Mapping[String] = of[String] verifying Constraints.pattern("""-?\d+(\.\d*)?""".r, "numeric", "Must be a number.")
   val gender: Mapping[String] = of[String] verifying Constraints.pattern("""[MmFf]""".r, "gender", "Must be either 'M' or 'F'.")
   val listOfInts: Mapping[String] = of[String] verifying Constraint[String]("listOfInts") {
-    o => {
-      try {
-        o.split(",").map { _.toInt }
-        Valid
-      } catch {
-        case _ => Invalid(ValidationError("Must be a list of integers separated by commas."))
+    o =>
+      {
+        try {
+          o.split(",").map { _.toInt }
+          Valid
+        } catch {
+          case _: Throwable => Invalid(ValidationError("Must be a list of integers separated by commas."))
+        }
       }
-    }
   }
   val itypes: Mapping[String] = of[String] verifying Constraints.pattern("""[^\t]+""".r, "itypes", "Must not contain \t.")
   val latlngRegex = """-?\d+(\.\d*)?,-?\d+(\.\d*)?""".r
   val latlng: Mapping[String] = of[String] verifying Constraint[String]("latlng", () => latlngRegex) {
-    o => latlngRegex.unapplySeq(o).map(_ => {
-      val coord = o.split(",") map { _.toDouble }
-      if (coord(0) >= -90 && coord(0) < 90 && coord(1) >= -180 && coord(1) < 180) Valid
-      else Invalid(ValidationError("Cooordinates exceed valid range (-90 <= lat < 90,-180 <= long < 180)."))
-    }).getOrElse(Invalid(ValidationError("Must be in the format of '<latitude>,<longitude>'.")))
+    o =>
+      latlngRegex.unapplySeq(o).map(_ => {
+        val coord = o.split(",") map { _.toDouble }
+        if (coord(0) >= -90 && coord(0) < 90 && coord(1) >= -180 && coord(1) < 180) Valid
+        else Invalid(ValidationError("Cooordinates exceed valid range (-90 <= lat < 90,-180 <= long < 180)."))
+      }).getOrElse(Invalid(ValidationError("Must be in the format of '<latitude>,<longitude>'.")))
   }
   val timestamp: Mapping[String] = of[String] verifying Constraint[String]("timestamp") {
-    o => {
-      try {
-        o.toLong
-        Valid
-      } catch {
-        case e: RuntimeException => try {
-          ISODateTimeFormat.dateTimeParser().parseDateTime(o)
+    o =>
+      {
+        try {
+          o.toLong
           Valid
         } catch {
-          case e: IllegalArgumentException => Invalid(ValidationError("Must either be a Unix time in milliseconds, or an ISO 8601 date and time."))
+          case e: RuntimeException => try {
+            ISODateTimeFormat.dateTimeParser().parseDateTime(o)
+            Valid
+          } catch {
+            case e: IllegalArgumentException => Invalid(ValidationError("Must either be a Unix time in milliseconds, or an ISO 8601 date and time."))
+          }
         }
       }
-    }
   }
   val date: Mapping[String] = of[String] verifying Constraint[String]("date") {
-    o => {
-      try {
-        o.toLong
-        Valid
-      } catch {
-        case _ => try {
-          ISODateTimeFormat.localDateParser().parseLocalDate(o)
+    o =>
+      {
+        try {
+          o.toLong
           Valid
         } catch {
-          case _ => Invalid(ValidationError("Must be an ISO 8601 date."))
+          case _: Throwable => try {
+            ISODateTimeFormat.localDateParser().parseLocalDate(o)
+            Valid
+          } catch {
+            case _: Throwable => Invalid(ValidationError("Must be an ISO 8601 date."))
+          }
         }
       }
-    }
   }
 
   /** Utilties. */
@@ -551,7 +556,7 @@ object API extends Controller {
                     val ll = latlng.split(",")
                     (ll(0).toDouble, ll(1).toDouble)
                   },
-                  within = within map { _.toDouble},
+                  within = within map { _.toDouble },
                   unit = unit
                 )
                 if (res.length > 0) {

@@ -2,19 +2,19 @@ package io.prediction.scheduler
 
 import io.prediction.commons._
 import io.prediction.commons.filepath._
-import io.prediction.commons.settings.{Algo, App, Engine, OfflineEval, OfflineEvalMetric, OfflineTune}
+import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval, OfflineEvalMetric, OfflineTune }
 
 import com.github.nscala_time.time.Imports._
 import org.clapper.scalasti.StringTemplate
-import org.quartz.{DisallowConcurrentExecution, PersistJobDataAfterExecution}
-import org.quartz.{InterruptableJob, Job, JobDetail, JobExecutionContext}
+import org.quartz.{ DisallowConcurrentExecution, PersistJobDataAfterExecution }
+import org.quartz.{ InterruptableJob, Job, JobDetail, JobExecutionContext }
 import org.quartz.JobBuilder.newJob
 import org.quartz.JobKey.jobKey
 import org.quartz.jobs.NativeJob
 
 import play.api.Logger
 
-import scala.collection.mutable.{HashMap, Map, SynchronizedMap}
+import scala.collection.mutable.{ HashMap, Map, SynchronizedMap }
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
 import scala.sys.process._
@@ -25,51 +25,56 @@ object Jobs {
   val offlineTuneJobGroup = "predictionio-offlinetune"
 
   def algoJob(config: Config, app: App, engine: Engine, algo: Algo, batchcommands: Seq[String]) = {
-    /** Add a job, then build a trigger for it.
-      * This is necessary for updating any existing job,
-      * and make sure the trigger will fire.
-      */
-    val job = newJob(classOf[AlgoJob]) withIdentity(algo.id.toString, algoJobGroup) storeDurably(true) build()
+    /**
+     * Add a job, then build a trigger for it.
+     * This is necessary for updating any existing job,
+     * and make sure the trigger will fire.
+     */
+    val job = newJob(classOf[AlgoJob]) withIdentity (algo.id.toString, algoJobGroup) storeDurably (true) build ()
     job.getJobDataMap().put("algoid", algo.id)
     job.getJobDataMap().put("engineinfoid", engine.infoid)
 
     job
   }
 
-  /** Offline Evaluation Flow
-    *
-    * 1. Iterate the following for a specified number of times
-    *    1. Perform data splitting
-    *    2. For each algo to be evaluated
-    *       1. Run algo on training set
-    *       2. Run all metrics on model data from the above against test set
-    * 2. Mark offline evaluation as finished
-    */
+  /**
+   * Offline Evaluation Flow
+   *
+   * 1. Iterate the following for a specified number of times
+   *    1. Perform data splitting
+   *    2. For each algo to be evaluated
+   *       1. Run algo on training set
+   *       2. Run all metrics on model data from the above against test set
+   * 2. Mark offline evaluation as finished
+   */
   def offlineEvalJob(config: Config, app: App, engine: Engine, offlineEval: OfflineEval) = {
-    /** Add a job, then build a trigger for it.
-      * This is necessary for updating any existing job,
-      * and make sure the trigger will fire.
-      */
-    val job = newJob(classOf[OfflineEvalJob]) withIdentity(offlineEval.id.toString, offlineEvalJobGroup) storeDurably(true) build()
+    /**
+     * Add a job, then build a trigger for it.
+     * This is necessary for updating any existing job,
+     * and make sure the trigger will fire.
+     */
+    val job = newJob(classOf[OfflineEvalJob]) withIdentity (offlineEval.id.toString, offlineEvalJobGroup) storeDurably (true) build ()
     job.getJobDataMap().put("evalid", offlineEval.id)
     job
   }
 
-  /** Offline Tuning Flow
-    *
-    * 1. Perform multiple set of data splitting
-    * 2. Train and evaluate baseline algo against data sets from 1.
-    * 3. For a specified number of iterations:
-    *    1. Parameter generator generates new parameters based on previous evaluation results.
-    *    2. Train algo and run metrics against both validation and test sets.
-    * 4. Mark offline evaluation as finished
-    */
+  /**
+   * Offline Tuning Flow
+   *
+   * 1. Perform multiple set of data splitting
+   * 2. Train and evaluate baseline algo against data sets from 1.
+   * 3. For a specified number of iterations:
+   *    1. Parameter generator generates new parameters based on previous evaluation results.
+   *    2. Train algo and run metrics against both validation and test sets.
+   * 4. Mark offline evaluation as finished
+   */
   def offlineTuneJob(config: Config, app: App, engine: Engine, offlineTune: OfflineTune) = {
-    /** Add a job, then build a trigger for it.
-      * This is necessary for updating any existing job,
-      * and make sure the trigger will fire.
-      */
-    val job = newJob(classOf[OfflineTuneJob]) withIdentity(offlineTune.id.toString, offlineTuneJobGroup) storeDurably(true) build()
+    /**
+     * Add a job, then build a trigger for it.
+     * This is necessary for updating any existing job,
+     * and make sure the trigger will fire.
+     */
+    val job = newJob(classOf[OfflineTuneJob]) withIdentity (offlineTune.id.toString, offlineTuneJobGroup) storeDurably (true) build ()
     job.getJobDataMap().put("tuneid", offlineTune.id)
     job
   }
@@ -97,7 +102,7 @@ object Jobs {
       val defaultParams = Scheduler.algoInfos.get(alg.infoid) map { _.params.mapValues(_.defaultvalue) } getOrElse Map[String, String]()
       command.setAttributes(command.attributes ++ defaultParams ++ alg.params)
       command.setAttribute("algoid", alg.id)
-      command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot+"mahout_temp/", app.id, engine.id, alg.id, offlineEval.map(_.id)))
+      command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot + "mahout_temp/", app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("dataFilePrefix", DataFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
       command.setAttribute("algoFilePrefix", AlgoFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
@@ -108,19 +113,20 @@ object Jobs {
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
     command.setAttribute("goalParam", engine.params("goal"))
 
-    /** Locate JAR names
-      * Use those from config file first, then override with SystemInfos.
-      */
+    /**
+     * Locate JAR names
+     * Use those from config file first, then override with SystemInfos.
+     */
     config.jars foreach { kv => command.setAttribute(kv._1, kv._2) }
     val systemInfosJarsR = """^jars\.(.*)""".r
     config.getSettingsSystemInfos.getAll foreach { e =>
       systemInfosJarsR findFirstIn e.id match {
-	case Some(systemInfosJarsR(jarKey)) => command.setAttribute(jarKey, e.value)
-	case None => Unit
+        case Some(systemInfosJarsR(jarKey)) => command.setAttribute(jarKey, e.value)
+        case None => Unit
       }
     }
 
-    command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file="+c).getOrElse("-Dconfig.file=conf/application.conf"))
+    command.setAttribute("configFile", Option(System.getProperty("config.file")).map(c => "-Dconfig.file=" + c).getOrElse("-Dconfig.file=conf/application.conf"))
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
@@ -196,7 +202,7 @@ class AlgoJob extends InterruptableJob {
 
     algos.get(algoid) map { algo =>
       engines.get(algo.engineid) map { engine =>
-        apps.get(engine.appid) map {app =>
+        apps.get(engine.appid) map { app =>
           algoInfos.get(algo.infoid) map { info =>
             info.batchcommands map { batchcommands =>
               Logger.info(s"${logPrefix}Current model set for is ${algo.modelset}")
@@ -305,7 +311,7 @@ class OfflineEvalJob extends InterruptableJob {
           }
         }
         if (iteration > 1) {
-          val iterationkey = s"iteration-${iteration-1}"
+          val iterationkey = s"iteration-${iteration - 1}"
           while (!finishFlags(iterationkey)) {
             Thread.sleep(1000)
           }
@@ -389,7 +395,7 @@ class OfflineEvalJob extends InterruptableJob {
 
     offlineEvals.get(evalid) map { offlineEval =>
       engines.get(offlineEval.engineid) map { engine =>
-        apps.get(engine.appid) map {app =>
+        apps.get(engine.appid) map { app =>
 
           val totalIterations = offlineEval.iterations
           val splittersToRun = offlineEvalSplitters.getByEvalid(offlineEval.id).toSeq
@@ -464,7 +470,7 @@ class OfflineEvalJob extends InterruptableJob {
                   }
                 } getOrElse {
                   Logger.warn(s"${logPrefix}Algo ID ${algo.id}: Metric ID ${metric.id}: Not doing training because algo information for ${algo.infoid} is missing")
-                    step(evalid, currentIteration, "metric", Seq(), Some(algo.id), Some(metric.id))
+                  step(evalid, currentIteration, "metric", Seq(), Some(algo.id), Some(metric.id))
                 }
               }
             }
@@ -505,11 +511,11 @@ class OfflineEvalJob extends InterruptableJob {
 
           for (currentIteration <- 1 to totalIterations) {
             Logger.info(s"${logPrefix}Iteration ${currentIteration}:")
-            Logger.info(s"${logPrefix}  Split: "+exitCodes(s"split-${currentIteration}"))
+            Logger.info(s"${logPrefix}  Split: " + exitCodes(s"split-${currentIteration}"))
             algoids foreach { algoid =>
-              Logger.info(s"${logPrefix}  Algo ID ${algoid}: "+exitCodes(s"training-${currentIteration}-${algoid}"))
+              Logger.info(s"${logPrefix}  Algo ID ${algoid}: " + exitCodes(s"training-${currentIteration}-${algoid}"))
               metricids foreach { metricid =>
-                Logger.info(s"${logPrefix}    Metric ID ${metricid}: "+exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
+                Logger.info(s"${logPrefix}    Metric ID ${metricid}: " + exitCodes(s"metric-${currentIteration}-${algoid}-${metricid}"))
               }
             }
           }
@@ -559,16 +565,16 @@ class OfflineTuneJob extends InterruptableJob {
     steptype match {
       case "split" => {
         /**
-        if (iteration > 1) {
-          val iterationkey = s"iteration-${iteration-1}"
-          while (!finishFlags(iterationkey)) {
-            Thread.sleep(1000)
-          }
-        }
-        */
+         * if (iteration > 1) {
+         * val iterationkey = s"iteration-${iteration-1}"
+         * while (!finishFlags(iterationkey)) {
+         * Thread.sleep(1000)
+         * }
+         * }
+         */
       }
       case "paramgen" => {
-        val keys = Scheduler.offlineEvals.getByTuneid(tuneid).toSeq.map(oe => s"iteration-${oe.id}-${iteration-1}")
+        val keys = Scheduler.offlineEvals.getByTuneid(tuneid).toSeq.map(oe => s"iteration-${oe.id}-${iteration - 1}")
         while (!finishFlags.filterKeys(keys.contains(_)).values.reduce((a, b) => a && b)) {
           Thread.sleep(1000)
         }
@@ -665,7 +671,7 @@ class OfflineTuneJob extends InterruptableJob {
 
     offlineTunes.get(tuneid) map { offlineTune =>
       engines.get(offlineTune.engineid) map { engine =>
-        apps.get(engine.appid) map {app =>
+        apps.get(engine.appid) map { app =>
           val totalLoops = offlineTune.loops
           val offlineEvalsToRun = offlineEvals.getByTuneid(offlineTune.id).toSeq
 
@@ -691,21 +697,22 @@ class OfflineTuneJob extends InterruptableJob {
                 Scheduler.trainingItemRecScores.deleteByAlgoid(algo.id)
                 algos.delete(algo.id)
               }
-              case "itemsim" => algosToClean foreach { algo =>
-                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting any old model data")
-                Scheduler.trainingItemSimScores.deleteByAlgoid(algo.id)
-                algos.delete(algo.id)
-              }
-              Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Deleting any old app data")
-              Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
-              Scheduler.appdataValidationUsers.deleteByAppid(offlineEval.id)
-              Scheduler.appdataValidationItems.deleteByAppid(offlineEval.id)
-              Scheduler.appdataValidationU2IActions.deleteByAppid(offlineEval.id)
+              case "itemsim" =>
+                algosToClean foreach { algo =>
+                  Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Algo ID ${algo.id}: Deleting any old model data")
+                  Scheduler.trainingItemSimScores.deleteByAlgoid(algo.id)
+                  algos.delete(algo.id)
+                }
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}: Deleting any old app data")
+                Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
+                Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
+                Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+                Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
+                Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
+                Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
+                Scheduler.appdataValidationUsers.deleteByAppid(offlineEval.id)
+                Scheduler.appdataValidationItems.deleteByAppid(offlineEval.id)
+                Scheduler.appdataValidationU2IActions.deleteByAppid(offlineEval.id)
             }
 
             val currentIteration = 0
@@ -897,11 +904,11 @@ class OfflineTuneJob extends InterruptableJob {
             val metricsToRun = offlineEvalMetrics.getByEvalid(offlineEval.id).toSeq
             val algoids = algosToRun map { _.id }
             val metricids = metricsToRun map { _.id }
-            Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Split: "+exitCodes(s"split-${offlineEval.id}-${currentIteration}"))
+            Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Split: " + exitCodes(s"split-${offlineEval.id}-${currentIteration}"))
             algoids foreach { algoid =>
-              Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Algo ID ${algoid}: "+exitCodes(s"training-${offlineEval.id}-${currentIteration}-${algoid}"))
+              Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Algo ID ${algoid}: " + exitCodes(s"training-${offlineEval.id}-${currentIteration}-${algoid}"))
               metricids foreach { metricid =>
-                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:     Metric ID ${metricid}: "+exitCodes(s"metric-${offlineEval.id}-${currentIteration}-${algoid}-${metricid}"))
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:     Metric ID ${metricid}: " + exitCodes(s"metric-${offlineEval.id}-${currentIteration}-${algoid}-${metricid}"))
               }
             }
           }
@@ -913,9 +920,9 @@ class OfflineTuneJob extends InterruptableJob {
               val algoids = algosToRun map { _.id }
               val metricids = metricsToRun map { _.id }
               algoids foreach { algoid =>
-                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Algo ID ${algoid}: "+exitCodes(s"training-${offlineEval.id}-${currentLoop}-${algoid}"))
+                Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:   Algo ID ${algoid}: " + exitCodes(s"training-${offlineEval.id}-${currentLoop}-${algoid}"))
                 metricids foreach { metricid =>
-                  Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:     Metric ID ${metricid}: "+exitCodes(s"metric-${offlineEval.id}-${currentLoop}-${algoid}-${metricid}"))
+                  Logger.info(s"${logPrefix}OfflineEval ID ${offlineEval.id}:     Metric ID ${metricid}: " + exitCodes(s"metric-${offlineEval.id}-${currentLoop}-${algoid}-${metricid}"))
                 }
               }
             }
