@@ -43,7 +43,7 @@ import io.prediction.commons.scalding.appdata.U2iActions
   * --algoid: <int>
   *
   * --kParam: <int>
-  * --goalParam: <string> ("view", "buy", "like", "rate3", "rate4", "rate5)
+  * --goalParam: <string> ("view", "conversion", "like", "rate3", "rate4", "rate5)
   *
   * Optional args:
   * --test_dbHost: <string> (eg. "127.0.0.1")
@@ -86,12 +86,12 @@ class ISMAPAtKDataPreparator(args: Args) extends Job(args) {
   val algoidArg = args("algoid").toInt
 
   val GOAL_VIEW: String = "view"
-  val GOAL_BUY: String = "buy"
+  val GOAL_CONVERSION: String = "conversion"
   val GOAL_LIKE: String = "like"
   val GOAL_RATE3: String = "rate3"
   val GOAL_RATE4: String = "rate4"
   val GOAL_RATE5: String = "rate5"
-  val GOAL_ARG_LIST: List[String] = List(GOAL_VIEW, GOAL_BUY, GOAL_LIKE, GOAL_RATE3, GOAL_RATE4, GOAL_RATE5)
+  val GOAL_ARG_LIST: List[String] = List(GOAL_VIEW, GOAL_CONVERSION, GOAL_LIKE, GOAL_RATE3, GOAL_RATE4, GOAL_RATE5)
 
   val goalParamArg = args("goalParam")
 
@@ -121,7 +121,7 @@ class ISMAPAtKDataPreparator(args: Args) extends Job(args) {
 
       goalParamArg match {
         case GOAL_VIEW => (action == ACTION_VIEW)
-        case GOAL_BUY => (action == ACTION_CONVERSION)
+        case GOAL_CONVERSION => (action == ACTION_CONVERSION)
         case GOAL_LIKE => (action == ACTION_LIKE)
         case GOAL_RATE3 => (action == ACTION_RATE) && (v.toInt >= 3)
         case GOAL_RATE4 => (action == ACTION_RATE) && (v.toInt >= 4)
