@@ -21,6 +21,8 @@ class AdminSpec extends Specification {
   val config = new Config
   val algoInfos = config.getSettingsAlgoInfos()
   val engineInfos = config.getSettingsEngineInfos()
+  val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
+  val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos()
 
   algoInfos.insert(AlgoInfo(
     id = "dummy",
@@ -89,6 +91,54 @@ class AdminSpec extends Specification {
     defaultofflineevalmetricinfoid = "dummy-metric",
     defaultofflineevalsplitterinfoid = "dummy-splitter"))
 
+  offlineEvalMetricInfos.insert(OfflineEvalMetricInfo(
+    id = "dummy-metric",
+    name = "dummy-metric",
+    description = None,
+    engineinfoids = Seq("itemrec"),
+    commands = None,
+    params = Map(
+      "foo" -> Param(
+        id = "foo",
+        name = "foo",
+        description = None,
+        defaultvalue = "bar",
+        ui = ParamUI(),
+        constraint = ParamStringConstraint()),
+      "bar" -> Param(
+        id = "bar",
+        name = "bar",
+        description = None,
+        defaultvalue = 3.14,
+        ui = ParamUI(),
+        constraint = ParamDoubleConstraint())),
+    paramsections = Seq(),
+    paramorder = Seq()))
+
+  offlineEvalSplitterInfos.insert(OfflineEvalSplitterInfo(
+    id = "dummy-splitter",
+    name = "dummy-splitter",
+    description = None,
+    engineinfoids = Seq("itemsim"),
+    commands = None,
+    params = Map(
+      "foo" -> Param(
+        id = "foo",
+        name = "foo",
+        description = None,
+        defaultvalue = true,
+        ui = ParamUI(),
+        constraint = ParamBooleanConstraint()),
+      "bar" -> Param(
+        id = "bar",
+        name = "bar",
+        description = None,
+        defaultvalue = 3,
+        ui = ParamUI(),
+        constraint = ParamIntegerConstraint())),
+    paramsections = Seq(),
+    paramorder = Seq()))
+
   "PredictionIO Forms" should {
     "bind from good request 1" in new WithApplication {
       val f = Form(single("algoinfoid" -> mapOfStringToAny))
@@ -133,12 +183,36 @@ class AdminSpec extends Specification {
       val bf = f.bind(Map(
         "anyid" -> "v12",
         "infotype" -> "engine",
-        "freshness" -> "4"))
+        "freshness" -> "4",
+        "similarityFunction" -> "city"))
       bf.hasErrors must beFalse and
         (bf.fold(
           f => 1 must be_==(2),
           params => {
             params("freshness") must be_==(4)
+          }
+        ))
+    }
+
+    "bind from good request 4" in new WithApplication {
+      val f = Form(single("infoid" -> seqOfMapOfStringToAny))
+      val bf = f.bind(Map(
+        "infoid[1]" -> "dummy-splitter",
+        "infoid[0]" -> "dummy-metric",
+        "infotype[1]" -> "offlineevalsplitter",
+        "infotype[0]" -> "offlineevalmetric",
+        "foo[0]" -> "baz",
+        "bar[0]" -> "12.345",
+        "foo[1]" -> "false",
+        "bar[1]" -> "54321"))
+      bf.hasErrors must beFalse and
+        (bf.fold(
+          f => 1 must be_==(2),
+          params => {
+            (params(0)("foo") must be_==("baz")) and
+              (params(0)("bar") must be_==(12.345)) and
+              (params(1)("foo") must be_==(false)) and
+              (params(1)("bar") must be_==(54321))
           }
         ))
     }
@@ -161,9 +235,8 @@ class AdminSpec extends Specification {
         "cd" -> "false",
         "ef" -> "deadbeef",
         "gh" -> "456.789"))
-      val params = bf.get
-      bf.hasErrors must beFalse and
-        (params.get("ab") must beNone)
+      bf.hasErrors must beTrue and
+        (bf.errors(0).key must be_==("ab"))
     }
 
     "bind from bad request 3" in new WithApplication {
@@ -230,6 +303,22 @@ class AdminSpec extends Specification {
         "gh" -> "d456.789d"))
       bf.hasErrors must beTrue and
         (bf.errors(0).key must be_==("engineinfoid"))
+    }
+
+    "bind from good request 8" in new WithApplication {
+      val f = Form(single("infoid" -> seqOfMapOfStringToAny))
+      val bf = f.bind(Map(
+        "infoid[0]" -> "dummy-splitter",
+        "infoid[1]" -> "dummy-metric",
+        "infotype[0]" -> "offlineevalsplitter",
+        "infotype[1]" -> "offlineevalmetric",
+        "foo[0]" -> "baz",
+        "bar[0]" -> "12.345",
+        "foo[1]" -> "false",
+        "bar[1]" -> "54321"))
+      bf.hasErrors must beTrue and
+        (bf.errors(0).key must be_==("foo[0]")) and
+        (bf.errors(1).key must be_==("bar[0]"))
     }
   }
 
