@@ -522,7 +522,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -559,7 +559,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -596,7 +596,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -633,7 +633,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -1041,7 +1041,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -1078,7 +1078,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -1115,7 +1115,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -1152,7 +1152,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -1480,7 +1480,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -1517,7 +1517,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -1554,7 +1554,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -1591,7 +1591,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -1933,7 +1933,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -1970,7 +1970,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -2007,7 +2007,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -2044,7 +2044,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -2365,7 +2365,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -2402,7 +2402,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -2439,7 +2439,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -2476,7 +2476,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -2692,7 +2692,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -2729,7 +2729,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -2766,7 +2766,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -2803,7 +2803,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -2973,7 +2973,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -3010,7 +3010,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -3047,7 +3047,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -3084,7 +3084,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -3352,7 +3352,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -3389,7 +3389,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -3426,7 +3426,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -3463,7 +3463,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -3794,7 +3794,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -3831,7 +3831,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -3868,7 +3868,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -3905,7 +3905,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -4288,7 +4288,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -4325,7 +4325,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -4362,7 +4362,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -4399,7 +4399,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
@@ -4762,7 +4762,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 3
+                    "defaultvalue": "3"
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -4799,7 +4799,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 5
+                    "defaultvalue": "5"
                 },
                 "dislikeParam": {
                     "name": "Dislike Score",
@@ -4836,7 +4836,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": "1"
                 },
                 "conversionParam": {
                     "name": "Conversion Score",
@@ -4873,7 +4873,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": 4
+                    "defaultvalue": "4"
                 },
                 "conflictParam": {
                     "name": "Override",
