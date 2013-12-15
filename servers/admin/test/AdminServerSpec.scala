@@ -18,9 +18,11 @@ import java.net.URLEncoder
 
 import io.prediction.commons.Config
 import io.prediction.commons.settings.{ App, Engine, Algo }
-import io.prediction.commons.settings.{ Param, ParamDoubleConstraint, ParamIntegerConstraint, ParamUI }
+import io.prediction.commons.settings.{ Param, ParamDoubleConstraint, ParamIntegerConstraint, ParamBooleanConstraint, ParamUI }
 import io.prediction.commons.settings.{ OfflineEval, OfflineEvalMetric, OfflineEvalSplitter, OfflineEvalResult }
 import io.prediction.commons.settings.{ EngineInfo, AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo }
+
+import Helper.{ algoParamToString, offlineEvalMetricParamToString }
 
 class AdminServerSpec extends Specification with JsonMatchers {
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -66,107 +68,118 @@ class AdminServerSpec extends Specification with JsonMatchers {
   }
 
   /* setup system info (engineinfo, algoinfo, etc) */
-  def setupInfo() = {
+  val appleEngineInfo = EngineInfo(
+    id = "apple-engine",
+    name = "Apple Engine Info Name",
+    description = Some("Apple engine info description"),
+    params = Map[String, Param](
+      "abc" -> Param(
+        id = "abc",
+        name = "",
+        description = None,
+        defaultvalue = 123.4,
+        constraint = ParamDoubleConstraint(),
+        ui = ParamUI())),
+    paramsections = Seq(),
+    defaultalgoinfoid = "pizza-algo",
+    defaultofflineevalmetricinfoid = "vanilla-metric",
+    defaultofflineevalsplitterinfoid = "brownie-splitter"
+  )
 
-    val itemrecEngine = EngineInfo(
-      id = "itemrec",
-      name = "Item Recommendation Engine",
-      description = Some("Description 1"),
-      params = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI())),
-      paramsections = Seq(),
-      defaultalgoinfoid = "knn",
-      defaultofflineevalmetricinfoid = "map",
-      defaultofflineevalsplitterinfoid = "test-splitter"
-    )
+  engineInfos.insert(appleEngineInfo)
 
-    engineInfos.insert(itemrecEngine)
+  val pizzaAlgoInfo = AlgoInfo(
+    id = "pizza-algo",
+    name = "Pizza Algo Info Name",
+    description = Some("Pizza algo info description."),
+    batchcommands = Some(Seq(
+      "algo cmd1",
+      "algo cmd2",
+      "algo cmd3")),
+    offlineevalcommands = Some(Seq(
+      "algo cmd1",
+      "algo cmd2",
+      "algo cmd3")),
+    params = Map(
+      "aParam" -> Param(
+        id = "aParam",
+        name = "A Parameter",
+        description = Some("A parameter description"),
+        defaultvalue = 4,
+        constraint = ParamIntegerConstraint(),
+        ui = ParamUI()),
+      "bParam" -> Param(
+        id = "bParam",
+        name = "B Parameter",
+        description = Some("B parameter description"),
+        defaultvalue = 55,
+        constraint = ParamIntegerConstraint(),
+        ui = ParamUI())
+    ),
+    paramorder = Seq(
+      "aParam",
+      "bParam"),
+    paramsections = Seq(),
+    engineinfoid = "apple-engine",
+    techreq = Seq("Hadoop"),
+    datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
 
-    val knnAlgo = AlgoInfo(
-      id = "knn",
-      name = "kNN Item Based Collaborative Filtering",
-      description = Some("This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items."),
-      batchcommands = Some(Seq(
-        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
-        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
-        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$")),
-      offlineevalcommands = Some(Seq(
-        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
-        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
-        "$hadoop$ jar $jar$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false")),
-      params = Map(
-        "aParam" -> Param(
-          id = "aParam",
-          name = "A Parameter",
-          description = Some("A parameter description"),
-          defaultvalue = 4,
-          constraint = ParamIntegerConstraint(),
-          ui = ParamUI()),
-        "bParam" -> Param(
-          id = "bParam",
-          name = "B Parameter",
-          description = Some("B parameter description"),
-          defaultvalue = 55,
-          constraint = ParamIntegerConstraint(),
-          ui = ParamUI())
-      ),
-      paramorder = Seq(
-        "aParam",
-        "bParam"),
-      paramsections = Seq(),
-      engineinfoid = "itemrec",
-      techreq = Seq("Hadoop"),
-      datareq = Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
+  algoInfos.insert(pizzaAlgoInfo)
 
-    algoInfos.insert(knnAlgo)
+  val vanillaMetricInfo = OfflineEvalMetricInfo(
+    id = "vanilla-metric",
+    name = "Vanilla Metric Name",
+    description = Some("Vanilla metric description"),
+    engineinfoids = Seq("apple-engine"),
+    commands = Some(Seq(
+      "cmd1",
+      "cmd2",
+      "cmd3")),
+    params = Map(
+      "jParam" -> Param(
+        id = "jParam",
+        name = "J parameter",
+        description = Some("J parameter description"),
+        defaultvalue = 21,
+        constraint = ParamIntegerConstraint(),
+        ui = ParamUI())
+    ),
+    paramsections = Seq(),
+    paramorder = Seq("jParam")
+  )
 
-    val mapMetric = OfflineEvalMetricInfo(
-      id = "map",
-      name = "Mean Average Precision A",
-      description = Some("metric description"),
-      engineinfoids = Seq("itemrec"),
-      commands = Some(Seq(
-        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
-        "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
-        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      params = Map(
-        "jParam" -> Param(
-          id = "jParam",
-          name = "J parameter",
-          description = Some("J parameter description"),
-          defaultvalue = 21,
-          constraint = ParamIntegerConstraint(),
-          ui = ParamUI())
-      ),
-      paramsections = Seq(),
-      paramorder = Seq("jParam")
-    )
+  offlineEvalMetricInfos.insert(vanillaMetricInfo)
 
-    offlineEvalMetricInfos.insert(mapMetric)
+  val brownieSplitterInfo = OfflineEvalSplitterInfo(
+    id = "brownie-splitter",
+    name = "Brownie Splitter Name",
+    description = Some("Brownie Splitter description"),
+    engineinfoids = Seq("apple-engine"),
+    commands = Some(Seq(
+      "cmd1",
+      "cmd2",
+      "cmd3")),
+    params = Map(
+      "sParam" -> Param(
+        id = "sParam",
+        name = "S parameter",
+        description = Some("S parameter description"),
+        defaultvalue = 21,
+        constraint = ParamIntegerConstraint(),
+        ui = ParamUI()),
+      "tParam" -> Param(
+        id = "tParam",
+        name = "T parameter",
+        description = Some("T parameter description"),
+        defaultvalue = false,
+        constraint = ParamBooleanConstraint(),
+        ui = ParamUI())
+    ),
+    paramsections = Seq(),
+    paramorder = Seq("sParam", "tParam")
+  )
 
-    val testSplitter = OfflineEvalSplitterInfo(
-      id = "test-splitter",
-      name = "Test Splitter Name",
-      description = Some("Test Splitter description"),
-      engineinfoids = Seq("itemrec"),
-      commands = Some(Seq(
-        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
-        "java -Dio.prediction.base=$base$ $configFile$ -Devalid=$evalid$ -Dalgoid=$algoid$ -Dk=$kParam$ -Dmetricid=$metricid$ -Dhdfsroot=$hdfsRoot$ -jar $topkJar$",
-        "$hadoop$ jar $pdioEvalJar$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$")),
-      params = Map(
-        "sParam" -> Param(
-          id = "sParam",
-          name = "S parameter",
-          description = Some("S parameter description"),
-          defaultvalue = 21,
-          constraint = ParamIntegerConstraint(),
-          ui = ParamUI())
-      ),
-      paramsections = Seq(),
-      paramorder = Seq("sParam")
-    )
-
-    offlineEvalSplitterInfos.insert(testSplitter)
-  }
+  offlineEvalSplitterInfos.insert(brownieSplitterInfo)
 
   /* convert algo to Json */
   def algoToJson(algo: Algo, appid: Int) = {
@@ -176,10 +189,22 @@ class AdminServerSpec extends Specification with JsonMatchers {
       "appid" -> appid,
       "engineid" -> algo.engineid,
       "algoinfoid" -> algo.infoid,
-      "algoinfoname" -> "kNN Item Based Collaborative Filtering", // TODO: hard code for now
+      "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
       "status" -> algo.status,
       "createdtime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
       "updatedtime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
+    )
+  }
+
+  def algoToJsonWithParam(algo: Algo, appid: Int) = {
+    Json.obj(
+      "id" -> algo.id,
+      "algoname" -> algo.name,
+      "appid" -> appid,
+      "engineid" -> algo.engineid,
+      "algoinfoid" -> algo.infoid,
+      "algoinfoname" -> algoInfos.get(algo.infoid).get.name,
+      "settingsstring" -> algoParamToString(algo, algoInfos.get(algo.infoid))
     )
   }
 
@@ -187,9 +212,18 @@ class AdminServerSpec extends Specification with JsonMatchers {
     Json.obj(
       "id" -> metric.id,
       "engineid" -> engineid,
-      "engineinfoid" -> "itemrec", // TODO: hard code now
+      "engineinfoid" -> engines.get(engineid).get.id,
       "metricsinfoid" -> metric.infoid,
-      "metricsname" -> "Mean Average Precision A" // TODO: hard code now
+      "metricsname" -> offlineEvalMetricInfos.get(metric.infoid).get.name
+    )
+  }
+
+  def offlineEvalMetricToJsonWithParam(metric: OfflineEvalMetric, engineid: Int) = {
+    Json.obj(
+      "id" -> metric.id,
+      "metricsinfoid" -> metric.infoid,
+      "metricsname" -> offlineEvalMetricInfos.get(metric.infoid).get.name,
+      "settingsstring" -> offlineEvalMetricParamToString(metric, offlineEvalMetricInfos.get(metric.infoid))
     )
   }
 
@@ -208,18 +242,18 @@ class AdminServerSpec extends Specification with JsonMatchers {
     id = 0,
     appid = appid,
     name = "test-engine",
-    infoid = "itemrec",
+    infoid = "apple-engine",
     itypes = None, // NOTE: default None (means all itypes)
-    params = Map("a" -> "b")
+    params = engineInfos.get("apple-engine").get.params.mapValues(_.defaultvalue)
   )
 
   def algoTemplate(engineid: Int) = {
-    val algoInfo = algoInfos.get("knn").get
+    val algoInfo = algoInfos.get("pizza-algo").get
     Algo(
       id = 0,
       engineid = 0,
       name = "test-algo",
-      infoid = "knn",
+      infoid = "pizza-algo",
       command = "",
       params = algoInfo.params.mapValues(_.defaultvalue),
       settings = Map(), // no use for now
@@ -246,31 +280,29 @@ class AdminServerSpec extends Specification with JsonMatchers {
   }
 
   def offlineEvalSplitterTemplate(evalid: Int) = {
+    val splitterInfo = offlineEvalSplitterInfos.get("brownie-splitter").get
     OfflineEvalSplitter(
       id = -1,
       evalid = evalid,
       name = ("sim-eval-" + evalid + "-splitter"),
-      infoid = "trainingtestsplit",
+      infoid = "brownie-splitter",
       settings = Map(
         "trainingPercent" -> 0.5,
         "validationPercent" -> 0.2,
-        "testPercent" -> 0.2,
-        "timeorder" -> false
-      )
+        "testPercent" -> 0.2
+      ) ++ splitterInfo.params.mapValues(_.defaultvalue)
     )
   }
 
   def offlineEvalMetricTemplate(evalid: Int) = {
-    val metricInfo = offlineEvalMetricInfos.get("map").get
+    val metricInfo = offlineEvalMetricInfos.get("vanilla-metric").get
     OfflineEvalMetric(
       id = -1,
-      infoid = "map",
+      infoid = "vanilla-metric",
       evalid = evalid,
       params = metricInfo.params.mapValues(_.defaultvalue)
     )
   }
-
-  setupInfo()
 
   /* tests */
   "POST /signin" should {
@@ -471,51 +503,54 @@ class AdminServerSpec extends Specification with JsonMatchers {
       val r = HelperAwait(wsUrl(s"/engineinfos").get())
 
       r.status must equalTo(OK) and
-        (r.json must equalTo(Json.arr(Json.obj("id" -> "itemrec", "engineinfoname" -> "Item Recommendation Engine", "description" -> "Description 1"))))
+        (r.json must equalTo(Json.arr(Json.obj(
+          "id" -> appleEngineInfo.id,
+          "engineinfoname" -> appleEngineInfo.name,
+          "description" -> appleEngineInfo.description))))
     }
 
     "return all algo infos of a engineinfoid" in new WithServer {
-      val r = HelperAwait(wsUrl(s"/engineinfos/itemrec/algoinfos").get())
+      val r = HelperAwait(wsUrl(s"/engineinfos/${appleEngineInfo.id}/algoinfos").get())
 
       r.status must equalTo(OK) and
         (r.json must equalTo(Json.obj(
-          "engineinfoname" -> "Item Recommendation Engine",
+          "engineinfoname" -> appleEngineInfo.name,
           "algotypelist" -> Json.arr(Json.obj(
-            "id" -> "knn",
-            "algoinfoname" -> "kNN Item Based Collaborative Filtering",
-            "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
-            "req" -> Json.toJson(Seq("Hadoop")),
-            "datareq" -> Json.toJson(Seq("Users, Items, and U2I Actions such as Like, Buy and Rate."))
+            "id" -> pizzaAlgoInfo.id,
+            "algoinfoname" -> pizzaAlgoInfo.name,
+            "description" -> pizzaAlgoInfo.description,
+            "req" -> Json.toJson(pizzaAlgoInfo.techreq),
+            "datareq" -> Json.toJson(pizzaAlgoInfo.datareq)
           ))
         )))
     }
 
     "return all metric infos of a engineinfoid" in new WithServer {
-      val r = HelperAwait(wsUrl(s"/engineinfos/itemrec/metricinfos").get())
+      val r = HelperAwait(wsUrl(s"/engineinfos/${appleEngineInfo.id}/metricinfos").get())
 
       r.status must equalTo(OK) and
         (r.json must equalTo(Json.obj(
-          "engineinfoname" -> "Item Recommendation Engine",
-          "defaultmetric" -> "map",
+          "engineinfoname" -> appleEngineInfo.name,
+          "defaultmetric" -> appleEngineInfo.defaultofflineevalmetricinfoid,
           "metricslist" -> Json.arr(Json.obj(
-            "id" -> "map",
-            "name" -> "Mean Average Precision A",
-            "description" -> "metric description"
+            "id" -> vanillaMetricInfo.id,
+            "name" -> vanillaMetricInfo.name,
+            "description" -> vanillaMetricInfo.description
           ))
         )))
     }
 
     "return all spitter infos of a engineinfoid" in new WithServer {
-      val r = HelperAwait(wsUrl(s"/engineinfos/itemrec/splitterinfos").get())
+      val r = HelperAwait(wsUrl(s"/engineinfos/${appleEngineInfo.id}/splitterinfos").get())
 
       r.status must equalTo(OK) and
         (r.json must equalTo(Json.obj(
-          "engineinfoname" -> "Item Recommendation Engine",
-          "defaultsplitter" -> "test-splitter",
+          "engineinfoname" -> appleEngineInfo.name,
+          "defaultsplitter" -> appleEngineInfo.defaultofflineevalsplitterinfoid,
           "splitterlist" -> Json.arr(Json.obj(
-            "id" -> "test-splitter",
-            "name" -> "Test Splitter Name",
-            "description" -> "Test Splitter description"
+            "id" -> brownieSplitterInfo.id,
+            "name" -> brownieSplitterInfo.name,
+            "description" -> brownieSplitterInfo.description
           ))
         )))
     }
@@ -541,7 +576,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val appid = apps.insert(testApp)
 
     "create an engine and write to database" in new WithServer {
-      val engineinfoid = "itemrec"
+      val engineinfoid = "apple-engine"
       val enginename = "My-Engine-A"
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines"), email, password).
@@ -568,7 +603,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return BAD_REQUEST if engine name has space" in new WithServer {
-      val engineinfoid = "itemrec"
+      val engineinfoid = "apple-engine"
       val enginename = "Space is not allowed"
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines"), email, password).
@@ -582,7 +617,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return BAD_REQUEST if duplicated engine name" in new WithServer {
-      val engineinfoid = "itemrec"
+      val engineinfoid = "apple-engine"
       val enginename = "myengine"
       val enginename2 = "myengine2"
 
@@ -645,11 +680,12 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val appid2 = apps.insert(testApp2)
     val appid3 = apps.insert(testApp3)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "get-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
@@ -668,7 +704,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
       r.status must equalTo(OK) and
         (r.json must equalTo(Json.obj(
           "id" -> engineid,
-          "engineinfoid" -> "itemrec",
+          "engineinfoid" -> engineinfoid,
           "appid" -> appid,
           "enginename" -> "get-engine",
           "enginestatus" -> "noappdata"
@@ -705,7 +741,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
             Json.obj(
               "id" -> engineid2,
               "enginename" -> "get-engine2",
-              "engineinfoid" -> "itemrec"
+              "engineinfoid" -> engineinfoid
             )
           )
         )))
@@ -721,17 +757,17 @@ class AdminServerSpec extends Specification with JsonMatchers {
             Json.obj(
               "id" -> engineid,
               "enginename" -> "get-engine",
-              "engineinfoid" -> "itemrec"
+              "engineinfoid" -> engineinfoid
             ),
             Json.obj(
               "id" -> engineid3,
               "enginename" -> "get-engine3",
-              "engineinfoid" -> "itemrec"
+              "engineinfoid" -> engineinfoid
             ),
             Json.obj(
               "id" -> engineid4,
               "enginename" -> "get-engine4",
-              "engineinfoid" -> "itemrec"
+              "engineinfoid" -> engineinfoid
             )
           )
         )))
@@ -770,18 +806,19 @@ class AdminServerSpec extends Specification with JsonMatchers {
     )
     val appid = apps.insert(testApp)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "test-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
     val engineid = engines.insert(testEngine)
 
     "create algo and write to database" in new WithServer {
-      val algoinfoid = "knn"
+      val algoinfoid = "pizza-algo"
       val algoname = "my-algo"
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_available"), email, password).
         post(Json.obj("algoinfoid" -> algoinfoid, "algoname" -> algoname)))
@@ -803,7 +840,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "appid" -> appid,
         "engineid" -> engineid,
         "algoinfoid" -> algoinfoid,
-        "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+        "algoinfoname" -> algoInfos.get("pizza-algo").get.name,
         "status" -> "ready",
         "createdtime" -> algoInDB.map(x => timeFormat.print(x.createtime.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
         "updatedtime" -> algoInDB.map(x => timeFormat.print(x.updatetime.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error")
@@ -823,7 +860,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return BAD_REQUEST if algo name has space" in new WithServer {
-      val algoinfoid = "knn"
+      val algoinfoid = "pizza-algo"
       val algoname = "name with-space"
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_available"), email, password).
         post(Json.obj("algoinfoid" -> algoinfoid, "algoname" -> algoname)))
@@ -832,7 +869,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return BAD_REQUEST if empty algo name" in new WithServer {
-      val algoinfoid = "knn"
+      val algoinfoid = "pizza-algo"
       val algoname = ""
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/algos_available"), email, password).
         post(Json.obj("algoinfoid" -> algoinfoid, "algoname" -> algoname)))
@@ -841,7 +878,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return BAD_REQUEST if duplicated algo name" in new WithServer {
-      val algoinfoid = "knn"
+      val algoinfoid = "pizza-algo"
       val algoname = "my-dup-algo"
       val algoname2 = "my-dup-algo2"
 
@@ -860,7 +897,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return NOT_FOUND if appid is invalid" in new WithServer {
-      val algoinfoid = "knn"
+      val algoinfoid = "pizza-algo"
       val algoname = "my-algoname"
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/99999/engines/${engineid}/algos_available"), email, password).
         post(Json.obj("algoinfoid" -> algoinfoid, "algoname" -> algoname)))
@@ -869,7 +906,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     }
 
     "return NOT_FOUND if engineid is invalid" in new WithServer {
-      val algoinfoid = "knn"
+      val algoinfoid = "pizza-algo"
       val algoname = "my-algoname"
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/999999/algos_available"), email, password).
         post(Json.obj("algoinfoid" -> algoinfoid, "algoname" -> algoname)))
@@ -903,11 +940,12 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val appid = apps.insert(testApp)
     val appid2 = apps.insert(testApp2)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "test-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
@@ -924,13 +962,13 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val engineid2 = engines.insert(testEngine2)
     val engineid3 = engines.insert(testEngine3)
 
-    val algoInfo = algoInfos.get("knn").get
+    val algoInfo = algoInfos.get("pizza-algo").get
 
     val newAlgo = Algo(
       id = -1,
       engineid = engineid,
       name = "get-algo",
-      infoid = "knn",
+      infoid = "pizza-algo",
       command = "",
       params = algoInfo.params.mapValues(_.defaultvalue),
       settings = Map(), // no use for now
@@ -966,8 +1004,8 @@ class AdminServerSpec extends Specification with JsonMatchers {
           "algoname" -> "get-algo",
           "appid" -> appid,
           "engineid" -> engineid,
-          "algoinfoid" -> "knn",
-          "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+          "algoinfoid" -> "pizza-algo",
+          "algoinfoname" -> algoInfos.get("pizza-algo").get.name,
           "status" -> "ready",
           "createdtime" -> timeFormat.print(DateTime.now.hour(4).minute(56).second(35).withZone(DateTimeZone.forID("UTC"))),
           "updatedtime" -> timeFormat.print(DateTime.now.hour(5).minute(6).second(7).withZone(DateTimeZone.forID("UTC")))
@@ -1012,8 +1050,8 @@ class AdminServerSpec extends Specification with JsonMatchers {
           "algoname" -> "get-algo2",
           "appid" -> appid,
           "engineid" -> engineid2,
-          "algoinfoid" -> "knn",
-          "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+          "algoinfoid" -> "pizza-algo",
+          "algoinfoname" -> algoInfos.get("pizza-algo").get.name,
           "status" -> "ready",
           "createdtime" -> timeFormat.print(DateTime.now.hour(4).minute(56).second(35).withZone(DateTimeZone.forID("UTC"))),
           "updatedtime" -> timeFormat.print(DateTime.now.hour(5).minute(6).second(7).withZone(DateTimeZone.forID("UTC")))
@@ -1029,8 +1067,8 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "algoname" -> "get-algo",
         "appid" -> appid,
         "engineid" -> engineid,
-        "algoinfoid" -> "knn",
-        "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+        "algoinfoid" -> "pizza-algo",
+        "algoinfoname" -> algoInfos.get("pizza-algo").get.name,
         "status" -> "ready",
         "createdtime" -> timeFormat.print(DateTime.now.hour(4).minute(56).second(35).withZone(DateTimeZone.forID("UTC"))),
         "updatedtime" -> timeFormat.print(DateTime.now.hour(5).minute(6).second(7).withZone(DateTimeZone.forID("UTC")))
@@ -1040,8 +1078,8 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "algoname" -> "get-algo3",
         "appid" -> appid,
         "engineid" -> engineid,
-        "algoinfoid" -> "knn",
-        "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+        "algoinfoid" -> "pizza-algo",
+        "algoinfoname" -> algoInfos.get("pizza-algo").get.name,
         "status" -> "ready",
         "createdtime" -> timeFormat.print(DateTime.now.hour(4).minute(56).second(35).withZone(DateTimeZone.forID("UTC"))),
         "updatedtime" -> timeFormat.print(DateTime.now.hour(5).minute(6).second(7).withZone(DateTimeZone.forID("UTC")))
@@ -1051,8 +1089,8 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "algoname" -> "get-algo4",
         "appid" -> appid,
         "engineid" -> engineid,
-        "algoinfoid" -> "knn",
-        "algoinfoname" -> "kNN Item Based Collaborative Filtering",
+        "algoinfoid" -> "pizza-algo",
+        "algoinfoname" -> algoInfos.get("pizza-algo").get.name,
         "status" -> "ready",
         "createdtime" -> timeFormat.print(DateTime.now.hour(4).minute(56).second(35).withZone(DateTimeZone.forID("UTC"))),
         "updatedtime" -> timeFormat.print(DateTime.now.hour(5).minute(6).second(7).withZone(DateTimeZone.forID("UTC")))
@@ -1125,24 +1163,25 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
     val appid = apps.insert(testApp)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "test-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
 
     val engineid = engines.insert(testEngine)
 
-    val algoInfo = algoInfos.get("knn").get
+    val algoInfo = algoInfos.get("pizza-algo").get
 
     val testAlgo = Algo(
       id = -1,
       engineid = engineid,
       name = "delete-algo",
-      infoid = "knn",
+      infoid = "pizza-algo",
       command = "",
       params = algoInfo.params.mapValues(_.defaultvalue),
       settings = Map(), // no use for now
@@ -1213,11 +1252,12 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val appid = apps.insert(testApp)
     val appid2 = apps.insert(testApp2)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "test-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
@@ -1234,13 +1274,13 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val engineid2 = engines.insert(testEngine2)
     val engineid3 = engines.insert(testEngine3)
 
-    val algoInfo = algoInfos.get("knn").get
+    val algoInfo = algoInfos.get("pizza-algo").get
 
     val newAlgo = Algo(
       id = -1,
       engineid = engineid,
       name = "get-algo-deployed",
-      infoid = "knn",
+      infoid = "pizza-algo",
       command = "",
       params = algoInfo.params.mapValues(_.defaultvalue),
       settings = Map(), // no use for now
@@ -1371,22 +1411,23 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
     val appid = apps.insert(testApp)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "test-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
 
-    val algoInfo = algoInfos.get("knn").get
+    val algoInfo = algoInfos.get("pizza-algo").get
 
     val testAlgo = Algo(
       id = -1,
       engineid = -1,
       name = "post-algos-deploy",
-      infoid = "knn",
+      infoid = "pizza-algo",
       command = "",
       params = algoInfo.params.mapValues(_.defaultvalue),
       settings = Map(), // no use for now
@@ -1591,22 +1632,23 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
     val appid = apps.insert(testApp)
 
+    val engineinfoid = "apple-engine"
     val testEngine = Engine(
       id = 0,
       appid = appid,
       name = "test-engine",
-      infoid = "itemrec",
+      infoid = engineinfoid,
       itypes = None, // NOTE: default None (means all itypes)
       params = Map("a" -> "b")
     )
 
-    val algoInfo = algoInfos.get("knn").get
+    val algoInfo = algoInfos.get("pizza-algo").get
 
     val testAlgo = Algo(
       id = -1,
       engineid = -1,
       name = "post-algos-undeploy",
-      infoid = "knn",
+      infoid = "pizza-algo",
       command = "",
       params = algoInfo.params.mapValues(_.defaultvalue),
       settings = Map(), // no use for now
@@ -1685,7 +1727,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
     val appid = apps.insert(appTemplate(testUserid).copy(appkey = s"{testName}appkeystring", display = s"{testName} App Name"))
 
-    "create simeval with 1 algo 1 metric and write to database" in new WithServer {
+    "create simeval with 1 algo, 1 metric, 1 splitter and write to database" in new WithServer {
       val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-1algo1metric"))
       val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1")
       val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2")
@@ -1697,43 +1739,67 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).
         post(Json.obj(
-          "algo" -> Json.toJson(Seq(algoid)),
-          "metrics" -> Json.toJson(Seq("map")),
-          "metricsSettings" -> Json.toJson(Seq(20)),
+          "algoids" -> Json.toJson(Seq(algoid)),
+          "infoid" -> Json.toJson(Seq("vanilla-metric", "brownie-splitter")),
+          "infotype" -> Json.toJson(Seq("offlineevalmetric", "offlineevalsplitter")),
           "splittrain" -> 66,
           "splittest" -> 13,
-          "splitmethod" -> "random",
-          "evaliteration" -> 4))
-      )
+          "evaliteration" -> 4,
+          "jParam[0]" -> 27, // metric param
+          "sParam[1]" -> 38, // splitter param
+          "tParam[1]" -> true
+        )))
 
       // check offlineEval, metric, splitter, shadow algo
       // this engine should only have this offline eval
-      val evals = offlineEvals.getByEngineid(engineid).toSeq
+      val evalList = offlineEvals.getByEngineid(engineid).toList
 
-      val evalOpt: Option[OfflineEval] = if (evals.size == 1) {
-        Some(evals.head)
-      } else {
-        None
+      val eval: OfflineEval = evalList(0)
+      val metricsList: List[OfflineEvalMetric] = offlineEvalMetrics.getByEvalid(eval.id).toList
+      val splittersList: List[OfflineEvalSplitter] = offlineEvalSplitters.getByEvalid(eval.id).toList
+      val algosList: List[Algo] = algos.getByOfflineEvalid(eval.id).toList
+
+      val expectedEval = eval.copy(
+        engineid = engineid,
+        iterations = 4,
+        tuneid = None)
+
+      val expectedMetric = OfflineEvalMetric(
+        id = metricsList(0).id, // don't check id, just copy over
+        infoid = "vanilla-metric",
+        evalid = eval.id,
+        params = Map("jParam" -> 27))
+
+      val expectedSplitter = OfflineEvalSplitter(
+        id = splittersList(0).id, // don't check id, just copy over
+        evalid = eval.id,
+        name = splittersList(0).name, // don't check name
+        infoid = "brownie-splitter",
+        settings = Map(
+          "sParam" -> 38,
+          "tParam" -> true,
+          "trainingPercent" -> 0.66,
+          "validationPercent" -> 0.0,
+          "testPercent" -> 0.13))
+
+      val expectedAlgo = myAlgo.copy(
+        id = algosList(0).id, // don't check id
+        status = "simeval",
+        offlineevalid = Some(eval.id)
+      )
+
+      if (r.status != OK) {
+        println((r.json \ "message").asOpt[String].getOrElse(""))
       }
 
-      val metricsList: List[OfflineEvalMetric] = evalOpt.map { e => offlineEvalMetrics.getByEvalid(e.id).toList }.getOrElse(List())
-      val splittersList: List[OfflineEvalSplitter] = evalOpt.map { e => offlineEvalSplitters.getByEvalid(e.id).toList }.getOrElse(List())
-      val algosList: List[Algo] = evalOpt.map { e => algos.getByOfflineEvalid(e.id).toList }.getOrElse(List())
-
-      val evalOK = evalOpt.map { e => (e.iterations == 4) }.getOrElse[Boolean](false)
-      // only number of records created for now
-      val metricOK = (metricsList.size == 1)
-      val splitterOK = (splittersList.size == 1)
-      val algoOK = (algosList.size == 1)
-
       r.status must equalTo(OK) and
-        (evalOK must beTrue) and
-        (metricOK must beTrue) and
-        (splitterOK must beTrue) and
-        (algoOK must beTrue)
+        (evalList must equalTo(List(expectedEval))) and
+        (metricsList must equalTo(List(expectedMetric))) and
+        (splittersList must equalTo(List(expectedSplitter))) and
+        (algosList must equalTo(List(expectedAlgo)))
     }
 
-    "create simeval with multiple algos mutliple metrics and write to database" in new WithServer {
+    "create simeval with multiple algos, multiple metrics, 1 splitter and write to database" in new WithServer {
       val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-malgommetric"))
       val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1")
       val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2")
@@ -1745,40 +1811,94 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).
         post(Json.obj(
-          "algo" -> Json.toJson(Seq(algoid, algoid2, algoid3)),
-          "metrics" -> Json.toJson(Seq("map", "map")),
-          "metricsSettings" -> Json.toJson(Seq(20, 40)),
-          "splittrain" -> 66,
-          "splittest" -> 13,
-          "splitmethod" -> "random",
-          "evaliteration" -> 4))
-      )
+          "algoids" -> Json.toJson(Seq(algoid, algoid2, algoid3)),
+          "infoid" -> Json.toJson(Seq("vanilla-metric", "brownie-splitter", "vanilla-metric")),
+          "infotype" -> Json.toJson(Seq("offlineevalmetric", "offlineevalsplitter", "offlineevalmetric")),
+          "splittrain" -> 68,
+          "splittest" -> 12,
+          "evaliteration" -> 2,
+          "jParam[0]" -> 22, // metric param
+          "sParam[1]" -> 31, // splitter param
+          "tParaa[1]" -> false,
+          "jParam[2]" -> 44 // 2nd metric param
+        )))
 
       // check offlineEval, metric, splitter, shadow algo
       // this engine should only have this offline eval
-      val evals = offlineEvals.getByEngineid(engineid).toSeq
+      val evalList = offlineEvals.getByEngineid(engineid).toList
 
-      val evalOpt: Option[OfflineEval] = if (evals.size == 1) {
-        Some(evals.head)
-      } else {
-        None
+      val eval: OfflineEval = evalList(0)
+      val metricsList: List[OfflineEvalMetric] = offlineEvalMetrics.getByEvalid(eval.id).toList
+      val splittersList: List[OfflineEvalSplitter] = offlineEvalSplitters.getByEvalid(eval.id).toList
+      val algosList: List[Algo] = algos.getByOfflineEvalid(eval.id).toList
+
+      val expectedEval = eval.copy(
+        engineid = engineid,
+        iterations = 2,
+        tuneid = None)
+
+      val expectedMetric = OfflineEvalMetric(
+        id = metricsList(0).id, // don't check id, just copy over
+        infoid = "vanilla-metric",
+        evalid = eval.id,
+        params = Map("jParam" -> 22))
+
+      val expectedMetric2 = OfflineEvalMetric(
+        id = metricsList(1).id, // don't check id, just copy over
+        infoid = "vanilla-metric",
+        evalid = eval.id,
+        params = Map("jParam" -> 44))
+
+      val expectedSplitter = OfflineEvalSplitter(
+        id = splittersList(0).id, // don't check id, just copy over
+        evalid = eval.id,
+        name = splittersList(0).name, // don't check name
+        infoid = "brownie-splitter",
+        settings = Map(
+          "sParam" -> 31,
+          "tParam" -> false,
+          "trainingPercent" -> 0.68,
+          "validationPercent" -> 0.0,
+          "testPercent" -> 0.12))
+
+      val expectedAlgo = myAlgo.copy(
+        id = algosList(0).id, // don't check id
+        status = "simeval",
+        offlineevalid = Some(eval.id)
+      )
+
+      val expectedAlgo2 = myAlgo2.copy(
+        id = algosList(1).id, // don't check id
+        status = "simeval",
+        offlineevalid = Some(eval.id)
+      )
+      val expectedAlgo3 = myAlgo3.copy(
+        id = algosList(2).id, // don't check id
+        status = "simeval",
+        offlineevalid = Some(eval.id)
+      )
+
+      if (r.status != OK) {
+        println((r.json \ "message").asOpt[String].getOrElse(""))
       }
 
-      val metricsList: List[OfflineEvalMetric] = evalOpt.map { e => offlineEvalMetrics.getByEvalid(e.id).toList }.getOrElse(List())
-      val splittersList: List[OfflineEvalSplitter] = evalOpt.map { e => offlineEvalSplitters.getByEvalid(e.id).toList }.getOrElse(List())
-      val algosList: List[Algo] = evalOpt.map { e => algos.getByOfflineEvalid(e.id).toList }.getOrElse(List())
-
-      val evalOK = evalOpt.map { e => (e.iterations == 4) }.getOrElse[Boolean](false)
-      // only number of records created for now
-      val metricOK = (metricsList.size == 2)
-      val splitterOK = (splittersList.size == 1)
-      val algoOK = (algosList.size == 3)
-
       r.status must equalTo(OK) and
-        (evalOK must beTrue) and
-        (metricOK must beTrue) and
-        (splitterOK must beTrue) and
-        (algoOK must beTrue)
+        (evalList must equalTo(List(expectedEval))) and
+        (metricsList must equalTo(List(expectedMetric, expectedMetric2))) and
+        (splittersList must equalTo(List(expectedSplitter))) and
+        (algosList must equalTo(List(expectedAlgo, expectedAlgo2, expectedAlgo3)))
+    }
+
+    "return BAD_REQUEST if no metric" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if no splitter" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if no algoid" in new WithServer {
+      new Pending("TODO")
     }
 
     "return BAD_REQUEST if invalid algoid in param" in new WithServer {
@@ -1789,15 +1909,19 @@ class AdminServerSpec extends Specification with JsonMatchers {
       new Pending("TODO")
     }
 
+    "return BAD_REQUEST if invalid metric param" in new WithServer {
+      new Pending("TODO")
+    }
+
+    "return BAD_REQUEST if invalid splitter param" in new WithServer {
+      new Pending("TODO")
+    }
+
     "return BAD_REQUEST if splittrain is not within 1-100" in new WithServer {
       new Pending("TODO")
     }
 
     "return BAD_REQUEST if splittest is not within 1-100" in new WithServer {
-      new Pending("TODO")
-    }
-
-    "return BAD_REQUEST if splitmethod is not supported (random, time)" in new WithServer {
       new Pending("TODO")
     }
 
@@ -1847,9 +1971,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
 
-      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson = algoToJsonWithParam(myAlgo.copy(id = algoid), appid)
 
       val simEvalJson = Json.obj(
         "id" -> evalid,
@@ -1880,15 +2002,9 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
 
-      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson2 = algoToJson(myAlgo2.copy(id = algoid2), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson3 = algoToJson(myAlgo3.copy(id = algoid3), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson = algoToJsonWithParam(myAlgo.copy(id = algoid), appid)
+      val algoJson2 = algoToJsonWithParam(myAlgo2.copy(id = algoid2), appid)
+      val algoJson3 = algoToJsonWithParam(myAlgo3.copy(id = algoid3), appid)
 
       val simEvalJson = Json.obj(
         "id" -> evalid,
@@ -1929,24 +2045,12 @@ class AdminServerSpec extends Specification with JsonMatchers {
 
       val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals"), email, password).get)
 
-      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson2 = algoToJson(myAlgo2.copy(id = algoid2), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson3 = algoToJson(myAlgo3.copy(id = algoid3), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson4 = algoToJson(myAlgo4.copy(id = algoid4), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson5 = algoToJson(myAlgo5.copy(id = algoid5), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson6 = algoToJson(myAlgo6.copy(id = algoid6), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
+      val algoJson = algoToJsonWithParam(myAlgo.copy(id = algoid), appid)
+      val algoJson2 = algoToJsonWithParam(myAlgo2.copy(id = algoid2), appid)
+      val algoJson3 = algoToJsonWithParam(myAlgo3.copy(id = algoid3), appid)
+      val algoJson4 = algoToJsonWithParam(myAlgo4.copy(id = algoid4), appid)
+      val algoJson5 = algoToJsonWithParam(myAlgo5.copy(id = algoid5), appid)
+      val algoJson6 = algoToJsonWithParam(myAlgo6.copy(id = algoid6), appid)
 
       val simEvalJson = Json.obj(
         "id" -> evalid,
@@ -1975,6 +2079,10 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "createtime" -> simEval.createtime.map(x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))).getOrElse[String]("error"),
         "endtime" -> "-"
       )
+
+      if (r.status != OK) {
+        println((r.json \ "message").asOpt[String].getOrElse(""))
+      }
 
       r.status must equalTo(OK) and
         (r.json must equalTo(Json.arr(simEvalJson, simEvalJson2, simEvalJson3)))
@@ -2021,23 +2129,29 @@ class AdminServerSpec extends Specification with JsonMatchers {
     val (testUserid, testUser) = createTestUser("Test", "Account", email, password)
     val appid = apps.insert(appTemplate(testUserid).copy(appkey = s"{testName}appkeystring", display = s"{testName} App Name"))
 
-    "return the report of the simeval" in new WithServer {
+    "return the report of the simeval of 1 algo, 1 metric and 1 iteration" in new WithServer {
       val engineid = engines.insert(engineTemplate(appid).copy(name = "test-engine-1simevalmalgos-1"))
 
-      val simEval = offlineEvalTemplate(engineid)
+      val simEval = offlineEvalTemplate(engineid).copy(
+        iterations = 1
+      )
       val evalid = offlineEvals.insert(simEval)
 
       val myAlgo = algoTemplate(engineid).copy(name = "test-algo-1", status = "simeval", offlineevalid = Some(evalid))
-      /*
-      val myAlgo2 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))
-      val myAlgo3 = algoTemplate(engineid).copy(name = "test-algo-2", status = "simeval", offlineevalid = Some(evalid))*/
       val algoid = algos.insert(myAlgo)
-      /*
-      val algoid2 = algos.insert(myAlgo2)
-      val algoid3 = algos.insert(myAlgo3)*/
 
       val metric = offlineEvalMetricTemplate(evalid)
       val metricid = offlineEvalMetrics.insert(metric)
+
+      val mySplitter = offlineEvalSplitterTemplate(evalid).copy(
+        settings = Map(
+          "sParam" -> 31,
+          "tParam" -> false,
+          "trainingPercent" -> 0.68,
+          "validationPercent" -> 0.0,
+          "testPercent" -> 0.12))
+
+      val splitterid = offlineEvalSplitters.insert(mySplitter)
 
       offlineEvalResults.save(OfflineEvalResult(
         evalid = evalid,
@@ -2048,34 +2162,25 @@ class AdminServerSpec extends Specification with JsonMatchers {
         splitset = "test"
       ))
 
-      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals/:evalid/report"), email, password).get)
+      val r = HelperAwait(signedinRequest(wsUrl(s"/apps/${appid}/engines/${engineid}/simevals/${evalid}/report"), email, password).get)
 
-      val algoJson = algoToJson(myAlgo.copy(id = algoid), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      /*
-      val algoJson2 = algoToJson(myAlgo2.copy(id = algoid2), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")
-      val algoJson3 = algoToJson(myAlgo3.copy(id = algoid3), appid) ++ Json.obj(
-        // TODO: hardcode for now
-        "settingsstring" -> "A Parameter = 4, B Parameter = 55")*/
+      val algoJson = algoToJsonWithParam(myAlgo.copy(id = algoid), appid)
 
-      val metricJson = offlineEvalMetricToJson(metric.copy(id = metricid), engineid) ++ Json.obj(
-        "settingstring" -> "k = 20" // TODO: hard code for now
-      )
+      val metricJson = offlineEvalMetricToJsonWithParam(metric.copy(id = metricid), engineid)
 
       val scoreJson = Json.obj(
         "algoid" -> algoid,
         "metricsid" -> metricid,
-        "score" -> 1.23
+        "score" -> "1.23"
       )
 
-      val scoreIterationJson = Json.obj(
+      val iteration1algoJson = Json.obj(
         "algoid" -> algoid,
         "metricsid" -> metricid,
-        "score" -> 1.23
+        "score" -> "1.23"
       )
+
+      val iteartion1Json = Json.arr(iteration1algoJson)
 
       val reportJson = Json.obj(
         "id" -> evalid,
@@ -2084,11 +2189,19 @@ class AdminServerSpec extends Specification with JsonMatchers {
         "algolist" -> Json.arr(algoJson),
         "metricslist" -> Json.arr(metricJson),
         "metricscorelist" -> Json.arr(scoreJson),
-        "metricscoreiterationlist" -> Json.arr(scoreIterationJson),
+        "metricscoreiterationlist" -> Json.arr(iteartion1Json),
+        "splittrain" -> 68,
+        "splittest" -> 12,
+        "splittersettingsstring" -> "S parameter: 31, T parameter: false",
+        "evaliteration" -> 1,
         "status" -> "pending",
         "starttime" -> "-",
         "endtime" -> "-"
       )
+
+      if (r.status != OK) {
+        println(r.body)
+      }
 
       r.status must equalTo(OK) and
         (r.json must equalTo(reportJson))

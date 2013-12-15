@@ -8,7 +8,9 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.commons.settings.{ OfflineEval, Algo, OfflineEvalSplitter, OfflineEvalMetric }
 import controllers.Application.{ offlineEvals, algos, engines, offlineEvalSplitters, offlineEvalMetrics }
 
-object SimEval extends Controller {
+object SimEval {
+
+  // TODO remove
 
   /**
    * common function to create Offline Eval

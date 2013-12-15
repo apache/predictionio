@@ -5063,9 +5063,6 @@
                 }
             ],
             "paramorder": [
-                "trainingPercent",
-                "validationPercent",
-                "testPercent",
                 "timeorder"
             ]
         }

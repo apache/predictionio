@@ -623,12 +623,7 @@
                         <span class="leftMargin">Validation Set: <%= data.splitvalidation %>%</span>
                         <span class="leftMargin">Test Set: <%= data.splittest %>%</span>
                         <div>
-                            Data Selection: 
-                            <% if(data.splitmethod == "random") { %>
-                                Random Sampling
-                            <% } else { %>
-                                Random with Time Order
-                            <% } %>
+                            <%= data.splittersettingsstring %>
                         </div>
                         <h5 class="topMargin">Metric</h5>
                         <span>Name: <%= metric.metricsname %> (<%= metric.settingsstring %>)</span>
@@ -706,12 +701,7 @@
                         -->
                         <span class="leftMargin">Test Set: <%= data.splittest %>%</span>
                         <div>
-                            Data Selection: 
-                            <% if(data.splitmethod == "random") { %>
-                                Random Sampling
-                            <% } else { %>
-                                Random with Time Order
-                            <% } %>
+                            <%= data.splittersettingsstring %>
                         </div>
                     </div>
                     <h5>Algorithms</h5>
@@ -800,7 +790,7 @@
 
                                             <li class="bottomMargin">
                                                 <div class="bottomMargin">
-                                                    <select name="metrics[<%= data.index %>]" class="span6 changeMetricsSelect">
+                                                    <select name="infoid[<%= data.index %>]" class="span6 changeMetricsSelect">
                                                         <% _.each(data.metricslist, function(metrics) { %>
                                                             <% if ( metrics.id == this.defaultmetric ) { %>
                                                             <option value="<%= metrics.id %>" selected><%= metrics.description %> (<%= metrics.name %>)</option>
@@ -830,7 +820,7 @@
                                         <div class="well">
                                             <ul>
                                                 <% _.each(data.algoList, function(algo, index) { %>
-                                                    <li><%= algo.algoname %><input type="hidden" value="<%= algo.id %>" name="algo[<%= index %>]"/></li>
+                                                    <li><%= algo.algoname %><input type="hidden" value="<%= algo.id %>" name="algoids[<%= index %>]"/></li>
                                                 <% }); %>
                                             </ul>
                                         </div>

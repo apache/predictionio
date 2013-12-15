@@ -1419,6 +1419,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
         this.engineid = getUrlParam("engineid");
         this.engineinfoid = getUrlParam("engineinfoid");
         this.indexCount = 0;
+        this.infotype = [];
 //      this.model = new EngineSimEvalSettingsModel({"id": this.simeval_id});
 //      this.model.bind('change', this.render, this);
 //      this.model.fetch();
@@ -1479,6 +1480,7 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
                 engineinfoid: this.engineinfoid
             }
         });
+        this.infotype[this.indexCount] = "offlineevalmetric";
         this.indexCount += 1; // increase count
         this.subViews.push(metricsView);
         this.$el.find('#metrics_list_ContentHolder').append(metricsView.render().el);
@@ -1486,17 +1488,20 @@ var EngineSimEvalSettingsView = Backbone.View.extend({
     addSplitter: function(splitterinfoid) {
         var splitterSettingView = new SplitterSettingView({
             data: {
+                index: this.indexCount,
                 engineinfoid: this.engineinfoid,
                 splitterinfoid: splitterinfoid
             }
         });
+        this.infotype[this.indexCount] = "offlineevalsplitter";
+        this.indexCount += 1; // increase count
         this.subViews.push(splitterSettingView);
         this.$el.find('#splitterSetting_Holder').html(splitterSettingView.render().el);
     },
     save: function() {
         $(this.error_el).slideUp().html(""); // reset/clear all error msg
         var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs
-        var simEvalModel = new SimEvalModel({appid: this.appid, engineid: this.engineid});
+        var simEvalModel = new SimEvalModel({appid: this.appid, engineid: this.engineid, infotype: this.infotype});
         var self = this;
         simEvalModel.save(data, {
             wait: true,

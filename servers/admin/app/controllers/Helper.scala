@@ -13,7 +13,9 @@ import Application.{ itemRecScores, itemSimScores }
 import Application.{ trainingItemRecScores, trainingItemSimScores }
 import Application.settingsSchedulerUrl
 
-import io.prediction.commons.settings.{ OfflineEval, OfflineTune, Algo, AlgoInfo, OfflineEvalMetric, OfflineEvalMetricInfo }
+import io.prediction.commons.settings.{ Algo, Engine }
+import io.prediction.commons.settings.{ OfflineEval, OfflineTune, OfflineEvalMetric, OfflineEvalSplitter }
+import io.prediction.commons.settings.{ AlgoInfo, OfflineEvalMetricInfo, OfflineEvalSplitterInfo }
 
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.ws.WS
@@ -142,10 +144,93 @@ object Helper extends Controller {
     }.getOrElse(s"offlineevalmetricinfo ${metric.infoid} not found")
   }
 
+  def offlineEvalSplitterParamToString(splitter: OfflineEvalSplitter, splitterinfoOpt: Option[OfflineEvalSplitterInfo]): String = {
+    splitterinfoOpt.map { splitterInfo =>
+      splitterInfo.paramorder.map { paramid =>
+        val param = splitterInfo.params(paramid)
+
+        val value = splitter.settings.getOrElse(paramid, splitterInfo.params(paramid).defaultvalue)
+        val displayValue = param.ui.uitype match {
+          // if selection, display the name of the selection instead of value.
+          case "selection" => {
+            val names: Map[String, String] = param.ui.selections.map(_.map(s => (s.value, s.name)).toMap[String, String]).getOrElse(Map[String, String]())
+            names.getOrElse(value.toString, value.toString)
+          }
+          case _ => value
+        }
+        splitterInfo.params(paramid).name + ": " + displayValue
+      }.mkString(", ")
+    }.getOrElse(s"OfflineEvalSplitterInfo ${splitter.infoid} not found")
+  }
+
   val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
 
   def dateTimeToString(t: DateTime, zoneName: String = "UTC"): String =
     timeFormat.print(t.withZone(DateTimeZone.forID(zoneName)))
+
+  /**
+   * Common function to create Offline Evaluation for sim eval or auto tune
+   * @param engine Engine
+   * @param algoList List of Algo
+   * @param metricList List of OfflineEvalMetric
+   * @param splitter OfflineEvalSplitter
+   * @param evalIteration number of iteration
+   * @param tuneid specify offline tune id if this Offine Eval is for auto tune
+   * @param the created OfflineEval ID
+   */
+  def createOfflineEval(engine: Engine, algoList: List[Algo], metricList: List[OfflineEvalMetric], splitter: OfflineEvalSplitter, evalIteration: Int, tuneid: Option[Int] = None): Int = {
+
+    // insert offlineeval record without create time
+    val newOfflineEval = OfflineEval(
+      id = 0,
+      engineid = engine.id,
+      name = "",
+      iterations = evalIteration,
+      tuneid = tuneid,
+      createtime = None, // NOTE: no createtime yet
+      starttime = None,
+      endtime = None
+    )
+
+    val evalid = offlineEvals.insert(newOfflineEval)
+    Logger.info("Create offline eval ID " + evalid)
+
+    // duplicate algo with evalid
+    for (algo <- algoList) {
+      // duplicate algo for sim eval
+      val algoid = algos.insert(algo.copy(
+        id = 0,
+        offlineevalid = Option(evalid),
+        status = "simeval"
+      ))
+      Logger.info("Create sim eval algo ID " + algoid)
+    }
+
+    for (metric <- metricList) {
+      val metricid = offlineEvalMetrics.insert(metric.copy(
+        id = 0,
+        evalid = evalid
+      ))
+      Logger.info("Create metric ID " + metricid)
+    }
+
+    // create splitter record
+    val splitterid = offlineEvalSplitters.insert(splitter.copy(
+      evalid = evalid,
+      name = ("sim-eval-" + evalid + "-splitter")
+    ))
+    Logger.info("Create offline eval splitter ID " + splitterid)
+
+    // after all algo and metric info is stored.
+    // update offlineeval record with createtime, so scheduler can know it's ready to be picked up
+    offlineEvals.update(newOfflineEval.copy(
+      id = evalid,
+      name = ("sim-eval-" + evalid),
+      createtime = Option(DateTime.now)
+    ))
+
+    evalid
+  }
 
   /**
    * Delete appdata DB of this appid

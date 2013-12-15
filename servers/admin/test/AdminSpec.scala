@@ -322,6 +322,66 @@ class AdminSpec extends Specification {
     }
   }
 
+  "Helper.offlineEvalSplitterParamToString()" should {
+    "convert splitter param to string correctly" in {
+      val splitterInfo = OfflineEvalSplitterInfo(
+        id = "dummy-splitter-x",
+        name = "dummy-splitter",
+        description = None,
+        engineinfoids = Seq("itemsim"),
+        commands = None,
+        params = Map(
+          "foo" -> Param(
+            id = "foo",
+            name = "Foo Name",
+            description = None,
+            defaultvalue = true,
+            ui = ParamUI(),
+            constraint = ParamBooleanConstraint()),
+          "bar" -> Param(
+            id = "bar",
+            name = "Bar Name",
+            description = None,
+            defaultvalue = 3,
+            ui = ParamUI(
+              uitype = "selection",
+              selections = Some(Seq(
+                ParamSelectionUI("3", "Three"),
+                ParamSelectionUI("4", "Four"),
+                ParamSelectionUI("5", "Five")
+              ))
+            ),
+            constraint = ParamIntegerConstraint())),
+        paramsections = Seq(),
+        paramorder = Seq("foo", "bar"))
+
+      val splitter = OfflineEvalSplitter(
+        id = 4,
+        evalid = 5,
+        name = "some name",
+        infoid = "dummy-splitter-x",
+        settings = Map("foo" -> false, "bar" -> 5)
+      )
+
+      val settingString = Helper.offlineEvalSplitterParamToString(splitter, Some(splitterInfo))
+      val expectedString = "Foo Name: false, Bar Name: Five"
+
+      val splitter2 = OfflineEvalSplitter(
+        id = 4,
+        evalid = 5,
+        name = "some name",
+        infoid = "dummy-splitter-x",
+        settings = Map("foo" -> true, "bar" -> 3)
+      )
+
+      val settingString2 = Helper.offlineEvalSplitterParamToString(splitter2, Some(splitterInfo))
+      val expectedString2 = "Foo Name: true, Bar Name: Three"
+
+      settingString must beEqualTo(expectedString) and
+        (settingString2 must beEqualTo(expectedString2))
+    }
+  }
+
   step {
     MongoConnection()(config.settingsDbName).dropDatabase()
     MongoConnection()(config.appdataDbName).dropDatabase()

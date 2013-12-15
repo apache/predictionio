@@ -7,8 +7,8 @@ import io.prediction.commons.appdata.{ Users, Items, U2IActions }
 import io.prediction.output.AlgoOutputSelector
 
 import Helper.{ algoToJson, offlineEvalMetricToJson }
-import Helper.{ dateTimeToString, algoParamToString }
-import Helper.{ getSimEvalStatus, getOfflineTuneStatus }
+import Helper.{ dateTimeToString, algoParamToString, offlineEvalSplitterParamToString }
+import Helper.{ getSimEvalStatus, getOfflineTuneStatus, createOfflineEval }
 
 import play.api._
 import play.api.mvc._
@@ -1625,15 +1625,17 @@ object Application extends Controller {
    * {{{
    * POST
    * JSON parameters:
-   *   {
-   *     "algo[i]" : <algo id>,
-   *     "metrics[i]" : <metric info id>,
-   *     "metricsSettings[i]" : <metric setting>,
-   *     "splittrain" : <training set split percentage 1 to 100>,
-   *     "splittest" : <test set split percentage 1 to 100>,
-   *     "splitmethod" : <split method string: randome, time>
-   *     "evaliteration" : <number of iterations>
-   *   }
+   *
+   *  {
+   *    "infoid[i]": <metric or splitter info id>
+   *    "infotype[i]": <"offlineevalmetric" or "offlineevalsplitter">
+   *    "other param [i]": <the parameter value for corresponding infoid[i]>
+   *    "algo" : <list of algo ids to be evaluated>
+   *    "splittrain": <training set split percentage 1 to 100>,
+   *    "splittest": <test set split percentage 1 to 100>,
+   *    "evaliteration": <number of iterations>
+   *  }
+   *
    * JSON response:
    *   If not authenticated:
    *   Forbidden
@@ -1656,42 +1658,61 @@ object Application extends Controller {
    */
   def createSimEval(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
     implicit request =>
-      // request payload example
-      // {"appid":"1","engineid":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
-      // {"appid":"17","engineid":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splittrain":"71","splittest":"24","splitmethod":"time","evaliteration":"3"}
-      val supportedMetricTypes = offlineEvalMetricInfos.getByEngineinfoid(eng.infoid).map(_.id).toSet
       val simEvalForm = Form(tuple(
-        "algo" -> list(number), // algo id
-        "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
-        "metricsSettings" -> list(text),
+        "infoid" -> seqOfMapOfStringToAny,
+        "algoids" -> list(number), // algo id
         "splittrain" -> number(1, 100),
         "splittest" -> number(1, 100),
-        "splitmethod" -> text,
         "evaliteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
       ))
 
       simEvalForm.bindFromRequest.fold(
-        formWithError => {
-          val msg = formWithError.errors(0).message // extract 1st error message only
-          BadRequest(toJson(Map("message" -> toJson(msg))))
-        },
-        formData => {
-          val (algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
+        e => BadRequest(Json.obj("message" -> e.toString)),
+        f => {
+          val (params, algoids, splitTrain, splitTest, evalIteration) = f
+
+          val metricList = params.filter(p => (p("infotype") == "offlineevalmetric")).map(p =>
+            OfflineEvalMetric(
+              id = 0,
+              infoid = p("infoid").asInstanceOf[String],
+              evalid = 0, // will be assigned later
+              params = p - "infoid" - "infotype" // remove these keys from params
+            )).toList
+
+          // percentage param is standard for all splitter
+          val percentageParam = Map(
+            "trainingPercent" -> (splitTrain.toDouble / 100),
+            "validationPercent" -> 0.0, // no validatoin set for sim eval
+            "testPercent" -> (splitTest.toDouble / 100)
+          )
+          val splitterList = params.filter(p => (p("infotype") == "offlineevalsplitter")).map(p =>
+            OfflineEvalSplitter(
+              id = 0,
+              evalid = 0, // will be assigned later
+              name = "", // will be assigned later
+              infoid = p("infoid").asInstanceOf[String],
+              settings = p ++ percentageParam - "infoid" - "infotype" // remove these keys from params
+            )).toList
 
           // get list of algo obj
-          val optAlgos: List[Option[Algo]] = algoIds map { algoId => algos.get(algoId) }
+          val optAlgos: List[Option[Algo]] = algoids.map { algos.get(_) }
 
-          if (!optAlgos.contains(None)) {
-            val listOfAlgos: List[Algo] = optAlgos map (x => x.get)
+          if (metricList.length == 0)
+            BadRequest(Json.obj("message" -> "At least one metric is required."))
+          else if (splitterList.length == 0)
+            BadRequest(Json.obj("message" -> "One Splitter is required."))
+          else if (splitterList.length > 1)
+            BadRequest(Json.obj("message" -> "Multiple Splitters are not supported now."))
+          else if (optAlgos.contains(None))
+            BadRequest(Json.obj("message" -> "Invalid algo ids."))
+          else {
+            val algoList: List[Algo] = optAlgos.map(_.get) // NOTE: already check optAlgos does not contain None
 
-            SimEval.createSimEval(engineid, listOfAlgos, metricTypes, metricSettings,
-              splitTrain, 0, splitTest, splitMethod, evalIteration, None)
+            val evalid = createOfflineEval(eng, algoList, metricList, splitterList(0), evalIteration)
 
             WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
 
             Ok
-          } else {
-            BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
           }
         }
       )
@@ -1810,15 +1831,22 @@ object Application extends Controller {
    *                           }, ...
    *                         ],
    *     "metricscoreiterationlist" : [
-   *                                    {
+   *                                    [{
    *                                      "algoid" : <algo id>,
    *                                      "metricsid" : <metric id>,
-   *                                      "score" : <score of this iteration>
-   *                                    }, ...
+   *                                      "score" : <score of 1st iteration>
+   *                                     }, ...
+   *                                    ],
+   *                                    [{
+   *                                      "algoid" : <algo id>,
+   *                                      "metricsid" : <metric id>,
+   *                                      "score" : <score of 2nd iteration>
+   *                                     }, ...
+   *                                    ],
    *                                  ],
    *     "splittrain" : <training set split percentage 1 to 100>,
    *     "splittest" : <test set split percentage 1 to 100>,
-   *     "splitmethod" : <split method string: randome, time>
+   *     "splittersettingsstring" : <splitter setting string>,
    *     "evaliteration" : <number of iterations>,
    *     "status" : <eval status>,
    *     "starttime" : <start time>,
@@ -1899,7 +1927,6 @@ object Application extends Controller {
 
         val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double]) * 100).toInt
         val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double]) * 100).toInt
-        val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
 
         if (splitters.hasNext) {
           InternalServerError(Json.obj("message" -> s"More than one splitter found for this Offline Eval ID: ${eval.id}"))
@@ -1914,7 +1941,7 @@ object Application extends Controller {
             "metricscoreiterationlist" -> metricscoreiterationlist,
             "splittrain" -> splitTrain,
             "splittest" -> splitTest,
-            "splitmethod" -> splitMethod,
+            "splittersettingsstring" -> offlineEvalSplitterParamToString(splitter, offlineEvalSplitterInfos.get(splitter.infoid)),
             "evaliteration" -> eval.iterations,
             "status" -> status,
             "starttime" -> starttime,
@@ -2003,6 +2030,7 @@ object Application extends Controller {
    *     "splitvalidation" : <validation set split percentage 1 to 100>,
    *     "splittest" : <test set split percentage 1 to 100>,
    *     "splitmethod" : <split method string: randome, time>
+   *     "splittersettingsstring" : <splitter setting string>,
    *     "evaliteration" : <number of iterations>,
    *     "status" : <auto tune status>,
    *     "starttime" : <start time>,
@@ -2098,7 +2126,6 @@ object Application extends Controller {
           val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double]) * 100).toInt
           val splitValidation = ((splitter.settings("validationPercent").asInstanceOf[Double]) * 100).toInt
           val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double]) * 100).toInt
-          val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
           val evalIteration = tuneOfflineEvals.size // NOTE: for autotune, number of offline eval is the iteration
           val engineinfoid = engines.get(engineid) map { _.infoid } getOrElse { "unkown-engine" }
 
@@ -2116,7 +2143,7 @@ object Application extends Controller {
             "splittrain" -> splitTrain,
             "splitvalidation" -> splitValidation,
             "splittest" -> splitTest,
-            "splitmethod" -> splitMethod,
+            "splittersettingsstring" -> offlineEvalSplitterParamToString(splitter, offlineEvalSplitterInfos.get(splitter.infoid)),
             "evaliteration" -> evalIteration,
             "status" -> getOfflineTuneStatus(tune),
             "starttime" -> starttime,
