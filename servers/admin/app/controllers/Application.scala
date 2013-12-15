@@ -2308,14 +2308,97 @@ object Application extends Controller {
 
   def updateAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
     implicit request =>
-      val f = Form(single("infoid" -> mapOfStringToAny))
+      val f = Form(tuple("infoid" -> mapOfStringToAny, "tune" -> text, "tuneMethod" -> text))
       f.bindFromRequest.fold(
         e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
-        params => {
+        bound => {
+          val (params, tune, tuneMethod) = bound
           // NOTE: read-modify-write the original param
-          val updatedParams = algo.params ++ params - "infoid"
+          val updatedParams = algo.params ++ params ++ Map("tune" -> tune, "tuneMethod" -> tuneMethod) - "infoid"
           val updatedAlgo = algo.copy(params = updatedParams)
           algos.update(updatedAlgo)
+
+          /** auto tune */
+          if (updatedParams("tune") == "auto") {
+
+            // delete previous offlinetune stuff if the algo's offlinetuneid != None
+            if (updatedAlgo.offlinetuneid != None) {
+              val tuneid = updatedAlgo.offlinetuneid.get
+
+              offlineTunes.get(tuneid) map { tune =>
+                /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
+                offlineTunes.update(tune.copy(createtime = None))
+
+                // TODO: check scheduler err
+                Helper.stopAndDeleteOfflineTuneScheduler(appid.toInt, engineid.toInt, tuneid)
+                Helper.deleteOfflineTune(tuneid, keepSettings = false)
+              }
+            }
+
+            // create an OfflineTune and paramGen
+            val offlineTune = OfflineTune(
+              id = -1,
+              engineid = updatedAlgo.engineid,
+              loops = 5, // TODO: default 5 now
+              createtime = None, // NOTE: no createtime yet
+              starttime = None,
+              endtime = None
+            )
+
+            val tuneid = offlineTunes.insert(offlineTune)
+            Logger.info("Create offline tune ID " + tuneid)
+
+            paramGens.insert(ParamGen(
+              id = -1,
+              infoid = "random", // TODO: default random scan param gen now
+              tuneid = tuneid,
+              params = Map() // TODO: param for param gen
+            ))
+
+            // update original algo status to tuning
+
+            algos.update(updatedAlgo.copy(
+              offlinetuneid = Some(tuneid),
+              status = "tuning"
+            ))
+
+            // create offline eval with baseline algo
+            val defaultBaseLineAlgoType = "pdio-randomrank" // TODO: get from UI
+            val defaultBaseLineAlgo = Algo(
+              id = -1,
+              engineid = updatedAlgo.engineid,
+              name = "Default-BasedLine-Algo-for-OfflineTune-" + tuneid,
+              infoid = defaultBaseLineAlgoType,
+              command = "",
+              params = algoInfos.get(defaultBaseLineAlgoType).get.params.mapValues(_.defaultvalue),
+              settings = Map(), // no use for now
+              modelset = false, // init value
+              createtime = DateTime.now,
+              updatetime = DateTime.now,
+              status = "simeval",
+              offlineevalid = None,
+              offlinetuneid = Some(tuneid),
+              loop = Some(0), // loop=0 reserved for autotune baseline
+              paramset = None
+            )
+
+            // TODO: get iterations, metric info, etc from UI, now hardcode to 3.
+            for (i <- 1 to 3) {
+              SimEval.createSimEval(updatedAlgo.engineid, List(defaultBaseLineAlgo), List("map_k"), List("20"),
+                60, 20, 20, "random", 1, Some(tuneid))
+            }
+
+            // after everything has setup,
+            // update with createtime, so scheduler can know it's ready to be picked up
+            offlineTunes.update(offlineTune.copy(
+              id = tuneid,
+              createtime = Some(DateTime.now)
+            ))
+
+            // call sync to scheduler here
+            WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+          }
+
           Ok
         })
   }
