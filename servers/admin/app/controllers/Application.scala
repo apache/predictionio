@@ -2272,90 +2272,131 @@ object Application extends Controller {
           // NOTE: read-modify-write the original param
           val updatedParams = algo.params ++ params ++ Map("tune" -> tune, "tuneMethod" -> tuneMethod) - "infoid"
           val updatedAlgo = algo.copy(params = updatedParams)
-          algos.update(updatedAlgo)
 
-          /** auto tune */
-          if (updatedParams("tune") == "auto") {
-
-            // delete previous offlinetune stuff if the algo's offlinetuneid != None
-            if (updatedAlgo.offlinetuneid != None) {
-              val tuneid = updatedAlgo.offlinetuneid.get
-
-              offlineTunes.get(tuneid) map { tune =>
-                /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
-                offlineTunes.update(tune.copy(createtime = None))
-
-                // TODO: check scheduler err
-                Helper.stopAndDeleteOfflineTuneScheduler(appid.toInt, engineid.toInt, tuneid)
-                Helper.deleteOfflineTune(tuneid, keepSettings = false)
-              }
-            }
-
-            // create an OfflineTune and paramGen
-            val offlineTune = OfflineTune(
-              id = -1,
-              engineid = updatedAlgo.engineid,
-              loops = 5, // TODO: default 5 now
-              createtime = None, // NOTE: no createtime yet
-              starttime = None,
-              endtime = None
-            )
-
-            val tuneid = offlineTunes.insert(offlineTune)
-            Logger.info("Create offline tune ID " + tuneid)
-
-            paramGens.insert(ParamGen(
-              id = -1,
-              infoid = "random", // TODO: default random scan param gen now
-              tuneid = tuneid,
-              params = Map() // TODO: param for param gen
-            ))
-
-            // update original algo status to tuning
-
-            algos.update(updatedAlgo.copy(
-              offlinetuneid = Some(tuneid),
-              status = "tuning"
-            ))
-
+          if (updatedParams("tune") != "auto") {
+            algos.update(updatedAlgo)
+            Ok
+          } else {
             // create offline eval with baseline algo
-            val defaultBaseLineAlgoType = "pdio-randomrank" // TODO: get from UI
-            val defaultBaseLineAlgo = Algo(
-              id = -1,
-              engineid = updatedAlgo.engineid,
-              name = "Default-BasedLine-Algo-for-OfflineTune-" + tuneid,
-              infoid = defaultBaseLineAlgoType,
-              command = "",
-              params = algoInfos.get(defaultBaseLineAlgoType).get.params.mapValues(_.defaultvalue),
-              settings = Map(), // no use for now
-              modelset = false, // init value
-              createtime = DateTime.now,
-              updatetime = DateTime.now,
-              status = "simeval",
-              offlineevalid = None,
-              offlinetuneid = Some(tuneid),
-              loop = Some(0), // loop=0 reserved for autotune baseline
-              paramset = None
-            )
-
-            // TODO: get iterations, metric info, etc from UI, now hardcode to 3.
-            for (i <- 1 to 3) {
-              SimEval.createSimEval(updatedAlgo.engineid, List(defaultBaseLineAlgo), List("map_k"), List("20"),
-                60, 20, 20, "random", 1, Some(tuneid))
+            // TODO: get from UI
+            val defaultBaseLineAlgoType = engine.infoid match {
+              case "itemrec" => "pdio-randomrank"
+              case "itemsim" => "pdio-itemsimrandomrank"
             }
 
-            // after everything has setup,
-            // update with createtime, so scheduler can know it's ready to be picked up
-            offlineTunes.update(offlineTune.copy(
-              id = tuneid,
-              createtime = Some(DateTime.now)
-            ))
+            engineInfos.get(engine.infoid).map { engineInfo =>
+              val metricinfoid = engineInfo.defaultofflineevalmetricinfoid // TODO: from UI
+              val splitterinfoid = engineInfo.defaultofflineevalsplitterinfoid // TODO: from UI
+              algoInfos.get(defaultBaseLineAlgoType).map { baseLineAlgoInfo =>
+                offlineEvalMetricInfos.get(metricinfoid).map { metricInfo =>
+                  offlineEvalSplitterInfos.get(splitterinfoid).map { splitterInfo =>
 
-            // call sync to scheduler here
-            WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+                    // delete previous offlinetune stuff if the algo's offlinetuneid != None
+                    if (updatedAlgo.offlinetuneid != None) {
+                      val tuneid = updatedAlgo.offlinetuneid.get
+
+                      offlineTunes.get(tuneid) map { tune =>
+                        /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
+                        offlineTunes.update(tune.copy(createtime = None))
+
+                        // TODO: check scheduler err
+                        Helper.stopAndDeleteOfflineTuneScheduler(appid.toInt, engineid.toInt, tuneid)
+                        Helper.deleteOfflineTune(tuneid, keepSettings = false)
+                      }
+                    }
+
+                    // auto tune
+                    algos.update(updatedAlgo)
+
+                    // create an OfflineTune and paramGen
+                    val offlineTune = OfflineTune(
+                      id = -1,
+                      engineid = updatedAlgo.engineid,
+                      loops = 5, // TODO: default 5 now
+                      createtime = None, // NOTE: no createtime yet
+                      starttime = None,
+                      endtime = None
+                    )
+
+                    val tuneid = offlineTunes.insert(offlineTune)
+                    Logger.info("Create offline tune ID " + tuneid)
+
+                    paramGens.insert(ParamGen(
+                      id = -1,
+                      infoid = "random", // TODO: default random scan param gen now
+                      tuneid = tuneid,
+                      params = Map() // TODO: param for param gen
+                    ))
+
+                    // update original algo status to tuning
+                    algos.update(updatedAlgo.copy(
+                      offlinetuneid = Some(tuneid),
+                      status = "tuning"
+                    ))
+
+                    val baseLineAlgo = Algo(
+                      id = -1,
+                      engineid = updatedAlgo.engineid,
+                      name = "Default-BasedLine-Algo-for-OfflineTune-" + tuneid,
+                      infoid = baseLineAlgoInfo.id,
+                      command = "",
+                      params = baseLineAlgoInfo.params.mapValues(_.defaultvalue),
+                      settings = Map(), // no use for now
+                      modelset = false, // init value
+                      createtime = DateTime.now,
+                      updatetime = DateTime.now,
+                      status = "simeval",
+                      offlineevalid = None,
+                      offlinetuneid = Some(tuneid),
+                      loop = Some(0), // loop=0 reserved for autotune baseline
+                      paramset = None
+                    )
+
+                    val metric = OfflineEvalMetric(
+                      id = 0,
+                      infoid = metricInfo.id,
+                      evalid = 0, // will be assigned later
+                      params = metricInfo.params.mapValues(_.defaultvalue)
+                    )
+
+                    // percentage param is standard for all splitter
+                    // TODO: hardcode percentage for auto tune for now. get from UI
+                    val percentageParam = Map(
+                      "trainingPercent" -> 0.55,
+                      "validationPercent" -> 0.2,
+                      "testPercent" -> 0.2
+                    )
+
+                    val splitter = OfflineEvalSplitter(
+                      id = 0,
+                      evalid = 0, // will be assigned later
+                      name = "", // will be assigned later
+                      infoid = splitterInfo.id,
+                      settings = splitterInfo.params.mapValues(_.defaultvalue) ++ percentageParam
+                    )
+
+                    // TODO: get iterations, metric info, etc from UI, now hardcode to 3.
+                    for (i <- 1 to 3) {
+                      createOfflineEval(engine, List(baseLineAlgo), List(metric), splitter, 1, Some(tuneid))
+                    }
+
+                    // after everything has setup,
+                    // update with createtime, so scheduler can know it's ready to be picked up
+                    offlineTunes.update(offlineTune.copy(
+                      id = tuneid,
+                      createtime = Some(DateTime.now)
+                    ))
+
+                    // call sync to scheduler here
+                    WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+
+                    Ok
+
+                  }.getOrElse(InternalServerError(Json.obj("message" -> s"OfflineEvalSplitterInfo ID ${splitterinfoid} not found.")))
+                }.getOrElse(InternalServerError(Json.obj("message" -> s"OfflineEvalMetricInfo ID ${metricinfoid} not found.")))
+              }.getOrElse(InternalServerError(Json.obj("message" -> s"AlgoInfo ID ${defaultBaseLineAlgoType} not found.")))
+            }.getOrElse(InternalServerError(Json.obj("message" -> s"EngineInfo ID ${engine.infoid} not found.")))
           }
-
-          Ok
         })
   }
 
