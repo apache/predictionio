@@ -128,14 +128,6 @@ object Application extends Controller {
     }
   }
 
-  // TODO: remove
-  def withUser(f: User => Request[AnyContent] => Result) = withAuth { username =>
-    implicit request =>
-      users.getByEmail(username).map { user =>
-        f(user)(request)
-      }.getOrElse(onUnauthorized(request))
-  }
-
   object WithApp {
     def apply(appid: Int)(f: (User, App) => Request[AnyContent] => SimpleResult) = async(appid) { (user, app) =>
       implicit request =>
@@ -148,14 +140,6 @@ object Application extends Controller {
           f(user, app)(request)
         }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid appid ${appid}."))))
     }
-  }
-
-  // TODO: remove
-  def withApp(appid: Int)(f: (User, App) => Request[AnyContent] => Result) = withUser { user =>
-    implicit request =>
-      apps.getByIdAndUserid(appid, user.id).map { app =>
-        f(user, app)(request)
-      }.getOrElse(NotFound(Json.obj("message" -> s"Invalid appid ${appid}.")))
   }
 
   object WithEngine {
@@ -174,15 +158,6 @@ object Application extends Controller {
     }
   }
 
-  // TODO: remove
-  def withEngine(appid: Int, engineid: Int)(f: (User, App, Engine) => Request[AnyContent] => Result) = withApp(appid) {
-    (user, app) =>
-      implicit request =>
-        engines.getByIdAndAppid(engineid, appid).map { eng =>
-          f(user, app, eng)(request)
-        }.getOrElse(NotFound(Json.obj("message" -> s"Invalid engineid ${engineid}.")))
-  }
-
   object WithAlgo {
     def apply(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => SimpleResult) = async(appid, engineid, algoid) {
       (user, app, eng, algo) =>
@@ -199,15 +174,6 @@ object Application extends Controller {
     }
   }
 
-  // TODO: remove
-  def withAlgo(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => Result) = withEngine(appid, engineid) {
-    (user, app, eng) =>
-      implicit request =>
-        algos.getByIdAndEngineid(algoid, engineid).map { algo =>
-          f(user, app, eng, algo)(request)
-        }.getOrElse(NotFound(Json.obj("message" -> s"Invalid algoid ${algoid}.")))
-  }
-
   object WithOfflineEval {
     def apply(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => SimpleResult) = async(appid, engineid, offlineevalid) {
       (user, app, eng, eval) =>
@@ -222,15 +188,6 @@ object Application extends Controller {
             f(user, app, eng, eval)(request)
           }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid offlineevalid ${offlineevalid}."))))
     }
-  }
-
-  // TODO: remove
-  def withOfflineEval(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => Result) = withEngine(appid, engineid) {
-    (user, app, eng) =>
-      implicit request =>
-        offlineEvals.getByIdAndEngineid(offlineevalid, engineid).map { eval =>
-          f(user, app, eng, eval)(request)
-        }.getOrElse(NotFound(Json.obj("message" -> s"Invalid offlineevalid ${offlineevalid}.")))
   }
 
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -2291,7 +2248,6 @@ object Application extends Controller {
 
   def getAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
     implicit request =>
-      // TODO: check user owns this app + engine + aglo
       algoInfos.get(algo.infoid) map { algoInfo =>
         // get default params from algoinfo and combined with existing params
         val params = algoInfo.params.mapValues(_.defaultvalue) ++ algo.params
