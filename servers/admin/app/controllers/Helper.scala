@@ -48,19 +48,21 @@ object Helper extends Controller {
   def getSimEvalStatus(eval: OfflineEval): String = {
     val status = (eval.createtime, eval.starttime, eval.endtime) match {
       case (Some(x), Some(y), Some(z)) => "completed"
-      case (Some(x), Some(y), _) => "running"
-      case (Some(x), _, _) => "pending"
-      case (_, _, _) => "canceled"
+      case (Some(x), Some(y), None) => "running"
+      case (Some(x), None, Some(z)) => "internal error"
+      case (Some(x), None, None) => "pending"
+      case (None, _, _) => "canceled"
     }
     status
   }
 
   def getOfflineTuneStatus(tune: OfflineTune): String = {
-    val status: String = (tune.starttime, tune.endtime) match {
-      case (Some(x), Some(y)) => "completed"
-      case (None, None) => "pending"
-      case (Some(x), None) => "running"
-      case _ => "error"
+    val status: String = (tune.createtime, tune.starttime, tune.endtime) match {
+      case (Some(x), Some(y), Some(z)) => "completed"
+      case (Some(x), Some(y), None) => "running"
+      case (Some(x), None, Some(z)) => "internal error"
+      case (Some(x), None, None) => "pending"
+      case (None, _, _) => "canceled"
     }
     status
   }
