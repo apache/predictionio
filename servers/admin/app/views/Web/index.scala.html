@@ -693,7 +693,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="bottomMargin">
+                        <p>Simulated Evaluation Status: <%= data.status %></p>
                         <p>Start Time: <%= data.starttime %></p>
+                        <p>End Time: <%= data.endtime %></p>
+
                         <h5>Data Split Settings:</h5>
                         <span>Train Set: <%= data.splittrain %>%</span>
                         <!-- 3-part split
@@ -710,7 +713,7 @@
                         <ul>
                             <% _.each(data.algolist, function(algo) { %>
                             <li><%= algo.algoname %>
-                                <p>(<%= algo.settingsstring %>)</p>
+                                <p><%= algo.algoinfoname %> (<%= algo.settingsstring %>)</p>
                             </li>
                             <% }); %>
                         </ul>
