@@ -71,14 +71,16 @@ var AlgoSettingsView = Backbone.View.extend({
         var data = formToJSON(this.$el.find(this.form_el)); // convert form names/values of fields into key/value pairs
         data.infotype = "algo";
         data.infoid = this.algotype_id;
+        var settingSaveInfo = notifyInfoSticky('Saving Settings...','');
         this.model.save(data, {
             wait: true,
             success: function(model, res) {
+                notifyClear(settingSaveInfo);
                 window.location.hash = 'engineTabAlgorithms';
             },
             error: function(model, res){
-                alert("An error has occured. HTTP Status Code: "
-                        + res.status);
+                notifyClear(settingSaveInfo);
+                notifyErrorResponse(res);
             }
         });
         return false;

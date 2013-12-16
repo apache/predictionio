@@ -2312,7 +2312,9 @@ object Application extends Controller {
 
                         // TODO: check scheduler err
                         Helper.stopAndDeleteOfflineTuneScheduler(appid.toInt, engineid.toInt, tuneid)
-                        Helper.deleteOfflineTune(tuneid, keepSettings = false)
+                        Future {
+                          Helper.deleteOfflineTune(tuneid, keepSettings = false)
+                        }
                       }
                     }
 

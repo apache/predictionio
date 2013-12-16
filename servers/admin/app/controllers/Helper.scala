@@ -297,7 +297,7 @@ object Helper extends Controller {
           }
         }
       } getOrElse { throw new RuntimeException("Try to delete algo of non-existing algotype: " + algo.infoid) }
-    } getOrElse { throw new RuntimeException("Try to delete non-existing algo: " + algoid) }
+    }
   }
 
   /**
