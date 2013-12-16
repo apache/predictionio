@@ -441,7 +441,7 @@
                                                                 Ready to Deploy<span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right">
-                                                                <li><a class="algoDeployBtn" href="#">Deploy</a></li> 
+                                                                <li><a class="algoDeployBtn" href="#">Deploy</a></li>
                                                                 <li><a href="#algoSettings/<%= data.algoinfoid %>/<%= data.algoname %>/<%= encodeURIComponent(data.id) %>">View/Edit Algorithm Settings</a></li>
                                                                 <li><a href="#simEvalSettings/<%= encodeURIComponent(data.id) %>">Run Simulated Evaluation</a></li>
                                                                 <li class="divider"></li>
@@ -591,13 +591,13 @@
 </div>
 </script>
 <script type="text/template" id="engine_algoAutotuningReport_template">
-<%  
+<%
     var algo = {};
     var metric = {}
-    if (data.algo) { 
+    if (data.algo) {
         algo = data.algo;
     }
-    if (data.metric) { 
+    if (data.metric) {
         metric = data.metric;
     }
 %>
@@ -629,7 +629,7 @@
                         <span>Name: <%= metric.metricsname %> (<%= metric.settingsstring %>)</span>
                         <span class="leftMargin">Number of Iteration: <%= data.evaliteration %></span>
                     </div>
-                   
+
                     <h4 class="topMargin-large">Average Results</h4>
                     <table class="table bottomMargin-large">
                         <thead>
@@ -866,14 +866,14 @@
                                             <span>Train: </span><input class="span1" readonly type="text" id="splittrain" name="splittrain" value="60">%
                                             <span class="leftMargin">Test: </span><input class="span1" readonly type="text" id="splittest" name="splittest" value="20">%
                                         </div>
-                                        
+
                                         <div class="topMargin-large" id="splitterSetting_Holder">
                                         </div>
                                         <h5 class="topMargin-large">Iteration</h5>
                                         <p>You may want to repeat the evaluation for a few times with different sampling. An average score will be reported.</p>
                                         <div class="topMargin">
                                             <span>Number of Iteration:  </span><input class="span1" type="text" name="evaliteration" value="3">
-                                        </div>                                        
+                                        </div>
 
                                     </div>
                                     <div class="modal-footer">
@@ -938,7 +938,7 @@
 	<div class="footer">
 		<hr />
 		<footer>
-			<p>Prediction IO Community Edition core is released under the
+			<p>PredictionIO Community Edition core is released under the
 				AGPL License, SDKs under Apache License and documentation under
 				Creative Common.</p>
 			<p>
