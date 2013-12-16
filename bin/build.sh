@@ -66,19 +66,19 @@ fi
 
 # Build connection check tool
 echo "+ Pack Connection Check Tool"
-BASE_TARGETS="$BASE_TARGETS toolsConncheck/pack"
+BASE_TARGETS="$BASE_TARGETS toolsConncheck/stage"
 
 # Build settings initialization tool
 echo "+ Pack Settings Initialization Tool"
-BASE_TARGETS="$BASE_TARGETS toolsSettingsInit/pack"
+BASE_TARGETS="$BASE_TARGETS toolsSettingsInit/stage"
 
 # Build software manager
 echo "+ Pack Software Manager"
-BASE_TARGETS="$BASE_TARGETS toolsSoftwareManager/pack"
+BASE_TARGETS="$BASE_TARGETS toolsSoftwareManager/stage"
 
 # Build user tool
 echo "+ Pack User Tool"
-BASE_TARGETS="$BASE_TARGETS toolsUsers/pack"
+BASE_TARGETS="$BASE_TARGETS toolsUsers/stage"
 
 $SBT $CLEAN $BASE_TARGETS
 

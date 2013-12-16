@@ -1,11 +1,11 @@
-import xerial.sbt.Pack._
+import com.typesafe.sbt.packager.Keys._
 
-name := "predictionio-connection-check-tool"
+name := "conncheck"
 
-libraryDependencies ++= Seq(
-  "org.slf4j" % "slf4j-nop" % "1.6.0"
-)
+scalariformSettings
 
-packSettings
+packageArchetype.java_application
 
-packMain := Map("conncheck" -> "io.prediction.tools.conncheck.ConnCheck")
+bashScriptExtraDefines += "addJava \"-Dconfig.file=${app_home}/../conf/predictionio.conf -Dio.prediction.base=${app_home}/..\""
+
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.6.0"

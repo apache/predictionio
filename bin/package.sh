@@ -61,10 +61,13 @@ cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/
 cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.10/predictionio-process-itemsim-algorithms-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/evaluations/hadoop/scalding/target/scala-2.10/predictionio-process-itemsim-evaluations-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemsim-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/conncheck/target/universal/stage/bin/conncheck $PACKAGE_DIR/bin
+cp -n $BASE/tools/conncheck/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/settingsinit/target/universal/stage/bin/settingsinit $PACKAGE_DIR/bin
+cp -n $BASE/tools/settingsinit/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/softwaremanager/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/users/target/universal/stage/bin/users $PACKAGE_DIR/bin
+cp -n $BASE/tools/users/target/universal/stage/lib/* $PACKAGE_DIR/lib
 
 mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.8
 cp $VENDOR_MAHOUT/mahout-core-0.8-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.8

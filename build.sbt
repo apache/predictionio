@@ -1,3 +1,7 @@
+import com.typesafe.sbt.SbtNativePackager.Universal
+
+import com.typesafe.sbt.packager.Keys._
+
 name := "predictionio"
 
 version in ThisBuild := "0.7.0-SNAPSHOT"
@@ -215,13 +219,13 @@ lazy val processEnginesItemSimEvalScalaTopKItems = project
 // Tools Section
 
 lazy val toolsConncheck = project.in(file("tools/conncheck"))
-  .dependsOn(commons).settings(scalariformSettings: _*)
+  .dependsOn(commons)
 
 lazy val toolsSettingsInit = project.in(file("tools/settingsinit"))
-  .dependsOn(commons).settings(scalariformSettings: _*)
+  .dependsOn(commons)
 
 lazy val toolsSoftwareManager = project.in(file("tools/softwaremanager"))
-  .dependsOn(commons).settings(scalariformSettings: _*)
+  .dependsOn(commons)
 
 lazy val toolsUsers = project.in(file("tools/users"))
-  .dependsOn(commons).settings(scalariformSettings: _*)
+  .dependsOn(commons)
