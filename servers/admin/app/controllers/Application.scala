@@ -1776,7 +1776,7 @@ object Application extends Controller {
    *                       {
    *                         "id" : <metric id>,
    *                         "metricsinfoid" : <metric info id>,
-   *                         "metricsname" : <metric name>,
+   *                         "metricsname" : <metric info name>,
    *                         "settingsstring" : <metric setting string>
    *                       }, ...
    *                     ],
@@ -1949,12 +1949,13 @@ object Application extends Controller {
    *     "metric" : {
    *                  "id" : <metric id>,
    *                  "metricsinfoid" : <metric info id>,
-   *                  "metricsname" : <metric name>,
+   *                  "metricsname" : <metric info name>,
    *                  "settingsstring" : <metric setting string>
    *                },
    *     "metricscorelist" : [
    *                           {
    *                             "algoautotuneid" : <tuned algo id>,
+   *                             "algoinfoname" : <algo info name>,
    *                             "settingsstring" : <algo setting string>,
    *                             "score" : <average score>
    *                           }, ...
@@ -1962,22 +1963,26 @@ object Application extends Controller {
    *     "metricscoreiterationlist" : [
    *                                    [ {
    *                                        "algoautotuneid" : <tuned algo id 1>,
+   *                                        "algoinfoname" : <algo info name>,
    *                                        "settingsstring" : <algo setting string>,
    *                                        "score" : <score of 1st iteration for this tuned algo id>
    *                                      },
    *                                      {
    *                                        "algoautotuneid" : <tuned algo id 2>,
+   *                                        "algoinfoname" : <algo info name>,
    *                                        "settingsstring" : <algo setting string>,
    *                                        "score" : <score of 1st iteration for this tuned algo id>
    *                                      }, ...
    *                                    ],
    *                                    [ {
    *                                        "algoautotuneid" : <tuned algo id 1>,
+   *                                        "algoinfoname" : <algo info name>,
    *                                        "settingsstring" : <algo setting string>,
    *                                        "score" : <score of 2nd iteration for this tuned algo id>
    *                                      },
    *                                      {
    *                                        "algoautotuneid" : <tuned algo id 2>,
+   *                                        "algoinfoname" : <algo info name>,
    *                                        "settingsstring" : <algo setting string>,
    *                                        "score" : <score of 2nd iteration for this tuned algo id>
    *                                      }, ...
@@ -2035,12 +2040,14 @@ object Application extends Controller {
           val tuneAlgosGroup: Map[AlgoGroupIndex, Array[Algo]] = tuneAlgos.groupBy(a => (a.loop, a.paramset))
 
           // get param of each group
-          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String)] = tuneAlgosGroup.map {
+          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String, String)] = tuneAlgosGroup.map {
             case (index, arrayOfAlgos) =>
-              val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
-              val settings = algoParamToString(algo, algoInfo)
+              val tAlgo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
+              val tAlgoInfo: Option[AlgoInfo] = algoInfos.get(tAlgo.infoid)
+              val infoName = tAlgoInfo.map(_.name).getOrElse("Algo info ${tAlgo.infoid} not found")
+              val settings = algoParamToString(tAlgo, tAlgoInfo)
 
-              (index -> (algo.id, settings))
+              (index -> (tAlgo.id, settings, infoName))
           }
 
           // calculate avg
@@ -2061,6 +2068,7 @@ object Application extends Controller {
             case (k, v) =>
               Json.obj(
                 "algoautotuneid" -> tuneAlgosGroupParams(k)._1,
+                "algoinfoname" -> tuneAlgosGroupParams(k)._3,
                 "settingsstring" -> tuneAlgosGroupParams(k)._2,
                 "score" -> v)
           }
@@ -2068,11 +2076,14 @@ object Application extends Controller {
           val metricscoreiterationlist = tuneOfflineEvals.map { e =>
             tuneOfflineEvalResultsTestSet.filter(x => (x.evalid == e.id)).sortBy(_.algoid).map { r =>
 
-              val algo = tuneAlgosMap(r.algoid)
+              val tAlgo = tuneAlgosMap(r.algoid)
+              val tAlgoInfo: Option[AlgoInfo] = algoInfos.get(tAlgo.infoid)
+              val infoName = tAlgoInfo.map(_.name).getOrElse("Algo info ${tAlgo.infoid} not found")
 
               Json.obj(
                 "algoautotuneid" -> r.algoid,
-                "settingsstring" -> algoParamToString(algo, algoInfo),
+                "algoinfoname" -> infoName,
+                "settingsstring" -> algoParamToString(tAlgo, tAlgoInfo),
                 "score" -> r.score)
             }.toSeq
           }.toSeq

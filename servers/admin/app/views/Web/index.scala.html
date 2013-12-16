@@ -642,7 +642,7 @@
                         <tbody>
                             <% _.each(data.metricscorelist, function(m, index) { %>
                             <tr>
-                                <td><%= m.settingsstring %></td>
+                                <td><%= m.algoinfoname %>: <%= m.settingsstring %></td>
                                 <td><%= m.score %></td>
                                 <td>
                                     <!-- NOTE: index 0 is baseline algo -->
@@ -668,7 +668,7 @@
                             <tbody>
                                 <% _.each(iterationscorelist, function(m) { %>
                                 <tr>
-                                    <td><%= m.settingsstring %></td>
+                                    <td><%= m.algoinfoname %>: <%= m.settingsstring %></td>
                                     <td><%= m.score %></td>
                                     <td></td>
                                 </tr>
