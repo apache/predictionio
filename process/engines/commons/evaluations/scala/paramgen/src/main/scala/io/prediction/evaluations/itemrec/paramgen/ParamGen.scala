@@ -36,7 +36,12 @@ object ParamGen {
         val minValue = algo.params(s"${p}Min")
         val maxValue = algo.params(s"${p}Max")
         algo.params(s"${p}Min") match {
-          case n: Int => p -> (minValue.asInstanceOf[Int] + scala.util.Random.nextInt(maxValue.asInstanceOf[Int] - minValue.asInstanceOf[Int]))
+          case n: Int =>
+            val diff = maxValue.asInstanceOf[Int] - minValue.asInstanceOf[Int]
+            if (diff == 0)
+              p -> minValue.asInstanceOf[Int]
+            else
+              p -> (minValue.asInstanceOf[Int] + scala.util.Random.nextInt(diff))
           case n: Double => p -> (minValue.asInstanceOf[Double] + scala.util.Random.nextDouble() * (maxValue.asInstanceOf[Double] - minValue.asInstanceOf[Double]))
         }
       }
