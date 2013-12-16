@@ -134,7 +134,7 @@
                     "constraint": {
                         "paramtype": "integer"
                     },
-                    "defaultvalue": 500,
+                    "defaultvalue": 50,
                     "ui": {
                         "uitype": "text"
                     }
@@ -276,7 +276,7 @@
                     "constraint": {
                         "paramtype": "integer"
                     },
-                    "defaultvalue": 500,
+                    "defaultvalue": 50,
                     "ui": {
                         "uitype": "text"
                     }
