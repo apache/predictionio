@@ -27,6 +27,7 @@ Usage: bin/change-version.py <old-version> <new-version>
 oldversion = sys.argv[1]
 newversion = sys.argv[2]
 files = [
+    'build.sbt',
     'bin/common.sh',
     'commons/build.sbt',
     'dist/bin/*',
