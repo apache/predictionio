@@ -4,24 +4,26 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class OfflineEvalMetricsSpec extends Specification { def is =
-  "PredictionIO OfflineEvalMetrics Specification"               ^
-                                                                p^
-  "OfflineEvalMetrics can be implemented by:"                   ^ endp^
-    "1. MongoOfflineEvalMetrics"                                ^ mongoOfflineEvalMetrics^end
+class OfflineEvalMetricsSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvalMetrics Specification" ^
+      p ^
+      "OfflineEvalMetrics can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvalMetrics" ^ mongoOfflineEvalMetrics ^ end
 
-  def mongoOfflineEvalMetrics =                                 p^
-    "MongoOfflineEvalMetrics should"                            ^
-      "behave like any OfflineEvalMetrics implementation"       ^ offlineEvalMetricsTest(newMongoOfflineEvalMetrics)^
-                                                                Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvalMetrics = p ^
+    "MongoOfflineEvalMetrics should" ^
+    "behave like any OfflineEvalMetrics implementation" ^ offlineEvalMetricsTest(newMongoOfflineEvalMetrics) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineEvalMetricsTest(offlineEvalMetrics: OfflineEvalMetrics) = {    t^
-    "create an OfflineEvalMetric"                                           ! insert(offlineEvalMetrics)^
-    "get two OfflineEvalMetrics"                                            ! getByEvalid(offlineEvalMetrics)^
-    "update an OfflineEvalMetric"                                           ! update(offlineEvalMetrics)^
-    "delete an OfflineEvalMetric"                                           ! delete(offlineEvalMetrics)^
-    "backup and restore OfflineEvalMetrics"                                 ! backuprestore(offlineEvalMetrics)^
-                                                                            bt
+  def offlineEvalMetricsTest(offlineEvalMetrics: OfflineEvalMetrics) = {
+    t ^
+      "create an OfflineEvalMetric" ! insert(offlineEvalMetrics) ^
+      "get two OfflineEvalMetrics" ! getByEvalid(offlineEvalMetrics) ^
+      "update an OfflineEvalMetric" ! update(offlineEvalMetrics) ^
+      "delete an OfflineEvalMetric" ! delete(offlineEvalMetrics) ^
+      "backup and restore OfflineEvalMetrics" ! backuprestore(offlineEvalMetrics) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflineevalmetrics_test"
@@ -68,8 +70,8 @@ class OfflineEvalMetricsSpec extends Specification { def is =
     val it2 = it.next()
     val left = it.hasNext // make sure it has 2 only
 
-    it1 must be equalTo(obj1.copy(id = id1)) and
-      (it2 must be equalTo(obj2.copy(id = id2))) and
+    it1 must be equalTo (obj1.copy(id = id1)) and
+      (it2 must be equalTo (obj2.copy(id = id2))) and
       (left must be_==(false))
 
   }
@@ -133,14 +135,14 @@ class OfflineEvalMetricsSpec extends Specification { def is =
       evalid = 45,
       params = Map("foo" -> "bar", "pi" -> 3.14))
     val id1 = offlineEvalMetrics.insert(obj1)
-    val fn = "metrics.bin"
+    val fn = "metrics.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineEvalMetrics.backup())
     } finally {
       fos.close()
     }
-    offlineEvalMetrics.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineEvalMetrics.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(obj1.copy(id = id1))
     } getOrElse 1 === 2
   }

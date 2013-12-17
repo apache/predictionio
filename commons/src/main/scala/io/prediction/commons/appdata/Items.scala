@@ -2,20 +2,21 @@ package io.prediction.commons.appdata
 
 import com.github.nscala_time.time.Imports._
 
-/** Item object.
-  *
-  * @param id ID.
-  * @param appid App ID that this item belongs to.
-  * @param ct Creation time.
-  * @param itypes Item types.
-  * @param starttime The start time when this item becomes valid.
-  * @param endtime The end time when this item becomes invalid.
-  * @param price Price of this item.
-  * @param profit Net profit made by this item.
-  * @param latlng Geolocation of this item.
-  * @param inactive Whether to disregard this item during any computation.
-  * @param attributes Attributes associated with this item.
-  */
+/**
+ * Item object.
+ *
+ * @param id ID.
+ * @param appid App ID that this item belongs to.
+ * @param ct Creation time.
+ * @param itypes Item types.
+ * @param starttime The start time when this item becomes valid.
+ * @param endtime The end time when this item becomes invalid.
+ * @param price Price of this item.
+ * @param profit Net profit made by this item.
+ * @param latlng Geolocation of this item.
+ * @param inactive Whether to disregard this item during any computation.
+ * @param attributes Attributes associated with this item.
+ */
 case class Item(
   id: String,
   appid: Int,
@@ -27,8 +28,7 @@ case class Item(
   profit: Option[Double],
   latlng: Option[Tuple2[Double, Double]],
   inactive: Option[Boolean],
-  attributes: Option[Map[String, Any]]
-)
+  attributes: Option[Map[String, Any]])
 
 /** Base trait for implementations that interact with items in the backend app data store. */
 trait Items {

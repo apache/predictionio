@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{Algo, Algos}
+import io.prediction.commons.settings.{ Algo, Algos }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
@@ -13,10 +13,10 @@ class MongoAlgos(db: MongoDB) extends Algos {
   private val seq = new MongoSequences(db)
   private val getFields = MongoDBObject(
     "engineid" -> 1,
-    "name"     -> 1,
-    "infoid"   -> 1,
-    "command"  -> 1,
-    "params"   -> 1,
+    "name" -> 1,
+    "infoid" -> 1,
+    "command" -> 1,
+    "params" -> 1,
     "settings" -> 1,
     "modelset" -> 1,
     "createtime" -> 1,
@@ -32,12 +32,12 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   private def dbObjToAlgo(dbObj: DBObject) = {
     Algo(
-      id       = dbObj.as[Int]("_id"),
+      id = dbObj.as[Int]("_id"),
       engineid = dbObj.as[Int]("engineid"),
-      name     = dbObj.as[String]("name"),
-      infoid   = dbObj.getAs[String]("infoid").getOrElse("pdio-knnitembased"), // TODO: tempararily default for backward compatiblity
-      command  = dbObj.as[String]("command"),
-      params   = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params")),
+      name = dbObj.as[String]("name"),
+      infoid = dbObj.getAs[String]("infoid").getOrElse("pdio-knnitembased"), // TODO: tempararily default for backward compatiblity
+      command = dbObj.as[String]("command"),
+      params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params")),
       settings = MongoUtils.dbObjToMap(dbObj.as[DBObject]("settings")),
       modelset = dbObj.as[Boolean]("modelset"),
       createtime = dbObj.as[DateTime]("createtime"),
@@ -55,12 +55,12 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
     // required fields
     val obj = MongoDBObject(
-      "_id"      -> id,
+      "_id" -> id,
       "engineid" -> algo.engineid,
-      "name"     -> algo.name,
-      "infoid"   -> algo.infoid,
-      "command"  -> algo.command,
-      "params"   -> algo.params,
+      "name" -> algo.name,
+      "infoid" -> algo.infoid,
+      "command" -> algo.command,
+      "params" -> algo.params,
       "settings" -> algo.settings,
       "modelset" -> algo.modelset,
       "createtime" -> algo.createtime,
@@ -98,21 +98,23 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   def getTuneSubjectByOfflineTuneid(tuneid: Int) = algoColl.findOne(MongoDBObject("offlinetuneid" -> tuneid, "loop" -> null, "paramset" -> null)) map { dbObjToAlgo(_) }
 
+  def getByIdAndEngineid(id: Int, engineid: Int): Option[Algo] = algoColl.findOne(MongoDBObject("_id" -> id, "engineid" -> engineid)) map { dbObjToAlgo(_) }
+
   def update(algo: Algo, upsert: Boolean = false) = {
 
     // required fields
     val obj = MongoDBObject(
-      "_id"        -> algo.id,
-      "engineid"   -> algo.engineid,
-      "name"       -> algo.name,
-      "infoid"     -> algo.infoid,
-      "command"    -> algo.command,
-      "params"     -> algo.params,
-      "settings"   -> algo.settings,
-      "modelset"   -> algo.modelset,
+      "_id" -> algo.id,
+      "engineid" -> algo.engineid,
+      "name" -> algo.name,
+      "infoid" -> algo.infoid,
+      "command" -> algo.command,
+      "params" -> algo.params,
+      "settings" -> algo.settings,
+      "modelset" -> algo.modelset,
       "createtime" -> algo.createtime,
       "updatetime" -> algo.updatetime,
-      "status"     -> algo.status)
+      "status" -> algo.status)
 
     // optional fields
     val optObj = algo.offlineevalid.map(x => MongoDBObject("offlineevalid" -> x)).getOrElse(MongoUtils.emptyObj) ++
@@ -125,7 +127,7 @@ class MongoAlgos(db: MongoDB) extends Algos {
 
   def delete(id: Int) = algoColl.remove(MongoDBObject("_id" -> id))
 
-  def existsByEngineidAndName(engineid: Int, name: String) = algoColl.findOne(MongoDBObject("name" -> name, "engineid" -> engineid, "offlineevalid" -> null, "offlinetuneid" -> null)) map { _ => true } getOrElse false
+  def existsByEngineidAndName(engineid: Int, name: String) = algoColl.findOne(MongoDBObject("name" -> name, "engineid" -> engineid, "offlineevalid" -> null)) map { _ => true } getOrElse false
 
   class MongoAlgoIterator(it: MongoCursor) extends Iterator[Algo] {
     def next = dbObjToAlgo(it.next)

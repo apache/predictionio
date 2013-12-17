@@ -36,7 +36,7 @@ object Users {
     val cr = new ConsoleReader()
     println("Adding a new user")
     val email = cr.readLine("Email: ")
-    
+
     if (users.emailExists(email)) {
       println("Email already exists. Not adding.")
     } else {
@@ -55,7 +55,7 @@ object Users {
 
       val firstName = cr.readLine("First name: ")
       val lastName = cr.readLine("Last name: ")
-    
+
       users.insert(
         email = email,
         password = md5password(password),

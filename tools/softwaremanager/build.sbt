@@ -1,22 +1,14 @@
-name := "PredictionIO Software Manager"
+import com.typesafe.sbt.packager.Keys._
 
-version := "0.6.4"
+name := "softwaremanager"
 
-organization := "io.prediction"
+scalariformSettings
 
-scalaVersion := "2.10.2"
+packageArchetype.java_application
 
-scalacOptions ++= Seq("-deprecation")
+bashScriptExtraDefines += "addJava \"-Dconfig.file=${app_home}/../conf/predictionio.conf -Dio.prediction.base=${app_home}/..\""
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.6.4",
   "com.github.scopt" %% "scopt" % "3.1.0",
   "commons-io" % "commons-io" % "2.4",
-  "org.slf4j" % "slf4j-nop" % "1.6.0"
-)
-
-libraryDependencies += "org.specs2" %% "specs2" % "2.1.1" % "test"
-
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+  "org.slf4j" % "slf4j-nop" % "1.6.0")

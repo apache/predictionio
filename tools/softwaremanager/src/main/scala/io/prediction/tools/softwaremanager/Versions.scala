@@ -4,8 +4,10 @@ import scala.reflect.ClassTag
 import scala.util.parsing.json.JSON
 
 /** Extractors: http://stackoverflow.com/questions/4170949/how-to-parse-json-in-scala-using-standard-scala-classes */
-class CC[T : ClassTag] { def unapply(a: Any)(implicit e: ClassTag[T]): Option[T] = {
-  try { Some(e.runtimeClass.cast(a).asInstanceOf[T]) } catch { case _: Throwable => None } }
+class CC[T: ClassTag] {
+  def unapply(a: Any)(implicit e: ClassTag[T]): Option[T] = {
+    try { Some(e.runtimeClass.cast(a).asInstanceOf[T]) } catch { case _: Throwable => None }
+  }
 }
 
 object M extends CC[Map[String, Any]]

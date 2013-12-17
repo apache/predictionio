@@ -17,22 +17,22 @@ case class UpgradeConfig(
 /** Upgrades previous version to current version. */
 object Upgrade {
   def main(args: Array[String]) {
-    val thisVersion = "0.6.4"
+    val thisVersion = "0.6.5"
     val parser = new scopt.OptionParser[UpgradeConfig]("upgrade") {
       head("PredictionIO Software Upgrade Utility", thisVersion)
-      help("help") text("prints this usage text")
+      help("help") text ("prints this usage text")
       opt[Unit]("nomigrate") action { (_, c) =>
         c.copy(nomigrate = true)
-      } text("upgrade from previous version backup data")
+      } text ("upgrade from previous version backup data")
       opt[String]("localVersion") action { (x, c) =>
         c.copy(localVersion = x)
-      } text("use a local file for version information")
+      } text ("use a local file for version information")
       arg[File]("<current>") action { (x, c) =>
         c.copy(current = x)
-      } text("directory containing current PredictionIO setup")
+      } text ("directory containing current PredictionIO setup")
       arg[File]("<latest>") action { (x, c) =>
         c.copy(latest = x)
-      } text("directory containing latest PredictionIO files")
+      } text ("directory containing latest PredictionIO files")
     }
 
     parser.parse(args, UpgradeConfig()) map { upgradeConfig =>
@@ -135,7 +135,7 @@ object Upgrade {
               if (i == 0)
                 restore(s"${updaterDirFile}/${dirname}/bin/restore", s"${current}/backup/settings/${installedVersion}", current)
               else
-                restore(s"${updaterDirFile}/${dirname}/bin/restore", s"${current}/backup/settings/${updateSequence(i-1)}", current)
+                restore(s"${updaterDirFile}/${dirname}/bin/restore", s"${current}/backup/settings/${updateSequence(i - 1)}", current)
 
               backup(s"${updaterDirFile}/${dirname}/bin/backup", s"${current}/backup/settings/${v}", current)
             }
@@ -248,9 +248,9 @@ object Upgrade {
       sys.exit(1)
     } else {
       if (Process(
-          s"${backupBin} ${backupDir}",
-          None,
-          ("JVM_OPT", s"-Dconfig.file=${base}/conf/predictionio.conf -Dio.prediction.base=${base}")).! != 0) {
+        s"${backupBin} ${backupDir}",
+        None,
+        ("JVM_OPT", s"-Dconfig.file=${base}/conf/predictionio.conf -Dio.prediction.base=${base}")).! != 0) {
         println("Backup utility returned non-zero exit code. Aborting.")
         sys.exit(1)
       }
@@ -268,9 +268,9 @@ object Upgrade {
       sys.exit(1)
     } else {
       if (Process(
-          s"${restoreBin} --upgrade ${restoreDir}",
-          None,
-          ("JVM_OPT", s"-Dconfig.file=${base}/conf/predictionio.conf -Dio.prediction.base=${base}")).! != 0) {
+        s"${restoreBin} --upgrade ${restoreDir}",
+        None,
+        ("JVM_OPT", s"-Dconfig.file=${base}/conf/predictionio.conf -Dio.prediction.base=${base}")).! != 0) {
         println("Restore utility returned non-zero exit code. Aborting.")
         sys.exit(1)
       }

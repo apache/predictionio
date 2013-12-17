@@ -4,23 +4,25 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class ParamGenInfosSpec extends Specification { def is =
-  "PredictionIO ParamGenInfos Specification"                                  ^
-                                                                              p^
-  "ParamGenInfos can be implemented by:"                                      ^ endp^
-    "1. MongoParamGenInfos"                                                   ^ mongoParamGenInfos^end
+class ParamGenInfosSpec extends Specification {
+  def is =
+    "PredictionIO ParamGenInfos Specification" ^
+      p ^
+      "ParamGenInfos can be implemented by:" ^ endp ^
+      "1. MongoParamGenInfos" ^ mongoParamGenInfos ^ end
 
-  def mongoParamGenInfos =                                                    p^
-    "MongoParamGenInfos should"                                               ^
-      "behave like any ParamGenInfos implementation"                          ^ paramGenInfos(newMongoParamGenInfos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoParamGenInfos = p ^
+    "MongoParamGenInfos should" ^
+    "behave like any ParamGenInfos implementation" ^ paramGenInfos(newMongoParamGenInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def paramGenInfos(paramGenInfos: ParamGenInfos) = {                         t^
-    "create and get a parameter generator info"                               ! insertAndGet(paramGenInfos)^
-    "update a parameter generator info"                                       ! update(paramGenInfos)^
-    "delete a parameter generator info"                                       ! delete(paramGenInfos)^
-    "backup and restore parameter generator info"                             ! backuprestore(paramGenInfos)^
-                                                                              bt
+  def paramGenInfos(paramGenInfos: ParamGenInfos) = {
+    t ^
+      "create and get a parameter generator info" ! insertAndGet(paramGenInfos) ^
+      "update a parameter generator info" ! update(paramGenInfos) ^
+      "delete a parameter generator info" ! delete(paramGenInfos) ^
+      "backup and restore parameter generator info" ! backuprestore(paramGenInfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoparamgeninfos_test"
@@ -98,14 +100,14 @@ class ParamGenInfosSpec extends Specification { def is =
       paramdescription = Map("k" -> "Averaging window size"),
       paramorder = Seq("k"))
     paramGenInfos.insert(mapkbk)
-    val fn = "paramgeninfos.bin"
+    val fn = "paramgeninfos.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(paramGenInfos.backup())
     } finally {
       fos.close()
     }
-    paramGenInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    paramGenInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       data must contain(mapkbk)
     } getOrElse 1 === 2
   }

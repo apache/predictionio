@@ -37,30 +37,33 @@ $PLAY stage
 
 # Packaging
 rm -rf "$PACKAGE_DIR"
+mkdir -p "$PACKAGE_DIR/bin"
 mkdir -p "$PACKAGE_DIR/lib"
 
-cp -n $ADMIN_DIR/target/staged/* $PACKAGE_DIR/lib
-cp -n $API_DIR/target/staged/* $PACKAGE_DIR/lib
-cp -n $SCHEDULER_DIR/target/staged/* $PACKAGE_DIR/lib
+cp -n $ADMIN_DIR/target/universal/stage/bin/predictionio-admin $PACKAGE_DIR/bin
+cp -n $ADMIN_DIR/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $API_DIR/target/universal/stage/bin/predictionio-api $PACKAGE_DIR/bin
+cp -n $API_DIR/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $SCHEDULER_DIR/target/universal/stage/bin/predictionio-scheduler $PACKAGE_DIR/bin
+cp -n $SCHEDULER_DIR/target/universal/stage/lib/* $PACKAGE_DIR/lib
 
-cp -R $DIST_DIR/bin $PACKAGE_DIR
+cp -R $DIST_DIR/bin/* $PACKAGE_DIR/bin
 cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
-cp "$BASE/process/engines/itemrec/algorithms/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemRec-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/PredictionIO-Process-ItemRec-Algorithms-Scala-Mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/scala/trainingtestsplit/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-Scala-TrainingTestSplitTime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemrec/evaluations/scala/paramgen/target/scala-2.10/PredictionIO-Process-ItemRec-Evaluations-ParamGen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemsim/algorithms/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemSim-Algorithms-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemsim/evaluations/hadoop/scalding/target/scala-2.10/PredictionIO-Process-ItemSim-Evaluations-Hadoop-Scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/PredictionIO-Process-ItemSim-Evaluations-TopKItems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/migration/0.5/appdata/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
+cp "$BASE/process/target/scala-2.10/predictionio-process-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/commons/evaluations/scala/paramgen/target/scala-2.10/predictionio-process-commons-evaluations-paramgen-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/commons/evaluations/scala/u2itrainingtestsplit/target/scala-2.10/predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/predictionio-process-itemrec-algorithms-scala-mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemrec-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemsim-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
+cp -n $BASE/tools/conncheck/target/universal/stage/bin/conncheck $PACKAGE_DIR/bin
+cp -n $BASE/tools/conncheck/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/settingsinit/target/universal/stage/bin/settingsinit $PACKAGE_DIR/bin
+cp -n $BASE/tools/settingsinit/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/softwaremanager/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp -n $BASE/tools/users/target/universal/stage/bin/users $PACKAGE_DIR/bin
+cp -n $BASE/tools/users/target/universal/stage/lib/* $PACKAGE_DIR/lib
 
 mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.8
 cp $VENDOR_MAHOUT/mahout-core-0.8-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.8

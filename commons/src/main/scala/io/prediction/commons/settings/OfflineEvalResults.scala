@@ -2,9 +2,11 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** OfflineEvalResult Object
+/**
+ * OfflineEvalResult Object
  *
  * @param evalid ID of the OfflineEval
  * @param metricid ID of the metric
@@ -19,8 +21,7 @@ case class OfflineEvalResult(
   algoid: Int,
   score: Double,
   iteration: Int,
-  splitset: String = ""
-)
+  splitset: String = "")
 
 trait OfflineEvalResults extends Common {
 
@@ -39,36 +40,19 @@ trait OfflineEvalResults extends Common {
   /** delete all results with this OfflineEval ID */
   def deleteByEvalid(evalid: Int)
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   /** Backup all OfflineEvalResults as a byte array. */
-  def backup(): Array[Byte] = {
-    val results = getAll().toSeq.map { result =>
-      Map(
-        "evalid" -> result.evalid,
-        "metricid" -> result.metricid,
-        "algoid" -> result.algoid,
-        "score" -> result.score,
-        "iteration" -> result.iteration,
-        "splitset" -> result.splitset)
-    }
-    KryoInjection(results)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore OfflineEvalResults from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalResult]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEvalResult(
-          evalid = data("evalid").asInstanceOf[Int],
-          metricid = data("metricid").asInstanceOf[Int],
-          algoid = data("algoid").asInstanceOf[Int],
-          score = data("score").asInstanceOf[Double],
-          iteration = data("iteration").asInstanceOf[Int],
-          splitset = data("splitset").asInstanceOf[String])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEvalResult]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { save(_) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

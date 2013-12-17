@@ -1,6 +1,6 @@
 package io.prediction.commons.modeldata
 
-import io.prediction.commons.settings.{Algo, App}
+import io.prediction.commons.settings.{ Algo, App }
 
 import org.specs2._
 import org.specs2.specification.Step
@@ -21,10 +21,10 @@ class ItemRecScoresSpec extends Specification {
 
   def itemRecScores(itemRecScores: ItemRecScores) = {
     t ^
-      "inserting and getting 3 ItemRecScores"     ! insert(itemRecScores) ^
-      "getting 4+4+2 ItemRecScores"               ! getTopN(itemRecScores) ^
-      "delete ItemRecScores by algoid"            ! deleteByAlgoid(itemRecScores) ^
-      "existence by Algo"                         ! existByAlgo(itemRecScores) ^
+      "inserting and getting 3 ItemRecScores" ! insert(itemRecScores) ^
+      "getting 4+4+2 ItemRecScores" ! getTopN(itemRecScores) ^
+      "delete ItemRecScores by algoid" ! deleteByAlgoid(itemRecScores) ^
+      "existence by Algo" ! existByAlgo(itemRecScores) ^
       bt
   }
 
@@ -64,7 +64,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem1",
       score = -5.6,
-      itypes = List("1","2","3"),
+      itypes = List("1", "2", "3"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -72,7 +72,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem2",
       score = 10,
-      itypes = List("4","5","6"),
+      itypes = List("4", "5", "6"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -80,7 +80,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem3",
       score = 124.678,
-      itypes = List("7","8","9"),
+      itypes = List("7", "8", "9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -138,7 +138,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem1",
       score = -5.6,
-      itypes = List("1","2","3"),
+      itypes = List("1", "2", "3"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -146,7 +146,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem2",
       score = 10,
-      itypes = List("4","5","6"),
+      itypes = List("4", "5", "6"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -154,7 +154,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem3",
       score = 124.678,
-      itypes = List("7","8","9"),
+      itypes = List("7", "8", "9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -170,7 +170,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem5",
       score = -5.6,
-      itypes = List("1","2","3"),
+      itypes = List("1", "2", "3"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -178,7 +178,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem6",
       score = 10,
-      itypes = List("4","5","6"),
+      itypes = List("4", "5", "6"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -186,7 +186,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem7",
       score = 124.678,
-      itypes = List("7","8","9"),
+      itypes = List("7", "8", "9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -202,7 +202,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser",
       iid = "testUserItem9",
       score = 124.678,
-      itypes = List("7","8","9"),
+      itypes = List("7", "8", "9"),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -283,7 +283,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser",
       iid = "testUserItem1",
       score = -5.6,
-      itypes = List("1","2","3"),
+      itypes = List("1", "2", "3"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -291,7 +291,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser",
       iid = "testUserItem2",
       score = 10,
-      itypes = List("4","5","6"),
+      itypes = List("4", "5", "6"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -299,7 +299,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser",
       iid = "testUserItem3",
       score = 124.678,
-      itypes = List("7","8","9"),
+      itypes = List("7", "8", "9"),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -317,7 +317,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser",
       iid = "testUserItem1",
       score = 3,
-      itypes = List("1","2","3"),
+      itypes = List("1", "2", "3"),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
@@ -325,7 +325,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser",
       iid = "testUserItem2",
       score = 2,
-      itypes = List("4","5","6"),
+      itypes = List("4", "5", "6"),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
@@ -333,7 +333,7 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser",
       iid = "testUserItem3",
       score = 1,
-      itypes = List("7","8","9"),
+      itypes = List("7", "8", "9"),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset

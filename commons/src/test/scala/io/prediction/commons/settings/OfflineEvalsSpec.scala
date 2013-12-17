@@ -6,25 +6,28 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
-class OfflineEvalsSpec extends Specification { def is =
-  "PredictionIO OfflineEvals Specification"               ^
-                                                          p^
-  "OfflineEvals can be implemented by:"                   ^ endp^
-    "1. MongoOfflineEvals"                                ^ mongoOfflineEvals^end
+class OfflineEvalsSpec extends Specification {
+  def is =
+    "PredictionIO OfflineEvals Specification" ^
+      p ^
+      "OfflineEvals can be implemented by:" ^ endp ^
+      "1. MongoOfflineEvals" ^ mongoOfflineEvals ^ end
 
-  def mongoOfflineEvals =                                 p^
-    "MongoOfflineEvals should"                            ^
-      "behave like any OfflineEvals implementation"       ^ offlineEvalsTest(newMongoOfflineEvals)^
-                                                          Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoOfflineEvals = p ^
+    "MongoOfflineEvals should" ^
+    "behave like any OfflineEvals implementation" ^ offlineEvalsTest(newMongoOfflineEvals) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def offlineEvalsTest(offlineEvals: OfflineEvals) = {    t^
-    "create an OfflineEval"                               ! insert(offlineEvals)^
-    "get two OfflineEvals by Engineid"                    ! getByEngineid(offlineEvals)^
-    "get two OfflineEvals by Tuneid"                      ! getByTuneid(offlineEvals)^
-    "update an OfflineEval"                               ! update(offlineEvals)^
-    "delete an OfflineEval"                               ! delete(offlineEvals)^
-    "backup and restore OfflineEvals"                     ! backuprestore(offlineEvals)^
-                                                          bt
+  def offlineEvalsTest(offlineEvals: OfflineEvals) = {
+    t ^
+      "create an OfflineEval" ! insert(offlineEvals) ^
+      "get two OfflineEvals by Engineid" ! getByEngineid(offlineEvals) ^
+      "get two OfflineEvals by Tuneid" ! getByTuneid(offlineEvals) ^
+      "get by id and engineid" ! getByIdAndEngineid(offlineEvals) ^
+      "update an OfflineEval" ! update(offlineEvals) ^
+      "delete an OfflineEval" ! delete(offlineEvals) ^
+      "backup and restore OfflineEvals" ! backuprestore(offlineEvals) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoofflineevals_test"
@@ -61,7 +64,7 @@ class OfflineEvalsSpec extends Specification { def is =
       starttime = None,
       endtime = None
     )
-   val eval2 = OfflineEval(
+    val eval2 = OfflineEval(
       id = -1,
       engineid = 11,
       name = "offline-eval-getByEngineid2",
@@ -80,8 +83,8 @@ class OfflineEvalsSpec extends Specification { def is =
     val it2 = it.next()
     val left = it.hasNext // make sure it has 2 only
 
-    it1 must be equalTo(eval1.copy(id = id1)) and
-      (it2 must be equalTo(eval2.copy(id = id2))) and
+    it1 must be equalTo (eval1.copy(id = id1)) and
+      (it2 must be equalTo (eval2.copy(id = id2))) and
       (left must be_==(false))
 
   }
@@ -99,7 +102,7 @@ class OfflineEvalsSpec extends Specification { def is =
       starttime = None,
       endtime = None
     )
-   val eval2 = OfflineEval(
+    val eval2 = OfflineEval(
       id = -1,
       engineid = 12,
       name = "offline-eval-getByEngineid2",
@@ -128,12 +131,42 @@ class OfflineEvalsSpec extends Specification { def is =
     val it2 = it.next()
     val left = it.hasNext // make sure it has 2 only
 
-    it1 must be equalTo(eval1.copy(id = id1)) and
-      (it2 must be equalTo(eval2.copy(id = id2))) and
+    it1 must be equalTo (eval1.copy(id = id1)) and
+      (it2 must be equalTo (eval2.copy(id = id2))) and
       (left must be_==(false))
 
   }
 
+  def getByIdAndEngineid(offlineEvals: OfflineEvals) = {
+    val obj1 = OfflineEval(
+      id = -1,
+      engineid = 2345,
+      name = "getByIdAndEngineid",
+      tuneid = Some(3),
+      createtime = None,
+      starttime = None,
+      endtime = None
+    )
+    val obj2 = obj1.copy()
+    val obj3 = obj1.copy(engineid = 2346, name = "getByIdAndEngineid3")
+
+    val id1 = offlineEvals.insert(obj1)
+    val id2 = offlineEvals.insert(obj2)
+    val id3 = offlineEvals.insert(obj3)
+    val eval1 = offlineEvals.getByIdAndEngineid(id1, 2345)
+    val eval1b = offlineEvals.getByIdAndEngineid(id1, 2346)
+    val eval2 = offlineEvals.getByIdAndEngineid(id2, 2345)
+    val eval2b = offlineEvals.getByIdAndEngineid(id2, 2346)
+    val eval3b = offlineEvals.getByIdAndEngineid(id3, 2345)
+    val eval3 = offlineEvals.getByIdAndEngineid(id3, 2346)
+
+    eval1 must beSome(obj1.copy(id = id1)) and
+      (eval1b must beNone) and
+      (eval2 must beSome(obj2.copy(id = id2))) and
+      (eval2b must beNone) and
+      (eval3 must beSome(obj3.copy(id = id3))) and
+      (eval3b must beNone)
+  }
 
   /**
    * insert one and then update with new data and get back
@@ -204,14 +237,14 @@ class OfflineEvalsSpec extends Specification { def is =
       endtime = None
     )
     val id1 = offlineEvals.insert(eval1)
-    val fn = "evals.bin"
+    val fn = "evals.json"
     val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(offlineEvals.backup())
     } finally {
       fos.close()
     }
-    offlineEvals.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { data =>
+    offlineEvals.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { data =>
       // For some reason inserting Joda DateTime to DB and getting them back will make test pass
       val feval1 = data.find(_.id == id1).get
       offlineEvals.update(feval1)

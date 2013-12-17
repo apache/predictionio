@@ -1,6 +1,6 @@
 package io.prediction.commons.settings.mongodb
 
-import io.prediction.commons.settings.{OfflineEvalResult, OfflineEvalResults}
+import io.prediction.commons.settings.{ OfflineEvalResult, OfflineEvalResults }
 import com.mongodb.casbah.Imports._
 
 class MongoOfflineEvalResults(db: MongoDB) extends OfflineEvalResults {

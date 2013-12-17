@@ -1,6 +1,6 @@
 package io.prediction.commons.settings.mongodb
 
-import io.prediction.commons.settings.{OfflineEval, OfflineEvals}
+import io.prediction.commons.settings.{ OfflineEval, OfflineEvals }
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
@@ -80,6 +80,8 @@ class MongoOfflineEvals(db: MongoDB) extends OfflineEvals {
   def getByTuneid(tuneid: Int): Iterator[OfflineEval] = new MongoOfflineEvalIterator(
     offlineEvalColl.find(MongoDBObject("tuneid" -> tuneid), getFields).sort(MongoDBObject("name" -> 1))
   )
+
+  def getByIdAndEngineid(id: Int, engineid: Int): Option[OfflineEval] = offlineEvalColl.findOne(MongoDBObject("_id" -> id, "engineid" -> engineid)) map { dbObjToOfflineEval(_) }
 
   def update(offlineEval: OfflineEval, upsert: Boolean = false) = {
     val obj = MongoDBObject(

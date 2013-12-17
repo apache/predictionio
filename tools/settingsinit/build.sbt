@@ -1,17 +1,11 @@
-name := "PredictionIO Settings Initialization"
+import com.typesafe.sbt.packager.Keys._
 
-version := "0.6.4"
+name := "settingsinit"
 
-organization := "io.prediction"
+scalariformSettings
 
-scalaVersion := "2.10.2"
+packageArchetype.java_application
 
-scalacOptions ++= Seq("-deprecation")
+bashScriptExtraDefines += "addJava \"-Dconfig.file=${app_home}/../conf/predictionio.conf -Dio.prediction.base=${app_home}/..\""
 
-libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.6.4"
-)
-
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.6.0"

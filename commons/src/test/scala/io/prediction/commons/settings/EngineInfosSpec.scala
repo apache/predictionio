@@ -4,23 +4,25 @@ import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
-class EngineInfosSpec extends Specification { def is =
-  "PredictionIO EngineInfos Specification"                                    ^
-                                                                              p^
-  "EngineInfos can be implemented by:"                                        ^ endp^
-    "1. MongoEngineInfos"                                                     ^ mongoEngineInfos^end
+class EngineInfosSpec extends Specification {
+  def is =
+    "PredictionIO EngineInfos Specification" ^
+      p ^
+      "EngineInfos can be implemented by:" ^ endp ^
+      "1. MongoEngineInfos" ^ mongoEngineInfos ^ end
 
-  def mongoEngineInfos =                                                      p^
-    "MongoEngineInfos should"                                                 ^
-      "behave like any EngineInfos implementation"                            ^ engineInfos(newMongoEngineInfos)^
-                                                                              Step(MongoConnection()(mongoDbName).dropDatabase())
+  def mongoEngineInfos = p ^
+    "MongoEngineInfos should" ^
+    "behave like any EngineInfos implementation" ^ engineInfos(newMongoEngineInfos) ^
+    Step(MongoConnection()(mongoDbName).dropDatabase())
 
-  def engineInfos(engineInfos: EngineInfos) = {                               t^
-    "create and get an engine info"                                           ! insertAndGet(engineInfos)^
-    "update an engine info"                                                   ! update(engineInfos)^
-    "delete an engine info"                                                   ! delete(engineInfos)^
-    "backup and restore existing engine info"                                 ! backuprestore(engineInfos)^
-                                                                              bt
+  def engineInfos(engineInfos: EngineInfos) = {
+    t ^
+      "create and get an engine info" ! insertAndGet(engineInfos) ^
+      "update an engine info" ! update(engineInfos) ^
+      "delete an engine info" ! delete(engineInfos) ^
+      "backup and restore existing engine info" ! backuprestore(engineInfos) ^
+      bt
   }
 
   val mongoDbName = "predictionio_mongoengineinfos_test"
@@ -31,8 +33,11 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemrec",
       name = "Item Recommendation Engine",
       description = Some("Recommend interesting items to each user personally."),
-      defaultsettings = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = "integer")),
-      defaultalgoinfoid = "mahout-itembased")
+      params = Map[String, Param]("numRecs" -> Param(id = "numRecs", name = "", description = None, defaultvalue = 500, constraint = ParamIntegerConstraint(), ui = ParamUI(), scopes = None)),
+      paramsections = Seq(),
+      defaultalgoinfoid = "mahout-itembased",
+      defaultofflineevalmetricinfoid = "metric-x",
+      defaultofflineevalsplitterinfoid = "splitter-y")
     engineInfos.insert(itemrec)
     engineInfos.get("itemrec") must beSome(itemrec)
   }
@@ -42,10 +47,16 @@ class EngineInfosSpec extends Specification { def is =
       id = "itemsim",
       name = "Items Similarity Prediction Engine",
       description = Some("Discover similar items."),
-      defaultsettings = Map[String, Param](),
-      defaultalgoinfoid = "knnitembased")
+      params = Map[String, Param](),
+      paramsections = Seq(),
+      defaultalgoinfoid = "knnitembased",
+      defaultofflineevalmetricinfoid = "metric-x",
+      defaultofflineevalsplitterinfoid = "splitter-y")
     engineInfos.insert(itemsim)
-    val updatedItemsim = itemsim.copy(defaultalgoinfoid = "mahout-itembasedcf")
+    val updatedItemsim = itemsim.copy(
+      defaultalgoinfoid = "mahout-itembasedcf",
+      defaultofflineevalmetricinfoid = "metric-apple",
+      defaultofflineevalsplitterinfoid = "splitter-orange")
     engineInfos.update(updatedItemsim)
     engineInfos.get("itemsim") must beSome(updatedItemsim)
   }
@@ -55,8 +66,11 @@ class EngineInfosSpec extends Specification { def is =
       id = "foo",
       name = "bar",
       description = None,
-      defaultsettings = Map[String, Param](),
-      defaultalgoinfoid = "baz")
+      params = Map[String, Param](),
+      paramsections = Seq(),
+      defaultalgoinfoid = "baz",
+      defaultofflineevalmetricinfoid = "food",
+      defaultofflineevalsplitterinfoid = "yummy")
     engineInfos.insert(foo)
     engineInfos.delete("foo")
     engineInfos.get("foo") must beNone
@@ -67,16 +81,20 @@ class EngineInfosSpec extends Specification { def is =
       id = "baz",
       name = "beef",
       description = Some("dead"),
-      defaultsettings = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = "double")),
-      defaultalgoinfoid = "bar")
+      params = Map[String, Param]("abc" -> Param(id = "abc", name = "", description = None, defaultvalue = 123.4, constraint = ParamDoubleConstraint(), ui = ParamUI(), scopes = None)),
+      paramsections = Seq(),
+      defaultalgoinfoid = "bar",
+      defaultofflineevalmetricinfoid = "yummy",
+      defaultofflineevalsplitterinfoid = "food")
     engineInfos.insert(baz)
-    val fos = new java.io.FileOutputStream("engineinfos.bin")
+    val fn = "engineinfos.json"
+    val fos = new java.io.FileOutputStream(fn)
     try {
       fos.write(engineInfos.backup())
     } finally {
       fos.close()
     }
-    engineInfos.restore(scala.io.Source.fromFile("engineinfos.bin")(scala.io.Codec.ISO8859).map(_.toByte).toArray) map { rengineinfos =>
+    engineInfos.restore(scala.io.Source.fromFile(fn)(scala.io.Codec.UTF8).mkString.getBytes("UTF-8")) map { rengineinfos =>
       rengineinfos must contain(baz)
     } getOrElse 1 === 2
   }

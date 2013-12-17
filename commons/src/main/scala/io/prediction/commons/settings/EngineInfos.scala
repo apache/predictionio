@@ -2,23 +2,29 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** EngineInfo object.
-  *
-  * @param id Unique identifier of an engine type.
-  * @param name Engine name.
-  * @param description A long description of the engine.
-  * @param defaultsettings Default engine settings.
-  * @param defaultalgoinfoid Default AlgoInfo ID for this engine.
-  */
+/**
+ * EngineInfo object.
+ *
+ * @param id Unique identifier of an engine type.
+ * @param name Engine name.
+ * @param description A long description of the engine.
+ * @param defaultsettings Default engine settings.
+ * @param defaultalgoinfoid Default AlgoInfo ID for this engine.
+ * @param defaultofflineevalmetricinfoid Default OfflineEvalMetricInfo ID for this engine.
+ * @param defaultofflineevalsplitterinfoid Default OfflineEvalSplitter ID for this engine.
+ */
 case class EngineInfo(
   id: String,
   name: String,
   description: Option[String],
-  defaultsettings: Map[String, Param],
-  defaultalgoinfoid: String
-)
+  params: Map[String, Param],
+  paramsections: Seq[ParamSection],
+  defaultalgoinfoid: String,
+  defaultofflineevalmetricinfoid: String,
+  defaultofflineevalsplitterinfoid: String) extends Info
 
 /** Base trait for implementations that interact with engine info in the backend data store. */
 trait EngineInfos extends Common {
@@ -37,34 +43,19 @@ trait EngineInfos extends Common {
   /** Delete an engine info by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new ParamSerializer
+
   /** Backup all EngineInfos as a byte array. */
-  def backup(): Array[Byte] = {
-    val engineinfos = getAll().map { engineinfo =>
-      Map(
-        "id" -> engineinfo.id,
-        "name" -> engineinfo.name,
-        "description" -> engineinfo.description,
-        "defaultsettings" -> engineinfo.defaultsettings,
-        "defaultalgoinfoid" -> engineinfo.defaultalgoinfoid)
-    }
-    KryoInjection(engineinfos)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore EngineInfos from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[EngineInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        EngineInfo(
-          id = data("id").asInstanceOf[String],
-          name = data("name").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]],
-          defaultsettings = data("defaultsettings").asInstanceOf[Map[String, Param]],
-          defaultalgoinfoid = data("defaultalgoinfoid").asInstanceOf[String])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[EngineInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

@@ -2,10 +2,12 @@
 
 # PredictionIO Admin Server Startup Script
 
+set -e
+
 # Get the absolute path of the build script
 SCRIPT="$0"
 while [ -h "$SCRIPT" ] ; do
-	SCRIPT=`readlink "$SCRIPT"`
+    SCRIPT=`readlink "$SCRIPT"`
 done
 
 # Get the base directory of the repo
@@ -14,62 +16,28 @@ cd $DIR
 BASE=`pwd`
 
 . "$BASE/bin/common.sh"
+. "$BASE/bin/vendors.sh"
 
-LIB_DIR="$BASE/lib"
+mkdir -p "$LOGDIR"
 
-JARS="${JARS}:$LIB_DIR/akka-actor_2.10.jar"
-JARS="${JARS}:$LIB_DIR/akka-slf4j_2.10.jar"
-JARS="${JARS}:$LIB_DIR/asm-4.0.jar"
-JARS="${JARS}:$LIB_DIR/asm-commons-4.0.jar"
-JARS="${JARS}:$LIB_DIR/asm-tree-4.0.jar"
-JARS="${JARS}:$LIB_DIR/async-http-client.jar"
-JARS="${JARS}:$LIB_DIR/bijection-core_2.10-0.4.0.jar"
-JARS="${JARS}:$LIB_DIR/casbah-commons_2.10-2.6.2.jar"
-JARS="${JARS}:$LIB_DIR/casbah-core_2.10-2.6.2.jar"
-JARS="${JARS}:$LIB_DIR/casbah-gridfs_2.10-2.6.2.jar"
-JARS="${JARS}:$LIB_DIR/casbah-query_2.10-2.6.2.jar"
-JARS="${JARS}:$LIB_DIR/chill_2.10-0.2.3.jar"
-JARS="${JARS}:$LIB_DIR/commons-codec-1.8.jar"
-JARS="${JARS}:$LIB_DIR/commons-lang3.jar"
-JARS="${JARS}:$LIB_DIR/commons-logging.jar"
-JARS="${JARS}:$LIB_DIR/config-1.0.2.jar"
-JARS="${JARS}:$LIB_DIR/ehcache-core.jar"
-JARS="${JARS}:$LIB_DIR/httpclient.jar"
-JARS="${JARS}:$LIB_DIR/httpcore.jar"
-JARS="${JARS}:$LIB_DIR/jackson-core-asl.jar"
-JARS="${JARS}:$LIB_DIR/jackson-mapper-asl.jar"
-JARS="${JARS}:$LIB_DIR/javassist.jar"
-JARS="${JARS}:$LIB_DIR/jcl-over-slf4j.jar"
-JARS="${JARS}:$LIB_DIR/joda-convert.jar"
-JARS="${JARS}:$LIB_DIR/joda-time-2.2.jar"
-JARS="${JARS}:$LIB_DIR/jta.jar"
-JARS="${JARS}:$LIB_DIR/jul-to-slf4j.jar"
-JARS="${JARS}:$LIB_DIR/kryo-2.21.jar"
-JARS="${JARS}:$LIB_DIR/logback-classic.jar"
-JARS="${JARS}:$LIB_DIR/logback-core.jar"
-JARS="${JARS}:$LIB_DIR/minlog-1.2.jar"
-JARS="${JARS}:$LIB_DIR/mongo-java-driver-2.11.2.jar"
-JARS="${JARS}:$LIB_DIR/netty.jar"
-JARS="${JARS}:$LIB_DIR/nscala-time_2.10-0.4.2.jar"
-JARS="${JARS}:$LIB_DIR/objenesis-1.2.jar"
-JARS="${JARS}:$LIB_DIR/play-exceptions.jar"
-JARS="${JARS}:$LIB_DIR/play-iteratees_2.10.jar"
-JARS="${JARS}:$LIB_DIR/play_2.10.jar"
-JARS="${JARS}:$LIB_DIR/predictionio-admin_2.10-${VERSION}.jar"
-JARS="${JARS}:$LIB_DIR/predictionio-commons_2.10-${VERSION}.jar"
-JARS="${JARS}:$LIB_DIR/predictionio-output_2.10-${VERSION}.jar"
-JARS="${JARS}:$LIB_DIR/reflectasm-1.07-shaded.jar"
-JARS="${JARS}:$LIB_DIR/sbt-link.jar"
-JARS="${JARS}:$LIB_DIR/scala-arm_2.10.jar"
-JARS="${JARS}:$LIB_DIR/scala-io-core_2.10.jar"
-JARS="${JARS}:$LIB_DIR/scala-io-file_2.10.jar"
-JARS="${JARS}:$LIB_DIR/scala-library.jar"
-JARS="${JARS}:$LIB_DIR/scala-reflect.jar"
-JARS="${JARS}:$LIB_DIR/scala-stm_2.10.0.jar"
-JARS="${JARS}:$LIB_DIR/signpost-commonshttp4.jar"
-JARS="${JARS}:$LIB_DIR/signpost-core.jar"
-JARS="${JARS}:$LIB_DIR/slf4j-api.jar"
-JARS="${JARS}:$LIB_DIR/templates_2.10.jar"
+SERVER_WAIT=1
+SERVER_RETRY=20
 
-mkdir -p $ADMIN_DIR
-exec java $@ -cp "$JARS" play.core.server.NettyServer $ADMIN_DIR
+$BASE/bin/conncheck
+
+# Admin server
+echo "Trying to start admin server... \c"
+echo "Trying to start admin server at: `date`" >>"$ADMIN_OUT"
+$BASE/bin/predictionio-admin $PLAY_START_OPTS -Dhttp.port=$ADMIN_PORT -Dlogger.file=$BASE/conf/admin-logger.xml -Dpidfile.path=$BASE/admin.pid >>"$ADMIN_OUT" 2>>"$ADMIN_ERR" &
+SERVER_TRY=1
+while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
+    sleep $SERVER_WAIT
+    if [ $(curl --write-out %{http_code} --silent --output /dev/null "localhost:$ADMIN_PORT") -eq 303 ] ; then
+        echo "started"
+        SERVER_TRY=$SERVER_RETRY
+    elif [ $SERVER_TRY -eq $SERVER_RETRY ] ; then
+        echo "failed ($ADMIN_PORT unreachable)"
+        exit 1
+    fi
+    SERVER_TRY=$((SERVER_TRY+1))
+done

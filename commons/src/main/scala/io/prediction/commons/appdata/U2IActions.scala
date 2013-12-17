@@ -2,17 +2,18 @@ package io.prediction.commons.appdata
 
 import com.github.nscala_time.time.Imports._
 
-/** User-to-item action object.
-  *
-  * @param appid App ID that this item belongs to.
-  * @param action Type of this action.
-  * @param uid User ID of this action.
-  * @param iid Item ID of this action.
-  * @param t Time of this action.
-  * @param latlng Geolocation of this action.
-  * @param v The value of this action (if applicable).
-  * @param price Price associated with this action (if applicable).
-  */
+/**
+ * User-to-item action object.
+ *
+ * @param appid App ID that this item belongs to.
+ * @param action Type of this action.
+ * @param uid User ID of this action.
+ * @param iid Item ID of this action.
+ * @param t Time of this action.
+ * @param latlng Geolocation of this action.
+ * @param v The value of this action (if applicable).
+ * @param price Price associated with this action (if applicable).
+ */
 case class U2IAction(
   appid: Int,
   action: String,
@@ -21,8 +22,7 @@ case class U2IAction(
   t: DateTime,
   latlng: Option[Tuple2[Double, Double]],
   v: Option[Int],
-  price: Option[Double]
-)
+  price: Option[Double])
 
 /** Base trait for implementations that interact with user-to-item actions in the backend app data store. */
 trait U2IActions {

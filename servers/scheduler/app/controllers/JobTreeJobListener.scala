@@ -1,6 +1,6 @@
 package io.prediction.scheduler
 
-import org.quartz.{JobExecutionContext, JobExecutionException, JobKey, SchedulerException}
+import org.quartz.{ JobExecutionContext, JobExecutionException, JobKey, SchedulerException }
 import org.quartz.listeners.JobListenerSupport
 
 class JobTreeJobListener(name: String) extends JobListenerSupport {

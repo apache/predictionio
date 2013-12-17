@@ -2,31 +2,30 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** OfflineEvalSplitterInfo object.
-  *
-  * @param id Unique identifier of a splitter.
-  * @param name Splitter name.
-  * @param description A long description of the splitter.
-  * @param engineinfoids A list of EngineInfo IDs that this splitter can apply to.
-  * @param commands A sequence of commands to run this metric.
-  * @param paramdefaults Default parameters as key-value pairs. Usually used by substituting template variables in command templates.
-  * @param paramnames Key value paris of (parameter -> display name).
-  * @param paramdescription Key value paris of (parameter -> description).
-  * @param paramorder The display order of parameters.
-  */
+/**
+ * OfflineEvalSplitterInfo object.
+ *
+ * @param id Unique identifier of a splitter.
+ * @param name Splitter name.
+ * @param description A long description of the splitter.
+ * @param engineinfoids A list of EngineInfo IDs that this splitter can apply to.
+ * @param commands A sequence of commands to run this metric.
+ * @param params Map of Param objects, with keys equal to IDs of Param objects it contains.
+ * @param paramsections Seq of ParamSection objects
+ * @param paramorder The display order of parameters.
+ */
 case class OfflineEvalSplitterInfo(
   id: String,
   name: String,
   description: Option[String],
   engineinfoids: Seq[String],
   commands: Option[Seq[String]],
-  paramdefaults: Map[String, Any],
-  paramnames: Map[String, String],
-  paramdescription: Map[String, String],
-  paramorder: Seq[String]
-)
+  params: Map[String, Param],
+  paramsections: Seq[ParamSection],
+  paramorder: Seq[String]) extends Info
 
 /** Base trait for implementations that interact with metric info in the backend data store. */
 trait OfflineEvalSplitterInfos extends Common {
@@ -39,48 +38,28 @@ trait OfflineEvalSplitterInfos extends Common {
   /** Get all splitter info. */
   def getAll(): Seq[OfflineEvalSplitterInfo]
 
+  /** Get all splitter info by engineinfo ID */
+  def getByEngineinfoid(engineinfoid: String): Seq[OfflineEvalSplitterInfo]
+
   /** Updates a splitter info. */
   def update(offlineEvalSplitterInfo: OfflineEvalSplitterInfo, upsert: Boolean = false): Unit
 
   /** Delete a splitter info by its ID. */
   def delete(id: String): Unit
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new ParamSerializer
+
   /** Backup all data as a byte array. */
-  def backup(): Array[Byte] = {
-    val backup = getAll().map { b =>
-      Map(
-        "id" -> b.id,
-        "name" -> b.name,
-        "description" -> b.description,
-        "engineinfoids" -> b.engineinfoids,
-        "commands" -> b.commands,
-        "paramdefaults" -> b.paramdefaults,
-        "paramnames" -> b.paramnames,
-        "paramdescription" -> b.paramdescription,
-        "paramorder" -> b.paramorder)
-    }
-    KryoInjection(backup)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll()).getBytes("UTF-8")
 
   /** Restore data from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalSplitterInfo]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEvalSplitterInfo(
-          id = data("id").asInstanceOf[String],
-          name = data("name").asInstanceOf[String],
-          description = data("description").asInstanceOf[Option[String]],
-          engineinfoids = data("engineinfoids").asInstanceOf[Seq[String]],
-          commands = data("commands").asInstanceOf[Option[Seq[String]]],
-          paramdefaults = data("paramdefaults").asInstanceOf[Map[String, Any]],
-          paramnames = data("paramnames").asInstanceOf[Map[String, String]],
-          paramdescription = data("paramdescription").asInstanceOf[Map[String, String]],
-          paramorder = data("paramorder").asInstanceOf[Seq[String]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEvalSplitterInfo]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }

@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{OfflineEvalMetric, OfflineEvalMetrics}
+import io.prediction.commons.settings.{ OfflineEvalMetric, OfflineEvalMetrics }
 
 import com.mongodb.casbah.Imports._
 
@@ -62,7 +62,7 @@ class MongoOfflineEvalMetrics(db: MongoDB) extends OfflineEvalMetrics {
   /** Update metric */
   def update(metric: OfflineEvalMetric, upsert: Boolean = false) = {
     offlineEvalMetricsColl.update(MongoDBObject("_id" -> metric.id), MongoDBObject(
-      "_id"    -> metric.id,
+      "_id" -> metric.id,
       "infoid" -> metric.infoid,
       "evalid" -> metric.evalid,
       "params" -> metric.params

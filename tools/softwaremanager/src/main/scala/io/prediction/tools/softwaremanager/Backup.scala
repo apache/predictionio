@@ -27,11 +27,11 @@ object Backup {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[BackupConfig]("backup") {
-      head("PredictionIO Backup Utility", "0.6.4")
-      help("help") text("prints this usage text")
+      head("PredictionIO Backup Utility", "0.6.5")
+      help("help") text ("prints this usage text")
       arg[String]("<backup directory>") action { (x, c) =>
         c.copy(backupDir = x)
-      } text("directory containing backup files")
+      } text ("directory containing backup files")
     }
 
     parser.parse(args, BackupConfig()) map { backupConfig =>
@@ -44,10 +44,10 @@ object Backup {
       if (!backupDirFile.exists && !backupDirFile.mkdirs) {
         println(s"Unable to create directory ${backupDir}. Aborting...")
         sys.exit(1)
-    	}
+      }
 
-    	settingsMap map { s =>
-        val fn = s"${backupDir}/${s._1}.bin"
+      settingsMap map { s =>
+        val fn = s"${backupDir}/${s._1}.json"
         val fos = new java.io.FileOutputStream(fn)
         try {
           fos.write(s._2.backup())
@@ -60,7 +60,7 @@ object Backup {
       config.settingsDbType match {
         case "mongodb" => {
           val metadata = new settings.mongodb.MongoMetadata(config.settingsMongoDb.get)
-          val fn = s"${backupDir}/metadata.bin"
+          val fn = s"${backupDir}/metadata.json"
           val fos = new java.io.FileOutputStream(fn)
           try {
             fos.write(metadata.backup())
@@ -73,7 +73,7 @@ object Backup {
       }
 
       println()
-    	println("Backup completed.")
+      println("Backup completed.")
     }
   }
 }

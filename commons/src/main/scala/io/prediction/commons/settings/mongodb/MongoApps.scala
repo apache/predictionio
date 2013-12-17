@@ -1,6 +1,6 @@
 package io.prediction.commons.settings.mongodb
 
-import io.prediction.commons.settings.{App, Apps}
+import io.prediction.commons.settings.{ App, Apps }
 import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of Apps. */
@@ -12,13 +12,13 @@ class MongoApps(db: MongoDB) extends Apps {
 
   private def dbObjToApp(dbObj: DBObject) = {
     App(
-      id       = dbObj.as[Int]("_id"),
-      userid   = dbObj.as[Int]("userid"),
-      appkey   = dbObj.as[String]("appkey"),
-      display  = dbObj.as[String]("display"),
-      url      = dbObj.getAs[String]("url"),
-      cat      = dbObj.getAs[String]("cat"),
-      desc     = dbObj.getAs[String]("desc"),
+      id = dbObj.as[Int]("_id"),
+      userid = dbObj.as[Int]("userid"),
+      appkey = dbObj.as[String]("appkey"),
+      display = dbObj.as[String]("display"),
+      url = dbObj.getAs[String]("url"),
+      cat = dbObj.getAs[String]("cat"),
+      desc = dbObj.getAs[String]("desc"),
       timezone = dbObj.as[String]("timezone")
     )
   }
@@ -37,8 +37,8 @@ class MongoApps(db: MongoDB) extends Apps {
       "display" -> app.display,
       "timezone" -> app.timezone
     )
-    val url  = app.url map { url => MongoDBObject("url" -> url) } getOrElse emptyObj
-    val cat  = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
+    val url = app.url map { url => MongoDBObject("url" -> url) } getOrElse emptyObj
+    val cat = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
     val desc = app.desc map { desc => MongoDBObject("desc" -> desc) } getOrElse emptyObj
 
     appColl.insert(must ++ url ++ cat ++ desc)
@@ -59,13 +59,13 @@ class MongoApps(db: MongoDB) extends Apps {
 
   def update(app: App, upsert: Boolean = false) = {
     val must = MongoDBObject(
-      "_id"      -> app.id,
-      "userid"   -> app.userid,
-      "appkey"   -> app.appkey,
-      "display"  -> app.display,
+      "_id" -> app.id,
+      "userid" -> app.userid,
+      "appkey" -> app.appkey,
+      "display" -> app.display,
       "timezone" -> app.timezone)
-    val url  = app.url map { url => MongoDBObject("url" -> url) } getOrElse emptyObj
-    val cat  = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
+    val url = app.url map { url => MongoDBObject("url" -> url) } getOrElse emptyObj
+    val cat = app.cat map { cat => MongoDBObject("cat" -> cat) } getOrElse emptyObj
     val desc = app.desc map { desc => MongoDBObject("desc" -> desc) } getOrElse emptyObj
 
     appColl.update(MongoDBObject("_id" -> app.id), must ++ url ++ cat ++ desc, upsert)

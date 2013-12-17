@@ -16,14 +16,14 @@ object UpdateCheck {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[UpdateCheckConfig]("updatecheck") {
-      head("PredictionIO Update Checker", "0.6.4")
-      help("help") text("prints this usage text")
+      head("PredictionIO Update Checker", "0.6.5")
+      help("help") text ("prints this usage text")
       opt[String]("localVersion") action { (x, c) =>
         c.copy(localVersion = x)
-      } text("read version information from a local file instead")
+      } text ("read version information from a local file instead")
       opt[String]("answer") action { (x, c) =>
         c.copy(answer = x)
-      } text("'y' to proceed downloading update if found; 'n' to skip")
+      } text ("'y' to proceed downloading update if found; 'n' to skip")
     }
 
     parser.parse(args, UpdateCheckConfig()) map { updateCheckConfig =>

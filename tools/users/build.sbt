@@ -1,21 +1,15 @@
-name := "PredictionIO Users Tool"
+import com.typesafe.sbt.packager.Keys._
 
-version := "0.6.4"
+name := "users"
 
-organization := "io.prediction"
+scalariformSettings
 
-scalaVersion := "2.10.2"
+packageArchetype.java_application
+
+bashScriptExtraDefines += "addJava \"-Dconfig.file=${app_home}/../conf/predictionio.conf -Dio.prediction.base=${app_home}/..\""
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.6.4",
   "commons-codec" % "commons-codec" % "1.8",
-  "jline" % "jline" % "2.9"
+  "jline" % "jline" % "2.9",
+  "org.slf4j" % "slf4j-nop" % "1.6.0"
 )
-
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
-
-publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.m2/repository")))
-
-publishMavenStyle := true

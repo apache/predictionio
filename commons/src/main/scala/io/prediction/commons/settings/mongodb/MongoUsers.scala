@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{User, Users}
+import io.prediction.commons.settings.{ User, Users }
 import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of Users. */
@@ -43,9 +43,9 @@ class MongoUsers(db: MongoDB) extends Users {
 
   def update(user: User, upsert: Boolean = false) = {
     val requiredObj = MongoDBObject(
-      "_id"       -> user.id,
-      "email"     -> user.email,
-      "password"  -> user.password,
+      "_id" -> user.id,
+      "email" -> user.email,
+      "password" -> user.password,
       "firstname" -> user.firstName)
     val lastnameObj = user.lastName map { x => MongoDBObject("lastname" -> x) } getOrElse { MongoUtils.emptyObj }
     val confirmObj = user.confirm map { x => MongoDBObject("confirm" -> x) } getOrElse { MongoUtils.emptyObj }
@@ -78,12 +78,12 @@ class MongoUsers(db: MongoDB) extends Users {
 
   private def dbObjToUser(dbObj: DBObject): User = {
     User(
-      id        = dbObj.as[Int]("_id"),
+      id = dbObj.as[Int]("_id"),
       firstName = dbObj.as[String]("firstname"),
-      lastName  = dbObj.getAs[String]("lastname"),
-      email     = dbObj.as[String]("email"),
-      password  = dbObj.as[String]("password"),
-      confirm   = dbObj.getAs[String]("confirm")
+      lastName = dbObj.getAs[String]("lastname"),
+      email = dbObj.as[String]("email"),
+      password = dbObj.as[String]("password"),
+      confirm = dbObj.getAs[String]("confirm")
     )
   }
 

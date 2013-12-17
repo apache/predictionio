@@ -1,7 +1,7 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
-import io.prediction.commons.settings.{OfflineEvalSplitter, OfflineEvalSplitters}
+import io.prediction.commons.settings.{ OfflineEvalSplitter, OfflineEvalSplitters }
 
 import com.mongodb.casbah.Imports._
 
@@ -12,10 +12,10 @@ class MongoOfflineEvalSplitters(db: MongoDB) extends OfflineEvalSplitters {
 
   private def dbObjToOfflineEvalSplitter(dbObj: DBObject) = {
     OfflineEvalSplitter(
-      id       = dbObj.as[Int]("_id"),
-      evalid   = dbObj.as[Int]("evalid"),
-      name     = dbObj.as[String]("name"),
-      infoid   = dbObj.as[String]("infoid"),
+      id = dbObj.as[Int]("_id"),
+      evalid = dbObj.as[Int]("evalid"),
+      name = dbObj.as[String]("name"),
+      infoid = dbObj.as[String]("infoid"),
       settings = MongoUtils.dbObjToMap(dbObj.as[DBObject]("settings"))
     )
   }
@@ -30,10 +30,10 @@ class MongoOfflineEvalSplitters(db: MongoDB) extends OfflineEvalSplitters {
 
     // required fields
     val obj = MongoDBObject(
-      "_id"      -> id,
-      "evalid"   -> splitter.evalid,
-      "name"     -> splitter.name,
-      "infoid"   -> splitter.infoid,
+      "_id" -> id,
+      "evalid" -> splitter.evalid,
+      "name" -> splitter.name,
+      "infoid" -> splitter.infoid,
       "settings" -> splitter.settings
     )
 

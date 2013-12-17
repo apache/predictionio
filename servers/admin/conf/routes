@@ -6,87 +6,77 @@ GET     /                           controllers.Application.redirectToWeb
 GET     /web                        controllers.Application.redirectToWeb
 GET     /web/                        controllers.Application.showWeb
 GET     /web/assets/*file               controllers.Assets.at(path="/public", file)
+
 ### During development, use enginebase controller instead to avoid cache problems
+# TODO: remove these new routes when work on PDIO-235
 GET     /web/enginebase/*file               controllers.Assets.at(path="/enginebase", file)
 # GET     /web/enginebase/*file                controllers.Application.enginebase(file)
 
+# TODO: use these new routes when work on PDIO-235
+#GET    /engineinfos/:engineinfoid/:filename   controllers.engineinfo.getFile(engineinfoid, filename)
+#GET    /algoinfos/:algoinfoid/:filename       controllers.algoinfo.getFile(algoinfoid, filename)
 
-POST    /signin                       controllers.Application.signin
-POST    /signout                    controllers.Application.signout
+
+POST    /signin                        controllers.Application.signin
+POST    /signout                       controllers.Application.signout
 
 # Admin User
-GET     /auth                       controllers.Application.getAuth
+GET     /auth                          controllers.Application.getAuth
 
 # An App
-GET     /app_list                      controllers.Application.getApplist
-GET   /app/:id                          controllers.Application.getApp(id)
-POST    /app                          controllers.Application.createApp
-DELETE  /app/:id                      controllers.Application.removeApp(id)
-#PUT    /app/:id                      controllers.Application.updateApp(id)
-GET     /app_details/:id              controllers.Application.getAppDetails(id)
-GET     /app_engine_list/:id           controllers.Application.getAppEnginelist(id)
-POST     /app/erasedata/:id           controllers.Application.eraseAppData(id)
+GET     /apps                          controllers.Application.getApplist
+GET     /apps/:id                      controllers.Application.getApp(id: Int)
+POST    /apps                          controllers.Application.createApp
+DELETE  /apps/:id                      controllers.Application.removeApp(id: Int)
+#PUT    /apps/:id                      controllers.Application.updateApp(id: Int)
+GET     /apps/:id/details              controllers.Application.getAppDetails(id: Int)
+POST    /apps/:id/erase_data           controllers.Application.eraseAppData(id: Int)
 
 # System Level
-GET     /enginetype_list                 controllers.Application.getEngineTypeList
-GET     /enginetype_algolist/:id                 controllers.Application.getEngineTypeAlgoList(id)
-GET     /enginetype_metricstype_list/:id        controllers.Application.getEngineTypeMetricsTypeList(id)
+GET     /engineinfos                   controllers.Application.getEngineInfoList
+GET     /engineinfos/:id/algoinfos     controllers.Application.getEngineInfoAlgoInfoList(id: String)
+GET     /engineinfos/:id/metricinfos   controllers.Application.getEngineInfoMetricInfoList(id: String)
+GET     /engineinfos/:id/splitterinfos controllers.Application.getEngineInfoSplitterInfoList(id: String)
 
 # An Engine of an App
-GET    /app/:app_id/engine/:id             controllers.Application.getEngine(app_id, id)
-POST    /app/:app_id/engine             controllers.Application.createEngine(app_id)
-DELETE  /app/:app_id/engine/:engine_id       controllers.Application.removeEngine(app_id, engine_id)
-GET     /app/:app_id/engine/:engine_id/algo_available_list      controllers.Application.getAvailableAlgoList(app_id, engine_id)
-GET    /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.getAvailableAlgo(app_id, engine_id, id)
-POST    /app/:app_id/engine/:engine_id/algo_available       controllers.Application.createAvailableAlgo(app_id, engine_id)
-DELETE  /app/:app_id/engine/:engine_id/algo_available/:id       controllers.Application.removeAvailableAlgo(app_id: Int, engine_id: Int, id: Int)
-GET     /app/:app_id/engine/:engine_id/algoautotuning_report/:algo_id   controllers.Application.getAlgoAutotuningReport(app_id, engine_id, algo_id)
+GET     /apps/:appid/engines          controllers.Application.getAppEnginelist(appid: Int)
+GET     /apps/:appid/engines/:id      controllers.Application.getEngine(appid: Int, id: Int)
+POST    /apps/:appid/engines          controllers.Application.createEngine(appid: Int)
+DELETE  /apps/:appid/engines/:id      controllers.Application.removeEngine(appid: Int, id: Int)
 
-POST    /app/:app_id/engine/:engine_id/algo/:algo_id/algoautotuning_select/:algoautotune_id      controllers.Application.algoAutotuningSelect(app_id, engine_id, algo_id, algoautotune_id)
+GET     /apps/:appid/engines/:engineid/algos_available      controllers.Application.getAvailableAlgoList(appid: Int, engineid: Int)
+GET     /apps/:appid/engines/:engineid/algos_available/:id  controllers.Application.getAvailableAlgo(appid: Int, engineid: Int, id: Int)
+POST    /apps/:appid/engines/:engineid/algos_available      controllers.Application.createAvailableAlgo(appid: Int, engineid: Int)
+DELETE  /apps/:appid/engines/:engineid/algos_available/:id  controllers.Application.removeAvailableAlgo(appid: Int, engineid: Int, id: Int)
 
+GET     /apps/:appid/engines/:engineid/algos_deployed       controllers.Application.getDeployedAlgoList(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/algos_deploy         controllers.Application.algoDeploy(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/algos_undeploy       controllers.Application.algoUndeploy(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/algos_trainnow       controllers.Application.algoTrainNow(appid: Int, engineid: Int)
 
-GET     /app/:app_id/engine/:engine_id/algo_deployed      controllers.Application.getDeployedAlgo(app_id, engine_id)
+GET     /apps/:appid/engines/:engineid/simevals             controllers.Application.getSimEvalList(appid: Int, engineid: Int)
+POST    /apps/:appid/engines/:engineid/simevals             controllers.Application.createSimEval(appid: Int, engineid: Int)
+DELETE  /apps/:appid/engines/:engineid/simevals/:id         controllers.Application.removeSimEval(appid: Int, engineid: Int, id: Int)
+GET     /apps/:appid/engines/:engineid/simevals/:id/report  controllers.Application.getSimEvalReport(appid: Int, engineid: Int, id: Int)
 
-GET     /app/:app_id/engine/:engine_id/simeval_list         controllers.Application.getSimEvalList(app_id, engine_id)
-POST    /app/:app_id/engine/:engine_id/simeval              controllers.Application.createSimEval(app_id, engine_id)
-DELETE  /app/:app_id/engine/:engine_id/simeval/:id          controllers.Application.removeSimEval(app_id: Int, engine_id: Int, id: Int)
-GET     /app/:app_id/engine/:engine_id/simeval_report/:id   controllers.Application.getSimEvalReport(app_id, engine_id, id)
-
-POST     /app/:app_id/engine/:engine_id/algo_deploy      controllers.Application.algoDeploy(app_id, engine_id)
-POST     /app/:app_id/engine/:engine_id/algo_undeploy      controllers.Application.algoUndeploy(app_id, engine_id)
-POST     /app/:app_id/engine/:engine_id/algo_trainnow      controllers.Application.algoTrainNow(app_id, engine_id)
-
+GET     /apps/:appid/engines/:engineid/algos_available/:algoid/autotune_report   controllers.Application.getAlgoAutotuningReport(appid: Int, engineid: Int, algoid: Int)
+POST    /apps/:appid/engines/:engineid/algos_available/:algoid/autotune_apply    controllers.Application.algoAutotuningSelect(appid: Int, engineid: Int, algoid: Int)
 
 # Engine Module
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.getSettings(app_id, engine_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id     controllers.Itemrec.Engine.updateSettings(app_id, engine_id)
+GET     /apps/:appid/engine_settings/:engineid         controllers.Application.getEngineSettings(appid: Int, engineid: Int)
+PUT     /apps/:appid/engine_settings/:engineid         controllers.Application.updateEngineSettings(appid: Int, engineid: Int)
 
-GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id     controllers.Itemsim.Engine.getSettings(app_id, engine_id)
-PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id     controllers.Itemsim.Engine.updateSettings(app_id, engine_id)
+GET     /apps/:appid/engines/:engineid/template.html   controllers.Application.getEngineTemplateHtml(appid: Int, engineid: Int)
+GET     /apps/:appid/engines/:engineid/template.js     controllers.Application.getEngineTemplateJs(appid: Int, engineid: Int)
 
 # Algo Module
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.PdioKnnItemBased.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/pdio-knnitembased/:algo_id     controllers.Itemrec.PdioKnnItemBased.updateSettings(app_id, engine_id, algo_id)
+GET     /apps/:appid/engines/:engineid/algo_settings/:algoid    controllers.Application.getAlgoSettings(appid: Int, engineid: Int, algoid: Int)
+PUT     /apps/:appid/engines/:engineid/algo_settings/:algoid    controllers.Application.updateAlgoSettings(appid: Int, engineid: Int, algoid: Int)
 
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemrec.MahoutItemBased.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-itembased/:algo_id     controllers.Itemrec.MahoutItemBased.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-parallelals/:algo_id     controllers.Itemrec.MahoutParallelALS.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-parallelals/:algo_id     controllers.Itemrec.MahoutParallelALS.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-knnuserbased/:algo_id     controllers.Itemrec.MahoutKnnUserBased.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-knnuserbased/:algo_id     controllers.Itemrec.MahoutKnnUserBased.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-thresholduserbased/:algo_id     controllers.Itemrec.MahoutThresholdUserBased.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-thresholduserbased/:algo_id     controllers.Itemrec.MahoutThresholdUserBased.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-slopeone/:algo_id     controllers.Itemrec.MahoutSlopeOne.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-slopeone/:algo_id     controllers.Itemrec.MahoutSlopeOne.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-alswr/:algo_id     controllers.Itemrec.MahoutALSWR.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-alswr/:algo_id     controllers.Itemrec.MahoutALSWR.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdsgd/:algo_id     controllers.Itemrec.MahoutSVDSGD.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdsgd/:algo_id     controllers.Itemrec.MahoutSVDSGD.updateSettings(app_id, engine_id, algo_id)
-GET     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdplusplus/:algo_id     controllers.Itemrec.MahoutSVDPlusPlus.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemrec/settings/app/:app_id/engine/:engine_id/mahout-svdplusplus/:algo_id     controllers.Itemrec.MahoutSVDPlusPlus.updateSettings(app_id, engine_id, algo_id)
+GET     /apps/:appid/engines/:engineid/algos/:algoid/template.html   controllers.Application.getAlgoTemplateHtml(appid: Int, engineid: Int, algoid: Int)
+GET     /apps/:appid/engines/:engineid/algos/:algoid/template.js     controllers.Application.getAlgoTemplateJs(appid: Int, engineid: Int, algoid: Int)
 
-GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/pdio-itemsimcf/:algo_id     controllers.Itemsim.ItemSimCF.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/pdio-itemsimcf/:algo_id     controllers.Itemsim.ItemSimCF.updateSettings(app_id, engine_id, algo_id)
+# Metric Info template
+GET     /engineinfos/:engineinfoid/metricinfos/:metricinfoid/template.html    controllers.Application.getMetricInfoTemplateHtml(engineinfoid: String, metricinfoid: String)
+GET     /engineinfos/:engineinfoid/splitterinfos/:splitterinfoid/template.html    controllers.Application.getSplitterInfoTemplateHtml(engineinfoid: String, splitterinfoid: String)
 
-GET     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itemsimcf/:algo_id     controllers.Itemsim.MahoutItemSimCF.getSettings(app_id, engine_id, algo_id)
-PUT     /modules/itemsim/settings/app/:app_id/engine/:engine_id/mahout-itemsimcf/:algo_id     controllers.Itemsim.MahoutItemSimCF.updateSettings(app_id, engine_id, algo_id)

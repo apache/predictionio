@@ -1,16 +1,11 @@
-name := "PredictionIO Connection Check Tool"
+import com.typesafe.sbt.packager.Keys._
 
-version := "0.6.4"
+name := "conncheck"
 
-organization := "io.prediction"
+scalariformSettings
 
-scalaVersion := "2.10.2"
+packageArchetype.java_application
 
-libraryDependencies ++= Seq(
-  "io.prediction" %% "predictionio-commons" % "0.6.4",
-  "org.slf4j" % "slf4j-nop" % "1.6.0"
-)
+bashScriptExtraDefines += "addJava \"-Dconfig.file=${app_home}/../conf/predictionio.conf -Dio.prediction.base=${app_home}/..\""
 
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.6.0"

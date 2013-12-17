@@ -15,4 +15,4 @@ BASE=`pwd`
 
 . "$BASE/bin/common.sh"
 
-stop_play "API" $API_DIR $API_OUT
+stop_play "api" $API_DIR $API_OUT

@@ -3,6 +3,7 @@ logs/
 .project
 project/*
 !project/Build.scala
+!project/plugins.sbt
 target/
 build/
 dist/target/

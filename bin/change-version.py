@@ -27,6 +27,7 @@ Usage: bin/change-version.py <old-version> <new-version>
 oldversion = sys.argv[1]
 newversion = sys.argv[2]
 files = [
+    'build.sbt',
     'bin/common.sh',
     'commons/build.sbt',
     'dist/bin/*',
@@ -46,7 +47,7 @@ files = [
     'process/engines/itemsim/algorithms/hadoop/scalding/build.sbt',
     'process/engines/itemsim/evaluations/hadoop/scalding/build.sbt',
     'process/engines/itemsim/evaluations/scala/*/build.sbt',
-    'servers/*/project/Build.scala',
+    'servers/*/build.sbt',
     'servers/scheduler/conf/application.conf',
     'tools/*/build.sbt',
     'tools/migration/*/*/build.sbt',

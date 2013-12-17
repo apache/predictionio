@@ -2,9 +2,11 @@ package io.prediction.commons.settings
 
 import io.prediction.commons.Common
 
-import com.twitter.chill.KryoInjection
+import org.json4s._
+import org.json4s.native.Serialization
 
-/** OfflineEvalMetric Object
+/**
+ * OfflineEvalMetric Object
  *
  * @param id ID
  * @param infoid MetricInfo ID
@@ -15,8 +17,7 @@ case class OfflineEvalMetric(
   id: Int,
   infoid: String,
   evalid: Int,
-  params: Map[String, Any]
-)
+  params: Map[String, Any])
 
 trait OfflineEvalMetrics extends Common {
 
@@ -38,32 +39,41 @@ trait OfflineEvalMetrics extends Common {
   /** Delete metric by its ID. */
   def delete(id: Int)
 
+  implicit val formats = Serialization.formats(NoTypeHints) + new OfflineEvalMetricSerializer
+
   /** Backup all OfflineEvalMetrics as a byte array. */
-  def backup(): Array[Byte] = {
-    val metrics = getAll().toSeq.map { metric =>
-      Map(
-        "id" -> metric.id,
-        "infoid" -> metric.infoid,
-        "evalid" -> metric.evalid,
-        "params" -> metric.params)
-    }
-    KryoInjection(metrics)
-  }
+  def backup(): Array[Byte] = Serialization.write(getAll().toSeq).getBytes("UTF-8")
 
   /** Restore OfflineEvalMetrics from a byte array backup created by the current or the immediate previous version of commons. */
   def restore(bytes: Array[Byte], inplace: Boolean = false, upgrade: Boolean = false): Option[Seq[OfflineEvalMetric]] = {
-    KryoInjection.invert(bytes) map { r =>
-      val rdata = r.asInstanceOf[Seq[Map[String, Any]]] map { data =>
-        OfflineEvalMetric(
-          id = data("id").asInstanceOf[Int],
-          infoid = data("infoid").asInstanceOf[String],
-          evalid = data("evalid").asInstanceOf[Int],
-          params = data("params").asInstanceOf[Map[String, Any]])
-      }
-
+    try {
+      val rdata = Serialization.read[Seq[OfflineEvalMetric]](new String(bytes, "UTF-8"))
       if (inplace) rdata foreach { update(_, true) }
-
-      rdata
+      Some(rdata)
+    } catch {
+      case e: MappingException => None
     }
   }
 }
+
+/** json4s serializer for the OfflineEvalMetric class. */
+class OfflineEvalMetricSerializer extends CustomSerializer[OfflineEvalMetric](format => (
+  {
+    case x: JObject =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      OfflineEvalMetric(
+        id = (x \ "id").extract[Int],
+        infoid = (x \ "infoid").extract[String],
+        evalid = (x \ "evalid").extract[Int],
+        params = Common.sanitize((x \ "params").asInstanceOf[JObject].values))
+  },
+  {
+    case x: OfflineEvalMetric =>
+      implicit val formats = Serialization.formats(NoTypeHints)
+      JObject(
+        JField("id", Extraction.decompose(x.id)) ::
+          JField("infoid", Extraction.decompose(x.infoid)) ::
+          JField("evalid", Extraction.decompose(x.evalid)) ::
+          JField("params", Extraction.decompose(x.params)) :: Nil)
+  })
+)

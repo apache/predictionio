@@ -3,34 +3,40 @@ package controllers
 import io.prediction.commons.Config
 import io.prediction.commons.settings._
 import io.prediction.commons.modeldata.ItemRecScores
-import io.prediction.commons.appdata.{Users, Items, U2IActions}
+import io.prediction.commons.appdata.{ Users, Items, U2IActions }
 import io.prediction.output.AlgoOutputSelector
+
+import Helper.{ algoToJson, offlineEvalMetricToJson }
+import Helper.{ dateTimeToString, algoParamToString, offlineEvalSplitterParamToString }
+import Helper.{ getSimEvalStatus, getOfflineTuneStatus, createOfflineEval }
 
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.data.format.Formats._
-import play.api.data.validation.{Constraints}
-import play.api.i18n.{Messages, Lang}
+import play.api.data.validation.{ Constraints }
+import play.api.i18n.{ Messages, Lang }
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.libs.json.Json._
-import play.api.libs.json.{JsNull}
+import play.api.libs.json.Json.toJson
+import play.api.libs.json.{ JsNull, JsArray, Json, JsValue, Writes, JsObject }
 import play.api.libs.ws.WS
 import play.api.Play.current
+import play.api.http
 
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.util.Random
 
 import com.github.nscala_time.time.Imports._
 import org.apache.commons.codec.digest.DigestUtils
 
+import Forms._
+
 /*
  * TODO:
  * - decodeURIComponent any GET custom param
  */
-
 
 /*
  * Backend of ControlPanel.
@@ -46,6 +52,7 @@ object Application extends Controller {
   val algos = config.getSettingsAlgos()
   val algoInfos = config.getSettingsAlgoInfos()
   val offlineEvalMetricInfos = config.getSettingsOfflineEvalMetricInfos()
+  val offlineEvalSplitterInfos = config.getSettingsOfflineEvalSplitterInfos()
   val offlineEvals = config.getSettingsOfflineEvals()
   val offlineEvalMetrics = config.getSettingsOfflineEvalMetrics()
   val offlineEvalResults = config.getSettingsOfflineEvalResults()
@@ -56,6 +63,10 @@ object Application extends Controller {
   /** PredictionIO Commons modeldata */
   val itemRecScores = config.getModeldataItemRecScores()
   val itemSimScores = config.getModeldataItemSimScores()
+
+  /** PredictionIO Commons modeldata */
+  val trainingItemRecScores = config.getModeldataTrainingItemRecScores()
+  val trainingItemSimScores = config.getModeldataTrainingItemSimScores()
 
   /** PredictionIO Commons appdata */
   val appDataUsers = config.getAppdataUsers()
@@ -83,8 +94,8 @@ object Application extends Controller {
   /** PredictionIO Output */
   val algoOutputSelector = new AlgoOutputSelector(algos)
 
-  /** */
-  val timeFormat = DateTimeFormat.forPattern("yyyy-MM-dd hh:mm:ss a z")
+  /** misc */
+  val nameRegex = """\b[a-zA-Z][a-zA-Z0-9_-]*\b""".r
 
   /** Play Framework security */
   def username(request: RequestHeader) = request.session.get(Security.username)
@@ -97,10 +108,86 @@ object Application extends Controller {
     }
   }
 
-  def withUser(f: User => Request[AnyContent] => Result) = withAuth { username => implicit request =>
-    users.getByEmail(username).map { user =>
-      f(user)(request)
-    }.getOrElse(onUnauthorized(request))
+  def withAuthAsync(f: => String => Request[AnyContent] => Future[SimpleResult]) = {
+    Security.Authenticated(username, onUnauthorized) { user =>
+      Action.async(request => f(user)(request))
+    }
+  }
+
+  object WithUser {
+    def apply(f: User => Request[AnyContent] => SimpleResult) = async { user =>
+      implicit request =>
+        Future.successful(f(user)(request))
+    }
+
+    def async(f: User => Request[AnyContent] => Future[SimpleResult]) = withAuthAsync { username =>
+      implicit request =>
+        users.getByEmail(username).map { user =>
+          f(user)(request)
+        }.getOrElse(Future.successful(onUnauthorized(request)))
+    }
+  }
+
+  object WithApp {
+    def apply(appid: Int)(f: (User, App) => Request[AnyContent] => SimpleResult) = async(appid) { (user, app) =>
+      implicit request =>
+        Future.successful(f(user, app)(request))
+    }
+
+    def async(appid: Int)(f: (User, App) => Request[AnyContent] => Future[SimpleResult]) = WithUser.async { user =>
+      implicit request =>
+        apps.getByIdAndUserid(appid, user.id).map { app =>
+          f(user, app)(request)
+        }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid appid ${appid}."))))
+    }
+  }
+
+  object WithEngine {
+    def apply(appid: Int, engineid: Int)(f: (User, App, Engine) => Request[AnyContent] => SimpleResult) = async(appid, engineid) {
+      (user, app, eng) =>
+        implicit request =>
+          Future.successful(f(user, app, eng)(request))
+    }
+
+    def async(appid: Int, engineid: Int)(f: (User, App, Engine) => Request[AnyContent] => Future[SimpleResult]) = WithApp.async(appid) {
+      (user, app) =>
+        implicit request =>
+          engines.getByIdAndAppid(engineid, appid).map { eng =>
+            f(user, app, eng)(request)
+          }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid engineid ${engineid}."))))
+    }
+  }
+
+  object WithAlgo {
+    def apply(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => SimpleResult) = async(appid, engineid, algoid) {
+      (user, app, eng, algo) =>
+        implicit request =>
+          Future.successful(f(user, app, eng, algo)(request))
+    }
+
+    def async(appid: Int, engineid: Int, algoid: Int)(f: (User, App, Engine, Algo) => Request[AnyContent] => Future[SimpleResult]) = WithEngine.async(appid, engineid) {
+      (user, app, eng) =>
+        implicit request =>
+          algos.getByIdAndEngineid(algoid, engineid).map { algo =>
+            f(user, app, eng, algo)(request)
+          }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid algoid ${algoid}."))))
+    }
+  }
+
+  object WithOfflineEval {
+    def apply(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => SimpleResult) = async(appid, engineid, offlineevalid) {
+      (user, app, eng, eval) =>
+        implicit request =>
+          Future.successful(f(user, app, eng, eval)(request))
+    }
+
+    def async(appid: Int, engineid: Int, offlineevalid: Int)(f: (User, App, Engine, OfflineEval) => Request[AnyContent] => Future[SimpleResult]) = WithEngine.async(appid, engineid) {
+      (user, app, eng) =>
+        implicit request =>
+          offlineEvals.getByIdAndEngineid(offlineevalid, engineid).map { eval =>
+            f(user, app, eng, eval)(request)
+          }.getOrElse(Future.successful(NotFound(Json.obj("message" -> s"Invalid offlineevalid ${offlineevalid}."))))
+    }
   }
 
   private def md5password(password: String) = DigestUtils.md5Hex(password)
@@ -124,167 +211,271 @@ object Application extends Controller {
     Redirect("web/")
   }
 
+  /* case class to json conversion */
+  implicit val userWrites = new Writes[User] {
+    /* note: do not return password */
+    def writes(u: User): JsValue = {
+      Json.obj(
+        "id" -> u.id,
+        "username" -> (u.firstName + u.lastName.map(" " + _).getOrElse("")),
+        "email" -> u.email
+      )
+    }
+  }
 
-  /* Authenticate Administrator
-   * Method: POST
-   * Request JSON Params:
-   * 	adminEmail - string
-   * 	adminPassword - string
-   * 	adminRemember - "on" or not exist
+  /**
+   * Authenticates user
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "email" : <string>,
+   *     "password" : <string>,
+   *     "remember" : <optional string "on">
+   *   }
+   * JSON response:
+   *   {
+   *     "id" : <string>,
+   *     "username" : <string>,
+   *     "email" : <string>
+   *   }
+   * }}}
+   *
    */
   def signin = Action { implicit request =>
     val loginForm = Form(
       tuple(
-        "adminEmail" -> text,
-        "adminPassword" -> text,
-        "adminRemember" -> optional(text)
+        "email" -> text,
+        "password" -> text,
+        "remember" -> optional(text)
       ) verifying ("Invalid email or password", result => result match {
-        case (adminEmail, adminPassword, adminRemember) => users.authenticateByEmail(adminEmail, md5password(adminPassword)) map { _ => true } getOrElse false
-      })
+          case (email, password, remember) => users.authenticateByEmail(email, md5password(password)) map { _ => true } getOrElse false
+        })
     )
 
     loginForm.bindFromRequest.fold(
       formWithErrors => Forbidden(toJson(Map("message" -> toJson("Incorrect Email or Password.")))),
       form => {
-        val user = users.getByEmail(form._1).get
-        Ok(toJson(Map(
-          "adminName" -> "%s %s".format(user.firstName, user.lastName.getOrElse("")),
-          "adminEmail" -> user.email
-        ))).withSession(Security.username -> user.email)
+        users.getByEmail(form._1).map(user =>
+          Ok(Json.toJson(user)).withSession(Security.username -> user.email)
+        ).getOrElse(
+          InternalServerError(Json.obj("message" -> "Could not find your user account."))
+        )
       }
     )
   }
 
+  /**
+   * Signs out
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   None
+   * }}}
+   */
   def signout = Action {
     Ok.withNewSession
   }
 
-  /* Get Authenticated Administrator Info
-   * Method: GET
-   *  Request JSON Params: None (read session cookie for auth)
+  /**
+   * Returns authenticated user info
+   * (from session cookie)
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If authenticated
+   *   OK
+   *   {
+   *     "id" : <string>,
+   *     "username" : <string>,
+   *     "email": <string>
+   *   }
+   *
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   * }}}
    */
-  def getAuth = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
-
-    // If authenticated
-    Ok(toJson(Map(
-      "id" -> user.id.toString,
-      "adminName" -> (user.firstName + user.lastName.map(" "+_).getOrElse("")),
-      "adminEmail" -> user.email
-    )))
-  }
-
-  def getApplist = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
-
-    // if No App yet
-    /*
-     * NoContent
-     */
-    val userApps = apps.getByUserid(user.id)
-    if (!userApps.hasNext) NoContent
-    else {
-      Ok(toJson(userApps.map { app =>
-        Map("id" -> app.id.toString, "appName" -> app.display)
-      }.toSeq))
-    }
-  }
-
-  def getAppDetails(id: String) = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
-
-    // if No such app id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-     */
-    apps.getByIdAndUserid(id.toInt, user.id) map { app =>
-      val numUsers = appDataUsers.countByAppid(app.id)
-      val numItems = appDataItems.countByAppid(app.id)
-      val numU2IActions = appDataU2IActions.countByAppid(app.id)
-      Ok(toJson(Map(
-        "id" -> toJson(app.id), // app id
-        "updatedTime" -> toJson(timeFormat.print(DateTime.now.withZone(DateTimeZone.forID("UTC")))),
-        "nUsers" -> toJson(numUsers),
-        "nItems" -> toJson(numItems),
-        "nU2IActions" -> toJson(numU2IActions),
-        "apiEndPoint" -> toJson("http://yourhost.com:123/appid12"),
-        "appkey" -> toJson(app.appkey))))
-    } getOrElse {
-      NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-    }
+  def getAuth = WithUser { user =>
+    implicit request =>
+      Ok(Json.toJson(user))
   }
 
   /**
-   * return JSON data in following format:
+   * Returns list of apps of the authenticated user
    *
-   * Ok(toJson(Map(
-   *   "id" -> toJson("appid2"), // appid
-   *   "enginelist" -> toJson(Seq(
-   *     Map(
-   *       "id" -> "e1234",
-   *       "engineName" -> "Engine Name 1",
-   *       "enginetype_id" -> "itemrec"),
-   *     Map(
-   *       "id" -> "e2234",
-   *       "engineName" -> "Engine Name 2",
-   *       "enginetype_id" -> "itemsim"))))))
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If no app:
+   *   No Content
+   *
+   *   If apps are found:
+   *   OK
+   *   [ { "id" : <appid int>,  "appname" : <string> },
+   *     ...
+   *   ]
+   *
+   * }}}
    */
-  def getAppEnginelist(id: String) = withUser { user => implicit request =>
+  def getApplist = WithUser { user =>
+    implicit request =>
 
-    // TODO: check this user owns this app
-
-    // TODO: check id is Int
-    val appEngines = engines.getByAppid(id.toInt)
-
-    if (!appEngines.hasNext) NoContent
-    else
-      Ok(toJson(Map(
-        "id" -> toJson(id),
-        "enginelist" -> toJson((appEngines map { eng =>
-          Map("id" -> eng.id.toString, "engineName" -> eng.name,"enginetype_id" -> eng.infoid)
-        }).toSeq)
-      )))
-
+      val userApps = apps.getByUserid(user.id)
+      if (!userApps.hasNext) NoContent
+      else {
+        Ok(JsArray(userApps.map { app =>
+          Json.obj("id" -> app.id, "appname" -> app.display)
+        }.toSeq))
+      }
   }
 
-  /* Required param: id (app_id) */
-  def getApp(id: String) = withUser { user => implicit request =>
-    val app = apps.getByIdAndUserid(id.toInt, user.id).get
-    Ok(toJson(Map(
-      "id" -> app.id.toString, // app id
-      "appName" -> app.display)))
+  /**
+   * Returns the app details of this appid
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If app is not found:
+   *   NotFound
+   *   {
+   *     "message" : "Invalid appid."
+   *   }
+   *
+   *   If app is found:
+   *   Ok
+   *   {
+   *     "id" : <appid int>,
+   *     "updatedtime" : <string>,
+   *     "userscount": <num of users int>
+   *     "itemscount": <num of items int>
+   *     "u2icount": <num of u2i Actions int>
+   *     "apiurl": <url of API server, string>
+   *     "appkey": <string>
+   *   }
+   * }}}
+   *
+   * @param id the App ID
+   */
+  def getAppDetails(id: Int) = WithApp(id) { (user, app) =>
+    implicit request =>
+      val numUsers = appDataUsers.countByAppid(app.id)
+      val numItems = appDataItems.countByAppid(app.id)
+      val numU2IActions = appDataU2IActions.countByAppid(app.id)
+      Ok(Json.obj(
+        "id" -> app.id,
+        "updatedtime" -> dateTimeToString(DateTime.now),
+        "userscount" -> numUsers,
+        "itemscount" -> numItems,
+        "u2icount" -> numU2IActions,
+        "apiurl" -> "http://yourhost.com:123/appid12",
+        "appkey" -> app.appkey
+      ))
   }
 
-  /*
-   * createApp
-   * JSON Param: appName
+  /**
+   * Returns an app
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If app is found:
+   *   Ok
+   *   {
+   *     "id" : <appid int>
+   *     "appname" : <string>
+   *   }
+   *
+   * }}}
+   *
+   * @param id the App ID
    */
-  def createApp = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
+  def getApp(id: Int) = WithApp(id) { (user, app) =>
+    implicit request =>
+      Ok(Json.obj(
+        "id" -> app.id,
+        "appname" -> app.display
+      ))
+  }
 
-    // if creation failed
-    /*
-     * BadRequest(toJson(Map("message" -> toJson("invalid character for app name."))))
-     */
-    val bad = BadRequest(toJson(Map("message" -> toJson("invalid character for app name."))))
+  /**
+   * Create an app
+   *
+   * {{{
+   * POST
+   * JSON Parameters:
+   *   {
+   *     "appname" : <the new app name. string>
+   *   }
+   * JSON Response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If creation failed:
+   *   BadRequest
+   *   {
+   *     "message" : "Invalid character for app name."
+   *    }
+   *
+   *   If app is created:
+   *   OK
+   *   {
+   *     "id" : <the appid of the created app. int>,
+   *     "appname" : <string>
+   *   }
+   * }}}
+   *
+   */
+  def createApp = WithUser { user =>
+    implicit request =>
 
-    request.body.asJson map { js =>
-      val appName = (js \ "appName").asOpt[String]
-      appName map { an =>
-        if (an == "") bad
-        else {
+      val appForm = Form(single(
+        "appname" -> nonEmptyText
+      ))
+
+      appForm.bindFromRequest.fold(
+        formWithError => {
+          val msg = formWithError.errors(0).message // extract 1st error message only
+          BadRequest(toJson(Map("message" -> toJson(msg))))
+        },
+        formData => {
+          val an = formData
           val appid = apps.insert(App(
             id = 0,
             userid = user.id,
@@ -295,165 +486,392 @@ object Application extends Controller {
             desc = None,
             timezone = "UTC"
           ))
-          Ok(toJson(Map(
-            "id" -> appid.toString,
-            "appName" -> an
-          )))
+          Logger.info("Create app ID " + appid)
+
+          Ok(Json.obj(
+            "id" -> appid,
+            "appname" -> an
+          ))
         }
-      } getOrElse bad
-    } getOrElse bad
+      )
   }
 
-  def removeApp(id: String) = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
+  /**
+   * Remove an app
+   *
+   * {{{
+   * DELETE
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If not found:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If error:
+   *   InternalServerError
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If deleted successfully:
+   *   Ok
+   * }}}
+   *
+   * @param id the App ID
+   */
+  def removeApp(id: Int) = WithApp.async(id) { (user, app) =>
+    implicit request =>
 
-    // if No such app id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-     */
+      // don't delete if there is any deployed aglo, sim eval or offline tune pending
+      val appEngines = engines.getByAppid(app.id).toList
 
-    val appid = id.toInt
-    deleteApp(appid, keepSettings=false)
+      val enginesDeployed = appEngines.filter(eng =>
+        !(algos.getDeployedByEngineid(eng.id).isEmpty)
+      )
+      val msgDeployed = "There are deployed algorithms in engines: " + enginesDeployed.map(_.name).mkString(", ") + ". Please undeploy them before delete this app."
 
-    //send deleteAppDir(appid) request to scheduler
-    WS.url(settingsSchedulerUrl+"/apps/"+id+"/delete").get()
+      val enginesSimEvals = appEngines.filter(eng =>
+        !(Helper.getSimEvalsByEngineid(eng.id).filter(Helper.isPendingSimEval(_)).isEmpty)
+      )
+      val msgSimEvals = "There are running simulated evaluations in engines: " + enginesSimEvals.map(_.name).mkString(", ") + ". Please stop and delete them before delete this app."
 
-    Logger.info("Delete app ID "+appid)
-    apps.deleteByIdAndUserid(appid, user.id)
+      val enginesOfflineTunes = appEngines.filter(eng =>
+        !(offlineTunes.getByEngineid(eng.id).filter(Helper.isPendingOfflineTune(_)).isEmpty)
+      )
+      val msgOfflineTunes = "There are auto-tuning algorithms in engines: " + enginesOfflineTunes.map(_.name).mkString(", ") + ". Please stop and delete them before delete this app."
 
-    Ok
+      val runningEngines = List(
+        (enginesDeployed, msgDeployed),
+        (enginesSimEvals, msgSimEvals),
+        (enginesOfflineTunes, msgOfflineTunes)
+      ).filter { case (x, y) => (!x.isEmpty) }
 
-    //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
+      if (!runningEngines.isEmpty) {
+        val msg = runningEngines.map { case (x, y) => y }.mkString(" ")
+        concurrent.Future(Forbidden(Json.obj("message" -> msg)))
+      } else {
+
+        val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+        val delete = Helper.deleteAppScheduler(app.id)
+
+        concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
+          case r: SimpleResult => {
+            if (r.header.status == http.Status.OK) {
+              Helper.deleteApp(id, user.id, keepSettings = false)
+            }
+            r
+          }
+          case t: String => InternalServerError(Json.obj("message" -> t))
+        }
+      }
   }
-  def eraseAppData(id: String) = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
 
-    // if No such app id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-     */
+  /**
+   * Erase appdata of this appid
+   *
+   * {{{
+   * POST
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If erased successfully:
+   *   Ok
+   * }}}
+   *
+   * @param id the App ID
+   */
+  def eraseAppData(id: Int) = WithApp.async(id) { (user, app) =>
+    implicit request =>
 
-    val appid = id.toInt
-    deleteApp(appid, keepSettings=true)
+      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+      val delete = Helper.deleteAppScheduler(app.id)
 
-    //send deleteAppDir(appid) request to scheduler
-    WS.url(settingsSchedulerUrl+"/apps/"+id+"/delete").get()
-
-    Ok
-    //BadRequest(toJson(Map("message" -> toJson("This feature will be available soon."))))
+      concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
+        case r: SimpleResult => {
+          if (r.header.status == http.Status.OK) {
+            Helper.deleteApp(id, user.id, keepSettings = true)
+          }
+          r
+        }
+        case t: String => InternalServerError(Json.obj("message" -> t))
+      }
   }
 
-  /* List all available/installable engine types in the system */
-  def getEngineTypeList = Action {
-    Ok(toJson(Seq(
-      Map(
-        "id" -> "itemrec",
-        "enginetypeName" -> "Item Recommendation Engine",
-        "description" -> """
-    						<h6>Recommend interesting items to each user personally.</h6>
-				            <p>Sample Use Cases</p>
-				            <ul>
-				                <li>recommend top N items to users personally</li>
-				                <li>predict users' future preferences</li>
-				                <li>help users to discover new topics they may be interested in</li>
-				                <li>personalize content</li>
-				                <li>optimize sales</li>
-				            </ul>
-    						"""),
-      Map(
-        "id" -> "itemsim",
-        "enginetypeName" -> "Item Similarity Engine",
-        "description" -> """
-    		            	<h6>Discover similar items.</h6>
-				            <p>Sample Use Cases</p>
-				            <ul>
-				                <li>predict what else would a user like if this user likes a,
-				                    i.e. "People who like this also like...."</li>
-				                <li>automatic item grouping</li>
-				            </ul>
-    						"""))))
+  /**
+   * Returns a list of available engine infos in the system
+   *
+   * {{{
+   * GET
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   Ok
+   *   [ { "id" : <engine info id stirng>,
+   *       "engineinfoname" : <name of the engine info>,
+   *       "description": <description in html string>
+   *     },
+   *     ...
+   *   ]
+   * }}}
+   */
+  def getEngineInfoList = Action {
+    Ok(JsArray(engineInfos.getAll() map {
+      eng =>
+        Json.obj(
+          "id" -> eng.id,
+          "engineinfoname" -> eng.name,
+          "description" -> eng.description
+        )
+    }))
   }
 
-  /* List all available/installable algorithm type of a specific engine type
-   * Required param: id  (i.e. enginetype_id)
-   *  */
-  def getEngineTypeAlgoList(id: String) = Action {
+  /**
+   * Returns a list of available algo infos of a specific engine info
+   *
+   * {{{
+   * GET
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If the engine info id is not found:
+   *   InternalServerError
+   *   {
+   *     "message" : "Invalid EngineInfo ID."
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   { "engineinfoname" : <the name of the engine info>,
+   *     "algotypelist" : [ { "id" : <algo info id>,
+   *                          "algoinfoname" : <name of the algo info>,
+   *                          "description" : <string>,
+   *                          "req" : [<technology requirement string>],
+   *                          "datareq" : [<data requirement string>]
+   *                        }, ...
+   *                      ]
+   *   }
+   * }}}
+   *
+   * @param id the engine info id
+   */
+  def getEngineInfoAlgoInfoList(id: String) = Action {
     engineInfos.get(id) map { engineInfo =>
-      Ok(toJson(
-        Map(
-          "enginetypeName" -> toJson(engineInfo.name),
-         /* "algotypelist" -> toJson(Seq(
-            Map(
-              "id" -> "pdio-knnitembased",
-              "algotypeName" -> algoTypeNames("pdio-knnitembased"), //"Item-based Similarity (kNN) ",
-              "description" -> "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
-              "req" -> "Hadoop",
-              "datareq" -> "U2I Actions such as Like, Buy and Rate.")
-              )) */
-          "algotypelist" -> toJson(
-            (algoInfos.getByEngineInfoId(id) map { algoInfo =>
-              Map(
-                "id" -> toJson(algoInfo.id),
-                "algotypeName" -> toJson(algoInfo.name),
-                "description" -> toJson(algoInfo.description.getOrElse("")),
-                "req" -> toJson(algoInfo.techreq),
-                "datareq" -> toJson(algoInfo.datareq)
-                )
-
-            }).toSeq )
-           )
-
-       ))
-    } getOrElse InternalServerError(obj("message" -> "Invalid EngineInfo ID"))
+      Ok(Json.obj(
+        "engineinfoname" -> engineInfo.name,
+        "algotypelist" -> JsArray(
+          algoInfos.getByEngineInfoId(id).map { algoInfo =>
+            Json.obj(
+              "id" -> algoInfo.id,
+              "algoinfoname" -> algoInfo.name,
+              "description" -> algoInfo.description.getOrElse[String](""),
+              "req" -> Json.toJson(algoInfo.techreq),
+              "datareq" -> Json.toJson(algoInfo.datareq)
+            )
+          }
+        )
+      ))
+    } getOrElse InternalServerError(Json.obj("message" -> s"Invalid EngineInfo ID: ${id}."))
   }
 
-   /* List all metrics type of a specific engine type
-   * Required param: id  (i.e. enginetype_id)
-   *  */
-  def getEngineTypeMetricsTypeList(id: String) = Action {
-   Ok(toJson(
-      Map(
-        "enginetypeName" -> toJson("Item Recommendation Engine"),
-        "metricslist" -> toJson(Seq(
-								          toJson(Map(
-								            "id" -> toJson("map_k"),
-								            "metricsName" -> toJson("MAP@k"),
-								            "metricsLongName" -> toJson("Mean Average Precision"),
-								            "settingFields" -> toJson(Map(
-								            					"k" -> "int"
-								            					))
-								          ))
-								          /*
-								          toJson(Map(
-								            "id" -> toJson("ndgc_k"),
-								            "metricsName" -> toJson("MAP@k"),
-								            "metricsLongName" -> toJson("Normalized Discounted Cumulative Gain"),
-								            "settingFields" -> toJson(Map(
-								            					"k" -> "int"
-								            					))
-								          ))*/
-        						))
-      )))
+  /**
+   * Returns a list of available metric infos of a specific engine info
+   *
+   * {{{
+   * GET
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If the engine info id is not found:
+   *   InternalServerError
+   *   {
+   *     "message" : "Invalid EngineInfo ID."
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   { "engineinfoname" : <the name of the engine info>,
+   *     "defaultmetric" : <default metric info id>,
+   *     "metricslist" : [ { "id" : <metric info id>,
+   *                         "name" : <short name of the metric info>,
+   *                         "description" : <long name of the metric info>,
+   *                       }, ...
+   *                     ]
+   *   }
+   * }}}
+   *
+   * @param id the engine info id
+   */
+  def getEngineInfoMetricInfoList(id: String) = Action {
+    engineInfos.get(id) map { engInfo =>
+      val metrics = offlineEvalMetricInfos.getByEngineinfoid(engInfo.id).map { m =>
+        Json.obj(
+          "id" -> m.id,
+          "name" -> m.name,
+          "description" -> m.description
+        )
+      }
+      Ok(Json.obj(
+        "engineinfoname" -> engInfo.name,
+        "defaultmetric" -> engInfo.defaultofflineevalmetricinfoid,
+        "metricslist" -> JsArray(metrics)
+      ))
+    } getOrElse {
+      InternalServerError(Json.obj("message" -> s"Invalid engineinfo ID: ${id}."))
+    }
   }
 
-  def getEngine(app_id: String, id: String) = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
+  /**
+   * Returns a list of available splitter infos of a specific engine info
+   *
+   * {{{
+   * GET
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If the engine info id is not found:
+   *   InternalServerError
+   *   {
+   *     "message" : "Invalid EngineInfo ID."
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   { "engineinfoname" : <the name of the engine info>,
+   *     "defaultsplitter": <default splitter info id>,
+   *     "splitterlist" : [ { "id" : <splitter info id>,
+   *                          "name" : <name of splitter>,
+   *                          "description" : <splitter description>,
+   *                       }, ...
+   *                     ]
+   *   }
+   * }}}
+   *
+   * @param id the engine info id
+   */
+  def getEngineInfoSplitterInfoList(id: String) = Action {
+    engineInfos.get(id).map { engInfo =>
+      val splitters = offlineEvalSplitterInfos.getByEngineinfoid(engInfo.id).map { m =>
+        Json.obj(
+          "id" -> m.id,
+          "name" -> m.name,
+          "description" -> m.description
+        )
+      }
+      Ok(Json.obj(
+        "engineinfoname" -> engInfo.name,
+        "defaultsplitter" -> engInfo.defaultofflineevalsplitterinfoid,
+        "splitterlist" -> JsArray(splitters)
+      ))
+    }.getOrElse {
+      InternalServerError(Json.obj("message" -> s"Invalid engineinfo ID: ${id}."))
+    }
+  }
 
-    // TODO: check this user owns this app
+  /**
+   * Returns list of engines of this appid
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If no engine:
+   *   NoContent
+   *
+   *   If engines found:
+   *   Ok
+   *   {
+   *     "id" : <appid int>,
+   *     "enginelist" : [ { "id" : <engineid int>, "enginename" : <string>, "engineinfoid" : <string> },
+   *                       ....,
+   *                      { "id" : <engineid int>, "enginename" : <string>, "engineinfoid" : <string> } ]
+   *
+   *   }
+   * }}}
+   *
+   * @param id the App ID
+   */
+  def getAppEnginelist(appid: Int) = WithApp(appid) { (user, app) =>
+    implicit request =>
 
-    // TODO: check app_id and id is int
-    val engine = engines.get(id.toInt)
+      val appEngines = engines.getByAppid(appid)
 
-    engine map { eng: Engine =>
+      if (!appEngines.hasNext) NoContent
+      else
+        Ok(Json.obj(
+          "id" -> appid,
+          "enginelist" -> JsArray(appEngines.map { eng =>
+            Json.obj("id" -> eng.id, "enginename" -> eng.name, "engineinfoid" -> eng.infoid)
+          }.toSeq)
+        ))
+  }
+
+  /**
+   * Returns the engine of this engineid
+   *
+   * {{{
+   * GET
+   * JSON Parameters:
+   *   None
+   * JSON Response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If engine not found:
+   *   NotFound
+   *   {
+   *     "message" : "Invalid app id or engine id."
+   *   }
+   *
+   *   If engine found:
+   *   Ok
+   *   {
+   *     "id" : <engine id>,
+   *     "engineinfoid" : <engine info id>,
+   *     "enginename" : <engine name>,
+   *     "enginestatus" : <engine status>
+   *   }
+   * }}}
+   * @note engine status:
+   *   noappdata
+   *   nodeployedalgo
+   *   firsttraining
+   *   nomodeldata
+   *   nomodeldatanoscheduler
+   *   training
+   *   running
+   *   runningnoscheduler
+   *
+   * @param appid the App ID
+   * @param id the engine ID
+   */
+  def getEngine(appid: Int, id: Int) = WithEngine(appid, id) { (user, app, eng) =>
+    implicit request =>
+
       val modelDataExist: Boolean = eng.infoid match {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case "itemsim" => try { itemSimScores.existByAlgo(algoOutputSelector.itemSimAlgoSelection(eng)) } catch { case e: RuntimeException => false }
@@ -485,633 +903,1127 @@ object Application extends Controller {
           } catch {
             case e: java.net.ConnectException => "runningnoscheduler"
           }
-      Ok(obj(
-        "id" -> eng.id.toString, // engine id
-        "enginetype_id" -> eng.infoid,
-        "app_id" -> eng.appid.toString,
-        "engineName" -> eng.name,
-        "engineStatus" -> engineStatus))
-    } getOrElse {
-      // if No such app id
-      NotFound(toJson(Map("message" -> toJson("Invalid app id or engine id."))))
-    }
-
+      Ok(Json.obj(
+        "id" -> eng.id, // engine id
+        "engineinfoid" -> eng.infoid,
+        "appid" -> eng.appid,
+        "enginename" -> eng.name,
+        "enginestatus" -> engineStatus))
   }
 
-
-  val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
-  val enginenameConstraint = Constraints.pattern("""\b[a-zA-Z][a-zA-Z0-9_-]*\b""".r, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
-  /*
-   * createEngine
-   * JSON request params:
-   * 	app_id - app id
-   * 	enginetype_id - engine type
-   * 	engineName - inputted engine name
+  /**
+   * Creates an Engine
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "engineinfoid" : <engine info id>,
+   *     "enginename" : <engine name>
+   *   }
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   if invalid appid:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If bad param:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If created:
+   *   Ok
+   *   {
+   *     "id" : <new engine id>,
+   *     "engineinfoid" : <engine info id>,
+   *     "appid" : <app id>,
+   *     "enginename" : <engine name>
+   *   }
+   *
+   * }}}
+   *
+   * @param appid the App ID
    */
-  def createEngine(app_id: String) = withUser { user => implicit request =>
-    val engineForm = Form(tuple(
-      "app_id" -> number,
-      "enginetype_id" -> (text verifying("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
-      "engineName" -> (text verifying("Please name your engine.", enginename => enginename.length > 0)
-                          verifying enginenameConstraint)
-    ) verifying("Engine name must be unique.", f => !engines.existsByAppidAndName(f._1, f._3))
-    verifying("Engine type is invalid.", f => engineInfos.get(f._2).map(_ => true).getOrElse(false)))
+  def createEngine(appid: Int) = WithApp(appid) { (user, app) =>
+    implicit request =>
 
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
+      val supportedEngineTypes: Seq[String] = engineInfos.getAll() map { _.id }
+      val enginenameConstraint = Constraints.pattern(nameRegex, "constraint.enginename", "Engine names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
 
-    // if No such app id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-     */
+      val engineForm = Form(tuple(
+        "engineinfoid" -> (text verifying ("This feature will be available soon.", e => supportedEngineTypes.contains(e))),
+        "enginename" -> (text verifying ("Please name your engine.", enginename => enginename.length > 0)
+          verifying enginenameConstraint)
+      ) verifying ("Engine name must be unique.", f => !engines.existsByAppidAndName(appid, f._2))
+        verifying ("Engine type is invalid.", f => engineInfos.get(f._1).map(_ => true).getOrElse(false)))
 
-    engineForm.bindFromRequest.fold(
-      formWithError => {
-        //println(formWithError.errors)
-        val msg = formWithError.errors(0).message // extract 1st error message only
-        //BadRequest(toJson(Map("message" -> toJson("invalid engine name"))))
-        BadRequest(toJson(Map("message" -> toJson(msg))))
-      },
-      formData => {
-        val (fappid, enginetype, enginename) = formData
-        val engineInfo = engineInfos.get(enginetype).get
-        val engineId = engines.insert(Engine(
-          id = -1,
-          appid = fappid,
-          name = enginename,
-          infoid = enginetype,
-          itypes = None, // NOTE: default None (means all itypes)
-          settings = engineInfo.defaultsettings.map(s => (s._2.id, s._2.defaultvalue)) // TODO: depends on enginetype
-        ))
+      engineForm.bindFromRequest.fold(
+        formWithError => {
+          val msg = formWithError.errors(0).message // extract 1st error message only
+          BadRequest(toJson(Map("message" -> toJson(msg))))
+        },
+        formData => {
+          val (enginetype, enginename) = formData
+          val engineInfo = engineInfos.get(enginetype).get
+          val engineId = engines.insert(Engine(
+            id = -1,
+            appid = appid,
+            name = enginename,
+            infoid = enginetype,
+            itypes = None, // NOTE: default None (means all itypes)
+            params = engineInfo.params.map(s => (s._2.id, s._2.defaultvalue))
+          ))
+          Logger.info("Create engine ID " + engineId)
 
-        // automatically create default algo
-        val defaultAlgoType = engineInfo.defaultalgoinfoid
-        val defaultAlgo = Algo(
-          id = -1,
-          engineid = engineId,
-          name = "Default-Algo", // TODO: get it from engineInfo
-          infoid = defaultAlgoType,
-          command = "",
-          params = algoInfos.get(defaultAlgoType).get.params.mapValues(_.defaultvalue),
-          settings = Map(), // no use for now
-          modelset = false, // init value
-          createtime = DateTime.now,
-          updatetime = DateTime.now,
-          status = "deployed", // this is default deployed algo
-          offlineevalid = None,
-          loop = None
-        )
+          // automatically create default algo
+          val defaultAlgoType = engineInfo.defaultalgoinfoid
+          val params = algoInfos.get(defaultAlgoType).get.params.mapValues(_.defaultvalue)
 
-        val algoId = algos.insert(defaultAlgo)
-
-        WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
-
-        Ok(toJson(Map(
-          "id" -> engineId.toString, // engine id
-          "enginetype_id" -> enginetype,
-          "app_id" -> fappid.toString,
-          "engineName" -> enginename)))
-      }
-    )
-
-  }
-
-  def removeEngine(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
-
-    // if No such app id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id"))))
-     */
-
-    val appid = app_id.toInt
-    val engineid = engine_id.toInt
-
-    deleteEngine(engineid, keepSettings=false)
-
-    //send deleteAppDir(appid) request to scheduler
-    WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/delete").get()
-
-    Logger.info("Delete Engine ID "+engine_id)
-    engines.deleteByIdAndAppid(engineid, appid)
-
-    Ok    // Ok
-  }
-
-  def getAvailableAlgoList(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    /* sample output
-    Ok(toJson(Seq(
-      Map(
-        "id" -> "algoid_13213",
-        "algoName" -> "algo-test-sim-correl=12",
-        "app_id" -> "appid1234",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
-        "algotypeName" -> "Item-based Similarity (kNN) ",
-        "status" -> "ready",
-        "updatedTime" -> "04-23-2012 12:21:33"),
-
-      Map(
-      	"id" -> "algoid_13213",
-        "algoName" -> "algo-test-mf-gamma=0.1,sigma=8",
-        "app_id" -> "appid1234",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
-        "algotypeName" -> "Non-negative Matrix Factorization",
-        "status" -> "autotuning",
-        "updatedTime" -> "04-23-2012 12:21:23"),
-
-      Map(
-        "id" -> "algoid_3213",
-        "algoName" -> "algo-test-mf-gamma=0.5,sigma=4",
-        "app_id" -> "appid765",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
-        "algotypeName" -> "Non-negative Matrix Factorization",
-        "status" -> "ready",
-        "updatedTime" -> "04-23-2012 12:21:23")
-     )))
-    */
-
-     // TODO: verifying this user owns app_id and engine_id
-
-     // TODO: check engine_id is int
-     val engineAlgos = algos.getByEngineid(engine_id.toInt)
-
-     if (!engineAlgos.hasNext) NoContent
-     else
-       Ok(toJson( // NOTE: only display algos which are not "deployed", nor "simeval"
-          (engineAlgos filter { algo => !((algo.status == "deployed") || (algo.status == "simeval")) } map { algo =>
-           Map("id" -> algo.id.toString,
-               "algoName" -> algo.name,
-               "app_id" -> app_id, // TODO: should algo db store appid and get it from there?
-               "engine_id" -> algo.engineid.toString,
-               "algotype_id" -> algo.infoid,
-               "algotypeName" -> algoInfos.get(algo.infoid).get.name,
-               "status" -> algo.status,
-               "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
-               )
-         }).toSeq
-       ))
-
-
-  }
-
-  def getAvailableAlgo(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
-    /* sample output
-    Ok(toJson(
-      Map(
-        "id" -> "algoid_13213",
-        "algoName" -> "algo-test-sim-correl=12",
-        "app_id" -> "appid1234",
-        "engine_id" -> "engid33333",
-        "algotype_id" -> "pdio-knnitembased",
-        "algotypeName" -> "Item-based Similarity (kNN) ",
-        "status" -> "ready",
-        "createdTime" -> "04-23-2012 12:21:33",
-        "updatedTime" -> "04-23-2012 12:21:33"
-        )
-     ))
-     */
-    // TODO: check this user owns this appid + engineid + algoid
-
-    val optAlgo: Option[Algo] = algos.get(id.toInt)
-
-    optAlgo map { algo =>
-      Ok(toJson(Map(
-          "id" -> algo.id.toString, // algo id
-          "algoName" -> algo.name,
-          "app_id" -> app_id, // TODO
-          "engine_id" -> algo.engineid.toString,
-          "algotype_id" -> algo.infoid,
-          "algotypeName" -> algoInfos.get(algo.infoid).get.name,
-          "status" -> "ready", // default status
-          "createdTime" -> timeFormat.print(algo.createtime.withZone(DateTimeZone.forID("UTC"))),
-          "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC")))
-        )))
-    } getOrElse {
-      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
-    }
-  }
-
-  val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
-
-  def createAvailableAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // request payload
-    //{"algotype_id":"pdio-knnitembased","algoName":"test","app_id":"1","engine_id":"12"}
-
-    // If NOT authenticated
-    /*
-     * Forbidden(toJson(Map("message" -> toJson("Haven't signed in yet."))))
-     */
-
-    // if No such app id or engine id
-    /*
-     *  NotFound(toJson(Map("message" -> toJson("invalid app id or engine id"))))
-     */
-
-    // if invalid algo name
-    /*
-     *  BadRequest(toJson(Map("message" -> toJson("invalid algo name"))))
-     */
-
-    val createAlgoForm = Form(tuple(
-      "algotype_id" -> (nonEmptyText verifying("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
-      "algoName" -> (text verifying("Please name your algo.", name => name.length > 0)
-                          verifying enginenameConstraint), // same name constraint as engine
-      "app_id" -> number,
-      "engine_id" -> number
-    ) verifying("Algo name must be unique.", f => !algos.existsByEngineidAndName(f._4, f._2)))
-
-    createAlgoForm.bindFromRequest.fold(
-      formWithError => {
-        //println(formWithError.errors)
-        val msg = formWithError.errors(0).message // extract 1st error message only
-        BadRequest(toJson(Map("message" -> toJson(msg))))
-      },
-      formData => {
-        val (algoType, algoName, appId, engineId) = formData
-
-        // TODO: store algotype into algos db?
-        val algoInfoOpt = algoInfos.get(algoType)
-
-        if (algoInfoOpt == None) {
-          BadRequest(toJson(Map("message" -> toJson("Invalid AlgoType."))))
-        } else {
-          val algoInfo = algoInfoOpt.get
-
-          val newAlgo = Algo(
+          val defaultAlgo = Algo(
             id = -1,
             engineid = engineId,
-            name = algoName,
-            infoid = algoType,
+            name = "Default-Algo",
+            infoid = defaultAlgoType,
             command = "",
-            params = algoInfo.params.mapValues(_.defaultvalue),
+            params = params,
             settings = Map(), // no use for now
             modelset = false, // init value
             createtime = DateTime.now,
             updatetime = DateTime.now,
-            status = "ready", // default status
+            status = "deployed", // this is default deployed algo
             offlineevalid = None,
             loop = None
           )
 
-          val algoId = algos.insert(newAlgo)
+          val algoId = algos.insert(defaultAlgo)
+          Logger.info("Create algo ID " + algoId)
 
-          Ok(toJson(Map(
-            "id" -> algoId.toString, // algo id
-            "algoName" -> newAlgo.name,
-            "app_id" -> appId.toString,
-            "engine_id" -> newAlgo.engineid.toString,
-            "algotype_id" -> algoType,
-            "algotypeName" -> algoInfos.get(algoType).get.name,
-            "status" -> newAlgo.status,
-            "createdTime" -> timeFormat.print(newAlgo.createtime.withZone(DateTimeZone.forID("UTC"))),
-            "updatedTime" -> timeFormat.print(newAlgo.updatetime.withZone(DateTimeZone.forID("UTC")))
-          )))
+          WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+
+          Ok(Json.obj(
+            "id" -> engineId, // engine id
+            "engineinfoid" -> enginetype,
+            "appid" -> appid,
+            "enginename" -> enginename))
         }
-
-      }
-    )
-
-  }
-
-  /**
-   * delete appdata DB of this appid
-   */
-  def deleteAppData(appid: Int) = {
-    Logger.info("Delete appdata for app ID "+appid)
-    appDataUsers.deleteByAppid(appid)
-    appDataItems.deleteByAppid(appid)
-    appDataU2IActions.deleteByAppid(appid)
-  }
-
-  def deleteTrainingSetData(evalid: Int) = {
-    Logger.info("Delete training set for offline eval ID "+evalid)
-    trainingSetUsers.deleteByAppid(evalid)
-    trainingSetItems.deleteByAppid(evalid)
-    trainingSetU2IActions.deleteByAppid(evalid)
-  }
-
-  def deleteValidationSetData(evalid: Int) = {
-    Logger.info("Delete validation set for offline eval ID "+evalid)
-    validationSetUsers.deleteByAppid(evalid)
-    validationSetItems.deleteByAppid(evalid)
-    validationSetU2IActions.deleteByAppid(evalid)
-  }
-
-  def deleteTestSetData(evalid: Int) = {
-    Logger.info("Delete test set for offline eval ID "+evalid)
-    testSetUsers.deleteByAppid(evalid)
-    testSetItems.deleteByAppid(evalid)
-    testSetU2IActions.deleteByAppid(evalid)
-  }
-
-  def deleteModelData(algoid: Int) = {
-    val algoOpt = algos.get(algoid)
-    algoOpt map { algo =>
-      algoInfos.get(algo.infoid) map { algoInfo =>
-        Logger.info("Delete model data for algo ID "+algoid)
-        algoInfo.engineinfoid match {
-          case "itemrec" => itemRecScores.deleteByAlgoid(algoid)
-          case "itemsim" => itemSimScores.deleteByAlgoid(algoid)
-          case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.engineinfoid)
-        }
-      } getOrElse { throw new RuntimeException("Try to delete algo of non-existing algotype: " + algo.infoid) }
-    } getOrElse { throw new RuntimeException("Try to delete non-existing algo: " + algoid) }
-  }
-
-
-  /**
-   * delete DB data under this app
-   */
-  def deleteApp(appid: Int, keepSettings: Boolean) = {
-
-    val appEngines = engines.getByAppid(appid)
-
-    appEngines foreach { eng =>
-      deleteEngine(eng.id, keepSettings)
-      if (!keepSettings) {
-        Logger.info("Delete engine ID "+eng.id)
-        engines.deleteByIdAndAppid(eng.id, appid)
-      }
-    }
-
-    deleteAppData(appid)
-  }
-
-  /**
-   * delete DB data under this engine
-   */
-  def deleteEngine(engineid: Int, keepSettings: Boolean) = {
-
-    val engineAlgos = algos.getByEngineid(engineid)
-
-    engineAlgos foreach { algo =>
-      deleteModelData(algo.id)
-      if (!keepSettings) {
-        Logger.info("Delete algo ID "+algo.id)
-        algos.delete(algo.id)
-      }
-    }
-
-    val engineOfflineEvals = offlineEvals.getByEngineid(engineid)
-
-    engineOfflineEvals foreach { eval =>
-      deleteOfflineEval(eval.id, keepSettings)
-      if (!keepSettings) {
-        Logger.info("Delete offline eval ID "+eval.id)
-        offlineEvals.delete(eval.id)
-      }
-    }
-
-    val engineOfflineTunes = offlineTunes.getByEngineid(engineid)
-
-    engineOfflineTunes foreach { tune =>
-      deleteOfflineTune(tune.id, keepSettings)
-      if (!keepSettings) {
-        Logger.info("Delete offline tune ID "+tune.id)
-        offlineTunes.delete(tune.id)
-      }
-    }
-
-  }
-
-
-  /**
-   * delete DB data under this offline eval
-   */
-  def deleteOfflineEval(evalid: Int, keepSettings: Boolean) = {
-
-    deleteTrainingSetData(evalid)
-    deleteValidationSetData(evalid)
-    deleteTestSetData(evalid)
-
-    val evalAlgos = algos.getByOfflineEvalid(evalid)
-
-    evalAlgos foreach { algo =>
-      deleteModelData(algo.id)
-      if (!keepSettings) {
-        Logger.info("Delete algo ID "+algo.id)
-        algos.delete(algo.id)
-      }
-    }
-
-    if (!keepSettings) {
-      val evalMetrics = offlineEvalMetrics.getByEvalid(evalid)
-
-      evalMetrics foreach { metric =>
-        Logger.info("Delete metric ID "+metric.id)
-        offlineEvalMetrics.delete(metric.id)
-      }
-
-      Logger.info("Delete offline eval results of offline eval ID "+evalid)
-      offlineEvalResults.deleteByEvalid(evalid)
-
-      val evalSplitters = offlineEvalSplitters.getByEvalid(evalid)
-      evalSplitters foreach { splitter =>
-        Logger.info("Delete Offline Eval Splitter ID "+splitter.id)
-        offlineEvalSplitters.delete(splitter.id)
-      }
-    }
-
-  }
-
-  /**
-   * delete DB data under this tuneid
-   */
-  def deleteOfflineTune(tuneid: Int, keepSettings: Boolean) = {
-
-    // delete paramGen
-    if (!keepSettings) {
-      val tuneParamGens = paramGens.getByTuneid(tuneid)
-      tuneParamGens foreach { gen =>
-        Logger.info("Delete ParamGen ID "+gen.id)
-        paramGens.delete(gen.id)
-      }
-    }
-
-    // delete OfflineEval
-    val tuneOfflineEvals = offlineEvals.getByTuneid(tuneid)
-
-    tuneOfflineEvals foreach { eval =>
-      deleteOfflineEval(eval.id, keepSettings)
-      if (!keepSettings) {
-        Logger.info("Delete offline eval ID "+eval.id)
-        offlineEvals.delete(eval.id)
-      }
-    }
-  }
-
-  /**
-   * stop offline tune job and remove both HDFS and DB of this OfflineTune
-   */
-  def removeOfflineTune(appid: Int, engineid: Int, id: Int) = {
-
-    offlineTunes.get(id) map { tune =>
-      /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
-      offlineTunes.update(tune.copy(createtime = None))
-
-      WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlinetunes/${id}/stop").get()
-
-      offlineEvals.getByTuneid(id) foreach { eval =>
-        WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${eval.id}/delete").get()
-      }
-
-      deleteOfflineTune(id, false)
-      Logger.info("Delete offline tune ID "+id)
-      offlineTunes.delete(id)
-
-    }
-
-  }
-
-  def removeAvailableAlgo(app_id: Int, engine_id: Int, id: Int) = withUser { user => implicit request =>
-
-    algos.get(id) map { algo =>
-      algo.offlinetuneid map { tuneid =>
-        removeOfflineTune(app_id, engine_id, tuneid)
-      }
-    }
-
-    deleteModelData(id)
-    // send the deleteAlgoDir(app_id, engine_id, id) request to scheduler here
-    WS.url(settingsSchedulerUrl+"/apps/"+app_id+"/engines/"+engine_id+"/algos/"+id+"/delete").get()
-    algos.delete(id)
-    Ok
-
-  }
-
-  def getDeployedAlgo(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    /* sample output
-    Ok(toJson(Map(
-       "updatedTime" -> toJson("12-03-2012 12:32:12"),
-       "status" -> toJson("Running"),
-       "algolist" -> toJson(Seq(
-	      Map(
-	        "id" -> "algoid1234",
-	        "algoName" -> "algo-test-sim1",
-	        "app_id" -> "appid1234",
-	        "engine_id" -> "engid33333",
-	        "algotype_id" -> "pdio-knnitembased",
-	        "algotypeName" -> "kNN Item-Based CF",
-	        "status" -> "deployed",
-	        "updatedTime" -> "04-23-2012 12:21:23"
-	      ),
-	      Map(
-	        "id" -> "algoid531",
-	        "algoName" -> "algo-test-sim-correl=12",
-	        "app_id" -> "appid765",
-	        "engine_id" -> "engid33333",
-	        "algotype_id" -> "pdio-knnitembased",
-	        "algotypeName" -> "kNN Item-Based CF",
-	        "status" -> "deployed",
-	        "updatedTime" -> "04-23-2012 12:21:23"
-	      )
-       ))
-     )))
-     */
-
-    // TODO: verifying this user owns this app id and engine id
-
-    // TODO: check engine_id is int
-
-    val deployedAlgos = algos.getDeployedByEngineid(engine_id.toInt)
-
-    if (!deployedAlgos.hasNext) NoContent
-    else
-      Ok(toJson(Map(
-       "updatedTime" -> toJson("12-03-2012 12:32:12"), // TODO: what's this time for?
-       "status" -> toJson("Running"),
-       "algolist" -> toJson(deployedAlgos.map { algo =>
-         Map("id" -> algo.id.toString,
-	         "algoName" -> algo.name,
-	         "app_id" -> app_id, // // TODO: should algo db store appid and get it from there?
-	         "engine_id" -> algo.engineid.toString,
-	         "algotype_id" -> algo.infoid,
-	         "algotypeName" -> algoInfos.get(algo.infoid).get.name,
-	         "status" -> algo.status,
-	         "updatedTime" -> timeFormat.print(algo.updatetime.withZone(DateTimeZone.forID("UTC"))))
-       }.toSeq)
-      )))
-
-  }
-
-  def getAlgoAutotuningReport(app_id: String, engine_id: String, algo_id: String) = withUser { user => implicit request =>
-    /* sample output
-    Ok(toJson(
-      Map(
-        "id" -> toJson("algo_id123"),
-        "app_id" -> toJson("appid1234"),
-        "engine_id" -> toJson("engid33333"),
-        "algo" -> toJson(Map(
-						        "id" -> "algoid1234",
-						        "algoName" -> "algo-test-sim1",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      )),
-		"metric" -> toJson(Map(
-						        "id" -> "metricid_123",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
-						        "metricsName" -> "MAP@k",
-						        "settingsString" -> "k=5"
-						      )),
-		"metricscorelist" -> toJson(Seq(
-		    Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.12341)),
-		    Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.32341)),
-		    Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.52341))
-		 )),
-		"metricscoreiterationlist" -> toJson(Seq(
-		    Seq(
-            Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.6)),
-		    		Map("algoautotune_id" -> toJson("algotuneid1231"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.1)),
-		    		Map("algoautotune_id" -> toJson("algotuneid1235"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2))
-		    ),
-		    Seq(
-		    		Map("algoautotune_id" -> toJson("algotuneid1234"), "settingsString"-> toJson("gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.2)),
-		    		Map("algoautotune_id" -> toJson("algotuneid222"), "settingsString"-> toJson("gamma=0.3, sigma=10, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.23)),
-		    		Map("algoautotune_id" -> toJson("algotuneid333"), "settingsString"-> toJson("gamma=0.2, sigma=3, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"), "score"-> toJson(0.5))
-		    )
-		 )),
-		"splitTrain" -> toJson(55), // TODO: engine-level setting
-        "splitValidation" -> toJson(20), // TODO: engine-level setting
-        "splitTest" -> toJson(15), // TODO: engine-level setting
-        "splitMethod" -> toJson("random"), // TODO: engine-level setting
-        "evalIteration" -> toJson(2), // TODO: engine-level setting
-
-        "status" -> toJson("completed"),
-        "startTime" -> toJson("04-23-2012 12:21:23"),
-        "endTime" -> toJson("04-25-2012 13:21:23")
       )
-    )) */
 
-    // get the offlinetuneid of this algo
-    algos.get(algo_id.toInt) map { algo =>
+  }
+
+  /**
+   * Removes an engine
+   *
+   * {{{
+   * DELETE
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If deleted:
+   *   Ok
+   *
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def removeEngine(appid: Int, engineid: Int) = WithEngine.async(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+      // don't delete if there is any sim eval and offline tune pending, or deployed algorithm
+      val pendingSimEvals = Helper.getSimEvalsByEngineid(eng.id).filter(x => Helper.isPendingSimEval(x)).toList
+      val pendingOfflineTunes = offlineTunes.getByEngineid(eng.id).filter(x => Helper.isPendingOfflineTune(x)).toList
+      val deployedAlgos = algos.getDeployedByEngineid(eng.id).toList
+
+      if (deployedAlgos.size != 0) {
+        val names = deployedAlgos map (x => x.name) mkString (",")
+        Future.successful(Forbidden(Json.obj("message" -> s"This engine has deployed algorithms (${names}). Please undeploy them before delete this engine.")))
+      } else if (pendingSimEvals.size != 0) {
+        Future.successful(Forbidden(Json.obj("message" -> "There are running simulated evaluations. Please stop and delete them before delete this engine.")))
+      } else if (pendingOfflineTunes.size != 0) {
+        Future.successful(Forbidden(Json.obj("message" -> "There are auto-tuning algorithms. Please stop and delete them before delete this engine.")))
+      } else {
+        /** Deletion could take a while */
+        val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+
+        // to scheduler: delete engine
+        val delete = Helper.deleteEngineScheduler(appid, engineid)
+
+        concurrent.Future.firstCompletedOf(Seq(delete, timeout)).map {
+          case r: SimpleResult => {
+            if (r.header.status == http.Status.OK) {
+              Helper.deleteEngine(engineid, appid, keepSettings = false)
+            }
+            r
+          }
+          case t: String => InternalServerError(Json.obj("message" -> t))
+        }
+      }
+  }
+
+  /**
+   * Returns a list of available (added but not deployed) algorithms of this engine
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If no algo:
+   *   NoContent
+   *
+   *   If algos found:
+   *   [ { see algoToJson
+   *     }, ...
+   *   ]
+   * }}}
+   * @note algo status
+   *   TODO: add more info here...
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def getAvailableAlgoList(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+
+      val engineAlgos = algos.getByEngineid(engineid).filter { Helper.isAvailableAlgo(_) }
+
+      if (!engineAlgos.hasNext) NoContent
+      else
+        Ok(Json.toJson( // NOTE: only display algos which are not "deployed", nor "simeval"
+          engineAlgos.map { algo =>
+            val algoInfo = algoInfos.get(algo.infoid)
+            algoToJson(algo, appid, algoInfo)
+          }.toSeq
+        ))
+  }
+
+  /**
+   * Returns an available algorithm
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If algo not found:
+   *   NotFound
+   *   {
+   *     "message" : "Invalid app id, engine id or algo id."
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   {
+   *     see algoToJson
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param id the algo ID
+   */
+  def getAvailableAlgo(appid: Int, engineid: Int, id: Int) = WithAlgo(appid, engineid, id) { (user, app, eng, algo) =>
+    implicit request =>
+      algoInfos.get(algo.infoid).map { info =>
+        Ok(algoToJson(algo, appid, Some(info)))
+      }.getOrElse {
+        InternalServerError(Json.obj("message" -> s"Algoinfo ${algo.infoid} not found."))
+      }
+  }
+
+  /**
+   * Creates an new algorithm
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "algoinfoid" : <algo info id>,
+   *     "algoname" : <algo name>,
+   *   }
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If invalid appid or engineid:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If creation failed:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If created:
+   *   Ok
+   *   {
+   *     see algoToJson
+   *   }
+   *
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def createAvailableAlgo(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+
+      val supportedAlgoTypes: Seq[String] = algoInfos.getAll map { _.id }
+      val algonameConstraint = Constraints.pattern(nameRegex, "constraint.algoname", "Algorithm names should only contain alphanumerical characters, underscores, or dashes. The first character must be an alphabet.")
+
+      val createAlgoForm = Form(tuple(
+        "algoinfoid" -> (nonEmptyText verifying ("This feature will be available soon.", t => supportedAlgoTypes.contains(t))),
+        "algoname" -> (text verifying ("Please name your algo.", name => name.length > 0)
+          verifying algonameConstraint) // same name constraint as engine
+      ) verifying ("Algo name must be unique.", f => !algos.existsByEngineidAndName(engineid, f._2)))
+
+      createAlgoForm.bindFromRequest.fold(
+        formWithError => {
+          val msg = formWithError.errors(0).message // extract 1st error message only
+          BadRequest(toJson(Map("message" -> toJson(msg))))
+        },
+        formData => {
+          val (algoType, algoName) = formData
+
+          algoInfos.get(algoType).map { algoInfo =>
+
+            val newAlgo = Algo(
+              id = -1,
+              engineid = engineid,
+              name = algoName,
+              infoid = algoType,
+              command = "",
+              params = algoInfo.params.mapValues(_.defaultvalue),
+              settings = Map(), // no use for now
+              modelset = false, // init value
+              createtime = DateTime.now,
+              updatetime = DateTime.now,
+              status = "ready", // default status
+              offlineevalid = None,
+              loop = None
+            )
+
+            val algoId = algos.insert(newAlgo)
+            Logger.info("Create algo ID " + algoId)
+
+            Ok(algoToJson(newAlgo.copy(id = algoId), appid, Some(algoInfo)))
+          }.getOrElse {
+            InternalServerError(Json.obj("message" -> s"Algoinfo ${algoType} not found."))
+          }
+        }
+      )
+  }
+
+  /**
+   * Deletes an algorithm
+   * {{{
+   * DELETE
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If deleted:
+   *   Ok
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param id the algo ID
+   */
+  def removeAvailableAlgo(appid: Int, engineid: Int, id: Int) = WithAlgo.async(appid, engineid, id) { (user, app, eng, algo) =>
+    implicit request =>
+      /** Deletion could take a while */
+      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+
+      val deleteTune = algo.offlinetuneid map { tuneid =>
+        offlineTunes.get(tuneid) map { tune =>
+          /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
+          offlineTunes.update(tune.copy(createtime = None))
+
+          Helper.stopAndDeleteOfflineTuneScheduler(appid, engineid, tuneid)
+        } getOrElse {
+          concurrent.Future { Ok }
+        }
+      } getOrElse {
+        concurrent.Future { Ok }
+      }
+
+      val deleteAlgo: concurrent.Future[SimpleResult] = Helper.deleteAlgoScheduler(appid, engineid, algo.id)
+
+      val complete: concurrent.Future[SimpleResult] = concurrent.Future.reduce(Seq(deleteTune, deleteAlgo)) { (a, b) =>
+        if (a.header.status != http.Status.OK) // keep the 1st error
+          a
+        else
+          b
+      }
+
+      concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
+        case r: SimpleResult => {
+          if (r.header.status == http.Status.OK) {
+            algo.offlinetuneid map { tuneid =>
+              Helper.deleteOfflineTune(tuneid, keepSettings = false)
+            }
+            Helper.deleteAlgo(algo.id, keepSettings = false)
+          }
+          r
+        }
+        case t: String => InternalServerError(Json.obj("message" -> t))
+      }
+  }
+
+  /**
+   * Returns a list of deployed algorithms
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON repseon:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If no deployed algo:
+   *   NoContent
+   *
+   *   If deployed algos found:
+   *   {
+   *     "updatedtime" : <TODO>,
+   *     "status" : <TODO>,
+   *     "algolist" : [ { see algoToJson
+   *                    }, ...
+   *                  ]
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def getDeployedAlgoList(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+
+      val deployedAlgos = algos.getDeployedByEngineid(engineid)
+
+      if (!deployedAlgos.hasNext) NoContent
+      else
+        Ok(Json.obj(
+          "updatedtime" -> "12-03-2012 12:32:12", // TODO: what's this time for?
+          "status" -> "Running",
+          "algolist" -> Json.toJson(deployedAlgos.map { algo =>
+            val algoInfo = algoInfos.get(algo.infoid)
+            algoToJson(algo, appid, algoInfo)
+          }.toSeq)
+        ))
+  }
+
+  /**
+   * Deploys a list of algorithms (also undeploys any existing deployed algorithms)
+   * The status of deployed algorithms change to "deployed"
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "algoidlist" : [ array of algo ids ]
+   *   }
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If any of the algo id is not valid:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If done:
+   *   Ok
+   *
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def algoDeploy(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+      val deployForm = Form(
+        "algoidlist" -> list(number)
+      )
+      deployForm.bindFromRequest.fold(
+        formWithErrors => Ok,
+        form => {
+          val algoidList = form
+          val algoList = algoidList.map(id => (id, algos.getByIdAndEngineid(id, engineid)))
+          val invalidAlgos = algoList.filter {
+            case (id, algoOpt) => algoOpt match {
+              case None => true // not exist
+              case Some(x) => (x.status != "ready") // not ready
+            }
+          }
+
+          // make sure all algoids are valid
+          if (!invalidAlgos.isEmpty) {
+            val ids = invalidAlgos.map { case (id, algoOpt) => id }.mkString(", ")
+            BadRequest(Json.obj("message" -> s"Invalid algo ids: ${ids}."))
+          } else {
+            algos.getDeployedByEngineid(engineid).foreach { algo =>
+              algos.update(algo.copy(status = "ready"))
+            }
+            algoList.foreach {
+              case (id, algoOpt) =>
+                // algoOpt can't be None because of invalidAlgos check
+                algos.update(algoOpt.get.copy(status = "deployed"))
+            }
+            WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+            Ok
+          }
+        }
+      )
+  }
+
+  /**
+   * Undeploys all deployed algorithms
+   * {{{
+   * POST
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If done:
+   *   Ok
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def algoUndeploy(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+
+      algos.getDeployedByEngineid(engineid) foreach { algo =>
+        algos.update(algo.copy(status = "ready"))
+      }
+      WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+      Ok
+  }
+
+  /**
+   * Requests to train model now
+   * {{{
+   * POST
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If error:
+   *   InternalServerError
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If done:
+   *   Ok
+   *   {
+   *     "message" : <message from scheduler>
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def algoTrainNow(appid: Int, engineid: Int) = WithEngine.async(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+      // No extra param required
+      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+      val request = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/trainoncenow").get() map { r =>
+        Ok(Json.obj("message" -> (r.json \ "message").as[String]))
+      } recover {
+        case e: Exception => InternalServerError(Json.obj("message" -> e.getMessage()))
+      }
+
+      /** Detect timeout (10 minutes by default) */
+      concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
+        case r: SimpleResult => r
+        case t: String => InternalServerError(Json.obj("message" -> t))
+      }
+  }
+
+  /**
+   * Returns a list of simulated evalulation for this engine
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If no sim evals:
+   *   NoContent
+   *
+   *   If found:
+   *   Ok
+   *   [
+   *     { "id" : <sim eval id>,
+   *       "appid" : <app id>,
+   *       "engineid" : <engine id>,
+   *       "algolist" : [
+   *                      { "id" : <algo id>,
+   *                        "algoname" : <algo name>,
+   *                        "appid" : <app id>,
+   *                        "engineid" : <engine id>,
+   *                        "algoinfoid" : <algo info id>,
+   *                        "algoinfoname" : <algo info name>,
+   *                        "settingsstring" : <algo setting string>
+   *                      }, ...
+   *                    ],
+   *       "status" : <sim eval status>,
+   *       "createtime" : <sim eval create time>,
+   *       "endtime" : <sim eval end time>
+   *     }, ...
+   *   ]
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def getSimEvalList(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+
+      // get offlineeval for this engine
+      val engineOfflineEvals = Helper.getSimEvalsByEngineid(engineid)
+
+      if (!engineOfflineEvals.hasNext) NoContent
+      else {
+        val resp = Json.toJson(
+
+          engineOfflineEvals.map { eval =>
+
+            val algolist = Json.toJson(
+              algos.getByOfflineEvalid(eval.id).map { algo =>
+                val algoInfo = algoInfos.get(algo.infoid)
+                algoToJson(algo, appid, algoInfo, withParam = true)
+              }.toSeq
+            )
+
+            val createtime = eval.createtime.map(dateTimeToString(_)).getOrElse("-")
+            val starttime = eval.starttime.map(dateTimeToString(_)).getOrElse("-")
+            val endtime = eval.endtime.map(dateTimeToString(_)).getOrElse("-")
+
+            Json.obj(
+              "id" -> eval.id,
+              "appid" -> appid,
+              "engineid" -> eval.engineid,
+              "algolist" -> algolist,
+              "status" -> getSimEvalStatus(eval),
+              "createtime" -> createtime, // NOTE: use createtime here for test date
+              "endtime" -> endtime
+            )
+          }.toSeq
+        )
+        Ok(resp)
+      }
+  }
+
+  /**
+   * Creates a simulated evalution
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *
+   *  {
+   *    "infoid[i]": <metric or splitter info id>
+   *    "infotype[i]": <"offlineevalmetric" or "offlineevalsplitter">
+   *    "other param [i]": <the parameter value for corresponding infoid[i]>
+   *    "algo" : <list of algo ids to be evaluated>
+   *    "splittrain": <training set split percentage 1 to 100>,
+   *    "splittest": <test set split percentage 1 to 100>,
+   *    "evaliteration": <number of iterations>
+   *  }
+   *
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If error:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If created:
+   *   Ok
+   *
+   * }}}
+   * @param appid the App ID
+   * @param engineid the engine ID
+   */
+  def createSimEval(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, eng) =>
+    implicit request =>
+      val simEvalForm = Form(tuple(
+        "infoid" -> seqOfMapOfStringToAny,
+        "algoids" -> list(number), // algo id
+        "splittrain" -> number(1, 100),
+        "splittest" -> number(1, 100),
+        "evaliteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
+      ))
+
+      simEvalForm.bindFromRequest.fold(
+        e => BadRequest(Json.obj("message" -> e.toString)),
+        f => {
+          val (params, algoids, splitTrain, splitTest, evalIteration) = f
+
+          val metricList = params.filter(p => (p("infotype") == "offlineevalmetric")).map(p =>
+            OfflineEvalMetric(
+              id = 0,
+              infoid = p("infoid").asInstanceOf[String],
+              evalid = 0, // will be assigned later
+              params = p - "infoid" - "infotype" // remove these keys from params
+            )).toList
+
+          // percentage param is standard for all splitter
+          val percentageParam = Map(
+            "trainingPercent" -> (splitTrain.toDouble / 100),
+            "validationPercent" -> 0.0, // no validatoin set for sim eval
+            "testPercent" -> (splitTest.toDouble / 100)
+          )
+          val splitterList = params.filter(p => (p("infotype") == "offlineevalsplitter")).map(p =>
+            OfflineEvalSplitter(
+              id = 0,
+              evalid = 0, // will be assigned later
+              name = "", // will be assigned later
+              infoid = p("infoid").asInstanceOf[String],
+              settings = p ++ percentageParam - "infoid" - "infotype" // remove these keys from params
+            )).toList
+
+          // get list of algo obj
+          val optAlgos: List[Option[Algo]] = algoids.map { algos.get(_) }
+
+          if (metricList.length == 0)
+            BadRequest(Json.obj("message" -> "At least one metric is required."))
+          else if (splitterList.length == 0)
+            BadRequest(Json.obj("message" -> "One Splitter is required."))
+          else if (splitterList.length > 1)
+            BadRequest(Json.obj("message" -> "Multiple Splitters are not supported now."))
+          else if (optAlgos.contains(None))
+            BadRequest(Json.obj("message" -> "Invalid algo ids."))
+          else {
+            val algoList: List[Algo] = optAlgos.map(_.get) // NOTE: already check optAlgos does not contain None
+
+            val evalid = createOfflineEval(eng, algoList, metricList, splitterList(0), evalIteration)
+
+            WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+
+            Ok
+          }
+        }
+      )
+  }
+
+  /**
+   * Requests to stop and delete simulated evalution (including running/pending job)
+   *
+   * {{{
+   * DELETE
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If not found:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If error:
+   *   InternalServerError
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If deleted:
+   *   Ok
+   *   {
+   *      "message" : "Offline evaluation ID $id has been deleted"
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param id the offline evaluation ID
+   *
+   */
+  def removeSimEval(appid: Int, engineid: Int, id: Int) = WithOfflineEval.async(appid, engineid, id) { (user, app, eng, oe) =>
+    implicit request =>
+      // remove algo, remove metric, remove offline eval
+      /** Make sure to unset offline eval's creation time to prevent scheduler from picking up */
+      offlineEvals.update(oe.copy(createtime = None))
+
+      /** Deletion of app data and model data could take a while */
+      val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+
+      val complete = Helper.stopAndDeleteSimEvalScheduler(appid, engineid, oe.id)
+
+      /** Detect timeout (10 minutes by default) */
+      concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
+        case r: SimpleResult => {
+          if (r.header.status == http.Status.OK) {
+            Helper.deleteOfflineEval(oe.id, keepSettings = false)
+          }
+          r
+        }
+        case t: String => InternalServerError(Json.obj("message" -> t))
+      }
+  }
+
+  /**
+   * Returns the simulated evaluation report
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If not found:
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   {
+   *     "id" : <sim eval id>,
+   *     "appid" : <app id>,
+   *     "engineid" : <engine id>,
+   *     "algolist" : [
+   *                    {
+   *                      "id" : <algo id>,
+   *                      "algoname" : <algo name>,
+   *                      "appid" : <app id>,
+   *                      "engineid" : <engine id>,
+   *                      "algoinfoid" : <algo info id>,
+   *                      "algoinfoname" : <algo info name>,
+   *                      "settingsstring" : <algo setting string>
+   *                    }, ...
+   *                  ],
+   *     "metricslist" : [
+   *                       {
+   *                         "id" : <metric id>,
+   *                         "metricsinfoid" : <metric info id>,
+   *                         "metricsname" : <metric info name>,
+   *                         "settingsstring" : <metric setting string>
+   *                       }, ...
+   *                     ],
+   *     "metricscorelist" : [
+   *                           {
+   *                             "algoid" : <algo id>,
+   *                             "metricsid" : <metric id>,
+   *                             "score" : <average score>
+   *                           }, ...
+   *                         ],
+   *     "metricscoreiterationlist" : [
+   *                                    [{
+   *                                      "algoid" : <algo id>,
+   *                                      "metricsid" : <metric id>,
+   *                                      "score" : <score of 1st iteration>
+   *                                     }, ...
+   *                                    ],
+   *                                    [{
+   *                                      "algoid" : <algo id>,
+   *                                      "metricsid" : <metric id>,
+   *                                      "score" : <score of 2nd iteration>
+   *                                     }, ...
+   *                                    ],
+   *                                  ],
+   *     "splittrain" : <training set split percentage 1 to 100>,
+   *     "splittest" : <test set split percentage 1 to 100>,
+   *     "splittersettingsstring" : <splitter setting string>,
+   *     "evaliteration" : <number of iterations>,
+   *     "status" : <eval status>,
+   *     "starttime" : <start time>,
+   *     "endtime" : <end time>
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param id the offline evaluation ID
+   */
+  def getSimEvalReport(appid: Int, engineid: Int, id: Int) = WithOfflineEval(appid, engineid, id) { (user, app, eng, eval) =>
+    implicit request =>
+
+      val status = getSimEvalStatus(eval)
+
+      val evalAlgos = algos.getByOfflineEvalid(eval.id).toArray
+
+      val algolist = Json.toJson(
+        evalAlgos.map { algo =>
+          val algoInfo = algoInfos.get(algo.infoid)
+          algoToJson(algo, appid, algoInfo, withParam = true)
+        }.toSeq
+      )
+
+      val evalMetrics = offlineEvalMetrics.getByEvalid(eval.id).toArray
+
+      val metricslist = Json.toJson(
+        evalMetrics.map { metric =>
+          val metricInfo = offlineEvalMetricInfos.get(metric.infoid)
+          offlineEvalMetricToJson(metric, metricInfo, withParam = true)
+        }.toSeq
+      )
+
+      val evalResults = offlineEvalResults.getByEvalid(eval.id).toArray
+
+      val metricscorelist = Json.toJson(
+        (for (algo <- evalAlgos; metric <- evalMetrics) yield {
+
+          val results = evalResults
+            .filter(x => ((x.metricid == metric.id) && (x.algoid == algo.id)))
+            .map(x => x.score)
+
+          val num = results.length
+          val avg = if ((results.isEmpty) || (num != eval.iterations)) "N/A" else ((results.reduceLeft(_ + _) / num).toString)
+
+          Json.obj(
+            "algoid" -> algo.id,
+            "metricsid" -> metric.id,
+            "score" -> avg
+          )
+        }).toSeq
+      )
+
+      val metricscoreiterationlist = Json.toJson((for (i <- 1 to eval.iterations) yield {
+        val defaultScore = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
+          ((algo.id, metric.id) -> "N/A") // default score
+        }).toMap
+
+        val evalScore = evalResults.filter(x => (x.iteration == i)).map(r =>
+          ((r.algoid, r.metricid) -> r.score.toString)).toMap
+
+        // overwrite defaultScore with evalScore
+        (defaultScore ++ evalScore).map {
+          case ((algoid, metricid), score) =>
+            Json.obj("algoid" -> algoid, "metricsid" -> metricid, "score" -> score)
+        }
+      }).toSeq)
+
+      val starttime = eval.starttime map (dateTimeToString(_)) getOrElse ("-")
+      val endtime = eval.endtime map (dateTimeToString(_)) getOrElse ("-")
+
+      // get splitter data
+      val splitters = offlineEvalSplitters.getByEvalid(eval.id)
+
+      if (splitters.hasNext) {
+        val splitter = splitters.next
+
+        val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double]) * 100).toInt
+        val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double]) * 100).toInt
+
+        if (splitters.hasNext) {
+          InternalServerError(Json.obj("message" -> s"More than one splitter found for this Offline Eval ID: ${eval.id}"))
+        } else {
+          Ok(Json.obj(
+            "id" -> eval.id,
+            "appid" -> appid,
+            "engineid" -> eval.engineid,
+            "algolist" -> algolist,
+            "metricslist" -> metricslist,
+            "metricscorelist" -> metricscorelist,
+            "metricscoreiterationlist" -> metricscoreiterationlist,
+            "splittrain" -> splitTrain,
+            "splittest" -> splitTest,
+            "splittersettingsstring" -> offlineEvalSplitterParamToString(splitter, offlineEvalSplitterInfos.get(splitter.infoid)),
+            "evaliteration" -> eval.iterations,
+            "status" -> status,
+            "starttime" -> starttime,
+            "endtime" -> endtime
+          ))
+        }
+      } else {
+        InternalServerError(Json.obj("message" -> s"No splitter found fo this Offline Eval ID ${eval.id}."))
+      }
+
+  }
+
+  /**
+   * Returns the algorithm auto tune report
+   *
+   * {{{
+   * GET
+   * JSON parameters:
+   *   None
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If not found:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If found:
+   *   Ok
+   *   {
+   *     "id" : <original algo id>,
+   *     "appid" : <app id>,
+   *     "engineid" : <engine id>,
+   *     "algo" : {
+   *                "id" : <original algo id>,
+   *                "algoname" : <algo name>,
+   *                "appid" : <app id>,
+   *                "engineid" : <engine id>,
+   *                "algoinfoid" : <algo info id>,
+   *                "algoinfoname" : <algo info name>,
+   *                "settingsstring" : <algo setting string>
+   *              },
+   *     "metric" : {
+   *                  "id" : <metric id>,
+   *                  "metricsinfoid" : <metric info id>,
+   *                  "metricsname" : <metric info name>,
+   *                  "settingsstring" : <metric setting string>
+   *                },
+   *     "metricscorelist" : [
+   *                           {
+   *                             "algoautotuneid" : <tuned algo id>,
+   *                             "algoinfoname" : <algo info name>,
+   *                             "settingsstring" : <algo setting string>,
+   *                             "score" : <average score>
+   *                           }, ...
+   *                         ],
+   *     "metricscoreiterationlist" : [
+   *                                    [ {
+   *                                        "algoautotuneid" : <tuned algo id 1>,
+   *                                        "algoinfoname" : <algo info name>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 1st iteration for this tuned algo id>
+   *                                      },
+   *                                      {
+   *                                        "algoautotuneid" : <tuned algo id 2>,
+   *                                        "algoinfoname" : <algo info name>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 1st iteration for this tuned algo id>
+   *                                      }, ...
+   *                                    ],
+   *                                    [ {
+   *                                        "algoautotuneid" : <tuned algo id 1>,
+   *                                        "algoinfoname" : <algo info name>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 2nd iteration for this tuned algo id>
+   *                                      },
+   *                                      {
+   *                                        "algoautotuneid" : <tuned algo id 2>,
+   *                                        "algoinfoname" : <algo info name>,
+   *                                        "settingsstring" : <algo setting string>,
+   *                                        "score" : <score of 2nd iteration for this tuned algo id>
+   *                                      }, ...
+   *                                    ], ...
+   *                                  ],
+   *     "splittrain" : <training set split percentage 1 to 100>,
+   *     "splitvalidation" : <validation set split percentage 1 to 100>,
+   *     "splittest" : <test set split percentage 1 to 100>,
+   *     "splitmethod" : <split method string: randome, time>
+   *     "splittersettingsstring" : <splitter setting string>,
+   *     "evaliteration" : <number of iterations>,
+   *     "status" : <auto tune status>,
+   *     "starttime" : <start time>,
+   *     "endtime" : <end time>
+   *   }
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param algoid the algo ID
+   */
+  def getAlgoAutotuningReport(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, eng, algo) =>
+    implicit request =>
+
       algo.offlinetuneid map { tuneid =>
         offlineTunes.get(tuneid) map { tune =>
+
+          val algoInfo = algoInfos.get(algo.infoid)
 
           // get all offlineeval of this offlinetuneid
           val tuneOfflineEvals: Array[OfflineEval] = offlineEvals.getByTuneid(tuneid).toArray.sortBy(_.id)
 
-          val tuneMetrics: Array[OfflineEvalMetric] = tuneOfflineEvals.flatMap{ e => offlineEvalMetrics.getByEvalid(e.id) }
+          val tuneMetrics: Array[OfflineEvalMetric] = tuneOfflineEvals.flatMap { e => offlineEvalMetrics.getByEvalid(e.id) }
 
-          val tuneSplitters: Array[OfflineEvalSplitter] = tuneOfflineEvals.flatMap{ e => offlineEvalSplitters.getByEvalid(e.id) }
+          val tuneSplitters: Array[OfflineEvalSplitter] = tuneOfflineEvals.flatMap { e => offlineEvalSplitters.getByEvalid(e.id) }
 
           // get all offlineeavlresults of each offlineevalid
-          val tuneOfflineEvalResults: Array[OfflineEvalResult] = tuneOfflineEvals.flatMap{ e => offlineEvalResults.getByEvalid(e.id) }
+          val tuneOfflineEvalResults: Array[OfflineEvalResult] = tuneOfflineEvals.flatMap { e => offlineEvalResults.getByEvalid(e.id) }
 
           // test set score
-          val tuneOfflineEvalResultsTestSet: Array[OfflineEvalResult] = tuneOfflineEvalResults.filter( x => (x.splitset == "test") )
+          val tuneOfflineEvalResultsTestSet: Array[OfflineEvalResult] = tuneOfflineEvalResults.filter(x => (x.splitset == "test"))
 
           val tuneOfflineEvalResultsTestSetAlgoidMap: Map[Int, Double] = tuneOfflineEvalResultsTestSet.map(x => (x.algoid -> x.score)).toMap
 
@@ -1120,27 +2032,28 @@ object Application extends Controller {
           // so these retrieved algos may have more algo than those used in offlineEvalResults.
           val tuneAlgos: Array[Algo] = tuneOfflineEvals flatMap { e => algos.getByOfflineEvalid(e.id) }
 
-          val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map{ a => (a.id -> a) }.toMap
+          val tuneAlgosMap: Map[Int, Algo] = tuneAlgos.map { a => (a.id -> a) }.toMap
 
           // group by (loop, paramset)
           type AlgoGroupIndex = (Option[Int], Option[Int])
 
-          val tuneAlgosGroup: Map[AlgoGroupIndex, Array[Algo]] = tuneAlgos.groupBy( a => (a.loop, a.paramset) )
+          val tuneAlgosGroup: Map[AlgoGroupIndex, Array[Algo]] = tuneAlgos.groupBy(a => (a.loop, a.paramset))
 
           // get param of each group
-          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String)] = tuneAlgosGroup.map{ case (index, arrayOfAlgos) =>
-            val algo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
-            val algoInfo = algoInfos.get(algo.infoid).get
-            val settings = Itemrec.Algorithms.displayParams(algoInfo, algo.params)
+          val tuneAlgosGroupParams: Map[AlgoGroupIndex, (Int, String, String)] = tuneAlgosGroup.map {
+            case (index, arrayOfAlgos) =>
+              val tAlgo = arrayOfAlgos(0) // just take 1, all algos of this group will have same params
+              val tAlgoInfo: Option[AlgoInfo] = algoInfos.get(tAlgo.infoid)
+              val infoName = tAlgoInfo.map(_.name).getOrElse("Algo info ${tAlgo.infoid} not found")
+              val settings = algoParamToString(tAlgo, tAlgoInfo)
 
-            (index -> (algo.id, settings))
-
+              (index -> (tAlgo.id, settings, infoName))
           }
 
           // calculate avg
-          val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues{ arrayOfAlgos =>
+          val avgScores: Map[AlgoGroupIndex, String] = tuneAlgosGroup.mapValues { arrayOfAlgos =>
             // check if all scores available
-            val allAvailable = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap.contains(algo.id)).reduceLeft( _ && _ )
+            val allAvailable = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap.contains(algo.id)).reduceLeft(_ && _)
 
             if (allAvailable) {
               val scores: Array[Double] = arrayOfAlgos.map(algo => tuneOfflineEvalResultsTestSetAlgoidMap(algo.id))
@@ -1151,591 +2064,510 @@ object Application extends Controller {
             }
           }
 
-          val metricscorelist = avgScores.toSeq.sortBy(_._1).map{ case (k,v) =>
-             Map(
-              "algoautotune_id" -> toJson(tuneAlgosGroupParams(k)._1),
-              "settingsString"-> toJson(tuneAlgosGroupParams(k)._2),
-              "score"-> toJson(v))
+          val metricscorelist = avgScores.toSeq.sortBy(_._1).map {
+            case (k, v) =>
+              Json.obj(
+                "algoautotuneid" -> tuneAlgosGroupParams(k)._1,
+                "algoinfoname" -> tuneAlgosGroupParams(k)._3,
+                "settingsstring" -> tuneAlgosGroupParams(k)._2,
+                "score" -> v)
           }
 
+          val metricscoreiterationlist = tuneOfflineEvals.map { e =>
+            tuneOfflineEvalResultsTestSet.filter(x => (x.evalid == e.id)).sortBy(_.algoid).map { r =>
 
-          val metricscoreiterationlist = tuneOfflineEvals.map{ e =>
-            tuneOfflineEvalResultsTestSet.filter( x => (x.evalid == e.id) ).sortBy(_.algoid).map{ r =>
+              val tAlgo = tuneAlgosMap(r.algoid)
+              val tAlgoInfo: Option[AlgoInfo] = algoInfos.get(tAlgo.infoid)
+              val infoName = tAlgoInfo.map(_.name).getOrElse("Algo info ${tAlgo.infoid} not found")
 
-              val algo = tuneAlgosMap(r.algoid)
-              val algoInfo = algoInfos.get(algo.infoid).get
-
-              Map(
-                "algoautotune_id" -> toJson(r.algoid.toString),
-                "settingsString"-> toJson(Itemrec.Algorithms.displayParams(algoInfo, algo.params)),
-                "score"-> toJson(r.score))
-
+              Json.obj(
+                "algoautotuneid" -> r.algoid,
+                "algoinfoname" -> infoName,
+                "settingsstring" -> algoParamToString(tAlgo, tAlgoInfo),
+                "score" -> r.score)
             }.toSeq
           }.toSeq
 
-          val algoInfo = algoInfos.get(algo.infoid).get
           val metric = tuneMetrics(0)
+          val metricInfo = offlineEvalMetricInfos.get(metric.infoid)
           val splitter = tuneSplitters(0)
-          val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double])*100).toInt
-          val splitValidation = ((splitter.settings("validationPercent").asInstanceOf[Double])*100).toInt
-          val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
-          val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
+          val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double]) * 100).toInt
+          val splitValidation = ((splitter.settings("validationPercent").asInstanceOf[Double]) * 100).toInt
+          val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double]) * 100).toInt
           val evalIteration = tuneOfflineEvals.size // NOTE: for autotune, number of offline eval is the iteration
+          val engineinfoid = engines.get(engineid) map { _.infoid } getOrElse { "unkown-engine" }
 
-          val status: String = (tune.starttime, tune.endtime) match {
-            case (Some(x), Some(y)) => "completed"
-            case (None, None) => "pending"
-            case (Some(x), None) => "running"
-            case _ => "error"
-          }
-          val starttime = tune.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-          val endtime = tune.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
+          val starttime = tune.starttime map (dateTimeToString(_)) getOrElse ("-")
+          val endtime = tune.endtime map (dateTimeToString(_)) getOrElse ("-")
 
-          Ok(toJson(
-            Map(
-              "id" -> toJson(algo_id),
-              "app_id" -> toJson(app_id),
-              "engine_id" -> toJson(engine_id),
-              "algo" -> toJson(Map(
-                          "id" -> algo.id.toString,
-                          "algoName" -> algo.name.toString,
-                          "app_id" -> app_id,
-                          "engine_id" -> algo.engineid.toString,
-                          "algotype_id" -> algo.infoid,
-                          "algotypeName" -> algoInfo.name,
-                          "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-                        )),
-              "metric" -> toJson(Map(
-                          "id" -> metric.id.toString,
-                          "engine_id" -> engine_id,
-                          "enginetype_id" -> "itemrec", // TODO: hardcode now, should get this from enginedb
-                          "metricstype_id" -> metric.infoid,
-                          "metricsName" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
-                          "settingsString" -> map_k_displayAllParams(metric.params)
-                        )),
-              "metricscorelist" -> toJson(metricscorelist),
-              "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
-
-              "splitTrain" -> toJson(splitTrain),
-              "splitValidation" -> toJson(splitValidation),
-              "splitTest" -> toJson(splitTest),
-              "splitMethod" -> toJson(splitMethod),
-              "evalIteration" -> toJson(evalIteration),
-
-              "status" -> toJson(status),
-              "startTime" -> toJson(starttime),
-              "endTime" -> toJson(endtime)
-            )
+          Ok(Json.obj(
+            "id" -> algoid,
+            "appid" -> appid,
+            "engineid" -> engineid,
+            "algo" -> algoToJson(algo, appid, algoInfo, withParam = true),
+            "metric" -> offlineEvalMetricToJson(metric, metricInfo, withParam = true),
+            "metricscorelist" -> Json.toJson(metricscorelist),
+            "metricscoreiterationlist" -> Json.toJson(metricscoreiterationlist),
+            "splittrain" -> splitTrain,
+            "splitvalidation" -> splitValidation,
+            "splittest" -> splitTest,
+            "splittersettingsstring" -> offlineEvalSplitterParamToString(splitter, offlineEvalSplitterInfos.get(splitter.infoid)),
+            "evaliteration" -> evalIteration,
+            "status" -> getOfflineTuneStatus(tune),
+            "starttime" -> starttime,
+            "endtime" -> endtime
           ))
-
         } getOrElse {
-          NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+          InternalServerError(Json.obj("message" -> s"The offline tune id ${tuneid} does not exist."))
         }
       } getOrElse {
-        NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+        InternalServerError(Json.obj("message" -> "This algo does not have offline tune."))
       }
-    } getOrElse {
-      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
-    }
-
-  }
-
-  // Apply the selected params to the algo
-  def algoAutotuningSelect(app_id: String, engine_id: String, algo_id: String, algoautotune_id: String) = withUser { user => implicit request =>
-
-    // Apply params of algoautotune_id to algo_id
-    // update the status of algo_id from 'tuning' or 'tuned' to 'ready'
-
-    val orgAlgo = algos.get(algo_id.toInt)
-    val tunedAlgo = algos.get(algoautotune_id.toInt)
-
-    if ((orgAlgo == None) || (tunedAlgo == None)) {
-      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
-    } else {
-      val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
-      algos.update(orgAlgo.get.copy(
-        params = tunedAlgoParams,
-        status = "ready"
-      ))
-
-      Ok
-    }
-  }
-
-
-  def getSimEvalList(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    /* sample output */
-    /*
-    Ok(toJson(Seq(
-      Map(
-        "id" -> toJson("simeval_id123"),
-        "app_id" -> toJson("appid1234"),
-        "engine_id" -> toJson("engid33333"),
-        "algolist" -> toJson(Seq(
-						      Map(
-						        "id" -> "algoid1234",
-						        "algoName" -> "algo-test-sim1",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      ),
-						      Map(
-						        "id" -> "algoid56456",
-						        "algoName" -> "algo-test-mf-gamma=0.1,sigma=8 ",
-						        "app_id" -> "appid765",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      )
-					       )),
-        "status" -> toJson("pending"),
-        "startTime" -> toJson("04-23-2012 12:21:23")
-      ),
-      Map(
-        "id" -> toJson("simeval_id321"),
-        "app_id" -> toJson("appid765"),
-        "engine_id" -> toJson("engid33333"),
-        "algolist" -> toJson(Seq(
-						      Map(
-						        "id" -> "algoid1234",
-						        "algoName" -> "algo-test-sim2",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      ),
-						      Map(
-						        "id" -> "algoid888",
-						        "algoName" -> "second_algo-test-mf-gamma=0.1,sigma=8 ",
-						        "app_id" -> "appid765",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      )
-					       )),
-        "status" -> toJson("completed"),
-        "startTime" -> toJson("04-23-2012 12:21:23"),
-        "endTime" -> toJson("04-25-2012 13:21:23")
-      )
-     )))*/
-
-    // TODO: check if the user owns this engine
-
-    // get offlineeval for this engine
-    val engineOfflineEvals = offlineEvals.getByEngineid(engine_id.toInt) filter { e => (e.tuneid == None) }
-
-    if (!engineOfflineEvals.hasNext) NoContent
-    else {
-      val resp = toJson(
-
-        engineOfflineEvals.map { eval =>
-
-          val status = (eval.starttime, eval.endtime) match {
-            case (Some(x), Some(y)) => "completed"
-            case (_, _) => "pending"
-          }
-
-          val evalAlgos = algos.getByOfflineEvalid(eval.id)
-
-          val algolist = if (!evalAlgos.hasNext) JsNull
-          else
-            toJson(
-              evalAlgos.map { algo =>
-                val algoInfo = algoInfos.get(algo.infoid).get // TODO: what if couldn't get the algoInfo here?
-
-                Map("id" -> algo.id.toString,
-                     "algoName" -> algo.name,
-                     "app_id" -> app_id,
-                     "engine_id" -> algo.engineid.toString,
-                     "algotype_id" -> algo.infoid,
-                     "algotypeName" -> algoInfo.name,
-                     "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-                     )
-              }.toSeq
-              )
-
-          val createtime = eval.createtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-          val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-          val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-
-          Map(
-           "id" -> toJson(eval.id),
-           "app_id" -> toJson(app_id),
-           "engine_id" -> toJson(eval.engineid),
-           "algolist" -> algolist,
-           "status" -> toJson(status),
-           "startTime" -> toJson(createtime), // NOTE: use createtime here for test date
-           "endTime" -> toJson(endtime)
-           )
-        }.toSeq
-
-      )
-
-      Ok(resp)
-
-    }
-
-  }
-
-
-  val supportedMetricTypes = Set("map_k")
-  // metrictype -> metrictypename
-  val metricTypeNames = Map("map_k" -> "MAP@k")
-
-  def map_k_displayAllParams(params: Map[String, Any]): String = {
-    val displayNames: List[String] = List("k")
-    val displayToParamNames: Map[String, String] = Map("k" -> "kParam")
-
-    displayNames map (x => x + " = " + params(displayToParamNames(x))) mkString(", ")
-  }
-
-  def createSimEval(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    /* request payload
-     * {"app_id":"1","engine_id":"17","algo[0]":"12","algo[1]":"13","metrics[0]":"map_k","metricsSettings[0]":"5","metrics[1]":"map_k","metricsSettings[1]":"10"}
-     */
-     //{"app_id":"17","engine_id":"22","algo[0]":"146","metrics[0]":"map_k","metricsSettings[0]":"20","splitTrain":"71","splitTest":"24","splitMethod":"time","evalIteration":"3"}
-    val simEvalForm = Form(tuple(
-      "app_id" -> number,
-      "engine_id" -> number,
-      "algo" -> list(number), // algo id
-      "metrics" -> (list(text) verifying ("Invalid metrics types.", x => (x.toSet -- supportedMetricTypes).isEmpty)),
-      "metricsSettings" -> list(text),
-      "splitTrain" -> number(1, 100),
-      "splitTest" -> number(1, 100),
-      "splitMethod" -> text,
-      "evalIteration" -> (number verifying ("Number of Iteration must be greater than 0", x => (x > 0)))
-    )) // TODO: verifying this user owns this app_id and engine_id, and the engine_id owns the algo ids
-
-    simEvalForm.bindFromRequest.fold(
-      formWithError => {
-        //println(formWithError.errors)
-        val msg = formWithError.errors(0).message // extract 1st error message only
-        BadRequest(toJson(Map("message" -> toJson(msg))))
-      },
-      formData => {
-        val (appId, engineId, algoIds, metricTypes, metricSettings, splitTrain, splitTest, splitMethod, evalIteration) = formData
-
-        // get list of algo obj
-        val optAlgos: List[Option[Algo]] = algoIds map {algoId => algos.get(algoId)}
-
-        if (!optAlgos.contains(None)) {
-          val listOfAlgos: List[Algo] = optAlgos map (x => x.get)
-
-          SimEval.createSimEval(engineId, listOfAlgos, metricTypes, metricSettings,
-          splitTrain, 0, splitTest, splitMethod, evalIteration, None)
-
-          WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
-
-          Ok
-        } else {
-          BadRequest(toJson(Map("message" -> toJson("Invalid algo ids."))))
-        }
-      }
-    )
   }
 
   /**
-   * Stop the simulated evaluation job if it's still running/pending
-   * Then delete it
+   * Applies the selected tuned algo's params to this algo
+   *
+   * {{{
+   * POST
+   * JSON parameters:
+   *   {
+   *     "tunedalgoid" : <the tuned algo id. This algo's parameters will be used>
+   *   }
+   * JSON response:
+   *   If not authenticated:
+   *   Forbidden
+   *   {
+   *     "message" : "Haven't signed in yet."
+   *   }
+   *
+   *   If error:
+   *   BadRequest
+   *   {
+   *     "message" : <error message>
+   *   }
+   *
+   *   If algo not found:
+   *   NotFound
+   *   {
+   *     "message" : <error message>
+   *   }
+   *   If applied:
+   *   Ok
+   *
+   * }}}
+   *
+   * @param appid the App ID
+   * @param engineid the engine ID
+   * @param algoid the algo ID to which the tuned parameters are applied
    */
-  def removeSimEval(app_id: Int, engine_id: Int, id: Int) = withUser { user => implicit request =>
+  def algoAutotuningSelect(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, eng, algo) =>
+    implicit request =>
 
-    // TODO: check if user owns this app + enigne + simeval
+      // Apply POST request params of tunedalgoid to algoid
+      // update the status of algoid from 'tuning' or 'tuned' to 'ready'
 
-    // remove algo, remove metric, remove offline eval
+      val form = Form("tunedalgoid" -> number)
 
-    /** Deletion of app data and model data could take a while */
-    val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
+      form.bindFromRequest.fold(
+        formWithError => {
+          val msg = formWithError.errors(0).message // extract 1st error message only
+          BadRequest(toJson(Map("message" -> toJson(msg))))
+        },
+        formData => {
+          val tunedAlgoid = formData
 
-    val offlineEval = offlineEvals.get(id)
+          val orgAlgo = algos.get(algoid)
+          val tunedAlgo = algos.get(tunedAlgoid)
 
-    offlineEval map { oe =>
-      /** Make sure to unset offline eval's creation time to prevent scheduler from picking up */
-      offlineEvals.update(oe.copy(createtime = None))
+          if ((orgAlgo == None) || (tunedAlgo == None)) {
+            NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or algo id."))))
+          } else {
+            val tunedAlgoParams = tunedAlgo.get.params ++ Map("tune" -> "manual")
+            algos.update(orgAlgo.get.copy(
+              params = tunedAlgoParams,
+              status = "ready"
+            ))
 
-      /** Stop any possible running jobs */
-      val stop = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/stop").get()
-      /** Clean up intermediate data files */
-      val delete = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/offlineevals/${id}/delete").get()
-      /** Synchronize on both scheduler actions */
-      val remove = for {
-        s <- stop
-        d <- delete
-      } yield {
-        /** Delete settings from database */
-        deleteOfflineEval(id, keepSettings=false)
-        offlineEvals.delete(id)
-      }
-
-      /** Handle any error that might occur within the Future */
-      val complete = remove map { r =>
-        Ok(obj("message" -> s"Offline evaluation ID $id has been deleted"))
-      } recover {
-        case e: Exception => InternalServerError(obj("message" -> e.getMessage()))
-      }
-
-      /** Detect timeout (10 minutes by default) */
-      Async {
-        concurrent.Future.firstCompletedOf(Seq(complete, timeout)).map {
-          case r: SimpleResult[_] => r
-          case t: String => InternalServerError(obj("message" -> t))
-        }
-      }
-    } getOrElse {
-      NotFound(obj("message" -> s"Offline evaluation ID $id does not exist"))
-    }
-  }
-
-  def getSimEvalReport(app_id: String, engine_id: String, id: String) = withUser { user => implicit request =>
-    /* sample output */
-    /*
-    Ok(toJson(
-      Map(
-        "id" -> toJson("simeval_id123"),
-        "app_id" -> toJson("appid1234"),
-        "engine_id" -> toJson("engid33333"),
-        "algolist" -> toJson(Seq(
-						      Map(
-						        "id" -> "algoid1234",
-						        "algoName" -> "algo-test-sim1",
-						        "app_id" -> "appid1234",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "distance=cosine, virtualCount=50, priorCorrelation=0, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      ),
-						      Map(
-						        "id" -> "algoid876",
-						        "algoName" -> "algo-test-mf-gamma=0.1,sigma=8",
-						        "app_id" -> "appid765",
-						        "engine_id" -> "engid33333",
-						        "algotype_id" -> "pdio-knnitembased",
-						        "algotypeName" -> "kNN Item-Based CF",
-						        "settingsString" -> "gamma=0.1, sigma=8, viewScore=3, viewmoreScore=5, likeScore=3, dislikeScore=2, buyScore=3, override=latest"
-						      )
-					       )),
-		"metricslist" -> toJson(Seq(
-						      Map(
-						        "id" -> "metricid_123",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
-						        "metricsName" -> "MAP@k",
-						        "settingsString" -> "k=5"
-						      ),
-						      Map(
-						        "id" -> "metricid_888",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
-						        "metricsName" -> "MAP@k",
-						        "settingsString" -> "k=10"
-						      ),
-						      Map(
-						        "id" -> "metricid_811",
-						        "engine_id" -> "engid33333",
-						        "enginetype_id" -> "itemrec",
-						        "metricstype_id" -> "map_k",
-						        "metricsName" -> "MAP@k",
-						        "settingsString" -> "k=20"
-						      )
-					       )),
-		"metricscorelist" -> toJson(Seq(
-		    Map("algo_id" -> toJson("algoid1234"), "metrics_id"-> toJson("metricid_123"), "score"-> toJson(0.12341)),
-		    Map("algo_id"-> toJson("algoid1234"), "metrics_id"-> toJson("metricid_888"), "score"-> toJson(0.832)),
-		    Map("algo_id"-> toJson("algoid1234"), "metrics_id"-> toJson("metricid_811"), "score"-> toJson(0.341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_123"), "score"-> toJson(0.2341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_888"), "score"-> toJson(0.9341)),
-		    Map("algo_id"-> toJson("algoid876"), "metrics_id"-> toJson("metricid_811"), "score"-> toJson(0.1241))
-		 )),
-        "status" -> toJson("completed"),
-        "startTime" -> toJson("04-23-2012 12:21:23"),
-        "endTime" -> toJson("04-25-2012 13:21:23")
-      )
-    ))*/
-
-    // TODO: check if id is int
-
-    // get offlineeval for this engine
-    val optOffineEval: Option[OfflineEval] = offlineEvals.get(id.toInt)
-
-    optOffineEval map { eval =>
-      val status = "completed"
-
-      // TODO: add assertion that eval.starttime, eval.endtime can't be None
-
-      val evalAlgos = algos.getByOfflineEvalid(eval.id).toArray
-
-      val algolist =
-        if (evalAlgos.isEmpty) // TODO: shouldn't expect this happen
-          JsNull
-        else {
-          toJson(
-            evalAlgos.map { algo =>
-
-              val algoInfo = algoInfos.get(algo.infoid).get // TODO: what if couldn't get the algoInfo here?
-
-              Map("id" -> algo.id.toString,
-                  "algoName" -> algo.name,
-                  "app_id" -> app_id,
-                  "engine_id" -> algo.engineid.toString,
-                  "algotype_id" -> algo.infoid,
-                  "algotypeName" -> algoInfo.name,
-                  "settingsString" -> Itemrec.Algorithms.displayParams(algoInfo, algo.params)
-                  )
-            }.toSeq
-          )
-        }
-
-      val evalMetrics = offlineEvalMetrics.getByEvalid(eval.id).toArray
-
-      val metricslist =
-        if (evalMetrics.isEmpty) // TODO: shouldn't expect this happen
-          JsNull
-        else {
-          toJson(
-            evalMetrics.map { metric =>
-              Map("id" -> metric.id.toString,
-                  "engine_id" -> engine_id,
-                  "enginetype_id" -> "itemrec", // TODO: hardcode now, should get it from engine db
-                  "metricstype_id" -> metric.infoid,
-                  "metricsName" -> (offlineEvalMetricInfos.get(metric.infoid) map { _.name } getOrElse ""),
-                  "settingsString" -> map_k_displayAllParams(metric.params)
-                  )
-            }.toSeq
-          )
-        }
-
-      val evalResults = offlineEvalResults.getByEvalid(eval.id).toArray
-
-      val metricscorelist = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
-
-        val results = evalResults
-          .filter( x => ((x.metricid == metric.id) && (x.algoid == algo.id)) )
-          .map(x => x.score)
-
-        val num = results.length
-        val avg = if ((results.isEmpty) || (num != eval.iterations)) "N/A" else ((results.reduceLeft( _ + _ ) / num).toString)
-
-        Map("algo_id" -> algo.id.toString,
-            "metrics_id" -> metric.id.toString,
-            "score" -> avg.toString
-            )
-      }).toSeq
-
-      val metricscoreiterationlist = (for (i <- 1 to eval.iterations) yield {
-        val defaultScore = (for (algo <- evalAlgos; metric <- evalMetrics) yield {
-          ((algo.id, metric.id) -> "N/A") // default score
-        }).toMap
-
-        val evalScore = evalResults.filter( x => (x.iteration == i) ).map(r =>
-          ((r.algoid, r.metricid) -> r.score.toString)).toMap
-
-        // overwrite defaultScore with evalScore
-        (defaultScore ++ evalScore).map{ case ((algoid, metricid), score) =>
-          Map("algo_id" -> algoid.toString, "metrics_id" -> metricid.toString, "score" -> score)
-        }
-      }).toSeq
-
-      val starttime = eval.starttime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-      val endtime = eval.endtime map (x => timeFormat.print(x.withZone(DateTimeZone.forID("UTC")))) getOrElse ("-")
-
-      // get splitter data
-      val splitters = offlineEvalSplitters.getByEvalid(eval.id)
-
-      if (splitters.hasNext) {
-        val splitter = splitters.next
-
-        val splitTrain = ((splitter.settings("trainingPercent").asInstanceOf[Double])*100).toInt
-        val splitTest = ((splitter.settings("testPercent").asInstanceOf[Double])*100).toInt
-        val splitMethod = if (splitter.settings("timeorder").asInstanceOf[Boolean]) "time" else "random"
-
-        if (splitters.hasNext) {
-          val message = "More than one splitter found for this Offline Eval ID:" + eval.id
-          NotFound(toJson(Map("message" -> toJson(message))))
-        } else {
-          Ok(toJson(
-            Map(
-              "id" -> toJson(eval.id),
-               "app_id" -> toJson(app_id),
-               "engine_id" -> toJson(eval.engineid),
-               "algolist" -> algolist,
-               "metricslist" -> metricslist,
-               "metricscorelist" -> toJson(metricscorelist),
-               "metricscoreiterationlist" -> toJson(metricscoreiterationlist),
-               "splitTrain" -> toJson(splitTrain),
-               "splitTest" -> toJson(splitTest),
-               "splitMethod" -> toJson(splitMethod),
-               "evalIteration" -> toJson(eval.iterations),
-               "status" -> toJson(status),
-               "startTime" -> toJson(starttime),
-               "endTime" -> toJson(endtime)
-               )
-          ))
-        }
-      } else {
-        val message = "No splitter found for this Offline Eval ID:" + eval.id
-        NotFound(toJson(Map("message" -> toJson(message))))
-      }
-    } getOrElse {
-      NotFound(toJson(Map("message" -> toJson("Invalid app id, engine id or simeval id."))))
-    }
-
-  }
-  // Deploy an array of algo -- set availableAlgo's status to deployed? also, undeploy existing, if any
-  def algoDeploy(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // REQUIRED Post Param: algo_id_list (array of availableAlgo ids)
-    val deployForm = Form(
-      "algo_id_list" -> list(number)
-    )
-    deployForm.bindFromRequest.fold(
-      formWithErrors => Ok,
-      form => {
-        algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
-          algos.update(algo.copy(status = "ready"))
-        }
-        form foreach { id =>
-          algos.get(id) foreach { algo =>
-            algos.update(algo.copy(status = "deployed"))
+            Ok
           }
         }
-        WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
-        Ok
-      }
-    )
+      )
   }
 
-  // Undeploy all deployed algo/algo(s) -- set availableAlgo's status back to undeploy?
-  def algoUndeploy(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // No extra param required
-    algos.getDeployedByEngineid(engine_id.toInt) foreach { algo =>
-      algos.update(algo.copy(status = "ready"))
-    }
-    WS.url(settingsSchedulerUrl+"/users/"+user.id+"/sync").get()
-    Ok
+  def getEngineSettings(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      engineInfos.get(engine.infoid) map { engineInfo =>
+        val params = engineInfo.params.mapValues(_.defaultvalue) ++ engine.params
+
+        Ok(toJson(Map(
+          "id" -> toJson(engine.id), // engine id
+          "appid" -> toJson(engine.appid),
+          "allitemtypes" -> toJson(engine.itypes == None),
+          "itemtypelist" -> engine.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull)) ++
+          (params map { case (k, v) => (k, toJson(v.toString)) })))
+      } getOrElse {
+        NotFound(toJson(Map("message" -> toJson(s"Invalid EngineInfo ID: ${engine.infoid}"))))
+      }
   }
 
-  // Add model training of the currently deployed algo(s) to queue.
-  def algoTrainNow(app_id: String, engine_id: String) = withUser { user => implicit request =>
-    // No extra param required
-    val timeout = play.api.libs.concurrent.Promise.timeout("Scheduler is unreachable. Giving up.", concurrent.duration.Duration(10, concurrent.duration.MINUTES))
-    val request = WS.url(s"${settingsSchedulerUrl}/apps/${app_id}/engines/${engine_id}/trainoncenow").get() map { r =>
-      Ok(obj("message" -> (r.json \ "message").as[String]))
-    } recover {
-      case e: Exception => InternalServerError(obj("message" -> e.getMessage()))
-    }
+  def updateEngineSettings(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      val f = Form(tuple(
+        "infoid" -> mapOfStringToAny,
+        "allitemtypes" -> boolean,
+        "itemtypelist" -> list(text)))
+      f.bindFromRequest.fold(
+        e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
+        f => {
+          val (params, allitemtypes, itemtypelist) = f
+          // NOTE: read-modify-write the original param
+          val itypes = if (itemtypelist.isEmpty) None else Option(itemtypelist)
+          val updatedParams = engine.params ++ params - "infoid"
+          val updatedEngine = engine.copy(itypes = itypes, params = updatedParams)
+          engines.update(updatedEngine)
+          Ok
+        })
+  }
 
-    /** Detect timeout (10 minutes by default) */
-    Async {
-      concurrent.Future.firstCompletedOf(Seq(request, timeout)).map {
-        case r: SimpleResult[_] => r
-        case t: String => InternalServerError(obj("message" -> t))
+  def getEngineTemplateHtml(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      //Ok(views.html.engines.template(engine.infoid))
+      engineInfos.get(engine.infoid) map { engineInfo =>
+        if (engineInfo.paramsections.isEmpty)
+          Ok(views.html.engines.template(handleParamSections[EngineInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this engine."))), engineInfo, 1), true))
+        else
+          Ok(views.html.engines.template(handleParamSections[EngineInfo](engineInfo.paramsections, engineInfo, 1), false))
+      } getOrElse {
+        NotFound(s"EngineInfo ID ${engine.infoid} not found")
       }
+  }
+
+  def getEngineTemplateJs(appid: Int, engineid: Int) = WithEngine(appid, engineid) { (user, app, engine) =>
+    implicit request =>
+      Ok(views.js.engines.template(engine.infoid, Seq()))
+      engineInfos.get(engine.infoid) map { engineInfo =>
+        Ok(views.js.engines.template(
+          engineInfo.id,
+          engineInfo.paramsections.map(collectParams(engineInfo, _)).foldLeft(Set[Param]())(_ ++ _).toSeq))
+      } getOrElse {
+        NotFound(s"EngineInfo ID ${engine.infoid} not found")
+      }
+  }
+
+  def getAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        // get default params from algoinfo and combined with existing params
+        val params = algoInfo.params.mapValues(_.defaultvalue) ++ algo.params
+
+        Ok(toJson(Map(
+          "id" -> toJson(algo.id),
+          "appid" -> toJson(appid),
+          "engineid" -> toJson(engineid)) ++
+          (params map { case (k, v) => (k, toJson(v.toString)) })))
+      } getOrElse {
+        NotFound(toJson(Map("message" -> toJson(s"Invalid AlgoInfo ID: ${algo.infoid}"))))
+      }
+  }
+
+  def updateAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      val f = Form(tuple("infoid" -> mapOfStringToAny, "tune" -> text, "tuneMethod" -> text))
+      f.bindFromRequest.fold(
+        e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
+        bound => {
+          val (params, tune, tuneMethod) = bound
+          // NOTE: read-modify-write the original param
+          val updatedParams = algo.params ++ params ++ Map("tune" -> tune, "tuneMethod" -> tuneMethod) - "infoid"
+          val updatedAlgo = algo.copy(params = updatedParams)
+
+          if (updatedParams("tune") != "auto") {
+            algos.update(updatedAlgo)
+            Ok
+          } else {
+            // create offline eval with baseline algo
+            // TODO: get from UI
+            val defaultBaseLineAlgoType = engine.infoid match {
+              case "itemrec" => "pdio-randomrank"
+              case "itemsim" => "pdio-itemsimrandomrank"
+            }
+
+            engineInfos.get(engine.infoid).map { engineInfo =>
+              val metricinfoid = engineInfo.defaultofflineevalmetricinfoid // TODO: from UI
+              val splitterinfoid = engineInfo.defaultofflineevalsplitterinfoid // TODO: from UI
+              algoInfos.get(defaultBaseLineAlgoType).map { baseLineAlgoInfo =>
+                offlineEvalMetricInfos.get(metricinfoid).map { metricInfo =>
+                  offlineEvalSplitterInfos.get(splitterinfoid).map { splitterInfo =>
+
+                    // delete previous offlinetune stuff if the algo's offlinetuneid != None
+                    if (updatedAlgo.offlinetuneid != None) {
+                      val tuneid = updatedAlgo.offlinetuneid.get
+
+                      offlineTunes.get(tuneid) map { tune =>
+                        /** Make sure to unset offline tune's creation time to prevent scheduler from picking up */
+                        offlineTunes.update(tune.copy(createtime = None))
+
+                        // TODO: check scheduler err
+                        Helper.stopAndDeleteOfflineTuneScheduler(appid.toInt, engineid.toInt, tuneid)
+                        Future {
+                          Helper.deleteOfflineTune(tuneid, keepSettings = false)
+                        }
+                      }
+                    }
+
+                    // auto tune
+                    algos.update(updatedAlgo)
+
+                    // create an OfflineTune and paramGen
+                    val offlineTune = OfflineTune(
+                      id = -1,
+                      engineid = updatedAlgo.engineid,
+                      loops = 5, // TODO: default 5 now
+                      createtime = None, // NOTE: no createtime yet
+                      starttime = None,
+                      endtime = None
+                    )
+
+                    val tuneid = offlineTunes.insert(offlineTune)
+                    Logger.info("Create offline tune ID " + tuneid)
+
+                    paramGens.insert(ParamGen(
+                      id = -1,
+                      infoid = "random", // TODO: default random scan param gen now
+                      tuneid = tuneid,
+                      params = Map() // TODO: param for param gen
+                    ))
+
+                    // update original algo status to tuning
+                    algos.update(updatedAlgo.copy(
+                      offlinetuneid = Some(tuneid),
+                      status = "tuning"
+                    ))
+
+                    val baseLineAlgo = Algo(
+                      id = -1,
+                      engineid = updatedAlgo.engineid,
+                      name = "Default-BasedLine-Algo-for-OfflineTune-" + tuneid,
+                      infoid = baseLineAlgoInfo.id,
+                      command = "",
+                      params = baseLineAlgoInfo.params.mapValues(_.defaultvalue),
+                      settings = Map(), // no use for now
+                      modelset = false, // init value
+                      createtime = DateTime.now,
+                      updatetime = DateTime.now,
+                      status = "simeval",
+                      offlineevalid = None,
+                      offlinetuneid = Some(tuneid),
+                      loop = Some(0), // loop=0 reserved for autotune baseline
+                      paramset = None
+                    )
+
+                    val metric = OfflineEvalMetric(
+                      id = 0,
+                      infoid = metricInfo.id,
+                      evalid = 0, // will be assigned later
+                      params = metricInfo.params.mapValues(_.defaultvalue)
+                    )
+
+                    // percentage param is standard for all splitter
+                    // TODO: hardcode percentage for auto tune for now. get from UI
+                    val percentageParam = Map(
+                      "trainingPercent" -> 0.55,
+                      "validationPercent" -> 0.2,
+                      "testPercent" -> 0.2
+                    )
+
+                    val splitter = OfflineEvalSplitter(
+                      id = 0,
+                      evalid = 0, // will be assigned later
+                      name = "", // will be assigned later
+                      infoid = splitterInfo.id,
+                      settings = splitterInfo.params.mapValues(_.defaultvalue) ++ percentageParam
+                    )
+
+                    // TODO: get iterations, metric info, etc from UI, now hardcode to 3.
+                    for (i <- 1 to 3) {
+                      createOfflineEval(engine, List(baseLineAlgo), List(metric), splitter, 1, Some(tuneid))
+                    }
+
+                    // after everything has setup,
+                    // update with createtime, so scheduler can know it's ready to be picked up
+                    offlineTunes.update(offlineTune.copy(
+                      id = tuneid,
+                      createtime = Some(DateTime.now)
+                    ))
+
+                    // call sync to scheduler here
+                    WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
+
+                    Ok
+
+                  }.getOrElse(InternalServerError(Json.obj("message" -> s"OfflineEvalSplitterInfo ID ${splitterinfoid} not found.")))
+                }.getOrElse(InternalServerError(Json.obj("message" -> s"OfflineEvalMetricInfo ID ${metricinfoid} not found.")))
+              }.getOrElse(InternalServerError(Json.obj("message" -> s"AlgoInfo ID ${defaultBaseLineAlgoType} not found.")))
+            }.getOrElse(InternalServerError(Json.obj("message" -> s"EngineInfo ID ${engine.infoid} not found.")))
+          }
+        })
+  }
+
+  def getAlgoTemplateHtml(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        if (algoInfo.paramsections.isEmpty)
+          Ok(views.html.algos.template(handleParamSections[AlgoInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this algorithm."))), algoInfo, 1), true))
+        else
+          Ok(views.html.algos.template(handleParamSections[AlgoInfo](algoInfo.paramsections, algoInfo, 1), false))
+      } getOrElse {
+        NotFound(s"AlgoInfo ID ${algo.infoid} not found")
+      }
+  }
+
+  def getAlgoTemplateJs(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
+    implicit request =>
+      algoInfos.get(algo.infoid) map { algoInfo =>
+        Ok(views.js.algos.template(
+          algoInfo.id,
+          algoInfo.paramsections.map(collectParams(algoInfo, _)).foldLeft(Set[Param]())(_ ++ _).toSeq,
+          algoInfo.paramsections.map(collectParams(algoInfo, _, true)).foldLeft(Set[Param]())(_ ++ _).toSeq))
+      } getOrElse {
+        NotFound(s"AlgoInfo ID ${algo.infoid} not found")
+      }
+  }
+
+  def getMetricInfoTemplateHtml(engineinfoid: String, metricinfoid: String) = WithUser { user =>
+    implicit request =>
+      offlineEvalMetricInfos.get(metricinfoid) map { metricInfo =>
+        if (metricInfo.paramsections.isEmpty)
+          Ok(views.html.metrics.template(handleParamSections[OfflineEvalMetricInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this metric."))), metricInfo, 1), true))
+        else
+          Ok(views.html.metrics.template(handleParamSections[OfflineEvalMetricInfo](metricInfo.paramsections, metricInfo, 1), false))
+      } getOrElse {
+        NotFound(s"OfflineEvalMetricInfo ID ${metricinfoid} not found")
+      }
+  }
+
+  def getSplitterInfoTemplateHtml(engineinfoid: String, splitterinfoid: String) = WithUser { user =>
+    implicit request =>
+      offlineEvalSplitterInfos.get(splitterinfoid) map { splitterInfo =>
+        if (splitterInfo.paramsections.isEmpty)
+          Ok(views.html.splitters.template(handleParamSections[OfflineEvalSplitterInfo](Seq(ParamSection(
+            name = "Parameter Settings",
+            description = Some("No extra setting is required for this splitter."))), splitterInfo, 1), true))
+        else
+          Ok(views.html.splitters.template(handleParamSections[OfflineEvalSplitterInfo](splitterInfo.paramsections, splitterInfo, 1), false))
+      } getOrElse {
+        NotFound(s"OfflineEvalSplitterInfo ID ${splitterinfoid} not found")
+      }
+  }
+
+  def collectParams[T <: Info](info: T, paramsection: ParamSection, tuning: Boolean = false): Set[Param] = {
+    if (tuning)
+      if (paramsection.sectiontype == "tuning")
+        paramsection.params.map(_.map(info.params(_)).toSet).getOrElse(Set()) ++
+          paramsection.subsections.map(_.map(collectParams(info, _, false)).reduce(_ ++ _)).getOrElse(Set())
+      else
+        paramsection.subsections.map(_.map(collectParams(info, _, tuning)).reduce(_ ++ _)).getOrElse(Set())
+    else
+      paramsection.params.map(_.map(info.params(_)).toSet).getOrElse(Set()) ++
+        paramsection.subsections.map(_.map(collectParams(info, _, tuning)).reduce(_ ++ _)).getOrElse(Set())
+  }
+
+  def handleParam[T <: Info](param: Param, info: T, tuning: Boolean = false): String = {
+    val content = param.ui.uitype match {
+      case "selection" =>
+        uiSelection[T](info, param.id, param.name, param.description, param.ui.selections.map(_.map(s => (s.name, s.value))).get, Some(param.defaultvalue.toString))
+      case "slider" =>
+        uiSlider[T](info, param.id, param.name, param.description)
+      case _ =>
+        if (tuning)
+          uiTextPair[T](info, param.id + "Min", param.id + "Max", param.name, param.description)
+        else
+          uiText[T](info, param.id, param.name, param.description, Some(param.defaultvalue.toString))
+    }
+    content.toString
+  }
+
+  def handleParamSections[T <: Info](paramsections: Seq[ParamSection], info: T, level: Int, tuning: Boolean = false): String = {
+    paramsections map { paramsection =>
+      if (paramsection.sectiontype == "tuning")
+        views.html.algos.sectionmanualauto(
+          paramsection.name,
+          handleParamSectionContent[T](paramsection, info, level),
+          handleParamSectionContent[T](paramsection, info, level, true))
+      else if (level > 1)
+        uiSection2[T](info, paramsection.name, paramsection.description, handleParamSectionContent[T](paramsection, info, level, tuning))
+      else
+        uiSection1[T](info, paramsection.name, paramsection.description, handleParamSectionContent[T](paramsection, info, level, tuning))
+    } mkString ""
+  }
+
+  def handleParamSectionContent[T <: Info](paramsection: ParamSection, info: T, level: Int, tuning: Boolean = false) = {
+    paramsection.params.map(_.map(p => handleParam[T](info.params(p), info, tuning)).mkString).getOrElse("") +
+      paramsection.subsections.map(handleParamSections[T](_, info, level + 1, tuning)).getOrElse("")
+  }
+
+  def uiText[T <: Info](info: T, id: String, name: String, description: Option[String], defaultValue: Option[String] = None) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.text(id, name, description)
+      case _: EngineInfo =>
+        views.html.engines.text(id, name, description)
+      case _: OfflineEvalMetricInfo =>
+        views.html.metrics.text(id, name, description, defaultValue)
+      case _: OfflineEvalSplitterInfo =>
+        views.html.splitters.text(id, name, description, defaultValue)
+    }
+  }
+
+  def uiTextPair[T <: Info](info: T, id1: String, id2: String, name: String, description: Option[String]) = {
+    views.html.algos.textpair(id1, id2, name, description)
+  }
+
+  def uiSlider[T <: Info](info: T, id: String, name: String, description: Option[String]) = {
+    views.html.engines.slider(id, name, description)
+  }
+
+  def uiSelection[T <: Info](info: T, id: String, name: String, description: Option[String], selections: Seq[(String, String)], defaultValue: Option[String] = None) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.selection(id, name, description, selections)
+      case _: EngineInfo =>
+        views.html.engines.selection(id, name, description, selections)
+      case _: OfflineEvalMetricInfo =>
+        views.html.metrics.selection(id, name, description, selections, defaultValue)
+      case _: OfflineEvalSplitterInfo =>
+        views.html.splitters.selection(id, name, description, selections, defaultValue)
+    }
+  }
+
+  def uiSection1[T <: Info](info: T, name: String, description: Option[String], content: String) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.section1(name, description, content)
+      case _: EngineInfo =>
+        views.html.engines.section1(name, description, content)
+      case _: OfflineEvalMetricInfo =>
+        views.html.metrics.section1(name, description, content)
+      case _: OfflineEvalSplitterInfo =>
+        views.html.splitters.section1(name, description, content)
+    }
+  }
+
+  def uiSection2[T <: Info](info: T, name: String, description: Option[String], content: String) = {
+    info match {
+      case _: AlgoInfo =>
+        views.html.algos.section2(name, description, content)
+      case _: EngineInfo =>
+        views.html.engines.section2(name, description, content)
+      // OfflineEvalMetricInfo doesn't support section2
+      // OfflineEvalSplitterInfo doesn't support section2
     }
   }
 }
