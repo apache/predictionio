@@ -5,19 +5,19 @@
             "description": "PredictionIO version"
         },
         "jars.pdioItemrecAlgo": {
-            "value": "predictionio-process-itemrec-algorithms-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.pdioItemsimAlgo": {
-            "value": "predictionio-process-itemsim-algorithms-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.mahoutItemrecAlgo": {
             "value": "predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.pdioItemrecEval": {
-            "value": "predictionio-process-itemrec-evaluations-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.pdioItemsimEval": {
-            "value": "predictionio-process-itemsim-evaluations-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.pdioItemrecTopK": {
             "value": "predictionio-process-itemrec-evaluations-topkitems-assembly-0.7.0-SNAPSHOT.jar"
@@ -26,7 +26,7 @@
             "value": "predictionio-process-itemsim-evaluations-topkitems-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.pdioCommonsEval": {
-            "value": "predictionio-process-commons-evaluations-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
         },
         "jars.pdioCommonsParamGen": {
             "value": "predictionio-process-commons-evaluations-paramgen-assembly-0.7.0-SNAPSHOT.jar"

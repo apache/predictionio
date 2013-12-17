@@ -30,16 +30,11 @@ parallelExecution in (ThisBuild, Test) := false
 lazy val root = project.in(file(".")).aggregate(
   commons,
   output,
-  processCommonsHadoopScalding,
-  processEnginesCommonsEvalHadoopScalding,
+  processHadoopScalding,
   processEnginesCommonsEvalScalaParamGen,
   processEnginesCommonsEvalScalaU2ITrainingTestSplit,
-  processEnginesItemRecAlgoHadoopScalding,
   processEnginesItemRecAlgoScalaMahout,
-  processEnginesItemRecEvalHadoopScalding,
   processEnginesItemRecEvalScalaTopKItems,
-  processEnginesItemSimAlgoHadoopScalding,
-  processEnginesItemSimEvalHadoopScalding,
   processEnginesItemSimEvalScalaTopKItems,
   toolsConncheck,
   toolsSettingsInit,
@@ -53,6 +48,23 @@ lazy val commons = project in file("commons") settings(scalariformSettings: _*)
 lazy val output = project.in(file("output")).dependsOn(commons).settings(scalariformSettings: _*)
 
 // Process Assemblies
+
+lazy val processHadoopScalding = project
+  .in(file("process"))
+  .aggregate(
+    processCommonsHadoopScalding,
+    processEnginesCommonsEvalHadoopScalding,
+    processEnginesItemRecAlgoHadoopScalding,
+    processEnginesItemRecEvalHadoopScalding,
+    processEnginesItemSimAlgoHadoopScalding,
+    processEnginesItemSimEvalHadoopScalding)
+  .dependsOn(
+    processCommonsHadoopScalding,
+    processEnginesCommonsEvalHadoopScalding,
+    processEnginesItemRecAlgoHadoopScalding,
+    processEnginesItemRecEvalHadoopScalding,
+    processEnginesItemSimAlgoHadoopScalding,
+    processEnginesItemSimEvalHadoopScalding)
 
 lazy val processCommonsHadoopScalding = project
   .in(file("process/commons/hadoop/scalding")).dependsOn(commons)

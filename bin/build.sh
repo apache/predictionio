@@ -33,8 +33,8 @@ BASE_TARGETS="update compile commons/publish output/publish"
 if test "$SKIP_PROCESS" = "1" ; then
     echo "Skip building process assemblies."
 else
-    echo "+ Assemble Process Commons Evaluations Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalHadoopScalding/assembly"
+    echo "+ Assemble Process Hadoop Scalding"
+    BASE_TARGETS="$BASE_TARGETS processHadoopScalding/assembly"
 
     echo "+ Assemble Process Commons Evaluations Scala Parameter Generator"
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaParamGen/assembly"
@@ -42,23 +42,11 @@ else
     echo "+ Assemble Process Commons Evaluations Scala U2I Training-Test Splitter"
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ITrainingTestSplit/assembly"
 
-    echo "+ Assemble Process ItemRec Algorithms Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoHadoopScalding/assembly"
-
     echo "+ Assemble Process ItemRec Algorithms Scala Mahout"
     BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaMahout/assembly"
 
-    echo "+ Assemble Process ItemRec Evaluations Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalHadoopScalding/assembly"
-
     echo "+ Assemble Process ItemRec Evaluations Scala Top-k Items Collector"
     BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaTopKItems/assembly"
-
-    echo "+ Assemble Process ItemSim Algorithms Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoHadoopScalding/assembly"
-
-    echo "+ Assemble Process ItemSim Evaluations Hadoop Scalding"
-    BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalHadoopScalding/assembly"
 
     echo "+ Assemble Process ItemSim Evaluations Scala Top-k Items Collector"
     BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalScalaTopKItems/assembly"
