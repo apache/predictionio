@@ -47,7 +47,7 @@ files = [
     'process/engines/itemsim/algorithms/hadoop/scalding/build.sbt',
     'process/engines/itemsim/evaluations/hadoop/scalding/build.sbt',
     'process/engines/itemsim/evaluations/scala/*/build.sbt',
-    'servers/*/project/Build.scala',
+    'servers/*/build.sbt',
     'servers/scheduler/conf/application.conf',
     'tools/*/build.sbt',
     'tools/migration/*/*/build.sbt',
