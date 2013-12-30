@@ -212,27 +212,6 @@
                         "sliderstep": 1
                     }
                 },
-                "unseenonly": {
-                    "name": "",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "boolean"
-                    },
-                    "defaultvalue": false,
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Recommend Unseen Only",
-                                "value": "true"
-                            },
-                            {
-                                "name": "Recommend Any Items",
-                                "value": "false"
-                            }
-                        ]
-                    }
-                },
                 "goal": {
                     "name": "Recommendation Goal",
                     "description": "Goal to be maximized",
@@ -271,7 +250,7 @@
                     }
                 },
                 "numSimilarItems": {
-                    "name": "Number of Similar Items",
+                    "name": "",
                     "description": "Number of similar items to be generated for each item.",
                     "constraint": {
                         "paramtype": "integer"
@@ -292,14 +271,6 @@
                         "serendipity"
                     ],
                     "subsections": [
-                        {
-                            "name": "Unseen Items Only",
-                            "sectiontype": "normal",
-                            "description": "Should the system recommend items that users have seen before?",
-                            "params": [
-                                "unseenonly"
-                            ]
-                        },
                         {
                             "name": "Number of Similar Items",
                             "sectiontype": "normal",
