@@ -7,8 +7,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of ItemSimScores. */
-class MongoItemSimScores(db: MongoDB) extends ItemSimScores {
+class MongoItemSimScores(db: MongoDB) extends ItemSimScores with MongoModelData {
   private val itemSimScoreColl = db("itemSimScores")
+  val mongodb = db
 
   /** Indices and hints. */
   val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
