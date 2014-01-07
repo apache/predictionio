@@ -175,6 +175,12 @@ class Config {
   /** The database password that stores PredictionIO modeldata. */
   val modeldataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.db.password")) } catch { case _: Throwable => None }
 
+  /** MongoDB-specific. Enable sharding on modeldata collections. */
+  val modeldataDbSharding: Option[Boolean] = try { Some(config.getBoolean("io.prediction.commons.modeldata.db.sharding")) } catch { case _: Throwable => None }
+
+  /** MongoDB-specific. Shard keys for sharding modeldata collections. */
+  val modeldataDbShardKeys: Option[Seq[String]] = try { Some(config.getStringList("io.prediction.commons.modeldata.db.shardkeys").toSeq) } catch { case _: Throwable => None }
+
   /** The database type that stores PredictionIO modeldata. */
   val modeldataTrainingDbType: String = config.getString("io.prediction.commons.modeldata.training.db.type")
 
