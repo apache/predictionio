@@ -1,5 +1,6 @@
 package io.prediction.commons.modeldata
 
+import io.prediction.commons.Config
 import io.prediction.commons.settings.{ Algo, App }
 
 import org.specs2._
@@ -30,7 +31,7 @@ class ItemRecScoresSpec extends Specification {
 
   val mongoDbName = "predictionio_modeldata_mongoitemrecscore_test"
 
-  def newMongoItemRecScores = new mongodb.MongoItemRecScores(MongoConnection()(mongoDbName))
+  def newMongoItemRecScores = new mongodb.MongoItemRecScores(new Config, MongoConnection()(mongoDbName))
 
   def insert(itemRecScores: ItemRecScores) = {
     implicit val app = App(

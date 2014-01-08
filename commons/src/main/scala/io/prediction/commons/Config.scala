@@ -176,7 +176,7 @@ class Config {
   val modeldataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.modeldata.db.password")) } catch { case _: Throwable => None }
 
   /** MongoDB-specific. Enable sharding on modeldata collections. */
-  val modeldataDbSharding: Option[Boolean] = try { Some(config.getBoolean("io.prediction.commons.modeldata.db.sharding")) } catch { case _: Throwable => None }
+  val modeldataDbSharding: Boolean = try { config.getBoolean("io.prediction.commons.modeldata.db.sharding") } catch { case _: Throwable => false }
 
   /** MongoDB-specific. Shard keys for sharding modeldata collections. */
   val modeldataDbShardKeys: Option[Seq[String]] = try { Some(config.getStringList("io.prediction.commons.modeldata.db.shardkeys").toSeq) } catch { case _: Throwable => None }
@@ -634,11 +634,28 @@ class Config {
     }
   }
 
+  def getModeldata(engineinfoid: String): modeldata.ModelData = {
+    modeldataDbType match {
+      case "mongodb" => {
+        val thisObj = this
+        engineinfoid match {
+          case "itemrec" => getModeldataItemRecScores
+          case "itemsim" => getModeldataItemSimScores
+          case _ => new modeldata.mongodb.MongoModelData {
+            val config = thisObj
+            val mongodb = modeldataMongoDb.get
+          }
+        }
+      }
+      case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataDbType)
+    }
+  }
+
   /** Obtains an ItemRecScores object with configured backend type. */
   def getModeldataItemRecScores(): modeldata.ItemRecScores = {
     modeldataDbType match {
       case "mongodb" => {
-        new modeldata.mongodb.MongoItemRecScores(modeldataMongoDb.get)
+        new modeldata.mongodb.MongoItemRecScores(this, modeldataMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataDbType)
     }
@@ -648,7 +665,7 @@ class Config {
   def getModeldataItemSimScores(): modeldata.ItemSimScores = {
     modeldataDbType match {
       case "mongodb" => {
-        new modeldata.mongodb.MongoItemSimScores(modeldataMongoDb.get)
+        new modeldata.mongodb.MongoItemSimScores(this, modeldataMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataDbType)
     }
@@ -658,7 +675,7 @@ class Config {
   def getModeldataTrainingItemRecScores(): modeldata.ItemRecScores = {
     modeldataDbType match {
       case "mongodb" => {
-        new modeldata.mongodb.MongoItemRecScores(modeldataTrainingMongoDb.get)
+        new modeldata.mongodb.MongoItemRecScores(this, modeldataTrainingMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataTrainingDbType)
     }
@@ -668,7 +685,7 @@ class Config {
   def getModeldataTrainingItemSimScores(): modeldata.ItemSimScores = {
     modeldataDbType match {
       case "mongodb" => {
-        new modeldata.mongodb.MongoItemSimScores(modeldataTrainingMongoDb.get)
+        new modeldata.mongodb.MongoItemSimScores(this, modeldataTrainingMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataTrainingDbType)
     }

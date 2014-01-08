@@ -1,5 +1,6 @@
 package io.prediction.commons.modeldata.mongodb
 
+import io.prediction.commons.Config
 import io.prediction.commons.MongoUtils._
 import io.prediction.commons.modeldata.{ ItemSimScore, ItemSimScores }
 import io.prediction.commons.settings.{ Algo, App, OfflineEval }
@@ -7,8 +8,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of ItemSimScores. */
-class MongoItemSimScores(db: MongoDB) extends ItemSimScores with MongoModelData {
+class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with MongoModelData {
   private val itemSimScoreColl = db("itemSimScores")
+  val config = cfg
   val mongodb = db
 
   /** Indices and hints. */

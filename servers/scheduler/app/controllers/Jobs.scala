@@ -205,8 +205,11 @@ class AlgoJob extends InterruptableJob {
         apps.get(engine.appid) map { app =>
           algoInfos.get(algo.infoid) map { info =>
             info.batchcommands map { batchcommands =>
-              Logger.info(s"${logPrefix}Current model set for is ${algo.modelset}")
-              Logger.info(s"${logPrefix}Launching algo job for model set ${algo.modelset}")
+              Logger.info(s"${logPrefix}Current model set is ${algo.modelset}")
+              Logger.info(s"${logPrefix}Running database specific before-logic for model set ${!algo.modelset}")
+              val modelData = config.getModeldata(engine.infoid)
+              modelData.before(algo.id, !algo.modelset)
+              Logger.info(s"${logPrefix}Launching algo job for model set ${!algo.modelset}")
               val commands = batchcommands map { c => Jobs.setSharedAttributes(new StringTemplate(c), config, app, engine, Some(algo), None, None, Some(collection.immutable.Map("modelset" -> !algo.modelset))).toString }
 
               commands map { _.trim } foreach { c =>
@@ -233,18 +236,10 @@ class AlgoJob extends InterruptableJob {
               } else if (exitCode == 0) {
                 Logger.info(s"${logPrefix}Flipping model set flag to ${!algo.modelset}")
                 algos.update(algo.copy(modelset = !algo.modelset))
-                engineinfoid match {
-                  case "itemrec" => {
-                    Logger.info(s"${logPrefix}Deleting data of model set ${algo.modelset}")
-                    itemRecScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
-                    Logger.info(s"${logPrefix}Deletion completed")
-                  }
-                  case "itemsim" => {
-                    Logger.info(s"${logPrefix}Deleting data of model set ${algo.modelset}")
-                    itemSimScores.deleteByAlgoidAndModelset(algo.id, algo.modelset)
-                    Logger.info(s"${logPrefix}Deletion completed")
-                  }
-                }
+                Logger.info(s"${logPrefix}Running database specific deletion for model set ${algo.modelset}")
+                modelData.delete(algo.id, algo.modelset)
+                Logger.info(s"${logPrefix}Running database specific after-logic for model set ${!algo.modelset}")
+                modelData.after(algo.id, !algo.modelset)
                 Logger.info(s"${logPrefix}Job completed")
               } else {
                 Logger.warn(s"${logPrefix}Not flipping model set flag because the algo job returned non-zero exit code")

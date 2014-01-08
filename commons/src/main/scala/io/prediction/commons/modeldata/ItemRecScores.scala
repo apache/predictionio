@@ -26,7 +26,7 @@ case class ItemRecScore(
   id: Option[Any] = None)
 
 /** Base trait for implementations that interact with itemrec scores in the backend data store. */
-trait ItemRecScores {
+trait ItemRecScores extends ModelData {
   /** Insert an ItemRecScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemRecScore: ItemRecScore): ItemRecScore
 

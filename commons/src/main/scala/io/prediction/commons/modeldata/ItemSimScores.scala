@@ -26,7 +26,7 @@ case class ItemSimScore(
   id: Option[Any] = None)
 
 /** Base trait for implementations that interact with itemsim scores in the backend data store. */
-trait ItemSimScores {
+trait ItemSimScores extends ModelData {
   /** Insert an ItemSimScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemSimScore: ItemSimScore): ItemSimScore
 

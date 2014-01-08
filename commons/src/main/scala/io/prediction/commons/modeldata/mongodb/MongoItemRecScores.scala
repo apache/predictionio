@@ -1,5 +1,6 @@
 package io.prediction.commons.modeldata.mongodb
 
+import io.prediction.commons.Config
 import io.prediction.commons.MongoUtils._
 import io.prediction.commons.modeldata.{ ItemRecScore, ItemRecScores }
 import io.prediction.commons.settings.{ Algo, App, OfflineEval }
@@ -7,19 +8,25 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of ItemRecScores. */
-class MongoItemRecScores(db: MongoDB) extends ItemRecScores with MongoModelData {
-  private val itemRecScoreColl = db("itemRecScores")
+class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with MongoModelData {
+  //private val itemRecScoreColl = collectionName(algoid, modelset)
+  val config = cfg
   val mongodb = db
 
   /** Indices and hints. */
   val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
-  itemRecScoreColl.ensureIndex(scoreIdIndex)
-  itemRecScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
+  //itemRecScoreColl.ensureIndex(scoreIdIndex)
+  //itemRecScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
 
   def getTopN(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
+    val itemRecScoreColl = db(collectionName(algo.id, modelset))
     val query = MongoDBObject("algoid" -> algo.id, "uid" -> idWithAppid(app.id, uid), "modelset" -> modelset) ++
       (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
+
+    itemRecScoreColl.ensureIndex(scoreIdIndex)
+    itemRecScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
+
     after map { irs =>
       new MongoItemRecScoreIterator(
         itemRecScoreColl.find(query).
@@ -45,20 +52,28 @@ class MongoItemRecScores(db: MongoDB) extends ItemRecScores with MongoModelData 
       "algoid" -> itemrecscore.algoid,
       "modelset" -> itemrecscore.modelset
     )
+    val itemRecScoreColl = db(collectionName(itemrecscore.algoid, itemrecscore.modelset))
     itemRecScoreColl.insert(itemRecObj)
     itemrecscore.copy(id = Some(id))
   }
 
   def deleteByAlgoid(algoid: Int) = {
-    itemRecScoreColl.remove(MongoDBObject("algoid" -> algoid))
+    db(collectionName(algoid, true)).drop()
+    db(collectionName(algoid, false)).drop()
   }
 
   def deleteByAlgoidAndModelset(algoid: Int, modelset: Boolean) = {
-    itemRecScoreColl.remove(MongoDBObject("algoid" -> algoid, "modelset" -> modelset))
+    db(collectionName(algoid, modelset)).drop()
   }
 
   def existByAlgo(algo: Algo) = {
-    itemRecScoreColl.findOne(MongoDBObject("algoid" -> algo.id, "modelset" -> algo.modelset)) map { _ => true } getOrElse false
+    db.collectionExists(collectionName(algo.id, algo.modelset))
+  }
+
+  override def after(algoid: Int, modelset: Boolean) = {
+    val coll = db(collectionName(algoid, modelset))
+    coll.ensureIndex(scoreIdIndex)
+    coll.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
   }
 
   /** Private mapping function to map DB Object to ItemRecScore object */
