@@ -5,11 +5,11 @@ import com.twitter.scalding._
 import cascading.flow.FlowDef
 import cascading.tuple.Tuple
 
-import io.prediction.commons.scalding.appdata.mongodb.{MongoUsersSource, MongoItemsSource, MongoU2iActionsSource}
-import io.prediction.commons.scalding.appdata.file.{FileUsersSource, FileItemsSource, FileU2iActionsSource}
+import io.prediction.commons.scalding.appdata.mongodb.{ MongoUsersSource, MongoItemsSource, MongoU2iActionsSource }
+import io.prediction.commons.scalding.appdata.file.{ FileUsersSource, FileItemsSource, FileU2iActionsSource }
 
 object Users {
-  
+
   /**
    * dbName: used as file path in dbType=="file"
    */
@@ -29,9 +29,9 @@ object Users {
   }
 
 }
-  
+
 object Items {
-  
+
   /**
    * dbName: used as file path in dbType=="file"
    */
@@ -53,7 +53,7 @@ object Items {
 }
 
 object U2iActions {
-  
+
   /**
    * dbName: used as file path in dbType=="file"
    */
@@ -75,5 +75,5 @@ object U2iActions {
       }
     }
   }
-  
+
 }

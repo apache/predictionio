@@ -11,11 +11,11 @@ import cascading.flow.FlowDef
 // can get the same type of pipe returned regardless of the actual DB type.
 
 trait ItemsSource {
-  
+
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
-  
+
   def getSource: Source
-  
+
   /**
    * read data and return Pipe with field name of the Symbol parameters and expected data type
    * iidField: Symbol of iid(String)
@@ -29,7 +29,7 @@ trait ItemsSource {
   def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
     throw new RuntimeException("ItemsSource readStarttime is not implemented.")
   }
-  
+
   /**
    * return Item Obj
    */
@@ -44,7 +44,7 @@ trait ItemsSource {
    * appid: Appid Int
    */
   def writeData(iidField: Symbol, itypesField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe
-  
+
   /**
    * write Item Obj
    */
@@ -59,10 +59,10 @@ object ItemsSource {
    *  ("table field name" -> Symbol)
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
-      ("id" -> 'id),
-      ("appid" -> 'appid),
-      ("ct" -> 'ct),
-      ("itypes" -> 'itypes),
-      ("starttime" -> 'starttime))
-      
+    ("id" -> 'id),
+    ("appid" -> 'appid),
+    ("ct" -> 'ct),
+    ("itypes" -> 'itypes),
+    ("starttime" -> 'starttime))
+
 }
