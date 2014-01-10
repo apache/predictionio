@@ -4,9 +4,9 @@ import org.specs2.mutable._
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Items, Users}
-import io.prediction.commons.scalding.modeldata.{ItemRecScores}
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.scalding.appdata.{ Items, Users }
+import io.prediction.commons.scalding.modeldata.{ ItemRecScores }
+import io.prediction.commons.filepath.{ AlgoFile }
 
 class LatestRankTest extends Specification with TupleConversions {
 
@@ -15,8 +15,7 @@ class LatestRankTest extends Specification with TupleConversions {
     numRecommendations: Int,
     items: List[(String, String, String, String)],
     users: List[(String, String)],
-    itemRecScores: List[(String, String, Double, String, Int, Boolean)]
-    ) = {
+    itemRecScores: List[(String, String, Double, String, Int, Boolean)]) = {
 
     val training_dbType = "file"
     val training_dbName = "testpath/"
@@ -42,11 +41,11 @@ class LatestRankTest extends Specification with TupleConversions {
       .arg("itypes", itypes)
       .arg("numRecommendations", numRecommendations.toString)
       .arg("modelSet", modelSet.toString)
-      .source(Items(appId=appid, itypes=Some(itypes), 
-        dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, items)
-      .source(Users(appId=appid,
-        dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, users)
-      .sink[(String, String, Double, String, Int, Boolean)](ItemRecScores(dbType=modeldata_dbType, dbName=modeldata_dbName, dbHost=None, dbPort=None).getSource) { outputBuffer =>
+      .source(Items(appId = appid, itypes = Some(itypes),
+        dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, items)
+      .source(Users(appId = appid,
+        dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, users)
+      .sink[(String, String, Double, String, Int, Boolean)](ItemRecScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None).getSource) { outputBuffer =>
 
         "correctly write ItemRecScores" in {
           outputBuffer.toList must containTheSameElementsAs(itemRecScores)

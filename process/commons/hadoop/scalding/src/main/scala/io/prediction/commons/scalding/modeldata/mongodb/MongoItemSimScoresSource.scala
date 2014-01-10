@@ -16,9 +16,9 @@ import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.modeldata.ItemSimScoresSource
 import io.prediction.commons.scalding.modeldata.ItemSimScoresSource.FIELD_SYMBOLS
 
-class MongoItemSimScoresSource(db: String, host: String, port: Int) extends MongoSource(
+class MongoItemSimScoresSource(db: String, host: String, port: Int, algoid: Int, modelset: Boolean) extends MongoSource(
   db = db,
-  coll = "itemSimScores",
+  coll = s"algo_${algoid}_${modelset}",
   cols = {
     val itemSimScoreCols = new ArrayList[String]()
 

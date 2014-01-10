@@ -77,7 +77,7 @@ class ModelConstructor(args: Args) extends Job(args) {
    */
   val p = score.joinWithSmaller('simiid -> 'iidx, items) // get items info for each simiid
     
-  val src = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg)
+  val src = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg, algoid=algoidArg, modelset=modelSetArg)
   
   p.then( src.writeData('iid, 'simiid, 'score, 'itypes, algoidArg, modelSetArg) _ )
   

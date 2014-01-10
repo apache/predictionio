@@ -9,19 +9,22 @@ import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of ItemSimScores. */
 class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with MongoModelData {
-  private val itemSimScoreColl = db("itemSimScores")
   val config = cfg
   val mongodb = db
 
   /** Indices and hints. */
   val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
-  itemSimScoreColl.ensureIndex(scoreIdIndex)
-  itemSimScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "iid" -> 1, "modelset" -> 1))
+  val queryIndex = MongoDBObject("algoid" -> 1, "iid" -> 1, "modelset" -> 1)
 
   def getTopN(iid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemSimScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
+    val itemSimScoreColl = db(collectionName(algo.id, modelset))
     val query = MongoDBObject("algoid" -> algo.id, "iid" -> idWithAppid(app.id, iid), "modelset" -> modelset) ++
       (itypes map { loi => MongoDBObject("simitypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
+
+    itemSimScoreColl.ensureIndex(scoreIdIndex)
+    itemSimScoreColl.ensureIndex(queryIndex)
+
     after map { iss =>
       new MongoItemSimScoreIterator(
         itemSimScoreColl.find(query).
@@ -47,20 +50,27 @@ class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with Mo
       "algoid" -> itemSimScore.algoid,
       "modelset" -> itemSimScore.modelset
     )
-    itemSimScoreColl.insert(itemSimObj)
+    db(collectionName(itemSimScore.algoid, itemSimScore.modelset)).insert(itemSimObj)
     itemSimScore.copy(id = Some(id))
   }
 
   def deleteByAlgoid(algoid: Int) = {
-    itemSimScoreColl.remove(MongoDBObject("algoid" -> algoid))
+    db(collectionName(algoid, true)).drop()
+    db(collectionName(algoid, false)).drop()
   }
 
   def deleteByAlgoidAndModelset(algoid: Int, modelset: Boolean) = {
-    itemSimScoreColl.remove(MongoDBObject("algoid" -> algoid, "modelset" -> modelset))
+    db(collectionName(algoid, modelset)).drop()
   }
 
   def existByAlgo(algo: Algo) = {
-    itemSimScoreColl.findOne(MongoDBObject("algoid" -> algo.id, "modelset" -> algo.modelset)) map { _ => true } getOrElse false
+    db.collectionExists(collectionName(algo.id, algo.modelset))
+  }
+
+  override def after(algoid: Int, modelset: Boolean) = {
+    val coll = db(collectionName(algoid, modelset))
+    coll.ensureIndex(scoreIdIndex)
+    coll.ensureIndex(queryIndex)
   }
 
   /** Private mapping function to map DB Object to ItemSimScore object */

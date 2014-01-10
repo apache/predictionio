@@ -11,7 +11,7 @@ class ReadWrite(args: Args) extends Job(args) {
    * test MongoItemSimScoresSource
    * read from Tsv and write to DB
    */
-  val itemSimSink = new MongoItemSimScoresSource("modeldata", "127.0.0.1", 27017)
+  val itemSimSink = new MongoItemSimScoresSource("modeldata", "127.0.0.1", 27017, 2, true)
 
   Tsv("itemSimScores.tsv").read
     .mapTo((0, 1, 2, 3) -> ('iid, 'simiid, 'score, 'simitypes)) { fields: (String, String, Double, String) =>

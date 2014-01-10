@@ -4,9 +4,9 @@ import org.specs2.mutable._
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Items, Users}
-import io.prediction.commons.scalding.modeldata.{ItemRecScores}
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.scalding.appdata.{ Items, Users }
+import io.prediction.commons.scalding.modeldata.{ ItemRecScores }
+import io.prediction.commons.filepath.{ AlgoFile }
 
 class RandomRankTest extends Specification with TupleConversions {
 
@@ -15,8 +15,7 @@ class RandomRankTest extends Specification with TupleConversions {
     numRecommendations: Int,
     items: List[(String, String)],
     users: List[(String, String)],
-    itemRecScores: List[(String, String, Double, String, Int, Boolean)]
-    ) = {
+    itemRecScores: List[(String, String, Double, String, Int, Boolean)]) = {
 
     val training_dbType = "file"
     val training_dbName = "testpath/"
@@ -42,10 +41,10 @@ class RandomRankTest extends Specification with TupleConversions {
       .arg("itypes", itypes)
       .arg("numRecommendations", numRecommendations.toString)
       .arg("modelSet", modelSet.toString)
-      .source(Items(appId=appid, itypes=Some(itypes), 
-        dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, items)
-      .source(Users(appId=appid,
-        dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, users)
+      .source(Items(appId = appid, itypes = Some(itypes),
+        dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, items)
+      .source(Users(appId = appid,
+        dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, users)
       /*
       .sink[(String, String)](Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "itemRecScores.tsv"))) { outputBuffer =>
 
@@ -61,14 +60,14 @@ class RandomRankTest extends Specification with TupleConversions {
         }
 
       }*/
-      .sink[(String, String, Double, String, Int, Boolean)](ItemRecScores(dbType=modeldata_dbType, dbName=modeldata_dbName, dbHost=None, dbPort=None).getSource) { outputBuffer =>
+      .sink[(String, String, Double, String, Int, Boolean)](ItemRecScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None).getSource) { outputBuffer =>
 
         def takeOutScores(d: List[(String, String, Double, String, Int, Boolean)]) = {
-          d map {x => (x._1, x._2, x._4, x._5, x._6) }
+          d map { x => (x._1, x._2, x._4, x._5, x._6) }
         }
 
         def getScoresOnly(d: List[(String, String, Double, String, Int, Boolean)]) = {
-          d map {x => x._3}
+          d map { x => x._3 }
         }
 
         "generate correct user and item pairs in modeldata" in {
@@ -147,5 +146,5 @@ class RandomRankTest extends Specification with TupleConversions {
   }
 
   // TODO: test with smaller number of numRecommendations (but can't know expected result beacause the score is random...)
-  
+
 }

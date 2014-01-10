@@ -9,14 +9,12 @@ import com.mongodb.casbah.Imports._
 
 /** MongoDB implementation of ItemRecScores. */
 class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with MongoModelData {
-  //private val itemRecScoreColl = collectionName(algoid, modelset)
   val config = cfg
   val mongodb = db
 
   /** Indices and hints. */
   val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
-  //itemRecScoreColl.ensureIndex(scoreIdIndex)
-  //itemRecScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
+  val queryIndex = MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1)
 
   def getTopN(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
@@ -25,7 +23,7 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
       (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
 
     itemRecScoreColl.ensureIndex(scoreIdIndex)
-    itemRecScoreColl.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
+    itemRecScoreColl.ensureIndex(queryIndex)
 
     after map { irs =>
       new MongoItemRecScoreIterator(
@@ -52,8 +50,7 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
       "algoid" -> itemrecscore.algoid,
       "modelset" -> itemrecscore.modelset
     )
-    val itemRecScoreColl = db(collectionName(itemrecscore.algoid, itemrecscore.modelset))
-    itemRecScoreColl.insert(itemRecObj)
+    db(collectionName(itemrecscore.algoid, itemrecscore.modelset)).insert(itemRecObj)
     itemrecscore.copy(id = Some(id))
   }
 
@@ -73,7 +70,7 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
   override def after(algoid: Int, modelset: Boolean) = {
     val coll = db(collectionName(algoid, modelset))
     coll.ensureIndex(scoreIdIndex)
-    coll.ensureIndex(MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1))
+    coll.ensureIndex(queryIndex)
   }
 
   /** Private mapping function to map DB Object to ItemRecScore object */

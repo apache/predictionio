@@ -76,7 +76,7 @@ class ModelConstructor(args: Args) extends Job(args) {
    * sink
    */
 
-  val ItemSimScoresSink = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg)
+  val ItemSimScoresSink = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg, algoid=algoidArg, modelset=modelSetArg)
 
   /**
    * computation

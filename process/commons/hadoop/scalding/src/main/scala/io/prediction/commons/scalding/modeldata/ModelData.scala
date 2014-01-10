@@ -8,14 +8,14 @@ object ItemSimScores {
   /**
    * dbName: used as file path in dbType=="file"
    */
-  def apply(dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int]): ItemSimScoresSource = {
+  def apply(dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int], algoid: Int, modelset: Boolean): ItemSimScoresSource = {
     dbType match {
       case "file" => {
         new FileItemSimScoresSource(dbName)
       }
       case "mongodb" => {
         require(((dbHost != None) && (dbPort != None)), "Please specify host and port number for mongodb.")
-        new MongoItemSimScoresSource(dbName, dbHost.get, dbPort.get)
+        new MongoItemSimScoresSource(dbName, dbHost.get, dbPort.get, algoid, modelset)
       }
       case _ => {
         throw new RuntimeException("Invalid ItemSimScores database type: " + dbType)

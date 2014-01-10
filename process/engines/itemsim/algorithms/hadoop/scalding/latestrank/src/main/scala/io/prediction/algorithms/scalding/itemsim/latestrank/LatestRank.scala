@@ -105,7 +105,9 @@ class LatestRank(args: Args) extends Job(args) {
     dbType=modeldata_dbTypeArg,
     dbName=modeldata_dbNameArg,
     dbHost=modeldata_dbHostArg,
-    dbPort=modeldata_dbPortArg)
+    dbPort=modeldata_dbPortArg,
+    algoid=algoidArg,
+    modelset=modelSetArg)
 
   /**
    * computation
