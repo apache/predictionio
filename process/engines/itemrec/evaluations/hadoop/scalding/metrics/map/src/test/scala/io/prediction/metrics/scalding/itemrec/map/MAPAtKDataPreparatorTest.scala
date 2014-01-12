@@ -6,7 +6,6 @@ import com.twitter.scalding._
 
 import io.prediction.commons.filepath.OfflineMetricFile
 import io.prediction.commons.scalding.appdata.U2iActions
-import io.prediction.commons.scalding.modeldata.ItemRecScores
 
 class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
   
@@ -19,7 +18,6 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
   
   def test(params: Map[String, String], 
       testU2i: List[(String, String, String, String, String)],
-      itemRecScores: List[(String, String, String, String)],
       relevantItems: List[(String, String)], // List(("u0", "i0,i1,i2"), ("u1", "i0,i1,i2"))
       topKItems: List[(String, String)]) = {
     
@@ -56,7 +54,6 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
       .arg("goalParam", params("goalParam"))
       .arg("kParam", params("kParam"))
       .source(U2iActions(appId=5, dbType=test_dbType, dbName=test_dbName, dbHost=test_dbHost, dbPort=test_dbPort).getSource, testU2i)
-      .source(ItemRecScores(dbType=modeldata_dbType, dbName=modeldata_dbName, dbHost=modeldata_dbHost, dbPort=modeldata_dbPort).getSource, itemRecScores)
       .sink[(String, String)](Tsv(OfflineMetricFile(hdfsRoot, 2, 4, 5, 6, 8, "relevantItems.tsv"))) { outputBuffer =>
         
         def sortItems(t: List[(String, String)]): List[(String, List[String])] = {
@@ -110,27 +107,7 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
       (View, "u2", "i3", "123458", "0"),
       (Conversion, "u2", "i4", "123451", "0"),
       (Conversion, "u2", "i5", "123452", "0"))
-      
-    val itemRecScores = List(
-      
-      ("u0", "i0", "1.0", "t1"),
-      ("u0", "i1", "1.1", "t1"),
-      ("u0", "i2", "1.2", "t1"),
-      ("u0", "i3", "1.3", "t1"),
-      ("u0", "i4", "1.4", "t1"),
-      ("u0", "i5", "1.5", "t1"),
-      ("u0", "i6", "1.6", "t1"),
-      ("u0", "i7", "1.7", "t1"),
-      ("u0", "i8", "1.8", "t1"),
-      ("u0", "i9", "1.9", "t1"),
-      
-      ("u1", "i0", "2.0", "t1"),
-      ("u1", "i1", "1.9", "t1"),
-      ("u1", "i2", "1.8", "t1"),
-      ("u1", "i3", "1.7", "t1"),
-      ("u1", "i4", "1.6", "t1"),
-      ("u1", "i5", "1.5", "t1"))
-    
+
     "itemrec.map MAPAtKDataPreparator with goal = view" should {
       val params = Map("goalParam" -> "view", "kParam" -> "4")
       val relevantItems = List(
@@ -142,7 +119,7 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
         ("u0", "i9,i8,i7,i6"),
         ("u1", "i0,i1,i2,i3"))
         
-      test(params, testU2i, itemRecScores, relevantItems, topKItems)
+      test(params, testU2i, relevantItems, topKItems)
     }
     
     "itemrec.map MAPAtKDataPreparator with goal = conversion" should {
@@ -155,7 +132,7 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
         ("u0", "i9,i8,i7,i6,i5,i4,i3,i2"),
         ("u1", "i0,i1,i2,i3,i4,i5"))
         
-      test(params, testU2i, itemRecScores, relevantItems, topKItems)
+      test(params, testU2i, relevantItems, topKItems)
     }
   
 }

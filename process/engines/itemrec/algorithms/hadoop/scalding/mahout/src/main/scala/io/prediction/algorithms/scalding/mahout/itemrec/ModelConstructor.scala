@@ -115,7 +115,9 @@ class ModelConstructor(args: Args) extends Job(args) {
     .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)
-    .then(itemRecScoresSink.writeData('uidU, 'iidI, 'rating, 'itypesI, algoidArg, modelSetArg) _)
+    .project('uidU, 'iidI, 'rating, 'itypesI)
+    .groupBy('uidU) { _.sortBy('rating).reverse.toList[(String, Double, List[String])](('iidI, 'rating, 'itypesI) -> 'iidsList) }
+    .then(itemRecScoresSink.writeData('uidU, 'iidsList, algoidArg, modelSetArg) _)
 
   /*
   Mahout ItemRec output format

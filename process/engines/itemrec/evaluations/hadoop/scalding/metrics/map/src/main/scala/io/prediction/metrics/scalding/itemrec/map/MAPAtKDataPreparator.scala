@@ -9,14 +9,12 @@ import io.prediction.commons.scalding.appdata.U2iActions
 /**
  * Source:
  *   Test set u2iActions.
- *   ItemRecScores
  *
  * Sink:
  *   relevantItems.tsv eg  u0   i0,i1,i2
- *   topKItems.tsv  eg.  u0  i1,i4,i5
  *
  * Description:
- *   Generate relevantItems and topKItems for MAP@k
+ *   Generate relevantItems for MAP@k
  *
  * Required args:
  * --test_dbType: <string> test_appdata DB type (eg. mongodb)
@@ -117,11 +115,6 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
       dbType=test_dbTypeArg, dbName=test_dbNameArg, dbHost=test_dbHostArg, dbPort=test_dbPortArg).readData('actionTest, 'uidTest, 'iidTest, 'tTest, 'vTest)
 
   /**
-  val itemRecScores = ItemRecScores(dbType=modeldata_dbTypeArg, dbName=modeldata_dbNameArg, dbHost=modeldata_dbHostArg, dbPort=modeldata_dbPortArg)
-    .readData('uid, 'iid, 'score, 'itypes)
-    */
-
-  /**
    * computation
    */
   // for each user, get a list of items which match the goalParam
@@ -152,22 +145,4 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
     }
     .write(Tsv(OfflineMetricFile(hdfsRootArg, appidArg, engineidArg, evalidArg, metricidArg, algoidArg, "relevantItems.tsv")))
 
-  // retreive top-K items from itemRecScores for each user
-  //val topKItems = itemRecScores
-    // NOTE: sortBy is from small to large. so need to do reverse since higher score means better.
-    /**
-    .groupBy('uid) { _.sortBy('score).reverse.take(kParamArg) }
-    .groupBy('uid) { _.toList[String]('iid -> 'topListTemp)}
-      */
-    // NOTE: the _.toList group method would create a list of iids in reverse order of the score
-    //  (the highest score item is the end of list).
-    //  so need to reverse the order back again so that highest score iid is first item in the list
-    /**
-    .mapTo(('uid, 'topListTemp) -> ('uid, 'topList)) { fields: (String, List[String]) =>
-      val (uid, topListTemp) = fields
-
-      (uid, topListTemp.reverse.mkString(","))
-    }
-    .write(Tsv(OfflineMetricFile(hdfsRootArg, appidArg, engineidArg, evalidArg, metricidArg, algoidArg, "topKItems.tsv")))
-      */
 }

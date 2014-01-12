@@ -80,12 +80,11 @@ class ModelConstructor(args: Args) extends Job(args) {
    * process & output
    */
   val p = score.joinWithSmaller('iid -> 'iidx, items) // get items info for each iid
-
-  // if offlineval, write to file instead of db
-  //val dbType = if (OFFLINE_EVAL) "file" else dbTypeArg
+    .project('uid, 'iid, 'score, 'itypes)
+    .groupBy('uid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iid, 'score, 'itypes) -> 'iidsList) }
 
   val src = ItemRecScores(dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg, algoid = algoidArg, modelset = modelSetArg)
 
-  p.then(src.writeData('uid, 'iid, 'score, 'itypes, algoidArg, modelSetArg) _)
+  p.then(src.writeData('uid, 'iidsList, algoidArg, modelSetArg) _)
 
 }

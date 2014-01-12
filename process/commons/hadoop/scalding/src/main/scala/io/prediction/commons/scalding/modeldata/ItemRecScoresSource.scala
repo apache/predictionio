@@ -18,25 +18,14 @@ trait ItemRecScoresSource {
   def getSource: Source
 
   /**
-   * read data and return Pipe with field name of the Symbol parameters and expected data type
-   * uidField: Symbol of iid(String)
-   * iidField: Symbol of iid(String).
-   * scoreField: Symbol of score(Double).
-   * itypesField: Symbol of itypes(List[String])
-   */
-  def readData(uidField: Symbol, iidField: Symbol, scoreField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe
-
-  /**
    * map pipe's field data to DB table fields and write to dbSink.
    * uidField: Symbol of uid(String).
-   * iidField: Symbol of iid(String).
-   * scoreField: Symbol of score(Double).
-   * itypesField: Symbol of itypes(List[String]).
-   * algoid: Int. algo ID.
-   * modelset: Boolean. model set number(false means set 0, true means set 1).
+   * iidsField: Symbol of List(iid, score, itypes). List[(String, Double, List[String])]
+   * algoid: Int. algo ID. TODO: remove
+   * modelset: Boolean. model set number(false means set 0, true means set 1). TODO: remove
    * p: Pipe. the data pipe.
    */
-  def writeData(uidField: Symbol, iidField: Symbol, scoreField: Symbol, itypesField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe
+  def writeData(uidField: Symbol, iidsField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe
 
 }
 
@@ -48,8 +37,8 @@ object ItemRecScoresSource {
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
     ("uid" -> 'uid),
-    ("iid" -> 'iid),
-    ("score" -> 'score),
+    ("iids" -> 'iids),
+    ("scores" -> 'scores),
     ("itypes" -> 'itypes),
     ("algoid" -> 'algoid),
     ("modelset" -> 'modelset))
