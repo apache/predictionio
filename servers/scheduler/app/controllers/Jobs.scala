@@ -284,18 +284,20 @@ class OfflineEvalJob extends InterruptableJob {
 
     Some(steptype) collect {
       case "split" => {
-        /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
-        Scheduler.offlineEvals.get(evalid) map { offlineEval =>
-          Scheduler.engines.get(offlineEval.engineid) map { engine =>
-            val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
-            val modelData = Scheduler.config.getModeldataTraining(engine.infoid)
-            algosToRun foreach { algo =>
-              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
-              modelData.delete(algo.id, false)
+        if (iteration == 1) {
+          /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
+          Scheduler.offlineEvals.get(evalid) map { offlineEval =>
+            Scheduler.engines.get(offlineEval.engineid) map { engine =>
+              val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
+              val modelData = Scheduler.config.getModeldataTraining(engine.infoid)
+              algosToRun foreach { algo =>
+                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+                modelData.delete(algo.id, false)
+              }
+              Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
+              Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+              Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
             }
-            Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
-            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
-            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
           }
         }
         if (iteration > 1) {
