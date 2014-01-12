@@ -40,7 +40,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
       .arg("numSimilarItems", numSimilarItems.toString)
       .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "similarities.tsv"), new Fields("iindex", "simiindex", "score")), similarities)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
-      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort, algoid=algoid, modelset=modelSet).getSource) { outputBuffer =>
         "correctly write model data to a file" in {
           outputBuffer.toList must containTheSameElementsAs(itemSimScores)
         }
@@ -61,18 +61,10 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("2", "3", "0.32"))
 
   val test1Output = List(
-    ("i0", "i1", "0.83", "t1,t2"),
-    ("i0", "i2", "0.25", "t2,t3"),
-    ("i0", "i3", "0.49", "t2"),
-    ("i1", "i0", "0.83", "t1,t2,t3"),
-    ("i1", "i2", "0.51", "t2,t3"),
-    ("i1", "i3", "0.68", "t2"),
-    ("i2", "i3", "0.32", "t2"),
-    ("i2", "i1", "0.51", "t1,t2"),
-    ("i2", "i0", "0.25", "t1,t2,t3"),
-    ("i3", "i0", "0.49", "t1,t2,t3"),
-    ("i3", "i1", "0.68", "t1,t2"),
-    ("i3", "i2", "0.32", "t2,t3"))
+    ("i0", "i1,i3,i2", "0.83,0.49,0.25", "[t1,t2],[t2],[t2,t3]"),
+    ("i1", "i0,i3,i2", "0.83,0.68,0.51", "[t1,t2,t3],[t2],[t2,t3]"),
+    ("i2", "i1,i3,i0", "0.51,0.32,0.25", "[t1,t2],[t2],[t1,t2,t3]"),
+    ("i3", "i1,i0,i2", "0.68,0.49,0.32", "[t1,t2],[t1,t2,t3],[t2,t3]"))
 
   "mahout.itemsim ModelConstructor" should {
 

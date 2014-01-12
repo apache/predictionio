@@ -92,6 +92,7 @@ class ModelConstructor(args: Args) extends Job(args) {
   val combinedSimilarities = sim1 ++ sim2
 
   combinedSimilarities
-    .then ( ItemSimScoresSink.writeData('iid, 'iidI, 'score, 'itypesI, algoidArg, modelSetArg) _ )
+    .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidI, 'score, 'itypesI) -> 'simiidsList) }
+    .then ( ItemSimScoresSink.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
   
 }

@@ -22,14 +22,12 @@ trait ItemSimScoresSource {
   /**
    * map pipe's field data to DB table fields and write to dbSink.
    * iidField: Symbol of iid(String)
-   * simiidField: Symbol of simiid(String)
-   * scoreField: Symbol of score(Double).
-   * simitypesField: Symbol of simitypes(List[String])
-   * algoid: Int. algo ID.
-   * modelSet: Boolean. model set number(false means set 0, true means set 1).
+   * simiidsField: Symbol of List(simiid, score, simitypes). List[(String, Double, List[String])]
+   * algoid: Int. algo ID. TODO: remove
+   * modelSet: Boolean. model set number(false means set 0, true means set 1). TODO: remove
    * p: Pipe. the data pipe.
    */
-  def writeData(iidField: Symbol, simiidField: Symbol, scoreField: Symbol, simitypesField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe
+  def writeData(iidField: Symbol, simiidsField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe
 
 }
 
@@ -41,8 +39,8 @@ object ItemSimScoresSource {
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
     ("iid" -> 'uid),
-    ("simiid" -> 'simiid),
-    ("score" -> 'score),
+    ("simiids" -> 'simiid),
+    ("scores" -> 'score),
     ("simitypes" -> 'simitypes),
     ("algoid" -> 'algoid),
     ("modelset" -> 'modelset))

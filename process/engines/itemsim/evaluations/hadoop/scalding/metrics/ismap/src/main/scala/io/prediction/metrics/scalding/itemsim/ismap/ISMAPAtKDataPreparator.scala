@@ -7,7 +7,6 @@ import io.prediction.commons.scalding.appdata.U2iActions
 
 /** Source:
   *   Test set u2iActions.
-  *   ItemSimScores
   *
   * Sink:
   *   relevantUsers.tsv

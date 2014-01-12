@@ -19,7 +19,8 @@ class ReadWrite(args: Args) extends Job(args) {
 
       (iid, simiid, score, simitypes.split(",").toList)
     }
-    .then(itemSimSink.writeData('iid, 'simiid, 'score, 'simitypes, 12, false) _)
+    .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('simiid, 'score, 'simitypes) -> 'simiidsList) }
+    .then(itemSimSink.writeData('iid, 'simiidsList, 12, false) _)
 
   /**
    * test MongoItemRecScoresSource
