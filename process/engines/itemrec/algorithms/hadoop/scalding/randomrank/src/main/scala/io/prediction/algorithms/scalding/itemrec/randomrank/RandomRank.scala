@@ -101,7 +101,11 @@ class RandomRank(args: Args) extends Job(args) {
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
     .map(() -> 'score) { u: Unit => scala.util.Random.nextDouble() }
+    .project('uid, 'iidx, 'score, 'itypes)
     .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
+    // another way to is to do toList then take top n from List. But then it would create an unncessary long List
+    // for each group first. not sure which way is better.
+    .groupBy('uid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'iidsList) }
 
   // this is solely for debug purpose
   /*
@@ -110,6 +114,6 @@ class RandomRank(args: Args) extends Job(args) {
   */
 
   // write modeldata
-  scores.then(itemRecScores.writeData('uid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _)
+  scores.then(itemRecScores.writeData('uid, 'iidsList, algoidArg, modelSetArg) _)
 
 }

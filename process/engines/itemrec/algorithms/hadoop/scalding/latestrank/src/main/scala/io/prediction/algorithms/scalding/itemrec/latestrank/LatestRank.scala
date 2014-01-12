@@ -99,7 +99,11 @@ class LatestRank(args: Args) extends Job(args) {
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
     .map('starttime -> 'score) { t: String => t.toDouble }
+    .project('uid, 'iidx, 'score, 'itypes)
     .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
-    .then(itemRecScores.writeData('uid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _)
+    // another way to is to do toList then take top n from List. But then it would create an unncessary long List
+    // for each group first. not sure which way is better.
+    .groupBy('uid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'iidsList) }
+    .then(itemRecScores.writeData('uid, 'iidsList, algoidArg, modelSetArg) _)
 
 }

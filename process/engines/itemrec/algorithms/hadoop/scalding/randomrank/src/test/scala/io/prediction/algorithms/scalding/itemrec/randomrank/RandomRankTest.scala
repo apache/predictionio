@@ -15,7 +15,7 @@ class RandomRankTest extends Specification with TupleConversions {
     numRecommendations: Int,
     items: List[(String, String)],
     users: List[(String, String)],
-    itemRecScores: List[(String, String, Double, String, Int, Boolean)]) = {
+    itemRecScores: List[(String, String, String, String, Int, Boolean)]) = {
 
     val training_dbType = "file"
     val training_dbName = "testpath/"
@@ -60,14 +60,33 @@ class RandomRankTest extends Specification with TupleConversions {
         }
 
       }*/
-      .sink[(String, String, Double, String, Int, Boolean)](ItemRecScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
 
-        def takeOutScores(d: List[(String, String, Double, String, Int, Boolean)]) = {
-          d map { x => (x._1, x._2, x._4, x._5, x._6) }
+        def takeOutScores(d: List[(String, String, String, String, Int, Boolean)]) = {
+          // don't check score and itypes.
+          // for iids, don't check order. convert to set
+          d map { x => (x._1, x._2.split(",").toSet, x._5, x._6) }
         }
 
-        def getScoresOnly(d: List[(String, String, Double, String, Int, Boolean)]) = {
-          d map { x => x._3 }
+        def getScoresOnly(d: List[(String, String, String, String, Int, Boolean)]) = {
+          d flatMap { x => x._3.split(",").toList.map(_.toDouble) }
+        }
+
+        def getIids(d: List[(String, String, String, String, Int, Boolean)]) = {
+          // List(List("i0", "i1"), List("i1", "i0"), ...)
+
+          d map { x => x._2.split(",").toList }
+        }
+
+        def getItypes(d: List[(String, String, String, String, Int, Boolean)]) = {
+          //("u0", "i0,i1", "0.0,0.0", "[t1,t2,t3],[t2,t3]", algoid, modelSet),
+          // => List( List( (i0, List(t1,t2,t3)) , (i1, List(t2,t3)) )
+          d.map { x =>
+            val itypesList = x._4.split("],").toList.map(x => x.stripPrefix("[").stripSuffix("]").split(",").toList)
+            val iidList = x._2.split(",").toList
+
+            iidList zip itypesList
+          }
         }
 
         "generate correct user and item pairs in modeldata" in {
@@ -90,6 +109,30 @@ class RandomRankTest extends Specification with TupleConversions {
           scoresSet.size must be_==(scoresList.size)
 
         }
+
+        "not generate same order of iid for all uid group" in {
+
+          getIids(outputBuffer.toList).toSet.size must be_>(1)
+
+        }
+
+        "itypes order match the iids order" in {
+
+          // extract (iid, itypes) from the output
+          val itypesList = getItypes(outputBuffer.toList)
+          val itemsMap = items.toMap
+
+          // use the iid only and contruct the (iid, itypes)
+          val expected = getIids(outputBuffer.toList).map(x =>
+            // x is List of iid
+            // create the List of item types using the iid
+            x.map(x => (x, itemsMap(x).split(",").toList))
+          )
+
+          itypesList must be_==(expected)
+
+        }
+
       }
       .run
       .finish
@@ -103,14 +146,10 @@ class RandomRankTest extends Specification with TupleConversions {
     val items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
     val users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
     val itemRecScores = List(
-      ("u0", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u0", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u1", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u1", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u2", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u2", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u3", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u3", "i1", 0.0, "t2,t3", algoid, modelSet))
+      ("u0", "i0,i1", "0.0,0.0", "[t1,t2,t3],[t2,t3]", algoid, modelSet),
+      ("u1", "i0,i1", "0.0,0.0", "[t1,t2,t3],[t2,t3]", algoid, modelSet),
+      ("u2", "i0,i1", "0.0,0.0", "[t1,t2,t3],[t2,t3]", algoid, modelSet),
+      ("u3", "i0,i1", "0.0,0.0", "[t1,t2,t3],[t2,t3]", algoid, modelSet))
 
     test(algoid, modelSet, itypes, 500, items, users, itemRecScores)
 
@@ -124,22 +163,10 @@ class RandomRankTest extends Specification with TupleConversions {
     val items = List(("i0", "t1,t2,t3"), ("i1", "t2,t3"), ("i2", "t4"), ("i3", "t3,t4"))
     val users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
     val itemRecScores = List(
-      ("u0", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u0", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u0", "i2", 0.0, "t4", algoid, modelSet),
-      ("u0", "i3", 0.0, "t3,t4", algoid, modelSet),
-      ("u1", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u1", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u1", "i2", 0.0, "t4", algoid, modelSet),
-      ("u1", "i3", 0.0, "t3,t4", algoid, modelSet),
-      ("u2", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u2", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u2", "i2", 0.0, "t4", algoid, modelSet),
-      ("u2", "i3", 0.0, "t3,t4", algoid, modelSet),
-      ("u3", "i0", 0.0, "t1,t2,t3", algoid, modelSet),
-      ("u3", "i1", 0.0, "t2,t3", algoid, modelSet),
-      ("u3", "i2", 0.0, "t4", algoid, modelSet),
-      ("u3", "i3", 0.0, "t3,t4", algoid, modelSet))
+      ("u0", "i0,i1,i2,i3", "0.0,0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t4],[t3,t4]", algoid, modelSet),
+      ("u1", "i0,i1,i2,i3", "0.0,0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t4],[t3,t4]", algoid, modelSet),
+      ("u2", "i0,i1,i2,i3", "0.0,0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t4],[t3,t4]", algoid, modelSet),
+      ("u3", "i0,i1,i2,i3", "0.0,0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t4],[t3,t4]", algoid, modelSet))
 
     test(algoid, modelSet, itypes, 500, items, users, itemRecScores)
 

@@ -76,9 +76,11 @@ class ModelConstructor(args: Args) extends Job(args) {
    * process & output
    */
   val p = score.joinWithSmaller('simiid -> 'iidx, items) // get items info for each simiid
+    .project('iid, 'simiid, 'score, 'itypes)
+    .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('simiid, 'score, 'itypes) -> 'simiidsList) }
     
   val src = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg, algoid=algoidArg, modelset=modelSetArg)
   
-  p.then( src.writeData('iid, 'simiid, 'score, 'itypes, algoidArg, modelSetArg) _ )
+  p.then( src.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
   
 }

@@ -17,13 +17,18 @@ class FileItemSimScoresSource(path: String) extends Tsv(
 
   override def getSource = this
 
-  override def writeData(iidField: Symbol, simiidField: Symbol, scoreField: Symbol, simitypesField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe = {
-    val dataPipe = p.mapTo((iidField, simiidField, scoreField, simitypesField) ->
-      (FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("simiid"), FIELD_SYMBOLS("score"), FIELD_SYMBOLS("simitypes"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("modelset"))) {
-      fields: (String, String, Double, List[String]) =>
-        val (iid, simiid, score, simitypes) = fields
+  override def writeData(iidField: Symbol, simiidsField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    val dataPipe = p.mapTo((iidField, simiidsField) ->
+      (FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("simiids"), FIELD_SYMBOLS("scores"), FIELD_SYMBOLS("simitypes"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("modelset"))) {
+      fields: (String, List[(String, Double, List[String])]) =>
+        val (iid, simiidsList) = fields
 
-        (iid, simiid, score, simitypes.mkString(","), algoid, modelSet)
+        // convert list to comma-separated string
+        val simiids = simiidsList.map(_._1).mkString(",")
+        val scores = simiidsList.map(_._2).mkString(",")
+        val simitypes = simiidsList.map(_._3).map(x => "[" + x.mkString(",") + "]").mkString(",")
+
+        (iid, simiids, scores, simitypes, algoid, modelSet)
     }.write(this)
 
     dataPipe

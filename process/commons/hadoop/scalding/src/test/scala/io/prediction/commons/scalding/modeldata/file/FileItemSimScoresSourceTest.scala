@@ -20,7 +20,8 @@ class FileItemSimScoresSourceTestJob(args: Args) extends Job(args) {
 
       (iid, simiid, score, simitypes.split(",").toList)
     }
-    .then(itemSimSink.writeData('iid, 'simiid, 'score, 'simitypes, algoidArg, modelSetArg) _)
+    .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('simiid, 'score, 'simitypes) -> 'simiidsList) }
+    .then(itemSimSink.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _)
 
 }
 
@@ -33,8 +34,8 @@ class FileItemSimScoresSourceTest extends Specification with TupleConversions {
     val evalid: Option[Int] = None
     val modelSet: Boolean = true
 
-    val test1Input = List(("i0", "i1", "0.7", "t1,t2,t3"), ("i0", "i1", "0.44", "t1"), ("i1", "i2", "0.1", "t4"))
-    val test1Output = List(("i0", "i1", 0.7, "t1,t2,t3", algoid, modelSet), ("i0", "i1", 0.44, "t1", algoid, modelSet), ("i1", "i2", 0.1, "t4", algoid, modelSet))
+    val test1Input = List(("i0", "i1", "0.7", "t1,t2,t3"), ("i0", "i2", "0.44", "t1"), ("i1", "i2", "0.1", "t4"))
+    val test1Output = List(("i0", "i1,i2", "0.7,0.44", "[t1,t2,t3],[t1]", algoid, modelSet), ("i1", "i2", "0.1", "[t4]", algoid, modelSet))
 
     JobTest("io.prediction.commons.scalding.modeldata.file.FileItemSimScoresSourceTestJob")
       .arg("appid", appid.toString)
@@ -42,7 +43,7 @@ class FileItemSimScoresSourceTest extends Specification with TupleConversions {
       .arg("algoid", algoid.toString)
       .arg("modelSet", modelSet.toString)
       .source(Tsv("FileItemSimScoresSourceTestInput"), test1Input)
-      .sink[(String, String, Double, String, Int, Boolean)](new FileItemSimScoresSource("testpath")) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](new FileItemSimScoresSource("testpath")) { outputBuffer =>
         "correctly write to FileItemSimScoresSource" in {
           outputBuffer.toList must containTheSameElementsAs(test1Output)
         }

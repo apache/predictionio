@@ -111,7 +111,8 @@ class RandomRank(args: Args) extends Job(args) {
     .filter('iid, 'iidx) { fields: (String, String) => fields._1 != fields._2 }
     .map(() -> 'score) { u: Unit => scala.util.Random.nextDouble() }
     .groupBy('iid) { _.sortBy('score).reverse.take(numSimilarItemsArg) }
+    .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'simiidsList) }
 
   // write modeldata
-  scores.then( itemSimScores.writeData('iid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _ )
+  scores.then( itemSimScores.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
 }
