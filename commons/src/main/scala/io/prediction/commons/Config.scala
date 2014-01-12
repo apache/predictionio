@@ -634,6 +634,7 @@ class Config {
     }
   }
 
+  /** Obtains a generic ModelData object with configured backend type. */
   def getModeldata(engineinfoid: String): modeldata.ModelData = {
     modeldataDbType match {
       case "mongodb" => {
@@ -671,7 +672,25 @@ class Config {
     }
   }
 
-  /** Obtains an ItemRecScores object with configured backend type. */
+  /** Obtains a generic ModelData object for training with configured backend type. */
+  def getModeldataTraining(engineinfoid: String): modeldata.ModelData = {
+    modeldataDbType match {
+      case "mongodb" => {
+        val thisObj = this
+        engineinfoid match {
+          case "itemrec" => getModeldataTrainingItemRecScores
+          case "itemsim" => getModeldataTrainingItemSimScores
+          case _ => new modeldata.mongodb.MongoModelData {
+            val config = thisObj
+            val mongodb = modeldataTrainingMongoDb.get
+          }
+        }
+      }
+      case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataTrainingDbType)
+    }
+  }
+
+  /** Obtains an ItemRecScores object for training with configured backend type. */
   def getModeldataTrainingItemRecScores(): modeldata.ItemRecScores = {
     modeldataDbType match {
       case "mongodb" => {
@@ -681,7 +700,7 @@ class Config {
     }
   }
 
-  /** Obtains an ItemSimScores object with configured backend type. */
+  /** Obtains an ItemSimScores object for training with configured backend type. */
   def getModeldataTrainingItemSimScores(): modeldata.ItemSimScores = {
     modeldataDbType match {
       case "mongodb" => {
