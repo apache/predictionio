@@ -17,9 +17,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  */
 case class ItemRecScore(
   uid: String,
-  iid: String,
-  score: Double,
-  itypes: Seq[String],
+  iids: Seq[String],
+  scores: Seq[Double],
+  itypes: Seq[Seq[String]],
   appid: Int,
   algoid: Int,
   modelset: Boolean,
@@ -30,12 +30,14 @@ trait ItemRecScores extends ModelData {
   /** Insert an ItemRecScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemRecScore: ItemRecScore): ItemRecScore
 
+  /** get the ItemRecScore by Uid*/
+  def getByUid(uid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemRecScore]
+
   /**
-   * Get the top N ItemRecScore ranked by score in descending order.
-   *
-   * @param after Returns the next top N results after the provided ItemRecScore, if provided.
+   * Get the top N ranked iids.
+   * @param n If n == 0, return as many iids as available
    */
-  def getTopN(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[ItemRecScore]
+  def getTopNIids(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[String]
 
   /** Delete by Algo ID. */
   def deleteByAlgoid(algoid: Int)

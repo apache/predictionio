@@ -13,30 +13,41 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
   val mongodb = db
 
   /** Indices and hints. */
-  val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
-  val queryIndex = MongoDBObject("algoid" -> 1, "uid" -> 1, "modelset" -> 1)
+  val queryIndex = MongoDBObject("uid" -> 1)
 
-  def getTopN(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
+  def getByUid(uid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemRecScore] = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
     val itemRecScoreColl = db(collectionName(algo.id, modelset))
-    val query = MongoDBObject("algoid" -> algo.id, "uid" -> idWithAppid(app.id, uid), "modelset" -> modelset) ++
-      (itypes map { loi => MongoDBObject("itypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
 
-    itemRecScoreColl.ensureIndex(scoreIdIndex)
-    itemRecScoreColl.ensureIndex(queryIndex)
+    itemRecScoreColl.ensureIndex(queryIndex) // not needed here. it's called in after(), just safety measure in case after() is not called
 
-    after map { irs =>
-      new MongoItemRecScoreIterator(
-        itemRecScoreColl.find(query).
-          $min(MongoDBObject("score" -> irs.score, "_id" -> irs.id)).
-          sort(scoreIdIndex).
-          skip(1).limit(n),
-        app.id
-      )
-    } getOrElse new MongoItemRecScoreIterator(
-      itemRecScoreColl.find(query).sort(scoreIdIndex).limit(n),
-      app.id
-    )
+    itemRecScoreColl.findOne(MongoDBObject("uid" -> idWithAppid(app.id, uid))).map(dbObjToItemRecScore(_, app.id))
+  }
+
+  def getTopNIids(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[String] = {
+    val modelset = offlineEval map { _ => false } getOrElse algo.modelset
+    val itemRecScoreColl = db(collectionName(algo.id, modelset))
+
+    itemRecScoreColl.ensureIndex(queryIndex) // not needed here. it's called in after(), just safety measure in case after() is not called
+
+    itemRecScoreColl.findOne(MongoDBObject("uid" -> idWithAppid(app.id, uid))).map(dbObjToItemRecScore(_, app.id)).map {
+      x: ItemRecScore =>
+
+        val iidsAndItypes = x.iids zip x.itypes.map(_.toSet) // List( (iid, Set(itypes of this iid)), ... )
+        val itypesSet: Option[Set[String]] = itypes.map(_.toSet) // query itypes Set
+        val itypesSetSize: Int = itypesSet.map(_.size).getOrElse(0)
+
+        val iids = iidsAndItypes.filter {
+          case (iid, iiditypes) =>
+            // if there are some elements in s existing in iiditypes, then s.diff(iiditypes) size will be < original size of s
+            // it means itypes match the item
+            itypesSet.map(s => (s.diff(iiditypes).size < itypesSetSize)).getOrElse[Boolean](true)
+        }.map(_._1) // only return the iid
+
+        val topNIids = if (n == 0) iids else iids.take(n)
+
+        topNIids
+    }.getOrElse(Seq()).toIterator
   }
 
   def insert(itemrecscore: ItemRecScore) = {
@@ -44,8 +55,8 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
     val itemRecObj = MongoDBObject(
       "_id" -> id,
       "uid" -> idWithAppid(itemrecscore.appid, itemrecscore.uid),
-      "iid" -> idWithAppid(itemrecscore.appid, itemrecscore.iid),
-      "score" -> itemrecscore.score,
+      "iids" -> itemrecscore.iids.map(i => idWithAppid(itemrecscore.appid, i)),
+      "scores" -> itemrecscore.scores,
       "itypes" -> itemrecscore.itypes,
       "algoid" -> itemrecscore.algoid,
       "modelset" -> itemrecscore.modelset
@@ -69,7 +80,7 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
 
   override def after(algoid: Int, modelset: Boolean) = {
     val coll = db(collectionName(algoid, modelset))
-    coll.ensureIndex(scoreIdIndex)
+
     coll.ensureIndex(queryIndex)
   }
 
@@ -77,9 +88,9 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
   private def dbObjToItemRecScore(dbObj: DBObject, appid: Int) = {
     ItemRecScore(
       uid = dbObj.as[String]("uid").drop(appid.toString.length + 1),
-      iid = dbObj.as[String]("iid").drop(appid.toString.length + 1),
-      score = dbObj.as[Double]("score"),
-      itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("itypes")),
+      iids = mongoDbListToListOfString(dbObj.as[MongoDBList]("iids")).map(_.drop(appid.toString.length + 1)),
+      scores = mongoDbListToListOfDouble(dbObj.as[MongoDBList]("scores")),
+      itypes = mongoDbListToListofListOfString(dbObj.as[MongoDBList]("itypes")),
       appid = appid,
       algoid = dbObj.as[Int]("algoid"),
       modelset = dbObj.as[Boolean]("modelset"),

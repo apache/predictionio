@@ -25,6 +25,20 @@ object MongoUtils {
     dbList.toList.map(_.asInstanceOf[String])
   }
 
+  /** Converts BasicDBList to List of String. */
+  def basicDBListToListOfString(dbList: BasicDBList): List[String] = {
+    dbList.toList.map(_.asInstanceOf[String])
+  }
+
+  /** Converts MongoDBList to List of Double. */
+  def mongoDbListToListOfDouble(dbList: MongoDBList): List[Double] = {
+    dbList.toList.map(_.asInstanceOf[Double])
+  }
+
+  def mongoDbListToListofListOfString(dbList: MongoDBList): List[List[String]] = {
+    dbList.toList.map(x => basicDBListToListOfString(x.asInstanceOf[BasicDBList]))
+  }
+
   /**
    * Convert custom attributes Map into MongoDBObject and add prefix "ca_"
    *  eg.

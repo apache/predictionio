@@ -7,7 +7,8 @@ import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval }
 import scala.util.Random
 
 trait ItemRecAlgoOutput {
-  def output(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore]
+  /** output the Seq of iids */
+  def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Iterator[String]
 }
 
 object ItemRecAlgoOutput {
@@ -16,13 +17,13 @@ object ItemRecAlgoOutput {
 
   def output(uid: String, n: Int, itypes: Option[Seq[String]], latlng: Option[Tuple2[Double, Double]], within: Option[Double], unit: Option[String])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
     /** Serendipity settings. */
-    val serendipity = engine.params.get("serendipity") map { _.asInstanceOf[Int] }
+    val serendipity = engine.params.get("serendipity").map { _.asInstanceOf[Int] }
 
     /**
      * Serendipity value (s) from 0-10 in engine settings.
      * Implemented as randomly picking items from top n*(s+1) results.
      */
-    val finalN = serendipity map { s => n * (s + 1) } getOrElse n
+    val finalN = serendipity.map { s => n * (s + 1) }.getOrElse(n)
 
     /**
      * At the moment, PredictionIO depends only on MongoDB for its model data storage.
@@ -30,34 +31,20 @@ object ItemRecAlgoOutput {
      * of documents that can be returned from a query with geospatial constraint is 100.
      * A "manual join" is still feasible with this size.
      */
-    val outputBuffer = collection.mutable.ListBuffer[String]()
-
-    latlng map { ll =>
+    val iids: Iterator[String] = latlng.map { ll =>
       val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
-      var stopMore = false
-      var after: Option[ItemRecScore] = None
-
-      while (outputBuffer.length < finalN && !stopMore) {
-        val moreItemRecScores = more(uid, finalN, itypes, after)
-        val moreIids = moreItemRecScores.map(_.iid).toSeq
-
-        /** Stop the loop if no more scores can be found. */
-        if (moreItemRecScores.length == 0)
-          stopMore = true
-        else {
-          outputBuffer ++= moreIids filter { geoItems(_) }
-          after = Some(moreItemRecScores.last)
-        }
-      }
-    } getOrElse {
-      outputBuffer ++= more(uid, finalN, itypes, None) map { _.iid }
+      // use n = 0 to return all available iids for now
+      knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
+    }.getOrElse {
+      // use n = 0 to return all available iids for now
+      knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, 0, itypes)
     }
 
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
-    val output = outputBuffer.toSeq.take(finalN)
+    val output = iids.take(finalN).toList
 
     /** Serendipity output. */
-    val serendipityOutput = serendipity map { s =>
+    val serendipityOutput = serendipity.map { s =>
       if (s > 0)
         Random.shuffle(output).take(n)
       else
@@ -86,29 +73,4 @@ object ItemRecAlgoOutput {
     finalOutput
   }
 
-  /** Private method just to get items. */
-  private def more(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Seq[ItemRecScore] = {
-    /**
-     * algo.infoid match {
-     * case "pdio-knnitembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "pdio-randomrank" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "pdio-latestrank" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-alswr" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-itembased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-knnuserbased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-parallelals" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-slopeone" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-svdplusplus" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-svdsgd" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case "mahout-thresholduserbased" => knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-     * case _ => throw new RuntimeException("Unsupported itemrec algorithm package: %s" format algo.infoid)
-     * }
-     */
-
-    /**
-     * To be refactored with real time algorithms.
-     * Temporarily enable any batch algorithms.
-     */
-    knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, n, itypes, after)
-  }
 }
