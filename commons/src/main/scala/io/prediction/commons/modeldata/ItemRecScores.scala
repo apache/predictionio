@@ -7,9 +7,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  * This object represents an item to be recommended to a user.
  *
  * @param uid User ID.
- * @param iid Item ID.
- * @param score Recommendation score.
- * @param itypes Item types of the item recommended. Copied from the item when a batch mode algorithm is run.
+ * @param iids Seq of item IDs.
+ * @param scores Seq of recommendation score.
+ * @param itypes Seq of item types of the item recommended. Copied from the item when a batch mode algorithm is run.
  * @param appid App ID of this record.
  * @param algoid Algo ID of this record.
  * @param modelset Model data set.
@@ -30,7 +30,7 @@ trait ItemRecScores extends ModelData {
   /** Insert an ItemRecScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemRecScore: ItemRecScore): ItemRecScore
 
-  /** get the ItemRecScore by Uid*/
+  /** get an ItemRecScore by uid */
   def getByUid(uid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemRecScore]
 
   /**

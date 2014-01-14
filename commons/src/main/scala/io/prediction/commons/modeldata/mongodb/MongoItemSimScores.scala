@@ -13,30 +13,46 @@ class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with Mo
   val mongodb = db
 
   /** Indices and hints. */
-  val scoreIdIndex = MongoDBObject("score" -> -1, "_id" -> 1)
-  val queryIndex = MongoDBObject("algoid" -> 1, "iid" -> 1, "modelset" -> 1)
+  val queryIndex = MongoDBObject("iid" -> 1)
 
-  def getTopN(iid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemSimScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None) = {
+  def getByIid(iid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemSimScore] = {
     val modelset = offlineEval map { _ => false } getOrElse algo.modelset
     val itemSimScoreColl = db(collectionName(algo.id, modelset))
-    val query = MongoDBObject("algoid" -> algo.id, "iid" -> idWithAppid(app.id, iid), "modelset" -> modelset) ++
-      (itypes map { loi => MongoDBObject("simitypes" -> MongoDBObject("$in" -> loi)) } getOrElse emptyObj)
 
-    itemSimScoreColl.ensureIndex(scoreIdIndex)
-    itemSimScoreColl.ensureIndex(queryIndex)
+    itemSimScoreColl.ensureIndex(queryIndex) // not needed here. it's called in after(), just safety measure in case after() is not called
 
-    after map { iss =>
-      new MongoItemSimScoreIterator(
-        itemSimScoreColl.find(query).
-          $min(MongoDBObject("score" -> iss.score, "_id" -> iss.id)).
-          sort(scoreIdIndex).
-          skip(1).limit(n),
-        app.id
-      )
-    } getOrElse new MongoItemSimScoreIterator(
-      itemSimScoreColl.find(query).sort(scoreIdIndex).limit(n),
-      app.id
-    )
+    itemSimScoreColl.findOne(MongoDBObject("iid" -> idWithAppid(app.id, iid))).map(dbObjToItemSimScore(_, app.id))
+  }
+
+  def getTopNIids(iid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[String] = {
+    val modelset = offlineEval map { _ => false } getOrElse algo.modelset
+    val itemSimScoreColl = db(collectionName(algo.id, modelset))
+
+    itemSimScoreColl.ensureIndex(queryIndex) // not needed here. it's called in after(), just safety measure in case after() is not called
+
+    itemSimScoreColl.findOne(MongoDBObject("iid" -> idWithAppid(app.id, iid))).map(dbObjToItemSimScore(_, app.id)).map {
+      x: ItemSimScore =>
+
+        val simiids = itypes.map { s =>
+          val simiidsAndItypes = x.simiids.zip(x.itypes.map(_.toSet)) // List( (iid, Set(itypes of this iid)), ... )
+          val itypesSet: Set[String] = s.toSet // query itypes Set
+          val itypesSetSize = itypesSet.size
+
+          simiidsAndItypes.filter {
+            case (simiid, iiditypes) =>
+              // if there are some elements in s existing in iiditypes, then s.diff(iiditypes) size will be < original size of s
+              // it means itypes match the item
+              (itypesSet.diff(iiditypes).size < itypesSetSize)
+          }.map(_._1) // only return the iid
+        }.getOrElse {
+          x.simiids
+        }
+
+        val topNIids = if (n == 0) simiids else simiids.take(n)
+
+        topNIids
+    }.getOrElse(Seq()).toIterator
+
   }
 
   def insert(itemSimScore: ItemSimScore) = {
@@ -44,8 +60,8 @@ class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with Mo
     val itemSimObj = MongoDBObject(
       "_id" -> id,
       "iid" -> idWithAppid(itemSimScore.appid, itemSimScore.iid),
-      "simiid" -> idWithAppid(itemSimScore.appid, itemSimScore.simiid),
-      "score" -> itemSimScore.score,
+      "simiids" -> itemSimScore.simiids.map(i => idWithAppid(itemSimScore.appid, i)),
+      "scores" -> itemSimScore.scores,
       "simitypes" -> itemSimScore.itypes,
       "algoid" -> itemSimScore.algoid,
       "modelset" -> itemSimScore.modelset
@@ -69,7 +85,7 @@ class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with Mo
 
   override def after(algoid: Int, modelset: Boolean) = {
     val coll = db(collectionName(algoid, modelset))
-    coll.ensureIndex(scoreIdIndex)
+
     coll.ensureIndex(queryIndex)
   }
 
@@ -77,9 +93,9 @@ class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with Mo
   private def dbObjToItemSimScore(dbObj: DBObject, appid: Int) = {
     ItemSimScore(
       iid = dbObj.as[String]("iid").drop(appid.toString.length + 1),
-      simiid = dbObj.as[String]("simiid").drop(appid.toString.length + 1),
-      score = dbObj.as[Double]("score"),
-      itypes = mongoDbListToListOfString(dbObj.as[MongoDBList]("simitypes")),
+      simiids = mongoDbListToListOfString(dbObj.as[MongoDBList]("simiids")).map(_.drop(appid.toString.length + 1)),
+      scores = mongoDbListToListOfDouble(dbObj.as[MongoDBList]("scores")),
+      itypes = mongoDbListToListofListOfString(dbObj.as[MongoDBList]("simitypes")),
       appid = appid,
       algoid = dbObj.as[Int]("algoid"),
       modelset = dbObj.as[Boolean]("modelset"),

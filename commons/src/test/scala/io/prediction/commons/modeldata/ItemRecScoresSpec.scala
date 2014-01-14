@@ -160,36 +160,6 @@ class ItemRecScoresSpec extends Specification {
       (resultUnknownAllTop4 must beEqualTo(Seq())) and
       (resultUnknown18Top4 must beEqualTo(Seq()))
 
-    /*
-
-    val results1234 = itemRecScores.getTopNIids("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), None)
-    val r1 = results1234.next
-    val r2 = results1234.next
-    val r3 = results1234.next
-    val r4 = results1234.next
-    val results5678 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r4))
-    val r5 = results5678.next
-    val r6 = results5678.next
-    val r7 = results5678.next
-    val r8 = results5678.next
-    val results910 = itemRecScores.getTopN("testUser", 4, Some(List("invalid", "8", "7", "6", "4", "3", "2", "1", "5", "9")), Some(r8))
-    val r9 = results910.next
-    val r10 = results910.next
-    results1234.hasNext must beFalse and
-      (r1 must beEqualTo(dbItemScores(3))) and
-      (r2 must beEqualTo(dbItemScores(7))) and
-      (r3 must beEqualTo(dbItemScores(9))) and
-      (r4 must beEqualTo(dbItemScores(2))) and
-      (results5678.hasNext must beFalse) and
-      (r5 must beEqualTo(dbItemScores(6))) and
-      (r6 must beEqualTo(dbItemScores(8))) and
-      (r7 must beEqualTo(dbItemScores(1))) and
-      (r8 must beEqualTo(dbItemScores(5))) and
-      (results910.hasNext must beFalse) and
-      (r9 must beEqualTo(dbItemScores(0))) and
-      (r10 must beEqualTo(dbItemScores(4)))
-      */
-
   }
 
   def deleteByAlgoid(itemRecScores: ItemRecScores) = {
@@ -270,22 +240,32 @@ class ItemRecScoresSpec extends Specification {
     }
 
     val results1 = itemRecScores.getByUid("deleteByAlgoidUser")(app, algo1)
+    val results1u2 = itemRecScores.getByUid("deleteByAlgoidUser2")(app, algo1)
     val results2 = itemRecScores.getByUid("deleteByAlgoidUser")(app, algo2)
+    val results2u2 = itemRecScores.getByUid("deleteByAlgoidUser2")(app, algo2)
 
     itemRecScores.deleteByAlgoid(algo1.id)
 
     val results1b = itemRecScores.getByUid("deleteByAlgoidUser")(app, algo1)
+    val results1bu2 = itemRecScores.getByUid("deleteByAlgoidUser2")(app, algo1)
     val results2b = itemRecScores.getByUid("deleteByAlgoidUser")(app, algo2)
+    val results2bu2 = itemRecScores.getByUid("deleteByAlgoidUser2")(app, algo2)
 
     itemRecScores.deleteByAlgoid(algo2.id)
 
     val results2c = itemRecScores.getByUid("deleteByAlgoidUser")(app, algo2)
+    val results2cu2 = itemRecScores.getByUid("deleteByAlgoidUser2")(app, algo2)
 
     results1 must beSome(dbItemScores1(0)) and
+      (results1u2 must beSome(dbItemScores1(1))) and
       (results2 must beSome(dbItemScores2(0))) and
+      (results2u2 must beSome(dbItemScores2(1))) and
       (results1b must beNone) and
+      (results1bu2 must beNone) and
       (results2b must beSome(dbItemScores2(0))) and
-      (results2c must beNone)
+      (results2bu2 must beSome(dbItemScores2(1))) and
+      (results2c must beNone) and
+      (results2cu2 must beNone)
 
   }
 

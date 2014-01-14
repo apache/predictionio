@@ -7,9 +7,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  * This object represents an item that is similar to an item.
  *
  * @param iid Item ID.
- * @param simiid Similar item ID.
- * @param score Similarity score.
- * @param itypes Item types of the similar item. Copied from the item when a batch mode algorithm is run.
+ * @param simiids Seq of similar item ID.
+ * @param scores Seq of similarity score.
+ * @param itypes Seq of item types of the similar item. Copied from the item when a batch mode algorithm is run.
  * @param appid App ID of this record.
  * @param algoid Algo ID of this record.
  * @param modelset Model data set.
@@ -17,9 +17,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  */
 case class ItemSimScore(
   iid: String,
-  simiid: String,
-  score: Double,
-  itypes: Seq[String],
+  simiids: Seq[String],
+  scores: Seq[Double],
+  itypes: Seq[Seq[String]],
   appid: Int,
   algoid: Int,
   modelset: Boolean,
@@ -30,12 +30,14 @@ trait ItemSimScores extends ModelData {
   /** Insert an ItemSimScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemSimScore: ItemSimScore): ItemSimScore
 
+  /** get an ItemSimScore by iid */
+  def getByIid(iid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemSimScore]
+
   /**
-   * Get the top N ItemSimScore ranked by score in descending order.
-   *
-   * @param after Returns the next top N results after the provided ItemSimScore, if provided.
+   * Get the top N ranked iids
+   * @param n if n == 0, return iids as many as avaiable
    */
-  def getTopN(iid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemSimScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[ItemSimScore]
+  def getTopNIids(iid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[String]
 
   /** Delete by Algo ID. */
   def deleteByAlgoid(algoid: Int)

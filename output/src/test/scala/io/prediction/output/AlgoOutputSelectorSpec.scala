@@ -477,79 +477,9 @@ class AlgoOutputSelectorSpec extends Specification {
 
     val scores = Seq(ItemSimScore(
       iid = "user1",
-      simiid = "item_x",
-      score = 5,
-      itypes = Seq("bar"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_y",
-      score = 4,
-      itypes = Seq("foo"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_a",
-      score = 3,
-      itypes = Seq("bar"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_b",
-      score = 2,
-      itypes = Seq("foo"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_c",
-      score = 1,
-      itypes = Seq("bar"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_d",
-      score = 10,
-      itypes = Seq("foo"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_e",
-      score = 9,
-      itypes = Seq("bar"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_f",
-      score = 8,
-      itypes = Seq("foo"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_g",
-      score = 7,
-      itypes = Seq("bar"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_h",
-      score = 6,
-      itypes = Seq("foo"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true), ItemSimScore(
-      iid = "user1",
-      simiid = "item_z",
-      score = 3,
-      itypes = Seq("unrelated"),
+      simiids = Seq("item_z", "item_h", "item_d", "item_g", "item_e", "item_f", "item_x", "item_y", "item_b", "item_c", "item_a"),
+      scores = Seq(11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+      itypes = Seq(Seq("unrelated"), Seq("foo"), Seq("foo"), Seq("bar"), Seq("bar"), Seq("foo"), Seq("bar"), Seq("foo"), Seq("foo"), Seq("bar"), Seq("bar")),
       appid = dummyApp.id,
       algoid = algoid,
       modelset = true))
@@ -557,6 +487,8 @@ class AlgoOutputSelectorSpec extends Specification {
     scores foreach { mongoItemSimScores.insert(_) }
 
     val result = algoOutputSelector.itemSimSelection("user1", 10, Some(Seq("bar", "foo")), None, None, None)(dummyApp, engine.copy(id = engineid))
+    val resultBar = algoOutputSelector.itemSimSelection("user1", 10, Some(Seq("bar")), None, None, None)(dummyApp, engine.copy(id = engineid))
+
     result must contain(
       "item_x",
       "item_y",
@@ -567,7 +499,13 @@ class AlgoOutputSelectorSpec extends Specification {
       "item_e",
       "item_f",
       "item_g",
-      "item_h")
+      "item_h") and
+      (resultBar must contain(
+        "item_a",
+        "item_c",
+        "item_e",
+        "item_x",
+        "item_g"))
   }
 
   def itemSimOutputSelectionWithLatlng(algoOutputSelector: AlgoOutputSelector) = {
@@ -651,41 +589,18 @@ class AlgoOutputSelectorSpec extends Specification {
     val allItems = Seq(dac, hsh, lbh, mvh)
     allItems foreach { mongoItems.insert(_) }
 
-    mongoItemSimScores.insert(ItemSimScore(
-      iid = "user1",
-      simiid = id + "dac",
-      score = 1,
-      itypes = Seq("bar"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true
-    ))
+    val scores: Seq[(String, Double, Seq[String])] = Seq(
+      // (iid, score, itypes)
+      (id + "hsh", 4, Seq("foo")),
+      (id + "mvh", 3, Seq("unrelated")),
+      (id + "lbh", 2, Seq("unrelated")),
+      (id + "dac", 1, Seq("bar")))
 
     mongoItemSimScores.insert(ItemSimScore(
       iid = "user1",
-      simiid = id + "hsh",
-      score = 4,
-      itypes = Seq("foo"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true
-    ))
-
-    mongoItemSimScores.insert(ItemSimScore(
-      iid = "user1",
-      simiid = id + "mvh",
-      score = 3,
-      itypes = Seq("unrelated"),
-      appid = dummyApp.id,
-      algoid = algoid,
-      modelset = true
-    ))
-
-    mongoItemSimScores.insert(ItemSimScore(
-      iid = "user1",
-      simiid = id + "lbh",
-      score = 2,
-      itypes = Seq("unrelated"),
+      simiids = scores.map(_._1),
+      scores = scores.map(_._2),
+      itypes = scores.map(_._3),
       appid = dummyApp.id,
       algoid = algoid,
       modelset = true

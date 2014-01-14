@@ -33,16 +33,20 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
     itemRecScoreColl.findOne(MongoDBObject("uid" -> idWithAppid(app.id, uid))).map(dbObjToItemRecScore(_, app.id)).map {
       x: ItemRecScore =>
 
-        val iidsAndItypes = x.iids zip x.itypes.map(_.toSet) // List( (iid, Set(itypes of this iid)), ... )
-        val itypesSet: Option[Set[String]] = itypes.map(_.toSet) // query itypes Set
-        val itypesSetSize: Int = itypesSet.map(_.size).getOrElse(0)
+        val iids = itypes.map { s =>
+          val iidsAndItypes = x.iids.zip(x.itypes.map(_.toSet)) // List( (iid, Set(itypes of this iid)), ... )
+          val itypesSet: Set[String] = s.toSet // query itypes Set
+          val itypesSetSize = itypesSet.size
 
-        val iids = iidsAndItypes.filter {
-          case (iid, iiditypes) =>
-            // if there are some elements in s existing in iiditypes, then s.diff(iiditypes) size will be < original size of s
-            // it means itypes match the item
-            itypesSet.map(s => (s.diff(iiditypes).size < itypesSetSize)).getOrElse[Boolean](true)
-        }.map(_._1) // only return the iid
+          iidsAndItypes.filter {
+            case (iid, iiditypes) =>
+              // if there are some elements in s existing in iiditypes, then s.diff(iiditypes) size will be < original size of s
+              // it means itypes match the item
+              (itypesSet.diff(iiditypes).size < itypesSetSize)
+          }.map(_._1) // only return the iid
+        }.getOrElse {
+          x.iids
+        }
 
         val topNIids = if (n == 0) iids else iids.take(n)
 
