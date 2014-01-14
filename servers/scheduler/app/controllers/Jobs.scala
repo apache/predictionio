@@ -15,9 +15,10 @@ import org.quartz.jobs.NativeJob
 import play.api.Logger
 
 import scala.collection.mutable.{ HashMap, Map, SynchronizedMap }
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.future
 import scala.sys.process._
+
+import Contexts.stepExecutionContext
 
 object Jobs {
   val algoJobGroup = "predictionio-algo"
