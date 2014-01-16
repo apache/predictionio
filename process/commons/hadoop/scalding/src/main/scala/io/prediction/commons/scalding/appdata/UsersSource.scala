@@ -11,17 +11,17 @@ import cascading.flow.FlowDef
 // can get the same type of pipe returned regardless of the actual DB type.
 
 trait UsersSource {
-  
+
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
-  
+
   def getSource: Source
-  
+
   /**
    * read data and return Pipe with field name of the Symbol parameters and expected data type
    * uidField: Symbol of iid(String)
    */
   def readData(uidField: Symbol)(implicit fd: FlowDef): Pipe
-  
+
   /**
    * read User object
    */
@@ -42,7 +42,7 @@ trait UsersSource {
   def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     throw new RuntimeException("UsersSource writeObj is not implemented.")
   }
-  
+
 }
 
 object UsersSource {
@@ -51,8 +51,8 @@ object UsersSource {
    *  ("table field name" -> Symbol)
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
-      ("id" -> 'id),
-      ("appid" -> 'appid),
-      ("ct" -> 'ct))
-      
+    ("id" -> 'id),
+    ("appid" -> 'appid),
+    ("ct" -> 'ct))
+
 }

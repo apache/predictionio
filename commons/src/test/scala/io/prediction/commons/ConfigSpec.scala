@@ -15,6 +15,7 @@ class ConfigSpec extends Specification {
       "get a MongoEngines implementation" ! getMongoEngines() ^
       "get a MongoAlgos implementation" ! getMongoAlgos() ^
       "get a list of job JARs" ! jars() ^
+      "get sharding configuration" ! sharding() ^
       Step(MongoConnection()(mongoConfig.settingsDbName).dropDatabase())
   end
 
@@ -49,5 +50,10 @@ class ConfigSpec extends Specification {
       "algorithms.mahout.itemrec" -> "../lib/predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.7.0-SNAPSHOT.jar",
       "algorithms.mahout.corejob" -> "../vendors/mahout-distribution-0.8/mahout-core-0.8-job.jar",
       "algorithms.scalding.itemrec.generic" -> "../lib/predictionio-process-itemrec-algorithms-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar")
+  }
+
+  def sharding() = {
+    mongoConfig.modeldataDbSharding must beTrue and
+      (mongoConfig.modeldataDbShardKeys must beSome(Seq("foo", "bar")))
   }
 }

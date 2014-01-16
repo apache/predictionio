@@ -2,16 +2,16 @@ package io.prediction.algorithms.scalding.itemrec.randomrank
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Items, Users}
+import io.prediction.commons.scalding.appdata.{ Items, Users }
 import io.prediction.commons.scalding.modeldata.ItemRecScores
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.filepath.{ AlgoFile }
 
 /**
  * Source:
- * 
+ *
  * Sink:
  *
- * Description: 
+ * Description:
  *
  * Args:
  * --training_dbType: <string> training_appdata DB type
@@ -53,7 +53,7 @@ class RandomRank(args: Args) extends Job(args) {
   val modeldata_dbNameArg = args("modeldata_dbName")
   val modeldata_dbHostArg = args.optional("modeldata_dbHost")
   val modeldata_dbPortArg = args.optional("modeldata_dbPort") map (x => x.toInt)
-  
+
   val hdfsRootArg = args("hdfsRoot")
 
   val appidArg = args("appid").toInt
@@ -72,25 +72,25 @@ class RandomRank(args: Args) extends Job(args) {
   /**
    * source
    */
-  
+
   // get appdata
   // NOTE: if OFFLINE_EVAL, read from training set, and use evalid as appid when read Items and U2iActions
-  val trainingAppid = if (OFFLINE_EVAL) evalidArg.get else appidArg 
-  
-  // get items data
-  val items = Items(appId=trainingAppid, itypes=itypesArg, 
-      dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg).readData('iidx, 'itypes)
+  val trainingAppid = if (OFFLINE_EVAL) evalidArg.get else appidArg
 
-  val users = Users(appId=trainingAppid,
-      dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg).readData('uid)
+  // get items data
+  val items = Items(appId = trainingAppid, itypes = itypesArg,
+    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('iidx, 'itypes)
+
+  val users = Users(appId = trainingAppid,
+    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('uid)
 
   // TODO: unseenOnly filtering (need u2iActions)
 
   /**
    * sink
    */
-  val itemRecScores = ItemRecScores(dbType=modeldata_dbTypeArg, dbName=modeldata_dbNameArg, dbHost=modeldata_dbHostArg, dbPort=modeldata_dbPortArg)
-  
+  val itemRecScores = ItemRecScores(dbType = modeldata_dbTypeArg, dbName = modeldata_dbNameArg, dbHost = modeldata_dbHostArg, dbPort = modeldata_dbPortArg, algoid = algoidArg, modelset = modelSetArg)
+
   //val scoresFile = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemRecScores.tsv"))
 
   /**
@@ -101,7 +101,11 @@ class RandomRank(args: Args) extends Job(args) {
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
     .map(() -> 'score) { u: Unit => scala.util.Random.nextDouble() }
+    .project('uid, 'iidx, 'score, 'itypes)
     .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
+    // another way to is to do toList then take top n from List. But then it would create an unncessary long List
+    // for each group first. not sure which way is better.
+    .groupBy('uid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'iidsList) }
 
   // this is solely for debug purpose
   /*
@@ -110,6 +114,6 @@ class RandomRank(args: Args) extends Job(args) {
   */
 
   // write modeldata
-  scores.then( itemRecScores.writeData('uid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _ )
+  scores.then(itemRecScores.writeData('uid, 'iidsList, algoidArg, modelSetArg) _)
 
 }

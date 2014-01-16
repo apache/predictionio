@@ -7,9 +7,9 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  * This object represents an item to be recommended to a user.
  *
  * @param uid User ID.
- * @param iid Item ID.
- * @param score Recommendation score.
- * @param itypes Item types of the item recommended. Copied from the item when a batch mode algorithm is run.
+ * @param iids Seq of item IDs.
+ * @param scores Seq of recommendation score.
+ * @param itypes Seq of item types of the item recommended. Copied from the item when a batch mode algorithm is run.
  * @param appid App ID of this record.
  * @param algoid Algo ID of this record.
  * @param modelset Model data set.
@@ -17,25 +17,27 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  */
 case class ItemRecScore(
   uid: String,
-  iid: String,
-  score: Double,
-  itypes: Seq[String],
+  iids: Seq[String],
+  scores: Seq[Double],
+  itypes: Seq[Seq[String]],
   appid: Int,
   algoid: Int,
   modelset: Boolean,
   id: Option[Any] = None)
 
 /** Base trait for implementations that interact with itemrec scores in the backend data store. */
-trait ItemRecScores {
+trait ItemRecScores extends ModelData {
   /** Insert an ItemRecScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemRecScore: ItemRecScore): ItemRecScore
 
+  /** get an ItemRecScore by uid */
+  def getByUid(uid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemRecScore]
+
   /**
-   * Get the top N ItemRecScore ranked by score in descending order.
-   *
-   * @param after Returns the next top N results after the provided ItemRecScore, if provided.
+   * Get the top N ranked iids.
+   * @param n If n == 0, return as many iids as available
    */
-  def getTopN(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[ItemRecScore]
+  def getTopNIids(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[String]
 
   /** Delete by Algo ID. */
   def deleteByAlgoid(algoid: Int)

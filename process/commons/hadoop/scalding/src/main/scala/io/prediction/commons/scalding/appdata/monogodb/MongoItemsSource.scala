@@ -20,56 +20,56 @@ import com.mongodb.casbah.Imports._
 import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.ItemsSource
 import io.prediction.commons.scalding.appdata.ItemsSource.FIELD_SYMBOLS
-import io.prediction.commons.appdata.{Item}
+import io.prediction.commons.appdata.{ Item }
 
-class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: Option[List[String]]) extends MongoSource (
-    db = db,
-    coll = "items",
-    cols = {
-      val itemsCols = new ArrayList[String]()
-      
-      itemsCols.add("_id") // 0
-      itemsCols.add("itypes") // 1
-      itemsCols.add("appid") // 2
-      itemsCols.add("starttime") // 3
-      itemsCols.add("ct") // 4
+class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: Option[List[String]]) extends MongoSource(
+  db = db,
+  coll = "items",
+  cols = {
+    val itemsCols = new ArrayList[String]()
 
-      itemsCols
-    },
-    mappings = {
-      val itemsMappings = new HashMap[String, String]()
-      
-      itemsMappings.put("_id", FIELD_SYMBOLS("id").name)
-      itemsMappings.put("itypes", FIELD_SYMBOLS("itypes").name)
-      itemsMappings.put("appid", FIELD_SYMBOLS("appid").name)
-      itemsMappings.put("starttime", FIELD_SYMBOLS("starttime").name)
-      itemsMappings.put("ct", FIELD_SYMBOLS("ct").name)
-      
-      itemsMappings
-    },
-    query = { // read query 
-      val itemsQuery = MongoDBObject("appid" -> appid) ++ (itypes.map(x => MongoDBObject("itypes" -> MongoDBObject("$in" -> x))).getOrElse(MongoDBObject()))
-      
-      itemsQuery
-    }, 
-    host = host, // String
-    port = port // Int
-    ) with ItemsSource {
-  
+    itemsCols.add("_id") // 0
+    itemsCols.add("itypes") // 1
+    itemsCols.add("appid") // 2
+    itemsCols.add("starttime") // 3
+    itemsCols.add("ct") // 4
+
+    itemsCols
+  },
+  mappings = {
+    val itemsMappings = new HashMap[String, String]()
+
+    itemsMappings.put("_id", FIELD_SYMBOLS("id").name)
+    itemsMappings.put("itypes", FIELD_SYMBOLS("itypes").name)
+    itemsMappings.put("appid", FIELD_SYMBOLS("appid").name)
+    itemsMappings.put("starttime", FIELD_SYMBOLS("starttime").name)
+    itemsMappings.put("ct", FIELD_SYMBOLS("ct").name)
+
+    itemsMappings
+  },
+  query = { // read query 
+    val itemsQuery = MongoDBObject("appid" -> appid) ++ (itypes.map(x => MongoDBObject("itypes" -> MongoDBObject("$in" -> x))).getOrElse(MongoDBObject()))
+
+    itemsQuery
+  },
+  host = host, // String
+  port = port // Int
+) with ItemsSource {
+
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
-  
+
   override def getSource: Source = this
-  
+
   override def readData(iidField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1) -> (iidField, itypesField)) { fields: (String, BasicDBList) => 
+      .mapTo((0, 1) -> (iidField, itypesField)) { fields: (String, BasicDBList) =>
         // NOTE: convert itypes form BasicDBList to scala List.
         (fields._1, fields._2.toList)
       }
-    
+
     items
   }
-  
+
   override def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
       .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, BasicDBList, java.util.Date) =>
@@ -79,7 +79,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
         // NOTE: convert itypes form BasicDBList to scala List.
         (fields._1, fields._2.toList, fields._3.getTime().toString)
       }
-    
+
     items
   }
 
@@ -92,7 +92,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
           id = id,
           appid = appid,
           ct = new DateTime(ct),
-          itypes = itypes.toList.map (x => x.toString),
+          itypes = itypes.toList.map(x => x.toString),
           starttime = Some(new DateTime(starttime)),
           endtime = None,
           price = None,
@@ -109,40 +109,39 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
   override def writeData(iidField: Symbol, itypesField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo((iidField, itypesField) ->
       (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"))) {
-        fields: (String, List[String]) => 
-          val (iid, itypes) = fields
-          
-          val itypesTuple = new Tuple()
-           
-          for (x <- itypes) {
-            itypesTuple.add(x)
-          }
-          
-          (iid, itypesTuple, appid)
-     }.write(this)
-    
-     writtenData
+      fields: (String, List[String]) =>
+        val (iid, itypes) = fields
+
+        val itypesTuple = new Tuple()
+
+        for (x <- itypes) {
+          itypesTuple.add(x)
+        }
+
+        (iid, itypesTuple, appid)
+    }.write(this)
+
+    writtenData
   }
 
   override def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo(objField ->
       (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"))) { obj: Item =>
 
-        val itypesTuple = new Tuple()
-        
-        for (x <- obj.itypes) {
-          itypesTuple.add(x)
-        }
+      val itypesTuple = new Tuple()
 
-        val starttime: java.util.Date = obj.starttime.get.toDate()
-        val ct: java.util.Date = obj.ct.toDate()
+      for (x <- obj.itypes) {
+        itypesTuple.add(x)
+      }
 
-        (obj.id, itypesTuple, obj.appid, starttime, ct)
+      val starttime: java.util.Date = obj.starttime.get.toDate()
+      val ct: java.util.Date = obj.ct.toDate()
+
+      (obj.id, itypesTuple, obj.appid, starttime, ct)
     }.write(this)
 
     writtenData
   }
-  
+
 }
 
-    

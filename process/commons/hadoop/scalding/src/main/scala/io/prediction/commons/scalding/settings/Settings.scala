@@ -4,7 +4,7 @@ import io.prediction.commons.scalding.settings.file.FileOfflineEvalResultsSource
 import io.prediction.commons.scalding.settings.mongodb.MongoOfflineEvalResultsSource
 
 object OfflineEvalResults {
-  
+
   def apply(dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int]): OfflineEvalResultsSource = {
     dbType match {
       case "file" => {

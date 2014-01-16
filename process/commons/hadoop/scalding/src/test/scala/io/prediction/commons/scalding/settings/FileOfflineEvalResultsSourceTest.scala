@@ -9,17 +9,17 @@ class FileOfflineEvalResultsSourceWriteTestJob(args: Args) extends Job(args) {
   val resultsSink = new FileOfflineEvalResultsSource("testpath")
 
   Tsv("FileOfflineEvalResultsSourceTestInput").read
-    .mapTo((0,1,2,3,4,5) -> ('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset)) { 
+    .mapTo((0, 1, 2, 3, 4, 5) -> ('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset)) {
       fields: (Int, Int, Int, Double, Int, String) =>
 
-      fields
+        fields
     }
-    .then ( resultsSink.writeData('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset) )
+    .then(resultsSink.writeData('evalid, 'metricid, 'algoid, 'score, 'iteration, 'splitset))
 
 }
 
 class FileOfflineEvalResultsSourceTest extends Specification with TupleConversions {
-  
+
   type resultTuples = (Int, Int, Int, Double, Int, String)
 
   def test(testInput: List[resultTuples]) = {

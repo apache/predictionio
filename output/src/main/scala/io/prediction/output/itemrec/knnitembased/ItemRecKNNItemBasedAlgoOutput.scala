@@ -5,8 +5,8 @@ import io.prediction.commons.settings.{ App, Algo, OfflineEval }
 import io.prediction.output.itemrec.ItemRecAlgoOutput
 
 object ItemRecKNNItemBasedAlgoOutput extends ItemRecAlgoOutput {
-  def output(uid: String, n: Int, itypes: Option[Seq[String]], after: Option[ItemRecScore] = None)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]) = {
+  override def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Iterator[String] = {
     /** Batch mode output only for now. */
-    ItemRecKNNItemBasedAlgoBatchOutput.output(uid, n, itypes, after)
+    ItemRecKNNItemBasedAlgoBatchOutput.output(uid, n, itypes)
   }
 }

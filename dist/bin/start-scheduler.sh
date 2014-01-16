@@ -28,7 +28,7 @@ $BASE/bin/conncheck
 # Scheduler server
 echo "Trying to start scheduler server... \c"
 echo "Trying to start scheduler server at: `date`" >>"$SCHEDULER_OUT"
-$BASE/bin/predictionio-scheduler $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml -Dpidfile.path=$BASE/scheduler.pid >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
+$BASE/bin/predictionio-scheduler $PLAY_START_OPTS -Dhttp.port=$SCHEDULER_PORT -Dlogger.file=$BASE/conf/scheduler-logger.xml -Dpidfile.path=$BASE/scheduler.pid -Dorg.quartz.properties=$BASE/conf/quartz.properties >>"$SCHEDULER_OUT" 2>>"$SCHEDULER_ERR" &
 SERVER_TRY=1
 while [ $SERVER_TRY -le $SERVER_RETRY ] ; do
     sleep $SERVER_WAIT

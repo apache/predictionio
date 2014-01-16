@@ -3,18 +3,19 @@ package io.prediction.tools.softwaremanager
 import org.specs2._
 import org.specs2.specification.Step
 
-class VersionsSpec extends Specification { def is =
-  "PredictionIO Software Manager Versions Specification"                      ^
-                                                                              p^
-  "load version file"                                                         ! load()^
-  "get latest version"                                                        ! latestVersion()^
-  "get latest version binaries"                                               ! latestBinaries()^
-  "get latest version sources"                                                ! latestSources()^
-  "get a non-existent updater"                                                ! latestUpdater()^
-  "get version sequence"                                                      ! sequence()^
-  "get a version that requires update"                                        ! updateRequired()^
-  "get an update sequence"                                                    ! updateSequence()^
-                                                                              end
+class VersionsSpec extends Specification {
+  def is =
+    "PredictionIO Software Manager Versions Specification" ^
+      p ^
+      "load version file" ! load() ^
+      "get latest version" ! latestVersion() ^
+      "get latest version binaries" ! latestBinaries() ^
+      "get latest version sources" ! latestSources() ^
+      "get a non-existent updater" ! latestUpdater() ^
+      "get version sequence" ! sequence() ^
+      "get a version that requires update" ! updateRequired() ^
+      "get an update sequence" ! updateSequence() ^
+      end
 
   lazy val versions = Versions(getClass.getResource("/versions.json").getPath)
 

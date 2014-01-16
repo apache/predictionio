@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 //import io.prediction.commons.scalding.AppDataFile
 import io.prediction.commons.scalding.appdata.ItemsSource
 import io.prediction.commons.scalding.appdata.ItemsSource.FIELD_SYMBOLS
-import io.prediction.commons.appdata.{Item}
+import io.prediction.commons.appdata.{ Item }
 
 /**
  * File Format:
@@ -19,7 +19,7 @@ import io.prediction.commons.appdata.{Item}
  * Example:
  * 1  t1,t2,t3  4  123456  123210
  */
-class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) extends Tsv (
+class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) extends Tsv(
   p = path + "items.tsv"
 ) with ItemsSource {
 
@@ -34,7 +34,7 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
 
         (iid, itypes.split(",").toList)
 
-      }.then( filterItypes(itypesField, itypes) _ )
+      }.then(filterItypes(itypesField, itypes) _)
 
   }
 
@@ -61,7 +61,7 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
 
         (iid, itypes.split(",").toList, starttime)
 
-      }.then( filterItypes('itypes, itypes) _ )
+      }.then(filterItypes('itypes, itypes) _)
   }
 
   override def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
@@ -83,10 +83,10 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
           latlng = None,
           inactive = None,
           attributes = None
-          ), itypesList)
+        ), itypesList)
 
       }
-      .then( filterItypes('itypes, itypes) _ )
+      .then(filterItypes('itypes, itypes) _)
       .project(objField)
 
     items
@@ -95,23 +95,23 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
   override def writeData(iidField: Symbol, itypesField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo((iidField, itypesField) ->
       (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"))) {
-        fields: (String, List[String]) =>
-          val (iid, itypes) = fields
+      fields: (String, List[String]) =>
+        val (iid, itypes) = fields
 
-          (iid, itypes.mkString(","), appid)
-     }.write(this)
+        (iid, itypes.mkString(","), appid)
+    }.write(this)
 
-     writtenData
+    writtenData
   }
 
   override def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo(objField ->
       (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"))) { obj: Item =>
 
-        val starttime: java.util.Date = obj.starttime.get.toDate()
-        val ct: java.util.Date = obj.ct.toDate()
+      val starttime: java.util.Date = obj.starttime.get.toDate()
+      val ct: java.util.Date = obj.ct.toDate()
 
-        (obj.id, obj.itypes.mkString(","), obj.appid, starttime.getTime(), ct.getTime())
+      (obj.id, obj.itypes.mkString(","), obj.appid, starttime.getTime(), ct.getTime())
 
     }.write(this)
 

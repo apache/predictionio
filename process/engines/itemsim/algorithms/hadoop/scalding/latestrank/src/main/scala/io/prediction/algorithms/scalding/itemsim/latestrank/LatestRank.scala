@@ -105,7 +105,9 @@ class LatestRank(args: Args) extends Job(args) {
     dbType=modeldata_dbTypeArg,
     dbName=modeldata_dbNameArg,
     dbHost=modeldata_dbHostArg,
-    dbPort=modeldata_dbPortArg)
+    dbPort=modeldata_dbPortArg,
+    algoid=algoidArg,
+    modelset=modelSetArg)
 
   /**
    * computation
@@ -113,5 +115,6 @@ class LatestRank(args: Args) extends Job(args) {
   val scores = items.crossWithTiny(latestItems)
     .filter('iid, 'iidx) { fields: (String, String) => fields._1 != fields._2 }
     .groupBy('iid) { _.sortBy('score).reverse.take(numSimilarItemsArg) }
-    .then ( itemSimScores.writeData('iid, 'iidx, 'score, 'itypes, algoidArg, modelSetArg) _ )
+    .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'simiidsList) }
+    .then ( itemSimScores.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
 }

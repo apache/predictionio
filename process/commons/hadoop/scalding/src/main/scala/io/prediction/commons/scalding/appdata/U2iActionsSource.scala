@@ -11,11 +11,11 @@ import cascading.flow.FlowDef
 // can get the same type of pipe returned regardless of the actual DB type.
 
 trait U2iActionsSource {
-  
+
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
-  
+
   def getSource: Source
-  
+
   /**
    * read data and return Pipe with field name of the Symbol parameters
    * actionField: Symbol of action(String)
@@ -37,7 +37,7 @@ trait U2iActionsSource {
    * p: Pipe. the data pipe.
    */
   def writeData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe
-  
+
 }
 
 object U2iActionsSource {
@@ -46,11 +46,11 @@ object U2iActionsSource {
    *  ("table field name" -> Symbol)
    */
   val FIELD_SYMBOLS: Map[String, Symbol] = Map(
-      ("action" -> 'action),
-      ("uid" -> 'uid),
-      ("iid" -> 'iid),
-      ("t" -> 't),
-      ("v" -> 'v),
-      ("appid" -> 'appid))
-      
+    ("action" -> 'action),
+    ("uid" -> 'uid),
+    ("iid" -> 'iid),
+    ("t" -> 't),
+    ("v" -> 'v),
+    ("appid" -> 'appid))
+
 }

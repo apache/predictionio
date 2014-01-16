@@ -10,35 +10,29 @@ import io.prediction.commons.scalding.modeldata.ItemRecScoresSource
 import io.prediction.commons.scalding.modeldata.ItemRecScoresSource.FIELD_SYMBOLS
 
 class FileItemRecScoresSource(path: String) extends Tsv(
-    p = path + "itemRecScores.tsv" //ModelDataFile(appId, engineId, algoId, evalId, "itemRecScores.tsv")
-    ) with ItemRecScoresSource {
-  
+  p = path + "itemRecScores.tsv" //ModelDataFile(appId, engineId, algoId, evalId, "itemRecScores.tsv")
+) with ItemRecScoresSource {
+
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
-  
+
   override def getSource = this
-  
-  override def readData(uidField: Symbol, iidField: Symbol, scoreField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe = {
-    this.read
-      .mapTo((0, 1, 2, 3) -> (uidField, iidField, scoreField, itypesField)) { fields: (String, String, Double, String) =>
-        val (uid, iid, score, itypes) = fields
-        
-        // NOTE: itypes are comma separated String in file, convert it to List[String]
-        (uid, iid, score, itypes.split(",").toList)
-    }
-  }
-  
-  override def writeData(uidField: Symbol, iidField: Symbol, scoreField: Symbol, itypesField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe = {
-    val dataPipe = p.mapTo((uidField, iidField, scoreField, itypesField) -> 
-    (FIELD_SYMBOLS("uid"), FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("score"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("modelset"))) { 
-      fields: (String, String, Double, List[String]) =>
-        val (uid, iid, score, itypes) = fields
-        
-        // NOTE: itypes are List[String], convert it to comma separated String.
-        (uid, iid, score, itypes.mkString(","), algoid, modelSet)
-      
+
+  override def writeData(uidField: Symbol, iidsField: Symbol, algoid: Int, modelSet: Boolean)(p: Pipe)(implicit fd: FlowDef): Pipe = {
+    val dataPipe = p.mapTo((uidField, iidsField) ->
+      (FIELD_SYMBOLS("uid"), FIELD_SYMBOLS("iids"), FIELD_SYMBOLS("scores"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("algoid"), FIELD_SYMBOLS("modelset"))) {
+      fields: (String, List[(String, Double, List[String])]) =>
+        val (uid, iidsList) = fields
+
+        // convert list to comma-separated String
+        val iids = iidsList.map(_._1).mkString(",")
+        val scores = iidsList.map(_._2).mkString(",")
+        val itypes = iidsList.map(_._3).map(x => "[" + x.mkString(",") + "]").mkString(",")
+
+        (uid, iids, scores, itypes, algoid, modelSet)
+
     }.write(this)
-    
+
     dataPipe
   }
-  
+
 }
