@@ -34,10 +34,10 @@ object ItemRecAlgoOutput {
     val iids: Iterator[String] = latlng.map { ll =>
       val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
       // use n = 0 to return all available iids for now
-      knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
+      ItemRecCFAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
     }.getOrElse {
       // use n = 0 to return all available iids for now
-      knnitembased.ItemRecKNNItemBasedAlgoOutput.output(uid, 0, itypes)
+      ItemRecCFAlgoOutput.output(uid, 0, itypes)
     }
 
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
