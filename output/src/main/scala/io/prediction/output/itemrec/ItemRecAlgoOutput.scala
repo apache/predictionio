@@ -6,6 +6,8 @@ import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval }
 
 import scala.util.Random
 
+import com.github.nscala_time.time.Imports._
+
 trait ItemRecAlgoOutput {
   /** output the Seq of iids */
   def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Iterator[String]
@@ -31,17 +33,29 @@ object ItemRecAlgoOutput {
      * of documents that can be returned from a query with geospatial constraint is 100.
      * A "manual join" is still feasible with this size.
      */
-    val iids: Iterator[String] = latlng.map { ll =>
+    val (iids, iidsCopy): (Iterator[String], Iterator[String]) = latlng.map { ll =>
       val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
       // use n = 0 to return all available iids for now
       ItemRecCFAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
     }.getOrElse {
       // use n = 0 to return all available iids for now
       ItemRecCFAlgoOutput.output(uid, 0, itypes)
-    }
+    }.duplicate
+
+    /** Start and end time filtering. */
+    val itemsForTimeCheck = items.getByIds(app.id, iidsCopy.toSeq)
+    val iidsWithValidTimeSet = (itemsForTimeCheck filter { item =>
+      (item.starttime, item.endtime) match {
+        case (Some(st), None) => DateTime.now >= st
+        case (None, Some(et)) => DateTime.now <= et
+        case (Some(st), Some(et)) => st <= DateTime.now && DateTime.now <= et
+        case _ => true
+      }
+    } map { _.id }).toSet
+    val iidsWithValidTime: Iterator[String] = iids.filter { iidsWithValidTimeSet(_) }
 
     /** At this point "output" is guaranteed to have n*(s+1) items (seen or unseen) unless model data is exhausted. */
-    val output = iids.take(finalN).toList
+    val output = iidsWithValidTime.take(finalN).toList
 
     /** Serendipity output. */
     val serendipityOutput = serendipity.map { s =>
