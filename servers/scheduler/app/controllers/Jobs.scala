@@ -161,7 +161,7 @@ object Jobs {
     command.setAttribute("modeldataTrainingDbHost", config.modeldataTrainingDbHost)
     command.setAttribute("modeldataTrainingDbPort", config.modeldataTrainingDbPort)
     engine.itypes foreach { it =>
-      command.setAttribute("itypes", "--itypes" + it.mkString(" "))
+      command.setAttribute("itypes", "--itypes" + " " + it.mkString(" ")) // NOTE: a space ' ' is necessary after --itypes
     }
     command.setAttribute("numRecommendations", engine.params.getOrElse("numRecommendations", 500))
     command.setAttribute("numSimilarItems", engine.params.getOrElse("numSimilarItems", 500))
