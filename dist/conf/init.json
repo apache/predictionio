@@ -1,38 +1,38 @@
 {
     "systeminfos": {
         "version": {
-            "value": "0.7.0-SNAPSHOT",
+            "value": "0.6.7",
             "description": "PredictionIO version"
         },
         "jars.pdioItemrecAlgo": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.6.7.jar"
         },
         "jars.pdioItemsimAlgo": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.6.7.jar"
         },
         "jars.mahoutItemrecAlgo": {
-            "value": "predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.6.7.jar"
         },
         "jars.pdioItemrecEval": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.6.7.jar"
         },
         "jars.pdioItemsimEval": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.6.7.jar"
         },
         "jars.pdioItemrecTopK": {
-            "value": "predictionio-process-itemrec-evaluations-topkitems-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-itemrec-evaluations-topkitems-assembly-0.6.7.jar"
         },
         "jars.pdioItemsimTopK": {
-            "value": "predictionio-process-itemsim-evaluations-topkitems-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-itemsim-evaluations-topkitems-assembly-0.6.7.jar"
         },
         "jars.pdioCommonsEval": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.6.7.jar"
         },
         "jars.pdioCommonsParamGen": {
-            "value": "predictionio-process-commons-evaluations-paramgen-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-commons-evaluations-paramgen-assembly-0.6.7.jar"
         },
         "jars.pdioCommonsU2ITrainingTestSplit": {
-            "value": "predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-0.6.7.jar"
         }
     },
     "engineinfos": {

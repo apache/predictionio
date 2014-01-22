@@ -17,7 +17,7 @@ case class UpgradeConfig(
 /** Upgrades previous version to current version. */
 object Upgrade {
   def main(args: Array[String]) {
-    val thisVersion = "0.7.0-SNAPSHOT"
+    val thisVersion = "0.6.7"
     val parser = new scopt.OptionParser[UpgradeConfig]("upgrade") {
       head("PredictionIO Software Upgrade Utility", thisVersion)
       help("help") text ("prints this usage text")

@@ -27,7 +27,7 @@ object Backup {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[BackupConfig]("backup") {
-      head("PredictionIO Backup Utility", "0.7.0-SNAPSHOT")
+      head("PredictionIO Backup Utility", "0.6.7")
       help("help") text ("prints this usage text")
       arg[String]("<backup directory>") action { (x, c) =>
         c.copy(backupDir = x)

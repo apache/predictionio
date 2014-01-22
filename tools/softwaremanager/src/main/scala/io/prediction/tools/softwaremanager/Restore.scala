@@ -27,7 +27,7 @@ object Restore {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[RestoreConfig]("restore") {
-      head("PredictionIO Restore Utility", "0.7.0-SNAPSHOT")
+      head("PredictionIO Restore Utility", "0.6.7")
       help("help") text ("prints this usage text")
       opt[Unit]("upgrade") action { (_, c) =>
         c.copy(upgrade = true)
