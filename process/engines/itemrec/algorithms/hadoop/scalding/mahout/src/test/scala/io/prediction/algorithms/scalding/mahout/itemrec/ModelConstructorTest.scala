@@ -118,4 +118,22 @@ class ModelConstructorTest extends Specification with TupleConversions {
 
   }
 
+  val test2Items = List(("0", "i0", "t1,t2,t3"), ("1", "i1", "t1,t2"), ("2", "i2", "t2,t3"), ("3", "i3", "t2"))
+
+  val test2Users = List(("0", "u0"), ("1", "u1"), ("2", "u2"), ("3", "u3"))
+
+  val test2Predicted = List(("0", "[1:123,2:9]"), ("1", "[0:1]"))
+
+  val test2Ratings = List(("0", "0", "2"), ("0", "3", "88"))
+
+  val test2Output = List(
+    ("u0", "i1,i3,i2,i0", "123.0,88.0,9.0,2.0", "[t1,t2],[t2],[t2,t3],[t1,t2,t3]"),
+    ("u1", "i0", "1.0", "[t1,t2,t3]"))
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100 (score should not be compared as string)" should {
+
+    test(false, 100, test2Items, test2Users, test2Predicted, test2Ratings, test2Output)
+
+  }
+
 }

@@ -94,7 +94,9 @@ class ModelConstructor(args: Args) extends Job(args) {
    * computation
    */
 
-  val seenRatings = ratingSource.read
+  val seenRatings = ratingSource.read.mapTo(('uindexR, 'iindexR, 'ratingR) -> ('uindexR, 'iindexR, 'ratingR)) {
+    fields: (String, String, Double) => fields // convert score from String to Double
+  }
 
   // convert to (uindex, iindex, rating) format
   // and filter seen items from predicted
@@ -126,11 +128,21 @@ class ModelConstructor(args: Args) extends Job(args) {
   [0:2.0]
   [16:3.0]
   */
-  def parsePredictedData(data: String): List[(String, String)] = {
+  def parsePredictedData(data: String): List[(String, Double)] = {
     val dataLen = data.length
     data.take(dataLen - 1).tail.split(",").toList.map { ratingData =>
       val ratingDataArray = ratingData.split(":")
-      (ratingDataArray(0), ratingDataArray(1))
+      val item = ratingDataArray(0)
+      val rating: Double = try {
+        ratingDataArray(1).toDouble
+      } catch {
+        case e: Exception =>
+          {
+            assert(false, s"Cannot convert rating value of item ${item} to double: " + ratingDataArray + ". Exception: " + e)
+          }
+          0.0
+      }
+      (item, rating)
     }
   }
 }

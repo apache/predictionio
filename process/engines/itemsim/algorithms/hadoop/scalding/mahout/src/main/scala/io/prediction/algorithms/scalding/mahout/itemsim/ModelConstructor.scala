@@ -64,6 +64,9 @@ class ModelConstructor(args: Args) extends Job(args) {
    * source
    */
   val similarities = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "similarities.tsv"), ('iindex, 'simiindex, 'score)).read
+    .mapTo(('iindex, 'simiindex, 'score) -> ('iindex, 'simiindex, 'score)) { 
+      fields: (String, String, Double) => fields // convert score from String to Double
+    }
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
     .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
@@ -87,7 +90,7 @@ class ModelConstructor(args: Args) extends Job(args) {
     .joinWithSmaller('simiindex -> 'iindexI, itemsIndex)
 
   val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score)
-  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score) -> ('iid, 'iidI, 'itypesI, 'score)) { fields: (String, String, List[String], String) => fields }
+  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score) -> ('iid, 'iidI, 'itypesI, 'score)) { fields: (String, String, List[String], Double) => fields }
 
   val combinedSimilarities = sim1 ++ sim2
 

@@ -72,4 +72,26 @@ class ModelConstructorTest extends Specification with TupleConversions {
 
   }
 
+  val test2Items = List(("0", "i0", "t1,t2,t3"), ("1", "i1", "t1,t2"), ("2", "i2", "t2,t3"), ("3", "i3", "t2"))
+    
+  val test2Similarities = List( 
+    ("0", "1", "83"),
+    ("0", "2", "200"),
+    ("0", "3", "4"),
+    ("1", "2", "9"),
+    ("1", "3", "68"),
+    ("2", "3", "1000"))
+
+  val test2Output = List(
+    ("i0", "i2,i1,i3", "200.0,83.0,4.0", "[t2,t3],[t1,t2],[t2]"),
+    ("i1", "i0,i3,i2", "83.0,68.0,9.0", "[t1,t2,t3],[t2],[t2,t3]"),
+    ("i2", "i3,i0,i1", "1000.0,200.0,9.0", "[t2],[t1,t2,t3],[t1,t2]"),
+    ("i3", "i2,i1,i0", "1000.0,68.0,4.0", "[t2,t3],[t1,t2],[t1,t2,t3]"))
+
+  "mahout.itemsim ModelConstructor (score should not be compared as string)" should {
+
+    test(100, test2Items, test2Similarities, test2Output)
+
+  }
+
 }
