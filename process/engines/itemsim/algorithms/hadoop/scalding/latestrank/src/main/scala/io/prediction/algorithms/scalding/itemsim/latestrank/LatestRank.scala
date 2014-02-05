@@ -85,8 +85,8 @@ class LatestRank(args: Args) extends Job(args) {
     dbName=training_dbNameArg,
     dbHost=training_dbHostArg,
     dbPort=training_dbPortArg)
-    .readStarttime('iidx, 'itypes, 'starttime)
-    .map('starttime -> 'score) { t: String => t.toDouble }
+    .readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
+    .map('starttime -> 'score) { t: Long => t.toDouble }
     .groupBy('iidx) { _.sortBy('score).reverse.take(numSimilarItemsArg + 1) }
 
   val items = Items(

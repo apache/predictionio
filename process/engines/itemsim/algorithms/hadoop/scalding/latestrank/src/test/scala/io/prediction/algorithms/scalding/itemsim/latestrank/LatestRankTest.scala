@@ -14,7 +14,7 @@ class LatestRankTest extends Specification with TupleConversions {
     modelSet: Boolean,
     itypes: List[String],
     numSimilarItems: Int,
-    items: List[(String, String, String, String)],
+    items: List[(String, String, String, String, String, String)],
     itemSimScores: List[(String, String, String, String, Int, Boolean)]) = {
     val training_dbType = "file"
     val training_dbName = "testpath/"
@@ -62,7 +62,7 @@ class LatestRankTest extends Specification with TupleConversions {
   val modelSet = false
   val itypesT1T2 = List("t1", "t2")
   val itypesAll = List("t1", "t2", "t3", "t4")
-  val items = List(("i0", "t1,t2,t3", "19", "123456"), ("i1", "t2,t3", "19", "123457"), ("i2", "t4", "19", "21"), ("i3", "t3,t4", "19", "9876543210"))
+  val items = List(("i0", "t1,t2,t3", "19", "123456", "345678", "PIO_NONE"), ("i1", "t2,t3", "19", "123457", "567890", "PIO_NONE"), ("i2", "t4", "19", "21", "88", "99"), ("i3", "t3,t4", "19", "9876543210", "67890", "PIO_NONE"))
   val itemSimScoresT1T2 = List(
     ("i3", "i1,i0", "123457.0,123456.0", "[t2,t3],[t1,t2,t3]", algoid, modelSet),
     ("i2", "i1,i0", "123457.0,123456.0", "[t2,t3],[t1,t2,t3]", algoid, modelSet),

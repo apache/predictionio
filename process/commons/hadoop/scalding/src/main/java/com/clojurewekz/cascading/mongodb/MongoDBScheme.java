@@ -166,7 +166,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
       if (tupleEntry != null) {
         result.add(tupleEntry);
       } else if (columnFieldName != this.keyColumnName) {
-        result.add("");
+        result.add(null);
       }
     }
 

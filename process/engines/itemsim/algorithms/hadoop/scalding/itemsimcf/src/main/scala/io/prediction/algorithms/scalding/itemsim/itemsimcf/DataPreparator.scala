@@ -132,7 +132,7 @@ class DataPreparator(args: Args) extends Job(args) {
    * computation
    */
   u2i.joinWithSmaller('iid -> 'iidx, items) // only select actions of these items
-    .filter('action, 'v) { fields: (String, String) =>
+    .filter('action, 'v) { fields: (String, Option[String]) =>
       val (action, v) = fields
 
       val keepThis: Boolean = action match {
@@ -148,12 +148,19 @@ class DataPreparator(args: Args) extends Job(args) {
       }
       keepThis
     }
-    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
+    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, Option[String], String) =>
       val (action, v, t) = fields
       
       // convert actions into rating value based on "action" and "v" fields
       val rating: Int = action match {
-        case ACTION_RATE => v.toInt
+        case ACTION_RATE => try {
+          v.get.toInt
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to integer for ${action} action. Exception:" + e)
+            1
+          }
+        }
         case ACTION_LIKE => likeParamArg.getOrElse{
           assert(false, "Action type " + action + " should have been filtered out!")
           1

@@ -60,7 +60,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
-  // determin how to map actions to rating values
+  // determine how to map actions to rating values
   def getActionParam(name: String): Option[Int] = {
     val actionParam: Option[Int] = args(name) match {
       case "ignore" => None
@@ -187,7 +187,7 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // filter and pre-process actions
   u2i.joinWithSmaller('iid -> 'iidx, itemsIndex) // only select actions of these items
-    .filter('action, 'v) { fields: (String, String) =>
+    .filter('action, 'v) { fields: (String, Option[String]) =>
       val (action, v) = fields
 
       val keepThis: Boolean = action match {
@@ -203,12 +203,19 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
       }
       keepThis
     }
-    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
+    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, Option[String], String) =>
       val (action, v, t) = fields
 
       // convert actions into rating value based on "action" and "v" fields
       val rating: Int = action match {
-        case ACTION_RATE => v.toInt
+        case ACTION_RATE => try {
+          v.get.toInt
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to integer for ${action} action. Exception:" + e)
+            1
+          }
+        }
         case ACTION_LIKE => likeParamArg.getOrElse {
           assert(false, "Action type " + action + " should have been filtered out!")
           1

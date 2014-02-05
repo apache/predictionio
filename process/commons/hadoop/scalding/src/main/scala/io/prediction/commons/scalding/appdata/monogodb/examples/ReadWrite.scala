@@ -53,7 +53,7 @@ class ReadWrite(args: Args) extends Job(args) {
   val items = itemsSource.readData('iid, 'itypes)
     .write(Tsv("items.tsv"))
 
-  val itemsStarttime = itemsSource.readStarttime('iid, 'itypes, 'starttime)
+  val itemsStarttime = itemsSource.readStartEndtime('iid, 'itypes, 'starttime, 'endtime)
     .write(Tsv("itemsStarttime.tsv"))
 
   val itemsObj = itemsSource.readObj('item)

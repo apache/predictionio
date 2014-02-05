@@ -27,14 +27,14 @@ class ReadItypesTestJob(args: Args) extends Job(args) {
       (iid, itypes.mkString(","))
     }.write(Tsv("output"))
 
-  src.readStarttime('iid, 'itypes, 'starttime)
-    .mapTo(('iid, 'itypes, 'starttime) -> ('iid, 'itypes, 'starttime)) { fields: (String, List[String], String) =>
-      val (iid, itypes, starttime) = fields
+  src.readStartEndtime('iid, 'itypes, 'starttime, 'endtime)
+    .mapTo(('iid, 'itypes, 'starttime, 'endtime) -> ('iid, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
+      val (iid, itypes, starttime, endtime) = fields
 
       // during read, itypes are converted from t1,t2,t3 to List[String] = List(t1,t2,t3)
       // convert the List back to string with ',' as separator
-      (iid, itypes.mkString(","), starttime)
-    }.write(Tsv("outputStarttime"))
+      (iid, itypes.mkString(","), starttime.toString, endtime.map(_.toString).getOrElse("PIO_NONE"))
+    }.write(Tsv("outputStartEndtime"))
 
   val writeDataSink = new FileItemsSource("writeDataTestpath", appidArg, None)
 
@@ -50,33 +50,33 @@ class ReadItypesTestJob(args: Args) extends Job(args) {
 class FileItemsSourceTest extends Specification with TupleConversions {
 
   val test1Input = List(
-    ("i0", "t1,t2,t3", "appid", "2293300", "1266673"),
-    ("i1", "t2,t3", "appid", "14526361", "12345135"),
-    ("i2", "t4", "appid", "14526361", "23423424"),
-    ("i3", "t3,t4", "appid", "1231415", "378462511"))
+    ("i0", "t1,t2,t3", "appid", "2293300", "1266673", "666554320"),
+    ("i1", "t2,t3", "appid", "14526361", "12345135", "PIO_NONE"),
+    ("i2", "t4", "appid", "14526361", "23423424", "PIO_NONE"),
+    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323"))
 
   val test1output_all = test1Input
 
   val test1output_t4 = List(
-    ("i2", "t4", "appid", "14526361", "23423424"),
-    ("i3", "t3,t4", "appid", "1231415", "378462511"))
+    ("i2", "t4", "appid", "14526361", "23423424", "PIO_NONE"),
+    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323"))
 
   val test1output_t2t3 = List(
-    ("i0", "t1,t2,t3", "appid", "2293300", "1266673"),
-    ("i1", "t2,t3", "appid", "14526361", "12345135"),
-    ("i3", "t3,t4", "appid", "1231415", "378462511"))
+    ("i0", "t1,t2,t3", "appid", "2293300", "1266673", "666554320"),
+    ("i1", "t2,t3", "appid", "14526361", "12345135", "PIO_NONE"),
+    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323"))
 
   val test1output_none = List()
 
   def testWithItypes(appid: Int, writeAppid: Int, itypes: List[String],
-    inputItems: List[(String, String, String, String, String)],
-    outputItems: List[(String, String, String, String, String)]) = {
+    inputItems: List[(String, String, String, String, String, String)],
+    outputItems: List[(String, String, String, String, String, String)]) = {
 
-    val inputSource = inputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, appid.toString, starttime, ct) }
-    val outputExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes) }
-    val outputStarttimeExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, starttime) }
-    val writeDataExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, writeAppid.toString) }
-    val writeObjExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct) => (id, itypes, appid.toString, starttime, ct) }
+    val inputSource = inputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, appid.toString, starttime, ct, endtime) }
+    val outputExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes) }
+    val outputStartEndtimeExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, starttime, endtime) }
+    val writeDataExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, writeAppid.toString) }
+    val writeObjExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, appid.toString, starttime, ct) }
 
     JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob")
       .arg("appid", appid.toString)
@@ -88,9 +88,9 @@ class FileItemsSourceTest extends Specification with TupleConversions {
           outputBuffer must containTheSameElementsAs(outputExpected)
         }
       }
-      .sink[(String, String, String)](Tsv("outputStarttime")) { outputBuffer =>
+      .sink[(String, String, String, String)](Tsv("outputStartEndtime")) { outputBuffer =>
         "correctly read starttime" in {
-          outputBuffer must containTheSameElementsAs(outputStarttimeExpected)
+          outputBuffer must containTheSameElementsAs(outputStartEndtimeExpected)
         }
       }
       .sink[(String, String, String)]((new FileItemsSource("writeDataTestpath", appid, None)).getSource) { outputBuffer =>

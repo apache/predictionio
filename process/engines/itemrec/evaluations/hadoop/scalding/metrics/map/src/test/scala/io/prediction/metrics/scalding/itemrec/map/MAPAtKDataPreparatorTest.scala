@@ -18,8 +18,8 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
   
   def test(params: Map[String, String], 
       testU2i: List[(String, String, String, String, String)],
-      relevantItems: List[(String, String)], // List(("u0", "i0,i1,i2"), ("u1", "i0,i1,i2"))
-      topKItems: List[(String, String)]) = {
+      relevantItems: List[(String, String)] // List(("u0", "i0,i1,i2"), ("u1", "i0,i1,i2"))
+    ) = {
     
     val test_dbType = "file"
     val test_dbName = "testsetpath/"
@@ -75,11 +75,6 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
           
         }
       }
-      /*.sink[(String, String)](Tsv(OfflineMetricFile(hdfsRoot, 2, 4, 5, 6, 8, "topKItems.tsv"))) { outputBuffer =>
-        "correctly generates topKItems for each user" in {
-          outputBuffer.toList must containTheSameElementsAs(topKItems)
-        }
-      }*/
       .run
       .finish
   }
@@ -88,25 +83,27 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
     
     val testU2i = List(
       // u0
-      (Rate, "u0", "i0", "123450", "4"), 
-      (View, "u0", "i1", "123457", "1"),
-      (Dislike, "u0", "i2", "123458", "0"),
-      (View, "u0", "i3", "123459", "0"),
-      (View, "u0", "i7", "123460", "0"),
+      (Rate, "u0", "i0", "123450", "4"),
+      (View, "u0", "i1", "123457", "PIO_NONE"),
+      (Dislike, "u0", "i2", "123458", "PIO_NONE"),
+      (View, "u0", "i3", "123459", "PIO_NONE"),
+      (View, "u0", "i7", "123460", "PIO_NONE"),
+      (Rate, "u0", "i8", "123450", "5"), 
       
       // u1
-      (View, "u1", "i0", "123457", "2"),
-      (Conversion, "u1", "i1", "123458", "0"),
-      (Conversion, "u1", "i4", "123457", "0"),
-      (Conversion, "u1", "i5", "123456", "0"),
+      (View, "u1", "i0", "123457", "PIO_NONE"),
+      (Conversion, "u1", "i1", "123458", "PIO_NONE"),
+      (Conversion, "u1", "i4", "123457", "PIO_NONE"),
+      (Conversion, "u1", "i5", "123456", "PIO_NONE"),
       (Rate, "u1", "i7", "123456", "3"),
       (Rate, "u1", "i8", "123454", "3"),
       (Rate, "u1", "i9", "123453", "4"),
       
       // u2
-      (View, "u2", "i3", "123458", "0"),
-      (Conversion, "u2", "i4", "123451", "0"),
-      (Conversion, "u2", "i5", "123452", "0"))
+      (View, "u2", "i3", "123458", "PIO_NONE"),
+      (Conversion, "u2", "i4", "123451", "PIO_NONE"),
+      (Conversion, "u2", "i5", "123452", "PIO_NONE"),
+      (Rate, "u2", "i6", "123452", "5"))
 
     "itemrec.map MAPAtKDataPreparator with goal = view" should {
       val params = Map("goalParam" -> "view", "kParam" -> "4")
@@ -114,12 +111,8 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
         ("u0", "i1,i3,i7"),
         ("u1", "i0"),
         ("u2", "i3"))
-    
-      val topKItems = List(
-        ("u0", "i9,i8,i7,i6"),
-        ("u1", "i0,i1,i2,i3"))
-        
-      test(params, testU2i, relevantItems, topKItems)
+
+      test(params, testU2i, relevantItems)
     }
     
     "itemrec.map MAPAtKDataPreparator with goal = conversion" should {
@@ -127,12 +120,37 @@ class MAPAtKDataPreparatorTest extends Specification with TupleConversions {
       val relevantItems = List(
         ("u1", "i1,i4,i5"),
         ("u2", "i4,i5"))
-    
-      val topKItems = List(
-        ("u0", "i9,i8,i7,i6,i5,i4,i3,i2"),
-        ("u1", "i0,i1,i2,i3,i4,i5"))
+            
+      test(params, testU2i, relevantItems)
+    }
+
+    "itemrec.map MAPAtKDataPreparator with goal = rate >= 3" should {
+      val params = Map("goalParam" -> "rate3", "kParam" -> "8")
+      val relevantItems = List(
+        ("u0", "i0,i8"),
+        ("u1", "i7,i8,i9"),
+        ("u2", "i6"))
         
-      test(params, testU2i, relevantItems, topKItems)
+      test(params, testU2i, relevantItems)
+    }
+
+    "itemrec.map MAPAtKDataPreparator with goal = rate >= 4" should {
+      val params = Map("goalParam" -> "rate4", "kParam" -> "8")
+      val relevantItems = List(
+        ("u0", "i0,i8"),
+        ("u1", "i9"),
+        ("u2", "i6"))
+        
+      test(params, testU2i, relevantItems)
+    }
+
+    "itemrec.map MAPAtKDataPreparator with goal = rate >= 5" should {
+      val params = Map("goalParam" -> "rate5", "kParam" -> "8")
+      val relevantItems = List(
+        ("u0", "i8"),
+        ("u2", "i6"))
+        
+      test(params, testU2i, relevantItems)
     }
   
 }

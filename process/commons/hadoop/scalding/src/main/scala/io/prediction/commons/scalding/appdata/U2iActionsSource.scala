@@ -22,7 +22,7 @@ trait U2iActionsSource {
    * uidField: Symbol of uid(String)
    * iidField: Symbol of iid(String)
    * tField: Symbol of t(String)
-   * vField: Symbol of v(String)
+   * vField: Symbol of v(Option[String])
    */
   def readData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol)(implicit fd: FlowDef): Pipe
 
@@ -32,7 +32,7 @@ trait U2iActionsSource {
    * uidField: Symbol of uid(String)
    * iidField: Symbol of iid(String)
    * tField: Symbol of t(String)
-   * vField: Symbol of v(String)
+   * vField: Symbol of v(Option[String])
    * appid: App ID(Int)
    * p: Pipe. the data pipe.
    */

@@ -79,7 +79,7 @@ class LatestRank(args: Args) extends Job(args) {
 
   // get items data
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readStarttime('iidx, 'itypes, 'starttime)
+    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
 
   val users = Users(appId = trainingAppid,
     dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('uid)
@@ -98,7 +98,7 @@ class LatestRank(args: Args) extends Job(args) {
   val usersWithKey = users.map(() -> 'userKey) { u: Unit => 1 }
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
-    .map('starttime -> 'score) { t: String => t.toDouble }
+    .map('starttime -> 'score) { t: Long => t.toDouble }
     .project('uid, 'iidx, 'score, 'itypes)
     .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
     // another way to is to do toList then take top n from List. But then it would create an unncessary long List

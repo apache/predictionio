@@ -245,11 +245,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
   val test3U2i = List(
     (Rate, "u0", "i0", "123450", "4"),
-    (Like, "u0", "i1", "123457", "3"),
-    (Dislike, "u0", "i2", "123458", "3"),
-    (View, "u0", "i3", "123459", "0"), // NOTE: assume v field won't be missing
+    (Like, "u0", "i1", "123457", "PIO_NONE"),
+    (Dislike, "u0", "i2", "123458", "PIO_NONE"),
+    (View, "u0", "i3", "123459", "PIO_NONE"), // NOTE: assume v field won't be missing
     (Rate, "u1", "i0", "123457", "2"),
-    (Conversion, "u1", "i1", "123458", "0"))
+    (Conversion, "u1", "i1", "123458", "PIO_NONE"))
 
   val test3Ratings = List(
     ("u0", "i0", "4"),
@@ -282,24 +282,24 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
   val test4U2i = List(
     (Rate, "u0", "i0", "123448", "3"),
-    (View, "u0", "i0", "123449", "4"), // lowest (2)
-    (Like, "u0", "i0", "123451", "0"), // latest, highest (5)
-    (Conversion, "u0", "i0", "123450", "1"),
+    (View, "u0", "i0", "123449", "PIO_NONE"), // lowest (2)
+    (Like, "u0", "i0", "123451", "PIO_NONE"), // latest, highest (5)
+    (Conversion, "u0", "i0", "123450", "PIO_NONE"),
 
     (Rate, "u0", "i1", "123456", "1"), // lowest
     (Rate, "u0", "i1", "123457", "4"), // highest
-    (View, "u0", "i1", "123458", "3"), // latest (2)
+    (View, "u0", "i1", "123458", "PIO_NONE"), // latest (2)
 
-    (Conversion, "u0", "i2", "123461", "2"), // latest, highest  (4)
+    (Conversion, "u0", "i2", "123461", "PIO_NONE"), // latest, highest  (4)
     (Rate, "u0", "i2", "123459", "3"),
-    (View, "u0", "i2", "123460", "5"), // lowest
+    (View, "u0", "i2", "123460", "PIO_NONE"), // lowest
 
     (Rate, "u0", "i3", "123459", "2"),
-    (View, "u1", "i0", "123457", "5"), // (2)
+    (View, "u1", "i0", "123457", "PIO_NONE"), // (2)
 
     (Rate, "u1", "i1", "123458", "5"), // highest
-    (Conversion, "u1", "i1", "123459", "4"), // (4)
-    (Dislike, "u1", "i1", "123460", "1")) // latest, lowest (1)
+    (Conversion, "u1", "i1", "123459", "PIO_NONE"), // (4)
+    (Dislike, "u1", "i1", "123460", "PIO_NONE")) // latest, lowest (1)
 
   val test4RatingsLatest = List(
     ("u0", "i0", "5"),
