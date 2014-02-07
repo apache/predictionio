@@ -217,7 +217,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
         dbObject.put(columnFieldName, tupleEntryValue);
       }
     }
-    logger.info("Putting key for output: {} {}", key, dbObject);
+    //logger.info("Putting key for output: {} {}", key, dbObject);
     outputCollector.collect(key, new BSONWritable(dbObject));
   }
 
