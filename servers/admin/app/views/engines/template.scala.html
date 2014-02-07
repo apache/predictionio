@@ -47,6 +47,28 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="boxBlock">
+                          <div class="boxtitle">Training Schedule</div>
+                          <div class="boxContent">
+                            <p>
+                              You may configure this engine's training schedule in this section.
+                              The schedule can be specified by any valid CRON expression.
+                              A description of CRON expression can be found <a href="http://en.wikipedia.org/wiki/Cron#CRON_expression">here</a>.
+                            </p>
+                            <div class="bottomMargin">
+                              <label class="checkbox">
+                                <input id="trainingdisabled" <% if (data.trainingdisabled == true) { %> checked <% } %> name="trainingdisabled" type="checkbox" /> Disable scheduled training
+                              </label>
+                            </div>
+                            <div class="control-group">
+                              <label for="trainingschedule" class="control-label">Training Schedule</label>
+                              <div class="controls">
+                                <input id="trainingschedule" name="trainingschedule" class="span2" type="text" value="<%= data.trainingschedule %>" />
+                                <span class="help-inline">If empty, "0 * * * *" is assumed.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 @Html(content)
                     </div>
                     <!-- End of Prediction Settings -->

@@ -15,7 +15,7 @@ import org.json4s.native.Serialization
  * @param itypes List of item types.
  * @param params Engine parameters as key-value pairs.
  * @param trainingdisabled Whether training is disabled or not. If value is undefined, assume training is not disabled.
- * @param trainingschedule Training schedule of this engine in cron expression. If none is provided, no training will be performed.
+ * @param trainingschedule Training schedule of this engine in cron expression. Default to an hourly schedule at 0 minute.
  */
 case class Engine(
   id: Int,
