@@ -9,7 +9,6 @@ import com.mongodb.casbah.Imports._
 class MongoEngines(db: MongoDB) extends Engines {
   private val engineColl = db("engines")
   private val seq = new MongoSequences(db)
-  private val getFields = MongoDBObject("appid" -> 1, "name" -> 1, "infoid" -> 1, "itypes" -> 1, "params" -> 1)
 
   private def dbObjToEngine(dbObj: DBObject) = {
     /** Transparent upgrade. Remove in next minor version. */
@@ -20,7 +19,9 @@ class MongoEngines(db: MongoDB) extends Engines {
         name = dbObj.as[String]("name"),
         infoid = dbObj.as[String]("infoid"),
         itypes = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
-        params = MongoUtils.dbObjToMap(settings))
+        params = MongoUtils.dbObjToMap(settings),
+        trainingdisabled = dbObj.getAs[Boolean]("trainingdisabled"),
+        trainingschedule = dbObj.getAs[String]("trainingschedule"))
       update(e)
       e
     } getOrElse {
@@ -30,7 +31,9 @@ class MongoEngines(db: MongoDB) extends Engines {
         name = dbObj.as[String]("name"),
         infoid = dbObj.as[String]("infoid"),
         itypes = dbObj.getAs[MongoDBList]("itypes") map { MongoUtils.mongoDbListToListOfString(_) },
-        params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params")))
+        params = MongoUtils.dbObjToMap(dbObj.as[DBObject]("params")),
+        trainingdisabled = dbObj.getAs[Boolean]("trainingdisabled"),
+        trainingschedule = dbObj.getAs[String]("trainingschedule"))
     }
   }
 
@@ -52,14 +55,16 @@ class MongoEngines(db: MongoDB) extends Engines {
     )
 
     // optional fields
-    val optObj = engine.itypes.map(x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
+    val optObj = engine.itypes.map(x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      engine.trainingdisabled.map(x => MongoDBObject("trainingdisabled" -> x)).getOrElse(MongoUtils.emptyObj) ++
+      engine.trainingschedule.map(x => MongoDBObject("trainingschedule" -> x)).getOrElse(MongoUtils.emptyObj)
 
     engineColl.insert(obj ++ optObj)
 
     id
   }
 
-  def get(id: Int) = engineColl.findOne(MongoDBObject("_id" -> id), getFields) map { dbObjToEngine(_) }
+  def get(id: Int) = engineColl.findOne(MongoDBObject("_id" -> id)) map { dbObjToEngine(_) }
 
   def getAll() = new MongoEngineIterator(engineColl.find())
 
@@ -76,10 +81,12 @@ class MongoEngines(db: MongoDB) extends Engines {
     val infoidObj = MongoDBObject("infoid" -> engine.infoid)
     val itypesObj = engine.itypes.map(x => MongoDBObject("itypes" -> x)).getOrElse(MongoUtils.emptyObj)
     val paramsObj = MongoDBObject("params" -> engine.params)
+    val trainingdisabledObj = engine.trainingdisabled.map(x => MongoDBObject("trainingdisabled" -> x)).getOrElse(MongoUtils.emptyObj)
+    val trainingscheduleObj = engine.trainingschedule.map(x => MongoDBObject("trainingschedule" -> x)).getOrElse(MongoUtils.emptyObj)
 
     engineColl.update(
       idObj,
-      idObj ++ appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ paramsObj,
+      idObj ++ appidObj ++ nameObj ++ infoidObj ++ itypesObj ++ paramsObj ++ trainingdisabledObj ++ trainingscheduleObj,
       upsert
     )
   }
