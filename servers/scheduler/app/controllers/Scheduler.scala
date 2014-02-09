@@ -174,8 +174,8 @@ object Scheduler extends Controller {
               Logger.info(s"${logPrefix}Training disabled")
             } else {
               // Append a 0 in front since Quartz support granularity to seconds
-              val trainingscheduleUnvalidated = "0 " + engine.trainingschedule.getOrElse("0 * * * *")
-              val trainingschedule = if (CronExpression.isValidExpression(trainingscheduleUnvalidated)) trainingscheduleUnvalidated else "0 0 * * * *"
+              val trainingscheduleUnvalidated = engine.trainingschedule.getOrElse("0 0 * * * ?")
+              val trainingschedule = if (CronExpression.isValidExpression(trainingscheduleUnvalidated)) trainingscheduleUnvalidated else "0 0 * * * ?"
               Logger.info(s"${logPrefix}Setting up batch algo job with schedule ${trainingschedule}")
               algoinfo.batchcommands map { batchcommands =>
                 val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
