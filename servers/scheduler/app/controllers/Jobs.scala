@@ -166,6 +166,7 @@ object Jobs {
     command.setAttribute("numRecommendations", engine.params.getOrElse("numRecommendations", 500))
     command.setAttribute("numSimilarItems", engine.params.getOrElse("numSimilarItems", 500))
     command.setAttribute("unseenOnly", engine.params.getOrElse("unseenonly", false))
+    command.setAttribute("recommendationTime", System.currentTimeMillis)
   }
 }
 
