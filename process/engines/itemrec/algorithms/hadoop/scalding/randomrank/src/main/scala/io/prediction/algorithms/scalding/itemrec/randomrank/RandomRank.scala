@@ -33,8 +33,8 @@ import io.prediction.commons.filepath.{ AlgoFile }
  *
  * --itypes: <string separated by white space>. optional. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  * --numRecommendations: <int>. number of recommendations to be generated
- *
  * --modelSet: <boolean> (true/false). flag to indicate which set
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Example:
  * hadoop jar PredictionIO-Process-Hadoop-Scala-assembly-0.1.jar io.prediction.algorithms.scalding.itemrec.randomrank.RandomRank --hdfs --training_dbType mongodb --training_dbName predictionio_appdata --training_dbHost localhost --training_dbPort 27017 --modeldata_dbType mongodb --modeldata_dbName predictionio_modeldata --modeldata_dbHost localhost --modeldata_dbPort 27017 --hdfsRoot predictionio/ --appid 1 --engineid 1 --algoid 18 --modelSet true
@@ -68,6 +68,7 @@ class RandomRank(args: Args) extends Job(args) {
   val numRecommendationsArg = args("numRecommendations").toInt
 
   val modelSetArg = args("modelSet").toBoolean
+  val recommendationTimeArg = args("recommendationTime").toLong
 
   /**
    * source
@@ -79,7 +80,7 @@ class RandomRank(args: Args) extends Job(args) {
 
   // get items data
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('iidx, 'itypes)
+    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
 
   val users = Users(appId = trainingAppid,
     dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('uid)
@@ -96,7 +97,23 @@ class RandomRank(args: Args) extends Job(args) {
   /**
    * computation
    */
-  val itemsWithKey = items.map(() -> 'itemKey) { u: Unit => 1 }
+  val itemsWithKey = items
+    .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
+      // only keep items with valid starttime and endtime
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
+    .map(() -> 'itemKey) { u: Unit => 1 }
+
   val usersWithKey = users.map(() -> 'userKey) { u: Unit => 1 }
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
@@ -106,14 +123,6 @@ class RandomRank(args: Args) extends Job(args) {
     // another way to is to do toList then take top n from List. But then it would create an unncessary long List
     // for each group first. not sure which way is better.
     .groupBy('uid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'iidsList) }
-
-  // this is solely for debug purpose
-  /*
-  scores.project('uid, 'iidx, 'score)
-    .write(scoresFile)
-  */
-
-  // write modeldata
-  scores.then(itemRecScores.writeData('uid, 'iidsList, algoidArg, modelSetArg) _)
+    .then(itemRecScores.writeData('uid, 'iidsList, algoidArg, modelSetArg) _)
 
 }

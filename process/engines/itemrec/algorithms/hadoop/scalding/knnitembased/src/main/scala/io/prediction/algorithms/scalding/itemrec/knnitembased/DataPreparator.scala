@@ -114,7 +114,7 @@ class DataPreparator(args: Args) extends Job(args) {
 
   // get items data
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('iidx, 'itypes)
+    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
 
   val u2i = U2iActions(appId = trainingAppid,
     dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('action, 'uid, 'iid, 't, 'v)
@@ -190,10 +190,12 @@ class DataPreparator(args: Args) extends Job(args) {
     .write(ratingsSink)
 
   // Also store the selected items into DataFile for later model construction usage.
-  items.mapTo(('iidx, 'itypes) -> ('iidx, 'itypes)) { fields: (String, List[String]) =>
-    val (iidx, itypes) = fields
+  items.mapTo(('iidx, 'itypes, 'starttime, 'endtime) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
+    val (iidx, itypes, starttime, endtime) = fields
 
-    (iidx, itypes.mkString(",")) // NOTE: convert List[String] into comma-separated String
+    // NOTE: convert List[String] into comma-separated String
+    // NOTE: endtime is optional
+    (iidx, itypes.mkString(","), starttime, endtime.map(_.toString).getOrElse("PIO_NONE"))
   }.write(selectedItemsSink)
 
   /**
