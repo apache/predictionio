@@ -24,6 +24,7 @@ import io.prediction.commons.scalding.modeldata.ItemSimScores
  * --modelSet: <boolean> (true/false). flag to indicate which set
  *
  * --numSimilarItems: <int>. number of similar items to be generated
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -59,6 +60,7 @@ class ModelConstructor(args: Args) extends Job(args) {
   val modelSetArg = args("modelSet").toBoolean
   
   val numSimilarItems = args("numSimilarItems").toInt
+  val recommendationTimeArg = args("recommendationTime").toLong
 
   /**
    * source
@@ -69,10 +71,24 @@ class ModelConstructor(args: Args) extends Job(args) {
     }
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
-    .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
-      val (iindex, iid, itypes) = fields // itypes are comma-separated String
-      
-      (iindex, iid, itypes.split(",").toList) 
+    .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
+      val (iindex, iid, itypes, starttime, endtime) = fields // itypes are comma-separated String
+
+      val endtimeOpt: Option[Long] = endtime match {
+        case "PIO_NONE" => None
+        case x: String => {
+          try {
+            Some(x.toLong)
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+              Some(0)
+            }
+          }
+        }
+      }
+
+      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt)
     }
   
   /**
@@ -86,15 +102,31 @@ class ModelConstructor(args: Args) extends Job(args) {
    */
   val sim = similarities.joinWithSmaller('iindex -> 'iindexI, itemsIndex)
     .discard('iindex, 'iindexI)
-    .rename(('iidI, 'itypesI) -> ('iid, 'itypes))
+    .rename(('iidI, 'itypesI, 'starttimeI, 'endtimeI) -> ('iid, 'itypes, 'starttime, 'endtime))
     .joinWithSmaller('simiindex -> 'iindexI, itemsIndex)
 
-  val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score)
-  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score) -> ('iid, 'iidI, 'itypesI, 'score)) { fields: (String, String, List[String], Double) => fields }
+  // NOTE: use simiid's starttime and endtime. not iid's.
+  val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)
+  // NOTE: mahout only calculate half of the sim matrix, reverse the fields to get the other half
+  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score, 'starttime, 'endtime) -> ('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)) { 
+    fields: (String, String, List[String], Double, Long, Option[Long]) => fields }
 
   val combinedSimilarities = sim1 ++ sim2
 
   combinedSimilarities
+    .filter('starttimeI, 'endtimeI) { fields: (Long, Option[Long]) =>
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidI, 'score, 'itypesI) -> 'simiidsList) }
     .then ( ItemSimScoresSink.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
   

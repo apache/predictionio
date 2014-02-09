@@ -26,6 +26,7 @@ import cascading.pipe.joiner.LeftJoin
  *
  * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true.
  * --numRecommendations: <int>. number of recommendations to be generated
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -62,6 +63,7 @@ class ModelConstructor(args: Args) extends Job(args) {
 
   val unseenOnlyArg = args("unseenOnly").toBoolean
   val numRecommendationsArg = args("numRecommendations").toInt
+  val recommendationTimeArg = args("recommendationTime").toLong
 
   /**
    * source
@@ -72,10 +74,24 @@ class ModelConstructor(args: Args) extends Job(args) {
   val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindexR, 'iindexR, 'ratingR))
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
-    .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
-      val (iindex, iid, itypes) = fields // itypes are comma-separated String
+    .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
+      val (iindex, iid, itypes, starttime, endtime) = fields // itypes are comma-separated String
 
-      (iindex, iid, itypes.split(",").toList)
+      val endtimeOpt: Option[Long] = endtime match {
+        case "PIO_NONE" => None
+        case x: String => {
+          try {
+            Some(x.toLong)
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+              Some(0)
+            }
+          }
+        }
+      }
+
+      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt)
     }
 
   val usersIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "usersIndex.tsv")).read
@@ -114,8 +130,21 @@ class ModelConstructor(args: Args) extends Job(args) {
   }
 
   combinedRating
-    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
+    .filter('starttimeI, 'endtimeI) { fields: (Long, Option[Long]) =>
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
+    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)
     .project('uidU, 'iidI, 'rating, 'itypesI)
     .groupBy('uidU) { _.sortBy('rating).reverse.toList[(String, Double, List[String])](('iidI, 'rating, 'itypesI) -> 'iidsList) }

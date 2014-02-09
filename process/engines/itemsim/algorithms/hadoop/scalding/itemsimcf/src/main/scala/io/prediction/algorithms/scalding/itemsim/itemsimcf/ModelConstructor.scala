@@ -25,7 +25,8 @@ import io.prediction.commons.scalding.modeldata.ItemSimScores
  * --engineid: <int>
  * --algoid: <int>
  * --modelSet: <boolean> (true/false). flag to indicate which set
- * 
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
+ *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
@@ -58,7 +59,8 @@ class ModelConstructor(args: Args) extends Job(args) {
   val DEBUG_TEST = debugArg.contains("test") // test mode
   
   val modelSetArg = args("modelSet").toBoolean
-  
+  val recommendationTimeArg = args("recommendationTime").toLong
+
   /**
    * input
    */
@@ -66,16 +68,43 @@ class ModelConstructor(args: Args) extends Job(args) {
     .mapTo((0, 1, 2) -> ('iid, 'simiid, 'score)) { fields: (String, String, Double) => fields }
   
   val items = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")).read
-    .mapTo((0, 1) -> ('iidx, 'itypes)) { fields: (String, String) =>
-      val (iidx, itypes) = fields // itypes are comma-separated String
-      
-      (iidx, itypes.split(",").toList) 
+    .mapTo((0, 1, 2, 3) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, String, Long, String) =>
+      val (iidx, itypes, starttime, endtime) = fields // itypes are comma-separated String
+
+      val endtimeOpt: Option[Long] = endtime match {
+        case "PIO_NONE" => None
+        case x: String => {
+          try {
+            Some(x.toLong)
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+              Some(0)
+            }
+          }
+        }
+      }
+
+      (iidx, itypes.split(",").toList, starttime, endtimeOpt)
     }
   
   /**
    * process & output
    */
   val p = score.joinWithSmaller('simiid -> 'iidx, items) // get items info for each simiid
+    .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
     .project('iid, 'simiid, 'score, 'itypes)
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('simiid, 'score, 'itypes) -> 'simiidsList) }
     
