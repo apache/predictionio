@@ -2230,6 +2230,7 @@ object Application extends Controller {
           val updatedParams = engine.params ++ params - "infoid"
           val updatedEngine = engine.copy(itypes = itypes, params = updatedParams, trainingdisabled = Some(trainingdisabled), trainingschedule = Some(trainingschedule))
           engines.update(updatedEngine)
+          WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
           Ok
         })
   }
