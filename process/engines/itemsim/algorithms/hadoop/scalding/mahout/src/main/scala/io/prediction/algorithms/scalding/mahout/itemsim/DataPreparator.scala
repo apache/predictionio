@@ -100,7 +100,7 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
    */
 
   val items = Items(appId=trainingAppid, itypes=itypesArg, 
-      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('iidx, 'itypes)
+      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
   
   val users = Users(appId=trainingAppid,
       dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('uid)
@@ -118,11 +118,13 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
 
   users.write(userIdSink)
 
-  items.mapTo(('iidx, 'itypes) -> ('iidx, 'itypes)) { fields: (String, List[String]) =>
-    val (iidx, itypes) = fields
+  items.mapTo(('iidx, 'itypes, 'starttime, 'endtime) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
+    val (iidx, itypes, starttime, endtime) = fields
     
-    (iidx, itypes.mkString(",")) // NOTE: convert List[String] into comma-separated String
-    }.write(selectedItemSink)
+    // NOTE: convert List[String] into comma-separated String
+    // NOTE: endtime is optional
+    (iidx, itypes.mkString(","), starttime, endtime.map(_.toString).getOrElse("PIO_NONE"))
+  }.write(selectedItemSink)
 
 }
 
@@ -147,21 +149,21 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // use byte offset as index for Mahout algo
   val itemsIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")).read
-    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes)) { fields: (String, String) =>
+    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, String) =>
       val (offset, line) = fields
 
       val lineArray = line.split("\t")
 
-      val (iidx, itypes) = try {
-          (lineArray(0), lineArray(1))
+      val (iidx, itypes, starttime, endtime) = try {
+          (lineArray(0), lineArray(1), lineArray(2), lineArray(3))
         } catch {
           case e: Exception => {
             assert(false, "Failed to extract iidx and itypes from the line: " + line + ". Exception: " + e)
-            (0, "dummy")
+            (0, "dummy", "dummy", "dummy")
           }
         }
         
-      (offset, iidx, itypes)
+      (offset, iidx, itypes, starttime, endtime)
     }
 
   val usersIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "userIds.tsv")).read
