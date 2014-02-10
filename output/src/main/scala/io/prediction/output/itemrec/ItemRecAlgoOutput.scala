@@ -15,9 +15,10 @@ trait ItemRecAlgoOutput {
 
 object ItemRecAlgoOutput {
   val config = new Config
-  val items = config.getAppdataItems
 
   def output(uid: String, n: Int, itypes: Option[Seq[String]], latlng: Option[Tuple2[Double, Double]], within: Option[Double], unit: Option[String])(implicit app: App, engine: Engine, algo: Algo, offlineEval: Option[OfflineEval] = None): Seq[String] = {
+    val items = offlineEval map { _ => config.getAppdataTrainingItems } getOrElse { config.getAppdataItems }
+
     /** Serendipity settings. */
     val serendipity = engine.params.get("serendipity").map { _.asInstanceOf[Int] }
 
