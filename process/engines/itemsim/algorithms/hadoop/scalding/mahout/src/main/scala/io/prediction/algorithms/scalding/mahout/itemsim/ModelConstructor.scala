@@ -128,6 +128,11 @@ class ModelConstructor(args: Args) extends Job(args) {
       keepThis
     }
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidI, 'score, 'itypesI) -> 'simiidsList) }
+    .mapTo(('iid, 'simiidsList) -> ('iid, 'simiidsList)) { fields: (String, List[(String, Double, List[String])]) =>
+      val (iid, simiidsList) = fields
+
+      (iid, simiidsList.take(numSimilarItems))
+    }
     .then ( ItemSimScoresSink.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
   
 }

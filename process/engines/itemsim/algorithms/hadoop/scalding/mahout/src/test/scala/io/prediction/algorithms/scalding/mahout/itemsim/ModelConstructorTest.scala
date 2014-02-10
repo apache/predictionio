@@ -75,12 +75,38 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("i2", "i1,i3,i0", "0.51,0.32,0.25", "[t1,t2],[t2],[t1,t2,t3]"),
     ("i3", "i1,i0,i2", "0.68,0.49,0.32", "[t1,t2],[t1,t2,t3],[t2,t3]"))
 
+  val test1Output1 = List(
+    ("i0", "i1", "0.83", "[t1,t2]"),
+    ("i1", "i0", "0.83", "[t1,t2,t3]"),
+    ("i2", "i1", "0.51", "[t1,t2]"),
+    ("i3", "i1", "0.68", "[t1,t2]"))
+
+  val test1Output2 = List(
+    ("i0", "i1,i3", "0.83,0.49", "[t1,t2],[t2]"),
+    ("i1", "i0,i3", "0.83,0.68", "[t1,t2,t3],[t2]"),
+    ("i2", "i1,i3", "0.51,0.32", "[t1,t2],[t2]"),
+    ("i3", "i1,i0", "0.68,0.49", "[t1,t2],[t1,t2,t3]"))
+
   "mahout.itemsim ModelConstructor" should {
 
     test(100, 1234567890, test1Items, test1Similarities, test1Output)
 
   }
 
+  "mahout.itemsim ModelConstructor with numSimilarItems=1" should {
+
+    test(1, 1234567890, test1Items, test1Similarities, test1Output1)
+
+  }
+
+  "mahout.itemsim ModelConstructor with numSimilarItems=2" should {
+
+    test(2, 1234567890, test1Items, test1Similarities, test1Output2)
+
+  }
+
+  /* test 2: score sorting */
+  
   val test2Items = List(
     ("0", "i0", "t1,t2,t3", "12346", noEndtime),
     ("1", "i1", "t1,t2", "12347", noEndtime),
