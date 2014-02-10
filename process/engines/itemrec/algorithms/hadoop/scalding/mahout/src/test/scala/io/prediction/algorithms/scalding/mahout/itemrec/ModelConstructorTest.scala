@@ -54,7 +54,98 @@ class ModelConstructorTest extends Specification with TupleConversions {
       }
       .run
       .finish
+  }
 
+  def testWithBooleanData(unseenOnly: Boolean, numRecommendations: Int, recommendationTime: Long,
+    items: List[(String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime)
+    users: List[(String, String)],
+    predicted: List[(String, String)],
+    ratings: List[(String, String, String)],
+    output: List[(String, String, String, String)],
+    booleanData: Boolean) = {
+
+    val engineid = 4
+    val algoid = 7
+    val evalid = None
+    val modelSet = true
+
+    val dbType = "file"
+    val dbName = "testpath/"
+    val dbHost = None
+    val dbPort = None
+    val hdfsRoot = "testroot/"
+
+    val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet) }
+
+    JobTest("io.prediction.algorithms.scalding.mahout.itemrec.ModelConstructor")
+      .arg("dbType", dbType)
+      .arg("dbName", dbName)
+      .arg("hdfsRoot", hdfsRoot)
+      .arg("appid", appid.toString)
+      .arg("engineid", engineid.toString)
+      .arg("algoid", algoid.toString)
+      .arg("modelSet", modelSet.toString)
+      .arg("unseenOnly", unseenOnly.toString)
+      .arg("numRecommendations", numRecommendations.toString)
+      .arg("recommendationTime", recommendationTime.toString)
+      .arg("booleanData", booleanData.toString)
+      .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv"), new Fields("uindex", "predicted")), predicted)
+      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindexR", "iindexR", "ratingR")), ratings)
+      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
+      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "usersIndex.tsv")), users)
+      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
+        "correctly write model data to a file" in {
+          outputBuffer.toList must containTheSameElementsAs(itemRecScores)
+        }
+      }
+      .run
+      .finish
+  }
+
+  def testWithImplicitFeedback(unseenOnly: Boolean, numRecommendations: Int, recommendationTime: Long,
+    items: List[(String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime)
+    users: List[(String, String)],
+    predicted: List[(String, String)],
+    ratings: List[(String, String, String)],
+    output: List[(String, String, String, String)],
+    implicitFeedback: Boolean) = {
+
+    val engineid = 4
+    val algoid = 7
+    val evalid = None
+    val modelSet = true
+
+    val dbType = "file"
+    val dbName = "testpath/"
+    val dbHost = None
+    val dbPort = None
+    val hdfsRoot = "testroot/"
+
+    val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet) }
+
+    JobTest("io.prediction.algorithms.scalding.mahout.itemrec.ModelConstructor")
+      .arg("dbType", dbType)
+      .arg("dbName", dbName)
+      .arg("hdfsRoot", hdfsRoot)
+      .arg("appid", appid.toString)
+      .arg("engineid", engineid.toString)
+      .arg("algoid", algoid.toString)
+      .arg("modelSet", modelSet.toString)
+      .arg("unseenOnly", unseenOnly.toString)
+      .arg("numRecommendations", numRecommendations.toString)
+      .arg("recommendationTime", recommendationTime.toString)
+      .arg("implicitFeedback", implicitFeedback.toString)
+      .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv"), new Fields("uindex", "predicted")), predicted)
+      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindexR", "iindexR", "ratingR")), ratings)
+      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
+      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "usersIndex.tsv")), users)
+      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
+        "correctly write model data to a file" in {
+          outputBuffer.toList must containTheSameElementsAs(itemRecScores)
+        }
+      }
+      .run
+      .finish
   }
 
   val noEndtime = "PIO_NONE"
@@ -92,39 +183,63 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("u1", "i0", "1.2", "[t1,t2,t3]"))
 
   "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100" should {
-
     test(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Output)
-
   }
 
   "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=2" should {
-
     test(false, 2, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Output2)
-
   }
 
   "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=100" should {
-
     test(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly)
-
   }
 
   "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=1" should {
-
     test(true, 1, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly1)
-
   }
 
   "mahout.itemrec.itembased ModelConstructor with unseenOnly=false, numRecommendations=100 and seen items in predicted results" should {
-
     test(false, 100, 1234567890, test1Items, test1Users, test1PredictedWithSeenItems, test1Ratings, test1Output)
-
   }
 
   "mahout.itemrec.itembased ModelConstructor with unseenOnly=true, numRecommendations=100 and seen items in predicted results" should {
-
     test(true, 100, 1234567890, test1Items, test1Users, test1PredictedWithSeenItems, test1Ratings, test1OutputUnseenOnly)
+  }
 
+  /* booleanData */
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=100 and booleanData=true" should {
+    testWithBooleanData(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly, true)
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=100 and booleanData=false" should {
+    testWithBooleanData(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly, false)
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100 and booleanData=true" should {
+    // should only generate unseen data if booleanData=true although unseenOnly=false
+    testWithBooleanData(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly, true)
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100 and booleanData=false" should {
+    testWithBooleanData(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Output, false)
+  }
+
+  /* implicitFeedback */
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=100 and implicitFeedback=true" should {
+    testWithImplicitFeedback(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly, true)
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=true and numRecommendations=100 and implicitFeedback=false" should {
+    testWithImplicitFeedback(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly, false)
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100 and implicitFeedback=true" should {
+    // should only generate unseen data if testWithImplicitFeedback=true although unseenOnly=false
+    testWithImplicitFeedback(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1OutputUnseenOnly, true)
+  }
+
+  "mahout.itemrec.itembased ModelConstructor with unseenOnly=false and numRecommendations=100 and implicitFeedback=false" should {
+    testWithImplicitFeedback(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Output, false)
   }
 
   /* test 2: test double comparision */

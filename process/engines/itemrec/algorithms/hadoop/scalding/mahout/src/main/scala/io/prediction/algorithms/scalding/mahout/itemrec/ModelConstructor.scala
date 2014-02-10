@@ -35,6 +35,9 @@ import cascading.pipe.joiner.LeftJoin
  * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
  *
+ * --booleanData: <boolean>. Mahout item rec algo flag for implicit action data
+ * --implicitFeedback: <boolean>. Mahout item rec algo flag for implicit action data
+ *
  * Example:
  *
  */
@@ -64,6 +67,11 @@ class ModelConstructor(args: Args) extends Job(args) {
   val unseenOnlyArg = args("unseenOnly").toBoolean
   val numRecommendationsArg = args("numRecommendations").toInt
   val recommendationTimeArg = args("recommendationTime").toLong
+
+  val booleanDataArg = args.optional("booleanData").map(x => x.toBoolean).getOrElse(false)
+  val implicitFeedbackArg = args.optional("implicitFeedback").map(x => x.toBoolean).getOrElse(false)
+  // implicit preference flag.
+  val IMPLICIT_PREFERENCE = booleanDataArg || implicitFeedbackArg
 
   /**
    * source
@@ -121,7 +129,10 @@ class ModelConstructor(args: Args) extends Job(args) {
     .filter('ratingR) { r: Double => (r == 0) } // if ratingR == 0, means unseen rating
     .project('uindex, 'iindex, 'rating)
 
-  val combinedRating = if (unseenOnlyArg) predictedRating else {
+  // NOTE: only suppoort unseenOnly if IMPLICIT_PREFERENCE = true because 
+  // can't simply merge the seen preference value with predicted preference value due to different meaning in value
+  // (depending on which distance function is used).
+  val combinedRating = if (unseenOnlyArg || IMPLICIT_PREFERENCE) predictedRating else {
 
     // rename for concatenation
     val seenRatings2 = seenRatings.rename(('uindexR, 'iindexR, 'ratingR) -> ('uindex, 'iindex, 'rating))
