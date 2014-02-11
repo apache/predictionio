@@ -18,14 +18,15 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
   val appid = 2
 
-  def test(itypes: List[String], params: Map[String, String],
+  def test(itypes: List[String], recommendationTime: Long, params: Map[String, String],
     items: List[(String, String, String, String, String, String)], // id, itypes, appid, starttime, ct, endtime
     users: List[Tuple1[String]],
     u2iActions: List[(String, String, String, String, String)],
     ratings: List[(String, String, String)],
     selectedItems: List[(String, String, String, String)], // id, itypes, starttime, endtime
     itemsIndexer: Map[String, String],
-    usersIndexer: Map[String, String]) = {
+    usersIndexer: Map[String, String],
+    recommendItems: List[String]) = {
 
     val userIds = users map (x => x._1)
     val selectedItemsTextLine = selectedItems map { x => (itemsIndexer(x._1), x.productIterator.mkString("\t")) }
@@ -35,6 +36,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     val usersIndex = users map { x => (usersIndexer(x._1), x._1) }
 
     val ratingsIndexed = ratings map { x => (usersIndexer(x._1), itemsIndexer(x._2), x._3) }
+
+    val recommendItemsIndexed = recommendItems map { x => (itemsIndexer(x)) }
 
     val dbType = "file"
     val dbName = "testpath/"
@@ -59,6 +62,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
       .arg("dislikeParam", params("dislikeParam"))
       .arg("conversionParam", params("conversionParam"))
       .arg("conflictParam", params("conflictParam"))
+      .arg("recommendationTime", recommendationTime.toString)
       .source(Items(appId = appid, itypes = Some(itypes), dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, items)
       .source(Users(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, users)
       .sink[(String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv"))) { outputBuffer =>
@@ -87,6 +91,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
       .arg("dislikeParam", params("dislikeParam"))
       .arg("conversionParam", params("conversionParam"))
       .arg("conflictParam", params("conflictParam"))
+      .arg("recommendationTime", recommendationTime.toString)
       .source(U2iActions(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, u2iActions)
       .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv")), selectedItemsTextLine)
       .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv")), usersTextLine)
@@ -105,6 +110,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
       .sink[(String, String, String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"))) { outputBuffer =>
         "correctly process and write data to ratings.csv" in {
           outputBuffer.toList must containTheSameElementsAs(ratingsIndexed)
+        }
+      }
+      .sink[(String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "recommendItems.csv"))) { outputBuffer =>
+        "correctly process and write data to recomomendItems.csv" in {
+          outputBuffer.toList must containTheSameElementsAs(recommendItemsIndexed)
         }
       }
       .run
@@ -129,6 +139,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test1ItemsMap("i1"),
     test1ItemsMap("i2"),
     test1ItemsMap("i3"))
+
+  val test1RecommendItems = List("i0", "i1", "i2", "i3")
 
   def genSelectedItems(items: List[(String, String, String, String, String, String)]) = {
     items map { x =>
@@ -162,11 +174,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
     "conflictParam" -> "latest")
 
   "DataPreparator with only rate actions, all itypes, no conflict" should {
-    test(test1AllItypes, test1Params, test1Items, test1Users, test1U2i, test1Ratings, genSelectedItems(test1Items), test1ItemsIndexer, test1UsersIndexer)
+    test(test1AllItypes, 20000, test1Params, test1Items, test1Users, test1U2i, test1Ratings, genSelectedItems(test1Items), test1ItemsIndexer, test1UsersIndexer, test1RecommendItems)
   }
 
   "DataPreparator with only rate actions, no itypes specified, no conflict" should {
-    test(List(), test1Params, test1Items, test1Users, test1U2i, test1Ratings, genSelectedItems(test1Items), test1ItemsIndexer, test1UsersIndexer)
+    test(List(), 20000, test1Params, test1Items, test1Users, test1U2i, test1Ratings, genSelectedItems(test1Items), test1ItemsIndexer, test1UsersIndexer, test1RecommendItems)
   }
 
   /**
@@ -185,6 +197,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test2ItemsMap("i1"),
     test2ItemsMap("i2"),
     test2ItemsMap("i3"))
+
+  val test2RecommendItems = List("i0", "i1", "i2", "i3")
 
   val test2ItemsIndexer = Map("i0" -> "0", "i1" -> "4", "i2" -> "7", "i3" -> "8") // map iid to index
 
@@ -242,6 +256,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test2ItemsMap("i2"),
     test2ItemsMap("i3"))
 
+  val test2RecommendItems_t1t4 = List("i0", "i2", "i3")
+
   val test2RatingsHighest_t1t4 = List(
     ("u0", "i0", "4"),
     ("u0", "i2", "5"),
@@ -254,19 +270,19 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test2ParamsLowest = test2Params + ("conflictParam" -> "lowest")
 
   "DataPreparator with only rate actions, all itypes, conflict=latest" should {
-    test(test2AllItypes, test2Params, test2Items, test2Users, test2U2i, test2RatingsLatest, genSelectedItems(test2Items), test2ItemsIndexer, test2UsersIndexer)
+    test(test2AllItypes, 20000, test2Params, test2Items, test2Users, test2U2i, test2RatingsLatest, genSelectedItems(test2Items), test2ItemsIndexer, test2UsersIndexer, test2RecommendItems)
   }
 
   "DataPreparator with only rate actions, all itypes, conflict=highest" should {
-    test(test2AllItypes, test2ParamsHighest, test2Items, test2Users, test2U2i, test2RatingsHighest, genSelectedItems(test2Items), test2ItemsIndexer, test2UsersIndexer)
+    test(test2AllItypes, 20000, test2ParamsHighest, test2Items, test2Users, test2U2i, test2RatingsHighest, genSelectedItems(test2Items), test2ItemsIndexer, test2UsersIndexer, test2RecommendItems)
   }
 
   "DataPreparator with only rate actions, all itypes, conflict=lowest" should {
-    test(test2AllItypes, test2ParamsLowest, test2Items, test2Users, test2U2i, test2RatingsLowest, genSelectedItems(test2Items), test2ItemsIndexer, test2UsersIndexer)
+    test(test2AllItypes, 20000, test2ParamsLowest, test2Items, test2Users, test2U2i, test2RatingsLowest, genSelectedItems(test2Items), test2ItemsIndexer, test2UsersIndexer, test2RecommendItems)
   }
 
   "DataPreparator with only rate actions, some itypes, conflict=highest" should {
-    test(test2Itypes_t1t4, test2ParamsHighest, test2Items, test2Users, test2U2i, test2RatingsHighest_t1t4, genSelectedItems(test2Items_t1t4), test2ItemsIndexer, test2UsersIndexer)
+    test(test2Itypes_t1t4, 20000, test2ParamsHighest, test2Items, test2Users, test2U2i, test2RatingsHighest_t1t4, genSelectedItems(test2Items_t1t4), test2ItemsIndexer, test2UsersIndexer, test2RecommendItems_t1t4)
   }
 
   /**
@@ -285,6 +301,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test3ItemsMap("i1"),
     test3ItemsMap("i2"),
     test3ItemsMap("i3"))
+
+  val test3RecommendItems = List("i0", "i1", "i2", "i3")
 
   val test3ItemsIndexer = Map("i0" -> "0", "i1" -> "4", "i2" -> "7", "i3" -> "8") // map iid to index
 
@@ -311,7 +329,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     "conflictParam" -> "latest")
 
   "DataPreparator with only all actions, all itypes, no conflict" should {
-    test(test3AllItypes, test3Params, test3Items, test3Users, test3U2i, test3Ratings, genSelectedItems(test3Items), test3ItemsIndexer, test3UsersIndexer)
+    test(test3AllItypes, 20000, test3Params, test3Items, test3Users, test3U2i, test3Ratings, genSelectedItems(test3Items), test3ItemsIndexer, test3UsersIndexer, test3RecommendItems)
   }
 
   /**
@@ -333,6 +351,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test4ItemsMap("i1"),
     test4ItemsMap("i2"),
     test4ItemsMap("i3"))
+
+  val test4RecommendItems = List("i0", "i1", "i2", "i3")
 
   val test4ItemsIndexer = Map("i0" -> "0", "i1" -> "4", "i2" -> "7", "i3" -> "8") // map iid to index
 
@@ -369,7 +389,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "1"))
 
   "DataPreparator with all actions, all itypes, and conflicts=latest" should {
-    test(test4AllItypes, test4Params, test4Items, test4Users, test4U2i, test4RatingsLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer)
+    test(test4AllItypes, 20000, test4Params, test4Items, test4Users, test4U2i, test4RatingsLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
   }
 
   val test4ParamsIgnoreView = test4Params + ("viewParam" -> "ignore")
@@ -382,7 +402,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "1"))
 
   "DataPreparator with all actions, all itypes, ignore View actions and conflicts=latest" should {
-    test(test4AllItypes, test4ParamsIgnoreView, test4Items, test4Users, test4U2i, test4RatingsIgnoreViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer)
+    test(test4AllItypes, 20000, test4ParamsIgnoreView, test4Items, test4Users, test4U2i, test4RatingsIgnoreViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
   }
 
   // note: currently rate action can't be ignored
@@ -397,7 +417,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "5"))
 
   "DataPreparator with all actions, all itypes, ignore all actions except View (and Rate) and conflicts=latest" should {
-    test(test4AllItypes, test4ParamsIgnoreAllExceptView, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllExceptViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer)
+    test(test4AllItypes, 20000, test4ParamsIgnoreAllExceptView, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllExceptViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
   }
 
   // note: meaning rate action only
@@ -411,7 +431,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "5"))
 
   "DataPreparator with all actions, all itypes, ignore all actions (except Rate) and conflicts=latest" should {
-    test(test4AllItypes, test4ParamsIgnoreAll, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer)
+    test(test4AllItypes, 20000, test4ParamsIgnoreAll, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
   }
 
   val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
@@ -422,6 +442,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test4ItemsMap("i1"),
     test4ItemsMap("i3"))
 
+  val test4RecommendItems_t3 = List("i0", "i1", "i3")
+
   val test4RatingsLowest_t3 = List(
     ("u0", "i0", "2"),
     ("u0", "i1", "1"),
@@ -430,7 +452,97 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "1"))
 
   "DataPreparator with only all actions, some itypes, and conflicts=lowest" should {
-    test(test4Itypes_t3, test4ParamsLowest, test4Items, test4Users, test4U2i, test4RatingsLowest_t3, genSelectedItems(test4Items_t3), test4ItemsIndexer, test4UsersIndexer)
+    test(test4Itypes_t3, 20000, test4ParamsLowest, test4Items, test4Users, test4U2i, test4RatingsLowest_t3, genSelectedItems(test4Items_t3), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems_t3)
+  }
+
+  /* test5: test starttime and endtime */
+
+  // starttime, endtime
+  // i0  A |---------|
+  // i1    B |---------|E
+  // i2       C|---------|
+  // i3           |---------|
+  //               D        F G  
+
+  val tA = 123122
+  val tB = 123123
+  val tC = 123457
+  val tD = 123679
+  val tE = 543322
+  val tF = 543654
+  val tG = 543655
+
+  val test5AllItypes = List("t1", "t2", "t3", "t4")
+  val test5ItemsMap = Map(
+    // id, itypes, appid, starttime, ct, endtime
+    "i0" -> ("i0", "t1,t2,t3", appid.toString, "123123", "12345", "543210"),
+    "i1" -> ("i1", "t1,t2", appid.toString, "123456", "12345", "543321"),
+    "i2" -> ("i2", "t2,t3", appid.toString, "123567", "12345", "543432"),
+    "i3" -> ("i3", "t2", appid.toString, "123678", "12345", "543654")
+  )
+
+  val test5Items = List(
+    test5ItemsMap("i0"),
+    test5ItemsMap("i1"),
+    test5ItemsMap("i2"),
+    test5ItemsMap("i3"))
+
+  val test5ItemsIndexer = Map("i0" -> "0", "i1" -> "4", "i2" -> "7", "i3" -> "8") // map iid to index
+
+  val test5Users = List(Tuple1("u0"), Tuple1("u1"), Tuple1("u2"), Tuple1("u3"))
+  val test5UsersIndexer = Map("u0" -> "0", "u1" -> "1", "u2" -> "2", "u3" -> "3") // map uid to index
+
+  val test5U2i = List(
+    (Rate, "u0", "i0", "123450", "4"),
+    (Like, "u0", "i1", "123457", "PIO_NONE"),
+    (Dislike, "u0", "i2", "123458", "PIO_NONE"),
+    (View, "u0", "i3", "123459", "PIO_NONE"), // NOTE: assume v field won't be missing
+    (Rate, "u1", "i0", "123457", "2"),
+    (Conversion, "u1", "i1", "123458", "PIO_NONE"))
+
+  val test5Ratings = List(
+    ("u0", "i0", "4"),
+    ("u0", "i1", "4"),
+    ("u0", "i2", "2"),
+    ("u0", "i3", "1"),
+    ("u1", "i0", "2"),
+    ("u1", "i1", "5"))
+
+  val test5RecommendItems = List("i0", "i1", "i2", "i3")
+  val test5RecommendItemsEmpty = List()
+  val test5RecommendItemsi0 = List("i0")
+  val test5RecommendItemsi0i1 = List("i0", "i1")
+  val test5RecommendItemsi2i3 = List("i2", "i3")
+
+  val test5Params: Map[String, String] = Map("viewParam" -> "1", "likeParam" -> "4", "dislikeParam" -> "2", "conversionParam" -> "5",
+    "conflictParam" -> "latest")
+
+  "recommendationTime < all item starttime" should {
+    test(test5AllItypes, tA, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsEmpty)
+  }
+
+  "recommendationTime == earliest starttime" should {
+    test(test5AllItypes, tB, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsi0)
+  }
+
+  "recommendationTime > some items starttime" should {
+    test(test5AllItypes, tC, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsi0i1)
+  }
+
+  "recommendationTime > all item starttime and < all item endtime" should {
+    test(test5AllItypes, tD, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItems)
+  }
+
+  "recommendationTime > some item endtime" should {
+    test(test5AllItypes, tE, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsi2i3)
+  }
+
+  "recommendationTime == last item endtime" should {
+    test(test5AllItypes, tF, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsEmpty)
+  }
+
+  "recommendationTime > last item endtime" should {
+    test(test5AllItypes, tG, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsEmpty)
   }
 
 }
