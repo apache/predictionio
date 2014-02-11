@@ -970,7 +970,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": "SIMILARITY_COOCCURRENCE"
+                    "defaultvalue": "SIMILARITY_LOGLIKELIHOOD"
                 },
                 "threshold": {
                     "name": "Threshold",
@@ -4691,7 +4691,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": "SIMILARITY_COOCCURRENCE"
+                    "defaultvalue": "SIMILARITY_LOGLIKELIHOOD"
                 },
                 "threshold": {
                     "name": "Threshold",
