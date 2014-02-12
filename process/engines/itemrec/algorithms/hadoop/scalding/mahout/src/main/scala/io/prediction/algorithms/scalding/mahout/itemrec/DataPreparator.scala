@@ -28,7 +28,6 @@ import io.prediction.commons.filepath.DataFile
  * --dislikeParam: <string>
  * --conversionParam: <string>
  * --conflictParam: <string>. (latest/highest/lowest)
- * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Optional args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -36,6 +35,7 @@ import io.prediction.commons.filepath.DataFile
  *
  * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  * --evalid: <int>. Offline Evaluation if evalid is specified
+ * --recommendationTime: <long> (eg. 9876543210). generate extra file (recommendItems.csv) which includes items with starttime <= recommendationTime and endtime > recommendationTime
  * --debug: <String>. "test" - for testing purpose
  *
  * Example:
@@ -89,7 +89,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val debugArg = args.list("debug")
   val DEBUG_TEST = debugArg.contains("test") // test mode
 
-  val recommendationTimeArg = args("recommendationTime").toLong
+  val recommendationTimeArg = args.optional("recommendationTime").map(_.toLong)
 
   // NOTE: if OFFLINE_EVAL, read from training set, and use evalid as appid when read Items and U2iActions
   val trainingAppid = if (OFFLINE_EVAL) evalidArg.get else appidArg
@@ -196,36 +196,38 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
   // Note: for u2i, use all items of the specified itypes.
   // but recommendItems only include items to be recommended:
   // - with valid starttime and endtime
-  itemsIndex
-    .filter('starttime, 'endtime) { fields: (Long, String) =>
-      val (starttimeI, endtime) = fields
+  recommendationTimeArg.foreach { recTime =>
+    itemsIndex
+      .filter('starttime, 'endtime) { fields: (Long, String) =>
+        val (starttimeI, endtime) = fields
 
-      val endtimeI: Option[Long] = endtime match {
-        case "PIO_NONE" => None
-        case x: String => {
-          try {
-            Some(x.toLong)
-          } catch {
-            case e: Exception => {
-              assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
-              Some(0)
+        val endtimeI: Option[Long] = endtime match {
+          case "PIO_NONE" => None
+          case x: String => {
+            try {
+              Some(x.toLong)
+            } catch {
+              case e: Exception => {
+                assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+                Some(0)
+              }
             }
           }
         }
-      }
 
-      val keepThis: Boolean = (starttimeI, endtimeI) match {
-        case (start, None) => (recommendationTimeArg >= start)
-        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
-        case _ => {
-          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
-          false
+        val keepThis: Boolean = (starttimeI, endtimeI) match {
+          case (start, None) => (recTime >= start)
+          case (start, Some(end)) => ((recTime >= start) && (recTime < end))
+          case _ => {
+            assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+            false
+          }
         }
+        keepThis
       }
-      keepThis
-    }
-    .project('iindex)
-    .write(recommendItemsSink)
+      .project('iindex)
+      .write(recommendItemsSink)
+  }
 
   // filter and pre-process actions
   u2i.joinWithSmaller('iid -> 'iidx, itemsIndex) // only select actions of these items
