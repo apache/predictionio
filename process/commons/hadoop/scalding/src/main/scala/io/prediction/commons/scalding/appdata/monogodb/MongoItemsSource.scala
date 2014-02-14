@@ -33,6 +33,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
     itemsCols.add("appid") // 2
     itemsCols.add("starttime") // 3
     itemsCols.add("ct") // 4
+    itemsCols.add("endtime") // 5 optional
 
     itemsCols
   },
@@ -44,6 +45,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
     itemsMappings.put("appid", FIELD_SYMBOLS("appid").name)
     itemsMappings.put("starttime", FIELD_SYMBOLS("starttime").name)
     itemsMappings.put("ct", FIELD_SYMBOLS("ct").name)
+    //itemsMappings.put("endtime", FIELD_SYMBOLS("endtime").name) // optional
 
     itemsMappings
   },
@@ -70,14 +72,16 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
     items
   }
 
-  override def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
+  override def readStartEndtime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol, endtimeField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, BasicDBList, java.util.Date) =>
+      .mapTo((0, 1, 3, 5) -> (iidField, itypesField, starttimeField, endtimeField)) { fields: (String, BasicDBList, java.util.Date, java.util.Date) =>
 
         //val dt = new DateTime(fields._3)
+        val starttime: Long = fields._3.getTime()
+        val endtimeOpt: Option[Long] = Option(fields._4).map(_.getTime()) // NOTE: become None if fields._4 is null
 
         // NOTE: convert itypes form BasicDBList to scala List.
-        (fields._1, fields._2.toList, fields._3.getTime().toString)
+        (fields._1, fields._2.toList, starttime, endtimeOpt)
       }
 
     items
@@ -94,7 +98,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
           ct = new DateTime(ct),
           itypes = itypes.toList.map(x => x.toString),
           starttime = Some(new DateTime(starttime)),
-          endtime = None,
+          endtime = None, // TODO: endtime Option(endtime).map(x => new DateTime(x)),
           price = None,
           profit = None,
           latlng = None,
@@ -136,6 +140,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
 
       val starttime: java.util.Date = obj.starttime.get.toDate()
       val ct: java.util.Date = obj.ct.toDate()
+      // TODO: write endtime
 
       (obj.id, itypesTuple, obj.appid, starttime, ct)
     }.write(this)

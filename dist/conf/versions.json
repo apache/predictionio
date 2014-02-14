@@ -1,5 +1,5 @@
 {
-    "latest": "0.6.0",
+    "latest": "0.6.8",
     "versions": {
         "0.5.0": {
             "binaries": "http://download.prediction.io/PredictionIO-0.5.0.zip",

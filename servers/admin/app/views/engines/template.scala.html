@@ -47,6 +47,28 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="boxBlock">
+                          <div class="boxtitle">Training Schedule</div>
+                          <div class="boxContent">
+                            <p>
+                              You may configure this engine's training schedule in this section.
+                              The schedule can be specified by a valid "Cron-Expression", which is slightly different from the standard crontab.
+                              A description of "Cron-Expression" can be found <a href="http://quartz-scheduler.org/api/2.1.7/org/quartz/CronExpression.html">here</a>.
+                            </p>
+                            <div class="bottomMargin">
+                              <label class="checkbox">
+                                <input id="trainingdisabled" <% if (data.trainingdisabled == true) { %> checked <% } %> name="trainingdisabled" type="checkbox" /> Disable scheduled training
+                              </label>
+                            </div>
+                            <div class="control-group">
+                              <label for="trainingschedule" class="control-label">Training Schedule</label>
+                              <div class="controls">
+                                <input id="trainingschedule" name="trainingschedule" class="span2" type="text" value="<%= data.trainingschedule %>" />
+                                <span class="help-inline">If empty or invalid, "0 0 * * * ?" (train hourly at 0-minute and 0-second) is assumed.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 @Html(content)
                     </div>
                     <!-- End of Prediction Settings -->

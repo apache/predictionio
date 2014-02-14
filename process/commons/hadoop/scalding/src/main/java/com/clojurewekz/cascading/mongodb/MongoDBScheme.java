@@ -166,7 +166,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
       if (tupleEntry != null) {
         result.add(tupleEntry);
       } else if (columnFieldName != this.keyColumnName) {
-        result.add("");
+        result.add(null);
       }
     }
 
@@ -217,7 +217,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
         dbObject.put(columnFieldName, tupleEntryValue);
       }
     }
-    logger.info("Putting key for output: {} {}", key, dbObject);
+    //logger.info("Putting key for output: {} {}", key, dbObject);
     outputCollector.collect(key, new BSONWritable(dbObject));
   }
 

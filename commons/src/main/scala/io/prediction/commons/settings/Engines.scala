@@ -14,6 +14,8 @@ import org.json4s.native.Serialization
  * @param infoid EngineInfo ID.
  * @param itypes List of item types.
  * @param params Engine parameters as key-value pairs.
+ * @param trainingdisabled Whether training is disabled or not. If value is undefined, assume training is not disabled.
+ * @param trainingschedule Training schedule of this engine in cron expression. Default to an hourly schedule at 0 minute.
  */
 case class Engine(
   id: Int,
@@ -21,7 +23,9 @@ case class Engine(
   name: String,
   infoid: String,
   itypes: Option[Seq[String]],
-  params: Map[String, Any])
+  params: Map[String, Any],
+  trainingdisabled: Option[Boolean] = None,
+  trainingschedule: Option[String] = None)
 
 /** Base trait for implementations that interact with engines in the backend data store. */
 trait Engines extends Common {
@@ -69,7 +73,7 @@ trait Engines extends Common {
   }
 }
 
-/** json4s serializer for the Algo class. */
+/** json4s serializer for the Engine class. */
 class EngineSerializer extends CustomSerializer[Engine](format => (
   {
     case x: JObject =>
@@ -80,7 +84,9 @@ class EngineSerializer extends CustomSerializer[Engine](format => (
         name = (x \ "name").extract[String],
         infoid = (x \ "infoid").extract[String],
         itypes = (x \ "itypes").extract[Option[Seq[String]]],
-        params = Common.sanitize((x \ "params").asInstanceOf[JObject].values))
+        params = Common.sanitize((x \ "params").asInstanceOf[JObject].values),
+        trainingdisabled = (x \ "trainingdisabled").extract[Option[Boolean]],
+        trainingschedule = (x \ "trainingschedule").extract[Option[String]])
   },
   {
     case x: Engine =>
@@ -91,6 +97,8 @@ class EngineSerializer extends CustomSerializer[Engine](format => (
           JField("name", Extraction.decompose(x.name)) ::
           JField("infoid", Extraction.decompose(x.infoid)) ::
           JField("itypes", Extraction.decompose(x.itypes)) ::
-          JField("params", Extraction.decompose(x.params)) :: Nil)
+          JField("params", Extraction.decompose(x.params)) ::
+          JField("trainingdisabled", Extraction.decompose(x.trainingdisabled)) ::
+          JField("trainingschedule", Extraction.decompose(x.trainingschedule)) :: Nil)
   })
 )

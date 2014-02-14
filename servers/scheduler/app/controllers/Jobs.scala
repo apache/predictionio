@@ -103,6 +103,7 @@ object Jobs {
       val defaultParams = Scheduler.algoInfos.get(alg.infoid) map { _.params.mapValues(_.defaultvalue) } getOrElse Map[String, String]()
       command.setAttributes(command.attributes ++ defaultParams ++ alg.params)
       command.setAttribute("algoid", alg.id)
+      command.setAttribute("localTempDir", BaseDir.algoDir(config.settingsLocalTempRoot, app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("mahoutTempDir", BaseDir.algoDir(config.settingsHdfsRoot + "mahout_temp/", app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("algoDir", BaseDir.algoDir(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id)))
       command.setAttribute("dataFilePrefix", DataFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
@@ -166,6 +167,7 @@ object Jobs {
     command.setAttribute("numRecommendations", engine.params.getOrElse("numRecommendations", 500))
     command.setAttribute("numSimilarItems", engine.params.getOrElse("numSimilarItems", 500))
     command.setAttribute("unseenOnly", engine.params.getOrElse("unseenonly", false))
+    command.setAttribute("recommendationTime", System.currentTimeMillis)
   }
 }
 

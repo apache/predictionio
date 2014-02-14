@@ -79,18 +79,19 @@ class U2ITrainingTestSplitTimePrep(args: Args) extends U2ITrainingTestSplitCommo
   
   val selectedU2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
     .joinWithSmaller('iid -> 'iidx, itemsIidx) // only select actions of these items
-    .map(('uid, 'iid, 'action, 'v) -> ('newUid, 'newIid, 'newV)) { fields: (String, String, String, String) =>
+    .map(('uid, 'iid, 'action, 'v) -> ('newUid, 'newIid, 'newV)) { fields: (String, String, String, Option[String]) =>
       
       // NOTE: replace appid prefix by evalid
       val (uid, iid, action, v) = fields
       val newUid = replacePrefix(uid)
       val newIid = replacePrefix(iid)
 
+      /* TODO remove
       // NOTE: add default value 0 for non-rate acitons to work around the optional v field issue 
       //       (cascading-mongo tap can't take optional field yet). 
-      val newV = if (v == "") "0" else v
-      
-      (newUid, newIid, newV)
+      val newV = if (v == "") "0" else v */
+
+      (newUid, newIid, v)
     }
 
   selectedU2i.then( u2iSink.writeData('action, 'newUid, 'newIid, 't, 'newV, evalidArg) _ ) // NOTE: appid is replaced by evalid 

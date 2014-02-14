@@ -24,10 +24,13 @@ trait ItemsSource {
   def readData(iidField: Symbol, itypesField: Symbol)(implicit fd: FlowDef): Pipe
 
   /**
-   * starttimeField: Symbol of starttime(String)
+   * iidField: Symbol of iid(String)
+   * itypesField: Symbol of itypes(List[String])
+   * starttimeField: Symbol of starttime(Long)
+   * endtimeField: Symbol of endtime(Option[Long])
    */
-  def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
-    throw new RuntimeException("ItemsSource readStarttime is not implemented.")
+  def readStartEndtime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol, endtimeField: Symbol)(implicit fd: FlowDef): Pipe = {
+    throw new RuntimeException("ItemsSource readStartEndtime is not implemented.")
   }
 
   /**
@@ -63,6 +66,7 @@ object ItemsSource {
     ("appid" -> 'appid),
     ("ct" -> 'ct),
     ("itypes" -> 'itypes),
-    ("starttime" -> 'starttime))
+    ("starttime" -> 'starttime),
+    ("endtime" -> 'endtime)) // optional
 
 }

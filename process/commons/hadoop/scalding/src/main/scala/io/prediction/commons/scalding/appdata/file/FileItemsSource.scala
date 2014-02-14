@@ -14,10 +14,14 @@ import io.prediction.commons.appdata.{ Item }
 
 /**
  * File Format:
- * <id>\t<itypes>\t<appid>\t<starttime>\t<ct>
+ * <id>\t<itypes>\t<appid>\t<starttime>\t<ct>\t<endtime>
+ *
+ * endtime is optional
+ * use PIO_NONE if no value for optional field
  *
  * Example:
- * 1  t1,t2,t3  4  123456  123210
+ * 1  t1,t2,t3  4  123456  123210  654321
+ * 1  t1,t2,t3  4  123456  123210  PIO_NONE
  */
 class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) extends Tsv(
   p = path + "items.tsv"
@@ -54,12 +58,26 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
     dataPipe
   }
 
-  override def readStarttime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol)(implicit fd: FlowDef): Pipe = {
+  override def readStartEndtime(iidField: Symbol, itypesField: Symbol, starttimeField: Symbol, endtimeField: Symbol)(implicit fd: FlowDef): Pipe = {
     this.read
-      .mapTo((0, 1, 3) -> (iidField, itypesField, starttimeField)) { fields: (String, String, String) =>
-        val (iid, itypes, starttime) = fields
+      .mapTo((0, 1, 3, 5) -> (iidField, itypesField, starttimeField, endtimeField)) { fields: (String, String, Long, String) =>
+        val (iid, itypes, starttime, endtime) = fields
 
-        (iid, itypes.split(",").toList, starttime)
+        val endtimeOpt: Option[Long] = endtime match {
+          case "PIO_NONE" => None
+          case x: String => {
+            try {
+              Some(x.toLong)
+            } catch {
+              case e: Exception => {
+                assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+                Some(0)
+              }
+            }
+          }
+        }
+
+        (iid, itypes.split(",").toList, starttime, endtimeOpt)
 
       }.then(filterItypes('itypes, itypes) _)
   }

@@ -6,7 +6,9 @@ import collection.JavaConversions._
 import play.api._
 import play.api.libs.json._
 import play.api.mvc._
-import org.quartz.impl.matchers.GroupMatcher._;
+import org.quartz.CronExpression
+import org.quartz.CronScheduleBuilder.cronSchedule
+import org.quartz.impl.matchers.GroupMatcher._
 import org.quartz.impl.StdSchedulerFactory
 import org.quartz.JobBuilder.newJob
 import org.quartz.JobKey.jobKey
@@ -162,15 +164,27 @@ object Scheduler extends Controller {
             } getOrElse {
               Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
             }
-          } else if (scheduler.checkExists(triggerkey) == false) {
-            Logger.info(s"${logPrefix}Setting up batch algo job (run every hour from now)")
-            algoinfo.batchcommands map { batchcommands =>
-              val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
-              scheduler.addJob(job, true)
-              val trigger = newTrigger() forJob (jobKey(algoid, Jobs.algoJobGroup)) withIdentity (algoid, Jobs.algoJobGroup) startNow () withSchedule (simpleSchedule() withIntervalInHours (1) repeatForever ()) build ()
-              scheduler.scheduleJob(trigger)
-            } getOrElse {
-              Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
+          } else {
+            if (scheduler.checkExists(triggerkey)) {
+              Logger.info(s"${logPrefix}Resetting existing trigger")
+              scheduler.unscheduleJob(triggerkey)
+            }
+            val trainingdisabled = engine.trainingdisabled.getOrElse(false)
+            if (trainingdisabled) {
+              Logger.info(s"${logPrefix}Training disabled")
+            } else {
+              // Append a 0 in front since Quartz support granularity to seconds
+              val trainingscheduleUnvalidated = engine.trainingschedule.getOrElse("0 0 * * * ?")
+              val trainingschedule = if (CronExpression.isValidExpression(trainingscheduleUnvalidated)) trainingscheduleUnvalidated else "0 0 * * * ?"
+              Logger.info(s"${logPrefix}Setting up batch algo job with schedule ${trainingschedule}")
+              algoinfo.batchcommands map { batchcommands =>
+                val job = Jobs.algoJob(config, app, engine, algo, batchcommands)
+                scheduler.addJob(job, true)
+                val trigger = newTrigger() forJob (jobKey(algoid, Jobs.algoJobGroup)) withIdentity (algoid, Jobs.algoJobGroup) startNow () withSchedule (cronSchedule(trainingschedule) withMisfireHandlingInstructionFireAndProceed ()) build ()
+                scheduler.scheduleJob(trigger)
+              } getOrElse {
+                Logger.info(s"${logPrefix}Giving up setting up batch algo job because it does not have any batch command")
+              }
             }
           }
         } else {

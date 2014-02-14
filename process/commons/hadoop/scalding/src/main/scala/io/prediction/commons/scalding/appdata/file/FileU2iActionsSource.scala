@@ -13,8 +13,12 @@ import io.prediction.commons.scalding.appdata.U2iActionsSource.{ FIELD_SYMBOLS }
  * File Format:
  * <action>\t<uid>\t<iid>\t<t>\t<v>
  *
+ * v is optional
+ * use PIO_NONE if no value for optional field
+ *
  * Example:
  * rate  u2  i13  123456  4
+ * view  u2  i13  234567  PIO_NONE
  */
 class FileU2iActionsSource(path: String, appId: Int) extends Tsv(
   p = path + "u2iActions.tsv"
@@ -30,17 +34,24 @@ class FileU2iActionsSource(path: String, appId: Int) extends Tsv(
         fields: (String, String, String, String, String) =>
           val (action, uid, iid, t, v) = fields
 
-          (action, uid, iid, t, v)
+          val vOpt: Option[String] = v match {
+            case "PIO_NONE" => None
+            case x: String => Some(x)
+          }
+
+          (action, uid, iid, t, vOpt)
       }
   }
 
   override def writeData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo((actionField, uidField, iidField, tField, vField) ->
       (FIELD_SYMBOLS("action"), FIELD_SYMBOLS("uid"), FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("t"), FIELD_SYMBOLS("v"), FIELD_SYMBOLS("appid"))) {
-      fields: (String, String, String, String, String) =>
+      fields: (String, String, String, String, Option[String]) =>
         val (action, uid, iid, t, v) = fields
 
-        (action, uid, iid, t, v.toInt, appid)
+        val vData: String = v.getOrElse("PIO_NONE")
+
+        (action, uid, iid, t, vData, appid)
     }.write(this)
 
     writtenData

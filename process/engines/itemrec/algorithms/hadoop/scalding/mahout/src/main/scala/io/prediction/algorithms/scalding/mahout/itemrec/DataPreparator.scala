@@ -35,6 +35,7 @@ import io.prediction.commons.filepath.DataFile
  *
  * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  * --evalid: <int>. Offline Evaluation if evalid is specified
+ * --recommendationTime: <long> (eg. 9876543210). generate extra file (recommendItems.csv) which includes items with starttime <= recommendationTime and endtime > recommendationTime
  * --debug: <String>. "test" - for testing purpose
  *
  * Example:
@@ -60,7 +61,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
-  // determin how to map actions to rating values
+  // determine how to map actions to rating values
   def getActionParam(name: String): Option[Int] = {
     val actionParam: Option[Int] = args(name) match {
       case "ignore" => None
@@ -88,6 +89,8 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val debugArg = args.list("debug")
   val DEBUG_TEST = debugArg.contains("test") // test mode
 
+  val recommendationTimeArg = args.optional("recommendationTime").map(_.toLong)
+
   // NOTE: if OFFLINE_EVAL, read from training set, and use evalid as appid when read Items and U2iActions
   val trainingAppid = if (OFFLINE_EVAL) evalidArg.get else appidArg
 
@@ -100,7 +103,7 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
    */
 
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('iidx, 'itypes)
+    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
 
   val users = Users(appId = trainingAppid,
     dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('uid)
@@ -118,10 +121,12 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
 
   users.write(userIdSink)
 
-  items.mapTo(('iidx, 'itypes) -> ('iidx, 'itypes)) { fields: (String, List[String]) =>
-    val (iidx, itypes) = fields
+  items.mapTo(('iidx, 'itypes, 'starttime, 'endtime) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
+    val (iidx, itypes, starttime, endtime) = fields
 
-    (iidx, itypes.mkString(",")) // NOTE: convert List[String] into comma-separated String
+    // NOTE: convert List[String] into comma-separated String
+    // NOTE: endtime is optional
+    (iidx, itypes.mkString(","), starttime, endtime.map(_.toString).getOrElse("PIO_NONE"))
   }.write(selectedItemSink)
 
 }
@@ -147,21 +152,21 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // use byte offset as index for Mahout algo
   val itemsIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")).read
-    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes)) { fields: (String, String) =>
+    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, String) =>
       val (offset, line) = fields
 
       val lineArray = line.split("\t")
 
-      val (iidx, itypes) = try {
-        (lineArray(0), lineArray(1))
+      val (iidx, itypes, starttime, endtime) = try {
+        (lineArray(0), lineArray(1), lineArray(2), lineArray(3))
       } catch {
         case e: Exception => {
-          assert(false, "Failed to extract iidx and itypes from the line: " + line + ". Exception: " + e)
-          (0, "dummy")
+          assert(false, "Failed to extract iidx, itypes, starttime and endtime from the line: " + line + ". Exception: " + e)
+          (0, "dummy", "dummy", "dummy")
         }
       }
 
-      (offset, iidx, itypes)
+      (offset, iidx, itypes, starttime, endtime)
     }
 
   val usersIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "userIds.tsv")).read
@@ -177,6 +182,9 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   val ratingsSink = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"))
 
+  // only recommend these items
+  val recommendItemsSink = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "recommendItems.csv"))
+
   /**
    * computation
    */
@@ -185,9 +193,45 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   usersIndex.write(usersIndexSink)
 
+  // Note: for u2i, use all items of the specified itypes.
+  // but recommendItems only include items to be recommended:
+  // - with valid starttime and endtime
+  recommendationTimeArg.foreach { recTime =>
+    itemsIndex
+      .filter('starttime, 'endtime) { fields: (Long, String) =>
+        val (starttimeI, endtime) = fields
+
+        val endtimeI: Option[Long] = endtime match {
+          case "PIO_NONE" => None
+          case x: String => {
+            try {
+              Some(x.toLong)
+            } catch {
+              case e: Exception => {
+                assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+                Some(0)
+              }
+            }
+          }
+        }
+
+        val keepThis: Boolean = (starttimeI, endtimeI) match {
+          case (start, None) => (recTime >= start)
+          case (start, Some(end)) => ((recTime >= start) && (recTime < end))
+          case _ => {
+            assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+            false
+          }
+        }
+        keepThis
+      }
+      .project('iindex)
+      .write(recommendItemsSink)
+  }
+
   // filter and pre-process actions
   u2i.joinWithSmaller('iid -> 'iidx, itemsIndex) // only select actions of these items
-    .filter('action, 'v) { fields: (String, String) =>
+    .filter('action, 'v) { fields: (String, Option[String]) =>
       val (action, v) = fields
 
       val keepThis: Boolean = action match {
@@ -203,12 +247,19 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
       }
       keepThis
     }
-    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
+    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, Option[String], String) =>
       val (action, v, t) = fields
 
       // convert actions into rating value based on "action" and "v" fields
       val rating: Int = action match {
-        case ACTION_RATE => v.toInt
+        case ACTION_RATE => try {
+          v.get.toInt
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to integer for ${action} action. Exception:" + e)
+            1
+          }
+        }
         case ACTION_LIKE => likeParamArg.getOrElse {
           assert(false, "Action type " + action + " should have been filtered out!")
           1

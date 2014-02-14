@@ -89,8 +89,9 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
           val (action, uid, iid, t, v) = fields
 
           //val dt = new DateTime(t)
+          val vOpt: Option[String] = Option(v)
 
-          (action, uid, iid, t.getTime().toString, v)
+          (action, uid, iid, t.getTime().toString, vOpt)
       }
 
     u2iactions
@@ -99,10 +100,12 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
   override def writeData(actionField: Symbol, uidField: Symbol, iidField: Symbol, tField: Symbol, vField: Symbol, appid: Int)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val dbData = p.mapTo((actionField, uidField, iidField, tField, vField) ->
       (FIELD_SYMBOLS("action"), FIELD_SYMBOLS("uid"), FIELD_SYMBOLS("iid"), FIELD_SYMBOLS("t"), FIELD_SYMBOLS("v"), FIELD_SYMBOLS("appid"))) {
-      fields: (String, String, String, String, String) =>
+      fields: (String, String, String, String, Option[String]) =>
         val (action, uid, iid, t, v) = fields
 
-        (action, uid, iid, new java.util.Date(t.toLong), v.toInt, appid)
+        val vData: String = v.getOrElse(null) // use null if no such field for this record
+
+        (action, uid, iid, new java.util.Date(t.toLong), vData, appid)
     }.write(this)
 
     dbData

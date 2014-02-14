@@ -120,16 +120,37 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
   // for each user, get a list of items which match the goalParam
   // TODO: filter out items appeared in trainingU2i?
   val testSetRelevant = testU2i
-    .filter('actionTest, 'vTest) { fields: (String, String) =>
+    .filter('actionTest, 'vTest) { fields: (String, Option[String]) =>
       val (action, v) = fields
 
       val cond: Boolean = goalParamArg match {
         case GOAL_VIEW => (action == ACTION_VIEW)
         case GOAL_CONVERSION => (action == ACTION_CONVERSION)
         case GOAL_LIKE => (action == ACTION_LIKE)
-        case GOAL_RATE3 => (action == ACTION_RATE) && (v.toInt >= 3)
-        case GOAL_RATE4 => (action == ACTION_RATE) && (v.toInt >= 4)
-        case GOAL_RATE5 => (action == ACTION_RATE) && (v.toInt >= 5)
+        case GOAL_RATE3 => try {
+          (action == ACTION_RATE) && (v.get.toInt >= 3)
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to int. Exception:" + e)
+            false
+          }
+        }
+        case GOAL_RATE4 => try {
+          (action == ACTION_RATE) && (v.get.toInt >= 4)
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to int. Exception:" + e)
+            false
+          }   
+        }
+        case GOAL_RATE5 => try {
+          (action == ACTION_RATE) && (v.get.toInt >= 5)
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to int. Exception:" + e)
+            false
+          }
+        }
         case _ => {
           assert(false, "Invalid goalParam " + goalParamArg + ".")
           false

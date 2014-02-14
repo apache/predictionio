@@ -2204,7 +2204,9 @@ object Application extends Controller {
           "id" -> toJson(engine.id), // engine id
           "appid" -> toJson(engine.appid),
           "allitemtypes" -> toJson(engine.itypes == None),
-          "itemtypelist" -> engine.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull)) ++
+          "itemtypelist" -> engine.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull),
+          "trainingdisabled" -> engine.trainingdisabled.map(toJson(_)).getOrElse(toJson(false)),
+          "trainingschedule" -> engine.trainingschedule.map(toJson(_)).getOrElse(toJson("0 * * * *"))) ++
           (params map { case (k, v) => (k, toJson(v.toString)) })))
       } getOrElse {
         NotFound(toJson(Map("message" -> toJson(s"Invalid EngineInfo ID: ${engine.infoid}"))))
@@ -2216,16 +2218,19 @@ object Application extends Controller {
       val f = Form(tuple(
         "infoid" -> mapOfStringToAny,
         "allitemtypes" -> boolean,
-        "itemtypelist" -> list(text)))
+        "itemtypelist" -> list(text),
+        "trainingdisabled" -> boolean,
+        "trainingschedule" -> text))
       f.bindFromRequest.fold(
         e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
         f => {
-          val (params, allitemtypes, itemtypelist) = f
+          val (params, allitemtypes, itemtypelist, trainingdisabled, trainingschedule) = f
           // NOTE: read-modify-write the original param
           val itypes = if (itemtypelist.isEmpty) None else Option(itemtypelist)
           val updatedParams = engine.params ++ params - "infoid"
-          val updatedEngine = engine.copy(itypes = itypes, params = updatedParams)
+          val updatedEngine = engine.copy(itypes = itypes, params = updatedParams, trainingdisabled = Some(trainingdisabled), trainingschedule = Some(trainingschedule))
           engines.update(updatedEngine)
+          WS.url(settingsSchedulerUrl + "/users/" + user.id + "/sync").get()
           Ok
         })
   }

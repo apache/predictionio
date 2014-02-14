@@ -114,7 +114,7 @@ class DataPreparator(args: Args) extends Job(args) {
 
   // get items data
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('iidx, 'itypes)
+    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
 
   val u2i = U2iActions(appId = trainingAppid,
     dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('action, 'uid, 'iid, 't, 'v)
@@ -132,7 +132,7 @@ class DataPreparator(args: Args) extends Job(args) {
    * computation
    */
   u2i.joinWithSmaller('iid -> 'iidx, items) // only select actions of these items
-    .filter('action, 'v) { fields: (String, String) =>
+    .filter('action, 'v) { fields: (String, Option[String]) =>
       val (action, v) = fields
 
       val keepThis: Boolean = action match {
@@ -148,12 +148,19 @@ class DataPreparator(args: Args) extends Job(args) {
       }
       keepThis
     }
-    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
+    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, Option[String], String) =>
       val (action, v, t) = fields
 
       // convert actions into rating value based on "action" and "v" fields
       val rating: Int = action match {
-        case ACTION_RATE => v.toInt
+        case ACTION_RATE => try {
+          v.get.toInt
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to integer for ${action} action. Exception:" + e)
+            1
+          }
+        }
         case ACTION_LIKE => likeParamArg.getOrElse {
           assert(false, "Action type " + action + " should have been filtered out!")
           1
@@ -183,10 +190,12 @@ class DataPreparator(args: Args) extends Job(args) {
     .write(ratingsSink)
 
   // Also store the selected items into DataFile for later model construction usage.
-  items.mapTo(('iidx, 'itypes) -> ('iidx, 'itypes)) { fields: (String, List[String]) =>
-    val (iidx, itypes) = fields
+  items.mapTo(('iidx, 'itypes, 'starttime, 'endtime) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
+    val (iidx, itypes, starttime, endtime) = fields
 
-    (iidx, itypes.mkString(",")) // NOTE: convert List[String] into comma-separated String
+    // NOTE: convert List[String] into comma-separated String
+    // NOTE: endtime is optional
+    (iidx, itypes.mkString(","), starttime, endtime.map(_.toString).getOrElse("PIO_NONE"))
   }.write(selectedItemsSink)
 
   /**

@@ -56,6 +56,8 @@ var EngineSettingsView = Backbone.View.extend({
         "change #@(p.id)": "@(p.id)Changed",
             }
         }
+        "change #trainingdisabled" : "trainingdisabledChanged",
+        "change #trainingschedule" : "trainingscheduleChanged",
         "change #engineAllItemTypes" : "toggleAllItemTypes"
     },
     onEnterAddItemType : function(e) {
@@ -125,6 +127,18 @@ var EngineSettingsView = Backbone.View.extend({
             });
             inputObj.prop('checked', true); // disallow unselect ALlItemTypes manually
         }
+    },
+    trainingdisabledChanged: function(e) {
+        var trainingdisabled = this.$el.find('#trainingdisabled').is(':checked');
+        this.model.set({trainingdisabled: trainingdisabled});
+        this.model.save();
+        return false;
+    },
+    trainingscheduleChanged: function(e) {
+        var trainingschedule = this.$el.find('#trainingschedule').val();
+        this.model.set({trainingschedule: trainingschedule});
+        this.model.save();
+        return false;
     },
     @for(p <- params) {
         @if(p.ui.uitype != "slider") {

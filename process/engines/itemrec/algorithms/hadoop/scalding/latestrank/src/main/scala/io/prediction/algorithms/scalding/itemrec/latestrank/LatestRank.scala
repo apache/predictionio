@@ -33,8 +33,8 @@ import io.prediction.commons.filepath.{ AlgoFile }
  *
  * --itypes: <string separated by white space>. optional. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  * --numRecommendations: <int>. number of recommendations to be generated
- *
  * --modelSet: <boolean> (true/false). flag to indicate which set
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Example:
  * hadoop jar PredictionIO-Process-Hadoop-Scala-assembly-0.1.jar io.prediction.algorithms.scalding.itemrec.latestrank.LatestRank --hdfs --training_dbType mongodb --training_dbName predictionio_appdata --training_dbHost localhost --training_dbPort 27017 --modeldata_dbType mongodb --modeldata_dbName predictionio_modeldata --modeldata_dbHost localhost --modeldata_dbPort 27017 --hdfsRoot predictionio/ --appid 1 --engineid 1 --algoid 18 --modelSet true
@@ -68,6 +68,7 @@ class LatestRank(args: Args) extends Job(args) {
   val numRecommendationsArg = args("numRecommendations").toInt
 
   val modelSetArg = args("modelSet").toBoolean
+  val recommendationTimeArg = args("recommendationTime").toLong
 
   /**
    * source
@@ -79,7 +80,7 @@ class LatestRank(args: Args) extends Job(args) {
 
   // get items data
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readStarttime('iidx, 'itypes, 'starttime)
+    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
 
   val users = Users(appId = trainingAppid,
     dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('uid)
@@ -89,16 +90,29 @@ class LatestRank(args: Args) extends Job(args) {
    */
   val itemRecScores = ItemRecScores(dbType = modeldata_dbTypeArg, dbName = modeldata_dbNameArg, dbHost = modeldata_dbHostArg, dbPort = modeldata_dbPortArg, algoid = algoidArg, modelset = modelSetArg)
 
-  val scoresFile = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemRecScores.tsv"))
-
   /**
    * computation
    */
-  val itemsWithKey = items.map(() -> 'itemKey) { u: Unit => 1 }
+  val itemsWithKey = items
+    .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
+      // only keep items with valid starttime and endtime
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
+    .map(() -> 'itemKey) { u: Unit => 1 }
   val usersWithKey = users.map(() -> 'userKey) { u: Unit => 1 }
 
   val scores = usersWithKey.joinWithSmaller('userKey -> 'itemKey, itemsWithKey)
-    .map('starttime -> 'score) { t: String => t.toDouble }
+    .map('starttime -> 'score) { t: Long => t.toDouble }
     .project('uid, 'iidx, 'score, 'itypes)
     .groupBy('uid) { _.sortBy('score).reverse.take(numRecommendationsArg) }
     // another way to is to do toList then take top n from List. But then it would create an unncessary long List

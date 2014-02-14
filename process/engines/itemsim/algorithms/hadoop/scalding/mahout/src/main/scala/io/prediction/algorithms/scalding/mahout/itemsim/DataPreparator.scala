@@ -60,7 +60,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
   
-  // determin how to map actions to rating values
+  // determine how to map actions to rating values
   def getActionParam(name: String): Option[Int] = {
     val actionParam: Option[Int] = args(name) match {
       case "ignore" => None
@@ -100,7 +100,7 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
    */
 
   val items = Items(appId=trainingAppid, itypes=itypesArg, 
-      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('iidx, 'itypes)
+      dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
   
   val users = Users(appId=trainingAppid,
       dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg).readData('uid)
@@ -118,11 +118,13 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
 
   users.write(userIdSink)
 
-  items.mapTo(('iidx, 'itypes) -> ('iidx, 'itypes)) { fields: (String, List[String]) =>
-    val (iidx, itypes) = fields
+  items.mapTo(('iidx, 'itypes, 'starttime, 'endtime) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
+    val (iidx, itypes, starttime, endtime) = fields
     
-    (iidx, itypes.mkString(",")) // NOTE: convert List[String] into comma-separated String
-    }.write(selectedItemSink)
+    // NOTE: convert List[String] into comma-separated String
+    // NOTE: endtime is optional
+    (iidx, itypes.mkString(","), starttime, endtime.map(_.toString).getOrElse("PIO_NONE"))
+  }.write(selectedItemSink)
 
 }
 
@@ -147,21 +149,21 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // use byte offset as index for Mahout algo
   val itemsIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")).read
-    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes)) { fields: (String, String) =>
+    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, String) =>
       val (offset, line) = fields
 
       val lineArray = line.split("\t")
 
-      val (iidx, itypes) = try {
-          (lineArray(0), lineArray(1))
+      val (iidx, itypes, starttime, endtime) = try {
+          (lineArray(0), lineArray(1), lineArray(2), lineArray(3))
         } catch {
           case e: Exception => {
             assert(false, "Failed to extract iidx and itypes from the line: " + line + ". Exception: " + e)
-            (0, "dummy")
+            (0, "dummy", "dummy", "dummy")
           }
         }
         
-      (offset, iidx, itypes)
+      (offset, iidx, itypes, starttime, endtime)
     }
 
   val usersIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "userIds.tsv")).read
@@ -187,7 +189,7 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // filter and pre-process actions
   u2i.joinWithSmaller('iid -> 'iidx, itemsIndex) // only select actions of these items
-    .filter('action, 'v) { fields: (String, String) =>
+    .filter('action, 'v) { fields: (String, Option[String]) =>
       val (action, v) = fields
 
       val keepThis: Boolean = action match {
@@ -203,12 +205,19 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
       }
       keepThis
     }
-    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, String, String) =>
+    .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, Option[String], String) =>
       val (action, v, t) = fields
       
       // convert actions into rating value based on "action" and "v" fields
       val rating: Int = action match {
-        case ACTION_RATE => v.toInt
+        case ACTION_RATE => try {
+          v.get.toInt
+        } catch {
+          case e: Exception => {
+            assert(false, s"Failed to convert v field ${v} to integer for ${action} action. Exception:" + e)
+            1
+          }
+        }
         case ACTION_LIKE => likeParamArg.getOrElse{
           assert(false, "Action type " + action + " should have been filtered out!")
           1

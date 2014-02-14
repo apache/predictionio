@@ -26,6 +26,7 @@ import cascading.pipe.joiner.LeftJoin
  *
  * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true.
  * --numRecommendations: <int>. number of recommendations to be generated
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -33,6 +34,9 @@ import cascading.pipe.joiner.LeftJoin
  *
  * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
+ *
+ * --booleanData: <boolean>. Mahout item rec algo flag for implicit action data
+ * --implicitFeedback: <boolean>. Mahout item rec algo flag for implicit action data
  *
  * Example:
  *
@@ -62,6 +66,12 @@ class ModelConstructor(args: Args) extends Job(args) {
 
   val unseenOnlyArg = args("unseenOnly").toBoolean
   val numRecommendationsArg = args("numRecommendations").toInt
+  val recommendationTimeArg = args("recommendationTime").toLong
+
+  val booleanDataArg = args.optional("booleanData").map(x => x.toBoolean).getOrElse(false)
+  val implicitFeedbackArg = args.optional("implicitFeedback").map(x => x.toBoolean).getOrElse(false)
+  // implicit preference flag.
+  val IMPLICIT_PREFERENCE = booleanDataArg || implicitFeedbackArg
 
   /**
    * source
@@ -72,10 +82,24 @@ class ModelConstructor(args: Args) extends Job(args) {
   val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindexR, 'iindexR, 'ratingR))
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
-    .mapTo((0, 1, 2) -> ('iindexI, 'iidI, 'itypesI)) { fields: (String, String, String) =>
-      val (iindex, iid, itypes) = fields // itypes are comma-separated String
+    .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
+      val (iindex, iid, itypes, starttime, endtime) = fields // itypes are comma-separated String
 
-      (iindex, iid, itypes.split(",").toList)
+      val endtimeOpt: Option[Long] = endtime match {
+        case "PIO_NONE" => None
+        case x: String => {
+          try {
+            Some(x.toLong)
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+              Some(0)
+            }
+          }
+        }
+      }
+
+      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt)
     }
 
   val usersIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "usersIndex.tsv")).read
@@ -94,7 +118,9 @@ class ModelConstructor(args: Args) extends Job(args) {
    * computation
    */
 
-  val seenRatings = ratingSource.read
+  val seenRatings = ratingSource.read.mapTo(('uindexR, 'iindexR, 'ratingR) -> ('uindexR, 'iindexR, 'ratingR)) {
+    fields: (String, String, Double) => fields // convert score from String to Double
+  }
 
   // convert to (uindex, iindex, rating) format
   // and filter seen items from predicted
@@ -103,7 +129,10 @@ class ModelConstructor(args: Args) extends Job(args) {
     .filter('ratingR) { r: Double => (r == 0) } // if ratingR == 0, means unseen rating
     .project('uindex, 'iindex, 'rating)
 
-  val combinedRating = if (unseenOnlyArg) predictedRating else {
+  // NOTE: only suppoort unseenOnly if IMPLICIT_PREFERENCE = true because 
+  // can't simply merge the seen preference value with predicted preference value due to different meaning in value
+  // (depending on which distance function is used).
+  val combinedRating = if (unseenOnlyArg || IMPLICIT_PREFERENCE) predictedRating else {
 
     // rename for concatenation
     val seenRatings2 = seenRatings.rename(('uindexR, 'iindexR, 'ratingR) -> ('uindex, 'iindex, 'rating))
@@ -112,8 +141,21 @@ class ModelConstructor(args: Args) extends Job(args) {
   }
 
   combinedRating
-    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
+    .filter('starttimeI, 'endtimeI) { fields: (Long, Option[Long]) =>
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
+    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)
     .project('uidU, 'iidI, 'rating, 'itypesI)
     .groupBy('uidU) { _.sortBy('rating).reverse.toList[(String, Double, List[String])](('iidI, 'rating, 'itypesI) -> 'iidsList) }
@@ -126,11 +168,21 @@ class ModelConstructor(args: Args) extends Job(args) {
   [0:2.0]
   [16:3.0]
   */
-  def parsePredictedData(data: String): List[(String, String)] = {
+  def parsePredictedData(data: String): List[(String, Double)] = {
     val dataLen = data.length
     data.take(dataLen - 1).tail.split(",").toList.map { ratingData =>
       val ratingDataArray = ratingData.split(":")
-      (ratingDataArray(0), ratingDataArray(1))
+      val item = ratingDataArray(0)
+      val rating: Double = try {
+        ratingDataArray(1).toDouble
+      } catch {
+        case e: Exception =>
+          {
+            assert(false, s"Cannot convert rating value of item ${item} to double: " + ratingDataArray + ". Exception: " + e)
+          }
+          0.0
+      }
+      (item, rating)
     }
   }
 }
