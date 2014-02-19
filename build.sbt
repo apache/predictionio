@@ -175,6 +175,10 @@ lazy val processEnginesItemRecAlgoScalaMahoutThresholdUserBased = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/thresholduserbased"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
 
+lazy val processEnginesItemRecAlgoScalaGraphChi = project
+  .in(file("process/engines/itemrec/algorithms/scala/graphchi"))
+  .dependsOn(commons)
+
 lazy val processEnginesItemRecEvalHadoopScalding = project
   .in(file("process/engines/itemrec/evaluations/hadoop/scalding"))
   .aggregate(

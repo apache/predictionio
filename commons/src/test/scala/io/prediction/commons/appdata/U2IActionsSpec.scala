@@ -22,6 +22,7 @@ class U2IActionsSpec extends Specification {
     t ^
       "inserting and getting 3 U2IAction's" ! insert(u2iActions) ^
       "getting U2IActions by App ID, User ID, and Item IDs" ! getAllByAppidAndUidAndIids(u2iActions) ^
+      "getting U2IActions by App ID, Item" ! getAllByAppidAndIid(u2iActions) ^
       "delete U2IActions by appid" ! deleteByAppid(u2iActions) ^
       "count U2IActions by appid" ! countByAppid(u2iActions) ^
       bt
@@ -106,6 +107,78 @@ class U2IActionsSpec extends Specification {
     results.size must beEqualTo(2) and
       (results(0) must beEqualTo(actions(0))) and
       (results(1) must beEqualTo(actions(2)))
+  }
+
+  def getAllByAppidAndIid(u2iActions: U2IActions) = {
+    val appid = 109
+    val actions = List(U2IAction(
+      appid = appid,
+      action = u2iActions.rate,
+      uid = "dead",
+      iid = "meat",
+      t = DateTime.now,
+      latlng = None,
+      v = Some(3),
+      price = None
+    ), U2IAction(
+      appid = appid,
+      action = u2iActions.view,
+      uid = "dead",
+      iid = "creeper",
+      t = DateTime.now,
+      latlng = Some((94.3904, -29.4839)),
+      v = None,
+      price = None
+    ), U2IAction(
+      appid = appid,
+      action = u2iActions.like,
+      uid = "dead",
+      iid = "sub",
+      t = DateTime.now,
+      latlng = None,
+      v = Some(1),
+      price = Some(49.40)
+    ), U2IAction(
+      appid = appid,
+      action = u2iActions.rate,
+      uid = "dead2",
+      iid = "meat",
+      t = DateTime.now,
+      latlng = None,
+      v = Some(2),
+      price = None
+    ), U2IAction(
+      appid = appid,
+      action = u2iActions.rate,
+      uid = "dead3",
+      iid = "meat",
+      t = DateTime.now,
+      latlng = None,
+      v = Some(5),
+      price = None
+    ), U2IAction(
+      appid = appid,
+      action = u2iActions.rate,
+      uid = "dead4",
+      iid = "meat",
+      t = DateTime.now,
+      latlng = None,
+      v = Some(1),
+      price = None
+    ))
+    actions foreach { u2iActions.insert(_) }
+    val results = u2iActions.getAllByAppidAndIid(appid, "meat", sortedByUid = true).toList
+    val resultsNoSort = u2iActions.getAllByAppidAndIid(appid, "meat", sortedByUid = false).toList.sortWith((s, t) => s.uid < t.uid)
+
+    results.size must beEqualTo(4) and
+      (results(0) must beEqualTo(actions(0))) and
+      (results(1) must beEqualTo(actions(3))) and
+      (results(2) must beEqualTo(actions(4))) and
+      (results(3) must beEqualTo(actions(5))) and
+      (resultsNoSort(0) must beEqualTo(actions(0))) and
+      (resultsNoSort(1) must beEqualTo(actions(3))) and
+      (resultsNoSort(2) must beEqualTo(actions(4))) and
+      (resultsNoSort(3) must beEqualTo(actions(5)))
   }
 
   def deleteByAppid(u2iActions: U2IActions) = {

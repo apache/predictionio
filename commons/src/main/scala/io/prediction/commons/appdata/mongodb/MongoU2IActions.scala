@@ -32,6 +32,13 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
     u2iActionColl.find(MongoDBObject("appid" -> appid, "uid" -> idWithAppid(appid, uid), "iid" -> MongoDBObject("$in" -> iids.map(idWithAppid(appid, _)))))
   )
 
+  def getAllByAppidAndIid(appid: Int, iid: String, sortedByUid: Boolean = true): Iterator[U2IAction] = {
+    if (sortedByUid)
+      new MongoU2IActionIterator(u2iActionColl.find(MongoDBObject("appid" -> appid, "iid" -> idWithAppid(appid, iid))).sort(MongoDBObject("uid" -> 1)))
+    else
+      new MongoU2IActionIterator(u2iActionColl.find(MongoDBObject("appid" -> appid, "iid" -> idWithAppid(appid, iid))))
+  }
+
   def deleteByAppid(appid: Int): Unit = {
     u2iActionColl.remove(MongoDBObject("appid" -> appid))
   }
