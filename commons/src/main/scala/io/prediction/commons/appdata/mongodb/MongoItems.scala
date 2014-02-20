@@ -59,6 +59,12 @@ class MongoItems(db: MongoDB) extends Items {
     new MongoItemsIterator(itemColl.find(MongoDBObject("appid" -> appid, "lnglat" -> (nearSphereObj ++ maxDistObj))))
   }
 
+  def getByAppidAndItypes(appid: Int, itypes: Seq[String]): Iterator[Item] = {
+    new MongoItemsIterator(itemColl.find(MongoDBObject(
+      "appid" -> appid,
+      "itypes" -> MongoDBObject("$in" -> itypes))))
+  }
+
   def getByIds(appid: Int, ids: Seq[String]) = {
     itemColl.find(MongoDBObject("_id" -> MongoDBObject("$in" -> ids.map(idWithAppid(appid, _))))).toList map { dbObjToItem(_) }
   }
