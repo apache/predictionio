@@ -2,22 +2,22 @@ package io.prediction.algorithms.scalding.mahout.itemsim
 
 import com.twitter.scalding._
 
-import io.prediction.commons.filepath.{DataFile, AlgoFile}
+import io.prediction.commons.filepath.{ DataFile, AlgoFile }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
 
 /**
  * Source:
  *
- * Sink: 
- * 
+ * Sink:
+ *
  * Description:
- *   
+ *
  * Required args:
  * --dbType: <string> modeldata DB type (eg. mongodb) (see --dbHost, --dbPort)
  * --dbName: <string> (eg. predictionio_modeldata)
- * 
+ *
  * --hdfsRoot: <string>. Root directory of the HDFS
- * 
+ *
  * --appid: <int>
  * --engineid: <int>
  * --algoid: <int>
@@ -29,15 +29,15 @@ import io.prediction.commons.scalding.modeldata.ItemSimScores
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
- * 
+ *
  * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
- * 
+ *
  * Example:
  *
  */
 class ModelConstructor(args: Args) extends Job(args) {
-  
+
   /**
    * parse args
    */
@@ -45,20 +45,20 @@ class ModelConstructor(args: Args) extends Job(args) {
   val dbNameArg = args("dbName")
   val dbHostArg = args.optional("dbHost")
   val dbPortArg = args.optional("dbPort") map (x => x.toInt)
-  
+
   val hdfsRootArg = args("hdfsRoot")
-  
+
   val appidArg = args("appid").toInt
   val engineidArg = args("engineid").toInt
   val algoidArg = args("algoid").toInt
   val evalidArg = args.optional("evalid") map (x => x.toInt)
   val OFFLINE_EVAL = (evalidArg != None) // offline eval mode
-    
+
   val debugArg = args.list("debug")
   val DEBUG_TEST = debugArg.contains("test") // test mode
-  
+
   val modelSetArg = args("modelSet").toBoolean
-  
+
   val numSimilarItems = args("numSimilarItems").toInt
   val recommendationTimeArg = args("recommendationTime").toLong
 
@@ -66,7 +66,7 @@ class ModelConstructor(args: Args) extends Job(args) {
    * source
    */
   val similarities = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "similarities.tsv"), ('iindex, 'simiindex, 'score)).read
-    .mapTo(('iindex, 'simiindex, 'score) -> ('iindex, 'simiindex, 'score)) { 
+    .mapTo(('iindex, 'simiindex, 'score) -> ('iindex, 'simiindex, 'score)) {
       fields: (String, String, Double) => fields // convert score from String to Double
     }
 
@@ -90,12 +90,12 @@ class ModelConstructor(args: Args) extends Job(args) {
 
       (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt)
     }
-  
+
   /**
    * sink
    */
 
-  val ItemSimScoresSink = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg, algoid=algoidArg, modelset=modelSetArg)
+  val ItemSimScoresSink = ItemSimScores(dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg, algoid = algoidArg, modelset = modelSetArg)
 
   /**
    * computation
@@ -108,8 +108,9 @@ class ModelConstructor(args: Args) extends Job(args) {
   // NOTE: use simiid's starttime and endtime. not iid's.
   val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)
   // NOTE: mahout only calculate half of the sim matrix, reverse the fields to get the other half
-  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score, 'starttime, 'endtime) -> ('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)) { 
-    fields: (String, String, List[String], Double, Long, Option[Long]) => fields }
+  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score, 'starttime, 'endtime) -> ('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)) {
+    fields: (String, String, List[String], Double, Long, Option[Long]) => fields
+  }
 
   val combinedSimilarities = sim1 ++ sim2
 
@@ -133,6 +134,6 @@ class ModelConstructor(args: Args) extends Job(args) {
 
       (iid, simiidsList.take(numSimilarItems))
     }
-    .then ( ItemSimScoresSink.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
-  
+    .then(ItemSimScoresSink.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _)
+
 }

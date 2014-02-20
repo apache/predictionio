@@ -23,7 +23,7 @@ class SVDSGDJob extends MahoutJob {
 
     val factorizer: Factorizer = new RatingSGDFactorizer(dataModel, numFeatures, learningRate, preventOverfitting,
       randomNoise, numIterations, learningRateDecay)
-    
+
     val recommender: Recommender = new SVDRecommender(dataModel, factorizer)
 
     recommender

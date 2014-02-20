@@ -2,9 +2,9 @@ package io.prediction.algorithms.scalding.itemsim.randomrank
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Items, Users}
+import io.prediction.commons.scalding.appdata.{ Items, Users }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.filepath.{ AlgoFile }
 
 /**
  * Source:
@@ -79,12 +79,12 @@ class RandomRank(args: Args) extends Job(args) {
 
   // get items data
   val items2 = Items(
-    appId=trainingAppid,
-    itypes=itypesArg,
-    dbType=training_dbTypeArg,
-    dbName=training_dbNameArg,
-    dbHost=training_dbHostArg,
-    dbPort=training_dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
+    appId = trainingAppid,
+    itypes = itypesArg,
+    dbType = training_dbTypeArg,
+    dbName = training_dbNameArg,
+    dbHost = training_dbHostArg,
+    dbPort = training_dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
     .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
       // only keep items with valid starttime and endtime
       val (starttimeI, endtimeI) = fields
@@ -101,23 +101,23 @@ class RandomRank(args: Args) extends Job(args) {
     }
 
   val items = Items(
-    appId=trainingAppid,
-    itypes=itypesArg,
-    dbType=training_dbTypeArg,
-    dbName=training_dbNameArg,
-    dbHost=training_dbHostArg,
-    dbPort=training_dbPortArg).readData('iid, 'itypesx)
+    appId = trainingAppid,
+    itypes = itypesArg,
+    dbType = training_dbTypeArg,
+    dbName = training_dbNameArg,
+    dbHost = training_dbHostArg,
+    dbPort = training_dbPortArg).readData('iid, 'itypesx)
 
   /**
    * sink
    */
   val itemSimScores = ItemSimScores(
-    dbType=modeldata_dbTypeArg,
-    dbName=modeldata_dbNameArg,
-    dbHost=modeldata_dbHostArg,
-    dbPort=modeldata_dbPortArg,
-    algoid=algoidArg,
-    modelset=modelSetArg)
+    dbType = modeldata_dbTypeArg,
+    dbName = modeldata_dbNameArg,
+    dbHost = modeldata_dbHostArg,
+    dbPort = modeldata_dbPortArg,
+    algoid = algoidArg,
+    modelset = modelSetArg)
 
   /**
    * computation
@@ -129,5 +129,5 @@ class RandomRank(args: Args) extends Job(args) {
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'simiidsList) }
 
   // write modeldata
-  scores.then( itemSimScores.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
+  scores.then(itemSimScores.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _)
 }

@@ -7,7 +7,7 @@ import scala.collection.JavaConversions._
 
 import scala.sys.process._
 
-import io.prediction.commons.filepath.{DataFile, AlgoFile}
+import io.prediction.commons.filepath.{ DataFile, AlgoFile }
 import io.prediction.commons.Config
 
 import org.apache.mahout.cf.taste.recommender.Recommender
@@ -23,13 +23,13 @@ object MahoutJob {
       println("Example. <job class name> --param1 1 --param2 2")
       System.exit(1)
     }
-    
+
     val jobName = args(0)
 
     println("Running Job %s...".format(jobName))
 
     //println(args.mkString(" "))
-    val (argMap, lastkey) = args.drop(1).foldLeft((Map[String, String](), "")) { (res, data) => 
+    val (argMap, lastkey) = args.drop(1).foldLeft((Map[String, String](), "")) { (res, data) =>
       val (argMap, lastkey) = res
       val key: Option[String] = if (data.startsWith("--")) Some(data.stripPrefix("--")) else None
 
@@ -40,7 +40,7 @@ object MahoutJob {
         val newData = orgData match {
           case "" => data
           case _ => orgData + " " + data
-        } 
+        }
         (argMap ++ Map(lastkey -> newData), lastkey)
       }
     }
@@ -50,9 +50,9 @@ object MahoutJob {
       getConstructor().
       newInstance().
       asInstanceOf[MahoutJob]
-  
+
     val runArgs = job.prepare(argMap)
-    
+
     val finishArgs = job.run(runArgs)
 
     val cleanupArgs = job.finish(finishArgs)
@@ -68,7 +68,7 @@ abstract class MahoutJob {
 
   val commonsConfig = new Config
   /** Try search path if hadoop home is not set. */
-  val hadoopCommand = commonsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+  val hadoopCommand = commonsConfig.settingsHadoopHome map { h => h + "/bin/hadoop" } getOrElse { "hadoop" }
 
   /** Get required arg */
   def getArg(args: Map[String, String], key: String): String = {
@@ -88,7 +88,7 @@ abstract class MahoutJob {
 
   /** Prepare stage for algo */
   def prepare(args: Map[String, String]): Map[String, String] = {
-    
+
     val hdfsRoot = getArg(args, "hdfsRoot") // required
     val localTempRoot = getArg(args, "localTempRoot") // required
     val appid = getArg(args, "appid").toInt // required
@@ -111,7 +111,7 @@ abstract class MahoutJob {
       throw new RuntimeException("Failed to execute '%s'".format(copyFromHdfsRatingsCmd))
 
     // output file
-    val localPredictedPath = localTempRoot + "algo-"+ algoid + "-predicted.tsv"
+    val localPredictedPath = localTempRoot + "algo-" + algoid + "-predicted.tsv"
     val localPredictedFile = new File(localPredictedPath)
 
     localPredictedFile.getParentFile().mkdirs() // create parent dir
@@ -124,25 +124,26 @@ abstract class MahoutJob {
     val createHdfsDirCmd = s"$hadoopCommand fs -mkdir -p $hdfsPredictedDir"
     println("Executing '%s'...".format(createHdfsDirCmd))
     createHdfsDirCmd.!
-    
+
     args ++ Map("input" -> localRatingsPath, "output" -> localPredictedPath, "hdfsOutput" -> hdfsPredictedPath)
   }
 
   /** create and return Mahout's Recommender object. */
   def buildRecommender(dataModel: DataModel, args: Map[String, String]): Recommender
 
-  /** Run algo job.
-    In default implementation, the prepare() function copies the ratings.csv from HDFS to local temporary directory.
-    The run() function should read and process this local file (defined by --input arg) file and generate the prediction 
-    output file (defined by --output arg) for each user.
-    Then finish() function copies the local prediction output file to HDFS predicted.tsv
-  */
+  /**
+   * Run algo job.
+   * In default implementation, the prepare() function copies the ratings.csv from HDFS to local temporary directory.
+   * The run() function should read and process this local file (defined by --input arg) file and generate the prediction
+   * output file (defined by --output arg) for each user.
+   * Then finish() function copies the local prediction output file to HDFS predicted.tsv
+   */
   def run(args: Map[String, String]): Map[String, String] = {
 
     val input = args("input")
     val output = args("output")
     val numRecommendations: Int = getArgOpt(args, "numRecommendations", "10").toInt
-    
+
     val dataModel: DataModel = new FileDataModel(new File(input))
     val recommender: Recommender = buildRecommender(dataModel, args)
 
@@ -155,8 +156,8 @@ abstract class MahoutJob {
       val uid = userIds.next
       val rec = recommender.recommend(uid, numRecommendations)
       if (rec.size != 0) {
-        val prediction = uid+"\t"+"[" + (rec map {x => x.getItemID +":"+x.getValue }).mkString(",") + "]"
-        outputWriter.write(prediction+"\n")
+        val prediction = uid + "\t" + "[" + (rec map { x => x.getItemID + ":" + x.getValue }).mkString(",") + "]"
+        outputWriter.write(prediction + "\n")
       }
     }
 
@@ -178,7 +179,7 @@ abstract class MahoutJob {
     //logger.info("Executing '%s'...".format(deleteHdfsPredictedCmd))
     println("Executing '%s'...".format(deleteHdfsPredictedCmd))
     deleteHdfsPredictedCmd.!
-    
+
     //logger.info("Executing '%s'...".format(copyToHdfsPredictedCmd))
     println("Executing '%s'...".format(copyToHdfsPredictedCmd))
     if ((copyToHdfsPredictedCmd.!) != 0)
@@ -191,7 +192,7 @@ abstract class MahoutJob {
   def cleanup(args: Map[String, String]) = {
     val localRatingsPath = args("input") // required
     val localPredictedPath = args("output") // required
-    
+
     val localRatingsFile = new File(localRatingsPath)
     val localPredictedFile = new File(localPredictedPath)
 

@@ -150,34 +150,42 @@ lazy val processEnginesItemRecAlgoScalaMahout = project
 lazy val processEnginesItemRecAlgoScalaMahoutCommons = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/commons"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaMahoutALSWR = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/alswr"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaMahoutKNNUserBased = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/knnuserbased"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaMahoutSlopeOne = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/slopeone"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaMahoutSVDPlusPlus = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/svdplusplus"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaMahoutSVDSGD = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/svdsgd"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaMahoutThresholdUserBased = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/thresholduserbased"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaGraphChi = project
   .in(file("process/engines/itemrec/algorithms/scala/graphchi"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecEvalHadoopScalding = project
   .in(file("process/engines/itemrec/evaluations/hadoop/scalding"))
@@ -189,10 +197,12 @@ lazy val processEnginesItemRecEvalHadoopScalding = project
 lazy val processEnginesItemRecEvalHadoopScaldingMetricsMAP = project
   .in(file("process/engines/itemrec/evaluations/hadoop/scalding/metrics/map"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecEvalScalaTopKItems = project
   .in(file("process/engines/itemrec/evaluations/scala/topkitems"))
   .dependsOn(commons, output)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimAlgoHadoopScalding = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding"))
@@ -210,18 +220,22 @@ lazy val processEnginesItemSimAlgoHadoopScalding = project
 lazy val processEnginesItemSimAlgoHadoopScaldingItemSimCF = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding/itemsimcf"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimAlgoHadoopScaldingLatestRank = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding/latestrank"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimAlgoHadoopScaldingMahout = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding/mahout"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimAlgoHadoopScaldingRandomRank = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding/randomrank"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimEvalHadoopScalding = project
   .in(file("process/engines/itemsim/evaluations/hadoop/scalding"))
@@ -233,21 +247,27 @@ lazy val processEnginesItemSimEvalHadoopScalding = project
 lazy val processEnginesItemSimEvalHadoopScaldingMetricsISMAP = project
   .in(file("process/engines/itemsim/evaluations/hadoop/scalding/metrics/ismap"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimEvalScalaTopKItems = project
   .in(file("process/engines/itemsim/evaluations/scala/topkitems"))
   .dependsOn(commons, output)
+  .settings(scalariformSettings: _*)
 
 // Tools Section
 
 lazy val toolsConncheck = project.in(file("tools/conncheck"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)
 
 lazy val toolsSettingsInit = project.in(file("tools/settingsinit"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)
 
 lazy val toolsSoftwareManager = project.in(file("tools/softwaremanager"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)
 
 lazy val toolsUsers = project.in(file("tools/users"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)

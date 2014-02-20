@@ -25,7 +25,7 @@ object TopKItems {
     val commonsConfig = new Config
 
     /** Try search path if hadoop home is not set. */
-    val hadoopCommand = commonsConfig.settingsHadoopHome map { h => h+"/bin/hadoop" } getOrElse { "hadoop" }
+    val hadoopCommand = commonsConfig.settingsHadoopHome map { h => h + "/bin/hadoop" } getOrElse { "hadoop" }
 
     val apps = commonsConfig.getSettingsApps
     val engines = commonsConfig.getSettingsEngines

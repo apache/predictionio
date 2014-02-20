@@ -28,9 +28,9 @@ class SlopeOneJob extends MahoutJob {
     }
 
     val recommender: Recommender = new SlopeOneRecommender(dataModel,
-         weighting, // weighting
-         stdDevWeighting, // stdDevWeighting
-         new MemoryDiffStorage(dataModel, stdDevWeighting, Long.MaxValue)); //maximum number of item-item average preference differences to track internally
+      weighting, // weighting
+      stdDevWeighting, // stdDevWeighting
+      new MemoryDiffStorage(dataModel, stdDevWeighting, Long.MaxValue)); //maximum number of item-item average preference differences to track internally
 
     recommender
   }
