@@ -33,9 +33,6 @@ object GraphChiDataPreparator {
   println(logger.isInfoEnabled)
 
   val commonsConfig = new Config
-  val usersDb = commonsConfig.getAppdataUsers
-  val itemsDb = commonsConfig.getAppdataItems
-  val u2iDb = commonsConfig.getAppdataU2IActions
 
   // argument of this job
   case class JobArg(
@@ -85,6 +82,7 @@ object GraphChiDataPreparator {
     // check if the conflictParam is valid
     require(List(CONFLICT_LATEST, CONFLICT_HIGHEST, CONFLICT_LOWEST).contains(conflictParamArg), "conflict param " + conflictParamArg + " is not valid.")
 
+    // write data in matrix market format
     val matrixMarketArg: Boolean = args.optional("matrixMarket").map(x => x.toBoolean).getOrElse(true)
 
     val arg = JobArg(
@@ -106,17 +104,44 @@ object GraphChiDataPreparator {
 
   }
 
-  def dataPrep(arg: JobArg) = {
-    // TODO: if offline eval, use evalid as appid
+  case class RatingData(
+    uid: Int,
+    iid: Int,
+    rating: Int,
+    t: Long)
 
-    // TODO: create outputDir if doesn't exist yet.
+  def dataPrep(arg: JobArg) = {
+
+    // NOTE: if OFFLINE_EVAL, read from training set, and use evalid as appid when read Items and U2iActions
+    val OFFLINE_EVAL = (arg.evalid != None)
+
+    val usersDb = if (!OFFLINE_EVAL)
+      commonsConfig.getAppdataUsers
+    else
+      commonsConfig.getAppdataTrainingUsers
+
+    val itemsDb = if (!OFFLINE_EVAL)
+      commonsConfig.getAppdataItems
+    else
+      commonsConfig.getAppdataTrainingItems
+
+    val u2iDb = if (!OFFLINE_EVAL)
+      commonsConfig.getAppdataU2IActions
+    else
+      commonsConfig.getAppdataTrainingU2IActions
+
+    val appid = if (OFFLINE_EVAL) arg.evalid.get else arg.appid
+
+    // create outputDir if doesn't exist yet.
+    val outputDir = new File(arg.outputDir)
+    outputDir.mkdirs()
 
     /* write user index */
     val usersIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "usersIndex.tsv")))
     // TODO sort by ID when read from Mongo (although not needed for funtionality)
     // convert to Map for later lookup
     // assuming number of users can be fit into memory.
-    val usersIndex: Map[String, Int] = usersDb.getByAppid(arg.appid).map(_.id).zipWithIndex
+    val usersIndex: Map[String, Int] = usersDb.getByAppid(appid).map(_.id).zipWithIndex
       .map { case (uid, index) => (uid, index + 1) }.toMap // +1 to make it starting from 1
 
     // TODO: output with key order?
@@ -126,66 +151,113 @@ object GraphChiDataPreparator {
     }
     usersIndexWriter.close()
 
-    /* write items and ratings */
+    /* write item index */
     val itemsIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "itemsIndex.tsv")))
-    val ratingsWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "ratings.csv"))) // intermediate file
-    val ratingsTempWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "ratingsTemp.tsv"))) // TODO: remove
+    // TODO sort by ID when read from Mongo (although not needed for funtionality)
+    val itemsIndex: Map[String, Int] = arg.itypes.map { itypes =>
+      itemsDb.getByAppidAndItypes(appid, itypes)
+    }.getOrElse {
+      itemsDb.getByAppid(appid)
+    }.map(_.id)
+      .zipWithIndex
+      .map { case (iid, index) => (iid, index + 1) }
+      .toMap // +1 to make it starting from 1
 
-    // TODO: add itypes, sort by ID when read from Mongo
-    val itemsIndex: Iterator[(String, Int)] = itemsDb.getByAppid(arg.appid).map(_.id).zipWithIndex
-      .map { case (iid, index) => (iid, index + 1) } // +1 to make it starting from 1
-
-    var numberOfEntries = 0
-    var numberOfItems = 0
+    // TODO: output with key order?
+    // TODO: also write extra item data (itypes, starttime, endtime, etc) into itemsindex
     itemsIndex.foreach {
       case (iid, iindex) =>
-        // TODO: also write extra item data (itypes, starttime, endtime, etc) into itemsindex
         itemsIndexWriter.write(s"${iindex}\t${iid}\n")
-        numberOfItems = numberOfItems + 1
-        // NOTE: keep u2i as Iterator[T], don't convert to List because u2i is large.
-        val u2iActions = u2iDb.getAllByAppidAndIid(arg.appid, iid, sortedByUid = true)
-          .filter(keepValidAction(_, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam))
-          .map(convertToRating(_, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam))
-          .reduceLeft { (acc: U2IAction, cur: U2IAction) =>
-            if (cur.uid == acc.uid) {
-              // keep highest rating
-              // TODO: support other conflict resolutions
-              val curRating = cur.v.get
-              val accRating = acc.v.get
-              if (curRating > accRating) {
-                cur
-              } else {
-                acc
-              }
-            } else {
-              ratingsTempWriter.write(s"${acc.uid}\t${acc.iid}\t${acc.v.get}\n") // TOOD: remove
-              val uindex = usersIndex(acc.uid)
-              numberOfEntries = numberOfEntries + 1
-              ratingsWriter.write(s"${uindex},${iindex},${acc.v.get}\n")
-              cur
-            }
-          }
     }
     itemsIndexWriter.close()
-    ratingsWriter.close()
-    ratingsTempWriter.close()
 
-    if (arg.matrixMarket) {
-      /* write again with Matrix Market Format header */
-      val mmWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "ratings.mm")))
-      mmWriter.write("%%MatrixMarket matrix coordinate real general\n")
-      mmWriter.write(s"${usersIndex.size} ${numberOfItems} ${numberOfEntries}\n")
-      val ratingsFile = Source.fromFile(arg.outputDir + "ratings.csv")
-      ratingsFile.getLines().foreach { line =>
-        val v = line.split(",")
-        mmWriter.write(s"${v(0)} ${v(1)} ${v(2)}")
-        mmWriter.newLine()
+    /* write u2i ratings */
+
+    val u2iRatings = u2iDb.getAllByAppid(appid)
+      .filter { u2i =>
+        val validAction = isValidAction(u2i, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam)
+        val validUser = usersIndex.contains(u2i.uid)
+        val validItem = itemsIndex.contains(u2i.iid)
+        (validAction && validUser && validItem)
+      }.map { u2i =>
+        val rating = convertToRating(u2i, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam)
+
+        RatingData(
+          uid = usersIndex(u2i.uid),
+          iid = itemsIndex(u2i.iid),
+          rating = rating,
+          t = u2i.t.getMillis
+        )
+      }.toSeq
+
+    if (!u2iRatings.isEmpty) {
+
+      val ratingReduced = u2iRatings.groupBy(x => (x.iid, x.uid))
+        .mapValues { v =>
+          v.reduce { (a, b) =>
+            resolveConflict(a, b, arg.conflictParam)
+          }
+        }.values
+        .toSeq
+        .sortBy { x: RatingData =>
+          (x.iid, x.uid)
+        }
+
+      val fileName = if (arg.matrixMarket) "ratings.mm" else "ratings.csv"
+      val ratingsWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + fileName))) // intermediate file
+
+      if (arg.matrixMarket) {
+        ratingsWriter.write("%%MatrixMarket matrix coordinate real general\n")
+        ratingsWriter.write(s"${usersIndex.size} ${itemsIndex.size} ${ratingReduced.size}\n")
       }
-      mmWriter.close()
+
+      ratingReduced.foreach { r =>
+        if (arg.matrixMarket) {
+          ratingsWriter.write(s"${r.uid} ${r.iid} ${r.rating}\n")
+        } else {
+          ratingsWriter.write(s"${r.uid},${r.iid},${r.rating}\n")
+        }
+      }
+
+      ratingsWriter.close()
+
+      /*
+      val fileName = if (arg.matrixMarket) "ratings.mm" else "ratings.csv"
+      val ratingsWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + fileName))) // intermediate file
+
+      if (arg.matrixMarket) {
+        ratingsWriter.write("%%MatrixMarket matrix coordinate real general\n")
+        ratingsWriter.write(s"${usersIndex.size} ${itemsIndex.size} ${u2iRatings.size}\n")
+      }
+      val last = u2iRatings
+        .sortBy { x: RatingData =>
+          (x.iid, x.uid) // NOTE: by iid first!
+        }.reduceLeft { (prev: RatingData, cur: RatingData) =>
+
+        if (cur.uid == prev.uid) {
+          resolveConflict(cur, prev, arg.conflictParam)
+        } else {
+          if (arg.matrixMarket) {
+            ratingsWriter.write(s"${prev.uid} ${prev.iid} ${prev.rating}\n")
+          } else {
+            ratingsWriter.write(s"${prev.uid},${prev.iid},${prev.rating}\n")
+          }
+          cur
+        }
+      }
+      // write the last u2i
+      if (arg.matrixMarket) {
+        ratingsWriter.write(s"${last.uid} ${last.iid} ${last.rating}\n")
+      } else {
+        ratingsWriter.write(s"${last.uid},${last.iid},${last.rating}\n")
+      }
+      ratingsWriter.close()
+      */
     }
+
   }
 
-  def keepValidAction(u2i: U2IAction, likeParam: Option[Int], dislikeParam: Option[Int],
+  def isValidAction(u2i: U2IAction, likeParam: Option[Int], dislikeParam: Option[Int],
     viewParam: Option[Int], conversionParam: Option[Int]): Boolean = {
     val keepThis: Boolean = u2i.action match {
       case ACTION_RATE => true
@@ -202,27 +274,35 @@ object GraphChiDataPreparator {
   }
 
   def convertToRating(u2i: U2IAction, likeParam: Option[Int], dislikeParam: Option[Int],
-    viewParam: Option[Int], conversionParam: Option[Int]) = {
-    val convertedU2I: U2IAction = u2i.action match {
-      case ACTION_RATE => u2i
-      case ACTION_LIKE => likeParam.map(param => u2i.copy(v = Some(param))).getOrElse {
+    viewParam: Option[Int], conversionParam: Option[Int]): Int = {
+    val rating: Int = u2i.action match {
+      case ACTION_RATE => u2i.v.get.toInt
+      case ACTION_LIKE => likeParam.getOrElse {
         assert(false, "Action type " + u2i.action + " should have been filtered out!")
-        u2i
+        0
       }
-      case ACTION_DISLIKE => dislikeParam.map(param => u2i.copy(v = Some(param))).getOrElse {
+      case ACTION_DISLIKE => dislikeParam.getOrElse {
         assert(false, "Action type " + u2i.action + " should have been filtered out!")
-        u2i
+        0
       }
-      case ACTION_VIEW => viewParam.map(param => u2i.copy(v = Some(param))).getOrElse {
+      case ACTION_VIEW => viewParam.getOrElse {
         assert(false, "Action type " + u2i.action + " should have been filtered out!")
-        u2i
+        0
       }
-      case ACTION_CONVERSION => conversionParam.map(param => u2i.copy(v = Some(param))).getOrElse {
+      case ACTION_CONVERSION => conversionParam.getOrElse {
         assert(false, "Action type " + u2i.action + " should have been filtered out!")
-        u2i
+        0
       }
     }
-    convertedU2I
+    rating
+  }
+
+  def resolveConflict(a: RatingData, b: RatingData, conflictParam: String) = {
+    conflictParam match {
+      case CONFLICT_LATEST => if (a.t > b.t) a else b
+      case CONFLICT_HIGHEST => if (a.rating > b.rating) a else b
+      case CONFLICT_LOWEST => if (a.rating < b.rating) a else b
+    }
   }
 
   def cleanup(arg: JobArg) = {
