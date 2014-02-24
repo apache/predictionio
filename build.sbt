@@ -1,7 +1,3 @@
-import com.typesafe.sbt.SbtNativePackager.Universal
-
-import com.typesafe.sbt.packager.Keys._
-
 name := "predictionio"
 
 version in ThisBuild := "0.7.0-SNAPSHOT"

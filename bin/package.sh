@@ -57,13 +57,16 @@ cp "$BASE/process/engines/commons/evaluations/scala/u2itrainingtestsplit/target/
 cp "$BASE/process/engines/itemrec/algorithms/scala/mahout/target/scala-2.10/predictionio-process-itemrec-algorithms-scala-mahout-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemrec-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemsim-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp -n $BASE/tools/conncheck/target/universal/stage/bin/conncheck $PACKAGE_DIR/bin
-cp -n $BASE/tools/conncheck/target/universal/stage/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/settingsinit/target/universal/stage/bin/settingsinit $PACKAGE_DIR/bin
-cp -n $BASE/tools/settingsinit/target/universal/stage/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/softwaremanager/target/universal/stage/lib/* $PACKAGE_DIR/lib
-cp -n $BASE/tools/users/target/universal/stage/bin/users $PACKAGE_DIR/bin
-cp -n $BASE/tools/users/target/universal/stage/lib/* $PACKAGE_DIR/lib
+#cp $BASE/process/engines/itemrec/algorithms/scala/graphchi/target/universal/stage/bin/GraphChiModelConstructor $PACKAGE_DIR/bin
+#cp -n $BASE/process/engines/itemrec/algorithms/scala/graphchi/target/universal/stage/lib/* $PACKAGE_DIR/lib
+cp $BASE/tools/conncheck/target/pack/bin/conncheck $PACKAGE_DIR/bin
+cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
+cp $BASE/tools/settingsinit/target/pack/bin/settingsinit $PACKAGE_DIR/bin
+cp -n $BASE/tools/settingsinit/target/pack/lib/* $PACKAGE_DIR/lib
+cp $BASE/tools/softwaremanager/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
+cp $BASE/tools/users/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
 mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.8
 cp $VENDOR_MAHOUT/mahout-core-0.8-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.8

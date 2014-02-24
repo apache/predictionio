@@ -52,21 +52,25 @@ else
     BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalScalaTopKItems/assembly"
 fi
 
+# Build GraphChi Data Preparator and Model Constructor
+#echo "+ Pack GraphChi Data Preparator and Model Constructor"
+#BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/stage"
+
 # Build connection check tool
 echo "+ Pack Connection Check Tool"
-BASE_TARGETS="$BASE_TARGETS toolsConncheck/stage"
+BASE_TARGETS="$BASE_TARGETS toolsConncheck/pack"
 
 # Build settings initialization tool
 echo "+ Pack Settings Initialization Tool"
-BASE_TARGETS="$BASE_TARGETS toolsSettingsInit/stage"
+BASE_TARGETS="$BASE_TARGETS toolsSettingsInit/pack"
 
 # Build software manager
 echo "+ Pack Software Manager"
-BASE_TARGETS="$BASE_TARGETS toolsSoftwareManager/stage"
+BASE_TARGETS="$BASE_TARGETS toolsSoftwareManager/pack"
 
 # Build user tool
 echo "+ Pack User Tool"
-BASE_TARGETS="$BASE_TARGETS toolsUsers/stage"
+BASE_TARGETS="$BASE_TARGETS toolsUsers/pack"
 
 $SBT $CLEAN $BASE_TARGETS
 
