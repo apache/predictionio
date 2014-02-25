@@ -19,12 +19,12 @@ install_sbt () {
 }
 
 install_play () {
-    echo "Going to download and install Play Framework 2.2.0..."
+    echo "Going to download and install Play Framework 2.2.1..."
     local VENDORS_PATH=$1
     mkdir -p $VENDORS_PATH
     cd $VENDORS_PATH
-    curl -O http://downloads.typesafe.com/play/2.2.0/play-2.2.0.zip
-    unzip play-2.2.0.zip
+    curl -O http://downloads.typesafe.com/play/2.2.1/play-2.2.1.zip
+    unzip play-2.2.1.zip
     cd $BASE
 }
 
@@ -44,7 +44,7 @@ install_mahout () {
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_SBT="$VENDORS_PATH/sbt-0.13.1/sbt"
-VENDOR_PLAY="$VENDORS_PATH/play-2.2.0/play"
+VENDOR_PLAY="$VENDORS_PATH/play-2.2.1/play"
 VENDOR_MAHOUT="$VENDORS_PATH/mahout-distribution-0.8"
 
 # Detect existing installations in search path
@@ -66,12 +66,12 @@ fi
 #if command_exists "play" ; then
 #   PLAY=play
 if [ -x "$VENDOR_PLAY" ] ; then
-    echo "Using Play Framework 2.2.0 in vendors."
+    echo "Using Play Framework 2.2.1 in vendors."
     PLAY="$VENDOR_PLAY"
 elif install_play "$VENDORS_PATH" ; then
     PLAY="$VENDOR_PLAY"
 else
-    echo "Unable to locate Play Framework 2.2.0 and automatic installation failed. Aborting." >&2
+    echo "Unable to locate Play Framework 2.2.1 and automatic installation failed. Aborting." >&2
     exit 1
 fi
 
