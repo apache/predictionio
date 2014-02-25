@@ -45,6 +45,7 @@ object GraphChiDataPreparator {
     val dislikeParam: Option[Int],
     val conversionParam: Option[Int],
     val conflictParam: String,
+    val recommendationTime: Option[Long],
     val matrixMarket: Boolean)
 
   def main(cmdArgs: Array[String]) {
@@ -82,6 +83,8 @@ object GraphChiDataPreparator {
     // check if the conflictParam is valid
     require(List(CONFLICT_LATEST, CONFLICT_HIGHEST, CONFLICT_LOWEST).contains(conflictParamArg), "conflict param " + conflictParamArg + " is not valid.")
 
+    val recommendationTimeArg = args.optional("recommendationTime").map(_.toLong)
+
     // write data in matrix market format
     val matrixMarketArg: Boolean = args.optional("matrixMarket").map(x => x.toBoolean).getOrElse(true)
 
@@ -95,6 +98,7 @@ object GraphChiDataPreparator {
       dislikeParam = dislikeParamArg,
       conversionParam = conversionParamArg,
       conflictParam = conflictParamArg,
+      recommendationTime = recommendationTimeArg,
       matrixMarket = matrixMarketArg
     )
 
@@ -137,37 +141,51 @@ object GraphChiDataPreparator {
     outputDir.mkdirs()
 
     /* write user index */
-    val usersIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "usersIndex.tsv")))
-    // TODO sort by ID when read from Mongo (although not needed for funtionality)
     // convert to Map for later lookup
     // assuming number of users can be fit into memory.
-    val usersIndex: Map[String, Int] = usersDb.getByAppid(appid).map(_.id).zipWithIndex
+    val usersMap: Map[String, Int] = usersDb.getByAppid(appid).map(_.id).zipWithIndex
       .map { case (uid, index) => (uid, index + 1) }.toMap // +1 to make it starting from 1
 
-    // TODO: output with key order?
-    usersIndex.foreach {
+    val usersIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "usersIndex.tsv")))
+    usersMap.foreach {
       case (uid, uindex) =>
         usersIndexWriter.write(s"${uindex}\t${uid}\n")
     }
     usersIndexWriter.close()
 
-    /* write item index */
-    val itemsIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "itemsIndex.tsv")))
-    // TODO sort by ID when read from Mongo (although not needed for funtionality)
-    val itemsIndex: Map[String, Int] = arg.itypes.map { itypes =>
+    case class ItemData(
+      val iindex: Int,
+      val itypes: Seq[String],
+      val starttime: Option[Long],
+      val endtime: Option[Long])
+
+    val itemsMap: Map[String, ItemData] = arg.itypes.map { itypes =>
       itemsDb.getByAppidAndItypes(appid, itypes)
     }.getOrElse {
       itemsDb.getByAppid(appid)
-    }.map(_.id)
-      .zipWithIndex
-      .map { case (iid, index) => (iid, index + 1) }
-      .toMap // +1 to make it starting from 1
+    }.zipWithIndex
+      .map {
+        case (item, index) =>
+          val itemData = ItemData(
+            iindex = index + 1, // +1 to make index starting from 1 (required by graphchi)
+            itypes = item.itypes,
+            starttime = item.starttime.map[Long](_.getMillis()),
+            endtime = item.endtime.map[Long](_.getMillis())
+          )
+          (item.id -> itemData)
+      }.toMap
 
-    // TODO: output with key order?
-    // TODO: also write extra item data (itypes, starttime, endtime, etc) into itemsindex
-    itemsIndex.foreach {
-      case (iid, iindex) =>
-        itemsIndexWriter.write(s"${iindex}\t${iid}\n")
+    // 
+    /* write item index (iindex iid itypes) */
+    val itemsIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "itemsIndex.tsv")))
+    // NOTE: only write valid items (eg. valid starttime and endtime)
+    itemsMap.filter {
+      case (iid, itemData) =>
+        itemTimeFilter(true, itemData.starttime, itemData.endtime, arg.recommendationTime)
+    }.foreach {
+      case (iid, itemData) =>
+        val itypes = itemData.itypes.mkString(",")
+        itemsIndexWriter.write(s"${itemData.iindex}\t${iid}\t${itypes}\n")
     }
     itemsIndexWriter.close()
 
@@ -176,15 +194,15 @@ object GraphChiDataPreparator {
     val u2iRatings = u2iDb.getAllByAppid(appid)
       .filter { u2i =>
         val validAction = isValidAction(u2i, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam)
-        val validUser = usersIndex.contains(u2i.uid)
-        val validItem = itemsIndex.contains(u2i.iid)
+        val validUser = usersMap.contains(u2i.uid)
+        val validItem = itemsMap.contains(u2i.iid)
         (validAction && validUser && validItem)
       }.map { u2i =>
         val rating = convertToRating(u2i, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam)
 
         RatingData(
-          uid = usersIndex(u2i.uid),
-          iid = itemsIndex(u2i.iid),
+          uid = usersMap(u2i.uid),
+          iid = itemsMap(u2i.iid).iindex,
           rating = rating,
           t = u2i.t.getMillis
         )
@@ -208,7 +226,7 @@ object GraphChiDataPreparator {
 
       if (arg.matrixMarket) {
         ratingsWriter.write("%%MatrixMarket matrix coordinate real general\n")
-        ratingsWriter.write(s"${usersIndex.size} ${itemsIndex.size} ${ratingReduced.size}\n")
+        ratingsWriter.write(s"${usersMap.size} ${itemsMap.size} ${ratingReduced.size}\n")
       }
 
       ratingReduced.foreach { r =>
@@ -220,41 +238,21 @@ object GraphChiDataPreparator {
       }
 
       ratingsWriter.close()
-
-      /*
-      val fileName = if (arg.matrixMarket) "ratings.mm" else "ratings.csv"
-      val ratingsWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + fileName))) // intermediate file
-
-      if (arg.matrixMarket) {
-        ratingsWriter.write("%%MatrixMarket matrix coordinate real general\n")
-        ratingsWriter.write(s"${usersIndex.size} ${itemsIndex.size} ${u2iRatings.size}\n")
-      }
-      val last = u2iRatings
-        .sortBy { x: RatingData =>
-          (x.iid, x.uid) // NOTE: by iid first!
-        }.reduceLeft { (prev: RatingData, cur: RatingData) =>
-
-        if (cur.uid == prev.uid) {
-          resolveConflict(cur, prev, arg.conflictParam)
-        } else {
-          if (arg.matrixMarket) {
-            ratingsWriter.write(s"${prev.uid} ${prev.iid} ${prev.rating}\n")
-          } else {
-            ratingsWriter.write(s"${prev.uid},${prev.iid},${prev.rating}\n")
-          }
-          cur
-        }
-      }
-      // write the last u2i
-      if (arg.matrixMarket) {
-        ratingsWriter.write(s"${last.uid} ${last.iid} ${last.rating}\n")
-      } else {
-        ratingsWriter.write(s"${last.uid},${last.iid},${last.rating}\n")
-      }
-      ratingsWriter.close()
-      */
     }
 
+  }
+
+  def itemTimeFilter(enable: Boolean, starttime: Option[Long], endtime: Option[Long], recommendationTime: Option[Long]): Boolean = {
+    if (enable) {
+      recommendationTime.map { recTime =>
+        (starttime, endtime) match {
+          case (Some(start), None) => (recTime >= start)
+          case (Some(start), Some(end)) => ((recTime >= start) && (recTime < end))
+          case (None, Some(end)) => (recTime < end)
+          case (None, None) => true
+        }
+      }.getOrElse(true)
+    } else true
   }
 
   def isValidAction(u2i: U2IAction, likeParam: Option[Int], dislikeParam: Option[Int],
