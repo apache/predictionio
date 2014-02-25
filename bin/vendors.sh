@@ -8,11 +8,11 @@ command_exists () {
 }
 
 install_sbt () {
-    echo "Going to download and install sbt 0.13.0..."
-    local VENDORS_PATH=$1/sbt-0.13.0
+    echo "Going to download and install sbt 0.13.1..."
+    local VENDORS_PATH=$1/sbt-0.13.1
     mkdir -p $VENDORS_PATH
     cd $VENDORS_PATH
-    curl -O http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.0/sbt-launch.jar
+    curl -O http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.1/sbt-launch.jar
     echo 'java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=512M -jar `dirname $0`/sbt-launch.jar "$@"' > sbt
     chmod a+x sbt
     cd $BASE
@@ -43,7 +43,7 @@ install_mahout () {
 
 # Third party software
 VENDORS_PATH="$BASE/vendors"
-VENDOR_SBT="$VENDORS_PATH/sbt-0.13.0/sbt"
+VENDOR_SBT="$VENDORS_PATH/sbt-0.13.1/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.2.0/play"
 VENDOR_MAHOUT="$VENDORS_PATH/mahout-distribution-0.8"
 
@@ -53,12 +53,12 @@ VENDOR_MAHOUT="$VENDORS_PATH/mahout-distribution-0.8"
 #   echo "Using sbt in search path. No additional JVM optimization will be set."
 #   SBT=sbt
 if [ -x "$VENDOR_SBT" ] ; then
-    echo "Using sbt 0.13.0 in vendors."
+    echo "Using sbt 0.13.1 in vendors."
     SBT="$VENDOR_SBT"
 elif install_sbt "$VENDORS_PATH" ; then
     SBT="$VENDOR_SBT"
 else
-    echo "Unable to locate sbt 0.13.0 and automatic installation failed. Aborting." >&2
+    echo "Unable to locate sbt 0.13.1 and automatic installation failed. Aborting." >&2
     exit 1
 fi
 

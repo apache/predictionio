@@ -4,7 +4,7 @@ version in ThisBuild := "0.7.0-SNAPSHOT"
 
 organization in ThisBuild := "io.prediction"
 
-scalaVersion in ThisBuild := "2.10.2"
+scalaVersion in ThisBuild := "2.10.3"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
