@@ -79,7 +79,7 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
   }
 
   def existByAlgo(algo: Algo) = {
-    db.collectionExists(collectionName(algo.id, algo.modelset))
+    db.collectionExists(collectionName(algo.id, algo.modelset)) && db(collectionName(algo.id, algo.modelset)).find().hasNext
   }
 
   override def after(algoid: Int, modelset: Boolean) = {
