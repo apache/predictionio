@@ -121,18 +121,17 @@ object GraphChiModelConstructor {
     }
 
     // feature x user matrix
-    val userMatrix = MatrixMarketReader.readDense(s"${arg.inputDir}u.mm").t
+    val userMatrix = MatrixMarketReader.readDense(s"${arg.inputDir}ratings.mm_U.mm").t
 
     // feature x item matrix
-    val itemMatrix = MatrixMarketReader.readDense(s"${arg.inputDir}i.mm").t
+    val itemMatrix = MatrixMarketReader.readDense(s"${arg.inputDir}ratings.mm_V.mm").t
 
-    // note: start form 0
     for (uindex <- 1 to userMatrix.cols if usersMap.contains(uindex)) {
       val scores = for (
         iindex <- 1 to itemMatrix.cols if (unseenItemFilter(arg.unseenOnly, uindex, iindex, seenMap)
           && validItemFilter(true, iindex, itemsMap))
       ) yield {
-        // NOTE: DenseMatrix index starts from 0, so minus 1
+        // NOTE: DenseMatrix index starts from 0, so minus 1 (but graphchi user and item index starts from 1)
         val score = userMatrix(::, uindex - 1) dot itemMatrix(::, iindex - 1)
         (iindex, score)
       }
