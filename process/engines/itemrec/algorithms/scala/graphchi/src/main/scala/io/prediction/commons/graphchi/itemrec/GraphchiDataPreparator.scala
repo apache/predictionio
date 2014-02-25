@@ -12,6 +12,14 @@ import scala.io.Source
 
 import com.twitter.scalding.Args
 
+/**
+ * Output file:
+ * - usersIndex.tsv
+ * - itemsIndex.tsv
+ * - ratings.mm
+ *
+ *
+ */
 object GraphChiDataPreparator {
 
   /* constants */
