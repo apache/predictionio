@@ -12,6 +12,8 @@ packJarNameConvention := "full"
 
 packExpandedClasspath := true
 
+packGenerateWindowsBatFile := false
+
 packMain := Map("settingsinit" -> "io.prediction.tools.settingsinit.SettingsInit")
 
 packJvmOpts := Map("settingsinit" -> Common.packCommonJvmOpts)

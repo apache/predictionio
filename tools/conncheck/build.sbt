@@ -12,6 +12,8 @@ packJarNameConvention := "full"
 
 packExpandedClasspath := true
 
+packGenerateWindowsBatFile := false
+
 packMain := Map("conncheck" -> "io.prediction.tools.conncheck.ConnCheck")
 
 packJvmOpts := Map("conncheck" -> Common.packCommonJvmOpts)

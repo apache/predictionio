@@ -16,6 +16,8 @@ packJarNameConvention := "full"
 
 packExpandedClasspath := true
 
+packGenerateWindowsBatFile := false
+
 packMain := Map("users" -> "io.prediction.tools.users.Users")
 
 packJvmOpts := Map("users" -> Common.packCommonJvmOpts)

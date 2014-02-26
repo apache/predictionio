@@ -15,6 +15,8 @@ packJarNameConvention := "full"
 
 packExpandedClasspath := true
 
+packGenerateWindowsBatFile := false
+
 packMain := Map(
   "backup"      -> "io.prediction.tools.softwaremanager.Backup",
   "restore"     -> "io.prediction.tools.softwaremanager.Restore",

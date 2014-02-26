@@ -53,8 +53,8 @@ else
 fi
 
 # Build GraphChi Data Preparator and Model Constructor
-#echo "+ Pack GraphChi Data Preparator and Model Constructor"
-#BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/stage"
+echo "+ Pack GraphChi Data Preparator and Model Constructor"
+BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/pack"
 
 # Build connection check tool
 echo "+ Pack Connection Check Tool"
