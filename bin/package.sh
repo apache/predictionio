@@ -36,7 +36,7 @@ cd $SCHEDULER_DIR
 $PLAY stage
 
 # Packaging
-rm -rf "$PACKAGE_DIR"
+rm -rf $PACKAGE_DIR $PACKAGE_DIR_LINUX32 $PACKAGE_DIR_LINUX64
 mkdir -p "$PACKAGE_DIR/bin"
 mkdir -p "$PACKAGE_DIR/lib"
 
@@ -72,7 +72,30 @@ mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.8
 cp $VENDOR_MAHOUT/mahout-core-0.8-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.8
 
 cd $DIST_DIR/target
-rm "$PACKAGE_NAME.zip"
-zip -q -r "$PACKAGE_NAME.zip" "$PACKAGE_NAME"
 
-echo "Packaging finished at $DIST_DIR/target/$PACKAGE_NAME.zip"
+# Multi-arch targets
+
+cp -R $PACKAGE_DIR $PACKAGE_DIR_LINUX64
+mv $PACKAGE_DIR $PACKAGE_DIR_LINUX32
+
+cd $PACKAGE_DIR_LINUX32
+cp $VENDOR_GRAPHCHI_CPP_CF_LINUX32/* $PACKAGE_DIR_LINUX32/bin
+
+cd $PACKAGE_DIR_LINUX64
+cp $VENDOR_GRAPHCHI_CPP_CF_LINUX64/* $PACKAGE_DIR_LINUX64/bin
+
+cd $DIST_DIR/target
+
+if [ -e "$PACKAGE_NAME_LINUX32.zip" ] ; then
+    rm "$PACKAGE_NAME_LINUX64.zip"
+fi
+if [ -e "$PACKAGE_NAME_LINUX64.zip" ] ; then
+    rm "$PACKAGE_NAME_LINUX64.zip"
+fi 
+
+zip -q -r "$PACKAGE_NAME_LINUX32.zip" "$PACKAGE_NAME_LINUX32"
+zip -q -r "$PACKAGE_NAME_LINUX64.zip" "$PACKAGE_NAME_LINUX64"
+
+echo "Packaging finished:"
+echo "- $DIST_DIR/target/$PACKAGE_NAME_LINUX32.zip"
+echo "- $DIST_DIR/target/$PACKAGE_NAME_LINUX64.zip"

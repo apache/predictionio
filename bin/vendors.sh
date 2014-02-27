@@ -41,11 +41,31 @@ install_mahout () {
     cd $BASE
 }
 
+install_graphchi_cpp_cf_linux32 () {
+    echo "Going to download and install GraphChi C++ CF Toolbox for Linux 32-bit..."
+    mkdir -p $VENDORS_PATH
+    cd $VENDORS_PATH
+    curl -O http://download.prediction.io/graphchi-cpp-cf/graphchi-cpp-cf-linux-i686-0a6545ccb7.tar.gz
+    tar zxvf graphchi-cpp-cf-linux-i686-0a6545ccb7.tar.gz
+    cd $BASE
+}
+
+install_graphchi_cpp_cf_linux64 () {
+    echo "Going to download and install GraphChi C++ CF Toolbox for Linux 64-bit..."
+    mkdir -p $VENDORS_PATH
+    cd $VENDORS_PATH
+    curl -O http://download.prediction.io/graphchi-cpp-cf/graphchi-cpp-cf-linux-x86_64-0a6545ccb7.tar.gz
+    tar zxvf graphchi-cpp-cf-linux-x86_64-0a6545ccb7.tar.gz
+    cd $BASE
+}
+
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_SBT="$VENDORS_PATH/sbt-0.13.1/sbt"
 VENDOR_PLAY="$VENDORS_PATH/play-2.2.1/play"
 VENDOR_MAHOUT="$VENDORS_PATH/mahout-distribution-0.8"
+VENDOR_GRAPHCHI_CPP_CF_LINUX32="$VENDORS_PATH/graphchi-cpp-cf-linux-i686-0a6545ccb7"
+VENDOR_GRAPHCHI_CPP_CF_LINUX64="$VENDORS_PATH/graphchi-cpp-cf-linux-x86_64-0a6545ccb7"
 
 # Detect existing installations in search path
 # Do not use existing sbt to enforce JVM settings
@@ -83,3 +103,22 @@ else
     echo "Unable to locate Apache Mahout 0.8 and automatic installation failed. Aborting." >&2
     exit 1
 fi
+
+if [ -r "$VENDOR_GRAPHCHI_CPP_CF_LINUX32/als" ] ; then
+    echo "Using GraphChi C++ CF Toolbox for Linux 32-bit."
+elif install_graphchi_cpp_cf_linux32 ; then
+    echo ""
+else
+    echo "Unable to locate GraphChi C++ CF Toolbox for Linux 32-bit and automatic installation failed. Aborting." >&2
+    exit 1
+fi
+
+if [ -r "$VENDOR_GRAPHCHI_CPP_CF_LINUX64/als" ] ; then
+    echo "Using GraphChi C++ CF Toolbox for Linux 64-bit."
+elif install_graphchi_cpp_cf_linux64 ; then
+    echo ""
+else
+    echo "Unable to locate GraphChi C++ CF Toolbox for Linux 64-bit and automatic installation failed. Aborting." >&2
+    exit 1
+fi
+
