@@ -32,11 +32,12 @@ install_mahout () {
     echo "Going to download and install Apache Mahout 0.8..."
     mkdir -p $VENDORS_PATH
     cd $VENDORS_PATH
-    echo "Retrieving Apache mirror list..."
-    curl -o apache_mahout_mirrors.txt http://www.apache.org/dyn/closer.cgi/mahout/0.8/mahout-distribution-0.8.tar.gz
-    MAHOUT_URL=$(cat apache_mahout_mirrors.txt | grep -m 1 "<strong>.*</strong>" | sed 's/.*<strong>//' | sed 's/<\/strong>.*//')
-    echo "Found mirror: $MAHOUT_URL"
-    curl -O $MAHOUT_URL
+    #echo "Retrieving Apache mirror list..."
+    #curl -o apache_mahout_mirrors.txt http://www.apache.org/dyn/closer.cgi/mahout/0.8/mahout-distribution-0.8.tar.gz
+    #MAHOUT_URL=$(cat apache_mahout_mirrors.txt | grep -m 1 "<strong>.*</strong>" | sed 's/.*<strong>//' | sed 's/<\/strong>.*//')
+    #echo "Found mirror: $MAHOUT_URL"
+    #curl -O $MAHOUT_URL
+    curl -O http://archive.apache.org/dist/mahout/0.8/mahout-distribution-0.8.tar.gz
     tar zxvf mahout-distribution-0.8.tar.gz
     cd $BASE
 }
