@@ -453,6 +453,8 @@ class GraphChiModelConstructorSpec extends Specification {
 
   }
 
+  // TODO: test evalid != None
+
   // clean up when finish test
   step(cleanUp())
 }

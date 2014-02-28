@@ -21,8 +21,8 @@ import io.prediction.commons.modeldata.{ ItemRecScore }
 object GraphChiModelConstructor {
 
   /* global */
-  val logger = Logger(GraphChiDataPreparator.getClass)
-  println(logger.isInfoEnabled)
+  val logger = Logger(GraphChiModelConstructor.getClass)
+  //println(logger.isInfoEnabled)
   val commonsConfig = new Config
 
   // argument of this job
@@ -36,8 +36,8 @@ object GraphChiModelConstructor {
     val numRecommendations: Int)
 
   def main(cmdArgs: Array[String]) {
-    println("Running model constructor for GraphChi ...")
-    println(cmdArgs.mkString(","))
+    logger.info("Running model constructor for GraphChi ...")
+    logger.info(cmdArgs.mkString(","))
 
     /* get arg */
     val args = Args(cmdArgs)
@@ -145,13 +145,13 @@ object GraphChiModelConstructor {
         (iindex, score)
       }
 
-      println(s"${uindex}: ${scores}")
+      logger.debug(s"${uindex}: ${scores}")
 
       val topScores = scores
         .sortBy(_._2)(Ordering[Double].reverse)
         .take(arg.numRecommendations)
 
-      println(s"$topScores")
+      logger.debug(s"$topScores")
 
       modeldataDb.insert(ItemRecScore(
         uid = usersMap(uindex),

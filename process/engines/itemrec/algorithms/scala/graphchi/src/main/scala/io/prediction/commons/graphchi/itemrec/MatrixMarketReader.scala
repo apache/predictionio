@@ -1,10 +1,12 @@
 package io.prediction.commons.graphchi.itemrec
 
 import breeze.linalg._
-
+import grizzled.slf4j.Logger
 import scala.io.Source
 
 object MatrixMarketReader {
+
+  val logger = Logger(MatrixMarketReader.getClass)
 
   /* read dense matrix market from file and return DenseMatrix object */
   def readDense(path: String): DenseMatrix[Double] = {
@@ -26,7 +28,7 @@ object MatrixMarketReader {
           throw new RuntimeException(s"Cannot extract matrix size from the line: ${line}. ${e}")
       }
 
-      println(s"${rowNum}, ${colNum}")
+      logger.debug(s"${rowNum}, ${colNum}")
       val matrix = DenseMatrix.zeros[Double](rowNum, colNum)
 
       var r = 0
@@ -36,7 +38,7 @@ object MatrixMarketReader {
           throw new RuntimeException(s"Number of elements greater than the defined size: ${rowNum} ${colNum}")
         } else {
 
-          println(s"${r}, ${c} = ${line}")
+          logger.debug(s"${r}, ${c} = ${line}")
           try {
             matrix(r, c) = line.toDouble
           } catch {
@@ -54,7 +56,7 @@ object MatrixMarketReader {
       if (c < colNum) {
         throw new RuntimeException(s"Number of elements smaller than the defined size: ${rowNum} ${colNum}")
       }
-      println(matrix)
+      logger.debug(matrix)
       matrix
     } else {
       DenseMatrix.zeros[Double](0, 0)

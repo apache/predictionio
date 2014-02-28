@@ -38,7 +38,7 @@ object GraphChiDataPreparator {
   /* global */
   val logger = Logger(GraphChiDataPreparator.getClass)
 
-  println(logger.isInfoEnabled)
+  //println(logger.isInfoEnabled)
 
   val commonsConfig = new Config
 
@@ -58,8 +58,8 @@ object GraphChiDataPreparator {
 
   def main(cmdArgs: Array[String]) {
 
-    println("Running data preparator for GraphChi...")
-    println(cmdArgs.mkString(","))
+    logger.info("Running data preparator for GraphChi...")
+    logger.info(cmdArgs.mkString(","))
 
     /* get arg */
     val args = Args(cmdArgs)
