@@ -233,6 +233,11 @@ lazy val processEnginesItemSimAlgoHadoopScaldingRandomRank = project
   .dependsOn(processCommonsHadoopScalding)
   .settings(scalariformSettings: _*)
 
+lazy val processEnginesItemSimAlgoScalaGraphChi = project
+  .in(file("process/engines/itemsim/algorithms/scala/graphchi"))
+  .dependsOn(commons)
+  .settings(scalariformSettings: _*)
+
 lazy val processEnginesItemSimEvalHadoopScalding = project
   .in(file("process/engines/itemsim/evaluations/hadoop/scalding"))
   .aggregate(
