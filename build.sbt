@@ -80,6 +80,11 @@ lazy val processEnginesCommonsEvalScalaParamGen = project
   .dependsOn(commons)
   .settings(scalariformSettings: _*)
 
+lazy val processEnginesCommonsEvalScalaU2ISplit = project
+  .in(file("process/engines/commons/evaluations/scala/u2isplit"))
+  .dependsOn(commons)
+  .settings(scalariformSettings: _*)
+
 lazy val processEnginesCommonsEvalScalaU2ITrainingTestSplit = project
   .in(file("process/engines/commons/evaluations/scala/u2itrainingtestsplit"))
   .dependsOn(commons)
