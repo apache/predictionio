@@ -823,12 +823,12 @@
             "name": "GraphChi's Alternating Least Squares Collaborative Filtering",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
-                "$base$/bin/itemrec.graphchi.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
                 "$base$/bin/als --training=$localTempDir$ratings.mm --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.graphchi.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
                 "$base$/bin/als --training=$localTempDir$ratings.mm --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],

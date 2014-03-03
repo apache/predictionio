@@ -16,7 +16,7 @@ packExpandedClasspath := true
 packGenerateWindowsBatFile := false
 
 packMain := Map(
-  "itemrec.generic.dataprep" -> "io.prediction.commons.generic.itemrec.GenericDataPreparator")
+  "itemrec.generic.dataprep" -> "io.prediction.algorithms.generic.itemrec.GenericDataPreparator")
 
 packJvmOpts := Map(
   "itemrec.generic.dataprep" -> Common.packCommonJvmOpts)
