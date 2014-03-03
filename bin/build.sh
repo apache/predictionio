@@ -52,13 +52,21 @@ else
     BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalScalaTopKItems/assembly"
 fi
 
-# Build Generic Single Machine Data Preparator
+# Build Generic Single Machine ItemRec Data Preparator
 echo "+ Pack Single Macine Generic Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGeneric/pack"
 
 # Build GraphChi Data Preparator and Model Constructor
-echo "+ Pack GraphChi Model Constructor"
+echo "+ Pack GraphChi ItemRec Model Constructor"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/pack"
+
+# Build Generic Single Machine ItemSim Data Preparator
+echo "+ Pack Single Macine Generic Data Preparator"
+BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGeneric/pack"
+
+# Build GraphChi Data Preparator and Model Constructor
+echo "+ Pack GraphChi ItemSim Model Constructor"
+BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGraphChi/pack"
 
 # Build connection check tool
 echo "+ Pack Connection Check Tool"

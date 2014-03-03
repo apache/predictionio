@@ -1,4 +1,4 @@
-package io.prediction.algorithms.graphchi.itemsim
+package io.prediction.algorithms.generic.itemsim
 
 import io.prediction.commons.Config
 import io.prediction.commons.appdata.{ Item, U2IAction, User }
@@ -13,14 +13,14 @@ import scala.io.Source
 import com.twitter.scalding.Args
 
 /**
- * Output file:
+ * Generic single machine data preparator for ItemSim engine.
+ * Read data from appdata and output the following files:
  * - itemsIndex.tsv (iindex iid itypes): all items
  * - validItemsIndex.tsv (iindex): valid candidate items to be recommended
- * - ratings.mm
- *
- *
+ * - ratings.mm (if --matrixMarket true ): matrix market format rating
+ * - ratings.csv (if --matrixMarket false): comma separated rating file
  */
-object GraphChiDataPreparator {
+object GenericDataPreparator {
 
   /* constants */
   final val ACTION_RATE = "rate"
@@ -36,7 +36,7 @@ object GraphChiDataPreparator {
   final val CONFLICT_LOWEST: String = "lowest" // use the one with lowest score
 
   /* global */
-  val logger = Logger(GraphChiDataPreparator.getClass)
+  val logger = Logger(GenericDataPreparator.getClass)
 
   //println(logger.isInfoEnabled)
 
@@ -58,7 +58,7 @@ object GraphChiDataPreparator {
 
   def main(cmdArgs: Array[String]) {
 
-    logger.info("Running data preparator for GraphChi...")
+    logger.info("Running generic data preparator ...")
     logger.info(cmdArgs.mkString(","))
 
     /* get arg */
