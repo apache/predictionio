@@ -1,4 +1,4 @@
-package io.prediction.commons.graphchi.itemsim
+package io.prediction.algorithms.graphchi.itemsim
 
 import grizzled.slf4j.Logger
 import breeze.linalg._

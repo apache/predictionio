@@ -1,4 +1,4 @@
-package io.prediction.commons.graphchi.itemsim
+package io.prediction.algorithms.graphchi.itemsim
 
 import io.prediction.commons.Config
 import io.prediction.commons.appdata.{ User, Item, U2IAction }
