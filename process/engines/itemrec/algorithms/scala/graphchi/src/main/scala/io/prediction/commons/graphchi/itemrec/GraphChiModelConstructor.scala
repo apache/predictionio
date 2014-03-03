@@ -1,11 +1,11 @@
-package io.prediction.commons.graphchi.itemrec
+package io.prediction.algorithms.graphchi.itemrec
 
 import grizzled.slf4j.Logger
 import breeze.linalg._
 import com.twitter.scalding.Args
 import scala.io.Source
 
-import io.prediction.commons.graphchi.itemrec.MatrixMarketReader
+import io.prediction.algorithms.graphchi.itemrec.MatrixMarketReader
 import io.prediction.commons.Config
 import io.prediction.commons.modeldata.{ ItemRecScore }
 

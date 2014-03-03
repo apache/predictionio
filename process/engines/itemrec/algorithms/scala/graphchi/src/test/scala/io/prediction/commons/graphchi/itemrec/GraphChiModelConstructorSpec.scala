@@ -1,4 +1,4 @@
-package io.prediction.commons.graphchi.itemrec
+package io.prediction.algorithms.graphchi.itemrec
 
 import io.prediction.commons.Config
 import io.prediction.commons.settings.{ App, Algo }

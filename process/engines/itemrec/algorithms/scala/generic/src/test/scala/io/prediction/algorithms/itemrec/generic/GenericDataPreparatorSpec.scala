@@ -1,4 +1,4 @@
-package io.prediction.commons.graphchi.itemrec
+package io.prediction.algorithms.generic.itemrec
 
 import io.prediction.commons.Config
 import io.prediction.commons.appdata.{ User, Item, U2IAction }
@@ -8,10 +8,10 @@ import com.github.nscala_time.time.Imports._
 import scala.io.Source
 import com.mongodb.casbah.Imports._
 
-class GraphChiDataPreparatorSpec extends Specification {
+class GenericDataPreparatorSpec extends Specification {
 
   // note: should match the db name defined in the application.conf
-  val mongoDbName = "predictionio_appdata_graphchi_dataprep_test"
+  val mongoDbName = "predictionio_appdata_generic_dataprep_test"
   def cleanUp() = {
     // remove the test database
     MongoConnection()(mongoDbName).dropDatabase()
@@ -22,7 +22,7 @@ class GraphChiDataPreparatorSpec extends Specification {
   val appdataItems = commonConfig.getAppdataItems
   val appdataU2IActions = commonConfig.getAppdataU2IActions
 
-  "GraphChiDataPreparator with basic rate action app data" should {
+  "GenericDataPreparator with basic rate action app data" should {
     val appid = 23
     // insert a few users into db
     val user = User(
@@ -95,7 +95,7 @@ class GraphChiDataPreparatorSpec extends Specification {
         Array(s"--${k}", v.toString)
     }
 
-    GraphChiDataPreparator.main(argsArray)
+    GenericDataPreparator.main(argsArray)
 
     "correctly generate usersIndex.tsv" in {
       val usersIndex = Source.fromFile(s"${outputDir}usersIndex.tsv")
@@ -152,6 +152,8 @@ class GraphChiDataPreparatorSpec extends Specification {
         (ratings must containTheSameElementsAs(expected))
     }
   }
+
+  // TODO: test csv format
 
   // TODO: test mixed and conflict actions
 

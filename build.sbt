@@ -178,6 +178,11 @@ lazy val processEnginesItemRecAlgoScalaMahoutThresholdUserBased = project
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
   .settings(scalariformSettings: _*)
 
+lazy val processEnginesItemRecAlgoScalaGeneric = project
+  .in(file("process/engines/itemrec/algorithms/scala/generic"))
+  .dependsOn(commons)
+  .settings(scalariformSettings: _*)
+
 lazy val processEnginesItemRecAlgoScalaGraphChi = project
   .in(file("process/engines/itemrec/algorithms/scala/graphchi"))
   .dependsOn(commons)
