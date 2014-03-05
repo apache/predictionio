@@ -7,6 +7,7 @@ import io.prediction.commons.filepath.{ U2ITrainingTestSplitFile }
 import java.io.{ BufferedWriter, File, FileWriter }
 import scala.io.Source
 
+import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logger
 import org.json4s.native.Serialization
 
@@ -23,6 +24,8 @@ case class U2ISplitConfig(
 
 /**
  * User-to-Item Action Splitter for Single Machine
+ *
+ * TODO: Eliminate use of Config object. Let scheduler handles it all.
  */
 object U2ISplit {
   def main(args: Array[String]) {
@@ -51,8 +54,8 @@ object U2ISplit {
       opt[Double]("validationpercent") required () action { (x, c) =>
         c.copy(validationpercent = x)
       } validate { x =>
-        if (x >= 0.01 && x <= 1) success else failure("--validationpercent must be between 0.01 and 1")
-      } text ("size of validation set (0.01 to 1)")
+        if (x >= 0 && x <= 1) success else failure("--validationpercent must be between 0 and 1")
+      } text ("size of validation set (0 to 1)")
       opt[Double]("testpercent") required () action { (x, c) =>
         c.copy(testpercent = x)
       } validate { x =>
@@ -119,40 +122,98 @@ object U2ISplit {
         usersWriter.close()
 
         // Dump all items and fix ID prefices
+        // Filtered by itypes
         logger.info(s"Writing to: $itemsFilePath")
-        val itemsWriter = new BufferedWriter(new FileWriter(itemsFilePath))
-        itemsDb.getByAppid(config.appid) foreach { item =>
-          itemsWriter.write(Serialization.write(item.copy(appid = config.evalid)))
-          itemsWriter.newLine()
+        val itemsWriter = new BufferedWriter(new FileWriter(itemsFile))
+        val validIids = collection.mutable.Set[String]()
+        config.itypes map { t =>
+          val engineItypes = t.toSet
+          itemsDb.getByAppid(config.appid) foreach { item =>
+            if (item.itypes.toSet.intersect(engineItypes).size > 0) {
+              itemsWriter.write(Serialization.write(item.copy(appid = config.evalid)))
+              itemsWriter.newLine()
+              validIids += item.id
+            }
+          }
+        } getOrElse {
+          itemsDb.getByAppid(config.appid) foreach { item =>
+            itemsWriter.write(Serialization.write(item.copy(appid = config.evalid)))
+            itemsWriter.newLine()
+            validIids += item.id
+          }
         }
         itemsWriter.close()
 
         // Dump all actions and fix ID prefices
+        // Filtered by itypes
         logger.info(s"Writing to: $u2iActionsFilePath")
-        val u2iActionsWriter = new BufferedWriter(new FileWriter(u2iActionsFilePath))
+        var u2iCount = 0
+        val u2iActionsWriter = new BufferedWriter(new FileWriter(u2iActionsFile))
         u2iDb.getAllByAppid(config.appid) foreach { u2iAction =>
-          u2iActionsWriter.write(Serialization.write(u2iAction.copy(appid = config.evalid)))
-          u2iActionsWriter.newLine()
+          if (validIids(u2iAction.iid)) {
+            u2iActionsWriter.write(Serialization.write(u2iAction.copy(appid = config.evalid)))
+            u2iActionsWriter.newLine()
+            u2iCount += 1
+          }
         }
         u2iActionsWriter.close()
+
+        // Save the count of U2I actions
+        val u2iActionsCountWriter = new BufferedWriter(new FileWriter(new File(u2iActionsFilePath + "Count")))
+        u2iActionsCountWriter.write(u2iCount.toString)
+        u2iActionsCountWriter.close()
       }
 
       // Read snapshots
       logger.info("Reading snapshots...")
 
-      logger.info("Reading from: $usersFilePath")
+      val trainingUsersDb = commonsConfig.getAppdataTrainingUsers
+      val trainingItemsDb = commonsConfig.getAppdataTrainingItems
+      val trainingU2iDb = commonsConfig.getAppdataTrainingU2IActions
+      val validationU2iDb = commonsConfig.getAppdataValidationU2IActions
+      val testU2iDb = commonsConfig.getAppdataTestU2IActions
+
+      val totalCount = Source.fromFile(new File(u2iActionsFilePath + "Count")).mkString.toInt
+      val evaluationCount = (math.floor((config.trainingpercent + config.validationpercent + config.testpercent) * totalCount)).toInt
+      val trainingCount = (math.floor(config.trainingpercent * totalCount)).toInt
+      val validationCount = (math.floor(config.validationpercent * totalCount)).toInt
+      val trainingValidationCount = trainingCount + validationCount
+      val testCount = evaluationCount - trainingValidationCount
+
+      logger.info(s"Reading from: $usersFilePath")
+      trainingUsersDb.deleteByAppid(config.evalid)
       Source.fromFile(usersFile).getLines() foreach { userJson =>
-        //println(Serialization.read[User](userJson))
+        trainingUsersDb.insert(Serialization.read[User](userJson))
       }
 
-      logger.info("Reading from: $itemsFilePath")
+      logger.info(s"Reading from: $itemsFilePath")
+      trainingItemsDb.deleteByAppid(config.evalid)
       Source.fromFile(itemsFile).getLines() foreach { itemJson =>
-        //println(Serialization.read[Item](itemJson))
+        trainingItemsDb.insert(Serialization.read[Item](itemJson))
       }
 
-      logger.info("Reading from: $u2iActionsFilePath")
-      Source.fromFile(u2iActionsFile).getLines() foreach { u2iActionJson =>
-        //println(Serialization.read[U2IAction](u2iActionJson))
+      /**
+       * Perform itypes filtering at this point because itypes is an
+       * engine-specific parameter, and we want the split percentage to
+       * be relative to the total number of items that is valid for this
+       * particular engine.
+       */
+      logger.info(s"Reading from: $u2iActionsFilePath")
+      trainingU2iDb.deleteByAppid(config.evalid)
+      validationU2iDb.deleteByAppid(config.evalid)
+      testU2iDb.deleteByAppid(config.evalid)
+      val allU2iActions = Source.fromFile(u2iActionsFile).getLines().map(Serialization.read[U2IAction](_))
+      val unsortedEvalU2iActions = util.Random.shuffle(allU2iActions).take(evaluationCount)
+      val evalU2iActions = if (config.timeorder) unsortedEvalU2iActions.toSeq.sortWith(_.t + 0.seconds < _.t + 0.seconds) else unsortedEvalU2iActions.toSeq
+      var count = 0
+      evalU2iActions foreach { u2iAction =>
+        if (count < trainingCount)
+          trainingU2iDb.insert(u2iAction)
+        else if (count >= trainingCount && count < trainingValidationCount)
+          validationU2iDb.insert(u2iAction)
+        else
+          testU2iDb.insert(u2iAction)
+        count += 1
       }
     }
   }
