@@ -53,7 +53,7 @@ else
 fi
 
 # Build Generic Single Machine ItemRec Data Preparator
-echo "+ Pack Single Macine Generic Data Preparator"
+echo "+ Pack Single Machine ItemRec Generic Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGeneric/pack"
 
 # Build GraphChi Data Preparator and Model Constructor
@@ -61,12 +61,16 @@ echo "+ Pack GraphChi ItemRec Model Constructor"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/pack"
 
 # Build Generic Single Machine ItemSim Data Preparator
-echo "+ Pack Single Macine Generic Data Preparator"
+echo "+ Pack Single Machine ItemSim Generic Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGeneric/pack"
 
 # Build GraphChi Data Preparator and Model Constructor
 echo "+ Pack GraphChi ItemSim Model Constructor"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGraphChi/pack"
+
+# Build Single Machine U2I Action Splitter
+echo "+ Pack Single Machine U2I Action Splitter"
+BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ISplit/pack"
 
 # Build connection check tool
 echo "+ Pack Connection Check Tool"

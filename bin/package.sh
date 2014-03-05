@@ -65,6 +65,8 @@ cp $BASE/process/engines/itemsim/algorithms/scala/generic/target/pack/bin/* $PAC
 cp -n $BASE/process/engines/itemsim/algorithms/scala/generic/target/pack/lib/* $PACKAGE_DIR/lib
 cp $BASE/process/engines/itemsim/algorithms/scala/graphchi/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/itemsim/algorithms/scala/graphchi/target/pack/lib/* $PACKAGE_DIR/lib
+cp $BASE/process/engines/commons/evaluations/scala/u2isplit/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/process/engines/commons/evaluations/scala/u2isplit/target/pack/lib/* $PACKAGE_DIR/lib
 cp $BASE/tools/conncheck/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/tools/conncheck/target/pack/lib/* $PACKAGE_DIR/lib
 cp $BASE/tools/settingsinit/target/pack/bin/* $PACKAGE_DIR/bin
