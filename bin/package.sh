@@ -59,6 +59,8 @@ cp "$BASE/process/engines/itemrec/evaluations/scala/topkitems/target/scala-2.10/
 cp "$BASE/process/engines/itemsim/evaluations/scala/topkitems/target/scala-2.10/predictionio-process-itemsim-evaluations-topkitems-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 cp $BASE/process/engines/itemrec/algorithms/scala/generic/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/itemrec/algorithms/scala/generic/target/pack/lib/* $PACKAGE_DIR/lib
+cp $BASE/process/engines/itemrec/algorithms/scala/mahout/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/process/engines/itemrec/algorithms/scala/mahout/target/pack/lib/* $PACKAGE_DIR/lib
 cp $BASE/process/engines/itemrec/algorithms/scala/graphchi/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/itemrec/algorithms/scala/graphchi/target/pack/lib/* $PACKAGE_DIR/lib
 cp $BASE/process/engines/itemsim/algorithms/scala/generic/target/pack/bin/* $PACKAGE_DIR/bin

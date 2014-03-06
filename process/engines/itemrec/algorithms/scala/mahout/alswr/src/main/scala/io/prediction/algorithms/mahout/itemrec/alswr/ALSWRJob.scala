@@ -2,7 +2,7 @@ package io.prediction.algorithms.mahout.itemrec.alswr
 
 import scala.collection.JavaConversions._
 
-import io.prediction.commons.mahout.itemrec.MahoutJob
+import io.prediction.algorithms.mahout.itemrec.MahoutJob
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.recommender.Recommender

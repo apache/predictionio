@@ -42,9 +42,6 @@ else
     echo "+ Assemble Process Commons Evaluations Scala U2I Training-Test Splitter"
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ITrainingTestSplit/assembly"
 
-    echo "+ Assemble Process ItemRec Algorithms Scala Mahout"
-    BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaMahout/assembly"
-
     echo "+ Assemble Process ItemRec Evaluations Scala Top-k Items Collector"
     BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaTopKItems/assembly"
 
@@ -53,18 +50,22 @@ else
 fi
 
 # Build Generic Single Machine ItemRec Data Preparator
-echo "+ Pack Single Machine ItemRec Generic Data Preparator"
+echo "+ Pack Single Machine Generic ItemRec Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGeneric/pack"
 
-# Build GraphChi Data Preparator and Model Constructor
+# Build Mahout ItemRec Job and Model Construcotor
+echo "+ Pack Mahout ItemRec Job and Model Constructor"
+BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaMahout/pack"
+
+# Build GraphChi Model Constructor
 echo "+ Pack GraphChi ItemRec Model Constructor"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/pack"
 
 # Build Generic Single Machine ItemSim Data Preparator
-echo "+ Pack Single Machine ItemSim Generic Data Preparator"
+echo "+ Pack Single Machine Generic ItemSim Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGeneric/pack"
 
-# Build GraphChi Data Preparator and Model Constructor
+# Build GraphChi Model Constructor
 echo "+ Pack GraphChi ItemSim Model Constructor"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGraphChi/pack"
 
