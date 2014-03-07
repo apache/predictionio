@@ -135,7 +135,6 @@ lazy val processEnginesItemRecAlgoScalaMahout = project
     processEnginesItemRecAlgoScalaMahoutCommons,
     processEnginesItemRecAlgoScalaMahoutALSWR,
     processEnginesItemRecAlgoScalaMahoutKNNUserBased,
-    processEnginesItemRecAlgoScalaMahoutSlopeOne,
     processEnginesItemRecAlgoScalaMahoutSVDPlusPlus,
     processEnginesItemRecAlgoScalaMahoutSVDSGD,
     processEnginesItemRecAlgoScalaMahoutThresholdUserBased)
@@ -143,7 +142,6 @@ lazy val processEnginesItemRecAlgoScalaMahout = project
     processEnginesItemRecAlgoScalaMahoutCommons,
     processEnginesItemRecAlgoScalaMahoutALSWR,
     processEnginesItemRecAlgoScalaMahoutKNNUserBased,
-    processEnginesItemRecAlgoScalaMahoutSlopeOne,
     processEnginesItemRecAlgoScalaMahoutSVDPlusPlus,
     processEnginesItemRecAlgoScalaMahoutSVDSGD,
     processEnginesItemRecAlgoScalaMahoutThresholdUserBased)
@@ -160,11 +158,6 @@ lazy val processEnginesItemRecAlgoScalaMahoutALSWR = project
 
 lazy val processEnginesItemRecAlgoScalaMahoutKNNUserBased = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout/knnuserbased"))
-  .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecAlgoScalaMahoutSlopeOne = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/slopeone"))
   .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
   .settings(scalariformSettings: _*)
 
