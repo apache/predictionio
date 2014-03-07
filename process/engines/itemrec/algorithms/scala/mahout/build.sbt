@@ -2,6 +2,12 @@ import xerial.sbt.Pack._
 
 name := "predictionio-process-itemrec-algorithms-scala-mahout"
 
+libraryDependencies ++= Seq(
+  "org.apache.mahout" % "mahout-core" % "0.9",
+  "ch.qos.logback" % "logback-classic" % "1.1.1",
+  "com.twitter" %% "scalding-args" % "0.8.11",
+  "org.clapper" %% "grizzled-slf4j" % "1.0.1")
+
 parallelExecution in Test := false
 
 packSettings

@@ -131,49 +131,7 @@ lazy val processEnginesItemRecAlgoHadoopScaldingMahout = project
 
 lazy val processEnginesItemRecAlgoScalaMahout = project
   .in(file("process/engines/itemrec/algorithms/scala/mahout"))
-  .aggregate(
-    processEnginesItemRecAlgoScalaMahoutCommons,
-    processEnginesItemRecAlgoScalaMahoutALSWR,
-    processEnginesItemRecAlgoScalaMahoutKNNUserBased,
-    processEnginesItemRecAlgoScalaMahoutSVDPlusPlus,
-    processEnginesItemRecAlgoScalaMahoutSVDSGD,
-    processEnginesItemRecAlgoScalaMahoutThresholdUserBased)
-  .dependsOn(
-    processEnginesItemRecAlgoScalaMahoutCommons,
-    processEnginesItemRecAlgoScalaMahoutALSWR,
-    processEnginesItemRecAlgoScalaMahoutKNNUserBased,
-    processEnginesItemRecAlgoScalaMahoutSVDPlusPlus,
-    processEnginesItemRecAlgoScalaMahoutSVDSGD,
-    processEnginesItemRecAlgoScalaMahoutThresholdUserBased)
-
-lazy val processEnginesItemRecAlgoScalaMahoutCommons = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/commons"))
   .dependsOn(commons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecAlgoScalaMahoutALSWR = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/alswr"))
-  .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecAlgoScalaMahoutKNNUserBased = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/knnuserbased"))
-  .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecAlgoScalaMahoutSVDPlusPlus = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/svdplusplus"))
-  .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecAlgoScalaMahoutSVDSGD = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/svdsgd"))
-  .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecAlgoScalaMahoutThresholdUserBased = project
-  .in(file("process/engines/itemrec/algorithms/scala/mahout/thresholduserbased"))
-  .dependsOn(processEnginesItemRecAlgoScalaMahoutCommons)
   .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecAlgoScalaGeneric = project
