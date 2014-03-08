@@ -54,6 +54,6 @@ class ConfigSpec extends Specification {
 
   def sharding() = {
     mongoConfig.modeldataDbSharding must beTrue and
-      (mongoConfig.modeldataDbShardKeys must beSome(Seq("foo", "bar")))
+      (mongoConfig.modeldataDbShardKeys must beSome(===(Seq("foo", "bar"))))
   }
 }

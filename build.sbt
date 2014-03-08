@@ -15,7 +15,8 @@ javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:de
 libraryDependencies in ThisBuild ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "0.6.0",
   "org.slf4j" % "slf4j-log4j12" % "1.7.5" % "test",
-  "org.specs2" %% "specs2" % "1.14" % "test")
+  "org.specs2" %% "specs2" % "2.3.10" % "test")
+  //"org.specs2" %% "specs2" % "1.14" % "test")
 
 publishTo in ThisBuild := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
 
@@ -154,6 +155,11 @@ lazy val processEnginesItemRecEvalHadoopScalding = project
 lazy val processEnginesItemRecEvalHadoopScaldingMetricsMAP = project
   .in(file("process/engines/itemrec/evaluations/hadoop/scalding/metrics/map"))
   .dependsOn(processCommonsHadoopScalding)
+  .settings(scalariformSettings: _*)
+
+lazy val processEnginesItemRecEvalScalaMetricsMAP = project
+  .in(file("process/engines/itemrec/evaluations/scala/map"))
+  .dependsOn(commons)
   .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemRecEvalScalaTopKItems = project

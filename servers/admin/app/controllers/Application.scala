@@ -1642,17 +1642,29 @@ object Application extends Controller {
             "validationPercent" -> 0.0, // no validatoin set for sim eval
             "testPercent" -> (splitTest.toDouble / 100)
           )
+
+          // get list of algo obj
+          val optAlgos: List[Option[Algo]] = algoids.map { algos.get(_) }
+
+          // TODO: Allow selection of splitter
+          // Use Hadoop version if any algo in the list requires Hadoop
+          val hadoopRequired = optAlgos.map { optAlgo =>
+            optAlgo map { algo =>
+              algoInfos.get(algo.infoid) map { info =>
+                info.techreq.contains("Hadoop")
+              } getOrElse false
+            } getOrElse false
+          } reduce { _ || _ }
+
           val splitterList = params.filter(p => (p("infotype") == "offlineevalsplitter")).map(p =>
             OfflineEvalSplitter(
               id = 0,
               evalid = 0, // will be assigned later
               name = "", // will be assigned later
-              infoid = p("infoid").asInstanceOf[String],
+              //infoid = p("infoid").asInstanceOf[String],
+              infoid = if (hadoopRequired) "trainingtestsplit" else "u2isplit",
               settings = p ++ percentageParam - "infoid" - "infotype" // remove these keys from params
             )).toList
-
-          // get list of algo obj
-          val optAlgos: List[Option[Algo]] = algoids.map { algos.get(_) }
 
           if (metricList.length == 0)
             BadRequest(Json.obj("message" -> "At least one metric is required."))
@@ -2206,7 +2218,7 @@ object Application extends Controller {
           "allitemtypes" -> toJson(engine.itypes == None),
           "itemtypelist" -> engine.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull),
           "trainingdisabled" -> engine.trainingdisabled.map(toJson(_)).getOrElse(toJson(false)),
-          "trainingschedule" -> engine.trainingschedule.map(toJson(_)).getOrElse(toJson("0 * * * *"))) ++
+          "trainingschedule" -> engine.trainingschedule.map(toJson(_)).getOrElse(toJson("0 0 * * * ?"))) ++
           (params map { case (k, v) => (k, toJson(v.toString)) })))
       } getOrElse {
         NotFound(toJson(Map("message" -> toJson(s"Invalid EngineInfo ID: ${engine.infoid}"))))
