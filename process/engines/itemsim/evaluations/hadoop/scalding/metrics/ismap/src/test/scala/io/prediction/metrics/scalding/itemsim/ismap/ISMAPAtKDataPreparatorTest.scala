@@ -57,7 +57,7 @@ class ISMAPAtKDataPreparatorTest extends Specification with TupleConversions {
       .arg("algoid", "8")
       .arg("goalParam", params("goalParam"))
       .arg("kParam", params("kParam"))
-      .source(U2iActions(appId=5, dbType=test_dbType, dbName=test_dbName, dbHost=test_dbHost, dbPort=test_dbPort).getSource, testU2i)
+      .source(U2iActions(appId = 5, dbType = test_dbType, dbName = test_dbName, dbHost = test_dbHost, dbPort = test_dbPort).getSource, testU2i)
       .sink[(String, String)](Tsv(OfflineMetricFile(hdfsRoot, 2, 4, 5, 6, 8, "relevantItems.tsv"))) { outputBuffer =>
         "correctly generates relevantItems for each user" in {
           val output = splitAndSortList(outputBuffer.toList)

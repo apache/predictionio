@@ -5,7 +5,7 @@ import org.specs2.mutable._
 import com.twitter.scalding._
 import com.twitter.scalding.Dsl._
 
-import io.prediction.commons.filepath.{OfflineMetricFile}
+import io.prediction.commons.filepath.{ OfflineMetricFile }
 import io.prediction.commons.scalding.settings.OfflineEvalResults
 
 class ISMAPAtKTest extends Specification {
@@ -57,8 +57,8 @@ class ISMAPAtKTest extends Specification {
           def roundingData(orgList: List[(String, Double)]) = {
             orgList map { x =>
               val (t1, t2) = x
-               // NOTE: use HALF_UP mode to avoid error caused by rounding when compare data
-               // (eg. 3.5 vs 3.499999999999, 0.6666666666 vs 0.666666667)
+              // NOTE: use HALF_UP mode to avoid error caused by rounding when compare data
+              // (eg. 3.5 vs 3.499999999999, 0.6666666666 vs 0.666666667)
               (t1, BigDecimal(t2).setScale(6, BigDecimal.RoundingMode.HALF_UP).toDouble)
             }
           }
@@ -66,7 +66,7 @@ class ISMAPAtKTest extends Specification {
           roundingData(outputBuffer.toList) must containTheSameElementsAs(roundingData(averagePrecision))
         }
       }
-      .sink[(Int, Int, Int, Double, Int, String)](OfflineEvalResults(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort).getSource) { outputBuffer =>
+      .sink[(Int, Int, Int, Double, Int, String)](OfflineEvalResults(dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource) { outputBuffer =>
         def roundingData(orgList: List[(Int, Int, Int, Double, Int, String)]) = {
           orgList map { x =>
             val (t1, t2, t3, t4, t5, t6) = x

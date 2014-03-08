@@ -5,8 +5,8 @@ import org.specs2.mutable._
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.Items
-import io.prediction.commons.scalding.modeldata.{ItemSimScores}
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.scalding.modeldata.{ ItemSimScores }
+import io.prediction.commons.filepath.{ AlgoFile }
 
 class RandomRankTest extends Specification with TupleConversions {
   def test(
@@ -42,17 +42,17 @@ class RandomRankTest extends Specification with TupleConversions {
       .arg("numSimilarItems", numSimilarItems.toString)
       .arg("modelSet", modelSet.toString)
       .arg("recommendationTime", recommendationTime.toString)
-      .source(Items(appId=appid, itypes=Some(itypes), dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, items)
-      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=modeldata_dbType, dbName=modeldata_dbName, dbHost=None, dbPort=None, algoid=algoid, modelset=modelSet).getSource) { outputBuffer =>
+      .source(Items(appId = appid, itypes = Some(itypes), dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, items)
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
 
         def takeOutScores(d: List[(String, String, String, String, Int, Boolean)]) = {
           // don't check score and itypes.
           // for iids, don't check order. convert to set
-          d map {x => (x._1, x._2.split(",").toSet, x._5, x._6) }
+          d map { x => (x._1, x._2.split(",").toSet, x._5, x._6) }
         }
 
         def getScoresOnly(d: List[(String, String, String, String, Int, Boolean)]) = {
-          d flatMap {x => x._3.split(",").toList.map(_.toDouble)}
+          d flatMap { x => x._3.split(",").toList.map(_.toDouble) }
         }
 
         def getIids(d: List[(String, String, String, String, Int, Boolean)]) = {
@@ -156,7 +156,7 @@ class RandomRankTest extends Specification with TupleConversions {
       ("i2", "t4", "19", "21", "88", noEndtime),
       ("i3", "t3,t4", "19", "9876543210", "67890", noEndtime))
     val itemSimScores = List(
-      ("i3", "i0,i1,i2", "0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t4]", algoid, modelSet),      
+      ("i3", "i0,i1,i2", "0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t4]", algoid, modelSet),
       ("i2", "i0,i1,i3", "0.0,0.0,0.0", "[t1,t2,t3],[t2,t3],[t3,t4]", algoid, modelSet),
       ("i1", "i0,i2,i3", "0.0,0.0,0.0", "[t1,t2,t3],[t4],[t3,t4]", algoid, modelSet),
       ("i0", "i1,i2,i3", "0.0,0.0,0.0", "[t2,t3],[t4],[t3,t4]", algoid, modelSet))
