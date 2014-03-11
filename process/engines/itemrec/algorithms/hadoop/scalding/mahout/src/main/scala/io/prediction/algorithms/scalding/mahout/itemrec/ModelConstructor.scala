@@ -81,6 +81,8 @@ class ModelConstructor(args: Args) extends Job(args) {
 
   val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindexR, 'iindexR, 'ratingR))
 
+  val seenSource = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "seen.tsv"), ('uindexS, 'iindexS))
+
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
     .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
       val (iindex, iid, itypes, starttime, endtime) = fields // itypes are comma-separated String
@@ -125,15 +127,30 @@ class ModelConstructor(args: Args) extends Job(args) {
   // convert to (uindex, iindex, rating) format
   // and filter seen items from predicted
   val predictedRating = predicted.flatMap('predicted -> ('iindex, 'rating)) { data: String => parsePredictedData(data) }
+    // mahout predicted output may contain items in rating file because it downsample
+    // we filter out known rating now because will merge with known rating later
     .joinWithSmaller(('uindex, 'iindex) -> ('uindexR, 'iindexR), seenRatings, joiner = new LeftJoin)
     .filter('ratingR) { r: Double => (r == 0) } // if ratingR == 0, means unseen rating
     .project('uindex, 'iindex, 'rating)
 
-  // NOTE: only suppoort unseenOnly if IMPLICIT_PREFERENCE = true because 
-  // can't simply merge the seen preference value with predicted preference value due to different meaning in value
-  // (depending on which distance function is used).
-  val combinedRating = if (unseenOnlyArg || IMPLICIT_PREFERENCE) predictedRating else {
+  val combinedRating = if (unseenOnlyArg) {
 
+    val seenActions = seenSource.read.mapTo(('uindexS, 'iindexS) -> ('uindexS, 'iindexS, 'actedS)) {
+      fields: (String, String) => (fields._1, fields._2, 1) // add dummy acted field for unseen filtering
+    }
+
+    predictedRating
+      .joinWithSmaller(('uindex, 'iindex) -> ('uindexS, 'iindexS), seenActions, joiner = new LeftJoin)
+      .filter('actedS) { a: Int => (a == 0) } // if actedS == 0, means unseen actions
+      .project('uindex, 'iindex, 'rating)
+
+  } else if (IMPLICIT_PREFERENCE) {
+    // NOTE: if IMPLICIT_PREFERENCE = true because 
+    // can't simply merge the seen preference value with predicted preference value due to different meaning in value
+    // (depending on which distance function is used).
+    // TODO: need special way to handle this case
+    predictedRating
+  } else {
     // rename for concatenation
     val seenRatings2 = seenRatings.rename(('uindexR, 'iindexR, 'ratingR) -> ('uindex, 'iindex, 'rating))
 
