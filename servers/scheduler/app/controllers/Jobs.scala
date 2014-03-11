@@ -250,7 +250,7 @@ class AlgoJob extends InterruptableJob {
                 Logger.info(s"${logPrefix}Running database specific after-logic for model set ${!algo.modelset}")
                 modelData.after(algo.id, !algo.modelset)
                 Logger.info(s"${logPrefix}Flipping model set flag to ${!algo.modelset}")
-                algos.update(algo.copy(modelset = !algo.modelset))
+                algos.update(algo.copy(modelset = !algo.modelset, lasttraintime = Some(DateTime.now)))
                 Logger.info(s"${logPrefix}Running database specific deletion for model set ${algo.modelset}")
                 modelData.delete(algo.id, algo.modelset)
                 Logger.info(s"${logPrefix}Job completed")
