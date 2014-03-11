@@ -910,7 +910,7 @@ object Application extends Controller {
         "enginename" -> eng.name,
         "enginestatus" -> engineStatus)
 
-      Ok(algo map { a => engineObj ++ Json.obj("lasttraintime" -> a.lasttraintime) } getOrElse engineObj)
+      Ok(algo map { a => engineObj ++ Json.obj("lasttraintime" -> a.lasttraintime.toString()) } getOrElse engineObj)
   }
 
   /**
