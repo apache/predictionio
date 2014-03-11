@@ -393,7 +393,6 @@ object API extends Controller {
           } else if (!validActions.contains(action)) {
             APIMessageResponse(BAD_REQUEST, Map("errors" -> APIErrors(Seq(Map("field" -> "pio_action", "message" -> "Custom action is not supported yet.")))))
           } else {
-
             u2iActions.insert(U2IAction(
               appid = app.id,
               action = action,
