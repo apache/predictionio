@@ -260,7 +260,7 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
         case ACTION_VIEW => (viewParamArg != None)
         case ACTION_CONVERSION => (conversionParamArg != None)
         case _ => {
-          logger.info(s"Found custom action ${action}")
+          logger.debug(s"Found custom action ${action}")
           false // all other unsupported actions
         }
       }
