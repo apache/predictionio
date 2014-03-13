@@ -2292,13 +2292,14 @@ object Application extends Controller {
 
   def updateAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
     implicit request =>
-      val f = Form(tuple("infoid" -> mapOfStringToAny, "tune" -> text, "tuneMethod" -> text))
+      val f = Form(tuple("infoid" -> mapOfStringToAny, "tune" -> optional(text), "tuneMethod" -> optional(text)))
       f.bindFromRequest.fold(
         e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
         bound => {
           val (params, tune, tuneMethod) = bound
           // NOTE: read-modify-write the original param
-          val updatedParams = algo.params ++ params ++ Map("tune" -> tune, "tuneMethod" -> tuneMethod) - "infoid"
+          val tuneObj = tune map { t => Map("tune" -> t, "tuneMethod" -> tuneMethod.get) } getOrElse { Map("tune" -> "manual") }
+          val updatedParams = algo.params ++ params ++ tuneObj - "infoid"
           val updatedAlgo = algo.copy(params = updatedParams)
 
           if (updatedParams("tune") != "auto") {
