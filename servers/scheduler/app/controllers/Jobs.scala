@@ -288,22 +288,21 @@ class OfflineEvalJob extends InterruptableJob {
 
     Some(steptype) collect {
       case "split" => {
-        if (iteration == 1) {
-          /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
-          Scheduler.offlineEvals.get(evalid) map { offlineEval =>
-            Scheduler.engines.get(offlineEval.engineid) map { engine =>
-              val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
-              val modelData = Scheduler.config.getModeldataTraining(engine.infoid)
-              algosToRun foreach { algo =>
-                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
-                modelData.delete(algo.id, false)
-              }
-              Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
-              Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
+        /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
+        Scheduler.offlineEvals.get(evalid) map { offlineEval =>
+          Scheduler.engines.get(offlineEval.engineid) map { engine =>
+            val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
+            val modelData = Scheduler.config.getModeldataTraining(engine.infoid)
+            algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+              modelData.delete(algo.id, false)
             }
+            Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
+            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
           }
         }
+
         if (iteration > 1) {
           val iterationkey = s"iteration-${iteration - 1}"
           while (!finishFlags(iterationkey)) {
@@ -481,19 +480,22 @@ class OfflineEvalJob extends InterruptableJob {
             Thread.sleep(1000)
           }
 
-          /** Clean up */
-          val modelData = config.getModeldataTraining(engine.infoid)
-          algosToRun foreach { algo =>
-            Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
-            modelData.delete(algo.id, false)
+          /** Clean up if ended normally or killed */
+          val sumExitCodes = exitCodes.values.sum
+          if (kill || sumExitCodes == 0) {
+            val modelData = config.getModeldataTraining(engine.infoid)
+            algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
+              modelData.delete(algo.id, false)
+            }
+            Logger.info(s"${logPrefix}Deleting used app data")
+            Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
           }
-          Logger.info(s"${logPrefix}Deleting used app data")
-          Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
 
           /** Check for errors from metric */
           Logger.info(s"${logPrefix}Exit code summary:")
@@ -509,7 +511,7 @@ class OfflineEvalJob extends InterruptableJob {
             }
           }
 
-          if (exitCodes.values.sum != 0)
+          if (sumExitCodes != 0)
             Logger.warn(s"${logPrefix}Offline evaluation completed with error(s)")
           else
             Logger.info(s"${logPrefix}Offline evaluation completed")
