@@ -139,7 +139,8 @@ abstract class MahoutJob {
     itemIds.foreach { iid =>
       val simScores = candidateItemsIds
         .map { simiid => (simiid, similarity.itemSimilarity(iid, simiid)) }
-        .filter { x: (_, Double) => !x._2.isNaN() } // filter out invalid score
+        // filter out invalid score or the same iid itself
+        .filter { x: (_, Double) => (!x._2.isNaN()) && (x._1 != iid) }
         .sortBy(_._2)(Ordering[Double].reverse)
         .take(numSimilarItems)
 
