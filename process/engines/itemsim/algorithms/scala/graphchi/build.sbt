@@ -17,9 +17,7 @@ packExpandedClasspath := true
 packGenerateWindowsBatFile := false
 
 packMain := Map(
-  "itemsim.graphchi.dataprep" -> "io.prediction.algorithms.graphchi.itemsim.GraphChiDataPreparator",
   "itemsim.graphchi.modelcon" -> "io.prediction.algorithms.graphchi.itemsim.GraphChiModelConstructor")
 
 packJvmOpts := Map(
-  "itemsim.graphchi.dataprep" -> Common.packCommonJvmOpts,
   "itemsim.graphchi.modelcon" -> Common.packCommonJvmOpts)
