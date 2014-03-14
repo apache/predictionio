@@ -9,8 +9,8 @@ import io.prediction.commons.modeldata.{ ItemSimScore }
 
 /*
  * Description:
+ * input file:
  * - itemsIndex.tsv (iindex iid itypes): all items
- * - validItemsIndex.tsv (iindex): valid candidate items to be recommended
  * - similarities.tsv (iindex [iindex1:score,iindex2:score,...]: output of MahotJob
  *
  * Required args:
@@ -97,24 +97,6 @@ object MahoutModelConstructor {
         (iindex, item)
       }.toMap
 
-    // valid item index file (iindex iid itypes)
-    // iindex -> true
-    /*
-    val validItemsMap: Map[Int, Boolean] = Source.fromFile(s"${arg.inputDir}validItemsIndex.tsv")
-      .getLines()
-      .map[(Int, Boolean)] { line =>
-        val iindex = try {
-          val fields = line.split("\t")
-          fields(0).toInt
-        } catch {
-          case e: Exception => {
-            throw new RuntimeException(s"Cannot get item info in line: ${line}. ${e}")
-          }
-        }
-        (iindex -> true)
-      }.toMap
-    */
-
     // prediction
     Source.fromFile(s"${arg.inputDir}similarities.tsv")
       .getLines()
@@ -131,10 +113,7 @@ object MahoutModelConstructor {
           .map { case (iindex, rating) => (iindex.toInt, rating) }
 
         val topScores = predicted
-          /*.filter { // moved to MahoutJob
-            case (iindex, rating) =>
-              validItemsMap.contains(iindex)
-          }*/
+          // valid item filtering is donw inside MahoutJob
           .sortBy(_._2)(Ordering[Double].reverse)
           .take(arg.numSimilarItems)
 

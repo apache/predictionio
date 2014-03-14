@@ -351,4 +351,6 @@ class GraphChiItemSimModelConstructorSpec extends Specification {
 
   }
 
+  // NOTE: clean up when finish test
+  step(cleanUp())
 }

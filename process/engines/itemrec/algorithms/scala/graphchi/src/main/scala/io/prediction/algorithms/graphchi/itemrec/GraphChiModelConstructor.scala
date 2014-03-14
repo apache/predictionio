@@ -109,7 +109,7 @@ object GraphChiModelConstructor {
       }.toMap
 
     // ratings file (for unseen filtering) 
-    val seenMap: Map[(Int, Int), Boolean] = if (arg.unseenOnly) {
+    val seenSet: Set[(Int, Int)] = if (arg.unseenOnly) {
       Source.fromFile(s"${arg.inputDir}ratings.mm")
         .getLines()
         // discard all empty line and comments
@@ -123,10 +123,10 @@ object GraphChiModelConstructor {
           } catch {
             case e: Exception => throw new RuntimeException(s"Cannot get user and item index from this line: ${line}. ${e}")
           }
-          ((u, i) -> true)
-        }.toMap
+          (u, i)
+        }.toSet
     } else {
-      Map() // empty map
+      Set() // empty map
     }
 
     // feature x user matrix
@@ -137,7 +137,7 @@ object GraphChiModelConstructor {
 
     for (uindex <- 1 to userMatrix.cols if usersMap.contains(uindex)) {
       val scores = for (
-        iindex <- 1 to itemMatrix.cols if (unseenItemFilter(arg.unseenOnly, uindex, iindex, seenMap)
+        iindex <- 1 to itemMatrix.cols if (unseenItemFilter(arg.unseenOnly, uindex, iindex, seenSet)
           && validItemFilter(true, iindex, itemsMap))
       ) yield {
         // NOTE: DenseMatrix index starts from 0, so minus 1 (but graphchi user and item index starts from 1)
@@ -165,8 +165,8 @@ object GraphChiModelConstructor {
 
   }
 
-  def unseenItemFilter(enable: Boolean, uindex: Int, iindex: Int, seenMap: Map[(Int, Int), Boolean]): Boolean = {
-    if (enable) (!seenMap.contains((uindex, iindex))) else true
+  def unseenItemFilter(enable: Boolean, uindex: Int, iindex: Int, seenSet: Set[(Int, Int)]): Boolean = {
+    if (enable) (!seenSet((uindex, iindex))) else true
   }
 
   def validItemFilter(enable: Boolean, iindex: Int, validMap: Map[Int, Any]): Boolean = {

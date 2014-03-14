@@ -89,10 +89,10 @@ object GraphChiModelConstructor {
       }.toMap
 
     // valid item index file (iindex iid itypes)
-    // iindex -> true
-    val validItemsMap: Map[Int, Boolean] = Source.fromFile(s"${arg.inputDir}validItemsIndex.tsv")
+    // iindex
+    val validItemsSet: Set[Int] = Source.fromFile(s"${arg.inputDir}validItemsIndex.tsv")
       .getLines()
-      .map[(Int, Boolean)] { line =>
+      .map[Int] { line =>
         val iindex = try {
           val fields = line.split("\t")
           fields(0).toInt
@@ -101,8 +101,8 @@ object GraphChiModelConstructor {
             throw new RuntimeException(s"Cannot get item info in line: ${line}. ${e}")
           }
         }
-        (iindex -> true)
-      }.toMap
+        iindex
+      }.toSet
 
     // iindex1 iindex2 score
     val simScores = Source.fromFile(s"${arg.inputDir}ratings.mm-topk")
@@ -125,7 +125,7 @@ object GraphChiModelConstructor {
       case (iindex1, scoresSeq) =>
 
         // only recommend items in validItems
-        val topScores = scoresSeq.filter { x => validItemsMap.contains(x._2) }
+        val topScores = scoresSeq.filter { x => validItemsSet(x._2) }
           .sortBy(_._3)(Ordering[Double].reverse)
           .take(arg.numSimilarItems)
 
