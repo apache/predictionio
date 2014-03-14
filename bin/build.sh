@@ -65,6 +65,10 @@ BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGraphChi/pack"
 echo "+ Pack Single Machine Generic ItemSim Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGeneric/pack"
 
+# Build Mahout ItemSim Job and Model Construcotor
+echo "+ Pack Mahout ItemSim Job and Model Constructor"
+BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaMahout/pack"
+
 # Build GraphChi Model Constructor
 echo "+ Pack GraphChi ItemSim Model Constructor"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemSimAlgoScalaGraphChi/pack"

@@ -205,6 +205,11 @@ lazy val processEnginesItemSimAlgoScalaGeneric = project
   .dependsOn(commons)
   .settings(scalariformSettings: _*)
 
+lazy val processEnginesItemSimAlgoScalaMahout = project
+  .in(file("process/engines/itemsim/algorithms/scala/mahout"))
+  .dependsOn(commons)
+  .settings(scalariformSettings: _*)
+
 lazy val processEnginesItemSimAlgoScalaGraphChi = project
   .in(file("process/engines/itemsim/algorithms/scala/graphchi"))
   .dependsOn(commons)
