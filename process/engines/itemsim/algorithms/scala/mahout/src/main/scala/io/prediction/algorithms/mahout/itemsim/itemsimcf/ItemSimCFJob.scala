@@ -1,4 +1,4 @@
-package io.prediction.algorithms.mahout.itemsim.itemsimilarity
+package io.prediction.algorithms.mahout.itemsim.itemsimcf
 
 import io.prediction.algorithms.mahout.itemsim.MahoutJob
 
@@ -14,7 +14,7 @@ import org.apache.mahout.cf.taste.impl.similarity.{
   UncenteredCosineSimilarity
 }
 
-class ItemSimilarityJob extends MahoutJob {
+class ItemSimCFJob extends MahoutJob {
 
   val defaultItemSimilarity = "LogLikelihoodSimilarity"
 
