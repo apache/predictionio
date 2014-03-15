@@ -1,4 +1,4 @@
-package io.prediction.evaluations.itemrec.topkitems
+package io.prediction.evaluations.commons.topkitems
 
 import io.prediction.commons._
 import io.prediction.commons.filepath.OfflineMetricFile

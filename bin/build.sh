@@ -41,12 +41,6 @@ else
 
     echo "+ Assemble Process Commons Evaluations Scala U2I Training-Test Splitter"
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ITrainingTestSplit/assembly"
-
-    #echo "+ Assemble Process ItemRec Evaluations Scala Top-k Items Collector"
-    #BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaTopKItems/assembly"
-
-    echo "+ Assemble Process ItemSim Evaluations Scala Top-k Items Collector"
-    BASE_TARGETS="$BASE_TARGETS processEnginesItemSimEvalScalaTopKItems/assembly"
 fi
 
 # Build Generic Single Machine ItemRec Data Preparator
@@ -81,9 +75,9 @@ BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ISplit/pack"
 echo "+ Pack Single Machine MAP@k"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaMetricsMAP/pack"
 
-# Build Single Machine ItemRec Top-K Collector
-echo "+ Pack Single Machine ItemRec Top-K Collector"
-BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaTopKItems/pack"
+# Build Single Machine Top-K Collector
+echo "+ Pack Single Machine Top-K Collector"
+BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaTopKItems/pack"
 
 # Build connection check tool
 echo "+ Pack Connection Check Tool"

@@ -1,6 +1,6 @@
 import xerial.sbt.Pack._
 
-name := "predictionio-process-itemrec-evaluations-topkitems"
+name := "predictionio-process-commons-evaluations-topkitems"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.1",
@@ -18,6 +18,6 @@ packExpandedClasspath := true
 
 packGenerateWindowsBatFile := false
 
-packMain := Map("topk" -> "io.prediction.evaluations.itemrec.topkitems.TopKItems")
+packMain := Map("topk" -> "io.prediction.evaluations.commons.topkitems.TopKItems")
 
 packJvmOpts := Map("topk" -> Common.packCommonJvmOpts)

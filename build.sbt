@@ -29,9 +29,9 @@ lazy val root = project.in(file(".")).aggregate(
   output,
   processHadoopScalding,
   processEnginesCommonsEvalScalaParamGen,
+  processEnginesCommonsEvalScalaTopKItems,
   processEnginesCommonsEvalScalaU2ITrainingTestSplit,
   processEnginesItemRecAlgoScalaMahout,
-  processEnginesItemRecEvalScalaTopKItems,
   processEnginesItemSimEvalScalaTopKItems,
   toolsConncheck,
   toolsSettingsInit,
@@ -79,6 +79,11 @@ lazy val processEnginesCommonsEvalHadoopScaldingU2ITrainingTestSplit = project
 lazy val processEnginesCommonsEvalScalaParamGen = project
   .in(file("process/engines/commons/evaluations/scala/paramgen"))
   .dependsOn(commons)
+  .settings(scalariformSettings: _*)
+
+lazy val processEnginesCommonsEvalScalaTopKItems = project
+  .in(file("process/engines/commons/evaluations/scala/topkitems"))
+  .dependsOn(commons, output)
   .settings(scalariformSettings: _*)
 
 lazy val processEnginesCommonsEvalScalaU2ISplit = project
@@ -160,11 +165,6 @@ lazy val processEnginesItemRecEvalHadoopScaldingMetricsMAP = project
 lazy val processEnginesItemRecEvalScalaMetricsMAP = project
   .in(file("process/engines/itemrec/evaluations/scala/map"))
   .dependsOn(commons)
-  .settings(scalariformSettings: _*)
-
-lazy val processEnginesItemRecEvalScalaTopKItems = project
-  .in(file("process/engines/itemrec/evaluations/scala/topkitems"))
-  .dependsOn(commons, output)
   .settings(scalariformSettings: _*)
 
 lazy val processEnginesItemSimAlgoHadoopScalding = project
