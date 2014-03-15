@@ -8,7 +8,6 @@ libraryDependencies ++= Seq(
   "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2",
   "com.github.scopt" %% "scopt" % "3.2.0",
-  "com.typesafe" % "config" % "1.0.0",
   "org.clapper" %% "grizzled-slf4j" % "1.0.1")
 
 packSettings

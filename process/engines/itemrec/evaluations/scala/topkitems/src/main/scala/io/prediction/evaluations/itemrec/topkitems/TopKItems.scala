@@ -3,14 +3,15 @@ package io.prediction.evaluations.itemrec.topkitems
 import io.prediction.commons._
 import io.prediction.commons.filepath.OfflineMetricFile
 import io.prediction.output.itemrec.ItemRecAlgoOutput
+import io.prediction.output.itemsim.ItemSimAlgoOutput
 
-import com.typesafe.config.ConfigFactory
 import grizzled.slf4j.Logger
 import java.io.File
 import scala.sys.process._
 import scalax.io._
 
 case class TopKItemsConfig(
+  enginetype: String = "",
   evalid: Int = 0,
   metricid: Int = 0,
   algoid: Int = 0,
@@ -22,6 +23,14 @@ object TopKItems {
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[TopKItemsConfig]("topk") {
       head("topk")
+      opt[String]("enginetype") required () action { (x, c) =>
+        c.copy(enginetype = x)
+      } validate { x =>
+        x match {
+          case "itemrec" | "itemsim" => success
+          case _ => failure("--enginetype must be either itemrec or itemsim")
+        }
+      } text ("engine type (supported: itemrec, itemsim)")
       opt[Int]("evalid") required () action { (x, c) =>
         c.copy(evalid = x)
       } text ("the OfflineEval ID that this metric will be applied to")
@@ -58,7 +67,6 @@ object TopKItems {
       val engines = commonsConfig.getSettingsEngines
       val algos = commonsConfig.getSettingsAlgos
       val offlineEvals = commonsConfig.getSettingsOfflineEvals
-      val users = commonsConfig.getAppdataTrainingUsers
 
       val algo = algos.get(algoid).get
       val offlineEval = offlineEvals.get(evalid).get
@@ -70,16 +78,37 @@ object TopKItems {
       val output: Output = Resource.fromFile(tmpFile)
       logger.info(s"Dumping data to temporary file $tmpFilePath...")
 
-      var userCount = 0
-      users.getByAppid(evalid) foreach { u =>
-        val topKItems = ItemRecAlgoOutput.output(u.id, k, None, None, None, None)(app, engine, algo, Some(offlineEval))
-        if (topKItems.length > 0) {
-          userCount += 1
-          val topKString = topKItems.map(iid => s"${evalid}_${iid}").mkString(",")
-          output.write(s"${evalid}_${u.id}\t${topKString}\n")
+      config.enginetype match {
+        case "itemrec" => {
+          val users = commonsConfig.getAppdataTrainingUsers
+          var userCount = 0
+          users.getByAppid(evalid) foreach { u =>
+            val topKItems = ItemRecAlgoOutput.output(u.id, k, None, None, None, None)(app, engine, algo, Some(offlineEval))
+            if (topKItems.length > 0) {
+              userCount += 1
+              val topKString = topKItems.map(iid => s"${evalid}_${iid}").mkString(",")
+              output.write(s"${evalid}_${u.id}\t${topKString}\n")
+            }
+          }
+          logger.info(s"Found $userCount user(s) with non-zero top-K items")
+        }
+        case "itemsim" => {
+          val items = commonsConfig.getAppdataTrainingItems
+          val scores = Seq.range(1, k + 1).reverse
+          var itemCount = 0
+          items.getByAppid(evalid) foreach { i =>
+            val topKItems = ItemSimAlgoOutput.output(i.id, k, None, None, None, None)(app, engine, algo, Some(offlineEval))
+            if (topKItems.length > 0) {
+              itemCount += 1
+              topKItems.zip(scores) foreach { tuple =>
+                val (iid, score) = tuple
+                output.write(s"${evalid}_${i.id}\t${evalid}_${iid}\t${score}\n")
+              }
+            }
+          }
+          logger.info(s"Found ${itemCount} item(s) with non-zero top-K items")
         }
       }
-      logger.info(s"Found $userCount user(s) with non-zero top-K items")
 
       if (!config.local) {
         tmpFile.deleteOnExit
