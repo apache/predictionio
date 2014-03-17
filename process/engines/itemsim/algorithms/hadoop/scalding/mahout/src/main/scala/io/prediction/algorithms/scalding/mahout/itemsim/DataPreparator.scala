@@ -4,6 +4,7 @@ import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{ Users, Items, U2iActions }
 import io.prediction.commons.filepath.DataFile
+import org.slf4j.{ Logger, LoggerFactory }
 
 /**
  * Source:
@@ -74,7 +75,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val dislikeParamArg: Option[Int] = getActionParam("dislikeParam")
   val conversionParamArg: Option[Int] = getActionParam("conversionParam")
 
-  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
+  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it,
   // determine which action will be considered as final preference.
   final val CONFLICT_LATEST: String = "latest" // use latest action
   final val CONFLICT_HIGHEST: String = "highest" // use the one with highest score
@@ -91,6 +92,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   // NOTE: if OFFLINE_EVAL, read from training set, and use evalid as appid when read Items and U2iActions
   val trainingAppid = if (OFFLINE_EVAL) evalidArg.get else appidArg
 
+  lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 }
 
 class DataCopy(args: Args) extends DataPreparatorCommon(args) {
@@ -199,7 +201,7 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
         case ACTION_VIEW => (viewParamArg != None)
         case ACTION_CONVERSION => (conversionParamArg != None)
         case _ => {
-          assert(false, "Action type " + action + " in u2iActions appdata is not supported!")
+          logger.debug(s"Found custom action ${action}")
           false // all other unsupported actions
         }
       }
