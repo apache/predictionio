@@ -5769,7 +5769,7 @@
             ],
             "commands": [
                 "$hadoop$ jar $base$/lib/$pdioItemrecEval$ io.prediction.metrics.scalding.itemrec.map.MAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
-                "$base$/bin/topk --enginetype itemrec --evalid $evalid$ --algoid $algoid$ --k $k$ --metricid $metricid$ --hdfsroot $hdfsRoot$",
+                "$base$/bin/topk --enginetype itemrec --evalid $evalid$ --algoid $algoid$ --k $kParam$ --metricid $metricid$ --hdfsroot $hdfsRoot$",
                 "$hadoop$ jar $base$/lib/$pdioItemrecEval$ io.prediction.metrics.scalding.itemrec.map.MAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --kParam $kParam$"
             ],
             "params": {
@@ -5844,7 +5844,7 @@
             ],
             "commands": [
                 "$hadoop$ jar $base$/lib/$pdioItemsimEval$ io.prediction.metrics.scalding.itemsim.ismap.ISMAPAtKDataPreparator --hdfs --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --modeldata_dbType $modeldataTrainingDbType$ --modeldata_dbName $modeldataTrainingDbName$ --modeldata_dbHost $modeldataTrainingDbHost$ --modeldata_dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --kParam $kParam$ --goalParam $goalParam$",
-                "$base$/bin/topk --enginetype itemsim --evalid $evalid$ --algoid $algoid$ --k $k$ --metricid $metricid$ --hdfsroot $hdfsRoot$",
+                "$base$/bin/topk --enginetype itemsim --evalid $evalid$ --algoid $algoid$ --k $kParam$ --metricid $metricid$ --hdfsroot $hdfsRoot$",
                 "$hadoop$ jar $base$/lib/$pdioItemsimEval$ io.prediction.metrics.scalding.itemsim.ismap.ISMAPAtK --hdfs --dbType $settingsDbType$ --dbName $settingsDbName$ --dbHost $settingsDbHost$ --dbPort $settingsDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --kParam $kParam$"
             ],
             "params": {
