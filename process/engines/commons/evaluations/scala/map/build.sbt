@@ -1,6 +1,6 @@
 import xerial.sbt.Pack._
 
-name := "predictionio-process-itemrec-metrics-scala-map"
+name := "predictionio-process-commons-metrics-scala-map"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.1",
@@ -17,6 +17,6 @@ packExpandedClasspath := true
 
 packGenerateWindowsBatFile := false
 
-packMain := Map("mapatk" -> "io.prediction.metrics.itemrec.map.MAPAtK")
+packMain := Map("mapatk" -> "io.prediction.metrics.commons.map.MAPAtK")
 
 packJvmOpts := Map("mapatk" -> Common.packCommonJvmOpts)

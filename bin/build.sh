@@ -73,7 +73,7 @@ BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ISplit/pack"
 
 # Build Single Machine MAP@k
 echo "+ Pack Single Machine MAP@k"
-BASE_TARGETS="$BASE_TARGETS processEnginesItemRecEvalScalaMetricsMAP/pack"
+BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaMetricsMAP/pack"
 
 # Build Single Machine Top-K Collector
 echo "+ Pack Single Machine Top-K Collector"

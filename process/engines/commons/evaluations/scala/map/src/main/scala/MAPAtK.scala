@@ -1,4 +1,4 @@
-package io.prediction.metrics.itemrec.map
+package io.prediction.metrics.commons.map
 
 import io.prediction.commons.Config
 import io.prediction.commons.settings.OfflineEvalResult
