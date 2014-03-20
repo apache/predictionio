@@ -43,6 +43,10 @@ else
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ITrainingTestSplit/assembly"
 fi
 
+# Build Non-distributed Random Algorithm
+echo "+ Pack Non-distributed Random Algorithm"
+BASE_TARGETS="$BASE_TARGETS processEnginesCommonsAlgoScalaRandom/pack"
+
 # Build Generic Single Machine ItemRec Data Preparator
 echo "+ Pack Single Machine Generic ItemRec Data Preparator"
 BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaGeneric/pack"

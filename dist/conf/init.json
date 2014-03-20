@@ -283,6 +283,42 @@
         }
     },
     "algoinfos": {
+        "pdio-local-itemrec-random": {
+            "name": "Random Rank (Non-distributed)",
+            "description": "Predict user preferences randomly.",
+            "batchcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numRecommendations$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
+            ],
+            "offlineevalcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numRecommendations$ --modelSet false --recommendationTime $recommendationTime$ --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemrec",
+            "techreq": [],
+            "datareq": [
+                "Users and Items."
+            ],
+            "params": {},
+            "paramsections": []
+        },
+        "pdio-local-itemsim-random": {
+            "name": "Random Rank (Non-distributed)",
+            "description": "Predict user preferences randomly.",
+            "batchcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numSimilarItems$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
+            ],
+            "offlineevalcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numSimilarItems$ --modelSet false --recommendationTime $recommendationTime$ --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemsim",
+            "techreq": [],
+            "datareq": [
+                "Users and Items."
+            ],
+            "params": {},
+            "paramsections": []
+        },
         "pdio-randomrank": {
             "name": "Random Rank",
             "description": "Predict user preferences randomly.",

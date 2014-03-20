@@ -27,6 +27,7 @@ lazy val root = project.in(file(".")).aggregate(
   commons,
   output,
   processHadoopScalding,
+  processEnginesCommonsAlgoScalaRandom,
   processEnginesCommonsEvalScalaMetricsMAP,
   processEnginesCommonsEvalScalaParamGen,
   processEnginesCommonsEvalScalaTopKItems,
@@ -65,6 +66,11 @@ lazy val processHadoopScalding = project
 
 lazy val processCommonsHadoopScalding = project
   .in(file("process/commons/hadoop/scalding")).dependsOn(commons)
+  .settings(scalariformSettings: _*)
+
+lazy val processEnginesCommonsAlgoScalaRandom = project
+  .in(file("process/engines/commons/algorithms/scala/random"))
+  .dependsOn(commons)
   .settings(scalariformSettings: _*)
 
 lazy val processEnginesCommonsEvalHadoopScalding = project

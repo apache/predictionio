@@ -2309,13 +2309,14 @@ object Application extends Controller {
             // create offline eval with baseline algo
             // TODO: get from UI
             val defaultBaseLineAlgoType = engine.infoid match {
-              case "itemrec" => "pdio-randomrank"
-              case "itemsim" => "pdio-itemsimrandomrank"
+              case "itemrec" => "pdio-local-itemrec-random"
+              case "itemsim" => "pdio-local-itemsim-random"
             }
 
             engineInfos.get(engine.infoid).map { engineInfo =>
-              val metricinfoid = engineInfo.defaultofflineevalmetricinfoid // TODO: from UI
-              val splitterinfoid = engineInfo.defaultofflineevalsplitterinfoid // TODO: from UI
+              val hadoopRequired = algoInfos.get(algo.infoid) map { _.techreq.contains("Hadoop") } getOrElse false
+              val metricinfoid = if (hadoopRequired) engineInfo.defaultofflineevalmetricinfoid else engineInfo.defaultofflineevalmetricinfoid + "_nd" // TODO: from UI
+              val splitterinfoid = if (hadoopRequired) engineInfo.defaultofflineevalsplitterinfoid else "u2isplit" // TODO: from UI
               algoInfos.get(defaultBaseLineAlgoType).map { baseLineAlgoInfo =>
                 offlineEvalMetricInfos.get(metricinfoid).map { metricInfo =>
                   offlineEvalSplitterInfos.get(splitterinfoid).map { splitterInfo =>
