@@ -2298,7 +2298,11 @@ object Application extends Controller {
         bound => {
           val (params, tune, tuneMethod) = bound
           // NOTE: read-modify-write the original param
-          val tuneObj = tune map { t => Map("tune" -> t, "tuneMethod" -> tuneMethod.get) } getOrElse { Map("tune" -> "manual") }
+          val tuneObj = (tune, tuneMethod) match {
+            case (Some("manual"), _) => Map("tune" -> "manual")
+            case (Some("auto"), Some(m)) => Map("tune" -> "auto", "tuneMethod" -> m)
+            case (_, _) => Map()
+          }
           val updatedParams = algo.params ++ params ++ tuneObj - "infoid"
           val updatedAlgo = algo.copy(params = updatedParams)
 
