@@ -8,7 +8,7 @@ How to build and run API server
 
 ## Build and run
 ```
-# From the repository root
+# From the repository root. API server depends on other pio modules, need to compile and publish them first.
 sbt commons/publish output/publish
 
 # Go to API server directory and run play framework
@@ -17,4 +17,7 @@ play
 
 # In play framework console
 run
+
+# Everytime when pio modules are updated (and published), need to run following command to update the dependency in Play console.
+update 
 ```
