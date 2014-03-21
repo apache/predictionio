@@ -283,6 +283,42 @@
         }
     },
     "algoinfos": {
+        "pdio-local-itemrec-random": {
+            "name": "Random Rank (Non-distributed)",
+            "description": "Predict user preferences randomly.",
+            "batchcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numRecommendations$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
+            ],
+            "offlineevalcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numRecommendations$ --modelSet false --recommendationTime $recommendationTime$ --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemrec",
+            "techreq": [],
+            "datareq": [
+                "Users and Items."
+            ],
+            "params": {},
+            "paramsections": []
+        },
+        "pdio-local-itemsim-random": {
+            "name": "Random Rank (Non-distributed)",
+            "description": "Predict user preferences randomly.",
+            "batchcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numSimilarItems$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
+            ],
+            "offlineevalcommands": [
+                "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numSimilarItems$ --modelSet false --recommendationTime $recommendationTime$ --evalid $evalid$"
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemsim",
+            "techreq": [],
+            "datareq": [
+                "Users and Items."
+            ],
+            "params": {},
+            "paramsections": []
+        },
         "pdio-randomrank": {
             "name": "Random Rank",
             "description": "Predict user preferences randomly.",
@@ -6202,8 +6238,8 @@
                 "kParam"
             ]
         },
-        "sm_map_k": {
-            "name": "MAP@k (non-distributed)",
+        "map_k_nd": {
+            "name": "MAP@k (Non-distributed)",
             "description": "Mean Average Precision",
             "engineinfoids": [
                 "itemrec"
@@ -6241,7 +6277,7 @@
         },
         "ismap_k": {
             "name": "ISMAP@k",
-            "description": "Item Similarity Mean Average Precision at k",
+            "description": "Item Similarity Mean Average Precision",
             "engineinfoids": [
                 "itemsim"
             ],
@@ -6275,6 +6311,43 @@
             ],
             "paramorder": [
                 "kParam"
+            ]
+        },
+        "ismap_k_nd": {
+            "name": "ISMAP@k (Non-distributed)",
+            "description": "Item Similarity Mean Average Precision",
+            "engineinfoids": [
+                "itemsim"
+            ],
+            "commands": [
+                "$base$/bin/topk --enginetype itemsim --evalid $evalid$ --algoid $algoid$ --k $k$ --metricid $metricid$ --hdfsroot $hdfsRoot$ --local",
+                "$base$/bin/mapatk --appid $appid$ --engineid $engineid$ --evalid $evalid$ --metricid $metricid$ --algoid $algoid$ --iteration $iteration$ --splitset $splitset$ --k $k$ --goal $goalParam$"
+            ],
+            "params": {
+                "k": {
+                    "name": "k",
+                    "description": "",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "defaultvalue": 20,
+                    "ui": {
+                        "uitype": "text"
+                    }
+                }
+            },
+            "paramsections": [
+                {
+                    "name": "Parameters",
+                    "sectiontype": "normal",
+                    "description": "",
+                    "params": [
+                        "k"
+                    ]
+                }
+            ],
+            "paramorder": [
+                "k"
             ]
         }
     },
