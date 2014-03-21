@@ -9,7 +9,7 @@
 # Get the absolute path of the build script
 SCRIPT="$0"
 while [ -h "$SCRIPT" ] ; do
-	SCRIPT=`readlink "$SCRIPT"`
+    SCRIPT=`readlink "$SCRIPT"`
 done
 
 # Get the base directory of the repo
@@ -104,27 +104,34 @@ cd $DIST_DIR/target
 
 # Multi-arch targets
 
-cp -R $PACKAGE_DIR $PACKAGE_DIR_LINUX64
-mv $PACKAGE_DIR $PACKAGE_DIR_LINUX32
+if test "$MULTI_ARCH" = "1" ; then
+    cp -R $PACKAGE_DIR $PACKAGE_DIR_LINUX64
+    mv $PACKAGE_DIR $PACKAGE_DIR_LINUX32
 
-cd $PACKAGE_DIR_LINUX32
-cp $VENDOR_GRAPHCHI_CPP_CF_LINUX32/* $PACKAGE_DIR_LINUX32/bin
+    cd $PACKAGE_DIR_LINUX32
+    cp $VENDOR_GRAPHCHI_CPP_CF_LINUX32/* $PACKAGE_DIR_LINUX32/bin
 
-cd $PACKAGE_DIR_LINUX64
-cp $VENDOR_GRAPHCHI_CPP_CF_LINUX64/* $PACKAGE_DIR_LINUX64/bin
+    cd $PACKAGE_DIR_LINUX64
+    cp $VENDOR_GRAPHCHI_CPP_CF_LINUX64/* $PACKAGE_DIR_LINUX64/bin
 
-cd $DIST_DIR/target
+    cd $DIST_DIR/target
 
-if [ -e "$PACKAGE_NAME_LINUX32.zip" ] ; then
-    rm "$PACKAGE_NAME_LINUX32.zip"
+    if [ -e "$PACKAGE_NAME_LINUX32.zip" ] ; then
+        rm "$PACKAGE_NAME_LINUX32.zip"
+    fi
+    if [ -e "$PACKAGE_NAME_LINUX64.zip" ] ; then
+        rm "$PACKAGE_NAME_LINUX64.zip"
+    fi 
+
+    zip -q -r "$PACKAGE_NAME_LINUX32.zip" "$PACKAGE_NAME_LINUX32"
+    zip -q -r "$PACKAGE_NAME_LINUX64.zip" "$PACKAGE_NAME_LINUX64"
+
+    echo "Packaging finished:"
+    echo "- $DIST_DIR/target/$PACKAGE_NAME_LINUX32.zip"
+    echo "- $DIST_DIR/target/$PACKAGE_NAME_LINUX64.zip"
+else
+    rm "$PACKAGE_NAME.zip"
+    zip -q -r "$PACKAGE_NAME.zip" "$PACKAGE_NAME"
+  
+    echo "Packaging finished at $DIST_DIR/target/$PACKAGE_NAME.zip"
 fi
-if [ -e "$PACKAGE_NAME_LINUX64.zip" ] ; then
-    rm "$PACKAGE_NAME_LINUX64.zip"
-fi 
-
-zip -q -r "$PACKAGE_NAME_LINUX32.zip" "$PACKAGE_NAME_LINUX32"
-zip -q -r "$PACKAGE_NAME_LINUX64.zip" "$PACKAGE_NAME_LINUX64"
-
-echo "Packaging finished:"
-echo "- $DIST_DIR/target/$PACKAGE_NAME_LINUX32.zip"
-echo "- $DIST_DIR/target/$PACKAGE_NAME_LINUX64.zip"
