@@ -18,6 +18,7 @@ play
 # In play framework console
 run
 
-# Everytime when pio modules are updated (and published), need to run following command to update the dependency in Play console.
+# Everytime when pio modules are updated (and published).
+# Need to update the dependency in Play console.
 update 
 ```
