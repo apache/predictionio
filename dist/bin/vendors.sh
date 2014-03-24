@@ -48,7 +48,7 @@ VENDOR_HADOOP_NAME="Apache Hadoop $VENDOR_HADOOP_VERSION"
 VENDOR_MONGODB_NAME="MongoDB $VENDOR_MONGODB_VERSION"
 
 install_graphchi () {
-	local FN="graphchi-cpp-cf-$OS-$ARCH-$VENDOR_GRAPHCHI_VERSION.tgz"
+	local FN="graphchi-cpp-cf-$OS-$ARCH-$VENDOR_GRAPHCHI_VERSION.tar.gz"
 	local URL="http://download.prediction.io/graphchi-cpp-cf/$FN"
 	echo "Going to download and install $VENDOR_GRAPHCHI_NAME ($URL)..."
 	local VENDORS_PATH=$1
