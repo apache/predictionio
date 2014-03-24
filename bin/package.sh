@@ -52,7 +52,6 @@ cp $BASE/bin/quiet.sh $PACKAGE_DIR/bin
 cp -R $DIST_DIR/conf $PACKAGE_DIR
 
 cp "$BASE/process/target/scala-2.10/predictionio-process-hadoop-scalding-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
-cp "$BASE/process/engines/commons/evaluations/scala/u2itrainingtestsplit/target/scala-2.10/predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-$VERSION.jar" "$PACKAGE_DIR/lib"
 
 cp $BASE/process/engines/commons/algorithms/scala/random/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/commons/algorithms/scala/random/target/pack/lib/* $PACKAGE_DIR/lib
@@ -68,6 +67,9 @@ cp -n $BASE/process/engines/commons/evaluations/scala/topkitems/target/pack/lib/
 
 cp $BASE/process/engines/commons/evaluations/scala/u2isplit/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/commons/evaluations/scala/u2isplit/target/pack/lib/* $PACKAGE_DIR/lib
+
+cp $BASE/process/engines/commons/evaluations/scala/u2itrainingtestsplit/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/process/engines/commons/evaluations/scala/u2itrainingtestsplit/target/pack/lib/* $PACKAGE_DIR/lib
 
 cp $BASE/process/engines/itemrec/algorithms/scala/generic/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/itemrec/algorithms/scala/generic/target/pack/lib/* $PACKAGE_DIR/lib

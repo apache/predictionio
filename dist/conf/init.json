@@ -18,9 +18,6 @@
         },
         "jars.pdioCommonsEval": {
             "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
-        },
-        "jars.pdioCommonsU2ITrainingTestSplit": {
-            "value": "predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-0.7.0-SNAPSHOT.jar"
         }
     },
     "engineinfos": {
@@ -7536,7 +7533,7 @@
                 "itemrec", "itemsim"
             ],
             "commands": [
-                "java -jar $base$/lib/$pdioCommonsU2ITrainingTestSplit$ --hadoop $hadoop$ --pdioEvalJar $base$/lib/$pdioCommonsEval$ --sequenceNum $iteration$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
+                "$base$/bin/u2itrainingtestsplit --hadoop $hadoop$ --pdioEvalJar $base$/lib/$pdioCommonsEval$ --sequenceNum $iteration$ --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --training_dbType $appdataTrainingDbType$ --training_dbName $appdataTrainingDbName$ --training_dbHost $appdataTrainingDbHost$ --training_dbPort $appdataTrainingDbPort$ --validation_dbType $appdataValidationDbType$ --validation_dbName $appdataValidationDbName$ --validation_dbHost $appdataValidationDbHost$ --validation_dbPort $appdataValidationDbPort$ --test_dbType $appdataTestDbType$ --test_dbName $appdataTestDbName$ --test_dbHost $appdataTestDbHost$ --test_dbPort $appdataTestDbPort$ --hdfsRoot $hdfsRoot$ --localTempRoot $localTempRoot$ --appid $appid$ --engineid $engineid$ --evalid $evalid$ $itypes$ --trainingPercent $trainingPercent$ --validationPercent $validationPercent$ --testPercent $testPercent$ --timeorder $timeorder$"
             ],
             "params": {
                 "timeorder": {
