@@ -36,9 +36,6 @@ else
     echo "+ Assemble Process Hadoop Scalding"
     BASE_TARGETS="$BASE_TARGETS processHadoopScalding/assembly"
 
-    echo "+ Assemble Process Commons Evaluations Scala Parameter Generator"
-    BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaParamGen/assembly"
-
     echo "+ Assemble Process Commons Evaluations Scala U2I Training-Test Splitter"
     BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ITrainingTestSplit/assembly"
 fi
@@ -78,6 +75,10 @@ BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaU2ISplit/pack"
 # Build Single Machine MAP@k
 echo "+ Pack Single Machine MAP@k"
 BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaMetricsMAP/pack"
+
+# Build parameter generator
+echo "+ Pack Process Commons Evaluations Scala Parameter Generator"
+BASE_TARGETS="$BASE_TARGETS processEnginesCommonsEvalScalaParamGen/pack"
 
 # Build Single Machine Top-K Collector
 echo "+ Pack Single Machine Top-K Collector"

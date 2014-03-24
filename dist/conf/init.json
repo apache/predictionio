@@ -19,9 +19,6 @@
         "jars.pdioCommonsEval": {
             "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
         },
-        "jars.pdioCommonsParamGen": {
-            "value": "predictionio-process-commons-evaluations-paramgen-assembly-0.7.0-SNAPSHOT.jar"
-        },
         "jars.pdioCommonsU2ITrainingTestSplit": {
             "value": "predictionio-process-commons-evaluations-scala-u2itrainingtestsplittime-assembly-0.7.0-SNAPSHOT.jar"
         }
@@ -7782,7 +7779,7 @@
             "name": "Random Search",
             "description": "Random search within specified interval",
             "commands": [
-                "java -Dio.prediction.base=$base$ $configFile$ -Devalids=$evalids$ -Dalgoid=$algoid$ -Dloop=$loop$ -Dparamsets=$paramsets$ -jar $base$/lib/$pdioCommonsParamGen$"
+                "$base$/bin/paramgen --evalids $evalids$ --algoid $algoid$ --loop $loop$ --paramsets $paramsets$"
             ],
             "paramorder": [],
             "paramnames": {},
