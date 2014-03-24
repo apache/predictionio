@@ -5,27 +5,52 @@
 # Third party software
 VENDORS_PATH="$BASE/vendors"
 VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-1.2.1"
-VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.6"
+VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-linux-x86_64-2.4.9"
+
+VENDOR_MONGODB_VERSION="2.4.9"
 
 VENDOR_HADOOP_NAME="Apache Hadoop 1.2.1"
-VENDOR_MONGODB_NAME="MongoDB 2.4.6 (64-bit Linux)"
+VENDOR_MONGODB_NAME="MongoDB $VENDOR_MONGODB_VERSION"
 
 # Utilities
 command_exists () {
 	command -v "$1" >/dev/null 2>&1
 }
 
+ostype () {
+	case $OSTYPE in
+		linux*)
+			echo "linux";;
+		darwin*)
+			echo "osx";;
+	esac
+}
+
+hosttype () {
+	case $HOSTTYPE in
+		i[3456]86)
+			echo "i686";;
+		x86_64)
+			echo "x86_64";;
+	esac
+}
+
+OS=$(ostype)
+ARCH=$(hosttype)
+
 process_exists () {
 	echo $(ps -ef | grep "$1" | grep -v "grep" | wc -l)
 }
 
 install_mongodb () {
-	echo "Going to download and install $VENDOR_MONGODB_NAME..."
+	local FN="mongodb-$OS-$ARCH-$VENDOR_MONGODB_VERSION.tgz"
+	local URL="http://fastdl.mongodb.org/$OS/$FN"
+	echo "Going to download and install $VENDOR_MONGODB_NAME ($URL)..."
 	local VENDORS_PATH=$1
 	mkdir -p $VENDORS_PATH
 	cd $VENDORS_PATH
-	curl -O http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.4.6.tgz
-	tar zxvf mongodb-linux-x86_64-2.4.6.tgz
+	curl -O $URL
+	tar zxvf $FN
 }
 
 install_hadoop () {
