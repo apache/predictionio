@@ -2,6 +2,8 @@
 
 # PredictionIO Third Party Software Utilities
 
+# This script should be sourced with $BASE set to the base of the binary package
+
 # Utilities
 command_exists () {
 	command -v "$1" >/dev/null 2>&1
@@ -39,7 +41,7 @@ VENDOR_GRAPHCHI_VERSION="0a6545ccb7"
 VENDOR_HADOOP_VERSION="1.2.1"
 VENDOR_MONGODB_VERSION="2.4.9"
 
-VENDOR_GRAPHCHI_PATH="$VENDORS_PATH/graphchi-cpp-cf-$OS-ARCH-$VENDOR_GRAPHCHI_VERSION"
+VENDOR_GRAPHCHI_PATH="$VENDORS_PATH/graphchi-cpp-cf-$OS-$ARCH-$VENDOR_GRAPHCHI_VERSION"
 VENDOR_HADOOP_PATH="$VENDORS_PATH/hadoop-$VENDOR_HADOOP_VERSION"
 VENDOR_MONGODB_PATH="$VENDORS_PATH/mongodb-$OS-$ARCH-$VENDOR_MONGODB_VERSION"
 
@@ -56,6 +58,7 @@ install_graphchi () {
 	cd $VENDORS_PATH
 	curl -O $URL
 	tar zxvf $FN
+	cp $VENDOR_GRAPHCHI_PATH/* $BASE/bin
 }
 
 install_mongodb () {
