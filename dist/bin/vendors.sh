@@ -18,16 +18,16 @@ command_exists () {
 }
 
 ostype () {
-	case $OSTYPE in
-		linux*)
+	case $(uname) in
+		Linux*)
 			echo "linux";;
-		darwin*)
+		Darwin*)
 			echo "osx";;
 	esac
 }
 
 hosttype () {
-	case $HOSTTYPE in
+	case $(uname -m) in
 		i[3456]86)
 			echo "i686";;
 		x86_64)
