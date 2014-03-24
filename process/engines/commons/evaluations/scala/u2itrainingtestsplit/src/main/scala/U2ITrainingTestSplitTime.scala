@@ -90,6 +90,7 @@ object U2ITrainingTestSplitTime {
       } validate { x =>
         if (x >= 1) success else failure("--sequenceNum must be >= 1")
       } text ("sequence (iteration) number of the offline evaluation")
+      override def errorOnUnknownArgument = false
     }
     val logger = Logger(U2ITrainingTestSplitTime.getClass)
 
@@ -102,7 +103,7 @@ object U2ITrainingTestSplitTime {
       val engineid = config.engineid
       val evalid = config.evalid
       val sequenceNum = config.sequenceNum
-      val argsString = args.toString
+      val argsString = args.mkString(" ")
       val resplit = sequenceNum > 1
 
       /** command */
