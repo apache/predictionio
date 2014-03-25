@@ -101,6 +101,9 @@ cp -n $BASE/tools/softwaremanager/target/pack/lib/* $PACKAGE_DIR/lib
 cp $BASE/tools/users/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/tools/users/target/pack/lib/* $PACKAGE_DIR/lib
 
+cp $BASE/tools/migration/0.7/infos/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/tools/migration/0.7/infos/target/pack/lib/* $PACKAGE_DIR/lib
+
 mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.9
 cp $VENDOR_MAHOUT/mahout-core-0.9-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.9
 

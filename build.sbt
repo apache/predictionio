@@ -256,3 +256,7 @@ lazy val toolsSoftwareManager = project.in(file("tools/softwaremanager"))
 lazy val toolsUsers = project.in(file("tools/users"))
   .dependsOn(commons)
   .settings(scalariformSettings: _*)
+
+lazy val toolsMigrationStandardizedInfoIDs = project.in(file("tools/migration/0.7/infos"))
+  .dependsOn(commons)
+  .settings(scalariformSettings: _*)

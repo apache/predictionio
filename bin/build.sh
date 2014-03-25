@@ -100,6 +100,10 @@ BASE_TARGETS="$BASE_TARGETS toolsSoftwareManager/pack"
 echo "+ Pack User Tool"
 BASE_TARGETS="$BASE_TARGETS toolsUsers/pack"
 
+# Build migration tool for 0.7
+echo "+ Pack 0.7 Migration Tool"
+BASE_TARGETS="$BASE_TARGETS toolsMigrationStandardizedInfoIDs/pack"
+
 $SBT $CLEAN $BASE_TARGETS
 
 # Build admin server
