@@ -25,9 +25,13 @@ object Operations extends Controller {
     // mkdir again to make sure that rmr failure is not due to non existing dir.
     // mkdir error can be ignored.
     val hadoopCode = if (hadoopRequired(request)) {
-      val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
-      val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
-      if (code == 0) true else false
+      try {
+        val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
+        val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
+        if (code == 0) true else false
+      } catch {
+        case e: java.io.IOException => true // allow deletion if hadoop command is absent         
+      }
     } else true
     if (localCode && hadoopCode)
       Ok(Json.obj("message" -> s"Deleted local (and HDFS, if applicable) storage for App ID: $appid (local: $localPath; HDFS: $hadoopPath)"))
@@ -46,9 +50,13 @@ object Operations extends Controller {
     // mkdir again to make sure that rmr failure is not due to non existing dir.
     // mkdir error can be ignored.
     val hadoopCode = if (hadoopRequired(request)) {
-      val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
-      val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
-      if (code == 0) true else false
+      try {
+        val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
+        val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
+        if (code == 0) true else false
+      } catch {
+        case e: java.io.IOException => true // allow deletion if hadoop command is absent         
+      }
     } else true
     if (localCode && hadoopCode)
       Ok(Json.obj("message" -> s"Deleted local (and HDFS, if applicable) storage for App ID: $appid, Engine ID: $engineid (local: $localPath; HDFS: $hadoopPath)"))
@@ -65,9 +73,13 @@ object Operations extends Controller {
     val localCode = FileUtils.deleteQuietly(localFile)
     val hadoopPath = BaseDir.algoDir(config.settingsHdfsRoot, appid, engineid, algoid, None)
     val hadoopCode = if (hadoopRequired(request)) {
-      val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
-      val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
-      if (code == 0) true else false
+      try {
+        val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
+        val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
+        if (code == 0) true else false
+      } catch {
+        case e: java.io.IOException => true // allow deletion if hadoop command is absent         
+      }
     } else true
     if (localCode && hadoopCode)
       Ok(Json.obj("message" -> s"Deleted HDFS storage for App ID: $appid, Engine ID: $engineid, Algo ID: $algoid (local: $localPath; HDFS: $hadoopPath)"))
@@ -86,9 +98,13 @@ object Operations extends Controller {
     // mkdir again to make sure that rmr failure is not due to non existing dir.
     // mkdir error can be ignored.
     val hadoopCode = if (hadoopRequired(request)) {
-      val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
-      val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
-      if (code == 0) true else false
+      try {
+        val mkdir = s"${Scheduler.hadoopCommand} fs -mkdir $hadoopPath".!
+        val code = s"${Scheduler.hadoopCommand} fs -rmr $hadoopPath".!
+        if (code == 0) true else false
+      } catch {
+        case e: java.io.IOException => true // allow deletion if hadoop command is absent         
+      }
     } else true
     if (localCode && hadoopCode)
       Ok(Json.obj("message" -> s"Deleted local (and HDFS, if applicable) storage for App ID: $appid, Engine ID: $engineid, OfflineEval ID: $offlineevalid (local: $localPath; HDFS: $hadoopPath)"))
