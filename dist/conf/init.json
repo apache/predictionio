@@ -845,17 +845,19 @@
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/als --training=$localTempDir$ratings.mm --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/als --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/als --training=$localTempDir$ratings.mm --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/als --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "paramorder": [
+                "d",
                 "lambda",
                 "maxIter",
+                "haltRMSEInc",
                 "viewParam",
                 "likeParam",
                 "dislikeParam",
@@ -870,6 +872,37 @@
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
+                "d": {
+                    "name": "Number of Factorized Features",
+                    "description": "Width of the factorized matrix.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 20
+                },
+                "dMin": {
+                    "name": "Number of Factorized Features (Min)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 2
+                },
+                "dMax": {
+                    "name": "Number of Factorized Features (Max)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 30
+                },
                 "lambda": {
                     "name": "Lambda",
                     "description": "Regularization parameter to avoid overfitting.",
@@ -924,6 +957,37 @@
                 },
                 "maxIterMax": {
                     "name": "Maximum Number of Iterations (Max)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 20
+                },
+                "haltRMSEInc": {
+                    "name": "Halt on RMSE Increase",
+                    "description": "Stop execution when validation error goes up. Run at least the number of iterations specified in the flag.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 0
+                },
+                "haltRMSEIncMin": {
+                    "name": "Halt on RMSE Increase (Min)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 0
+                },
+                "haltRMSEIncMax": {
+                    "name": "Halt on RMSE Increase (Max)",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -1115,8 +1179,10 @@
                             "name": "Numeric Parameters",
                             "sectiontype": "tuning",
                             "params": [
+                                "d",
                                 "lambda",
-                                "maxIter"
+                                "maxIter",
+                                "haltRMSEInc"
                             ]
                         }
                     ]
@@ -1153,17 +1219,19 @@
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/als_coord --training=$localTempDir$ratings.mm --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/als_coord --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/als_coord --training=$localTempDir$ratings.mm --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/als_coord --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "paramorder": [
+                "d",
                 "lambda",
                 "maxIter",
+                "haltRMSEInc",
                 "viewParam",
                 "likeParam",
                 "dislikeParam",
@@ -1178,6 +1246,37 @@
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
+                "d": {
+                    "name": "Number of Factorized Features",
+                    "description": "Width of the factorized matrix.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 20
+                },
+                "dMin": {
+                    "name": "Number of Factorized Features (Min)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 2
+                },
+                "dMax": {
+                    "name": "Number of Factorized Features (Max)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 30
+                },
                 "lambda": {
                     "name": "Lambda",
                     "description": "Regularization parameter to avoid overfitting.",
@@ -1232,6 +1331,37 @@
                 },
                 "maxIterMax": {
                     "name": "Maximum Number of Iterations (Max)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 20
+                },
+                "haltRMSEInc": {
+                    "name": "Halt on RMSE Increase",
+                    "description": "Stop execution when validation error goes up. Run at least the number of iterations specified in the flag.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 0
+                },
+                "haltRMSEIncMin": {
+                    "name": "Halt on RMSE Increase (Min)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 0
+                },
+                "haltRMSEIncMax": {
+                    "name": "Halt on RMSE Increase (Max)",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -1423,8 +1553,10 @@
                             "name": "Numeric Parameters",
                             "sectiontype": "tuning",
                             "params": [
+                                "d",
                                 "lambda",
-                                "maxIter"
+                                "maxIter",
+                                "haltRMSEInc"
                             ]
                         }
                     ]
@@ -1461,19 +1593,21 @@
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/sgd --training=$localTempDir$ratings.mm --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/sgd --training=$localTempDir$ratings.mm --D=$d$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/sgd --training=$localTempDir$ratings.mm --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/sgd --training=$localTempDir$ratings.mm --D=$d$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "paramorder": [
+                "d",
                 "lambda",
                 "gamma",
                 "stepDec",
                 "maxIter",
+                "haltRMSEInc",
                 "viewParam",
                 "likeParam",
                 "dislikeParam",
@@ -1488,6 +1622,37 @@
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
+                "d": {
+                    "name": "Number of Factorized Features",
+                    "description": "Width of the factorized matrix.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 20
+                },
+                "dMin": {
+                    "name": "Number of Factorized Features (Min)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 2
+                },
+                "dMax": {
+                    "name": "Number of Factorized Features (Max)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 30
+                },
                 "lambda": {
                     "name": "Lambda",
                     "description": "Regularization parameter to avoid overfitting.",
@@ -1612,276 +1777,29 @@
                     },
                     "defaultvalue": 20
                 },
-                "viewParam": {
-                    "name": "View Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "3"
-                },
-                "likeParam": {
-                    "name": "Like Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "5"
-                },
-                "dislikeParam": {
-                    "name": "Dislike Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "1"
-                },
-                "conversionParam": {
-                    "name": "Conversion Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "4"
-                },
-                "conflictParam": {
-                    "name": "Override",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Use the latest action",
-                                "value": "latest"
-                            },
-                            {
-                                "name": "Use the highest preference score one",
-                                "value": "highest"
-                            },
-                            {
-                                "name": "Use the lowest preference score one",
-                                "value": "lowest"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "latest"
-                }
-            },
-            "paramsections": [
-                {
-                    "name": "Parameter Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "Numeric Parameters",
-                            "sectiontype": "tuning",
-                            "params": [
-                                "lambda",
-                                "gamma",
-                                "stepDec",
-                                "maxIter"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "User Actions Representation Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "User Action Scores",
-                            "sectiontype": "normal",
-                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
-                            "params": [
-                                "viewParam",
-                                "likeParam",
-                                "dislikeParam",
-                                "conversionParam"
-                            ]
-                        },
-                        {
-                            "name": "Overriding",
-                            "sectiontype": "normal",
-                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
-                            "params": [
-                                "conflictParam"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        "graphchi-nmf": {
-            "name": "GraphChi's Non-negative Matrix Factorization",
-            "description": "Predict user preferences based on matrix factorization.",
-            "batchcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/nmf --training=$localTempDir$ratings.mm --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
-                "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
-            ],
-            "offlineevalcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/nmf --training=$localTempDir$ratings.mm --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
-                "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
-            ],
-            "paramorder": [
-                "maxIter",
-                "viewParam",
-                "likeParam",
-                "dislikeParam",
-                "conversionParam",
-                "conflictParam"
-            ],
-            "engineinfoid": "itemrec",
-            "techreq": [
-                "GraphChi"
-            ],
-            "datareq": [
-                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
-            ],
-            "params": {
-                "maxIter": {
-                    "name": "Maximum Number of Iterations",
-                    "description": "Maximum number of training iterations allowed.",
+                "haltRMSEInc": {
+                    "name": "Halt on RMSE Increase",
+                    "description": "Stop execution when validation error goes up. Run at least the number of iterations specified in the flag.",
                     "constraint": {
                         "paramtype": "integer"
                     },
                     "ui": {
                         "uitype": "text"
                     },
-                    "defaultvalue": 6
+                    "defaultvalue": 0
                 },
-                "maxIterMin": {
-                    "name": "Maximum Number of Iterations (Min)",
+                "haltRMSEIncMin": {
+                    "name": "Halt on RMSE Increase (Min)",
                     "constraint": {
                         "paramtype": "integer"
                     },
                     "ui": {
                         "uitype": "text"
                     },
-                    "defaultvalue": 1
+                    "defaultvalue": 0
                 },
-                "maxIterMax": {
-                    "name": "Maximum Number of Iterations (Max)",
+                "haltRMSEIncMax": {
+                    "name": "Halt on RMSE Increase (Max)",
                     "constraint": {
                         "paramtype": "integer"
                     },
@@ -2073,7 +1991,12 @@
                             "name": "Numeric Parameters",
                             "sectiontype": "tuning",
                             "params": [
-                                "maxIter"
+                                "d",
+                                "lambda",
+                                "gamma",
+                                "stepDec",
+                                "maxIter",
+                                "haltRMSEInc"
                             ]
                         }
                     ]
@@ -2110,17 +2033,18 @@
             "description": "Predict user preferences based on matrix factorization and optimizing MRR (mean reciprocal rank)",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/climf --training=$localTempDir$ratings.mm --binary_relevance_thresh=$relevanceThresh$ --halt_on_mrr_decrease=$halt$ --num_ratings=$numRatings$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/climf --training=$localTempDir$ratings.mm --D=$d$ --binary_relevance_thresh=$relevanceThresh$ --halt_on_mrr_decrease=$haltMRRDec$ --num_ratings=$numRatings$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
-                "$base$/bin/climf --training=$localTempDir$ratings.mm --binary_relevance_thresh=$relevanceThresh$ --halt_on_mrr_decrease=$halt$ --num_ratings=$numRatings$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
+                "$base$/bin/climf --training=$localTempDir$ratings.mm --D=$d$ --binary_relevance_thresh=$relevanceThresh$ --halt_on_mrr_decrease=$haltMRRDec$ --num_ratings=$numRatings$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "paramorder": [
+                "d",
                 "relevanceThresh",
-                "halt",
+                "haltMRRDec",
                 "numRatings",
                 "lambda",
                 "gamma",
@@ -2140,6 +2064,37 @@
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
             "params": {
+                "d": {
+                    "name": "Number of Factorized Features",
+                    "description": "Width of the factorized matrix.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 20
+                },
+                "dMin": {
+                    "name": "Number of Factorized Features (Min)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 2
+                },
+                "dMax": {
+                    "name": "Number of Factorized Features (Max)",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 30
+                },
                 "relevanceThresh": {
                     "name": "Binary Relevant Threshold",
                     "description": "Consider the item liked/relevant if rating is at least this value.",
@@ -2171,7 +2126,7 @@
                     },
                     "defaultvalue": 3
                 },
-                "halt": {
+                "haltMRRDec": {
                     "name": "Halt on MRR Decrease",
                     "description": "Halt if the training set objective (smoothed MRR) decreases.",
                     "constraint": {
@@ -2530,13 +2485,14 @@
                             "name": "Boolean Parameter",
                             "sectiontype": "normal",
                             "params": [
-                                "halt"
+                                "haltMRRDec"
                             ]
                         },
                         {
                             "name": "Numeric Parameters",
                             "sectiontype": "tuning",
                             "params": [
+                                "d",
                                 "relevanceThresh",
                                 "numRatings",
                                 "lambda",
