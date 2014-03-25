@@ -277,8 +277,8 @@
         }
     },
     "algoinfos": {
-        "pdio-local-itemrec-random": {
-            "name": "Random Rank (Non-distributed)",
+        "pio-itemrec-single-random": {
+            "name": "Random Rank (Single Machine)",
             "description": "Predict user preferences randomly.",
             "batchcommands": [
                 "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numRecommendations$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
@@ -295,8 +295,8 @@
             "params": {},
             "paramsections": []
         },
-        "pdio-local-itemsim-random": {
-            "name": "Random Rank (Non-distributed)",
+        "pio-itemsim-single-random": {
+            "name": "Random Rank (Single Machine)",
             "description": "Predict user preferences randomly.",
             "batchcommands": [
                 "$base$/bin/random --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numPredictions $numSimilarItems$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
@@ -313,7 +313,7 @@
             "params": {},
             "paramsections": []
         },
-        "pdio-randomrank": {
+        "pio-itemrec-distributed-random": {
             "name": "Random Rank",
             "description": "Predict user preferences randomly.",
             "batchcommands": [
@@ -333,7 +333,7 @@
             "params": {},
             "paramsections": []
         },
-        "pdio-latestrank": {
+        "pio-itemrec-distributed-latest": {
             "name": "Latest Rank",
             "description": "Recommend latest items to users.",
             "batchcommands": [
@@ -353,494 +353,7 @@
             "params": {},
             "paramsections": []
         },
-        "pdio-knnitembased": {
-            "name": "kNN Item Based Collaborative Filtering",
-            "description": "This item-based k-NearestNeighbor algorithm predicts user preferences based on previous behaviors of users on similar items.",
-            "batchcommands": [
-                "$hadoop$ jar $base$/lib/$pdioItemrecAlgo$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
-                "$hadoop$ jar $base$/lib/$pdioItemrecAlgo$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
-                "$hadoop$ jar $base$/lib/$pdioItemrecAlgo$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
-            ],
-            "offlineevalcommands": [
-                "$hadoop$ jar $base$/lib/$pdioItemrecAlgo$ io.prediction.algorithms.scalding.itemrec.knnitembased.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
-                "$hadoop$ jar $base$/lib/$pdioItemrecAlgo$ io.prediction.algorithms.scalding.itemrec.knnitembased.KNNItemBased --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --minNumRatedSimParam $minNumRatedSimParam$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$",
-                "$hadoop$ jar $base$/lib/$pdioItemrecAlgo$ io.prediction.algorithms.scalding.itemrec.knnitembased.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --recommendationTime $recommendationTime$"
-            ],
-            "paramorder": [
-                "measureParam",
-                "priorCountParam",
-                "priorCorrelParam",
-                "minNumRatersParam",
-                "maxNumRatersParam",
-                "minIntersectionParam",
-                "minNumRatedSimParam",
-                "viewParam",
-                "likeParam",
-                "dislikeParam",
-                "conversionParam",
-                "conflictParam"
-            ],
-            "engineinfoid": "itemrec",
-            "techreq": [
-                "Hadoop"
-            ],
-            "datareq": [
-                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
-            ],
-            "params": {
-                "measureParam": {
-                    "name": "Distance Function",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "defaultvalue": "correl",
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Pearson Correlation Similarity",
-                                "value": "correl"
-                            },
-                            {
-                                "name": "Cosine Similarity",
-                                "value": "cosine"
-                            },
-                            {
-                                "name": "Jaccard Similarity",
-                                "value": "jaccard"
-                            }
-                        ]
-                    }
-                },
-                "priorCountParam": {
-                    "name": "Virtual Count",
-                    "description": "Suggested range: 0 to 100.",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 20
-                },
-                "priorCorrelParam": {
-                    "name": "Prior Correlation",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 0
-                },
-                "minNumRatersParam": {
-                    "name": "Minimum Number of Raters",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "maxNumRatersParam": {
-                    "name": "Maximum Number of Raters",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10000
-                },
-                "minIntersectionParam": {
-                    "name": "Minimum Intersection",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "minNumRatedSimParam": {
-                    "name": "Minimum Number of Rated Similar Items",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "viewParam": {
-                    "name": "View Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "3"
-                },
-                "likeParam": {
-                    "name": "Like Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "5"
-                },
-                "dislikeParam": {
-                    "name": "Dislike Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "1"
-                },
-                "conversionParam": {
-                    "name": "Conversion Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "4"
-                },
-                "conflictParam": {
-                    "name": "Override",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Use the latest action",
-                                "value": "latest"
-                            },
-                            {
-                                "name": "Use the highest preference score one",
-                                "value": "highest"
-                            },
-                            {
-                                "name": "Use the lowest preference score one",
-                                "value": "lowest"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "latest"
-                },
-                "priorCountParamMin": {
-                    "name": "priorCountParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10
-                },
-                "priorCountParamMax": {
-                    "name": "priorCountParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 30
-                },
-                "minNumRatersParamMin": {
-                    "name": "minNumRatersParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "minNumRatersParamMax": {
-                    "name": "minNumRatersParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 5
-                },
-                "maxNumRatersParamMin": {
-                    "name": "maxNumRatersParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10000
-                },
-                "maxNumRatersParamMax": {
-                    "name": "maxNumRatersParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10000
-                },
-                "minIntersectionParamMin": {
-                    "name": "minIntersectionParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "minIntersectionParamMax": {
-                    "name": "minIntersectionParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 5
-                },
-                "minNumRatedSimParamMin": {
-                    "name": "minNumRatedSimParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "minNumRatedSimParamMax": {
-                    "name": "minNumRatedSimParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 5
-                },
-                "priorCorrelParamMin": {
-                    "name": "priorCorrelParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 0
-                },
-                "priorCorrelParamMax": {
-                    "name": "priorCorrelParamMax",
-                    "constraint": {
-                        "paramtype": "double"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 0.1
-                }
-            },
-            "paramsections": [
-                {
-                    "name": "Parameter Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "Item Similarity Measurement",
-                            "sectiontype": "normal",
-                            "params": [
-                                "measureParam"
-                            ]
-                        },
-                        {
-                            "name": "Numeric Parameters",
-                            "sectiontype": "tuning",
-                            "subsections": [
-                                {
-                                    "name": "Regularization",
-                                    "sectiontype": "normal",
-                                    "description": "Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.",
-                                    "params": [
-                                        "priorCountParam",
-                                        "priorCorrelParam"
-                                    ]
-                                },
-                                {
-                                    "name": "Other Parameters",
-                                    "sectiontype": "normal",
-                                    "description": "Filters to speed up computation and reduce noise.",
-                                    "params": [
-                                        "minNumRatersParam",
-                                        "maxNumRatersParam",
-                                        "minIntersectionParam",
-                                        "minNumRatedSimParam"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "User Actions Representation Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "User Action Scores",
-                            "sectiontype": "normal",
-                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
-                            "params": [
-                                "viewParam",
-                                "likeParam",
-                                "dislikeParam",
-                                "conversionParam"
-                            ]
-                        },
-                        {
-                            "name": "Overriding",
-                            "sectiontype": "normal",
-                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
-                            "params": [
-                                "conflictParam"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        "graphchi-als": {
+        "pio-itemrec-single-graphchi-als": {
             "name": "GraphChi's Alternating Least Squares Collaborative Filtering",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
@@ -1214,7 +727,7 @@
                 }
             ]
         },
-        "graphchi-als_coord": {
+        "pio-itemrec-single-graphchi-als_coord": {
             "name": "GraphChi's CCD++ Alternating Least Squares Collaborative Filtering with Parallel Coordinate Descent",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
@@ -1588,7 +1101,7 @@
                 }
             ]
         },
-        "graphchi-sgd": {
+        "pio-itemrec-single-graphchi-sgd": {
             "name": "GraphChi's Stochastic Gradient Descent",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
@@ -2028,7 +1541,7 @@
                 }
             ]
         },
-        "graphchi-climf": {
+        "pio-itemrec-single-graphchi-climf": {
             "name": "GraphChi's CLiMF algorithm",
             "description": "Predict user preferences based on matrix factorization and optimizing MRR (mean reciprocal rank)",
             "batchcommands": [
@@ -2530,7 +2043,7 @@
                 }
             ]
         },
-        "mahout-itembased": {
+        "pio-itemrec-distributed-mahout-itembased": {
             "name": "Mahout's Threshold Item Based Collaborative Filtering",
             "description": "Predicts user preferences based on previous behaviors of users on similar items.",
             "batchcommands": [
@@ -3027,7 +2540,7 @@
                 }
             ]
         },
-        "mahout-parallelals": {
+        "pio-itemrec-distributed-mahout-parallelals": {
             "name": "Mahout's Parallel ALS-WR",
             "description": "Predicts user preferences based on previous behaviors of users.",
             "batchcommands": [
@@ -3434,9 +2947,9 @@
                 }
             ]
         },
-        "mahout-knnitembased": {
-            "name": "Mahout's kNN Item Based Collaborative Filtering (extension to GenericItemBased) (Non-distributed)",
-            "description": "Predicts user preferences based on previous behaviors of users on similar items (Non-distributed).",
+        "pio-itemrec-single-mahout-knnitembased": {
+            "name": "Mahout's kNN Item Based Collaborative Filtering (extension to GenericItemBased) (Single Machine)",
+            "description": "Predicts user preferences based on previous behaviors of users on similar items (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$",
@@ -3837,340 +3350,9 @@
                 }
             ]
         },
-        "mahout-genericitembased": {
-            "name": "Mahout's Generic Item Based Collaborative Filtering (Non-distributed)",
-            "description": "Predicts user preferences based on previous behaviors of users on similar items (Non-distributed).",
-            "batchcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.genericitembased.GenericItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$",
-                "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$ --booleanData $booleanData$"
-            ],
-            "offlineevalcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.genericitembased.GenericItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$",
-                "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$ --booleanData $booleanData$"
-            ],
-            "paramorder": [
-                "booleanData",
-                "itemSimilarity",
-                "weighted",
-                "viewParam",
-                "likeParam",
-                "dislikeParam",
-                "conversionParam",
-                "conflictParam"
-            ],
-            "engineinfoid": "itemrec",
-            "techreq": [],
-            "datareq": [
-                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
-            ],
-            "params": {
-                "booleanData": {
-                    "name": "Boolean Data",
-                    "description": "Treat input data as having no preference values.",
-                    "constraint": {
-                        "paramtype": "boolean"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "True",
-                                "value": "true"
-                            },
-                            {
-                                "name": "False",
-                                "value": "false"
-                            }
-                        ]
-                    },
-                    "defaultvalue": false
-                },
-                "itemSimilarity": {
-                    "name": "Item Similarity",
-                    "description": "Item Similarity Measure.",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "City Block",
-                                "value": "CityBlockSimilarity"
-                            },
-                            {
-                                "name": "Euclidean Distance",
-                                "value": "EuclideanDistanceSimilarity"
-                            },
-                            {
-                                "name": "Log-Likelihood",
-                                "value": "LogLikelihoodSimilarity"
-                            },
-                            {
-                                "name": "Pearson Correlation",
-                                "value": "PearsonCorrelationSimilarity"
-                            },
-                            {
-                                "name": "Tanimoto Coefficient",
-                                "value": "TanimotoCoefficientSimilarity"
-                            },
-                            {
-                                "name": "Uncentered Cosine",
-                                "value": "UncenteredCosineSimilarity"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "LogLikelihoodSimilarity"
-                },
-                "weighted": {
-                    "name": "Weighted",
-                    "description": "The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine item similarity).",
-                    "constraint": {
-                        "paramtype": "boolean"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "True",
-                                "value": "true"
-                            },
-                            {
-                                "name": "False",
-                                "value": "false"
-                            }
-                        ]
-                    },
-                    "defaultvalue": false
-                },
-                "viewParam": {
-                    "name": "View Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "3"
-                },
-                "likeParam": {
-                    "name": "Like Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "5"
-                },
-                "dislikeParam": {
-                    "name": "Dislike Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "1"
-                },
-                "conversionParam": {
-                    "name": "Conversion Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "4"
-                },
-                "conflictParam": {
-                    "name": "Override",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Use the latest action",
-                                "value": "latest"
-                            },
-                            {
-                                "name": "Use the highest preference score one",
-                                "value": "highest"
-                            },
-                            {
-                                "name": "Use the lowest preference score one",
-                                "value": "lowest"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "latest"
-                }
-            },
-            "paramsections": [
-                {
-                    "name": "Parameter Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "Item Similarity Measurement",
-                            "sectiontype": "normal",
-                            "params": [
-                                "itemSimilarity"
-                            ]
-                        },
-                        {
-                            "name": "Advanced Parameters",
-                            "sectiontype": "normal",
-                            "params": [
-                                "booleanData",
-                                "weighted"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "User Actions Representation Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "User Action Scores",
-                            "sectiontype": "normal",
-                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
-                            "params": [
-                                "viewParam",
-                                "likeParam",
-                                "dislikeParam",
-                                "conversionParam"
-                            ]
-                        },
-                        {
-                            "name": "Overriding",
-                            "sectiontype": "normal",
-                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
-                            "params": [
-                                "conflictParam"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        "mahout-knnuserbased": {
-            "name": "Mahout's kNN User Based Collaborative Filtering (Non-distributed)",
-            "description": "Predicts user preferences based on previous behaviors of users who are the k-nearest neighbors (Non-distributed).",
+        "pio-itemrec-single-mahout-knnuserbased": {
+            "name": "Mahout's kNN User Based Collaborative Filtering (Single Machine)",
+            "description": "Predicts user preferences based on previous behaviors of users who are the k-nearest neighbors (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnuserbased.KNNUserBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --nearestN $nearestN$ --userSimilarity $userSimilarity$ --weighted $weighted$ --minSimilarity $minSimilarity$ --samplingRate $samplingRate$",
@@ -4608,9 +3790,9 @@
                 }
             ]
         },
-        "mahout-thresholduserbased": {
-            "name": "Mahout's Threshold User Based Collaborative Filtering (Non-distributed)",
-            "description": "Predicts user preferences based on previous behaviors of users whose similarity meets or exceeds a certain threshold (Non-distributed).",
+        "pio-itemrec-single-mahout-thresholduserbased": {
+            "name": "Mahout's Threshold User Based Collaborative Filtering (Single Machine)",
+            "description": "Predicts user preferences based on previous behaviors of users whose similarity meets or exceeds a certain threshold (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.thresholduserbased.ThresholdUserBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --threshold $threshold$ --userSimilarity $userSimilarity$ --weighted $weighted$ --samplingRate $samplingRate$",
@@ -5015,9 +4197,9 @@
                 }
             ]
         },
-        "mahout-alswr": {
-            "name": "Mahout's ALS-WR (Non-distributed)",
-            "description": "Predict user preferences using matrix factorization (Non-distributed).",
+        "pio-itemrec-single-mahout-alswr": {
+            "name": "Mahout's ALS-WR (Single Machine)",
+            "description": "Predict user preferences using matrix factorization (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.alswr.ALSWRJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numRecommendations $numRecommendations$ --numFeatures $numFeatures$ --lambda $lambda$ --numIterations $numIterations$",
@@ -5354,9 +4536,9 @@
                 }
             ]
         },
-        "mahout-svdsgd": {
-            "name": "Mahout's SVD-RatingSGD Recommender (Non-distributed)",
-            "description": "Predict user preferences using matrix factorization (Non-distributed).",
+        "pio-itemrec-single-mahout-svdsgd": {
+            "name": "Mahout's SVD-RatingSGD Recommender (Single Machine)",
+            "description": "Predict user preferences using matrix factorization (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.svdsgd.SVDSGDJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numRecommendations $numRecommendations$ --numFeatures $numFeatures$ --learningRate $learningRate$ --preventOverfitting $preventOverfitting$ --randomNoise $randomNoise$ --numIterations $numIterations$ --learningRateDecay $learningRateDecay$",
@@ -5792,9 +4974,9 @@
                 }
             ]
         },
-        "mahout-svdplusplus": {
-            "name": "Mahout's SVDPlusPlus Recommender (Non-distributed)",
-            "description": "Predict user preferences using matrix factorization (Non-distributed).",
+        "pio-itemrec-single-mahout-svdplusplus": {
+            "name": "Mahout's SVDPlusPlus Recommender (Single Machine)",
+            "description": "Predict user preferences using matrix factorization (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.svdplusplus.SVDPlusPlusJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --numRecommendations $numRecommendations$ --numFeatures $numFeatures$ --learningRate $learningRate$ --preventOverfitting $preventOverfitting$ --randomNoise $randomNoise$ --numIterations $numIterations$ --learningRateDecay $learningRateDecay$",
@@ -6230,7 +5412,7 @@
                 }
             ]
         },
-        "pdio-itemsimrandomrank": {
+        "pio-itemsim-distributed-random": {
             "name": "Random Rank",
             "description": "Predict item similarities randomly.",
             "batchcommands": [
@@ -6250,7 +5432,7 @@
             "params": {},
             "paramsections": []
         },
-        "pdio-itemsimlatestrank": {
+        "pio-itemsim-distributed-latest": {
             "name": "Latest Rank",
             "description": "Consider latest items as most similar.",
             "batchcommands": [
@@ -6270,463 +5452,9 @@
             "params": {},
             "paramsections": []
         },
-        "pdio-itemsimcf": {
-            "name": "Item Similarity Collaborative Filtering",
-            "description": "This algorithm predicts similar items which the user may also like.",
-            "batchcommands": [
-                "$hadoop$ jar $base$/lib/$pdioItemsimAlgo$ io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --hdfs --dbType $appdataDbType$ --dbName $appdataDbName$ --dbHost $appdataDbHost$ --dbPort $appdataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
-                "$hadoop$ jar $base$/lib/$pdioItemsimAlgo$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --numSimilarItems $numSimilarItems$",
-                "$hadoop$ jar $base$/lib/$pdioItemsimAlgo$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --hdfs --dbType $modeldataDbType$ --dbName $modeldataDbName$ --dbHost $modeldataDbHost$ --dbPort $modeldataDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --recommendationTime $recommendationTime$"
-            ],
-            "offlineevalcommands": [
-                "$hadoop$ jar $base$/lib/$pdioItemsimAlgo$ io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator --hdfs --dbType $appdataTrainingDbType$ --dbName $appdataTrainingDbName$ --dbHost $appdataTrainingDbHost$ --dbPort $appdataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$",
-                "$hadoop$ jar $base$/lib/$pdioItemsimAlgo$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ItemSimilarity --hdfs --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --measureParam $measureParam$ --priorCountParam $priorCountParam$ --priorCorrelParam $priorCorrelParam$ --minNumRatersParam $minNumRatersParam$ --maxNumRatersParam $maxNumRatersParam$ --minIntersectionParam $minIntersectionParam$ --numSimilarItems $numSimilarItems$",
-                "$hadoop$ jar $base$/lib/$pdioItemsimAlgo$ io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --hdfs --dbType $modeldataTrainingDbType$ --dbName $modeldataTrainingDbName$ --dbHost $modeldataTrainingDbHost$ --dbPort $modeldataTrainingDbPort$ --hdfsRoot $hdfsRoot$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --recommendationTime $recommendationTime$"
-            ],
-            "paramorder": [
-                "measureParam",
-                "priorCountParam",
-                "priorCorrelParam",
-                "minNumRatersParam",
-                "maxNumRatersParam",
-                "minIntersectionParam",
-                "viewParam",
-                "likeParam",
-                "dislikeParam",
-                "conversionParam",
-                "conflictParam"
-            ],
-            "engineinfoid": "itemsim",
-            "techreq": [
-                "Hadoop"
-            ],
-            "datareq": [
-                "Users, Items, and U2I Actions such as Like, Conversion and Rate."
-            ],
-            "params": {
-                "measureParam": {
-                    "name": "Distance Function",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Pearson Correlation Similarity",
-                                "value": "correl"
-                            },
-                            {
-                                "name": "Cosine Similarity",
-                                "value": "cosine"
-                            },
-                            {
-                                "name": "Jaccard Similarity",
-                                "value": "jaccard"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "correl"
-                },
-                "priorCountParam": {
-                    "name": "Virtual Count",
-                    "description": "Suggested range: 0 to 100.",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 20
-                },
-                "priorCorrelParam": {
-                    "name": "Prior Correlation",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 0
-                },
-                "minNumRatersParam": {
-                    "name": "Minimum Number of Raters",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "maxNumRatersParam": {
-                    "name": "Maximum Number of Raters",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10000
-                },
-                "minIntersectionParam": {
-                    "name": "Minimum Intersection",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "viewParam": {
-                    "name": "View Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "3"
-                },
-                "likeParam": {
-                    "name": "Like Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "5"
-                },
-                "dislikeParam": {
-                    "name": "Dislike Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "1"
-                },
-                "conversionParam": {
-                    "name": "Conversion Score",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "1",
-                                "value": "1"
-                            },
-                            {
-                                "name": "2",
-                                "value": "2"
-                            },
-                            {
-                                "name": "3",
-                                "value": "3"
-                            },
-                            {
-                                "name": "4",
-                                "value": "4"
-                            },
-                            {
-                                "name": "5",
-                                "value": "5"
-                            },
-                            {
-                                "name": "Ignore",
-                                "value": "ignore"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "4"
-                },
-                "conflictParam": {
-                    "name": "Override",
-                    "description": "",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Use the latest action",
-                                "value": "latest"
-                            },
-                            {
-                                "name": "Use the highest preference score one",
-                                "value": "highest"
-                            },
-                            {
-                                "name": "Use the lowest preference score one",
-                                "value": "lowest"
-                            }
-                        ]
-                    },
-                    "defaultvalue": "latest"
-                },
-                "priorCountParamMin": {
-                    "name": "priorCountParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10
-                },
-                "priorCountParamMax": {
-                    "name": "priorCountParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 30
-                },
-                "minNumRatersParamMin": {
-                    "name": "minNumRatersParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "minNumRatersParamMax": {
-                    "name": "minNumRatersParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 5
-                },
-                "maxNumRatersParamMin": {
-                    "name": "maxNumRatersParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10000
-                },
-                "maxNumRatersParamMax": {
-                    "name": "maxNumRatersParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 10000
-                },
-                "minIntersectionParamMin": {
-                    "name": "minIntersectionParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 1
-                },
-                "minIntersectionParamMax": {
-                    "name": "minIntersectionParamMax",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 5
-                },
-                "priorCorrelParamMin": {
-                    "name": "priorCorrelParamMin",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 0
-                },
-                "priorCorrelParamMax": {
-                    "name": "priorCorrelParamMax",
-                    "constraint": {
-                        "paramtype": "double"
-                    },
-                    "ui": {
-                        "uitype": "text"
-                    },
-                    "defaultvalue": 0.1
-                }
-            },
-            "paramsections": [
-                {
-                    "name": "Parameter Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "Item Similarity Measurement",
-                            "sectiontype": "normal",
-                            "params": [
-                                "measureParam"
-                            ]
-                        },
-                        {
-                            "name": "Numeric Parameters",
-                            "sectiontype": "tuning",
-                            "subsections": [
-                                {
-                                    "name": "Regularization",
-                                    "sectiontype": "normal",
-                                    "description": "Add virtual item pairs that have zero correlation. This helps avoid noise if some item pairs have very few user actions in common.",
-                                    "params": [
-                                        "priorCountParam",
-                                        "priorCorrelParam"
-                                    ]
-                                },
-                                {
-                                    "name": "Other Parameters",
-                                    "sectiontype": "normal",
-                                    "description": "Filters to speed up computation and reduce noise.",
-                                    "params": [
-                                        "minNumRatersParam",
-                                        "maxNumRatersParam",
-                                        "minIntersectionParam"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "User Actions Representation Settings",
-                    "sectiontype": "normal",
-                    "subsections": [
-                        {
-                            "name": "User Action Scores",
-                            "sectiontype": "normal",
-                            "description": "Define the preference score represented by each user action from 1 to 5. 5 is the most preferred, 1 is the least preferred. 3 is neutral.",
-                            "params": [
-                                "viewParam",
-                                "likeParam",
-                                "dislikeParam",
-                                "conversionParam"
-                            ]
-                        },
-                        {
-                            "name": "Overriding",
-                            "sectiontype": "normal",
-                            "description": "When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, determine which action will be considered as final preference.",
-                            "params": [
-                                "conflictParam"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        "mahout-itemsimcf-single": {
-            "name": "Mahout's Item Similarity Collaborative Filtering (Non-distributed)",
-            "description": "This algorithm predicts similar items which the user may also like (Non-distributed).",
+        "pio-itemsim-single-mahout-itemsimcf": {
+            "name": "Mahout's Item Similarity Collaborative Filtering (Single Machine)",
+            "description": "This algorithm predicts similar items which the user may also like (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemsim.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
                 "$base$/bin/itemsim.mahout.mahoutjob io.prediction.algorithms.mahout.itemsim.itemsimcf.ItemSimCFJob --input $localTempDir$ratings.csv --output $localTempDir$similarities.tsv --itemsFile $localTempDir$validItemsIndex.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numSimilarItems $numSimilarItems$ --itemSimilarity $itemSimilarity$ --weighted $weighted$",
@@ -7055,7 +5783,7 @@
                 }
             ]
         },
-        "mahout-itemsimcf": {
+        "pio-itemsim-distributed-mahout-itemsimcf": {
             "name": "Mahout's Item Similarity Collaborative Filtering",
             "description": "This algorithm predicts similar items which the user may also like.",
             "batchcommands": [
@@ -7482,7 +6210,7 @@
         }
     },
     "offlineevalsplitterinfos": {
-        "trainingtestsplit": {
+        "pio-distributed-trainingtestsplit": {
             "name": "Training/Test Data Splitter With Time Order Option",
             "description": "Split data into training, validation and test sets",
             "engineinfoids": [
@@ -7528,8 +6256,8 @@
                 "timeorder"
             ]
         },
-        "u2isplit": {
-            "name": "Training and Test Set Data Splitter for User-to-Item Actions (non-distributed)",
+        "pio-single-trainingtestsplit": {
+            "name": "Training and Test Set Data Splitter for User-to-Item Actions (Single Machine)",
             "description": "Split data into training, validation and test sets",
             "engineinfoids": [
                 "itemrec", "itemsim"
@@ -7576,7 +6304,7 @@
         }
     },
     "offlineevalmetricinfos": {
-        "map_k": {
+        "pio-itemrec-distributed-map_k": {
             "name": "MAP@k",
             "description": "Mean Average Precision",
             "engineinfoids": [
@@ -7614,8 +6342,8 @@
                 "kParam"
             ]
         },
-        "map_k_nd": {
-            "name": "MAP@k (Non-distributed)",
+        "pio-itemrec-single-map_k": {
+            "name": "MAP@k (Single Machine)",
             "description": "Mean Average Precision",
             "engineinfoids": [
                 "itemrec"
@@ -7651,7 +6379,7 @@
                 "k"
             ]
         },
-        "ismap_k": {
+        "pio-itemsim-distributed-ismap_k": {
             "name": "ISMAP@k",
             "description": "Item Similarity Mean Average Precision",
             "engineinfoids": [
@@ -7689,8 +6417,8 @@
                 "kParam"
             ]
         },
-        "ismap_k_nd": {
-            "name": "ISMAP@k (Non-distributed)",
+        "pio-itemsim-single-ismap_k": {
+            "name": "ISMAP@k (Single Machine)",
             "description": "Item Similarity Mean Average Precision",
             "engineinfoids": [
                 "itemsim"
@@ -7728,7 +6456,7 @@
         }
     },
     "paramgeninfos": {
-        "random": {
+        "pio-single-random": {
             "name": "Random Search",
             "description": "Random search within specified interval",
             "commands": [
