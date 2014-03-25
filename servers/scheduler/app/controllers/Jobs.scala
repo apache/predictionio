@@ -312,21 +312,25 @@ class OfflineEvalJob extends InterruptableJob {
       }
       case "training" => {
         val splitkey = s"split-${iteration}"
+        val trainingkey = s"training-${iteration}-${algoid.get}"
         while (!finishFlags(splitkey)) {
           Thread.sleep(1000)
         }
         if (exitCodes(splitkey) != 0) {
           abort = true
+          exitCodes(trainingkey) = 1
           Logger.info(s"${logPrefix}(${steptype}) Aborted due to split error")
         }
       }
       case "metric" => {
         val trainingkey = s"training-${iteration}-${algoid.get}"
+        val metrickey = s"metric-${iteration}-${algoid.get}-${metricid.get}"
         while (!finishFlags(trainingkey)) {
           Thread.sleep(1000)
         }
         if (exitCodes(trainingkey) != 0) {
           abort = true
+          exitCodes(metrickey) = 1
           Logger.info(s"${logPrefix}(${steptype}) Aborted due to training error")
         }
       }
@@ -345,21 +349,35 @@ class OfflineEvalJob extends InterruptableJob {
     }
 
     commands map { _.trim } foreach { c =>
+      var exception = false
       this.synchronized {
         if (!kill && !abort && !c.isEmpty && exitCodes(key) == 0) {
           Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
-          procs(key) = Process(c).run
-          Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+          try {
+            procs(key) = Process(c).run
+            Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+          } catch {
+            case e: java.io.IOException => {
+              exception = true
+              Logger.info(s"${logPrefix}(${steptype}) ${e.getMessage}")
+            }
+          }
         }
       }
 
-      procs.get(key) map { p =>
-        val exitCode = p.exitValue
+      // Continue if the last command succeeded
+      if (exitCodes(key) == 0) {
+        procs.get(key) map { p =>
+          val exitCode = if (exception) 1 else p.exitValue
 
-        /** Save completion information for global access */
-        exitCodes(key) = exitCode
+          /** Save completion information for global access */
+          exitCodes(key) = exitCode
 
-        Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+          if (exception)
+            Logger.info(s"${logPrefix}(${steptype}) Exception trying to run sub-process")
+          else
+            Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+        }
       }
     }
 
