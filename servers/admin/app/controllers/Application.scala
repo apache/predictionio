@@ -1662,7 +1662,7 @@ object Application extends Controller {
               evalid = 0, // will be assigned later
               name = "", // will be assigned later
               //infoid = p("infoid").asInstanceOf[String],
-              infoid = if (hadoopRequired) "trainingtestsplit" else "u2isplit",
+              infoid = if (hadoopRequired) "pio-distributed-trainingtestsplit" else "pio-single-trainingtestsplit",
               settings = p ++ percentageParam - "infoid" - "infotype" // remove these keys from params
             )).toList
 
@@ -2313,14 +2313,19 @@ object Application extends Controller {
             // create offline eval with baseline algo
             // TODO: get from UI
             val defaultBaseLineAlgoType = engine.infoid match {
-              case "itemrec" => "pdio-local-itemrec-random"
-              case "itemsim" => "pdio-local-itemsim-random"
+              case "itemrec" => "pio-itemrec-single-random"
+              case "itemsim" => "pio-itemsim-single-random"
             }
 
             engineInfos.get(engine.infoid).map { engineInfo =>
               val hadoopRequired = algoInfos.get(algo.infoid) map { _.techreq.contains("Hadoop") } getOrElse false
-              val metricinfoid = if (hadoopRequired) engineInfo.defaultofflineevalmetricinfoid else engineInfo.defaultofflineevalmetricinfoid + "_nd" // TODO: from UI
-              val splitterinfoid = if (hadoopRequired) engineInfo.defaultofflineevalsplitterinfoid else "u2isplit" // TODO: from UI
+              val metricinfoid = (hadoopRequired, engine.infoid) match {
+                case (true, "itemrec") => "pio-itemrec-distributed-map_k"
+                case (true, "itemsim") => "pio-itemsim-distributed-ismap_k"
+                case (false, "itemrec") => "pio-itemrec-single-map_k"
+                case (false, "itemsim") => "pio-itemsim-single-ismap_k"
+              } // TODO: from UI
+              val splitterinfoid = if (hadoopRequired) "pio-distributed-trainingtestsplit" else "pio-single-trainingtestsplit" // TODO: from UI
               algoInfos.get(defaultBaseLineAlgoType).map { baseLineAlgoInfo =>
                 offlineEvalMetricInfos.get(metricinfoid).map { metricInfo =>
                   offlineEvalSplitterInfos.get(splitterinfoid).map { splitterInfo =>
@@ -2359,7 +2364,7 @@ object Application extends Controller {
 
                     paramGens.insert(ParamGen(
                       id = -1,
-                      infoid = "random", // TODO: default random scan param gen now
+                      infoid = "pio-single-random", // TODO: default random scan param gen now
                       tuneid = tuneid,
                       params = Map() // TODO: param for param gen
                     ))
