@@ -357,12 +357,12 @@
             "name": "GraphChi's Alternating Least Squares Collaborative Filtering",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/als --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/als --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
@@ -731,12 +731,12 @@
             "name": "GraphChi's CCD++ Alternating Least Squares Collaborative Filtering with Parallel Coordinate Descent",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/als_coord --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/als_coord --training=$localTempDir$ratings.mm --D=$d$ --lambda=$lambda$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
@@ -1105,12 +1105,12 @@
             "name": "GraphChi's Stochastic Gradient Descent",
             "description": "Predict user preferences based on matrix factorization.",
             "batchcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/sgd --training=$localTempDir$ratings.mm --D=$d$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/sgd --training=$localTempDir$ratings.mm --D=$d$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --halt_on_rmse_increase=$haltRMSEInc$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
@@ -1545,12 +1545,12 @@
             "name": "GraphChi's CLiMF algorithm",
             "description": "Predict user preferences based on matrix factorization and optimizing MRR (mean reciprocal rank)",
             "batchcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/climf --training=$localTempDir$ratings.mm --D=$d$ --binary_relevance_thresh=$relevanceThresh$ --halt_on_mrr_decrease=$haltMRRDec$ --num_ratings=$numRatings$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
+                "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket true",
                 "$base$/bin/climf --training=$localTempDir$ratings.mm --D=$d$ --binary_relevance_thresh=$relevanceThresh$ --halt_on_mrr_decrease=$haltMRRDec$ --num_ratings=$numRatings$ --sgd_lambda=$lambda$ --sgd_gamma=$gamma$ --sgd_step_dec=$stepDec$ --minval=1 --maxval=5 --max_iter=$maxIter$ --quiet=1",
                 "$base$/bin/itemrec.graphchi.modelcon --inputDir $localTempDir$ --appid $appid$ --algoid $algoid$ --evalid $evalid$ --modelSet false --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$"
             ],
