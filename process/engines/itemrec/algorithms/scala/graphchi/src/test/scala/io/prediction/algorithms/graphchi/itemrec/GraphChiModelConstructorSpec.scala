@@ -69,11 +69,8 @@ class GraphChiModelConstructorSpec extends Specification {
       "1 2 4",
       "1 3 1",
       "2 1 2",
-      "2 2 1",
       "2 4 3",
-      "3 2 5",
-      "3 3 1",
-      "3 4 4"
+      "3 2 5"
     )
 
     /*
@@ -419,18 +416,18 @@ class GraphChiModelConstructorSpec extends Specification {
 
       val u2Expected = ItemRecScore(
         uid = "u2",
-        iids = Seq("i3"),
-        scores = Seq(7.67),
-        itypes = Seq(Seq("t2", "t3")),
+        iids = Seq("i2", "i3"),
+        scores = Seq(8.76, 7.67),
+        itypes = Seq(Seq("t1"), Seq("t2", "t3")),
         appid = appid,
         algoid = algoid,
         modelset = modelSet)
 
       val u3Expected = ItemRecScore(
         uid = "u3",
-        iids = Seq("i1"),
-        scores = Seq(5.91),
-        itypes = Seq(Seq("t1", "t2")),
+        iids = Seq("i4", "i3", "i1"),
+        scores = Seq(6.89, 5.98, 5.91),
+        itypes = Seq(Seq("t3"), Seq("t2", "t3"), Seq("t1", "t2")),
         appid = appid,
         algoid = algoid,
         modelset = modelSet)
