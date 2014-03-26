@@ -2306,7 +2306,8 @@ object Application extends Controller {
           val updatedParams = algo.params ++ params ++ tuneObj - "infoid"
           val updatedAlgo = algo.copy(params = updatedParams)
 
-          if (updatedParams("tune") != "auto") {
+          // NOTE: "tune" is optional param. default to "manual"
+          if (updatedParams.getOrElse("tune", "manual") != "auto") {
             algos.update(updatedAlgo)
             Ok
           } else {
