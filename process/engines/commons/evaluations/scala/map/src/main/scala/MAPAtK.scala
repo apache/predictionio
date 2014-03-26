@@ -5,6 +5,9 @@ import io.prediction.commons.settings.OfflineEvalResult
 import io.prediction.commons.filepath.OfflineMetricFile
 
 import scala.io.Source
+import java.io.File
+import java.io.FileWriter
+import java.io.BufferedWriter
 
 import grizzled.slf4j.Logger
 
@@ -17,7 +20,8 @@ case class MAPAtKConfig(
   iteration: Int = 0,
   splitset: String = "",
   k: Int = 0,
-  goal: String = "")
+  goal: String = "",
+  debug: Boolean = false)
 
 /**
  * Mean Average Precision at K for Single Machine
@@ -66,6 +70,9 @@ object MAPAtK {
           case _ => failure("invalid goal specified")
         }
       } text ("actions to be treated as relevant (valid values: view, conversion, like, rate3, rate4, rate5)")
+      opt[Unit]("debug") hidden () action { (x, c) =>
+        c.copy(debug = true)
+      } text ("debug mode")
     }
 
     parser.parse(args, MAPAtKConfig()) map { config =>
@@ -99,6 +106,22 @@ object MAPAtK {
 
       val relevantItems = u2i.groupBy(_.uid).mapValues(_.map(_.iid).toSet)
       val relevantUsers = if (engine.infoid == "itemsim") u2i.groupBy(_.iid).mapValues(_.map(_.uid).toSet) else Map[String, Set[String]]()
+
+      val relevantItemsPath = OfflineMetricFile(
+        commonsConfig.settingsLocalTempRoot,
+        config.appid,
+        config.engineid,
+        config.evalid,
+        config.metricid,
+        config.algoid,
+        "relevantItems.tsv")
+      val relevantItemsWriter = new BufferedWriter(new FileWriter(new File(relevantItemsPath)))
+      relevantItems.foreach {
+        case (uid, iids) =>
+          val iidsString = iids.mkString(",")
+          relevantItemsWriter.write(s"${uid}\t${iidsString}\n")
+      }
+      relevantItemsWriter.close()
 
       logger.info(s"# users: ${relevantItems.size}")
       if (engine.infoid == "itemsim") logger.info(s"# items: ${relevantUsers.size}")
@@ -148,11 +171,27 @@ object MAPAtK {
       val mapAtK: Double = engine.infoid match {
         case "itemrec" => {
           val apAtK = topKItems map { t =>
-            relevantItems.get(t._1) map { ri =>
+            val score = relevantItems.get(t._1) map { ri =>
               averagePrecisionAtK(config.k, t._2, ri)
             } getOrElse 0.0
+            (t._1, score)
           }
-          apAtK.sum / scala.math.min(topKItems.size, relevantItems.size)
+          val apAtKPath = OfflineMetricFile(
+            commonsConfig.settingsLocalTempRoot,
+            config.appid,
+            config.engineid,
+            config.evalid,
+            config.metricid,
+            config.algoid,
+            "apAtK.tsv")
+          val apAtKWriter = new BufferedWriter(new FileWriter(new File(apAtKPath)))
+          apAtK.foreach {
+            case (uid, score) =>
+              apAtKWriter.write(s"${uid}\t${score}\n")
+          }
+          apAtKWriter.close()
+
+          apAtK.map(_._2).sum / scala.math.min(topKItems.size, relevantItems.size)
         }
         case "itemsim" => {
           val iapAtK = topKItems map { t =>
