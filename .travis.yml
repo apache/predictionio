@@ -6,3 +6,8 @@ jdk:
   - openjdk7
   - openjdk6
 services: mongodb
+before_script:
+  - git clone https://github.com/mongodb/mongo-hadoop.git
+  - cd mongo-hadoop
+  - git checkout r1.1.0
+  - ./sbt publish-local
