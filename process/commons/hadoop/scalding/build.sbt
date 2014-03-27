@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
 // for compiling mongotap
 libraryDependencies ++= Seq(
   "org.mongodb" %% "casbah" % "2.6.2",
-  "org.mongodb" % "mongo-hadoop-core" % "1.1.0"
+  "io.prediction" % "mongo-hadoop-core" % "1.1.0"
 )
 
 resolvers += "Concurrent Maven Repo" at "http://conjars.org/repo"
