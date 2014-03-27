@@ -1,4 +1,4 @@
-package io.prediction.metrics.itemrec.map
+package io.prediction.metrics.commons.map
 
 import com.mongodb.casbah.Imports._
 import org.specs2._
