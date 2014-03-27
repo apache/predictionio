@@ -2,15 +2,15 @@ package io.prediction.evaluations.scalding.commons.u2itrainingtestsplit
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Users, Items, U2iActions}
+import io.prediction.commons.scalding.appdata.{ Users, Items, U2iActions }
 import io.prediction.commons.filepath.U2ITrainingTestSplitFile
-import io.prediction.commons.appdata.{User, Item}
+import io.prediction.commons.appdata.{ User, Item }
 
 /**
  * Description:
  *   TrainingtestsplitCommon
  *
- * Args: 
+ * Args:
  * --dbType: <string> appdata DB type
  * --dbName: <string>
  * --dbHost: <string>. optional. (eg. "127.0.0.1")
@@ -20,7 +20,7 @@ import io.prediction.commons.appdata.{User, Item}
  * --training_dbName: <string>
  * --training_dbHost: <string>. optional
  * --training_dbPort: <int>. optional
- * 
+ *
  * --validation_dbType: <string> validation_appdata DB type
  * --validation_dbName: <string>
  * --validation_dbHost: <string>. optional
@@ -32,7 +32,7 @@ import io.prediction.commons.appdata.{User, Item}
  * --test_dbPort: <int>. optional
  *
  * --hdfsRoot: <string>. Root directory of the HDFS
- * 
+ *
  * --appid: <int>
  * --engineid: <int>
  * --evalid: <int>
@@ -53,29 +53,29 @@ abstract class U2ITrainingTestSplitCommon(args: Args) extends Job(args) {
   val dbTypeArg = args("dbType")
   val dbNameArg = args("dbName")
   val dbHostArg = args.optional("dbHost")
-  val dbPortArg = args.optional("dbPort") map (x => x.toInt) 
-  
+  val dbPortArg = args.optional("dbPort") map (x => x.toInt)
+
   val training_dbTypeArg = args("training_dbType")
   val training_dbNameArg = args("training_dbName")
   val training_dbHostArg = args.optional("training_dbHost")
-  val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt) 
-  
+  val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt)
+
   val validation_dbTypeArg = args("validation_dbType")
   val validation_dbNameArg = args("validation_dbName")
   val validation_dbHostArg = args.optional("validation_dbHost")
-  val validation_dbPortArg = args.optional("validation_dbPort") map (x => x.toInt) 
+  val validation_dbPortArg = args.optional("validation_dbPort") map (x => x.toInt)
 
   val test_dbTypeArg = args("test_dbType")
   val test_dbNameArg = args("test_dbName")
   val test_dbHostArg = args.optional("test_dbHost")
-  val test_dbPortArg = args.optional("test_dbPort") map (x => x.toInt) 
+  val test_dbPortArg = args.optional("test_dbPort") map (x => x.toInt)
 
   val hdfsRootArg = args("hdfsRoot")
-  
+
   val appidArg = args("appid").toInt
   val engineidArg = args("engineid").toInt
   val evalidArg = args("evalid").toInt
-  
+
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
