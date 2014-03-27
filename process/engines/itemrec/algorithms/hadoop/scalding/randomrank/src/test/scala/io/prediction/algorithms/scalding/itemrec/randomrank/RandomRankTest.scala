@@ -112,7 +112,7 @@ class RandomRankTest extends Specification with TupleConversions {
 
         }
 
-        if (getIids(itemRecScores).flatMap { x => x }.toSet.size > 1) {
+        if (getIids(itemRecScores).flatMap { x => x }.toSet.size > 3) {
           // only check this if the iids in itemRecScores are more than 1
           "not generate same order of iid for all uid group" in {
             if (!(getIids(outputBuffer.toList).toSet.size > 1)) {
