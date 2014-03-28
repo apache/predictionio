@@ -59,7 +59,7 @@ class UsersSpec extends Specification {
       lastname = Option(name),
       confirm = name
     )
-    users.emailExists(name + "@prediction.io") must beTrue.eventually(60, 1000.millis)
+    users.emailExists(name + "@prediction.io") must beTrue
   }
 
   def get(users: Users) = {
@@ -71,7 +71,7 @@ class UsersSpec extends Specification {
       lastname = Option(name),
       confirm = name
     )
-    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io", name, Some(name))).eventually(60, 1000.millis)
+    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io", name, Some(name)))
   }
 
   def getByEmail(users: Users) = {
@@ -83,7 +83,7 @@ class UsersSpec extends Specification {
       lastname = None,
       confirm = name
     )
-    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io", name, Some(name))).eventually(60, 1000.millis)
+    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io", name, Some(name)))
   }
 
   def emailExists(users: Users) = {
@@ -96,7 +96,7 @@ class UsersSpec extends Specification {
       lastname = None,
       confirm = dummy
     )
-    users.emailExists(email) must beTrue.eventually(60, 1000.millis)
+    users.emailExists(email) must beTrue
   }
 
   def emailExistsNonExist(users: Users) = {
@@ -112,7 +112,7 @@ class UsersSpec extends Specification {
       lastname = Option(name),
       confirm = name
     )
-    users.idAndEmailExists(id, name + "@prediction.io") must beTrue.eventually(60, 1000.millis)
+    users.idAndEmailExists(id, name + "@prediction.io") must beTrue
   }
 
   def idAndEmailExistsNonExist(users: Users) = {
@@ -145,7 +145,7 @@ class UsersSpec extends Specification {
       confirm = name
     )
     users.confirm(name)
-    users.authenticate(id, name) must beTrue.eventually(60, 1000.millis)
+    users.authenticate(id, name) must beTrue
   }
 
   def authenticateByEmailNonExist(users: Users) = {
@@ -174,7 +174,7 @@ class UsersSpec extends Specification {
       confirm = name
     )
     users.confirm(name)
-    users.authenticateByEmail(name + "@prediction.io", name) must beSome(id).eventually(60, 1000.millis)
+    users.authenticateByEmail(name + "@prediction.io", name) must beSome(id)
   }
 
   def confirmNonExist(users: Users) = {
@@ -202,7 +202,7 @@ class UsersSpec extends Specification {
       confirm = "updateEmail"
     )
     users.updateEmail(id, "updateEmailUpdated@prediction.io")
-    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io", "updateEmail", Some("updateEmail"))).eventually(60, 1000.millis)
+    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io", "updateEmail", Some("updateEmail")))
   }
 
   def updatePassword(users: Users) = {
@@ -215,7 +215,7 @@ class UsersSpec extends Specification {
     )
     users.confirm("updatePassword")
     users.updatePassword(id, "updatePasswordUpdated")
-    users.authenticate(id, "updatePasswordUpdated") must beTrue.eventually(60, 1000.millis)
+    users.authenticate(id, "updatePasswordUpdated") must beTrue
   }
 
   def updatePasswordByEmail(users: Users) = {
@@ -228,7 +228,7 @@ class UsersSpec extends Specification {
     )
     users.confirm("updatePasswordByEmail")
     users.updatePasswordByEmail("updatePasswordByEmail@prediction.io", "updatePasswordByEmailUpdated")
-    users.authenticate(id, "updatePasswordByEmailUpdated") must beTrue.eventually(60, 1000.millis)
+    users.authenticate(id, "updatePasswordByEmailUpdated") must beTrue
   }
 
   def update(users: Users) = {
@@ -241,7 +241,7 @@ class UsersSpec extends Specification {
     )
     val updatedUser = User(id, "updated", None, "updated@prediction.io")
     users.update(updatedUser)
-    users.get(id) must beSome(updatedUser).eventually(60, 1000.millis)
+    users.get(id) must beSome(updatedUser)
   }
 
   def backuprestore(users: Users) = {

@@ -1,7 +1,9 @@
 package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.settings.{ App, Apps }
+
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.WriteConcern
 
 /** MongoDB implementation of Apps. */
 class MongoApps(db: MongoDB) extends Apps {
@@ -9,6 +11,8 @@ class MongoApps(db: MongoDB) extends Apps {
   private val appColl = db("apps")
   private val seq = new MongoSequences(db)
   private val getFields = MongoDBObject("userid" -> 1, "appkey" -> 1, "display" -> 1, "url" -> 1, "cat" -> 1, "desc" -> 1, "timezone" -> 1)
+
+  appColl.setWriteConcern(WriteConcern.JournalSafe)
 
   private def dbObjToApp(dbObj: DBObject) = {
     App(

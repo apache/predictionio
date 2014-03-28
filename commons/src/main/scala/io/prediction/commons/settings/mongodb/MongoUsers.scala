@@ -2,13 +2,17 @@ package io.prediction.commons.settings.mongodb
 
 import io.prediction.commons.MongoUtils
 import io.prediction.commons.settings.{ User, Users }
+
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.WriteConcern
 
 /** MongoDB implementation of Users. */
 class MongoUsers(db: MongoDB) extends Users {
   private val emptyObj = MongoDBObject()
   private val userColl = db("users")
   private val seq = new MongoSequences(db)
+
+  userColl.setWriteConcern(WriteConcern.JournalSafe)
 
   def authenticate(id: Int, password: String) = {
     userColl.findOne(MongoDBObject("_id" -> id, "password" -> password) ++ ("confirm" $exists false)) map { _ => true } getOrElse false

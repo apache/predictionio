@@ -162,9 +162,10 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
 
       "all sets are mutually exclusive" in {
         // make sure all 3 sinks are flushed
-        (results("training") must not(containAnyOf(results("validation"))).eventually(10, 1000.millis)) and
-          (results("training") must not(containAnyOf(results("test"))).eventually(10, 1000.millis)) and
-          (results("validation") must not(containAnyOf(results("test"))).eventually(10, 1000.millis))
+        (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
+          (results("training") must not(containAnyOf(results("validation")))) and
+          (results("training") must not(containAnyOf(results("test")))) and
+          (results("validation") must not(containAnyOf(results("test"))))
       }
 
       def getTimeOnly(dataSet: List[(String, String, String, String, String)]): List[Long] = {
