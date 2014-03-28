@@ -104,7 +104,7 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
 
     def splitTest() = {
 
-      val results = scala.collection.mutable.Map[String, List[(String, String, String, String, String)]]()
+      val results = new scala.collection.mutable.HashMap[String, List[(String, String, String, String, String)]] with scala.collection.mutable.SynchronizedMap[String, List[(String, String, String, String, String)]]
 
       JobTest("io.prediction.evaluations.scalding.commons.u2itrainingtestsplit.U2ITrainingTestSplitTime")
         .arg("dbType", dbType)
@@ -162,8 +162,8 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
 
       "all sets are mutually exclusive" in {
         // make sure all 3 sinks are flushed
-        (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
-          (results("training") must not(containAnyOf(results("validation")))) and
+        while (results.keys.size < 3) Thread.sleep(1000)
+        (results("training") must not(containAnyOf(results("validation")))) and
           (results("training") must not(containAnyOf(results("test")))) and
           (results("validation") must not(containAnyOf(results("test"))))
       }
@@ -176,18 +176,18 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
         // check time order
         if (validationPercent != 0) {
           "validation set must be newer than training set" in {
-            (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
-              (getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max))
+            while (results.keys.size < 3) Thread.sleep(1000)
+            getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max)
           }
           "test set must be newer than validation set" in {
-            (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
-              (getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("validation")).max))
+            while (results.keys.size < 3) Thread.sleep(1000)
+            getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("validation")).max)
           }
         }
 
         "test set must be newer than training set" in {
-          (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
-            (getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("training")).max))
+          while (results.keys.size < 3) Thread.sleep(1000)
+          getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("training")).max)
         }
       }
 
