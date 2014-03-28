@@ -71,7 +71,7 @@ class AppsSpec extends Specification {
     val userid = 2345
     val dummy = dummyApp(0, userid, "getByAppkey")
     val id = apps.insert(dummy)
-    apps.getByAppkey("getByAppkey") must beSome(dummy.copy(id = id)).eventually(5, 1000.millis)
+    apps.getByAppkey("getByAppkey") must beSome(dummy.copy(id = id)).eventually(10, 1000.millis)
   }
 
   def getByAppkeyNonExist(apps: Apps) = {
@@ -83,7 +83,7 @@ class AppsSpec extends Specification {
     val userid = 689
     val dummy = dummyApp(0, userid, name)
     val id = apps.insert(dummy)
-    apps.getByAppkeyAndUserid(name, userid) must beSome(dummy.copy(id = id)).eventually(5, 1000.millis)
+    apps.getByAppkeyAndUserid(name, userid) must beSome(dummy.copy(id = id)).eventually(10, 1000.millis)
   }
 
   def getByAppkeyAndUseridNonExist(apps: Apps) = {
@@ -97,7 +97,7 @@ class AppsSpec extends Specification {
     val userid = 12
     val dummy = dummyApp(0, userid, name)
     val id = apps.insert(dummy)
-    apps.getByIdAndUserid(id, userid) must beSome(dummy.copy(id = id)).eventually(5, 1000.millis)
+    apps.getByIdAndUserid(id, userid) must beSome(dummy.copy(id = id)).eventually(10, 1000.millis)
   }
 
   def getByIdAndUseridNonExist(apps: Apps) = {
@@ -112,14 +112,14 @@ class AppsSpec extends Specification {
     val userid = 34
     val id = apps.insert(dummyApp(0, userid, name))
     apps.deleteByIdAndUserid(id, userid)
-    apps.getByIdAndUserid(id, userid) must beNone.eventually(5, 1000.millis)
+    apps.getByIdAndUserid(id, userid) must beNone.eventually(10, 1000.millis)
   }
 
   def existsByIdAndAppkeyAndUserid(apps: Apps) = {
     val name = "existsByIdAndAppkeyAndUserid"
     val userid = 45
     val id = apps.insert(dummyApp(0, userid, name))
-    apps.existsByIdAndAppkeyAndUserid(id, name, userid) must beTrue.eventually(5, 1000.millis)
+    apps.existsByIdAndAppkeyAndUserid(id, name, userid) must beTrue.eventually(10, 1000.millis)
   }
 
   def update(apps: Apps) = {
@@ -128,7 +128,7 @@ class AppsSpec extends Specification {
     val id = apps.insert(dummyApp(0, userid, name))
     val updated = dummyApp(id, 67, "updated")
     apps.update(updated)
-    apps.getByIdAndUserid(id, 67) must beSome(updated).eventually(5, 1000.millis)
+    apps.getByIdAndUserid(id, 67) must beSome(updated).eventually(10, 1000.millis)
   }
 
   def updateAppkeyByAppkeyAndUserid(apps: Apps) = {
@@ -137,7 +137,7 @@ class AppsSpec extends Specification {
     val id = apps.insert(dummyApp(0, userid, name))
     val updated = dummyApp(id, 67, "updated")
     apps.updateAppkeyByAppkeyAndUserid(name, userid, "updatedAppkey")
-    apps.existsByIdAndAppkeyAndUserid(id, "updatedAppkey", userid) must beTrue.eventually(5, 1000.millis)
+    apps.existsByIdAndAppkeyAndUserid(id, "updatedAppkey", userid) must beTrue.eventually(10, 1000.millis)
   }
 
   def updateTimezoneByAppkeyAndUserid(apps: Apps) = {
@@ -155,7 +155,7 @@ class AppsSpec extends Specification {
       timezone = "US/Pacific"
     )
     apps.updateTimezoneByAppkeyAndUserid(name, userid, "US/Pacific")
-    apps.getByAppkey(name) must beSome(updated).eventually(5, 1000.millis)
+    apps.getByAppkey(name) must beSome(updated).eventually(10, 1000.millis)
   }
 
   def backuprestore(apps: Apps) = {
