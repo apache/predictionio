@@ -176,15 +176,18 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
         // check time order
         if (validationPercent != 0) {
           "validation set must be newer than training set" in {
-            getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max)
+            (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
+              (getTimeOnly(results("validation")).min must be_>=(getTimeOnly(results("training")).max))
           }
           "test set must be newer than validation set" in {
-            getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("validation")).max)
+            (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
+              (getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("validation")).max))
           }
         }
 
         "test set must be newer than training set" in {
-          getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("training")).max)
+          (results.keys.size must be_==(3).eventually(60, 1000.millis)) and
+            (getTimeOnly(results("test")).min must be_>=(getTimeOnly(results("training")).max))
         }
       }
 
