@@ -16,13 +16,14 @@ import org.specs2._
 import org.specs2.matcher.ContentMatchers
 import org.specs2.specification.Step
 
-class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
+class SchedulerSpec extends Specification with ContentMatchers {
+  def is = s2"""
   PredictionIO Scheduler Specification
-                                                  ${ Step(helloFile.delete()) }
-                                                  ${ Step(FileUtils.touch(helloFile)) }
+                                                  ${Step(helloFile.delete())}
+                                                  ${Step(FileUtils.touch(helloFile))}
     Synchronize a user                            $userSync
     Setting shared attributes                     $setSharedAttributes
-                                                  ${ Step(MongoConnection()(config.settingsDbName).dropDatabase()) }
+                                                  ${Step(MongoConnection()(config.settingsDbName).dropDatabase())}
   """
 
   lazy val helloFilename = "test/hello.txt"
@@ -64,7 +65,9 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
     description = None,
     params = Map(),
     paramsections = Seq(),
-    defaultalgoinfoid = "mypkg"))
+    defaultalgoinfoid = "mypkg",
+    defaultofflineevalmetricinfoid = "metric",
+    defaultofflineevalsplitterinfoid = "splitter"))
 
   val algo = Algo(
     id = 0,
@@ -74,11 +77,11 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
     status = "deployed",
     command = "",
     params = Map(
-      "viewParam"       -> "2",
-      "likeParam"       -> "5",
-      "dislikeParam"    -> "1",
+      "viewParam" -> "2",
+      "likeParam" -> "5",
+      "dislikeParam" -> "1",
       "conversionParam" -> "4",
-      "conflictParam"   -> "latest"),
+      "conflictParam" -> "latest"),
     settings = Map(),
     modelset = false,
     createtime = DateTime.now,
@@ -91,7 +94,7 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
     id = "mypkg",
     name = "mypkg",
     description = None,
-    batchcommands = Some(Seq("test/echo.sh $appid$ $engineid$ $algoid$ $conflictParam$ "+helloFilename)),
+    batchcommands = Some(Seq("test/echo.sh $appid$ $engineid$ $algoid$ $conflictParam$ " + helloFilename)),
     offlineevalcommands = None,
     params = Map(),
     paramsections = Seq(),
@@ -112,7 +115,8 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
 
   def userSync = {
     running(TestServer(5555), HTMLUNIT) { browser =>
-      browser.goTo("http://localhost:5555/users/" + userid + "/sync")
+      browser.goTo(s"http://localhost:5555/users/${userid}/sync")
+      browser.goTo(s"http://localhost:5555/apps/${appid}/engines/${engineid}/trainoncenow")
       helloFile.deleteOnExit()
       helloFile must haveSameLinesAs(Seq(
         Seq(appid, engineid, algoid, "latest") mkString " "
@@ -131,7 +135,7 @@ class SchedulerSpec extends Specification with ContentMatchers { def is = s2"""
       None,
       None,
       Some(Map(
-	"modelset" -> !algo.modelset))).toString
+        "modelset" -> !algo.modelset))).toString
 
     result must beEqualTo("hadoop jar ../../vendors/mahout-distribution-0.8/mahout-core-0.8-job.jar and ../../lib/predictionio-process-itemrec-algorithms-scala-mahout-assembly-0.7.0-SNAPSHOT.jar and ../../my.jar plus foobar.jar")
   }
