@@ -5,41 +5,47 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class UsersSpec extends Specification {
-  def is =
-    "PredictionIO Users Specification" ^
-      p ^
-      "Users can be implemented by:" ^ endp ^
-      "1. MongoUsers" ^ mongoUsers ^ end
+  def is = s2"""
 
-  def mongoUsers = p ^
-    "MongoUsers should" ^
-    "behave like any Users implementation" ^ users(newMongoUsers) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO Users Specification
 
-  def users(users: Users) = {
-    t ^
-      "inserting a user" ! insert(users) ^
-      "looking up an existing e-mail" ! emailExists(users) ^
-      "looking up a non-existing e-mail should fail" ! emailExistsNonExist(users) ^
-      "looking up an existing ID and e-mail combo" ! idAndEmailExists(users) ^
-      "looking up a non-existing ID and e-mail combo should fail" ! idAndEmailExistsNonExist(users) ^
-      "getting a user by ID" ! get(users) ^
-      "getting a user by e-mail" ! getByEmail(users) ^
-      "authenticating a non-existing user and fail" ! authenticateNonExist(users) ^
-      "authenticating an unconfirmed user and fail" ! authenticateUnconfirmed(users) ^
-      "authenticating a confirmed user" ! authenticate(users) ^
-      "authenticating by e-mail a non-existing user and fail" ! authenticateByEmailNonExist(users) ^
-      "authenticating by e-mail an unconfirmed user and fail" ! authenticateByEmailUnconfirmed(users) ^
-      "authenticating by e-mail a confirmed user" ! authenticateByEmail(users) ^
-      "confirming a non-existing user and fail" ! confirmNonExist(users) ^
-      "confirming an unconfirmed user" ! confirm(users) ^
-      "updating a user's e-mail by ID" ! updateEmail(users) ^
-      "updating a user's password by ID" ! updatePassword(users) ^
-      "updating a user's password by e-mail" ! updatePasswordByEmail(users) ^
-      "updating a user" ! update(users) ^
-      "backup and restore users" ! backuprestore(users) ^
-      bt
-  }
+    Users can be implemented by:
+    - MongoUsers $mongoUsers
+
+  """
+
+  def mongoUsers = s2"""
+
+    MongoUsers should
+    - behave like any Users implementation ${users(newMongoUsers)}
+    - (database cleanup) ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+
+  """
+
+  def users(users: Users) = s2"""
+
+    inserting a user ${insert(users)}
+    looking up an existing e-mail ${emailExists(users)}
+    looking up a non-existing e-mail should fail ${emailExistsNonExist(users)}
+    looking up an existing ID and e-mail combo ${idAndEmailExists(users)}
+    looking up a non-existing ID and e-mail combo should fail ${idAndEmailExistsNonExist(users)}
+    getting a user by ID ${get(users)}
+    getting a user by e-mail ${getByEmail(users)}
+    authenticating a non-existing user and fail ${authenticateNonExist(users)}
+    authenticating an unconfirmed user and fail ${authenticateUnconfirmed(users)}
+    authenticating a confirmed user ${authenticate(users)}
+    authenticating by e-mail a non-existing user and fail ${authenticateByEmailNonExist(users)}
+    authenticating by e-mail an unconfirmed user and fail ${authenticateByEmailUnconfirmed(users)}
+    authenticating by e-mail a confirmed user ${authenticateByEmail(users)}
+    confirming a non-existing user and fail ${confirmNonExist(users)}
+    confirming an unconfirmed user ${confirm(users)}
+    updating a user's e-mail by ID ${updateEmail(users)}
+    updating a user's password by ID ${updatePassword(users)}
+    updating a user's password by e-mail ${updatePasswordByEmail(users)}
+    updating a user ${update(users)}
+    backup and restore users ${backuprestore(users)}
+
+  """
 
   val mongoDbName = "predictionio_mongousers_test"
   def newMongoUsers = new mongodb.MongoUsers(MongoConnection()(mongoDbName))
@@ -53,7 +59,7 @@ class UsersSpec extends Specification {
       lastname = Option(name),
       confirm = name
     )
-    users.emailExists(name + "@prediction.io") must beTrue
+    users.emailExists(name + "@prediction.io") must beTrue.eventually
   }
 
   def get(users: Users) = {
@@ -65,7 +71,7 @@ class UsersSpec extends Specification {
       lastname = Option(name),
       confirm = name
     )
-    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io", name, Some(name)))
+    users.get(id) must beSome(User(id, name, Option(name), name + "@prediction.io", name, Some(name))).eventually
   }
 
   def getByEmail(users: Users) = {
@@ -77,7 +83,7 @@ class UsersSpec extends Specification {
       lastname = None,
       confirm = name
     )
-    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io", name, Some(name)))
+    users.getByEmail(name + "@prediction.io") must beSome(User(id, name, None, name + "@prediction.io", name, Some(name))).eventually
   }
 
   def emailExists(users: Users) = {
@@ -90,7 +96,7 @@ class UsersSpec extends Specification {
       lastname = None,
       confirm = dummy
     )
-    users.emailExists(email) must beTrue
+    users.emailExists(email) must beTrue.eventually
   }
 
   def emailExistsNonExist(users: Users) = {
@@ -106,7 +112,7 @@ class UsersSpec extends Specification {
       lastname = Option(name),
       confirm = name
     )
-    users.idAndEmailExists(id, name + "@prediction.io") must beTrue
+    users.idAndEmailExists(id, name + "@prediction.io") must beTrue.eventually
   }
 
   def idAndEmailExistsNonExist(users: Users) = {
@@ -139,7 +145,7 @@ class UsersSpec extends Specification {
       confirm = name
     )
     users.confirm(name)
-    users.authenticate(id, name) must beTrue
+    users.authenticate(id, name) must beTrue.eventually
   }
 
   def authenticateByEmailNonExist(users: Users) = {
@@ -168,7 +174,7 @@ class UsersSpec extends Specification {
       confirm = name
     )
     users.confirm(name)
-    users.authenticateByEmail(name + "@prediction.io", name) must beSome(id)
+    users.authenticateByEmail(name + "@prediction.io", name) must beSome(id).eventually
   }
 
   def confirmNonExist(users: Users) = {
@@ -196,7 +202,7 @@ class UsersSpec extends Specification {
       confirm = "updateEmail"
     )
     users.updateEmail(id, "updateEmailUpdated@prediction.io")
-    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io", "updateEmail", Some("updateEmail")))
+    users.get(id) must beSome(User(id, "updateEmail", None, "updateEmailUpdated@prediction.io", "updateEmail", Some("updateEmail"))).eventually
   }
 
   def updatePassword(users: Users) = {
@@ -209,7 +215,7 @@ class UsersSpec extends Specification {
     )
     users.confirm("updatePassword")
     users.updatePassword(id, "updatePasswordUpdated")
-    users.authenticate(id, "updatePasswordUpdated") must beTrue
+    users.authenticate(id, "updatePasswordUpdated") must beTrue.eventually
   }
 
   def updatePasswordByEmail(users: Users) = {
@@ -222,7 +228,7 @@ class UsersSpec extends Specification {
     )
     users.confirm("updatePasswordByEmail")
     users.updatePasswordByEmail("updatePasswordByEmail@prediction.io", "updatePasswordByEmailUpdated")
-    users.authenticate(id, "updatePasswordByEmailUpdated") must beTrue
+    users.authenticate(id, "updatePasswordByEmailUpdated") must beTrue.eventually
   }
 
   def update(users: Users) = {
@@ -235,7 +241,7 @@ class UsersSpec extends Specification {
     )
     val updatedUser = User(id, "updated", None, "updated@prediction.io")
     users.update(updatedUser)
-    users.get(id) must beSome(updatedUser)
+    users.get(id) must beSome(updatedUser).eventually
   }
 
   def backuprestore(users: Users) = {
