@@ -13,6 +13,8 @@ before_script:
   - unzip -q play-${PLAY_VERSION}.zip
 script:
   - sbt test
+  - sbt commons/publish
+  - sbt output/publish
   - cd servers/admin
   - ../../play-${PLAY_VERSION}/play test
   - cd ../api
