@@ -161,6 +161,8 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
         .finish
 
       "all sets are mutually exclusive" in {
+        // make sure all 3 sinks are flushed
+        while (results.keys.size < 3) Thread.sleep(1000)
         (results("training") must not(containAnyOf(results("validation")))) and
           (results("training") must not(containAnyOf(results("test")))) and
           (results("validation") must not(containAnyOf(results("test"))))
