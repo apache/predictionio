@@ -1774,7 +1774,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
         id = splittersList(0).id, // don't check id, just copy over
         evalid = eval.id,
         name = splittersList(0).name, // don't check name
-        infoid = "brownie-splitter",
+        infoid = "pio-distributed-trainingtestsplit",
         settings = Map(
           "sParam" -> 38,
           "tParam" -> true,
@@ -1853,7 +1853,7 @@ class AdminServerSpec extends Specification with JsonMatchers {
         id = splittersList(0).id, // don't check id, just copy over
         evalid = eval.id,
         name = splittersList(0).name, // don't check name
-        infoid = "brownie-splitter",
+        infoid = "pio-distributed-trainingtestsplit",
         settings = Map(
           "sParam" -> 31,
           "tParam" -> false,
