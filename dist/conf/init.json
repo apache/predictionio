@@ -3137,7 +3137,7 @@
                             }
                         ]
                     },
-                    "defaultvalue": true
+                    "defaultvalue": false
                 },
                 "similarItemsPerItem": {
                     "name": "Number of Similar Items per Items",
