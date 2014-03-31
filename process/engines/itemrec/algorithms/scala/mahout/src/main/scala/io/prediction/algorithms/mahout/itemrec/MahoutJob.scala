@@ -112,19 +112,21 @@ abstract class MahoutJob {
     outputFile.getParentFile().mkdirs()
 
     // generate prediction output file
-    val outputWriter = new BufferedWriter(new FileWriter(outputFile))
-
-    val userIds = dataModel.getUserIDs
-
-    while (userIds.hasNext) {
-      val uid = userIds.next
-      val rec = recommender.recommend(uid, numRecommendations)
-      if (rec.size != 0) {
-        val prediction = uid + "\t" + "[" + (rec map { x => x.getItemID + ":" + x.getValue }).mkString(",") + "]"
-        outputWriter.write(prediction + "\n")
+    val userRec = dataModel.getUserIDs.toSeq.par
+      .map { uid =>
+        val rec = recommender.recommend(uid, numRecommendations)
+        if (rec.size != 0) {
+          val prediction = uid + "\t" + "[" + (rec map { x => x.getItemID + ":" + x.getValue }).mkString(",") + "]"
+          Some(prediction)
+        } else {
+          None
+        }
       }
-    }
 
+    val outputWriter = new BufferedWriter(new FileWriter(outputFile))
+    userRec.seq.foreach { line =>
+      line.map(v => outputWriter.write(v + "\n"))
+    }
     outputWriter.close()
 
     args

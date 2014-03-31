@@ -2952,12 +2952,12 @@
             "description": "Predicts user preferences based on previous behaviors of users on similar items (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$",
+                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$",
                 "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$ --booleanData $booleanData$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$",
+                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$",
                 "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --unseenOnly $unseenOnly$ --numRecommendations $numRecommendations$ --booleanData $booleanData$"
             ],
             "paramorder": [
@@ -2966,6 +2966,8 @@
                 "weighted",
                 "nearestN",
                 "threshold",
+                "preComputeItemSim",
+                "similarItemsPerItem",
                 "viewParam",
                 "likeParam",
                 "dislikeParam",
@@ -3115,6 +3117,38 @@
                         "uitype": "text"
                     },
                     "defaultvalue": 5e-324
+                },
+                "preComputeItemSim": {
+                    "name": "Pre-Compute Item Similarity",
+                    "description": "Pre-compute item similarity for better run time performance (but use more storage space and memory).",
+                    "constraint": {
+                        "paramtype": "boolean"
+                    },
+                    "ui": {
+                        "uitype": "selection",
+                        "selections": [
+                            {
+                                "name": "True",
+                                "value": "true"
+                            },
+                            {
+                                "name": "False",
+                                "value": "false"
+                            }
+                        ]
+                    },
+                    "defaultvalue": true
+                },
+                "similarItemsPerItem": {
+                    "name": "Number of Similar Items per Items",
+                    "description": "Number of Similar items in pre-computed item similarity. Only applicable when Pre-Compute Item Similarity = true. Should set this cautiously if you have large number of items (>100K). Storage space needed is about number of items * number of similar items * 30Bytes. Also, the pre-computed similarity will be loaded into memory.",
+                    "constraint": {
+                        "paramtype": "integer"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 100
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -3310,7 +3344,9 @@
                             "sectiontype": "normal",
                             "params": [
                                 "booleanData",
-                                "weighted"
+                                "weighted",
+                                "preComputeItemSim",
+                                "similarItemsPerItem"
                             ]
                         },
                         {
