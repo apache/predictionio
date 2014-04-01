@@ -1,7 +1,7 @@
 PredictionIO
 ============
 
-[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg)](https://travis-ci.org/PredictionIO/PredictionIO)
+[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=develop)](https://travis-ci.org/PredictionIO/PredictionIO)
 
 PredictionIO is a prediction server for building smart applications. You can make
 predictions through PredictionIO just as you would filter data using a database server.
