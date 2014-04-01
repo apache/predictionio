@@ -2,25 +2,25 @@ package io.prediction.algorithms.scalding.itemsim.itemsimcf
 
 import com.twitter.scalding._
 
-import io.prediction.commons.filepath.{DataFile, AlgoFile}
+import io.prediction.commons.filepath.{ DataFile, AlgoFile }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
 
 /**
- * Source: 
+ * Source:
  *   selectedItems.tsv
  *   itemSimScores.tsv
- * Sink: 
+ * Sink:
  *   itemSimScores DB
  * Description:
  *   Read the itemSimScores.tsv and get additional attributes from selectedItems.tsv for each similiar items.
  *   Then write the result to model DB.
- *   
+ *
  * Required args:
  * --dbType: <string> modeldata DB type (eg. mongodb) (see --dbHost, --dbPort)
  * --dbName: <string> (eg. predictionio_modeldata)
- * 
+ *
  * --hdfsRoot: <string>. Root directory of the HDFS
- * 
+ *
  * --appid: <int>
  * --engineid: <int>
  * --algoid: <int>
@@ -30,15 +30,15 @@ import io.prediction.commons.scalding.modeldata.ItemSimScores
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
- * 
+ *
  * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
- * 
+ *
  * Example:
  * scald.rb --hdfs-local io.prediction.algorithms.scalding.itemsim.itemsimcf.ModelConstructor --dbType mongodb --dbName modeldata --dbHost 127.0.0.1 --dbPort 27017 --hdfsRoot hdfs/predictionio/ --appid 34 --engineid 2 --algoid 8 --modelSet false
  */
 class ModelConstructor(args: Args) extends Job(args) {
-  
+
   /**
    * parse args
    */
@@ -46,18 +46,18 @@ class ModelConstructor(args: Args) extends Job(args) {
   val dbNameArg = args("dbName")
   val dbHostArg = args.optional("dbHost")
   val dbPortArg = args.optional("dbPort") map (x => x.toInt)
-  
+
   val hdfsRootArg = args("hdfsRoot")
-  
+
   val appidArg = args("appid").toInt
   val engineidArg = args("engineid").toInt
   val algoidArg = args("algoid").toInt
   val evalidArg = args.optional("evalid") map (x => x.toInt)
   val OFFLINE_EVAL = (evalidArg != None) // offline eval mode
-  
+
   val debugArg = args.list("debug")
   val DEBUG_TEST = debugArg.contains("test") // test mode
-  
+
   val modelSetArg = args("modelSet").toBoolean
   val recommendationTimeArg = args("recommendationTime").toLong
 
@@ -66,7 +66,7 @@ class ModelConstructor(args: Args) extends Job(args) {
    */
   val score = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemSimScores.tsv")).read
     .mapTo((0, 1, 2) -> ('iid, 'simiid, 'score)) { fields: (String, String, Double) => fields }
-  
+
   val items = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")).read
     .mapTo((0, 1, 2, 3) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, String, Long, String) =>
       val (iidx, itypes, starttime, endtime) = fields // itypes are comma-separated String
@@ -87,7 +87,7 @@ class ModelConstructor(args: Args) extends Job(args) {
 
       (iidx, itypes.split(",").toList, starttime, endtimeOpt)
     }
-  
+
   /**
    * process & output
    */
@@ -107,9 +107,9 @@ class ModelConstructor(args: Args) extends Job(args) {
     }
     .project('iid, 'simiid, 'score, 'itypes)
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('simiid, 'score, 'itypes) -> 'simiidsList) }
-    
-  val src = ItemSimScores(dbType=dbTypeArg, dbName=dbNameArg, dbHost=dbHostArg, dbPort=dbPortArg, algoid=algoidArg, modelset=modelSetArg)
-  
-  p.then( src.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
-  
+
+  val src = ItemSimScores(dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg, algoid = algoidArg, modelset = modelSetArg)
+
+  p.then(src.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _)
+
 }

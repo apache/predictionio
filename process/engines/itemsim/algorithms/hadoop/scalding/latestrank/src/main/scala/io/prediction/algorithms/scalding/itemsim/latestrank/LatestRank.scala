@@ -2,9 +2,9 @@ package io.prediction.algorithms.scalding.itemsim.latestrank
 
 import com.twitter.scalding._
 
-import io.prediction.commons.scalding.appdata.{Items, Users}
+import io.prediction.commons.scalding.appdata.{ Items, Users }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.filepath.{ AlgoFile }
 
 /**
  * Source:
@@ -81,12 +81,12 @@ class LatestRank(args: Args) extends Job(args) {
 
   // get items data
   val latestItems = Items(
-    appId=trainingAppid,
-    itypes=itypesArg,
-    dbType=training_dbTypeArg,
-    dbName=training_dbNameArg,
-    dbHost=training_dbHostArg,
-    dbPort=training_dbPortArg)
+    appId = trainingAppid,
+    itypes = itypesArg,
+    dbType = training_dbTypeArg,
+    dbName = training_dbNameArg,
+    dbHost = training_dbHostArg,
+    dbPort = training_dbPortArg)
     .readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
     .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
       // only keep items with valid starttime and endtime
@@ -106,24 +106,24 @@ class LatestRank(args: Args) extends Job(args) {
     .groupBy('iidx) { _.sortBy('score).reverse.take(numSimilarItemsArg + 1) }
 
   val items = Items(
-    appId=trainingAppid,
-    itypes=None,
-    dbType=training_dbTypeArg,
-    dbName=training_dbNameArg,
-    dbHost=training_dbHostArg,
-    dbPort=training_dbPortArg)
+    appId = trainingAppid,
+    itypes = None,
+    dbType = training_dbTypeArg,
+    dbName = training_dbNameArg,
+    dbHost = training_dbHostArg,
+    dbPort = training_dbPortArg)
     .readData('iid, 'itypesx)
 
   /**
    * sink
    */
   val itemSimScores = ItemSimScores(
-    dbType=modeldata_dbTypeArg,
-    dbName=modeldata_dbNameArg,
-    dbHost=modeldata_dbHostArg,
-    dbPort=modeldata_dbPortArg,
-    algoid=algoidArg,
-    modelset=modelSetArg)
+    dbType = modeldata_dbTypeArg,
+    dbName = modeldata_dbNameArg,
+    dbHost = modeldata_dbHostArg,
+    dbPort = modeldata_dbPortArg,
+    algoid = algoidArg,
+    modelset = modelSetArg)
 
   /**
    * computation
@@ -132,5 +132,5 @@ class LatestRank(args: Args) extends Job(args) {
     .filter('iid, 'iidx) { fields: (String, String) => fields._1 != fields._2 }
     .groupBy('iid) { _.sortBy('score).reverse.take(numSimilarItemsArg) }
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidx, 'score, 'itypes) -> 'simiidsList) }
-    .then ( itemSimScores.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _ )
+    .then(itemSimScores.writeData('iid, 'simiidsList, algoidArg, modelSetArg) _)
 }

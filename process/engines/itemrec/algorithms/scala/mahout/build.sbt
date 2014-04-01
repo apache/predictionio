@@ -1,35 +1,27 @@
-import AssemblyKeys._
+import xerial.sbt.Pack._
 
 name := "predictionio-process-itemrec-algorithms-scala-mahout"
 
-packageOptions += Package.ManifestAttributes(java.util.jar.Attributes.Name.MAIN_CLASS -> "io.prediction.commons.mahout.itemrec.MahoutJob")
+libraryDependencies ++= Seq(
+  "org.apache.mahout" % "mahout-core" % "0.9",
+  "ch.qos.logback" % "logback-classic" % "1.1.1",
+  "com.twitter" %% "scalding-args" % "0.8.11",
+  "org.clapper" %% "grizzled-slf4j" % "1.0.1")
 
 parallelExecution in Test := false
 
-resolvers ++= Seq(
-  "Concurrent Maven Repo" at "http://conjars.org/repo",
-  "Clojars Repository" at "http://clojars.org/repo")
+packSettings
 
-assemblySettings
+packJarNameConvention := "full"
 
-test in assembly := {}
+packExpandedClasspath := true
 
-excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-  val excludes = Set(
-    "jsp-api-2.1-6.1.14.jar",
-    "jsp-2.1-6.1.14.jar",
-    "jasper-compiler-5.5.12.jar",
-    "janino-2.5.16.jar",
-    "minlog-1.2.jar",
-    "mockito-all-1.8.5.jar",
-    "hadoop-core-1.0.4.jar")
-  cp filter { jar => excludes(jar.data.getName)}
-}
+packGenerateWindowsBatFile := false
 
-mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
-  {
-    case ("org/xmlpull/v1/XmlPullParser.class") => MergeStrategy.rename
-    case ("org/xmlpull/v1/XmlPullParserException.class") => MergeStrategy.rename
-    case x => old(x)
-  }
-}
+packMain := Map(
+  "itemrec.mahout.mahoutjob" -> "io.prediction.algorithms.mahout.itemrec.MahoutJob",
+  "itemrec.mahout.modelcon" -> "io.prediction.algorithms.mahout.itemrec.MahoutModelConstructor")
+
+packJvmOpts := Map(
+  "itemrec.mahout.mahoutjob" -> Common.packCommonJvmOpts,
+  "itemrec.mahout.modelcon" -> Common.packCommonJvmOpts)

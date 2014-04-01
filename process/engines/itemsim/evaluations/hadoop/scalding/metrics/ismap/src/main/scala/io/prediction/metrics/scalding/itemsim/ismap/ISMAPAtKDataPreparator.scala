@@ -5,61 +5,62 @@ import com.twitter.scalding._
 import io.prediction.commons.filepath.OfflineMetricFile
 import io.prediction.commons.scalding.appdata.U2iActions
 
-/** Source:
-  *   Test set u2iActions.
-  *
-  * Sink:
-  *   relevantUsers.tsv
-  *     iid     uid
-  *     i0      u0
-  *     i0      u1
-  *     i0      u2
-  *   relevantItems.tsv
-  *     uid     iid
-  *     u0      i0
-  *     u0      i1
-  *     u0      i2
-  *
-  * Description:
-  *   Generate relevantUsers and relevantItems for ISMAP@k
-  *
-  * Required args:
-  * --test_dbType: <string> test_appdata DB type (eg. mongodb)
-  * --test_dbName: <string>
-  *
-  * --training_dbType: <string> training_appdata DB type
-  * --training_dbName: <string>
-  *
-  * --modeldata_dbType: <string> modeldata DB type
-  * --modeldata_dbName: <string>
-  *
-  * --hdfsRoot: <string>. Root directory of the HDFS
-  *
-  * --appid: <int>
-  * --engineid: <int>
-  * --evalid: <int>
-  * --metricid: <int>
-  * --algoid: <int>
-  *
-  * --kParam: <int>
-  * --goalParam: <string> ("view", "conversion", "like", "rate3", "rate4", "rate5)
-  *
-  * Optional args:
-  * --test_dbHost: <string> (eg. "127.0.0.1")
-  * --test_dbPort: <int> (eg. 27017)
-  *
-  * --training_dbHost: <string>
-  * --training_dbPort: <int>
-  *
-  * --modeldata_dbHost: <string>
-  * --modeldata_dbPort <int>
-  *
-  * --debug: <String>. "test" - for testing purpose
-  *
-  * Example:
-  * scald.rb --hdfs-local io.prediction.metrics.scalding.itemsim.map.ISMAPAtKDataPreparator --test_dbType mongodb --test_dbName test_appdata --test_dbHost 127.0.0.1 --test_dbPort 27017 --training_dbType mongodb --training_dbName training_appdata --training_dbHost 127.0.0.1 --training_dbPort 27017 --modeldata_dbType file --modeldata_dbName modeldata_path/ --hdfsRoot hdfs/predictionio/ --appid 34 --engineid 3 --evalid 15 --metricid 10 --algoid 9 --kParam 30 --goalParam rate3
-  *
-  */
+/**
+ * Source:
+ *   Test set u2iActions.
+ *
+ * Sink:
+ *   relevantUsers.tsv
+ *     iid     uid
+ *     i0      u0
+ *     i0      u1
+ *     i0      u2
+ *   relevantItems.tsv
+ *     uid     iid
+ *     u0      i0
+ *     u0      i1
+ *     u0      i2
+ *
+ * Description:
+ *   Generate relevantUsers and relevantItems for ISMAP@k
+ *
+ * Required args:
+ * --test_dbType: <string> test_appdata DB type (eg. mongodb)
+ * --test_dbName: <string>
+ *
+ * --training_dbType: <string> training_appdata DB type
+ * --training_dbName: <string>
+ *
+ * --modeldata_dbType: <string> modeldata DB type
+ * --modeldata_dbName: <string>
+ *
+ * --hdfsRoot: <string>. Root directory of the HDFS
+ *
+ * --appid: <int>
+ * --engineid: <int>
+ * --evalid: <int>
+ * --metricid: <int>
+ * --algoid: <int>
+ *
+ * --kParam: <int>
+ * --goalParam: <string> ("view", "conversion", "like", "rate3", "rate4", "rate5)
+ *
+ * Optional args:
+ * --test_dbHost: <string> (eg. "127.0.0.1")
+ * --test_dbPort: <int> (eg. 27017)
+ *
+ * --training_dbHost: <string>
+ * --training_dbPort: <int>
+ *
+ * --modeldata_dbHost: <string>
+ * --modeldata_dbPort <int>
+ *
+ * --debug: <String>. "test" - for testing purpose
+ *
+ * Example:
+ * scald.rb --hdfs-local io.prediction.metrics.scalding.itemsim.map.ISMAPAtKDataPreparator --test_dbType mongodb --test_dbName test_appdata --test_dbHost 127.0.0.1 --test_dbPort 27017 --training_dbType mongodb --training_dbName training_appdata --training_dbHost 127.0.0.1 --training_dbPort 27017 --modeldata_dbType file --modeldata_dbName modeldata_path/ --hdfsRoot hdfs/predictionio/ --appid 34 --engineid 3 --evalid 15 --metricid 10 --algoid 9 --kParam 30 --goalParam rate3
+ *
+ */
 class ISMAPAtKDataPreparator(args: Args) extends Job(args) {
   val test_dbTypeArg = args("test_dbType")
   val test_dbNameArg = args("test_dbName")
@@ -106,14 +107,15 @@ class ISMAPAtKDataPreparator(args: Args) extends Job(args) {
   final val ACTION_CONVERSION = "conversion"
 
   /** source */
-  val testU2i = U2iActions(appId=evalidArg,
-      dbType=test_dbTypeArg, dbName=test_dbNameArg, dbHost=test_dbHostArg, dbPort=test_dbPortArg).readData('actionTest, 'uidTest, 'iidTest, 'tTest, 'vTest)
+  val testU2i = U2iActions(appId = evalidArg,
+    dbType = test_dbTypeArg, dbName = test_dbNameArg, dbHost = test_dbHostArg, dbPort = test_dbPortArg).readData('actionTest, 'uidTest, 'iidTest, 'tTest, 'vTest)
 
-  /** computation
-    *
-    * for each user, get a list of items which match the goalParam
-    * TODO: filter out items appeared in trainingU2i?
-    */
+  /**
+   * computation
+   *
+   * for each user, get a list of items which match the goalParam
+   * TODO: filter out items appeared in trainingU2i?
+   */
   testU2i
     .filter('actionTest, 'vTest) { fields: (String, Option[String]) =>
       val (action, v) = fields
@@ -136,7 +138,7 @@ class ISMAPAtKDataPreparator(args: Args) extends Job(args) {
           case e: Exception => {
             assert(false, s"Failed to convert v field ${v} to int. Exception:" + e)
             false
-          }   
+          }
         }
         case GOAL_RATE5 => try {
           (action == ACTION_RATE) && (v.get.toInt >= 5)

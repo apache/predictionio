@@ -4,7 +4,7 @@ import org.specs2.mutable._
 
 import com.twitter.scalding._
 
-import io.prediction.commons.filepath.{AlgoFile, DataFile}
+import io.prediction.commons.filepath.{ AlgoFile, DataFile }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
 
 class ModelConstructorTest extends Specification with TupleConversions {
@@ -39,13 +39,13 @@ class ModelConstructorTest extends Specification with TupleConversions {
       //.arg("debug", "test") // NOTE: test mode
       .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, None, "itemSimScores.tsv")), itemSimScores)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, None, "selectedItems.tsv")), items)
-      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort, algoid=algoid, modelset=modelSet).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
         "correctly write model data to a file" in {
           outputBuffer.toList must containTheSameElementsAs(outputItemSimScores)
         }
-    }
-    .run
-    .finish
+      }
+      .run
+      .finish
   }
 
   val largeNumber = 1234567890 // larger than any item starttime

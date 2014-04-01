@@ -22,6 +22,7 @@ class ItemsSpec extends Specification {
     t ^
       "inserting and getting an item" ! insert(items) ^
       "getting items by App ID and geo data" ! getByAppidAndLatlng(items) ^
+      "getting items by App ID and itypes" ! getByAppidAndItypes(items) ^
       "getting items by IDs" ! getByIds(items) ^
       "getting items by IDs sorted by start time" ! getRecentByIds(items) ^
       "updating an item" ! update(items) ^
@@ -127,6 +128,68 @@ class ItemsSpec extends Specification {
       (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), None, None).toSeq must beEqualTo(Seq(dac, hsh, mvh, lbh))) and
       (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), Some(2.2), None).toSeq must beEqualTo(Seq(dac, hsh))) and
       (items.getByAppidAndLatlng(appid, (37.3229978, -122.0321823), Some(2.2), Some("mi")).toSeq must beEqualTo(Seq(dac, hsh, mvh)))
+  }
+
+  def getByAppidAndItypes(items: Items) = {
+    val id = "getByAppidAndItypes"
+    val appid = 56
+    val dac = Item(
+      id = id + "dac",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("type1", "type2"),
+      starttime = Some(DateTime.now.hour(14).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3197611, -122.0466141)),
+      inactive = None,
+      attributes = Some(Map("foo" -> "bar", "foo2" -> "bar2")))
+    val hsh = Item(
+      id = id + "hsh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("type1"),
+      starttime = Some(DateTime.now.hour(23).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3370801, -122.0493201)),
+      inactive = None,
+      attributes = None)
+    val mvh = Item(
+      id = id + "mvh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("type2", "type3"),
+      starttime = Some(DateTime.now.hour(17).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3154153, -122.0566829)),
+      inactive = None,
+      attributes = Some(Map("foo3" -> "bar3")))
+    val lbh = Item(
+      id = id + "lbh",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("type4"),
+      starttime = Some(DateTime.now.hour(3).minute(13)),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.2997029, -122.0034684)),
+      inactive = None,
+      attributes = Some(Map("foo4" -> "bar4", "foo5" -> "bar5")))
+
+    val allItems = Seq(dac, hsh, lbh, mvh)
+    allItems foreach { items.insert(_) }
+
+    (items.getByAppidAndItypes(appid, Seq("type1", "type2", "type3", "type4"))).toSeq must beEqualTo(Seq(dac, hsh, lbh, mvh)) and
+      ((items.getByAppidAndItypes(appid, Seq("type1"))).toSeq must beEqualTo(Seq(dac, hsh))) and
+      ((items.getByAppidAndItypes(appid, Seq("type2"))).toSeq must beEqualTo(Seq(dac, mvh))) and
+      ((items.getByAppidAndItypes(appid, Seq("type3", "type4"))).toSeq must beEqualTo(Seq(lbh, mvh)))
+
   }
 
   def getByIds(items: Items) = {

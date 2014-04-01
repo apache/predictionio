@@ -2,7 +2,7 @@
 
 # This script should be sourced with $BASE set to the base of the repository
 
-VERSION=0.6.8
+VERSION=0.7.0
 
 # Play framework related
 PLAY_OPTS=
@@ -26,8 +26,12 @@ SCHEDULER_ERR="$LOGDIR/scheduler.err"
 
 # Packaging related
 PACKAGE_NAME="PredictionIO-$VERSION"
+PACKAGE_NAME_LINUX32="PredictionIO-linux-i686-$VERSION"
+PACKAGE_NAME_LINUX64="PredictionIO-linux-x86_64-$VERSION"
 DIST_DIR="$BASE/dist"
 PACKAGE_DIR="$DIST_DIR/target/$PACKAGE_NAME"
+PACKAGE_DIR_LINUX32="$DIST_DIR/target/$PACKAGE_NAME_LINUX32"
+PACKAGE_DIR_LINUX64="$DIST_DIR/target/$PACKAGE_NAME_LINUX64"
 
 # Kill the whole shell when Ctrl+C is pressed
 trap "exit 1" INT

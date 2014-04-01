@@ -1642,17 +1642,29 @@ object Application extends Controller {
             "validationPercent" -> 0.0, // no validatoin set for sim eval
             "testPercent" -> (splitTest.toDouble / 100)
           )
+
+          // get list of algo obj
+          val optAlgos: List[Option[Algo]] = algoids.map { algos.get(_) }
+
+          // TODO: Allow selection of splitter
+          // Use Hadoop version if any algo in the list requires Hadoop
+          val hadoopRequired = optAlgos.map { optAlgo =>
+            optAlgo map { algo =>
+              algoInfos.get(algo.infoid) map { info =>
+                info.techreq.contains("Hadoop")
+              } getOrElse false
+            } getOrElse false
+          } reduce { _ || _ }
+
           val splitterList = params.filter(p => (p("infotype") == "offlineevalsplitter")).map(p =>
             OfflineEvalSplitter(
               id = 0,
               evalid = 0, // will be assigned later
               name = "", // will be assigned later
-              infoid = p("infoid").asInstanceOf[String],
+              //infoid = p("infoid").asInstanceOf[String],
+              infoid = if (hadoopRequired) "pio-distributed-trainingtestsplit" else "pio-single-trainingtestsplit",
               settings = p ++ percentageParam - "infoid" - "infotype" // remove these keys from params
             )).toList
-
-          // get list of algo obj
-          val optAlgos: List[Option[Algo]] = algoids.map { algos.get(_) }
 
           if (metricList.length == 0)
             BadRequest(Json.obj("message" -> "At least one metric is required."))
@@ -2206,7 +2218,7 @@ object Application extends Controller {
           "allitemtypes" -> toJson(engine.itypes == None),
           "itemtypelist" -> engine.itypes.map(x => toJson(x.toIterator.toSeq)).getOrElse(JsNull),
           "trainingdisabled" -> engine.trainingdisabled.map(toJson(_)).getOrElse(toJson(false)),
-          "trainingschedule" -> engine.trainingschedule.map(toJson(_)).getOrElse(toJson("0 * * * *"))) ++
+          "trainingschedule" -> engine.trainingschedule.map(toJson(_)).getOrElse(toJson("0 0 * * * ?"))) ++
           (params map { case (k, v) => (k, toJson(v.toString)) })))
       } getOrElse {
         NotFound(toJson(Map("message" -> toJson(s"Invalid EngineInfo ID: ${engine.infoid}"))))
@@ -2280,29 +2292,41 @@ object Application extends Controller {
 
   def updateAlgoSettings(appid: Int, engineid: Int, algoid: Int) = WithAlgo(appid, engineid, algoid) { (user, app, engine, algo) =>
     implicit request =>
-      val f = Form(tuple("infoid" -> mapOfStringToAny, "tune" -> text, "tuneMethod" -> text))
+      val f = Form(tuple("infoid" -> mapOfStringToAny, "tune" -> optional(text), "tuneMethod" -> optional(text)))
       f.bindFromRequest.fold(
         e => BadRequest(toJson(Map("message" -> toJson(e.toString)))),
         bound => {
           val (params, tune, tuneMethod) = bound
           // NOTE: read-modify-write the original param
-          val updatedParams = algo.params ++ params ++ Map("tune" -> tune, "tuneMethod" -> tuneMethod) - "infoid"
+          val tuneObj = (tune, tuneMethod) match {
+            case (Some("manual"), _) => Map("tune" -> "manual")
+            case (Some("auto"), Some(m)) => Map("tune" -> "auto", "tuneMethod" -> m)
+            case (_, _) => Map()
+          }
+          val updatedParams = algo.params ++ params ++ tuneObj - "infoid"
           val updatedAlgo = algo.copy(params = updatedParams)
 
-          if (updatedParams("tune") != "auto") {
+          // NOTE: "tune" is optional param. default to "manual"
+          if (updatedParams.getOrElse("tune", "manual") != "auto") {
             algos.update(updatedAlgo)
             Ok
           } else {
             // create offline eval with baseline algo
             // TODO: get from UI
             val defaultBaseLineAlgoType = engine.infoid match {
-              case "itemrec" => "pdio-randomrank"
-              case "itemsim" => "pdio-itemsimrandomrank"
+              case "itemrec" => "pio-itemrec-single-random"
+              case "itemsim" => "pio-itemsim-single-random"
             }
 
             engineInfos.get(engine.infoid).map { engineInfo =>
-              val metricinfoid = engineInfo.defaultofflineevalmetricinfoid // TODO: from UI
-              val splitterinfoid = engineInfo.defaultofflineevalsplitterinfoid // TODO: from UI
+              val hadoopRequired = algoInfos.get(algo.infoid) map { _.techreq.contains("Hadoop") } getOrElse false
+              val metricinfoid = (hadoopRequired, engine.infoid) match {
+                case (true, "itemrec") => "pio-itemrec-distributed-map_k"
+                case (true, "itemsim") => "pio-itemsim-distributed-ismap_k"
+                case (false, "itemrec") => "pio-itemrec-single-map_k"
+                case (false, "itemsim") => "pio-itemsim-single-ismap_k"
+              } // TODO: from UI
+              val splitterinfoid = if (hadoopRequired) "pio-distributed-trainingtestsplit" else "pio-single-trainingtestsplit" // TODO: from UI
               algoInfos.get(defaultBaseLineAlgoType).map { baseLineAlgoInfo =>
                 offlineEvalMetricInfos.get(metricinfoid).map { metricInfo =>
                   offlineEvalSplitterInfos.get(splitterinfoid).map { splitterInfo =>
@@ -2341,7 +2365,7 @@ object Application extends Controller {
 
                     paramGens.insert(ParamGen(
                       id = -1,
-                      infoid = "random", // TODO: default random scan param gen now
+                      infoid = "pio-single-random", // TODO: default random scan param gen now
                       tuneid = tuneid,
                       params = Map() // TODO: param for param gen
                     ))

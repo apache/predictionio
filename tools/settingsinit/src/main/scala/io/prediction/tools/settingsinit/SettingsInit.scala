@@ -53,6 +53,11 @@ object SettingsInit {
     println("PredictionIO settings initialization starting")
 
     M.unapply(settingsJson) map { settings =>
+      println("Deleting old SystemInfo entries...")
+      systemInfos.getAll() foreach { info =>
+        println(s"- ${info.id}")
+        systemInfos.delete(info.id)
+      }
       M.unapply(settings("systeminfos")) map { infos =>
         println("Populating SystemInfos...")
         for {
@@ -73,6 +78,11 @@ object SettingsInit {
         }
       } getOrElse println("Cannot find any SystemInfo information. Skipping.")
 
+      println("Deleting old EngineInfo entries...")
+      engineInfos.getAll() foreach { info =>
+        println(s"- ${info.id}")
+        engineInfos.delete(info.id)
+      }
       M.unapply(settings("engineinfos")) map { infos =>
         println("Populating EngineInfos...")
         for {
@@ -106,6 +116,11 @@ object SettingsInit {
         }
       } getOrElse println("Cannot find any EngineInfo information. Skipping.")
 
+      println("Deleting old AlgoInfo entries...")
+      algoInfos.getAll() foreach { info =>
+        println(s"- ${info.id}")
+        algoInfos.delete(info.id)
+      }
       M.unapply(settings("algoinfos")) map { infos =>
         println("Populating AlgoInfos...")
         for {
@@ -145,6 +160,11 @@ object SettingsInit {
         }
       } getOrElse println("Cannot find any AlgoInfo information. Skipping.")
 
+      println("Deleting old OfflineEvalSplitterInfo entries...")
+      offlineEvalSplitterInfos.getAll() foreach { info =>
+        println(s"- ${info.id}")
+        offlineEvalSplitterInfos.delete(info.id)
+      }
       M.unapply(settings("offlineevalsplitterinfos")) map { infos =>
         println("Populating OfflineEvalSplitterInfos...")
         for {
@@ -178,6 +198,11 @@ object SettingsInit {
         }
       } getOrElse println("Cannot find any OfflineEvalSplitterInfo information. Skipping.")
 
+      println("Deleting old OfflineEvalMetricInfo entries...")
+      offlineEvalMetricInfos.getAll() foreach { info =>
+        println(s"- ${info.id}")
+        offlineEvalMetricInfos.delete(info.id)
+      }
       M.unapply(settings("offlineevalmetricinfos")) map { infos =>
         println("Populating OfflineEvalMetricInfos...")
         for {
@@ -211,6 +236,11 @@ object SettingsInit {
         }
       } getOrElse println("Cannot find any OfflineEvalMetricInfo information. Skipping.")
 
+      println("Deleting old ParamGenInfo entries...")
+      paramGenInfos.getAll() foreach { info =>
+        println(s"- ${info.id}")
+        paramGenInfos.delete(info.id)
+      }
       M.unapply(settings("paramgeninfos")) map { infos =>
         println("Populating ParamGenInfos...")
         for {

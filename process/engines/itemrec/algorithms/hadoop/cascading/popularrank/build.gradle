@@ -1,6 +1,9 @@
 
 apply plugin: 'java'
 
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+ 
 repositories {
   mavenLocal()
   mavenCentral()
@@ -13,6 +16,7 @@ dependencies {
   compile( group: 'cascading', name: 'cascading-core', version: cascadingVersion )
   compile( group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion )
   compile 'commons-cli:commons-cli:1.2'
+  compile( group: 'org.apache.hadoop', name: 'hadoop-core', version: '1.2.1')
 }
 
 jar {

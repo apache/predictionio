@@ -1,11 +1,19 @@
-import com.typesafe.sbt.packager.Keys._
+import xerial.sbt.Pack._
 
 name := "settingsinit"
 
 scalariformSettings
 
-packageArchetype.java_application
-
-bashScriptExtraDefines += "addJava \"-Dconfig.file=${app_home}/../conf/predictionio.conf -Dio.prediction.base=${app_home}/..\""
-
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.6.0"
+
+packSettings
+
+packJarNameConvention := "full"
+
+packExpandedClasspath := true
+
+packGenerateWindowsBatFile := false
+
+packMain := Map("settingsinit" -> "io.prediction.tools.settingsinit.SettingsInit")
+
+packJvmOpts := Map("settingsinit" -> Common.packCommonJvmOpts)

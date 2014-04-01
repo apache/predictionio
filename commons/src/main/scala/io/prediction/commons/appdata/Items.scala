@@ -44,6 +44,9 @@ trait Items {
   /** Find items by App ID sorted by geolocation distance. */
   def getByAppidAndLatlng(appid: Int, latlng: Tuple2[Double, Double], within: Option[Double], unit: Option[String]): Iterator[Item]
 
+  /** Find items by App ID which belong to one of the itypes. */
+  def getByAppidAndItypes(appid: Int, itypes: Seq[String]): Iterator[Item]
+
   /** Get items by IDs. */
   def getByIds(appid: Int, ids: Seq[String]): Seq[Item]
 

@@ -441,6 +441,32 @@ object Helper extends Controller {
     }
   }
 
+  def hadoopRequiredByApp(appid: Int): Boolean = {
+    apps.get(appid) map { app =>
+      engines.getByAppid(app.id).foldLeft(false) { (b, a) => b || hadoopRequiredByEngine(a.id) }
+    } getOrElse false
+  }
+
+  def hadoopRequiredByEngine(engineid: Int): Boolean = {
+    engines.get(engineid) map { engine =>
+      algos.getByEngineid(engine.id).foldLeft(false) { (b, a) => (b || hadoopRequiredByAlgo(a.id)) }
+    } getOrElse false
+  }
+
+  def hadoopRequiredByAlgo(algoid: Int): Boolean = {
+    algos.get(algoid) map { algo =>
+      algoInfos.get(algo.infoid) map { algoinfo =>
+        algoinfo.techreq.contains("Hadoop")
+      } getOrElse false
+    } getOrElse false
+  }
+
+  def hadoopRequiredByOfflineEval(evalid: Int): Boolean = {
+    offlineEvals.get(evalid) map { oe =>
+      algos.getByOfflineEvalid(oe.id).foldLeft(false) { (b, a) => (b || hadoopRequiredByAlgo(a.id)) }
+    } getOrElse false
+  }
+
   /**
    * Request scheduler to stop and delete sim eval
    * @return Future[SimpleResult]
@@ -450,7 +476,8 @@ object Helper extends Controller {
     /** Stop any possible running jobs */
     val stop = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${evalid}/stop").get()
     /** Clean up intermediate data files */
-    val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${evalid}/delete").get()
+    val deleteHadoop = if (hadoopRequiredByOfflineEval(evalid)) "?hadoop=1" else ""
+    val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${evalid}/delete${deleteHadoop}").get()
     /** Synchronize on both scheduler actions */
     val remove = concurrent.Future.reduce(Seq(stop, delete)) { (a, b) =>
       if (a.status != http.Status.OK) // keep the 1st error
@@ -482,7 +509,8 @@ object Helper extends Controller {
     val stop = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlinetunes/${tuneid}/stop").get()
 
     val deletes = offlineEvals.getByTuneid(tuneid) map { eval =>
-      WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${eval.id}/delete").get()
+      val deleteHadoop = if (hadoopRequiredByOfflineEval(eval.id)) "?hadoop=1" else ""
+      WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/offlineevals/${eval.id}/delete${deleteHadoop}").get()
     }
 
     val remove = concurrent.Future.reduce(Seq(stop) ++ deletes) { (a, b) =>
@@ -511,7 +539,8 @@ object Helper extends Controller {
    * @return Future[SimpleResult]
    */
   def deleteAlgoScheduler(appid: Int, engineid: Int, id: Int) = {
-    val delete = WS.url(settingsSchedulerUrl + "/apps/" + appid + "/engines/" + engineid + "/algos/" + id + "/delete").get()
+    val deleteHadoop = if (hadoopRequiredByAlgo(id)) "?hadoop=1" else ""
+    val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/algos/${id}/delete${deleteHadoop}").get()
 
     delete map { r =>
       if (r.status == http.Status.OK)
@@ -529,7 +558,8 @@ object Helper extends Controller {
    * @return Future[SimpleResult]
    */
   def deleteEngineScheduler(appid: Int, engineid: Int) = {
-    val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/delete").get()
+    val deleteHadoop = if (hadoopRequiredByEngine(engineid)) "?hadoop=1" else ""
+    val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/engines/${engineid}/delete${deleteHadoop}").get()
 
     delete map { r =>
       if (r.status == http.Status.OK)
@@ -547,7 +577,8 @@ object Helper extends Controller {
    * @return Future[SimpleResult]
    */
   def deleteAppScheduler(appid: Int) = {
-    val delete = WS.url(settingsSchedulerUrl + "/apps/" + appid + "/delete").get()
+    val deleteHadoop = if (hadoopRequiredByApp(appid)) "?hadoop=1" else ""
+    val delete = WS.url(s"${settingsSchedulerUrl}/apps/${appid}/delete${deleteHadoop}").get()
 
     delete map { r =>
       if (r.status == http.Status.OK)

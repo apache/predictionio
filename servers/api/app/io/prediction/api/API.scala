@@ -150,7 +150,17 @@ object API extends Controller {
         }
       }
   }
-  val itypes: Mapping[String] = of[String] verifying Constraints.pattern("""[^\t]+""".r, "itypes", "Must not contain \t.")
+  val itypes: Mapping[String] = of[String] verifying Constraint[String]("itypes") { o =>
+    """[^\t]+""".r.unapplySeq(o) map { _ =>
+      val splitted = o.split(",")
+      if (splitted.size == 0)
+        Invalid(ValidationError("Must specify at least one valid item type."))
+      else if (splitted.exists(_.size == 0))
+        Invalid(ValidationError("Must not contain any empty item types."))
+      else
+        Valid
+    } getOrElse (Invalid(ValidationError("Must not contain any tab characters.")))
+  }
   val latlngRegex = """-?\d+(\.\d*)?,-?\d+(\.\d*)?""".r
   val latlng: Mapping[String] = of[String] verifying Constraint[String]("latlng", () => latlngRegex) {
     o =>

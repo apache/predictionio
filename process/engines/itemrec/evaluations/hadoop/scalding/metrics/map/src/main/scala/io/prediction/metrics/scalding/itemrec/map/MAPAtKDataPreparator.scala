@@ -111,8 +111,8 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
   /*val trainingU2i = U2iActions(appId=evalidArg,
       dbType=training_dbTypeArg, dbName=training_dbNameArg, dbHost=training_dbHostArg, dbPort=training_dbPortArg).readData('actionTrain, 'uidTrain, 'iidTrain, 'tTrain, 'vTrain)*/
 
-  val testU2i = U2iActions(appId=evalidArg,
-      dbType=test_dbTypeArg, dbName=test_dbNameArg, dbHost=test_dbHostArg, dbPort=test_dbPortArg).readData('actionTest, 'uidTest, 'iidTest, 'tTest, 'vTest)
+  val testU2i = U2iActions(appId = evalidArg,
+    dbType = test_dbTypeArg, dbName = test_dbNameArg, dbHost = test_dbHostArg, dbPort = test_dbPortArg).readData('actionTest, 'uidTest, 'iidTest, 'tTest, 'vTest)
 
   /**
    * computation
@@ -141,7 +141,7 @@ class MAPAtKDataPreparator(args: Args) extends Job(args) {
           case e: Exception => {
             assert(false, s"Failed to convert v field ${v} to int. Exception:" + e)
             false
-          }   
+          }
         }
         case GOAL_RATE5 => try {
           (action == ACTION_RATE) && (v.get.toInt >= 5)

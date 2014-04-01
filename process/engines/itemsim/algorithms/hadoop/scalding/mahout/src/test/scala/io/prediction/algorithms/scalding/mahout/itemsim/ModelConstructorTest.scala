@@ -4,9 +4,9 @@ import org.specs2.mutable._
 
 import com.twitter.scalding._
 
-import io.prediction.commons.filepath.{AlgoFile, DataFile}
+import io.prediction.commons.filepath.{ AlgoFile, DataFile }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
-import cascading.tuple.{Tuple, TupleEntry, TupleEntryIterator, Fields}
+import cascading.tuple.{ Tuple, TupleEntry, TupleEntryIterator, Fields }
 
 class ModelConstructorTest extends Specification with TupleConversions {
 
@@ -27,8 +27,8 @@ class ModelConstructorTest extends Specification with TupleConversions {
     val dbHost = None
     val dbPort = None
     val hdfsRoot = "testroot/"
-    
-    val itemSimScores = output map { case (iid, simiid, score, simitypes) => (iid, simiid, score, simitypes, algoid, modelSet)} 
+
+    val itemSimScores = output map { case (iid, simiid, score, simitypes) => (iid, simiid, score, simitypes, algoid, modelSet) }
 
     JobTest("io.prediction.algorithms.scalding.mahout.itemsim.ModelConstructor")
       .arg("dbType", dbType)
@@ -42,13 +42,13 @@ class ModelConstructorTest extends Specification with TupleConversions {
       .arg("recommendationTime", recommendationTime.toString)
       .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "similarities.tsv"), new Fields("iindex", "simiindex", "score")), similarities)
       .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
-      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=dbType, dbName=dbName, dbHost=dbHost, dbPort=dbPort, algoid=algoid, modelset=modelSet).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
         "correctly write model data to a file" in {
           outputBuffer.toList must containTheSameElementsAs(itemSimScores)
         }
-    }
-    .run
-    .finish
+      }
+      .run
+      .finish
 
   }
 
@@ -60,8 +60,8 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("1", "i1", "t1,t2", "12347", noEndtime),
     ("2", "i2", "t2,t3", "12348", noEndtime),
     ("3", "i3", "t2", "12349", noEndtime))
-    
-  val test1Similarities = List( 
+
+  val test1Similarities = List(
     ("0", "1", "0.83"),
     ("0", "2", "0.25"),
     ("0", "3", "0.49"),
@@ -106,14 +106,14 @@ class ModelConstructorTest extends Specification with TupleConversions {
   }
 
   /* test 2: score sorting */
-  
+
   val test2Items = List(
     ("0", "i0", "t1,t2,t3", "12346", noEndtime),
     ("1", "i1", "t1,t2", "12347", noEndtime),
     ("2", "i2", "t2,t3", "12348", noEndtime),
     ("3", "i3", "t2", "12349", noEndtime))
-    
-  val test2Similarities = List( 
+
+  val test2Similarities = List(
     ("0", "1", "83"),
     ("0", "2", "200"),
     ("0", "3", "4"),
@@ -156,7 +156,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("2", "i2", "t2,t3", "123567", "543432"),
     ("3", "i3", "t2", "123678", "543654"))
 
-  val test3Similarities = List( 
+  val test3Similarities = List(
     ("0", "1", "83"),
     ("0", "2", "200"),
     ("0", "3", "4"),

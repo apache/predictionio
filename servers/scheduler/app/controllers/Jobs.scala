@@ -162,7 +162,8 @@ object Jobs {
     command.setAttribute("modeldataTrainingDbHost", config.modeldataTrainingDbHost)
     command.setAttribute("modeldataTrainingDbPort", config.modeldataTrainingDbPort)
     engine.itypes foreach { it =>
-      command.setAttribute("itypes", "--itypes" + " " + it.mkString(" ")) // NOTE: a space ' ' is necessary after --itypes
+      command.setAttribute("itypes", "--itypes " + it.mkString(" ")) // NOTE: a space ' ' is necessary after --itypes
+      command.setAttribute("itypesCSV", "--itypes " + it.mkString(","))
     }
     command.setAttribute("numRecommendations", engine.params.getOrElse("numRecommendations", 500))
     command.setAttribute("numSimilarItems", engine.params.getOrElse("numSimilarItems", 500))
@@ -287,22 +288,21 @@ class OfflineEvalJob extends InterruptableJob {
 
     Some(steptype) collect {
       case "split" => {
-        if (iteration == 1) {
-          /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
-          Scheduler.offlineEvals.get(evalid) map { offlineEval =>
-            Scheduler.engines.get(offlineEval.engineid) map { engine =>
-              val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
-              val modelData = Scheduler.config.getModeldataTraining(engine.infoid)
-              algosToRun foreach { algo =>
-                Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
-                modelData.delete(algo.id, false)
-              }
-              Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
-              Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
-              Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
+        /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
+        Scheduler.offlineEvals.get(evalid) map { offlineEval =>
+          Scheduler.engines.get(offlineEval.engineid) map { engine =>
+            val algosToRun = Scheduler.algos.getByOfflineEvalid(offlineEval.id).toSeq
+            val modelData = Scheduler.config.getModeldataTraining(engine.infoid)
+            algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting any old model data")
+              modelData.delete(algo.id, false)
             }
+            Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
+            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
           }
         }
+
         if (iteration > 1) {
           val iterationkey = s"iteration-${iteration - 1}"
           while (!finishFlags(iterationkey)) {
@@ -312,21 +312,25 @@ class OfflineEvalJob extends InterruptableJob {
       }
       case "training" => {
         val splitkey = s"split-${iteration}"
+        val trainingkey = s"training-${iteration}-${algoid.get}"
         while (!finishFlags(splitkey)) {
           Thread.sleep(1000)
         }
         if (exitCodes(splitkey) != 0) {
           abort = true
+          exitCodes(trainingkey) = 1
           Logger.info(s"${logPrefix}(${steptype}) Aborted due to split error")
         }
       }
       case "metric" => {
         val trainingkey = s"training-${iteration}-${algoid.get}"
+        val metrickey = s"metric-${iteration}-${algoid.get}-${metricid.get}"
         while (!finishFlags(trainingkey)) {
           Thread.sleep(1000)
         }
         if (exitCodes(trainingkey) != 0) {
           abort = true
+          exitCodes(metrickey) = 1
           Logger.info(s"${logPrefix}(${steptype}) Aborted due to training error")
         }
       }
@@ -345,21 +349,35 @@ class OfflineEvalJob extends InterruptableJob {
     }
 
     commands map { _.trim } foreach { c =>
+      var exception = false
       this.synchronized {
         if (!kill && !abort && !c.isEmpty && exitCodes(key) == 0) {
           Logger.info(s"${logPrefix}(${steptype}) Going to run: $c")
-          procs(key) = Process(c).run
-          Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+          try {
+            procs(key) = Process(c).run
+            Logger.info(s"${logPrefix}(${steptype}) Scheduler waiting for sub-process to finish")
+          } catch {
+            case e: java.io.IOException => {
+              exception = true
+              Logger.info(s"${logPrefix}(${steptype}) ${e.getMessage}")
+            }
+          }
         }
       }
 
-      procs.get(key) map { p =>
-        val exitCode = p.exitValue
+      // Continue if the last command succeeded
+      if (exitCodes(key) == 0) {
+        procs.get(key) map { p =>
+          val exitCode = if (exception) 1 else p.exitValue
 
-        /** Save completion information for global access */
-        exitCodes(key) = exitCode
+          /** Save completion information for global access */
+          exitCodes(key) = exitCode
 
-        Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+          if (exception)
+            Logger.info(s"${logPrefix}(${steptype}) Exception trying to run sub-process")
+          else
+            Logger.info(s"${logPrefix}(${steptype}) Sub-process has finished with exit code ${exitCode}")
+        }
       }
     }
 
@@ -480,19 +498,22 @@ class OfflineEvalJob extends InterruptableJob {
             Thread.sleep(1000)
           }
 
-          /** Clean up */
-          val modelData = config.getModeldataTraining(engine.infoid)
-          algosToRun foreach { algo =>
-            Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
-            modelData.delete(algo.id, false)
+          /** Clean up if ended normally or killed */
+          val sumExitCodes = exitCodes.values.sum
+          if (kill || sumExitCodes == 0) {
+            val modelData = config.getModeldataTraining(engine.infoid)
+            algosToRun foreach { algo =>
+              Logger.info(s"${logPrefix}Algo ID ${algo.id}: Deleting used model data")
+              modelData.delete(algo.id, false)
+            }
+            Logger.info(s"${logPrefix}Deleting used app data")
+            Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
+            Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
           }
-          Logger.info(s"${logPrefix}Deleting used app data")
-          Scheduler.appdataTrainingUsers.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTrainingItems.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTestUsers.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTestItems.deleteByAppid(offlineEval.id)
-          Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
 
           /** Check for errors from metric */
           Logger.info(s"${logPrefix}Exit code summary:")
@@ -508,7 +529,7 @@ class OfflineEvalJob extends InterruptableJob {
             }
           }
 
-          if (exitCodes.values.sum != 0)
+          if (sumExitCodes != 0)
             Logger.warn(s"${logPrefix}Offline evaluation completed with error(s)")
           else
             Logger.info(s"${logPrefix}Offline evaluation completed")

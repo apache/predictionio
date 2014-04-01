@@ -5,8 +5,8 @@ import org.specs2.mutable._
 import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.Items
-import io.prediction.commons.scalding.modeldata.{ItemSimScores}
-import io.prediction.commons.filepath.{AlgoFile}
+import io.prediction.commons.scalding.modeldata.{ ItemSimScores }
+import io.prediction.commons.filepath.{ AlgoFile }
 
 class LatestRankTest extends Specification with TupleConversions {
   def test(
@@ -42,8 +42,8 @@ class LatestRankTest extends Specification with TupleConversions {
       .arg("numSimilarItems", numSimilarItems.toString)
       .arg("modelSet", modelSet.toString)
       .arg("recommendationTime", recommendationTime.toString)
-      .source(Items(appId=appid, itypes=Some(itypes), dbType=training_dbType, dbName=training_dbName, dbHost=None, dbPort=None).getSource, items)
-      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType=modeldata_dbType, dbName=modeldata_dbName, dbHost=None, dbPort=None, algoid=algoid, modelset=modelSet).getSource) { outputBuffer =>
+      .source(Items(appId = appid, itypes = Some(itypes), dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, items)
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
         "correctly write ItemSimScores" in {
           val outputList = outputBuffer.toList
 

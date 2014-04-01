@@ -674,7 +674,7 @@ class Config {
 
   /** Obtains a generic ModelData object for training with configured backend type. */
   def getModeldataTraining(engineinfoid: String): modeldata.ModelData = {
-    modeldataDbType match {
+    modeldataTrainingDbType match {
       case "mongodb" => {
         val thisObj = this
         engineinfoid match {
@@ -692,7 +692,7 @@ class Config {
 
   /** Obtains an ItemRecScores object for training with configured backend type. */
   def getModeldataTrainingItemRecScores(): modeldata.ItemRecScores = {
-    modeldataDbType match {
+    modeldataTrainingDbType match {
       case "mongodb" => {
         new modeldata.mongodb.MongoItemRecScores(this, modeldataTrainingMongoDb.get)
       }
@@ -702,7 +702,7 @@ class Config {
 
   /** Obtains an ItemSimScores object for training with configured backend type. */
   def getModeldataTrainingItemSimScores(): modeldata.ItemSimScores = {
-    modeldataDbType match {
+    modeldataTrainingDbType match {
       case "mongodb" => {
         new modeldata.mongodb.MongoItemSimScores(this, modeldataTrainingMongoDb.get)
       }
