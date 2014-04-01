@@ -10,6 +10,7 @@ import org.apache.mahout.cf.taste.recommender.CandidateItemsStrategy
 import org.apache.mahout.cf.taste.recommender.MostSimilarItemsCandidateItemsStrategy
 import org.apache.mahout.cf.taste.impl.recommender.EstimatedPreferenceCapper
 
+import scala.collection.mutable.PriorityQueue
 import scala.collection.JavaConversions._
 
 /* Extension to Mahout's GenericItemBasedRecommender
@@ -36,12 +37,12 @@ class KNNItemBasedRecommender(dataModel: DataModel,
 
   @throws(classOf[TasteException])
   override def doEstimatePreference(userID: Long, preferencesFromUser: PreferenceArray, itemID: Long): Float = {
-    val neighbourRatedIds = preferencesFromUser.getIDs()
-      .zipWithIndex
+    val ratedIds = preferencesFromUser.getIDs()
+      .zipWithIndex // need index for accessing preferencesFromUser later
       .map { case (id, index) => (id, similarity.itemSimilarity(itemID, id), index) } // (id, simiarity, index)
       .filter { case (id, sim, index) => (!sim.isNaN()) && (sim >= threshold) }
-      .sortBy(_._2)(Ordering[Double].reverse)
-      .take(neighbourSize)
+
+    val neighbourRatedIds = getTopN(ratedIds, neighbourSize)(RatedIdOdering.reverse)
 
     val estimatedPreference: Float = if (booleanData) {
       val totalSimilarity = neighbourRatedIds.foldLeft[Double](0) { (acc, x) =>
@@ -69,6 +70,28 @@ class KNNItemBasedRecommender(dataModel: DataModel,
       }
     }
     estimatedPreference
+  }
+
+  object RatedIdOdering extends Ordering[(Long, Double, Int)] {
+    override def compare(a: (Long, Double, Int), b: (Long, Double, Int)) = a._2 compare b._2
+  }
+
+  def getTopN[T](s: Seq[T], n: Int)(implicit ord: Ordering[T]): Seq[T] = {
+    val q = PriorityQueue()
+
+    for (x <- s) {
+      if (q.size < n)
+        q.enqueue(x)
+      else {
+        // q is full
+        if (ord.compare(x, q.head) < 0) {
+          q.dequeue()
+          q.enqueue(x)
+        }
+      }
+    }
+
+    q.dequeueAll.toSeq.reverse
   }
 
   override def toString() = {

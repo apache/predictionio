@@ -8,6 +8,7 @@ import java.io.BufferedWriter
 import scala.io.Source
 import scala.collection.JavaConversions._
 import scala.sys.process._
+import scala.collection.mutable.PriorityQueue
 
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity
 import org.apache.mahout.cf.taste.model.DataModel
@@ -136,18 +137,21 @@ abstract class MahoutJob {
     val itemIds = dataModel.getItemIDs.toSeq
     val candidateItemsIds = itemIds.filter(validItemsSet(_))
 
-    itemIds.foreach { iid =>
+    val allTopScores = itemIds.par.map { iid =>
       val simScores = candidateItemsIds
         .map { simiid => (simiid, similarity.itemSimilarity(iid, simiid)) }
         // filter out invalid score or the same iid itself
         .filter { x: (_, Double) => (!x._2.isNaN()) && (x._1 != iid) }
-        .sortBy(_._2)(Ordering[Double].reverse)
-        .take(numSimilarItems)
 
-      if (!simScores.isEmpty) {
-        val scoresString = simScores.map(x => s"${x._1}:${x._2}").mkString(",")
-        outputWriter.write(s"${iid}\t[${scoresString}]\n")
-      }
+      (iid, getTopN(simScores, numSimilarItems)(ScoreOdering.reverse))
+    }
+
+    allTopScores.seq.foreach {
+      case (iid, simScores) =>
+        if (!simScores.isEmpty) {
+          val scoresString = simScores.map(x => s"${x._1}:${x._2}").mkString(",")
+          outputWriter.write(s"${iid}\t[${scoresString}]\n")
+        }
     }
 
     outputWriter.close()
@@ -165,6 +169,28 @@ abstract class MahoutJob {
   def cleanup(args: Map[String, String]) = {
     // simpley pass the args to next stage
     args
+  }
+
+  object ScoreOdering extends Ordering[(java.lang.Long, Double)] {
+    override def compare(a: (java.lang.Long, Double), b: (java.lang.Long, Double)) = a._2 compare b._2
+  }
+
+  def getTopN[T](s: Seq[T], n: Int)(implicit ord: Ordering[T]): Seq[T] = {
+    val q = PriorityQueue()
+
+    for (x <- s) {
+      if (q.size < n)
+        q.enqueue(x)
+      else {
+        // q is full
+        if (ord.compare(x, q.head) < 0) {
+          q.dequeue()
+          q.enqueue(x)
+        }
+      }
+    }
+
+    q.dequeueAll.toSeq.reverse
   }
 
 }

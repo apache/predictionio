@@ -4,6 +4,7 @@ import grizzled.slf4j.Logger
 import breeze.linalg._
 import com.twitter.scalding.Args
 import scala.io.Source
+import scala.collection.mutable.PriorityQueue
 
 import io.prediction.algorithms.graphchi.itemrec.MatrixMarketReader
 import io.prediction.commons.Config
@@ -109,7 +110,7 @@ object GraphChiModelConstructor {
       }.toMap
 
     // ratings file (for unseen filtering) 
-    val seenSet: Set[(Int, Int)] = if (arg.unseenOnly) {
+    val seenSet: Map[Int, Set[Int]] = if (arg.unseenOnly) {
       Source.fromFile(s"${arg.inputDir}ratings.mm")
         .getLines()
         // discard all empty line and comments
@@ -124,9 +125,10 @@ object GraphChiModelConstructor {
             case e: Exception => throw new RuntimeException(s"Cannot get user and item index from this line: ${line}. ${e}")
           }
           (u, i)
-        }.toSet
+        }.toSeq.groupBy(_._1)
+        .mapValues(_.map(_._2).toSet)
     } else {
-      Set() // empty map
+      Map() // empty map
     }
 
     // feature x user matrix
@@ -135,38 +137,35 @@ object GraphChiModelConstructor {
     // feature x item matrix
     val itemMatrix = MatrixMarketReader.readDense(s"${arg.inputDir}ratings.mm_V.mm")
 
-    for (uindex <- 1 to userMatrix.cols if usersMap.contains(uindex)) {
-      val scores = for (
-        iindex <- 1 to itemMatrix.cols if (unseenItemFilter(arg.unseenOnly, uindex, iindex, seenSet)
-          && validItemFilter(true, iindex, itemsMap))
-      ) yield {
-        // NOTE: DenseMatrix index starts from 0, so minus 1 (but graphchi user and item index starts from 1)
-        val score = userMatrix(::, uindex - 1) dot itemMatrix(::, iindex - 1)
-        (iindex, score)
+    val allUindex = for (uindex <- 1 to userMatrix.cols if usersMap.contains(uindex)) yield (uindex, userMatrix(::, uindex - 1), seenSet.getOrElse(uindex, Set()))
+
+    val validIindex = for (iindex <- 1 to itemMatrix.cols if validItemFilter(true, iindex, itemsMap)) yield (iindex)
+
+    val allScores = allUindex.par
+      .foreach {
+        case (uindex, userVector, seenItemSet) =>
+          val scores = validIindex.filter(iindex => unseenItemFilter(arg.unseenOnly, iindex, seenItemSet))
+            .map { iindex =>
+              // NOTE: DenseMatrix index starts from 0, so minus 1 (but graphchi user and item index starts from 1)
+              val score = userVector dot itemMatrix(::, iindex - 1)
+              (iindex, score)
+            }
+
+          val topScores = getTopN(scores, arg.numRecommendations)(ScoreOrdering.reverse)
+          //(uindex, topScores)
+          modeldataDb.insert(ItemRecScore(
+            uid = usersMap(uindex),
+            iids = topScores.map(x => itemsMap(x._1).iid),
+            scores = topScores.map(_._2),
+            itypes = topScores.map(x => itemsMap(x._1).itypes),
+            appid = appid,
+            algoid = arg.algoid,
+            modelset = arg.modelSet))
       }
-
-      logger.debug(s"${uindex}: ${scores}")
-
-      val topScores = scores
-        .sortBy(_._2)(Ordering[Double].reverse)
-        .take(arg.numRecommendations)
-
-      logger.debug(s"$topScores")
-
-      modeldataDb.insert(ItemRecScore(
-        uid = usersMap(uindex),
-        iids = topScores.map(x => itemsMap(x._1).iid),
-        scores = topScores.map(_._2),
-        itypes = topScores.map(x => itemsMap(x._1).itypes),
-        appid = appid,
-        algoid = arg.algoid,
-        modelset = arg.modelSet))
-    }
-
   }
 
-  def unseenItemFilter(enable: Boolean, uindex: Int, iindex: Int, seenSet: Set[(Int, Int)]): Boolean = {
-    if (enable) (!seenSet((uindex, iindex))) else true
+  def unseenItemFilter(enable: Boolean, iindex: Int, seenSet: Set[Int]): Boolean = {
+    if (enable) (!seenSet(iindex)) else true
   }
 
   def validItemFilter(enable: Boolean, iindex: Int, validMap: Map[Int, Any]): Boolean = {
@@ -175,6 +174,28 @@ object GraphChiModelConstructor {
 
   def cleanUp(arg: JobArg) = {
 
+  }
+
+  object ScoreOrdering extends Ordering[(Int, Double)] {
+    override def compare(a: (Int, Double), b: (Int, Double)) = a._2 compare b._2
+  }
+
+  def getTopN[T](s: Seq[T], n: Int)(implicit ord: Ordering[T]): Seq[T] = {
+    val q = PriorityQueue()
+
+    for (x <- s) {
+      if (q.size < n)
+        q.enqueue(x)
+      else {
+        // q is full
+        if (ord.compare(x, q.head) < 0) {
+          q.dequeue()
+          q.enqueue(x)
+        }
+      }
+    }
+
+    q.dequeueAll.toSeq.reverse
   }
 
 }
