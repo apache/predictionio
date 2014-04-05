@@ -133,6 +133,7 @@ object Jobs {
     command.setAttribute("engineid", engine.id)
     command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
     command.setAttribute("localTempRoot", config.settingsLocalTempRoot)
+    command.setAttribute("javaOpts", config.schedulerChildJavaOpts)
     command.setAttribute("settingsDbType", config.settingsDbType)
     command.setAttribute("settingsDbName", config.settingsDbName)
     command.setAttribute("settingsDbHost", config.settingsDbHost)
