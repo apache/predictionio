@@ -219,7 +219,7 @@ class AlgoJob extends InterruptableJob {
                 this.synchronized {
                   if (!kill && !c.isEmpty && exitCode == 0) {
                     Logger.info(s"${logPrefix}Going to run: $c")
-                    proc = Some(Process(c).run)
+                    proc = Some(Process(c, None, "JVM_OPT" -> config.schedulerChildJavaOpts).run)
                     Logger.info(s"${logPrefix}Scheduler waiting for sub-process to finish")
                   }
                 }
