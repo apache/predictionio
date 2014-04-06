@@ -52,6 +52,10 @@ class Config {
   /** Whether the scheduler should check for new releases regularly. */
   val schedulerChildJavaOpts: String = try { config.getString("io.prediction.scheduler.child.java.opts") } catch { case _: Throwable => "" }
 
+  val schedulerMapredMinSplitSize: Option[Long] = try { Some(config.getLong("io.prediction.scheduler.mapred.min.split.size")) } catch { case _: Throwable => None }
+
+  val schedulerMapredReduceTasks: Option[Int] = try { Some(config.getInt("io.prediction.scheduler.mapred.reduce.tasks")) } catch { case _: Throwable => None }
+
   /** The database user that stores PredictionIO settings. */
   val settingsDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.settings.db.user")) } catch { case _: Throwable => None }
 

@@ -132,6 +132,9 @@ object Jobs {
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
+    command.setAttribute("hadoopOptions", Seq(
+      config.schedulerMapredMinSplitSize map { x => s"-Dmapred.min.split.size=${x}" } getOrElse "",
+      config.schedulerMapredReduceTasks map { x => s"-Dmapred.reduce.tasks=${x}" } getOrElse "").mkString(" "))
     command.setAttribute("localTempRoot", config.settingsLocalTempRoot)
     command.setAttribute("javaOpts", config.schedulerChildJavaOpts)
     command.setAttribute("settingsDbType", config.settingsDbType)
