@@ -30,6 +30,9 @@ trait ItemRecScores extends ModelData {
   /** Insert an ItemRecScore and return it with a real ID, if any (database vendor dependent). */
   def insert(itemRecScore: ItemRecScore): ItemRecScore
 
+  /** Insert ItemRecScore(s) and return them with real IDs, if any (database vendor dependent). */
+  def insert(itemRecScores: Seq[ItemRecScore]): Seq[ItemRecScore]
+
   /** get an ItemRecScore by uid */
   def getByUid(uid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemRecScore]
 

@@ -86,9 +86,7 @@ class ItemRecScoresSpec extends Specification {
       algoid = algo.id,
       modelset = algo.modelset
     ))
-    val dbItemScores = itemScores map {
-      itemRecScores.insert(_)
-    }
+    val dbItemScores = itemRecScores.insert(itemScores)
     val results = itemRecScores.getByUid("testUser")
     val results2 = itemRecScores.getByUid("testUser2")
     val results3 = itemRecScores.getByUid("testUser3")

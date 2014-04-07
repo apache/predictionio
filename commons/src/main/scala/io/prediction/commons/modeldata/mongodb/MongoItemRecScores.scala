@@ -54,19 +54,45 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
     }.getOrElse(Seq()).toIterator
   }
 
-  def insert(itemrecscore: ItemRecScore) = {
+  def insert(itemRecScore: ItemRecScore) = {
     val id = new ObjectId
     val itemRecObj = MongoDBObject(
       "_id" -> id,
-      "uid" -> idWithAppid(itemrecscore.appid, itemrecscore.uid),
-      "iids" -> itemrecscore.iids.map(i => idWithAppid(itemrecscore.appid, i)),
-      "scores" -> itemrecscore.scores,
-      "itypes" -> itemrecscore.itypes,
-      "algoid" -> itemrecscore.algoid,
-      "modelset" -> itemrecscore.modelset
+      "uid" -> idWithAppid(itemRecScore.appid, itemRecScore.uid),
+      "iids" -> itemRecScore.iids.map(i => idWithAppid(itemRecScore.appid, i)),
+      "scores" -> itemRecScore.scores,
+      "itypes" -> itemRecScore.itypes,
+      "algoid" -> itemRecScore.algoid,
+      "modelset" -> itemRecScore.modelset
     )
-    db(collectionName(itemrecscore.algoid, itemrecscore.modelset)).insert(itemRecObj)
-    itemrecscore.copy(id = Some(id))
+    db(collectionName(itemRecScore.algoid, itemRecScore.modelset)).insert(itemRecObj)
+    itemRecScore.copy(id = Some(id))
+  }
+
+  /**
+   * Insert ItemRecScore(s) and return them with real IDs.
+   * This method uses the Algo ID and model set of the first
+   * ItemRecScore in the sequence as the collection name.
+   */
+  def insert(itemRecScores: Seq[ItemRecScore]) = {
+    val size = itemRecScores.size
+    if (size == 0) Seq[ItemRecScore]()
+    else {
+      val algoid = itemRecScores(0).algoid
+      val modelset = itemRecScores(0).modelset
+      val ids = Seq.fill(itemRecScores.size)(new ObjectId)
+      val itemRecObjsAndIds = itemRecScores.zip(ids)
+      val itemRecObjs = itemRecObjsAndIds.map(t => MongoDBObject(
+        "_id" -> t._2,
+        "uid" -> idWithAppid(t._1.appid, t._1.uid),
+        "iids" -> t._1.iids.map(i => idWithAppid(t._1.appid, i)),
+        "scores" -> t._1.scores,
+        "itypes" -> t._1.itypes,
+        "algoid" -> t._1.algoid,
+        "modelset" -> t._1.modelset))
+      db(collectionName(algoid, modelset)).insert(itemRecObjs: _*)
+      itemRecObjsAndIds.map(t => t._1.copy(id = Some(t._2)))
+    }
   }
 
   def deleteByAlgoid(algoid: Int) = {
