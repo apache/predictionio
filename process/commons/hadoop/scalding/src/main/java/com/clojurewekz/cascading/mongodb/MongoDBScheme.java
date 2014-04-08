@@ -44,6 +44,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
   public List<String> columnFieldNames;
   public Map<String, String> fieldMappings;
   public String keyColumnName;
+  public int splitSize = 64;
 
   private String host;
   private Integer port;
@@ -111,6 +112,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
     // TODO: MongoConfigUtil.setFields(conf, fieldsBson);
     //if (!this.query.isEmpty())
     MongoConfigUtil.setQuery(conf, this.query);
+    MongoConfigUtil.setSplitSize(conf, splitSize);
     // TODO: MongoConfigUtil.setFields(conf, fields);
   }
 
