@@ -54,6 +54,8 @@ class Config {
 
   val schedulerMapredMinSplitSize: Option[Long] = try { Some(config.getLong("io.prediction.scheduler.mapred.min.split.size")) } catch { case _: Throwable => None }
 
+  val schedulerMapredMapTasks: Option[Int] = try { Some(config.getInt("io.prediction.scheduler.mapred.map.tasks")) } catch { case _: Throwable => None }
+
   val schedulerMapredReduceTasks: Option[Int] = try { Some(config.getInt("io.prediction.scheduler.mapred.reduce.tasks")) } catch { case _: Throwable => None }
 
   /** The database user that stores PredictionIO settings. */
