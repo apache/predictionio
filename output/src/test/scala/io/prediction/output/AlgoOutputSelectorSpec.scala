@@ -26,6 +26,7 @@ class AlgoOutputSelectorSpec extends Specification {
   get itemrec output with dedup from a valid engine ${itemRecOutputSelectionDedupByAttribute(algoOutputSelector)}
   get itemrec output from a valid engine with no algorithm ${itemRecOutputSelectionNoAlgo(algoOutputSelector)}
   get itemrec output from an invalid engine ${itemRecOutputSelectionBadEngine(algoOutputSelector)}
+
   get itemsim output from a valid engine ${itemSimOutputSelection(algoOutputSelector)}
   get itemsim output from a valid engine with freshness ${itemSimOutputSelectionWithFreshness(algoOutputSelector)}
   get itemsim output with geo from a valid engine ${itemSimOutputSelectionWithLatlng(algoOutputSelector)}
@@ -33,6 +34,11 @@ class AlgoOutputSelectorSpec extends Specification {
   get itemsim output with dedup from a valid engine ${itemSimOutputSelectionDedupByAttribute(algoOutputSelector)}
   get itemsim output from a valid engine with no algorithm ${itemSimOutputSelectionNoAlgo(algoOutputSelector)}
   get itemsim output from an invalid engine ${itemSimOutputSelectionBadEngine(algoOutputSelector)}
+
+  get itemreorder output from a valid engine ${itemReorderOutputSelection(algoOutputSelector)}
+  get itemreorder output from a valid engine with no algorithm ${itemReorderOutputSelectionNoAlgo(algoOutputSelector)}
+  get itemreorder output from an invalid engine ${itemReorderOutputSelectionBadEngine(algoOutputSelector)}
+
   ${Step(mongoDb.dropDatabase())}
 
   """
@@ -1272,5 +1278,114 @@ class AlgoOutputSelectorSpec extends Specification {
     )
     val engineid = mongoEngines.insert(engine)
     algoOutputSelector.itemSimSelection("", 10, None, None, None, None)(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
+  }
+
+  /** ItemReorder engine. */
+  def itemReorderOutputSelection(algoOutputSelector: AlgoOutputSelector) = {
+    val engine = Engine(
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemReorderOutputSelection",
+      infoid = "itemreorder",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
+    )
+    val engineid = mongoEngines.insert(engine)
+
+    val algo = Algo(
+      id = 0,
+      engineid = engineid,
+      name = "itemReorderOutputSelection",
+      infoid = "pio-itemreorder-single-mahout-knnitembased",
+      command = "itemReorderOutputSelection",
+      params = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed",
+      offlineevalid = None
+    )
+    val algoid = mongoAlgos.insert(algo)
+
+    val scores = Seq(ItemRecScore(
+      uid = "user1",
+      iids = Seq("item_z", "item_h", "item_d", "item_g", "item_e", "item_f", "item_x", "item_y", "item_b", "item_c", "item_a"),
+      scores = Seq(11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+      itypes = Seq(Seq("unrelated"), Seq("foo"), Seq("foo"), Seq("bar"), Seq("bar"), Seq("foo"), Seq("bar"), Seq("foo"), Seq("foo"), Seq("bar"), Seq("bar")),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true))
+
+    scores foreach { mongoItemRecScores.insert(_) }
+
+    val result = algoOutputSelector.itemReorderSelection("user1", Seq("item_e", "item_d", "item_a", "item_x", "item_h"))(dummyApp, engine.copy(id = engineid))
+    val resultBar = algoOutputSelector.itemReorderSelection("user1", Seq("x", "y", "z"))(dummyApp, engine.copy(id = engineid))
+    val resultBaz = algoOutputSelector.itemReorderSelection("user1", Seq("item_e", "item_d", "item_a", "x", "y", "z"))(dummyApp, engine.copy(id = engineid))
+
+    result must contain(
+      "item_h",
+      "item_d",
+      "item_e",
+      "item_x",
+      "item_a") and
+      (resultBar must contain("x", "y", "z")) and
+      (resultBaz must contain("item_d", "item_e", "item_a", "x", "y", "z"))
+  }
+
+  def itemReorderOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
+    val engine = Engine(
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemReorderOutputSelection",
+      infoid = "itemreorder",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
+    )
+    val engineid = mongoEngines.insert(engine)
+
+    val algo = Algo(
+      id = 0,
+      engineid = engineid,
+      name = "itemReorderOutputSelection",
+      infoid = "abc4",
+      command = "itemReorderOutputSelection",
+      params = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed",
+      offlineevalid = None
+    )
+    val algoid = mongoAlgos.insert(algo)
+
+    algoOutputSelector.itemReorderSelection("", Seq())(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
+  }
+
+  def itemReorderOutputSelectionNoAlgo(algoOutputSelector: AlgoOutputSelector) = {
+    val engine = Engine(
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemReorderOutputSelectionNoAlgo",
+      infoid = "itemrec",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
+    )
+    val engineid = mongoEngines.insert(engine)
+    algoOutputSelector.itemReorderSelection("", Seq())(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
+  }
+
+  def itemReorderOutputSelectionBadEngine(algoOutputSelector: AlgoOutputSelector) = {
+    val engine = Engine(
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemReorderOutputSelectionBadEngine",
+      infoid = "itemReorderOutputSelectionBadEngine",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map()
+    )
+    val engineid = mongoEngines.insert(engine)
+    algoOutputSelector.itemReorderSelection("", Seq())(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
   }
 }

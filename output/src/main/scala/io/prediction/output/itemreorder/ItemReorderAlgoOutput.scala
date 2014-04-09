@@ -32,7 +32,10 @@ object ItemReorderAlgoOutput {
     val iidsSet = iids.toSet
     allItemsForUid map { allItems =>
       val iidScorePairs = allItems.iids.zip(allItems.scores)
-      iidScorePairs.filter(p => iidsSet(p._1)).sortBy(_._2).reverse.map(_._1)
+      val reordered = iidScorePairs.filter(p => iidsSet(p._1)).sortBy(_._2).reverse.map(_._1)
+      val reorderedSet = reordered.toSet
+      val unordered = iids.filterNot(x => reorderedSet(x))
+      reordered ++ unordered
     } getOrElse iids
   }
 }
