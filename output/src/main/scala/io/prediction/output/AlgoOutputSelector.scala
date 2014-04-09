@@ -48,4 +48,26 @@ class AlgoOutputSelector(algos: Algos) {
 
     algo
   }
+
+  def itemReorderSelection(uid: String, iids: Seq[String])(implicit app: App, engine: Engine): Seq[String] = {
+    implicit val algo = itemReorderAlgoSelection(engine)
+
+    itemreorder.ItemReorderAlgoOutput.output(uid, iids)
+  }
+
+  def itemReorderAlgoSelection(engine: Engine): Algo = {
+    /** Check engine type. */
+    if (engine.infoid != "itemreorder") throw new RuntimeException("Not an itemreorder engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
+
+    val itemReorderAlgos = algos.getDeployedByEngineid(engine.id)
+
+    if (!itemReorderAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
+
+    val algo = itemReorderAlgos.next()
+
+    /** Multiple deployment not yet supported. */
+    if (itemReorderAlgos.hasNext) throw new RuntimeException(multipleAlgoErrorMsg)
+
+    algo
+  }
 }
