@@ -15,28 +15,31 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class AlgoOutputSelectorSpec extends Specification {
-  def is =
-    "PredictionIO AlgoOutputSelector Specification" ^
-      p ^
-      "get itemrec output from a valid engine" ! itemRecOutputSelection(algoOutputSelector) ^
-      "get itemrec output from a valid engine with freshness" ! itemRecOutputSelectionWithFreshness(algoOutputSelector) ^
-      "get itemrec output with geo from a valid engine" ! itemRecOutputSelectionWithLatlng(algoOutputSelector) ^
-      "get itemrec output with time constraints from a valid engine" ! itemRecOutputSelectionWithTime(algoOutputSelector) ^
-      "get itemrec output with dedup from a valid engine" ! itemRecOutputSelectionDedupByAttribute(algoOutputSelector) ^
-      //"get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
-      //"get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
-      "get itemrec output from a valid engine with no algorithm" ! itemRecOutputSelectionNoAlgo(algoOutputSelector) ^
-      "get itemrec output from an invalid engine" ! itemRecOutputSelectionBadEngine(algoOutputSelector) ^
-      "get itemsim output from a valid engine" ! itemSimOutputSelection(algoOutputSelector) ^
-      "get itemsim output from a valid engine with freshness" ! itemSimOutputSelectionWithFreshness(algoOutputSelector) ^
-      "get itemsim output with geo from a valid engine" ! itemSimOutputSelectionWithLatlng(algoOutputSelector) ^
-      "get itemsim output with time constraints from a valid engine" ! itemSimOutputSelectionWithTime(algoOutputSelector) ^
-      "get itemsim output with dedup from a valid engine" ! itemSimOutputSelectionDedupByAttribute(algoOutputSelector) ^
-      //"get itemsim output from a valid engine with an unsupported algorithm"    ! itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
-      "get itemsim output from a valid engine with no algorithm" ! itemSimOutputSelectionNoAlgo(algoOutputSelector) ^
-      "get itemsim output from an invalid engine" ! itemSimOutputSelectionBadEngine(algoOutputSelector) ^
-      Step(mongoDb.dropDatabase()) ^
-      end
+  def is = s2"""
+
+  PredictionIO AlgoOutputSelector Specification
+
+  get itemrec output from a valid engine ${itemRecOutputSelection(algoOutputSelector)}
+  get itemrec output from a valid engine with freshness ${itemRecOutputSelectionWithFreshness(algoOutputSelector)}
+  get itemrec output with geo from a valid engine ${itemRecOutputSelectionWithLatlng(algoOutputSelector)}
+  get itemrec output with time constraints from a valid engine ${itemRecOutputSelectionWithTime(algoOutputSelector)}
+  get itemrec output with dedup from a valid engine ${itemRecOutputSelectionDedupByAttribute(algoOutputSelector)}
+  get itemrec output from a valid engine with no algorithm ${itemRecOutputSelectionNoAlgo(algoOutputSelector)}
+  get itemrec output from an invalid engine ${itemRecOutputSelectionBadEngine(algoOutputSelector)}
+  get itemsim output from a valid engine ${itemSimOutputSelection(algoOutputSelector)}
+  get itemsim output from a valid engine with freshness ${itemSimOutputSelectionWithFreshness(algoOutputSelector)}
+  get itemsim output with geo from a valid engine ${itemSimOutputSelectionWithLatlng(algoOutputSelector)}
+  get itemsim output with time constraints from a valid engine ${itemSimOutputSelectionWithTime(algoOutputSelector)}
+  get itemsim output with dedup from a valid engine ${itemSimOutputSelectionDedupByAttribute(algoOutputSelector)}
+  get itemsim output from a valid engine with no algorithm ${itemSimOutputSelectionNoAlgo(algoOutputSelector)}
+  get itemsim output from an invalid engine ${itemSimOutputSelectionBadEngine(algoOutputSelector)}
+  ${Step(mongoDb.dropDatabase())}
+
+  """
+
+  //"get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
+  //"get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
+  //"get itemsim output from a valid engine with an unsupported algorithm"    ! itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
 
   val mongoDbName = "predictionio_algooutputselection_test"
   val mongoDb = MongoConnection()(mongoDbName)
