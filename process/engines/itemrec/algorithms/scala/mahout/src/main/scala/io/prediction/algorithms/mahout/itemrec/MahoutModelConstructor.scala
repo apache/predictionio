@@ -46,7 +46,7 @@ object MahoutModelConstructor {
     val evalid: Option[Int],
     val modelSet: Boolean,
     val unseenOnly: Boolean,
-    val numRecommendations: Int,
+    val numRecommendations: Option[Int],
     val booleanData: Boolean,
     val implicitFeedback: Boolean)
 
@@ -64,7 +64,7 @@ object MahoutModelConstructor {
       evalid = args.optional("evalid") map (x => x.toInt),
       modelSet = args("modelSet").toBoolean,
       unseenOnly = args.optional("unseenOnly").map(_.toBoolean).getOrElse(false),
-      numRecommendations = args("numRecommendations").toInt,
+      numRecommendations = args.optional("numRecommendations").map(x => x.toInt),
       booleanData = args.optional("booleanData").map(x => x.toBoolean).getOrElse(false),
       implicitFeedback = args.optional("implicitFeedback").map(x => x.toBoolean).getOrElse(false)
     )
@@ -153,13 +153,13 @@ object MahoutModelConstructor {
         /*if (arg.unseenOnly || IMPLICIT_PREFERENCE) predicted
         else (predicted ++ ratingsMap.getOrElse(uindex, Seq()))*/
 
-        val topScores = combined
+        val topScoresAll = combined
           .filter {
             case (iindex, rating) =>
               unseenItemFilter(arg.unseenOnly, uindex, iindex, seenMap) &&
                 validItemFilter(true, iindex, itemsMap)
           }.sortBy(_._2)(Ordering[Double].reverse)
-          .take(arg.numRecommendations)
+        val topScores = arg.numRecommendations.map(x => topScoresAll.take(x)).getOrElse(topScoresAll)
 
         logger.debug(s"$topScores")
 
