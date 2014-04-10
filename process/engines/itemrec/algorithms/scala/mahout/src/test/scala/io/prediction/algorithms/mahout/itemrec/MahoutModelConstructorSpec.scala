@@ -3,6 +3,7 @@ package io.prediction.algorithms.mahout.itemrec
 import io.prediction.commons.Config
 import io.prediction.commons.settings.{ App, Algo }
 import io.prediction.commons.modeldata.{ ItemRecScore }
+import io.prediction.algorithms.mahout.itemrec.TestUtils
 
 import org.specs2.mutable._
 import com.github.nscala_time.time.Imports._
@@ -24,24 +25,6 @@ class MahoutModelConstructorSpec extends Specification {
 
   val commonConfig = new Config
   val modeldataItemRecScores = commonConfig.getModeldataItemRecScores
-
-  // NOTE: use HALF_UP mode to avoid error caused by rounding when compare data
-  // (eg. 3.5 vs 3.499999999999).
-  // (eg. 0.6666666666 vs 0.666666667)
-  def roundUpScores(irec: ItemRecScore): ItemRecScore = {
-    irec.copy(
-      scores = irec.scores.map { x =>
-        BigDecimal(x).setScale(9, BigDecimal.RoundingMode.HALF_UP).toDouble
-      }
-    )
-  }
-
-  def argMapToArray(args: Map[String, Any]): Array[String] = {
-    args.toArray.flatMap {
-      case (k, v) =>
-        Array(s"--${k}", v.toString)
-    }
-  }
 
   "MahoutModelConstructor" should {
 
@@ -79,18 +62,10 @@ class MahoutModelConstructorSpec extends Specification {
       "2\t[3:1.2,4:11.4,5:3.0,6:2.55]",
       "3\t[1:4.5,3:22.5,2:3.3,5:2.2]")
 
-    def writeToFile(lines: List[String], filePath: String) = {
-      val writer = new BufferedWriter(new FileWriter(new File(filePath)))
-      lines.foreach { line =>
-        writer.write(s"${line}\n")
-      }
-      writer.close()
-    }
-
-    writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")
-    writeToFile(itemsIndex, s"${inputDir}itemsIndex.tsv")
-    writeToFile(ratingsCSV, s"${inputDir}ratings.csv")
-    writeToFile(predicted, s"${inputDir}predicted.tsv")
+    TestUtils.writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")
+    TestUtils.writeToFile(itemsIndex, s"${inputDir}itemsIndex.tsv")
+    TestUtils.writeToFile(ratingsCSV, s"${inputDir}ratings.csv")
+    TestUtils.writeToFile(predicted, s"${inputDir}predicted.tsv")
 
     val appid = 24
 
@@ -166,16 +141,16 @@ class MahoutModelConstructorSpec extends Specification {
         algoid = algoid,
         modelset = modelSet)
 
-      MahoutModelConstructor.main(argMapToArray(args))
+      MahoutModelConstructor.main(TestUtils.argMapToArray(args))
 
       val u0ItemRec = modeldataItemRecScores.getByUid("u0")
       val u1ItemRec = modeldataItemRecScores.getByUid("u1")
       val u2ItemRec = modeldataItemRecScores.getByUid("u2")
 
       // don't check id
-      u0ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u0Expected)) and
-        (u1ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u1Expected))) and
-        (u2ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u2Expected)))
+      u0ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u0Expected)) and
+        (u1ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u1Expected))) and
+        (u2ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u2Expected)))
 
     }
 
@@ -240,16 +215,16 @@ class MahoutModelConstructorSpec extends Specification {
         algoid = algoid,
         modelset = modelSet)
 
-      MahoutModelConstructor.main(argMapToArray(args))
+      MahoutModelConstructor.main(TestUtils.argMapToArray(args))
 
       val u0ItemRec = modeldataItemRecScores.getByUid("u0")
       val u1ItemRec = modeldataItemRecScores.getByUid("u1")
       val u2ItemRec = modeldataItemRecScores.getByUid("u2")
 
       // don't check id
-      u0ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u0Expected)) and
-        (u1ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u1Expected))) and
-        (u2ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u2Expected)))
+      u0ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u0Expected)) and
+        (u1ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u1Expected))) and
+        (u2ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u2Expected)))
 
     }
 
@@ -266,10 +241,10 @@ class MahoutModelConstructorSpec extends Specification {
         "4\ti3\tt3"
       )
 
-      writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")
-      writeToFile(itemsIndex, s"${inputDir}itemsIndex.tsv")
-      writeToFile(ratingsCSV, s"${inputDir}ratings.csv")
-      writeToFile(predicted, s"${inputDir}predicted.tsv")
+      TestUtils.writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")
+      TestUtils.writeToFile(itemsIndex, s"${inputDir}itemsIndex.tsv")
+      TestUtils.writeToFile(ratingsCSV, s"${inputDir}ratings.csv")
+      TestUtils.writeToFile(predicted, s"${inputDir}predicted.tsv")
 
       val algoid = 27
       val modelSet = false
@@ -330,16 +305,16 @@ class MahoutModelConstructorSpec extends Specification {
         algoid = algoid,
         modelset = modelSet)
 
-      MahoutModelConstructor.main(argMapToArray(args))
+      MahoutModelConstructor.main(TestUtils.argMapToArray(args))
 
       val u0ItemRec = modeldataItemRecScores.getByUid("u0")
       val u1ItemRec = modeldataItemRecScores.getByUid("u1")
       val u2ItemRec = modeldataItemRecScores.getByUid("u2")
 
       // don't check id
-      u0ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u0Expected)) and
-        (u1ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u1Expected))) and
-        (u2ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u2Expected)))
+      u0ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u0Expected)) and
+        (u1ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u1Expected))) and
+        (u2ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u2Expected)))
 
     }
 
@@ -404,16 +379,16 @@ class MahoutModelConstructorSpec extends Specification {
         algoid = algoid,
         modelset = modelSet)
 
-      MahoutModelConstructor.main(argMapToArray(args))
+      MahoutModelConstructor.main(TestUtils.argMapToArray(args))
 
       val u0ItemRec = modeldataItemRecScores.getByUid("u0")
       val u1ItemRec = modeldataItemRecScores.getByUid("u1")
       val u2ItemRec = modeldataItemRecScores.getByUid("u2")
 
       // don't check id
-      u0ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u0Expected)) and
-        (u1ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u1Expected))) and
-        (u2ItemRec.map(roundUpScores(_).copy(id = None)) must beSome(roundUpScores(u2Expected)))
+      u0ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u0Expected)) and
+        (u1ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u1Expected))) and
+        (u2ItemRec.map(TestUtils.roundUpScores(_).copy(id = None)) must beSome(TestUtils.roundUpScores(u2Expected)))
 
     }
 

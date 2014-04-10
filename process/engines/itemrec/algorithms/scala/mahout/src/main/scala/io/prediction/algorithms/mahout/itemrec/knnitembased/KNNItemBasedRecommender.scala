@@ -32,7 +32,7 @@ class KNNItemBasedRecommender(dataModel: DataModel,
     Some(new EstimatedPreferenceCapper(getDataModel()))
 
   def this(dataModel: DataModel, similarity: ItemSimilarity, booleanData: Boolean, neighbourSize: Int, threshold: Double) =
-    this(dataModel, similarity, AbstractRecommender.getDefaultCandidateItemsStrategy(),
+    this(dataModel, similarity, new AllPreferredItemsNeighborhoodCandidateItemsStrategy(), //AbstractRecommender.getDefaultCandidateItemsStrategy()
       GenericItemBasedRecommender.getDefaultMostSimilarItemsCandidateItemsStrategy(), booleanData, neighbourSize, threshold)
 
   @throws(classOf[TasteException])

@@ -20,6 +20,7 @@ import org.apache.mahout.cf.taste.similarity.precompute.BatchItemSimilarities
 import org.apache.mahout.cf.taste.impl.similarity.precompute.MultithreadedBatchItemSimilarities
 import org.apache.mahout.cf.taste.impl.similarity.precompute.FileSimilarItemsWriter
 import org.apache.mahout.cf.taste.similarity.precompute.SimilarItems
+import org.apache.mahout.cf.taste.impl.recommender.PreferredItemsNeighborhoodCandidateItemsStrategy
 
 import scala.collection.JavaConversions._
 
@@ -37,8 +38,9 @@ class KNNItemBasedJob extends MahoutJob {
     val threshold: Double = getArgOpt(args, "threshold").map(_.toDouble).getOrElse(Double.MinPositiveValue)
     val nearestN: Int = getArgOpt(args, "nearestN", "10").toInt
     val outputSim: String = getArg(args, "outputSim")
+    val unseenOnly: Boolean = getArgOpt(args, "unseenOnly", "false").toBoolean
 
-    val preComputeItemSim: Boolean = getArgOpt(args, "preComputeItemSim", "true").toBoolean
+    val preComputeItemSim: Boolean = getArgOpt(args, "preComputeItemSim", "false").toBoolean
     val similarItemsPerItem: Int = getArgOpt(args, "similarItemsPerItem", "100").toInt // number of similar items per item in pre-computation
     // MultithreadedBatchItemSimilarities parameter
     /*
@@ -90,7 +92,14 @@ class KNNItemBasedJob extends MahoutJob {
       new FileItemSimilarity(new File(outputSim))
     } else similarity
 
-    val recommender: Recommender = new KNNItemBasedRecommender(dataModel, recSimilarity, booleanData, nearestN, threshold)
+    val candidateItemsStrategy = if (unseenOnly) new PreferredItemsNeighborhoodCandidateItemsStrategy()
+    else new AllPreferredItemsNeighborhoodCandidateItemsStrategy()
+
+    val mostSimilarItemsCandidateItemsStrategy = new PreferredItemsNeighborhoodCandidateItemsStrategy()
+
+    val recommender: Recommender = new KNNItemBasedRecommender(dataModel, recSimilarity,
+      candidateItemsStrategy, mostSimilarItemsCandidateItemsStrategy,
+      booleanData, nearestN, threshold)
 
     recommender
   }
