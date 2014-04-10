@@ -80,7 +80,10 @@ object Jobs {
     job
   }
 
-  def setSharedAttributes(command: StringTemplate, config: Config, app: App, engine: Engine, algo: Option[Algo], offlineEval: Option[OfflineEval], metric: Option[OfflineEvalMetric], params: Option[collection.immutable.Map[String, Any]] = None) = {
+  def setSharedAttributes(command: StringTemplate, config: Config, app: App,
+    engine: Engine, algo: Option[Algo], offlineEval: Option[OfflineEval],
+    metric: Option[OfflineEvalMetric],
+    params: Option[collection.immutable.Map[String, Any]] = None) = {
     /** Custom attributes */
     params map { command.setAttributes(_) }
 
@@ -110,10 +113,15 @@ object Jobs {
       command.setAttribute("algoFilePrefix", AlgoFile(config.settingsHdfsRoot, app.id, engine.id, alg.id, offlineEval.map(_.id), ""))
     }
 
+    /** Engine-specific attributes */
+    val engineDefaultParams = Scheduler.engineInfos.get(engine.infoid) map {
+      _.params.mapValues(_.defaultvalue)
+    } getOrElse Map[String, String]()
+    command.setAttributes(command.attributes ++ engineDefaultParams ++ engine.params)
+
     /** Common attributes */
     command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
-    command.setAttribute("goalParam", engine.params("goal"))
 
     /**
      * Locate JAR names
@@ -165,8 +173,6 @@ object Jobs {
       command.setAttribute("itypes", "--itypes " + it.mkString(" ")) // NOTE: a space ' ' is necessary after --itypes
       command.setAttribute("itypesCSV", "--itypes " + it.mkString(","))
     }
-    command.setAttribute("numRecommendations", engine.params.getOrElse("numRecommendations", 500))
-    command.setAttribute("numSimilarItems", engine.params.getOrElse("numSimilarItems", 500))
     command.setAttribute("unseenOnly", engine.params.getOrElse("unseenonly", false))
     command.setAttribute("recommendationTime", System.currentTimeMillis)
   }
