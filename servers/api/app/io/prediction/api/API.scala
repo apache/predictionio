@@ -161,6 +161,17 @@ object API extends Controller {
         Valid
     } getOrElse (Invalid(ValidationError("Must not contain any tab characters.")))
   }
+  val listOfIids: Mapping[String] = of[String] verifying Constraint[String]("iids") { o =>
+    """[^\t]+""".r.unapplySeq(o) map { _ =>
+      val splitted = o.split(",")
+      if (splitted.size == 0)
+        Invalid(ValidationError("Must specify at least one valid Item ID."))
+      else if (splitted.exists(_.size == 0))
+        Invalid(ValidationError("Must not contain any empty Item ID."))
+      else
+        Valid
+    } getOrElse (Invalid(ValidationError("Must not contain any tab characters.")))
+  }
   val latlngRegex = """-?\d+(\.\d*)?,-?\d+(\.\d*)?""".r
   val latlng: Mapping[String] = of[String] verifying Constraint[String]("latlng", () => latlngRegex) {
     o =>
@@ -651,6 +662,55 @@ object API extends Controller {
               } catch {
                 case e: Exception =>
                   APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage(), "trace" -> e.getStackTrace().map(_.toString).mkString("\n")))
+              }
+            }
+          }
+        }
+      )
+    }
+  }
+
+  def itemReorder(format: String, enginename: String) = Action { implicit request =>
+    FormattedResponse(format) {
+      Form(tuple(
+        "pio_appkey" -> nonEmptyText,
+        "pio_uid" -> nonEmptyText,
+        "pio_iids" -> listOfIids,
+        "pio_attributes" -> optional(text)
+      )).bindFromRequest.fold(
+        f => bindFailed(f.errors),
+        t => {
+          val (appkey, uid, iids, attributes) = t
+          AuthenticatedApp(appkey) { implicit app =>
+            ValidEngine(enginename) { implicit engine =>
+              try {
+                val res = algoOutputSelector.itemReorderSelection(
+                  uid = uid,
+                  iids = iids.split(",")
+                )
+                if (res.length > 0) {
+                  val attributesToGet: Seq[String] = attributes map { _.split(",").toSeq } getOrElse Seq()
+
+                  if (attributesToGet.length > 0) {
+                    val attributedItems = items.getByIds(app.id, res).map(i => (i.id, i)).toMap
+                    val ar = attributesToGet map { atg =>
+                      Map(atg -> res.map(ri =>
+                        attributedItems(ri).attributes map { attribs =>
+                          attribs.get(atg) getOrElse null
+                        } getOrElse null
+                      ))
+                    }
+
+                    APIMessageResponse(OK, Map("pio_iids" -> res) ++ ar.reduceLeft((a, b) => a ++ b))
+                  } else {
+                    APIMessageResponse(OK, Map("pio_iids" -> res))
+                  }
+                } else {
+                  APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find reordering for user."))
+                }
+              } catch {
+                case e: Exception =>
+                  APIMessageResponse(INTERNAL_SERVER_ERROR, Map("message" -> e.getMessage()))
               }
             }
           }

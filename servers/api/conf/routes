@@ -21,3 +21,4 @@ GET     /p/actions/u2i/:action.:format            io.prediction.api.API.userToIt
 
 GET     /engines/itemrec/:engine/topn.:format     io.prediction.api.API.itemRecTopN(format, engine)
 GET     /engines/itemsim/:engine/topn.:format     io.prediction.api.API.itemSimTopN(format, engine)
+GET     /engines/itemreorder/:engine/reordered.:format io.prediction.api.API.itemReorder(format, engine)

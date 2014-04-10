@@ -207,6 +207,63 @@ class APISpec extends Specification {
     }
   }
 
+  "ItemReorder" should {
+    val enginename = "itemreorder"
+
+    val engineid = engines.insert(Engine(
+      id = 0,
+      appid = appid,
+      name = "itemreorder",
+      infoid = "itemreorder",
+      itypes = None,
+      params = Map()))
+
+    val algoid = algos.insert(Algo(
+      id = 0,
+      engineid = engineid,
+      name = enginename,
+      infoid = "pio-itemreorder-single-knnitembased",
+      command = "itemr",
+      params = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed",
+      offlineevalid = None))
+
+    itemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iids = Seq("hsh", "mvh", "lbh", "dac"),
+      scores = Seq(4, 3, 2, 1),
+      itypes = Seq(Seq("fresh", "meat"), Seq("fresh", "meat"), Seq("fresh", "meat"), Seq("fresh", "meat")),
+      appid = appid,
+      algoid = algoid,
+      modelset = true))
+
+    "reorder" in new WithServer {
+      val response = Helpers.await(wsUrl(s"/engines/itemreorder/${enginename}/reordered.json")
+        .withQueryString(
+          "pio_appkey" -> "appkey",
+          "pio_uid" -> "user1",
+          "pio_iids" -> "lbh,dac,mvh,hsh")
+        .get())
+      response.status must beEqualTo(OK) and
+        (response.body must beEqualTo("""{"pio_iids":["hsh","mvh","lbh","dac"]}"""))
+    }
+
+    "reorder and unorder" in new WithServer {
+      val response = Helpers.await(wsUrl(s"/engines/itemreorder/${enginename}/reordered.json")
+        .withQueryString(
+          "pio_appkey" -> "appkey",
+          "pio_uid" -> "user1",
+          "pio_iids" -> "foobar,lbh,dac,mvh,hsh")
+        .get())
+      response.status must beEqualTo(OK) and
+        (response.body must beEqualTo("""{"pio_iids":["hsh","mvh","lbh","dac","foobar"]}"""))
+    }
+  }
+
   "Items" should {
     "fail creation with tabs in itypes" in new WithServer {
       val response = Helpers.await(wsUrl(s"/items.json").post(Map(
