@@ -1,23 +1,23 @@
 {
     "systeminfos": {
         "version": {
-            "value": "0.7.0-SNAPSHOT",
+            "value": "0.7.1-SNAPSHOT",
             "description": "PredictionIO version"
         },
         "jars.pdioItemrecAlgo": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.1-SNAPSHOT.jar"
         },
         "jars.pdioItemsimAlgo": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.1-SNAPSHOT.jar"
         },
         "jars.pdioItemrecEval": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.1-SNAPSHOT.jar"
         },
         "jars.pdioItemsimEval": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.1-SNAPSHOT.jar"
         },
         "jars.pdioCommonsEval": {
-            "value": "predictionio-process-hadoop-scalding-assembly-0.7.0-SNAPSHOT.jar"
+            "value": "predictionio-process-hadoop-scalding-assembly-0.7.1-SNAPSHOT.jar"
         }
     },
     "engineinfos": {
