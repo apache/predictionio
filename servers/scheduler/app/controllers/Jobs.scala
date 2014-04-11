@@ -120,8 +120,10 @@ object Jobs {
     command.setAttributes(command.attributes ++ engineDefaultParams ++ engine.params)
 
     /** Common attributes */
+    val appdataItems = config.getAppdataItems
     command.setAttribute("base", config.base)
     command.setAttribute("hadoop", Scheduler.hadoopCommand)
+    command.setAttribute("itemCount", appdataItems.countByAppid(app.id))
 
     /**
      * Locate JAR names
