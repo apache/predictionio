@@ -1,7 +1,7 @@
 package io.prediction.output.itemrec
 
 import io.prediction.commons.Config
-import io.prediction.commons.appdata.Items
+import io.prediction.commons.appdata.{ Item, Items }
 import io.prediction.commons.modeldata.ItemRecScore
 import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval }
 
@@ -11,7 +11,8 @@ import com.github.nscala_time.time.Imports._
 
 trait ItemRecAlgoOutput {
   /** output the Seq of iids */
-  def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Iterator[String]
+  def output(uid: String, n: Int, itypes: Option[Seq[String]])(
+    implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Iterator[String]
 }
 
 object ItemRecAlgoOutput {
@@ -28,7 +29,7 @@ object ItemRecAlgoOutput {
     serendipity.map { s => n * (s + 1) }.getOrElse(n)
   }
 
-  def serendipityOutput(output: Seq[String], n: Int)(implicit engine: Engine) = {
+  def serendipityOutput(output: Seq[Item], n: Int)(implicit engine: Engine) = {
     val serendipity = engine.params.get("serendipity").map(_.asInstanceOf[Int])
     /** Serendipity output. */
     serendipity.map { s =>
@@ -39,18 +40,21 @@ object ItemRecAlgoOutput {
     } getOrElse output
   }
 
-  def freshnessOutput(output: Seq[String], n: Int)(implicit app: App, engine: Engine, items: Items) = {
+  def freshnessOutput(output: Seq[Item], n: Int)(implicit app: App, engine: Engine, items: Items) = {
     val freshness = engine.params.get("freshness").map(_.asInstanceOf[Int])
-
     /** Freshness output. */
     freshness map { f =>
       if (f > 0) {
         val freshnessN = scala.math.round(n * f / 10)
         val otherN = n - freshnessN
-        val freshnessOutput = items.getRecentByIds(app.id, output).map(_.id)
+        val freshnessOutput = items.getRecentByIds(app.id, output.map(_.id))
         val finalFreshnessOutput = freshnessOutput.take(freshnessN)
-        val finalFreshnessOutputSet = finalFreshnessOutput.toSet
-        finalFreshnessOutput ++ (output filterNot { finalFreshnessOutputSet(_) }).take(otherN)
+        val finalFreshnessIidSet = finalFreshnessOutput.map(_.id).toSet
+        // Other output exclude fresh items
+        val otherOutput = output
+          .filterNot(item => finalFreshnessIidSet(item.id)).take(otherN)
+
+        (finalFreshnessOutput ++ otherOutput)
       } else
         output
     } getOrElse output
@@ -96,32 +100,36 @@ object ItemRecAlgoOutput {
      * geospatial constraint is 100. A "manual join" is still feasible with this
      * size.
      */
-    val (iids, iidsCopy): (Iterator[String], Iterator[String]) = latlng.map { ll =>
-      val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
-      // use n = 0 to return all available iids for now
-      ItemRecCFAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
-    }.getOrElse {
-      // use n = 0 to return all available iids for now
-      ItemRecCFAlgoOutput.output(uid, 0, itypes)
-    }.duplicate
+    val iids =
+      latlng.map { ll =>
+        val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
+        // use n = 0 to return all available iids for now
+        ItemRecCFAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
+      }.getOrElse {
+        // use n = 0 to return all available iids for now
+        ItemRecCFAlgoOutput.output(uid, 0, itypes)
+      }.toSeq
 
     /** Start and end time filtering. */
-    val itemsForTimeCheck = items.getByIds(app.id, iidsCopy.toSeq)
-    val iidsWithValidTimeSet = (itemsForTimeCheck filter { item =>
+    val itemsForTimeCheck = items.getByIds(app.id, iids)
+    val iidsWithValidTimeMap = (itemsForTimeCheck filter { item =>
       (item.starttime, item.endtime) match {
         case (Some(st), None) => DateTime.now >= st
         case (None, Some(et)) => DateTime.now <= et
         case (Some(st), Some(et)) => st <= DateTime.now && DateTime.now <= et
         case _ => true
       }
-    } map { _.id }).toSet
-    val iidsWithValidTime: Iterator[String] = iids.filter { iidsWithValidTimeSet(_) }
+    }).map(item => (item.id, item)).toMap
+
+    val itemsWithValidTime = iids
+      .filter(iid => iidsWithValidTimeMap.contains(iid))
+      .map(iid => iidsWithValidTimeMap(iid))
 
     /**
      * At this point "output" is guaranteed to have n*(s+1) items (seen or
      * unseen) unless model data is exhausted.
      */
-    val output = iidsWithValidTime.take(filterN).toSeq
+    val output = itemsWithValidTime.take(filterN).toSeq
 
     val finalOutput = handledByEngine.foldLeft(output) { (output, cap) =>
       cap match {
@@ -130,6 +138,6 @@ object ItemRecAlgoOutput {
       }
     }
 
-    finalOutput
+    finalOutput.map(_.id)
   }
 }
