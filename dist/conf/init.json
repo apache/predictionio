@@ -267,42 +267,6 @@
                             }
                         ]
                     }
-                },
-                "goal": {
-                    "name": "Recommend items that users will",
-                    "constraint": {
-                        "paramtype": "string"
-                    },
-                    "defaultvalue": "rate3",
-                    "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "rate = 5",
-                                "value": "rate5"
-                            },
-                            {
-                                "name": "rate >= 4",
-                                "value": "rate4"
-                            },
-                            {
-                                "name": "rate >= 3",
-                                "value": "rate3"
-                            },
-                            {
-                                "name": "like",
-                                "value": "like"
-                            },
-                            {
-                                "name": "conversion",
-                                "value": "conversion"
-                            },
-                            {
-                                "name": "view",
-                                "value": "view"
-                            }
-                        ]
-                    }
                 }
             },
             "paramsections": [
@@ -313,24 +277,6 @@
                     "params": [
                         "freshness",
                         "serendipity"
-                    ],
-                    "subsections": [
-                        {
-                            "name": "Unseen Items Only",
-                            "sectiontype": "normal",
-                            "description": "Should the system recommend items that users have seen before?",
-                            "params": [
-                                "unseenonly"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "Recommendation Goal",
-                    "sectiontype": "normal",
-                    "description": "Please define the goal to be maximized. Algorithms will be evaluated based on the goal defined here.",
-                    "params": [
-                        "goal"
                     ]
                 }
             ]
