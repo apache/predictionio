@@ -11,11 +11,11 @@ case class CORSFilter() extends Filter {
   }
 
   /**
-  * If the origin of the request is allowed, return the origin.
-  * Otherwise, return "" (no CORS access allowed).
-  */
+   * If the origin of the request is allowed, return the origin.
+   * Otherwise, return "" (no CORS access allowed).
+   */
   def getOriginAllowed(requestOrigin: String): String = {
-    for (allowedOrig <- allowedDomains) {
+    for (allowedDomain <- allowedDomains) {
       if (allowedDomain == "*" || requestOrigin == allowedDomain) {
         return requestOrigin
       }
