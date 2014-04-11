@@ -1,6 +1,7 @@
 package io.prediction.algorithms.mahout.itemrec.knnitembased
 
 import io.prediction.algorithms.mahout.itemrec.MahoutJob
+import io.prediction.algorithms.mahout.itemrec.AllPreferredItemsNeighborhoodCandidateItemsStrategy
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.common.Weighting
@@ -30,7 +31,7 @@ class KNNItemBasedJob extends MahoutJob {
 
   val defaultItemSimilarity = "LogLikelihoodSimilarity"
 
-  override def buildRecommender(dataModel: DataModel, args: Map[String, String]): Recommender = {
+  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender = {
 
     val booleanData: Boolean = getArgOpt(args, "booleanData", "false").toBoolean
     val itemSimilarity: String = getArgOpt(args, "itemSimilarity", defaultItemSimilarity)
@@ -92,13 +93,13 @@ class KNNItemBasedJob extends MahoutJob {
       new FileItemSimilarity(new File(outputSim))
     } else similarity
 
-    val candidateItemsStrategy = if (unseenOnly) new PreferredItemsNeighborhoodCandidateItemsStrategy()
-    else new AllPreferredItemsNeighborhoodCandidateItemsStrategy()
-
-    val mostSimilarItemsCandidateItemsStrategy = new PreferredItemsNeighborhoodCandidateItemsStrategy()
+    val candidateItemsStrategy = if (unseenOnly)
+      new AllPreferredItemsNeighborhoodCandidateItemsStrategy(seenDataModel)
+    else
+      new AllPreferredItemsNeighborhoodCandidateItemsStrategy()
 
     val recommender: Recommender = new KNNItemBasedRecommender(dataModel, recSimilarity,
-      candidateItemsStrategy, mostSimilarItemsCandidateItemsStrategy,
+      candidateItemsStrategy,
       booleanData, nearestN, threshold)
 
     recommender

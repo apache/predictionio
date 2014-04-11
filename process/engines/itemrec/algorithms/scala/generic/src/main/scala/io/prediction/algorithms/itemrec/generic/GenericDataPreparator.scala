@@ -19,6 +19,10 @@ import com.twitter.scalding.Args
  * - itemsIndex.tsv (iindex iid itypes): only contain valid items to be recommended
  * - ratings.mm (if --matrixMarket true ): matrix market format rating
  * - ratings.csv (if --matrixMarket false): comma separated rating file
+ * - seen.csv (if --seenActions is specified)
+ *
+ * Args:
+ * --seenActions: <string separated by white space>. optional. generate seen file separately.
  */
 object GenericDataPreparator {
 
@@ -29,7 +33,7 @@ object GenericDataPreparator {
   final val ACTION_VIEW = "view"
   final val ACTION_CONVERSION = "conversion"
 
-  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
+  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it,
   // determine which action will be considered as final preference.
   final val CONFLICT_LATEST: String = "latest" // use latest action
   final val CONFLICT_HIGHEST: String = "highest" // use the one with highest score
@@ -54,6 +58,7 @@ object GenericDataPreparator {
     val conversionParam: Option[Int],
     val conflictParam: String,
     val recommendationTime: Option[Long],
+    val seenActions: Option[List[String]],
     val matrixMarket: Boolean)
 
   def main(cmdArgs: Array[String]) {
@@ -93,6 +98,9 @@ object GenericDataPreparator {
 
     val recommendationTimeArg = args.optional("recommendationTime").map(_.toLong)
 
+    val preSeenActionsArg = args.list("seenActions")
+    val seenActionsArg: Option[List[String]] = if (preSeenActionsArg.mkString(",").length == 0) None else Option(preSeenActionsArg)
+
     // write data in matrix market format
     val matrixMarketArg: Boolean = args.optional("matrixMarket").map(x => x.toBoolean).getOrElse(true)
 
@@ -107,6 +115,7 @@ object GenericDataPreparator {
       conversionParam = conversionParamArg,
       conflictParam = conflictParamArg,
       recommendationTime = recommendationTimeArg,
+      seenActions = seenActionsArg,
       matrixMarket = matrixMarketArg
     )
 
@@ -183,7 +192,7 @@ object GenericDataPreparator {
           (item.id -> itemData)
       }.toMap
 
-    // 
+    //
     /* write item index (iindex iid itypes) */
     val itemsIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "itemsIndex.tsv")))
     // NOTE: only write valid items (eg. valid starttime and endtime)
@@ -199,7 +208,9 @@ object GenericDataPreparator {
 
     /* write u2i ratings */
 
-    val u2iRatings = u2iDb.getAllByAppid(appid)
+    val u2iActions = u2iDb.getAllByAppid(appid).toSeq
+
+    val u2iRatings = u2iActions
       .filter { u2i =>
         val validAction = isValidAction(u2i, arg.likeParam, arg.dislikeParam, arg.viewParam, arg.conversionParam)
         val validUser = usersMap.contains(u2i.uid)
@@ -214,7 +225,7 @@ object GenericDataPreparator {
           rating = rating,
           t = u2i.t.getMillis
         )
-      }.toSeq
+      }
 
     if (!u2iRatings.isEmpty) {
 
@@ -246,6 +257,26 @@ object GenericDataPreparator {
       }
 
       ratingsWriter.close()
+    }
+
+    /* write u2i seen */
+    arg.seenActions.map { seenActions =>
+      println(seenActions)
+      val u2iSeen = u2iActions
+        .filter { u2i => seenActions.contains(u2i.action) }
+        // convert to index
+        .map { u2i => (usersMap(u2i.uid), itemsMap(u2i.iid).iindex) }
+        .groupBy(x => x)
+        .mapValues { v => v(0) } // take 1
+        .values
+
+      val fileName = "seen.csv"
+      val seenWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + fileName)))
+
+      u2iSeen.foreach { s =>
+        seenWriter.write(s"${s._1},${s._2}\n")
+      }
+      seenWriter.close()
     }
 
   }

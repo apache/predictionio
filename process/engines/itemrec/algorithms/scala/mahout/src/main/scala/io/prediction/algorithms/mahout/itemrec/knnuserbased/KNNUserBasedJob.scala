@@ -35,7 +35,7 @@ class KNNUserBasedJob extends MahoutJob {
 
   val defaultUserSimilarity = "PearsonCorrelationSimilarity"
 
-  override def buildRecommender(dataModel: DataModel, args: Map[String, String]): Recommender = {
+  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender = {
 
     val booleanData: Boolean = getArgOpt(args, "booleanData", "false").toBoolean
     val nearestN: Int = getArgOpt(args, "nearestN", "10").toInt
@@ -43,6 +43,7 @@ class KNNUserBasedJob extends MahoutJob {
     val weighted: Boolean = getArgOpt(args, "weighted", "false").toBoolean
     val minSimilarity: Double = getArgOpt(args, "minSimilarity").map(_.toDouble).getOrElse(Double.NegativeInfinity)
     val samplingRate: Double = getArgOpt(args, "samplingRate", "1.0").toDouble
+    val unseenOnly: Boolean = getArgOpt(args, "unseenOnly", "false").toBoolean // TOOD: support unseen
 
     val weightedParam: Weighting = if (weighted) Weighting.WEIGHTED else Weighting.UNWEIGHTED
 

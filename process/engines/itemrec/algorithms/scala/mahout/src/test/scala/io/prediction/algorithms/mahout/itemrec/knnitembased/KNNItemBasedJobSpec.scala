@@ -31,7 +31,8 @@ class KNNItemBasedJobSpec extends Specification {
   val engineid = 31
   val algoid = 32
 
-  val jobName = "io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob"
+  val jobName =
+    "io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob"
 
   "KNNItemBasedJob with unseenOnly=false" should {
     val testDir = "/tmp/pio_test/KNNItemBasedJob/unseenOnlyfalse"
@@ -112,6 +113,60 @@ class KNNItemBasedJobSpec extends Specification {
       "2\t[1:3.0,2:3.0]",
       "3\t[1:2.3333333]",
       "4\t[3:3.8779385]"
+    )
+
+    MahoutJob.main(Array(jobName) ++ TestUtils.argMapToArray(jobArgs))
+
+    "generate prediction output correctly" in {
+      val predicted = Source.fromFile(outputFile)
+        .getLines().toList
+
+      predicted must containTheSameElementsAs(predictedExpected)
+    }
+  }
+
+  "KNNItemBasedJob with unseenOnly=true and seenFile" should {
+    val testDir = "/tmp/pio_test/KNNItemBasedJob/unseenOnlytrueSeenFile"
+    val inputFile = s"${testDir}ratings.csv"
+    val outputFile = s"${testDir}predicted.tsv"
+    val outputSim = s"${testDir}sim.csv"
+    val seenFile = s"${testDir}seen.csv"
+
+    val testDirFile = new File(testDir)
+    testDirFile.mkdirs()
+
+    val seenCSV = List(
+      "1,1",
+      "4,1",
+      "1,2"
+    )
+
+    val jobArgs = Map(
+      "input" -> inputFile,
+      "output" -> outputFile,
+      "appid" -> appid,
+      "engineid" -> engineid,
+      "algoid" -> algoid,
+      "booleanData" -> false,
+      "numRecommendations" -> 5,
+      "itemSimilarity" -> "LogLikelihoodSimilarity",
+      "weighted" -> false,
+      "nearestN" -> 10,
+      "threshold" -> 4.9E-324,
+      "outputSim" -> outputSim,
+      "preComputeItemSim" -> false,
+      "unseenOnly" -> true,
+      "seenFile" -> seenFile
+    )
+
+    TestUtils.writeToFile(ratingsCSV, inputFile)
+    TestUtils.writeToFile(seenCSV, seenFile)
+
+    val predictedExpected = List(
+      "1\t[3:3.4408236,4:3.2805154]",
+      "2\t[3:3.338186,1:3.0,2:3.0,4:2.661814]",
+      "3\t[4:2.5027347,1:2.3333333,2:2.2486327,3:2.2486327]",
+      "4\t[2:3.905135,3:3.8779385,4:3.4595158]"
     )
 
     MahoutJob.main(Array(jobName) ++ TestUtils.argMapToArray(jobArgs))

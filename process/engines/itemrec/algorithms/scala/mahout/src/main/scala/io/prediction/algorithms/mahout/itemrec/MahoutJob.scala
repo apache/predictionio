@@ -89,7 +89,7 @@ abstract class MahoutJob {
   }
 
   /** create and return Mahout's Recommender object. */
-  def buildRecommender(dataModel: DataModel, args: Map[String, String]): Recommender
+  def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender
 
   /**
    * Run algo job.
@@ -102,10 +102,21 @@ abstract class MahoutJob {
 
     val input = args("input")
     val output = args("output")
+
     val numRecommendations: Int = getArgOpt(args, "numRecommendations", "10").toInt
+    val seenFileOpt = getArgOpt(args, "seenFile") /* use input ratng file as seen data if it's not defined */
 
     val dataModel: DataModel = new FileDataModel(new File(input))
-    val recommender: Recommender = buildRecommender(dataModel, args)
+
+    val seenDataModel: DataModel = seenFileOpt.map { seenFileName =>
+      val seenFile = new File(seenFileName)
+      if (seenFile.exists())
+        new FileDataModel(seenFile)
+      else
+        dataModel
+    }.getOrElse(dataModel)
+
+    val recommender: Recommender = buildRecommender(dataModel, seenDataModel, args)
 
     val outputFile = new File(output)
     // create dir if it doesn't exist yet.

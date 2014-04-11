@@ -13,6 +13,8 @@ import org.apache.mahout.cf.taste.impl.recommender.EstimatedPreferenceCapper
 import scala.collection.mutable.PriorityQueue
 import scala.collection.JavaConversions._
 
+import io.prediction.algorithms.mahout.itemrec.AllPreferredItemsNeighborhoodCandidateItemsStrategy
+
 /* Extension to Mahout's GenericItemBasedRecommender
  * with the additional settings: booleanData, neighbourSize, threshold.
  */
@@ -31,8 +33,15 @@ class KNNItemBasedRecommender(dataModel: DataModel,
   else
     Some(new EstimatedPreferenceCapper(getDataModel()))
 
+  def this(dataModel: DataModel, similarity: ItemSimilarity,
+    candidateItemsStrategy: CandidateItemsStrategy,
+    booleanData: Boolean, neighbourSize: Int, threshold: Double) =
+    this(dataModel, similarity, candidateItemsStrategy,
+      GenericItemBasedRecommender.getDefaultMostSimilarItemsCandidateItemsStrategy(),
+      booleanData, neighbourSize, threshold)
+
   def this(dataModel: DataModel, similarity: ItemSimilarity, booleanData: Boolean, neighbourSize: Int, threshold: Double) =
-    this(dataModel, similarity, new AllPreferredItemsNeighborhoodCandidateItemsStrategy(), //AbstractRecommender.getDefaultCandidateItemsStrategy()
+    this(dataModel, similarity, AbstractRecommender.getDefaultCandidateItemsStrategy(),
       GenericItemBasedRecommender.getDefaultMostSimilarItemsCandidateItemsStrategy(), booleanData, neighbourSize, threshold)
 
   @throws(classOf[TasteException])
