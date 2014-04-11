@@ -136,6 +136,7 @@ object SettingsInit {
           S(engineinfoid) = info("engineinfoid")
           SS(techreq) = info("techreq")
           SS(datareq) = info("datareq")
+          OSS(capabilities) = info("capabilities")
         } yield {
           println(s"Processing AlgoInfo ID: ${id}")
           val castedparams = mapToParams(params)
@@ -151,7 +152,8 @@ object SettingsInit {
             paramorder = paramorder,
             engineinfoid = engineinfoid,
             techreq = techreq,
-            datareq = datareq)
+            datareq = datareq,
+            capabilities = capabilities.getOrElse(Seq()))
 
           println(s"Deleting any old AlgoInfo ID: ${id}")
           algoInfos.delete(id)

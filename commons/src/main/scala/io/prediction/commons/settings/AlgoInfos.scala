@@ -18,6 +18,7 @@ import org.json4s.native.Serialization
  * @param engineinfoid The EngineInfo ID of the engine that can run this algorithm.
  * @param techreq Technology requirement for this algorithm to run.
  * @param datareq Data requirement for this algorithm to run.
+ * @param capabilities Engine features that this algorithm can handle.
  */
 case class AlgoInfo(
   id: String,
@@ -30,7 +31,8 @@ case class AlgoInfo(
   paramorder: Seq[String],
   engineinfoid: String,
   techreq: Seq[String],
-  datareq: Seq[String]) extends Info
+  datareq: Seq[String],
+  capabilities: Seq[String] = Seq()) extends Info
 
 /** Base trait for implementations that interact with algo info in the backend data store. */
 trait AlgoInfos extends Common {
