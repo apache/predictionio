@@ -107,8 +107,8 @@ abstract class MahoutJob {
     val input = args("input")
     val output = args("output")
 
-    val numRecommendations: Int = getArgOpt(args, "numRecommendations", "10")
-      .toInt
+    val numRecommendations: Int = getArgOpt(args, "numRecommendations").
+      map(_.toInt).getOrElse(Int.MaxValue)
     val recommendationTime: Long = getArg(args, "recommendationTime").toLong
     val freshnessTimeUnit: Long = getArgOpt(args, "freshnessTimeUnit")
       .map(_.toLong).getOrElse(1.hours.millis)
