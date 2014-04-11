@@ -874,6 +874,7 @@ object Application extends Controller {
 
       val modelDataExist: Boolean = eng.infoid match {
         case "itemrec" => try { itemRecScores.existByAlgo(algoOutputSelector.itemRecAlgoSelection(eng)) } catch { case e: RuntimeException => false }
+        case "itemreorder" => try { itemRecScores.existByAlgo(algoOutputSelector.itemReorderAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case "itemsim" => try { itemSimScores.existByAlgo(algoOutputSelector.itemSimAlgoSelection(eng)) } catch { case e: RuntimeException => false }
         case _ => false
       }
