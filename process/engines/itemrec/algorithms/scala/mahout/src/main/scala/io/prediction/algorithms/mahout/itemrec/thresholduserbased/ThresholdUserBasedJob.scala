@@ -35,7 +35,7 @@ class ThresholdUserBasedJob extends MahoutJob {
 
   val defaultUserSimilarity = "PearsonCorrelationSimilarity"
 
-  override def buildRecommender(dataModel: DataModel, args: Map[String, String]): Recommender = {
+  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender = {
 
     val booleanData: Boolean = getArgOpt(args, "booleanData", "false").toBoolean
     val userSimilarity: String = getArgOpt(args, "userSimilarity", defaultUserSimilarity)
@@ -44,6 +44,7 @@ class ThresholdUserBasedJob extends MahoutJob {
     val samplingRate: Double = getArgOpt(args, "samplingRate", "1.0").toDouble
 
     val weightedParam: Weighting = if (weighted) Weighting.WEIGHTED else Weighting.UNWEIGHTED
+    val unseenOnly: Boolean = getArgOpt(args, "unseenOnly", "false").toBoolean // TOOD: support unseen
 
     val similarity: UserSimilarity = userSimilarity match {
       case "CityBlockSimilarity" => new CityBlockSimilarity(dataModel)
