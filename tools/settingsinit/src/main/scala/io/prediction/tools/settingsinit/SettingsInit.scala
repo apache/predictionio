@@ -136,7 +136,7 @@ object SettingsInit {
           S(engineinfoid) = info("engineinfoid")
           SS(techreq) = info("techreq")
           SS(datareq) = info("datareq")
-          OSS(capabilities) = info("capabilities")
+          OSS(capabilities) = info.get("capabilities")
         } yield {
           println(s"Processing AlgoInfo ID: ${id}")
           val castedparams = mapToParams(params)
