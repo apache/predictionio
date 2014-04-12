@@ -3,6 +3,7 @@ package io.prediction.algorithms.generic.itemrec
 import io.prediction.commons.Config
 import io.prediction.commons.appdata.{ Item, U2IAction, User }
 
+import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logger
 import java.io.File
 import java.io.FileWriter
@@ -195,6 +196,7 @@ object GenericDataPreparator {
     //
     /* write item index (iindex iid itypes) */
     val itemsIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "itemsIndex.tsv")))
+    val currentTime = DateTime.now.millis
     // NOTE: only write valid items (eg. valid starttime and endtime)
     itemsMap.filter {
       case (iid, itemData) =>
@@ -202,7 +204,7 @@ object GenericDataPreparator {
     }.foreach {
       case (iid, itemData) =>
         val itypes = itemData.itypes.mkString(",")
-        itemsIndexWriter.write(s"${itemData.iindex}\t${iid}\t${itypes}\n")
+        itemsIndexWriter.write(s"${itemData.iindex}\t${iid}\t${itypes}\t${itemData.starttime.getOrElse(currentTime)}\n")
     }
     itemsIndexWriter.close()
 

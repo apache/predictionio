@@ -77,6 +77,7 @@ object Forms {
           val indexedParamKey = index map { param._1 + "[" + _ + "]" } getOrElse param._1
           param._2.constraint.paramtype match {
             case "integer" => scoped(data.get(scopeKey), param._2.scopes, Formats.intFormat.bind(indexedParamKey, data).right.map(d => Map[String, Any](param._1 -> d)))
+            case "long" => scoped(data.get(scopeKey), param._2.scopes, Formats.longFormat.bind(indexedParamKey, data).right.map(d => Map[String, Any](param._1 -> d)))
             case "boolean" => scoped(data.get(scopeKey), param._2.scopes, Formats.booleanFormat.bind(indexedParamKey, data).right.map(d => Map[String, Any](param._1 -> d)))
             case "string" => scoped(data.get(scopeKey), param._2.scopes, Formats.stringFormat.bind(indexedParamKey, data).right.map(d => Map[String, Any](param._1 -> d)))
             case "double" => scoped(data.get(scopeKey), param._2.scopes, Formats.doubleFormat.bind(indexedParamKey, data).right.map(d => Map[String, Any](param._1 -> d)))

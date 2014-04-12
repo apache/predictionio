@@ -103,29 +103,7 @@ object MahoutModelConstructor {
         (uindex, uid)
       }.toMap
 
-    case class ItemData(
-      val iid: String,
-      val itypes: Seq[String])
-
-    // item index file (iindex iid itypes)
-    // iindex -> ItemData
-    val itemsMap: Map[Int, ItemData] = Source.fromFile(s"${arg.inputDir}itemsIndex.tsv")
-      .getLines()
-      .map[(Int, ItemData)] { line =>
-        val (iindex, item) = try {
-          val fields = line.split("\t")
-          val itemData = ItemData(
-            iid = fields(1),
-            itypes = fields(2).split(",").toList
-          )
-          (fields(0).toInt, itemData)
-        } catch {
-          case e: Exception => {
-            throw new RuntimeException(s"Cannot get item info in line: ${line}. ${e}")
-          }
-        }
-        (iindex, item)
-      }.toMap
+    val itemsMap = MahoutCommons.itemsMap(s"${arg.inputDir}itemsIndex.tsv")
 
     // ratings file (for unseen filtering)
     val seenMap: Map[(Int, Int), Double] = if (arg.unseenOnly) {
@@ -235,7 +213,7 @@ object MahoutModelConstructor {
     if (enable) (!seenMap.contains((uindex, iindex))) else true
   }
 
-  def validItemFilter(enable: Boolean, iindex: Int, validMap: Map[Int, Any]): Boolean = {
+  def validItemFilter(enable: Boolean, iindex: Int, validMap: Map[Long, Any]): Boolean = {
     if (enable) validMap.contains(iindex) else true
   }
 

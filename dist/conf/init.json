@@ -2990,12 +2990,12 @@
             "description": "Predicts user preferences based on previous behaviors of users on similar items (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false --seenActions $seenActions$",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$ --seenFile $localTempDir$seen.csv --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$",
+                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --inputDir $localTempDir$ --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$ --unseenOnly $unseenOnly$ --freshness $freshness$ --recommendationTime $recommendationTime$ --freshnessTimeUnit $freshnessTimeUnit$",
                 "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --booleanData $booleanData$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false --seenActions $seenActions$",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --unseenOnly $unseenOnly$ --seenFile $localTempDir$seen.csv --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$",
+                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --inputDir $localTempDir$ --input $localTempDir$ratings.csv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --booleanData $booleanData$ --numRecommendations $numRecommendations$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$ --unseenOnly $unseenOnly$ --freshness $freshness$ --recommendationTime $recommendationTime$ --freshnessTimeUnit $freshnessTimeUnit$",
                 "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --evalid $evalid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --booleanData $booleanData$"
             ],
             "paramorder": [
@@ -3017,6 +3017,7 @@
             "datareq": [
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
+            "capabilities": ["freshness"],
             "params": {
                 "booleanData": {
                     "name": "Boolean Data",
@@ -3187,6 +3188,17 @@
                         "uitype": "text"
                     },
                     "defaultvalue": 100
+                },
+                "freshnessTimeUnit": {
+                    "name": "Time Unit for Freshness",
+                    "description": "The time unit in seconds for freshness prioritization. As an example, if you set this to one day (86400), and freshness is set to 10, items that are one day old would have their score degraded by a bit more than 60%.",
+                    "constraint": {
+                        "paramtype": "long"
+                    },
+                    "ui": {
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 86400
                 },
                 "likeParam": {
                     "name": "Like Score",
@@ -3375,6 +3387,13 @@
                             "sectiontype": "normal",
                             "params": [
                                 "itemSimilarity"
+                            ]
+                        },
+                        {
+                            "name": "Freshness Parameters",
+                            "sectiontype": "normal",
+                            "params": [
+                                "freshnessTimeUnit"
                             ]
                         },
                         {
