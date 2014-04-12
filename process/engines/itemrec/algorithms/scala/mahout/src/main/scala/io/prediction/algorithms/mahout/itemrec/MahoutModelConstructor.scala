@@ -63,7 +63,7 @@ object MahoutModelConstructor {
       algoid = args("algoid").toInt,
       evalid = args.optional("evalid") map (x => x.toInt),
       modelSet = args("modelSet").toBoolean,
-      unseenOnly = args("unseenOnly").toBoolean,
+      unseenOnly = args.optional("unseenOnly").map(_.toBoolean).getOrElse(false),
       numRecommendations = args("numRecommendations").toInt,
       booleanData = args.optional("booleanData").map(x => x.toBoolean).getOrElse(false),
       implicitFeedback = args.optional("implicitFeedback").map(x => x.toBoolean).getOrElse(false)
@@ -127,7 +127,7 @@ object MahoutModelConstructor {
         (iindex, item)
       }.toMap
 
-    // ratings file (for unseen filtering) 
+    // ratings file (for unseen filtering)
     val seenMap: Map[(Int, Int), Double] = if (arg.unseenOnly) {
       Source.fromFile(s"${arg.inputDir}ratings.csv")
         .getLines()

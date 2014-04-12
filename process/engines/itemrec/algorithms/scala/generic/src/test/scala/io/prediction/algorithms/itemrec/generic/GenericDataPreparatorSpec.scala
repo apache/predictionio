@@ -93,6 +93,12 @@ class GenericDataPreparatorSpec extends Specification {
   appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i4", action = "view"))
   appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i4", action = "rate", v = Some(4)))
 
+  // unknown user and item actions (not exist in user and items appdata)
+  appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i5", action = "view"))
+  appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i6", action = "rate", v = Some(4)))
+  appdataU2IActions.insert(u2i.copy(uid = "u4", iid = "i2", action = "view"))
+  appdataU2IActions.insert(u2i.copy(uid = "u4", iid = "i1", action = "rate", v = Some(3)))
+
   "GenericDataPreparator with matrixMarket = true" should {
 
     val outputDir = s"${parentDir}/mmtrue"

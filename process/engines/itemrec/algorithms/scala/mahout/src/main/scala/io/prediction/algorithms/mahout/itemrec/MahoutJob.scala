@@ -111,9 +111,12 @@ abstract class MahoutJob {
     val seenDataModel: DataModel = seenFileOpt.map { seenFileName =>
       val seenFile = new File(seenFileName)
       if (seenFile.exists())
-        new FileDataModel(seenFile)
+        if (seenFile.length() != 0) // if not empty
+          new FileDataModel(seenFile)
+        else
+          null
       else
-        dataModel
+        dataModel // fall back to rating dataModel if no seenFile defined
     }.getOrElse(dataModel)
 
     val recommender: Recommender = buildRecommender(dataModel, seenDataModel, args)

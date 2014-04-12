@@ -46,7 +46,7 @@ class SVDPlusPlusJobSpec extends Specification {
   }
 
   "SVDPlusPlusJob with unseenOnly=false" should {
-    val testDir = "/tmp/pio_test/SVDPlusPlusJob/unseenOnlyfalse"
+    val testDir = "/tmp/pio_test/SVDPlusPlusJob/unseenOnlyfalse/"
     val inputFile = s"${testDir}ratings.csv"
     val outputFile = s"${testDir}predicted.tsv"
 
@@ -89,7 +89,7 @@ class SVDPlusPlusJobSpec extends Specification {
   }
 
   "SVDPlusPlusJob with unseenOnly=true" should {
-    val testDir = "/tmp/pio_test/SVDPlusPlusJob/unseenOnlytrue"
+    val testDir = "/tmp/pio_test/SVDPlusPlusJob/unseenOnlytrue/"
     val inputFile = s"${testDir}ratings.csv"
     val outputFile = s"${testDir}predicted.tsv"
 
@@ -133,7 +133,7 @@ class SVDPlusPlusJobSpec extends Specification {
   }
 
   "SVDPlusPlusJob with unseenOnly=true and seenFile" should {
-    val testDir = "/tmp/pio_test/SVDPlusPlusJob/unseenOnlytrueSeenFile"
+    val testDir = "/tmp/pio_test/SVDPlusPlusJob/unseenOnlytrueSeenFile/"
     val inputFile = s"${testDir}ratings.csv"
     val outputFile = s"${testDir}predicted.tsv"
     val seenFile = s"${testDir}seen.csv"

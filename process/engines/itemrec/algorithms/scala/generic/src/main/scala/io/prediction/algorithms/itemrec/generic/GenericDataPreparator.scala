@@ -263,7 +263,12 @@ object GenericDataPreparator {
     arg.seenActions.map { seenActions =>
       println(seenActions)
       val u2iSeen = u2iActions
-        .filter { u2i => seenActions.contains(u2i.action) }
+        .filter { u2i =>
+          val validAction = seenActions.contains(u2i.action)
+          val validUser = usersMap.contains(u2i.uid)
+          val validItem = itemsMap.contains(u2i.iid)
+          (validAction && validUser && validItem)
+        }
         // convert to index
         .map { u2i => (usersMap(u2i.uid), itemsMap(u2i.iid).iindex) }
         .groupBy(x => x)
