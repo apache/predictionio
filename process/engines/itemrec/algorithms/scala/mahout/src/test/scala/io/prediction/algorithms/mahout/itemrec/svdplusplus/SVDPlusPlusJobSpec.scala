@@ -66,7 +66,8 @@ class SVDPlusPlusJobSpec extends Specification {
       "randomNoise" -> 0.01,
       "numIterations" -> 3,
       "learningRateDecay" -> 1,
-      "unseenOnly" -> false
+      "unseenOnly" -> false,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -109,7 +110,8 @@ class SVDPlusPlusJobSpec extends Specification {
       "randomNoise" -> 0.01,
       "numIterations" -> 3,
       "learningRateDecay" -> 1,
-      "unseenOnly" -> true
+      "unseenOnly" -> true,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -161,7 +163,8 @@ class SVDPlusPlusJobSpec extends Specification {
       "numIterations" -> 3,
       "learningRateDecay" -> 1,
       "unseenOnly" -> true,
-      "seenFile" -> seenFile
+      "seenFile" -> seenFile,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)

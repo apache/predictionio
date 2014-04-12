@@ -39,12 +39,12 @@ class MahoutModelConstructorSpec extends Specification {
       "3\tu2")
 
     val itemsIndex = List(
-      "1\ti0\tt1,t2",
-      "2\ti1\tt1",
-      "3\ti2\tt2,t3",
-      "4\ti3\tt3",
-      "5\ti4\tt2,t3",
-      "6\ti5\tt1,t2"
+      "1\ti0\tt1,t2\t0",
+      "2\ti1\tt1\t0",
+      "3\ti2\tt2,t3\t0",
+      "4\ti3\tt3\t0",
+      "5\ti4\tt2,t3\t0",
+      "6\ti5\tt1,t2\t0"
     )
 
     val ratingsCSV = List(
@@ -236,9 +236,9 @@ class MahoutModelConstructorSpec extends Specification {
       inputDirFile.mkdirs()
 
       val itemsIndex = List(
-        "1\ti0\tt1,t2",
-        "3\ti2\tt2,t3",
-        "4\ti3\tt3"
+        "1\ti0\tt1,t2\t0",
+        "3\ti2\tt2,t3\t0",
+        "4\ti3\tt3\t0"
       )
 
       TestUtils.writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")

@@ -56,7 +56,8 @@ class KNNItemBasedJobSpec extends Specification {
       "threshold" -> 4.9E-324,
       "outputSim" -> outputSim,
       "preComputeItemSim" -> false,
-      "unseenOnly" -> false
+      "unseenOnly" -> false,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -102,7 +103,8 @@ class KNNItemBasedJobSpec extends Specification {
       "threshold" -> 4.9E-324,
       "outputSim" -> outputSim,
       "preComputeItemSim" -> false,
-      "unseenOnly" -> true
+      "unseenOnly" -> true,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -155,7 +157,8 @@ class KNNItemBasedJobSpec extends Specification {
       "outputSim" -> outputSim,
       "preComputeItemSim" -> false,
       "unseenOnly" -> true,
-      "seenFile" -> seenFile
+      "seenFile" -> seenFile,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -205,7 +208,8 @@ class KNNItemBasedJobSpec extends Specification {
       "outputSim" -> outputSim,
       "preComputeItemSim" -> false,
       "unseenOnly" -> true,
-      "seenFile" -> seenFile
+      "seenFile" -> seenFile,
+      "recommendationTime" -> DateTime.now.millis
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)

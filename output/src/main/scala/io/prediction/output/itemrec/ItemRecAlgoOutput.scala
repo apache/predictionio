@@ -13,7 +13,8 @@ import com.github.nscala_time.time.Imports._
 trait ItemRecAlgoOutput {
   /** output the Seq of iids */
   def output(uid: String, n: Int, itypes: Option[Seq[String]])(
-    implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]): Iterator[String]
+    implicit app: App, algo: Algo,
+    offlineEval: Option[OfflineEval]): Iterator[String]
 }
 
 object ItemRecAlgoOutput {
@@ -41,7 +42,8 @@ object ItemRecAlgoOutput {
     } getOrElse output
   }
 
-  def freshnessOutput(output: Seq[Item], n: Int)(implicit app: App, engine: Engine, items: Items) = {
+  def freshnessOutput(output: Seq[Item], n: Int)(implicit app: App,
+    engine: Engine, items: Items) = {
     val freshness = engine.params.get("freshness").map(_.asInstanceOf[Int])
     /** Freshness output. */
     freshness map { f =>
