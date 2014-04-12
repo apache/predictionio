@@ -6,6 +6,7 @@ import io.prediction.commons.modeldata.ItemRecScore
 import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval }
 
 import scala.util.Random
+import scala.collection.mutable
 
 import com.github.nscala_time.time.Imports._
 
@@ -60,6 +61,37 @@ object ItemRecAlgoOutput {
     } getOrElse output
   }
 
+  private def dedupByAttribute(output: Seq[Item], attribute: String) = {
+    val seenValueSet = mutable.Set[String]()
+    output.filter { item =>
+      if (item.attributes.isEmpty) {
+        false
+      } else if (!item.attributes.get.contains(attribute)) {
+        // If item doesn't have the attribute, drop the item
+        false
+      } else {
+        val attributeValue = item.attributes.get(attribute)
+          .asInstanceOf[String]
+        if (seenValueSet(attributeValue)) {
+          false
+        } else {
+          seenValueSet.add(attributeValue)
+          true
+        }
+      }
+    }
+  }
+
+  def dedupOutput(output: Seq[Item])(implicit engine: Engine) = {
+    val attribute = engine.params.get("dedupByAttribute")
+      .map(_.asInstanceOf[String])
+
+    if (!attribute.isEmpty && attribute.get != "")
+      dedupByAttribute(output, attribute.get)
+    else
+      output
+  }
+
   /**
    * The ItemRec output does the following in sequence:
    *
@@ -82,7 +114,8 @@ object ItemRecAlgoOutput {
      * Determine capability of algo to see what this engine output layer needs
      * to handle.
      */
-    val engineCapabilities = Seq("serendipity", "freshness")
+    val engineCapabilities = Seq("dedupByAttribute", "serendipity", "freshness")
+    //val engineCapabilities = Seq("serendipity", "freshness")
     val algoCapabilities = algoInfos.get(algo.infoid).map(_.capabilities).
       getOrElse(Seq())
     val handledByEngine = engineCapabilities.filterNot(
@@ -102,7 +135,8 @@ object ItemRecAlgoOutput {
      */
     val iids =
       latlng.map { ll =>
-        val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit).map(_.id).toSet
+        val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit)
+          .map(_.id).toSet
         // use n = 0 to return all available iids for now
         ItemRecCFAlgoOutput.output(uid, 0, itypes).filter { geoItems(_) }
       }.getOrElse {
@@ -133,6 +167,7 @@ object ItemRecAlgoOutput {
 
     val finalOutput = handledByEngine.foldLeft(output) { (output, cap) =>
       cap match {
+        case "dedupByAttribute" => dedupOutput(output)
         case "serendipity" => serendipityOutput(output, n)
         case "freshness" => freshnessOutput(output, n)
       }

@@ -21,6 +21,7 @@ class AlgoOutputSelectorSpec extends Specification {
       "get itemrec output from a valid engine" ! itemRecOutputSelection(algoOutputSelector) ^
       "get itemrec output with geo from a valid engine" ! itemRecOutputSelectionWithLatlng(algoOutputSelector) ^
       "get itemrec output with time constraints from a valid engine" ! itemRecOutputSelectionWithTime(algoOutputSelector) ^
+      "get itemrec output with dedup from a valid engine" ! itemRecOutputSelectionDedupByAttribute(algoOutputSelector) ^
       //"get itemrec output from a valid engine without seen items"               ! itemRecOutputSelectionUnseenOnly(algoOutputSelector) ^
       //"get itemrec output from a valid engine with an unsupported algorithm"    ! itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
       "get itemrec output from a valid engine with no algorithm" ! itemRecOutputSelectionNoAlgo(algoOutputSelector) ^
@@ -66,7 +67,9 @@ class AlgoOutputSelectorSpec extends Specification {
     profit = None,
     latlng = None,
     inactive = None,
-    attributes = None), Item(
+    //attributes = Some(Map("ca_attr1"->"a", "ca_attr2"->"b"))
+    attributes = None
+  ), Item(
     id = "item_y",
     appid = dummyApp.id,
     ct = DateTime.now,
@@ -506,6 +509,131 @@ class AlgoOutputSelectorSpec extends Specification {
     ))
 
     algoOutputSelector.itemRecSelection("user1", 5, Some(Seq("bar", "foo")), None, None, None)(dummyApp, engine.copy(id = engineid)) must beEqualTo(Seq("item_x", "item_y", "item_z", "item_c", "item_a"))
+  }
+
+  def itemRecOutputSelectionDedupByAttribute(algoOutputSelector: AlgoOutputSelector) = {
+    val appid = dummyApp.id
+    val engine = Engine(
+      id = 0,
+      appid = appid,
+      name = "itemRecOutputSelectionDedupByAttribute",
+      infoid = "itemrec",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map("dedupByAttribute" -> "foo")
+    )
+    val engineid = mongoEngines.insert(engine)
+
+    val algo = Algo(
+      id = 0,
+      engineid = engineid,
+      name = "itemRecOutputSelectionDedupByAttribute",
+      infoid = "pdio-knnitembased",
+      command = "itemRecOutputSelectionDedupByAttribute",
+      params = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed",
+      offlineevalid = None
+    )
+    val algoid = mongoAlgos.insert(algo)
+
+    val id = "itemRecOutputSelectionDedupByAttribute"
+
+    val fooA1 = Item(
+      id = id + "fooA1",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = None,
+      inactive = None,
+      attributes = Some(Map("foo" -> "a", "bar" -> "a")))
+    val fooA2 = Item(
+      id = id + "fooA2",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = None,
+      inactive = None,
+      attributes = Some(Map("foo" -> "a", "bar" -> "b")))
+    val noFoo1 = Item(
+      id = id + "noFoo1",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.3154153, -122.0566829)),
+      inactive = None,
+      attributes = Some(Map("bar" -> "c")))
+    val fooB1 = Item(
+      id = id + "fooB1",
+      appid = appid,
+      ct = DateTime.now,
+      itypes = List("fresh", "meat"),
+      starttime = Some(DateTime.now),
+      endtime = None,
+      price = Some(49.394),
+      profit = None,
+      latlng = Some((37.2997029, -122.0034684)),
+      inactive = None,
+      attributes = Some(Map("foo" -> "b")))
+    val allItems = Seq(fooA1, fooA2, noFoo1, fooB1)
+    allItems foreach { mongoItems.insert(_) }
+
+    val scores1: Seq[(String, Double, Seq[String])] = Seq(
+      // (iid, score, itypes)
+      (id + "fooA2", 4, Seq("foo")),
+      (id + "noFoo1", 3, Seq("unrelated")),
+      (id + "fooA1", 2, Seq("unrelated")),
+      (id + "fooB1", 1, Seq("bar")))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user1",
+      iids = scores1.map(_._1),
+      scores = scores1.map(_._2),
+      itypes = scores1.map(_._3),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    val result1 = algoOutputSelector.itemRecSelection(
+      "user1", 10, None, None, None, None)(
+        dummyApp, engine.copy(id = engineid))
+
+    result1 must beEqualTo(Seq(id + "fooA2", id + "fooB1"))
+
+    val scores2: Seq[(String, Double, Seq[String])] = Seq(
+      // (iid, score, itypes)
+      (id + "noFoo1", 3, Seq("unrelated")))
+
+    mongoItemRecScores.insert(ItemRecScore(
+      uid = "user2",
+      iids = scores2.map(_._1),
+      scores = scores2.map(_._2),
+      itypes = scores2.map(_._3),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true
+    ))
+
+    val result2 = algoOutputSelector.itemRecSelection(
+      "user2", 10, None, None, None, None)(
+        dummyApp, engine.copy(id = engineid))
+
+    result2 must beEqualTo(Seq())
   }
 
   def itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
