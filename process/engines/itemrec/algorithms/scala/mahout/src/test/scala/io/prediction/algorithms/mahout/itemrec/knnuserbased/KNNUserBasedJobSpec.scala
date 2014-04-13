@@ -54,7 +54,8 @@ class KNNUserBasedJobSpec extends Specification {
       "weighted" -> false,
       "minSimilarity" -> 5e-324,
       "samplingRate" -> 1,
-      "unseenOnly" -> false
+      "unseenOnly" -> false,
+      "recommendationTime" -> 0
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -98,7 +99,8 @@ class KNNUserBasedJobSpec extends Specification {
       "weighted" -> false,
       "minSimilarity" -> 5e-324,
       "samplingRate" -> 1,
-      "unseenOnly" -> true
+      "unseenOnly" -> true,
+      "recommendationTime" -> 0
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -151,7 +153,8 @@ class KNNUserBasedJobSpec extends Specification {
       "minSimilarity" -> 5e-324,
       "samplingRate" -> 1,
       "unseenOnly" -> true,
-      "seenFile" -> seenFile
+      "seenFile" -> seenFile,
+      "recommendationTime" -> 0
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
@@ -199,7 +202,8 @@ class KNNUserBasedJobSpec extends Specification {
       "minSimilarity" -> 5e-324,
       "samplingRate" -> 1,
       "unseenOnly" -> true,
-      "seenFile" -> seenFile
+      "seenFile" -> seenFile,
+      "recommendationTime" -> 0
     )
 
     TestUtils.writeToFile(ratingsCSV, inputFile)
