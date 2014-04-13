@@ -9,29 +9,38 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class ItemRecScoresSpec extends Specification {
-  def is =
-    "PredictionIO Model Data Item Recommendation Scores Specification" ^
-      p ^
-      "ItemRecScores can be implemented by:" ^ endp ^
-      "1. MongoItemRecScores" ^ mongoItemRecScores ^ end
+  def is = s2"""
 
-  def mongoItemRecScores = p ^
-    "MongoItemRecScores should" ^
-    "behave like any ItemRecScores implementation" ^ itemRecScores(newMongoItemRecScores) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+    PredictionIO Model Data Item Recommendation Scores Specification
 
-  def itemRecScores(itemRecScores: ItemRecScores) = {
-    t ^
-      "inserting and getting 3 ItemRecScores" ! insert(itemRecScores) ^
-      "getting Top N Iids" ! getTopNIids(itemRecScores) ^
-      "delete ItemRecScores by algoid" ! deleteByAlgoid(itemRecScores) ^
-      "existence by Algo" ! existByAlgo(itemRecScores) ^
-      bt
-  }
+    ItemRecScores can be implemented by:
+    1. MongoItemRecScores ${mongoItemRecScores}
+
+  """
+
+  def mongoItemRecScores = s2"""
+
+    MongoItemRecScores should
+
+    - behave like any ItemRecScores implementation ${itemRecScores(newMongoItemRecScores)}
+
+    (clean up database after test) ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+
+  """
+
+  def itemRecScores(itemRecScores: ItemRecScores) = s2"""
+
+    inserting and getting 3 ItemRecScores ${insert(itemRecScores)}
+    getting Top N Iids ${getTopNIids(itemRecScores)}
+    delete ItemRecScores by algoid ${deleteByAlgoid(itemRecScores)}
+    existence by Algo ${existByAlgo(itemRecScores)}
+
+  """
 
   val mongoDbName = "predictionio_modeldata_mongoitemrecscore_test"
 
-  def newMongoItemRecScores = new mongodb.MongoItemRecScores(new Config, MongoConnection()(mongoDbName))
+  def newMongoItemRecScores = new mongodb.MongoItemRecScores(
+    new Config, MongoConnection()(mongoDbName))
 
   def insert(itemRecScores: ItemRecScores) = {
     implicit val app = App(
@@ -63,9 +72,11 @@ class ItemRecScoresSpec extends Specification {
     )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
-      iids = Seq("testUserItem4", "testUserItem3", "testUserItem2", "testUserItem1"),
+      iids = Seq("testUserItem4", "testUserItem3", "testUserItem2",
+        "testUserItem1"),
       scores = Seq(999, 124.678, 10, -5.6),
-      itypes = Seq(List("invalid"), List("7", "8", "9"), List("4", "5", "6"), List("1", "2", "3")),
+      itypes = Seq(List("invalid"), List("7", "8", "9"), List("4", "5", "6"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo.id,
       modelset = algo.modelset
@@ -81,7 +92,8 @@ class ItemRecScoresSpec extends Specification {
       uid = "testUser3",
       iids = Seq("b", "c", "e", "s"),
       scores = Seq(999, 124.678, 10, -5.6),
-      itypes = Seq(List("1"), List("7", "8", "9"), List("4", "5", "6"), List("1")),
+      itypes = Seq(List("1"), List("7", "8", "9"), List("4", "5", "6"),
+        List("1")),
       appid = app.id,
       algoid = algo.id,
       modelset = algo.modelset
@@ -128,9 +140,15 @@ class ItemRecScoresSpec extends Specification {
     )
     val itemScores = List(ItemRecScore(
       uid = "testUser",
-      iids = Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"),
-      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6, -5.6),
-      itypes = Seq(List("invalid"), List("invalid"), List("invalid"), List("1", "2", "3"), List("1", "2", "4"), List("3"), List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"), List("1", "2", "3")),
+      iids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
+        "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2",
+        "testUserItem6", "testUserItem1", "testUserItem5"),
+      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6,
+        -5.6),
+      itypes = Seq(List("invalid"), List("invalid"), List("invalid"),
+        List("1", "2", "3"), List("1", "2", "4"), List("3"),
+        List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -143,18 +161,30 @@ class ItemRecScoresSpec extends Specification {
     val resultsAllTop5 = itemRecScores.getTopNIids("testUser", 5, None).toSeq
     val resultsAllTop1 = itemRecScores.getTopNIids("testUser", 1, None).toSeq
     val resultsAllTop0 = itemRecScores.getTopNIids("testUser", 0, None).toSeq
-    val results23Top4 = itemRecScores.getTopNIids("testUser", 4, Some(List("2", "3"))).toSeq
-    val results23Top100 = itemRecScores.getTopNIids("testUser", 100, Some(List("2", "3"))).toSeq
-    val results8Top4 = itemRecScores.getTopNIids("testUser", 4, Some(List("8"))).toSeq
-    val results8Top0 = itemRecScores.getTopNIids("testUser", 0, Some(List("8"))).toSeq
-    val resultUnknownAllTop4 = itemRecScores.getTopNIids("unknown", 4, None).toSeq
-    val resultUnknown18Top4 = itemRecScores.getTopNIids("unknown", 4, Some(List("1", "8"))).toSeq
+    val results23Top4 = itemRecScores.getTopNIids("testUser", 4,
+      Some(List("2", "3"))).toSeq
+    val results23Top100 = itemRecScores.getTopNIids("testUser", 100,
+      Some(List("2", "3"))).toSeq
+    val results8Top4 = itemRecScores.getTopNIids("testUser", 4,
+      Some(List("8"))).toSeq
+    val results8Top0 = itemRecScores.getTopNIids("testUser", 0,
+      Some(List("8"))).toSeq
+    val resultUnknownAllTop4 = itemRecScores.getTopNIids("unknown", 4,
+      None).toSeq
+    val resultUnknown18Top4 = itemRecScores.getTopNIids("unknown", 4,
+      Some(List("1", "8"))).toSeq
 
-    resultsAllTop5 must beEqualTo(Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7")) and
+    resultsAllTop5 must beEqualTo(Seq("testUserItem10", "testUserItem8",
+      "testUserItem4", "testUserItem9", "testUserItem7")) and
       (resultsAllTop1 must beEqualTo(Seq("testUserItem10"))) and
-      (resultsAllTop0 must beEqualTo(Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"))) and
-      (results23Top4 must beEqualTo(Seq("testUserItem9", "testUserItem7", "testUserItem3", "testUserItem1"))) and
-      (results23Top100 must beEqualTo(Seq("testUserItem9", "testUserItem7", "testUserItem3", "testUserItem1", "testUserItem5"))) and
+      (resultsAllTop0 must beEqualTo(Seq("testUserItem10", "testUserItem8",
+        "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3",
+        "testUserItem2", "testUserItem6", "testUserItem1",
+        "testUserItem5"))) and
+      (results23Top4 must beEqualTo(Seq("testUserItem9", "testUserItem7",
+        "testUserItem3", "testUserItem1"))) and
+      (results23Top100 must beEqualTo(Seq("testUserItem9", "testUserItem7",
+        "testUserItem3", "testUserItem1", "testUserItem5"))) and
       (results8Top4 must beEqualTo(Seq("testUserItem6"))) and
       (results8Top0 must beEqualTo(Seq("testUserItem6"))) and
       (resultUnknownAllTop4 must beEqualTo(Seq())) and
@@ -197,9 +227,15 @@ class ItemRecScoresSpec extends Specification {
 
     val itemScores1 = List(ItemRecScore(
       uid = "deleteByAlgoidUser",
-      iids = Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"),
-      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6, -5.6),
-      itypes = Seq(List("invalid"), List("invalid"), List("invalid"), List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"), List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"), List("1", "2", "3")),
+      iids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
+        "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2",
+        "testUserItem6", "testUserItem1", "testUserItem5"),
+      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6,
+        -5.6),
+      itypes = Seq(List("invalid"), List("invalid"), List("invalid"),
+        List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"),
+        List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -207,7 +243,8 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser2",
       iids = Seq("a", "b", "c", "d"),
       scores = Seq(10, 9, 8, 7),
-      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"), List("4")),
+      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"),
+        List("4")),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -215,9 +252,15 @@ class ItemRecScoresSpec extends Specification {
 
     val itemScores2 = List(ItemRecScore(
       uid = "deleteByAlgoidUser",
-      iids = Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"),
-      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6, -5.6),
-      itypes = Seq(List("invalid"), List("invalid"), List("invalid"), List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"), List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"), List("1", "2", "3")),
+      iids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
+        "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2",
+        "testUserItem6", "testUserItem1", "testUserItem5"),
+      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6,
+        -5.6),
+      itypes = Seq(List("invalid"), List("invalid"), List("invalid"),
+        List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"),
+        List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
@@ -225,7 +268,8 @@ class ItemRecScoresSpec extends Specification {
       uid = "deleteByAlgoidUser2",
       iids = Seq("a", "b", "c", "d"),
       scores = Seq(10, 9, 8, 7),
-      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"), List("4")),
+      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"),
+        List("4")),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
