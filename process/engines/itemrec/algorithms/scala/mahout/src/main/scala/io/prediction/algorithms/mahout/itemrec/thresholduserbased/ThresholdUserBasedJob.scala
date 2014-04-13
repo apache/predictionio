@@ -3,6 +3,7 @@ package io.prediction.algorithms.mahout.itemrec.thresholduserbased
 import scala.collection.JavaConversions._
 
 import io.prediction.algorithms.mahout.itemrec.MahoutJob
+import io.prediction.algorithms.mahout.itemrec.{ UserBasedRecommender, BooleanPrefUserBasedRecommender }
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.recommender.Recommender
@@ -10,7 +11,6 @@ import org.apache.mahout.cf.taste.recommender.RecommendedItem
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood
 import org.apache.mahout.cf.taste.similarity.UserSimilarity
 import org.apache.mahout.cf.taste.common.Weighting
-import org.apache.mahout.cf.taste.impl.recommender.{ GenericUserBasedRecommender, GenericBooleanPrefUserBasedRecommender }
 import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood
 import org.apache.mahout.cf.taste.impl.similarity.{
   CityBlockSimilarity,
@@ -44,7 +44,7 @@ class ThresholdUserBasedJob extends MahoutJob {
     val samplingRate: Double = getArgOpt(args, "samplingRate", "1.0").toDouble
 
     val weightedParam: Weighting = if (weighted) Weighting.WEIGHTED else Weighting.UNWEIGHTED
-    val unseenOnly: Boolean = getArgOpt(args, "unseenOnly", "false").toBoolean // TOOD: support unseen
+    val unseenOnly: Boolean = getArgOpt(args, "unseenOnly", "false").toBoolean
 
     val similarity: UserSimilarity = userSimilarity match {
       case "CityBlockSimilarity" => new CityBlockSimilarity(dataModel)
@@ -59,10 +59,12 @@ class ThresholdUserBasedJob extends MahoutJob {
 
     val neighborhood: UserNeighborhood = new ThresholdUserNeighborhood(threshold, similarity, dataModel, samplingRate)
 
+    val recSeenDataModel = if (unseenOnly) seenDataModel else null
+
     val recommender: Recommender = if (booleanData) {
-      new GenericBooleanPrefUserBasedRecommender(dataModel, neighborhood, similarity)
+      new BooleanPrefUserBasedRecommender(dataModel, neighborhood, similarity, recSeenDataModel)
     } else {
-      new GenericUserBasedRecommender(dataModel, neighborhood, similarity)
+      new UserBasedRecommender(dataModel, neighborhood, similarity, recSeenDataModel)
     }
 
     recommender
