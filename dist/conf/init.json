@@ -168,7 +168,7 @@
                         {
                             "name": "Seen Actions",
                             "sectiontype": "normal",
-                            "description": "Actions to be treated as seen (space-separated string). If empty, all actions will be treated as seen.",
+                            "description": "Actions to be treated as seen (space-separated string) (For example: like,rate). If empty, all actions will be treated as seen.",
                             "params": [
                                 "seenActions"
                             ]
