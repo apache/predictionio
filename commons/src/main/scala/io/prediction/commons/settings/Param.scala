@@ -28,14 +28,18 @@ case class Param(
  * Base trait for a parameter constraint.
  */
 trait ParamConstraint {
-  /** Parameter type. Can be "boolean", "double", "integer", or "string". */
+  /**
+   * Parameter type.
+   * Can be "boolean", "double", "integer", "long", or "string".
+   */
   def paramtype: String
 }
 
 /**
  * Indicates a parameter of type Boolean.
  */
-case class ParamBooleanConstraint(paramtype: String = "boolean") extends ParamConstraint
+case class ParamBooleanConstraint(paramtype: String = "boolean")
+  extends ParamConstraint
 
 /**
  * Indicates a parameter of type Double.
@@ -62,15 +66,30 @@ case class ParamIntegerConstraint(
     extends ParamConstraint
 
 /**
- * Indicates a parameter of type String.
+ * Indicates a parameter of type Long.
+ *
+ * @param min Minimum allowed value.
+ * @param max Maximum allowed value.
  */
-case class ParamStringConstraint(paramtype: String = "string") extends ParamConstraint
+case class ParamLongConstraint(
+  paramtype: String = "long",
+  min: Option[Long] = None,
+  max: Option[Long] = None)
+    extends ParamConstraint
 
 /**
- * Defines the parameter's user interface that will be used in the administration user interface.
+ * Indicates a parameter of type String.
+ */
+case class ParamStringConstraint(paramtype: String = "string")
+  extends ParamConstraint
+
+/**
+ * Defines the parameter's user interface that will be used in the
+ * administration user interface.
  *
  * @param uitype User interface type. Can be "text", "slider", and "selection".
- * @param selections List of selectable items to be displayed when UI type is "selection".
+ * @param selections List of selectable items to be displayed when UI type is
+ *                   "selection".
  * @param slidermin Minimum value of the slider when UI type is "slider".
  * @param slidermax Maximum value of the slider when UI type is "slider".
  * @param sliderstep Step size of the slider when UI type is "slider".
@@ -91,7 +110,8 @@ case class ParamUI(
 case class ParamSelectionUI(value: String, name: String)
 
 /**
- * Defines a section that contains parameters to be displayed in the user interface.
+ * Defines a section that contains parameters to be displayed in the user
+ * interface.
  *
  * @param name Section's name.
  * @param sectiontype Section's type. Can be "normal" and "tuning".
@@ -114,6 +134,7 @@ class ParamSerializer extends CustomSerializer[Param](format => (
         classOf[ParamBooleanConstraint],
         classOf[ParamDoubleConstraint],
         classOf[ParamIntegerConstraint],
+        classOf[ParamLongConstraint],
         classOf[ParamStringConstraint])))
       val constraint = (x \ "constraint").extract[ParamConstraint]
       val dv = x \ "defaultvalue"
@@ -121,6 +142,7 @@ class ParamSerializer extends CustomSerializer[Param](format => (
         case c: ParamBooleanConstraint => dv.extract[Boolean]
         case c: ParamDoubleConstraint => dv.extract[Double]
         case c: ParamIntegerConstraint => dv.extract[Int]
+        case c: ParamLongConstraint => dv.extract[Long]
         case c: ParamStringConstraint => dv.extract[String]
       }
       Param(
@@ -138,6 +160,7 @@ class ParamSerializer extends CustomSerializer[Param](format => (
         classOf[ParamBooleanConstraint],
         classOf[ParamDoubleConstraint],
         classOf[ParamIntegerConstraint],
+        classOf[ParamLongConstraint],
         classOf[ParamStringConstraint])))
       JObject(
         JField("id", Extraction.decompose(p.id)) ::
