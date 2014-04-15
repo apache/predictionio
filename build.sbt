@@ -175,6 +175,11 @@ lazy val processEnginesItemRecEvalHadoopScaldingMetricsMAP = project
   .dependsOn(processCommonsHadoopScalding)
   .settings(scalariformSettings: _*)
 
+lazy val processEnginesItemRecAlgoScalaFeatureBased = project
+  .in(file("process/engines/itemrec/algorithms/scala/featurebased"))
+  .dependsOn(commons)
+  //.settings(scalariformSettings: _*)
+
 lazy val processEnginesItemSimAlgoHadoopScalding = project
   .in(file("process/engines/itemsim/algorithms/hadoop/scalding"))
   .aggregate(
