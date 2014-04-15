@@ -7,8 +7,12 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
 object ItemRecCFAlgoBatchOutput {
   private val config = new Config
 
-  def output(uid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]) = {
-    val itemRecScores = offlineEval map { _ => config.getModeldataTrainingItemRecScores } getOrElse config.getModeldataItemRecScores
-    itemRecScores.getTopNIids(uid, n, itypes)
+  def output(uid: String, n: Int,
+    itypes: Option[Seq[String]])(implicit app: App, algo: Algo,
+      offlineEval: Option[OfflineEval]): Seq[(String, Double)] = {
+    val itemRecScores = offlineEval map { _ =>
+      config.getModeldataTrainingItemRecScores
+    } getOrElse config.getModeldataItemRecScores
+    itemRecScores.getTopNIidsAndScores(uid, n, itypes)
   }
 }

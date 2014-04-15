@@ -119,8 +119,7 @@ class ItemRecScoresSpec extends Specification {
       url = None,
       cat = None,
       desc = None,
-      timezone = "UTC"
-    )
+      timezone = "UTC")
     implicit val algo = Algo(
       id = 234,
       engineid = 0,
@@ -136,8 +135,7 @@ class ItemRecScoresSpec extends Specification {
       offlineevalid = None,
       offlinetuneid = None,
       loop = None,
-      paramset = None
-    )
+      paramset = None)
     val itemScores = List(ItemRecScore(
       uid = "testUser",
       iids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
@@ -158,9 +156,9 @@ class ItemRecScoresSpec extends Specification {
       itemRecScores.insert(_)
     }
 
-    val resultsAllTop5 = itemRecScores.getTopNIids("testUser", 5, None).toSeq
-    val resultsAllTop1 = itemRecScores.getTopNIids("testUser", 1, None).toSeq
-    val resultsAllTop0 = itemRecScores.getTopNIids("testUser", 0, None).toSeq
+    val resultsAllTop5 = itemRecScores.getTopNIidsAndScores("testUser", 5, None)
+    val resultsAllTop1 = itemRecScores.getTopNIidsAndScores("testUser", 1, None)
+    val resultsAllTop0 = itemRecScores.getTopNIidsAndScores("testUser", 0, None)
     val results23Top4 = itemRecScores.getTopNIids("testUser", 4,
       Some(List("2", "3"))).toSeq
     val results23Top100 = itemRecScores.getTopNIids("testUser", 100,
@@ -174,13 +172,16 @@ class ItemRecScoresSpec extends Specification {
     val resultUnknown18Top4 = itemRecScores.getTopNIids("unknown", 4,
       Some(List("1", "8"))).toSeq
 
-    resultsAllTop5 must beEqualTo(Seq("testUserItem10", "testUserItem8",
-      "testUserItem4", "testUserItem9", "testUserItem7")) and
-      (resultsAllTop1 must beEqualTo(Seq("testUserItem10"))) and
-      (resultsAllTop0 must beEqualTo(Seq("testUserItem10", "testUserItem8",
-        "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3",
-        "testUserItem2", "testUserItem6", "testUserItem1",
-        "testUserItem5"))) and
+    resultsAllTop5 must beEqualTo(Seq(("testUserItem10", 10000.0),
+      ("testUserItem8", 999.0), ("testUserItem4", 999.0),
+      ("testUserItem9", 124.678), ("testUserItem7", 124.678))) and
+      (resultsAllTop1 must beEqualTo(Seq(("testUserItem10", 10000)))) and
+      (resultsAllTop0 must beEqualTo(Seq(("testUserItem10", 10000),
+        ("testUserItem8", 999), ("testUserItem4", 999),
+        ("testUserItem9", 124.678), ("testUserItem7", 124.678),
+        ("testUserItem3", 124.678), ("testUserItem2", 10),
+        ("testUserItem6", 10), ("testUserItem1", -5.6),
+        ("testUserItem5", -5.6)))) and
       (results23Top4 must beEqualTo(Seq("testUserItem9", "testUserItem7",
         "testUserItem3", "testUserItem1"))) and
       (results23Top100 must beEqualTo(Seq("testUserItem9", "testUserItem7",
@@ -189,7 +190,6 @@ class ItemRecScoresSpec extends Specification {
       (results8Top0 must beEqualTo(Seq("testUserItem6"))) and
       (resultUnknownAllTop4 must beEqualTo(Seq())) and
       (resultUnknown18Top4 must beEqualTo(Seq()))
-
   }
 
   def deleteByAlgoid(itemRecScores: ItemRecScores) = {
