@@ -42,12 +42,14 @@ class GenericDataPreparatorSpec extends Specification {
   appdataUsers.insert(user.copy(id = "u3"))
 
   // insert a few items into db
+  val itemStartTime = DateTime.now
+  val itemStartTimeMillis = itemStartTime.millis
   val item = Item(
     id = "i1",
     appid = appid,
     ct = DateTime.now,
     itypes = List("t1", "t2"),
-    starttime = None,
+    starttime = Some(itemStartTime),
     endtime = None,
     price = None,
     profit = None,
@@ -139,10 +141,10 @@ class GenericDataPreparatorSpec extends Specification {
         .toList
 
       val expected = List(
-        "1\ti1\tt1,t2",
-        "2\ti2\tt1",
-        "3\ti3\tt2,t3",
-        "4\ti4\tt3"
+        s"1\ti1\tt1,t2\t${itemStartTimeMillis}",
+        s"2\ti2\tt1\t${itemStartTimeMillis}",
+        s"3\ti3\tt2,t3\t${itemStartTimeMillis}",
+        s"4\ti4\tt3\t${itemStartTimeMillis}"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
@@ -222,10 +224,10 @@ class GenericDataPreparatorSpec extends Specification {
         .toList
 
       val expected = List(
-        "1\ti1\tt1,t2",
-        "2\ti2\tt1",
-        "3\ti3\tt2,t3",
-        "4\ti4\tt3"
+        s"1\ti1\tt1,t2\t${itemStartTimeMillis}",
+        s"2\ti2\tt1\t${itemStartTimeMillis}",
+        s"3\ti3\tt2,t3\t${itemStartTimeMillis}",
+        s"4\ti4\tt3\t${itemStartTimeMillis}"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
@@ -300,10 +302,10 @@ class GenericDataPreparatorSpec extends Specification {
         .toList
 
       val expected = List(
-        "1\ti1\tt1,t2",
-        "2\ti2\tt1",
-        "3\ti3\tt2,t3",
-        "4\ti4\tt3"
+        s"1\ti1\tt1,t2\t${itemStartTimeMillis}",
+        s"2\ti2\tt1\t${itemStartTimeMillis}",
+        s"3\ti3\tt2,t3\t${itemStartTimeMillis}",
+        s"4\ti4\tt3\t${itemStartTimeMillis}"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
