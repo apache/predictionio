@@ -672,6 +672,16 @@ class Config {
     }
   }
 
+  /** Obtain an MetadataKeyvals object. */
+  def getModeldataMetadataKeyvals(): modeldata.MetadataKeyvals = {
+    modeldataDbType match {
+      case "mongodb" => {
+        new modeldata.mongodb.MongoMetadataKeyvals(this, modeldataMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid modeldata database type: " + modeldataDbType)
+    }
+  }
+
   /** Obtains a generic ModelData object for training with configured backend type. */
   def getModeldataTraining(engineinfoid: String): modeldata.ModelData = {
     modeldataTrainingDbType match {
