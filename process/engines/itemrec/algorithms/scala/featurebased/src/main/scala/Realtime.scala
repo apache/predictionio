@@ -13,8 +13,8 @@ import io.prediction.commons.modeldata.{ MetadataKeyvals, MetadataKeyval }
  * - modelCon: output UserFeatureMap in datastore.
  */
 
-object FeatureBasedUserProfileRecommendationRealtime {
-  val logger = Logger(FeatureBasedUserProfileRecommendationBatch.getClass)
+object UserProfileRecommendationRealtime {
+  val logger = Logger(UserProfileRecommendationRealtime.getClass)
   val commonsConfig = new Config
 
   def modelCon(appid: Int, algoid: Int, modelset: Boolean,
