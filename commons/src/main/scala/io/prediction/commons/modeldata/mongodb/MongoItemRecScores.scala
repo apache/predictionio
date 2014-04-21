@@ -84,7 +84,7 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
       }
   }
 
-  def insert(itemrecscore: ItemRecScore) = {
+  def insert(itemRecScore: ItemRecScore) = {
     val id = new ObjectId
     val itemRecObj = MongoDBObject(
       "_id" -> id,
@@ -95,7 +95,8 @@ class MongoItemRecScores(cfg: Config, db: MongoDB) extends ItemRecScores with Mo
       "algoid" -> itemRecScore.algoid,
       "modelset" -> itemRecScore.modelset
     )
-    db(collectionName(itemRecScore.algoid, itemRecScore.modelset)).insert(itemRecObj)
+    db(collectionName(itemRecScore.algoid, itemRecScore.modelset))
+      .insert(itemRecObj)
     itemRecScore.copy(id = Some(id))
   }
 
