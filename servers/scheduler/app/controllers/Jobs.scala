@@ -140,7 +140,12 @@ object Jobs {
     command.setAttribute("appid", app.id)
     command.setAttribute("engineid", engine.id)
     command.setAttribute("hdfsRoot", config.settingsHdfsRoot)
+    command.setAttribute("hadoopOptions", Seq(
+      config.schedulerMapredMinSplitSize map { x => s"-Dmapred.min.split.size=${x}" } getOrElse "",
+      config.schedulerMapredMapTasks map { x => s"-Dmapred.map.tasks=${x}" } getOrElse "",
+      config.schedulerMapredReduceTasks map { x => s"-Dmapred.reduce.tasks=${x}" } getOrElse "").mkString(" "))
     command.setAttribute("localTempRoot", config.settingsLocalTempRoot)
+    command.setAttribute("javaOpts", config.schedulerChildJavaOpts)
     command.setAttribute("settingsDbType", config.settingsDbType)
     command.setAttribute("settingsDbName", config.settingsDbName)
     command.setAttribute("settingsDbHost", config.settingsDbHost)
@@ -224,7 +229,7 @@ class AlgoJob extends InterruptableJob {
                 this.synchronized {
                   if (!kill && !c.isEmpty && exitCode == 0) {
                     Logger.info(s"${logPrefix}Going to run: $c")
-                    proc = Some(Process(c).run)
+                    proc = Some(Process(c, None, "JVM_OPT" -> config.schedulerChildJavaOpts).run)
                     Logger.info(s"${logPrefix}Scheduler waiting for sub-process to finish")
                   }
                 }

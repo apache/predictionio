@@ -142,25 +142,28 @@ object GraphChiModelConstructor {
     val validIindex = for (iindex <- 1 to itemMatrix.cols if validItemFilter(true, iindex, itemsMap)) yield (iindex)
 
     val allScores = allUindex.par
-      .foreach {
-        case (uindex, userVector, seenItemSet) =>
-          val scores = validIindex.filter(iindex => unseenItemFilter(arg.unseenOnly, iindex, seenItemSet))
-            .map { iindex =>
-              // NOTE: DenseMatrix index starts from 0, so minus 1 (but graphchi user and item index starts from 1)
-              val score = userVector dot itemMatrix(::, iindex - 1)
-              (iindex, score)
-            }
+      .foreach { fields =>
+        val (uindex, userVector, seenItemSet) = fields
+        val q = new TopNQueue[(Int, Double)](arg.numRecommendations)(ScoreOrdering.reverse)
+        val candidateIindex = validIindex.toIterator
+          .filter(iindex => unseenItemFilter(arg.unseenOnly, iindex, seenItemSet))
 
-          val topScores = getTopN(scores, arg.numRecommendations)(ScoreOrdering.reverse)
-          //(uindex, topScores)
-          modeldataDb.insert(ItemRecScore(
-            uid = usersMap(uindex),
-            iids = topScores.map(x => itemsMap(x._1).iid),
-            scores = topScores.map(_._2),
-            itypes = topScores.map(x => itemsMap(x._1).itypes),
-            appid = appid,
-            algoid = arg.algoid,
-            modelset = arg.modelSet))
+        while (candidateIindex.hasNext) {
+          val iindex = candidateIindex.next()
+          val score = userVector dot itemMatrix(::, iindex - 1)
+          q.add((iindex, score))
+        }
+
+        val topScores = q.toSeq
+
+        modeldataDb.insert(ItemRecScore(
+          uid = usersMap(uindex),
+          iids = topScores.map(x => itemsMap(x._1).iid),
+          scores = topScores.map(_._2),
+          itypes = topScores.map(x => itemsMap(x._1).itypes),
+          appid = appid,
+          algoid = arg.algoid,
+          modelset = arg.modelSet))
       }
   }
 
@@ -196,6 +199,26 @@ object GraphChiModelConstructor {
     }
 
     q.dequeueAll.toSeq.reverse
+  }
+
+  class TopNQueue[T](val n: Int)(implicit ord: Ordering[T]) {
+    val q = PriorityQueue[T]()
+
+    def add(x: T) = {
+      if (q.size < n)
+        q.enqueue(x)
+      else {
+        // q is full
+        if (ord.compare(x, q.head) < 0) {
+          q.dequeue()
+          q.enqueue(x)
+        }
+      }
+    }
+
+    def toSeq[T] = {
+      q.dequeueAll.toSeq.reverse
+    }
   }
 
 }
