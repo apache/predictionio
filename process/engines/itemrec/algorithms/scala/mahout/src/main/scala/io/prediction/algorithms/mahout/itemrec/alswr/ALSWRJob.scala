@@ -3,7 +3,7 @@ package io.prediction.algorithms.mahout.itemrec.alswr
 import scala.collection.JavaConversions._
 
 import io.prediction.algorithms.mahout.itemrec.MahoutJob
-import io.prediction.algorithms.mahout.itemrec.AllPreferredItemsNeighborhoodCandidateItemsStrategy
+import io.prediction.algorithms.mahout.itemrec.AllValidItemsCandidateItemsStrategy
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.recommender.Recommender
@@ -13,7 +13,8 @@ import org.apache.mahout.cf.taste.impl.recommender.svd.Factorizer
 
 class ALSWRJob extends MahoutJob {
 
-  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender = {
+  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel,
+    validItemIDs: Set[Long], args: Map[String, String]): Recommender = {
 
     val numFeatures: Int = getArg(args, "numFeatures").toInt
     val lambda: Double = getArg(args, "lambda").toDouble
@@ -23,9 +24,10 @@ class ALSWRJob extends MahoutJob {
     val factorizer: Factorizer = new ALSWRFactorizer(dataModel, numFeatures, lambda, numIterations)
 
     val candidateItemsStrategy = if (unseenOnly)
-      new AllPreferredItemsNeighborhoodCandidateItemsStrategy(seenDataModel)
+      new AllValidItemsCandidateItemsStrategy(validItemIDs.toArray,
+        seenDataModel)
     else
-      new AllPreferredItemsNeighborhoodCandidateItemsStrategy()
+      new AllValidItemsCandidateItemsStrategy(validItemIDs.toArray)
 
     // default stratagy is PreferredItemsNeighborhoodCandidateItemsStrategy();
     val recommender: Recommender = new SVDRecommender(dataModel, factorizer, candidateItemsStrategy)

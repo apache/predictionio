@@ -93,7 +93,7 @@ abstract class MahoutJob {
 
   /** create and return Mahout's Recommender object. */
   def buildRecommender(dataModel: DataModel, seenDataModel: DataModel,
-    args: Map[String, String]): Recommender
+    validItemIDs: Set[Long], args: Map[String, String]): Recommender
 
   /**
    * Run algo job.
@@ -112,12 +112,18 @@ abstract class MahoutJob {
     val recommendationTime: Long = getArg(args, "recommendationTime").toLong
     val freshnessTimeUnit: Long = getArgOpt(args, "freshnessTimeUnit")
       .map(_.toLong).getOrElse(1.hours.millis)
-    val inputDir: String = getArgOpt(args, "inputDir", "")
+
+    val itemsFile = getArg(args, "itemsFile")
     /** use input ratng file as seen data if it's not defined */
     val seenFileOpt = getArgOpt(args, "seenFile")
     val freshnessOpt = getArgOpt(args, "freshness")
 
     val dataModel: DataModel = new FileDataModel(new File(input))
+
+    val itemsMap: Map[Long, MahoutCommons.ItemData] =
+      MahoutCommons.itemsMap(itemsFile)
+
+    val validItemIDs: Set[Long] = itemsMap.keySet
 
     val seenDataModel: DataModel = seenFileOpt.map { seenFileName =>
       val seenFile = new File(seenFileName)
@@ -125,13 +131,13 @@ abstract class MahoutJob {
         if (seenFile.length() != 0) // if not empty
           new FileDataModel(seenFile)
         else
-          null
+          null // seen file exists but it's empty
       else
         dataModel // fall back to rating dataModel if no seenFile defined
     }.getOrElse(dataModel)
 
     val recommender: Recommender = buildRecommender(dataModel, seenDataModel,
-      args)
+      validItemIDs, args)
 
     val outputFile = new File(output)
     // create dir if it doesn't exist yet.
@@ -140,7 +146,7 @@ abstract class MahoutJob {
     // handle freshness rescoring
     val freshnessRescorer = freshnessOpt map { f =>
       new FreshnessRescorer(f.toInt, recommendationTime, freshnessTimeUnit,
-        MahoutCommons.itemsMap(s"${inputDir}itemsIndex.tsv"))
+        itemsMap)
     }
 
     // generate prediction output file

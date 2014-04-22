@@ -13,10 +13,12 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 public class BooleanPrefUserBasedRecommender extends GenericUserBasedRecommender {
 
   private final FastByIDMap<FastIDSet> seenDataMap;
+  private final FastIDSet validItemIDSet;
 
   public BooleanPrefUserBasedRecommender(DataModel dataModel,
     UserNeighborhood neighborhood,
     UserSimilarity similarity,
+    long[] validItemIDs,
     DataModel seenDataModel)
     throws TasteException {
       super(dataModel, neighborhood, similarity);
@@ -25,6 +27,8 @@ public class BooleanPrefUserBasedRecommender extends GenericUserBasedRecommender
           seenDataModel);
       else
         this.seenDataMap = null;
+
+      this.validItemIDSet = new FastIDSet(validItemIDs);
   }
 
   /**
@@ -59,6 +63,8 @@ public class BooleanPrefUserBasedRecommender extends GenericUserBasedRecommender
     for (long userID : theNeighborhood) {
       possibleItemIDs.addAll(dataModel.getItemIDsFromUser(userID));
     }
+
+    possibleItemIDs.retainAll(this.validItemIDSet);
 
     // exclude seen items if seenDataMap != null
     if (this.seenDataMap != null) {

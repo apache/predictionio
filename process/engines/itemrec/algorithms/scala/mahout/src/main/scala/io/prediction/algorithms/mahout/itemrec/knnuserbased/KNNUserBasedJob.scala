@@ -35,7 +35,8 @@ class KNNUserBasedJob extends MahoutJob {
 
   val defaultUserSimilarity = "PearsonCorrelationSimilarity"
 
-  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender = {
+  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel,
+    validItemIDs: Set[Long], args: Map[String, String]): Recommender = {
 
     val booleanData: Boolean = getArgOpt(args, "booleanData", "false").toBoolean
     val nearestN: Int = getArgOpt(args, "nearestN", "10").toInt
@@ -64,10 +65,10 @@ class KNNUserBasedJob extends MahoutJob {
 
     val recommender: Recommender = if (booleanData) {
       new BooleanPrefUserBasedRecommender(dataModel, neighborhood, similarity,
-        recSeenDataModel)
+        validItemIDs.toArray, recSeenDataModel)
     } else {
       new UserBasedRecommender(dataModel, neighborhood, similarity,
-        recSeenDataModel)
+        validItemIDs.toArray, recSeenDataModel)
     }
 
     recommender

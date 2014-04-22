@@ -35,7 +35,8 @@ class ThresholdUserBasedJob extends MahoutJob {
 
   val defaultUserSimilarity = "PearsonCorrelationSimilarity"
 
-  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel, args: Map[String, String]): Recommender = {
+  override def buildRecommender(dataModel: DataModel, seenDataModel: DataModel,
+    validItemIDs: Set[Long], args: Map[String, String]): Recommender = {
 
     val booleanData: Boolean = getArgOpt(args, "booleanData", "false").toBoolean
     val userSimilarity: String = getArgOpt(args, "userSimilarity", defaultUserSimilarity)
@@ -62,9 +63,11 @@ class ThresholdUserBasedJob extends MahoutJob {
     val recSeenDataModel = if (unseenOnly) seenDataModel else null
 
     val recommender: Recommender = if (booleanData) {
-      new BooleanPrefUserBasedRecommender(dataModel, neighborhood, similarity, recSeenDataModel)
+      new BooleanPrefUserBasedRecommender(dataModel, neighborhood, similarity,
+        validItemIDs.toArray, recSeenDataModel)
     } else {
-      new UserBasedRecommender(dataModel, neighborhood, similarity, recSeenDataModel)
+      new UserBasedRecommender(dataModel, neighborhood, similarity,
+        validItemIDs.toArray, recSeenDataModel)
     }
 
     recommender
