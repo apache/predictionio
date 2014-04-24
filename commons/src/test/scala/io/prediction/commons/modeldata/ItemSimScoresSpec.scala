@@ -9,29 +9,39 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class ItemSimScoresSpec extends Specification {
-  def is =
-    "PredictionIO Model Data Item Similarity Scores Specification" ^
-      p ^
-      "ItemSimScores can be implemented by:" ^ endp ^
-      "1. MongoItemSimScores" ^ mongoItemSimScores ^ end
+  def is = s2"""
 
-  def mongoItemSimScores = p ^
-    "MongoItemSimScores should" ^
-    "behave like any ItemSimScores implementation" ^ itemSimScores(newMongoItemSimScores) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+    PredictionIO Model Data Item Similarity Scores Specification
 
-  def itemSimScores(itemSimScores: ItemSimScores) = {
-    t ^
-      "inserting and getting 3 ItemSimScores" ! insert(itemSimScores) ^
-      "getting Top N Iids" ! getTopNIids(itemSimScores) ^
-      "delete ItemSimScores by algoid" ! deleteByAlgoid(itemSimScores) ^
-      "existence by Algo" ! existByAlgo(itemSimScores) ^
-      bt
-  }
+    ItemSimScores can be implemented by:
+    1. MongoItemSimScores ${mongoItemSimScores}
+
+  """
+
+  def mongoItemSimScores = s2"""
+
+    MongoItemSimScores should
+
+    - behave like any ItemSimScores implementation ${itemSimScores(newMongoItemSimScores)}
+
+    (clean up database after test)
+    ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+
+  """
+
+  def itemSimScores(itemSimScores: ItemSimScores) = s2"""
+
+    inserting and getting 3 ItemSimScores ${insert(itemSimScores)}
+    getting Top N Iids ${getTopNIids(itemSimScores)}
+    delete ItemSimScores by algoid ${deleteByAlgoid(itemSimScores)}
+    existence by Algo ${existByAlgo(itemSimScores)}
+
+  """
 
   val mongoDbName = "predictionio_modeldata_mongoitemsimscore_test"
 
-  def newMongoItemSimScores = new mongodb.MongoItemSimScores(new Config, MongoConnection()(mongoDbName))
+  def newMongoItemSimScores = new mongodb.MongoItemSimScores(
+    new Config, MongoConnection()(mongoDbName))
 
   def insert(itemSimScores: ItemSimScores) = {
     implicit val app = App(
@@ -63,9 +73,11 @@ class ItemSimScoresSpec extends Specification {
     )
     val itemScores = List(ItemSimScore(
       iid = "testUser",
-      simiids = Seq("testUserItem4", "testUserItem3", "testUserItem2", "testUserItem1"),
+      simiids = Seq("testUserItem4", "testUserItem3", "testUserItem2",
+        "testUserItem1"),
       scores = Seq(999, 124.678, 10, -5.6),
-      itypes = Seq(List("invalid"), List("7", "8", "9"), List("4", "5", "6"), List("1", "2", "3")),
+      itypes = Seq(List("invalid"), List("7", "8", "9"), List("4", "5", "6"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo.id,
       modelset = algo.modelset
@@ -81,7 +93,8 @@ class ItemSimScoresSpec extends Specification {
       iid = "testUser3",
       simiids = Seq("b", "c", "e", "s"),
       scores = Seq(999, 124.678, 10, -5.6),
-      itypes = Seq(List("1"), List("7", "8", "9"), List("4", "5", "6"), List("1")),
+      itypes = Seq(List("1"), List("7", "8", "9"), List("4", "5", "6"),
+        List("1")),
       appid = app.id,
       algoid = algo.id,
       modelset = algo.modelset
@@ -129,9 +142,15 @@ class ItemSimScoresSpec extends Specification {
     )
     val itemScores = List(ItemSimScore(
       iid = "testUser",
-      simiids = Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"),
-      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6, -5.6),
-      itypes = Seq(List("invalid"), List("invalid"), List("invalid"), List("1", "2", "3"), List("1", "2", "4"), List("3"), List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"), List("1", "2", "3")),
+      simiids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
+        "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2",
+        "testUserItem6", "testUserItem1", "testUserItem5"),
+      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6,
+        -5.6),
+      itypes = Seq(List("invalid"), List("invalid"), List("invalid"),
+        List("1", "2", "3"), List("1", "2", "4"), List("3"),
+        List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo.id,
       modelset = true
@@ -141,26 +160,40 @@ class ItemSimScoresSpec extends Specification {
       itemSimScores.insert(_)
     }
 
-    val resultsAllTop5 = itemSimScores.getTopNIids("testUser", 5, None).toSeq
-    val resultsAllTop1 = itemSimScores.getTopNIids("testUser", 1, None).toSeq
-    val resultsAllTop0 = itemSimScores.getTopNIids("testUser", 0, None).toSeq
-    val results23Top4 = itemSimScores.getTopNIids("testUser", 4, Some(List("2", "3"))).toSeq
-    val results23Top100 = itemSimScores.getTopNIids("testUser", 100, Some(List("2", "3"))).toSeq
-    val results8Top4 = itemSimScores.getTopNIids("testUser", 4, Some(List("8"))).toSeq
-    val results8Top0 = itemSimScores.getTopNIids("testUser", 0, Some(List("8"))).toSeq
-    val resultUnknownAllTop4 = itemSimScores.getTopNIids("unknown", 4, None).toSeq
-    val resultUnknown18Top4 = itemSimScores.getTopNIids("unknown", 4, Some(List("1", "8"))).toSeq
+    val resultsAllTop5 = itemSimScores.getTopNIidsAndScores("testUser", 5, None)
+    val resultsAllTop1 = itemSimScores.getTopNIidsAndScores("testUser", 1, None)
+    val resultsAllTop0 = itemSimScores.getTopNIidsAndScores("testUser", 0, None)
+    val results23Top4 = itemSimScores.getTopNIids("testUser", 4,
+      Some(List("2", "3"))).toSeq
+    val results23Top100 = itemSimScores.getTopNIids("testUser", 100,
+      Some(List("2", "3"))).toSeq
+    val results8Top4 = itemSimScores.getTopNIids("testUser", 4,
+      Some(List("8"))).toSeq
+    val results8Top0 = itemSimScores.getTopNIids("testUser", 0,
+      Some(List("8"))).toSeq
+    val resultUnknownAllTop4 = itemSimScores.getTopNIids("unknown", 4, None)
+      .toSeq
+    val resultUnknown18Top4 = itemSimScores.getTopNIids("unknown", 4,
+      Some(List("1", "8"))).toSeq
 
-    resultsAllTop5 must beEqualTo(Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7")) and
-      (resultsAllTop1 must beEqualTo(Seq("testUserItem10"))) and
-      (resultsAllTop0 must beEqualTo(Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"))) and
-      (results23Top4 must beEqualTo(Seq("testUserItem9", "testUserItem7", "testUserItem3", "testUserItem1"))) and
-      (results23Top100 must beEqualTo(Seq("testUserItem9", "testUserItem7", "testUserItem3", "testUserItem1", "testUserItem5"))) and
+    resultsAllTop5 must beEqualTo(Seq(("testUserItem10", 10000.0),
+      ("testUserItem8", 999.0), ("testUserItem4", 999.0),
+      ("testUserItem9", 124.678), ("testUserItem7", 124.678))) and
+      (resultsAllTop1 must beEqualTo(Seq(("testUserItem10", 10000)))) and
+      (resultsAllTop0 must beEqualTo(Seq(("testUserItem10", 10000),
+        ("testUserItem8", 999), ("testUserItem4", 999),
+        ("testUserItem9", 124.678), ("testUserItem7", 124.678),
+        ("testUserItem3", 124.678), ("testUserItem2", 10),
+        ("testUserItem6", 10), ("testUserItem1", -5.6),
+        ("testUserItem5", -5.6)))) and
+      (results23Top4 must beEqualTo(Seq("testUserItem9", "testUserItem7",
+        "testUserItem3", "testUserItem1"))) and
+      (results23Top100 must beEqualTo(Seq("testUserItem9", "testUserItem7",
+        "testUserItem3", "testUserItem1", "testUserItem5"))) and
       (results8Top4 must beEqualTo(Seq("testUserItem6"))) and
       (results8Top0 must beEqualTo(Seq("testUserItem6"))) and
       (resultUnknownAllTop4 must beEqualTo(Seq())) and
       (resultUnknown18Top4 must beEqualTo(Seq()))
-
   }
 
   def deleteByAlgoid(itemSimScores: ItemSimScores) = {
@@ -198,9 +231,15 @@ class ItemSimScoresSpec extends Specification {
 
     val itemScores1 = List(ItemSimScore(
       iid = "deleteByAlgoidUser",
-      simiids = Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"),
-      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6, -5.6),
-      itypes = Seq(List("invalid"), List("invalid"), List("invalid"), List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"), List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"), List("1", "2", "3")),
+      simiids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
+        "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2",
+        "testUserItem6", "testUserItem1", "testUserItem5"),
+      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6,
+        -5.6),
+      itypes = Seq(List("invalid"), List("invalid"), List("invalid"),
+        List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"),
+        List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -208,7 +247,8 @@ class ItemSimScoresSpec extends Specification {
       iid = "deleteByAlgoidUser2",
       simiids = Seq("a", "b", "c", "d"),
       scores = Seq(10, 9, 8, 7),
-      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"), List("4")),
+      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"),
+        List("4")),
       appid = app.id,
       algoid = algo1.id,
       modelset = algo1.modelset
@@ -216,9 +256,15 @@ class ItemSimScoresSpec extends Specification {
 
     val itemScores2 = List(ItemSimScore(
       iid = "deleteByAlgoidUser",
-      simiids = Seq("testUserItem10", "testUserItem8", "testUserItem4", "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2", "testUserItem6", "testUserItem1", "testUserItem5"),
-      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6, -5.6),
-      itypes = Seq(List("invalid"), List("invalid"), List("invalid"), List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"), List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"), List("1", "2", "3")),
+      simiids = Seq("testUserItem10", "testUserItem8", "testUserItem4",
+        "testUserItem9", "testUserItem7", "testUserItem3", "testUserItem2",
+        "testUserItem6", "testUserItem1", "testUserItem5"),
+      scores = Seq(10000, 999, 999, 124.678, 124.678, 124.678, 10, 10, -5.6,
+        -5.6),
+      itypes = Seq(List("invalid"), List("invalid"), List("invalid"),
+        List("1", "2", "3"), List("1", "2", "4"), List("2", "3", "4"),
+        List("5", "6", "7"), List("5", "6", "8"), List("1", "2", "3"),
+        List("1", "2", "3")),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset
@@ -226,7 +272,8 @@ class ItemSimScoresSpec extends Specification {
       iid = "deleteByAlgoidUser2",
       simiids = Seq("a", "b", "c", "d"),
       scores = Seq(10, 9, 8, 7),
-      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"), List("4")),
+      itypes = Seq(List("invalid"), List("5", "6", "7"), List("5", "6", "8"),
+        List("4")),
       appid = app.id,
       algoid = algo2.id,
       modelset = algo2.modelset

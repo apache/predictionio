@@ -55,6 +55,36 @@ class MongoItemSimScores(cfg: Config, db: MongoDB) extends ItemSimScores with Mo
 
   }
 
+  def getTopNIidsAndScores(iid: String, n: Int,
+    itypes: Option[Seq[String]])(implicit app: App, algo: Algo,
+      offlineEval: Option[OfflineEval] = None): Seq[(String, Double)] = {
+    val modelset = offlineEval map { _ => false } getOrElse algo.modelset
+    val itemRecScoreColl = db(collectionName(algo.id, modelset))
+
+    itemRecScoreColl.findOne(MongoDBObject(
+      "iid" -> idWithAppid(app.id, iid))).map(
+      dbObjToItemSimScore(_, app.id)).map {
+        x: ItemSimScore =>
+          val iids = itypes.map { s =>
+            val zippedIids = (x.simiids, x.scores, x.itypes).zipped.toSeq
+            val itypesSet: Set[String] = s.toSet // query itypes Set
+            val itypesSetSize = itypesSet.size
+
+            zippedIids.filter { z =>
+              // if there are some elements in s existing in iiditypes, then
+              // s.diff(iiditypes) size will be < original size of s
+              // it means itypes match the item
+              (itypesSet.diff(z._3.toSet).size < itypesSetSize)
+            }.map(z => (z._1, z._2)) // only return the iid
+          }.getOrElse {
+            x.simiids.zip(x.scores)
+          }
+          if (n == 0) iids else iids.take(n)
+      } getOrElse {
+        Seq[(String, Double)]()
+      }
+  }
+
   def insert(itemSimScore: ItemSimScore) = {
     val id = new ObjectId
     val itemSimObj = MongoDBObject(
