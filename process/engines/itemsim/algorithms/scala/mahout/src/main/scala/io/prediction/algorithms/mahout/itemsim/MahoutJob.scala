@@ -10,6 +10,7 @@ import scala.collection.JavaConversions._
 import scala.sys.process._
 import scala.collection.mutable.PriorityQueue
 
+import com.github.nscala_time.time.Imports._
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel
@@ -107,22 +108,27 @@ abstract class MahoutJob {
     val output = args("output")
     val itemsFile = args("itemsFile") // contains valid item index can be recommended
     val numSimilarItems: Int = getArgOpt(args, "numSimilarItems", "10").toInt
+    val recommendationTime: Long = getArg(args, "recommendationTime").toLong
+    val freshness = getArgOpt(args, "freshness", "0").toInt
+    val freshnessTimeUnit: Long = getArgOpt(args, "freshnessTimeUnit")
+      .map(_.toLong).getOrElse(1.hours.millis)
 
     // valid item index file (iindex)
     // iindex
-    val validItemsSet: Set[Long] = Source.fromFile(itemsFile)
-      .getLines()
-      .map[Long] { line =>
-        val iindex = try {
+    val validItemsMap: Map[Long, Long] = Source.fromFile(itemsFile).getLines()
+      .map { line =>
+        val (iindex, starttime) = try {
           val fields = line.split("\t")
-          fields(0).toLong
+          (fields(0).toLong, fields(1).toLong)
         } catch {
           case e: Exception => {
             throw new RuntimeException(s"Cannot get item info in line: ${line}. ${e}")
           }
         }
-        iindex
-      }.toSet
+        (iindex, starttime)
+      }.toMap
+
+    val validItemsSet = validItemsMap.keys.toSet
 
     val dataModel: DataModel = new FileDataModel(new File(input))
     val similarity: ItemSimilarity = buildItemSimilarity(dataModel, args)
@@ -134,22 +140,36 @@ abstract class MahoutJob {
     // generate prediction output file
     val outputWriter = new BufferedWriter(new FileWriter(outputFile))
 
-    val itemIds = dataModel.getItemIDs.toSeq
+    val itemIds = dataModel.getItemIDs.toSeq.map(_.toLong)
     val candidateItemsIds = itemIds.filter(validItemsSet(_))
 
     val allTopScores = itemIds.par.map { iid =>
       val simScores = candidateItemsIds
-        .map { simiid => (simiid, similarity.itemSimilarity(iid, simiid)) }
+        .map { simiid =>
+          val originalScore = similarity.itemSimilarity(iid, simiid)
+          val score = if (freshness > 0) {
+            validItemsMap.get(simiid) map { starttime =>
+              val timeDiff = (recommendationTime - starttime) / 1000.0 /
+                freshnessTimeUnit
+              if (timeDiff > 0)
+                originalScore * scala.math.exp(-timeDiff / (11 - freshness))
+              else
+                originalScore
+            } getOrElse originalScore
+          } else originalScore
+          (simiid, score)
+        }
         // filter out invalid score or the same iid itself
-        .filter { x: (_, Double) => (!x._2.isNaN()) && (x._1 != iid) }
+        .filter { x: (Long, Double) => (!x._2.isNaN()) && (x._1 != iid) }
 
-      (iid, getTopN(simScores, numSimilarItems)(ScoreOdering.reverse))
+      (iid, getTopN(simScores, numSimilarItems)(ScoreOrdering.reverse))
     }
 
     allTopScores.seq.foreach {
       case (iid, simScores) =>
         if (!simScores.isEmpty) {
-          val scoresString = simScores.map(x => s"${x._1}:${x._2}").mkString(",")
+          val scoresString = simScores.map(x => s"${x._1}:${x._2}")
+            .mkString(",")
           outputWriter.write(s"${iid}\t[${scoresString}]\n")
         }
     }
@@ -171,12 +191,13 @@ abstract class MahoutJob {
     args
   }
 
-  object ScoreOdering extends Ordering[(java.lang.Long, Double)] {
-    override def compare(a: (java.lang.Long, Double), b: (java.lang.Long, Double)) = a._2 compare b._2
+  object ScoreOrdering extends Ordering[(Long, Double)] {
+    override def compare(a: (Long, Double), b: (Long, Double)) =
+      a._2 compare b._2
   }
 
-  def getTopN[T](s: Seq[T], n: Int)(implicit ord: Ordering[T]): Seq[T] = {
-    val q = PriorityQueue()
+  def getTopN[T](s: Seq[T], n: Int)(ord: Ordering[T]): Seq[T] = {
+    val q = PriorityQueue()(ord)
 
     for (x <- s) {
       if (q.size < n)
@@ -192,5 +213,4 @@ abstract class MahoutJob {
 
     q.dequeueAll.toSeq.reverse
   }
-
 }

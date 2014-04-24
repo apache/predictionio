@@ -9,7 +9,8 @@ import io.prediction.commons.settings.{ Algo, App, OfflineEval }
  * @param iid Item ID.
  * @param simiids Seq of similar item ID.
  * @param scores Seq of similarity score.
- * @param itypes Seq of item types of the similar item. Copied from the item when a batch mode algorithm is run.
+ * @param itypes Seq of item types of the similar item. Copied from the item
+ *               when a batch mode algorithm is run.
  * @param appid App ID of this record.
  * @param algoid Algo ID of this record.
  * @param modelset Model data set.
@@ -25,19 +26,36 @@ case class ItemSimScore(
   modelset: Boolean,
   id: Option[Any] = None)
 
-/** Base trait for implementations that interact with itemsim scores in the backend data store. */
+/**
+ * Base trait for implementations that interact with itemsim scores in the
+ * backend data store.
+ */
 trait ItemSimScores extends ModelData {
-  /** Insert an ItemSimScore and return it with a real ID, if any (database vendor dependent). */
+  /**
+   * Insert an ItemSimScore and return it with a real ID, if any (database
+   * vendor dependent).
+   */
   def insert(itemSimScore: ItemSimScore): ItemSimScore
 
   /** get an ItemSimScore by iid */
-  def getByIid(iid: String)(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Option[ItemSimScore]
+  def getByIid(iid: String)(implicit app: App, algo: Algo,
+    offlineEval: Option[OfflineEval] = None): Option[ItemSimScore]
 
   /**
    * Get the top N ranked iids
    * @param n if n == 0, return iids as many as avaiable
    */
-  def getTopNIids(iid: String, n: Int, itypes: Option[Seq[String]])(implicit app: App, algo: Algo, offlineEval: Option[OfflineEval] = None): Iterator[String]
+  def getTopNIids(iid: String, n: Int,
+    itypes: Option[Seq[String]])(implicit app: App, algo: Algo,
+      offlineEval: Option[OfflineEval] = None): Iterator[String]
+
+  /**
+   * Get the top N ranked iids.
+   * @param n If n == 0, return as many iids as available
+   */
+  def getTopNIidsAndScores(iid: String, n: Int,
+    itypes: Option[Seq[String]])(implicit app: App, algo: Algo,
+      offlineEval: Option[OfflineEval] = None): Seq[(String, Double)]
 
   /** Delete by Algo ID. */
   def deleteByAlgoid(algoid: Int)

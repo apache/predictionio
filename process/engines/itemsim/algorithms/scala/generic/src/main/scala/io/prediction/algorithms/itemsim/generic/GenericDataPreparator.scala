@@ -3,6 +3,7 @@ package io.prediction.algorithms.generic.itemsim
 import io.prediction.commons.Config
 import io.prediction.commons.appdata.{ Item, U2IAction, User }
 
+import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logger
 import java.io.File
 import java.io.FileWriter
@@ -29,7 +30,7 @@ object GenericDataPreparator {
   final val ACTION_VIEW = "view"
   final val ACTION_CONVERSION = "conversion"
 
-  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
+  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it,
   // determine which action will be considered as final preference.
   final val CONFLICT_LATEST: String = "latest" // use latest action
   final val CONFLICT_HIGHEST: String = "highest" // use the one with highest score
@@ -195,7 +196,7 @@ object GenericDataPreparator {
         itemTimeFilter(true, itemData.starttime, itemData.endtime, arg.recommendationTime)
     }.foreach {
       case (iid, itemData) =>
-        validItemsIndexWriter.write(s"${itemData.iindex}\n")
+        validItemsIndexWriter.write(s"${itemData.iindex}\t${itemData.starttime.getOrElse(DateTime.now.millis)}\n")
     }
     validItemsIndexWriter.close()
 
