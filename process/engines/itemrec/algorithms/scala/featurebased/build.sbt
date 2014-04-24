@@ -17,8 +17,14 @@ packExpandedClasspath := true
 packGenerateWindowsBatFile := false
 
 packMain := Map(
-  "itemrec.featurebased.Batch" -> "io.prediction.algorithms.itemrec.featurebased.FeatureBasedUserProfileRecommendation")
+  "itemrec.featurebased.Batch" ->
+  "io.prediction.algorithms.itemrec.featurebased.UserProfileRecommendationBatch",
+  "itemrec.featurebased.Realtime" ->
+  "io.prediction.algorithms.itemrec.featurebased.UserProfileRecommendationRealtime"
+  )
 
 packJvmOpts := Map(
-  "itemrec.featurebased.Batch" -> Common.packCommonJvmOpts)
+  "itemrec.featurebased.Batch" -> Common.packCommonJvmOpts,
+  "itemrec.featurebased.Realtime" -> Common.packCommonJvmOpts
+  )
 

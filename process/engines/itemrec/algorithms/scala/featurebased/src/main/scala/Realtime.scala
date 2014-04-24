@@ -43,8 +43,6 @@ object UserProfileRecommendationRealtime {
     val appid = args("appid").toInt
     val algoid = args("algoid").toInt
     val modelset = args("modelSet").toBoolean
-    //val numRecommendations = args.optional("numRecommendations")
-    //.getOrElse("10").toInt
     val verbose = args.optional("verbose").getOrElse("false").toBoolean
 
     val (itypes, itemTypesMap) = UserProfileRecommendation.getItems(appid)
@@ -56,22 +54,6 @@ object UserProfileRecommendationRealtime {
       invItypes, itemTypesMap, userU2IsMap)
 
     modelCon(appid, algoid, modelset, itypes, userFeaturesMap)
-
-    /*
-    val userRecommendationsMap = UserProfileRecommendation.recommend(
-      userFeaturesMap, itemTypesMap, itypes, invItypes, 
-      userFeaturesMap.keys.toSeq, numRecommendations)
-
-    modelCon(appid, algoid, modelset,
-      userRecommendationsMap, itemTypesMap)
-    */
-
-    /*
-    if (verbose) {
-      UserProfileRecommendation.printRecommendations(userFeaturesMap, itypes,
-        userFeaturesMap, itemTypesMap)
-    }
-    */
   }
 
 }

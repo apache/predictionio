@@ -5523,6 +5523,24 @@
             "params": {},
             "paramsections": []
         },
+        "pio-itemrec-single-featurebased_realtime": {
+            "name": "Feature Based (Realtime)",
+            "description": "Item recommendation based on item's feature vector",
+            "batchcommands": [
+                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ "
+            ],
+            "offlineevalcommands": [
+                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ "
+            ],
+            "paramorder": [],
+            "engineinfoid": "itemrec",
+            "techreq": [],
+            "datareq": [
+              "Users, Items, and U2I Actions."
+            ],
+            "params": {},
+            "paramsections": []
+        },
         "pio-itemsim-distributed-random": {
             "name": "Random Rank",
             "description": "Predict item similarities randomly.",
