@@ -23,7 +23,7 @@ class GenericDataPreparatorSpec extends Specification {
   val appdataU2IActions = commonConfig.getAppdataU2IActions
 
   "GenericDataPreparator with basic rate action app data" should {
-    val appid = 23
+    val appid = 46
     // insert a few users into db
     val user = User(
       id = "u0",
