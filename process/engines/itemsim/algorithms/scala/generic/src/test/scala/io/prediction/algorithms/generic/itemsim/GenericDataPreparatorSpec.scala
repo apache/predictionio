@@ -80,7 +80,7 @@ class GenericDataPreparatorSpec extends Specification {
     appdataU2IActions.insert(u2i.copy(uid = "u2", iid = "i2", action = "rate", v = Some(1)))
     appdataU2IActions.insert(u2i.copy(uid = "u2", iid = "i3", action = "rate", v = Some(4)))
 
-    val outputDir = "/tmp/pio_test/"
+    val outputDir = "/tmp/pio_test/io.prediction.algorithms.generic.itemsim.GenericDataPreparatorSpec"
     val args = Map(
       "outputDir" -> outputDir,
       "appid" -> appid,
