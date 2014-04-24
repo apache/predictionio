@@ -5,29 +5,37 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class OfflineEvalSplitterInfosSpec extends Specification {
-  def is =
-    "PredictionIO OfflineEvalSplitterInfos Specification" ^
-      p ^
-      "OfflineEvalSplitterInfos can be implemented by:" ^ endp ^
-      "1. MongoOfflineEvalSplitterInfos" ^ mongoOfflineEvalSplitterInfos ^ end
+  def is = s2"""
 
-  def mongoOfflineEvalSplitterInfos = p ^
-    "MongoOfflineEvalSplitterInfos should" ^
-    "behave like any OfflineEvalSplitterInfos implementation" ^ offlineEvalSplitterInfos(newMongoOfflineEvalSplitterInfos) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+    PredictionIO OfflineEvalSplitterInfos Specification
 
-  def offlineEvalSplitterInfos(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
-    t ^
-      "create and get an splitter info" ! insertAndGet(offlineEvalSplitterInfos) ^
-      "get splitter info by engine info id" ! getByEngineinfoid(offlineEvalSplitterInfos) ^
-      "update an splitter info" ! update(offlineEvalSplitterInfos) ^
-      "delete an splitter info" ! delete(offlineEvalSplitterInfos) ^
-      "backup and restore splitter info" ! backuprestore(offlineEvalSplitterInfos) ^
-      bt
-  }
+    OfflineEvalSplitterInfos can be implemented by:
+    1. MongoOfflineEvalSplitterInfos ${mongoOfflineEvalSplitterInfos}
+
+  """
+
+  def mongoOfflineEvalSplitterInfos = s2"""
+
+    MongoOfflineEvalSplitterInfos should
+    behave like any OfflineEvalSplitterInfos implementation ${offlineEvalSplitterInfos(newMongoOfflineEvalSplitterInfos)}
+    ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+
+  """
+
+  def offlineEvalSplitterInfos(
+    offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = s2"""
+
+    create and get an splitter info ${insertAndGet(offlineEvalSplitterInfos)}
+    get splitter info by engine info id ${getByEngineinfoid(offlineEvalSplitterInfos)}
+    update an splitter info ${update(offlineEvalSplitterInfos)}
+    delete an splitter info ${delete(offlineEvalSplitterInfos)}
+    backup and restore splitter info ${backuprestore(offlineEvalSplitterInfos)}
+
+  """
 
   val mongoDbName = "predictionio_mongoofflineevalsplitterinfos_test"
-  def newMongoOfflineEvalSplitterInfos = new mongodb.MongoOfflineEvalSplitterInfos(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvalSplitterInfos =
+    new mongodb.MongoOfflineEvalSplitterInfos(MongoConnection()(mongoDbName))
 
   def insertAndGet(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
     val mapk = OfflineEvalSplitterInfo(
@@ -120,9 +128,8 @@ class OfflineEvalSplitterInfosSpec extends Specification {
     val engine3Splitter1 = engine3Splitters(0)
 
     engine1Splitters.length must be equalTo (3) and
-      (engine1Splitter1 must be equalTo (mapkA)) and
-      (engine1Splitter2 must be equalTo (mapkB)) and
-      (engine1Splitter3 must be equalTo (mapkD)) and
+      (engine1Splitters must containTheSameElementsAs(Seq(mapkA, mapkB,
+        mapkD))) and
       (engine2Splitters.length must be equalTo (1)) and
       (engine2Splitter1 must be equalTo (mapkC)) and
       (engine3Splitters.length must be equalTo (1)) and
