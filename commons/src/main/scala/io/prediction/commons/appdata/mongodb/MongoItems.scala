@@ -60,9 +60,25 @@ class MongoItems(db: MongoDB) extends Items {
   }
 
   def getByAppidAndItypes(appid: Int, itypes: Seq[String]): Iterator[Item] = {
-    new MongoItemsIterator(itemColl.find(MongoDBObject(
-      "appid" -> appid,
-      "itypes" -> MongoDBObject("$in" -> itypes))))
+    getByAppidAndItypesAndTime(appid, optItypes = Some(itypes), optTime = None)
+  }
+
+  def getByAppidAndItypesAndTime(appid: Int,
+    optItypes: Option[Seq[String]] = None,
+    optTime: Option[DateTime] = None): Iterator[Item] = {
+    val queryObj = ("appid" $eq appid)
+    if (!optItypes.isEmpty)
+      queryObj ++= ("itypes" $in optItypes.get)
+    if (!optTime.isEmpty) {
+      val time = optTime.get
+      queryObj ++= ("starttime" $lt time)
+      // Need to create an ugly DBObject as casbah don't have scala-ble support
+      // for $or
+      queryObj ++= DBObject("$or" -> MongoDBList(
+        ("endtime" $exists false),
+        ("endtime" $gt time)))
+    }
+    new MongoItemsIterator(itemColl.find(queryObj))
   }
 
   def getByIds(appid: Int, ids: Seq[String]) = {

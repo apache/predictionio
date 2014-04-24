@@ -24,11 +24,11 @@ case class Item(
   itypes: Seq[String],
   starttime: Option[DateTime],
   endtime: Option[DateTime],
-  price: Option[Double],
-  profit: Option[Double],
-  latlng: Option[Tuple2[Double, Double]],
-  inactive: Option[Boolean],
-  attributes: Option[Map[String, Any]])
+  price: Option[Double] = None,
+  profit: Option[Double] = None,
+  latlng: Option[Tuple2[Double, Double]] = None,
+  inactive: Option[Boolean] = None,
+  attributes: Option[Map[String, Any]] = None)
 
 /** Base trait for implementations that interact with items in the backend app data store. */
 trait Items {
@@ -46,6 +46,10 @@ trait Items {
 
   /** Find items by App ID which belong to one of the itypes. */
   def getByAppidAndItypes(appid: Int, itypes: Seq[String]): Iterator[Item]
+
+  /** Find current items by App ID which belong to one of the itypes. */
+  def getByAppidAndItypesAndTime(appid: Int, optItypes: Option[Seq[String]] = None,
+    optTime: Option[DateTime] = None): Iterator[Item]
 
   /** Get items by IDs. */
   def getByIds(appid: Int, ids: Seq[String]): Seq[Item]

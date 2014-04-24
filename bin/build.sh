@@ -104,6 +104,11 @@ BASE_TARGETS="$BASE_TARGETS toolsUsers/pack"
 echo "+ Pack 0.7 Migration Tool"
 BASE_TARGETS="$BASE_TARGETS toolsMigrationStandardizedInfoIDs/pack"
 
+# Build Feature-based Item Rec
+echo "+ Feature-based Item Rec"
+BASE_TARGETS="$BASE_TARGETS processEnginesItemRecAlgoScalaFeatureBased/pack"
+
+
 $SBT $CLEAN $BASE_TARGETS
 
 # Build admin server

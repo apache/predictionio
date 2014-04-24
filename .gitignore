@@ -12,3 +12,4 @@ vendors
 .DS_Store
 .idea
 .gradle
+*.swp

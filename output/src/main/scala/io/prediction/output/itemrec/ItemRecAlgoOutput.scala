@@ -12,9 +12,10 @@ import com.github.nscala_time.time.Imports._
 
 trait ItemRecAlgoOutput {
   /** output the Seq of iids */
-  def output(uid: String, n: Int, itypes: Option[Seq[String]])(
-    implicit app: App, algo: Algo,
-    offlineEval: Option[OfflineEval]): Seq[(String, Double)]
+  def output(uid: String, n: Int, itypes: Option[Seq[String]],
+    instant: DateTime)(
+      implicit app: App, algo: Algo,
+      offlineEval: Option[OfflineEval]): Seq[(String, Double)]
 }
 
 object ItemRecAlgoOutput {
@@ -133,6 +134,9 @@ object ItemRecAlgoOutput {
       if (cap == "serendipity") serendipityN(n) else n
     }
 
+    // Time-dependent logic should reference to the same instant.
+    val instant = DateTime.now
+
     /**
      * At the moment, PredictionIO depends only on MongoDB for its model data
      * storage. Since we are still using the legacy longitude-latitude format,
@@ -145,10 +149,10 @@ object ItemRecAlgoOutput {
         val geoItems = items.getByAppidAndLatlng(app.id, ll, within, unit)
           .map(_.id).toSet
         // use n = 0 to return all available iids for now
-        ItemRecCFAlgoOutput.output(uid, 0, itypes).filter(t => geoItems(t._1))
+        ItemRecCFAlgoOutput.output(uid, 0, itypes, instant).filter(t => geoItems(t._1))
       }.getOrElse {
         // use n = 0 to return all available iids for now
-        ItemRecCFAlgoOutput.output(uid, 0, itypes)
+        ItemRecCFAlgoOutput.output(uid, 0, itypes, instant)
       }.toSeq
     val iids = iidsAndScores map { _._1 }
 
@@ -156,9 +160,9 @@ object ItemRecAlgoOutput {
     val itemsForTimeCheck = items.getByIds(app.id, iids)
     val iidsWithValidTimeMap = (itemsForTimeCheck filter { item =>
       (item.starttime, item.endtime) match {
-        case (Some(st), None) => DateTime.now >= st
-        case (None, Some(et)) => DateTime.now <= et
-        case (Some(st), Some(et)) => st <= DateTime.now && DateTime.now <= et
+        case (Some(st), None) => instant >= st
+        case (None, Some(et)) => instant <= et
+        case (Some(st), Some(et)) => st <= instant && instant <= et
         case _ => true
       }
     }).map(item => (item.id, item)).toMap

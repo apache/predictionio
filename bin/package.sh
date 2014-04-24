@@ -80,6 +80,9 @@ cp -n $BASE/process/engines/itemrec/algorithms/scala/mahout/target/pack/lib/* $P
 cp $BASE/process/engines/itemrec/algorithms/scala/graphchi/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/itemrec/algorithms/scala/graphchi/target/pack/lib/* $PACKAGE_DIR/lib
 
+cp $BASE/process/engines/itemrec/algorithms/scala/featurebased/target/pack/bin/* $PACKAGE_DIR/bin
+cp -n $BASE/process/engines/itemrec/algorithms/scala/featurebased/target/pack/lib/* $PACKAGE_DIR/lib
+
 cp $BASE/process/engines/itemsim/algorithms/scala/generic/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/process/engines/itemsim/algorithms/scala/generic/target/pack/lib/* $PACKAGE_DIR/lib
 

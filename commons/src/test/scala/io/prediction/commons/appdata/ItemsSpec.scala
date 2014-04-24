@@ -29,6 +29,8 @@ class ItemsSpec extends Specification {
       "deleting an item" ! delete(items) ^
       "deleting items by appid" ! deleteByAppid(items) ^
       "count items by appid" ! countByAppid(items) ^
+      "getting items by App ID and itypes and time" !
+      getByAppidAndItypesAndTime(items) ^
       bt
   }
 
@@ -190,6 +192,66 @@ class ItemsSpec extends Specification {
       ((items.getByAppidAndItypes(appid, Seq("type2"))).toSeq must beEqualTo(Seq(dac, mvh))) and
       ((items.getByAppidAndItypes(appid, Seq("type3", "type4"))).toSeq must beEqualTo(Seq(lbh, mvh)))
 
+  }
+
+  def getByAppidAndItypesAndTime(items: Items) = {
+    val id = "getByAppidAndItypesAndTime_"
+    val appid = 20130423
+
+    val s1e2 = Item(id = id + "s1e2", appid = appid, ct = DateTime.now,
+      itypes = List[String](),
+      starttime = Some(new DateTime("2013-01-15T12:34:56.789-08:00")),
+      endtime = Some(new DateTime("2013-02-15T12:34:56.789-08:00")))
+
+    val s1e3a = Item(id = id + "s1e3a", appid = appid, ct = DateTime.now,
+      itypes = List[String]("a"),
+      starttime = Some(new DateTime("2013-01-15T12:34:56.789-08:00")),
+      endtime = Some(new DateTime("2013-03-15T12:34:56.789-08:00")))
+
+    val s2e3a = Item(id = id + "s2e3a", appid = appid, ct = DateTime.now,
+      itypes = List[String]("a"),
+      starttime = Some(new DateTime("2013-02-15T12:34:56.789-08:00")),
+      endtime = Some(new DateTime("2013-03-15T12:34:56.789-08:00")))
+
+    val s2e3b = Item(id = id + "s2e3b", appid = appid, ct = DateTime.now,
+      itypes = List[String]("b"),
+      starttime = Some(new DateTime("2013-02-15T12:34:56.789-08:00")),
+      endtime = Some(new DateTime("2013-03-15T12:34:56.789-08:00")))
+
+    val s4e6 = Item(id = id + "s4e6", appid = appid, ct = DateTime.now,
+      itypes = List[String](),
+      starttime = Some(new DateTime("2013-04-15T12:34:56.789-08:00")),
+      endtime = Some(new DateTime("2013-06-15T12:34:56.789-08:00")))
+
+    val s1 = Item(id = id + "s1", appid = appid, ct = DateTime.now,
+      itypes = List[String](),
+      starttime = Some(new DateTime("2013-01-15T12:34:56.789-08:00")),
+      endtime = None)
+
+    val s2 = Item(id = id + "s2", appid = appid, ct = DateTime.now,
+      itypes = List[String](),
+      starttime = Some(new DateTime("2013-02-15T12:34:56.789-08:00")),
+      endtime = None)
+
+    Seq(s1e2, s1e3a, s2e3a, s2e3b, s4e6, s1, s2).foreach { items.insert }
+
+    val t2 = new DateTime("2013-02-01T12:34:56.789-08:00")
+    val t3 = new DateTime("2013-03-01T12:34:56.789-08:00")
+
+    val tests = List(
+      (items.getByAppidAndItypesAndTime(appid, optTime = Some(t3)).toSeq
+        must containTheSameElementsAs(Seq(s1e3a, s2e3a, s2e3b, s1, s2))),
+      (items.getByAppidAndItypesAndTime(
+        appid, optItypes = Some(List("b")), optTime = Some(t3)).toSeq
+        must containTheSameElementsAs(Seq(s2e3b))),
+      (items.getByAppidAndItypesAndTime(
+        appid, optItypes = Some(List("a")), optTime = Some(t3)).toSeq
+        must containTheSameElementsAs(Seq(s1e3a, s2e3a))),
+      (items.getByAppidAndItypesAndTime(appid, optTime = Some(t2)).toSeq
+        must containTheSameElementsAs(Seq(s1e2, s1e3a, s1)))
+    )
+
+    tests.reduce(_ and _)
   }
 
   def getByIds(items: Items) = {
