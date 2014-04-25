@@ -49,24 +49,24 @@ class AlgoOutputSelector(algos: Algos) {
     algo
   }
 
-  def itemReorderSelection(uid: String, iids: Seq[String])(implicit app: App, engine: Engine): Seq[String] = {
-    implicit val algo = itemReorderAlgoSelection(engine)
+  def itemRankSelection(uid: String, iids: Seq[String])(implicit app: App, engine: Engine): Seq[String] = {
+    implicit val algo = itemRankAlgoSelection(engine)
 
-    itemreorder.ItemReorderAlgoOutput.output(uid, iids)
+    itemrank.ItemRankAlgoOutput.output(uid, iids)
   }
 
-  def itemReorderAlgoSelection(engine: Engine): Algo = {
+  def itemRankAlgoSelection(engine: Engine): Algo = {
     /** Check engine type. */
-    if (engine.infoid != "itemreorder") throw new RuntimeException("Not an itemreorder engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
+    if (engine.infoid != "itemrank") throw new RuntimeException("Not an itemrank engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
-    val itemReorderAlgos = algos.getDeployedByEngineid(engine.id)
+    val itemRankAlgos = algos.getDeployedByEngineid(engine.id)
 
-    if (!itemReorderAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
+    if (!itemRankAlgos.hasNext) throw new RuntimeException("No deployed algorithm for specified engine (id: %d, name: %s, type: %s)" format (engine.id, engine.name, engine.infoid))
 
-    val algo = itemReorderAlgos.next()
+    val algo = itemRankAlgos.next()
 
     /** Multiple deployment not yet supported. */
-    if (itemReorderAlgos.hasNext) throw new RuntimeException(multipleAlgoErrorMsg)
+    if (itemRankAlgos.hasNext) throw new RuntimeException(multipleAlgoErrorMsg)
 
     algo
   }

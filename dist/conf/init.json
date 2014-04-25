@@ -212,10 +212,10 @@
                 }
             ]
         },
-        "itemreorder": {
-            "name": "Item Reordering Engine",
-            "description": "<h6>Reorder given items to each user personally.</h6><p>Sample Use Cases</p><ul><li>prioritize a set of items to users personally</li><li>reorder menu items to users personally</li></ul>",
-            "defaultalgoinfoid": "pio-itemreorder-single-mahout-knnitembased",
+        "itemrank": {
+            "name": "Item Ranking Engine",
+            "description": "<h6>Rank given items to each user personally.</h6><p>Sample Use Cases</p><ul><li>prioritize a set of items to users personally</li><li>reorder menu items to users personally</li></ul>",
+            "defaultalgoinfoid": "pio-itemrank-single-mahout-knnitembased",
             "defaultofflineevalmetricinfoid": "pio-itemrec-single-map_k",
             "defaultofflineevalsplitterinfoid": "pio-single-trainingtestsplit",
             "params": {
@@ -6460,7 +6460,7 @@
                 }
             ]
         },
-        "pio-itemreorder-single-mahout-knnitembased": {
+        "pio-itemrank-single-mahout-knnitembased": {
             "name": "Mahout's kNN Item Based Collaborative Filtering (extension to GenericItemBased) (Single Machine)",
             "description": "Predicts user preferences based on previous behaviors of users on similar items (Single Machine).",
             "batchcommands": [
@@ -6487,7 +6487,7 @@
                 "conversionParam",
                 "conflictParam"
             ],
-            "engineinfoid": "itemreorder",
+            "engineinfoid": "itemrank",
             "techreq": [],
             "datareq": [
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."

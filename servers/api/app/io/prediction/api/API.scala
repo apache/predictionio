@@ -670,7 +670,7 @@ object API extends Controller {
     }
   }
 
-  def itemReorder(format: String, enginename: String) = Action { implicit request =>
+  def itemRank(format: String, enginename: String) = Action { implicit request =>
     FormattedResponse(format) {
       Form(tuple(
         "pio_appkey" -> nonEmptyText,
@@ -684,7 +684,7 @@ object API extends Controller {
           AuthenticatedApp(appkey) { implicit app =>
             ValidEngine(enginename) { implicit engine =>
               try {
-                val res = algoOutputSelector.itemReorderSelection(
+                val res = algoOutputSelector.itemRankSelection(
                   uid = uid,
                   iids = iids.split(",")
                 )
@@ -706,7 +706,7 @@ object API extends Controller {
                     APIMessageResponse(OK, Map("pio_iids" -> res))
                   }
                 } else {
-                  APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find reordering for user."))
+                  APIMessageResponse(NOT_FOUND, Map("message" -> "Cannot find item ranking for user."))
                 }
               } catch {
                 case e: Exception =>

@@ -207,14 +207,14 @@ class APISpec extends Specification {
     }
   }
 
-  "ItemReorder" should {
-    val enginename = "itemreorder"
+  "ItemRank" should {
+    val enginename = "itemrank"
 
     val engineid = engines.insert(Engine(
       id = 0,
       appid = appid,
-      name = "itemreorder",
-      infoid = "itemreorder",
+      name = "itemrank",
+      infoid = "itemrank",
       itypes = None,
       params = Map()))
 
@@ -222,7 +222,7 @@ class APISpec extends Specification {
       id = 0,
       engineid = engineid,
       name = enginename,
-      infoid = "pio-itemreorder-single-knnitembased",
+      infoid = "pio-itemrank-single-knnitembased",
       command = "itemr",
       params = Map("foo" -> "bar"),
       settings = Map("dead" -> "beef"),
@@ -241,8 +241,8 @@ class APISpec extends Specification {
       algoid = algoid,
       modelset = true))
 
-    "reorder" in new WithServer {
-      val response = Helpers.await(wsUrl(s"/engines/itemreorder/${enginename}/reordered.json")
+    "ranked" in new WithServer {
+      val response = Helpers.await(wsUrl(s"/engines/itemrank/${enginename}/ranked.json")
         .withQueryString(
           "pio_appkey" -> "appkey",
           "pio_uid" -> "user1",
@@ -252,8 +252,8 @@ class APISpec extends Specification {
         (response.body must beEqualTo("""{"pio_iids":["hsh","mvh","lbh","dac"]}"""))
     }
 
-    "reorder and unorder" in new WithServer {
-      val response = Helpers.await(wsUrl(s"/engines/itemreorder/${enginename}/reordered.json")
+    "ranked and unranked" in new WithServer {
+      val response = Helpers.await(wsUrl(s"/engines/itemrank/${enginename}/ranked.json")
         .withQueryString(
           "pio_appkey" -> "appkey",
           "pio_uid" -> "user1",
