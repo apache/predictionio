@@ -284,14 +284,14 @@ object Helper extends Controller {
         if (algo.status == "simeval") {
           Logger.info("Delete training model data for algo ID " + algoid)
           algoInfo.engineinfoid match {
-            case "itemrec" => trainingItemRecScores.deleteByAlgoid(algoid)
+            case "itemrec" | "itemreorder" => trainingItemRecScores.deleteByAlgoid(algoid)
             case "itemsim" => trainingItemSimScores.deleteByAlgoid(algoid)
             case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.engineinfoid)
           }
         } else {
           Logger.info("Delete model data for algo ID " + algoid)
           algoInfo.engineinfoid match {
-            case "itemrec" => itemRecScores.deleteByAlgoid(algoid)
+            case "itemrec" | "itemreorder" => itemRecScores.deleteByAlgoid(algoid)
             case "itemsim" => itemSimScores.deleteByAlgoid(algoid)
             case _ => throw new RuntimeException("Try to delete algo of unsupported engine type: " + algoInfo.engineinfoid)
           }
