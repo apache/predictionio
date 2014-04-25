@@ -26,7 +26,9 @@ class DataPreparatorTest extends Specification with TupleConversions {
     selectedItems: List[(String, String, String, String)], // id, itypes, starttime, endtime
     itemsIndexer: Map[String, String],
     usersIndexer: Map[String, String],
-    recommendItems: Option[List[String]] = None) = {
+    recommendItems: Option[List[String]] = None,
+    seenActions: List[String] = List(),
+    seen: List[(String, String)] = List()) = {
 
     val userIds = users map (x => x._1)
     val selectedItemsTextLine = selectedItems map { x => (itemsIndexer(x._1), x.productIterator.mkString("\t")) }
@@ -39,6 +41,12 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
     val recommendItemsIndexed = recommendItems.map { x => x.map(y => itemsIndexer(y)) }.getOrElse(List())
 
+    val seenIndexed: List[(String, String)] = if (seen.isEmpty) {
+      // if no seen is defined, using rating file as seen file to check
+      ratingsIndexed.map(y => (y._1, y._2))
+    } else {
+      seen.map(y => (usersIndexer(y._1), itemsIndexer(y._2)))
+    }
     val dbType = "file"
     val dbName = "testpath/"
     val dbHost = None
@@ -142,6 +150,59 @@ class DataPreparatorTest extends Specification with TupleConversions {
             outputBuffer.toList must containTheSameElementsAs(ratingsIndexed)
           }
         }
+        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.tsv"))) { outputBuffer =>
+          "correctly write data to seen.tsv" in {
+            outputBuffer.toList must containTheSameElementsAs(seenIndexed)
+          }
+        }
+        .run
+        .finish
+    } else if (!seenActions.isEmpty) {
+      JobTest("io.prediction.algorithms.scalding.mahout.itemrec.DataPreparator")
+        .arg("dbType", dbType)
+        .arg("dbName", dbName)
+        .arg("hdfsRoot", hdfsRoot)
+        .arg("appid", appid.toString)
+        .arg("engineid", engineid.toString)
+        .arg("algoid", algoid.toString)
+        .arg("itypes", itypes)
+        .arg("viewParam", params("viewParam"))
+        .arg("likeParam", params("likeParam"))
+        .arg("dislikeParam", params("dislikeParam"))
+        .arg("conversionParam", params("conversionParam"))
+        .arg("conflictParam", params("conflictParam"))
+        .arg("recommendationTime", recommendationTime.toString)
+        .arg("seenActions", seenActions)
+        .source(U2iActions(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, u2iActions)
+        .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv")), selectedItemsTextLine)
+        .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv")), usersTextLine)
+        .sink[(String, String, String, String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv"))) { outputBuffer =>
+          // index, iid, itypes
+          "correctly write itemsIndex.tsv" in {
+            outputBuffer.toList must containTheSameElementsAs(itemsIndex)
+          }
+        }
+        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "usersIndex.tsv"))) { outputBuffer =>
+          // index, uid
+          "correctly write usersIndex.tsv" in {
+            outputBuffer.toList must containTheSameElementsAs(usersIndex)
+          }
+        }
+        .sink[(String, String, String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"))) { outputBuffer =>
+          "correctly process and write data to ratings.csv" in {
+            outputBuffer.toList must containTheSameElementsAs(ratingsIndexed)
+          }
+        }
+        .sink[(String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "recommendItems.csv"))) { outputBuffer =>
+          "correctly process and write data to recomomendItems.csv" in {
+            outputBuffer.toList must containTheSameElementsAs(recommendItemsIndexed)
+          }
+        }
+        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.tsv"))) { outputBuffer =>
+          "correctly write data to seen.tsv" in {
+            outputBuffer.toList must containTheSameElementsAs(seenIndexed)
+          }
+        }
         .run
         .finish
     } else {
@@ -182,6 +243,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
         .sink[(String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "recommendItems.csv"))) { outputBuffer =>
           "correctly process and write data to recomomendItems.csv" in {
             outputBuffer.toList must containTheSameElementsAs(recommendItemsIndexed)
+          }
+        }
+        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.tsv"))) { outputBuffer =>
+          "correctly write data to seen.tsv" in {
+            outputBuffer.toList must containTheSameElementsAs(seenIndexed)
           }
         }
         .run
@@ -472,8 +538,17 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u0", "i3", "2"),
     ("u1", "i1", "1"))
 
+  // seen won't be affacted by the ignore setting
+  val test4Seen = List(
+    ("u0", "i0"),
+    ("u0", "i1"),
+    ("u0", "i2"),
+    ("u0", "i3"),
+    ("u1", "i0"),
+    ("u1", "i1"))
+
   "DataPreparator with all actions, all itypes, ignore View actions and conflicts=latest" should {
-    test(test4AllItypes, 20000, test4ParamsIgnoreView, test4Items, test4Users, test4U2i, test4RatingsIgnoreViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
+    test(test4AllItypes, 20000, test4ParamsIgnoreView, test4Items, test4Users, test4U2i, test4RatingsIgnoreViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems, seen = test4Seen)
   }
 
   // note: currently rate action can't be ignored
@@ -488,7 +563,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "5"))
 
   "DataPreparator with all actions, all itypes, ignore all actions except View (and Rate) and conflicts=latest" should {
-    test(test4AllItypes, 20000, test4ParamsIgnoreAllExceptView, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllExceptViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
+    test(test4AllItypes, 20000, test4ParamsIgnoreAllExceptView, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllExceptViewLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems, seen = test4Seen)
   }
 
   // note: meaning rate action only
@@ -502,7 +577,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u1", "i1", "5"))
 
   "DataPreparator with all actions, all itypes, ignore all actions (except Rate) and conflicts=latest" should {
-    test(test4AllItypes, 20000, test4ParamsIgnoreAll, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems)
+    test(test4AllItypes, 20000, test4ParamsIgnoreAll, test4Items, test4Users, test4U2i, test4RatingsIgnoreAllLatest, genSelectedItems(test4Items), test4ItemsIndexer, test4UsersIndexer, test4RecommendItems, seen = test4Seen)
   }
 
   val test4ParamsLowest: Map[String, String] = test4Params + ("conflictParam" -> "lowest")
@@ -614,6 +689,60 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
   "recommendationTime > last item endtime" should {
     test(test5AllItypes, tG, test5Params, test5Items, test5Users, test5U2i, test5Ratings, genSelectedItems(test5Items), test5ItemsIndexer, test5UsersIndexer, test5RecommendItemsEmpty)
+  }
+
+  /* test6: seen action */
+  val test6AllItypes = List("t1", "t2", "t3", "t4")
+  val test6ItemsMap = Map(
+    // id, itypes, appid, starttime, ct, endtime
+    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", "56789"),
+    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime),
+    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", "56790"),
+    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime))
+
+  val test6Items = List(
+    test6ItemsMap("i0"),
+    test6ItemsMap("i1"),
+    test6ItemsMap("i2"),
+    test6ItemsMap("i3"))
+
+  val test6RecommendItems = Some(List("i0", "i1", "i2", "i3"))
+
+  val test6ItemsIndexer = Map("i0" -> "0", "i1" -> "4", "i2" -> "7", "i3" -> "8") // map iid to index
+
+  val test6Users = List(Tuple1("u0"), Tuple1("u1"), Tuple1("u2"), Tuple1("u3"))
+  val test6UsersIndexer = Map("u0" -> "0", "u1" -> "1", "u2" -> "2", "u3" -> "3") // map uid to index
+
+  val test6U2i = List(
+    (Rate, "u0", "i0", "123450", "4"),
+    (Like, "u0", "i1", "123457", "PIO_NONE"),
+    (Dislike, "u0", "i2", "123458", "PIO_NONE"),
+    (View, "u0", "i3", "123459", "PIO_NONE"), // NOTE: assume v field won't be missing
+    (Rate, "u1", "i0", "123457", "2"),
+    (Conversion, "u1", "i1", "123458", "PIO_NONE"),
+    ("action1", "u0", "i2", "123459", "PIO_NONE"),
+    ("action2", "u1", "i1", "123459", "PIO_NONE"),
+    ("action1", "u2", "i0", "123459", "PIO_NONE"))
+
+  val test6Ratings = List(
+    ("u0", "i0", "4"),
+    ("u0", "i1", "4"),
+    ("u0", "i2", "2"),
+    ("u0", "i3", "1"),
+    ("u1", "i0", "2"),
+    ("u1", "i1", "5"))
+
+  val test6seenActions = List("action1", "action2")
+  val test6Seen = List(
+    ("u0", "i2"),
+    ("u1", "i1"),
+    ("u2", "i0"))
+
+  val test6Params: Map[String, String] = Map("viewParam" -> "1", "likeParam" -> "4", "dislikeParam" -> "2", "conversionParam" -> "5",
+    "conflictParam" -> "latest")
+
+  "DataPreparator with only all actions, all itypes, no conflict, and seenActions" should {
+    test(test6AllItypes, 20000, test6Params, test6Items, test6Users, test6U2i, test6Ratings, genSelectedItems(test6Items), test6ItemsIndexer, test6UsersIndexer, test6RecommendItems, test6seenActions, test6Seen)
   }
 
 }

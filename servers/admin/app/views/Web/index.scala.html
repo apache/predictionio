@@ -527,11 +527,11 @@
                     <% } else if (data.enginestatus == "firsttraining") { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Training the first data model.</span>
                     <% } else if (data.enginestatus == "training") { %>
-                        <span class="label label-info">Running (training data model) <i class="icon-ok icon-white"></i></span>
+                        <span class="label label-info">Running (Last Successful Training: <%= data.lasttraintime %>) (training data model) <i class="icon-ok icon-white"></i></span>
                     <% } else if (data.enginestatus == "runningnoscheduler") { %>
-                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Running (Scheduler is unreachable)</span>
+                        <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Running (Last Successful Training: <%= data.lasttraintime %>) (Scheduler is unreachable)</span>
                     <% } else if (data.enginestatus == "running") { %>
-                        <span class="label label-info">Running <i class="icon-ok icon-white"></i></span>
+                        <span class="label label-info">Running (Last Successful Training: <%= data.lasttraintime %>) <i class="icon-ok icon-white"></i></span>
                     <% } else { %>
                         <span class="label label-warning"><i class="icon-warning-sign icon-white"></i> Not Running: Undetermined error</span>
                     <% } %>

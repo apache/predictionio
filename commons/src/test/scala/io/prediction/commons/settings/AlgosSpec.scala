@@ -381,7 +381,8 @@ class AlgosSpec extends Specification {
       offlineevalid = None,
       offlinetuneid = Some(3),
       loop = None,
-      paramset = None)
+      paramset = None,
+      lasttraintime = Some(DateTime.now))
     val algo2 = Algo(
       id = 0,
       engineid = 5839,

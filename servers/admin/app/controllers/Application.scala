@@ -903,12 +903,18 @@ object Application extends Controller {
           } catch {
             case e: java.net.ConnectException => "runningnoscheduler"
           }
-      Ok(Json.obj(
+      val engineObj = Json.obj(
         "id" -> eng.id, // engine id
         "engineinfoid" -> eng.infoid,
         "appid" -> eng.appid,
         "enginename" -> eng.name,
-        "enginestatus" -> engineStatus))
+        "enginestatus" -> engineStatus)
+
+      Ok(
+        algo map { a =>
+          val lasttraintime: String = a.lasttraintime map { _.toString() } getOrElse "unknown"
+          engineObj ++ Json.obj("lasttraintime" -> lasttraintime)
+        } getOrElse engineObj)
   }
 
   /**
