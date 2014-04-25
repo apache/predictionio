@@ -73,27 +73,32 @@ object UserProfileRecommendationBatch {
     val numRecommendations = args.optional("numRecommendations")
     .getOrElse("10").toInt
     val verbose = args.optional("verbose").getOrElse("false").toBoolean
+    val optWhiteItypesStr = args.optional("whiteItypes")
 
+    // Recommendation 
     val (itypes, itemTypesMap) = UserProfileRecommendation.getItems(appid)
-    val invItypes = (0 until itypes.length).map(i => (itypes(i), i)).toMap
+
+    val whiteItypes = UserProfileRecommendation.getWhiteItypes(
+      itypes, optWhiteItypesStr)
+
+    val whiteInvItypes = (0 until whiteItypes.length)
+      .map(i => (whiteItypes(i), i)).toMap
 
     val userU2IsMap = UserProfileRecommendation.getU2I(appid)
 
-    val cStart = System.currentTimeMillis
     val userFeaturesMap = UserProfileRecommendation.constructUserFeatureMap(
-      invItypes, itemTypesMap, userU2IsMap)
-    val cEnd = System.currentTimeMillis
+      whiteInvItypes, itemTypesMap, userU2IsMap)
 
     val userRecommendationsMap = UserProfileRecommendation.recommend(
-      userFeaturesMap, itemTypesMap, itypes, invItypes, 
+      userFeaturesMap, itemTypesMap, itypes, whiteInvItypes, 
       userFeaturesMap.keys.toSeq, numRecommendations)
 
-    modelCon(appid, algoid, modelset,
-      userRecommendationsMap, itemTypesMap)
+    // Model Construction
+    modelCon(appid, algoid, modelset, userRecommendationsMap, itemTypesMap)
 
     if (verbose) {
       UserProfileRecommendation.printRecommendations(
-        userFeaturesMap, itypes,
+        userFeaturesMap, whiteItypes,
         userRecommendationsMap, itemTypesMap)
     }
   }

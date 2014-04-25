@@ -5517,13 +5517,13 @@
             ]
         },
         "pio-itemrec-single-featurebased_batch": {
-            "name": "Feature Based (Batch)",
-            "description": "Item recommendation based on item's feature vector",
+            "name": "Feature Based, Batch Mode. (Experimental)",
+            "description": "Item recommendation based on item's feature vector (itypes). This engine build a user preference model based on high ratings items (rate > 3).",
             "batchcommands": [
-                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ "
+                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ "
+                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteIteyps $whiteItypes$"
             ],
             "paramorder": [],
             "engineinfoid": "itemrec",
@@ -5531,17 +5531,37 @@
             "datareq": [
               "Users, Items, and U2I Actions."
             ],
-            "params": {},
-            "paramsections": []
+            "params": {
+              "whiteItypes": {
+                "name": "Whitelisted Itypes",
+                "description": "A comma-delimited list of itypes that is used to construct the preference model. If not specified, all itypes found in items will be used.",
+                "constraint": {
+                  "paramtype": "string"
+                },
+                "ui": {
+                  "uitype": "text"
+                },
+                "defaultvalue": ""
+              }
+            },
+            "paramsections": [
+              {
+                "name": "Parameter Settings",
+                "sectiontype": "normal",
+                "params": [
+                  "whiteItypes"
+                ]
+              }
+            ]
         },
         "pio-itemrec-single-featurebased_realtime": {
-            "name": "Feature Based (Realtime)",
-            "description": "Item recommendation based on item's feature vector",
+            "name": "Feature Based, Realtime Mode. (Experimental)",
+            "description": "Item recommendation based on item's feature vector (itypes). This engine build a user preference model based on high ratings items (rate > 3).",
             "batchcommands": [
-                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ "
+                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ "
+                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"
             ],
             "paramorder": [],
             "engineinfoid": "itemrec",
@@ -5549,8 +5569,28 @@
             "datareq": [
               "Users, Items, and U2I Actions."
             ],
-            "params": {},
-            "paramsections": []
+            "params": {
+              "whiteItypes": {
+                "name": "Whitelisted Itypes",
+                "description": "A comma-delimited list of itypes that is used to construct the preference model. If not specified, all itypes found in items will be used.",
+                "constraint": {
+                  "paramtype": "string"
+                },
+                "ui": {
+                  "uitype": "text"
+                },
+                "defaultvalue": ""
+              }
+            },
+            "paramsections": [
+              {
+                "name": "Parameter Settings",
+                "sectiontype": "normal",
+                "params": [
+                  "whiteItypes"
+                ]
+              }
+            ]
         },
         "pio-itemsim-distributed-random": {
             "name": "Random Rank",

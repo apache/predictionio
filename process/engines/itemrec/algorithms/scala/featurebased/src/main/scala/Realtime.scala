@@ -44,16 +44,24 @@ object UserProfileRecommendationRealtime {
     val algoid = args("algoid").toInt
     val modelset = args("modelSet").toBoolean
     val verbose = args.optional("verbose").getOrElse("false").toBoolean
+    val optWhiteItypesStr = args.optional("whiteItypes")
 
     val (itypes, itemTypesMap) = UserProfileRecommendation.getItems(appid)
-    val invItypes = (0 until itypes.length).map(i => (itypes(i), i)).toMap
+    //val invItypes = (0 until itypes.length).map(i => (itypes(i), i)).toMap
+    val whiteItypes = UserProfileRecommendation.getWhiteItypes(
+      itypes, optWhiteItypesStr)
+
+    val whiteInvItypes = (0 until whiteItypes.length)
+      .map(i => (whiteItypes(i), i)).toMap
 
     val userU2IsMap = UserProfileRecommendation.getU2I(appid)
 
     val userFeaturesMap = UserProfileRecommendation.constructUserFeatureMap(
-      invItypes, itemTypesMap, userU2IsMap)
+      whiteInvItypes, itemTypesMap, userU2IsMap)
+      //invItypes, itemTypesMap, userU2IsMap)
 
-    modelCon(appid, algoid, modelset, itypes, userFeaturesMap)
+    //modelCon(appid, algoid, modelset, itypes, userFeaturesMap)
+    modelCon(appid, algoid, modelset, whiteItypes, userFeaturesMap)
   }
 
 }
