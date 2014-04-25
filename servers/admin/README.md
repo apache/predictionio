@@ -24,4 +24,4 @@ bin/setup.sh
 ````
 
 ## Troubleshooting
-`setup.sh` fails if the json file is malformed. You can use python's json package for error checking: `python -mjson.tool ../../conf/init.json`.
+`setup.sh` fails if the json file is malformed. You can use python's json package for error checking: `python -m json.tool ../../conf/init.json`.
