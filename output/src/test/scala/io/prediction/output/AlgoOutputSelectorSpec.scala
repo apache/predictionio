@@ -36,6 +36,7 @@ class AlgoOutputSelectorSpec extends Specification {
   get itemsim output from an invalid engine ${itemSimOutputSelectionBadEngine(algoOutputSelector)}
 
   get itemrank output from a valid engine ${itemRankOutputSelection(algoOutputSelector)}
+  get itemrank output from a valid engine with freshness ${itemRankOutputSelectionWithFreshness(algoOutputSelector)}
   get itemrank output from a valid engine with no algorithm ${itemRankOutputSelectionNoAlgo(algoOutputSelector)}
   get itemrank output from an invalid engine ${itemRankOutputSelectionBadEngine(algoOutputSelector)}
 
@@ -1288,8 +1289,7 @@ class AlgoOutputSelectorSpec extends Specification {
       name = "itemRankOutputSelection",
       infoid = "itemrank",
       itypes = Some(Seq("foo", "bar")),
-      params = Map()
-    )
+      params = Map())
     val engineid = mongoEngines.insert(engine)
 
     val algo = Algo(
@@ -1304,36 +1304,93 @@ class AlgoOutputSelectorSpec extends Specification {
       createtime = DateTime.now,
       updatetime = DateTime.now,
       status = "deployed",
-      offlineevalid = None
-    )
+      offlineevalid = None)
     val algoid = mongoAlgos.insert(algo)
 
     val scores = Seq(ItemRecScore(
       uid = "user1",
-      iids = Seq("item_z", "item_h", "item_d", "item_g", "item_e", "item_f", "item_x", "item_y", "item_b", "item_c", "item_a"),
+      iids = Seq("item_z", "item_h", "item_d", "item_g", "item_e", "item_f",
+        "item_x", "item_y", "item_b", "item_c", "item_a"),
       scores = Seq(11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
-      itypes = Seq(Seq("unrelated"), Seq("foo"), Seq("foo"), Seq("bar"), Seq("bar"), Seq("foo"), Seq("bar"), Seq("foo"), Seq("foo"), Seq("bar"), Seq("bar")),
+      itypes = Seq(Seq("unrelated"), Seq("foo"), Seq("foo"), Seq("bar"),
+        Seq("bar"), Seq("foo"), Seq("bar"), Seq("foo"), Seq("foo"), Seq("bar"),
+        Seq("bar")),
       appid = dummyApp.id,
       algoid = algoid,
       modelset = true))
 
     scores foreach { mongoItemRecScores.insert(_) }
 
-    val result = algoOutputSelector.itemRankSelection("user1", Seq("item_e", "item_d", "item_a", "item_x", "item_h"))(dummyApp, engine.copy(id = engineid))
-    val resultBar = algoOutputSelector.itemRankSelection("user1", Seq("x", "y", "z"))(dummyApp, engine.copy(id = engineid))
-    val resultBaz = algoOutputSelector.itemRankSelection("user1", Seq("item_e", "item_d", "item_a", "x", "y", "z"))(dummyApp, engine.copy(id = engineid))
+    val result = algoOutputSelector.itemRankSelection("user1",
+      Seq("item_e", "item_d", "item_a", "item_x", "item_h"))(dummyApp,
+        engine.copy(id = engineid))
+    val resultBar = algoOutputSelector.itemRankSelection("user1",
+      Seq("x", "y", "z"))(dummyApp, engine.copy(id = engineid))
+    val resultBaz = algoOutputSelector.itemRankSelection("user1",
+      Seq("item_e", "item_d", "item_a", "x", "y", "z"))(dummyApp,
+        engine.copy(id = engineid))
 
-    result must contain(
-      "item_h",
-      "item_d",
-      "item_e",
-      "item_x",
-      "item_a") and
-      (resultBar must contain("x", "y", "z")) and
-      (resultBaz must contain("item_d", "item_e", "item_a", "x", "y", "z"))
+    result must_== Seq("item_h", "item_d", "item_e", "item_x", "item_a") and
+      (resultBar must_== Seq("x", "y", "z")) and
+      (resultBaz must_== Seq("item_d", "item_e", "item_a", "x", "y", "z"))
   }
 
-  def itemRankOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
+  def itemRankOutputSelectionWithFreshness(
+    algoOutputSelector: AlgoOutputSelector) = {
+    val engine = Engine(
+      id = 0,
+      appid = dummyApp.id,
+      name = "itemRankOutputSelection",
+      infoid = "itemrank",
+      itypes = Some(Seq("foo", "bar")),
+      params = Map("freshness" -> 5, "freshnessTimeUnit" -> 3600L))
+    val engineid = mongoEngines.insert(engine)
+
+    val algo = Algo(
+      id = 0,
+      engineid = engineid,
+      name = "itemRankOutputSelection",
+      infoid = "pio-itemrank-single-mahout-knnitembased",
+      command = "itemRankOutputSelection",
+      params = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed",
+      offlineevalid = None)
+    val algoid = mongoAlgos.insert(algo)
+
+    val scores = Seq(ItemRecScore(
+      uid = "user1",
+      iids = Seq("item_z", "item_h", "item_d", "item_g", "item_e", "item_f",
+        "item_x", "item_y", "item_b", "item_c", "item_a"),
+      scores = Seq(11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+      itypes = Seq(Seq("unrelated"), Seq("foo"), Seq("foo"), Seq("bar"),
+        Seq("bar"), Seq("foo"), Seq("bar"), Seq("foo"), Seq("foo"), Seq("bar"),
+        Seq("bar")),
+      appid = dummyApp.id,
+      algoid = algoid,
+      modelset = true))
+
+    scores foreach { mongoItemRecScores.insert(_) }
+
+    val result = algoOutputSelector.itemRankSelection("user1",
+      Seq("item_e", "item_d", "item_a", "item_x", "item_h"))(dummyApp,
+        engine.copy(id = engineid))
+    val resultBar = algoOutputSelector.itemRankSelection("user1",
+      Seq("x", "y", "z"))(dummyApp, engine.copy(id = engineid))
+    val resultBaz = algoOutputSelector.itemRankSelection("user1",
+      Seq("item_e", "item_d", "item_a", "x", "y", "z"))(dummyApp,
+        engine.copy(id = engineid))
+
+    result must_== Seq("item_e", "item_x", "item_h", "item_d", "item_a") and
+      (resultBar must_== Seq("x", "y", "z")) and
+      (resultBaz must_== Seq("item_e", "item_d", "item_a", "x", "y", "z"))
+  }
+
+  def itemRankOutputSelectionUnsupportedAlgo(
+    algoOutputSelector: AlgoOutputSelector) = {
     val engine = Engine(
       id = 0,
       appid = dummyApp.id,

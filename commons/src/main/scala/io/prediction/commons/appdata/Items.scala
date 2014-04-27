@@ -30,7 +30,10 @@ case class Item(
   inactive: Option[Boolean] = None,
   attributes: Option[Map[String, Any]] = None)
 
-/** Base trait for implementations that interact with items in the backend app data store. */
+/**
+ * Base trait for implementations that interact with items in the backend app
+ * data store.
+ */
 trait Items {
   /** Insert a new item. */
   def insert(item: Item): Unit
@@ -42,16 +45,21 @@ trait Items {
   def getByAppid(appid: Int): Iterator[Item]
 
   /** Find items by App ID sorted by geolocation distance. */
-  def getByAppidAndLatlng(appid: Int, latlng: Tuple2[Double, Double], within: Option[Double], unit: Option[String]): Iterator[Item]
+  def getByAppidAndLatlng(appid: Int, latlng: Tuple2[Double, Double],
+    within: Option[Double], unit: Option[String]): Iterator[Item]
 
   /** Find items by App ID which belong to one of the itypes. */
   def getByAppidAndItypes(appid: Int, itypes: Seq[String]): Iterator[Item]
 
   /** Find current items by App ID which belong to one of the itypes. */
-  def getByAppidAndItypesAndTime(appid: Int, optItypes: Option[Seq[String]] = None,
+  def getByAppidAndItypesAndTime(appid: Int,
+    optItypes: Option[Seq[String]] = None,
     optTime: Option[DateTime] = None): Iterator[Item]
 
-  /** Get items by IDs. */
+  /**
+   * Get items by IDs. Items returned are not guaranteed to be in the same order
+   * as the input, as some IDs may not be valid.
+   */
   def getByIds(appid: Int, ids: Seq[String]): Seq[Item]
 
   /** Get items by IDs sorted by their start time in descending order. */
