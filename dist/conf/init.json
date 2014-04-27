@@ -219,20 +219,6 @@
             "defaultofflineevalmetricinfoid": "pio-itemrec-single-map_k",
             "defaultofflineevalsplitterinfoid": "pio-single-trainingtestsplit",
             "params": {
-                "serendipity": {
-                    "name": "Serendipity",
-                    "description": "Preference for surprising discovery",
-                    "constraint": {
-                        "paramtype": "integer"
-                    },
-                    "defaultvalue": 0,
-                    "ui": {
-                        "uitype": "slider",
-                        "slidermin": 0,
-                        "slidermax": 10,
-                        "sliderstep": 1
-                    }
-                },
                 "freshness": {
                     "name": "Freshness",
                     "description": "Preference for newer items",
@@ -247,26 +233,16 @@
                         "sliderstep": 1
                     }
                 },
-                "unseenonly": {
-                    "name": "",
-                    "description": "",
+                "freshnessTimeUnit": {
+                    "name": "Time Unit for Freshness",
+                    "description": "The time unit in seconds for freshness prioritization. As an example, if you set this to one day (86400), and freshness is set to 10, items that are one day old would have their score degraded by a bit more than 60%.",
                     "constraint": {
-                        "paramtype": "boolean"
+                        "paramtype": "long"
                     },
-                    "defaultvalue": false,
                     "ui": {
-                        "uitype": "selection",
-                        "selections": [
-                            {
-                                "name": "Recommend Unseen Only",
-                                "value": "true"
-                            },
-                            {
-                                "name": "Recommend Any Items",
-                                "value": "false"
-                            }
-                        ]
-                    }
+                        "uitype": "text"
+                    },
+                    "defaultvalue": 86400
                 }
             },
             "paramsections": [
@@ -276,7 +252,7 @@
                     "description": "You could adjust the following parameters using the sliders. Higher value means more important to your App.",
                     "params": [
                         "freshness",
-                        "serendipity"
+                        "freshnessTimeUnit"
                     ]
                 }
             ]
@@ -6465,12 +6441,12 @@
             "description": "Predicts user preferences based on previous behaviors of users on similar items (Single Machine).",
             "batchcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --itemsFile $localTempDir$itemsIndex.tsv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $itemCount$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$ --recommendationTime $recommendationTime$",
+                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --itemsFile $localTempDir$itemsIndex.tsv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $itemCount$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$ --freshness $freshness$ --recommendationTime $recommendationTime$ --freshnessTimeUnit $freshnessTimeUnit$",
                 "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $itemCount$ --booleanData $booleanData$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.generic.dataprep --outputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ $itypes$ --viewParam $viewParam$ --likeParam $likeParam$ --dislikeParam $dislikeParam$ --conversionParam $conversionParam$ --conflictParam $conflictParam$ --recommendationTime $recommendationTime$ --matrixMarket false",
-                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --itemsFile $localTempDir$itemsIndex.tsv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $itemCount$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$ --recommendationTime $recommendationTime$",
+                "$base$/bin/itemrec.mahout.mahoutjob io.prediction.algorithms.mahout.itemrec.knnitembased.KNNItemBasedJob --input $localTempDir$ratings.csv --itemsFile $localTempDir$itemsIndex.tsv --output $localTempDir$predicted.tsv --outputSim $localTempDir$itemSim.csv --appid $appid$ --engineid $engineid$ --algoid $algoid$ --booleanData $booleanData$ --numRecommendations $itemCount$ --itemSimilarity $itemSimilarity$ --weighted $weighted$ --nearestN $nearestN$ --threshold $threshold$ --preComputeItemSim $preComputeItemSim$ --similarItemsPerItem $similarItemsPerItem$ --freshness $freshness$ --recommendationTime $recommendationTime$ --freshnessTimeUnit $freshnessTimeUnit$",
                 "$base$/bin/itemrec.mahout.modelcon --inputDir $localTempDir$ --appid $appid$ --engineid $engineid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $itemCount$ --booleanData $booleanData$"
             ],
             "paramorder": [
@@ -6492,6 +6468,7 @@
             "datareq": [
                 "Users, Items, and U2I Actions such as Like, Conversion and Rate."
             ],
+            "capabilities": ["freshness"],
             "params": {
                 "booleanData": {
                     "name": "Boolean Data",
