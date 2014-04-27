@@ -21,7 +21,8 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
       paramorder = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("paramorder")),
       engineinfoid = dbObj.as[String]("engineinfoid"),
       techreq = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("techreq")),
-      datareq = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("datareq")))
+      datareq = MongoUtils.mongoDbListToListOfString(dbObj.as[MongoDBList]("datareq")),
+      capabilities = dbObj.getAs[MongoDBList]("capabilities") map { MongoUtils.mongoDbListToListOfString(_) } getOrElse Seq[String]())
   }
 
   def insert(algoInfo: AlgoInfo) = {
@@ -34,7 +35,8 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
       "paramorder" -> algoInfo.paramorder,
       "engineinfoid" -> algoInfo.engineinfoid,
       "techreq" -> algoInfo.techreq,
-      "datareq" -> algoInfo.datareq)
+      "datareq" -> algoInfo.datareq,
+      "capabilities" -> algoInfo.capabilities)
 
     // optional fields
     val descriptionObj = algoInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
@@ -59,7 +61,8 @@ class MongoAlgoInfos(db: MongoDB) extends AlgoInfos {
       "paramorder" -> algoInfo.paramorder,
       "engineinfoid" -> algoInfo.engineinfoid,
       "techreq" -> algoInfo.techreq,
-      "datareq" -> algoInfo.datareq)
+      "datareq" -> algoInfo.datareq,
+      "capabilities" -> algoInfo.capabilities)
     val descriptionObj = algoInfo.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj
     val batchcommandsObj = algoInfo.batchcommands.map { c => MongoDBObject("batchcommands" -> c) } getOrElse MongoUtils.emptyObj
     val offlineevalcommandsObj = algoInfo.offlineevalcommands.map { c => MongoDBObject("offlineevalcommands" -> c) } getOrElse MongoUtils.emptyObj
