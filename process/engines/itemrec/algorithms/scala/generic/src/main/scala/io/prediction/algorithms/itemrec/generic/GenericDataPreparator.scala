@@ -310,7 +310,7 @@ object GenericDataPreparator {
       case ACTION_VIEW => (viewParam != None)
       case ACTION_CONVERSION => (conversionParam != None)
       case _ => {
-        assert(false, "Action type " + u2i.action + " in u2iActions appdata is not supported!")
+        //assert(false, "Action type " + u2i.action + " in u2iActions appdata is not supported!")
         false // all other unsupported actions
       }
     }
