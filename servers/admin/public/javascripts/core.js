@@ -947,6 +947,12 @@ var EngineAlgorithmsView = Backbone.View.extend({
         this.$el.find('#engine_availableAlgoList_ContentHolder').html(this.availableAlgoListView.el);
         this.$el.find('#engine_deployedAlgo_ContentHolder').html(this.deployedAlgoView.render().el);
         this.$el.find('#engine_simevalList_ContentHolder').html(this.simevalListView.el);
+
+        // Disable offline evaluation for anything other than ItemRec & ItemSim
+        if (this.engineinfoid != "itemrec" && this.engineinfoid != "itemsim") {
+            this.$el.find('#availableSimEvalBtn').hide();
+        }
+
         return this;
     },
     reloadData : function() {
@@ -1162,6 +1168,12 @@ var EngineAlgorithmsAvailableAlgoView = Backbone.View.extend({
     },
     render : function() {
         this.$el.html(this.template({"data": this.model.toJSON()}));
+
+        // Disable offline evaluation for anything other than ItemRec & ItemSim
+        if (this.engineinfoid != "itemrec" && this.engineinfoid != "itemsim") {
+            this.$el.find("a[href*='#simEvalSettings']").hide();
+        }
+
         return this;
     },
     selectToggle: function(e) {
@@ -1590,5 +1602,3 @@ var SplitterSettingView = Backbone.View.extend({
         return this;
     }
 })
-
-
