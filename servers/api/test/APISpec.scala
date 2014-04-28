@@ -236,42 +236,56 @@ class APISpec extends Specification {
 
     "not allow any origin if setting is empty" in new WithServer() {
       val origin = "http://www.test-domain.com"
-      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
-      response.header("Access-Control-Allow-Origin").getOrElse("") mustNotEqual origin
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustNotEqual origin
     }
 
     val appWithOneAllowedDomain = FakeApplication(withGlobal = Some(new WithFilters(CORSFilter(Some("http://www.test-domain.com")))))
     val appWithSeveralAllowedDomains = FakeApplication(
       withGlobal = Some(new WithFilters(CORSFilter(Some("http://www.test-domain.com,http://www.other-domain.com,http://www.abcd.efgh")))))
+    val appWithAllDomains = FakeApplication(withGlobal = Some(new WithFilters(CORSFilter(Some("*")))))
 
     "allow specified origin if setting contains one domain" in new WithServer(app = appWithOneAllowedDomain) {
       val origin = "http://www.test-domain.com"
-      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
-      response.header("Access-Control-Allow-Origin").getOrElse("") mustEqual origin
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustEqual origin or (originHeader mustEqual "*")
     }
 
     "not allow unspecified origin if setting contains one domain" in new WithServer(app = appWithOneAllowedDomain) {
       val origin = "http://www.other-domain.com"
-      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
-      response.header("Access-Control-Allow-Origin").getOrElse("") mustNotEqual origin
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustNotEqual origin
     }
 
     "allow specified origin 1 if setting contains several domains" in new WithServer(app = appWithSeveralAllowedDomains) {
       val origin = "http://www.test-domain.com"
-      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
-      response.header("Access-Control-Allow-Origin").getOrElse("") mustEqual origin
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustEqual origin or (originHeader mustEqual "*")
     }
 
     "allow specified origin 2 if setting contains several domains" in new WithServer(app = appWithSeveralAllowedDomains) {
       val origin = "http://www.other-domain.com"
-      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
-      response.header("Access-Control-Allow-Origin").getOrElse("") mustEqual origin
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustEqual origin or (originHeader mustEqual "*")
     }
 
     "not allow unspecified origin if setting contains several domains" in new WithServer(app = appWithSeveralAllowedDomains) {
       val origin = "http://www.unallowed-domain.com"
-      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
-      response.header("Access-Control-Allow-Origin").getOrElse("") mustNotEqual origin
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustNotEqual origin
+    }
+
+    "allow any origin if setting is *" in new WithServer(app = appWithAllDomains) {
+      val origin = "http://www.random-domain.com"
+      val originHeader = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+        .header("Access-Control-Allow-Origin").getOrElse("")
+      originHeader mustEqual origin or (originHeader mustEqual "*")
     }
 
   }
