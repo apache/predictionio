@@ -1,10 +1,13 @@
+package io.prediction.api
+
 import controllers.Default
 import play.api.mvc.{ SimpleResult, RequestHeader, Filter }
 
-case class CORSFilter() extends Filter {
+case class CORSFilter(allowedDomainString: Option[String] = None) extends Filter {
   import scala.concurrent._
   import ExecutionContext.Implicits.global
-  lazy val allowedDomains = play.api.Play.current.configuration.getString("cors.allowed.domains").getOrElse("").split(",")
+  lazy val allowedDomains = allowedDomainString.orElse(play.api.Play.current.configuration.getString("cors.allowed.domains"))
+    .getOrElse("").split(",")
 
   def isPreflight(r: RequestHeader) = {
     r.method.toLowerCase.equals("options") && r.headers.get("Access-Control-Request-Method").nonEmpty

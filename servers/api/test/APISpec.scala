@@ -217,6 +217,65 @@ class APISpec extends Specification {
     }
   }
 
+  "CORSFilter" should {
+    import play.api.mvc.WithFilters
+    import io.prediction.api.CORSFilter
+
+    "send correct CORS headers for OPTIONS request" in new WithServer {
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders(
+        "Access-Control-Request-Method" -> "POST").options())
+
+      def allowsCorrectMethods(allowedMethodHeader: String): Boolean = {
+        val allowedMethods = allowedMethodHeader.split(", ")
+        return allowedMethods.sameElements(Array("GET", "POST", "DELETE"))
+      }
+
+      response.header("Access-Control-Allow-Origin").nonEmpty must beTrue and
+        (response.header("Access-Control-Allow-Methods").exists(allowsCorrectMethods) must beTrue)
+    }
+
+    "not allow any origin if setting is empty" in new WithServer() {
+      val origin = "http://www.test-domain.com"
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+      response.header("Access-Control-Allow-Origin").getOrElse("") mustNotEqual origin
+    }
+
+    val appWithOneAllowedDomain = FakeApplication(withGlobal = Some(new WithFilters(CORSFilter(Some("http://www.test-domain.com")))))
+    val appWithSeveralAllowedDomains = FakeApplication(
+      withGlobal = Some(new WithFilters(CORSFilter(Some("http://www.test-domain.com,http://www.other-domain.com,http://www.abcd.efgh")))))
+
+    "allow specified origin if setting contains one domain" in new WithServer(app = appWithOneAllowedDomain) {
+      val origin = "http://www.test-domain.com"
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+      response.header("Access-Control-Allow-Origin").getOrElse("") mustEqual origin
+    }
+
+    "not allow unspecified origin if setting contains one domain" in new WithServer(app = appWithOneAllowedDomain) {
+      val origin = "http://www.other-domain.com"
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+      response.header("Access-Control-Allow-Origin").getOrElse("") mustNotEqual origin
+    }
+
+    "allow specified origin 1 if setting contains several domains" in new WithServer(app = appWithSeveralAllowedDomains) {
+      val origin = "http://www.test-domain.com"
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+      response.header("Access-Control-Allow-Origin").getOrElse("") mustEqual origin
+    }
+
+    "allow specified origin 2 if setting contains several domains" in new WithServer(app = appWithSeveralAllowedDomains) {
+      val origin = "http://www.other-domain.com"
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+      response.header("Access-Control-Allow-Origin").getOrElse("") mustEqual origin
+    }
+
+    "not allow unspecified origin if setting contains several domains" in new WithServer(app = appWithSeveralAllowedDomains) {
+      val origin = "http://www.unallowed-domain.com"
+      val response = Helpers.await(wsUrl(s"/apiurl").withHeaders("Origin" -> origin).get())
+      response.header("Access-Control-Allow-Origin").getOrElse("") mustNotEqual origin
+    }
+
+  }
+
   step {
     MongoConnection()(config.settingsDbName).dropDatabase()
     MongoConnection()(config.appdataDbName).dropDatabase()
