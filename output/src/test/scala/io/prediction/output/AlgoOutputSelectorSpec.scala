@@ -687,8 +687,6 @@ class AlgoOutputSelectorSpec extends Specification {
       "user1", 10, None, None, None, None)(
         dummyApp, engine.copy(id = engineid))
 
-    result1 must beEqualTo(Seq(id + "fooA2", id + "fooB1"))
-
     val scores2: Seq[(String, Double, Seq[String])] = Seq(
       // (iid, score, itypes)
       (id + "noFoo1", 3, Seq("unrelated")))
@@ -707,7 +705,8 @@ class AlgoOutputSelectorSpec extends Specification {
       "user2", 10, None, None, None, None)(
         dummyApp, engine.copy(id = engineid))
 
-    result2 must beEqualTo(Seq())
+    ((result1 must beEqualTo(Seq(id + "fooA2", id + "fooB1")))
+      and (result2 must beEqualTo(Seq())))
   }
 
   def itemRecOutputSelectionUnsupportedAlgo(algoOutputSelector: AlgoOutputSelector) = {
