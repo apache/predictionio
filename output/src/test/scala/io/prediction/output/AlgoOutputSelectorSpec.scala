@@ -34,6 +34,7 @@ class AlgoOutputSelectorSpec extends Specification {
   get itemsim output with dedup from a valid engine ${itemSimOutputSelectionDedupByAttribute(algoOutputSelector)}
   get itemsim output from a valid engine with no algorithm ${itemSimOutputSelectionNoAlgo(algoOutputSelector)}
   get itemsim output from an invalid engine ${itemSimOutputSelectionBadEngine(algoOutputSelector)}
+  get itemsim output from multiple iids ${itemSimOutputSelectionMultipleIids(algoOutputSelector)}
 
   get itemrank output from a valid engine ${itemRankOutputSelection(algoOutputSelector)}
   get itemrank output from a valid engine with freshness ${itemRankOutputSelectionWithFreshness(algoOutputSelector)}
@@ -1279,6 +1280,85 @@ class AlgoOutputSelectorSpec extends Specification {
     )
     val engineid = mongoEngines.insert(engine)
     algoOutputSelector.itemSimSelection("", 10, None, None, None, None)(dummyApp, engine.copy(id = engineid)) must throwA[RuntimeException]
+  }
+
+  def itemSimOutputSelectionMultipleIids(algoOutputSelector: AlgoOutputSelector) = {
+    val appid = dummyApp.id
+    val engine = Engine(
+      id = 0,
+      appid = appid,
+      name = "itemSimOutputSelectionMultipleIids",
+      infoid = "itemsim",
+      itypes = None,
+      params = Map("a" -> "b")
+    )
+    val engineid = mongoEngines.insert(engine)
+
+    val algo = Algo(
+      id = 0,
+      engineid = engineid,
+      name = "itemSimOutputSelectionMultipleIids",
+      infoid = "it-does-not-matter",
+      command = "it-does-not-matter-too",
+      params = Map("foo" -> "bar"),
+      settings = Map("dead" -> "beef"),
+      modelset = true,
+      createtime = DateTime.now,
+      updatetime = DateTime.now,
+      status = "deployed",
+      offlineevalid = None
+    )
+    val algoid = mongoAlgos.insert(algo)
+
+    val id = "i"
+
+    def item(index: Int) = Item(
+      id = id + index,
+      appid = appid,
+      ct = DateTime.now,
+      itypes = Seq[String](),
+      starttime = Some(DateTime.now),
+      endtime = None)
+
+    (1 to 6).foreach { i => mongoItems.insert(item(i)) }
+
+    val itemSimRawMap = Map(
+      "i1" -> Seq(("i2", 1.0), ("i3", 0.5), ("i4", 0.2)),
+      // aggregation should be unaffected by scale
+      "i2" -> Seq(("i3", 100.0), ("i5", 200.0)),
+      "i3" -> Seq(("i1", -0.5), ("i2", -0.2), ("i4", -0.4)),
+      "i4" -> Seq(("i5", 2.0), ("i6", 3.0)))
+
+    itemSimRawMap.foreach {
+      case (item, simRaw) => {
+        val itemSimScore = ItemSimScore(
+          iid = item,
+          simiids = simRaw.map(_._1),
+          scores = simRaw.map(_._2),
+          itypes = Seq.fill(simRaw.length)(Seq[String]()),
+          appid = appid,
+          algoid = algoid,
+          modelset = true
+        )
+        mongoItemSimScores.insert(itemSimScore)
+      }
+    }
+
+    val tests = List(
+      (algoOutputSelector.itemSimSelection("i1", 10, None, None, None, None)(
+        dummyApp, engine.copy(id = engineid))
+        must beEqualTo(Seq("i2", "i3", "i4"))),
+      (algoOutputSelector.itemSimSelection("i1,i4", 10, None, None, None, None)(
+        dummyApp, engine.copy(id = engineid))
+        must beEqualTo(Seq("i2", "i6", "i3", "i5", "i4"))),
+      (algoOutputSelector.itemSimSelection("i1,i2", 3, None, None, None, None)(
+        dummyApp, engine.copy(id = engineid))
+        must beEqualTo(Seq("i2", "i5", "i3"))),
+      (algoOutputSelector.itemSimSelection("i1,i2,i3,i4", 10, None, None,
+        None, None)(dummyApp, engine.copy(id = engineid))
+        must beEqualTo(Seq("i2", "i6", "i5", "i3", "i1", "i4")))
+    )
+    tests.reduce(_ and _)
   }
 
   /** ItemRank engine. */
