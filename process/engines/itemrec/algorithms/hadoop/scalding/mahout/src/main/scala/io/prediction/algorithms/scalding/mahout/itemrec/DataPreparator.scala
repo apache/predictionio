@@ -30,11 +30,14 @@ import org.slf4j.{ Logger, LoggerFactory }
  * --conversionParam: <string>
  * --conflictParam: <string>. (latest/highest/lowest)
  *
+ * --unseenOnly: <boolean>. (true/false)
+ *     generate seen.csv. Empty seen.csv is generated if this is false.
+ *
  * Optional args:
  * --dbHost: <string> (eg. "127.0.0.1")
  * --dbPort: <int> (eg. 27017)
  * --seenActions: <string separated by white space>. eg --seenActions view dislike (treat these actions as seen item actions)
- *   all actions are considered as seen action if it's not specified
+ *   all actions used in training are considered as seen action if it's not specified or empty
  *
  * --itypes: <string separated by white space>. eg "--itypes type1 type2". If no --itypes specified, then ALL itypes will be used.
  * --evalid: <int>. Offline Evaluation if evalid is specified
@@ -64,6 +67,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
+  val unseenOnlyArg = args("unseenOnly").toBoolean
   val preSeenActionsArg = args.list("seenActions")
   val seenActionsArg: Option[List[String]] = if (preSeenActionsArg.mkString(",").length == 0) None else Option(preSeenActionsArg)
 
@@ -81,7 +85,7 @@ class DataPreparatorCommon(args: Args) extends Job(args) {
   val dislikeParamArg: Option[Int] = getActionParam("dislikeParam")
   val conversionParamArg: Option[Int] = getActionParam("conversionParam")
 
-  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
+  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it,
   // determine which action will be considered as final preference.
   final val CONFLICT_LATEST: String = "latest" // use latest action
   final val CONFLICT_HIGHEST: String = "highest" // use the one with highest score
@@ -143,7 +147,7 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
  * usersIndex.tsv
  * ratings.csv:
  * recommendItems.csv: only recommend these items
- * seen.tsv: personalized seen item list that will be not be recommended
+ * seen.csv: personalized seen item list that will be not be recommended
  */
 class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
@@ -199,7 +203,7 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
   // only recommend these items
   val recommendItemsSink = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "recommendItems.csv"))
 
-  val seenSink = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "seen.tsv"))
+  val seenSink = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "seen.csv"))
 
   /**
    * computation
@@ -252,19 +256,7 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
   validu2i
     .filter('action, 'v) { fields: (String, Option[String]) =>
       val (action, v) = fields
-
-      val keepThis: Boolean = action match {
-        case ACTION_RATE => true
-        case ACTION_LIKE => (likeParamArg != None)
-        case ACTION_DISLIKE => (dislikeParamArg != None)
-        case ACTION_VIEW => (viewParamArg != None)
-        case ACTION_CONVERSION => (conversionParamArg != None)
-        case _ => {
-          logger.debug(s"Found custom action ${action}")
-          false // all other unsupported actions
-        }
-      }
-      keepThis
+      isValidAction(action)
     }
     .map(('action, 'v, 't) -> ('rating, 'tLong)) { fields: (String, Option[String], String) =>
       val (action, v, t) = fields
@@ -312,13 +304,34 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
   validu2i
     .filter('action) { action: String =>
       seenActionsArg.map { seenActions =>
-        seenActions.contains(action)
-      }.getOrElse(true) // if seenAction is not defined, all actions is considered as seen
+        unseenOnlyArg && seenActions.contains(action)
+      }.getOrElse {
+        // if seenAction is not defined, all actions used in treaining are considered as seen
+        unseenOnlyArg && isValidAction(action)
+      }
     }
     .groupBy('uid, 'iid) { _.take(1) } // don't care which action, just take one
     .joinWithSmaller('uid -> 'uidx, usersIndex)
     .project('uindex, 'iindex)
     .write(seenSink)
+
+  /**
+   *
+   */
+  def isValidAction(action: String): Boolean = {
+    val keepThis: Boolean = action match {
+      case ACTION_RATE => true
+      case ACTION_LIKE => (likeParamArg != None)
+      case ACTION_DISLIKE => (dislikeParamArg != None)
+      case ACTION_VIEW => (viewParamArg != None)
+      case ACTION_CONVERSION => (conversionParamArg != None)
+      case _ => {
+        logger.debug(s"Found custom action ${action}")
+        false // all other unsupported actions
+      }
+    }
+    keepThis
+  }
 
   /**
    * function to resolve conflicting actions of same uid-iid pair.
