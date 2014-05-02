@@ -64,6 +64,23 @@ object UserProfileRecommendationBatch {
     }}
   }
 
+  def run(appid: Int, algoid: Int, modelset: Boolean,
+    numRecommendations: Int,
+    optFeatureItypesStr: Option[String]) = {
+    val (userFeaturesMap, featureItypes, itemItypesMap) = (
+      UserProfileRecommendation.constructUserFeaturesMapFromArg(
+        appid, optFeatureItypesStr))
+
+    val userRecommendationsMap = UserProfileRecommendation.recommend(
+      userFeaturesMap,
+      featureItypes,
+      itemItypesMap,
+      numRecommendations
+    )
+    
+    modelCon(appid, algoid, modelset, userRecommendationsMap, itemItypesMap)
+  }
+
   def main(cmdArgs: Array[String]) = {
     val args = Args(cmdArgs)
 
@@ -72,34 +89,16 @@ object UserProfileRecommendationBatch {
     val modelset = args("modelSet").toBoolean
     val numRecommendations = args.optional("numRecommendations")
     .getOrElse("10").toInt
-    val verbose = args.optional("verbose").getOrElse("false").toBoolean
-    val optWhiteItypesStr = args.optional("whiteItypes")
+    val optFeatureItypesStr = args.optional("featureItypes")
 
-    // Recommendation 
-    val (itypes, itemTypesMap) = UserProfileRecommendation.getItems(appid)
-
-    val whiteItypes = UserProfileRecommendation.getWhiteItypes(
-      itypes, optWhiteItypesStr)
-
-    val whiteInvItypes = (0 until whiteItypes.length)
-      .map(i => (whiteItypes(i), i)).toMap
-
-    val userU2IsMap = UserProfileRecommendation.getU2I(appid)
-
-    val userFeaturesMap = UserProfileRecommendation.constructUserFeatureMap(
-      whiteInvItypes, itemTypesMap, userU2IsMap)
-
-    val userRecommendationsMap = UserProfileRecommendation.recommend(
-      userFeaturesMap, itemTypesMap, itypes, whiteInvItypes, 
-      userFeaturesMap.keys.toSeq, numRecommendations)
-
-    // Model Construction
-    modelCon(appid, algoid, modelset, userRecommendationsMap, itemTypesMap)
-
+    run(appid, algoid, modelset, numRecommendations,
+      optFeatureItypesStr)
+    /*
     if (verbose) {
       UserProfileRecommendation.printRecommendations(
-        userFeaturesMap, whiteItypes,
-        userRecommendationsMap, itemTypesMap)
+        userFeaturesMap, featureItypes,
+        userRecommendationsMap, itemItypesMap)
     }
+    */
   }
 }

@@ -16,9 +16,9 @@ case class User(
   id: String,
   appid: Int,
   ct: DateTime,
-  latlng: Option[Tuple2[Double, Double]],
-  inactive: Option[Boolean],
-  attributes: Option[Map[String, Any]])
+  latlng: Option[Tuple2[Double, Double]] = None,
+  inactive: Option[Boolean] = None,
+  attributes: Option[Map[String, Any]] = None)
 
 /** Base trait for implementations that interact with users in the backend app data store. */
 trait Users {

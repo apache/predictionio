@@ -36,6 +36,15 @@ object UserProfileRecommendationRealtime {
         modelset = modelset))
     }}
   }
+
+  def run(appid: Int, algoid: Int, modelset: Boolean,
+    optFeatureItypesStr: Option[String]) = {
+    val (userFeaturesMap, whiteItypes, itemTypesMap) = (
+      UserProfileRecommendation.constructUserFeaturesMapFromArg(
+        appid, optFeatureItypesStr))
+
+    modelCon(appid, algoid, modelset, whiteItypes, userFeaturesMap)
+  }
   
   def main(cmdArgs: Array[String]) = {
     val args = Args(cmdArgs)
@@ -43,25 +52,11 @@ object UserProfileRecommendationRealtime {
     val appid = args("appid").toInt
     val algoid = args("algoid").toInt
     val modelset = args("modelSet").toBoolean
-    val verbose = args.optional("verbose").getOrElse("false").toBoolean
-    val optWhiteItypesStr = args.optional("whiteItypes")
 
-    val (itypes, itemTypesMap) = UserProfileRecommendation.getItems(appid)
-    //val invItypes = (0 until itypes.length).map(i => (itypes(i), i)).toMap
-    val whiteItypes = UserProfileRecommendation.getWhiteItypes(
-      itypes, optWhiteItypesStr)
+    // FIXME. Take another itypes list (engine setting), filter items by that
+    // itypes list
+    val optFeatureItypesStr = args.optional("featureItypes")
 
-    val whiteInvItypes = (0 until whiteItypes.length)
-      .map(i => (whiteItypes(i), i)).toMap
-
-    val userU2IsMap = UserProfileRecommendation.getU2I(appid)
-
-    val userFeaturesMap = UserProfileRecommendation.constructUserFeatureMap(
-      whiteInvItypes, itemTypesMap, userU2IsMap)
-      //invItypes, itemTypesMap, userU2IsMap)
-
-    //modelCon(appid, algoid, modelset, itypes, userFeaturesMap)
-    modelCon(appid, algoid, modelset, whiteItypes, userFeaturesMap)
+    run(appid, algoid, modelset, optFeatureItypesStr)
   }
-
 }

@@ -28,3 +28,8 @@ packJvmOpts := Map(
   "itemrec.featurebased.Realtime" -> Common.packCommonJvmOpts
   )
 
+
+testOptions in Test += Tests.Argument("failtrace")
+
+// Can exclude some paths
+// testOptions in Test += Tests.Argument("tracefilter", "/io.prediction.algorithms.itemrec.featurebased.CustomMatcher")

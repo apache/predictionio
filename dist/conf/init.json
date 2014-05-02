@@ -5565,10 +5565,10 @@
             "name": "Feature Based, Batch Mode. (Experimental)",
             "description": "Item recommendation based on item's feature vector (itypes). This engine build a user preference model based on high ratings items (rate > 3).",
             "batchcommands": [
-                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"
+                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$"
             ],
             "offlineevalcommands": [
-                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteIteyps $whiteItypes$"
+                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$"
             ],
             "paramorder": [],
             "engineinfoid": "itemrec",
@@ -5577,8 +5577,8 @@
               "Users, Items, and U2I Actions."
             ],
             "params": {
-              "whiteItypes": {
-                "name": "Whitelisted Itypes",
+              "featureItypes": {
+                "name": "Feature Itypes",
                 "description": "A comma-delimited list of itypes that is used to construct the preference model. If not specified, all itypes found in items will be used.",
                 "constraint": {
                   "paramtype": "string"
@@ -5594,7 +5594,7 @@
                 "name": "Parameter Settings",
                 "sectiontype": "normal",
                 "params": [
-                  "whiteItypes"
+                  "featureItypes"
                 ]
               }
             ]
@@ -5603,7 +5603,7 @@
             "name": "Feature Based, Realtime Mode. (Experimental)",
             "description": "Item recommendation based on item's feature vector (itypes). This engine build a user preference model based on high ratings items (rate > 3).",
             "batchcommands": [
-                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"
+                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"
@@ -5615,8 +5615,8 @@
               "Users, Items, and U2I Actions."
             ],
             "params": {
-              "whiteItypes": {
-                "name": "Whitelisted Itypes",
+              "featureItypes": {
+                "name": "Feature Itypes",
                 "description": "A comma-delimited list of itypes that is used to construct the preference model. If not specified, all itypes found in items will be used.",
                 "constraint": {
                   "paramtype": "string"
@@ -5632,7 +5632,7 @@
                 "name": "Parameter Settings",
                 "sectiontype": "normal",
                 "params": [
-                  "whiteItypes"
+                  "featureItypes"
                 ]
               }
             ]

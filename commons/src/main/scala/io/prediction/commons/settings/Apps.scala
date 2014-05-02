@@ -22,10 +22,10 @@ case class App(
   userid: Int,
   appkey: String,
   display: String,
-  url: Option[String],
-  cat: Option[String],
-  desc: Option[String],
-  timezone: String)
+  url: Option[String] = Some(""),
+  cat: Option[String] = Some(""),
+  desc: Option[String] = Some(""),
+  timezone: String = "UTC")
 
 /** Base trait for implementations that interact with apps in the backend data store. */
 trait Apps extends Common {

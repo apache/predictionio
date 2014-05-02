@@ -20,9 +20,9 @@ case class U2IAction(
   uid: String,
   iid: String,
   t: DateTime,
-  latlng: Option[Tuple2[Double, Double]],
-  v: Option[Int],
-  price: Option[Double])
+  latlng: Option[Tuple2[Double, Double]] = None,
+  v: Option[Int] = None,
+  price: Option[Double] = None)
 
 /** Base trait for implementations that interact with user-to-item actions in the backend app data store. */
 trait U2IActions {

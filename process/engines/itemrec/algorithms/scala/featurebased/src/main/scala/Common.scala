@@ -3,23 +3,39 @@ package io.prediction.algorithms.itemrec.featurebased
 import grizzled.slf4j.Logger
 import io.prediction.commons.Config
 import com.twitter.scalding.Args
-import io.prediction.commons.appdata.U2IAction
+import io.prediction.commons.appdata.{ Item, User, U2IAction }
 import io.prediction.commons.modeldata.ItemRecScore
+
+class UserProfileRecommendationException(msg: String = null, cause: Throwable=null) 
+extends RuntimeException(msg, cause)
+
 
 // Only consider items rated >= 3
 object UserProfileRecommendation {
   val logger = Logger(UserProfileRecommendation.getClass)
   val commonsConfig = new Config
 
-  // Return itypes if whiteItypesStr is emtpy
-  // Otherwise, return only their intersection.
-  def getWhiteItypes(itypes: Seq[String], optWhiteItypesStr: Option[String])
+  // Return itypes if whiteItypesStr is empty or opt is None
+  // If WhiteItypesStr is specify, return their intersection, using whiteItypes
+  // order.
+  def getFeatureItypes(itypes: Seq[String], optFeatureItypesStr: Option[String])
   : Seq[String] = {
-    if (optWhiteItypesStr.isEmpty)
+    if (optFeatureItypesStr.isEmpty)
       return itypes
 
-    val whiteItypeSet = optWhiteItypesStr.get.split(',').toSet
-    itypes.filter{ itypes => whiteItypeSet.contains(itypes) }
+    val featureItypesStr = optFeatureItypesStr.get
+    if (featureItypesStr == "")
+      return itypes
+
+    val itypeSet = itypes.toSet
+    featureItypesStr.split(',').filter{
+      featureItype => itypeSet.contains(featureItype)
+    }
+  }
+
+  def getUsers(appid: Int): Seq[User] = {
+    val usersDb = commonsConfig.getAppdataUsers
+    usersDb.getByAppid(appid).toSeq
   }
 
   // distinct itypes
@@ -27,7 +43,6 @@ object UserProfileRecommendation {
   def getItems(appid: Int): (Seq[String], Map[String, Seq[String]]) = {
     val itemsDb = commonsConfig.getAppdataItems
 
-    // FIXME(yipjustin) filter by startT, endT.
     val itemTypesMap = itemsDb.getByAppid(appid)
     .map(item => (item.id, item.itypes)).toMap
 
@@ -41,42 +56,86 @@ object UserProfileRecommendation {
     u2iDb.getAllByAppid(appid).toSeq.groupBy(_.uid)
   }
 
-  // Only whiteInvItypes is used.
+  // Only featureInvItypes is used.
   def constructUserFeatureMap(
-    whiteInvItypes: Map[String, Int],
+    featureInvItypes: Map[String, Int],
     itemTypesMap: Map[String, Seq[String]],
+    uidList: Seq[String],
     userU2IsMap: Map[String, Seq[U2IAction]]) : Map[String, Seq[Double]] = {
-    
-    val userFeatureMap = userU2IsMap.map{ case(user, u2is) => {
+    //val userFeatureMap = userU2IsMap.map{ case(user, u2is) => {
+    val userFeatureMap = uidList.map{ user => {
+      val u2is = userU2IsMap.getOrElse(user, Seq[U2IAction]())
+
       // TODO. Discount early actions
       val userFeatureList = u2is
       .filter(_.action == "rate")
       .filter(_.v.getOrElse(0) > 3)
+      .filter(u2i => itemTypesMap.contains(u2i.iid))
       .map{ u2i => {
-        // Only populate the whitelisted itypes
-        val feature = new Array[Int](whiteInvItypes.size)
+        // Only populate the featurelisted itypes
+        //val feature = new Array[Int](featureInvItypes.size)
+        val feature = Array.fill[Int](featureInvItypes.size)(0)
         itemTypesMap(u2i.iid)
-          .filter(whiteInvItypes.contains)
-          .foreach(e => feature(whiteInvItypes(e)) = 1)
+          .filter(featureInvItypes.contains)
+          .foreach(e => feature(featureInvItypes(e)) = 1)
+
         feature
       }}
 
       val userFeature = (
         if (userFeatureList.length > 0) {
-          userFeatureList.transpose.map(_.sum).toList
+          val sumUserFeature = userFeatureList.transpose.map(_.sum).toList
+          if (sumUserFeature.sum == 0) {
+            // This happens when all items rated by the user have no interested
+            // itypes. In such case we have to fill null.
+            Seq.fill(featureInvItypes.size)(1)
+          } else {
+            sumUserFeature
+          }
         } else {
           // For user has no feature, assumes uniform.
-          Seq.fill(whiteInvItypes.size)(1)
+          Seq.fill(featureInvItypes.size)(1)
         }
       )
       
       val featureSum = userFeature.sum 
       val normalizedUserFeature = userFeature.map(_.toDouble / featureSum)
 
-      //println(user + " : " + normalizedUserFeature) 
       (user, normalizedUserFeature.toList)
     }}.toMap
     userFeatureMap
+  }
+
+  // Notice that the third return value is item to *all* its itypes. It is
+  // important to pass non-feature itypes since we need these info in modeldata
+  // for other pruning.
+  def constructUserFeaturesMapFromArg(
+    appid: Int,
+    optFeatureItypesStr: Option[String]) : (
+    Map[String, Seq[Double]],  // User -> Itype Scores
+    Seq[String],  // Itype Feature List
+    Map[String, Seq[String]]  // Item -> All Itypes
+  ) = { 
+    val (itypes, itemTypesMap) = getItems(appid)
+    
+    //val usersDb = commonsConfig.getAppdataUsers
+    val users = getUsers(appid).map(_.id)
+
+    val featureItypes = getFeatureItypes(itypes, optFeatureItypesStr)
+    //println(featureItypes)
+    if (featureItypes.length == 0) {
+      throw new UserProfileRecommendationException("No items has featurelisted types")
+    }
+
+    val featureInvItypes = (0 until featureItypes.length)
+      .map(i => (featureItypes(i), i)).toMap
+
+    val userU2IsMap = getU2I(appid)
+
+    val userFeaturesMap = constructUserFeatureMap(
+      featureInvItypes, itemTypesMap, users, userU2IsMap)
+     
+    return (userFeaturesMap, featureItypes, itemTypesMap)
   }
 
   def printFeature(feature: Seq[Double], itypes: Seq[String]): String = {
@@ -86,28 +145,25 @@ object UserProfileRecommendation {
 
   def recommend(
     userFeaturesMap: Map[String, Seq[Double]],
-    itemTypesMap: Map[String, Seq[String]],
-    allItypes: Seq[String],
-    whiteInvItypes: Map[String, Int],
-    users: Seq[String],
+    featureItypes: Seq[String],
+    itemItypes: Map[String, Seq[String]],
     numRecommendations: Int
   ) : Map[String, Seq[(String, Double)]] = {
 
-    users.map { uid => {
-      val userFeatures = userFeaturesMap(uid)
-      
-      val itemScoreMap = itemTypesMap.map{ case(iid, itypes) => {
-        val score = itypes
-        .filter(whiteInvItypes.contains)
-        .map(itype => whiteInvItypes(itype))
-        .map(idx => userFeatures(idx))
-        .sum
-        // FIXME: not decided yet. if item has too many types, need to discount
-        // them
-        // / itypes.size  
-        (iid, score)
-      }}
+    val featureIdxMap = featureItypes.zip(0 until featureItypes.size).toMap
 
+    userFeaturesMap.map { case(uid, features) => {
+      val itemScoreMap = itemItypes.map{ case(iid, itypes) => {
+        val score = itypes
+          .filter(featureIdxMap.contains)
+          .map(itype => featureIdxMap(itype))
+          .map(idx => features(idx))
+          .sum
+        // FIXME: not decided yet. if item has too many types, need to discount
+        // them / itypes.size  
+        (iid, score) 
+      }}
+      
       val top = itemScoreMap.toList.sortBy(-_._2).take(numRecommendations)
       (uid, top)
     }}.toMap
