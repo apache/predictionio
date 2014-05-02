@@ -24,7 +24,9 @@ import cascading.pipe.joiner.LeftJoin
  * --algoid: <int>
  * --modelSet: <boolean> (true/false). flag to indicate which set
  *
+ * --unseenOnly: <boolean> (true/false). only recommend unseen items if this is true.
  * --numRecommendations: <int>. number of recommendations to be generated
+ * --recommendationTime: <long> (eg. 9876543210). recommend items with starttime <= recommendationTime and endtime > recommendationTime
  *
  * Optionsl args:
  * --dbHost: <string> (eg. "127.0.0.1")
@@ -33,10 +35,13 @@ import cascading.pipe.joiner.LeftJoin
  * --evalid: <int>. Offline Evaluation if evalid is specified
  * --debug: <String>. "test" - for testing purpose
  *
+ * --booleanData: <boolean>. Mahout item rec algo flag for implicit action data
+ * --implicitFeedback: <boolean>. Mahout item rec algo flag for implicit action data
+ *
  * Example:
  *
  */
-class ModelConstructor(args: Args) extends Job(args) {
+class ParallelALSModelConstructor(args: Args) extends Job(args) {
 
   /**
    * parse args
@@ -59,13 +64,24 @@ class ModelConstructor(args: Args) extends Job(args) {
 
   val modelSetArg = args("modelSet").toBoolean
 
+  val unseenOnlyArg = args("unseenOnly").toBoolean
   val numRecommendationsArg = args("numRecommendations").toInt
+  val recommendationTimeArg = args("recommendationTime").toLong
+
+  val booleanDataArg = args.optional("booleanData").map(x => x.toBoolean).getOrElse(false)
+  val implicitFeedbackArg = args.optional("implicitFeedback").map(x => x.toBoolean).getOrElse(false)
+  // implicit preference flag.
+  val IMPLICIT_PREFERENCE = booleanDataArg || implicitFeedbackArg
 
   /**
    * source
    */
 
   val predicted = Tsv(AlgoFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "predicted.tsv"), ('uindex, 'predicted)).read
+
+  val ratingSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "ratings.csv"), ",", ('uindexR, 'iindexR, 'ratingR))
+
+  val seenSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "seen.csv"), ",", ('uindexS, 'iindexS))
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
     .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
@@ -103,20 +119,63 @@ class ModelConstructor(args: Args) extends Job(args) {
   /**
    * computation
    */
+
+  val seenRatings = ratingSource.read.mapTo(('uindexR, 'iindexR, 'ratingR) -> ('uindexR, 'iindexR, 'ratingR)) {
+    fields: (String, String, Double) => fields // convert score from String to Double
+  }
+
   // convert to (uindex, iindex, rating) format
+  // and filter seen items from predicted
   val predictedRating = predicted.flatMap('predicted -> ('iindex, 'rating)) { data: String => parsePredictedData(data) }
+    // mahout predicted output may contain items in rating file because it downsample
+    // we filter out known rating now because will merge with known rating later
+    .joinWithSmaller(('uindex, 'iindex) -> ('uindexR, 'iindexR), seenRatings, joiner = new LeftJoin)
+    .filter('ratingR) { r: Double => (r == 0) } // if ratingR == 0, means unseen rating
     .project('uindex, 'iindex, 'rating)
 
-  predictedRating
+  val combinedRating = if (unseenOnlyArg) {
+
+    val seenActions = seenSource.read.mapTo(('uindexS, 'iindexS) -> ('uindexS, 'iindexS, 'actedS)) {
+      fields: (String, String) => (fields._1, fields._2, 1) // add dummy acted field for unseen filtering
+    }
+
+    predictedRating
+      .joinWithSmaller(('uindex, 'iindex) -> ('uindexS, 'iindexS), seenActions, joiner = new LeftJoin)
+      .filter('actedS) { a: Int => (a == 0) } // if actedS == 0, means unseen actions
+      .project('uindex, 'iindex, 'rating)
+
+  } else if (IMPLICIT_PREFERENCE) {
+    // NOTE: if IMPLICIT_PREFERENCE = true because
+    // can't simply merge the seen preference value with predicted preference value due to different meaning in value
+    // (depending on which distance function is used).
+    // TODO: need special way to handle this case
+    predictedRating
+  } else {
+    // rename for concatenation
+    val seenRatings2 = seenRatings.rename(('uindexR, 'iindexR, 'ratingR) -> ('uindex, 'iindex, 'rating))
+
+    predictedRating ++ seenRatings2
+  }
+
+  combinedRating
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
+    .filter('starttimeI, 'endtimeI) { fields: (Long, Option[Long]) =>
+      val (starttimeI, endtimeI) = fields
+
+      val keepThis: Boolean = (starttimeI, endtimeI) match {
+        case (start, None) => (recommendationTimeArg >= start)
+        case (start, Some(end)) => ((recommendationTimeArg >= start) && (recommendationTimeArg < end))
+        case _ => {
+          assert(false, s"Unexpected item starttime ${starttimeI} and endtime ${endtimeI}")
+          false
+        }
+      }
+      keepThis
+    }
+    .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)
     .project('uidU, 'iidI, 'rating, 'itypesI)
     .groupBy('uidU) { _.sortBy('rating).reverse.toList[(String, Double, List[String])](('iidI, 'rating, 'itypesI) -> 'iidsList) }
-    .mapTo(('uidU, 'iidsList) -> ('uidU, 'iidsList)) {
-      fields: (String, List[(String, Double, List[String])]) =>
-        val (uidU, iidsList) = fields
-        (uidU, iidsList.take(numRecommendationsArg))
-    }
     .then(itemRecScoresSink.writeData('uidU, 'iidsList, algoidArg, modelSetArg) _)
 
   /*

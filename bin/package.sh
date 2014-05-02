@@ -108,7 +108,7 @@ cp $BASE/tools/migration/0.7/infos/target/pack/bin/* $PACKAGE_DIR/bin
 cp -n $BASE/tools/migration/0.7/infos/target/pack/lib/* $PACKAGE_DIR/lib
 
 mkdir -p $PACKAGE_DIR/vendors/mahout-distribution-0.9
-cp $VENDOR_MAHOUT/mahout-core-0.9-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.9
+cp $VENDOR_MAHOUT/pio-mahout-core-0.9-a91092c0e1-job.jar $PACKAGE_DIR/vendors/mahout-distribution-0.9
 
 cd $DIST_DIR/target
 
@@ -131,7 +131,7 @@ if test "$MULTI_ARCH" = "1" ; then
     fi
     if [ -e "$PACKAGE_NAME_LINUX64.zip" ] ; then
         rm "$PACKAGE_NAME_LINUX64.zip"
-    fi 
+    fi
 
     zip -q -r "$PACKAGE_NAME_LINUX32.zip" "$PACKAGE_NAME_LINUX32"
     zip -q -r "$PACKAGE_NAME_LINUX64.zip" "$PACKAGE_NAME_LINUX64"
@@ -142,6 +142,6 @@ if test "$MULTI_ARCH" = "1" ; then
 else
     rm "$PACKAGE_NAME.zip"
     zip -q -r "$PACKAGE_NAME.zip" "$PACKAGE_NAME"
-  
+
     echo "Packaging finished at $DIST_DIR/target/$PACKAGE_NAME.zip"
 fi

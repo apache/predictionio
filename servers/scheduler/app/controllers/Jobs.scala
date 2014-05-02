@@ -301,6 +301,13 @@ class OfflineEvalJob extends InterruptableJob {
 
     Some(steptype) collect {
       case "split" => {
+        if (iteration > 1) {
+          val iterationkey = s"iteration-${iteration - 1}"
+          while (!finishFlags(iterationkey)) {
+            Thread.sleep(1000)
+          }
+        }
+
         /** Delete old model data, if any (for recovering from an incomplete run, and clean old score for multi-iterations) */
         Scheduler.offlineEvals.get(evalid) map { offlineEval =>
           Scheduler.engines.get(offlineEval.engineid) map { engine =>
@@ -313,13 +320,6 @@ class OfflineEvalJob extends InterruptableJob {
             Logger.info(s"${logPrefix}Deleting any old user-to-item actions")
             Scheduler.appdataTrainingU2IActions.deleteByAppid(offlineEval.id)
             Scheduler.appdataTestU2IActions.deleteByAppid(offlineEval.id)
-          }
-        }
-
-        if (iteration > 1) {
-          val iterationkey = s"iteration-${iteration - 1}"
-          while (!finishFlags(iterationkey)) {
-            Thread.sleep(1000)
           }
         }
       }

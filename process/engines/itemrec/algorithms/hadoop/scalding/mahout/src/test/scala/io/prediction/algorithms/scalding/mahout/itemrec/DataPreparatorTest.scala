@@ -27,6 +27,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     itemsIndexer: Map[String, String],
     usersIndexer: Map[String, String],
     recommendItems: Option[List[String]] = None,
+    unseenOnly: Boolean = false,
     seenActions: List[String] = List(),
     seen: List[(String, String)] = List()) = {
 
@@ -41,12 +42,15 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
     val recommendItemsIndexed = recommendItems.map { x => x.map(y => itemsIndexer(y)) }.getOrElse(List())
 
-    val seenIndexed: List[(String, String)] = if (seen.isEmpty) {
-      // if no seen is defined, using rating file as seen file to check
-      ratingsIndexed.map(y => (y._1, y._2))
+    val seenIndexed: List[(String, String)] = if (unseenOnly) {
+      if (seenActions.isEmpty)
+        ratingsIndexed.map(y => (y._1, y._2))
+      else
+        seen.map(y => (usersIndexer(y._1), itemsIndexer(y._2)))
     } else {
-      seen.map(y => (usersIndexer(y._1), itemsIndexer(y._2)))
+      List()
     }
+
     val dbType = "file"
     val dbName = "testpath/"
     val dbHost = None
@@ -71,6 +75,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
         .arg("dislikeParam", params("dislikeParam"))
         .arg("conversionParam", params("conversionParam"))
         .arg("conflictParam", params("conflictParam"))
+        .arg("unseenOnly", unseenOnly.toString)
         .source(Items(appId = appid, itypes = Some(itypes), dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, items)
         .source(Users(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, users)
         .sink[(String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv"))) { outputBuffer =>
@@ -100,6 +105,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
         .arg("conversionParam", params("conversionParam"))
         .arg("conflictParam", params("conflictParam"))
         .arg("recommendationTime", recommendationTime.toString)
+        .arg("unseenOnly", unseenOnly.toString)
         .source(Items(appId = appid, itypes = Some(itypes), dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, items)
         .source(Users(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, users)
         .sink[(String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv"))) { outputBuffer =>
@@ -130,6 +136,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
         .arg("dislikeParam", params("dislikeParam"))
         .arg("conversionParam", params("conversionParam"))
         .arg("conflictParam", params("conflictParam"))
+        .arg("unseenOnly", unseenOnly.toString)
         .source(U2iActions(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, u2iActions)
         .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv")), selectedItemsTextLine)
         .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv")), usersTextLine)
@@ -150,14 +157,14 @@ class DataPreparatorTest extends Specification with TupleConversions {
             outputBuffer.toList must containTheSameElementsAs(ratingsIndexed)
           }
         }
-        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.tsv"))) { outputBuffer =>
-          "correctly write data to seen.tsv" in {
+        .sink[(String, String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.csv"))) { outputBuffer =>
+          "correctly write data to seen.csv" in {
             outputBuffer.toList must containTheSameElementsAs(seenIndexed)
           }
         }
         .run
         .finish
-    } else if (!seenActions.isEmpty) {
+    } else {
       JobTest("io.prediction.algorithms.scalding.mahout.itemrec.DataPreparator")
         .arg("dbType", dbType)
         .arg("dbName", dbName)
@@ -172,6 +179,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
         .arg("conversionParam", params("conversionParam"))
         .arg("conflictParam", params("conflictParam"))
         .arg("recommendationTime", recommendationTime.toString)
+        .arg("unseenOnly", unseenOnly.toString)
         .arg("seenActions", seenActions)
         .source(U2iActions(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, u2iActions)
         .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv")), selectedItemsTextLine)
@@ -198,14 +206,15 @@ class DataPreparatorTest extends Specification with TupleConversions {
             outputBuffer.toList must containTheSameElementsAs(recommendItemsIndexed)
           }
         }
-        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.tsv"))) { outputBuffer =>
-          "correctly write data to seen.tsv" in {
+        .sink[(String, String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.csv"))) { outputBuffer =>
+          "correctly write data to seen.csv" in {
+            println(outputBuffer.toList)
             outputBuffer.toList must containTheSameElementsAs(seenIndexed)
           }
         }
         .run
         .finish
-    } else {
+    } /*else {
       JobTest("io.prediction.algorithms.scalding.mahout.itemrec.DataPreparator")
         .arg("dbType", dbType)
         .arg("dbName", dbName)
@@ -220,6 +229,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
         .arg("conversionParam", params("conversionParam"))
         .arg("conflictParam", params("conflictParam"))
         .arg("recommendationTime", recommendationTime.toString)
+        .arg("unseenOnly", unseenOnly.toString)
         .source(U2iActions(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, u2iActions)
         .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv")), selectedItemsTextLine)
         .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv")), usersTextLine)
@@ -245,14 +255,14 @@ class DataPreparatorTest extends Specification with TupleConversions {
             outputBuffer.toList must containTheSameElementsAs(recommendItemsIndexed)
           }
         }
-        .sink[(String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.tsv"))) { outputBuffer =>
-          "correctly write data to seen.tsv" in {
+        .sink[(String, String)](Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.csv"))) { outputBuffer =>
+          "correctly write data to seen.csv" in {
             outputBuffer.toList must containTheSameElementsAs(seenIndexed)
           }
         }
         .run
         .finish
-    }
+    }*/
   }
 
   val noEndtime = "PIO_NONE"
@@ -345,7 +355,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test2U2i = List(
     (Rate, "u0", "i0", "123448", "3"),
     (Rate, "u0", "i0", "123449", "4"), // highest
-    (Rate, "u0", "i0", "123451", "2"), // latest 
+    (Rate, "u0", "i0", "123451", "2"), // latest
     (Rate, "u0", "i0", "123450", "1"), // lowest
 
     (Rate, "u0", "i1", "123456", "1"), // lowest
@@ -608,7 +618,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   // i1    B |---------|E
   // i2       C|---------|
   // i3           |---------|
-  //               D        F G  
+  //               D        F G
 
   val tA = 123122
   val tB = 123123
@@ -722,7 +732,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     (Conversion, "u1", "i1", "123458", "PIO_NONE"),
     ("action1", "u0", "i2", "123459", "PIO_NONE"),
     ("action2", "u1", "i1", "123459", "PIO_NONE"),
-    ("action1", "u2", "i0", "123459", "PIO_NONE"))
+    ("action1", "u2", "i0", "123459", "PIO_NONE")) // custom action only
 
   val test6Ratings = List(
     ("u0", "i0", "4"),
@@ -737,12 +747,27 @@ class DataPreparatorTest extends Specification with TupleConversions {
     ("u0", "i2"),
     ("u1", "i1"),
     ("u2", "i0"))
+  val test6SeenAll = List(
+    ("u0", "i0"),
+    ("u0", "i1"),
+    ("u0", "i2"),
+    ("u0", "i3"),
+    ("u1", "i0"),
+    ("u1", "i1"))
 
   val test6Params: Map[String, String] = Map("viewParam" -> "1", "likeParam" -> "4", "dislikeParam" -> "2", "conversionParam" -> "5",
     "conflictParam" -> "latest")
 
-  "DataPreparator with only all actions, all itypes, no conflict, and seenActions" should {
-    test(test6AllItypes, 20000, test6Params, test6Items, test6Users, test6U2i, test6Ratings, genSelectedItems(test6Items), test6ItemsIndexer, test6UsersIndexer, test6RecommendItems, test6seenActions, test6Seen)
+  "DataPreparator with only all actions, all itypes, no conflict, unseenOnly=true and seenActions" should {
+    test(test6AllItypes, 20000, test6Params, test6Items, test6Users, test6U2i, test6Ratings, genSelectedItems(test6Items), test6ItemsIndexer, test6UsersIndexer, test6RecommendItems, true, test6seenActions, test6Seen)
+  }
+
+  "DataPreparator with only all actions, all itypes, no conflict, unseenOnly=true and without seenActions defined" should {
+    test(test6AllItypes, 20000, test6Params, test6Items, test6Users, test6U2i, test6Ratings, genSelectedItems(test6Items), test6ItemsIndexer, test6UsersIndexer, test6RecommendItems, true, List(), test6SeenAll)
+  }
+
+  "DataPreparator with only all actions, all itypes, no conflict, unseenOnly=false and seenActions defined" should {
+    test(test6AllItypes, 20000, test6Params, test6Items, test6Users, test6U2i, test6Ratings, genSelectedItems(test6Items), test6ItemsIndexer, test6UsersIndexer, test6RecommendItems, false, test6seenActions, List())
   }
 
 }

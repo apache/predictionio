@@ -38,16 +38,12 @@ install_play () {
 }
 
 install_mahout () {
-    echo "Going to download and install Apache Mahout 0.9..."
+    echo "Going to download and install Apache Mahout 0.9 (PIO version)..."
     mkdir -p $VENDORS_PATH
     cd $VENDORS_PATH
-    echo "Retrieving Apache mirror list..."
-    curl -o apache_mahout_mirrors.txt http://www.apache.org/dyn/closer.cgi/mahout/0.9/mahout-distribution-0.9.tar.gz
-    MAHOUT_URL=$(cat apache_mahout_mirrors.txt | grep -m 1 "<strong>.*</strong>" | sed 's/.*<strong>//' | sed 's/<\/strong>.*//')
-    echo "Found mirror: $MAHOUT_URL"
-    curl -O $MAHOUT_URL
-    #curl -O http://archive.apache.org/dist/mahout/0.8/mahout-distribution-0.8.tar.gz
-    tar zxvf mahout-distribution-0.9.tar.gz
+    mkdir -p mahout-distribution-0.9
+    cd mahout-distribution-0.9
+    curl -O http://download.prediction.io/mahout/pio-mahout-core-0.9-a91092c0e1-job.jar
     cd $BASE
 }
 
@@ -97,8 +93,8 @@ else
     exit 1
 fi
 
-if [ -r "$VENDOR_MAHOUT/mahout-core-0.9-job.jar" ] ; then
-    echo "Using Apache Mahout 0.9 in vendors."
+if [ -r "$VENDOR_MAHOUT/pio-mahout-core-0.9-a91092c0e1-job.jar" ] ; then
+    echo "Using Apache Mahout 0.9 (PIO version) in vendors."
 elif install_mahout ; then
     echo ""
 else
@@ -123,4 +119,3 @@ else
     echo "Unable to locate GraphChi C++ CF Toolbox for Linux 64-bit and automatic installation failed. Aborting." >&2
     exit 1
 fi
-
