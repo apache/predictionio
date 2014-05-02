@@ -13,6 +13,8 @@ object ItemSimCFAlgoBatchOutput {
   def combinedOutput(itemSimScores: ItemSimScores, iidList: Seq[String],
     n: Int, itypes: Option[Seq[String]])(
       implicit app: App, algo: Algo, offlineEval: Option[OfflineEval]) = {
+    val iidSet = iidList.toSet
+
     val iidScoreList = iidList.map { iid =>
       {
         val itemScores = itemSimScores.getTopNIidsAndScores(iid, 0, itypes)
@@ -20,9 +22,10 @@ object ItemSimCFAlgoBatchOutput {
         val meanScore = mean(scores)
         val stdevScore = math.sqrt(variance(scores))
 
-        val itemStdScoreList = itemScores.map {
-          case (item, score) => (item, (score - meanScore) / stdevScore)
-        }
+        val itemStdScoreList = itemScores
+          // remove input items from output list
+          .filter { case (item, score) => !iidSet.contains(item) }
+          .map { case (item, score) => (item, (score - meanScore) / stdevScore) }
         itemStdScoreList
       }
     }.flatten

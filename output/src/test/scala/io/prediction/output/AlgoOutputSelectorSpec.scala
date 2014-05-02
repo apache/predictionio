@@ -1349,13 +1349,13 @@ class AlgoOutputSelectorSpec extends Specification {
         must beEqualTo(Seq("i2", "i3", "i4"))),
       (algoOutputSelector.itemSimSelection("i1,i4", 10, None, None, None, None)(
         dummyApp, engine.copy(id = engineid))
-        must beEqualTo(Seq("i2", "i6", "i3", "i5", "i4"))),
+        must beEqualTo(Seq("i2", "i6", "i3", "i5"))),
       (algoOutputSelector.itemSimSelection("i1,i2", 3, None, None, None, None)(
         dummyApp, engine.copy(id = engineid))
-        must beEqualTo(Seq("i2", "i5", "i3"))),
+        must beEqualTo(Seq("i5", "i3", "i4"))),
       (algoOutputSelector.itemSimSelection("i1,i2,i3,i4", 10, None, None,
         None, None)(dummyApp, engine.copy(id = engineid))
-        must beEqualTo(Seq("i2", "i6", "i5", "i3", "i1", "i4")))
+        must beEqualTo(Seq("i6", "i5")))
     )
     tests.reduce(_ and _)
   }
