@@ -350,6 +350,17 @@
                     "ui": {
                         "uitype": "text"
                     }
+                },
+                "dedupByAttribute": {
+                    "name": "Dedup By Attribute",
+                    "description": "When specified, the engine returns at most 1 item per custom attribute value.",
+                    "constraint": {
+                        "paramtype": "string"
+                    },
+                    "defaultvalue": "",
+                    "ui": {
+                        "uitype": ""
+                    }
                 }
             },
             "paramsections": [
@@ -368,6 +379,14 @@
                             "sectiontype": "normal",
                             "params": [
                                 "numSimilarItems"
+                            ]
+                        },
+                        {
+                            "name": "Dedup by Custom Attribute",
+                            "sectiontype": "normal",
+                            "description": "Only return at most one item per attribute value.",
+                            "params": [
+                                "dedupByAttribute"
                             ]
                         }
                     ]
