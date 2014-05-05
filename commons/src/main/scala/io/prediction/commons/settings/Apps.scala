@@ -22,9 +22,9 @@ case class App(
   userid: Int,
   appkey: String,
   display: String,
-  url: Option[String] = Some(""),
-  cat: Option[String] = Some(""),
-  desc: Option[String] = Some(""),
+  url: Option[String] = None,
+  cat: Option[String] = None,
+  desc: Option[String] = None,
   timezone: String = "UTC")
 
 /** Base trait for implementations that interact with apps in the backend data store. */
