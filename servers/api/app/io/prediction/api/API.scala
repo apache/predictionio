@@ -244,6 +244,10 @@ object API extends Controller {
     Ok("PredictionIO Output API is online.")
   }
 
+  def options(path: String) = Action {
+    Ok("")
+  }
+
   def createUser(format: String) = Action { implicit request =>
     FormattedResponse(format) {
       Attributes(tuple(

@@ -2,6 +2,8 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+OPTIONS	/*path									  io.prediction.api.API.options(path)
+
 GET     /                                         io.prediction.api.API.status()
 
 POST    /users.:format                            io.prediction.api.API.createUser(format)
