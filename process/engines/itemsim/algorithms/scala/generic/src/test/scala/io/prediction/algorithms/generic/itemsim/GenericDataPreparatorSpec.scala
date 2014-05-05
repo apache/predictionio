@@ -52,10 +52,16 @@ class GenericDataPreparatorSpec extends Specification {
       inactive = None,
       attributes = None)
 
-    appdataItems.insert(item.copy(id = "i0", itypes = List("t1", "t2")))
+    appdataItems.insert(item.copy(id = "i0", itypes = List("t1", "t2"),
+      inactive = Some(false)))
     appdataItems.insert(item.copy(id = "i1", itypes = List("t1")))
-    appdataItems.insert(item.copy(id = "i2", itypes = List("t2", "t3")))
+    appdataItems.insert(item.copy(id = "i2", itypes = List("t2", "t3"),
+      inactive = Some(true)))
     appdataItems.insert(item.copy(id = "i3", itypes = List("t3")))
+    appdataItems.insert(item.copy(id = "i4", itypes = List("t1"),
+      inactive = Some(true)))
+    appdataItems.insert(item.copy(id = "i5", itypes = List("t3"),
+      inactive = Some(false)))
 
     // insert a few u2i into db
     val u2i = U2IAction(
@@ -107,7 +113,9 @@ class GenericDataPreparatorSpec extends Specification {
         "1\ti0\tt1,t2",
         "2\ti1\tt1",
         "3\ti2\tt2,t3",
-        "4\ti3\tt3"
+        "4\ti3\tt3",
+        "5\ti4\tt1",
+        "6\ti5\tt3"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
@@ -120,8 +128,10 @@ class GenericDataPreparatorSpec extends Specification {
       val expected = List(
         s"1\t${currentTime.millis}",
         s"2\t${currentTime.millis}",
-        s"3\t${currentTime.millis}",
-        s"4\t${currentTime.millis}"
+        //s"3\t${currentTime.millis}", // inactive
+        s"4\t${currentTime.millis}",
+        //s"5\t${currentTime.millis}", // inactive
+        s"6\t${currentTime.millis}"
       )
       validItemsIndex must containTheSameElementsAs(expected)
     }
@@ -136,7 +146,7 @@ class GenericDataPreparatorSpec extends Specification {
 
       val expectedHeaders = List(
         "%%MatrixMarket matrix coordinate real general",
-        "3 4 9"
+        "3 6 9"
       )
 
       val expected = List(

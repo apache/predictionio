@@ -160,7 +160,8 @@ object GenericDataPreparator {
       val iindex: Int,
       val itypes: Seq[String],
       val starttime: Option[Long],
-      val endtime: Option[Long])
+      val endtime: Option[Long],
+      val inactive: Boolean)
 
     val itemsMap: Map[String, ItemData] = arg.itypes.map { itypes =>
       itemsDb.getByAppidAndItypes(appid, itypes)
@@ -173,7 +174,8 @@ object GenericDataPreparator {
             iindex = index + 1, // +1 to make index starting from 1 (required by graphchi)
             itypes = item.itypes,
             starttime = item.starttime.map[Long](_.getMillis()),
-            endtime = item.endtime.map[Long](_.getMillis())
+            endtime = item.endtime.map[Long](_.getMillis()),
+            inactive = item.inactive.getOrElse(false)
           )
           (item.id -> itemData)
       }.toMap
@@ -193,10 +195,13 @@ object GenericDataPreparator {
     // NOTE: only write valid items (eg. valid starttime and endtime)
     itemsMap.filter {
       case (iid, itemData) =>
-        itemTimeFilter(true, itemData.starttime, itemData.endtime, arg.recommendationTime)
+        val validTime = itemTimeFilter(true, itemData.starttime,
+          itemData.endtime, arg.recommendationTime)
+
+        validTime && (!itemData.inactive)
     }.foreach {
       case (iid, itemData) =>
-        validItemsIndexWriter.write(s"${itemData.iindex}\t${itemData.starttime.getOrElse(DateTime.now.millis)}\n")
+        validItemsIndexWriter.write(s"${itemData.iindex}\t${itemData.starttime.getOrElse(arg.recommendationTime)}\n")
     }
     validItemsIndexWriter.close()
 
