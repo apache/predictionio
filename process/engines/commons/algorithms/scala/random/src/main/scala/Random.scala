@@ -64,7 +64,9 @@ object Random {
           case (Some(st), Some(et)) => st <= config.recommendationTime && config.recommendationTime <= et
           case _ => true
         }
-        typeValidity && timeValidity
+        val inactive = item.inactive.getOrElse(false)
+
+        typeValidity && timeValidity && (!inactive)
       }
       logger.info(s"# valid items: ${validItems.size}")
       val randomScores = Seq.range(1, config.numPredictions + 1).reverse map { _.toDouble }
