@@ -17,7 +17,7 @@ import com.twitter.scalding.Args
  * Generic single machine data preparator for ItemRec engine.
  * Read data from appdata and output the following files:
  * - usersIndex.tsv (uindex uid)
- * - itemsIndex.tsv (iindex iid itypes): only contain valid items to be recommended
+ * - itemsIndex.tsv (iindex iid itypes starttime): only contain valid items to be recommended
  * - ratings.mm (if --matrixMarket true ): matrix market format rating
  * - ratings.csv (if --matrixMarket false): comma separated rating file
  * - seen.csv (if --seenActions is specified)
@@ -175,7 +175,8 @@ object GenericDataPreparator {
       val iindex: Int,
       val itypes: Seq[String],
       val starttime: Option[Long],
-      val endtime: Option[Long])
+      val endtime: Option[Long],
+      val inactive: Boolean)
 
     val itemsMap: Map[String, ItemData] = arg.itypes.map { itypes =>
       itemsDb.getByAppidAndItypes(appid, itypes)
@@ -188,7 +189,8 @@ object GenericDataPreparator {
             iindex = index + 1, // +1 to make index starting from 1 (required by graphchi)
             itypes = item.itypes,
             starttime = item.starttime.map[Long](_.getMillis()),
-            endtime = item.endtime.map[Long](_.getMillis())
+            endtime = item.endtime.map[Long](_.getMillis()),
+            inactive = item.inactive.getOrElse(false)
           )
           (item.id -> itemData)
       }.toMap
@@ -196,15 +198,20 @@ object GenericDataPreparator {
     //
     /* write item index (iindex iid itypes) */
     val itemsIndexWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + "itemsIndex.tsv")))
-    val currentTime = DateTime.now.millis
-    // NOTE: only write valid items (eg. valid starttime and endtime)
+
+    // NOTE: only write valid items (eg. valid starttime and endtime,
+    // inactive=false)
     itemsMap.filter {
       case (iid, itemData) =>
-        itemTimeFilter(true, itemData.starttime, itemData.endtime, arg.recommendationTime)
+        val validTime = itemTimeFilter(true, itemData.starttime,
+          itemData.endtime, arg.recommendationTime)
+
+        validTime && (!itemData.inactive)
     }.foreach {
       case (iid, itemData) =>
         val itypes = itemData.itypes.mkString(",")
-        itemsIndexWriter.write(s"${itemData.iindex}\t${iid}\t${itypes}\t${itemData.starttime.getOrElse(currentTime)}\n")
+        // write starttime for freshness
+        itemsIndexWriter.write(s"${itemData.iindex}\t${iid}\t${itypes}\t${itemData.starttime.getOrElse(arg.recommendationTime)}\n")
     }
     itemsIndexWriter.close()
 
@@ -263,7 +270,6 @@ object GenericDataPreparator {
 
     /* write u2i seen */
     arg.seenActions.map { seenActions =>
-      println(seenActions)
       val u2iSeen = u2iActions
         .filter { u2i =>
           val validAction = seenActions.contains(u2i.action)

@@ -57,10 +57,16 @@ class GenericDataPreparatorSpec extends Specification {
     inactive = None,
     attributes = None)
 
-  appdataItems.insert(item.copy(id = "i1", itypes = List("t1", "t2")))
+  appdataItems.insert(item.copy(id = "i1", itypes = List("t1", "t2"),
+    inactive = Some(false)))
   appdataItems.insert(item.copy(id = "i2", itypes = List("t1")))
-  appdataItems.insert(item.copy(id = "i3", itypes = List("t2", "t3")))
+  appdataItems.insert(item.copy(id = "i3", itypes = List("t2", "t3"),
+    inactive = Some(true)))
   appdataItems.insert(item.copy(id = "i4", itypes = List("t3")))
+  appdataItems.insert(item.copy(id = "i5", itypes = List("t1"),
+    inactive = Some(true)))
+  appdataItems.insert(item.copy(id = "i6", itypes = List("t3"),
+    inactive = Some(false)))
 
   // insert a few u2i into db
   val u2i = U2IAction(
@@ -96,10 +102,10 @@ class GenericDataPreparatorSpec extends Specification {
   appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i4", action = "rate", v = Some(4)))
 
   // unknown user and item actions (not exist in user and items appdata)
-  appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i5", action = "view"))
-  appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "i6", action = "rate", v = Some(4)))
-  appdataU2IActions.insert(u2i.copy(uid = "u4", iid = "i2", action = "view"))
-  appdataU2IActions.insert(u2i.copy(uid = "u4", iid = "i1", action = "rate", v = Some(3)))
+  appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "unkowni5", action = "view"))
+  appdataU2IActions.insert(u2i.copy(uid = "u3", iid = "unkowni6", action = "rate", v = Some(4)))
+  appdataU2IActions.insert(u2i.copy(uid = "unkownu4", iid = "i2", action = "view"))
+  appdataU2IActions.insert(u2i.copy(uid = "unkownu4", iid = "i1", action = "rate", v = Some(3)))
 
   "GenericDataPreparator with matrixMarket = true" should {
 
@@ -143,8 +149,9 @@ class GenericDataPreparatorSpec extends Specification {
       val expected = List(
         s"1\ti1\tt1,t2\t${itemStartTimeMillis}",
         s"2\ti2\tt1\t${itemStartTimeMillis}",
-        s"3\ti3\tt2,t3\t${itemStartTimeMillis}",
-        s"4\ti4\tt3\t${itemStartTimeMillis}"
+        //s"3\ti3\tt2,t3\t${itemStartTimeMillis}", inactive
+        s"4\ti4\tt3\t${itemStartTimeMillis}",
+        s"6\ti6\tt3\t${itemStartTimeMillis}"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
@@ -159,7 +166,7 @@ class GenericDataPreparatorSpec extends Specification {
 
       val expectedHeaders = List(
         "%%MatrixMarket matrix coordinate real general",
-        "3 4 9"
+        "3 6 9"
       )
 
       val expected = List(
@@ -226,8 +233,9 @@ class GenericDataPreparatorSpec extends Specification {
       val expected = List(
         s"1\ti1\tt1,t2\t${itemStartTimeMillis}",
         s"2\ti2\tt1\t${itemStartTimeMillis}",
-        s"3\ti3\tt2,t3\t${itemStartTimeMillis}",
-        s"4\ti4\tt3\t${itemStartTimeMillis}"
+        //s"3\ti3\tt2,t3\t${itemStartTimeMillis}", inactive
+        s"4\ti4\tt3\t${itemStartTimeMillis}",
+        s"6\ti6\tt3\t${itemStartTimeMillis}"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
@@ -304,8 +312,9 @@ class GenericDataPreparatorSpec extends Specification {
       val expected = List(
         s"1\ti1\tt1,t2\t${itemStartTimeMillis}",
         s"2\ti2\tt1\t${itemStartTimeMillis}",
-        s"3\ti3\tt2,t3\t${itemStartTimeMillis}",
-        s"4\ti4\tt3\t${itemStartTimeMillis}"
+        //s"3\ti3\tt2,t3\t${itemStartTimeMillis}", inactive
+        s"4\ti4\tt3\t${itemStartTimeMillis}",
+        s"6\ti6\tt3\t${itemStartTimeMillis}"
       )
       itemsIndex must containTheSameElementsAs(expected)
     }
