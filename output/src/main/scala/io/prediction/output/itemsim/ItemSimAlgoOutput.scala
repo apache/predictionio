@@ -123,6 +123,9 @@ object ItemSimAlgoOutput {
       if (cap == "serendipity") serendipityN(n) else n
     }
 
+    // Time-dependent logic should reference to the same instant.
+    val instant = DateTime.now
+
     /**
      * At the moment, PredictionIO depends only on MongoDB for its model data storage.
      * Since we are still using the legacy longitude-latitude format, the maximum number
@@ -142,20 +145,23 @@ object ItemSimAlgoOutput {
 
     /** Start and end time filtering. */
     val itemsForTimeCheck = items.getByIds(app.id, iids)
-    val iidsWithValidTimeMap = (itemsForTimeCheck filter { item =>
-      (item.starttime, item.endtime) match {
-        case (Some(st), None) => DateTime.now >= st
-        case (None, Some(et)) => DateTime.now <= et
-        case (Some(st), Some(et)) => st <= DateTime.now && DateTime.now <= et
+    // valid time and !inactive
+    val iidsWithValidMap = (itemsForTimeCheck filter { item =>
+      val validTime = (item.starttime, item.endtime) match {
+        case (Some(st), None) => instant >= st
+        case (None, Some(et)) => instant <= et
+        case (Some(st), Some(et)) => st <= instant && instant <= et
         case _ => true
       }
+      val inactive = item.inactive.getOrElse(false)
+      validTime && (!inactive)
     }).map(item => (item.id, item)).toMap
 
-    val itemsAndScoresWithValidTime = iidsAndScores
-      .filter(t => iidsWithValidTimeMap.contains(t._1))
-      .map(t => (iidsWithValidTimeMap(t._1), t._2))
+    val itemsAndScoresWithValid = iidsAndScores
+      .filter(t => iidsWithValidMap.contains(t._1))
+      .map(t => (iidsWithValidMap(t._1), t._2))
 
-    val finalOutput = handledByEngine.foldLeft(itemsAndScoresWithValidTime) {
+    val finalOutput = handledByEngine.foldLeft(itemsAndScoresWithValid) {
       (output, cap) =>
         cap match {
           case "dedupByAttribute" => dedupOutput(output)
