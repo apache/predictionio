@@ -4,6 +4,7 @@ import com.twitter.scalding._
 
 import io.prediction.commons.scalding.appdata.{ Users, Items, U2iActions }
 import io.prediction.commons.filepath.DataFile
+import io.prediction.commons.appdata.{ Item }
 import org.slf4j.{ Logger, LoggerFactory }
 
 /**
@@ -114,7 +115,7 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
    */
 
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
+    dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readObj('item)
 
   val users = Users(appId = trainingAppid,
     dbType = dbTypeArg, dbName = dbNameArg, dbHost = dbHostArg, dbPort = dbPortArg).readData('uid)
@@ -132,12 +133,16 @@ class DataCopy(args: Args) extends DataPreparatorCommon(args) {
 
   users.write(userIdSink)
 
-  items.mapTo(('iidx, 'itypes, 'starttime, 'endtime) -> ('iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, List[String], Long, Option[Long]) =>
-    val (iidx, itypes, starttime, endtime) = fields
+  items.mapTo('item -> ('iidx, 'itypes, 'starttime, 'endtime, 'inactive)) {
+    item: Item =>
 
-    // NOTE: convert List[String] into comma-separated String
-    // NOTE: endtime is optional
-    (iidx, itypes.mkString(","), starttime, endtime.map(_.toString).getOrElse("PIO_NONE"))
+      // NOTE: convert List[String] into comma-separated String
+      // NOTE: endtime is optional
+      (item.id,
+        item.itypes.mkString(","),
+        item.starttime.map(_.getMillis().toString).getOrElse("PIO_NONE"),
+        item.endtime.map(_.getMillis().toString).getOrElse("PIO_NONE"),
+        item.inactive.map(_.toString).getOrElse("PIO_NONE"))
   }.write(selectedItemSink)
 
 }
@@ -170,21 +175,21 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
 
   // use byte offset as index for Mahout algo
   val itemsIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "selectedItems.tsv")).read
-    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes, 'starttime, 'endtime)) { fields: (String, String) =>
+    .mapTo(('offset, 'line) -> ('iindex, 'iidx, 'itypes, 'starttime, 'endtime, 'inactive)) { fields: (String, String) =>
       val (offset, line) = fields
 
       val lineArray = line.split("\t")
 
-      val (iidx, itypes, starttime, endtime) = try {
-        (lineArray(0), lineArray(1), lineArray(2), lineArray(3))
+      val (iidx, itypes, starttime, endtime, inactive) = try {
+        (lineArray(0), lineArray(1), lineArray(2), lineArray(3), lineArray(4))
       } catch {
         case e: Exception => {
           assert(false, "Failed to extract iidx, itypes, starttime and endtime from the line: " + line + ". Exception: " + e)
-          (0, "dummy", "dummy", "dummy")
+          (0, "dummy", "dummy", "dummy", "dummy")
         }
       }
 
-      (offset, iidx, itypes, starttime, endtime)
+      (offset, iidx, itypes, starttime, endtime, inactive)
     }
 
   val usersIndex = TextLine(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "userIds.tsv")).read
@@ -209,32 +214,46 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
    * computation
    */
 
-  itemsIndex.write(itemsIndexSink)
+  itemsIndex.write(itemsIndexSink) // all items
 
   usersIndex.write(usersIndexSink)
 
   // Note: for u2i, use all items of the specified itypes.
   // but recommendItems only include items to be recommended:
-  // - with valid starttime and endtime
-  recommendationTimeArg.foreach { recTime =>
-    itemsIndex
-      .filter('starttime, 'endtime) { fields: (Long, String) =>
-        val (starttimeI, endtime) = fields
+  // - with valid starttime and endtime, and inactive=false
+  itemsIndex
+    .filter('starttime, 'endtime, 'inactive) { fields: (Long, String, String) =>
+      val (starttimeI, endtime, inactiveString) = fields
 
-        val endtimeI: Option[Long] = endtime match {
-          case "PIO_NONE" => None
-          case x: String => {
-            try {
-              Some(x.toLong)
-            } catch {
-              case e: Exception => {
-                assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
-                Some(0)
-              }
+      val endtimeI: Option[Long] = endtime match {
+        case "PIO_NONE" => None
+        case x: String => {
+          try {
+            Some(x.toLong)
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+              Some(0)
             }
           }
         }
+      }
 
+      val inactive: Boolean = inactiveString match {
+        case "PIO_NONE" => false
+        case x: String => {
+          try {
+            x.toBoolean
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Boolean. Exception: " + e)
+              false
+            }
+          }
+        }
+      }
+
+      val validTime = recommendationTimeArg.map { recTime =>
         val keepThis: Boolean = (starttimeI, endtimeI) match {
           case (start, None) => (recTime >= start)
           case (start, Some(end)) => ((recTime >= start) && (recTime < end))
@@ -244,10 +263,12 @@ class DataPreparator(args: Args) extends DataPreparatorCommon(args) {
           }
         }
         keepThis
-      }
-      .project('iindex)
-      .write(recommendItemsSink)
-  }
+      }.getOrElse { false }
+
+      validTime && (!inactive)
+    }
+    .project('iindex)
+    .write(recommendItemsSink)
 
   // filter and pre-process actions
   val validu2i = u2i.joinWithSmaller('iid -> 'iidx, itemsIndex) // only select actions of these items

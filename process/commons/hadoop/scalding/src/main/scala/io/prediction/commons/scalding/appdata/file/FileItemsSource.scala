@@ -14,7 +14,8 @@ import io.prediction.commons.appdata.{ Item }
 
 /**
  * File Format:
- * <id>\t<itypes>\t<appid>\t<starttime>\t<ct>\t<endtime>
+ * 0     1         2        3            4      5           6
+ * <id>\t<itypes>\t<appid>\t<starttime>\t<ct>\t<endtime>\t<inactive>
  *
  * endtime is optional
  * use PIO_NONE if no value for optional field
@@ -84,10 +85,38 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
 
   override def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1, 2, 3, 4) -> (objField, 'itypes)) { fields: (String, String, Int, Long, Long) =>
-        val (id, itypes, appid, starttime, ct) = fields
+      .mapTo((0, 1, 2, 3, 4, 5, 6) -> (objField, 'itypes)) { fields: (String, String, Int, Long, Long, String, String) =>
+        val (id, itypes, appid, starttime, ct, endtime, inactive) = fields
 
         val itypesList = itypes.split(",").toList
+
+        val endtimeOpt: Option[Long] = endtime match {
+          case "PIO_NONE" => None
+          case x: String => {
+            try {
+              Some(x.toLong)
+            } catch {
+              case e: Exception => {
+                assert(false, s"Failed to convert ${x} to Long. Exception: " + e)
+                Some(0)
+              }
+            }
+          }
+        }
+
+        val inactiveOpt: Option[Boolean] = inactive match {
+          case "PIO_NONE" => None
+          case x: String => {
+            try {
+              Some(x.toBoolean)
+            } catch {
+              case e: Exception => {
+                assert(false, s"Failed to convert ${x} to Boolean. Exception: " + e)
+                Some(false)
+              }
+            }
+          }
+        }
 
         (Item(
           id = id,
@@ -95,11 +124,11 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
           ct = new DateTime(ct),
           itypes = itypesList,
           starttime = Some(new DateTime(starttime)),
-          endtime = None,
+          endtime = endtimeOpt.map(x => new DateTime(x)),
           price = None,
           profit = None,
           latlng = None,
-          inactive = None,
+          inactive = inactiveOpt,
           attributes = None
         ), itypesList)
 
@@ -124,12 +153,17 @@ class FileItemsSource(path: String, appId: Int, itypes: Option[List[String]]) ex
 
   override def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo(objField ->
-      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"))) { obj: Item =>
+      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"),
+        FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"),
+        FIELD_SYMBOLS("endtime"), FIELD_SYMBOLS("inactive"))) { obj: Item =>
 
       val starttime: java.util.Date = obj.starttime.get.toDate()
       val ct: java.util.Date = obj.ct.toDate()
+      val endtime: String = obj.endtime.map(_.toDate().getTime().toString)
+        .getOrElse("PIO_NONE")
+      val inactive: String = obj.inactive.map(_.toString).getOrElse("PIO_NONE")
 
-      (obj.id, obj.itypes.mkString(","), obj.appid, starttime.getTime(), ct.getTime())
+      (obj.id, obj.itypes.mkString(","), obj.appid, starttime.getTime(), ct.getTime(), endtime, inactive)
 
     }.write(this)
 

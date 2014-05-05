@@ -14,7 +14,7 @@ class LatestRankTest extends Specification with TupleConversions {
     itypes: List[String],
     numRecommendations: Int,
     recommendationTime: Long,
-    items: List[(String, String, String, String, String, String)], // id, itypes, appid, starttime, ct, endtime
+    items: List[(String, String, String, String, String, String, String)], // id, itypes, appid, starttime, ct, endtime, inactive
     users: List[(String, String)],
     itemRecScores: List[(String, String, String, String, Int, Boolean)]) = {
 
@@ -68,6 +68,7 @@ class LatestRankTest extends Specification with TupleConversions {
 
   val largeNumber: Long = scala.Long.MaxValue // larger than any item starttime
   val noEndtime = "PIO_NONE"
+  val noInactive = "PIO_NONE"
 
   /* test 1 */
   val test1Algoid = 12
@@ -75,10 +76,10 @@ class LatestRankTest extends Specification with TupleConversions {
   val test1ItypesT1T2 = List("t1", "t2")
   val test1ItypesAll = List("t1", "t2", "t3", "t4")
   val test1Items = List(
-    ("i0", "t1,t2,t3", "19", "123456", "345678", noEndtime),
-    ("i1", "t2,t3", "19", "123457", "567890", noEndtime),
-    ("i2", "t4", "19", "21", "88", noEndtime),
-    ("i3", "t3,t4", "19", "9876543210", "67890", noEndtime))
+    ("i0", "t1,t2,t3", "19", "123456", "345678", noEndtime, noInactive),
+    ("i1", "t2,t3", "19", "123457", "567890", noEndtime, noInactive),
+    ("i2", "t4", "19", "21", "88", noEndtime, noInactive),
+    ("i3", "t3,t4", "19", "9876543210", "67890", noEndtime, noInactive))
   val test1Users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
   val test1ItemRecScoresT1T2 = List(
     ("u0", "i1,i0", "123457.0,123456.0", "[t2,t3],[t1,t2,t3]", test1Algoid, test1ModelSet),
@@ -122,7 +123,7 @@ class LatestRankTest extends Specification with TupleConversions {
   // i1    B |---------|E
   // i2       C|---------|
   // i3           |---------|
-  //               D        F G  
+  //               D        F G
 
   val tA = 123122
   val tB = 123123
@@ -137,10 +138,16 @@ class LatestRankTest extends Specification with TupleConversions {
 
   val test2ItypesAll = List("t1", "t2", "t3", "t4")
   val test2Items = List(
-    ("i0", "t1,t2,t3", "19", "123123", "4", "543210"),
-    ("i1", "t2,t3", "19", "123456", "5", "543321"),
-    ("i2", "t4", "19", "123567", "6", "543432"),
-    ("i3", "t3,t4", "19", "123678", "7", "543654"))
+    ("i0", "t1,t2,t3", "19", "123123", "4", "543210", noInactive),
+    ("i1", "t2,t3", "19", "123456", "5", "543321", noInactive),
+    ("i2", "t4", "19", "123567", "6", "543432", noInactive),
+    ("i3", "t3,t4", "19", "123678", "7", "543654", noInactive))
+
+  val test2ItemsInactive = List(
+    ("i0", "t1,t2,t3", "19", "123123", "4", "543210", "false"),
+    ("i1", "t2,t3", "19", "123456", "5", "543321", "true"),
+    ("i2", "t4", "19", "123567", "6", "543432", "true"),
+    ("i3", "t3,t4", "19", "123678", "7", "543654", noInactive))
 
   val test2Users = List(("u0", "3"), ("u1", "3"), ("u2", "3"), ("u3", "3"))
 
@@ -149,6 +156,16 @@ class LatestRankTest extends Specification with TupleConversions {
     ("u1", "i3,i2,i1,i0", "123678.0,123567.0,123456.0,123123.0", "[t3,t4],[t4],[t2,t3],[t1,t2,t3]", test2Algoid, test2ModelSet),
     ("u2", "i3,i2,i1,i0", "123678.0,123567.0,123456.0,123123.0", "[t3,t4],[t4],[t2,t3],[t1,t2,t3]", test2Algoid, test2ModelSet),
     ("u3", "i3,i2,i1,i0", "123678.0,123567.0,123456.0,123123.0", "[t3,t4],[t4],[t2,t3],[t1,t2,t3]", test2Algoid, test2ModelSet))
+
+  val test2ItemRecScoresAllInactive = List(
+    ("u0", "i3,i0", "123678.0,123123.0", "[t3,t4],[t1,t2,t3]",
+      test2Algoid, test2ModelSet),
+    ("u1", "i3,i0", "123678.0,123123.0", "[t3,t4],[t1,t2,t3]",
+      test2Algoid, test2ModelSet),
+    ("u2", "i3,i0", "123678.0,123123.0", "[t3,t4],[t1,t2,t3]",
+      test2Algoid, test2ModelSet),
+    ("u3", "i3,i0", "123678.0,123123.0", "[t3,t4],[t1,t2,t3]",
+      test2Algoid, test2ModelSet))
 
   val test2ItemRecScoresEmpty = List()
 
@@ -163,6 +180,12 @@ class LatestRankTest extends Specification with TupleConversions {
     ("u1", "i1,i0", "123456.0,123123.0", "[t2,t3],[t1,t2,t3]", test2Algoid, test2ModelSet),
     ("u2", "i1,i0", "123456.0,123123.0", "[t2,t3],[t1,t2,t3]", test2Algoid, test2ModelSet),
     ("u3", "i1,i0", "123456.0,123123.0", "[t2,t3],[t1,t2,t3]", test2Algoid, test2ModelSet))
+
+  val test2ItemRecScoresi0i1Inactive = List(
+    ("u0", "i0", "123123.0", "[t1,t2,t3]", test2Algoid, test2ModelSet),
+    ("u1", "i0", "123123.0", "[t1,t2,t3]", test2Algoid, test2ModelSet),
+    ("u2", "i0", "123123.0", "[t1,t2,t3]", test2Algoid, test2ModelSet),
+    ("u3", "i0", "123123.0", "[t1,t2,t3]", test2Algoid, test2ModelSet))
 
   val test2ItemRecScoresi2i3 = List(
     ("u0", "i3,i2", "123678.0,123567.0", "[t3,t4],[t4]", test2Algoid, test2ModelSet),
@@ -182,8 +205,18 @@ class LatestRankTest extends Specification with TupleConversions {
     test(test2Algoid, test2ModelSet, test2ItypesAll, 500, tC, test2Items, test2Users, test2ItemRecScoresi0i1)
   }
 
+  "recommendationTime > some items starttime with some inactive" should {
+    test(test2Algoid, test2ModelSet, test2ItypesAll, 500, tC,
+      test2ItemsInactive, test2Users, test2ItemRecScoresi0i1Inactive)
+  }
+
   "recommendationTime > all item starttime and < all item endtime" should {
     test(test2Algoid, test2ModelSet, test2ItypesAll, 500, tD, test2Items, test2Users, test2ItemRecScoresAll)
+  }
+
+  "recommendationTime > all item starttime and < all item endtime with some inactive" should {
+    test(test2Algoid, test2ModelSet, test2ItypesAll, 500, tD,
+      test2ItemsInactive, test2Users, test2ItemRecScoresAllInactive)
   }
 
   "recommendationTime > some item endtime" should {

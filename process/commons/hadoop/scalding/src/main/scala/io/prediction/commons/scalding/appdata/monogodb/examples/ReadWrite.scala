@@ -23,6 +23,7 @@ class ReadWrite(args: Args) extends Job(args) {
   val preItypesArg = args.list("itypes")
   val itypesArg: Option[List[String]] = if (preItypesArg.mkString(",").length == 0) None else Option(preItypesArg)
 
+  val hdfsDir = args("hdfsDir")
   /**
    * test MongoUsersSource
    * read from DB and write to Tsv
@@ -30,10 +31,10 @@ class ReadWrite(args: Args) extends Job(args) {
   val usersSource = new MongoUsersSource(read_dbNameArg, read_dbHostArg, read_dbPortArg, read_appidArg)
 
   val users = usersSource.readData('uid)
-    .write(Tsv("users.tsv"))
+    .write(Tsv(hdfsDir + "users.tsv"))
 
   val usersObj = usersSource.readObj('user)
-    .write(Tsv("usersObj.tsv"))
+    .write(Tsv(hdfsDir + "usersObj.tsv"))
 
   val testUsersObj = new MongoUsersSource(write_dbNameArg + "_obj", write_dbHostArg, write_dbPortArg, write_appidArg)
 
@@ -51,13 +52,13 @@ class ReadWrite(args: Args) extends Job(args) {
   val itemsSource = new MongoItemsSource(read_dbNameArg, read_dbHostArg, read_dbPortArg, read_appidArg, itypesArg)
 
   val items = itemsSource.readData('iid, 'itypes)
-    .write(Tsv("items.tsv"))
+    .write(Tsv(hdfsDir + "items.tsv"))
 
   val itemsStarttime = itemsSource.readStartEndtime('iid, 'itypes, 'starttime, 'endtime)
-    .write(Tsv("itemsStarttime.tsv"))
+    .write(Tsv(hdfsDir + "itemsStarttime.tsv"))
 
   val itemsObj = itemsSource.readObj('item)
-    .write(Tsv("itemsObj.tsv"))
+    .write(Tsv(hdfsDir + "itemsObj.tsv"))
 
   val testItemsObj = new MongoItemsSource(write_dbNameArg + "_obj", write_dbHostArg, write_dbPortArg, write_appidArg, itypesArg)
 
@@ -75,7 +76,7 @@ class ReadWrite(args: Args) extends Job(args) {
   val u2iSource = new MongoU2iActionsSource(read_dbNameArg, read_dbHostArg, read_dbPortArg, read_appidArg)
 
   val u2i = u2iSource.readData('action, 'uid, 'iid, 't, 'v)
-  u2i.write(Tsv("u2iData.tsv"))
+  u2i.write(Tsv(hdfsDir + "u2iData.tsv"))
 
   val testU2i = new MongoU2iActionsSource(write_dbNameArg, write_dbHostArg, write_dbPortArg, write_appidArg)
   u2i.then(testU2i.writeData('action, 'uid, 'iid, 't, 'v, write_appidArg) _)

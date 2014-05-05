@@ -34,6 +34,7 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
     itemsCols.add("starttime") // 3
     itemsCols.add("ct") // 4
     itemsCols.add("endtime") // 5 optional
+    itemsCols.add("inactive") // 6 optional
 
     itemsCols
   },
@@ -45,11 +46,12 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
     itemsMappings.put("appid", FIELD_SYMBOLS("appid").name)
     itemsMappings.put("starttime", FIELD_SYMBOLS("starttime").name)
     itemsMappings.put("ct", FIELD_SYMBOLS("ct").name)
-    //itemsMappings.put("endtime", FIELD_SYMBOLS("endtime").name) // optional
+    itemsMappings.put("endtime", FIELD_SYMBOLS("endtime").name) // optional
+    itemsMappings.put("inactive", FIELD_SYMBOLS("inactive").name) // optional
 
     itemsMappings
   },
-  query = { // read query 
+  query = { // read query
     val itemsQuery = MongoDBObject("appid" -> appid) ++ (itypes.map(x => MongoDBObject("itypes" -> MongoDBObject("$in" -> x))).getOrElse(MongoDBObject()))
 
     itemsQuery
@@ -89,22 +91,29 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
 
   override def readObj(objField: Symbol)(implicit fd: FlowDef): Pipe = {
     val items = this.read
-      .mapTo((0, 1, 2, 3, 4) -> (objField)) { fields: (String, BasicDBList, Int, java.util.Date, java.util.Date) =>
-        val (id, itypes, appid, starttime, ct) = fields
+      .mapTo((0, 1, 2, 3, 4, 5, 6) -> (objField)) {
+        fields: (String, BasicDBList, Int, java.util.Date, java.util.Date, java.util.Date, Any) =>
+          val (id, itypes, appid, starttime, ct, endtime, inactiveAny) = fields
 
-        Item(
-          id = id,
-          appid = appid,
-          ct = new DateTime(ct),
-          itypes = itypes.toList.map(x => x.toString),
-          starttime = Some(new DateTime(starttime)),
-          endtime = None, // TODO: endtime Option(endtime).map(x => new DateTime(x)),
-          price = None,
-          profit = None,
-          latlng = None,
-          inactive = None,
-          attributes = None
-        )
+          val inactive: Option[Boolean] = inactiveAny match {
+            case null => None
+            case x: Boolean => Some(x)
+            case _ => None
+          }
+
+          Item(
+            id = id,
+            appid = appid,
+            ct = new DateTime(ct),
+            itypes = itypes.toList.map(x => x.toString),
+            starttime = Some(new DateTime(starttime)),
+            endtime = Option(endtime).map(x => new DateTime(x)),
+            price = None,
+            profit = None,
+            latlng = None,
+            inactive = inactive,
+            attributes = None
+          )
 
       }
     items
@@ -130,7 +139,9 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
 
   override def writeObj(objField: Symbol)(p: Pipe)(implicit fd: FlowDef): Pipe = {
     val writtenData = p.mapTo(objField ->
-      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"), FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"))) { obj: Item =>
+      (FIELD_SYMBOLS("id"), FIELD_SYMBOLS("itypes"), FIELD_SYMBOLS("appid"),
+        FIELD_SYMBOLS("starttime"), FIELD_SYMBOLS("ct"),
+        FIELD_SYMBOLS("endtime"), FIELD_SYMBOLS("inactive"))) { obj: Item =>
 
       val itypesTuple = new Tuple()
 
@@ -140,13 +151,13 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
 
       val starttime: java.util.Date = obj.starttime.get.toDate()
       val ct: java.util.Date = obj.ct.toDate()
-      // TODO: write endtime
+      val endtime: java.util.Date = obj.endtime.map(_.toDate()).getOrElse(null)
+      val inactive: Any = obj.inactive.getOrElse(null)
 
-      (obj.id, itypesTuple, obj.appid, starttime, ct)
+      (obj.id, itypesTuple, obj.appid, starttime, ct, endtime, inactive)
     }.write(this)
 
     writtenData
   }
 
 }
-

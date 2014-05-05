@@ -50,33 +50,33 @@ class ReadItypesTestJob(args: Args) extends Job(args) {
 class FileItemsSourceTest extends Specification with TupleConversions {
 
   val test1Input = List(
-    ("i0", "t1,t2,t3", "appid", "2293300", "1266673", "666554320"),
-    ("i1", "t2,t3", "appid", "14526361", "12345135", "PIO_NONE"),
-    ("i2", "t4", "appid", "14526361", "23423424", "PIO_NONE"),
-    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323"))
+    ("i0", "t1,t2,t3", "appid", "2293300", "1266673", "666554320", "PIO_NONE"),
+    ("i1", "t2,t3", "appid", "14526361", "12345135", "PIO_NONE", "false"),
+    ("i2", "t4", "appid", "14526361", "23423424", "PIO_NONE", "true"),
+    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323", "PIO_NONE"))
 
   val test1output_all = test1Input
 
   val test1output_t4 = List(
-    ("i2", "t4", "appid", "14526361", "23423424", "PIO_NONE"),
-    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323"))
+    ("i2", "t4", "appid", "14526361", "23423424", "PIO_NONE", "true"),
+    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323", "PIO_NONE"))
 
   val test1output_t2t3 = List(
-    ("i0", "t1,t2,t3", "appid", "2293300", "1266673", "666554320"),
-    ("i1", "t2,t3", "appid", "14526361", "12345135", "PIO_NONE"),
-    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323"))
+    ("i0", "t1,t2,t3", "appid", "2293300", "1266673", "666554320", "PIO_NONE"),
+    ("i1", "t2,t3", "appid", "14526361", "12345135", "PIO_NONE", "false"),
+    ("i3", "t3,t4", "appid", "1231415", "378462511", "666554323", "PIO_NONE"))
 
   val test1output_none = List()
 
   def testWithItypes(appid: Int, writeAppid: Int, itypes: List[String],
-    inputItems: List[(String, String, String, String, String, String)],
-    outputItems: List[(String, String, String, String, String, String)]) = {
+    inputItems: List[(String, String, String, String, String, String, String)],
+    outputItems: List[(String, String, String, String, String, String, String)]) = {
 
-    val inputSource = inputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, appid.toString, starttime, ct, endtime) }
-    val outputExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes) }
-    val outputStartEndtimeExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, starttime, endtime) }
-    val writeDataExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, writeAppid.toString) }
-    val writeObjExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime) => (id, itypes, appid.toString, starttime, ct) }
+    val inputSource = inputItems map { case (id, itypes, tempAppid, starttime, ct, endtime, inactive) => (id, itypes, appid.toString, starttime, ct, endtime, inactive) }
+    val outputExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime, inactive) => (id, itypes) }
+    val outputStartEndtimeExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime, inactive) => (id, itypes, starttime, endtime) }
+    val writeDataExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime, inactive) => (id, itypes, writeAppid.toString) }
+    val writeObjExpected = outputItems map { case (id, itypes, tempAppid, starttime, ct, endtime, inactive) => (id, itypes, appid.toString, starttime, ct, endtime, inactive) }
 
     JobTest("io.prediction.commons.scalding.appdata.file.ReadItypesTestJob")
       .arg("appid", appid.toString)
@@ -98,7 +98,7 @@ class FileItemsSourceTest extends Specification with TupleConversions {
           outputBuffer must containTheSameElementsAs(writeDataExpected)
         }
       }
-      .sink[(String, String, String, String, String)]((new FileItemsSource("writeObjTestpath", appid, None)).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, String, String, String)]((new FileItemsSource("writeObjTestpath", appid, None)).getSource) { outputBuffer =>
         "sink with writeObj" in {
           outputBuffer must containTheSameElementsAs(writeObjExpected)
         }

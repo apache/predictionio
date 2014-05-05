@@ -13,7 +13,7 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
   val appid = 3
 
   def test(unseenOnly: Boolean, numRecommendations: Int, recommendationTime: Long,
-    items: List[(String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime)
+    items: List[(String, String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime, inactive)
     users: List[(String, String)],
     predicted: List[(String, String)],
     ratings: List[(String, String, String)],
@@ -58,56 +58,8 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
       .finish
   }
 
-  def testWithBooleanData(unseenOnly: Boolean, numRecommendations: Int, recommendationTime: Long,
-    items: List[(String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime)
-    users: List[(String, String)],
-    predicted: List[(String, String)],
-    ratings: List[(String, String, String)],
-    seen: List[(String, String)],
-    output: List[(String, String, String, String)],
-    booleanData: Boolean) = {
-
-    val engineid = 4
-    val algoid = 7
-    val evalid = None
-    val modelSet = true
-
-    val dbType = "file"
-    val dbName = "testpath/"
-    val dbHost = None
-    val dbPort = None
-    val hdfsRoot = "testroot/"
-
-    val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet) }
-
-    JobTest("io.prediction.algorithms.scalding.mahout.itemrec.ParallelALSModelConstructor")
-      .arg("dbType", dbType)
-      .arg("dbName", dbName)
-      .arg("hdfsRoot", hdfsRoot)
-      .arg("appid", appid.toString)
-      .arg("engineid", engineid.toString)
-      .arg("algoid", algoid.toString)
-      .arg("modelSet", modelSet.toString)
-      .arg("unseenOnly", unseenOnly.toString)
-      .arg("numRecommendations", numRecommendations.toString)
-      .arg("recommendationTime", recommendationTime.toString)
-      .arg("booleanData", booleanData.toString)
-      .source(Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "predicted.tsv"), new Fields("uindex", "predicted")), predicted)
-      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "ratings.csv"), ",", new Fields("uindexR", "iindexR", "ratingR")), ratings)
-      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv")), items)
-      .source(Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "usersIndex.tsv")), users)
-      .source(Csv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "seen.csv"), ",", new Fields("uindexS", "iindexS")), seen)
-      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
-        "correctly write model data to a file" in {
-          outputBuffer.toList must containTheSameElementsAs(itemRecScores)
-        }
-      }
-      .run
-      .finish
-  }
-
   def testWithImplicitFeedback(unseenOnly: Boolean, numRecommendations: Int, recommendationTime: Long,
-    items: List[(String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime)
+    items: List[(String, String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime, inactive)
     users: List[(String, String)],
     predicted: List[(String, String)],
     ratings: List[(String, String, String)],
@@ -155,14 +107,15 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
   }
 
   val noEndtime = "PIO_NONE"
+  val noInactive = "PIO_NONE"
 
   /* test 1*/
   val test1Items = List(
-    ("0", "i0", "t1,t2,t3", "12346", noEndtime),
-    ("1", "i1", "t1,t2", "12347", noEndtime),
-    ("2", "i2", "t2,t3", "12348", noEndtime),
-    ("3", "i3", "t2", "12349", noEndtime),
-    ("4", "i4", "t1", "12349", noEndtime))
+    ("0", "i0", "t1,t2,t3", "12346", noEndtime, noInactive),
+    ("1", "i1", "t1,t2", "12347", noEndtime, noInactive),
+    ("2", "i2", "t2,t3", "12348", noEndtime, noInactive),
+    ("3", "i3", "t2", "12349", noEndtime, noInactive),
+    ("4", "i4", "t1", "12349", noEndtime, noInactive))
 
   val test1Users = List(("0", "u0"), ("1", "u1"), ("2", "u2"), ("3", "u3"))
 
@@ -222,24 +175,6 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
     test(true, 100, 1234567890, test1Items, test1Users, test1PredictedWithSeenItems, test1Ratings, test1Seen, test1OutputUnseenOnly)
   }
 
-  /* booleanData */
-  "ParallelALSModelConstructor with unseenOnly=true and numRecommendations=100 and booleanData=true" should {
-    testWithBooleanData(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Seen, test1OutputUnseenOnly, true)
-  }
-
-  "ParallelALSModelConstructor with unseenOnly=true and numRecommendations=100 and booleanData=false" should {
-    testWithBooleanData(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Seen, test1OutputUnseenOnly, false)
-  }
-
-  "ParallelALSModelConstructor with unseenOnly=false and numRecommendations=100 and booleanData=true" should {
-    // should only generate unseen data if booleanData=true although unseenOnly=false
-    testWithBooleanData(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Seen, test1OutputUnratedOnly, true)
-  }
-
-  "ParallelALSModelConstructor with unseenOnly=false and numRecommendations=100 and booleanData=false" should {
-    testWithBooleanData(false, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Seen, test1Output, false)
-  }
-
   /* implicitFeedback */
   "ParallelALSModelConstructor with unseenOnly=true and numRecommendations=100 and implicitFeedback=true" should {
     testWithImplicitFeedback(true, 100, 1234567890, test1Items, test1Users, test1Predicted, test1Ratings, test1Seen, test1OutputUnseenOnly, true)
@@ -260,10 +195,10 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
 
   /* test 2: test double comparision */
   val test2Items = List(
-    ("0", "i0", "t1,t2,t3", "12346", noEndtime),
-    ("1", "i1", "t1,t2", "12347", noEndtime),
-    ("2", "i2", "t2,t3", "12348", noEndtime),
-    ("3", "i3", "t2", "12349", noEndtime))
+    ("0", "i0", "t1,t2,t3", "12346", noEndtime, noInactive),
+    ("1", "i1", "t1,t2", "12347", noEndtime, noInactive),
+    ("2", "i2", "t2,t3", "12348", noEndtime, noInactive),
+    ("3", "i3", "t2", "12349", noEndtime, noInactive))
 
   val test2Users = List(("0", "u0"), ("1", "u1"), ("2", "u2"), ("3", "u3"))
 
@@ -301,10 +236,16 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
   val tG = 543655
 
   val test3Items = List(
-    ("0", "i0", "t1,t2,t3", "123123", "543210"),
-    ("1", "i1", "t1,t2", "123456", "543321"),
-    ("2", "i2", "t2,t3", "123567", "543432"),
-    ("3", "i3", "t2", "123678", "543654"))
+    ("0", "i0", "t1,t2,t3", "123123", "543210", noInactive),
+    ("1", "i1", "t1,t2", "123456", "543321", noInactive),
+    ("2", "i2", "t2,t3", "123567", "543432", noInactive),
+    ("3", "i3", "t2", "123678", "543654", noInactive))
+
+  val test3ItemsInactive = List(
+    ("0", "i0", "t1,t2,t3", "123123", "543210", noInactive),
+    ("1", "i1", "t1,t2", "123456", "543321", "true"),
+    ("2", "i2", "t2,t3", "123567", "543432", "false"),
+    ("3", "i3", "t2", "123678", "543654", "true"))
 
   val test3Users = List(("0", "u0"), ("1", "u1"), ("2", "u2"), ("3", "u3"))
 
@@ -321,9 +262,15 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
     ("2", "3"))
 
   val test3Output = List(
-    ("u0", "i1,i3,i2,i0", "123.0,88.0,9.0,2.0", "[t1,t2],[t2],[t2,t3],[t1,t2,t3]"),
+    ("u0", "i1,i3,i2,i0", "123.0,88.0,9.0,2.0",
+      "[t1,t2],[t2],[t2,t3],[t1,t2,t3]"),
     ("u1", "i2,i0", "3.0,1.0", "[t2,t3],[t1,t2,t3]"),
     ("u2", "i3", "4.0", "[t2]"))
+
+  val test3OutputInactive = List(
+    ("u0", "i2,i0", "9.0,2.0",
+      "[t2,t3],[t1,t2,t3]"),
+    ("u1", "i2,i0", "3.0,1.0", "[t2,t3],[t1,t2,t3]"))
 
   val test3OutputEmpty = List()
 
@@ -339,6 +286,10 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
     ("u0", "i3,i2", "88.0,9.0", "[t2],[t2,t3]"),
     ("u1", "i2", "3.0", "[t2,t3]"),
     ("u2", "i3", "4.0", "[t2]"))
+
+  val test3Outputi2i3Inactive = List(
+    ("u0", "i2", "9.0", "[t2,t3]"),
+    ("u1", "i2", "3.0", "[t2,t3]"))
 
   "unseenOnly=false, numRecommendations=100 and recommendationTime < all item starttime" should {
     test(false, 100, tA, test3Items, test3Users, test3Predicted, test3Ratings, test3Seen, test3OutputEmpty)
@@ -356,8 +307,16 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
     test(false, 100, tD, test3Items, test3Users, test3Predicted, test3Ratings, test3Seen, test3Output)
   }
 
+  "unseenOnly=false, numRecommendations=100 and recommendationTime > all item starttime and < all item endtime with some inactive" should {
+    test(false, 100, tD, test3ItemsInactive, test3Users, test3Predicted, test3Ratings, test3Seen, test3OutputInactive)
+  }
+
   "unseenOnly=false, numRecommendations=100 and recommendationTime > some item endtime" should {
     test(false, 100, tE, test3Items, test3Users, test3Predicted, test3Ratings, test3Seen, test3Outputi2i3)
+  }
+
+  "unseenOnly=false, numRecommendations=100 and recommendationTime > some item endtime with some inactive" should {
+    test(false, 100, tE, test3ItemsInactive, test3Users, test3Predicted, test3Ratings, test3Seen, test3Outputi2i3Inactive)
   }
 
   "unseenOnly=false, numRecommendations=100 and recommendationTime == last item endtime" should {

@@ -12,10 +12,10 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
 
   def test(itypes: List[String], trainingPercent: Double, validationPercent: Double, testPercent: Double, timeorder: Boolean,
     appid: Int, evalid: Int,
-    items: List[(String, String, String, String, String)],
+    items: List[(String, String, String, String, String, String, String)],
     users: List[(String, String, String)],
     u2iActions: List[(String, String, String, String, String)],
-    selectedItems: List[(String, String, String, String, String)],
+    selectedItems: List[(String, String, String, String, String, String, String)],
     selectedUsers: List[(String, String, String)],
     selectedU2iActions: List[(String, String, String, String, String)]) = {
 
@@ -83,7 +83,7 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
           outputBuffer must containTheSameElementsAs(selectedUsers)
         }
       }
-      .sink[(String, String, String, String, String)](Items(appId = evalid, itypes = None, dbType = training_dbType, dbName = training_dbName, dbHost = training_dbHost, dbPort = training_dbPort).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, String, String, String)](Items(appId = evalid, itypes = None, dbType = training_dbType, dbName = training_dbName, dbHost = training_dbHost, dbPort = training_dbPort).getSource) { outputBuffer =>
         "correctly write trainingItems" in {
           outputBuffer must containTheSameElementsAs(selectedItems)
         }
@@ -234,10 +234,14 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
     (appid + "_u3", appid.toString, "876563111"))
 
   val items = List(
-    (appid + "_i0", "t1,t2,t3", appid.toString, "2293300", "1266673"),
-    (appid + "_i1", "t2,t3", appid.toString, "14526361", "12345135"),
-    (appid + "_i2", "t4", appid.toString, "14526361", "23423424"),
-    (appid + "_i3", "t3,t4", appid.toString, "1231415", "378462511"))
+    (appid + "_i0", "t1,t2,t3", appid.toString, "2293300", "1266673",
+      "978462511", "PIO_NONE"),
+    (appid + "_i1", "t2,t3", appid.toString, "14526361", "12345135",
+      "978462512", "true"),
+    (appid + "_i2", "t4", appid.toString, "14526361", "23423424",
+      "978462513", "false"),
+    (appid + "_i3", "t3,t4", appid.toString, "1231415", "378462511",
+      "978462514", "PIO_NONE"))
 
   val u2iActions = List(
     ("4", appid + "_u0", appid + "_i1", "1234500", "5"),
@@ -264,10 +268,14 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
     (evalid + "_u3", evalid.toString, "876563111"))
 
   val selectedItemsAll = List(
-    (evalid + "_i0", "t1,t2,t3", evalid.toString, "2293300", "1266673"),
-    (evalid + "_i1", "t2,t3", evalid.toString, "14526361", "12345135"),
-    (evalid + "_i2", "t4", evalid.toString, "14526361", "23423424"),
-    (evalid + "_i3", "t3,t4", evalid.toString, "1231415", "378462511"))
+    (evalid + "_i0", "t1,t2,t3", evalid.toString, "2293300", "1266673",
+      "978462511", "PIO_NONE"),
+    (evalid + "_i1", "t2,t3", evalid.toString, "14526361", "12345135",
+      "978462512", "true"),
+    (evalid + "_i2", "t4", evalid.toString, "14526361", "23423424",
+      "978462513", "false"),
+    (evalid + "_i3", "t3,t4", evalid.toString, "1231415", "378462511",
+      "978462514", "PIO_NONE"))
 
   val selectedU2iActions = List(
     ("4", evalid + "_u0", evalid + "_i1", "1234500", "5"),

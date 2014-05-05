@@ -5,6 +5,7 @@ import com.twitter.scalding._
 import io.prediction.commons.scalding.appdata.{ Items, Users }
 import io.prediction.commons.scalding.modeldata.ItemRecScores
 import io.prediction.commons.filepath.{ AlgoFile }
+import io.prediction.commons.appdata.{ Item }
 
 /**
  * Source:
@@ -80,7 +81,16 @@ class RandomRank(args: Args) extends Job(args) {
 
   // get items data
   val items = Items(appId = trainingAppid, itypes = itypesArg,
-    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
+    dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readObj('item)
+    .mapTo('item -> ('iidx, 'itypes, 'starttime, 'endtime, 'inactive)) {
+      item: Item =>
+        (item.id,
+          item.itypes,
+          item.starttime.map(_.getMillis()).get,
+          item.endtime.map(_.getMillis()),
+          item.inactive.getOrElse(false)
+        )
+    }
 
   val users = Users(appId = trainingAppid,
     dbType = training_dbTypeArg, dbName = training_dbNameArg, dbHost = training_dbHostArg, dbPort = training_dbPortArg).readData('uid)
@@ -98,9 +108,9 @@ class RandomRank(args: Args) extends Job(args) {
    * computation
    */
   val itemsWithKey = items
-    .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
+    .filter('starttime, 'endtime, 'inactive) { fields: (Long, Option[Long], Boolean) =>
       // only keep items with valid starttime and endtime
-      val (starttimeI, endtimeI) = fields
+      val (starttimeI, endtimeI, inactive) = fields
 
       val keepThis: Boolean = (starttimeI, endtimeI) match {
         case (start, None) => (recommendationTimeArg >= start)
@@ -110,7 +120,7 @@ class RandomRank(args: Args) extends Job(args) {
           false
         }
       }
-      keepThis
+      keepThis && (!inactive)
     }
     .map(() -> 'itemKey) { u: Unit => 1 }
 

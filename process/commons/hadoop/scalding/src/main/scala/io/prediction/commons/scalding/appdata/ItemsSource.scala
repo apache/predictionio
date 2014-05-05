@@ -7,7 +7,7 @@ import cascading.flow.FlowDef
 
 // use trait because different DB may have a bit different raw read data.
 // such as time format, etc.
-// The DB Source class should implement this trait so the algo implementers 
+// The DB Source class should implement this trait so the algo implementers
 // can get the same type of pipe returned regardless of the actual DB type.
 
 trait ItemsSource {
@@ -67,6 +67,7 @@ object ItemsSource {
     ("ct" -> 'ct),
     ("itypes" -> 'itypes),
     ("starttime" -> 'starttime),
-    ("endtime" -> 'endtime)) // optional
+    ("endtime" -> 'endtime), // optional
+    ("inactive" -> 'inactive)) // optional
 
 }

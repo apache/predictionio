@@ -68,10 +68,9 @@ class ParallelALSModelConstructor(args: Args) extends Job(args) {
   val numRecommendationsArg = args("numRecommendations").toInt
   val recommendationTimeArg = args("recommendationTime").toLong
 
-  val booleanDataArg = args.optional("booleanData").map(x => x.toBoolean).getOrElse(false)
   val implicitFeedbackArg = args.optional("implicitFeedback").map(x => x.toBoolean).getOrElse(false)
   // implicit preference flag.
-  val IMPLICIT_PREFERENCE = booleanDataArg || implicitFeedbackArg
+  val IMPLICIT_PREFERENCE = implicitFeedbackArg
 
   /**
    * source
@@ -84,8 +83,8 @@ class ParallelALSModelConstructor(args: Args) extends Job(args) {
   val seenSource = Csv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "seen.csv"), ",", ('uindexS, 'iindexS))
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
-    .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
-      val (iindex, iid, itypes, starttime, endtime) = fields // itypes are comma-separated String
+    .mapTo((0, 1, 2, 3, 4, 5) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI, 'inactive)) { fields: (String, String, String, Long, String, String) =>
+      val (iindex, iid, itypes, starttime, endtime, inactive) = fields // itypes are comma-separated String
 
       val endtimeOpt: Option[Long] = endtime match {
         case "PIO_NONE" => None
@@ -101,7 +100,21 @@ class ParallelALSModelConstructor(args: Args) extends Job(args) {
         }
       }
 
-      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt)
+      val inactiveB: Boolean = inactive match {
+        case "PIO_NONE" => false
+        case x: String => {
+          try {
+            x.toBoolean
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Boolean. Exception: " + e)
+              false
+            }
+          }
+        }
+      }
+
+      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt, inactiveB)
     }
 
   val usersIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "usersIndex.tsv")).read
@@ -159,8 +172,8 @@ class ParallelALSModelConstructor(args: Args) extends Job(args) {
 
   combinedRating
     .joinWithSmaller('iindex -> 'iindexI, itemsIndex)
-    .filter('starttimeI, 'endtimeI) { fields: (Long, Option[Long]) =>
-      val (starttimeI, endtimeI) = fields
+    .filter('starttimeI, 'endtimeI, 'inactive) { fields: (Long, Option[Long], Boolean) =>
+      val (starttimeI, endtimeI, inactive) = fields
 
       val keepThis: Boolean = (starttimeI, endtimeI) match {
         case (start, None) => (recommendationTimeArg >= start)
@@ -170,7 +183,7 @@ class ParallelALSModelConstructor(args: Args) extends Job(args) {
           false
         }
       }
-      keepThis
+      keepThis && (!inactive)
     }
     .groupBy('uindex) { _.sortBy('rating).reverse.take(numRecommendationsArg) }
     .joinWithSmaller('uindex -> 'uindexU, usersIndex)
