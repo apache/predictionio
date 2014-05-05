@@ -11,7 +11,7 @@ import com.mongodb.casbah.Imports._
 class GenericDataPreparatorSpec extends Specification {
 
   // note: should match the db name defined in the application.conf
-  val mongoDbName = "predictionio_appdata_generic_dataprep_test"
+  val mongoDbName = "predictionio_appdata_itemsim_generic_dataprep_test"
   def cleanUp() = {
     // remove the test database
     MongoConnection()(mongoDbName).dropDatabase()
