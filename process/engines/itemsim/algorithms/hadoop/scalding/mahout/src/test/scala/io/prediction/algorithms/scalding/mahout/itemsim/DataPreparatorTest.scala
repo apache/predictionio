@@ -19,11 +19,11 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val appid = 2
 
   def test(itypes: List[String], params: Map[String, String],
-    items: List[(String, String, String, String, String, String)], // id, itypes, appid, starttime, ct, endtime
+    items: List[(String, String, String, String, String, String, String)], // id, itypes, appid, starttime, ct, endtime, inactive
     users: List[Tuple1[String]],
     u2iActions: List[(String, String, String, String, String)],
     ratings: List[(String, String, String)],
-    selectedItems: List[(String, String, String, String)], // id, itypes, starttime, endtime
+    selectedItems: List[(String, String, String, String, String)], // id, itypes, starttime, endtime, inactive
     itemsIndexer: Map[String, String],
     usersIndexer: Map[String, String]) = {
 
@@ -31,7 +31,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
     val selectedItemsTextLine = selectedItems map { x => (itemsIndexer(x._1), x.productIterator.mkString("\t")) }
     val usersTextLine = users map { x => (usersIndexer(x._1), x._1) }
 
-    val itemsIndex = selectedItems map { x => (itemsIndexer(x._1), x._1, x._2, x._3, x._4) }
+    val itemsIndex = selectedItems map { x => (itemsIndexer(x._1), x._1, x._2, x._3, x._4, x._5) }
     val usersIndex = users map { x => (usersIndexer(x._1), x._1) }
 
     val ratingsIndexed = ratings map { x => (usersIndexer(x._1), itemsIndexer(x._2), x._3) }
@@ -66,7 +66,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
           outputBuffer.toList must containTheSameElementsAs(userIds)
         }
       }
-      .sink[(String, String, String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv"))) { outputBuffer =>
+      .sink[(String, String, String, String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv"))) { outputBuffer =>
         "correctly write selectedItems.tsv" in {
           outputBuffer.toList must containTheSameElementsAs(selectedItems)
         }
@@ -90,7 +90,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
       .source(U2iActions(appId = appid, dbType = dbType, dbName = dbName, dbHost = dbHost, dbPort = dbPort).getSource, u2iActions)
       .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "selectedItems.tsv")), selectedItemsTextLine)
       .source(TextLine(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "userIds.tsv")), usersTextLine)
-      .sink[(String, String, String, String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv"))) { outputBuffer =>
+      .sink[(String, String, String, String, String, String)](Tsv(DataFile(hdfsRoot, appid, engineid, algoid, evalid, "itemsIndex.tsv"))) { outputBuffer =>
         // index, iid, itypes
         "correctly write itemsIndex.tsv" in {
           outputBuffer.toList must containTheSameElementsAs(itemsIndex)
@@ -113,16 +113,22 @@ class DataPreparatorTest extends Specification with TupleConversions {
   }
 
   val noEndtime = "PIO_NONE"
+  val noInactive = "PIO_NONE"
+
   /**
    * Test 1. basic. Rate actions only without conflicts
    */
   val test1AllItypes = List("t1", "t2", "t3", "t4")
   val test1ItemsMap = Map(
     // id, itypes, appid, starttime, ct, endtime
-    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", noEndtime),
-    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime),
-    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", noEndtime),
-    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime))
+    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", noEndtime,
+      noInactive),
+    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime,
+      noInactive),
+    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", noEndtime,
+      noInactive),
+    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime,
+      noInactive))
 
   val test1Items = List(
     test1ItemsMap("i0"),
@@ -130,10 +136,10 @@ class DataPreparatorTest extends Specification with TupleConversions {
     test1ItemsMap("i2"),
     test1ItemsMap("i3"))
 
-  def genSelectedItems(items: List[(String, String, String, String, String, String)]) = {
+  def genSelectedItems(items: List[(String, String, String, String, String, String, String)]) = {
     items map { x =>
-      val (id, itypes, appid, starttime, ct, endtime) = x
-      (id, itypes, starttime, endtime)
+      val (id, itypes, appid, starttime, ct, endtime, inactive) = x
+      (id, itypes, starttime, endtime, inactive)
     }
   }
 
@@ -175,10 +181,14 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test2AllItypes = List("t1", "t2", "t3", "t4")
   val test2ItemsMap = Map(
     // id, itypes, appid, starttime, ct, endtime
-    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", noEndtime),
-    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime),
-    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", noEndtime),
-    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime))
+    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", noEndtime,
+      noInactive),
+    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime,
+      noInactive),
+    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", noEndtime,
+      noInactive),
+    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime,
+      noInactive))
 
   val test2Items = List(
     test2ItemsMap("i0"),
@@ -194,7 +204,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test2U2i = List(
     (Rate, "u0", "i0", "123448", "3"),
     (Rate, "u0", "i0", "123449", "4"), // highest
-    (Rate, "u0", "i0", "123451", "2"), // latest 
+    (Rate, "u0", "i0", "123451", "2"), // latest
     (Rate, "u0", "i0", "123450", "1"), // lowest
 
     (Rate, "u0", "i1", "123456", "1"), // lowest
@@ -275,10 +285,14 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test3AllItypes = List("t1", "t2", "t3", "t4")
   val test3ItemsMap = Map(
     // id, itypes, appid, starttime, ct, endtime
-    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", "56789"),
-    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime),
-    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", "56790"),
-    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime))
+    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", "56789",
+      noInactive),
+    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime,
+      noInactive),
+    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", "56790",
+      noInactive),
+    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime,
+      noInactive))
 
   val test3Items = List(
     test3ItemsMap("i0"),
@@ -323,10 +337,14 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test4AllItypes = List("t1", "t2", "t3", "t4")
   val test4ItemsMap = Map(
     // id, itypes, appid, starttime, ct, endtime
-    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", "56789"),
-    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime),
-    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", "56790"),
-    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime))
+    "i0" -> ("i0", "t1,t2,t3", appid.toString, "12345", "12346", "56789",
+      noInactive),
+    "i1" -> ("i1", "t2,t3", appid.toString, "12347", "12348", noEndtime,
+      "true"),
+    "i2" -> ("i2", "t4", appid.toString, "12349", "12350", "56790",
+      "true"),
+    "i3" -> ("i3", "t3,t4", appid.toString, "12351", "12352", noEndtime,
+      "false"))
 
   val test4Items = List(
     test4ItemsMap("i0"),

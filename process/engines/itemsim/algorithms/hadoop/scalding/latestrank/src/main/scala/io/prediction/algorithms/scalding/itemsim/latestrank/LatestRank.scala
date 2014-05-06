@@ -5,6 +5,7 @@ import com.twitter.scalding._
 import io.prediction.commons.scalding.appdata.{ Items, Users }
 import io.prediction.commons.scalding.modeldata.ItemSimScores
 import io.prediction.commons.filepath.{ AlgoFile }
+import io.prediction.commons.appdata.{ Item }
 
 /**
  * Source:
@@ -87,10 +88,19 @@ class LatestRank(args: Args) extends Job(args) {
     dbName = training_dbNameArg,
     dbHost = training_dbHostArg,
     dbPort = training_dbPortArg)
-    .readStartEndtime('iidx, 'itypes, 'starttime, 'endtime)
-    .filter('starttime, 'endtime) { fields: (Long, Option[Long]) =>
+    .readObj('item)
+    .mapTo('item -> ('iidx, 'itypes, 'starttime, 'endtime, 'inactive)) {
+      item: Item =>
+        (item.id,
+          item.itypes,
+          item.starttime.map(_.getMillis()).get,
+          item.endtime.map(_.getMillis()),
+          item.inactive.getOrElse(false)
+        )
+    }
+    .filter('starttime, 'endtime, 'inactive) { fields: (Long, Option[Long], Boolean) =>
       // only keep items with valid starttime and endtime
-      val (starttimeI, endtimeI) = fields
+      val (starttimeI, endtimeI, inactive) = fields
 
       val keepThis: Boolean = (starttimeI, endtimeI) match {
         case (start, None) => (recommendationTimeArg >= start)
@@ -100,7 +110,7 @@ class LatestRank(args: Args) extends Job(args) {
           false
         }
       }
-      keepThis
+      keepThis && (!inactive)
     }
     .map('starttime -> 'score) { t: Long => t.toDouble }
     .groupBy('iidx) { _.sortBy('score).reverse.take(numSimilarItemsArg + 1) }

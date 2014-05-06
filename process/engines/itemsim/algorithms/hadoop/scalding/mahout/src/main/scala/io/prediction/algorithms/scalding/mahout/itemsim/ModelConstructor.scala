@@ -71,8 +71,8 @@ class ModelConstructor(args: Args) extends Job(args) {
     }
 
   val itemsIndex = Tsv(DataFile(hdfsRootArg, appidArg, engineidArg, algoidArg, evalidArg, "itemsIndex.tsv")).read
-    .mapTo((0, 1, 2, 3, 4) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI)) { fields: (String, String, String, Long, String) =>
-      val (iindex, iid, itypes, starttime, endtime) = fields // itypes are comma-separated String
+    .mapTo((0, 1, 2, 3, 4, 5) -> ('iindexI, 'iidI, 'itypesI, 'starttimeI, 'endtimeI, 'inactiveI)) { fields: (String, String, String, Long, String, String) =>
+      val (iindex, iid, itypes, starttime, endtime, inactive) = fields // itypes are comma-separated String
 
       val endtimeOpt: Option[Long] = endtime match {
         case "PIO_NONE" => None
@@ -88,7 +88,21 @@ class ModelConstructor(args: Args) extends Job(args) {
         }
       }
 
-      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt)
+      val inactiveB: Boolean = inactive match {
+        case "PIO_NONE" => false
+        case x: String => {
+          try {
+            x.toBoolean
+          } catch {
+            case e: Exception => {
+              assert(false, s"Failed to convert ${x} to Boolean. Exception: " + e)
+              false
+            }
+          }
+        }
+      }
+
+      (iindex, iid, itypes.split(",").toList, starttime, endtimeOpt, inactiveB)
     }
 
   /**
@@ -102,21 +116,21 @@ class ModelConstructor(args: Args) extends Job(args) {
    */
   val sim = similarities.joinWithSmaller('iindex -> 'iindexI, itemsIndex)
     .discard('iindex, 'iindexI)
-    .rename(('iidI, 'itypesI, 'starttimeI, 'endtimeI) -> ('iid, 'itypes, 'starttime, 'endtime))
+    .rename(('iidI, 'itypesI, 'starttimeI, 'endtimeI, 'inactiveI) -> ('iid, 'itypes, 'starttime, 'endtime, 'inactive))
     .joinWithSmaller('simiindex -> 'iindexI, itemsIndex)
 
   // NOTE: use simiid's starttime and endtime. not iid's.
-  val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)
+  val sim1 = sim.project('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI, 'inactiveI)
   // NOTE: mahout only calculate half of the sim matrix, reverse the fields to get the other half
-  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score, 'starttime, 'endtime) -> ('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI)) {
-    fields: (String, String, List[String], Double, Long, Option[Long]) => fields
+  val sim2 = sim.mapTo(('iidI, 'iid, 'itypes, 'score, 'starttime, 'endtime, 'inactive) -> ('iid, 'iidI, 'itypesI, 'score, 'starttimeI, 'endtimeI, 'inactiveI)) {
+    fields: (String, String, List[String], Double, Long, Option[Long], Boolean) => fields
   }
 
   val combinedSimilarities = sim1 ++ sim2
 
   combinedSimilarities
-    .filter('starttimeI, 'endtimeI) { fields: (Long, Option[Long]) =>
-      val (starttimeI, endtimeI) = fields
+    .filter('starttimeI, 'endtimeI, 'inactiveI) { fields: (Long, Option[Long], Boolean) =>
+      val (starttimeI, endtimeI, inactiveI) = fields
 
       val keepThis: Boolean = (starttimeI, endtimeI) match {
         case (start, None) => (recommendationTimeArg >= start)
@@ -126,7 +140,7 @@ class ModelConstructor(args: Args) extends Job(args) {
           false
         }
       }
-      keepThis
+      keepThis && (!inactiveI)
     }
     .groupBy('iid) { _.sortBy('score).reverse.toList[(String, Double, List[String])](('iidI, 'score, 'itypesI) -> 'simiidsList) }
     .mapTo(('iid, 'simiidsList) -> ('iid, 'simiidsList)) { fields: (String, List[(String, Double, List[String])]) =>

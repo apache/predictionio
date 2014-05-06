@@ -13,7 +13,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
   val appid = 3
 
   def test(numSimilarItems: Int, recommendationTime: Long,
-    items: List[(String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime)
+    items: List[(String, String, String, String, String, String)], //(iindex, iid, itypes, starttime, endtime, inactive)
     similarities: List[(String, String, String)],
     output: List[(String, String, String, String)]) = {
 
@@ -53,13 +53,14 @@ class ModelConstructorTest extends Specification with TupleConversions {
   }
 
   val noEndtime = "PIO_NONE"
+  val noInactive = "PIO_NONE"
 
   /* test 1*/
   val test1Items = List(
-    ("0", "i0", "t1,t2,t3", "12346", noEndtime),
-    ("1", "i1", "t1,t2", "12347", noEndtime),
-    ("2", "i2", "t2,t3", "12348", noEndtime),
-    ("3", "i3", "t2", "12349", noEndtime))
+    ("0", "i0", "t1,t2,t3", "12346", noEndtime, noInactive),
+    ("1", "i1", "t1,t2", "12347", noEndtime, noInactive),
+    ("2", "i2", "t2,t3", "12348", noEndtime, noInactive),
+    ("3", "i3", "t2", "12349", noEndtime, noInactive))
 
   val test1Similarities = List(
     ("0", "1", "0.83"),
@@ -108,10 +109,10 @@ class ModelConstructorTest extends Specification with TupleConversions {
   /* test 2: score sorting */
 
   val test2Items = List(
-    ("0", "i0", "t1,t2,t3", "12346", noEndtime),
-    ("1", "i1", "t1,t2", "12347", noEndtime),
-    ("2", "i2", "t2,t3", "12348", noEndtime),
-    ("3", "i3", "t2", "12349", noEndtime))
+    ("0", "i0", "t1,t2,t3", "12346", noEndtime, noInactive),
+    ("1", "i1", "t1,t2", "12347", noEndtime, noInactive),
+    ("2", "i2", "t2,t3", "12348", noEndtime, noInactive),
+    ("3", "i3", "t2", "12349", noEndtime, noInactive))
 
   val test2Similarities = List(
     ("0", "1", "83"),
@@ -140,7 +141,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
   // i1    B |---------|E
   // i2       C|---------|
   // i3           |---------|
-  //               D        F G  
+  //               D        F G
 
   val tA = 123122
   val tB = 123123
@@ -151,10 +152,16 @@ class ModelConstructorTest extends Specification with TupleConversions {
   val tG = 543655
 
   val test3Items = List(
-    ("0", "i0", "t1,t2,t3", "123123", "543210"),
-    ("1", "i1", "t1,t2", "123456", "543321"),
-    ("2", "i2", "t2,t3", "123567", "543432"),
-    ("3", "i3", "t2", "123678", "543654"))
+    ("0", "i0", "t1,t2,t3", "123123", "543210", noInactive),
+    ("1", "i1", "t1,t2", "123456", "543321", noInactive),
+    ("2", "i2", "t2,t3", "123567", "543432", noInactive),
+    ("3", "i3", "t2", "123678", "543654", noInactive))
+
+  val test3ItemsInactive = List(
+    ("0", "i0", "t1,t2,t3", "123123", "543210", noInactive),
+    ("1", "i1", "t1,t2", "123456", "543321", "true"),
+    ("2", "i2", "t2,t3", "123567", "543432", "false"),
+    ("3", "i3", "t2", "123678", "543654", "true"))
 
   val test3Similarities = List(
     ("0", "1", "83"),
@@ -169,6 +176,12 @@ class ModelConstructorTest extends Specification with TupleConversions {
     ("i1", "i0,i3,i2", "83.0,68.0,9.0", "[t1,t2,t3],[t2],[t2,t3]"),
     ("i2", "i3,i0,i1", "1000.0,200.0,9.0", "[t2],[t1,t2,t3],[t1,t2]"),
     ("i3", "i2,i1,i0", "1000.0,68.0,4.0", "[t2,t3],[t1,t2],[t1,t2,t3]"))
+
+  val test3OutputInactive = List(
+    ("i0", "i2", "200.0", "[t2,t3]"),
+    ("i1", "i0,i2", "83.0,9.0", "[t1,t2,t3],[t2,t3]"),
+    ("i2", "i0", "200.0", "[t1,t2,t3]"),
+    ("i3", "i2,i0", "1000.0,4.0", "[t2,t3],[t1,t2,t3]"))
 
   val test3OutputEmpty = List()
 
@@ -203,6 +216,10 @@ class ModelConstructorTest extends Specification with TupleConversions {
 
   "numSimilarItems=100 and recommendationTime > all item starttime and < all item endtime" should {
     test(100, tD, test3Items, test3Similarities, test3Output)
+  }
+
+  "numSimilarItems=100 and recommendationTime > all item starttime and < all item endtime with some inactive" should {
+    test(100, tD, test3ItemsInactive, test3Similarities, test3OutputInactive)
   }
 
   "numSimilarItems=100 and recommendationTime > some item endtime" should {
