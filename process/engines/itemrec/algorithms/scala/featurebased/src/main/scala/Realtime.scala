@@ -38,12 +38,13 @@ object UserProfileRecommendationRealtime {
   }
 
   def run(appid: Int, algoid: Int, modelset: Boolean,
-    optFeatureItypesStr: Option[String]) = {
-    val (userFeaturesMap, whiteItypes, itemTypesMap) = (
+    optFeatureItypesStr: Option[String],
+    whiteItypes: Seq[String]) = {
+    val (userFeaturesMap, featureItypes, itemTypesMap, whiteItems) = (
       UserProfileRecommendation.constructUserFeaturesMapFromArg(
-        appid, optFeatureItypesStr))
+        appid, optFeatureItypesStr, whiteItypes))
 
-    modelCon(appid, algoid, modelset, whiteItypes, userFeaturesMap)
+    modelCon(appid, algoid, modelset, featureItypes, userFeaturesMap)
   }
   
   def main(cmdArgs: Array[String]) = {
@@ -56,7 +57,8 @@ object UserProfileRecommendationRealtime {
     // FIXME. Take another itypes list (engine setting), filter items by that
     // itypes list
     val optFeatureItypesStr = args.optional("featureItypes")
+    val whiteItypes = args.list("itypes")
 
-    run(appid, algoid, modelset, optFeatureItypesStr)
+    run(appid, algoid, modelset, optFeatureItypesStr, whiteItypes)
   }
 }

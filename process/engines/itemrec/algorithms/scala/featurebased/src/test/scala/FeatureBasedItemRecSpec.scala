@@ -114,15 +114,6 @@ class CustomMatcherSpec extends Specification {
 class FeatureBasedItemRecSpec extends Specification {
   import io.prediction.algorithms.itemrec.featurebased.CustomMatcher._
 
-  //val excludePattern = "CustomMatcher"
-  /*
-  val excludePattern = "io\\.prediction\\.algorithms\\.itemrec\\.featurebased"
-
-  override def is = args.report(traceFilter = includeAlsoTrace(excludePattern)) ^
-  super.is
-  */
-  //args.report(traceFilter=excludeAlsoTrace(excludePattern))
-
   def cleanUp() = {
     val connection = MongoConnection()
     Seq(
@@ -148,6 +139,9 @@ class FeatureBasedItemRecSpec extends Specification {
     "i5" -> Seq("t4"),
     "i6" -> Seq("t2", "t3"),
     "i7" -> Seq("t2", "t4"))
+  val rawInactiveItems = Map(
+    "i8" -> Seq("t5"),
+    "i9" -> Seq("t5", "t3"))
   val rawUsers = Seq("u1", "u2", "u3", "u4")
   val rawU2Is = Map(
     "u1" -> Seq(
@@ -177,6 +171,17 @@ class FeatureBasedItemRecSpec extends Specification {
       appid = appid,
       ct = DateTime.now,
       itypes = itypes,
+      starttime = None,
+      endtime = None))
+  }}
+  
+  rawInactiveItems.foreach{ case(iid, itypes) => {
+    appdataItems.insert(Item(
+      id = iid,
+      appid = appid,
+      ct = DateTime.now,
+      itypes = itypes,
+      inactive = Some(true),
       starttime = None,
       endtime = None))
   }}
@@ -232,15 +237,33 @@ class FeatureBasedItemRecSpec extends Specification {
     }
 
     "Default App" in {
-      val r = UserProfileRecommendation.getItems(appid)
+      val r = UserProfileRecommendation.getItems(appid, Seq[String]())
       val itypes = r._1
-      itypes must containTheSameElementsAs(Seq("t4", "t3", "t2", "t1"))
+      itypes must containTheSameElementsAs(Seq("t4", "t3", "t2", "t1", "t5"))
+      val itemItypes = r._2
+      itemItypes.keys must containTheSameElementsAs(
+        rawItems.keys.toSeq ++ rawInactiveItems.keys.toSeq)
+      val whiteItems = r._3
+      whiteItems must containTheSameElementsAs(rawItems.keys.toSeq)
+    }
+    
+    "Default App with whitelisted itypes" in {
+      val r = UserProfileRecommendation.getItems(appid, Seq("t1", "t3"))
+      val itypes = r._1
+      itypes must containTheSameElementsAs(Seq("t3", "t2", "t5", "t1"))
+      // notice there is a difference between itemItypesMap and whiteItems,
+      // as whiteItems filters inactive items.
+      val itemItypesMap = r._2
+      itemItypesMap.keys must containTheSameElementsAs(
+        Seq("i1", "i3", "i4", "i6", "i9"))
+      val whiteItems = r._3
+      whiteItems must containTheSameElementsAs(rawItems.keys.toSeq)
     }
   }
 
   "Construct user features map" should {
     "Run with all itypes" in {
-      val (userFeaturesMap, featureItypes, itemTypesMap) = (
+      val (userFeaturesMap, featureItypes, itemTypesMap, whiteItems) = (
         UserProfileRecommendation.constructUserFeaturesMapFromArg(
           appid, Some("t4,t1,t2,t3")))
 
@@ -259,7 +282,7 @@ class FeatureBasedItemRecSpec extends Specification {
     }
     
     "Run with feature itypes t1,t2" in {
-      val (userFeaturesMap, featureItypes, itemTypesMap) = (
+      val (userFeaturesMap, featureItypes, itemTypesMap, whiteItems) = (
         UserProfileRecommendation.constructUserFeaturesMapFromArg(
           appid, Some("t1,t2")))
 
@@ -291,30 +314,22 @@ class FeatureBasedItemRecSpec extends Specification {
   }
 
   "Construct batch recommendation" should {
-    "Run with all itypes" in {
-      val (userFeaturesMap, featureItypes, itemItypesMap) = (
+    "Run with all t1, t2, t3, t4" in {
+      val (userFeaturesMap, featureItypes, itemItypesMap, whiteItems) = (
         UserProfileRecommendation.constructUserFeaturesMapFromArg(
-          appid, Some("")))
+          appid, Some(""), Seq("t1", "t3", "t4", "t2")))
       val userRecommendationMap = UserProfileRecommendation.recommend(
-        userFeaturesMap, featureItypes, itemItypesMap, 100)
-     
-      /*
-      println("f")
-      println(featureItypes)
-      println("u->f")
-      userFeaturesMap.foreach{println}
-      println("u->i")
-      userRecommendationMap.foreach{println}
-      */
+        userFeaturesMap, featureItypes, itemItypesMap, whiteItems, 100)
+      
       val expectedUserRecommendationMap = Map(
         "u1" -> Map("i4" -> 1.0, "i1" -> 0.83333, "i3" -> 0.666666, "i6" -> 0.5,
-          "i7" -> 0.333333, "i5" -> 0.0, "i2" -> 0.0),
+          "i7" -> 0.333333, "i5" -> 0.0),
         "u2" -> Map("i5" -> 1.0, "i7" -> 1.0, "i4" -> 0.0, "i3" -> 0.0,
-          "i1" -> 0.0, "i2" -> 0.0, "i6" -> 0.0),
-        "u3" -> Map("i4" -> 0.75, "i3" -> 0.5, "i1" -> 0.5, "i7" -> 0.5,
-          "i6" -> 0.5, "i5" -> 0.25, "i2" -> 0.0),
-        "u4" -> Map("i4" -> 0.75, "i3" -> 0.5, "i1" -> 0.5, "i7" -> 0.5,
-          "i6" -> 0.5, "i5" -> 0.25, "i2" -> 0.0))
+          "i1" -> 0.0, "i6" -> 0.0),
+        "u3" -> Map("i4" -> 0.6, "i3" -> 0.4, "i1" -> 0.4, "i7" -> 0.4,
+          "i6" -> 0.4, "i5" -> 0.2),
+        "u4" -> Map("i4" -> 0.6, "i3" -> 0.4, "i1" -> 0.4, "i7" -> 0.4,
+          "i6" -> 0.4, "i5" -> 0.2))
 
       userRecommendationMap.keys must containTheSameElementsAs(
         expectedUserRecommendationMap.keys.toSeq)
@@ -330,17 +345,51 @@ class FeatureBasedItemRecSpec extends Specification {
     }
     
     "Run with all itypes and top 2" in {
-      val (userFeaturesMap, featureItypes, itemItypesMap) = (
+      val (userFeaturesMap, featureItypes, itemItypesMap, whiteItems) = (
         UserProfileRecommendation.constructUserFeaturesMapFromArg(
           appid, Some("")))
       val userRecommendationMap = UserProfileRecommendation.recommend(
-        userFeaturesMap, featureItypes, itemItypesMap, 2)
+        userFeaturesMap, featureItypes, itemItypesMap, whiteItems, 2)
     
       val expectedUserRecommendationMap = Map(
         "u1" -> Map("i4" -> 1.0, "i1" -> 0.83333),
         "u2" -> Map("i5" -> 1.0, "i7" -> 1.0),
-        "u3" -> Map("i4" -> 0.75),
-        "u4" -> Map("i4" -> 0.75))
+        "u3" -> Map("i4" -> 0.6),
+        "u4" -> Map("i4" -> 0.6))
+
+      userRecommendationMap.keys must containTheSameElementsAs(
+        expectedUserRecommendationMap.keys.toSeq)
+
+      expectedUserRecommendationMap.map{ case(user, expected) => {
+        val recommendation = userRecommendationMap(user)
+        val actual = recommendation.toMap
+        ((recommendation must have size(2)) and
+          (actual must CustomMatcher.containMapStringDouble(expected)) and
+          (recommendation.map(-_._2) must beSorted))
+      }}.reduce(_ and _)
+    }
+    
+    "Run with all itypes and top 2 and whiteItypes 't1', 't3'" in {
+      // Only items with t1, t3 will be used for training.
+      val (userFeaturesMap, featureItypes, itemItypesMap, whiteItems) = (
+        UserProfileRecommendation.constructUserFeaturesMapFromArg(
+          appid, Some(""), Seq("t1", "t3")))
+      val userRecommendationMap = UserProfileRecommendation.recommend(
+        userFeaturesMap, featureItypes, itemItypesMap, whiteItems, 2)
+     
+      /*
+      println("f")
+      println(featureItypes)
+      println("u->f")
+      userFeaturesMap.foreach{println}
+      println("u->i")
+      userRecommendationMap.foreach{println}
+      */
+      val expectedUserRecommendationMap = Map(
+        "u1" -> Map("i4" -> 1.0, "i1" -> 0.83333),
+        "u2" -> Map("i4" -> 0.75, "i3" -> 0.5),
+        "u3" -> Map("i4" -> 0.75, "i3" -> 0.5),
+        "u4" -> Map("i4" -> 0.75, "i3" -> 0.5))
 
       userRecommendationMap.keys must containTheSameElementsAs(
         expectedUserRecommendationMap.keys.toSeq)
@@ -364,13 +413,14 @@ class FeatureBasedItemRecSpec extends Specification {
       val keyvalDb = commonConfig.getModeldataMetadataKeyvals
       val itemRecScoreDb = commonConfig.getModeldataItemRecScores
 
-      UserProfileRecommendationRealtime.run(appid, algoid, modelset, None)
+      UserProfileRecommendationRealtime.run(appid, algoid, modelset, None,
+        Seq[String]())
 
       // must find meta
       val featuresStr = keyvalDb.get(algoid, modelset, "features")
       featuresStr.isEmpty must beFalse
       featuresStr.get.split(',').toSeq must containTheSameElementsAs(
-        Seq("t1", "t2", "t3", "t4"))
+        Seq("t1", "t2", "t3", "t4", "t5"))
 
       // must see all users from modeldata
       rawUsers.map { uid => {
@@ -387,7 +437,7 @@ class FeatureBasedItemRecSpec extends Specification {
       val itemRecScoreDb = commonConfig.getModeldataItemRecScores
 
       UserProfileRecommendationRealtime.run(appid, algoid, modelset,
-        Some("t1,t2"))
+        Some("t1,t2"), Seq[String]())
 
       // must find meta
       val featuresStr = keyvalDb.get(algoid, modelset, "features")
@@ -412,7 +462,7 @@ class FeatureBasedItemRecSpec extends Specification {
   }
 
   "Batch Run" should {
-    "Run with all itypes" in {
+    "Run with white types t1, t2, t3, t4" in {
       implicit val app = getApp(appid)
       val algoid = 3
       val modelset = true
@@ -422,17 +472,17 @@ class FeatureBasedItemRecSpec extends Specification {
       val itemRecScoreDb = commonConfig.getModeldataItemRecScores
 
       UserProfileRecommendationBatch.run(appid, algoid, modelset,
-        numRecommendations, None)
+        numRecommendations, None, Seq("t1", "t2", "t3", "t4"))
 
       val expectedUserRecommendationMap = Map(
         "u1" -> Map("i4" -> 1.0, "i1" -> 0.83333, "i3" -> 0.666666, "i6" -> 0.5,
-          "i7" -> 0.333333, "i5" -> 0.0, "i2" -> 0.0),
+          "i7" -> 0.333333, "i5" -> 0.0),
         "u2" -> Map("i5" -> 1.0, "i7" -> 1.0, "i4" -> 0.0, "i3" -> 0.0,
-          "i1" -> 0.0, "i2" -> 0.0, "i6" -> 0.0),
-        "u3" -> Map("i4" -> 0.75, "i3" -> 0.5, "i1" -> 0.5, "i7" -> 0.5,
-          "i6" -> 0.5, "i5" -> 0.25, "i2" -> 0.0),
-        "u4" -> Map("i4" -> 0.75, "i3" -> 0.5, "i1" -> 0.5, "i7" -> 0.5,
-          "i6" -> 0.5, "i5" -> 0.25, "i2" -> 0.0))
+          "i1" -> 0.0, "i6" -> 0.0),
+        "u3" -> Map("i4" -> 0.6, "i3" -> 0.4, "i1" -> 0.4, "i7" -> 0.4,
+          "i6" -> 0.4, "i5" -> 0.2),
+        "u4" -> Map("i4" -> 0.6, "i3" -> 0.4, "i1" -> 0.4, "i7" -> 0.4,
+          "i6" -> 0.4, "i5" -> 0.2))
       
       // must see all users from modeldata
       rawUsers.map { uid => {

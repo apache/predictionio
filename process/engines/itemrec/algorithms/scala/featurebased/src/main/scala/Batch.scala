@@ -66,15 +66,17 @@ object UserProfileRecommendationBatch {
 
   def run(appid: Int, algoid: Int, modelset: Boolean,
     numRecommendations: Int,
-    optFeatureItypesStr: Option[String]) = {
-    val (userFeaturesMap, featureItypes, itemItypesMap) = (
+    optFeatureItypesStr: Option[String],
+    whiteItypes: Seq[String]) = {
+    val (userFeaturesMap, featureItypes, itemItypesMap, whiteItems) = (
       UserProfileRecommendation.constructUserFeaturesMapFromArg(
-        appid, optFeatureItypesStr))
+        appid, optFeatureItypesStr, whiteItypes))
 
     val userRecommendationsMap = UserProfileRecommendation.recommend(
       userFeaturesMap,
       featureItypes,
       itemItypesMap,
+      whiteItems,
       numRecommendations
     )
     
@@ -90,9 +92,10 @@ object UserProfileRecommendationBatch {
     val numRecommendations = args.optional("numRecommendations")
     .getOrElse("10").toInt
     val optFeatureItypesStr = args.optional("featureItypes")
+    val whiteItypes = args.list("itypes")
 
     run(appid, algoid, modelset, numRecommendations,
-      optFeatureItypesStr)
+      optFeatureItypesStr, whiteItypes)
     /*
     if (verbose) {
       UserProfileRecommendation.printRecommendations(

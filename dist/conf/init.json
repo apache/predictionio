@@ -5584,7 +5584,7 @@
             "name": "Feature Based, Batch Mode. (Experimental)",
             "description": "Item recommendation based on item's feature vector (itypes). This engine build a user preference model based on high ratings items (rate > 3).",
             "batchcommands": [
-                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$"
+                "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$ $itypes$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.featurebased.Batch --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$"
@@ -5622,7 +5622,7 @@
             "name": "Feature Based, Realtime Mode. (Experimental)",
             "description": "Item recommendation based on item's feature vector (itypes). This engine build a user preference model based on high ratings items (rate > 3).",
             "batchcommands": [
-                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$"
+                "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --featureItypes $featureItypes$ $itypes$"
             ],
             "offlineevalcommands": [
                 "$base$/bin/itemrec.featurebased.Realtime --appid $appid$ --algoid $algoid$ --modelSet $modelset$ --numRecommendations $numRecommendations$ --whiteItypes $whiteItypes$"

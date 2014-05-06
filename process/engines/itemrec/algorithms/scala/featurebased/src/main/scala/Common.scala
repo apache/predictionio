@@ -40,15 +40,24 @@ object UserProfileRecommendation {
 
   // distinct itypes
   // iid -> itypes
-  def getItems(appid: Int): (Seq[String], Map[String, Seq[String]]) = {
+  // [white iid]
+  def getItems(appid: Int, whiteItypes: Seq[String] = Seq[String]()): (
+    Seq[String], Map[String, Seq[String]], Seq[String]) = {
     val itemsDb = commonsConfig.getAppdataItems
 
-    val itemTypesMap = itemsDb.getByAppid(appid)
-    .map(item => (item.id, item.itypes)).toMap
+    val trainingItems = (if (whiteItypes.length == 0) itemsDb.getByAppid(appid)
+      else itemsDb.getByAppidAndItypes(appid, whiteItypes)).toSeq
+
+    val itemTypesMap = trainingItems.map(item => (item.id, item.itypes)).toMap
 
     val itypes: Seq[String]  = itemTypesMap.values.toSeq.flatten.distinct
+
+    // create white item list, filter inactive items. Note that it is
+    // independent of the whiteItypes.
+    val whiteItems = itemsDb.getByAppid(appid)
+      .filter(!_.inactive.getOrElse(false)).map(_.id).toSeq
     
-    return (itypes, itemTypesMap)
+    return (itypes, itemTypesMap, whiteItems)
   }
 
   def getU2I(appid: Int): (Map[String, Seq[U2IAction]]) = {
@@ -62,7 +71,6 @@ object UserProfileRecommendation {
     itemTypesMap: Map[String, Seq[String]],
     uidList: Seq[String],
     userU2IsMap: Map[String, Seq[U2IAction]]) : Map[String, Seq[Double]] = {
-    //val userFeatureMap = userU2IsMap.map{ case(user, u2is) => {
     val userFeatureMap = uidList.map{ user => {
       val u2is = userU2IsMap.getOrElse(user, Seq[U2IAction]())
 
@@ -73,7 +81,6 @@ object UserProfileRecommendation {
       .filter(u2i => itemTypesMap.contains(u2i.iid))
       .map{ u2i => {
         // Only populate the featurelisted itypes
-        //val feature = new Array[Int](featureInvItypes.size)
         val feature = Array.fill[Int](featureInvItypes.size)(0)
         itemTypesMap(u2i.iid)
           .filter(featureInvItypes.contains)
@@ -111,18 +118,18 @@ object UserProfileRecommendation {
   // for other pruning.
   def constructUserFeaturesMapFromArg(
     appid: Int,
-    optFeatureItypesStr: Option[String]) : (
+    optFeatureItypesStr: Option[String] = None,
+    whiteItypes: Seq[String] = Seq[String]()) : (
     Map[String, Seq[Double]],  // User -> Itype Scores
     Seq[String],  // Itype Feature List
-    Map[String, Seq[String]]  // Item -> All Itypes
+    Map[String, Seq[String]],  // Item -> All Itypes
+    Seq[String]  // Whitelist of items can be passed to output
   ) = { 
-    val (itypes, itemTypesMap) = getItems(appid)
+    val (itypes, itemTypesMap, whiteItems) = getItems(appid, whiteItypes)
     
-    //val usersDb = commonsConfig.getAppdataUsers
     val users = getUsers(appid).map(_.id)
 
     val featureItypes = getFeatureItypes(itypes, optFeatureItypesStr)
-    //println(featureItypes)
     if (featureItypes.length == 0) {
       throw new UserProfileRecommendationException("No items has featurelisted types")
     }
@@ -135,7 +142,7 @@ object UserProfileRecommendation {
     val userFeaturesMap = constructUserFeatureMap(
       featureInvItypes, itemTypesMap, users, userU2IsMap)
      
-    return (userFeaturesMap, featureItypes, itemTypesMap)
+    return (userFeaturesMap, featureItypes, itemTypesMap, whiteItems)
   }
 
   def printFeature(feature: Seq[Double], itypes: Seq[String]): String = {
@@ -147,13 +154,17 @@ object UserProfileRecommendation {
     userFeaturesMap: Map[String, Seq[Double]],
     featureItypes: Seq[String],
     itemItypes: Map[String, Seq[String]],
+    whiteItems: Seq[String],
     numRecommendations: Int
   ) : Map[String, Seq[(String, Double)]] = {
 
     val featureIdxMap = featureItypes.zip(0 until featureItypes.size).toMap
 
     userFeaturesMap.map { case(uid, features) => {
-      val itemScoreMap = itemItypes.map{ case(iid, itypes) => {
+      val itemScoreMap = whiteItems
+      .filter(iid => itemItypes.contains(iid))  // model must have this data.
+      .map{ case(iid) => {
+        val itypes = itemItypes(iid)
         val score = itypes
           .filter(featureIdxMap.contains)
           .map(itype => featureIdxMap(itype))

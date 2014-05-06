@@ -26,8 +26,10 @@ object UserProfileRecommendationRealtimeOutput {
     val featureScoreMap = features.zip(featureScores).toMap
 
     val items = config.getAppdataItems
-    val itemList = items.getByAppidAndItypesAndTime(app.id, itypes,
-      Some(instant)).toSeq
+    val itemList = items
+      .getByAppidAndItypesAndTime(app.id, itypes, Some(instant))
+      .filter(!_.inactive.getOrElse(false)) // Remove inactive items.
+      .toSeq
 
     val itemScoreList = itemList.map { item =>
       {
