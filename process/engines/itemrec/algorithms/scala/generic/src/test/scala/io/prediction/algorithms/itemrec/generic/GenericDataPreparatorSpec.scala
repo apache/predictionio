@@ -184,9 +184,20 @@ class GenericDataPreparatorSpec extends Specification {
         (ratings must containTheSameElementsAs(expected))
     }
 
-    "don't write seen.csv" in {
-      val seenFile = new File(s"${outputDir}seen.csv")
-      seenFile.exists() must be_==(false)
+    "correctly write seen.csv" in {
+      val seen = Source.fromFile(s"${outputDir}seen.csv").getLines().toList
+      val expected = List(
+        "1,1",
+        "1,2",
+        "1,3",
+        "2,1",
+        "2,2",
+        "2,4",
+        "3,2",
+        "3,3",
+        "3,4"
+      )
+      seen must containTheSameElementsAs(expected)
     }
 
   }
@@ -259,9 +270,20 @@ class GenericDataPreparatorSpec extends Specification {
       ratings must containTheSameElementsAs(expected)
     }
 
-    "don't write seen.csv" in {
-      val seenFile = new File(s"${outputDir}seen.csv")
-      seenFile.exists() must be_==(false)
+    "correctly write seen.csv" in {
+      val seen = Source.fromFile(s"${outputDir}seen.csv").getLines().toList
+      val expected = List(
+        "1,1",
+        "1,2",
+        "1,3",
+        "2,1",
+        "2,2",
+        "2,4",
+        "3,2",
+        "3,3",
+        "3,4"
+      )
+      seen must containTheSameElementsAs(expected)
     }
   }
 

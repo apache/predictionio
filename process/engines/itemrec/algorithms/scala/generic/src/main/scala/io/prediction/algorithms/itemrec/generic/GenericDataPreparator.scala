@@ -20,7 +20,8 @@ import com.twitter.scalding.Args
  * - itemsIndex.tsv (iindex iid itypes starttime): only contain valid items to be recommended
  * - ratings.mm (if --matrixMarket true ): matrix market format rating
  * - ratings.csv (if --matrixMarket false): comma separated rating file
- * - seen.csv (if --seenActions is specified)
+ * - seen.csv (uindex, iindex) (if --seenActions is defined, only contain seen
+ *  actions, else, same as ratings)
  *
  * Args:
  * --seenActions: <string separated by white space>. optional. generate seen file separately.
@@ -269,28 +270,31 @@ object GenericDataPreparator {
     }
 
     /* write u2i seen */
-    arg.seenActions.map { seenActions =>
-      val u2iSeen = u2iActions
-        .filter { u2i =>
-          val validAction = seenActions.contains(u2i.action)
-          val validUser = usersMap.contains(u2i.uid)
-          val validItem = itemsMap.contains(u2i.iid)
-          (validAction && validUser && validItem)
-        }
-        // convert to index
-        .map { u2i => (usersMap(u2i.uid), itemsMap(u2i.iid).iindex) }
-        .groupBy(x => x)
-        .mapValues { v => v(0) } // take 1
-        .values
-
-      val fileName = "seen.csv"
-      val seenWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + fileName)))
-
-      u2iSeen.foreach { s =>
-        seenWriter.write(s"${s._1},${s._2}\n")
+    val u2iSeen = u2iActions
+      .filter { u2i =>
+        val validAction = arg.seenActions.map(seenActions =>
+          seenActions.contains(u2i.action)).getOrElse(
+          // same as training actions if seenActions is not defined
+          isValidAction(u2i, arg.likeParam, arg.dislikeParam,
+            arg.viewParam, arg.conversionParam)
+        )
+        val validUser = usersMap.contains(u2i.uid)
+        val validItem = itemsMap.contains(u2i.iid)
+        (validAction && validUser && validItem)
       }
-      seenWriter.close()
+      // convert to index
+      .map { u2i => (usersMap(u2i.uid), itemsMap(u2i.iid).iindex) }
+      .groupBy(x => x)
+      .mapValues { v => v(0) } // take 1
+      .values
+
+    val fileName = "seen.csv"
+    val seenWriter = new BufferedWriter(new FileWriter(new File(arg.outputDir + fileName)))
+
+    u2iSeen.foreach { s =>
+      seenWriter.write(s"${s._1},${s._2}\n")
     }
+    seenWriter.close()
 
   }
 

@@ -62,15 +62,13 @@ class GraphChiModelConstructorSpec extends Specification {
       "4\ti4\tt3"
     )
 
-    val ratingsMM = List(
-      "%%MatrixMarket matrix coordinate real general",
-      "3 4 9",
-      "1 1 3",
-      "1 2 4",
-      "1 3 1",
-      "2 1 2",
-      "2 4 3",
-      "3 2 5"
+    val seenCSV = List(
+      "1,1",
+      "1,2",
+      "1,3",
+      "2,1",
+      "2,4",
+      "3,2"
     )
 
     /*
@@ -123,7 +121,7 @@ class GraphChiModelConstructorSpec extends Specification {
 
     writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")
     writeToFile(itemsIndex, s"${inputDir}itemsIndex.tsv")
-    writeToFile(ratingsMM, s"${inputDir}ratings.mm")
+    writeToFile(seenCSV, s"${inputDir}seen.csv")
     writeToFile(ratingsUMM, s"${inputDir}ratings.mm_U.mm")
     writeToFile(ratingsVMM, s"${inputDir}ratings.mm_V.mm")
 
@@ -299,7 +297,7 @@ class GraphChiModelConstructorSpec extends Specification {
 
       writeToFile(usersIndex, s"${inputDir}usersIndex.tsv")
       writeToFile(itemsIndex, s"${inputDir}itemsIndex.tsv")
-      writeToFile(ratingsMM, s"${inputDir}ratings.mm")
+      writeToFile(seenCSV, s"${inputDir}seen.csv")
       writeToFile(ratingsUMM, s"${inputDir}ratings.mm_U.mm")
       writeToFile(ratingsVMM, s"${inputDir}ratings.mm_V.mm")
 
