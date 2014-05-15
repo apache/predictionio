@@ -26,7 +26,7 @@ object Worker {
 }
 
 class Worker(clusterClient: ActorRef, workExecutorProps: Props, registerInterval: FiniteDuration)
-  extends Actor with ActorLogging {
+    extends Actor with ActorLogging {
   import Worker._
   import MasterWorkerProtocol._
 
