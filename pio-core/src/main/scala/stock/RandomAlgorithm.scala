@@ -7,11 +7,9 @@ import scala.util.Random
 class EmptyModel (
 ) extends BaseModel {}
 
-class RandomAlgorithm extends BaseAlgorithm[TrainingData, EmptyModel] {
+class RandomAlgorithm 
+extends BaseAlgorithm[TrainingData, Feature, Target, EmptyModel] {
   def train(trainingData: TrainingData) = new EmptyModel()
-}
-
-class RandomServer extends BaseServer[EmptyModel, Feature, Target] {
   def predict(model: EmptyModel, feature: Feature): Target = {
     val tickers = feature.data.colIx.toVec.contents
     val prediction = tickers.map { 

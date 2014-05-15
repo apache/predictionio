@@ -17,7 +17,7 @@ object PIORunner {
     ](
     evalParams: EP,
     dataPreparator: BaseDataPreparator[TDP, EDP, TD, F, T],
-    algorithm: BaseAlgorithm[TD, M],
+    algorithm: AbstractAlgorithm[TD, F, T],
     server: BaseServer[M, F, T],
     evaluator: BaseEvaluator[EP, TDP, EDP, F, T]
     ) {
@@ -52,7 +52,7 @@ object PIORunner {
       val model = modelMapPar(idx)
       evalDataSeq.map{ case(evalData) => {
         val (feature, actual) = evalData
-        val predicted = server.predict(model, feature)
+        val predicted = algorithm.predictBaseModel(model, feature)
         (idx, feature, predicted, actual)  
       }}
     }}.flatten
