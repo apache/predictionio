@@ -17,8 +17,7 @@ javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6",
 
 def sharedSettings = scalariformSettings ++ Seq(
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
-    .setPreference(AlignSingleLineCaseStatements, true)
-    .setPreference(DoubleIndentClassDeclaration, true))
+    .setPreference(AlignSingleLineCaseStatements, true))
 
 lazy val root = project in file(".") aggregate(
   core)

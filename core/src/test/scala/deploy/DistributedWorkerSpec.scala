@@ -44,11 +44,11 @@ object DistributedWorkerSpec {
 }
 
 class DistributedWorkerSpec(_system: ActorSystem)
-  extends TestKit(_system)
-  with Matchers
-  with FlatSpecLike
-  with BeforeAndAfterAll
-  with ImplicitSender {
+    extends TestKit(_system)
+    with Matchers
+    with FlatSpecLike
+    with BeforeAndAfterAll
+    with ImplicitSender {
 
   import DistributedWorkerSpec._
 
