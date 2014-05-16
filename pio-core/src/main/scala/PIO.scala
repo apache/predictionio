@@ -35,20 +35,24 @@ object PIORunner {
     }
 
     // Init engine
-    engine.algorithm.initBase(algoParams)
+    val dataPreparator = engine.dataPreparatorClass.newInstance
+    val algorithm = engine.algorithmClass.newInstance
+    val server = engine.serverClass.newInstance
+
+    algorithm.initBase(algoParams)
     println(algoParams)
     
     // Data Prep
     val rawDataMapPar = paramsIdxList/*.par*/.map{ case(params, idx) => {
       val (trainingParams, evaluationParams) = params
-      val trainingData = engine.dataPreparator.prepareTraining(trainingParams)
+      val trainingData = dataPreparator.prepareTraining(trainingParams)
       val evalDataSeq = evaluationPreparator.prepareEvaluation(evaluationParams)
       (idx, (trainingData, evalDataSeq))
     }}.toMap
 
     // Model Con
     val modelMapPar = rawDataMapPar.map{ case(idx, data) => {
-      (idx, engine.algorithm.train(data._1))
+      (idx, algorithm.train(data._1))
     }}.toMap
 
     // Serving
@@ -57,7 +61,7 @@ object PIORunner {
       val model = modelMapPar(idx)
       evalDataSeq.map{ case(evalData) => {
         val (feature, actual) = evalData
-        val predicted = engine.algorithm.predictBaseModel(model, feature)
+        val predicted = algorithm.predictBaseModel(model, feature)
         (idx, feature, predicted, actual)  
       }}
     }}.flatten

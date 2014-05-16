@@ -42,12 +42,9 @@ class DefaultServer[F, T] extends BaseServer[F, T] {
 }
 
 class BaseEngine[TDP, TD, F, T](
-  val dataPreparator: BaseDataPreparator[TDP, TD],
-  val algorithm: AbstractAlgorithm[TD, F, T],
-  val server: BaseServer[F, T]) {
+  val dataPreparatorClass: Class[_ <: BaseDataPreparator[TDP, TD]],
+  val algorithmClass: Class[_ <: AbstractAlgorithm[TD, F, T]],
+  val serverClass: Class[_ <: BaseServer[F, T]]) {
 }
-
-
-
 
 

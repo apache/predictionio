@@ -25,19 +25,16 @@ object Run {
       tickerList = tickerList)
 
 
-    val preparator = new Preparator
-
-    val algorithm = new Algorithm
-    val algoParams = null
-
-    //val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
-    //val algorithm = new RandomAlgorithm
-
-    val server = new DefaultServer[Feature, Target]
+    val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
     
-    val engine = new BaseEngine(preparator, algorithm, server)
+    val engine = new BaseEngine(
+      classOf[Preparator], 
+      classOf[RandomAlgorithm], 
+      classOf[DefaultServer[Feature, Target]])
 
     val evaluator = new Evaluator
+    val preparator = new Preparator
+
     PIORunner.run(evalParams, algoParams, engine, evaluator, preparator)
   }
 }
