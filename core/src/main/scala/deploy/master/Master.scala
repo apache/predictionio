@@ -13,7 +13,7 @@ import akka.actor.Props
 
 import io.prediction.core.deploy._
 
-object Master {
+object Master extends Startup {
 
   val ResultsTopic = "results"
 
@@ -29,6 +29,14 @@ object Master {
 
   private case object CleanupTick
 
+  def main(args: Array[String]): Unit = {
+    val (actorSystem, joinAddress) = startBackend(
+      args(0),
+      args(1).toInt,
+      None,
+      "backend")
+    actorSystem.awaitTermination()
+  }
 }
 
 class Master(workTimeout: FiniteDuration) extends Actor with ActorLogging {

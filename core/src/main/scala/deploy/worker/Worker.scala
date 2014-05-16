@@ -17,12 +17,17 @@ import akka.actor.DeathPactException
 
 import io.prediction.core.deploy._
 
-object Worker {
+object Worker extends Startup {
 
   def props(clusterClient: ActorRef, workExecutorProps: Props, registerInterval: FiniteDuration = 10.seconds): Props =
     Props(classOf[Worker], clusterClient, workExecutorProps, registerInterval)
 
   case class WorkComplete(result: Any)
+
+  def main(args: Array[String]): Unit = {
+    val actorSystem = startWorker(args(0), args(1).toInt)
+    actorSystem.awaitTermination()
+  }
 }
 
 class Worker(clusterClient: ActorRef, workExecutorProps: Props, registerInterval: FiniteDuration)
