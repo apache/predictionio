@@ -26,23 +26,7 @@ case class U2IAction(
 
 /** Base trait for implementations that interact with user-to-item actions in the backend app data store. */
 trait U2IActions {
-  /** Represents a user-rate-item action. */
-  val rate = "rate"
-
-  /** Represents a user-like/dislike-item action. */
-  val like = "like"
-
-  val dislike = "dislike"
-
-  /** Represents a user-view-item action. */
-  val view = "view"
-
-  /** Represents a user-view-item's details action. */
-  val viewDetails = "viewDetails"
-
-  /** Represents a user-item conversion (e.g. buy) action. */
-  val conversion = "conversion"
-
+  
   /** Inserts a user-to-item action. */
   def insert(u2iAction: U2IAction): Unit
 

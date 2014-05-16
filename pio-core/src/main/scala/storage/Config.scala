@@ -74,4 +74,35 @@ class Config {
       case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
     }
   }
+
+  /** Obtains a Users object with configured backend type. */
+  def getAppdataUsers(): Users = {
+    appdataDbType match {
+      case "mongodb" => {
+        new MongoUsers(appdataMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
+    }
+  }
+
+  /** Obtains an Items object with configured backend type. */
+  def getAppdataItems(): Items = {
+    appdataDbType match {
+      case "mongodb" => {
+        new MongoItems(appdataMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
+    }
+  }
+
+  /** Obtains a U2IActions object with configured backend type. */
+  def getAppdataU2IActions(): U2IActions = {
+    appdataDbType match {
+      case "mongodb" => {
+        new MongoU2IActions(appdataMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
+    }
+  }
+
 }
