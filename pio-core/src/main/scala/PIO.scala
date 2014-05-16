@@ -17,7 +17,7 @@ object PIORunner {
     M <: BaseModel
     ](
     evalParams: EP,
-    algoParams: AP,
+    algoParams: (String, AP),
     engine: BaseEngine[TDP, TD, F, T],
     evaluator: BaseEvaluator[EP, TDP, EDP, F, T],
     evaluationPreparator: BaseEvaluationPreparator[EDP, F, T]
@@ -36,10 +36,11 @@ object PIORunner {
 
     // Init engine
     val dataPreparator = engine.dataPreparatorClass.newInstance
-    val algorithm = engine.algorithmClass.newInstance
+    val algoMap = engine.algorithmClassMap.mapValues(cls => cls.newInstance)
+    val algorithm = algoMap(algoParams._1)
     val server = engine.serverClass.newInstance
 
-    algorithm.initBase(algoParams)
+    algorithm.initBase(algoParams._2)
     println(algoParams)
     
     // Data Prep

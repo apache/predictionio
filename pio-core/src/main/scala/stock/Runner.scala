@@ -24,17 +24,23 @@ object Run {
       marketTicker = "SPY",
       tickerList = tickerList)
 
-
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
     
     val engine = new BaseEngine(
       classOf[Preparator], 
-      classOf[RandomAlgorithm], 
+      Map("random" -> classOf[RandomAlgorithm],
+        "regression" -> classOf[Algorithm]), 
       classOf[DefaultServer[Feature, Target]])
 
     val evaluator = new Evaluator
     val preparator = new Preparator
 
-    PIORunner.run(evalParams, algoParams, engine, evaluator, preparator)
+    val algoParamsSet = Seq(
+      ("random", new RandomAlgoParams(seed = 1, scale = 0.01)),
+      ("random", new RandomAlgoParams(seed = 2, drift = 1)),
+      ("regression", null))
+
+    PIORunner.run(evalParams, algoParamsSet(2), 
+      engine, evaluator, preparator)
   }
 }
