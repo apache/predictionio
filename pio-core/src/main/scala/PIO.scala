@@ -8,6 +8,7 @@ object PIOSettings {
 object PIORunner {
   def run[
     EP <: BaseEvaluationParams,
+    AP <: BaseAlgoParams,
     TDP <: BaseTrainingDataParams,
     EDP <: BaseEvaluationDataParams,
     TD <: BaseTrainingData,
@@ -16,10 +17,10 @@ object PIORunner {
     M <: BaseModel
     ](
     evalParams: EP,
-    dataPreparator: BaseDataPreparator[TDP, EDP, TD, F, T],
-    algorithm: AbstractAlgorithm[TD, F, T],
-    server: BaseServer[M, F, T],
-    evaluator: BaseEvaluator[EP, TDP, EDP, F, T]
+    algoParams: AP,
+    engine: BaseEngine[TDP, TD, F, T],
+    evaluator: BaseEvaluator[EP, TDP, EDP, F, T],
+    evaluationPreparator: BaseEvaluationPreparator[EDP, F, T]
     ) {
     val verbose = 1
 
@@ -32,18 +33,22 @@ object PIORunner {
         case (data, idx) => println(s"$idx :${data._1} ${data._2}")
       }
     }
+
+    // Init engine
+    engine.algorithm.initBase(algoParams)
+    println(algoParams)
     
     // Data Prep
-    val rawDataMapPar = paramsIdxList.par.map{ case(params, idx) => {
+    val rawDataMapPar = paramsIdxList/*.par*/.map{ case(params, idx) => {
       val (trainingParams, evaluationParams) = params
-      val trainingData = dataPreparator.prepareTraining(trainingParams)
-      val evalDataSeq = dataPreparator.prepareEvaluation(evaluationParams)
+      val trainingData = engine.dataPreparator.prepareTraining(trainingParams)
+      val evalDataSeq = evaluationPreparator.prepareEvaluation(evaluationParams)
       (idx, (trainingData, evalDataSeq))
     }}.toMap
 
     // Model Con
     val modelMapPar = rawDataMapPar.map{ case(idx, data) => {
-      (idx, algorithm.train(data._1))
+      (idx, engine.algorithm.train(data._1))
     }}.toMap
 
     // Serving
@@ -52,7 +57,7 @@ object PIORunner {
       val model = modelMapPar(idx)
       evalDataSeq.map{ case(evalData) => {
         val (feature, actual) = evalData
-        val predicted = algorithm.predictBaseModel(model, feature)
+        val predicted = engine.algorithm.predictBaseModel(model, feature)
         (idx, feature, predicted, actual)  
       }}
     }}.flatten

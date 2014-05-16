@@ -13,3 +13,5 @@ trait BaseFeature {}
 trait BaseTarget {}
 
 trait BaseModel {}
+
+trait BaseAlgoParams {}

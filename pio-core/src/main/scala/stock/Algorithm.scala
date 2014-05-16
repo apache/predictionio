@@ -1,6 +1,6 @@
 package io.prediction.stock
 
-import io.prediction.BaseAlgorithm
+import io.prediction.{ BaseAlgorithm, BaseAlgoParams }
 import scala.math
 import org.saddle._
 import org.saddle.index.IndexTime
@@ -13,7 +13,8 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
-class Algorithm extends BaseAlgorithm[TrainingData, Feature, Target, Model] {
+class Algorithm 
+extends BaseAlgorithm[TrainingData, Feature, Target, Model, BaseAlgoParams] {
   private def getRet(logPrice: Frame[DateTime, String, Double], d: Int) = 
     (logPrice - logPrice.shift(d)).mapVec[Double](_.fillNA(_ => 0.0))
 

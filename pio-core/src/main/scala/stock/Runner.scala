@@ -2,6 +2,8 @@ package io.prediction.stock
 import com.github.nscala_time.time.Imports.DateTime
 
 import io.prediction.PIORunner
+import io.prediction.BaseEngine
+import io.prediction.DefaultServer
 
 object Run {
   val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
@@ -13,7 +15,7 @@ object Run {
   */
 
   def main(args: Array[String]) {
-    val params = new EvaluationParams(
+    val evalParams = new EvaluationParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
       untilIdx = 650,
@@ -22,10 +24,20 @@ object Run {
       marketTicker = "SPY",
       tickerList = tickerList)
 
-    val dataPreparator = new DataPreparator
+
+    val preparator = new Preparator
+
     val algorithm = new Algorithm
+    val algoParams = null
+
+    //val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
     //val algorithm = new RandomAlgorithm
+
+    val server = new DefaultServer[Feature, Target]
+    
+    val engine = new BaseEngine(preparator, algorithm, server)
+
     val evaluator = new Evaluator
-    PIORunner.run(params, dataPreparator, algorithm, evaluator)
+    PIORunner.run(evalParams, algoParams, engine, evaluator, preparator)
   }
 }
