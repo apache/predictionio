@@ -14,48 +14,46 @@ import akka.contrib.pattern.ClusterSingletonManager
 import master._
 import worker._
 
-object Main extends Startup {
-
-  def main(args: Array[String]): Unit = {
-    val joinAddress = startBackend(None, "backend")
-    Thread.sleep(5000)
-    startBackend(Some(joinAddress), "backend")
-    startWorker(joinAddress)
-    Thread.sleep(5000)
-    startFrontend(joinAddress)
-  }
-
-}
-
 trait Startup {
 
-  def systemName = "Workers"
+  def systemName = "pio"
   def workTimeout = 10.seconds
 
-  def startBackend(joinAddressOption: Option[Address], role: String): Address = {
-    val conf = ConfigFactory.parseString(s"akka.cluster.roles=[$role]").
+  def startBackend(hostname: String, port: Int,
+    joinAddressOption: Option[Address],
+    role: String): (ActorSystem, Address) = {
+    val conf = ConfigFactory.parseString(s"""
+      akka.cluster.roles=[$role]
+      akka.remote.netty.tcp.hostname=$hostname
+      akka.remote.netty.tcp.port=$port
+      """).
       withFallback(ConfigFactory.load())
     val system = ActorSystem(systemName, conf)
     val joinAddress = joinAddressOption.getOrElse(Cluster(system).selfAddress)
     Cluster(system).join(joinAddress)
-    system.actorOf(ClusterSingletonManager.props(Master.props(workTimeout), "active",
-      PoisonPill, Some(role)), "master")
-    joinAddress
+    system.actorOf(ClusterSingletonManager.props(Master.props(workTimeout),
+      "active", PoisonPill, Some(role)), "master")
+    (system, joinAddress)
   }
 
-  def startWorker(contactAddress: akka.actor.Address): Unit = {
+  def startWorker(hostname: String, port: Int): ActorSystem = {
+    val contactAddress = Address("akka.tcp", systemName, hostname, port)
     val system = ActorSystem(systemName)
-    val initialContacts = Set(
-      system.actorSelection(RootActorPath(contactAddress) / "user" / "receptionist"))
-    val clusterClient = system.actorOf(ClusterClient.props(initialContacts), "clusterClient")
+    val initialContacts = Set(system.actorSelection(
+      RootActorPath(contactAddress) / "user" / "receptionist"))
+    val clusterClient = system.actorOf(
+      ClusterClient.props(initialContacts), "clusterClient")
     system.actorOf(Worker.props(clusterClient, Props[WorkExecutor]), "worker")
+    system
   }
 
-  def startFrontend(joinAddress: akka.actor.Address): Unit = {
+  def startFrontend(hostname: String, port: Int): ActorSystem = {
+    val joinAddress = Address("akka.tcp", systemName, hostname, port)
     val system = ActorSystem(systemName)
     Cluster(system).join(joinAddress)
     val frontend = system.actorOf(Props[Frontend], "frontend")
     system.actorOf(Props(classOf[WorkProducer], frontend), "producer")
     system.actorOf(Props[WorkResultConsumer], "consumer")
+    system
   }
 }

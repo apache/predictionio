@@ -9,9 +9,14 @@ import akka.util.Timeout
 
 import io.prediction.core.deploy.master._
 
-object Frontend {
+object Frontend extends Startup {
   case object Ok
   case object NotOk
+
+  def main(args: Array[String]): Unit = {
+    val actorSystem = startFrontend(args(0), args(1).toInt)
+    actorSystem.awaitTermination()
+  }
 }
 
 class Frontend extends Actor {
