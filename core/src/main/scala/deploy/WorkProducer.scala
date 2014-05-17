@@ -30,7 +30,11 @@ class WorkProducer(frontend: ActorRef) extends Actor with ActorLogging {
     case Tick =>
       n += 1
       log.info("Produced work: {}", n)
-      val work = Work(nextWorkId(), n)
+      val work = Process(
+        nextWorkId(),
+        Seq("perl", "-e", "print $ENV{\"foo\"}; print \"\n\";"),
+        None,
+        Array("foo" -> "bar"))
       frontend ! work
       context.become(waitAccepted(work), discardOld = false)
 

@@ -42,6 +42,7 @@ class Worker(clusterClient: ActorRef, workExecutorProps: Props, registerInterval
     SendToAll("/user/master/active", RegisterWorker(workerId)))
 
   val workExecutor = context.watch(context.actorOf(workExecutorProps, "exec"))
+  val processExecutor = context.watch(context.actorOf(Props[ProcessExecutor]))
 
   var currentWorkId: Option[String] = None
   def workId: String = currentWorkId match {
@@ -66,10 +67,16 @@ class Worker(clusterClient: ActorRef, workExecutorProps: Props, registerInterval
     case WorkIsReady =>
       sendToMaster(WorkerRequestsWork(workerId))
 
-    case Work(workId, job) =>
+    case SimpleWork(workId, job) =>
       log.debug("Got work: {}", job)
       currentWorkId = Some(workId)
       workExecutor ! job
+      context.become(working)
+
+    case Process(workId, command, cwd, extraEnv, Nil) =>
+      log.debug("Got process: {}", command)
+      currentWorkId = Some(workId)
+      processExecutor ! Process(workId, command, cwd, extraEnv)
       context.become(working)
   }
 
@@ -95,9 +102,10 @@ class Worker(clusterClient: ActorRef, workExecutorProps: Props, registerInterval
   }
 
   override def unhandled(message: Any): Unit = message match {
-    case Terminated(`workExecutor`) => context.stop(self)
-    case WorkIsReady                =>
-    case _                          => super.unhandled(message)
+    case Terminated(`workExecutor`)    => context.stop(self)
+    case Terminated(`processExecutor`) => context.stop(self)
+    case WorkIsReady                   =>
+    case _                             => super.unhandled(message)
   }
 
   def sendToMaster(msg: Any): Unit = {
