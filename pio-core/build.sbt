@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   // other dependencies here
   "org.scalanlp" % "breeze_2.10" % "0.7",
   "org.scalanlp" % "breeze-natives_2.10" % "0.7",
-  "org.scalanlp" % "nak" % "1.2.1"
+  "org.scalanlp" % "nak" % "1.2.1",
+  "com.twitter" % "chill_2.10" % "0.3.5"
   )
 
 resolvers ++= Seq(

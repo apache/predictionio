@@ -32,6 +32,7 @@ object Run {
         "regression" -> classOf[Algorithm]), 
       classOf[DefaultServer[Feature, Target]])
 
+
     val evaluator = new Evaluator
     val preparator = new Preparator
 
@@ -40,7 +41,16 @@ object Run {
       ("random", new RandomAlgoParams(seed = 2, drift = 1)),
       ("regression", null))
 
-    PIORunner.run(evalParams, algoParamsSet(2), 
-      engine, evaluator, preparator)
+    if (true) {
+      // Pass engine directly
+      PIORunner(evalParams, algoParamsSet(0), engine, evaluator, preparator)
+    } 
+
+    if (true) {
+      // Pass engine via serialized object 
+      val engineFilename = "/home/yipjustin/tmp/engine.obj"
+      PIORunner.writeEngine(engine, engineFilename)
+      PIORunner(evalParams, algoParamsSet(1), engineFilename, evaluator, preparator)
+    }
   }
 }
