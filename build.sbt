@@ -15,15 +15,10 @@ scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
 javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
-def sharedSettings = scalariformSettings ++ Seq(
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value
-    .setPreference(AlignSingleLineCaseStatements, true))
-
 lazy val root = project in file(".") aggregate(
   core,
   engines)
 
-lazy val core = project in file("core") settings(sharedSettings: _*)
+lazy val core = project in file("core")
 
-lazy val engines = project in file("engines") settings(
-  sharedSettings: _*) dependsOn(core)
+lazy val engines = project in file("engines") dependsOn(core)
