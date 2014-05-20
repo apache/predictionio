@@ -1,14 +1,14 @@
 package io.prediction.itemrank
 
-import io.prediction.{ BaseAlgorithm }
+import io.prediction.{ Algorithm }
 import breeze.linalg.{ SparseVector }
 
-class Algorithm extends BaseAlgorithm[TrainigData, Feature, Target, Model,
-AlgoParams] {
+class KNNAlgorithm extends Algorithm[TrainigData, Feature, Target, KNNModel,
+KNNAlgoParams] {
 
-  override def init(algoParams: AlgoParams): Unit = {} // TODO
+  override def init(algoParams: KNNAlgoParams): Unit = {} // TODO
 
-  override def train(trainingData: TrainigData): Model = {
+  override def train(trainingData: TrainigData): KNNModel = {
     val rating = trainingData.rating
 
     if (!rating.isEmpty) {
@@ -64,13 +64,13 @@ AlgoParams] {
           }
         }.map{ case (k,v) => (items(k).iid, v)}
 
-      new Model (
+      new KNNModel (
         userSeen = seenMap,
         userHistory = userHistoryMap,
         itemSim = itemSimMap
       )
     } else {
-      new Model (
+      new KNNModel (
         userSeen = Map(),
         userHistory = Map(),
         itemSim = Map()
@@ -78,7 +78,7 @@ AlgoParams] {
     }
   }
 
-  override def predict(model: Model, feature: Feature): Target = {
+  override def predict(model: KNNModel, feature: Feature): Target = {
     val nearestK = 10 // TODO: algo param
     val uid = feature.uid
     val possibleItems = feature.items

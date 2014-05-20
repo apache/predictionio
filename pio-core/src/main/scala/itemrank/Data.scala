@@ -68,22 +68,6 @@ class TrainigData (
   val seen: Set[(Int, Int)] // uindex->iindex
 ) extends BaseTrainingData {}
 
-class AlgoParams (
-
-) extends BaseAlgoParams {}
-
-class Model (
-  /*val userSeen: Map[String, SparseVector[Boolean]],
-  val userHistory: Map[String, SparseVector[Int]],
-  val itemSim: Map[String, SparseVector[Double]]*/
-  val userSeen: Map[String, Set[String]],
-  val userHistory: Map[String, Set[(String, Int)]],
-  val itemSim: Map[String, Seq[(String, Double)]]
-) extends BaseModel {
-
-  override def toString = s"${itemSim}"
-}
-
 // "Feature" here means prediction Input
 class Feature (
   val uid: String,

@@ -22,19 +22,19 @@ object Runner {
       goal = Set("conversion", "view")
     )
 
-    val algoParams = new AlgoParams
+    val knnAlgoParams = new KNNAlgoParams
     val engine = new BaseEngine(
-      classOf[DataPreparator],
-      Map("knn" -> classOf[Algorithm]),
+      classOf[ItemRankDataPreparator],
+      Map("knn" -> classOf[KNNAlgorithm]),
       classOf[DefaultServer[Feature, Target]]
     )
 
-    val evaluator = new Evaluator
-    val evalDataPrep = new DataPreparator
+    val evaluator = new ItemRankEvaluator
+    val evalDataPrep = new ItemRankDataPreparator
 
-    PIORunner.run(
+    PIORunner(
       evalParams,
-      ("knn", algoParams),
+      ("knn", knnAlgoParams),
       engine,
       evaluator,
       evalDataPrep)

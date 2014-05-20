@@ -1,12 +1,12 @@
 package io.prediction.itemrank
 
-import io.prediction.{ BaseDataPreparator, BaseEvaluationPreparator }
+import io.prediction.{ DataPreparator, EvaluationPreparator }
 
 import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User }
 
-class DataPreparator extends BaseDataPreparator[TrainDataParams, TrainigData]
-with BaseEvaluationPreparator[EvalDataParams, Feature, Target] {
+class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData]
+with EvaluationPreparator[EvalDataParams, Feature, Target] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"

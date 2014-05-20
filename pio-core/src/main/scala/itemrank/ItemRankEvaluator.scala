@@ -1,9 +1,9 @@
 package io.prediction.itemrank
 
-import io.prediction.{ BaseEvaluator }
+import io.prediction.{ Evaluator }
 import scala.collection.mutable.ArrayBuffer
 
-class Evaluator extends BaseEvaluator[EvalParams, TrainDataParams,
+class ItemRankEvaluator extends Evaluator[EvalParams, TrainDataParams,
   EvalDataParams, Feature, Target] {
 
   val result = new ArrayBuffer[(Feature, Target)]

@@ -1,8 +1,8 @@
 package io.prediction.itemrank
 
-import io.prediction.{ BaseServer }
+import io.prediction.{ Server }
 
-class Server extends BaseServer[Feature, Target] {
+class ItemRankServer extends Server[Feature, Target] {
 
   override def combine(feature: Feature, target: Seq[Target]): Target = {
     target.head
