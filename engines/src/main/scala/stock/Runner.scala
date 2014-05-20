@@ -1,4 +1,4 @@
-package io.prediction.stock
+package io.prediction.engines.stock
 import com.github.nscala_time.time.Imports.DateTime
 
 import io.prediction.PIORunner
@@ -46,7 +46,7 @@ object Run {
     }
 
     if (false) {
-      // Pass engine via serialized object 
+      // Pass engine via serialized object
       val engineFilename = "/home/yipjustin/tmp/engine.obj"
       PIORunner.writeEngine(engine, engineFilename)
       PIORunner(evalParams, algoParamsSet(2), engineFilename, evaluator, preparator)

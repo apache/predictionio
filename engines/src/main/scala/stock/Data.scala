@@ -1,4 +1,4 @@
-package io.prediction.stock
+package io.prediction.engines.stock
 
 import io.prediction.{
   BaseEvaluationParams,
@@ -70,4 +70,3 @@ class Feature(
 
 class Target(
   val data: Map[String, Double]) extends BaseTarget {}
-

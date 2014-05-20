@@ -1,4 +1,4 @@
-package io.prediction.stock
+package io.prediction.engines.stock
 
 import io.prediction.storage.Config
 import io.prediction.storage.{ ItemTrend, ItemTrends }

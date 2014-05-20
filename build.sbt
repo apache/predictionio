@@ -20,6 +20,10 @@ def sharedSettings = scalariformSettings ++ Seq(
     .setPreference(AlignSingleLineCaseStatements, true))
 
 lazy val root = project in file(".") aggregate(
-  core)
+  core,
+  engines)
 
 lazy val core = project in file("core") settings(sharedSettings: _*)
+
+lazy val engines = project in file("engines") settings(
+  sharedSettings: _*) dependsOn(core)

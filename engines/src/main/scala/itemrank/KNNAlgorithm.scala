@@ -1,4 +1,4 @@
-package io.prediction.itemrank
+package io.prediction.engines.itemrank
 
 import io.prediction.{ Algorithm }
 import breeze.linalg.{ SparseVector }

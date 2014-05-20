@@ -1,4 +1,4 @@
-package io.prediction.stock
+package io.prediction.engines.stock
 
 import io.prediction.{ Algorithm, BaseModel, BaseAlgoParams }
 
