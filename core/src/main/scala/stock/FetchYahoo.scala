@@ -16,7 +16,7 @@ s=GOOG&d=4&e=7&f=2014&g=d&a=2&b=27&c=2014&ignore=.csv
 */
 
 class YahooFetcher(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
-  toYear: Int, toMonth: Int, toDay: Int) {
+    toYear: Int, toMonth: Int, toDay: Int) {
   val logger = Logger(YahooFetcher.getClass)
   // yahoo api use 0-base for month
   val fromMonth_ = fromMonth - 1
@@ -29,7 +29,7 @@ class YahooFetcher(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
 
   def getUrl(ticker: String) = {
     (f"http://ichart.finance.yahoo.com/table.csv?" +
-      f"s=$ticker&a=${fromMonth_}&b=$fromDay&c=$fromYear&" + 
+      f"s=$ticker&a=${fromMonth_}&b=$fromDay&c=$fromYear&" +
       f"d=${toMonth_}&e=${toDay}&f=$toYear")
   }
 
@@ -37,28 +37,29 @@ class YahooFetcher(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
     //println(getUrl(ticker))
     val t = Source.fromURL(getUrl(ticker)).mkString
     val dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss zzz")
-    val yahooRaw = t.split("\n").drop(1).map(_.split(",")).map{ l => {
-      // Fix date
-      val dateStr = l(0) + " 16:00:00 EST"
-      val dt = dateFormatter.parseDateTime(dateStr)
-      (dt, (
-        l(1).toDouble, l(2).toDouble, l(3).toDouble, l(4).toDouble,
-        l(5).toDouble, l(6).toDouble))
-    }}.toMap
+    val yahooRaw = t.split("\n").drop(1).map(_.split(",")).map { l =>
+      {
+        // Fix date
+        val dateStr = l(0) + " 16:00:00 EST"
+        val dt = dateFormatter.parseDateTime(dateStr)
+        (dt, (
+          l(1).toDouble, l(2).toDouble, l(3).toDouble, l(4).toDouble,
+          l(5).toDouble, l(6).toDouble))
+      }
+    }.toMap
     yahooRaw
   }
 
   def fillNA(
     raw: Map[DateTime, (Double, Double, Double, Double, Double, Double)]) = {
-    val data = ArrayBuffer[
-      (DateTime, Double, Double, Double, Double, Double, Double, Boolean)]()
-    
+    val data = ArrayBuffer[(DateTime, Double, Double, Double, Double, Double, Double, Boolean)]()
+
     for (t <- baseTime) {
       data.append(raw.get(t).map(
         e => (t, e._1, e._2, e._3, e._4, e._5, e._6, true)
       ).getOrElse(
-        (t, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
-      ))
+          (t, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+        ))
     }
 
     // Construct aprc series
@@ -67,26 +68,26 @@ class YahooFetcher(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
     // This handles data missing from the starts. data with gaps are not
     // supported.
     for (i <- 1 until data.length) {
-      val prevActive = data(i-1)._8
+      val prevActive = data(i - 1)._8
       val currActive = data(i)._8
       val aret = (if (prevActive && currActive) {
-          (data(i)._7 / data(i-1)._7) - 1
-        } else { 
-          0.0 
-        })
-      val currAprc = aprcBuffer(i-1) * (1 + aret)
+        (data(i)._7 / data(i - 1)._7) - 1
+      } else {
+        0.0
+      })
+      val currAprc = aprcBuffer(i - 1) * (1 + aret)
       aprcBuffer.append(currAprc)
     }
 
     (0 until data.length).map(i => {
-        val d = data(i)
-        val aprc = aprcBuffer(i)
-        (d._1, d._2, d._3, d._4, d._5, d._6, aprc, d._8)
-      })
+      val d = data(i)
+      val aprc = aprcBuffer(i)
+      (d._1, d._2, d._3, d._4, d._5, d._6, aprc, d._8)
+    })
   }
 
   def fetchTicker(ticker: String) = {
-    logger.info(s"Fetching $ticker") 
+    logger.info(s"Fetching $ticker")
     val rawData = fetchRaw(ticker)
     val cleansedData = fillNA(rawData)
     ItemTrend(
@@ -99,9 +100,9 @@ class YahooFetcher(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
 }
 
 object YahooFetcher {
-  def apply(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int, 
+  def apply(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
     toYear: Int, toMonth: Int, toDay: Int) = {
-    new YahooFetcher(appid, fromYear, fromMonth, fromDay, 
+    new YahooFetcher(appid, fromYear, fromMonth, fromDay,
       toYear, toMonth, toDay)
   }
 }
@@ -163,13 +164,13 @@ object FetchMain {
   //val appid = PIOSettings.appid
   val appid = 42
   val itemTrendsDb = config.getAppdataItemTrends()
-  val itemTrendsDbGetTicker = itemTrendsDb.get(appid, _:String).get
+  val itemTrendsDbGetTicker = itemTrendsDb.get(appid, _: String).get
 
   def main(args: Array[String]) {
     logger.info(s"Download to appid: $appid")
     val fetcher = YahooFetcher(appid, 1998, 1, 1, 2015, 1, 1)
-  
-    (sp500List ++ marketList).foreach( ticker => {
+
+    (sp500List ++ marketList).foreach(ticker => {
       val itemTrend = fetcher.fetchTicker(ticker)
       itemTrendsDb.insert(itemTrend)
     })

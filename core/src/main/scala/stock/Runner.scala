@@ -8,9 +8,9 @@ import io.prediction.DefaultServer
 object Run {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",
-      "HPQ", "INTC", "NTAP", "CSCO", "ORCL",
-      "XRX", "YHOO", "AMAT", "QCOM", "TXN",
-      "CRM", "INTU", "WDC", "SNDK")
+    "HPQ", "INTC", "NTAP", "CSCO", "ORCL",
+    "XRX", "YHOO", "AMAT", "QCOM", "TXN",
+    "CRM", "INTU", "WDC", "SNDK")
 
   def main(args: Array[String]) {
     val evalParams = new EvaluationParams(
@@ -24,13 +24,12 @@ object Run {
       tickerList = tickerList)
 
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
-    
-    val engine = new BaseEngine(
-      classOf[StockPreparator], 
-      Map("random" -> classOf[RandomAlgorithm],
-        "regression" -> classOf[RegressionAlgorithm]), 
-      classOf[DefaultServer[Feature, Target]])
 
+    val engine = new BaseEngine(
+      classOf[StockPreparator],
+      Map("random" -> classOf[RandomAlgorithm],
+        "regression" -> classOf[RegressionAlgorithm]),
+      classOf[DefaultServer[Feature, Target]])
 
     val evaluator = new StockEvaluator
     val preparator = new StockPreparator
@@ -44,7 +43,7 @@ object Run {
       // Pass engine directly
       PIORunner(evalParams, algoParamsSet(1), engine, evaluator, preparator)
       PIORunner(evalParams, algoParamsSet(2), engine, evaluator, preparator)
-    } 
+    }
 
     if (false) {
       // Pass engine via serialized object 

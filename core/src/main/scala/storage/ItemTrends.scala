@@ -3,10 +3,8 @@ package io.prediction.storage
 import com.github.nscala_time.time.Imports._
 
 package object stock {
-  type DailyTuple = Tuple8[DateTime, Double, Double, Double, Double, Double,
-  Double, Boolean]
+  type DailyTuple = Tuple8[DateTime, Double, Double, Double, Double, Double, Double, Boolean]
 }
-
 
 /**
  * ItemTrend object.
@@ -31,8 +29,7 @@ case class ItemTrend(
 
   // Date, Open, High Low, Close, Volume, Adj.Close, Active
   // The active field is true if data originally not exists.
-  daily: Seq[stock.DailyTuple] = Vector[stock.DailyTuple]()
-)
+  daily: Seq[stock.DailyTuple] = Vector[stock.DailyTuple]())
 
 /**
  * Base trait for implementations that interact with itemTrendTrends in the
@@ -75,5 +72,4 @@ trait ItemTrends {
   /** count number of records by App ID*/
   def countByAppid(appid: Int): Long
 }
-
 

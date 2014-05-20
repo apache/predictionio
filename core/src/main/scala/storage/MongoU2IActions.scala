@@ -1,8 +1,12 @@
 package io.prediction.storage
 
 import io.prediction.storage.MongoUtils.{
-  emptyObj, mongoDbListToListOfString, idWithAppid,
-  attributesToMongoDBObject, getAttributesFromDBObject }
+  emptyObj,
+  mongoDbListToListOfString,
+  idWithAppid,
+  attributesToMongoDBObject,
+  getAttributesFromDBObject
+}
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._

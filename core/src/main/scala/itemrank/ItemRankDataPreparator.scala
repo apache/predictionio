@@ -6,7 +6,7 @@ import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User }
 
 class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData]
-with EvaluationPreparator[EvalDataParams, Feature, Target] {
+    with EvaluationPreparator[EvalDataParams, Feature, Target] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"
@@ -28,7 +28,7 @@ with EvaluationPreparator[EvalDataParams, Feature, Target] {
       itemsDb.getByAppid(params.appid)
     }.zipWithIndex.map {
       case (item, index) =>
-        val itemTD = new ItemTD (
+        val itemTD = new ItemTD(
           iid = item.id,
           itypes = item.itypes,
           starttime = item.starttime.map[Long](_.getMillis()),
@@ -97,36 +97,35 @@ with EvaluationPreparator[EvalDataParams, Feature, Target] {
       .toSet
 
     new TrainigData(
-      users = usersMap.map{ case (k,v) => (v,k)},
-      items = itemsMap.map{ case (k, (v1,v2)) => (v2, v1)},
+      users = usersMap.map { case (k, v) => (v, k) },
+      items = itemsMap.map { case (k, (v1, v2)) => (v2, v1) },
       //possibleItems = possibleItems,
       rating = ratingReduced,
       seen = u2iSeen
     )
   }
 
-  override def prepareEvaluation(params: EvalDataParams):
-    Seq[(Feature, Target)] = {
-      // TODO: should read test data from db as well. hardcode in param for now
-      params.testUsers.map { u =>
-        val f = new Feature(
-          uid = u,
-          items = params.testItems
-        )
-        // TODO
-        val t = new Target(
-          items = params.testItems.map(i => (i, 0.0)).toSeq
-        )
-        (f, t)
-      }.toSeq
-    }
+  override def prepareEvaluation(params: EvalDataParams): Seq[(Feature, Target)] = {
+    // TODO: should read test data from db as well. hardcode in param for now
+    params.testUsers.map { u =>
+      val f = new Feature(
+        uid = u,
+        items = params.testItems
+      )
+      // TODO
+      val t = new Target(
+        items = params.testItems.map(i => (i, 0.0)).toSeq
+      )
+      (f, t)
+    }.toSeq
+  }
 
   private def resolveConflict(a: RatingTD, b: RatingTD,
     conflictParam: String) = {
     conflictParam match {
-      case CONFLICT_LATEST => if (a.t > b.t) a else b
+      case CONFLICT_LATEST  => if (a.t > b.t) a else b
       case CONFLICT_HIGHEST => if (a.rating > b.rating) a else b
-      case CONFLICT_LOWEST => if (a.rating < b.rating) a else b
+      case CONFLICT_LOWEST  => if (a.rating < b.rating) a else b
     }
   }
 
@@ -138,7 +137,7 @@ with EvaluationPreparator[EvalDataParams, Feature, Target] {
         case (Some(start), Some(end)) => ((recTime >= start) &&
           (recTime < end))
         case (None, Some(end)) => (recTime < end)
-        case (None, None) => true
+        case (None, None)      => true
       }
     } else true
   }

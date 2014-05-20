@@ -26,7 +26,7 @@ case class U2IAction(
 
 /** Base trait for implementations that interact with user-to-item actions in the backend app data store. */
 trait U2IActions {
-  
+
   /** Inserts a user-to-item action. */
   def insert(u2iAction: U2IAction): Unit
 

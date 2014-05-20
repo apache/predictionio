@@ -58,14 +58,14 @@ class Config {
   /** The database password that stores PredictionIO appdata. */
   val appdataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.appdata.db.password")) } catch { case _: Throwable => None }
 
-    /** If appdataDbType is "mongodb", this will contain a Some[MongoDB] object. */
+  /** If appdataDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val appdataMongoDb: Option[MongoDB] = if (appdataDbType == "mongodb") {
     val db = MongoClient(appdataDbHost, appdataDbPort)(appdataDbName)
     appdataDbUser map { db.authenticate(_, appdataDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
-    /** Obtains an ItemTrends object with configured backend type. */
+  /** Obtains an ItemTrends object with configured backend type. */
   def getAppdataItemTrends(): ItemTrends = {
     appdataDbType match {
       case "mongodb" => {

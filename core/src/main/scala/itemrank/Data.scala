@@ -8,28 +8,28 @@ import io.prediction.{
   BaseFeature,
   BaseTarget,
   BaseModel,
-  BaseAlgoParams }
+  BaseAlgoParams
+}
 
-class EvalParams (
-  // TODO
-  //val iterations: Int
-  val appid: Int,
-  val itypes: Option[Set[String]],
-  val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
-  val conflict: String, // conflict resolution, "latest" "highest" "lowest"
-  val recommendationTime: Long,
-  val seenActions: Option[Set[String]], // (view, rate)
-  //val ignoreInactive: Boolean,
-  val testUsers: Set[String],
-  val testItems: Set[String],
-  val goal: Set[String]
-) extends BaseEvaluationParams {
+class EvalParams(
+    // TODO
+    //val iterations: Int
+    val appid: Int,
+    val itypes: Option[Set[String]],
+    val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
+    val conflict: String, // conflict resolution, "latest" "highest" "lowest"
+    val recommendationTime: Long,
+    val seenActions: Option[Set[String]], // (view, rate)
+    //val ignoreInactive: Boolean,
+    val testUsers: Set[String],
+    val testItems: Set[String],
+    val goal: Set[String]) extends BaseEvaluationParams {
 
   override def toString = s"appid=${appid},itypes=${itypes}" +
     s"actions=${actions}, conflict=${conflict}"
 }
 
-class TrainDataParams (
+class TrainDataParams(
   val appid: Int,
   val itypes: Option[Set[String]],
   val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
@@ -37,48 +37,45 @@ class TrainDataParams (
   val recommendationTime: Long,
   val seenActions: Option[Set[String]] // (view, rate)
   //val ignoreInactive: Boolean
-) extends BaseTrainingDataParams {}
+  ) extends BaseTrainingDataParams {}
 
-class EvalDataParams (
+class EvalDataParams(
   val testUsers: Set[String],
   val testItems: Set[String],
   val goal: Set[String] // action name
-) extends BaseEvaluationDataParams {}
+  ) extends BaseEvaluationDataParams {}
 
-class ItemTD (
+class ItemTD(
   val iid: String,
   val itypes: Seq[String],
   val starttime: Option[Long],
   val endtime: Option[Long],
-  val inactive: Boolean
-)
+  val inactive: Boolean)
 
-class RatingTD (
+class RatingTD(
   val uindex: Int,
   val iindex: Int,
   val rating: Int,
-  val t: Long
-)
+  val t: Long)
 
-class TrainigData (
+class TrainigData(
   val users: Map[Int, String], // uindex->uid
   val items: Map[Int, ItemTD], // iindex->itemTD
   //val possibleItems: Set[Int], // iindex
   val rating: Seq[RatingTD],
   val seen: Set[(Int, Int)] // uindex->iindex
-) extends BaseTrainingData {}
+  ) extends BaseTrainingData {}
 
 // "Feature" here means prediction Input
-class Feature (
-  val uid: String,
-  val items: Set[String] // items to be ranked
-) extends BaseFeature {
+class Feature(
+    val uid: String,
+    val items: Set[String] // items to be ranked
+    ) extends BaseFeature {
   override def toString = s"[${uid}, ${items}]"
 }
 
 // target means prediction output
-class Target (
-  val items: Seq[(String, Double)]
-) extends BaseTarget {
+class Target(
+    val items: Seq[(String, Double)]) extends BaseTarget {
   override def toString = s"${items}"
 }

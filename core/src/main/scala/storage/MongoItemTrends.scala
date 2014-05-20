@@ -1,6 +1,5 @@
 package io.prediction.storage
 
-
 import io.prediction.storage.MongoUtils.{
   emptyObj,
   mongoDbListToListOfString,
@@ -12,7 +11,6 @@ import io.prediction.storage.MongoUtils.{
   basicDBListToListOfTuple2,
   basicDBListToListOfTuple8
 }
-
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
@@ -49,9 +47,8 @@ class MongoItemTrends(db: MongoDB) extends ItemTrends {
     itemColl.find(MongoDBObject("_id" -> MongoDBObject("$in" -> ids.map(idWithAppid(appid, _))))).toList map { dbObjToItem(_) }
   }
 
-
   //def update(itemTrend: ItemTrend) = {
-    /*
+  /*
     val idObj = getIdDbObj(itemTrend.appid, itemTrend.id)
 
     val itemTrendObj = MongoDBObject(
@@ -60,7 +57,7 @@ class MongoItemTrends(db: MongoDB) extends ItemTrends {
       "priceRaw" -> itemTrend.priceRaw
     )
     */
-    //itemColl.update(idObj, idObj ++ itemTrendObj) 
+  //itemColl.update(idObj, idObj ++ itemTrendObj) 
   //}
 
   /*

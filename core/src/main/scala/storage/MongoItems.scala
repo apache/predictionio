@@ -1,8 +1,12 @@
 package io.prediction.storage
 
 import io.prediction.storage.MongoUtils.{
-  emptyObj, mongoDbListToListOfString, idWithAppid,
-  attributesToMongoDBObject, getAttributesFromDBObject }
+  emptyObj,
+  mongoDbListToListOfString,
+  idWithAppid,
+  attributesToMongoDBObject,
+  getAttributesFromDBObject
+}
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
@@ -52,7 +56,7 @@ class MongoItems(db: MongoDB) extends Items {
       unit match {
         case Some("km") => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInKm)
         case Some("mi") => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInMiles)
-        case _ => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInKm)
+        case _          => MongoDBObject("$maxDistance" -> maxDist / earthRadiusInKm)
       }
     } getOrElse emptyObj
 

@@ -1,9 +1,7 @@
 package io.prediction
 
-
-trait Evaluator[-EP, +TDP <: BaseTrainingDataParams,
-  +EDP <: BaseEvaluationDataParams, -F, -T] 
-extends BaseEvaluator[EP, TDP, EDP, F, T] {
+trait Evaluator[-EP, +TDP <: BaseTrainingDataParams, +EDP <: BaseEvaluationDataParams, -F, -T]
+    extends BaseEvaluator[EP, TDP, EDP, F, T] {
   def getParamsSet(params: EP): Seq[(TDP, EDP)]
 
   def evaluate(feature: F, predicted: T, actual: T): Unit
@@ -12,18 +10,17 @@ extends BaseEvaluator[EP, TDP, EDP, F, T] {
 }
 
 trait DataPreparator[-TDP, +TD <: BaseTrainingData]
-extends BaseDataPreparator[TDP, TD] {
+    extends BaseDataPreparator[TDP, TD] {
   def prepareTraining(params: TDP): TD
 }
 
 trait EvaluationPreparator[-EDP, +F <: BaseFeature, +T <: BaseTarget]
-extends BaseEvaluationPreparator[EDP, F, T]{
+    extends BaseEvaluationPreparator[EDP, F, T] {
   def prepareEvaluation(params: EDP): Seq[(F, T)]
 }
 
-trait Algorithm[-TD, -F, +T <: BaseTarget, 
-  M <: BaseModel, AP <: BaseAlgoParams]
-extends BaseAlgorithm[TD, F, T, M, AP] {
+trait Algorithm[-TD, -F, +T <: BaseTarget, M <: BaseModel, AP <: BaseAlgoParams]
+    extends BaseAlgorithm[TD, F, T, M, AP] {
   def init(algoParams: AP): Unit
 
   def train(trainingData: TD): M

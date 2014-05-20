@@ -1,15 +1,19 @@
 package io.prediction.stock
 
-import io.prediction.{ BaseEvaluationParams, BaseTrainingDataParams,
-  BaseEvaluationDataParams, BaseTrainingData, BaseFeature,
-  BaseTarget, BaseModel }
+import io.prediction.{
+  BaseEvaluationParams,
+  BaseTrainingDataParams,
+  BaseEvaluationDataParams,
+  BaseTrainingData,
+  BaseFeature,
+  BaseTarget,
+  BaseModel
+}
 
 import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
-import breeze.linalg.{DenseMatrix, DenseVector}
-
-  
+import breeze.linalg.{ DenseMatrix, DenseVector }
 
 // Use data after baseData.
 // Afterwards, slicing uses idx
@@ -33,16 +37,14 @@ class EvaluationParams(
   val trainingWindowSize: Int,
   val evaluationInterval: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]
-) extends BaseEvaluationParams {}
+  val tickerList: Seq[String]) extends BaseEvaluationParams {}
 
 class TrainingDataParams(
   val baseDate: DateTime,
   val untilIdx: Int,
   val windowSize: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]
-) extends BaseTrainingDataParams {}
+  val tickerList: Seq[String]) extends BaseTrainingDataParams {}
 
 // Evaluate with data generate up to idx (exclusive). The target data is also
 // restricted by idx. For example, if idx == 10, the data-preparator use data to
@@ -53,24 +55,19 @@ class EvaluationDataParams(
   val fromIdx: Int,
   val untilIdx: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]
-) extends BaseEvaluationDataParams {}
+  val tickerList: Seq[String]) extends BaseEvaluationDataParams {}
 
-class TrainingData (
-  val price: Frame[DateTime, String, Double]
-) extends BaseTrainingData {}
+class TrainingData(
+  val price: Frame[DateTime, String, Double]) extends BaseTrainingData {}
 
-class Model (
-  val data: Map[String, DenseVector[Double]]
-) extends BaseModel {}
+class Model(
+  val data: Map[String, DenseVector[Double]]) extends BaseModel {}
 
-class Feature (
+class Feature(
   // This is different from TrainingData. This serves as input for algorithm.
   // Hence, the time series should be shorter than that of TrainingData.
-  val data: Frame[DateTime, String, Double]
-) extends BaseFeature {}
+  val data: Frame[DateTime, String, Double]) extends BaseFeature {}
 
-class Target (
-  val data: Map[String, Double]
-) extends BaseTarget {}
+class Target(
+  val data: Map[String, Double]) extends BaseTarget {}
 
