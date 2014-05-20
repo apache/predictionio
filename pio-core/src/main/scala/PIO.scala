@@ -22,7 +22,7 @@ class PIORunner(
     val verbose = 1
 
     val paramsIdxList = evaluator.getParamsSetBase(evalParams)
-      .take(3)  // for fast debug
+      //.take(3)  // for fast debug
       .zipWithIndex
 
       if (verbose > 0) { 
@@ -39,9 +39,12 @@ class PIORunner(
 
     algorithm.initBase(algoParams._2)
     println(algoParams)
+
+    val parParamsIdxList = (if (false) paramsIdxList else paramsIdxList.par)
     
     // Data Prep
-    val rawDataMapPar = paramsIdxList/*.par*/.map{ case(params, idx) => {
+    //val rawDataMapPar = paramsIdxList/*.par*/.map{ case(params, idx) => {
+    val rawDataMapPar = parParamsIdxList.map{ case(params, idx) => {
       val (trainingParams, evaluationParams) = params
       val trainingData = dataPreparator.prepareTrainingBase(trainingParams)
       val evalDataSeq = evaluationPreparator.prepareEvaluationBase(evaluationParams)

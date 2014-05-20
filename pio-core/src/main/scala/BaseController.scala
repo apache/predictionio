@@ -24,7 +24,7 @@ trait BaseEvaluator[
       actual.asInstanceOf[T])
   def evaluate(feature: F, predicted: T, actual: T): Unit
 
-  def report(): Unit
+  override def report(): Unit
 }
 
 trait AbstractDataPreparator {
@@ -83,10 +83,6 @@ trait BaseServer[-F, T <: BaseTarget] extends AbstractServer {
   def combine(feature: F, targets: Seq[T]): T
 }
 
-class DefaultServer[F, T <: BaseTarget] extends BaseServer[F, T] {
-  override def combine(feature: F, targets: Seq[T]): T = targets.head
-}
-
 class AbstractEngine(
   val dataPreparatorClass: Class[_ <: AbstractDataPreparator],
   val algorithmClassMap: Map[String, Class[_ <: AbstractAlgorithm]],
@@ -102,5 +98,3 @@ extends AbstractEngine(
   algorithmClassMap,
   serverClass) {
 }
-
-

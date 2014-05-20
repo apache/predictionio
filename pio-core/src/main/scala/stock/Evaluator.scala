@@ -1,6 +1,6 @@
 package io.prediction.stock
 
-import io.prediction.BaseEvaluator
+import io.prediction.Evaluator
 import scala.math
 import org.saddle._
 import org.saddle.index.IndexTime
@@ -13,7 +13,7 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
-class Evaluator extends BaseEvaluator[EvaluationParams, 
+class StockEvaluator extends Evaluator[EvaluationParams, 
   TrainingDataParams, EvaluationDataParams, Feature, Target] {
   // (predicted, acutal)
   val results = ArrayBuffer[(Double, Double)]()

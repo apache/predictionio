@@ -2,8 +2,8 @@ package io.prediction.stock
 
 import io.prediction.storage.Config
 import io.prediction.storage.{ ItemTrend, ItemTrends }
-import io.prediction.BaseDataPreparator
-import io.prediction.BaseEvaluationPreparator
+import io.prediction.DataPreparator
+import io.prediction.EvaluationPreparator
 import io.prediction.PIOSettings
 
 import scala.math
@@ -19,9 +19,9 @@ import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
 
-class Preparator 
-extends BaseDataPreparator[TrainingDataParams, TrainingData]
-with BaseEvaluationPreparator[EvaluationDataParams, Feature, Target] {
+class StockPreparator 
+extends DataPreparator[TrainingDataParams, TrainingData]
+with EvaluationPreparator[EvaluationDataParams, Feature, Target] {
   val config = new Config()
   val appid = PIOSettings.appid
   val itemTrendsDb = config.getAppdataItemTrends()

@@ -1,7 +1,6 @@
 package io.prediction.stock
 
-//import io.prediction.{ BaseAlgorithm, BaseServer, BaseModel }
-import io.prediction.{ BaseAlgorithm, BaseModel, BaseAlgoParams }
+import io.prediction.{ Algorithm, BaseModel, BaseAlgoParams }
 
 import scala.util.Random
 
@@ -13,7 +12,7 @@ class RandomAlgoParams (
   val drift: Double = 0.0) extends BaseAlgoParams {}
 
 class RandomAlgorithm 
-extends BaseAlgorithm[TrainingData, Feature, Target, 
+extends Algorithm[TrainingData, Feature, Target, 
   EmptyModel, RandomAlgoParams] {
   var _scale: Double = 0.0
   var _drift: Double = 0.0
