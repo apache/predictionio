@@ -53,6 +53,14 @@ class MongoItemSets(db: MongoDB) extends ItemSets {
     new MongoItemSetsIterator(itemSetColl.find(MongoDBObject("appid" -> appid)))
   }
 
+  /** Get by appid and t >= startTime and t < untilTime */
+  def getByAppidAndTime(appid: Int, startTime: DateTime, untilTime: DateTime):
+    Iterator[ItemSet] = {
+      new MongoItemSetsIterator(itemSetColl.find(
+        MongoDBObject("appid" -> appid,
+          "t" -> MongoDBObject("$gte" -> startTime, "$lt" -> untilTime))))
+    }
+
   /** Delete itemSet */
   def delete(itemSet: ItemSet): Unit = {
     itemSetColl.remove(MongoDBObject("_id" -> idWithAppid(itemSet.appid,

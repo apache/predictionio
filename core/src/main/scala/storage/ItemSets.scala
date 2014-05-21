@@ -18,6 +18,10 @@ trait ItemSets {
   /** Get by appid */
   def getByAppid(appid: Int): Iterator[ItemSet]
 
+  /** Get by appid and t >= startTime and t < untilTime */
+  def getByAppidAndTime(appid: Int, startTime: DateTime, untilTime: DateTime):
+    Iterator[ItemSet]
+
   /** Delete itemSet */
   def delete(itemSet: ItemSet): Unit
 
