@@ -1,3 +1,4 @@
+.DS_Store
 *.swp
 target/
 sbt/sbt-launch-*.jar
