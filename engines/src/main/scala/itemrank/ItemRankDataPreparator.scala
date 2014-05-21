@@ -3,7 +3,7 @@ package io.prediction.engines.itemrank
 import io.prediction.{ DataPreparator, EvaluationPreparator }
 
 import io.prediction.storage.Config
-import io.prediction.storage.{ Item, U2IAction, User }
+import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 
 class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData]
     with EvaluationPreparator[EvalDataParams, Feature, Target] {
@@ -16,6 +16,7 @@ class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData
   val usersDb = config.getAppdataUsers
   val itemsDb = config.getAppdataItems
   val u2iDb = config.getAppdataU2IActions
+  val itemSetsDb = config.getAppdataItemSets
 
   override def prepareTraining(params: TrainDataParams): TrainigData = {
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)

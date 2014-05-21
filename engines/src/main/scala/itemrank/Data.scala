@@ -11,6 +11,7 @@ import io.prediction.{
   BaseAlgoParams
 }
 
+// param to evaluator
 class EvalParams(
     // TODO
     //val iterations: Int
@@ -29,9 +30,12 @@ class EvalParams(
     s"actions=${actions}, conflict=${conflict}"
 }
 
+// param for preparing training
 class TrainDataParams(
   val appid: Int,
   val itypes: Option[Set[String]],
+  //val start: Option[DateTime],
+  //val until: Option[DataTime],// use all data if both start and until is None
   val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
   val conflict: String, // conflict resolution, "latest" "highest" "lowest"
   val recommendationTime: Long,
@@ -39,6 +43,7 @@ class TrainDataParams(
   //val ignoreInactive: Boolean
   ) extends BaseTrainingDataParams {}
 
+// param for preparing evaluation data
 class EvalDataParams(
   val testUsers: Set[String],
   val testItems: Set[String],

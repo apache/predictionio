@@ -105,4 +105,13 @@ class Config {
     }
   }
 
+  def getAppdataItemSets(): ItemSets = {
+    appdataDbType match {
+      case "mongodb" => {
+        new MongoItemSets(appdataMongoDb.get)
+      }
+      case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
+    }
+  }
+
 }
