@@ -10,7 +10,9 @@ trait BaseTrainingData {}
 
 trait BaseFeature {}
 
-trait BaseTarget {}
+trait BasePrediction {}
+
+trait BaseActual {}
 
 trait BaseModel {}
 

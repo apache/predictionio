@@ -6,7 +6,8 @@ import io.prediction.{
   BaseEvaluationDataParams,
   BaseTrainingData,
   BaseFeature,
-  BaseTarget,
+  BasePrediction,
+  BaseActual,
   BaseModel,
   BaseEvaluationUnit
 }
@@ -59,7 +60,7 @@ class Feature(
   val data: Frame[DateTime, String, Double]) extends BaseFeature {}
 
 class Target(
-  val data: Map[String, Double]) extends BaseTarget {}
+  val data: Map[String, Double]) extends BasePrediction with BaseActual {}
 
 class EvaluationUnit(
   val data: Seq[(Double, Double)]) extends BaseEvaluationUnit {}

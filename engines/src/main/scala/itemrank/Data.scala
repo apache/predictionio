@@ -8,7 +8,8 @@ import io.prediction.{
   BaseEvaluationDataParams,
   BaseTrainingData,
   BaseFeature,
-  BaseTarget,
+  BasePrediction,
+  BaseActual,
   BaseModel,
   BaseAlgoParams,
   BaseEvaluationUnit
@@ -95,7 +96,7 @@ class Feature(
 
 // target means prediction output
 class Target(
-    val items: Seq[(String, Double)]) extends BaseTarget {
+    val items: Seq[(String, Double)]) extends BasePrediction with BaseActual {
   override def toString = s"${items}"
 }
 

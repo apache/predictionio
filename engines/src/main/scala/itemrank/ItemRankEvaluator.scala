@@ -6,7 +6,7 @@ import com.github.nscala_time.time.Imports._
 
 class ItemRankEvaluator
   extends Evaluator[EvalParams, TrainDataPrepParams, EvalDataPrepParams,
-      Feature, Target, EvalUnit, BaseEvaluationResults] {
+      Feature, Target, Target, EvalUnit, BaseEvaluationResults] {
 
   override def getParamsSet(params: EvalParams): Seq[(TrainDataPrepParams,
     EvalDataPrepParams)] = {
