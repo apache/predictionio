@@ -5,7 +5,7 @@ import io.prediction.{ Algorithm, BaseAlgoParams }
 class MyAlgoParams() extends BaseAlgoParams {}
 
 class MyAlgo
-  extends Algorithm[TrainingData, Feature, Target, Model, BaseAlgoParams] {
+  extends Algorithm[TrainingData, Feature, Prediction, Model, BaseAlgoParams] {
 
   override def init(algoParams: BaseAlgoParams): Unit = {}
 
@@ -13,8 +13,8 @@ class MyAlgo
     new Model()
   }
 
-  def predict(model: Model, feature: Feature): Target = {
-    new Target()
+  def predict(model: Model, feature: Feature): Prediction = {
+    new Prediction()
   }
 
 }

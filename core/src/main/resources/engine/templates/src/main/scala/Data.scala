@@ -6,7 +6,8 @@ import io.prediction.{
   BaseEvaluationDataParams,
   BaseTrainingData,
   BaseFeature,
-  BaseTarget,
+  BasePrediction,
+  BaseActual,
   BaseModel,
   BaseEvaluationUnit,
   BaseEvaluationResults
@@ -24,7 +25,9 @@ class Model() extends BaseModel {}
 
 class Feature() extends BaseFeature {}
 
-class Target() extends BaseTarget {}
+class Prediction() extends BasePrediction {}
+
+class Actual() extends BaseActual {}
 
 class EvaluationUnit() extends BaseEvaluationUnit {}
 

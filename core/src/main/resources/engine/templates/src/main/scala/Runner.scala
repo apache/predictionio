@@ -14,7 +14,7 @@ object MyRun {
     val engine = new BaseEngine(
       classOf[MyPreparator],
       Map("myalgo" -> classOf[MyAlgo]),
-      classOf[DefaultServer[Feature, Target]])
+      classOf[DefaultServer[Feature, Prediction]])
 
     val evaluator = new MyEvaluator
     val preparator = new MyPreparator

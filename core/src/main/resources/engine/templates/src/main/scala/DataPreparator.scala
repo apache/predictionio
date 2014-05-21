@@ -5,13 +5,13 @@ import io.prediction.EvaluationPreparator
 
 class MyPreparator
     extends DataPreparator[TrainingDataParams, TrainingData]
-    with EvaluationPreparator[EvaluationDataParams, Feature, Target] {
+    with EvaluationPreparator[EvaluationDataParams, Feature, Actual] {
 
   def prepareTraining(params: TrainingDataParams): TrainingData = {
     new TrainingData()
   }
 
-  def prepareEvaluation(params: EvaluationDataParams): Seq[(Feature, Target)] = {
-    Seq[(Feature, Target)]()
+  def prepareEvaluation(params: EvaluationDataParams): Seq[(Feature, Actual)] = {
+    Seq[(Feature, Actual)]()
   }
 }

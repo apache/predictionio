@@ -5,8 +5,9 @@ import io.prediction.Server
 
 class MyServerParams() extends BaseServerParams {}
 
-class MyServer extends Server[Feature, Target, MyServerParams] {
+class MyServer extends Server[Feature, Prediction, MyServerParams] {
 
-  def combine(feature: Feature, targets: Seq[Target]): Target = new Target()
+  def combine(feature: Feature, predictions: Seq[Prediction]): Prediction =
+    new Prediction()
 
 }

@@ -7,7 +7,8 @@ class MyEvaluator extends Evaluator[
     TrainingDataParams,
     EvaluationDataParams,
     Feature,
-    Target,
+    Prediction,
+    Actual,
     EvaluationUnit,
     EvaluationResults] {
 
@@ -16,7 +17,7 @@ class MyEvaluator extends Evaluator[
     Seq[(TrainingDataParams, EvaluationDataParams)]()
   }
 
-  def evaluate(feature: Feature, predicted: Target, actual: Target):
+  def evaluate(feature: Feature, predicted: Prediction, actual: Actual):
     EvaluationUnit = {
     new EvaluationUnit()
   }
