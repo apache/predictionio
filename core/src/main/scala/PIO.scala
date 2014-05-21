@@ -14,6 +14,7 @@ object PIOSettings {
 class PIORunner(
     evalParams: BaseEvaluationParams,
     algoParams: (String, BaseAlgoParams),
+    serverParams: BaseServerParams,
     engine: AbstractEngine,
     evaluator: AbstractEvaluator,
     evaluationPreparator: AbstractEvaluationPreparator) {
@@ -39,6 +40,10 @@ class PIORunner(
 
     algorithm.initBase(algoParams._2)
     println(algoParams)
+
+    // TODO(yipjustin). Server is not implemented.
+    server.initBase(serverParams)
+    println(serverParams)
 
     val parParamsIdxList = (if (false) paramsIdxList else paramsIdxList.par)
 
@@ -76,11 +81,12 @@ class PIORunner(
     }.flatten
 
     // Evaluate
-    resultListPar.seq.map {
+    val evalUnits = resultListPar.seq.map {
       case (idx, feature, predicted, actual) =>
         evaluator.evaluateBase(feature, predicted, actual)
-    }
-    evaluator.report
+    }.toSeq
+
+    evaluator.reportBase(evalUnits)
   }
 }
 
@@ -104,19 +110,32 @@ object PIORunner {
   }
 
   // Type checking between interfaces happens here.
-  def apply[EP <: BaseEvaluationParams, AP <: BaseAlgoParams, TDP <: BaseTrainingDataParams, EDP <: BaseEvaluationDataParams, TD <: BaseTrainingData, F <: BaseFeature, T <: BaseTarget](
+  def apply[
+      EP <: BaseEvaluationParams, 
+      AP <: BaseAlgoParams, 
+      SP <: BaseServerParams,
+      TDP <: BaseTrainingDataParams, 
+      EDP <: BaseEvaluationDataParams, 
+      TD <: BaseTrainingData, 
+      F <: BaseFeature, 
+      T <: BaseTarget,
+      EU <: BaseEvaluationUnit,
+      ER <: BaseEvaluationResults
+      ](
     evalParams: EP,
     algoParams: (String, AP),
+    serverParams:SP,
     engine: BaseEngine[TDP, TD, F, T],
-    evaluator: BaseEvaluator[EP, TDP, EDP, F, T],
+    evaluator: BaseEvaluator[EP, TDP, EDP, F, T, EU, ER],
     evaluationPreparator: BaseEvaluationPreparator[EDP, F, T]) = {
-    val runner = new PIORunner(evalParams, algoParams, engine, evaluator,
+    val runner = new PIORunner(evalParams, algoParams, serverParams, engine, evaluator,
       evaluationPreparator)
 
     runner.run
   }
 
   // Engine is passed via serialized object.
+  /*
   def apply[EP <: BaseEvaluationParams, AP <: BaseAlgoParams, TDP <: BaseTrainingDataParams, EDP <: BaseEvaluationDataParams, TD <: BaseTrainingData, F <: BaseFeature, T <: BaseTarget](
     evalParams: EP,
     algoParams: (String, AP),
@@ -129,7 +148,9 @@ object PIORunner {
 
     runner.run
   }
+  */
 
+  /*
   @deprecated("Use PIORunner(...) instead", "since 20140517")
   def run[EP <: BaseEvaluationParams, AP <: BaseAlgoParams, TDP <: BaseTrainingDataParams, EDP <: BaseEvaluationDataParams, TD <: BaseTrainingData, F <: BaseFeature, T <: BaseTarget, M <: BaseModel](
     evalParams: EP,
@@ -140,5 +161,6 @@ object PIORunner {
 
     PIORunner(evalParams, algoParams, engine, evaluator, evaluationPreparator)
   }
+  */
 }
 

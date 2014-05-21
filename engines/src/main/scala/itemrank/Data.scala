@@ -8,7 +8,8 @@ import io.prediction.{
   BaseFeature,
   BaseTarget,
   BaseModel,
-  BaseAlgoParams
+  BaseAlgoParams,
+  BaseEvaluationUnit
 }
 
 // param to evaluator
@@ -84,3 +85,5 @@ class Target(
     val items: Seq[(String, Double)]) extends BaseTarget {
   override def toString = s"${items}"
 }
+
+class EvalUnit(val f: Feature, val p: Target) extends BaseEvaluationUnit {}

@@ -15,3 +15,9 @@ trait BaseTarget {}
 trait BaseModel {}
 
 trait BaseAlgoParams {}
+
+trait BaseServerParams {}
+
+trait BaseEvaluationUnit {}
+
+trait BaseEvaluationResults {}

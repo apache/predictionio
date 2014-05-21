@@ -24,12 +24,13 @@ object Run {
       tickerList = tickerList)
 
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
+    val serverParams = new StockServerParams(i = 1)
 
     val engine = new BaseEngine(
       classOf[StockPreparator],
       Map("random" -> classOf[RandomAlgorithm],
         "regression" -> classOf[RegressionAlgorithm]),
-      classOf[DefaultServer[Feature, Target]])
+      classOf[StockServer])
 
     val evaluator = new StockEvaluator
     val preparator = new StockPreparator
@@ -41,15 +42,20 @@ object Run {
 
     if (true) {
       // Pass engine directly
-      PIORunner(evalParams, algoParamsSet(1), engine, evaluator, preparator)
-      PIORunner(evalParams, algoParamsSet(2), engine, evaluator, preparator)
+      PIORunner(evalParams, algoParamsSet(1), serverParams, 
+        engine, evaluator, preparator)
+      PIORunner(evalParams, algoParamsSet(2), serverParams,
+        engine, evaluator, preparator)
     }
 
+    /*
     if (false) {
       // Pass engine via serialized object
       val engineFilename = "/home/yipjustin/tmp/engine.obj"
       PIORunner.writeEngine(engine, engineFilename)
-      PIORunner(evalParams, algoParamsSet(2), engineFilename, evaluator, preparator)
+      PIORunner(evalParams, algoParamsSet(2), stockServerParams,
+        engineFilename, evaluator, preparator)
     }
+    */
   }
 }

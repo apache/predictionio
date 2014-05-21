@@ -23,6 +23,8 @@ object Runner {
     )
 
     val knnAlgoParams = new KNNAlgoParams
+    val serverParams = null
+
     val engine = new BaseEngine(
       classOf[ItemRankDataPreparator],
       Map("knn" -> classOf[KNNAlgorithm]),
@@ -32,9 +34,11 @@ object Runner {
     val evaluator = new ItemRankEvaluator
     val evalDataPrep = new ItemRankDataPreparator
 
+
     PIORunner(
       evalParams,
       ("knn", knnAlgoParams),
+      serverParams,
       engine,
       evaluator,
       evalDataPrep)

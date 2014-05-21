@@ -7,7 +7,8 @@ import io.prediction.{
   BaseTrainingData,
   BaseFeature,
   BaseTarget,
-  BaseModel
+  BaseModel,
+  BaseEvaluationUnit
 }
 
 import org.saddle._
@@ -19,17 +20,6 @@ import breeze.linalg.{ DenseMatrix, DenseVector }
 // Afterwards, slicing uses idx
 // Evaluate fromIdx until untilIdx
 // Use until fromIdx to construct training data
-/*
-case class EvaluationParams (
-  baseDate: DateTime,
-  fromIdx: Int,
-  untilIdx: Int,
-  trainingWindowSize: Int,
-  evaluationInterval: Int,
-  marketTicker: String,
-  tickerList: Seq[String]
-)
-*/
 class EvaluationParams(
   val baseDate: DateTime,
   val fromIdx: Int,
@@ -70,3 +60,6 @@ class Feature(
 
 class Target(
   val data: Map[String, Double]) extends BaseTarget {}
+
+class EvaluationUnit(
+  val data: Seq[(Double, Double)]) extends BaseEvaluationUnit {}

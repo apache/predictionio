@@ -95,5 +95,4 @@ class RegressionAlgorithm
       }.toMap
     new Target(data = prediction)
   }
-
 }

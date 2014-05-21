@@ -1,11 +1,11 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ Evaluator }
+import io.prediction.{ Evaluator, BaseEvaluationResults }
 import scala.collection.mutable.ArrayBuffer
 
-class ItemRankEvaluator extends Evaluator[EvalParams, TrainDataParams, EvalDataParams, Feature, Target] {
-
-  val result = new ArrayBuffer[(Feature, Target)]
+class ItemRankEvaluator 
+  extends Evaluator[EvalParams, TrainDataParams, EvalDataParams, 
+      Feature, Target, EvalUnit, BaseEvaluationResults] {
 
   override def getParamsSet(params: EvalParams): Seq[(TrainDataParams, EvalDataParams)] = {
     // TODO: for now simply feedthrough the params
@@ -27,17 +27,18 @@ class ItemRankEvaluator extends Evaluator[EvalParams, TrainDataParams, EvalDataP
   }
 
   override def evaluate(feature: Feature, predicted: Target,
-    actual: Target): Unit = {
+    actual: Target): EvalUnit = {
     // simply store result for now
-    result += Tuple2(feature, predicted)
+    new EvalUnit(feature, predicted)
   }
 
-  override def report(): Unit = {
+  override def report(evalUnits: Seq[EvalUnit]): BaseEvaluationResults = {
     // simply print result
-    result.foreach { r =>
-      val (f, t) = r
+    evalUnits.foreach { r =>
+      val (f, t) = (r.f, r.p)
       println(s"${f}, ${t}")
     }
+    null
   }
 
 }

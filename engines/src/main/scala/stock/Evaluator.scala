@@ -1,7 +1,9 @@
 package io.prediction.engines.stock
 
 import io.prediction.Evaluator
+import io.prediction.BaseEvaluationResults
 import scala.math
+// FIXME(yipjustin). Remove ._ as it is polluting the namespace.
 import org.saddle._
 import org.saddle.index.IndexTime
 
@@ -13,10 +15,11 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
-class StockEvaluator extends Evaluator[EvaluationParams, TrainingDataParams, EvaluationDataParams, Feature, Target] {
+class StockEvaluator 
+    extends Evaluator[
+        EvaluationParams, TrainingDataParams, EvaluationDataParams, 
+        Feature, Target, EvaluationUnit, BaseEvaluationResults] {
   // (predicted, acutal)
-  val results = ArrayBuffer[(Double, Double)]()
-
   def getParamsSet(params: EvaluationParams): Seq[(TrainingDataParams, EvaluationDataParams)] = {
     Range(params.fromIdx, params.untilIdx, params.evaluationInterval)
       .map(idx => {
@@ -38,18 +41,22 @@ class StockEvaluator extends Evaluator[EvaluationParams, TrainingDataParams, Eva
       })
   }
 
-  def evaluate(feature: Feature, predicted: Target, actual: Target) {
+  def evaluate(feature: Feature, predicted: Target, actual: Target)
+      : EvaluationUnit = {
     val predictedData = predicted.data
     val actualData = actual.data
 
-    predictedData.foreach {
+    val data = predictedData.map {
       case (ticker, pValue) => {
-        results.append((pValue, actualData(ticker)))
+        (pValue, actualData(ticker))
       }
-    }
+    }.toSeq
+    new EvaluationUnit(data = data)
   }
 
-  def report() {
+  //def report() {
+  def report(evalUnits: Seq[EvaluationUnit]): BaseEvaluationResults = {
+    val results: Seq[(Double, Double)] = evalUnits.map(_.data).flatten
     val pThresholds = Seq(-0.01, -0.003, -0.001, -0.0003,
       0.0, 0.0003, 0.001, 0.003, 0.01)
 
@@ -68,5 +75,6 @@ class StockEvaluator extends Evaluator[EvaluationParams, TrainingDataParams, Eva
         f"Mean: ${mean_}%+.6f Stdev: ${stdev}%.6f CI: ${ci}%.6f " +
         f"Total: ${count}%5d Over: $over%5d Under: $under%5d")
     }
+    null
   }
 }

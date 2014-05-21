@@ -8,9 +8,9 @@ trait AbstractEvaluator {
   def evaluateBase(
     feature: BaseFeature,
     predicted: BaseTarget,
-    actual: BaseTarget): Unit
+    actual: BaseTarget): BaseEvaluationUnit
 
-  def report(): Unit
+  def reportBase(evalUnits: Seq[BaseEvaluationUnit]): BaseEvaluationResults
 
 }
 
@@ -19,7 +19,10 @@ trait BaseEvaluator[
     +TDP <: BaseTrainingDataParams,
     +EDP <: BaseEvaluationDataParams,
     -F,
-    -T]
+    -T,
+    EU <: BaseEvaluationUnit,
+    ER <: BaseEvaluationResults
+    ]
   extends AbstractEvaluator {
 
   override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)] =
@@ -30,15 +33,20 @@ trait BaseEvaluator[
   override def evaluateBase(
     feature: BaseFeature,
     predicted: BaseTarget,
-    actual: BaseTarget): Unit =
+    actual: BaseTarget): BaseEvaluationUnit =
     evaluate(
       feature.asInstanceOf[F],
       predicted.asInstanceOf[T],
       actual.asInstanceOf[T])
 
-  def evaluate(feature: F, predicted: T, actual: T): Unit
+  def evaluate(feature: F, predicted: T, actual: T): EU
 
-  override def report(): Unit
+  //override 
+  def reportBase(evalUnits: Seq[BaseEvaluationUnit]): BaseEvaluationResults = {
+    report(evalUnits.map(_.asInstanceOf[EU]))
+  }
+
+  def report(evalUnits: Seq[EU]): ER
 
 }
 
@@ -114,11 +122,19 @@ trait BaseAlgorithm[
 
 trait AbstractServer {
 
+  def initBase(baseServerParams: BaseServerParams): Unit
+
   def combineBase(feature: BaseFeature, targets: Seq[BaseTarget]): BaseTarget
 
 }
 
-trait BaseServer[-F, T <: BaseTarget] extends AbstractServer {
+trait BaseServer[-F, T <: BaseTarget, SP <: BaseServerParams]
+    extends AbstractServer {
+
+  override def initBase(baseServerParams: BaseServerParams): Unit =
+    init(baseServerParams.asInstanceOf[SP])
+
+  def init(serverParams: SP): Unit = {}
 
   override def combineBase(feature: BaseFeature, targets: Seq[BaseTarget]) =
     combine(feature.asInstanceOf[F], targets.map(_.asInstanceOf[T]))
@@ -137,9 +153,16 @@ class AbstractEngine(
 
 }
 
-class BaseEngine[TDP, TD <: BaseTrainingData, F, T <: BaseTarget](
+class BaseEngine[
+    TDP <: BaseTrainingDataParams,
+    TD <: BaseTrainingData, 
+    F <: BaseFeature, 
+    T <: BaseTarget](
     dataPreparatorClass: Class[_ <: BaseDataPreparator[TDP, TD]],
-    algorithmClassMap: Map[String, Class[_ <: AbstractAlgorithm]],
-    serverClass: Class[_ <: BaseServer[F, T]])
+    algorithmClassMap: 
+      Map[String, 
+        Class[_ <: 
+          BaseAlgorithm[TD, F, T, _ <: BaseModel, _ <: BaseAlgoParams]]],
+    serverClass: Class[_ <: BaseServer[F, T, _ <: BaseServerParams]])
   extends AbstractEngine(dataPreparatorClass, algorithmClassMap, serverClass) {
 }
