@@ -10,6 +10,8 @@ scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
 scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
 
+fork in (ThisBuild, run) := true
+
 javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
