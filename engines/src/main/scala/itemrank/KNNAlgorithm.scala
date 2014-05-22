@@ -1,7 +1,7 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.{ Algorithm }
-import breeze.linalg.{ SparseVector }
+import breeze.linalg.{ SparseVector, sum => LSum }
 
 class KNNAlgorithm extends Algorithm[TrainigData, Feature, Prediction, KNNModel, KNNAlgoParams] {
 
@@ -114,8 +114,8 @@ class KNNAlgorithm extends Algorithm[TrainigData, Feature, Prediction, KNNModel,
     v2: SparseVector[Int]): Double =
     {
       val p = v1 dot v2
-      val v1L2Norm = Math.sqrt((v1 :* v1).sum)
-      val v2L2Norm = Math.sqrt((v2 :* v2).sum)
+      val v1L2Norm = Math.sqrt(LSum(v1 :* v1))
+      val v2L2Norm = Math.sqrt(LSum(v2 :* v2))
       p.toDouble / (v1L2Norm * v2L2Norm)
     }
 }
