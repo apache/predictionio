@@ -44,7 +44,7 @@ trait Algorithm[
   def predict(model: M, feature: F): P
 }
 
-trait Server[-F, P <: BasePrediction, SP <: BaseServerParams]
+trait Server[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
     extends BaseServer[F, P, SP] {
   def init(serverParams: SP): Unit
 
@@ -52,7 +52,7 @@ trait Server[-F, P <: BasePrediction, SP <: BaseServerParams]
 }
 
 // Below is default implementation.
-class DefaultServer[F, P <: BasePrediction]
+class DefaultServer[F <: BaseFeature, P <: BasePrediction]
     extends Server[F, P, BaseServerParams] {
   override def combine(feature: F, predictions: Seq[P]): P = predictions.head
 }

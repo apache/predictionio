@@ -1,5 +1,6 @@
 package io.prediction
 
+/* Evaluator */
 trait AbstractEvaluator {
 
   def initBase(params: BaseEvaluationParams): Unit
@@ -52,6 +53,8 @@ trait BaseEvaluator[
   def report(evalUnits: Seq[EU]): ER
 }
 
+/* DataPrepatator */
+
 trait AbstractDataPreparator {
 
   def prepareTrainingBase(params: BaseTrainingDataParams): BaseTrainingData
@@ -67,6 +70,8 @@ trait BaseDataPreparator[-TDP, +TD <: BaseTrainingData]
   def prepareTraining(params: TDP): TD
 
 }
+
+/* EvaluationPrepatator */
 
 trait AbstractEvaluationPreparator {
 
@@ -86,6 +91,8 @@ trait BaseEvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
   def prepareEvaluation(params: EDP): Seq[(F, A)]
 
 }
+
+/* Algorithm */
 
 trait AbstractAlgorithm {
 
@@ -135,16 +142,19 @@ trait BaseAlgorithm[
 
 }
 
+/* Server */
+
 trait AbstractServer {
 
   def initBase(baseServerParams: BaseServerParams): Unit
 
-  def combineBase(feature: BaseFeature,
-    predictions: Seq[BasePrediction]): BasePrediction
-
+  // The server takes a seq of Prediction and combine it into one.
+  // In the batch model, things are run in batch therefore we have seq of seq.
+  def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
+    : BasePredictionSeq
 }
 
-trait BaseServer[-F, P <: BasePrediction, SP <: BaseServerParams]
+trait BaseServer[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
     extends AbstractServer {
 
   override def initBase(baseServerParams: BaseServerParams): Unit =
@@ -152,13 +162,27 @@ trait BaseServer[-F, P <: BasePrediction, SP <: BaseServerParams]
 
   def init(serverParams: SP): Unit = {}
 
-  override def combineBase(feature: BaseFeature,
-    predictions: Seq[BasePrediction]) =
-    combine(feature.asInstanceOf[F], predictions.map(_.asInstanceOf[P]))
+  def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
+    : BasePredictionSeq = {
+    val dataSeq: Seq[Seq[(F, P, BaseActual)]] = basePredictionSeqSeq
+      .map(_.asInstanceOf[PredictionSeq[F, P, BaseActual]].data).transpose
+
+    val output: Seq[(F, P, BaseActual)] = dataSeq.map{ input => {
+      val f = input(0)._1
+      val ps = input.map(_._2)
+      val a = input(0)._3
+      // TODO(yipjustin). Check all seqs have the same f and a
+      val p = combine(f, ps)
+      (f, p, a)
+    }} 
+    new PredictionSeq[F, P, BaseActual](data = output)
+  }
 
   def combine(feature: F, predictions: Seq[P]): P
 
 }
+
+/* Engine */
 
 class AbstractEngine(
 

@@ -7,6 +7,10 @@ import io.prediction.BaseAlgoParams
 import io.prediction.BaseServerParams
 import io.prediction.BaseEvaluationParams
 import io.prediction.BasePersistentData
+import io.prediction.BaseModel
+import io.prediction.BaseEvaluationSeq
+import io.prediction.BasePredictionSeq
+import io.prediction.BaseEvaluationUnitSeq
 import io.prediction.AbstractEngine
 import io.prediction.AbstractEvaluator
 import io.prediction.AbstractEvaluationPreparator
@@ -146,7 +150,7 @@ object EvaluationWorkflow {
     // eval to eval_unit_id
     val evalUnitMap = serverMap.map{ case(eval, serverId) => {
       val task = new EvaluationUnitTask(workflow.nextId, batch, evaluator,
-        serverId, evalPrepMap(eval))
+        serverId)
       val evalUnitId = workflow.submit(task)
       (eval, evalUnitId)
     }}

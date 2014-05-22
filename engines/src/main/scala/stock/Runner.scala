@@ -26,7 +26,7 @@ object Run {
       tickerList = tickerList)
 
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
-    val serverParams = new StockServerParams(i = 1)
+    val serverParams = new StockServerParams(i = 2)
 
     val engine = new BaseEngine(
       classOf[StockPreparator],
@@ -42,7 +42,7 @@ object Run {
       ("random", new RandomAlgoParams(seed = 2, drift = 1)),
       ("regression", null))
 
-    if (true) {
+    if (false) {
       // Pass engine directly
       PIORunner(evalParams, algoParamsSet(1), serverParams, 
         engine, evaluator, preparator)

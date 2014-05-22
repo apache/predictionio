@@ -141,17 +141,4 @@ object PIORunner {
     runner.run
   }
   */
-
-  /*
-  @deprecated("Use PIORunner(...) instead", "since 20140517")
-  def run[EP <: BaseEvaluationParams, AP <: BaseAlgoParams, TDP <: BaseTrainingDataParams, EDP <: BaseEvaluationDataParams, TD <: BaseTrainingData, F <: BaseFeature, T <: BaseTarget, M <: BaseModel](
-    evalParams: EP,
-    algoParams: (String, AP),
-    engine: BaseEngine[TDP, TD, F, T],
-    evaluator: BaseEvaluator[EP, TDP, EDP, F, T],
-    evaluationPreparator: BaseEvaluationPreparator[EDP, F, T]) = {
-
-    PIORunner(evalParams, algoParams, engine, evaluator, evaluationPreparator)
-  }
-  */
 }
