@@ -6,11 +6,15 @@ import io.prediction.BaseTrainingDataParams
 import io.prediction.BaseAlgoParams
 import io.prediction.BaseServerParams
 import io.prediction.BaseEvaluationParams
+import io.prediction.BasePersistentData
 import io.prediction.AbstractEngine
 import io.prediction.AbstractEvaluator
 import io.prediction.AbstractEvaluationPreparator
 
-class EvaluationWorkflow(val batch: String = "") {
+import scala.collection.mutable.{ Map => MMap }
+import scala.util.Random
+
+class Workflow(val batch: String = "") {
   val tasks: ArrayBuffer[Task] = ArrayBuffer[Task]()
   var _lastId: Int = -1
   def nextId() : Int = { _lastId += 1; _lastId }
@@ -19,6 +23,48 @@ class EvaluationWorkflow(val batch: String = "") {
     tasks.append(task)
     println(s"Task id: ${task.id} depends: ${task.dependingIds} task: $task")
     task.id
+  }
+
+  def runTask(task: Task, dataMap: MMap[Int, BasePersistentData]): Unit = {
+    // gather dependency
+    val localDataMap = task.dependingIds.map(id => (id, dataMap(id))).toMap
+    val taskOutput = task.run(localDataMap)
+    dataMap += (task.id -> taskOutput)
+    println(task.id)
+    println(taskOutput)
+  }
+
+  // This function serves as a simple single threaded workflow scheduler.
+  def run(): Unit = {
+    val doneTaskMap: MMap[Int, Boolean] 
+      = MMap(this.tasks.map(task => (task.id, false)) : _*)
+
+    val dataMap = MMap[Int, BasePersistentData]()
+
+    // Shuffle the task just to make sure we are handling the dependence right.
+    val tasks = Random.shuffle(this.tasks)
+    println(tasks.map(_.id))
+
+    var changed = false
+    do {
+      changed = false
+
+      // Find one task
+      val taskOpt = tasks.find(t => {
+        !doneTaskMap(t.id) && t.dependingIds.map(doneTaskMap).fold(true)(_ && _)
+      })
+
+      taskOpt.map{ task => { 
+        println(s"Task: ${task.id} $task")
+        runTask(task, dataMap)
+
+        changed = true
+        doneTaskMap(task.id) = true
+      }}
+    } while (changed)
+
+    println(doneTaskMap)
+    
   }
 }
 
@@ -30,8 +76,8 @@ object EvaluationWorkflow {
       serverParams: BaseServerParams,
       engine: AbstractEngine,
       evaluator: AbstractEvaluator,
-      evaluationPreparator: AbstractEvaluationPreparator) {
-    val workflow = new EvaluationWorkflow(batch)
+      evaluationPreparator: AbstractEvaluationPreparator): Workflow = {
+    val workflow = new Workflow(batch)
     // In the comment, *_id corresponds to a task id.
 
     // eval to eval_params
@@ -113,5 +159,7 @@ object EvaluationWorkflow {
       val evalReportId = workflow.submit(task)
       (eval, evalReportId)
     }}
+
+    return workflow
   }
 }

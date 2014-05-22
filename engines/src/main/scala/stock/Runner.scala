@@ -5,6 +5,8 @@ import io.prediction.PIORunner
 import io.prediction.BaseEngine
 import io.prediction.DefaultServer
 
+import io.prediction.workflow.EvaluationWorkflow
+
 object Run {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",
@@ -16,7 +18,7 @@ object Run {
     val evalParams = new EvaluationParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
-      untilIdx = 650,
+      untilIdx = 630,
       //untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
@@ -57,5 +59,13 @@ object Run {
         engineFilename, evaluator, preparator)
     }
     */
+
+    if (true) {
+      val evalWorkflow = EvaluationWorkflow(
+        "", evalParams, algoParamsSet, serverParams, 
+        engine, evaluator, preparator)
+
+      evalWorkflow.run
+    }
   }
 }
