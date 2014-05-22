@@ -33,6 +33,14 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
 
   def getAllByAppid(appid: Int) = new MongoU2IActionIterator(u2iActionColl.find(MongoDBObject("appid" -> appid)))
 
+  def getByAppidAndTime(appid: Int, startTime: DateTime, untilTime: DateTime):
+    Iterator[U2IAction] = {
+      new MongoU2IActionIterator(u2iActionColl.find(
+        MongoDBObject("appid" -> appid,
+          "t" -> MongoDBObject("$gte" -> startTime, "$lt" -> untilTime))
+      ))
+    }
+
   def getAllByAppidAndUidAndIids(appid: Int, uid: String, iids: Seq[String]) = new MongoU2IActionIterator(
     u2iActionColl.find(MongoDBObject("appid" -> appid, "uid" -> idWithAppid(appid, uid), "iid" -> MongoDBObject("$in" -> iids.map(idWithAppid(appid, _)))))
   )

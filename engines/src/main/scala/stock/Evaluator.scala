@@ -15,10 +15,10 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
-class StockEvaluator 
+class StockEvaluator
     extends Evaluator[
-        EvaluationParams, TrainingDataParams, EvaluationDataParams, 
-        Feature, Target, EvaluationUnit, BaseEvaluationResults] {
+        EvaluationParams, TrainingDataParams, EvaluationDataParams,
+        Feature, Target, Target, EvaluationUnit, BaseEvaluationResults] {
   // (predicted, acutal)
   def getParamsSet(params: EvaluationParams): Seq[(TrainingDataParams, EvaluationDataParams)] = {
     Range(params.fromIdx, params.untilIdx, params.evaluationInterval)

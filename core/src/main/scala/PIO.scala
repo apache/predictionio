@@ -111,23 +111,24 @@ object PIORunner {
 
   // Type checking between interfaces happens here.
   def apply[
-      EP <: BaseEvaluationParams, 
-      AP <: BaseAlgoParams, 
+      EP <: BaseEvaluationParams,
+      AP <: BaseAlgoParams,
       SP <: BaseServerParams,
-      TDP <: BaseTrainingDataParams, 
-      EDP <: BaseEvaluationDataParams, 
-      TD <: BaseTrainingData, 
-      F <: BaseFeature, 
-      T <: BaseTarget,
+      TDP <: BaseTrainingDataParams,
+      EDP <: BaseEvaluationDataParams,
+      TD <: BaseTrainingData,
+      F <: BaseFeature,
+      P <: BasePrediction,
+      A <: BaseActual,
       EU <: BaseEvaluationUnit,
       ER <: BaseEvaluationResults
       ](
     evalParams: EP,
     algoParams: (String, AP),
     serverParams:SP,
-    engine: BaseEngine[TDP, TD, F, T],
-    evaluator: BaseEvaluator[EP, TDP, EDP, F, T, EU, ER],
-    evaluationPreparator: BaseEvaluationPreparator[EDP, F, T]) = {
+    engine: BaseEngine[TDP, TD, F, P],
+    evaluator: BaseEvaluator[EP, TDP, EDP, F, P, A, EU, ER],
+    evaluationPreparator: BaseEvaluationPreparator[EDP, F, A]) = {
     val runner = new PIORunner(evalParams, algoParams, serverParams, engine, evaluator,
       evaluationPreparator)
 
@@ -163,4 +164,3 @@ object PIORunner {
   }
   */
 }
-

@@ -33,6 +33,10 @@ trait U2IActions {
   /** Gets all user-to-item actions by App ID. */
   def getAllByAppid(appid: Int): Iterator[U2IAction]
 
+  /** Gets by appid where t >= start and t < untilTime */
+  def getByAppidAndTime(appid: Int, startTime: DateTime, untilTime: DateTime):
+    Iterator[U2IAction]
+
   /** Gets all user-to-item actions by App ID, User ID, and Item IDs. */
   def getAllByAppidAndUidAndIids(appid: Int, uid: String, iids: Seq[String]): Iterator[U2IAction]
 

@@ -5,8 +5,8 @@ import io.prediction.{ DataPreparator, EvaluationPreparator }
 import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 
-class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData]
-    with EvaluationPreparator[EvalDataParams, Feature, Target] {
+class ItemRankDataPreparator extends DataPreparator[TrainDataPrepParams, TrainigData]
+    with EvaluationPreparator[EvalDataPrepParams, Feature, Target] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"
@@ -18,7 +18,7 @@ class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData
   val u2iDb = config.getAppdataU2IActions
   val itemSetsDb = config.getAppdataItemSets
 
-  override def prepareTraining(params: TrainDataParams): TrainigData = {
+  override def prepareTraining(params: TrainDataPrepParams): TrainigData = {
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
       .map(_.id).zipWithIndex
       .map { case (uid, index) => (uid, index + 1) }.toMap
@@ -54,7 +54,12 @@ class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData
     }.toSet
     */
 
-    val u2iActions = u2iDb.getAllByAppid(params.appid).toSeq
+    val u2iActions = params.startUntil.map{ startUntil =>
+      u2iDb.getByAppidAndTime(params.appid, startUntil._1,
+        startUntil._2).toSeq
+    }.getOrElse{
+      u2iDb.getAllByAppid(params.appid).toSeq
+    }
 
     val u2iRatings = u2iActions
       .filter { u2i =>
@@ -106,19 +111,58 @@ class ItemRankDataPreparator extends DataPreparator[TrainDataParams, TrainigData
     )
   }
 
-  override def prepareEvaluation(params: EvalDataParams): Seq[(Feature, Target)] = {
-    // TODO: should read test data from db as well. hardcode in param for now
-    params.testUsers.map { u =>
-      val f = new Feature(
-        uid = u,
-        items = params.testItems
-      )
-      // TODO
-      val t = new Target(
-        items = params.testItems.map(i => (i, 0.0)).toSeq
-      )
-      (f, t)
-    }.toSeq
+  // TODO: use t to generate eval data
+  override def prepareEvaluation(params: EvalDataPrepParams):
+    Seq[(Feature, Target)] = {
+
+    val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
+      .map(_.id).zipWithIndex
+      .map { case (uid, index) => (uid, index + 1) }.toMap
+
+    val itemsMap: Map[String, (ItemTD, Int)] = params.itypes.map { itypes =>
+      itemsDb.getByAppidAndItypes(params.appid, itypes.toSeq)
+    }.getOrElse {
+      itemsDb.getByAppid(params.appid)
+    }.zipWithIndex.map {
+      case (item, index) =>
+        val itemTD = new ItemTD(
+          iid = item.id,
+          itypes = item.itypes,
+          starttime = item.starttime.map[Long](_.getMillis()),
+          endtime = item.endtime.map[Long](_.getMillis()),
+          inactive = item.inactive.getOrElse(false)
+        )
+        (item.id -> (itemTD, index + 1))
+    }.toMap
+
+
+    // TODO: what if want to rank multiple itemset in each period?
+    // only use one itemSet for now (take(1))
+    val itemList = itemSetsDb.getByAppidAndTime(params.appid, params.startUntil._1,
+      params.startUntil._2).toList(0).iids
+
+    // get u2i within startUntil time
+    val userFT = u2iDb.getByAppidAndTime(params.appid,
+      params.startUntil._1, params.startUntil._2).toSeq
+      .filter { u2i =>
+        val validAction = params.goal.contains(u2i.action)
+        val validUser = usersMap.contains(u2i.uid)
+        val validItem = itemsMap.contains(u2i.iid)
+        (validAction && validUser && validItem)
+      }.groupBy { u2i => u2i.uid }
+      .mapValues { listOfU2i => listOfU2i.map(_.iid).toSet }
+      .toSeq
+      .map{ case (uid, iids) =>
+        val f = new Feature(
+          uid = uid,
+          items = itemList
+        )
+        val t = new Target(
+          items = iids.toSeq.map(i => (i,0.0))
+        )
+        (f, t)
+      }
+    userFT
   }
 
   private def resolveConflict(a: RatingTD, b: RatingTD,
