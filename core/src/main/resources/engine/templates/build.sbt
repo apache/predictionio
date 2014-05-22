@@ -1,6 +1,6 @@
-name := "yourengine"
+name := "myengine"
 
-organization := "org.yourorg"
+organization := "org.myorg"
 
 scalaVersion := "2.10.4"
 
