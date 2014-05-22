@@ -76,7 +76,7 @@ class ItemRankEvaluator
     reports.foreach { r =>
       println(s"${r.mkString(" ")}")
     }
-    println(s"baseline MAP@k = ${baseMean}, MAP@k = ${mean}")
+    println(s"baseline MAP@k = ${baseMean}, algo MAP@k = ${mean}")
     new EvalResults()
   }
 

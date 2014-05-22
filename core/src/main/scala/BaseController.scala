@@ -2,6 +2,8 @@ package io.prediction
 
 trait AbstractEvaluator {
 
+  def initBase(params: BaseEvaluationParams): Unit
+
   def getParamsSetBase(params: BaseEvaluationParams):
     Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
 
@@ -25,6 +27,11 @@ trait BaseEvaluator[
     ER <: BaseEvaluationResults
     ]
   extends AbstractEvaluator {
+
+  override def initBase(params: BaseEvaluationParams): Unit =
+    init(params.asInstanceOf[EP])
+
+  def init(params: EP): Unit = {}
 
   override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)] =
     getParamsSet(params.asInstanceOf[EP])

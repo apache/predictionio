@@ -10,6 +10,9 @@ trait Evaluator[
     EU <: BaseEvaluationUnit,
     ER <: BaseEvaluationResults]
     extends BaseEvaluator[EP, TDP, EDP, F, P, A, EU, ER] {
+
+  def init(params: EP): Unit
+  
   def getParamsSet(params: EP): Seq[(TDP, EDP)]
 
   def evaluate(feature: F, predicted: P, actual: A): EU

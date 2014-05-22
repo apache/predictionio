@@ -12,6 +12,8 @@ class MyEvaluator extends Evaluator[
     EvaluationUnit,
     EvaluationResults] {
 
+  override def init(params: EvaluationParams): Unit = {}
+
   def getParamsSet(params: EvaluationParams):
     Seq[(TrainingDataParams, EvaluationDataParams)] = {
     Seq[(TrainingDataParams, EvaluationDataParams)]()
