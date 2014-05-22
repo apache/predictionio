@@ -6,7 +6,7 @@ import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 
 class ItemRankDataPreparator extends DataPreparator[TrainDataPrepParams, TrainigData]
-    with EvaluationPreparator[EvalDataPrepParams, Feature, Target] {
+    with EvaluationPreparator[EvalDataPrepParams, Feature, Actual] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"
@@ -113,7 +113,7 @@ class ItemRankDataPreparator extends DataPreparator[TrainDataPrepParams, Trainig
 
   // TODO: use t to generate eval data
   override def prepareEvaluation(params: EvalDataPrepParams):
-    Seq[(Feature, Target)] = {
+    Seq[(Feature, Actual)] = {
 
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
       .map(_.id).zipWithIndex
@@ -151,14 +151,14 @@ class ItemRankDataPreparator extends DataPreparator[TrainDataPrepParams, Trainig
         (validAction && validUser && validItem)
       }.groupBy { u2i => u2i.uid }
       .mapValues { listOfU2i => listOfU2i.map(_.iid).toSet }
-      .toSeq
+      .toSeq.sortBy(_._1)
       .map{ case (uid, iids) =>
         val f = new Feature(
           uid = uid,
           items = itemList
         )
-        val t = new Target(
-          items = iids.toSeq.map(i => (i,0.0))
+        val t = new Actual(
+          items = iids.toSeq
         )
         (f, t)
       }
