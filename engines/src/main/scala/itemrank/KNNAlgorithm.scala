@@ -3,7 +3,7 @@ package io.prediction.engines.itemrank
 import io.prediction.{ Algorithm }
 import breeze.linalg.{ SparseVector }
 
-class KNNAlgorithm extends Algorithm[TrainigData, Feature, Target, KNNModel, KNNAlgoParams] {
+class KNNAlgorithm extends Algorithm[TrainigData, Feature, Prediction, KNNModel, KNNAlgoParams] {
 
   override def init(algoParams: KNNAlgoParams): Unit = {} // TODO
 
@@ -83,7 +83,7 @@ class KNNAlgorithm extends Algorithm[TrainigData, Feature, Target, KNNModel, KNN
     }
   }
 
-  override def predict(model: KNNModel, feature: Feature): Target = {
+  override def predict(model: KNNModel, feature: Feature): Prediction = {
     val nearestK = 10 // TODO: algo param
     val uid = feature.uid
     val possibleItems = feature.items
@@ -105,7 +105,7 @@ class KNNAlgorithm extends Algorithm[TrainigData, Feature, Target, KNNModel, KNN
     }.sortBy(_._2)(Ordering.Double.reverse)
     // TODO: keep same order as input if no score
 
-    new Target(
+    new Prediction (
       items = rankedItems
     )
   }

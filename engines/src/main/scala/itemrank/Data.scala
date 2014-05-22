@@ -12,7 +12,8 @@ import io.prediction.{
   BaseActual,
   BaseModel,
   BaseAlgoParams,
-  BaseEvaluationUnit
+  BaseEvaluationUnit,
+  BaseEvaluationResults
 }
 
 // param to evaluator
@@ -94,10 +95,25 @@ class Feature(
   override def toString = s"[${uid}, ${items}]"
 }
 
-// target means prediction output
-class Target(
-    val items: Seq[(String, Double)]) extends BasePrediction with BaseActual {
+// prediction output
+class Prediction(
+  // the ranked items and score
+    val items: Seq[(String, Double)]) extends BasePrediction {
   override def toString = s"${items}"
 }
 
-class EvalUnit(val f: Feature, val p: Target) extends BaseEvaluationUnit {}
+class Actual(
+    // actual items the user has performed actions on
+    val items: Seq[String]) extends BaseActual {
+  override def toString = s"${items}"
+}
+
+class EvalUnit(
+  val f: Feature,
+  val p: Prediction,
+  val a: Actual,
+  val score: Double,
+  val baseline: Double
+) extends BaseEvaluationUnit {}
+
+class EvalResults() extends BaseEvaluationResults {}

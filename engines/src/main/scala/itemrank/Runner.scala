@@ -24,8 +24,8 @@ object Runner {
       // int minutes, int seconds, int millis)
       period = new Period(0, 0, 0, 1, 0, 0, 0, 0),
       trainStart = new DateTime("2014-04-01T00:00:00.000"),
-      testStart = new DateTime("2014-04-10T00:00:00.000"),
-      testUntil = new DateTime("2014-04-14T00:00:00.000"),
+      testStart = new DateTime("2014-04-20T00:00:00.000"),
+      testUntil = new DateTime("2014-04-30T00:00:00.000"),
       goal = Set("conversion", "view")
     )
 
@@ -35,7 +35,7 @@ object Runner {
     val engine = new BaseEngine(
       classOf[ItemRankDataPreparator],
       Map("knn" -> classOf[KNNAlgorithm]),
-      classOf[DefaultServer[Feature, Target]]
+      classOf[DefaultServer[Feature, Prediction]]
     )
 
     val evaluator = new ItemRankEvaluator
