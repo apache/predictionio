@@ -5,12 +5,9 @@ trait AbstractEvaluator {
   def getParamsSetBase(params: BaseEvaluationParams):
     Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
 
-  def evaluateBase(
-    feature: BaseFeature,
-    predicted: BasePrediction,
-    actual: BaseActual): BaseEvaluationUnit
+  def evaluateSeqBase(predictionSeq: BasePredictionSeq): BaseEvaluationUnitSeq
 
-  def reportBase(evalUnits: Seq[BaseEvaluationUnit]): BaseEvaluationResults
+  def reportBase(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults
 
 }
 
@@ -30,25 +27,22 @@ trait BaseEvaluator[
     getParamsSet(params.asInstanceOf[EP])
 
   def getParamsSet(params: EP): Seq[(TDP, EDP)]
-
-  override def evaluateBase(
-    feature: BaseFeature,
-    predicted: BasePrediction,
-    actual: BaseActual): BaseEvaluationUnit =
-    evaluate(
-      feature.asInstanceOf[F],
-      predicted.asInstanceOf[P],
-      actual.asInstanceOf[A])
+  
+  override def evaluateSeqBase(predictionSeq: BasePredictionSeq)
+    : BaseEvaluationUnitSeq = {
+    val input: Seq[(F, P, A)] = predictionSeq
+      .asInstanceOf[PredictionSeq[F, P, A]].data
+    val output = input.map(e => evaluate(e._1, e._2, e._3))
+    return new EvaluationUnitSeq(data = output)
+  }
 
   def evaluate(feature: F, predicted: P, actual: A): EU
 
-  //override
-  def reportBase(evalUnits: Seq[BaseEvaluationUnit]): BaseEvaluationResults = {
-    report(evalUnits.map(_.asInstanceOf[EU]))
+  def reportBase(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults = {
+    report(evalUnitSeq.asInstanceOf[EvaluationUnitSeq[EU]].data)
   }
 
   def report(evalUnits: Seq[EU]): ER
-
 }
 
 trait AbstractDataPreparator {
@@ -69,16 +63,18 @@ trait BaseDataPreparator[-TDP, +TD <: BaseTrainingData]
 
 trait AbstractEvaluationPreparator {
 
-  def prepareEvaluationBase(params: BaseEvaluationDataParams):
-    Seq[(BaseFeature, BaseActual)]
+  def prepareEvaluationBase(params: BaseEvaluationDataParams): BaseEvaluationSeq
 
 }
 
 trait BaseEvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
   extends AbstractEvaluationPreparator {
 
-  override def prepareEvaluationBase(params: BaseEvaluationDataParams):
-    Seq[(F, A)] = prepareEvaluation(params.asInstanceOf[EDP])
+  override def prepareEvaluationBase(params: BaseEvaluationDataParams)
+    : BaseEvaluationSeq = {
+    val data = prepareEvaluation(params.asInstanceOf[EDP])
+    new EvaluationSeq[F, A](data = data)
+  }
 
   def prepareEvaluation(params: EDP): Seq[(F, A)]
 
@@ -90,7 +86,8 @@ trait AbstractAlgorithm {
 
   def trainBase(trainingData: BaseTrainingData): BaseModel
 
-  def predictBase(baseModel: BaseModel, feature: BaseFeature): BasePrediction
+  def predictSeqBase(baseModel: BaseModel, evalSeq: BaseEvaluationSeq)
+    : BasePredictionSeq
 
 }
 
@@ -112,10 +109,20 @@ trait BaseAlgorithm[
 
   def train(trainingData: TD): M
 
-  override def predictBase(
-    baseModel: BaseModel,
-    feature: BaseFeature): BasePrediction =
-    predict(baseModel.asInstanceOf[M], feature.asInstanceOf[F])
+  override def predictSeqBase(baseModel: BaseModel,
+    evalSeq: BaseEvaluationSeq): BasePredictionSeq = {
+   
+    val input: Seq[(F, BaseActual)] = evalSeq
+      .asInstanceOf[EvaluationSeq[F, BaseActual]]
+      .data
+
+    val model = baseModel.asInstanceOf[M]
+    // Algorithm don't know the actual subtype used.
+    val output: Seq[(F, P, BaseActual)] = input.map{ case(f, a) => {
+      (f, predict(model, f), a)
+    }}
+    new PredictionSeq[F, P, BaseActual](data = output)
+  }
 
   def predict(model: M, feature: F): P
 

@@ -48,13 +48,12 @@ class PIORunner(
     val parParamsIdxList = (if (false) paramsIdxList else paramsIdxList.par)
 
     // Data Prep
-    //val rawDataMapPar = paramsIdxList/*.par*/.map{ case(params, idx) => {
     val rawDataMapPar = parParamsIdxList.map {
       case (params, idx) => {
         val (trainingParams, evaluationParams) = params
         val trainingData = dataPreparator.prepareTrainingBase(trainingParams)
-        val evalDataSeq = evaluationPreparator.prepareEvaluationBase(evaluationParams)
-        (idx, (trainingData, evalDataSeq))
+        val evalSeq = evaluationPreparator.prepareEvaluationBase(evaluationParams)
+        (idx, (trainingData, evalSeq))
       }
     }.toMap
 
@@ -66,27 +65,19 @@ class PIORunner(
     }.toMap
 
     // Serving
-    val resultListPar = rawDataMapPar.map {
-      case (idx, data) => {
-        val evalDataSeq = data._2
-        val model = modelMapPar(idx)
-        evalDataSeq.map {
-          case (evalData) => {
-            val (feature, actual) = evalData
-            val predicted = algorithm.predictBase(model, feature)
-            (idx, feature, predicted, actual)
-          }
-        }
-      }
-    }.flatten
+    val evalMapPar = rawDataMapPar.mapValues(_._2)
+    val resultListPar = evalMapPar.map { case (idx, evalSeq) => {
+      val model = modelMapPar(idx)
+
+      val predictionSeq = algorithm.predictSeqBase(model, evalSeq)
+      (idx, predictionSeq)
+    }}
 
     // Evaluate
-    val evalUnits = resultListPar.seq.map {
-      case (idx, feature, predicted, actual) =>
-        evaluator.evaluateBase(feature, predicted, actual)
-    }.toSeq
-
-    evaluator.reportBase(evalUnits)
+    val evalResultMap = resultListPar.seq.map { case (idx, predictionSeq) => {
+      val evalUnits = evaluator.evaluateSeqBase(predictionSeq) 
+      evaluator.reportBase(evalUnits)
+    }}
   }
 }
 
