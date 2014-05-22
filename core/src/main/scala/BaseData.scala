@@ -1,25 +1,28 @@
 package io.prediction
 
+
 trait BaseEvaluationParams {}
 
 trait BaseTrainingDataParams {}
 
 trait BaseEvaluationDataParams {}
 
-trait BaseTrainingData {}
+trait BasePersistentData {}
 
-trait BaseFeature {}
+trait BaseTrainingData extends BasePersistentData {}
 
-trait BasePrediction {}
+trait BaseFeature extends BasePersistentData {}
 
-trait BaseActual {}
+trait BasePrediction extends BasePersistentData {}
 
-trait BaseModel {}
+trait BaseActual extends BasePersistentData {}
+
+trait BaseModel extends BasePersistentData {}
 
 trait BaseAlgoParams {}
 
 trait BaseServerParams {}
 
-trait BaseEvaluationUnit {}
+trait BaseEvaluationUnit extends BasePersistentData {}
 
-trait BaseEvaluationResults {}
+trait BaseEvaluationResults extends BasePersistentData {}
