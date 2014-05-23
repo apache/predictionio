@@ -214,13 +214,11 @@ trait BaseServer[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
 /* Engine */
 
 class BaseEngine[
-    TDP <: BaseTrainingDataParams,
-    CP <: BaseCleanserParams,
     TD <: BaseTrainingData,
     CD <: BaseCleansedData,
     F <: BaseFeature,
     P <: BasePrediction](
-    cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]],
+    cleanserClass: Class[_ <: BaseCleanser[TD, CD, _ <: BaseCleanserParams]],
     algorithmClassMap:
       Map[String,
         Class[_ <:

@@ -1,9 +1,10 @@
 package io.prediction.engines.stock
 import com.github.nscala_time.time.Imports.DateTime
 
-import io.prediction.PIORunner
-import io.prediction.BaseEngine
+//import io.prediction.PIORunner
+import io.prediction.core.BaseEngine
 import io.prediction.DefaultServer
+import io.prediction.DefaultCleanser
 
 import io.prediction.workflow.EvaluationWorkflow
 
@@ -26,22 +27,24 @@ object Run {
       tickerList = tickerList)
 
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
-    val serverParams = new StockServerParams(i = 2)
+    val serverParams = new StockServerParams(i = 1)
 
     val engine = new BaseEngine(
-      classOf[StockPreparator],
+      //classOf[StockPreparator],
+      classOf[DefaultCleanser[TrainingData]],
       Map("random" -> classOf[RandomAlgorithm],
         "regression" -> classOf[RegressionAlgorithm]),
       classOf[StockServer])
 
     val evaluator = new StockEvaluator
-    val preparator = new StockPreparator
+    //val preparator = new StockPreparator
 
     val algoParamsSet = Seq(
       ("random", new RandomAlgoParams(seed = 1, scale = 0.01)),
       ("random", new RandomAlgoParams(seed = 2, drift = 1)),
       ("regression", null))
 
+    /*
     if (false) {
       // Pass engine directly
       PIORunner(evalParams, algoParamsSet(1), serverParams, 
@@ -49,6 +52,7 @@ object Run {
       PIORunner(evalParams, algoParamsSet(2), serverParams,
         engine, evaluator, preparator)
     }
+    */
 
     /*
     if (false) {
@@ -62,8 +66,9 @@ object Run {
 
     if (true) {
       val evalWorkflow = EvaluationWorkflow(
-        "", evalParams, algoParamsSet, serverParams, 
-        engine, evaluator, preparator)
+        "", evalParams, 
+        null /* cleanserParams */, algoParamsSet, serverParams, 
+        engine, evaluator)
 
       evalWorkflow.run
     }

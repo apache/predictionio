@@ -53,7 +53,7 @@ class CleanserTask(
   val engine: AbstractEngine,
   val cleanserParams: BaseCleanserParams,
   val dataPrepId: Int
-) extends Task(id, batch, Seq[Int]()) {
+) extends Task(id, batch, Seq(dataPrepId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     //val algorithm = engine.algorithmClassMap(algoName).newInstance
     val cleanser = engine.cleanserClass.newInstance

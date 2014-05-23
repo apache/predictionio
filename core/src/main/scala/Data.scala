@@ -20,10 +20,11 @@ trait BaseAlgoParams {}
 trait BaseServerParams {}
 
 // Persistent Data
-trait BaseTrainingData extends BasePersistentData {}
+//trait BaseTrainingData extends BasePersistentData {}
+trait BaseTrainingData extends BaseCleansedData {}
 
-//trait BaseCleansedData extends BasePersistentData {}
-trait BaseCleansedData extends BaseTrainingData {}
+trait BaseCleansedData extends BasePersistentData {}
+//trait BaseCleansedData extends BaseTrainingData {}
 
 trait BaseFeature extends BasePersistentData {}
 

@@ -5,6 +5,7 @@ import io.prediction.{
   BaseTrainingDataParams,
   BaseEvaluationDataParams,
   BaseTrainingData,
+  BaseCleansedData,
   BaseFeature,
   BasePrediction,
   BaseActual,
