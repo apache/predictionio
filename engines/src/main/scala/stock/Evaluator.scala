@@ -2,8 +2,6 @@ package io.prediction.engines.stock
 
 import io.prediction.storage.Config
 import io.prediction.storage.{ ItemTrend, ItemTrends }
-//import io.prediction.DataPreparator
-//import io.prediction.EvaluationPreparator
 import io.prediction.PIOSettings
 
 import io.prediction.Evaluator
@@ -159,7 +157,6 @@ class StockEvaluator
     new EvaluationUnit(data = data)
   }
 
-  //def report() {
   def report(evalUnits: Seq[EvaluationUnit]): BaseEvaluationResults = {
     val results: Seq[(Double, Double)] = evalUnits.map(_.data).flatten
     val pThresholds = Seq(-0.01, -0.003, -0.001, -0.0003,

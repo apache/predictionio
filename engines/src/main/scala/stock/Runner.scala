@@ -1,7 +1,6 @@
 package io.prediction.engines.stock
 import com.github.nscala_time.time.Imports.DateTime
 
-//import io.prediction.PIORunner
 import io.prediction.core.BaseEngine
 import io.prediction.DefaultServer
 import io.prediction.DefaultCleanser
@@ -30,14 +29,12 @@ object Run {
     val serverParams = new StockServerParams(i = 1)
 
     val engine = new BaseEngine(
-      //classOf[StockPreparator],
       classOf[DefaultCleanser[TrainingData]],
       Map("random" -> classOf[RandomAlgorithm],
         "regression" -> classOf[RegressionAlgorithm]),
       classOf[StockServer])
 
     val evaluator = new StockEvaluator
-    //val preparator = new StockPreparator
 
     val algoParamsSet = Seq(
       ("random", new RandomAlgoParams(seed = 1, scale = 0.01)),

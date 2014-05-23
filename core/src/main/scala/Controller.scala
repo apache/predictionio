@@ -1,6 +1,6 @@
 package io.prediction
 
-// FIXME(yipjustin). I am being lazy..
+// FIXME(yipjustin). I am lazy...
 import io.prediction.core._
 
 trait Evaluator[

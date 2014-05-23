@@ -11,6 +11,8 @@ object PIOSettings {
   val appid = 42
 }
 
+// Runner is deprecated. Use workflow.EvaluationWorkflow instead
+
 /*
 class PIORunner(
     evalParams: BaseEvaluationParams,

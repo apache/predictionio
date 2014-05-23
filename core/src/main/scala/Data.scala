@@ -20,11 +20,11 @@ trait BaseAlgoParams {}
 trait BaseServerParams {}
 
 // Persistent Data
-//trait BaseTrainingData extends BasePersistentData {}
-trait BaseTrainingData extends BaseCleansedData {}
-
 trait BaseCleansedData extends BasePersistentData {}
-//trait BaseCleansedData extends BaseTrainingData {}
+
+// TrainingData is a subclass of CleasedData. If an algo can handle (potentially
+// unclean training data, it should also handle cleansed data.
+trait BaseTrainingData extends BaseCleansedData {}
 
 trait BaseFeature extends BasePersistentData {}
 

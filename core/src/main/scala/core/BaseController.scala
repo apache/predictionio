@@ -3,21 +3,6 @@ package io.prediction.core
 // FIXME(yipjustin). I am being lazy...
 import io.prediction._
 
-/* Evaluator */
-
-/*
-trait BaseEvaluator[
-    -EP <: BaseEvaluationParams,
-    +TDP <: BaseTrainingDataParams,
-    +EDP <: BaseEvaluationDataParams,
-    -F <: BaseFeature,
-    -P <: BasePrediction,
-    -A <: BaseActual,
-    EU <: BaseEvaluationUnit,
-    ER <: BaseEvaluationResults
-    ]
-*/
-
 trait BaseEvaluator[
     EP <: BaseEvaluationParams,
     TDP <: BaseTrainingDataParams,
@@ -31,9 +16,6 @@ trait BaseEvaluator[
     ]
   extends AbstractEvaluator {
   
-  //def prepareDataBase(params: BaseEvaluationParams)
-  //  : Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
-
   override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)] 
     = getParamsSet(params.asInstanceOf[EP])
 
@@ -51,24 +33,6 @@ trait BaseEvaluator[
   }
 
   def prepareEvaluation(params: EDP): Seq[(F, A)]
-
-  /*
-  def prepareTrainingBase(params: BaseTrainingDataParams)
-    : BaseTrainingData
-    
-  def prepareEvaluationBase(params: BaseEvaluationDataParams)
-    : BaseEvaluationSeq
-  */
-
-  /*
-  override def prepareDataBase(params: BaseEvaluationParams)
-  : Seq[(BaseTrainingData, BaseEvaluationSeq)] = {
-    val data = prepareData(params.asInstanceOf[EP])
-    data.map(e => (e, new BaseEvaluationSeq(data = e._2)))
-  }
-
-  def prepareData(params: EP): Seq[(TD, Seq[(F, A)]]
-  */
 
   override def initBase(params: BaseEvaluationParams): Unit =
     init(params.asInstanceOf[EP])
@@ -92,36 +56,6 @@ trait BaseEvaluator[
   def report(evalUnits: Seq[EU]): ER
 }
 
-/* DataPrepatator */
-
-/*
-trait BaseDataPreparator[-TDP, +TD <: BaseTrainingData]
-  extends AbstractDataPreparator {
-
-  override def prepareTrainingBase(params: BaseTrainingDataParams): TD =
-    prepareTraining(params.asInstanceOf[TDP])
-
-  def prepareTraining(params: TDP): TD
-
-}
-*/
-
-/* EvaluationPrepatator */
-
-/*
-trait BaseEvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
-  extends AbstractEvaluationPreparator {
-
-  override def prepareEvaluationBase(params: BaseEvaluationDataParams)
-    : BaseEvaluationSeq = {
-    val data = prepareEvaluation(params.asInstanceOf[EDP])
-    new EvaluationSeq[F, A](data = data)
-  }
-
-  def prepareEvaluation(params: EDP): Seq[(F, A)]
-}
-*/
-
 trait BaseCleanser[
     -TD <: BaseTrainingData,
     +CD <: BaseCleansedData,
@@ -143,7 +77,6 @@ trait BaseCleanser[
 
 /* Algorithm */
 
-    //-TD <: BaseTrainingData,
 trait BaseAlgorithm[
     -CD <: BaseCleansedData,
     -F <: BaseFeature,

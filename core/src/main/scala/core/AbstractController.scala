@@ -1,6 +1,6 @@
 package io.prediction.core
 
-// FIXME(yipjustin). I am being lazy...
+// FIXME(yipjustin). I am lazy...
 import io.prediction._
 
 trait AbstractEvaluator {
@@ -22,7 +22,6 @@ trait AbstractEvaluator {
   def report(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults
 }
 
-
 trait AbstractCleanser {
 
   def initBase(baseCleanserParams: BaseCleanserParams): Unit
@@ -30,7 +29,6 @@ trait AbstractCleanser {
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
 
 }
-
 
 trait AbstractAlgorithm {
 
@@ -62,4 +60,3 @@ class AbstractEngine(
   val serverClass: Class[_ <: AbstractServer]) {
 
 }
-

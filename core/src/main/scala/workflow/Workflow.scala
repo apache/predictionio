@@ -25,12 +25,10 @@ class Task(val id: Int, val batch: String, val dependingIds: Seq[Int]) {
 class DataPrepTask(
   id: Int,
   batch: String,
-  //val engine: AbstractEngine,
   val evaluator: AbstractEvaluator,
   val dataParams: BaseTrainingDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    //val dataPrep = engine.dataPreparatorClass.newInstance
     evaluator.prepareTrainingBase(dataParams)
   }
 }
@@ -38,7 +36,6 @@ class DataPrepTask(
 class EvalPrepTask(
   id: Int,
   batch: String,
-  //val evalPreparator: AbstractEvaluationPreparator,
   val evaluator: AbstractEvaluator,
   val evalDataParams: BaseEvaluationDataParams
 ) extends Task(id, batch, Seq[Int]()) {
@@ -55,7 +52,6 @@ class CleanserTask(
   val dataPrepId: Int
 ) extends Task(id, batch, Seq(dataPrepId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    //val algorithm = engine.algorithmClassMap(algoName).newInstance
     val cleanser = engine.cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
     cleanser.cleanseBase(input(dataPrepId).asInstanceOf[BaseTrainingData])

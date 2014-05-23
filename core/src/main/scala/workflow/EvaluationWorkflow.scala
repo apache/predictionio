@@ -1,21 +1,18 @@
 package io.prediction.workflow
 
-import scala.collection.mutable.ArrayBuffer
-import io.prediction.core.AbstractEngine
-//import io.prediction.core.AbstractEngine
-import io.prediction.core.AbstractEvaluator
-//import io.prediction.core.AbstractEvaluationPreparator
-import io.prediction.BaseTrainingDataParams
 import io.prediction.BaseAlgoParams
 import io.prediction.BaseCleanserParams
-import io.prediction.BaseServerParams
 import io.prediction.BaseEvaluationParams
-import io.prediction.core.BasePersistentData
 import io.prediction.BaseModel
+import io.prediction.BaseServerParams
+import io.prediction.BaseTrainingDataParams
+import io.prediction.core.AbstractEngine
+import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluationSeq
-import io.prediction.core.BasePredictionSeq
 import io.prediction.core.BaseEvaluationUnitSeq
-
+import io.prediction.core.BasePersistentData
+import io.prediction.core.BasePredictionSeq
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.util.Random
 
@@ -82,8 +79,7 @@ object EvaluationWorkflow {
       algoParamsList: Seq[(String, BaseAlgoParams)],
       serverParams: BaseServerParams,
       engine: AbstractEngine,
-      evaluator: AbstractEvaluator/*,
-      evaluationPreparator: AbstractEvaluationPreparator*/): Workflow = {
+      evaluator: AbstractEvaluator): Workflow = {
     val workflow = new Workflow(batch)
     // In the comment, *_id corresponds to a task id.
     
