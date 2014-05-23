@@ -1,10 +1,19 @@
 package io.prediction.core
 
+// FIXME(yipjustin). I am being lazy...
+import io.prediction._
+
 trait AbstractEvaluator {
   // Data Preparation methods
-  def prepareDataBase(params: BaseEvaluationParams)
-    : Seq[(BaseTrainingData, BaseEvaluationSeq)]
+  def getParamsSetBase(params: BaseEvaluationParams)
+    : Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
 
+  def prepareTrainingBase(params: BaseTrainingDataParams)
+    : BaseTrainingData
+    
+  def prepareEvaluationBase(params: BaseEvaluationDataParams)
+    : BaseEvaluationSeq
+    
   // Evaluation methods
   def initBase(params: BaseEvaluationParams): Unit
   
@@ -27,7 +36,7 @@ trait AbstractAlgorithm {
 
   def initBase(baseAlgoParams: BaseAlgoParams): Unit
 
-  def trainBase(processedData: BaseProcessedData): BaseModel
+  def trainBase(cleansedData: BaseCleansedData): BaseModel
 
   def predictSeqBase(baseModel: BaseModel, evalSeq: BaseEvaluationSeq)
     : BasePredictionSeq
@@ -46,7 +55,7 @@ trait AbstractServer {
 
 class AbstractEngine(
 
-  val preprocessorClass: Class[_ <: AbstractPreprocessor],
+  val cleanserClass: Class[_ <: AbstractCleanser],
 
   val algorithmClassMap: Map[String, Class[_ <: AbstractAlgorithm]],
 

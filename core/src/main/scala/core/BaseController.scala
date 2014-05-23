@@ -1,5 +1,8 @@
 package io.prediction.core
 
+// FIXME(yipjustin). I am being lazy...
+import io.prediction._
+
 /* Evaluator */
 
 /*
@@ -16,15 +19,48 @@ trait BaseEvaluator[
 */
 
 trait BaseEvaluator[
-    -EP <: BaseEvaluationParams,
-    -TD <: BaseTrainingData,
-    -F <: BaseFeature,
-    -P <: BasePrediction,
-    -A <: BaseActual,
+    EP <: BaseEvaluationParams,
+    TDP <: BaseTrainingDataParams,
+    EDP <: BaseEvaluationDataParams,
+    +TD <: BaseTrainingData,
+    F <: BaseFeature,
+    P <: BasePrediction,
+    A <: BaseActual,
     EU <: BaseEvaluationUnit,
     ER <: BaseEvaluationResults
     ]
-  extends AbstractEvalPrepatator {
+  extends AbstractEvaluator {
+  
+  //def prepareDataBase(params: BaseEvaluationParams)
+  //  : Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
+
+  override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)] 
+    = getParamsSet(params.asInstanceOf[EP])
+
+  def getParamsSet(params: EP): Seq[(TDP, EDP)]
+
+  override def prepareTrainingBase(params: BaseTrainingDataParams): TD
+    = prepareTraining(params.asInstanceOf[TDP])
+
+  def prepareTraining(params: TDP): TD
+
+  override def prepareEvaluationBase(params: BaseEvaluationDataParams)
+    : BaseEvaluationSeq = {
+    val data = prepareEvaluation(params.asInstanceOf[EDP])
+    new EvaluationSeq[F, A](data = data)
+  }
+
+  def prepareEvaluation(params: EDP): Seq[(F, A)]
+
+  /*
+  def prepareTrainingBase(params: BaseTrainingDataParams)
+    : BaseTrainingData
+    
+  def prepareEvaluationBase(params: BaseEvaluationDataParams)
+    : BaseEvaluationSeq
+  */
+
+  /*
   override def prepareDataBase(params: BaseEvaluationParams)
   : Seq[(BaseTrainingData, BaseEvaluationSeq)] = {
     val data = prepareData(params.asInstanceOf[EP])
@@ -32,6 +68,7 @@ trait BaseEvaluator[
   }
 
   def prepareData(params: EP): Seq[(TD, Seq[(F, A)]]
+  */
 
   override def initBase(params: BaseEvaluationParams): Unit =
     init(params.asInstanceOf[EP])
@@ -89,19 +126,19 @@ trait BaseCleanser[
     -TD <: BaseTrainingData,
     +CD <: BaseCleansedData,
     CP <: BaseCleanserParams]
-  extends AbstractPreprocessor {
+  extends AbstractCleanser {
 
-  override def initBase(params: BasePreprocessorParam): Unit = {
-    init(params.asInstanceOf[PP])
+  override def initBase(params: BaseCleanserParams): Unit = {
+    init(params.asInstanceOf[CP])
   }
 
-  def init(params: PP): Unit
+  def init(params: CP): Unit
   
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
-    preprocess(trainingData.asInstanceOf[TD])
+    cleanse(trainingData.asInstanceOf[TD])
   }
 
-  def cleanse(trainingData: TD): CP
+  def cleanse(trainingData: TD): CD
 }
 
 /* Algorithm */
@@ -123,7 +160,7 @@ trait BaseAlgorithm[
   override def trainBase(cleansedData: BaseCleansedData): BaseModel =
     train(cleansedData.asInstanceOf[CD])
 
-  def train(trainingData: TD): M
+  def train(cleansedData: CD): M
 
   override def predictSeqBase(baseModel: BaseModel,
     evalSeq: BaseEvaluationSeq): BasePredictionSeq = {
@@ -180,7 +217,7 @@ class BaseEngine[
     TDP <: BaseTrainingDataParams,
     CP <: BaseCleanserParams,
     TD <: BaseTrainingData,
-    CD <: BaseClensedData,
+    CD <: BaseCleansedData,
     F <: BaseFeature,
     P <: BasePrediction](
     cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]],
@@ -189,5 +226,5 @@ class BaseEngine[
         Class[_ <:
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
-  extends AbstractEngine(dataPreparatorClass, algorithmClassMap, serverClass) {
+  extends AbstractEngine(cleanserClass, algorithmClassMap, serverClass) {
 }

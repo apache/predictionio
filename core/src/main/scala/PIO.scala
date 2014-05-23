@@ -11,6 +11,7 @@ object PIOSettings {
   val appid = 42
 }
 
+/*
 class PIORunner(
     evalParams: BaseEvaluationParams,
     algoParams: (String, BaseAlgoParams),
@@ -127,7 +128,6 @@ object PIORunner {
   }
 
   // Engine is passed via serialized object.
-  /*
   def apply[EP <: BaseEvaluationParams, AP <: BaseAlgoParams, TDP <: BaseTrainingDataParams, EDP <: BaseEvaluationDataParams, TD <: BaseTrainingData, F <: BaseFeature, T <: BaseTarget](
     evalParams: EP,
     algoParams: (String, AP),
@@ -140,5 +140,5 @@ object PIORunner {
 
     runner.run
   }
-  */
 }
+*/

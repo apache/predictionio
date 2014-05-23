@@ -1,45 +1,46 @@
 package io.prediction
 
+// FIXME(yipjustin). I am being lazy..
+import io.prediction.core._
+
 trait Evaluator[
-    -EP <: BaseEvaluationParams,
-    +TDP <: BaseTrainingDataParams,
-    +EDP <: BaseEvaluationDataParams,
-    -F <: BaseFeature,
-    -P <: BasePrediction,
-    -A <: BaseActual,
+    EP <: BaseEvaluationParams,
+    TDP <: BaseTrainingDataParams,
+    EDP <: BaseEvaluationDataParams,
+    TD <: BaseTrainingData,
+    F <: BaseFeature,
+    P <: BasePrediction,
+    A <: BaseActual,
     EU <: BaseEvaluationUnit,
     ER <: BaseEvaluationResults]
-    extends BaseEvaluator[EP, TDP, EDP, F, P, A, EU, ER] {
+    extends BaseEvaluator[EP, TDP, EDP, TD, F, P, A, EU, ER] {
 
-  def init(params: EP): Unit
-  
+  // Data generation
   def getParamsSet(params: EP): Seq[(TDP, EDP)]
+  
+  def prepareTraining(params: TDP): TD
+  
+  def prepareEvaluation(params: EDP): Seq[(F, A)]
+ 
+  // Evaluation
+  def init(params: EP): Unit
 
   def evaluate(feature: F, predicted: P, actual: A): EU
 
   def report(evalUnits: Seq[EU]): ER
 }
-
-trait DataPreparator[-TDP, +TD <: BaseTrainingData]
-    extends BaseDataPreparator[TDP, TD] {
-  def prepareTraining(params: TDP): TD
-}
-
-trait EvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
-    extends BaseEvaluationPreparator[EDP, F, A] {
-  def prepareEvaluation(params: EDP): Seq[(F, A)]
-}
+    
 
 trait Algorithm[
-    -TD <: BaseTrainingData,
+    -CD <: BaseCleansedData,
     -F <: BaseFeature,
     +P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams]
-    extends BaseAlgorithm[TD, F, P, M, AP] {
+    extends BaseAlgorithm[CD, F, P, M, AP] {
   def init(algoParams: AP): Unit
 
-  def train(trainingData: TD): M
+  def train(cleansedData: CD): M
 
   def predict(model: M, feature: F): P
 }
@@ -57,8 +58,8 @@ class DefaultServer[F <: BaseFeature, P <: BasePrediction]
   override def combine(feature: F, predictions: Seq[P]): P = predictions.head
 }
 
-class DefaultCleanser[TD]
-    extends BaseCleanser[TD, TD, BaseCleanserParams] {
-  def init(params: BaseCleanswerParams): Unit = {}
-  def cleanse(trainingData: TD): TD = trainingData
+class DefaultCleanser[CD <: BaseCleansedData]
+    extends BaseCleanser[CD, CD, BaseCleanserParams] {
+  def init(params: BaseCleanserParams): Unit = {}
+  def cleanse(trainingData: CD): CD = trainingData
 }

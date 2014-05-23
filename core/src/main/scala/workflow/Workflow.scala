@@ -1,20 +1,19 @@
 package io.prediction.workflow
 
-import io.prediction.{
-  AbstractEngine,
-  AbstractEvaluator,
-  AbstractEvaluationPreparator
-}
+import io.prediction.core.AbstractEngine
+import io.prediction.core.AbstractEvaluator
 import io.prediction.BaseTrainingDataParams
 import io.prediction.BaseAlgoParams
+import io.prediction.BaseCleanserParams
 import io.prediction.BaseServerParams
 import io.prediction.BaseEvaluationDataParams
-import io.prediction.BasePersistentData
+import io.prediction.core.BasePersistentData
 import io.prediction.BaseTrainingData
 import io.prediction.BaseModel
-import io.prediction.BaseEvaluationSeq
-import io.prediction.BasePredictionSeq
-import io.prediction.BaseEvaluationUnitSeq
+import io.prediction.BaseCleansedData
+import io.prediction.core.BaseEvaluationSeq
+import io.prediction.core.BasePredictionSeq
+import io.prediction.core.BaseEvaluationUnitSeq
 
 
 class Task(val id: Int, val batch: String, val dependingIds: Seq[Int]) {
@@ -26,24 +25,42 @@ class Task(val id: Int, val batch: String, val dependingIds: Seq[Int]) {
 class DataPrepTask(
   id: Int,
   batch: String,
-  val engine: AbstractEngine,
+  //val engine: AbstractEngine,
+  val evaluator: AbstractEvaluator,
   val dataParams: BaseTrainingDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val dataPrep = engine.dataPreparatorClass.newInstance
-    dataPrep.prepareTrainingBase(dataParams)
+    //val dataPrep = engine.dataPreparatorClass.newInstance
+    evaluator.prepareTrainingBase(dataParams)
   }
 }
 
 class EvalPrepTask(
   id: Int,
   batch: String,
-  val evalPreparator: AbstractEvaluationPreparator,
+  //val evalPreparator: AbstractEvaluationPreparator,
+  val evaluator: AbstractEvaluator,
   val evalDataParams: BaseEvaluationDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evalPreparator.prepareEvaluationBase(evalDataParams)
+    evaluator.prepareEvaluationBase(evalDataParams)
   }
+}
+
+class CleanserTask(
+  id: Int,
+  batch: String,
+  val engine: AbstractEngine,
+  val cleanserParams: BaseCleanserParams,
+  val dataPrepId: Int
+) extends Task(id, batch, Seq[Int]()) {
+  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
+    //val algorithm = engine.algorithmClassMap(algoName).newInstance
+    val cleanser = engine.cleanserClass.newInstance
+    cleanser.initBase(cleanserParams)
+    cleanser.cleanseBase(input(dataPrepId).asInstanceOf[BaseTrainingData])
+  }
+  
 }
 
 class TrainingTask(
@@ -52,12 +69,12 @@ class TrainingTask(
   val engine: AbstractEngine,
   val algoName: String,
   val algoParams: BaseAlgoParams,
-  val dataPrepId: Int
-) extends Task(id, batch, Seq(dataPrepId)) {
+  val cleanseId: Int
+) extends Task(id, batch, Seq(cleanseId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val algorithm = engine.algorithmClassMap(algoName).newInstance
     algorithm.initBase(algoParams)
-    algorithm.trainBase(input(dataPrepId).asInstanceOf[BaseTrainingData])
+    algorithm.trainBase(input(cleanseId).asInstanceOf[BaseCleansedData])
   }
 }
 
@@ -102,7 +119,7 @@ class EvaluationUnitTask(
   val serverId: Int
 ) extends Task(id, batch, Seq(serverId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evaluator.evaluateSeqBase(input(serverId).asInstanceOf[BasePredictionSeq])
+    evaluator.evaluateSeq(input(serverId).asInstanceOf[BasePredictionSeq])
   }
 }
 
@@ -113,6 +130,6 @@ class EvaluationReportTask(
   val evalUnitId: Int
 ) extends Task(id, batch, Seq(evalUnitId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evaluator.reportBase(input(evalUnitId).asInstanceOf[BaseEvaluationUnitSeq])
+    evaluator.report(input(evalUnitId).asInstanceOf[BaseEvaluationUnitSeq])
   }
 }
