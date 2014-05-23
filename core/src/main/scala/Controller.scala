@@ -56,3 +56,9 @@ class DefaultServer[F <: BaseFeature, P <: BasePrediction]
     extends Server[F, P, BaseServerParams] {
   override def combine(feature: F, predictions: Seq[P]): P = predictions.head
 }
+
+class DefaultCleanser[TD]
+    extends BaseCleanser[TD, TD, BaseCleanserParams] {
+  def init(params: BaseCleanswerParams): Unit = {}
+  def cleanse(trainingData: TD): TD = trainingData
+}

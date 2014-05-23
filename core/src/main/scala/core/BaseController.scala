@@ -15,11 +15,14 @@ trait BaseEvaluator[
     ]
 */
 
-trait BaseEvalPreparator[
+trait BaseEvaluator[
     -EP <: BaseEvaluationParams,
     -TD <: BaseTrainingData,
     -F <: BaseFeature,
+    -P <: BasePrediction,
     -A <: BaseActual,
+    EU <: BaseEvaluationUnit,
+    ER <: BaseEvaluationResults
     ]
   extends AbstractEvalPrepatator {
   override def prepareDataBase(params: BaseEvaluationParams)
@@ -29,19 +32,6 @@ trait BaseEvalPreparator[
   }
 
   def prepareData(params: EP): Seq[(TD, Seq[(F, A)]]
-}
-
-
-
-trait BaseEvaluator[
-    -EP <: BaseEvaluationParams,
-    -F <: BaseFeature,
-    -P <: BasePrediction,
-    -A <: BaseActual,
-    EU <: BaseEvaluationUnit,
-    ER <: BaseEvaluationResults
-    ]
-  extends AbstractEvalPrepatator {
 
   override def initBase(params: BaseEvaluationParams): Unit =
     init(params.asInstanceOf[EP])
@@ -95,10 +85,10 @@ trait BaseEvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
 }
 */
 
-trait BasePreprocessor[
+trait BaseCleanser[
     -TD <: BaseTrainingData,
-    +PD <: BaseProcessedData,
-    PP <: BasePreprocessorParam]
+    +CD <: BaseCleansedData,
+    CP <: BaseCleanserParams]
   extends AbstractPreprocessor {
 
   override def initBase(params: BasePreprocessorParam): Unit = {
@@ -107,17 +97,18 @@ trait BasePreprocessor[
 
   def init(params: PP): Unit
   
-  def preprocessBase(trainingData: BaseTrainingData): BaseProcessedData = {
+  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
     preprocess(trainingData.asInstanceOf[TD])
   }
 
-  def preprocess(trainingData: TD): PP
+  def cleanse(trainingData: TD): CP
 }
 
 /* Algorithm */
 
+    //-TD <: BaseTrainingData,
 trait BaseAlgorithm[
-    -TD <: BaseTrainingData,
+    -CD <: BaseCleansedData,
     -F <: BaseFeature,
     +P <: BasePrediction,
     M <: BaseModel,
@@ -129,8 +120,8 @@ trait BaseAlgorithm[
 
   def init(algoParams: AP): Unit = {}
 
-  override def trainBase(trainingData: BaseTrainingData): BaseModel =
-    train(trainingData.asInstanceOf[TD])
+  override def trainBase(cleansedData: BaseCleansedData): BaseModel =
+    train(cleansedData.asInstanceOf[CD])
 
   def train(trainingData: TD): M
 
@@ -187,14 +178,16 @@ trait BaseServer[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
 
 class BaseEngine[
     TDP <: BaseTrainingDataParams,
+    CP <: BaseCleanserParams,
     TD <: BaseTrainingData,
+    CD <: BaseClensedData,
     F <: BaseFeature,
     P <: BasePrediction](
-    dataPreparatorClass: Class[_ <: BaseDataPreparator[TDP, TD]],
+    cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]],
     algorithmClassMap:
       Map[String,
         Class[_ <:
-          BaseAlgorithm[TD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
+          BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
   extends AbstractEngine(dataPreparatorClass, algorithmClassMap, serverClass) {
 }

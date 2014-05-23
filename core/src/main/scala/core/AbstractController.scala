@@ -1,20 +1,10 @@
 package io.prediction.core
 
-trait AbstractEvalPrepatator {
+trait AbstractEvaluator {
   // Data Preparation methods
-  /*
-  def getParamsSetBase(params: BaseEvaluationParams)
-    : Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
-
-  def prepareTrainingBase(params: BaseTrainingDataParams): BaseTrainingData
-
-  def prepareEvaluationBase(params: BaseEvaluationDataParams): BaseEvaluationSeq
-  */
   def prepareDataBase(params: BaseEvaluationParams)
     : Seq[(BaseTrainingData, BaseEvaluationSeq)]
-}
 
-trait AbstractEvaluator {
   // Evaluation methods
   def initBase(params: BaseEvaluationParams): Unit
   
@@ -24,11 +14,11 @@ trait AbstractEvaluator {
 }
 
 
-trait AbstractPreprocessor {
+trait AbstractCleanser {
 
-  def initBase(basePreprocessParams: BasePreprocessParams): Unit
+  def initBase(baseCleanserParams: BaseCleanserParams): Unit
 
-  def preprocessBase(trainingData: BaseTrainingData): BaseProcessedData
+  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
 
 }
 
