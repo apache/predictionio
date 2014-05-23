@@ -1,4 +1,4 @@
-package io.prediction
+package io.prediction.core
 
 // Below are internal classes used by PIO workflow
 trait BaseEvaluationSeq extends BasePersistentData {}

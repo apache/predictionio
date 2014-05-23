@@ -1,19 +1,8 @@
-package io.prediction
+package io.prediction.core
 
 /* Evaluator */
-trait AbstractEvaluator {
 
-  def initBase(params: BaseEvaluationParams): Unit
-
-  def getParamsSetBase(params: BaseEvaluationParams):
-    Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
-
-  def evaluateSeqBase(predictionSeq: BasePredictionSeq): BaseEvaluationUnitSeq
-
-  def reportBase(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults
-
-}
-
+/*
 trait BaseEvaluator[
     -EP <: BaseEvaluationParams,
     +TDP <: BaseTrainingDataParams,
@@ -24,19 +13,42 @@ trait BaseEvaluator[
     EU <: BaseEvaluationUnit,
     ER <: BaseEvaluationResults
     ]
-  extends AbstractEvaluator {
+*/
+
+trait BaseEvalPreparator[
+    -EP <: BaseEvaluationParams,
+    -TD <: BaseTrainingData,
+    -F <: BaseFeature,
+    -A <: BaseActual,
+    ]
+  extends AbstractEvalPrepatator {
+  override def prepareDataBase(params: BaseEvaluationParams)
+  : Seq[(BaseTrainingData, BaseEvaluationSeq)] = {
+    val data = prepareData(params.asInstanceOf[EP])
+    data.map(e => (e, new BaseEvaluationSeq(data = e._2)))
+  }
+
+  def prepareData(params: EP): Seq[(TD, Seq[(F, A)]]
+}
+
+
+
+trait BaseEvaluator[
+    -EP <: BaseEvaluationParams,
+    -F <: BaseFeature,
+    -P <: BasePrediction,
+    -A <: BaseActual,
+    EU <: BaseEvaluationUnit,
+    ER <: BaseEvaluationResults
+    ]
+  extends AbstractEvalPrepatator {
 
   override def initBase(params: BaseEvaluationParams): Unit =
     init(params.asInstanceOf[EP])
 
   def init(params: EP): Unit = {}
 
-  override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)] =
-    getParamsSet(params.asInstanceOf[EP])
-
-  def getParamsSet(params: EP): Seq[(TDP, EDP)]
-  
-  override def evaluateSeqBase(predictionSeq: BasePredictionSeq)
+  override def evaluateSeq(predictionSeq: BasePredictionSeq)
     : BaseEvaluationUnitSeq = {
     val input: Seq[(F, P, A)] = predictionSeq
       .asInstanceOf[PredictionSeq[F, P, A]].data
@@ -46,7 +58,7 @@ trait BaseEvaluator[
 
   def evaluate(feature: F, predicted: P, actual: A): EU
 
-  def reportBase(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults = {
+  def report(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults = {
     report(evalUnitSeq.asInstanceOf[EvaluationUnitSeq[EU]].data)
   }
 
@@ -55,12 +67,7 @@ trait BaseEvaluator[
 
 /* DataPrepatator */
 
-trait AbstractDataPreparator {
-
-  def prepareTrainingBase(params: BaseTrainingDataParams): BaseTrainingData
-
-}
-
+/*
 trait BaseDataPreparator[-TDP, +TD <: BaseTrainingData]
   extends AbstractDataPreparator {
 
@@ -70,15 +77,11 @@ trait BaseDataPreparator[-TDP, +TD <: BaseTrainingData]
   def prepareTraining(params: TDP): TD
 
 }
+*/
 
 /* EvaluationPrepatator */
 
-trait AbstractEvaluationPreparator {
-
-  def prepareEvaluationBase(params: BaseEvaluationDataParams): BaseEvaluationSeq
-
-}
-
+/*
 trait BaseEvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
   extends AbstractEvaluationPreparator {
 
@@ -89,21 +92,29 @@ trait BaseEvaluationPreparator[-EDP, +F <: BaseFeature, +A <: BaseActual]
   }
 
   def prepareEvaluation(params: EDP): Seq[(F, A)]
+}
+*/
 
+trait BasePreprocessor[
+    -TD <: BaseTrainingData,
+    +PD <: BaseProcessedData,
+    PP <: BasePreprocessorParam]
+  extends AbstractPreprocessor {
+
+  override def initBase(params: BasePreprocessorParam): Unit = {
+    init(params.asInstanceOf[PP])
+  }
+
+  def init(params: PP): Unit
+  
+  def preprocessBase(trainingData: BaseTrainingData): BaseProcessedData = {
+    preprocess(trainingData.asInstanceOf[TD])
+  }
+
+  def preprocess(trainingData: TD): PP
 }
 
 /* Algorithm */
-
-trait AbstractAlgorithm {
-
-  def initBase(baseAlgoParams: BaseAlgoParams): Unit
-
-  def trainBase(trainingData: BaseTrainingData): BaseModel
-
-  def predictSeqBase(baseModel: BaseModel, evalSeq: BaseEvaluationSeq)
-    : BasePredictionSeq
-
-}
 
 trait BaseAlgorithm[
     -TD <: BaseTrainingData,
@@ -144,16 +155,6 @@ trait BaseAlgorithm[
 
 /* Server */
 
-trait AbstractServer {
-
-  def initBase(baseServerParams: BaseServerParams): Unit
-
-  // The server takes a seq of Prediction and combine it into one.
-  // In the batch model, things are run in batch therefore we have seq of seq.
-  def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
-    : BasePredictionSeq
-}
-
 trait BaseServer[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
     extends AbstractServer {
 
@@ -183,16 +184,6 @@ trait BaseServer[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
 }
 
 /* Engine */
-
-class AbstractEngine(
-
-  val dataPreparatorClass: Class[_ <: AbstractDataPreparator],
-
-  val algorithmClassMap: Map[String, Class[_ <: AbstractAlgorithm]],
-
-  val serverClass: Class[_ <: AbstractServer]) {
-
-}
 
 class BaseEngine[
     TDP <: BaseTrainingDataParams,
