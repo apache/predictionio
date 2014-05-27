@@ -1,6 +1,9 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ PIORunner, BaseEngine, DefaultServer }
+import io.prediction.core.{ BaseEngine }
+import io.prediction.{ DefaultServer, DefaultCleanser }
+import io.prediction.workflow.EvaluationWorkflow
+
 import com.github.nscala_time.time.Imports._
 
 object Runner {
@@ -34,31 +37,24 @@ object Runner {
     val serverParams = null
 
     val engine = new BaseEngine(
-      classOf[ItemRankDataPreparator],
-      Map("knn" -> classOf[KNNAlgorithm],
-        "rand" -> classOf[RandomAlgorithm]),
+      classOf[DefaultCleanser[TrainigData]],
+      Map("knn" -> classOf[KNNAlgorithm]),
+
       classOf[DefaultServer[Feature, Prediction]]
     )
 
     val evaluator = new ItemRankEvaluator
-    val evalDataPrep = new ItemRankDataPreparator
 
-    PIORunner(
-      evalParams,
-      ("knn", knnAlgoParams),
-      serverParams,
-      engine,
-      evaluator,
-      evalDataPrep)
+    // TODO: add random algo
+    val algoParamsSet = Seq(
+      ("knn", knnAlgoParams))
 
-    PIORunner(
-      evalParams,
-      ("rand", randomAlgoParams),
-      serverParams,
-      engine,
-      evaluator,
-      evalDataPrep)
+    val evalWorkflow = EvaluationWorkflow(
+      "", evalParams,
+      null /* cleanserParams */, algoParamsSet, serverParams,
+      engine, evaluator)
 
+    evalWorkflow.run
   }
 
 }

@@ -1,20 +1,18 @@
 package io.prediction.workflow
 
-import scala.collection.mutable.ArrayBuffer
-import io.prediction.AbstractEngine
-import io.prediction.BaseTrainingDataParams
 import io.prediction.BaseAlgoParams
-import io.prediction.BaseServerParams
+import io.prediction.BaseCleanserParams
 import io.prediction.BaseEvaluationParams
-import io.prediction.BasePersistentData
 import io.prediction.BaseModel
-import io.prediction.BaseEvaluationSeq
-import io.prediction.BasePredictionSeq
-import io.prediction.BaseEvaluationUnitSeq
-import io.prediction.AbstractEngine
-import io.prediction.AbstractEvaluator
-import io.prediction.AbstractEvaluationPreparator
-
+import io.prediction.BaseServerParams
+import io.prediction.BaseTrainingDataParams
+import io.prediction.core.AbstractEngine
+import io.prediction.core.AbstractEvaluator
+import io.prediction.core.BaseEvaluationSeq
+import io.prediction.core.BaseEvaluationUnitSeq
+import io.prediction.core.BasePersistentData
+import io.prediction.core.BasePredictionSeq
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.util.Random
 
@@ -76,14 +74,15 @@ object EvaluationWorkflow {
   def apply(
       batch: String,
       evalParams: BaseEvaluationParams,
+      // Should group below 3 into 1
+      cleanserParams: BaseCleanserParams,
       algoParamsList: Seq[(String, BaseAlgoParams)],
       serverParams: BaseServerParams,
       engine: AbstractEngine,
-      evaluator: AbstractEvaluator,
-      evaluationPreparator: AbstractEvaluationPreparator): Workflow = {
+      evaluator: AbstractEvaluator): Workflow = {
     val workflow = new Workflow(batch)
     // In the comment, *_id corresponds to a task id.
-
+    
     // eval to eval_params
     val evalParamsMap = evaluator.getParamsSetBase(evalParams)
       .zipWithIndex
@@ -98,7 +97,7 @@ object EvaluationWorkflow {
     val dataPrepMap = evalParamsMap.map{ case(eval, evalParams) => {
       val (trainDataParams, evalDataParams) = evalParams
       val task = new DataPrepTask(workflow.nextId, batch,
-        engine, trainDataParams)
+        evaluator, trainDataParams)
       val dataPrepId = workflow.submit(task)
       (eval, dataPrepId)
     }}.toMap
@@ -108,17 +107,26 @@ object EvaluationWorkflow {
     val evalPrepMap = evalParamsMap.map{ case(eval, evalParams) => {
       val (trainDataParams, evalDataParams) = evalParams
       val task = new EvalPrepTask(workflow.nextId, batch,
-        evaluationPreparator, evalDataParams)
+        evaluator, evalDataParams)
       val evalPrepId = workflow.submit(task)
       (eval, evalPrepId)
     }}.toMap
 
+    // Cleansing
+    // eval to cleansing_id
+    val cleanserMap = dataPrepMap.map{ case(eval, dataPrepId) => {
+      val task = new CleanserTask(workflow.nextId, batch, engine,
+        cleanserParams, dataPrepId)
+      val cleanserId = workflow.submit(task)
+      (eval, cleanserId)
+    }}
+
     // Training
     // (eval, algo) to training_id
-    val modelMap = dataPrepMap.map{ case(eval, dataPrepId) => {
+    val modelMap = cleanserMap.map{ case(eval, cleanserId) => {
       algoParamsMap.map{ case(algo, (algoName, algoParams)) => {
         val task = new TrainingTask(workflow.nextId, batch, 
-          engine, algoName, algoParams, dataPrepId)
+          engine, algoName, algoParams, cleanserId)
         val trainingId = workflow.submit(task)
         ((eval, algo) , trainingId)
       }}

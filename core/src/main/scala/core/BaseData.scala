@@ -1,6 +1,14 @@
-package io.prediction
+package io.prediction.core
+
+import io.prediction.{ 
+  BaseActual, 
+  BaseFeature, 
+  BasePrediction,
+  BaseEvaluationUnit }
 
 // Below are internal classes used by PIO workflow
+trait BasePersistentData {}
+
 trait BaseEvaluationSeq extends BasePersistentData {}
 
 trait BasePredictionSeq extends BasePersistentData {}
