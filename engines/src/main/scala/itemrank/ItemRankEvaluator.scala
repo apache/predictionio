@@ -174,7 +174,8 @@ class ItemRankEvaluator
 
     // TODO: what if want to rank multiple itemset in each period?
     // only use one itemSet for now (take(1))
-    val itemList = itemSetsDb.getByAppidAndTime(params.appid, params.startUntil._1,
+    val itemList = itemSetsDb.getByAppidAndTime(params.appid,
+      params.startUntil._1,
       params.startUntil._2).toList(0).iids
 
     // get u2i within startUntil time
