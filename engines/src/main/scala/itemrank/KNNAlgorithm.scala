@@ -3,7 +3,8 @@ package io.prediction.engines.itemrank
 import io.prediction.{ Algorithm }
 import breeze.linalg.{ SparseVector, sum => LSum }
 
-class KNNAlgorithm extends Algorithm[TrainigData, Feature, Prediction, KNNModel, KNNAlgoParams] {
+class KNNAlgorithm extends Algorithm[TrainigData, Feature, Prediction,
+  KNNModel, KNNAlgoParams] {
 
   override def init(algoParams: KNNAlgoParams): Unit = {} // TODO
 
