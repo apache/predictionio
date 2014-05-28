@@ -8,6 +8,7 @@ import io.prediction.BaseServerParams
 import io.prediction.BaseTrainingDataParams
 import io.prediction.core.AbstractEngine
 import io.prediction.core.AbstractEvaluator
+import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluationSeq
 import io.prediction.core.BaseEvaluationUnitSeq
 import io.prediction.core.BasePersistentData
@@ -15,60 +16,6 @@ import io.prediction.core.BasePredictionSeq
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.util.Random
-
-class Workflow(val batch: String = "") {
-  val tasks: ArrayBuffer[Task] = ArrayBuffer[Task]()
-  var _lastId: Int = -1
-  def nextId() : Int = { _lastId += 1; _lastId }
-
-  def submit(task: Task): Int = {
-    tasks.append(task)
-    println(s"Task id: ${task.id} depends: ${task.dependingIds} task: $task")
-    task.id
-  }
-
-  def runTask(task: Task, dataMap: MMap[Int, BasePersistentData]): Unit = {
-    // gather dependency
-    val localDataMap = task.dependingIds.map(id => (id, dataMap(id))).toMap
-    val taskOutput = task.run(localDataMap)
-    dataMap += (task.id -> taskOutput)
-    println(task.id)
-    println(taskOutput)
-  }
-
-  // This function serves as a simple single threaded workflow scheduler.
-  def run(): Unit = {
-    val doneTaskMap: MMap[Int, Boolean] 
-      = MMap(this.tasks.map(task => (task.id, false)) : _*)
-
-    val dataMap = MMap[Int, BasePersistentData]()
-
-    // Shuffle the task just to make sure we are handling the dependence right.
-    val tasks = Random.shuffle(this.tasks)
-    println(tasks.map(_.id))
-
-    var changed = false
-    do {
-      changed = false
-
-      // Find one task
-      val taskOpt = tasks.find(t => {
-        !doneTaskMap(t.id) && t.dependingIds.map(doneTaskMap).fold(true)(_ && _)
-      })
-
-      taskOpt.map{ task => { 
-        println(s"Task: ${task.id} $task")
-        runTask(task, dataMap)
-
-        changed = true
-        doneTaskMap(task.id) = true
-      }}
-    } while (changed)
-
-    println(doneTaskMap)
-    
-  }
-}
 
 object EvaluationWorkflow {
   def apply(
@@ -79,9 +26,12 @@ object EvaluationWorkflow {
       algoParamsList: Seq[(String, BaseAlgoParams)],
       serverParams: BaseServerParams,
       engine: AbstractEngine,
-      evaluator: AbstractEvaluator): Workflow = {
-    val workflow = new Workflow(batch)
+      evaluatorClass: Class[_ <: AbstractEvaluator]
+    ): WorkflowScheduler = {
+    val submitter = new WorkflowSubmitter
     // In the comment, *_id corresponds to a task id.
+
+    val evaluator = evaluatorClass.newInstance
     
     // eval to eval_params
     val evalParamsMap = evaluator.getParamsSetBase(evalParams)
@@ -96,9 +46,9 @@ object EvaluationWorkflow {
     // eval to data_prep_id
     val dataPrepMap = evalParamsMap.map{ case(eval, evalParams) => {
       val (trainDataParams, evalDataParams) = evalParams
-      val task = new DataPrepTask(workflow.nextId, batch,
-        evaluator, trainDataParams)
-      val dataPrepId = workflow.submit(task)
+      val task = new DataPrepTask(submitter.nextId, batch,
+        evaluatorClass, trainDataParams)
+      val dataPrepId = submitter.submit(task)
       (eval, dataPrepId)
     }}.toMap
 
@@ -106,18 +56,18 @@ object EvaluationWorkflow {
     // eval to eval_prep_id
     val evalPrepMap = evalParamsMap.map{ case(eval, evalParams) => {
       val (trainDataParams, evalDataParams) = evalParams
-      val task = new EvalPrepTask(workflow.nextId, batch,
-        evaluator, evalDataParams)
-      val evalPrepId = workflow.submit(task)
+      val task = new EvalPrepTask(submitter.nextId, batch,
+        evaluatorClass, evalDataParams)
+      val evalPrepId = submitter.submit(task)
       (eval, evalPrepId)
     }}.toMap
 
     // Cleansing
     // eval to cleansing_id
     val cleanserMap = dataPrepMap.map{ case(eval, dataPrepId) => {
-      val task = new CleanserTask(workflow.nextId, batch, engine,
+      val task = new CleanserTask(submitter.nextId, batch, engine,
         cleanserParams, dataPrepId)
-      val cleanserId = workflow.submit(task)
+      val cleanserId = submitter.submit(task)
       (eval, cleanserId)
     }}
 
@@ -125,9 +75,9 @@ object EvaluationWorkflow {
     // (eval, algo) to training_id
     val modelMap = cleanserMap.map{ case(eval, cleanserId) => {
       algoParamsMap.map{ case(algo, (algoName, algoParams)) => {
-        val task = new TrainingTask(workflow.nextId, batch, 
+        val task = new TrainingTask(submitter.nextId, batch, 
           engine, algoName, algoParams, cleanserId)
-        val trainingId = workflow.submit(task)
+        val trainingId = submitter.submit(task)
         ((eval, algo) , trainingId)
       }}
     }}.flatten.toMap
@@ -137,9 +87,9 @@ object EvaluationWorkflow {
     val predictionMap = modelMap.map{ case((eval, algo), trainingId) => {
       val (algoName, algoParams) = algoParamsMap(algo)
       val evalPrepId = evalPrepMap(eval)
-      val task = new PredictionTask(workflow.nextId, batch, engine, algoName,
+      val task = new PredictionTask(submitter.nextId, batch, engine, algoName,
         algoParams, trainingId, evalPrepId)
-      val predictionId = workflow.submit(task)
+      val predictionId = submitter.submit(task)
       ((eval, algo), predictionId)
     }}.toMap
 
@@ -148,30 +98,30 @@ object EvaluationWorkflow {
     val algoList = algoParamsMap.keys.toSeq
     val serverMap = evalParamsMap.map{ case(eval, _) => {
       val predictionIds = algoList.map(algo => predictionMap((eval, algo)))
-      val task = new ServerTask(workflow.nextId, batch, engine, serverParams,
+      val task = new ServerTask(submitter.nextId, batch, engine, serverParams,
         predictionIds)
-      val serverId = workflow.submit(task)
+      val serverId = submitter.submit(task)
       (eval, serverId)
     }}.toMap
 
     // EvaluationUnitTask
     // eval to eval_unit_id
     val evalUnitMap = serverMap.map{ case(eval, serverId) => {
-      val task = new EvaluationUnitTask(workflow.nextId, batch, evaluator,
-        serverId)
-      val evalUnitId = workflow.submit(task)
+      val task = new EvaluationUnitTask(submitter.nextId, batch, 
+        evaluatorClass, serverId)
+      val evalUnitId = submitter.submit(task)
       (eval, evalUnitId)
     }}
 
     // EvaluationReportTask
     // eval to eval_report_id
     val evalReportMap = evalUnitMap.map{ case(eval, evalUnitId) => {
-      val task = new EvaluationReportTask(workflow.nextId, batch, evaluator,
-        evalUnitId)
-      val evalReportId = workflow.submit(task)
+      val task = new EvaluationReportTask(submitter.nextId, batch,
+        evaluatorClass, evalUnitId)
+      val evalReportId = submitter.submit(task)
       (eval, evalReportId)
     }}
 
-    return workflow
+    return new SingleThreadScheduler()
   }
 }

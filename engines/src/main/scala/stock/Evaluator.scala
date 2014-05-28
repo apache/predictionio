@@ -19,19 +19,23 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
+object StockEvaluator {
+  // Use singleton class here to avoid re-registering hooks in config.
+  val config = new Config()
+  val itemTrendsDb = config.getAppdataItemTrends()
+}
+
 class StockEvaluator
     extends Evaluator[
         EvaluationParams, TrainingDataParams, EvaluationDataParams,
         TrainingData, Feature, Target, Target, 
         EvaluationUnit, BaseEvaluationResults] {
-  val config = new Config()
   val appid = PIOSettings.appid
-  val itemTrendsDb = config.getAppdataItemTrends()
-  val itemTrendsDbGetTicker = itemTrendsDb.get(appid, _: String).get
-
+  val itemTrendsDbGetTicker = StockEvaluator.itemTrendsDb.get(appid, _: String).get
 
   // (predicted, acutal)
-  def getParamsSet(params: EvaluationParams): Seq[(TrainingDataParams, EvaluationDataParams)] = {
+  def getParamsSet(params: EvaluationParams)
+  : Seq[(TrainingDataParams, EvaluationDataParams)] = {
     Range(params.fromIdx, params.untilIdx, params.evaluationInterval)
       .map(idx => {
         val trainParams = new TrainingDataParams(
@@ -61,7 +65,8 @@ class StockEvaluator
 
   def getPriceSeriesFromItemTrend(
     timeIndex: IndexTime,
-    itemTrend: ItemTrend): (Series[DateTime, Double], Series[DateTime, Boolean]) = {
+    itemTrend: ItemTrend)
+  : (Series[DateTime, Double], Series[DateTime, Boolean]) = {
     // The current implementation imports the whole series and reindex with the
     // input timeIndex. Of course not the most efficient one. May revisit later.
     val daily = itemTrend.daily
@@ -137,7 +142,8 @@ class StockEvaluator
     return (new Feature(data = featureData), new Target(data = targetData))
   }
 
-  def prepareEvaluation(params: EvaluationDataParams): Seq[(Feature, Target)] = {
+  def prepareEvaluation(params: EvaluationDataParams)
+  : Seq[(Feature, Target)] = {
     (params.fromIdx until params.untilIdx).map(idx =>
       prepareOneEvaluation(idx, params.baseDate,
         params.marketTicker, params.tickerList)

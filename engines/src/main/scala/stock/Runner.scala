@@ -34,7 +34,7 @@ object Run {
         "regression" -> classOf[RegressionAlgorithm]),
       classOf[StockServer])
 
-    val evaluator = new StockEvaluator
+    val evaluatorClass = classOf[StockEvaluator]
 
     val algoParamsSet = Seq(
       ("random", new RandomAlgoParams(seed = 1, scale = 0.01)),
@@ -65,8 +65,10 @@ object Run {
       val evalWorkflow = EvaluationWorkflow(
         "", evalParams, 
         null /* cleanserParams */, algoParamsSet, serverParams, 
-        engine, evaluator)
+        engine, 
+        evaluatorClass)
 
+      println("Start singlethread runner") 
       evalWorkflow.run
     }
   }

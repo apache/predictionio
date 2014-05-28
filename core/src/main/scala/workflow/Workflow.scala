@@ -1,131 +1,113 @@
 package io.prediction.workflow
 
-import io.prediction.core.AbstractEngine
-import io.prediction.core.AbstractEvaluator
-import io.prediction.BaseTrainingDataParams
 import io.prediction.BaseAlgoParams
 import io.prediction.BaseCleanserParams
-import io.prediction.BaseServerParams
-import io.prediction.BaseEvaluationDataParams
-import io.prediction.core.BasePersistentData
-import io.prediction.BaseTrainingData
+import io.prediction.BaseEvaluationParams
 import io.prediction.BaseModel
-import io.prediction.BaseCleansedData
+import io.prediction.BaseServerParams
+import io.prediction.BaseTrainingDataParams
+import io.prediction.core.AbstractEngine
+import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluationSeq
-import io.prediction.core.BasePredictionSeq
 import io.prediction.core.BaseEvaluationUnitSeq
+import io.prediction.core.BasePersistentData
+import io.prediction.core.BasePredictionSeq
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ Map => MMap, Set => MSet }
+import scala.util.Random
+import io.prediction.storage.Config
+import io.prediction.storage.MongoSequences
 
+import com.twitter.chill.MeatLocker
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
+import java.io.FileInputStream
+import java.io.ObjectInputStream
 
-class Task(val id: Int, val batch: String, val dependingIds: Seq[Int]) {
-  def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    null
-  }
+trait WorkflowScheduler {
+  val tmpDir = "/tmp/pio/"
+
+  def run(): Unit
+
+  def filename(id: Int): String = s"${tmpDir}${id}.data"
 }
 
-class DataPrepTask(
-  id: Int,
-  batch: String,
-  val evaluator: AbstractEvaluator,
-  val dataParams: BaseTrainingDataParams
-) extends Task(id, batch, Seq[Int]()) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evaluator.prepareTrainingBase(dataParams)
-  }
-}
+// This scheduler only run tasks that exists in database during start.
+class SingleThreadScheduler extends WorkflowScheduler {
+  val config = new Config
+  val tasksDb = new MongoTasks(config.workflowdataMongoDb.get)
 
-class EvalPrepTask(
-  id: Int,
-  batch: String,
-  val evaluator: AbstractEvaluator,
-  val evalDataParams: BaseEvaluationDataParams
-) extends Task(id, batch, Seq[Int]()) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evaluator.prepareEvaluationBase(evalDataParams)
+  def loadData(filePath: String): BasePersistentData = {
+    val ois = new ObjectInputStream(new FileInputStream(filePath))
+    val obj = ois.readObject
+    obj.asInstanceOf[MeatLocker[BasePersistentData]].get
   }
-}
 
-class CleanserTask(
-  id: Int,
-  batch: String,
-  val engine: AbstractEngine,
-  val cleanserParams: BaseCleanserParams,
-  val dataPrepId: Int
-) extends Task(id, batch, Seq(dataPrepId)) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val cleanser = engine.cleanserClass.newInstance
-    cleanser.initBase(cleanserParams)
-    cleanser.cleanseBase(input(dataPrepId).asInstanceOf[BaseTrainingData])
+  def saveData(id: Int, data: BasePersistentData): String = {
+    val boxedData = MeatLocker(data)
+    val filePath = filename(id)
+    val oos = new ObjectOutputStream(new FileOutputStream(filePath))
+    oos.writeObject(boxedData)
+    filePath
   }
   
-}
+  def runTask(task: Task, doneTasks: MMap[Int, Task]): Unit = {
+    // gather data
+    val localDataMap = task.dependingIds.map{
+      id => (id, doneTasks(id).outputPath)
+    }.toMap.mapValues(loadData)
 
-class TrainingTask(
-  id: Int,
-  batch: String,
-  val engine: AbstractEngine,
-  val algoName: String,
-  val algoParams: BaseAlgoParams,
-  val cleanseId: Int
-) extends Task(id, batch, Seq(cleanseId)) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val algorithm = engine.algorithmClassMap(algoName).newInstance
-    algorithm.initBase(algoParams)
-    algorithm.trainBase(input(cleanseId).asInstanceOf[BaseCleansedData])
+    val taskOutput = task.run(localDataMap)
+
+    val outputPath = saveData(task.id, taskOutput)
+    
+    // Book-keeping
+    doneTasks += (task.id -> task)
+    task.markDone(outputPath)
+    // need to mark it in persistent database.
+    tasksDb.markDone(task.id, outputPath)
+    
+    println(s"RunTask. id: ${task.id} task: $task")
+  }
+
+  def run(): Unit = {
+    val doneTasks = MMap[Int, Task](tasksDb.getDone.map(t => (t.id, t)):_*)
+    val tasks = ArrayBuffer[Task](tasksDb.getNotDone():_*)
+
+    var changed = true
+    while (changed) {
+      changed = false
+
+      // Find one task
+      val taskOpt = tasks.find(t => {
+        !t.done && 
+        t.dependingIds.map(id => doneTasks.contains(id)).fold(true)(_ && _)
+      })
+    
+      taskOpt.map{ task => {
+        runTask(task, doneTasks)
+        changed = true
+      }}
+    }
   }
 }
 
-class PredictionTask(
-  id: Int,
-  batch: String,
-  val engine: AbstractEngine,
-  val algoName: String,
-  val algoParams: BaseAlgoParams,
-  val trainingId: Int,
-  val evalPrepId: Int
-) extends Task(id, batch, Seq(trainingId, evalPrepId)) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val algorithm = engine.algorithmClassMap(algoName).newInstance
-    algorithm.initBase(algoParams)
-    algorithm.predictSeqBase(
-      baseModel = input(trainingId).asInstanceOf[BaseModel],
-      evalSeq = input(evalPrepId).asInstanceOf[BaseEvaluationSeq]
-    )
+class WorkflowSubmitter {
+  val config = new Config
+  val tasksDb = new MongoTasks(config.workflowdataMongoDb.get)
+
+  def nextId(): Int = tasksDb.nextId
+
+  def submit(task: Task): Int = {
+    println(s"Task id: ${task.id} depends: ${task.dependingIds} task: $task")
+    tasksDb.insert(task)
+    task.id
   }
 }
 
-class ServerTask(
-  id: Int,
-  batch: String,
-  val engine: AbstractEngine,
-  val serverParams: BaseServerParams,
-  val predictionIds: Seq[Int]
-) extends Task(id, batch, predictionIds) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val server = engine.serverClass.newInstance
-    server.initBase(serverParams)
-    server.combineSeqBase(predictionIds.map(id =>
-      input(id).asInstanceOf[BasePredictionSeq]))
-  }
-}
-
-class EvaluationUnitTask(
-  id: Int,
-  batch: String,
-  val evaluator: AbstractEvaluator,
-  val serverId: Int
-) extends Task(id, batch, Seq(serverId)) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evaluator.evaluateSeq(input(serverId).asInstanceOf[BasePredictionSeq])
-  }
-}
-
-class EvaluationReportTask(
-  id: Int,
-  batch: String,
-  val evaluator: AbstractEvaluator,
-  val evalUnitId: Int
-) extends Task(id, batch, Seq(evalUnitId)) {
-  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    evaluator.report(input(evalUnitId).asInstanceOf[BaseEvaluationUnitSeq])
+object Run {
+  def main(args: Array[String]): Unit = {
+    val s = new SingleThreadScheduler
+    s.run
   }
 }

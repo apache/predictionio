@@ -43,7 +43,8 @@ object Runner {
       classOf[DefaultServer[Feature, Prediction]]
     )
 
-    val evaluator = new ItemRankEvaluator
+    //val evaluator = new ItemRankEvaluator
+    val evaluatorClass = classOf[ItemRankEvaluator]
 
     // TODO: add random algo
     val algoParamsSet = Seq(
@@ -52,7 +53,7 @@ object Runner {
     val evalWorkflow = EvaluationWorkflow(
       "", evalParams,
       null /* cleanserParams */, algoParamsSet, serverParams,
-      engine, evaluator)
+      engine, evaluatorClass)
 
     evalWorkflow.run
   }

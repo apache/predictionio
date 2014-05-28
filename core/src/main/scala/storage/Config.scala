@@ -113,5 +113,37 @@ class Config {
       case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
     }
   }
+  
+  /** The database type that stores PredictionIO workflowdata. */
+  val workflowdataDbType: String = config.getString("io.prediction.commons.workflowdata.db.type")
+
+  /** The database host that stores PredictionIO workflowdata. */
+  val workflowdataDbHost: String = workflowdataDbType match {
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.workflowdata.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  }
+
+  /** The database port that stores PredictionIO workflowdata. */
+  val workflowdataDbPort: Int = workflowdataDbType match {
+    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.workflowdata.db.port") } catch { case _: Throwable => 27017 }
+  }
+
+  /** The database name that stores PredictionIO workflowdata. */
+  val workflowdataDbName: String = workflowdataDbType match {
+    case dbTypeMongoDb => try { config.getString("io.prediction.commons.workflowdata.db.name") } catch { case _: Throwable => "predictionio_workflowdata" }
+  }
+
+  /** The database user that stores PredictionIO workflowdata. */
+  val workflowdataDbUser: Option[String] = try { Some(config.getString("io.prediction.commons.workflowdata.db.user")) } catch { case _: Throwable => None }
+
+  /** The database password that stores PredictionIO workflowdata. */
+  val workflowdataDbPassword: Option[String] = try { Some(config.getString("io.prediction.commons.workflowdata.db.password")) } catch { case _: Throwable => None }
+
+  /** If workflowdataDbType is "mongodb", this will contain a Some[MongoDB] object. */
+  val workflowdataMongoDb: Option[MongoDB] = if (workflowdataDbType == "mongodb") {
+    val db = MongoClient(workflowdataDbHost, workflowdataDbPort)(workflowdataDbName)
+    workflowdataDbUser map { db.authenticate(_, workflowdataDbPassword.getOrElse("")) }
+    Some(db)
+  } else None
+
 
 }
