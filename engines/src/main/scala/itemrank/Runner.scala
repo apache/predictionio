@@ -21,8 +21,6 @@ object Runner {
       conflict = "latest",
       //recommendationTime = 123456,
       seenActions = Some(Set("conversion")),
-      //testUsers = Set("u0", "u1", "u2", "u3"),
-      //testItems = Set("i0", "i1", "i2"),
       //(int years, int months, int weeks, int days, int hours,
       // int minutes, int seconds, int millis)
       period = new Period(0, 0, 0, 1, 0, 0, 0, 0),
@@ -36,26 +34,42 @@ object Runner {
     val randomAlgoParams = new RandomAlgoParams
     val serverParams = null
 
-    val engine = new BaseEngine(
+    val knnEngine = new BaseEngine(
       classOf[DefaultCleanser[TrainigData]],
       Map("knn" -> classOf[KNNAlgorithm]),
+      classOf[DefaultServer[Feature, Prediction]]
+    )
 
+    val randEngine = new BaseEngine(
+      classOf[DefaultCleanser[TrainigData]],
+      Map("rand" -> classOf[RandomAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]
     )
 
     //val evaluator = new ItemRankEvaluator
     val evaluatorClass = classOf[ItemRankEvaluator]
 
-    // TODO: add random algo
-    val algoParamsSet = Seq(
+    val knnEngineAlgoParamSet = Seq(
       ("knn", knnAlgoParams))
 
-    val evalWorkflow = EvaluationWorkflow(
-      "", evalParams,
-      null /* cleanserParams */, algoParamsSet, serverParams,
-      engine, evaluatorClass)
+    val randEngineAlgoParamSet = Seq(
+      ("rand", randomAlgoParams)
+    )
 
-    evalWorkflow.run
+    val evalWorkflow1 = EvaluationWorkflow(
+      "", evalParams,
+      null /* cleanserParams */, knnEngineAlgoParamSet, serverParams,
+      knnEngine, evaluatorClass)
+
+    val evalWorkflow2 = EvaluationWorkflow(
+      "", evalParams,
+      null /* cleanserParams */, randEngineAlgoParamSet, serverParams,
+      randEngine, evaluatorClass)
+
+    // Comment by yipjustin. All tasks are now persist in database. Hence, using
+    // one worker suffice.
+    evalWorkflow1.run
+    evalWorkflow2.run
   }
 
 }

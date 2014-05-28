@@ -17,11 +17,11 @@ trait Evaluator[
 
   // Data generation
   def getParamsSet(params: EP): Seq[(TDP, EDP)]
-  
+
   def prepareTraining(params: TDP): TD
-  
+
   def prepareEvaluation(params: EDP): Seq[(F, A)]
- 
+
   // Evaluation
   def init(params: EP): Unit
 
@@ -29,7 +29,17 @@ trait Evaluator[
 
   def report(evalUnits: Seq[EU]): ER
 }
-    
+
+trait Cleanser[
+    -TD <: BaseTrainingData,
+    +CD <: BaseCleansedData,
+    CP <: BaseCleanserParams]
+  extends BaseCleanser[TD, CD, CP] {
+
+  def init(params: CP): Unit
+
+  def cleanse(trainingData: TD): CD
+}
 
 trait Algorithm[
     -CD <: BaseCleansedData,
@@ -59,7 +69,7 @@ class DefaultServer[F <: BaseFeature, P <: BasePrediction]
 }
 
 class DefaultCleanser[TD <: BaseTrainingData]
-    extends BaseCleanser[TD, TD, BaseCleanserParams] {
+    extends Cleanser[TD, TD, BaseCleanserParams] {
   def init(params: BaseCleanserParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
 }
