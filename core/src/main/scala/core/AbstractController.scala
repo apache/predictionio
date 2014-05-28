@@ -2,6 +2,8 @@ package io.prediction.core
 
 // FIXME(yipjustin). I am lazy...
 import io.prediction._
+import org.json4s.JsonAST.JValue
+
 
 trait AbstractEvaluator {
   // Data Preparation methods
@@ -44,6 +46,8 @@ trait AbstractAlgorithm {
 trait AbstractServer {
 
   def initBase(baseServerParams: BaseServerParams): Unit
+
+  def json2Params(json: JValue): BaseServerParams
 
   // The server takes a seq of Prediction and combine it into one.
   // In the batch model, things are run in batch therefore we have seq of seq.

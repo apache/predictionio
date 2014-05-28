@@ -3,7 +3,9 @@ package io.prediction.engines.stock
 import io.prediction.BaseServerParams
 import io.prediction.Server
 
-class StockServerParams(val i: Int = 0) extends BaseServerParams {}
+class StockServerParams(val i: Int = 0) extends BaseServerParams {
+  override def toString = s"StockerServerParams(i=$i)"
+}
 
 class StockServer 
     extends Server[Feature, Target, StockServerParams] {

@@ -2,10 +2,22 @@ package io.prediction.engines.stock
 import com.github.nscala_time.time.Imports.DateTime
 
 import io.prediction.core.BaseEngine
+import io.prediction.core.AbstractEngine
 import io.prediction.DefaultServer
 import io.prediction.DefaultCleanser
 
 import io.prediction.workflow.EvaluationWorkflow
+
+object StockEngineFactory {
+  def get(): AbstractEngine = {
+    new BaseEngine(
+      classOf[DefaultCleanser[TrainingData]],
+      Map("random" -> classOf[RandomAlgorithm],
+        "regression" -> classOf[RegressionAlgorithm]),
+      classOf[StockServer])
+  }
+}
+
 
 object Run {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
@@ -28,11 +40,8 @@ object Run {
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
     val serverParams = new StockServerParams(i = 1)
 
-    val engine = new BaseEngine(
-      classOf[DefaultCleanser[TrainingData]],
-      Map("random" -> classOf[RandomAlgorithm],
-        "regression" -> classOf[RegressionAlgorithm]),
-      classOf[StockServer])
+    val engine = StockEngineFactory.get
+
 
     val evaluatorClass = classOf[StockEvaluator]
 
