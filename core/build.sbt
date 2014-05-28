@@ -10,7 +10,8 @@ libraryDependencies ++= Seq(
   "org.clapper"       %% "grizzled-slf4j"  % "1.0.2",
   "org.mongodb"       %% "casbah"          % "2.7.2",
   "org.scalatest"     %% "scalatest"       % "2.1.6" % "test",
-  "org.json4s"        %% "json4s-native"   % "3.2.9")
+  "org.json4s"        %% "json4s-native"   % "3.2.9",
+  "org.json4s"        %% "json4s-ext"      % "3.2.7")
 
 scalacOptions <<= (scalacOptions, scalaSource in Compile) map { (options, base) =>
   options :+ ("-P:sxr:base-directory:" + base.getAbsolutePath)
