@@ -11,6 +11,13 @@ import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
 
 object ItemRankEvaluator extends EvaluatorFactory {
+
+  val config = new Config
+  val usersDb = config.getAppdataUsers
+  val itemsDb = config.getAppdataItems
+  val u2iDb = config.getAppdataU2IActions
+  val itemSetsDb = config.getAppdataItemSets
+
   override def apply(): AbstractEvaluator = {
     new ItemRankEvaluator
   }
@@ -24,11 +31,10 @@ class ItemRankEvaluator
   final val CONFLICT_HIGHEST: String = "highest"
   final val CONFLICT_LOWEST: String = "lowest"
 
-  val config = new Config
-  val usersDb = config.getAppdataUsers
-  val itemsDb = config.getAppdataItems
-  val u2iDb = config.getAppdataU2IActions
-  val itemSetsDb = config.getAppdataItemSets
+  val usersDb = ItemRankEvaluator.usersDb
+  val itemsDb = ItemRankEvaluator.itemsDb
+  val u2iDb = ItemRankEvaluator.u2iDb
+  val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
   // Data generation
   override def getParamsSet(params: EvalParams): Seq[(TrainDataPrepParams,
