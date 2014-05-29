@@ -43,10 +43,12 @@ class ItemRankEvaluator
     var testStart = params.testStart
     val testStartSeq = ArrayBuffer[DateTime]()
     val period = Period.hours(params.hours)
+
     while (testStart < params.testUntil) {
       testStartSeq += testStart
       testStart = testStart + period
     }
+    //println(testStartSeq)
 
     val paramSeq = testStartSeq.toList.map { ts =>
       val trainingP = new TrainDataPrepParams(
@@ -135,7 +137,7 @@ class ItemRankEvaluator
           resolveConflict(a, b, params.conflict)
         }
       }.values
-      .toSeq
+      .toList
 
     /* write u2i seen */
     val u2iSeen = u2iActions
