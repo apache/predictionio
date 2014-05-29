@@ -108,7 +108,7 @@ object EvaluationWorkflow {
     // eval to eval_unit_id
     val evalUnitMap = serverMap.map{ case(eval, serverId) => {
       val task = new EvaluationUnitTask(submitter.nextId, batch, 
-        evaluatorClass, serverId)
+        evaluatorClass, evalParams, serverId)
       val evalUnitId = submitter.submit(task)
       (eval, evalUnitId)
     }}
@@ -117,7 +117,7 @@ object EvaluationWorkflow {
     // eval to eval_report_id
     val evalReportMap = evalUnitMap.map{ case(eval, evalUnitId) => {
       val task = new EvaluationReportTask(submitter.nextId, batch,
-        evaluatorClass, evalUnitId)
+        evaluatorClass, evalParams, evalUnitId)
       val evalReportId = submitter.submit(task)
       (eval, evalReportId)
     }}

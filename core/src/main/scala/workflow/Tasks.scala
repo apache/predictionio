@@ -3,6 +3,7 @@ package io.prediction.workflow
 import io.prediction.core.AbstractEngine
 import io.prediction.core.AbstractEvaluator
 import io.prediction.BaseTrainingDataParams
+import io.prediction.BaseEvaluationParams
 import io.prediction.BaseAlgoParams
 import io.prediction.BaseCleanserParams
 import io.prediction.BaseServerParams
@@ -17,7 +18,7 @@ import io.prediction.core.BaseEvaluationUnitSeq
 import io.prediction.core.BaseEvaluator
 
 
-class Task(
+abstract class Task(
   val id: Int,
   val batch: String,
   val dependingIds: Seq[Int] = Seq[Int](),
@@ -29,9 +30,7 @@ class Task(
     this.outputPath = outputPath
   }
   
-  def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    null
-  }
+  def run(input: Map[Int, BasePersistentData]): BasePersistentData
   
   override def toString() = {
     (s"${this.getClass.getSimpleName} id: $id batch: $batch "
@@ -131,10 +130,12 @@ class EvaluationUnitTask(
   id: Int,
   batch: String,
   val evaluatorClass: Class[_ <: AbstractEvaluator],
+  val evalParams: BaseEvaluationParams,
   val serverId: Int
 ) extends Task(id, batch, Seq(serverId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val evaluator = evaluatorClass.newInstance
+    evaluator.initBase(evalParams)
     evaluator.evaluateSeq(input(serverId).asInstanceOf[BasePredictionSeq])
   }
 }
@@ -143,10 +144,12 @@ class EvaluationReportTask(
   id: Int,
   batch: String,
   val evaluatorClass: Class[_ <: AbstractEvaluator],
+  val evalParams: BaseEvaluationParams,
   val evalUnitId: Int
 ) extends Task(id, batch, Seq(evalUnitId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val evaluator = evaluatorClass.newInstance
+    evaluator.initBase(evalParams)
     evaluator.report(input(evalUnitId).asInstanceOf[BaseEvaluationUnitSeq])
   }
 }
