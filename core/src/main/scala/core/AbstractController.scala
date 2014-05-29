@@ -2,7 +2,7 @@ package io.prediction.core
 
 // FIXME(yipjustin). I am lazy...
 import io.prediction._
-import org.json4s.JsonAST.JValue
+import scala.reflect.Manifest
 
 
 trait AbstractEvaluator {
@@ -47,7 +47,9 @@ trait AbstractServer {
 
   def initBase(baseServerParams: BaseServerParams): Unit
 
-  def json2Params(json: JValue): BaseServerParams
+  //def json2Params(json: JValue): BaseServerParams
+
+  def paramsClass(): Manifest[_]
 
   // The server takes a seq of Prediction and combine it into one.
   // In the batch model, things are run in batch therefore we have seq of seq.

@@ -5,9 +5,6 @@ import scala.reflect.Manifest
 // FIXME(yipjustin). I am being lazy...
 import io.prediction._
 
-import org.json4s.JsonAST.JValue
-import org.json4s.DefaultFormats
-
 trait BaseEvaluator[
     EP <: BaseEvaluationParams,
     TDP <: BaseTrainingDataParams,
@@ -130,10 +127,7 @@ abstract class BaseServer[
   override def initBase(baseServerParams: BaseServerParams): Unit =
     init(baseServerParams.asInstanceOf[SP])
 
-  override def json2Params(json: JValue): SP = {
-    implicit val formats = DefaultFormats 
-    json.extract[SP]
-  }
+  override def paramsClass() = manifest[SP]
 
   def init(serverParams: SP): Unit = {}
 
