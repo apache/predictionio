@@ -1,7 +1,8 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.core.{ BaseEngine }
-import io.prediction.{ BaseAlgoParams, BaseCleanserParams, BaseServerParams }
+import io.prediction.{ BaseAlgoParams, BaseCleanserParams, BaseServerParams,
+  BaseEvaluationParams }
 import io.prediction.workflow.EvaluationWorkflow
 
 import grizzled.slf4j.Logging
@@ -83,15 +84,15 @@ object CLI extends Logging {
 
     println(serverJson)
     println(serverParams)
-/*
+
     val evalWorkflow1 = EvaluationWorkflow(
       "", evalParams,
-      cleanserParams.asInstanceOf[BaseCleanserParams],
+      cleanserParams,
       algoParamSet,
-      serverParams.asInstanceOf[BaseServerParams],
+      serverParams,
       engine, evaluator.getClass)
 
     evalWorkflow1.run
-*/
+
   }
 }

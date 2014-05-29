@@ -19,7 +19,7 @@ trait AbstractEvaluator {
   // Evaluation methods
   def initBase(params: BaseEvaluationParams): Unit
 
-  def paramsClass(): Manifest[_]
+  def paramsClass(): Manifest[_ <: BaseEvaluationParams]
 
   def evaluateSeq(predictionSeq: BasePredictionSeq): BaseEvaluationUnitSeq
 
@@ -30,7 +30,7 @@ trait AbstractCleanser {
 
   def initBase(baseCleanserParams: BaseCleanserParams): Unit
 
-  def paramsClass(): Manifest[_]
+  def paramsClass(): Manifest[_ <: BaseCleanserParams]
 
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
 
@@ -40,7 +40,7 @@ trait AbstractAlgorithm {
 
   def initBase(baseAlgoParams: BaseAlgoParams): Unit
 
-  def paramsClass(): Manifest[_]
+  def paramsClass(): Manifest[_ <: BaseAlgoParams]
 
   def trainBase(cleansedData: BaseCleansedData): BaseModel
 
@@ -53,7 +53,7 @@ trait AbstractServer {
 
   def initBase(baseServerParams: BaseServerParams): Unit
 
-  def paramsClass(): Manifest[_]
+  def paramsClass(): Manifest[_ <: BaseServerParams]
 
   // The server takes a seq of Prediction and combine it into one.
   // In the batch model, things are run in batch therefore we have seq of seq.
