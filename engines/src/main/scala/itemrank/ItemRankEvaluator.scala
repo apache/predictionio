@@ -1,12 +1,20 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.{ Evaluator, BaseEvaluationResults }
+import io.prediction.{ EvaluatorFactory }
+import io.prediction.core.AbstractEvaluator
 import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 
 import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
+
+object ItemRankEvaluator extends EvaluatorFactory {
+  override def apply(): AbstractEvaluator = {
+    new ItemRankEvaluator
+  }
+}
 
 class ItemRankEvaluator
   extends Evaluator[EvalParams, TrainDataPrepParams, EvalDataPrepParams,

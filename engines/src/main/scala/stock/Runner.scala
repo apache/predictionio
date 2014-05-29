@@ -29,7 +29,7 @@ object Run {
     val algoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
     val serverParams = new StockServerParams(i = 1)
 
-    val engine = StockEngineFactory.get
+    val engine = StockEngine()
 
 
     val evaluatorClass = classOf[StockEvaluator]

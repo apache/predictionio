@@ -32,8 +32,8 @@ object CLI extends Logging {
     println(args.mkString(" "))
 
     // TODO: get class name from command line
-    val evaluator = ItemRankEvaluatorFactory.get
-    val engine = ItemRankEngineFactory.get
+    val evaluator = ItemRankEvaluator()
+    val engine = ItemRankEngine()
 
     val evalString = Source.fromFile(args(0)).mkString
     val evalJson = JsonMethods.parse(evalString)

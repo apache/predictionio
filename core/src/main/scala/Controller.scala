@@ -76,9 +76,9 @@ class DefaultCleanser[TD <: BaseTrainingData]
 
 // factory
 trait EvaluatorFactory {
-  def get(): AbstractEvaluator
+  def apply(): AbstractEvaluator
 }
 
 trait EngineFactory {
-  def get(): AbstractEngine
+  def apply(): AbstractEngine
 }

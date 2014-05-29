@@ -6,6 +6,9 @@ import io.prediction.PIOSettings
 
 import io.prediction.Evaluator
 import io.prediction.BaseEvaluationResults
+import io.prediction.EvaluatorFactory
+import io.prediction.core.AbstractEvaluator
+
 import scala.math
 // FIXME(yipjustin). Remove ._ as it is polluting the namespace.
 import org.saddle._
@@ -19,16 +22,20 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
-object StockEvaluator {
+object StockEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
   val config = new Config()
   val itemTrendsDb = config.getAppdataItemTrends()
+
+  override def apply(): AbstractEvaluator = {
+    new StockEvaluator
+  }
 }
 
 class StockEvaluator
     extends Evaluator[
         EvaluationParams, TrainingDataParams, EvaluationDataParams,
-        TrainingData, Feature, Target, Target, 
+        TrainingData, Feature, Target, Target,
         EvaluationUnit, BaseEvaluationResults] {
   val appid = PIOSettings.appid
   val itemTrendsDbGetTicker = StockEvaluator.itemTrendsDb.get(appid, _: String).get
@@ -55,7 +62,7 @@ class StockEvaluator
         (trainParams, evalParams)
       })
   }
-  
+
   def getTimeIndex(baseDate: DateTime, marketTicker: String) = {
     val spy = itemTrendsDbGetTicker(marketTicker)
     val timestamps = spy.daily.map(_._1).distinct.filter(_ >= baseDate)
