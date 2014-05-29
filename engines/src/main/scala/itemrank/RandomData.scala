@@ -5,6 +5,8 @@ import io.prediction.{
   BaseAlgoParams
 }
 
-class RandomAlgoParams() extends BaseAlgoParams {}
+class RandomAlgoParams() extends BaseAlgoParams {
+  override def toString = s"empty"
+}
 
 class RandomModel() extends BaseModel {}

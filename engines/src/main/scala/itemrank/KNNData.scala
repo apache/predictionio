@@ -5,7 +5,9 @@ import io.prediction.{
   BaseAlgoParams
 }
 
-class KNNAlgoParams() extends BaseAlgoParams {}
+class KNNAlgoParams(val similarity: String) extends BaseAlgoParams {
+  override def toString = s"${similarity}"
+}
 
 class KNNModel(
     /*val userSeen: Map[String, SparseVector[Boolean]],

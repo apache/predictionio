@@ -28,9 +28,10 @@ class ItemRankEvaluator
 
     var testStart = params.testStart
     val testStartSeq = ArrayBuffer[DateTime]()
+    val period = Period.hours(params.hours)
     while (testStart < params.testUntil) {
       testStartSeq += testStart
-      testStart = testStart + params.period
+      testStart = testStart + period
     }
 
     val paramSeq = testStartSeq.toList.map { ts =>
@@ -45,7 +46,7 @@ class ItemRankEvaluator
       val evalP = new EvalDataPrepParams(
         appid = params.appid,
         itypes = params.itypes,
-        startUntil = (ts, ts + params.period),
+        startUntil = (ts, ts + period),
         goal = params.goal
       )
       (trainingP, evalP)

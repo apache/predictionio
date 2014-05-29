@@ -1,0 +1,12 @@
+{
+  "appid": 1,
+  "itypes": ["type1", "type2"],
+  "actions": { "view": 3, "like" : 5, "conversion" : 5, "rate" : null },
+  "conflict": "latest",
+  "seenActions" : [ "conversion" ],
+  "hours": 24,
+  "trainStart" : "2014-04-01T00:00:00.000Z",
+  "testStart" : "2014-04-20T00:00:00.000Z",
+  "testUntil" : "2014-04-30T00:00:00.000Z"
+  "goal": ["conversion", "view"]
+}

@@ -23,14 +23,14 @@ object Runner {
       seenActions = Some(Set("conversion")),
       //(int years, int months, int weeks, int days, int hours,
       // int minutes, int seconds, int millis)
-      period = new Period(0, 0, 0, 1, 0, 0, 0, 0),
+      hours = 24,//new Period(0, 0, 0, 1, 0, 0, 0, 0),
       trainStart = new DateTime("2014-04-01T00:00:00.000"),
       testStart = new DateTime("2014-04-20T00:00:00.000"),
       testUntil = new DateTime("2014-04-30T00:00:00.000"),
       goal = Set("conversion", "view")
     )
 
-    val knnAlgoParams = new KNNAlgoParams
+    val knnAlgoParams = new KNNAlgoParams(similarity="consine")
     val randomAlgoParams = new RandomAlgoParams
     val serverParams = null
 

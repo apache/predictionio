@@ -5,8 +5,8 @@ import scala.reflect.Manifest
 // FIXME(yipjustin). I am being lazy...
 import io.prediction._
 
-trait BaseEvaluator[
-    EP <: BaseEvaluationParams,
+abstract class BaseEvaluator[
+    EP <: BaseEvaluationParams: Manifest,
     TDP <: BaseTrainingDataParams,
     EDP <: BaseEvaluationDataParams,
     +TD <: BaseTrainingData,
@@ -17,8 +17,8 @@ trait BaseEvaluator[
     ER <: BaseEvaluationResults
     ]
   extends AbstractEvaluator {
-  
-  override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)] 
+
+  override def getParamsSetBase(params: BaseEvaluationParams): Seq[(TDP, EDP)]
     = getParamsSet(params.asInstanceOf[EP])
 
   def getParamsSet(params: EP): Seq[(TDP, EDP)]
@@ -41,6 +41,8 @@ trait BaseEvaluator[
 
   def init(params: EP): Unit = {}
 
+  override def paramsClass() = manifest[EP]
+
   override def evaluateSeq(predictionSeq: BasePredictionSeq)
     : BaseEvaluationUnitSeq = {
     val input: Seq[(F, P, A)] = predictionSeq
@@ -58,10 +60,10 @@ trait BaseEvaluator[
   def report(evalUnits: Seq[EU]): ER
 }
 
-trait BaseCleanser[
+abstract class BaseCleanser[
     -TD <: BaseTrainingData,
     +CD <: BaseCleansedData,
-    CP <: BaseCleanserParams]
+    CP <: BaseCleanserParams: Manifest]
   extends AbstractCleanser {
 
   override def initBase(params: BaseCleanserParams): Unit = {
@@ -69,7 +71,9 @@ trait BaseCleanser[
   }
 
   def init(params: CP): Unit
-  
+
+  override def paramsClass() = manifest[CP]
+
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
     cleanse(trainingData.asInstanceOf[TD])
   }
@@ -79,18 +83,20 @@ trait BaseCleanser[
 
 /* Algorithm */
 
-trait BaseAlgorithm[
+abstract class BaseAlgorithm[
     -CD <: BaseCleansedData,
     -F <: BaseFeature,
     +P <: BasePrediction,
     M <: BaseModel,
-    AP <: BaseAlgoParams]
+    AP <: BaseAlgoParams: Manifest]
   extends AbstractAlgorithm {
 
   override def initBase(baseAlgoParams: BaseAlgoParams): Unit =
     init(baseAlgoParams.asInstanceOf[AP])
 
   def init(algoParams: AP): Unit = {}
+
+  override def paramsClass() = manifest[AP]
 
   override def trainBase(cleansedData: BaseCleansedData): BaseModel =
     train(cleansedData.asInstanceOf[CD])
@@ -99,7 +105,7 @@ trait BaseAlgorithm[
 
   override def predictSeqBase(baseModel: BaseModel,
     evalSeq: BaseEvaluationSeq): BasePredictionSeq = {
-   
+
     val input: Seq[(F, BaseActual)] = evalSeq
       .asInstanceOf[EvaluationSeq[F, BaseActual]]
       .data
@@ -119,8 +125,8 @@ trait BaseAlgorithm[
 /* Server */
 
 abstract class BaseServer[
-    -F <: BaseFeature, 
-    P <: BasePrediction, 
+    -F <: BaseFeature,
+    P <: BasePrediction,
     SP <: BaseServerParams: Manifest]
     extends AbstractServer {
 
@@ -143,7 +149,7 @@ abstract class BaseServer[
       // TODO(yipjustin). Check all seqs have the same f and a
       val p = combine(f, ps)
       (f, p, a)
-    }} 
+    }}
     new PredictionSeq[F, P, BaseActual](data = output)
   }
 

@@ -28,7 +28,7 @@ class EvalParams(
     //val recommendationTime: Long,
     val seenActions: Option[Set[String]], // (view, rate)
     //val ignoreInactive: Boolean,
-    val period: Period,
+    val hours: Int,
     val trainStart: DateTime,
     val testStart: DateTime,
     val testUntil: DateTime,

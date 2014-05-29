@@ -12,13 +12,15 @@ trait AbstractEvaluator {
 
   def prepareTrainingBase(params: BaseTrainingDataParams)
     : BaseTrainingData
-    
+
   def prepareEvaluationBase(params: BaseEvaluationDataParams)
     : BaseEvaluationSeq
-    
+
   // Evaluation methods
   def initBase(params: BaseEvaluationParams): Unit
-  
+
+  def paramsClass(): Manifest[_]
+
   def evaluateSeq(predictionSeq: BasePredictionSeq): BaseEvaluationUnitSeq
 
   def report(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults
@@ -28,6 +30,8 @@ trait AbstractCleanser {
 
   def initBase(baseCleanserParams: BaseCleanserParams): Unit
 
+  def paramsClass(): Manifest[_]
+
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
 
 }
@@ -35,6 +39,8 @@ trait AbstractCleanser {
 trait AbstractAlgorithm {
 
   def initBase(baseAlgoParams: BaseAlgoParams): Unit
+
+  def paramsClass(): Manifest[_]
 
   def trainBase(cleansedData: BaseCleansedData): BaseModel
 
@@ -46,8 +52,6 @@ trait AbstractAlgorithm {
 trait AbstractServer {
 
   def initBase(baseServerParams: BaseServerParams): Unit
-
-  //def json2Params(json: JValue): BaseServerParams
 
   def paramsClass(): Manifest[_]
 

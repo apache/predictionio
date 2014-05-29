@@ -28,7 +28,7 @@ object CreateEvaluationWorkflow extends Logging {
     val itypes: Option[Set[String]],
     // action for training
     val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
-    val conflict: String,
+    val conflict: Int = 10,
     val trainStart: DateTime,
     val x: DataX
   ) {
@@ -40,7 +40,7 @@ object CreateEvaluationWorkflow extends Logging {
       "appid": 1,
       "itypes": ["type1", "type2"],
       "actions": { "view": 1, "like" : 4 },
-      "conflict": "latest",
+      "conflict": "abc",
       "trainStart" : "2014-04-01T00:00:00.000Z",
       "x": { "x": 123, "y": 567}
      } """)

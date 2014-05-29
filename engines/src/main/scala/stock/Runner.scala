@@ -8,17 +8,6 @@ import io.prediction.DefaultCleanser
 
 import io.prediction.workflow.EvaluationWorkflow
 
-object StockEngineFactory {
-  def get(): AbstractEngine = {
-    new BaseEngine(
-      classOf[DefaultCleanser[TrainingData]],
-      Map("random" -> classOf[RandomAlgorithm],
-        "regression" -> classOf[RegressionAlgorithm]),
-      classOf[StockServer])
-  }
-}
-
-
 object Run {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",
@@ -53,7 +42,7 @@ object Run {
     /*
     if (false) {
       // Pass engine directly
-      PIORunner(evalParams, algoParamsSet(1), serverParams, 
+      PIORunner(evalParams, algoParamsSet(1), serverParams,
         engine, evaluator, preparator)
       PIORunner(evalParams, algoParamsSet(2), serverParams,
         engine, evaluator, preparator)
@@ -72,12 +61,12 @@ object Run {
 
     if (true) {
       val evalWorkflow = EvaluationWorkflow(
-        "", evalParams, 
-        null /* cleanserParams */, algoParamsSet, serverParams, 
-        engine, 
+        "", evalParams,
+        null /* cleanserParams */, algoParamsSet, serverParams,
+        engine,
         evaluatorClass)
 
-      println("Start singlethread runner") 
+      println("Start singlethread runner")
       evalWorkflow.run
     }
   }

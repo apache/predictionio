@@ -19,6 +19,10 @@ trait BaseAlgoParams {}
 
 trait BaseServerParams {}
 
+class DefaultCleanserParams() extends BaseCleanserParams{}
+
+class DefaultServerParams() extends BaseServerParams{}
+
 // Persistent Data
 trait BaseCleansedData extends BasePersistentData {}
 
@@ -33,5 +37,3 @@ trait BasePrediction extends BasePersistentData {}
 trait BaseActual extends BasePersistentData {}
 
 trait BaseModel extends BasePersistentData {}
-
-
