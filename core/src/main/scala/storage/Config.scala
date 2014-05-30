@@ -69,7 +69,8 @@ class Config {
   def getAppdataItemTrends(): ItemTrends = {
     appdataDbType match {
       case "mongodb" => {
-        new MongoItemTrends(appdataMongoDb.get)
+        //new MongoItemTrends(appdataMongoDb.get)
+        MongoItemTrends(appdataMongoDb.get)
       }
       case _ => throw new RuntimeException("Invalid appdata database type: " + appdataDbType)
     }
