@@ -1,6 +1,7 @@
-package io.prediction.engines.itemrank
+package io.prediction.engines.tools
 
-import io.prediction.core.{ BaseEngine }
+import io.prediction.core.{ AbstractEvaluator, AbstractEngine }
+import io.prediction.{ EngineFactory, EvaluatorFactory }
 import io.prediction.{ BaseAlgoParams, BaseCleanserParams, BaseServerParams,
   BaseEvaluationParams }
 import io.prediction.workflow.EvaluationWorkflow
@@ -17,8 +18,17 @@ import org.json4s.JValue
 import org.json4s._
 
 import scala.io.Source
+import scala.reflect.runtime.universe
 
-object CLI extends Logging {
+/* 
+run <Evaluator Factory name> <Engine Factory name> <eval param.json>
+<cleanser param.json>  <algo params array.json> <server paran.json>
+
+Example
+run io.prediction.engines.itemrank.ItemRankEvaluator io.prediction.engines.itemrank.ItemRankEngine  src/main/scala/itemrank/examples/evalParams.json src/main/scala/itemrank/examples/cleanserParams.json  src/main/scala/itemrank/examples/algoParamArray.json  src/main/scala/itemrank/examples/serverParams.json
+*/
+
+object CreateEvaluationWorkFlow extends Logging {
 
   implicit val formats = new DefaultFormats {
     override def dateFormatter = new java.text.SimpleDateFormat(
@@ -30,13 +40,28 @@ object CLI extends Logging {
   // run /pio
   def main(args: Array[String]) {
 
+    val evaluatorFactoryName = args(0)
+    val engineFactoryName = args(1)
+    val evalJsonPath = args(2)
+    val cleanserJsonPath = args(3)
+    val algoJsonPath = args(4)
+    val serverJsonPath = args(5)
+
     println(args.mkString(" "))
 
-    // TODO: get class name from command line
-    val evaluator = ItemRankEvaluator()
-    val engine = ItemRankEngine()
+    val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
 
-    val evalString = Source.fromFile(args(0)).mkString
+    // create evaluator instance
+    val evaluatorModule = runtimeMirror.staticModule(evaluatorFactoryName)
+    val evaluatorObject = runtimeMirror.reflectModule(evaluatorModule)
+    val evaluator = evaluatorObject.instance.asInstanceOf[EvaluatorFactory]()
+
+    // create engine instance
+    val engineModule = runtimeMirror.staticModule(engineFactoryName)
+    val engineObject = runtimeMirror.reflectModule(engineModule)
+    val engine = engineObject.instance.asInstanceOf[EngineFactory]()
+
+    val evalString = Source.fromFile(evalJsonPath).mkString
     val evalJson = JsonMethods.parse(evalString)
     val evalParams = Extraction.extract(evalJson)(formats,
       evaluator.paramsClass)
@@ -44,7 +69,7 @@ object CLI extends Logging {
     println(evalJson)
     println(evalParams)
 
-    val cleanserString = Source.fromFile(args(1)).mkString
+    val cleanserString = Source.fromFile(cleanserJsonPath).mkString
     val cleanserJson = JsonMethods.parse(cleanserString)
     val cleanserParams =
       Extraction.extract(cleanserJson)(formats,
@@ -53,7 +78,7 @@ object CLI extends Logging {
     println(cleanserJson)
     println(cleanserParams)
 
-    val algoString = Source.fromFile(args(2)).mkString
+    val algoString = Source.fromFile(algoJsonPath).mkString
     val algoJson = JsonMethods.parse(algoString)
     val algoJsonSeq = algoJson.extract[Seq[Tuple2[String, JValue]]]
 
@@ -76,7 +101,7 @@ object CLI extends Logging {
     println(algoJson)
     println(algoParamSet)
 
-    val serverString = Source.fromFile(args(3)).mkString
+    val serverString = Source.fromFile(serverJsonPath).mkString
     val serverJson = JsonMethods.parse(serverString)
 
     val serverParams = Extraction.extract(serverJson)(formats,
