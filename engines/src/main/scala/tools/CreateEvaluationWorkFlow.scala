@@ -20,12 +20,11 @@ import org.json4s._
 import scala.io.Source
 import scala.reflect.runtime.universe
 
-/* 
-run <Evaluator Factory name> <Engine Factory name> <eval param.json>
-<cleanser param.json>  <algo params array.json> <server paran.json>
 
+/*
 Example
-run io.prediction.engines.itemrank.ItemRankEvaluator io.prediction.engines.itemrank.ItemRankEngine  src/main/scala/itemrank/examples/evalParams.json src/main/scala/itemrank/examples/cleanserParams.json  src/main/scala/itemrank/examples/algoParamArray.json  src/main/scala/itemrank/examples/serverParams.json
+run --evaluatorFactory io.prediction.engines.itemrank.ItemRankEvaluator --engineFactory io.prediction.engines.itemrank.ItemRankEngine --ep src/main/scala/itemrank/examples/evalParams.json --cp src/main/scala/itemrank/examples/cleanserParams.json --ap src/main/scala/itemrank/examples/algoParamArray.json --sp src/main/scala/itemrank/examples/serverParams.json
+
 */
 
 object CreateEvaluationWorkFlow extends Logging {
@@ -35,19 +34,55 @@ object CreateEvaluationWorkFlow extends Logging {
       "yyyy-MM-dd'T'HH:mm:ss.SSSX")
   } ++ JodaTimeSerializers.all
 
-  // run <eval param json> <cleanser param json> <algo param json>
-  //     <server param json>
-  // run /pio
+  case class Args(
+    evaluatorFactoryName: String = "",
+    engineFactoryName: String = "",
+    evalJsonPath: String = "",
+    cleanserJsonPath: String = "",
+    algoJsonPath: String = "",
+    serverJsonPath: String = ""
+  )
+
   def main(args: Array[String]) {
 
-    val evaluatorFactoryName = args(0)
-    val engineFactoryName = args(1)
-    val evalJsonPath = args(2)
-    val cleanserJsonPath = args(3)
-    val algoJsonPath = args(4)
-    val serverJsonPath = args(5)
+    val parser = new scopt.OptionParser[Args]("CreateEvaluationWorkFlow") {
+      head("CreateEvaluationWorkFlow", "0.x")
+      help("help") text ("prints this usage text")
+      opt[String]("evaluatorFactory").required()
+        .valueName("<evalutor factory name>").action { (x, c) =>
+          c.copy(evaluatorFactoryName = x)}
+      opt[String]("engineFactory").required().
+        valueName("<engine factory name>").action { (x, c) =>
+          c.copy(engineFactoryName = x)}
+      opt[String]("ep").required()
+        .valueName("<eval param json>").action { (x,c) =>
+          c.copy(evalJsonPath = x)}
+      opt[String]("cp").required()
+        .valueName("<cleanser param json>").action { (x,c) =>
+          c.copy(cleanserJsonPath = x)}
+      opt[String]("ap").required()
+        .valueName("<algo param json>").action { (x,c) =>
+          c.copy(algoJsonPath = x) }
+      opt[String]("sp").required()
+        .valueName("<server param json>").action { (x,c) =>
+          c.copy(serverJsonPath = x) }
+    }
 
-    println(args.mkString(" "))
+    val arg: Option[Args] = parser.parse(args, Args())
+
+    if (arg == None) {
+      error("Invalid arguments")
+      System.exit(1)
+    }
+
+    val evaluatorFactoryName = arg.get.evaluatorFactoryName
+    val engineFactoryName = arg.get.engineFactoryName
+    val evalJsonPath = arg.get.evalJsonPath
+    val cleanserJsonPath = arg.get.cleanserJsonPath
+    val algoJsonPath = arg.get.algoJsonPath
+    val serverJsonPath = arg.get.serverJsonPath
+
+    info(args.mkString(" "))
 
     val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
 
@@ -66,8 +101,8 @@ object CreateEvaluationWorkFlow extends Logging {
     val evalParams = Extraction.extract(evalJson)(formats,
       evaluator.paramsClass)
 
-    println(evalJson)
-    println(evalParams)
+    info(evalJson)
+    info(evalParams)
 
     val cleanserString = Source.fromFile(cleanserJsonPath).mkString
     val cleanserJson = JsonMethods.parse(cleanserString)
@@ -75,8 +110,8 @@ object CreateEvaluationWorkFlow extends Logging {
       Extraction.extract(cleanserJson)(formats,
         engine.cleanserClass.newInstance.paramsClass)
 
-    println(cleanserJson)
-    println(cleanserParams)
+    info(cleanserJson)
+    info(cleanserParams)
 
     val algoString = Source.fromFile(algoJsonPath).mkString
     val algoJson = JsonMethods.parse(algoString)
@@ -87,7 +122,7 @@ object CreateEvaluationWorkFlow extends Logging {
     }
 
     if (!invalidAlgoIds.isEmpty) {
-      println(s"Invalid algo id defined: ${invalidAlgoIds}")
+      error(s"Invalid algo id defined: ${invalidAlgoIds}")
       System.exit(1)
     }
 
@@ -98,8 +133,8 @@ object CreateEvaluationWorkFlow extends Logging {
         (id, p)//.asInstanceOf[BaseAlgoParams])
       }
 
-    println(algoJson)
-    println(algoParamSet)
+    info(algoJson)
+    info(algoParamSet)
 
     val serverString = Source.fromFile(serverJsonPath).mkString
     val serverJson = JsonMethods.parse(serverString)
@@ -107,8 +142,8 @@ object CreateEvaluationWorkFlow extends Logging {
     val serverParams = Extraction.extract(serverJson)(formats,
       engine.serverClass.newInstance.paramsClass)
 
-    println(serverJson)
-    println(serverParams)
+    info(serverJson)
+    info(serverParams)
 
     val evalWorkflow1 = EvaluationWorkflow(
       "", evalParams,
