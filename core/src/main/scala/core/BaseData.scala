@@ -11,7 +11,7 @@ import io.prediction.{
 }
 
 // Below are internal classes used by PIO workflow
-trait BasePersistentData {}
+trait BasePersistentData extends AnyRef {}
 
 trait BaseValidationSeq extends BasePersistentData {}
 

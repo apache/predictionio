@@ -1,8 +1,12 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.core.{ BaseEngine }
-import io.prediction.{ BaseAlgoParams, BaseCleanserParams, BaseServerParams,
-  BaseEvaluationParams }
+import io.prediction.{ 
+  BaseAlgoParams, 
+  BaseCleanserParams, 
+  BaseServerParams/*,
+  BaseEvaluationParams */
+}
 import io.prediction.workflow.EvaluationWorkflow
 
 import grizzled.slf4j.Logging
@@ -36,13 +40,23 @@ object CLI extends Logging {
     val evaluator = ItemRankEvaluator()
     val engine = ItemRankEngine()
 
+    // This eval should be data prep.
     val evalString = Source.fromFile(args(0)).mkString
     val evalJson = JsonMethods.parse(evalString)
     val evalParams = Extraction.extract(evalJson)(formats,
-      evaluator.paramsClass)
+      evaluator.dataPreparatorClass.newInstance.paramsClass)
 
     println(evalJson)
     println(evalParams)
+
+    // Validator
+    val validationString = Source.fromFile(args(4)).mkString
+    val validationJson = JsonMethods.parse(validationString)
+    val validationParams = Extraction.extract(validationJson)(formats,
+      evaluator.validatorClass.newInstance.paramsClass)
+
+    println(validationJson)
+    println(validationParams)
 
     val cleanserString = Source.fromFile(args(1)).mkString
     val cleanserJson = JsonMethods.parse(cleanserString)
@@ -86,11 +100,14 @@ object CLI extends Logging {
     println(serverParams)
 
     val evalWorkflow1 = EvaluationWorkflow(
-      "", evalParams,
+      "",  // Batch Name
+      evalParams,
+      validationParams,
       cleanserParams,
       algoParamSet,
       serverParams,
-      engine, evaluator.getClass)
+      engine, 
+      evaluator)
 
     evalWorkflow1.run
 

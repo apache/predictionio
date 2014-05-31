@@ -3,17 +3,20 @@ package io.prediction.engines.itemrank
 import com.github.nscala_time.time.Imports._
 
 import io.prediction.{
-  BaseEvaluationParams,
-  BaseTrainingDataParams,
+  //BaseEvaluationParams,
+  BaseValidationParams,
   BaseEvaluationDataParams,
+  BaseTrainingDataParams,
+  BaseValidationDataParams,
   BaseTrainingData,
   BaseFeature,
   BasePrediction,
   BaseActual,
   BaseModel,
   BaseAlgoParams,
-  BaseEvaluationUnit,
-  BaseEvaluationResults
+  BaseValidationUnit,
+  BaseValidationResults,
+  BaseCrossValidationResults
 }
 
 // param to evaluator
@@ -33,11 +36,13 @@ class EvalParams(
     val testStart: DateTime,
     val testUntil: DateTime,
     val goal: Set[String]
-  ) extends BaseEvaluationParams {
+  //) extends BaseEvaluationParams {
+  ) extends BaseEvaluationDataParams with BaseValidationParams {
 
   override def toString = s"appid=${appid},itypes=${itypes}" +
     s"actions=${actions}, conflict=${conflict}"
 }
+
 
 // param for preparing training
 class TrainDataPrepParams(
@@ -62,7 +67,7 @@ class EvalDataPrepParams(
     val itypes: Option[Set[String]],
     val startUntil: Tuple2[DateTime, DateTime],
     val goal: Set[String] // action name
-  ) extends BaseEvaluationDataParams {
+  ) extends BaseValidationDataParams {
     override def toString = s"start=${startUntil._1} until=${startUntil._2}"
   }
 
@@ -114,6 +119,9 @@ class EvalUnit(
   val a: Actual,
   val score: Double,
   val baseline: Double
-) extends BaseEvaluationUnit {}
+) extends BaseValidationUnit {}
 
-class EvalResults() extends BaseEvaluationResults {}
+class EvalResults() extends BaseValidationResults {}
+
+class CrossEvalResults() extends BaseCrossValidationResults{} 
+

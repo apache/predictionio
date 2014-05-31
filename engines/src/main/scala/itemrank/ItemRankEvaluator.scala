@@ -1,10 +1,16 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ Evaluator, BaseEvaluationResults }
+//import io.prediction.{ Evaluator }
 import io.prediction.{ EvaluatorFactory }
 import io.prediction.core.AbstractEvaluator
+import io.prediction.core.BaseEvaluator
 import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
+import io.prediction.EmptyParams
+import io.prediction.EmptyData
+
+import io.prediction.DataPreparator
+import io.prediction.Validator
 
 import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._
@@ -19,14 +25,26 @@ object ItemRankEvaluator extends EvaluatorFactory {
   val itemSetsDb = config.getAppdataItemSets
 
   override def apply(): AbstractEvaluator = {
-    new ItemRankEvaluator
+    new BaseEvaluator(
+      classOf[ItemRankDataPreparator],
+      classOf[ItemRankValidator])
   }
 }
 
+/*
 class ItemRankEvaluator
   extends Evaluator[EvalParams, TrainDataPrepParams, EvalDataPrepParams,
       TrainigData, Feature, Prediction, Actual, EvalUnit, EvalResults] {
+*/
 
+class ItemRankDataPreparator
+  extends DataPreparator[
+      EvalParams,
+      TrainDataPrepParams,
+      EvalDataPrepParams,
+      TrainigData,
+      Feature,
+      Actual] {
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"
   final val CONFLICT_LOWEST: String = "lowest"
@@ -165,7 +183,7 @@ class ItemRankEvaluator
   }
 
   // TODO: use t to generate eval data
-  override def prepareEvaluation(params: EvalDataPrepParams):
+  override def prepareValidation(params: EvalDataPrepParams):
     Seq[(Feature, Actual)] = {
 
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
@@ -240,10 +258,23 @@ class ItemRankEvaluator
       }
     } else true
   }
+}
+
+class ItemRankValidator
+  extends Validator[
+      EvalParams,
+      TrainDataPrepParams,
+      EvalDataPrepParams,
+      Feature,
+      Prediction,
+      Actual,
+      EvalUnit,
+      EvalResults,
+      EmptyData] {
 
   // evaluation
 
-  override def evaluate(feature: Feature, predicted: Prediction,
+  override def validate(feature: Feature, predicted: Prediction,
     actual: Actual): EvalUnit = {
 
     val k = feature.items.size
@@ -261,7 +292,10 @@ class ItemRankEvaluator
   private def printDouble(d: Double): String = {
     BigDecimal(d).setScale(4, BigDecimal.RoundingMode.HALF_UP).toString
   }
-  override def report(evalUnits: Seq[EvalUnit]): EvalResults = {
+  override def validateSet(
+    trainDataPrepParams: TrainDataPrepParams,
+    evalDataPrepParams: EvalDataPrepParams,
+    evalUnits: Seq[EvalUnit]): EvalResults = {
     // calcualte MAP at k
     val mean = evalUnits.map( eu => eu.score ).sum / evalUnits.size
     val baseMean = evalUnits.map (eu => eu.baseline).sum / evalUnits.size
@@ -304,6 +338,12 @@ class ItemRankEvaluator
     val pAtK = pAtKNom.zip(pAtKDenom).map { t => t._1 / t._2 }
     val apAtKDenom = scala.math.min(n, r.size)
     if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
+  }
+
+  override def crossValidate(
+    input: Seq[(TrainDataPrepParams, EvalDataPrepParams, EvalResults)]
+  ): EmptyData = {
+    new EmptyData()
   }
 
 }

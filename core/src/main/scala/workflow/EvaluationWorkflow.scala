@@ -33,7 +33,7 @@ object EvaluationWorkflow {
     val submitter = new WorkflowSubmitter
     // In the comment, *_id corresponds to a task id.
 
-    val dataPrep = evaluator.dataPrepatatorClass.newInstance
+    val dataPrep = evaluator.dataPreparatorClass.newInstance
 
     // eval to eval_params
     val evalParamsMap = dataPrep.getParamsSetBase(evalDataParams)

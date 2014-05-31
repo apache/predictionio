@@ -47,7 +47,8 @@ object Runner {
     )
 
     //val evaluator = new ItemRankEvaluator
-    val evaluatorClass = classOf[ItemRankEvaluator]
+    //val evaluatorClass = classOf[ItemRankEvaluator]
+    val evaluator = ItemRankEvaluator()
 
     val knnEngineAlgoParamSet = Seq(
       ("knn", knnAlgoParams))
@@ -57,14 +58,14 @@ object Runner {
     )
 
     val evalWorkflow1 = EvaluationWorkflow(
-      "", evalParams,
+      "", evalParams, evalParams, 
       null /* cleanserParams */, knnEngineAlgoParamSet, serverParams,
-      knnEngine, evaluatorClass)
+      knnEngine, evaluator)
 
     val evalWorkflow2 = EvaluationWorkflow(
-      "", evalParams,
+      "", evalParams, evalParams,
       null /* cleanserParams */, randEngineAlgoParamSet, serverParams,
-      randEngine, evaluatorClass)
+      randEngine, evaluator)
 
     // Comment by yipjustin. All tasks are now persist in database. Hence, using
     // one worker suffice.

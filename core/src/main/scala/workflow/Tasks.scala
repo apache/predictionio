@@ -48,7 +48,7 @@ class DataPrepTask(
   val dataParams: BaseTrainingDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val dataPreparator = evaluator.dataPrepatatorClass.newInstance
+    val dataPreparator = evaluator.dataPreparatorClass.newInstance
     dataPreparator.prepareTrainingBase(dataParams)
   }
 }
@@ -60,7 +60,7 @@ class ValidationPrepTask(
   val validationDataParams: BaseValidationDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val dataPreparator = evaluator.dataPrepatatorClass.newInstance
+    val dataPreparator = evaluator.dataPreparatorClass.newInstance
     dataPreparator.prepareValidationBase(validationDataParams)
   }
 }

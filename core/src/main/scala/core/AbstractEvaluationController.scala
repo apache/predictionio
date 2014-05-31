@@ -40,5 +40,5 @@ trait AbstractValidator {
 }
 
 class AbstractEvaluator(
-  val dataPrepatatorClass: Class[_ <: AbstractDataPreparator],
+  val dataPreparatorClass: Class[_ <: AbstractDataPreparator],
   val validatorClass: Class[_ <: AbstractValidator]) {}
