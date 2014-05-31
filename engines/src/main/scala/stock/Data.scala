@@ -1,16 +1,17 @@
 package io.prediction.engines.stock
 
 import io.prediction.{
-  BaseEvaluationParams,
   BaseTrainingDataParams,
   BaseEvaluationDataParams,
+  BaseValidationDataParams,
   BaseTrainingData,
   BaseCleansedData,
   BaseFeature,
   BasePrediction,
   BaseActual,
   BaseModel,
-  BaseEvaluationUnit
+  BaseValidationUnit,
+  BaseValidationResults
 }
 
 import org.saddle._
@@ -22,14 +23,14 @@ import breeze.linalg.{ DenseMatrix, DenseVector }
 // Afterwards, slicing uses idx
 // Evaluate fromIdx until untilIdx
 // Use until fromIdx to construct training data
-class EvaluationParams(
+class EvaluationDataParams(
   val baseDate: DateTime,
   val fromIdx: Int,
   val untilIdx: Int,
   val trainingWindowSize: Int,
   val evaluationInterval: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseEvaluationParams {}
+  val tickerList: Seq[String]) extends BaseEvaluationDataParams {}
 
 class TrainingDataParams(
   val baseDate: DateTime,
@@ -42,12 +43,12 @@ class TrainingDataParams(
 // restricted by idx. For example, if idx == 10, the data-preparator use data to
 // at most time (idx - 1).
 // EvluationDataParams specifies idx where idx in [fromIdx, untilIdx).
-class EvaluationDataParams(
+class ValidationDataParams(
   val baseDate: DateTime,
   val fromIdx: Int,
   val untilIdx: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseEvaluationDataParams {}
+  val tickerList: Seq[String]) extends BaseValidationDataParams {}
 
 class TrainingData(
   val price: Frame[DateTime, String, Double]) extends BaseTrainingData {}
@@ -63,5 +64,8 @@ class Feature(
 class Target(
   val data: Map[String, Double]) extends BasePrediction with BaseActual {}
 
-class EvaluationUnit(
-  val data: Seq[(Double, Double)]) extends BaseEvaluationUnit {}
+class ValidationUnit(
+  val data: Seq[(Double, Double)]) extends BaseValidationUnit {}
+
+class ValidationResults(
+  val data: Seq[String]) extends BaseValidationResults {}

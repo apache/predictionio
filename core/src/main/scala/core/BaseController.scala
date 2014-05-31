@@ -5,6 +5,7 @@ import scala.reflect.Manifest
 // FIXME(yipjustin). I am being lazy...
 import io.prediction._
 
+/*
 abstract class BaseEvaluator[
     EP <: BaseEvaluationParams: Manifest,
     TDP <: BaseTrainingDataParams,
@@ -59,6 +60,7 @@ abstract class BaseEvaluator[
 
   def report(evalUnits: Seq[EU]): ER
 }
+*/
 
 abstract class BaseCleanser[
     -TD <: BaseTrainingData,
@@ -104,10 +106,10 @@ abstract class BaseAlgorithm[
   def train(cleansedData: CD): M
 
   override def predictSeqBase(baseModel: BaseModel,
-    evalSeq: BaseEvaluationSeq): BasePredictionSeq = {
+    validationSeq: BaseValidationSeq): BasePredictionSeq = {
 
-    val input: Seq[(F, BaseActual)] = evalSeq
-      .asInstanceOf[EvaluationSeq[F, BaseActual]]
+    val input: Seq[(F, BaseActual)] = validationSeq
+      .asInstanceOf[ValidationSeq[F, BaseActual]]
       .data
 
     val model = baseModel.asInstanceOf[M]

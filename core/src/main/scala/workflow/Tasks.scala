@@ -3,7 +3,9 @@ package io.prediction.workflow
 import io.prediction.core.AbstractEngine
 import io.prediction.core.AbstractEvaluator
 import io.prediction.BaseTrainingDataParams
-import io.prediction.BaseEvaluationParams
+import io.prediction.BaseEvaluationDataParams
+import io.prediction.BaseValidationDataParams
+import io.prediction.BaseValidationParams
 import io.prediction.BaseAlgoParams
 import io.prediction.BaseCleanserParams
 import io.prediction.BaseServerParams
@@ -12,10 +14,11 @@ import io.prediction.core.BasePersistentData
 import io.prediction.BaseTrainingData
 import io.prediction.BaseModel
 import io.prediction.BaseCleansedData
-import io.prediction.core.BaseEvaluationSeq
+import io.prediction.core.BaseValidationSeq
 import io.prediction.core.BasePredictionSeq
-import io.prediction.core.BaseEvaluationUnitSeq
+import io.prediction.core.BaseValidationUnitSeq
 import io.prediction.core.BaseEvaluator
+import io.prediction.core.BaseValidationParamsResults
 
 
 abstract class Task(
@@ -41,24 +44,24 @@ abstract class Task(
 class DataPrepTask(
   id: Int,
   batch: String,
-  val evaluatorClass: Class[_ <: AbstractEvaluator],
+  val evaluator: AbstractEvaluator,
   val dataParams: BaseTrainingDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val evaluator = evaluatorClass.newInstance
-    evaluator.prepareTrainingBase(dataParams)
+    val dataPreparator = evaluator.dataPrepatatorClass.newInstance
+    dataPreparator.prepareTrainingBase(dataParams)
   }
 }
 
-class EvalPrepTask(
+class ValidationPrepTask(
   id: Int,
   batch: String,
-  val evaluatorClass: Class[_ <: AbstractEvaluator],
-  val evalDataParams: BaseEvaluationDataParams
+  val evaluator: AbstractEvaluator,
+  val validationDataParams: BaseValidationDataParams
 ) extends Task(id, batch, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val evaluator = evaluatorClass.newInstance
-    evaluator.prepareEvaluationBase(evalDataParams)
+    val dataPreparator = evaluator.dataPrepatatorClass.newInstance
+    dataPreparator.prepareValidationBase(validationDataParams)
   }
 }
 
@@ -99,14 +102,14 @@ class PredictionTask(
   val algoName: String,
   val algoParams: BaseAlgoParams,
   val trainingId: Int,
-  val evalPrepId: Int
-) extends Task(id, batch, Seq(trainingId, evalPrepId)) {
+  val validationPrepId: Int
+) extends Task(id, batch, Seq(trainingId, validationPrepId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val algorithm = engine.algorithmClassMap(algoName).newInstance
     algorithm.initBase(algoParams)
     algorithm.predictSeqBase(
       baseModel = input(trainingId).asInstanceOf[BaseModel],
-      evalSeq = input(evalPrepId).asInstanceOf[BaseEvaluationSeq]
+      validationSeq = input(validationPrepId).asInstanceOf[BaseValidationSeq]
     )
   }
 }
@@ -126,30 +129,51 @@ class ServerTask(
   }
 }
 
-class EvaluationUnitTask(
+class ValidationUnitTask(
   id: Int,
   batch: String,
-  val evaluatorClass: Class[_ <: AbstractEvaluator],
-  val evalParams: BaseEvaluationParams,
+  val evaluator: AbstractEvaluator,
+  val validationParams: BaseValidationParams,
   val serverId: Int
 ) extends Task(id, batch, Seq(serverId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val evaluator = evaluatorClass.newInstance
-    evaluator.initBase(evalParams)
-    evaluator.evaluateSeq(input(serverId).asInstanceOf[BasePredictionSeq])
+    val validator = evaluator.validatorClass.newInstance
+    validator.initBase(validationParams)
+    validator.validateSeq(input(serverId).asInstanceOf[BasePredictionSeq])
   }
 }
 
-class EvaluationReportTask(
+class ValidationSetTask(
   id: Int,
   batch: String,
-  val evaluatorClass: Class[_ <: AbstractEvaluator],
-  val evalParams: BaseEvaluationParams,
-  val evalUnitId: Int
-) extends Task(id, batch, Seq(evalUnitId)) {
+  val evaluator: AbstractEvaluator,
+  val validationParams: BaseValidationParams,
+  val trainingDataParams: BaseTrainingDataParams,
+  val validationDataParams: BaseValidationDataParams,
+  val validationUnitId: Int
+) extends Task(id, batch, Seq(validationUnitId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
-    val evaluator = evaluatorClass.newInstance
-    evaluator.initBase(evalParams)
-    evaluator.report(input(evalUnitId).asInstanceOf[BaseEvaluationUnitSeq])
+    val validator = evaluator.validatorClass.newInstance
+    validator.initBase(validationParams)
+    validator.validateSet(
+      trainingDataParams,
+      validationDataParams,
+      input(validationUnitId).asInstanceOf[BaseValidationUnitSeq])
+  }
+}
+
+class CrossValidationTask(
+  id: Int,
+  batch: String,
+  val evaluator: AbstractEvaluator,
+  val validationParams: BaseValidationParams,
+  val validationSetIds: Seq[Int]
+) extends Task(id, batch, validationSetIds) {
+  override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
+    val validator = evaluator.validatorClass.newInstance
+    validator.initBase(validationParams)
+    validator.crossValidateBase(
+      validationSetIds.map(id =>
+        input(id).asInstanceOf[BaseValidationParamsResults]))
   }
 }

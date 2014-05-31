@@ -2,14 +2,14 @@ package io.prediction.workflow
 
 import io.prediction.BaseAlgoParams
 import io.prediction.BaseCleanserParams
-import io.prediction.BaseEvaluationParams
+//import io.prediction.BaseEvaluationParams
 import io.prediction.BaseModel
 import io.prediction.BaseServerParams
 import io.prediction.BaseTrainingDataParams
 import io.prediction.core.AbstractEngine
 import io.prediction.core.AbstractEvaluator
-import io.prediction.core.BaseEvaluationSeq
-import io.prediction.core.BaseEvaluationUnitSeq
+//import io.prediction.core.BaseEvaluationSeq
+//import io.prediction.core.BaseEvaluationUnitSeq
 import io.prediction.core.BasePersistentData
 import io.prediction.core.BasePredictionSeq
 import scala.collection.mutable.ArrayBuffer

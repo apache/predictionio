@@ -4,10 +4,14 @@ import io.prediction.storage.Config
 import io.prediction.storage.{ ItemTrend, ItemTrends }
 import io.prediction.PIOSettings
 
-import io.prediction.Evaluator
-import io.prediction.BaseEvaluationResults
+import io.prediction.DataPreparator
+import io.prediction.Validator
 import io.prediction.EvaluatorFactory
 import io.prediction.core.AbstractEvaluator
+import io.prediction.core.BaseEvaluator
+import io.prediction.BaseValidationParams
+import io.prediction.BaseValidationResults
+import io.prediction.BaseCrossValidationResults
 
 import scala.math
 // FIXME(yipjustin). Remove ._ as it is polluting the namespace.
@@ -28,21 +32,27 @@ object StockEvaluator extends EvaluatorFactory {
   val itemTrendsDb = config.getAppdataItemTrends()
 
   override def apply(): AbstractEvaluator = {
-    new StockEvaluator
+    //new StockEvaluator
+    new BaseEvaluator(
+      classOf[StockDataPreparator],
+      classOf[StockValidator])
   }
 }
 
-class StockEvaluator
-    extends Evaluator[
-        EvaluationParams, TrainingDataParams, EvaluationDataParams,
-        TrainingData, Feature, Target, Target,
-        EvaluationUnit, BaseEvaluationResults] {
+class StockDataPreparator
+    extends DataPreparator[
+        EvaluationDataParams, 
+        TrainingDataParams, 
+        ValidationDataParams,
+        TrainingData, 
+        Feature, 
+        Target] {
   val appid = PIOSettings.appid
   val itemTrendsDbGetTicker = StockEvaluator.itemTrendsDb.get(appid, _: String).get
 
   // (predicted, acutal)
-  def getParamsSet(params: EvaluationParams)
-  : Seq[(TrainingDataParams, EvaluationDataParams)] = {
+  def getParamsSet(params: EvaluationDataParams)
+  : Seq[(TrainingDataParams, ValidationDataParams)] = {
     Range(params.fromIdx, params.untilIdx, params.evaluationInterval)
       .map(idx => {
         val trainParams = new TrainingDataParams(
@@ -51,7 +61,7 @@ class StockEvaluator
           windowSize = params.trainingWindowSize,
           marketTicker = params.marketTicker,
           tickerList = params.tickerList)
-        val evalParams = new EvaluationDataParams(
+        val validationParams = new ValidationDataParams(
           baseDate = params.baseDate,
           fromIdx = idx,
           untilIdx = math.min(
@@ -59,7 +69,7 @@ class StockEvaluator
             params.untilIdx),
           marketTicker = params.marketTicker,
           tickerList = params.tickerList)
-        (trainParams, evalParams)
+        (trainParams, validationParams)
       })
   }
 
@@ -116,7 +126,7 @@ class StockEvaluator
   //   visible_data = [3,4,5,6,7]
   //   feature use [4,5,6]
   //   target use [6,7], (as target represents daily return)
-  def prepareOneEvaluation(idx: Int,
+  def prepareOneValidation(idx: Int,
     baseDate: DateTime,
     marketTicker: String, tickerList: Seq[String]): (Feature, Target) = {
     val featureWindowSize = 60 // engine-specific param
@@ -149,16 +159,29 @@ class StockEvaluator
     return (new Feature(data = featureData), new Target(data = targetData))
   }
 
-  def prepareEvaluation(params: EvaluationDataParams)
+  def prepareValidation(params: ValidationDataParams)
   : Seq[(Feature, Target)] = {
     (params.fromIdx until params.untilIdx).map(idx =>
-      prepareOneEvaluation(idx, params.baseDate,
+      prepareOneValidation(idx, params.baseDate,
         params.marketTicker, params.tickerList)
     ).toSeq
   }
+}
 
-  def evaluate(feature: Feature, predicted: Target, actual: Target)
-      : EvaluationUnit = {
+
+class StockValidator
+    extends Validator[
+        BaseValidationParams, 
+        TrainingDataParams, 
+        ValidationDataParams,
+        Feature, 
+        Target, 
+        Target,
+        ValidationUnit, 
+        ValidationResults, 
+        BaseCrossValidationResults] {
+  def validate(feature: Feature, predicted: Target, actual: Target)
+      : ValidationUnit = {
     val predictedData = predicted.data
     val actualData = actual.data
 
@@ -167,15 +190,20 @@ class StockEvaluator
         (pValue, actualData(ticker))
       }
     }.toSeq
-    new EvaluationUnit(data = data)
+    new ValidationUnit(data = data)
   }
 
-  def report(evalUnits: Seq[EvaluationUnit]): BaseEvaluationResults = {
-    val results: Seq[(Double, Double)] = evalUnits.map(_.data).flatten
+  override 
+  def validateSet(
+    trainingDataParams: TrainingDataParams,
+    validationDataParams: ValidationDataParams,
+    validationUnits: Seq[ValidationUnit])
+    : ValidationResults = {
+    val results: Seq[(Double, Double)] = validationUnits.map(_.data).flatten
     val pThresholds = Seq(-0.01, -0.003, -0.001, -0.0003,
       0.0, 0.0003, 0.001, 0.003, 0.01)
 
-    for (pThreshold <- pThresholds) {
+    val output = pThresholds.map( pThreshold => {
       val screened = results.filter(e => e._1 > pThreshold).toSeq
       val over = screened.filter(e => (e._1 > e._2)).length
       val under = screened.filter(e => (e._1 < e._2)).length
@@ -186,10 +214,23 @@ class StockEvaluator
       // 95% CI
       val ci = 1.96 * stdev / math.sqrt(count)
 
-      println(f"Threshold: ${pThreshold}%+.4f " +
+      val s = (f"Threshold: ${pThreshold}%+.4f " +
         f"Mean: ${mean_}%+.6f Stdev: ${stdev}%.6f CI: ${ci}%.6f " +
         f"Total: ${count}%5d Over: $over%5d Under: $under%5d")
-    }
+
+      println(s)
+      s
+    })
+    new ValidationResults(data = output)
+  }
+
+  override
+  def crossValidate(
+    validateResultsSeq
+      : Seq[(TrainingDataParams, ValidationDataParams, ValidationResults)])
+  : BaseCrossValidationResults = {
+    println("Cross Validation")
+    validateResultsSeq.map(e => e._3.data.map(println))
     null
   }
 }

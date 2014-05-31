@@ -2,15 +2,19 @@ package io.prediction
 
 import io.prediction.core.BasePersistentData
 
-trait BaseEvaluationParams {}
+trait BaseEvaluationDataParams {}
 
 trait BaseTrainingDataParams {}
 
-trait BaseEvaluationDataParams {}
+trait BaseValidationDataParams {}
 
-trait BaseEvaluationUnit extends BasePersistentData {}
+trait BaseValidationParams {}
 
-trait BaseEvaluationResults extends BasePersistentData {}
+trait BaseValidationUnit extends BasePersistentData {}
+
+trait BaseValidationResults extends BasePersistentData {}
+
+trait BaseCrossValidationResults extends BasePersistentData {}
 
 // Params
 trait BaseCleanserParams {}

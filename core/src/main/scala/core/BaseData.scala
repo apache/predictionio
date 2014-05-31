@@ -4,23 +4,39 @@ import io.prediction.{
   BaseActual, 
   BaseFeature, 
   BasePrediction,
-  BaseEvaluationUnit }
+  BaseValidationUnit,
+  BaseTrainingDataParams,
+  BaseValidationDataParams,
+  BaseValidationResults
+}
 
 // Below are internal classes used by PIO workflow
 trait BasePersistentData {}
 
-trait BaseEvaluationSeq extends BasePersistentData {}
+trait BaseValidationSeq extends BasePersistentData {}
 
 trait BasePredictionSeq extends BasePersistentData {}
 
-trait BaseEvaluationUnitSeq extends BasePersistentData {}
+trait BaseValidationUnitSeq extends BasePersistentData {}
 
-class EvaluationSeq[F <: BaseFeature, A <: BaseActual](
-  val data: Seq[(F, A)]) extends BaseEvaluationSeq {}
+trait BaseValidationParamsResults extends BasePersistentData {}
+
+class ValidationSeq[F <: BaseFeature, A <: BaseActual](
+  val data: Seq[(F, A)]) extends BaseValidationSeq {}
 
 class PredictionSeq[F <: BaseFeature, P <: BasePrediction, A <: BaseActual](
   val data: Seq[(F, P, A)]) extends BasePredictionSeq {}
 
-class EvaluationUnitSeq[EU <: BaseEvaluationUnit](
-  val data: Seq[EU]) extends BaseEvaluationUnitSeq {}
+class ValidationUnitSeq[VU <: BaseValidationUnit](
+  val data: Seq[VU]) extends BaseValidationUnitSeq {}
+
+class ValidationParamsResults[
+    TDP <: BaseTrainingDataParams,
+    VDP <: BaseValidationDataParams,
+    VR <: BaseValidationResults](
+    val trainingDataParams: TDP,
+    val validationDataParams: VDP,
+    val data: VR) extends BaseValidationParamsResults {}
+
+
 

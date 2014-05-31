@@ -16,7 +16,7 @@ object Run {
     "CRM", "INTU", "WDC", "SNDK")
 
   def main(args: Array[String]) {
-    val evalParams = new EvaluationParams(
+    val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
       untilIdx = 630,
@@ -31,8 +31,7 @@ object Run {
 
     val engine = StockEngine()
 
-
-    val evaluatorClass = classOf[StockEvaluator]
+    val evaluator = StockEvaluator()
 
     val algoParamsSet = Seq(
       ("random", new RandomAlgoParams(seed = 1, scale = 0.01)),
@@ -61,10 +60,10 @@ object Run {
 
     if (true) {
       val evalWorkflow = EvaluationWorkflow(
-        "", evalParams,
+        "", evalDataParams, null /* validationParams */,
         null /* cleanserParams */, algoParamsSet, serverParams,
         engine,
-        evaluatorClass)
+        evaluator)
 
       println("Start singlethread runner")
       evalWorkflow.run

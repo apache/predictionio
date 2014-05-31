@@ -3,33 +3,6 @@ package io.prediction
 // FIXME(yipjustin). I am lazy...
 import io.prediction.core._
 
-trait Evaluator[
-    EP <: BaseEvaluationParams,
-    TDP <: BaseTrainingDataParams,
-    EDP <: BaseEvaluationDataParams,
-    TD <: BaseTrainingData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    A <: BaseActual,
-    EU <: BaseEvaluationUnit,
-    ER <: BaseEvaluationResults]
-    extends BaseEvaluator[EP, TDP, EDP, TD, F, P, A, EU, ER] {
-
-  // Data generation
-  def getParamsSet(params: EP): Seq[(TDP, EDP)]
-
-  def prepareTraining(params: TDP): TD
-
-  def prepareEvaluation(params: EDP): Seq[(F, A)]
-
-  // Evaluation
-  def init(params: EP): Unit
-
-  def evaluate(feature: F, predicted: P, actual: A): EU
-
-  def report(evalUnits: Seq[EU]): ER
-}
-
 trait Cleanser[
     -TD <: BaseTrainingData,
     +CD <: BaseCleansedData,
@@ -74,11 +47,7 @@ class DefaultCleanser[TD <: BaseTrainingData]
   def cleanse(trainingData: TD): TD = trainingData
 }
 
-// factory
-trait EvaluatorFactory {
-  def apply(): AbstractEvaluator
-}
-
+// Factory Methods
 trait EngineFactory {
   def apply(): AbstractEngine
 }

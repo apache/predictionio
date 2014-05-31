@@ -4,7 +4,7 @@ package io.prediction.core
 import io.prediction._
 import scala.reflect.Manifest
 
-
+/*
 trait AbstractEvaluator {
   // Data Preparation methods
   def getParamsSetBase(params: BaseEvaluationParams)
@@ -25,6 +25,7 @@ trait AbstractEvaluator {
 
   def report(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults
 }
+*/
 
 trait AbstractCleanser {
 
@@ -44,7 +45,7 @@ trait AbstractAlgorithm {
 
   def trainBase(cleansedData: BaseCleansedData): BaseModel
 
-  def predictSeqBase(baseModel: BaseModel, evalSeq: BaseEvaluationSeq)
+  def predictSeqBase(baseModel: BaseModel, validationSeq: BaseValidationSeq)
     : BasePredictionSeq
 
 }
