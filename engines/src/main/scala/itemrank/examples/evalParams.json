@@ -7,6 +7,6 @@
   "hours": 24,
   "trainStart" : "2014-04-01T00:00:00.000Z",
   "testStart" : "2014-04-20T00:00:00.000Z",
-  "testUntil" : "2014-04-21T00:00:00.000Z"
+  "testUntil" : "2014-04-21T00:00:00.000Z",
   "goal": ["conversion", "view"]
 }
