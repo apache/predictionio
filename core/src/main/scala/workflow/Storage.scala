@@ -4,7 +4,7 @@ package io.prediction.workflow
 
 import com.mongodb.casbah.Imports.MongoCursor
 import com.mongodb.casbah.commons.Imports._
-import com.mongodb.casbah.Imports.MongoDB 
+import com.mongodb.casbah.Imports.MongoDB
 import com.twitter.chill.MeatLocker
 import io.prediction.storage.MongoSequences
 
@@ -22,16 +22,16 @@ trait Tasks {
 
   def markDone(taskId: Int, outputPath: String): Unit
 
-  def getNotDone(): Seq[Task]
+  def getNotDone(runId: String): Seq[Task]
 
-  def getDone(): Seq[Task]
+  def getDone(runId: String): Seq[Task]
 
-  def getDoneIds(): Seq[Int]
+  def getDoneIds(runId: String): Seq[Int]
 }
 
 class MongoTasks(db: MongoDB) extends Tasks {
   private val taskColl = db("tasks")
-  
+
   val mongoSeq = new MongoSequences(db)
   def nextId(): Int = mongoSeq.genNext("workflow")
 
@@ -40,12 +40,13 @@ class MongoTasks(db: MongoDB) extends Tasks {
     val updateObj = MongoDBObject(
       "_id" -> task.id,
       "batch" -> task.batch,
+      "runId" -> task.runId,
       "dependingIds" -> task.dependingIds,
       "done" -> task.done,
       "data" -> taskToByteArray(task),
       "debugName" -> task.toString
     )
-    taskColl.update(queryObj, updateObj, upsert) 
+    taskColl.update(queryObj, updateObj, upsert)
   }
 
   def insert(task: Task): Unit = upsert(task.id, task, /* upsert */ true)
@@ -55,24 +56,24 @@ class MongoTasks(db: MongoDB) extends Tasks {
     task.markDone(outputPath)
     upsert(task.id, task, upsert = false)
   }
-  
+
   def get(taskId: Int): Option[Task] = {
     val taskOpt = taskColl.findOne(MongoDBObject("_id" -> taskId))
     taskOpt.map(taskObj => byteArrayToTask(taskObj.as[Array[Byte]]("data")))
   }
 
-  def getNotDone(): Seq[Task] = {
-    val queryObj = MongoDBObject("done" -> false)
-    (new MongoTasksIterator(taskColl.find(queryObj))).toSeq
-  }
-  
-  def getDone(): Seq[Task] = {
-    val queryObj = MongoDBObject("done" -> true)
+  def getNotDone(runId: String): Seq[Task] = {
+    val queryObj = MongoDBObject("runId" -> runId, "done" -> false)
     (new MongoTasksIterator(taskColl.find(queryObj))).toSeq
   }
 
-  def getDoneIds(): Seq[Int] = {
-    val queryObj = MongoDBObject("done" -> true)
+  def getDone(runId: String): Seq[Task] = {
+    val queryObj = MongoDBObject("runId" -> runId, "done" -> true)
+    (new MongoTasksIterator(taskColl.find(queryObj))).toSeq
+  }
+
+  def getDoneIds(runId: String): Seq[Int] = {
+    val queryObj = MongoDBObject("runId" -> runId, "done" -> true)
     val fieldsObj = MongoDBObject("_id" -> 1)
     taskColl.find(queryObj, fieldsObj).map(_.as[Int]("_id")).toSeq
   }

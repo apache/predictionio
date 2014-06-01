@@ -24,6 +24,7 @@ import io.prediction.core.BaseValidationParamsResults
 abstract class Task(
   val id: Int,
   val batch: String,
+  val runId: String,
   val dependingIds: Seq[Int] = Seq[Int](),
   var done: Boolean = false,
   var outputPath: String = "") {
@@ -32,9 +33,9 @@ abstract class Task(
     done = true
     this.outputPath = outputPath
   }
-  
+
   def run(input: Map[Int, BasePersistentData]): BasePersistentData
-  
+
   override def toString() = {
     (s"${this.getClass.getSimpleName} id: $id batch: $batch "
     + s"depending: $dependingIds done: $done outputPath: $outputPath")
@@ -44,9 +45,10 @@ abstract class Task(
 class DataPrepTask(
   id: Int,
   batch: String,
+  runId: String,
   val evaluator: AbstractEvaluator,
   val dataParams: BaseTrainingDataParams
-) extends Task(id, batch, Seq[Int]()) {
+) extends Task(id, batch, runId, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val dataPreparator = evaluator.dataPreparatorClass.newInstance
     dataPreparator.prepareTrainingBase(dataParams)
@@ -56,9 +58,10 @@ class DataPrepTask(
 class ValidationPrepTask(
   id: Int,
   batch: String,
+  runId: String,
   val evaluator: AbstractEvaluator,
   val validationDataParams: BaseValidationDataParams
-) extends Task(id, batch, Seq[Int]()) {
+) extends Task(id, batch, runId, Seq[Int]()) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val dataPreparator = evaluator.dataPreparatorClass.newInstance
     dataPreparator.prepareValidationBase(validationDataParams)
@@ -68,26 +71,28 @@ class ValidationPrepTask(
 class CleanserTask(
   id: Int,
   batch: String,
+  runId: String,
   val engine: AbstractEngine,
   val cleanserParams: BaseCleanserParams,
   val dataPrepId: Int
-) extends Task(id, batch, Seq(dataPrepId)) {
+) extends Task(id, batch, runId, Seq(dataPrepId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val cleanser = engine.cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
     cleanser.cleanseBase(input(dataPrepId).asInstanceOf[BaseTrainingData])
   }
-  
+
 }
 
 class TrainingTask(
   id: Int,
   batch: String,
+  runId: String,
   val engine: AbstractEngine,
   val algoName: String,
   val algoParams: BaseAlgoParams,
   val cleanseId: Int
-) extends Task(id, batch, Seq(cleanseId)) {
+) extends Task(id, batch, runId, Seq(cleanseId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val algorithm = engine.algorithmClassMap(algoName).newInstance
     algorithm.initBase(algoParams)
@@ -98,12 +103,13 @@ class TrainingTask(
 class PredictionTask(
   id: Int,
   batch: String,
+  runId: String,
   val engine: AbstractEngine,
   val algoName: String,
   val algoParams: BaseAlgoParams,
   val trainingId: Int,
   val validationPrepId: Int
-) extends Task(id, batch, Seq(trainingId, validationPrepId)) {
+) extends Task(id, batch, runId, Seq(trainingId, validationPrepId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val algorithm = engine.algorithmClassMap(algoName).newInstance
     algorithm.initBase(algoParams)
@@ -117,10 +123,11 @@ class PredictionTask(
 class ServerTask(
   id: Int,
   batch: String,
+  runId: String,
   val engine: AbstractEngine,
   val serverParams: BaseServerParams,
   val predictionIds: Seq[Int]
-) extends Task(id, batch, predictionIds) {
+) extends Task(id, batch, runId, predictionIds) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val server = engine.serverClass.newInstance
     server.initBase(serverParams)
@@ -132,10 +139,11 @@ class ServerTask(
 class ValidationUnitTask(
   id: Int,
   batch: String,
+  runId: String,
   val evaluator: AbstractEvaluator,
   val validationParams: BaseValidationParams,
   val serverId: Int
-) extends Task(id, batch, Seq(serverId)) {
+) extends Task(id, batch, runId, Seq(serverId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val validator = evaluator.validatorClass.newInstance
     validator.initBase(validationParams)
@@ -146,12 +154,13 @@ class ValidationUnitTask(
 class ValidationSetTask(
   id: Int,
   batch: String,
+  runId: String,
   val evaluator: AbstractEvaluator,
   val validationParams: BaseValidationParams,
   val trainingDataParams: BaseTrainingDataParams,
   val validationDataParams: BaseValidationDataParams,
   val validationUnitId: Int
-) extends Task(id, batch, Seq(validationUnitId)) {
+) extends Task(id, batch, runId, Seq(validationUnitId)) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val validator = evaluator.validatorClass.newInstance
     validator.initBase(validationParams)
@@ -165,10 +174,11 @@ class ValidationSetTask(
 class CrossValidationTask(
   id: Int,
   batch: String,
+  runId: String,
   val evaluator: AbstractEvaluator,
   val validationParams: BaseValidationParams,
   val validationSetIds: Seq[Int]
-) extends Task(id, batch, validationSetIds) {
+) extends Task(id, batch, runId, validationSetIds) {
   override def run(input: Map[Int, BasePersistentData]): BasePersistentData = {
     val validator = evaluator.validatorClass.newInstance
     validator.initBase(validationParams)

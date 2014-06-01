@@ -30,6 +30,7 @@ object EvaluationWorkflow {
       engine: AbstractEngine,
       evaluator: AbstractEvaluator
     ): WorkflowScheduler = {
+    val runId = java.util.UUID.randomUUID.toString
     val submitter = new WorkflowSubmitter
     // In the comment, *_id corresponds to a task id.
 
@@ -48,7 +49,7 @@ object EvaluationWorkflow {
     // eval to data_prep_id
     val dataPrepMap = evalParamsMap.map{ case(eval, evalParams) => {
       val (trainDataParams, _) = evalParams
-      val task = new DataPrepTask(submitter.nextId, batch,
+      val task = new DataPrepTask(submitter.nextId, batch, runId,
         evaluator, trainDataParams)
       val dataPrepId = submitter.submit(task)
       (eval, dataPrepId)
@@ -58,7 +59,7 @@ object EvaluationWorkflow {
     // eval to validation_prep_id
     val validationPrepMap = evalParamsMap.map{ case(eval, evalParams) => {
       val (_, validationDataParams) = evalParams
-      val task = new ValidationPrepTask(submitter.nextId, batch,
+      val task = new ValidationPrepTask(submitter.nextId, batch, runId,
         evaluator, validationDataParams)
       val validationPrepId = submitter.submit(task)
       (eval, validationPrepId)
@@ -67,7 +68,7 @@ object EvaluationWorkflow {
     // Cleansing
     // eval to cleansing_id
     val cleanserMap = dataPrepMap.map{ case(eval, dataPrepId) => {
-      val task = new CleanserTask(submitter.nextId, batch, engine,
+      val task = new CleanserTask(submitter.nextId, batch, runId, engine,
         cleanserParams, dataPrepId)
       val cleanserId = submitter.submit(task)
       (eval, cleanserId)
@@ -77,7 +78,7 @@ object EvaluationWorkflow {
     // (eval, algo) to training_id
     val modelMap = cleanserMap.map{ case(eval, cleanserId) => {
       algoParamsMap.map{ case(algo, (algoName, algoParams)) => {
-        val task = new TrainingTask(submitter.nextId, batch, 
+        val task = new TrainingTask(submitter.nextId, batch, runId,
           engine, algoName, algoParams, cleanserId)
         val trainingId = submitter.submit(task)
         ((eval, algo) , trainingId)
@@ -89,8 +90,8 @@ object EvaluationWorkflow {
     val predictionMap = modelMap.map{ case((eval, algo), trainingId) => {
       val (algoName, algoParams) = algoParamsMap(algo)
       val validationPrepId = validationPrepMap(eval)
-      val task = new PredictionTask(submitter.nextId, batch, engine, algoName,
-        algoParams, trainingId, validationPrepId)
+      val task = new PredictionTask(submitter.nextId, batch, runId, engine,
+        algoName, algoParams, trainingId, validationPrepId)
       val predictionId = submitter.submit(task)
       ((eval, algo), predictionId)
     }}.toMap
@@ -100,8 +101,8 @@ object EvaluationWorkflow {
     val algoList = algoParamsMap.keys.toSeq
     val serverMap = evalParamsMap.map{ case(eval, _) => {
       val predictionIds = algoList.map(algo => predictionMap((eval, algo)))
-      val task = new ServerTask(submitter.nextId, batch, engine, serverParams,
-        predictionIds)
+      val task = new ServerTask(submitter.nextId, batch, runId, engine,
+        serverParams, predictionIds)
       val serverId = submitter.submit(task)
       (eval, serverId)
     }}.toMap
@@ -109,7 +110,7 @@ object EvaluationWorkflow {
     // ValidationUnitTask
     // eval to validation_unit_id
     val validationUnitMap = serverMap.map{ case(eval, serverId) => {
-      val task = new ValidationUnitTask(submitter.nextId, batch, 
+      val task = new ValidationUnitTask(submitter.nextId, batch, runId,
         evaluator, validationParams, serverId)
       val validationUnitId = submitter.submit(task)
       (eval, validationUnitId)
@@ -117,12 +118,12 @@ object EvaluationWorkflow {
 
     // ValidationSetTask
     // eval to validation_set_id
-    val validationSetMap = validationUnitMap.map{ 
+    val validationSetMap = validationUnitMap.map{
       case(eval, validationUnitId) => {
         val (trainDataParams, validationDataParams) = evalParamsMap(eval)
-        val task = new ValidationSetTask(submitter.nextId, batch,
-          evaluator, 
-          validationParams, 
+        val task = new ValidationSetTask(submitter.nextId, batch, runId,
+          evaluator,
+          validationParams,
           trainDataParams, validationDataParams,
           validationUnitId)
         val validationSetId = submitter.submit(task)
@@ -130,7 +131,7 @@ object EvaluationWorkflow {
     }}
 
     // CrossValidationTask
-    val task = new CrossValidationTask(submitter.nextId, batch,
+    val task = new CrossValidationTask(submitter.nextId, batch, runId,
       evaluator,
       validationParams,
       validationSetMap.values.toList)
@@ -138,6 +139,6 @@ object EvaluationWorkflow {
 
     // FIXME(yipjustin). Workflow should not return a schduler.
     // Schduler should work independently.
-    return new SingleThreadScheduler()
+    return new MultiThreadScheduler(runId)
   }
 }
