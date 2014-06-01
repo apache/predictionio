@@ -99,7 +99,7 @@ class WorkflowSubmitter {
   def nextId(): Int = tasksDb.nextId
 
   def submit(task: Task): Int = {
-    println(s"Task id: ${task.id} depends: ${task.dependingIds} task: $task")
+    println(s"SubmitTask id: ${task.id} depends: ${task.dependingIds} task: $task")
     tasksDb.insert(task)
     task.id
   }
