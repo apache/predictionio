@@ -12,17 +12,20 @@ import io.prediction.core.AbstractEvaluator
 //import io.prediction.core.BaseEvaluationUnitSeq
 import io.prediction.core.BasePersistentData
 import io.prediction.core.BasePredictionSeq
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.{ Map => MMap, Set => MSet }
-import scala.util.Random
 import io.prediction.storage.Config
 import io.prediction.storage.MongoSequences
 
-import com.twitter.chill.MeatLocker
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ Map => MMap, Set => MSet }
+import scala.concurrent.duration._
+import scala.util.Random
+
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
+
+import com.twitter.chill.MeatLocker
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
@@ -161,6 +164,7 @@ class MultiThreadScheduler(val runId: String) extends WorkflowScheduler {
 
 case class TaskStart(dependentTasksOutput: Map[Int, String])
 case class TaskDone(id: Int, outputPath: String)
+case class TaskFail(id: Int)
 case object TaskAllDone
 
 class WorkflowSupervisor(runId: String) extends Actor with ActorLogging {
@@ -182,6 +186,8 @@ class WorkflowSupervisor(runId: String) extends Actor with ActorLogging {
 }
 
 class BatchSupervisor(runId: String) extends Actor with ActorLogging {
+  import context.dispatcher
+
   val config = new Config
   val tasksDb = new MongoTasks(config.workflowdataMongoDb.get)
 
@@ -206,13 +212,20 @@ class BatchSupervisor(runId: String) extends Actor with ActorLogging {
       tasksDb.markDone(id, outputPath)
       startReadyTasks()
       if (tasks.keys.toSet == doneTasks.keys.toSet) context.parent ! TaskAllDone
+    case TaskFail(id) =>
+      log.warning(s"Task ${id} failed. Retrying in a moment.")
+      context.system.scheduler.scheduleOnce(
+        1.seconds,
+        taskWorkers(id),
+        TaskStart(inputDataPathsForTasks(tasks(id).dependingIds)))
   }
+
+  def inputDataPathsForTasks(ids: Seq[Int]): Map[Int, String] =
+    ids.map(id => id -> doneTasks(id).outputPath).toMap
 
   def startReadyTasks(): Unit = {
     taskReadyToStart() foreach { tid =>
-      val inputDataMap = tasks(tid).dependingIds.map(id =>
-        (id, doneTasks(id).outputPath)
-      ).toMap
+      val inputDataMap = inputDataPathsForTasks(tasks(tid).dependingIds)
       taskWorkers(tid) ! TaskStart(inputDataMap)
     }
   }
@@ -227,13 +240,18 @@ class BatchSupervisor(runId: String) extends Actor with ActorLogging {
 }
 
 class TaskWorker(task: Task) extends Actor with ActorLogging {
+  override def postRestart(reason: Throwable) = {
+    super.postRestart(reason)
+    context.parent ! TaskFail(task.id)
+  }
+
   def receive = {
     case TaskStart(depTaskOutput) =>
-      //if (scala.util.Random.nextInt(5) == 0) throw new RuntimeException("random oops!")
+      log.info(s"TaskWorker (id: ${task.id}, task: $task)")
+      //if (scala.util.Random.nextInt(2) == 0) throw new RuntimeException("random oops!")
       val localDataMap = depTaskOutput.mapValues(WorkflowScheduler.loadData)
       val taskOutput = task.run(localDataMap)
       val outputPath = WorkflowScheduler.saveData(task.id, taskOutput)
-      log.info(s"TaskWorker (id: ${task.id}, task: $task)")
       sender ! TaskDone(task.id, outputPath)
       context.become(finished, true)
   }
