@@ -12,6 +12,7 @@ import io.prediction.core.BaseEvaluator
 import io.prediction.BaseValidationParams
 import io.prediction.BaseValidationResults
 import io.prediction.BaseCrossValidationResults
+import io.prediction.EmptyParams
 
 import scala.math
 // FIXME(yipjustin). Remove ._ as it is polluting the namespace.
@@ -171,7 +172,7 @@ class StockDataPreparator
 
 class StockValidator
     extends Validator[
-        BaseValidationParams, 
+        EmptyParams, 
         TrainingDataParams, 
         ValidationDataParams,
         Feature, 

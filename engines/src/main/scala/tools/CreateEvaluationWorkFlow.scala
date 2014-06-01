@@ -26,8 +26,12 @@ import scala.reflect.runtime.universe
 
 /*
 Example
+
+ItemRank:
 run --evaluatorFactory io.prediction.engines.itemrank.ItemRankEvaluator --engineFactory io.prediction.engines.itemrank.ItemRankEngine --dp dataPrepParams.json --vp dataPrepParams.json --cp cleanserParams.json --ap algoParamArray.json --sp serverParams.json --jsonDir src/main/scala/itemrank/examples/
 
+Stock:
+run --evaluatorFactory io.prediction.engines.stock.StockEvaluator --engineFactory io.prediction.engines.stock.StockEngine --dp dataPrepParams.json --sp serverParams.json --ap algoParamArray.json --jsonDir src/main/scala/stock/examples/
 */
 
 object CreateEvaluationWorkFlow extends Logging {
@@ -47,9 +51,22 @@ object CreateEvaluationWorkFlow extends Logging {
     serverJsonPath: String = "",
     jsonDir: String = ""
   )
+  
+  def getParams[A <: AnyRef](jsonDir: String, path: String, 
+    classManifest: Manifest[A]): A = {
+    val jsonString = (
+      if (path == "") "" 
+      else Source.fromFile(jsonDir + path).mkString)
+      
+    val json = JsonMethods.parse(jsonString)
+    val params = Extraction.extract(json)(formats, classManifest)
+    info(json)
+    info(params)
+    params
+  }
 
   def main(args: Array[String]) {
-
+    // If json path is not provided, it is assumed to be an empty string.
     val parser = new scopt.OptionParser[Args]("CreateEvaluationWorkFlow") {
       head("CreateEvaluationWorkFlow", "0.x")
       help("help") text ("prints this usage text")
@@ -59,19 +76,19 @@ object CreateEvaluationWorkFlow extends Logging {
       opt[String]("engineFactory").required().
         valueName("<engine factory name>").action { (x, c) =>
           c.copy(engineFactoryName = x)}
-      opt[String]("dp").required()
+      opt[String]("dp").optional()
         .valueName("<dataprep param json>").action { (x,c) =>
           c.copy(dataPrepJsonPath = x)}
-      opt[String]("vp").required()
+      opt[String]("vp").optional()
         .valueName("<validator param json>").action { (x,c) =>
           c.copy(validatorJsonPath = x)}
-      opt[String]("cp").required()
+      opt[String]("cp").optional()
         .valueName("<cleanser param json>").action { (x,c) =>
           c.copy(cleanserJsonPath = x)}
-      opt[String]("ap").required()
+      opt[String]("ap").optional()
         .valueName("<algo param json>").action { (x,c) =>
           c.copy(algoJsonPath = x) }
-      opt[String]("sp").required()
+      opt[String]("sp").optional()
         .valueName("<server param json>").action { (x,c) =>
           c.copy(serverJsonPath = x) }
       opt[String]("jsonDir").optional()
@@ -109,31 +126,24 @@ object CreateEvaluationWorkFlow extends Logging {
     val engineObject = runtimeMirror.reflectModule(engineModule)
     val engine = engineObject.instance.asInstanceOf[EngineFactory]()
 
-    val dataPrepString = Source.fromFile(jsonDir + dataPrepJsonPath).mkString
-    val dataPrepJson = JsonMethods.parse(dataPrepString)
-    val dataPrepParams = Extraction.extract(dataPrepJson)(formats,
+    // Params
+    val dataPrepParams = getParams(
+      jsonDir, dataPrepJsonPath,
       evaluator.dataPreparatorClass.newInstance.paramsClass)
-
-    info(dataPrepJson)
-    info(dataPrepParams)
     
-    val validatorString = Source.fromFile(jsonDir + validatorJsonPath).mkString
-    val validatorJson = JsonMethods.parse(validatorString)
-    val validatorParams = Extraction.extract(validatorJson)(formats,
+    val validatorParams = getParams(
+      jsonDir, validatorJsonPath,
       evaluator.validatorClass.newInstance.paramsClass)
 
-    info(validatorJson)
-    info(validatorParams)
+    val cleanserParams = getParams(
+      jsonDir, cleanserJsonPath,
+      engine.cleanserClass.newInstance.paramsClass)
+    
+    val serverParams = getParams(
+      jsonDir, serverJsonPath,
+      engine.serverClass.newInstance.paramsClass)
 
-    val cleanserString = Source.fromFile(jsonDir + cleanserJsonPath).mkString
-    val cleanserJson = JsonMethods.parse(cleanserString)
-    val cleanserParams =
-      Extraction.extract(cleanserJson)(formats,
-        engine.cleanserClass.newInstance.paramsClass)
-
-    info(cleanserJson)
-    info(cleanserParams)
-
+    // AlgoParams require special handling as it is a Map.
     val algoString = Source.fromFile(jsonDir + algoJsonPath).mkString
     val algoJson = JsonMethods.parse(algoString)
     val algoJsonSeq = algoJson.extract[Seq[Tuple2[String, JValue]]]
@@ -157,14 +167,6 @@ object CreateEvaluationWorkFlow extends Logging {
     info(algoJson)
     info(algoParamSet)
 
-    val serverString = Source.fromFile(jsonDir + serverJsonPath).mkString
-    val serverJson = JsonMethods.parse(serverString)
-
-    val serverParams = Extraction.extract(serverJson)(formats,
-      engine.serverClass.newInstance.paramsClass)
-
-    info(serverJson)
-    info(serverParams)
 
     val evalWorkflow1 = EvaluationWorkflow(
       "",  // Batch Name

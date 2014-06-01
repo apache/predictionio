@@ -10,6 +10,9 @@ import io.prediction.{
   BaseValidationResults
 }
 
+// Base Params
+trait BaseParams extends AnyRef {}
+
 // Below are internal classes used by PIO workflow
 trait BasePersistentData extends AnyRef {}
 

@@ -1,0 +1,14 @@
+{
+  "baseDate" : "2006-01-01T00:00:00.000Z",
+  "fromIdx": 600,
+  "untilIdx": 630,
+  "trainingWindowSize": 600,
+  "evaluationInterval": 20,
+  "marketTicker": "SPY",
+  "tickerList": [ 
+    "GOOG", "AAPL", "AMZN", "MSFT", "IBM",
+    "HPQ", "INTC", "NTAP", "CSCO", "ORCL",
+    "XRX", "YHOO", "AMAT", "QCOM", "TXN",
+    "CRM", "INTU", "WDC", "SNDK"]
+}
+

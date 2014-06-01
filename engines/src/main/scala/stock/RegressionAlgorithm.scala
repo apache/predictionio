@@ -1,7 +1,11 @@
 package io.prediction.engines.stock
 
 import io.prediction.{ Algorithm, BaseAlgoParams }
+import io.prediction.EmptyParams
+
 import scala.math
+
+// FIXME. saddle polluted the io. namespace.
 import org.saddle._
 import org.saddle.index.IndexTime
 
@@ -13,8 +17,9 @@ import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 
+
 class RegressionAlgorithm
-    extends Algorithm[TrainingData, Feature, Target, Model, BaseAlgoParams] {
+    extends Algorithm[TrainingData, Feature, Target, Model, EmptyParams] {
   private def getRet(logPrice: Frame[DateTime, String, Double], d: Int) =
     (logPrice - logPrice.shift(d)).mapVec[Double](_.fillNA(_ => 0.0))
 
