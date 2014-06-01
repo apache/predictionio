@@ -1,5 +1,0 @@
-[
-      { "knn" : { "similarity" : "consine"} },
-      { "knn" : { "similarity" : "jaccard"} },
-      { "rand" : {} }
-]
