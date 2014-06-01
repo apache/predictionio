@@ -1,6 +1,5 @@
 package io.prediction.engines.itemrank
 
-//import io.prediction.{ Evaluator }
 import io.prediction.{ EvaluatorFactory }
 import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluator
@@ -31,18 +30,12 @@ object ItemRankEvaluator extends EvaluatorFactory {
   }
 }
 
-/*
-class ItemRankEvaluator
-  extends Evaluator[EvalParams, TrainDataPrepParams, EvalDataPrepParams,
-      TrainigData, Feature, Prediction, Actual, EvalUnit, EvalResults] {
-*/
-
 class ItemRankDataPreparator
   extends DataPreparator[
       EvalParams,
       TrainDataPrepParams,
-      EvalDataPrepParams,
-      TrainigData,
+      ValidationDataPrepParams,
+      TrainingData,
       Feature,
       Actual] {
   final val CONFLICT_LATEST: String = "latest"
@@ -55,8 +48,8 @@ class ItemRankDataPreparator
   val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
   // Data generation
-  override def getParamsSet(params: EvalParams): Seq[(TrainDataPrepParams,
-    EvalDataPrepParams)] = {
+  override def getParamsSet(params: EvalParams)
+  : Seq[(TrainDataPrepParams, ValidationDataPrepParams)] = {
 
     var testStart = params.testStart
     val testStartSeq = ArrayBuffer[DateTime]()
@@ -77,19 +70,19 @@ class ItemRankDataPreparator
         seenActions = params.seenActions,
         startUntil = Some((params.trainStart, ts))
       )
-      val evalP = new EvalDataPrepParams(
+      val validateP = new ValidationDataPrepParams(
         appid = params.appid,
         itypes = params.itypes,
         startUntil = (ts, ts + period),
         goal = params.goal
       )
-      (trainingP, evalP)
+      (trainingP, validateP)
     }
     paramSeq
   }
 
 
-  override def prepareTraining(params: TrainDataPrepParams): TrainigData = {
+  override def prepareTraining(params: TrainDataPrepParams): TrainingData = {
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
       .map(_.id).zipWithIndex
       .map { case (uid, index) => (uid, index + 1) }.toMap
@@ -173,7 +166,7 @@ class ItemRankDataPreparator
       .map { u2i => (usersMap(u2i.uid), itemsMap(u2i.iid)._2) }
       .toSet
 
-    new TrainigData(
+    new TrainingData(
       users = usersMap.map { case (k, v) => (v, k) },
       items = itemsMap.map { case (k, (v1, v2)) => (v2, v1) },
       //possibleItems = possibleItems,
@@ -183,7 +176,7 @@ class ItemRankDataPreparator
   }
 
   // TODO: use t to generate eval data
-  override def prepareValidation(params: EvalDataPrepParams):
+  override def prepareValidation(params: ValidationDataPrepParams):
     Seq[(Feature, Actual)] = {
 
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
@@ -264,22 +257,22 @@ class ItemRankValidator
   extends Validator[
       EvalParams,
       TrainDataPrepParams,
-      EvalDataPrepParams,
+      ValidationDataPrepParams,
       Feature,
       Prediction,
       Actual,
-      EvalUnit,
-      EvalResults,
+      ValidationUnit,
+      EmptyData,
       EmptyData] {
 
   // evaluation
 
   override def validate(feature: Feature, predicted: Prediction,
-    actual: Actual): EvalUnit = {
+    actual: Actual): ValidationUnit = {
 
     val k = feature.items.size
 
-    new EvalUnit(
+    new ValidationUnit(
       f = feature,
       p = predicted,
       a = actual,
@@ -294,13 +287,13 @@ class ItemRankValidator
   }
   override def validateSet(
     trainDataPrepParams: TrainDataPrepParams,
-    evalDataPrepParams: EvalDataPrepParams,
-    evalUnits: Seq[EvalUnit]): EvalResults = {
+    validationDataPrepParams: ValidationDataPrepParams,
+    validationUnits: Seq[ValidationUnit]): EmptyData = {
     // calcualte MAP at k
-    val mean = evalUnits.map( eu => eu.score ).sum / evalUnits.size
-    val baseMean = evalUnits.map (eu => eu.baseline).sum / evalUnits.size
+    val mean = validationUnits.map( eu => eu.score ).sum / validationUnits.size
+    val baseMean = validationUnits.map (eu => eu.baseline).sum / validationUnits.size
     // TODO: simply print results for now...
-    val reports = evalUnits.map{ eu =>
+    val reports = validationUnits.map{ eu =>
       val flag = if (eu.baseline > eu.score) "x" else ""
       Seq(eu.f.uid, eu.f.items.mkString(","),
       eu.p.items.map(_._1).mkString(","),
@@ -315,7 +308,7 @@ class ItemRankValidator
       println(s"${r.mkString(" ")}")
     }
     println(s"baseline MAP@k = ${baseMean}, algo MAP@k = ${mean}")
-    new EvalResults()
+    EmptyData()
   }
 
   // metric
@@ -341,9 +334,7 @@ class ItemRankValidator
   }
 
   override def crossValidate(
-    input: Seq[(TrainDataPrepParams, EvalDataPrepParams, EvalResults)]
-  ): EmptyData = {
-    new EmptyData()
-  }
+    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, EmptyData)]
+  ): EmptyData = EmptyData()
 
 }

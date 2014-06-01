@@ -7,7 +7,7 @@ import io.prediction.{ DefaultCleanser, DefaultServer }
 object ItemRankEngine extends EngineFactory {
   override def apply(): AbstractEngine = {
     new BaseEngine(
-      classOf[DefaultCleanser[TrainigData]],
+      classOf[DefaultCleanser[TrainingData]],
       Map("knn" -> classOf[KNNAlgorithm],
         "rand" -> classOf[RandomAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]

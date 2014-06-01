@@ -65,3 +65,7 @@ with BaseCleansedData
 with BaseValidationUnit
 with BaseValidationResults
 with BaseCrossValidationResults
+
+object EmptyData {
+  def apply() = new EmptyData()
+}

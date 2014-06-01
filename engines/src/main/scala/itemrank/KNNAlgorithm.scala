@@ -3,12 +3,12 @@ package io.prediction.engines.itemrank
 import io.prediction.{ Algorithm }
 import breeze.linalg.{ SparseVector, sum => LSum }
 
-class KNNAlgorithm extends Algorithm[TrainigData, Feature, Prediction,
+class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
   KNNModel, KNNAlgoParams] {
 
   override def init(algoParams: KNNAlgoParams): Unit = {} // TODO
 
-  override def train(trainingData: TrainigData): KNNModel = {
+  override def train(trainingData: TrainingData): KNNModel = {
     val rating = trainingData.rating
 
     if (!rating.isEmpty) {

@@ -41,8 +41,6 @@ trait Validator[
     validationDataParams: VDP,
     validationUnits: Seq[VU]): VR
 
-  // Please find a better method name
-  // Not yet implemented in BaseValidator
   def crossValidate(validationResultsSeq: Seq[(TDP, VDP, VR)]): CVR
 }
 

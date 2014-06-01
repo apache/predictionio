@@ -19,7 +19,7 @@ import io.prediction.{
   BaseCrossValidationResults
 }
 
-// param to evaluator
+// param to evaluator, it applies to both DataPrep and Validator
 class EvalParams(
     // TODO
     //val iterations: Int
@@ -36,7 +36,6 @@ class EvalParams(
     val testStart: DateTime,
     val testUntil: DateTime,
     val goal: Set[String]
-  //) extends BaseEvaluationParams {
   ) extends BaseEvaluationDataParams with BaseValidationParams {
 
   override def toString = s"appid=${appid},itypes=${itypes}" +
@@ -62,7 +61,7 @@ class TrainDataPrepParams(
   }
 
 // param for preparing evaluation data
-class EvalDataPrepParams(
+class ValidationDataPrepParams(
     val appid: Int,
     val itypes: Option[Set[String]],
     val startUntil: Tuple2[DateTime, DateTime],
@@ -84,7 +83,7 @@ class RatingTD(
   val rating: Int,
   val t: Long)
 
-class TrainigData(
+class TrainingData(
     val users: Map[Int, String], // uindex->uid
     val items: Map[Int, ItemTD], // iindex->itemTD
     //val possibleItems: Set[Int], // iindex
@@ -113,15 +112,10 @@ class Actual(
   override def toString = s"${items}"
 }
 
-class EvalUnit(
+class ValidationUnit(
   val f: Feature,
   val p: Prediction,
   val a: Actual,
   val score: Double,
   val baseline: Double
 ) extends BaseValidationUnit {}
-
-class EvalResults() extends BaseValidationResults {}
-
-class CrossEvalResults() extends BaseCrossValidationResults{} 
-
