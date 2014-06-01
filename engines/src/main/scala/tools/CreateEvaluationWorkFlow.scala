@@ -26,7 +26,7 @@ import scala.reflect.runtime.universe
 
 /*
 Example
-run --evaluatorFactory io.prediction.engines.itemrank.ItemRankEvaluator --engineFactory io.prediction.engines.itemrank.ItemRankEngine --dp src/main/scala/itemrank/examples/dataPrepParams.json --vp src/main/scala/itemrank/examples/dataPrepParams.json --cp src/main/scala/itemrank/examples/cleanserParams.json --ap src/main/scala/itemrank/examples/algoParamArray.json --sp src/main/scala/itemrank/examples/serverParams.json
+run --evaluatorFactory io.prediction.engines.itemrank.ItemRankEvaluator --engineFactory io.prediction.engines.itemrank.ItemRankEngine --dp dataPrepParams.json --vp dataPrepParams.json --cp cleanserParams.json --ap algoParamArray.json --sp serverParams.json --jsonDir src/main/scala/itemrank/examples/
 
 */
 
@@ -40,12 +40,12 @@ object CreateEvaluationWorkFlow extends Logging {
   case class Args(
     evaluatorFactoryName: String = "",
     engineFactoryName: String = "",
-    //evalJsonPath: String = "",
     dataPrepJsonPath: String = "",
     validatorJsonPath: String = "",
     cleanserJsonPath: String = "",
     algoJsonPath: String = "",
-    serverJsonPath: String = ""
+    serverJsonPath: String = "",
+    jsonDir: String = ""
   )
 
   def main(args: Array[String]) {
@@ -74,6 +74,9 @@ object CreateEvaluationWorkFlow extends Logging {
       opt[String]("sp").required()
         .valueName("<server param json>").action { (x,c) =>
           c.copy(serverJsonPath = x) }
+      opt[String]("jsonDir").optional()
+        .valueName("<json directory>").action { (x,c) =>
+          c.copy(jsonDir = x) }
     }
 
     val arg: Option[Args] = parser.parse(args, Args())
@@ -90,6 +93,7 @@ object CreateEvaluationWorkFlow extends Logging {
     val cleanserJsonPath = arg.get.cleanserJsonPath
     val algoJsonPath = arg.get.algoJsonPath
     val serverJsonPath = arg.get.serverJsonPath
+    val jsonDir = arg.get.jsonDir
 
     info(args.mkString(" "))
 
@@ -105,7 +109,7 @@ object CreateEvaluationWorkFlow extends Logging {
     val engineObject = runtimeMirror.reflectModule(engineModule)
     val engine = engineObject.instance.asInstanceOf[EngineFactory]()
 
-    val dataPrepString = Source.fromFile(dataPrepJsonPath).mkString
+    val dataPrepString = Source.fromFile(jsonDir + dataPrepJsonPath).mkString
     val dataPrepJson = JsonMethods.parse(dataPrepString)
     val dataPrepParams = Extraction.extract(dataPrepJson)(formats,
       evaluator.dataPreparatorClass.newInstance.paramsClass)
@@ -113,7 +117,7 @@ object CreateEvaluationWorkFlow extends Logging {
     info(dataPrepJson)
     info(dataPrepParams)
     
-    val validatorString = Source.fromFile(validatorJsonPath).mkString
+    val validatorString = Source.fromFile(jsonDir + validatorJsonPath).mkString
     val validatorJson = JsonMethods.parse(validatorString)
     val validatorParams = Extraction.extract(validatorJson)(formats,
       evaluator.validatorClass.newInstance.paramsClass)
@@ -121,7 +125,7 @@ object CreateEvaluationWorkFlow extends Logging {
     info(validatorJson)
     info(validatorParams)
 
-    val cleanserString = Source.fromFile(cleanserJsonPath).mkString
+    val cleanserString = Source.fromFile(jsonDir + cleanserJsonPath).mkString
     val cleanserJson = JsonMethods.parse(cleanserString)
     val cleanserParams =
       Extraction.extract(cleanserJson)(formats,
@@ -130,7 +134,7 @@ object CreateEvaluationWorkFlow extends Logging {
     info(cleanserJson)
     info(cleanserParams)
 
-    val algoString = Source.fromFile(algoJsonPath).mkString
+    val algoString = Source.fromFile(jsonDir + algoJsonPath).mkString
     val algoJson = JsonMethods.parse(algoString)
     val algoJsonSeq = algoJson.extract[Seq[Tuple2[String, JValue]]]
 
@@ -153,7 +157,7 @@ object CreateEvaluationWorkFlow extends Logging {
     info(algoJson)
     info(algoParamSet)
 
-    val serverString = Source.fromFile(serverJsonPath).mkString
+    val serverString = Source.fromFile(jsonDir + serverJsonPath).mkString
     val serverJson = JsonMethods.parse(serverString)
 
     val serverParams = Extraction.extract(serverJson)(formats,
