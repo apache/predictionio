@@ -40,6 +40,55 @@ object StockEvaluator extends EvaluatorFactory {
   }
 }
 
+object LocalFileStockEvaluator extends EvaluatorFactory {
+  override def apply(): AbstractEvaluator = {
+    //new StockEvaluator
+    new BaseEvaluator(
+      classOf[LocalFileStockDataPreparator],
+      classOf[StockValidator])
+  }
+}
+
+class LocalFileStockDataPreparator
+    extends DataPreparator[
+        EvaluationDataParams, 
+        TrainingDataParams, 
+        ValidationDataParams,
+        TrainingData, 
+        Feature, 
+        Target] {
+  def getParamsSet(params: EvaluationDataParams)
+  : Seq[(TrainingDataParams, ValidationDataParams)] = {
+    Range(params.fromIdx, params.untilIdx, params.evaluationInterval)
+      .map(idx => {
+        val trainParams = new TrainingDataParams(
+          baseDate = params.baseDate,
+          untilIdx = idx - 1,
+          windowSize = params.trainingWindowSize,
+          marketTicker = params.marketTicker,
+          tickerList = params.tickerList)
+        val validationParams = new ValidationDataParams(
+          baseDate = params.baseDate,
+          fromIdx = idx,
+          untilIdx = math.min(
+            idx + params.evaluationInterval,
+            params.untilIdx),
+          marketTicker = params.marketTicker,
+          tickerList = params.tickerList)
+        (trainParams, validationParams)
+      })
+  }
+
+  def prepareTraining(params: TrainingDataParams): TrainingData = {
+    null
+  }
+
+  def prepareValidation(params: ValidationDataParams)
+  : Seq[(Feature, Target)] = {
+    Seq[(Feature, Target)]()
+  }
+}
+
 class StockDataPreparator
     extends DataPreparator[
         EvaluationDataParams, 

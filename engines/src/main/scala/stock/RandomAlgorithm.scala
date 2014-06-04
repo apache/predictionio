@@ -23,7 +23,11 @@ class RandomAlgorithm
     _drift = algoParams.drift
   }
 
-  def train(trainingData: TrainingData) = new EmptyModel()
+  def train(trainingData: TrainingData) = {
+    println("RandomAlgorithm.train")
+    new EmptyModel()
+  }
+
   def predict(model: EmptyModel, feature: Feature): Target = {
     val tickers = feature.data.colIx.toVec.contents
     val prediction = tickers.map {

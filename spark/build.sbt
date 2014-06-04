@@ -1,4 +1,10 @@
-name := "core"
+name := "Imagine Spark"
+
+version := "0.8"
+
+scalaVersion := "2.10.4"
+
+libraryDependencies += "org.apache.spark" %% "spark-core" % "1.0.0"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback"     % "logback-classic" % "1.1.2",
@@ -11,18 +17,13 @@ libraryDependencies ++= Seq(
   "org.mongodb"       %% "casbah"          % "2.7.2",
   "org.scalatest"     %% "scalatest"       % "2.1.6" % "test",
   "org.json4s"        %% "json4s-native"   % "3.2.9",
-  "org.json4s"        %% "json4s-ext"      % "3.2.7",
-  "org.apache.spark"  %% "spark-core"      % "1.0.0")
+  "org.json4s"        %% "json4s-ext"      % "3.2.7")
 
-scalacOptions <<= (scalacOptions, scalaSource in Compile) map { (options, base) =>
-  options :+ ("-P:sxr:base-directory:" + base.getAbsolutePath)
-}
+libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "1.2.0"
+
+resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
 
 resolvers += Resolver.url(
   "Typesafe Releases",
   url("http://repo.typesafe.com/typesafe/ivy-releases"))(
     Resolver.ivyStylePatterns)
-
-resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
-
-addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
