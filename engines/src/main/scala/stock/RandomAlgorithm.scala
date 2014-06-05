@@ -16,7 +16,7 @@ class RandomAlgorithm
   var _scale: Double = 0.0
   var _drift: Double = 0.0
   // Notice that parallization may mess-up reproduceability of a fixed seed.
-  var _random: Random = null
+  @transient var _random: Random = null
   override def init(algoParams: RandomAlgoParams): Unit = {
     _random = new Random(algoParams.seed)
     _scale = algoParams.scale

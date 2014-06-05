@@ -32,7 +32,19 @@ object StockEvaluator extends EvaluatorFactory {
   val config = new Config()
   val itemTrendsDb = config.getAppdataItemTrends()
 
-  override def apply(): AbstractEvaluator = {
+  override def apply()
+  : BaseEvaluator[
+      EvaluationDataParams,
+      EmptyParams,
+      TrainingDataParams,
+      ValidationDataParams,
+      TrainingData,
+      Feature,
+      Target,
+      Target,
+      ValidationUnit, 
+      ValidationResults, 
+      BaseCrossValidationResults] = {
     //new StockEvaluator
     new BaseEvaluator(
       classOf[StockDataPreparator],

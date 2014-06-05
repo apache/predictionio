@@ -10,8 +10,24 @@ import io.prediction.{
   BaseValidationResults
 }
 
+import com.twitter.chill.MeatLocker
+
 // Base Params
-trait BaseParams extends AnyRef {}
+//trait BaseParams extends AnyRef {}
+trait BaseParams extends Serializable {}
+/*
+trait BaseParams extends Serializable {
+  private def writeObject(oos: ObjectOutputStream): Unit = {                        
+    val boxed = MeatLocker(this)
+    oos.writeObject(boxed)                                                                 
+  }                                                                                 
+                                                                                                
+  private def readObject(ois: ObjectInputStream): Unit = {                          
+    val params = ois.readObject.asInstanceOf[MeatLocker[BaseParams]]
+    initBase(params.get)
+  }                                                                                 
+}
+*/
 
 // Below are internal classes used by PIO workflow
 trait BasePersistentData extends AnyRef {}

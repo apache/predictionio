@@ -5,7 +5,7 @@ import io.prediction._
 import scala.reflect.Manifest
 
 
-trait AbstractDataPreparator {
+trait AbstractDataPreparator extends AbstractParameterizedDoer {
   // Data Preparation methods
   def getParamsSetBase(params: BaseEvaluationDataParams)
     : Seq[(BaseTrainingDataParams, BaseValidationDataParams)]

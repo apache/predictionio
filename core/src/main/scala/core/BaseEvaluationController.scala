@@ -32,6 +32,11 @@ abstract class BaseDataPreparator[
     new ValidationSeq[F, A](data = data)
   }
 
+  def prepareValidationSpark(params: BaseValidationDataParams)
+  : Seq[(F, A)] = {
+    prepareValidation(params.asInstanceOf[VDP])
+  }
+
   def prepareValidation(params: VDP): Seq[(F, A)]
 }
 
@@ -110,6 +115,8 @@ class BaseEvaluator[
     VU <: BaseValidationUnit,
     VR <: BaseValidationResults,
     CVR <: BaseCrossValidationResults](
-  dataPrepatatorClass: Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
-  validatorClass: Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]])
-  extends AbstractEvaluator(dataPrepatatorClass, validatorClass) {}
+  val dataPreparatorBaseClass
+    : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
+  val validatorBaseClass
+    : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]])
+  extends AbstractEvaluator(dataPreparatorBaseClass, validatorBaseClass) {}

@@ -1,5 +1,6 @@
 package io.prediction.core
 
+import scala.collection.Iterable
 import scala.reflect.Manifest
 
 // FIXME(yipjustin). I am being lazy...
@@ -36,8 +37,11 @@ abstract class BaseAlgorithm[
     AP <: BaseAlgoParams: Manifest]
   extends AbstractAlgorithm {
 
-  override def initBase(baseAlgoParams: BaseAlgoParams): Unit =
-    init(baseAlgoParams.asInstanceOf[AP])
+  //override def initBase(baseAlgoParams: BaseAlgoParams): Unit = {
+  override def initBase(baseParams: BaseParams): Unit = {
+    super.initBase(baseParams)
+    init(baseParams.asInstanceOf[AP])
+  }
 
   def init(algoParams: AP): Unit = {}
 
@@ -61,6 +65,18 @@ abstract class BaseAlgorithm[
       (f, predict(model, f), a)
     }}
     new PredictionSeq[F, P, BaseActual](data = output)
+  }
+
+  def predictSpark[TD <: BaseModel](
+    input: (Iterable[TD], Iterable[(BaseFeature, BaseActual)])
+    ): Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
+    val model = input._1.head.asInstanceOf[M]
+
+    val validationSeq = input._2.map{ case(f, a) => {
+      val ff = f.asInstanceOf[F]
+      (f, predict(model, ff), a)
+    }}
+    validationSeq
   }
 
   def predict(model: M, feature: F): P
@@ -109,11 +125,12 @@ class BaseEngine[
     CD <: BaseCleansedData,
     F <: BaseFeature,
     P <: BasePrediction](
-    cleanserClass: Class[_ <: BaseCleanser[TD, CD, _ <: BaseCleanserParams]],
-    algorithmClassMap:
-      Map[String,
+    val cleanserBaseClass
+      : Class[_ <: BaseCleanser[TD, CD, _ <: BaseCleanserParams]],
+    val algorithmBaseClassMap
+      : Map[String,
         Class[_ <:
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
-    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
-  extends AbstractEngine(cleanserClass, algorithmClassMap, serverClass) {
-}
+    val serverBaseClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+  extends AbstractEngine(
+    cleanserBaseClass, algorithmBaseClassMap, serverBaseClass) {}

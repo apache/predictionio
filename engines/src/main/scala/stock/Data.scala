@@ -51,7 +51,13 @@ class ValidationDataParams(
   val tickerList: Seq[String]) extends BaseValidationDataParams {}
 
 class TrainingData(
-  val price: Frame[DateTime, String, Double]) extends BaseTrainingData {}
+  val price: Frame[DateTime, String, Double]) extends BaseTrainingData {
+  override def toString(): String = {
+    val firstDate = price.rowIx.first.get
+    val lastDate = price.rowIx.last.get
+    s"TrainingData $firstDate $lastDate"
+  }
+}
 
 class Model(
   val data: Map[String, DenseVector[Double]]) extends BaseModel {}
@@ -59,7 +65,13 @@ class Model(
 class Feature(
   // This is different from TrainingData. This serves as input for algorithm.
   // Hence, the time series should be shorter than that of TrainingData.
-  val data: Frame[DateTime, String, Double]) extends BaseFeature {}
+  val data: Frame[DateTime, String, Double]) extends BaseFeature {
+  override def toString(): String = {
+    val firstDate = data.rowIx.first.get
+    val lastDate = data.rowIx.last.get
+    s"Feature $firstDate $lastDate"
+  }
+}
 
 class Target(
   val data: Map[String, Double]) extends BasePrediction with BaseActual {}

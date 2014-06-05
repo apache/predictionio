@@ -4,28 +4,35 @@ package io.prediction.core
 import io.prediction._
 import scala.reflect.Manifest
 
-/*
-trait AbstractEvaluator {
-  // Data Preparation methods
-  def getParamsSetBase(params: BaseEvaluationParams)
-    : Seq[(BaseTrainingDataParams, BaseEvaluationDataParams)]
+import com.twitter.chill.MeatLocker
 
-  def prepareTrainingBase(params: BaseTrainingDataParams)
-    : BaseTrainingData
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
+import java.io.FileInputStream
+import java.io.ObjectInputStream
 
-  def prepareEvaluationBase(params: BaseEvaluationDataParams)
-    : BaseEvaluationSeq
+trait AbstractParameterizedDoer extends Serializable {
+  private var baseParams: BaseParams = null
+  //def paramClass(): Manifest[_ <: BaseParams]
 
-  // Evaluation methods
-  def initBase(params: BaseEvaluationParams): Unit
+  def initBase(baseParams: BaseParams): Unit = {
+    this.baseParams = baseParams
+  }
 
-  def paramsClass(): Manifest[_ <: BaseEvaluationParams]
-
-  def evaluateSeq(predictionSeq: BasePredictionSeq): BaseEvaluationUnitSeq
-
-  def report(evalUnitSeq: BaseEvaluationUnitSeq): BaseEvaluationResults
+  private def writeObject(oos: ObjectOutputStream): Unit = {                        
+    val boxed = MeatLocker(baseParams)
+    oos.writeObject(boxed)                                                                 
+  }                                                                                 
+                                                                                                
+  private def readObject(ois: ObjectInputStream): Unit = {                          
+    val params = ois.readObject.asInstanceOf[MeatLocker[BaseParams]]
+    initBase(params.get)
+  }                                                                                 
 }
-*/
+
+
+
+//
 
 trait AbstractCleanser {
 
@@ -37,9 +44,10 @@ trait AbstractCleanser {
 
 }
 
-trait AbstractAlgorithm {
+trait AbstractAlgorithm extends AbstractParameterizedDoer {
 
-  def initBase(baseAlgoParams: BaseAlgoParams): Unit
+  //abstract override def initBase(baseAlgoParams: BaseAlgoParams): Unit
+  //def initBase(baseParams: BaseParams): Unit
 
   def paramsClass(): Manifest[_ <: BaseAlgoParams]
 

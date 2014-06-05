@@ -7,11 +7,12 @@ import io.prediction.DefaultCleanser
 import io.prediction.EngineFactory
 
 object StockEngine extends EngineFactory {
-  override def apply(): AbstractEngine = {
+  override def apply(): BaseEngine[TrainingData,TrainingData,Feature,Target] = {
     new BaseEngine(
       classOf[DefaultCleanser[TrainingData]],
       Map("random" -> classOf[RandomAlgorithm],
         "regression" -> classOf[RegressionAlgorithm]),
       classOf[StockServer])
   }
+
 }
