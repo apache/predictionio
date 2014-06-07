@@ -30,7 +30,8 @@ trait BaseParams extends Serializable {
 */
 
 // Below are internal classes used by PIO workflow
-trait BasePersistentData extends AnyRef {}
+//trait BasePersistentData extends AnyRef {}
+trait BasePersistentData extends Serializable {}
 
 trait BaseValidationSeq extends BasePersistentData {}
 

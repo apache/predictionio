@@ -18,12 +18,24 @@ import scala.math.BigDecimal
 object ItemRankEvaluator extends EvaluatorFactory {
 
   val config = new Config
-  val usersDb = config.getAppdataUsers
-  val itemsDb = config.getAppdataItems
-  val u2iDb = config.getAppdataU2IActions
-  val itemSetsDb = config.getAppdataItemSets
+  val usersDb = config.getAppdataUsers()
+  val itemsDb = config.getAppdataItems()
+  val u2iDb = config.getAppdataU2IActions()
+  val itemSetsDb = config.getAppdataItemSets()
 
-  override def apply(): AbstractEvaluator = {
+  //override def apply(): AbstractEvaluator = {
+  override def apply()
+  : BaseEvaluator[EvalParams,
+      EvalParams,
+      TrainDataPrepParams,
+      ValidationDataPrepParams,
+      TrainingData,
+      Feature,
+      Prediction,
+      Actual,
+      ValidationUnit,
+      EmptyData,
+      EmptyData] = {
     new BaseEvaluator(
       classOf[ItemRankDataPreparator],
       classOf[ItemRankValidator])
@@ -42,10 +54,11 @@ class ItemRankDataPreparator
   final val CONFLICT_HIGHEST: String = "highest"
   final val CONFLICT_LOWEST: String = "lowest"
 
-  val usersDb = ItemRankEvaluator.usersDb
-  val itemsDb = ItemRankEvaluator.itemsDb
-  val u2iDb = ItemRankEvaluator.u2iDb
-  val itemSetsDb = ItemRankEvaluator.itemSetsDb
+  // Connection object makes the class not serializable.
+  //@transient val usersDb = ItemRankEvaluator.usersDb
+  //@transient val itemsDb = ItemRankEvaluator.itemsDb
+  //@transient val u2iDb = ItemRankEvaluator.u2iDb
+  //@transient val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
   // Data generation
   override def getParamsSet(params: EvalParams)
@@ -83,6 +96,11 @@ class ItemRankDataPreparator
 
 
   override def prepareTraining(params: TrainDataPrepParams): TrainingData = {
+    val usersDb = ItemRankEvaluator.usersDb
+    val itemsDb = ItemRankEvaluator.itemsDb
+    val u2iDb = ItemRankEvaluator.u2iDb
+    val itemSetsDb = ItemRankEvaluator.itemSetsDb
+
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
       .map(_.id).zipWithIndex
       .map { case (uid, index) => (uid, index + 1) }.toMap
@@ -178,6 +196,10 @@ class ItemRankDataPreparator
   // TODO: use t to generate eval data
   override def prepareValidation(params: ValidationDataPrepParams):
     Seq[(Feature, Actual)] = {
+    val usersDb = ItemRankEvaluator.usersDb
+    val itemsDb = ItemRankEvaluator.itemsDb
+    val u2iDb = ItemRankEvaluator.u2iDb
+    val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
     val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
       .map(_.id).zipWithIndex

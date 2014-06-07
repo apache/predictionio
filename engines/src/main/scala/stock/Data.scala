@@ -18,6 +18,7 @@ import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
 import breeze.linalg.{ DenseMatrix, DenseVector }
+import com.twitter.chill.MeatLocker
 
 // Use data after baseData.
 // Afterwards, slicing uses idx
@@ -57,6 +58,11 @@ class TrainingData(
     val lastDate = price.rowIx.last.get
     s"TrainingData $firstDate $lastDate"
   }
+  /*
+  private def writeObject(oos: ObjectOutputStream): Unit = {
+
+  }
+  */
 }
 
 class Model(
@@ -65,10 +71,13 @@ class Model(
 class Feature(
   // This is different from TrainingData. This serves as input for algorithm.
   // Hence, the time series should be shorter than that of TrainingData.
-  val data: Frame[DateTime, String, Double]) extends BaseFeature {
+  //val data: Frame[DateTime, String, Double]) extends BaseFeature {
+  val boxedData: MeatLocker[Frame[DateTime, String, Double]]) extends BaseFeature {
   override def toString(): String = {
-    val firstDate = data.rowIx.first.get
-    val lastDate = data.rowIx.last.get
+    //val firstDate = data.rowIx.first.get
+    //val lastDate = data.rowIx.last.get
+    val firstDate = boxedData.get.rowIx.first.get
+    val lastDate = boxedData.get.rowIx.last.get
     s"Feature $firstDate $lastDate"
   }
 }

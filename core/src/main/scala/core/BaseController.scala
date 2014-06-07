@@ -1,6 +1,6 @@
 package io.prediction.core
 
-import scala.collection.Iterable
+//import scala.collection.Iterable
 import scala.reflect.Manifest
 
 // FIXME(yipjustin). I am being lazy...
@@ -67,10 +67,11 @@ abstract class BaseAlgorithm[
     new PredictionSeq[F, P, BaseActual](data = output)
   }
 
-  def predictSpark[TD <: BaseModel](
-    input: (Iterable[TD], Iterable[(BaseFeature, BaseActual)])
+  //def predictSpark[M <: BaseModel](
+  def predictSpark(
+    input: (Iterable[BaseModel], Iterable[(BaseFeature, BaseActual)])
     ): Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
-    val model = input._1.head.asInstanceOf[M]
+    val model: M = input._1.head.asInstanceOf[M]
 
     val validationSeq = input._2.map{ case(f, a) => {
       val ff = f.asInstanceOf[F]

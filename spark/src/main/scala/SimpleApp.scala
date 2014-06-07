@@ -1,8 +1,16 @@
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+
 import io.prediction.engines.stock.LocalFileStockEvaluator
 import io.prediction.engines.stock.StockEvaluator
 import io.prediction.engines.stock.EvaluationDataParams
 import io.prediction.engines.stock.RandomAlgoParams
 import io.prediction.engines.stock.StockEngine
+import io.prediction.engines.stock.Feature
+
+import io.prediction.engines.itemrank._
 
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
@@ -12,15 +20,22 @@ import io.prediction.core.AbstractDataPreparator
 
 import com.github.nscala_time.time.Imports.DateTime
 
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
+import org.apache.spark.serializer.KryoRegistrator
+import org.apache.spark.serializer.KryoSerializer
 
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
 
+//import org.saddle.Series
+import org.saddle._
+
+import com.twitter.chill.MeatLocker
+
+//import com.twitter.summingbird.online.Externalizer
+import com.twitter.chill.Externalizer
+import com.esotericsoftware.kryo.Kryo
 
 object WS {
   val tmpDir = "/tmp/pio/"
@@ -44,10 +59,23 @@ object WS {
   }
 }
 
+class R extends KryoRegistrator {
+  override def registerClasses(kryo: Kryo) {
+    println("XXXXXXXXXX")
+    //kryo.register(classOf[Series[Int, Int]])
+    //kryo.register(classOf[org.saddle.Series[_, _]])
+    kryo.register(classOf[X])
+  }
+}
+
+class X(val x : Int) {}
+
 object SimpleApp {
   def simple() {
     val logFile = "/home/yipjustin/client/spark/spark-1.0.0-bin-hadoop2/README.md" 
     val conf = new SparkConf().setAppName("Simple Application")
+   
+
     val sc = new SparkContext(conf)
     val logData = sc.textFile(logFile, 2).cache()
     val numAs = logData.filter(line => line.contains("a")).count()
@@ -57,23 +85,42 @@ object SimpleApp {
   }
 
   def test() {
+    val conf = new SparkConf().setAppName("PredictionIO")
+    //conf.set("spark.serializer", classOf[KryoSerializer].getName)
+    /*
+    conf.set("spark.serializer", 
+      "org.apache.spark.serializer.KryoSerializer")
+    conf.set("spark.kryo.registrator", classOf[R].getName)
+    */
+
+    val sc = new SparkContext(conf)
+    //sc.addJar("/home/yipjustin/.ivy2/cache/org.scala-saddle/saddle-core_2.10/jars/saddle-core_2.10-1.3.2.jar")
+
+    val d = sc.parallelize(Array(1,2,3))                                          
+
+    //val e = d.map(i => Series(i)).map(e => Externalizer[Series[Int, Int]](e))  
+    val e = d.map(i => Series(i)).map(s => {
+      val f = Frame("a" -> s)
+      MeatLocker[Frame[Int, String, Int]](f)
+    })
+
+    e.collect.foreach(e => println(e.get))
+
+    
+    /*
     val s = StockEvaluator()
     val dataPrep = s.dataPreparatorClass.newInstance
 
     val fn = WS.saveData(42, dataPrep)
 
     val dp = WS.loadData[AbstractDataPreparator](fn) 
+    */
+    //val f: Series[Int, Int] = Series(1,2,3,4,5,6)
     
   }
 
-
-
-  def main(args: Array[String]) {
-    //test
-    //return
-
+  def stock() {
     val s = StockEvaluator()
-    //val e = StockEngine.get
     val e = StockEngine()
     
     val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
@@ -89,68 +136,63 @@ object SimpleApp {
     println(evalDataParams) 
 
     val randomAlgoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
-
     SparkWorkflow.run("Fizz", 
+      //evalDataParams, 
       evalDataParams, 
+      null, /* validation params */
       //null,  /* algo params */
       randomAlgoParams,
       s, 
       e)
+  }
+
+  def itemrank() {
+    val s = ItemRankEvaluator()
+    val e = ItemRankEngine()
+    val evalParams = new EvalParams(
+      appid = 1,
+      itypes = None,
+      actions = Map(
+        "view" -> Some(3),
+        "like" -> Some(5),
+        "conversion" -> Some(4),
+        "rate" -> None
+      ),
+      conflict = "latest",
+      //recommendationTime = 123456,
+      seenActions = Some(Set("conversion")),
+      //(int years, int months, int weeks, int days, int hours,
+      // int minutes, int seconds, int millis)
+      hours = 24,//new Period(0, 0, 0, 1, 0, 0, 0, 0),
+      trainStart = new DateTime("2014-04-01T00:00:00.000"),
+      testStart = new DateTime("2014-04-20T00:00:00.000"),
+      testUntil = new DateTime("2014-04-30T00:00:00.000"),
+      goal = Set("conversion", "view")
+    ) 
+    val knnAlgoParams = new KNNAlgoParams(similarity="consine")
+
+    SparkWorkflow.run("Fizz", 
+      //evalDataParams, 
+      evalParams, 
+      evalParams, /* validation params */
+      //null,  /* algo params */
+      //randomAlgoParams,
+      knnAlgoParams,
+      s, 
+      e)
     return
+  }
+
+
+  def main(args: Array[String]) {
+    //itemrank
+    //stock
+    test
+    //return
+
+
     
     
-
-    val randomAlgo = e.algorithmClassMap("random").newInstance
-
-    //val logFile = "YOUR_SPARK_HOME/README.md" // Should be some file on your system
-
-
-    //val logFile = "/Users/yipjustin/data/spark/README.md" 
-    val conf = new SparkConf().setAppName("PredictionIO")
-    val sc = new SparkContext(conf)
-
-    /*
-    val logData = sc.textFile(logFile, 2).cache()
-    val numAs = logData.filter(line => line.contains("a")).count()
-    val numBs = logData.filter(line => line.contains("b")).count()
-    println("Lines with a: %s, Lines with b: %s".format(numAs, numBs))
-    */
-    //val s = LocalFileStockEvaluator()
-    //val s = StockEvaluator()
-
-
-
-
-    val dataPrep = s.dataPreparatorClass.newInstance
-
-    val localParamsSet = dataPrep.getParamsSetBase(evalDataParams)
-
-    val sparkParamsSet = sc.parallelize(localParamsSet)
-
-    sparkParamsSet.foreach(println)
-
-    val sparkTrainingSet = sparkParamsSet.map(_._1).map(dataPrep.prepareTrainingBase)
-
-    println("spark training set")
-    println(sparkTrainingSet.first)
-    sparkTrainingSet.foreach(println)
-
-
-    //randomAlgo.initBase(randomAlgoParams)
-    //val sparkModel = sparkTrainingSet.map(randomAlgo.trainBase)
-
-    //println("spark model")
-
-    //sparkModel.foreach(println)
-
-    //println(sparkModel.first)
-    //val localModel = sparkModel.collect
-    //val localModel = sparkModel.take(3)
-
-    //localModel.foreach(println)
-    //sparkModel.persist
-
-    //sparkModel.saveAsObjectFile("/tmp/pio/obj")
    
   }
 }

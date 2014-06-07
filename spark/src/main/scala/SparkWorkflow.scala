@@ -31,6 +31,9 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.Manifest
 
+import org.saddle._
+import com.twitter.chill.Externalizer
+
 object SparkWorkflow {
   def run[
       EDP <: BaseEvaluationDataParams : Manifest,
@@ -47,12 +50,14 @@ object SparkWorkflow {
       CVR <: BaseCrossValidationResults : Manifest](
     batch: String,
     evalDataParams: BaseEvaluationDataParams,
+    validationParams: BaseValidationParams,
     algoParams: BaseAlgoParams,
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR],
     baseEngine: BaseEngine[TD,CD,F,P]): Unit = {
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
+    conf.set("spark.local.dir", "/home/yipjustin/tmp/spark")
     val sc = new SparkContext(conf)
     
     val dataPrep = baseEvaluator.dataPreparatorBaseClass.newInstance
@@ -78,19 +83,19 @@ object SparkWorkflow {
     val trainingDataMap: RDD[(Int, TD)] =
       trainingParamsMap.mapValues(dataPrep.prepareTrainingBase)
 
-    trainingDataMap.foreach(println)
+    //trainingDataMap.collect.foreach(println)
 
     // Prepare Validation Data
     val validationDataMap: RDD[(Int, (F, A))] =
       validationParamsMap.flatMapValues(dataPrep.prepareValidationSpark)
 
-    validationDataMap.foreach(println)
+    validationDataMap.collect.foreach(println)
 
     // TODO: Cleanse Data
 
     // Model Training
-    //val algo = baseEngine.algorithmBaseClassMap("regression").newInstance
-    val algo = baseEngine.algorithmBaseClassMap("random").newInstance
+    val algo = baseEngine.algorithmBaseClassMap("regression").newInstance
+    //val algo = baseEngine.algorithmBaseClassMap("knn").newInstance
     algo.initBase(algoParams)
 
     val modelMap: RDD[(Int, BaseModel)] = 
@@ -100,12 +105,21 @@ object SparkWorkflow {
 
     // Prediction
     val modelValidationMap: RDD[(Int, (Iterable[BaseModel], Iterable[(F,A)]))] =
-      trainingDataMap.cogroup(validationDataMap)
+      modelMap.cogroup(validationDataMap)
 
-    val predictionMap: RDD[(Int, Iterable[(F, A, P)])] =
+    val predictionMap
+      : RDD[(Int, Iterable[(BaseFeature, BasePrediction, BaseActual)])] =
       modelValidationMap.mapValues(algo.predictSpark)
       
-    predictionMap.foreach(println)
+    predictionMap.collect.foreach(println)
+
+    // Validation
+    /*
+    val validator = baseEvaluator.validatorBaseClass.newInstance
+    validator.initBase(validationParams)
+
+    val validationUnitMap: RDD[(Int, BaseValidationUnit)]
+    */ 
 
 
     //val trainingSet = trainingParamsSet.map(dataPrep.prepareTrainingBase)

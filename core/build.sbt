@@ -1,11 +1,17 @@
 name := "core"
+  
+//"com.typesafe.akka" %% "akka-agent"    % "2.3.2",
+//"com.typesafe.akka" %% "akka-cluster"    % "2.3.2",
+//"com.typesafe.akka" %% "akka-remote"    % "2.3.2",
 
 libraryDependencies ++= Seq(
   "ch.qos.logback"     % "logback-classic" % "1.1.2",
   "com.twitter"       %% "chill"           % "0.3.6" exclude("com.esotericsoftware.minlog", "minlog"),
   "com.typesafe"       % "config"          % "1.2.1",
-  "com.typesafe.akka" %% "akka-contrib"    % "2.3.2",
-  "com.typesafe.akka" %% "akka-testkit"    % "2.3.2",
+  "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "provided",
+"com.typesafe.akka" %% "akka-contrib"    % "2.3.2" % "provided",
+"com.typesafe.akka" %% "akka-testkit"    % "2.3.2" % "provided",
+"com.typesafe.akka" %% "akka-slf4j"    % "2.3.2" % "provided",
   "commons-io"         % "commons-io"      % "2.4",
   "org.clapper"       %% "grizzled-slf4j"  % "1.0.2",
   "org.mongodb"       %% "casbah"          % "2.7.2",

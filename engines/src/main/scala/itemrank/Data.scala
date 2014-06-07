@@ -75,13 +75,13 @@ class ItemTD(
   val itypes: Seq[String],
   val starttime: Option[Long],
   val endtime: Option[Long],
-  val inactive: Boolean)
+  val inactive: Boolean) extends Serializable
 
 class RatingTD(
   val uindex: Int,
   val iindex: Int,
   val rating: Int,
-  val t: Long)
+  val t: Long) extends Serializable
 
 class TrainingData(
     val users: Map[Int, String], // uindex->uid

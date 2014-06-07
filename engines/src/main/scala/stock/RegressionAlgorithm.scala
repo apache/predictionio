@@ -85,7 +85,8 @@ class RegressionAlgorithm
   }
 
   def predict(model: Model, feature: Feature): Target = {
-    val price: Frame[DateTime, String, Double] = feature.data
+    //val price: Frame[DateTime, String, Double] = feature.data
+    val price: Frame[DateTime, String, Double] = feature.boxedData.get
     val modelData = model.data
     val prediction = price.colIx.toVec.contents
       // If model doesn't have the data, skip

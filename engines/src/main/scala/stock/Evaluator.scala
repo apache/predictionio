@@ -26,6 +26,7 @@ import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.stats.{ mean, meanAndVariance }
 import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
+import com.twitter.chill.MeatLocker
 
 object StockEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
@@ -218,7 +219,10 @@ class StockDataPreparator
 
     val featureData = Frame(data.map(e => (e._1, e._2)): _*)
     val targetData = data.map(e => (e._1, e._3)).toMap
-    return (new Feature(data = featureData), new Target(data = targetData))
+    //return (new Feature(data = featureData), new Target(data = targetData))
+    return (new Feature(
+      boxedData = MeatLocker(featureData)), 
+      new Target(data = targetData))
   }
 
   def prepareValidation(params: ValidationDataParams)
