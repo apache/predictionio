@@ -1,4 +1,8 @@
-name := "pio-engines"
+import AssemblyKeys._
+
+assemblySettings
+
+name := "engines"
 
 libraryDependencies ++= Seq(
   "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
@@ -13,4 +17,13 @@ addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
 
 scalacOptions <<= (scalacOptions, scalaSource in Compile) map { (options, base) =>
   options :+ ("-P:sxr:base-directory:" + base.getAbsolutePath)
+}
+
+run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
+
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+  {
+    case PathList("scala", xs @ _*) => MergeStrategy.discard
+    case x => old(x)
+  }
 }
