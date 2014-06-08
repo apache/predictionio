@@ -180,7 +180,8 @@ class StockDataPreparator
       .map(ticker => (ticker, getData(timeIndex, ticker)))
       .filter { case (ticker, optData) => !optData.isEmpty }
       .map { case (ticker, optData) => (ticker, optData.get) }
-    new TrainingData(price = Frame(tickerDataSeq: _*))
+    //new TrainingData(price = Frame(tickerDataSeq: _*))
+    new TrainingData(boxedPrice = MeatLocker(Frame(tickerDataSeq: _*)))
   }
 
   // Generate evaluation data set with target data up to idx (exclusive)

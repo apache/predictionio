@@ -40,7 +40,8 @@ class RegressionAlgorithm
   // Build a linear model
   // ret(-1) = a * ret_1d + b * ret_1w + c * ret_1m + d
   def train(trainingData: TrainingData): Model = {
-    val price = trainingData.price
+    //val price = trainingData.price
+    val price = trainingData.boxedPrice.get
     val logPrice = price.mapValues(math.log)
 
     val ret1d = getRet(logPrice, 1)

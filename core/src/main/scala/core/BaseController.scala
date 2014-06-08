@@ -31,8 +31,8 @@ abstract class BaseCleanser[
 
 abstract class BaseAlgorithm[
     -CD <: BaseCleansedData,
-    -F <: BaseFeature,
-    +P <: BasePrediction,
+    F <: BaseFeature,
+    P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams: Manifest]
   extends AbstractAlgorithm {
@@ -49,6 +49,8 @@ abstract class BaseAlgorithm[
 
   override def trainBase(cleansedData: BaseCleansedData): BaseModel =
     train(cleansedData.asInstanceOf[CD])
+
+  //def trainSpark[CD <: BaseCleansedData](cleansedData: CD)
 
   def train(cleansedData: CD): M
 
@@ -67,14 +69,17 @@ abstract class BaseAlgorithm[
     new PredictionSeq[F, P, BaseActual](data = output)
   }
 
-  //def predictSpark[M <: BaseModel](
+  //def predictSpark[M <: BaseModel, F <: BaseFeature](
+  //def predictSpark(
   def predictSpark(
-    input: (Iterable[BaseModel], Iterable[(BaseFeature, BaseActual)])
-    ): Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
+    input: (Iterable[BaseModel], Iterable[(F, BaseActual)])
+    ): Iterable[(F, P, BaseActual)] = {
     val model: M = input._1.head.asInstanceOf[M]
 
     val validationSeq = input._2.map{ case(f, a) => {
-      val ff = f.asInstanceOf[F]
+      //val ff = f.asInstanceOf[F]
+      println(f)
+      val ff = f
       (f, predict(model, ff), a)
     }}
     validationSeq
@@ -134,4 +139,9 @@ class BaseEngine[
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     val serverBaseClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
   extends AbstractEngine(
-    cleanserBaseClass, algorithmBaseClassMap, serverBaseClass) {}
+    cleanserBaseClass, algorithmBaseClassMap, serverBaseClass) {
+  
+  
+  
+  
+}

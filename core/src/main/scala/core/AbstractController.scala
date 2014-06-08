@@ -34,7 +34,7 @@ trait AbstractParameterizedDoer extends Serializable {
 
 //
 
-trait AbstractCleanser {
+trait AbstractCleanser extends AbstractParameterizedDoer {
 
   def initBase(baseCleanserParams: BaseCleanserParams): Unit
 
@@ -58,7 +58,7 @@ trait AbstractAlgorithm extends AbstractParameterizedDoer {
 
 }
 
-trait AbstractServer {
+trait AbstractServer extends AbstractParameterizedDoer {
 
   def initBase(baseServerParams: BaseServerParams): Unit
 

@@ -16,8 +16,8 @@ trait Cleanser[
 
 trait Algorithm[
     -CD <: BaseCleansedData,
-    -F <: BaseFeature,
-    +P <: BasePrediction,
+    F <: BaseFeature,
+    P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams]
     extends BaseAlgorithm[CD, F, P, M, AP] {

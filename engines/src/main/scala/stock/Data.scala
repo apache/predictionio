@@ -52,10 +52,14 @@ class ValidationDataParams(
   val tickerList: Seq[String]) extends BaseValidationDataParams {}
 
 class TrainingData(
-  val price: Frame[DateTime, String, Double]) extends BaseTrainingData {
+  //val price: Frame[DateTime, String, Double]) extends BaseTrainingData {
+  val boxedPrice: MeatLocker[Frame[DateTime, String, Double]]) 
+  extends BaseTrainingData {
   override def toString(): String = {
-    val firstDate = price.rowIx.first.get
-    val lastDate = price.rowIx.last.get
+    //val firstDate = price.rowIx.first.get
+    //val lastDate = price.rowIx.last.get
+    val firstDate = boxedPrice.get.rowIx.first.get
+    val lastDate = boxedPrice.get.rowIx.last.get
     s"TrainingData $firstDate $lastDate"
   }
   /*
@@ -68,7 +72,7 @@ class TrainingData(
 class Model(
   val data: Map[String, DenseVector[Double]]) extends BaseModel {}
 
-class Feature(
+case class Feature(
   // This is different from TrainingData. This serves as input for algorithm.
   // Hence, the time series should be shorter than that of TrainingData.
   //val data: Frame[DateTime, String, Double]) extends BaseFeature {

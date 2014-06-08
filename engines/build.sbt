@@ -11,7 +11,9 @@ libraryDependencies ++= Seq(
   "org.scalanlp"      %% "breeze-natives" % "0.7",
   "org.scalanlp"       % "nak"            % "1.2.1",
   "org.json4s"        %% "json4s-native"  % "3.2.9",
-  "com.github.scopt"  %% "scopt"          % "3.2.0")
+  "com.github.scopt"  %% "scopt"          % "3.2.0",
+  "org.apache.spark"  %% "spark-core"      % "1.0.0" % "provided"
+  )
 
 addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
 

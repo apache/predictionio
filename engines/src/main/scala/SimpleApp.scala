@@ -68,7 +68,10 @@ class R extends KryoRegistrator {
   }
 }
 
+/*
 class X(val x : Int) {}
+class Y(val data: MeatLocker[Frame[Int, String, Int]]) extends Serializable {}
+*/
 
 object SimpleApp {
   def simple() {
@@ -101,11 +104,20 @@ object SimpleApp {
     //val e = d.map(i => Series(i)).map(e => Externalizer[Series[Int, Int]](e))  
     val e = d.map(i => Series(i)).map(s => {
       val f = Frame("a" -> s)
-      MeatLocker[Frame[Int, String, Int]](f)
+      new Y(data = MeatLocker(f))
     })
 
-    e.collect.foreach(e => println(e.get))
+    e.collect.foreach(e => println(e.data.get))
 
+    val f = e.zipWithIndex.map(_.swap)
+    
+    val g = d.zipWithIndex.map(_.swap)
+
+    val h = f.join(g)
+
+    h.collect.foreach{ case(k, v) => {
+      println(k + " : " + v._1 + " " + v._2)
+    }}
     
     /*
     val s = StockEvaluator()
@@ -140,8 +152,8 @@ object SimpleApp {
       //evalDataParams, 
       evalDataParams, 
       null, /* validation params */
-      //null,  /* algo params */
-      randomAlgoParams,
+      null,  /* algo params */
+      //randomAlgoParams,
       s, 
       e)
   }
@@ -186,8 +198,8 @@ object SimpleApp {
 
   def main(args: Array[String]) {
     //itemrank
-    //stock
-    test
+    stock
+    //test
     //return
 
 
