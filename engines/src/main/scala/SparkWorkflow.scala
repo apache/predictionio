@@ -34,39 +34,6 @@ import scala.reflect.Manifest
 import org.saddle._
 import com.twitter.chill.Externalizer
 
-
-import com.esotericsoftware.kryo.Kryo
-import org.apache.spark.serializer.KryoRegistrator
-
-class MyRegistrator extends KryoRegistrator {
-  override def registerClasses(kryo: Kryo) {
-    kryo.register(classOf[Frame[DateTime, String, Double]])
-    //kryo.register(classOf[Series])
-  }
-}
-
-/*
-val conf = new SparkConf().setMaster(...).setAppName(...)
-conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-conf.set("spark.kryo.registrator", "mypackage.MyRegistrator")
-val sc = new SparkContext(conf)
-*/
-
-/*
-object SparkPredict {
-  def predict[
-      CD <: BaseCleansedData,
-      F <: BaseFeature,
-      P <: BasePrediction,
-      M <: BaseModel,
-      AP <: BaseAlgoParams: Manifest]
-  (algo: BaseAlgorithm[CD,F,P,M,A], ) = {
-
-  }
-}
-*/
-
-
 object SparkWorkflow {
   def run[
       EDP <: BaseEvaluationDataParams : Manifest,
@@ -105,10 +72,8 @@ object SparkWorkflow {
     val localTrainingParamsSet = localParamsSet.map(e => (e._1, e._2._1))
     val localValidationParamsSet = localParamsSet.map(e => (e._1, e._2._2))
 
-    //val trainingParamsMap: RDD[(Int, TDP)] = 
     val trainingParamsMap: RDD[(Int, BaseTrainingDataParams)] = 
       sc.parallelize(localTrainingParamsSet)
-    //val validationParamsMap: RDD[(Int, VDP)] = 
     val validationParamsMap: RDD[(Int, BaseValidationDataParams)] = 
       sc.parallelize(localValidationParamsSet)
 
@@ -122,7 +87,7 @@ object SparkWorkflow {
     val trainingDataMap: RDD[(Int, BaseTrainingData)] =
       trainingParamsMap.mapValues(dataPrep.prepareTrainingBase)
 
-    //trainingDataMap.collect.foreach(println)
+    trainingDataMap.collect.foreach(println)
 
     // Prepare Validation Data
     val validationDataMap: RDD[(Int, (BaseFeature, BaseActual))] =
@@ -162,9 +127,7 @@ object SparkWorkflow {
     }}
 
     val predictionMap
-      //: RDD[(Int, Iterable[(BaseFeature, BasePrediction, BaseActual)])] =
       : RDD[(Int, (BaseFeature, BasePrediction, BaseActual))] =
-      //modelValidationMap.mapValues(algo.predictSpark)
       modelValidationMap.flatMapValues(algo.predictSpark)
 
     val collectedPredictionMap = predictionMap.collect
@@ -207,41 +170,6 @@ object SparkWorkflow {
       validationSetMap.glom().map(validator.crossValidateSpark)
 
     crossValidationResults.collect.foreach{ println }
-
-    //val trainingSet = trainingParamsSet.map(dataPrep.prepareTrainingBase)
-
-    /*
-    localParamsSet.map { params => {
-      val (trainingParams, validationParams) = params
-
-      val trainingParamsSet = sc.parallelize(Array(trainingParams))
-
-      val trainingSet = trainingParamsSet.map(dataPrep.prepareTrainingBase)
-
-    }}
-    */
-
-    /*
-    val paramsSet = sc.parallelize(localParamsSet)
-
-    paramsSet.foreach(println)
-    
-    val trainingParamsSet = paramsSet.map(_._1)
-
-    val trainingSet = trainingParamsSet.map(dataPrep.prepareTrainingBase)
-
-    println("training set")
-    println(trainingSet.first)
-    trainingSet.foreach(println)
-
-    val validationParamsSet = paramsSet.map(_._2)
-    val validationSet = validationParamsSet.flatMap(
-      dataPrep.prepareValidationBaseSpark)
-
-    println("validation set")
-    println(validationSet.first)
-    validationSet.foreach(println)
-    */
   }
 
 }
