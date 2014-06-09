@@ -181,7 +181,8 @@ class StockDataPreparator
       .filter { case (ticker, optData) => !optData.isEmpty }
       .map { case (ticker, optData) => (ticker, optData.get) }
     //new TrainingData(price = Frame(tickerDataSeq: _*))
-    new TrainingData(boxedPrice = MeatLocker(Frame(tickerDataSeq: _*)))
+    TrainingData(price = Frame(tickerDataSeq: _*))
+    //new TrainingData(boxedPrice = MeatLocker(Frame(tickerDataSeq: _*)))
   }
 
   // Generate evaluation data set with target data up to idx (exclusive)
@@ -220,10 +221,10 @@ class StockDataPreparator
 
     val featureData = Frame(data.map(e => (e._1, e._2)): _*)
     val targetData = data.map(e => (e._1, e._3)).toMap
-    //return (new Feature(data = featureData), new Target(data = targetData))
-    return (new Feature(
-      boxedData = MeatLocker(featureData)), 
-      new Target(data = targetData))
+    return (Feature(data = featureData), new Target(data = targetData))
+    //return (new Feature(
+    //  boxedData = MeatLocker(featureData)), 
+    //  new Target(data = targetData))
   }
 
   def prepareValidation(params: ValidationDataParams)

@@ -72,14 +72,14 @@ abstract class BaseAlgorithm[
   //def predictSpark[M <: BaseModel, F <: BaseFeature](
   //def predictSpark(
   def predictSpark(
-    input: (Iterable[BaseModel], Iterable[(F, BaseActual)])
-    ): Iterable[(F, P, BaseActual)] = {
+    input: (Iterable[BaseModel], Iterable[(BaseFeature, BaseActual)])
+    ): Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
     val model: M = input._1.head.asInstanceOf[M]
 
     val validationSeq = input._2.map{ case(f, a) => {
-      //val ff = f.asInstanceOf[F]
-      println(f)
-      val ff = f
+      val ff = f.asInstanceOf[F]
+      //println(f)
+      //val ff = f
       (f, predict(model, ff), a)
     }}
     validationSeq

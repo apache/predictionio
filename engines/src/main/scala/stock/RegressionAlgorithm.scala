@@ -41,7 +41,8 @@ class RegressionAlgorithm
   // ret(-1) = a * ret_1d + b * ret_1w + c * ret_1m + d
   def train(trainingData: TrainingData): Model = {
     //val price = trainingData.price
-    val price = trainingData.boxedPrice.get
+    //val price = trainingData.boxedPrice.get
+    val price = trainingData.price
     val logPrice = price.mapValues(math.log)
 
     val ret1d = getRet(logPrice, 1)
@@ -86,8 +87,8 @@ class RegressionAlgorithm
   }
 
   def predict(model: Model, feature: Feature): Target = {
-    //val price: Frame[DateTime, String, Double] = feature.data
-    val price: Frame[DateTime, String, Double] = feature.boxedData.get
+    val price: Frame[DateTime, String, Double] = feature.data
+    //val price: Frame[DateTime, String, Double] = feature.boxedData.get
     val modelData = model.data
     val prediction = price.colIx.toVec.contents
       // If model doesn't have the data, skip

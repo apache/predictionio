@@ -20,7 +20,7 @@ trait AbstractDataPreparator extends AbstractParameterizedDoer {
 }
 
 
-trait AbstractValidator {
+trait AbstractValidator extends AbstractParameterizedDoer {
   // Evaluation methods
   def initBase(params: BaseValidationParams): Unit
 

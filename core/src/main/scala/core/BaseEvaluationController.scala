@@ -68,6 +68,16 @@ abstract class BaseValidator[
     return new ValidationUnitSeq(data = output)
   }
 
+  //def validateSpark(feature: BaseFeature, predicted: BasePrediction,
+  //  actual: BaseActual): BaseValidationUnit
+  def validateSpark(input: (BaseFeature, BasePrediction, BaseActual))
+    : BaseValidationUnit = {
+    validate(
+      input._1.asInstanceOf[F],
+      input._2.asInstanceOf[P],
+      input._3.asInstanceOf[A])
+  }
+
   def validate(feature: F, predicted: P, actual: A): VU
 
   override 
@@ -84,6 +94,19 @@ abstract class BaseValidator[
     return new ValidationParamsResults(tdp, vdp, results)
   }
 
+  def validateSetSpark(
+    input: (
+      (BaseTrainingDataParams, BaseValidationDataParams),
+      Iterable[BaseValidationUnit]))
+    : ((BaseTrainingDataParams, BaseValidationDataParams),
+      BaseValidationResults) = {
+    val results = validateSet(
+      input._1._1.asInstanceOf[TDP],
+      input._1._2.asInstanceOf[VDP],
+      input._2.map(_.asInstanceOf[VU]).toSeq)
+    (input._1, results)
+  }
+
   def validateSet(
     trainingDataParams: TDP, 
     validationDataParams: VDP,
@@ -98,6 +121,22 @@ abstract class BaseValidator[
     
     crossValidate(input)
   }
+
+  def crossValidateSpark(
+    input: Array[
+    (Int, ((BaseTrainingDataParams, BaseValidationDataParams),
+      BaseValidationResults))]): BaseCrossValidationResults = {
+    // maybe sort them.
+    val data = input
+      .map(e => (e._2._1._1, e._2._1._2, e._2._2))
+      .map(e => (
+        e._1.asInstanceOf[TDP],
+        e._2.asInstanceOf[VDP],
+        e._3.asInstanceOf[VR]))
+
+    crossValidate(data)
+  }
+
 
   def crossValidate(validateResultsSeq: Seq[(TDP, VDP, VR)]): CVR
 }

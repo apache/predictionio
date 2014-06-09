@@ -29,8 +29,8 @@ class RandomAlgorithm
   }
 
   def predict(model: EmptyModel, feature: Feature): Target = {
-    //val tickers = feature.data.colIx.toVec.contents
-    val tickers = feature.boxedData.get.colIx.toVec.contents
+    val tickers = feature.data.colIx.toVec.contents
+    //val tickers = feature.boxedData.get.colIx.toVec.contents
     val prediction = tickers.map {
       ticker => (ticker, _drift + _random.nextGaussian() * _scale)
     }.toMap

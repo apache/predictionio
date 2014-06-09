@@ -19,6 +19,7 @@ import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
 import breeze.linalg.{ DenseMatrix, DenseVector }
 import com.twitter.chill.MeatLocker
+import com.github.nscala_time.time.Imports._
 
 // Use data after baseData.
 // Afterwards, slicing uses idx
@@ -52,37 +53,80 @@ class ValidationDataParams(
   val tickerList: Seq[String]) extends BaseValidationDataParams {}
 
 class TrainingData(
-  //val price: Frame[DateTime, String, Double]) extends BaseTrainingData {
-  val boxedPrice: MeatLocker[Frame[DateTime, String, Double]]) 
+  val data: (Array[DateTime], Array[(String, Array[Double])]))
   extends BaseTrainingData {
+  val timeIndex: Array[DateTime] = data._1
+  val tickerPriceSeq: Array[(String, Array[Double])] = data._2
+ 
+  @transient lazy val price = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
+
   override def toString(): String = {
-    //val firstDate = price.rowIx.first.get
-    //val lastDate = price.rowIx.last.get
-    val firstDate = boxedPrice.get.rowIx.first.get
-    val lastDate = boxedPrice.get.rowIx.last.get
+    val firstDate = timeIndex.head
+    val lastDate = timeIndex.last
     s"TrainingData $firstDate $lastDate"
   }
-  /*
-  private def writeObject(oos: ObjectOutputStream): Unit = {
-
-  }
-  */
 }
+
+object TrainingData {
+  def apply(price: Frame[DateTime, String, Double]): TrainingData = {
+    return new TrainingData(SaddleWrapper.FromFrame(price))
+  }
+}
+
+object SaddleWrapper {
+  def ToFrame(
+    timeIndex: Array[DateTime],
+    tickerPriceSeq: Array[(String, Array[Double])]
+    ): Frame[DateTime, String, Double] = {
+    val index = IndexTime(timeIndex:_ *)
+    val seriesList = tickerPriceSeq.map{ case(ticker, price) => {
+      val series = Series(Vec(price), index)
+      (ticker, series)
+    }}
+    Frame(seriesList:_*)
+  }
+
+  def FromFrame(data: Frame[DateTime, String, Double]
+    ): (Array[DateTime], Array[(String, Array[Double])]) = {
+    val timeIndex = data.rowIx.toVec.contents
+    val tickers = data.colIx.toVec.contents
+
+    val tickerDataSeq = tickers.map{ ticker => {
+      (ticker, data.firstCol(ticker).toVec.contents)
+    }}
+
+    (timeIndex, tickerDataSeq)
+  }
+}
+
+
 
 class Model(
   val data: Map[String, DenseVector[Double]]) extends BaseModel {}
 
-case class Feature(
+class Feature(
   // This is different from TrainingData. This serves as input for algorithm.
   // Hence, the time series should be shorter than that of TrainingData.
-  //val data: Frame[DateTime, String, Double]) extends BaseFeature {
-  val boxedData: MeatLocker[Frame[DateTime, String, Double]]) extends BaseFeature {
+  val input: (Array[DateTime], Array[(String, Array[Double])])
+  ) extends BaseFeature {
+  
+  val timeIndex: Array[DateTime] = input._1
+  val tickerPriceSeq: Array[(String, Array[Double])] = input._2
+  @transient lazy val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
+  //val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
+
   override def toString(): String = {
-    //val firstDate = data.rowIx.first.get
-    //val lastDate = data.rowIx.last.get
-    val firstDate = boxedData.get.rowIx.first.get
-    val lastDate = boxedData.get.rowIx.last.get
+    val firstDate = data.rowIx.first.get
+    val lastDate = data.rowIx.last.get
+    //val firstDate = data.get.rowIx.first.get
+    //val lastDate = data.get.rowIx.last.get
     s"Feature $firstDate $lastDate"
+  }
+}
+
+object Feature {
+  def apply(data: Frame[DateTime, String, Double]): Feature = {
+    return new Feature(SaddleWrapper.FromFrame(data))
   }
 }
 
