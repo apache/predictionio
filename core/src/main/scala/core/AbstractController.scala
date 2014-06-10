@@ -12,6 +12,7 @@ import java.io.FileInputStream
 import java.io.ObjectInputStream
 
 trait AbstractParameterizedDoer extends Serializable {
+  /*
   private var baseParams: BaseParams = null
   //def paramClass(): Manifest[_ <: BaseParams]
 
@@ -20,14 +21,17 @@ trait AbstractParameterizedDoer extends Serializable {
   }
 
   private def writeObject(oos: ObjectOutputStream): Unit = {                        
+    println("Doer.writeObject: $this")
     val boxed = MeatLocker(baseParams)
     oos.writeObject(boxed)                                                                 
   }                                                                                 
                                                                                                 
   private def readObject(ois: ObjectInputStream): Unit = {                          
+    println("Doer.readObject: $this")
     val params = ois.readObject.asInstanceOf[MeatLocker[BaseParams]]
     initBase(params.get)
   }                                                                                 
+  */
 }
 
 
@@ -47,7 +51,7 @@ trait AbstractCleanser extends AbstractParameterizedDoer {
 trait AbstractAlgorithm extends AbstractParameterizedDoer {
 
   //abstract override def initBase(baseAlgoParams: BaseAlgoParams): Unit
-  //def initBase(baseParams: BaseParams): Unit
+  def initBase(baseParams: BaseParams): Unit
 
   def paramsClass(): Manifest[_ <: BaseAlgoParams]
 
@@ -55,6 +59,9 @@ trait AbstractAlgorithm extends AbstractParameterizedDoer {
 
   def predictSeqBase(baseModel: BaseModel, validationSeq: BaseValidationSeq)
     : BasePredictionSeq
+
+  def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
+    : BasePrediction
 
 }
 
@@ -68,6 +75,12 @@ trait AbstractServer extends AbstractParameterizedDoer {
   // In the batch model, things are run in batch therefore we have seq of seq.
   def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
     : BasePredictionSeq
+
+  def combineBase(
+    baseFeature: BaseFeature,
+    basePredictions: Seq[BasePrediction])
+    : BasePrediction
+
 }
 
 class AbstractEngine(

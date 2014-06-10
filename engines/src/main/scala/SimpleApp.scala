@@ -28,6 +28,8 @@ import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
 
+import io.prediction.workflow.SparkWorkflow
+
 //import org.saddle.Series
 import org.saddle._
 
@@ -148,14 +150,12 @@ object SimpleApp {
     println(evalDataParams) 
 
     val randomAlgoParams = new RandomAlgoParams(seed = 1, scale = 0.01)
-    SparkWorkflow.run("Fizz", 
-      //evalDataParams, 
-      evalDataParams, 
-      null, /* validation params */
-      null,  /* algo params */
-      //randomAlgoParams,
-      s, 
-      e)
+    
+    //SparkWorkflow.run("Fizz", 
+    //  evalDataParams, 
+    //  null, /* validation params */
+    //  null,  /* algo params */
+    //  e,s)
   }
 
   def itemrank() {
@@ -183,15 +183,12 @@ object SimpleApp {
     ) 
     val knnAlgoParams = new KNNAlgoParams(similarity="consine")
 
-    SparkWorkflow.run("Fizz", 
-      //evalDataParams, 
-      evalParams, 
-      evalParams, /* validation params */
-      //null,  /* algo params */
-      //randomAlgoParams,
-      knnAlgoParams,
-      s, 
-      e)
+    //SparkWorkflow.run("Fizz", 
+    //  //evalDataParams, 
+    //  evalParams, 
+    //  evalParams, /* validation params */
+    //  knnAlgoParams,
+    //  e,s)
     return
   }
 

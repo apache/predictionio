@@ -38,8 +38,9 @@ abstract class BaseAlgorithm[
   extends AbstractAlgorithm {
 
   //override def initBase(baseAlgoParams: BaseAlgoParams): Unit = {
-  override def initBase(baseParams: BaseParams): Unit = {
-    super.initBase(baseParams)
+  //override 
+  def initBase(baseParams: BaseParams): Unit = {
+    //super.initBase(baseParams)
     init(baseParams.asInstanceOf[AP])
   }
 
@@ -85,6 +86,13 @@ abstract class BaseAlgorithm[
     validationSeq
   }
 
+  def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
+    : BasePrediction = {
+    predict(
+      baseModel.asInstanceOf[M],
+      baseFeature.asInstanceOf[F])
+  }
+
   def predict(model: M, feature: F): P
 
 }
@@ -118,6 +126,15 @@ abstract class BaseServer[
       (f, p, a)
     }}
     new PredictionSeq[F, P, BaseActual](data = output)
+  }
+
+  def combineBase(
+    baseFeature: BaseFeature,
+    basePredictions: Seq[BasePrediction])
+    : BasePrediction = {
+    combine(
+      baseFeature.asInstanceOf[F],
+      basePredictions.map(_.asInstanceOf[P]))
   }
 
   def combine(feature: F, predictions: Seq[P]): P

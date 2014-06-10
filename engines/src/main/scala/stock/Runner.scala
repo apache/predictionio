@@ -6,6 +6,7 @@ import io.prediction.core.AbstractEngine
 import io.prediction.DefaultServer
 import io.prediction.DefaultCleanser
 
+import io.prediction.workflow.SparkWorkflow
 import io.prediction.workflow.EvaluationWorkflow
 
 object Run {
@@ -33,11 +34,13 @@ object Run {
     val evaluator = StockEvaluator()
 
     val algoParamsSet = Seq(
-      ("random", new RandomAlgoParams(seed = 1, scale = 0.01)),
+      ("random", new RandomAlgoParams(seed = 1, scale = 0.02)),
       ("random", new RandomAlgoParams(seed = 2, drift = 1)),
-      ("regression", null))
+      ("regression", null)
+    )
 
-    if (true) {
+    if (false) {
+      // PIO runner
       val evalWorkflow = EvaluationWorkflow(
         "", 
         evalDataParams, 
@@ -50,6 +53,19 @@ object Run {
 
       println("Start singlethread runner")
       evalWorkflow.run
+    }
+    
+    if (true) {
+      // PIO runner
+      SparkWorkflow.run(
+        "Iron Man", 
+        evalDataParams, 
+        null /* validation */, 
+        null /* cleanserParams */, 
+        algoParamsSet, 
+        serverParams,
+        engine,
+        evaluator)
     }
   }
 }

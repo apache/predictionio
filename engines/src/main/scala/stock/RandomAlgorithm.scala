@@ -15,10 +15,13 @@ class RandomAlgorithm
     extends Algorithm[TrainingData, Feature, Target, EmptyModel, RandomAlgoParams] {
   var _scale: Double = 0.0
   var _drift: Double = 0.0
+  var _seed: Long = 0
   // Notice that parallization may mess-up reproduceability of a fixed seed.
-  @transient var _random: Random = null
+  @transient lazy val _random: Random = new Random(_seed)
   override def init(algoParams: RandomAlgoParams): Unit = {
-    _random = new Random(algoParams.seed)
+    println("RandomAlgorithm.init")
+    //_random = new Random(algoParams.seed)
+    _seed = algoParams.seed
     _scale = algoParams.scale
     _drift = algoParams.drift
   }
@@ -29,6 +32,7 @@ class RandomAlgorithm
   }
 
   def predict(model: EmptyModel, feature: Feature): Target = {
+    println(s"RandomAlgorithm.predict ${_seed} ${_scale} ${_drift}")
     val tickers = feature.data.colIx.toVec.contents
     //val tickers = feature.boxedData.get.colIx.toVec.contents
     val prediction = tickers.map {
@@ -36,4 +40,6 @@ class RandomAlgorithm
     }.toMap
     new Target(data = prediction)
   }
+
+  override def toString() = "RandomAlgorithm"
 }
