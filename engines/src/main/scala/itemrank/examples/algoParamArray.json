@@ -1,5 +1,5 @@
 [
-  { "knn" : { "similarity" : "consine"} },
-  { "knn" : { "similarity" : "jaccard"} },
-  { "rand" : {} }
+  { "name": "knn" , "params": { "similarity" : "consine"} },
+  { "name": "knn" , "params": { "similarity" : "jaccard"} },
+  { "name": "rand" , "params": {} }
 ]

@@ -2,7 +2,7 @@ package io.prediction.engines.itemrank
 
 import io.prediction.core.{ BaseEngine }
 import io.prediction.{ DefaultServer, DefaultCleanser }
-import io.prediction.workflow.EvaluationWorkflow
+//import io.prediction.workflow.EvaluationWorkflow
 
 import com.github.nscala_time.time.Imports._
 
@@ -55,20 +55,25 @@ object Runner {
       ("rand", randomAlgoParams)
     )
 
+    /*
+    // Comment by yipjustin. Use SparkWorkflow instead
     val evalWorkflow1 = EvaluationWorkflow(
       "", evalParams, evalParams, 
-      null /* cleanserParams */, knnEngineAlgoParamSet, serverParams,
+      null,  // cleanserParams 
+      knnEngineAlgoParamSet, serverParams,
       knnEngine, evaluator)
 
     val evalWorkflow2 = EvaluationWorkflow(
       "", evalParams, evalParams,
-      null /* cleanserParams */, randEngineAlgoParamSet, serverParams,
+      null, // cleanserParams
+      randEngineAlgoParamSet, serverParams,
       randEngine, evaluator)
 
     // Comment by yipjustin. All tasks are now persist in database. Hence, using
     // one worker suffice.
     evalWorkflow1.run
     evalWorkflow2.run
+    */
   }
 
 }

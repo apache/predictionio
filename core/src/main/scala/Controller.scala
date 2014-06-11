@@ -38,6 +38,7 @@ trait Server[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
 // Below is default implementation.
 class DefaultServer[F <: BaseFeature, P <: BasePrediction]
     extends Server[F, P, DefaultServerParams] {
+  def init(params: DefaultServerParams): Unit = {}
   override def combine(feature: F, predictions: Seq[P]): P = predictions.head
 }
 
@@ -49,5 +50,9 @@ class DefaultCleanser[TD <: BaseTrainingData]
 
 // Factory Methods
 trait EngineFactory {
-  def apply(): AbstractEngine
+  def apply(): BaseEngine[
+    _ <: BaseTrainingData,
+    _ <: BaseCleansedData,
+    _ <: BaseFeature,
+    _ <: BasePrediction]
 }

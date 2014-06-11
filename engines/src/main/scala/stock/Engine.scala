@@ -1,7 +1,6 @@
 package io.prediction.engines.stock
 
 import io.prediction.core.BaseEngine
-import io.prediction.core.AbstractEngine
 import io.prediction.DefaultServer
 import io.prediction.DefaultCleanser
 import io.prediction.EngineFactory

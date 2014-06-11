@@ -1,7 +1,7 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.{ EvaluatorFactory }
-import io.prediction.core.AbstractEvaluator
+//import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluator
 import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
@@ -286,6 +286,8 @@ class ItemRankValidator
       ValidationUnit,
       EmptyData,
       EmptyData] {
+
+  def init(params: EvalParams): Unit = {}
 
   // evaluation
 

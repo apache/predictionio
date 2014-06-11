@@ -1,3 +1,4 @@
+/*
 package io.prediction.core
 
 // FIXME(yipjustin). I am lazy...
@@ -42,3 +43,4 @@ trait AbstractValidator extends AbstractParameterizedDoer {
 class AbstractEvaluator(
   val dataPreparatorClass: Class[_ <: AbstractDataPreparator],
   val validatorClass: Class[_ <: AbstractValidator]) {}
+*/

@@ -11,7 +11,16 @@ import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
 
-trait AbstractParameterizedDoer extends Serializable {
+abstract class AbstractParameterizedDoer[P <: BaseParams : Manifest]
+extends Serializable {
+  def initBase(params: BaseParams): Unit = {
+    init(params.asInstanceOf[P])
+  }
+
+  def init(params: P): Unit
+
+  def paramsClass() = manifest[P]
+
   /*
   private var baseParams: BaseParams = null
   //def paramClass(): Manifest[_ <: BaseParams]
@@ -38,6 +47,7 @@ trait AbstractParameterizedDoer extends Serializable {
 
 //
 
+/*
 trait AbstractCleanser extends AbstractParameterizedDoer {
 
   def initBase(baseCleanserParams: BaseCleanserParams): Unit
@@ -92,3 +102,4 @@ class AbstractEngine(
   val serverClass: Class[_ <: AbstractServer]) {
 
 }
+*/

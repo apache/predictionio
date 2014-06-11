@@ -16,7 +16,7 @@ import io.prediction.core.BaseEngine
 import io.prediction.BaseEvaluationDataParams
 
 
-import io.prediction.core.AbstractDataPreparator
+//import io.prediction.core.AbstractDataPreparator
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -48,9 +48,20 @@ object SparkWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
 
+  type BAlgorithm = BaseAlgorithm[
+    _ <: BaseCleansedData,
+    _ <: BaseFeature,
+    _ <: BasePrediction,
+    _ <: BaseModel,
+    _ <: BaseAlgoParams]
+  type BServer = BaseServer[
+    _ <: BaseFeature, 
+    _ <: BasePrediction, 
+    _ <: BaseServerParams]
+
   def onePassPredictFunction(
-    algos: Array[AbstractAlgorithm],
-    server: AbstractServer,
+    algos: Array[BAlgorithm],
+    server: BServer,
     input: (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
   : Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
     val modelIter = input._1
@@ -73,9 +84,12 @@ object SparkWorkflow {
       TDP <: BaseTrainingDataParams : Manifest,
       VDP <: BaseValidationDataParams : Manifest,
       TD <: BaseTrainingData : Manifest,
+      TD1 <: BaseTrainingData : Manifest,
       CD <: BaseCleansedData : Manifest,
       F <: BaseFeature : Manifest,
+      F1 <: BaseFeature : Manifest,
       P <: BasePrediction : Manifest,
+      P1 <: BasePrediction : Manifest,
       A <: BaseActual : Manifest,
       VU <: BaseValidationUnit : Manifest,
       VR <: BaseValidationResults : Manifest,
@@ -86,7 +100,8 @@ object SparkWorkflow {
     cleanserParams: BaseCleanserParams,
     algoParamsList: Seq[(String, BaseAlgoParams)],
     serverParams: BaseServerParams,
-    baseEngine: BaseEngine[TD,CD,F,P],
+    //baseEngine: BaseEngine[TD,CD,F,P],
+    baseEngine: BaseEngine[TD1,CD,F1,P1],
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
     ): Unit = {
@@ -119,8 +134,6 @@ object SparkWorkflow {
     trainingParamsMap = trainingParamsMap.repartition(numPartitions)
     validationParamsMap = validationParamsMap.repartition(numPartitions)
 
-
-
     // ParamsSet
     val paramsMap: 
       RDD[(Int, (BaseTrainingDataParams, BaseValidationDataParams))] = 
@@ -143,7 +156,7 @@ object SparkWorkflow {
     }
 
 
-    // TODO: Cleanse Data
+    // Cleanse Data
     val cleanser = baseEngine.cleanserBaseClass.newInstance
     cleanser.initBase(cleanserParams) 
 
@@ -158,7 +171,7 @@ object SparkWorkflow {
     // Array[AlgoInstance]
     val algoDummy = sc.parallelize(0 until algoParamsList.length)
 
-    val algoInstanceList: Array[AbstractAlgorithm] = algoParamsList
+    val algoInstanceList: Array[BAlgorithm] = algoParamsList
       .map{ e => {
         val (algoName, algoParams) = e
         val algo = baseEngine.algorithmBaseClassMap(algoName).newInstance
@@ -208,7 +221,6 @@ object SparkWorkflow {
         println(s"Prediction: $ei F: ${fpa._1} P: ${fpa._2} A: ${fpa._3}")
       }}
     }
-
 
     // Validation
     val validator = baseEvaluator.validatorBaseClass.newInstance

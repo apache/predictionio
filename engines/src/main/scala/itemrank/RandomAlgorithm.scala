@@ -6,7 +6,7 @@ import scala.util.Random
 class RandomAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
   RandomModel, RandomAlgoParams] {
 
-  val rand = new Random(3) // TODO: pass seed from init()
+  @transient lazy val rand = new Random(3) // TODO: pass seed from init()
 
   override def init(algoParams: RandomAlgoParams): Unit = {} // TODO
 

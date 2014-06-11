@@ -7,7 +7,7 @@ import io.prediction.PIOSettings
 import io.prediction.DataPreparator
 import io.prediction.Validator
 import io.prediction.EvaluatorFactory
-import io.prediction.core.AbstractEvaluator
+//import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluator
 import io.prediction.BaseValidationParams
 import io.prediction.BaseValidationResults
@@ -54,8 +54,7 @@ object StockEvaluator extends EvaluatorFactory {
 }
 
 object LocalFileStockEvaluator extends EvaluatorFactory {
-  override def apply(): AbstractEvaluator = {
-    //new StockEvaluator
+  override def apply() = {
     new BaseEvaluator(
       classOf[LocalFileStockDataPreparator],
       classOf[StockValidator])
@@ -248,6 +247,8 @@ class StockValidator
         ValidationUnit, 
         ValidationResults, 
         BaseCrossValidationResults] {
+  def init(params: EmptyParams) = {}
+
   def validate(feature: Feature, predicted: Target, actual: Target)
       : ValidationUnit = {
     val predictedData = predicted.data

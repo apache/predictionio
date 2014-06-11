@@ -1,13 +1,15 @@
 package io.prediction.engines.tools
 
-import io.prediction.core.{ AbstractEvaluator, AbstractEngine }
+//import io.prediction.core.{ AbstractEvaluator, AbstractEngine }
+import io.prediction.core.{ BaseEvaluator, BaseEngine }
 import io.prediction.{ EngineFactory, EvaluatorFactory }
 import io.prediction.{ 
   BaseAlgoParams, 
   BaseCleanserParams, 
   BaseServerParams
 }
-import io.prediction.workflow.EvaluationWorkflow
+//import io.prediction.workflow.EvaluationWorkflow
+import io.prediction.workflow.SparkWorkflow
 
 import grizzled.slf4j.Logging
 import com.github.nscala_time.time.Imports._
@@ -33,6 +35,8 @@ run --evaluatorFactory io.prediction.engines.itemrank.ItemRankEvaluator --engine
 Stock:
 run --evaluatorFactory io.prediction.engines.stock.StockEvaluator --engineFactory io.prediction.engines.stock.StockEngine --dp dataPrepParams.json --sp serverParams.json --ap algoParamArray.json --jsonDir src/main/scala/stock/examples/
 */
+
+case class AlgoParams(name: String, params: JValue)
 
 object CreateEvaluationWorkFlow extends Logging {
 
@@ -129,27 +133,28 @@ object CreateEvaluationWorkFlow extends Logging {
     // Params
     val dataPrepParams = getParams(
       jsonDir, dataPrepJsonPath,
-      evaluator.dataPreparatorClass.newInstance.paramsClass)
+      evaluator.dataPreparatorBaseClass.newInstance.paramsClass)
     
     val validatorParams = getParams(
       jsonDir, validatorJsonPath,
-      evaluator.validatorClass.newInstance.paramsClass)
+      evaluator.validatorBaseClass.newInstance.paramsClass)
 
     val cleanserParams = getParams(
       jsonDir, cleanserJsonPath,
-      engine.cleanserClass.newInstance.paramsClass)
+      engine.cleanserBaseClass.newInstance.paramsClass)
     
     val serverParams = getParams(
       jsonDir, serverJsonPath,
-      engine.serverClass.newInstance.paramsClass)
+      engine.serverBaseClass.newInstance.paramsClass)
 
     // AlgoParams require special handling as it is a Map.
     val algoString = Source.fromFile(jsonDir + algoJsonPath).mkString
     val algoJson = JsonMethods.parse(algoString)
-    val algoJsonSeq = algoJson.extract[Seq[Tuple2[String, JValue]]]
+    println(algoJson)
+    var algoJsonSeq = algoJson.extract[Seq[AlgoParams]]
 
-    val invalidAlgoIds = algoJsonSeq.filter { case (id, json) =>
-      !engine.algorithmClassMap.contains(id)
+    val invalidAlgoIds = algoJsonSeq.filter { ap => 
+      !engine.algorithmBaseClassMap.contains(ap.name)
     }
 
     if (!invalidAlgoIds.isEmpty) {
@@ -158,17 +163,18 @@ object CreateEvaluationWorkFlow extends Logging {
     }
 
     val algoParamSet = algoJsonSeq
-      .map{ case (id, json) =>
-        val p = Extraction.extract(json)(formats,
-          engine.algorithmClassMap(id).newInstance.paramsClass)
-        (id, p)//.asInstanceOf[BaseAlgoParams])
+      .map{ ap => 
+        val p = Extraction.extract(ap.params)(formats,
+          engine.algorithmBaseClassMap(ap.name).newInstance.paramsClass)
+        (ap.name, p)//.asInstanceOf[BaseAlgoParams])
       }
 
     info(algoJson)
     info(algoParamSet)
 
-
-    val evalWorkflow1 = EvaluationWorkflow(
+    // FIXME. Use SparkWorkflow
+    //val evalWorkflow1 = EvaluationWorkflow(
+    val evalWorkflow1 = SparkWorkflow.run(
       "",  // Batch Name
       dataPrepParams,
       validatorParams,
@@ -178,7 +184,8 @@ object CreateEvaluationWorkFlow extends Logging {
       engine, 
       evaluator)
 
-    evalWorkflow1.run
+    //evalWorkflow1.run
+    //*/
 
   }
 }

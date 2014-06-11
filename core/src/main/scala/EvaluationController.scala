@@ -46,6 +46,18 @@ trait Validator[
 
 // Factory Methods
 trait EvaluatorFactory {
-  def apply(): AbstractEvaluator
+  //def apply(): AbstractEvaluator
+  def apply(): BaseEvaluator[
+    _ <: BaseEvaluationDataParams,
+    _ <: BaseValidationParams,
+    _ <: BaseTrainingDataParams,
+    _ <: BaseValidationDataParams,
+    _ <: BaseTrainingData,
+    _ <: BaseFeature,
+    _ <: BasePrediction,
+    _ <: BaseActual,
+    _ <: BaseValidationUnit,
+    _ <: BaseValidationResults,
+    _ <: BaseCrossValidationResults]
 }
 

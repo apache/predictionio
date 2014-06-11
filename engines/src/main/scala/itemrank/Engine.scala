@@ -1,6 +1,7 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.core.{ AbstractEngine, BaseEngine }
+//import io.prediction.core.{ AbstractEngine, BaseEngine }
+import io.prediction.core.BaseEngine
 import io.prediction.EngineFactory
 import io.prediction.{ DefaultCleanser, DefaultServer }
 

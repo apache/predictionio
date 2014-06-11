@@ -2,12 +2,13 @@ package io.prediction.engines.stock
 import com.github.nscala_time.time.Imports.DateTime
 
 import io.prediction.core.BaseEngine
-import io.prediction.core.AbstractEngine
+//import io.prediction.core.AbstractEngine
 import io.prediction.DefaultServer
 import io.prediction.DefaultCleanser
 
 import io.prediction.workflow.SparkWorkflow
-import io.prediction.workflow.EvaluationWorkflow
+//import io.prediction.workflow.EvaluationWorkflow
+
 
 object Run {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
@@ -20,14 +21,14 @@ object Run {
     val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
-      untilIdx = 630,
+      untilIdx = 710,
       //untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
       marketTicker = "SPY",
       tickerList = tickerList)
 
-    val serverParams = new StockServerParams(i = 1)
+    val serverParams = new StockServerParams(i = 2)
 
     val engine = StockEngine()
 
@@ -39,13 +40,14 @@ object Run {
       ("regression", null)
     )
 
+    /*
     if (false) {
       // PIO runner
       val evalWorkflow = EvaluationWorkflow(
         "", 
         evalDataParams, 
-        null /* validationParams */,
-        null /* cleanserParams */, 
+        null,  // validationParams 
+        null,  // cleanserParams 
         algoParamsSet, 
         serverParams,
         engine,
@@ -54,6 +56,7 @@ object Run {
       println("Start singlethread runner")
       evalWorkflow.run
     }
+    */
     
     if (true) {
       // PIO runner

@@ -10,15 +10,16 @@ abstract class BaseCleanser[
     -TD <: BaseTrainingData,
     +CD <: BaseCleansedData,
     CP <: BaseCleanserParams: Manifest]
-  extends AbstractCleanser {
+  //extends AbstractCleanser {
+  extends AbstractParameterizedDoer[CP] {
 
-  override def initBase(params: BaseCleanserParams): Unit = {
-    init(params.asInstanceOf[CP])
-  }
+  //override def initBase(params: BaseCleanserParams): Unit = {
+    //init(params.asInstanceOf[CP])
+  //}
 
-  def init(params: CP): Unit
+  //def init(params: CP): Unit
 
-  override def paramsClass() = manifest[CP]
+  //override def paramsClass() = manifest[CP]
 
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
     cleanse(trainingData.asInstanceOf[TD])
@@ -35,27 +36,28 @@ abstract class BaseAlgorithm[
     P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams: Manifest]
-  extends AbstractAlgorithm {
+  //extends AbstractAlgorithm {
+  extends AbstractParameterizedDoer[AP] {
 
   //override def initBase(baseAlgoParams: BaseAlgoParams): Unit = {
   //override 
-  def initBase(baseParams: BaseParams): Unit = {
+  //def initBase(baseParams: BaseParams): Unit = {
     //super.initBase(baseParams)
-    init(baseParams.asInstanceOf[AP])
-  }
+  //  init(baseParams.asInstanceOf[AP])
+  //}
 
-  def init(algoParams: AP): Unit = {}
+  //def init(algoParams: AP): Unit = {}
 
-  override def paramsClass() = manifest[AP]
+  //override def paramsClass() = manifest[AP]
 
-  override def trainBase(cleansedData: BaseCleansedData): BaseModel =
+  def trainBase(cleansedData: BaseCleansedData): BaseModel =
     train(cleansedData.asInstanceOf[CD])
 
   //def trainSpark[CD <: BaseCleansedData](cleansedData: CD)
 
   def train(cleansedData: CD): M
 
-  override def predictSeqBase(baseModel: BaseModel,
+  def predictSeqBase(baseModel: BaseModel,
     validationSeq: BaseValidationSeq): BasePredictionSeq = {
 
     val input: Seq[(F, BaseActual)] = validationSeq
@@ -103,14 +105,17 @@ abstract class BaseServer[
     -F <: BaseFeature,
     P <: BasePrediction,
     SP <: BaseServerParams: Manifest]
-    extends AbstractServer {
+    //extends AbstractServer {
+  extends AbstractParameterizedDoer[SP] {
 
+  /*
   override def initBase(baseServerParams: BaseServerParams): Unit =
     init(baseServerParams.asInstanceOf[SP])
 
   override def paramsClass() = manifest[SP]
 
   def init(serverParams: SP): Unit = {}
+  */
 
   def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
     : BasePredictionSeq = {
@@ -155,9 +160,9 @@ class BaseEngine[
         Class[_ <:
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     val serverBaseClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
-  extends AbstractEngine(
-    cleanserBaseClass, algorithmBaseClassMap, serverBaseClass) {
-  
+  //extends AbstractEngine(
+  //  cleanserBaseClass, algorithmBaseClassMap, serverBaseClass) {
+  { 
   
   
   

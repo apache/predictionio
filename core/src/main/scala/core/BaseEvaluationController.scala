@@ -12,21 +12,23 @@ abstract class BaseDataPreparator[
     TD <: BaseTrainingData,
     F <: BaseFeature,
     A <: BaseActual]
-    extends AbstractDataPreparator {
+    //extends AbstractDataPreparator {
+  extends AbstractParameterizedDoer[EDP] {
 
-  override def paramsClass() = manifest[EDP]
+  //override def paramsClass() = manifest[EDP]
+  def init(params: EDP): Unit = {}
 
-  override def getParamsSetBase(params: BaseEvaluationDataParams)
+  def getParamsSetBase(params: BaseEvaluationDataParams)
   : Seq[(TDP, VDP)] = getParamsSet(params.asInstanceOf[EDP])
 
   def getParamsSet(params: EDP): Seq[(TDP, VDP)]
 
-  override def prepareTrainingBase(params: BaseTrainingDataParams): TD
+  def prepareTrainingBase(params: BaseTrainingDataParams): TD
     = prepareTraining(params.asInstanceOf[TDP])
 
   def prepareTraining(params: TDP): TD
 
-  override def prepareValidationBase(params: BaseValidationDataParams)
+  def prepareValidationBase(params: BaseValidationDataParams)
     : BaseValidationSeq = {
     val data = prepareValidation(params.asInstanceOf[VDP])
     new ValidationSeq[F, A](data = data)
@@ -51,16 +53,19 @@ abstract class BaseValidator[
     VU <: BaseValidationUnit,
     VR <: BaseValidationResults,
     CVR <: BaseCrossValidationResults]
-    extends AbstractValidator {
+  extends AbstractParameterizedDoer[VP] {
+    //extends AbstractValidator {
 
+  /*
   override def initBase(params: BaseValidationParams): Unit =
     init(params.asInstanceOf[VP])
 
   def init(params: VP): Unit = {}
 
   override def paramsClass() = manifest[VP]
+  */
 
-  override def validateSeq(predictionSeq: BasePredictionSeq)
+  def validateSeq(predictionSeq: BasePredictionSeq)
     : BaseValidationUnitSeq = {
     val input: Seq[(F, P, A)] = predictionSeq
       .asInstanceOf[PredictionSeq[F, P, A]].data
@@ -80,7 +85,6 @@ abstract class BaseValidator[
 
   def validate(feature: F, predicted: P, actual: A): VU
 
-  override 
   def validateSet(
     trainingDataParams: BaseTrainingDataParams,
     validationDataParams: BaseValidationDataParams,
@@ -112,7 +116,6 @@ abstract class BaseValidator[
     validationDataParams: VDP,
     validationUnits: Seq[VU]): VR
 
-  override
   def crossValidateBase(validationParamsResultsSeq: Seq[BaseValidationParamsResults])
   : BaseCrossValidationResults = {
     val input = validationParamsResultsSeq
@@ -157,5 +160,5 @@ class BaseEvaluator[
   val dataPreparatorBaseClass
     : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
   val validatorBaseClass
-    : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]])
-  extends AbstractEvaluator(dataPreparatorBaseClass, validatorBaseClass) {}
+    : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]]) {}
+  //extends AbstractEvaluator(dataPreparatorBaseClass, validatorBaseClass) {}
