@@ -26,13 +26,16 @@ abstract class BaseDataPreparator[
 
   def prepareTraining(params: TDP): TD
 
+  /*
+  // Obsolete workflow scheduler code
   def prepareValidationBase(params: BaseValidationDataParams)
     : BaseValidationSeq = {
     val data = prepareValidation(params.asInstanceOf[VDP])
     new ValidationSeq[F, A](data = data)
   }
+  */
 
-  def prepareValidationSpark(params: BaseValidationDataParams)
+  def prepareValidationBase(params: BaseValidationDataParams)
   : Seq[(F, A)] = {
     prepareValidation(params.asInstanceOf[VDP])
   }
@@ -61,16 +64,26 @@ abstract class BaseValidator[
     return new ValidationUnitSeq(data = output)
   }
 
-  def validateSpark(input: (BaseFeature, BasePrediction, BaseActual))
+  def validateBase(input: (BaseFeature, BasePrediction, BaseActual))
+    : BaseValidationUnit = {
+    validateBase(input._1, input._2, input._3)
+  }
+  
+  def validateBase(
+      feature: BaseFeature, 
+      prediction: BasePrediction, 
+      actual: BaseActual)
     : BaseValidationUnit = {
     validate(
-      input._1.asInstanceOf[F],
-      input._2.asInstanceOf[P],
-      input._3.asInstanceOf[A])
+      feature.asInstanceOf[F],
+      prediction.asInstanceOf[P],
+      actual.asInstanceOf[A])
   }
 
   def validate(feature: F, predicted: P, actual: A): VU
 
+  /*
+  // obsolete code
   def validateSet(
     trainingDataParams: BaseTrainingDataParams,
     validationDataParams: BaseValidationDataParams,
@@ -83,18 +96,16 @@ abstract class BaseValidator[
 
     return new ValidationParamsResults(tdp, vdp, results)
   }
+  */
 
-  def validateSetSpark(
-    input: (
-      (BaseTrainingDataParams, BaseValidationDataParams),
-      Iterable[BaseValidationUnit]))
-    : ((BaseTrainingDataParams, BaseValidationDataParams),
-      BaseValidationResults) = {
-    val results = validateSet(
-      input._1._1.asInstanceOf[TDP],
-      input._1._2.asInstanceOf[VDP],
-      input._2.map(_.asInstanceOf[VU]).toSeq)
-    (input._1, results)
+  def validateSetBase(
+    trainingDataParams: BaseTrainingDataParams,
+    validationDataParams: BaseValidationDataParams,
+    validationUnits: Seq[BaseValidationUnit]): BaseValidationResults = {
+    validateSet(
+      trainingDataParams.asInstanceOf[TDP],
+      validationDataParams.asInstanceOf[VDP],
+      validationUnits.map(_.asInstanceOf[VU]))
   }
 
   def validateSet(
@@ -102,6 +113,8 @@ abstract class BaseValidator[
     validationDataParams: VDP,
     validationUnits: Seq[VU]): VR
 
+  /*
+  // Obsolete
   def crossValidateBase(validationParamsResultsSeq: Seq[BaseValidationParamsResults])
   : BaseCrossValidationResults = {
     val input = validationParamsResultsSeq
@@ -110,22 +123,16 @@ abstract class BaseValidator[
     
     crossValidate(input)
   }
+  */
 
-  def crossValidateSpark(
-    input: Array[
-    (Int, ((BaseTrainingDataParams, BaseValidationDataParams),
-      BaseValidationResults))]): BaseCrossValidationResults = {
-    // maybe sort them.
-    val data = input
-      .map(e => (e._2._1._1, e._2._1._2, e._2._2))
-      .map(e => (
-        e._1.asInstanceOf[TDP],
-        e._2.asInstanceOf[VDP],
-        e._3.asInstanceOf[VR]))
-
-    crossValidate(data)
+  def crossValidateBase(
+    input: Seq[(BaseTrainingDataParams, BaseValidationDataParams,
+      BaseValidationResults)]): BaseCrossValidationResults = {
+    crossValidate(input.map(e => (
+      e._1.asInstanceOf[TDP],
+      e._2.asInstanceOf[VDP],
+      e._3.asInstanceOf[VR])))
   }
-
 
   def crossValidate(validateResultsSeq: Seq[(TDP, VDP, VR)]): CVR
 }

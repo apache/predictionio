@@ -47,13 +47,23 @@ object SparkWorkflow {
     _ <: BaseFeature, 
     _ <: BasePrediction, 
     _ <: BaseServerParams]
+  type BValidator = BaseValidator[
+    _ <: BaseValidationParams,
+    _ <: BaseTrainingDataParams,
+    _ <: BaseValidationDataParams,
+    _ <: BaseFeature,
+    _ <: BasePrediction,
+    _ <: BaseActual,
+    _ <: BaseValidationUnit,
+    _ <: BaseValidationResults,
+    _ <: BaseCrossValidationResults]
 
-  def onePassPredictFunction(
-    algos: Array[BAlgorithm],
-    server: BServer,
-    input: (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
-  : Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
-    val modelIter = input._1
+  class AlgoServerWrapper(val algos: Array[BAlgorithm], val server: BServer) 
+  extends Serializable {
+    def onePassPredict(
+      input: (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
+    : Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
+      val modelIter = input._1
       val featureActualIter = input._2
 
       val models = modelIter.toSeq.sortBy(_._1).map(_._2) 
@@ -65,7 +75,34 @@ object SparkWorkflow {
         val prediction = server.combineBase(feature, predictions)
         (feature, prediction, actual)
       }}
+    }
   }
+
+  class ValidatorWrapper(val validator: BValidator) extends Serializable {
+    //def validateSetFunction(
+    def validateSet(
+      //validator: BValidator,
+      input: ((BaseTrainingDataParams, BaseValidationDataParams),
+        Iterable[BaseValidationUnit]))
+      : ((BaseTrainingDataParams, BaseValidationDataParams), 
+        BaseValidationResults) = {
+      val results = validator.validateSetBase(
+        input._1._1, input._1._2, input._2.toSeq)
+      (input._1, results)
+    }
+  
+    //def crossValidateFunction(
+      //validator: BValidator,
+    def crossValidate(
+      input: Array[
+        ((BaseTrainingDataParams, BaseValidationDataParams), BaseValidationResults)
+      ]): BaseCrossValidationResults = {
+      // maybe sort them.
+      val data = input.map(e => (e._1._1, e._1._2, e._2))
+      validator.crossValidateBase(data)
+    }
+  }
+
 
   def run[
       EDP <: BaseEvaluationDataParams : Manifest,
@@ -137,7 +174,7 @@ object SparkWorkflow {
 
     // Prepare Validation Data
     val validationDataMap: RDD[(EI, (BaseFeature, BaseActual))] =
-      validationParamsMap.flatMapValues(dataPrep.prepareValidationSpark)
+      validationParamsMap.flatMapValues(dataPrep.prepareValidationBase)
 
     if (verbose) { 
       validationDataMap.collect.foreach(println)
@@ -196,12 +233,14 @@ object SparkWorkflow {
     server.initBase(serverParams)
 
     // Partial function for the one pass wrapper
-    val onePassPrediction = onePassPredictFunction(
-      algoInstanceList, server,
-      _:  (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
+    //val onePassPrediction = onePassPredictFunction(
+    //  algoInstanceList, server,
+    //  _:  (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
+
+    val onePassWrapper = new AlgoServerWrapper(algoInstanceList, server)
 
     val predictionMap: RDD[(EI, (BaseFeature, BasePrediction, BaseActual))] =
-      modelFeatureGroupedMap.flatMapValues(onePassPrediction)
+      modelFeatureGroupedMap.flatMapValues(onePassWrapper.onePassPredict)
 
     if (verbose) {
       predictionMap.collect.foreach{ case(ei, fpa) => {
@@ -213,8 +252,12 @@ object SparkWorkflow {
     val validator = baseEvaluator.validatorClass.newInstance
     validator.initBase(validationParams)
 
+    val validatorWrapper = new ValidatorWrapper(validator)
+
     val validationUnitMap: RDD[(Int, BaseValidationUnit)]
-      = predictionMap.mapValues(validator.validateSpark)
+      //= predictionMap.mapValues(validator.validateSpark)
+      = predictionMap.mapValues(validator.validateBase)
+      //= predictionMap.mapValues(validateSetFunction)
 
     if (verbose) {
       validationUnitMap.collect.foreach{ case(i, e) => {
@@ -228,12 +271,17 @@ object SparkWorkflow {
       .groupByKey
       .join(paramsMap)
       .mapValues(_.swap)
+    
+    //val validateSetFunc = validateSetFunction(
+    //  validator, 
+    //  _: ((BaseTrainingDataParams, BaseValidationDataParams),
+    //  Iterable[BaseValidationUnit]))
 
     val validationSetMap
     : RDD[(Int, 
       ((BaseTrainingDataParams, BaseValidationDataParams), 
         BaseValidationResults))]
-      = validationParamsUnitMap.mapValues(validator.validateSetSpark)
+      = validationParamsUnitMap.mapValues(validatorWrapper.validateSet)
 
     if (verbose) {
       validationSetMap.collect.foreach{ case(i, e) => {
@@ -241,11 +289,19 @@ object SparkWorkflow {
       }}
     }
 
+    //val crossValidateFunc = crossValidateFunction(
+    //  validator,
+    //  _: Array[((BaseTrainingDataParams, BaseValidationDataParams), 
+    //    BaseValidationResults)])
+
     val crossValidationResults: RDD[BaseCrossValidationResults] =
       validationSetMap
+      .values
       .coalesce(numPartitions=1)
       .glom()
-      .map(validator.crossValidateSpark)
+      //.map(validator.crossValidateSpark)
+      //.map(crossValidateFunc)
+      .map(validatorWrapper.crossValidate)
 
     crossValidationResults.collect.foreach{ println }
   }
