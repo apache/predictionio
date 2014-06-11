@@ -1,13 +1,5 @@
 package io.prediction.workflow
 
-/*
-import io.prediction.engines.stock.LocalFileStockEvaluator
-import io.prediction.engines.stock.StockEvaluator
-import io.prediction.engines.stock.EvaluationDataParams
-import io.prediction.engines.stock.RandomAlgoParams
-import io.prediction.engines.stock.StockEngine
-*/
-
 import scala.language.existentials
 
 import io.prediction.core.BaseEvaluator
@@ -15,8 +7,6 @@ import io.prediction.core.BaseEngine
 
 import io.prediction.BaseEvaluationDataParams
 
-
-//import io.prediction.core.AbstractDataPreparator
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -36,7 +26,6 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.Manifest
 
-//import org.saddle._
 import com.twitter.chill.Externalizer
 
 
@@ -100,7 +89,6 @@ object SparkWorkflow {
     cleanserParams: BaseCleanserParams,
     algoParamsList: Seq[(String, BaseAlgoParams)],
     serverParams: BaseServerParams,
-    //baseEngine: BaseEngine[TD,CD,F,P],
     baseEngine: BaseEngine[TD1,CD,F1,P1],
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
@@ -116,7 +104,7 @@ object SparkWorkflow {
 
     val numPartitions = 8
     
-    val dataPrep = baseEvaluator.dataPreparatorBaseClass.newInstance
+    val dataPrep = baseEvaluator.dataPreparatorClass.newInstance
 
     val localParamsSet = dataPrep
       .getParamsSetBase(evalDataParams)
@@ -155,9 +143,8 @@ object SparkWorkflow {
       validationDataMap.collect.foreach(println)
     }
 
-
     // Cleanse Data
-    val cleanser = baseEngine.cleanserBaseClass.newInstance
+    val cleanser = baseEngine.cleanserClass.newInstance
     cleanser.initBase(cleanserParams) 
 
     val cleansedMap: RDD[(EI, BaseCleansedData)] = 
@@ -174,7 +161,7 @@ object SparkWorkflow {
     val algoInstanceList: Array[BAlgorithm] = algoParamsList
       .map{ e => {
         val (algoName, algoParams) = e
-        val algo = baseEngine.algorithmBaseClassMap(algoName).newInstance
+        val algo = baseEngine.algorithmClassMap(algoName).newInstance
         algo.initBase(algoParams)
         algo    
       }}
@@ -205,7 +192,7 @@ object SparkWorkflow {
         (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
       ] = modelMap.cogroup(validationDataMap)
  
-    val server = baseEngine.serverBaseClass.newInstance
+    val server = baseEngine.serverClass.newInstance
     server.initBase(serverParams)
 
     // Partial function for the one pass wrapper
@@ -223,7 +210,7 @@ object SparkWorkflow {
     }
 
     // Validation
-    val validator = baseEvaluator.validatorBaseClass.newInstance
+    val validator = baseEvaluator.validatorClass.newInstance
     validator.initBase(validationParams)
 
     val validationUnitMap: RDD[(Int, BaseValidationUnit)]
@@ -262,6 +249,4 @@ object SparkWorkflow {
 
     crossValidationResults.collect.foreach{ println }
   }
-
 }
-

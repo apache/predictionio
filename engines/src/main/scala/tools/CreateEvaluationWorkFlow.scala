@@ -133,19 +133,19 @@ object CreateEvaluationWorkFlow extends Logging {
     // Params
     val dataPrepParams = getParams(
       jsonDir, dataPrepJsonPath,
-      evaluator.dataPreparatorBaseClass.newInstance.paramsClass)
+      evaluator.dataPreparatorClass.newInstance.paramsClass)
     
     val validatorParams = getParams(
       jsonDir, validatorJsonPath,
-      evaluator.validatorBaseClass.newInstance.paramsClass)
+      evaluator.validatorClass.newInstance.paramsClass)
 
     val cleanserParams = getParams(
       jsonDir, cleanserJsonPath,
-      engine.cleanserBaseClass.newInstance.paramsClass)
+      engine.cleanserClass.newInstance.paramsClass)
     
     val serverParams = getParams(
       jsonDir, serverJsonPath,
-      engine.serverBaseClass.newInstance.paramsClass)
+      engine.serverClass.newInstance.paramsClass)
 
     // AlgoParams require special handling as it is a Map.
     val algoString = Source.fromFile(jsonDir + algoJsonPath).mkString
@@ -154,7 +154,7 @@ object CreateEvaluationWorkFlow extends Logging {
     var algoJsonSeq = algoJson.extract[Seq[AlgoParams]]
 
     val invalidAlgoIds = algoJsonSeq.filter { ap => 
-      !engine.algorithmBaseClassMap.contains(ap.name)
+      !engine.algorithmClassMap.contains(ap.name)
     }
 
     if (!invalidAlgoIds.isEmpty) {
@@ -165,7 +165,7 @@ object CreateEvaluationWorkFlow extends Logging {
     val algoParamSet = algoJsonSeq
       .map{ ap => 
         val p = Extraction.extract(ap.params)(formats,
-          engine.algorithmBaseClassMap(ap.name).newInstance.paramsClass)
+          engine.algorithmClassMap(ap.name).newInstance.paramsClass)
         (ap.name, p)//.asInstanceOf[BaseAlgoParams])
       }
 

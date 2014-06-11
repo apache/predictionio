@@ -1,6 +1,5 @@
 package io.prediction.core
 
-//import scala.collection.Iterable
 import scala.reflect.Manifest
 
 // FIXME(yipjustin). I am being lazy...
@@ -10,16 +9,7 @@ abstract class BaseCleanser[
     -TD <: BaseTrainingData,
     +CD <: BaseCleansedData,
     CP <: BaseCleanserParams: Manifest]
-  //extends AbstractCleanser {
   extends AbstractParameterizedDoer[CP] {
-
-  //override def initBase(params: BaseCleanserParams): Unit = {
-    //init(params.asInstanceOf[CP])
-  //}
-
-  //def init(params: CP): Unit
-
-  //override def paramsClass() = manifest[CP]
 
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
     cleanse(trainingData.asInstanceOf[TD])
@@ -36,24 +26,10 @@ abstract class BaseAlgorithm[
     P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams: Manifest]
-  //extends AbstractAlgorithm {
   extends AbstractParameterizedDoer[AP] {
-
-  //override def initBase(baseAlgoParams: BaseAlgoParams): Unit = {
-  //override 
-  //def initBase(baseParams: BaseParams): Unit = {
-    //super.initBase(baseParams)
-  //  init(baseParams.asInstanceOf[AP])
-  //}
-
-  //def init(algoParams: AP): Unit = {}
-
-  //override def paramsClass() = manifest[AP]
 
   def trainBase(cleansedData: BaseCleansedData): BaseModel =
     train(cleansedData.asInstanceOf[CD])
-
-  //def trainSpark[CD <: BaseCleansedData](cleansedData: CD)
 
   def train(cleansedData: CD): M
 
@@ -72,18 +48,13 @@ abstract class BaseAlgorithm[
     new PredictionSeq[F, P, BaseActual](data = output)
   }
 
-  //def predictSpark[M <: BaseModel, F <: BaseFeature](
-  //def predictSpark(
   def predictSpark(
     input: (Iterable[BaseModel], Iterable[(BaseFeature, BaseActual)])
     ): Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
     val model: M = input._1.head.asInstanceOf[M]
 
     val validationSeq = input._2.map{ case(f, a) => {
-      val ff = f.asInstanceOf[F]
-      //println(f)
-      //val ff = f
-      (f, predict(model, ff), a)
+      (f, predict(model, f.asInstanceOf[F]), a)
     }}
     validationSeq
   }
@@ -105,17 +76,7 @@ abstract class BaseServer[
     -F <: BaseFeature,
     P <: BasePrediction,
     SP <: BaseServerParams: Manifest]
-    //extends AbstractServer {
   extends AbstractParameterizedDoer[SP] {
-
-  /*
-  override def initBase(baseServerParams: BaseServerParams): Unit =
-    init(baseServerParams.asInstanceOf[SP])
-
-  override def paramsClass() = manifest[SP]
-
-  def init(serverParams: SP): Unit = {}
-  */
 
   def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
     : BasePredictionSeq = {
@@ -153,17 +114,10 @@ class BaseEngine[
     CD <: BaseCleansedData,
     F <: BaseFeature,
     P <: BasePrediction](
-    val cleanserBaseClass
+    val cleanserClass
       : Class[_ <: BaseCleanser[TD, CD, _ <: BaseCleanserParams]],
-    val algorithmBaseClassMap
+    val algorithmClassMap
       : Map[String,
         Class[_ <:
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
-    val serverBaseClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
-  //extends AbstractEngine(
-  //  cleanserBaseClass, algorithmBaseClassMap, serverBaseClass) {
-  { 
-  
-  
-  
-}
+    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]]) {}

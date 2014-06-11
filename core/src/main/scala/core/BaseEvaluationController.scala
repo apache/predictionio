@@ -12,10 +12,8 @@ abstract class BaseDataPreparator[
     TD <: BaseTrainingData,
     F <: BaseFeature,
     A <: BaseActual]
-    //extends AbstractDataPreparator {
   extends AbstractParameterizedDoer[EDP] {
 
-  //override def paramsClass() = manifest[EDP]
   def init(params: EDP): Unit = {}
 
   def getParamsSetBase(params: BaseEvaluationDataParams)
@@ -54,16 +52,6 @@ abstract class BaseValidator[
     VR <: BaseValidationResults,
     CVR <: BaseCrossValidationResults]
   extends AbstractParameterizedDoer[VP] {
-    //extends AbstractValidator {
-
-  /*
-  override def initBase(params: BaseValidationParams): Unit =
-    init(params.asInstanceOf[VP])
-
-  def init(params: VP): Unit = {}
-
-  override def paramsClass() = manifest[VP]
-  */
 
   def validateSeq(predictionSeq: BasePredictionSeq)
     : BaseValidationUnitSeq = {
@@ -73,8 +61,6 @@ abstract class BaseValidator[
     return new ValidationUnitSeq(data = output)
   }
 
-  //def validateSpark(feature: BaseFeature, predicted: BasePrediction,
-  //  actual: BaseActual): BaseValidationUnit
   def validateSpark(input: (BaseFeature, BasePrediction, BaseActual))
     : BaseValidationUnit = {
     validate(
@@ -157,8 +143,7 @@ class BaseEvaluator[
     VU <: BaseValidationUnit,
     VR <: BaseValidationResults,
     CVR <: BaseCrossValidationResults](
-  val dataPreparatorBaseClass
+  val dataPreparatorClass
     : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
-  val validatorBaseClass
+  val validatorClass
     : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]]) {}
-  //extends AbstractEvaluator(dataPreparatorBaseClass, validatorBaseClass) {}
