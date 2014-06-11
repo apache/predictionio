@@ -28,11 +28,6 @@ import scala.reflect.Manifest
 
 import com.twitter.chill.Externalizer
 
-
-
-
-
-
 object SparkWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
@@ -79,9 +74,7 @@ object SparkWorkflow {
   }
 
   class ValidatorWrapper(val validator: BValidator) extends Serializable {
-    //def validateSetFunction(
     def validateSet(
-      //validator: BValidator,
       input: ((BaseTrainingDataParams, BaseValidationDataParams),
         Iterable[BaseValidationUnit]))
       : ((BaseTrainingDataParams, BaseValidationDataParams), 
@@ -91,8 +84,6 @@ object SparkWorkflow {
       (input._1, results)
     }
   
-    //def crossValidateFunction(
-      //validator: BValidator,
     def crossValidate(
       input: Array[
         ((BaseTrainingDataParams, BaseValidationDataParams), BaseValidationResults)
@@ -134,7 +125,7 @@ object SparkWorkflow {
     val verbose = false
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
-    conf.set("spark.local.dir", "/Users/yipjustin/tmp/spark")
+    conf.set("spark.local.dir", "~/tmp/spark")
     conf.set("spark.executor.memory", "8g")
 
     val sc = new SparkContext(conf)
@@ -156,8 +147,10 @@ object SparkWorkflow {
     var validationParamsMap: RDD[(EI, BaseValidationDataParams)] = 
       sc.parallelize(localValidationParamsSet)
 
-    trainingParamsMap = trainingParamsMap.repartition(numPartitions)
-    validationParamsMap = validationParamsMap.repartition(numPartitions)
+    trainingParamsMap = trainingParamsMap
+      .repartition(numPartitions)
+    validationParamsMap = validationParamsMap
+      .repartition(numPartitions)
 
     // ParamsSet
     val paramsMap: 
@@ -175,6 +168,8 @@ object SparkWorkflow {
     // Prepare Validation Data
     val validationDataMap: RDD[(EI, (BaseFeature, BaseActual))] =
       validationParamsMap.flatMapValues(dataPrep.prepareValidationBase)
+
+    validationDataMap.persist
 
     if (verbose) { 
       validationDataMap.collect.foreach(println)
@@ -232,11 +227,6 @@ object SparkWorkflow {
     val server = baseEngine.serverClass.newInstance
     server.initBase(serverParams)
 
-    // Partial function for the one pass wrapper
-    //val onePassPrediction = onePassPredictFunction(
-    //  algoInstanceList, server,
-    //  _:  (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
-
     val onePassWrapper = new AlgoServerWrapper(algoInstanceList, server)
 
     val predictionMap: RDD[(EI, (BaseFeature, BasePrediction, BaseActual))] =
@@ -255,9 +245,7 @@ object SparkWorkflow {
     val validatorWrapper = new ValidatorWrapper(validator)
 
     val validationUnitMap: RDD[(Int, BaseValidationUnit)]
-      //= predictionMap.mapValues(validator.validateSpark)
       = predictionMap.mapValues(validator.validateBase)
-      //= predictionMap.mapValues(validateSetFunction)
 
     if (verbose) {
       validationUnitMap.collect.foreach{ case(i, e) => {
@@ -272,11 +260,6 @@ object SparkWorkflow {
       .join(paramsMap)
       .mapValues(_.swap)
     
-    //val validateSetFunc = validateSetFunction(
-    //  validator, 
-    //  _: ((BaseTrainingDataParams, BaseValidationDataParams),
-    //  Iterable[BaseValidationUnit]))
-
     val validationSetMap
     : RDD[(Int, 
       ((BaseTrainingDataParams, BaseValidationDataParams), 
@@ -289,18 +272,11 @@ object SparkWorkflow {
       }}
     }
 
-    //val crossValidateFunc = crossValidateFunction(
-    //  validator,
-    //  _: Array[((BaseTrainingDataParams, BaseValidationDataParams), 
-    //    BaseValidationResults)])
-
     val crossValidationResults: RDD[BaseCrossValidationResults] =
       validationSetMap
       .values
       .coalesce(numPartitions=1)
       .glom()
-      //.map(validator.crossValidateSpark)
-      //.map(crossValidateFunc)
       .map(validatorWrapper.crossValidate)
 
     crossValidationResults.collect.foreach{ println }
