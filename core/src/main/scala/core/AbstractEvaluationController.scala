@@ -9,7 +9,7 @@ trait AbstractDataPreparator {
   // Data Preparation methods
   def getParamsSetBase(params: BaseEvaluationDataParams)
     : Seq[(BaseTrainingDataParams, BaseValidationDataParams)]
-  
+
   def paramsClass(): Manifest[_ <: BaseEvaluationDataParams]
 
   def prepareTrainingBase(params: BaseTrainingDataParams)
@@ -27,6 +27,16 @@ trait AbstractValidator {
   def paramsClass(): Manifest[_ <: BaseValidationParams]
 
   def validateSeq(predictionSeq: BasePredictionSeq): BaseValidationUnitSeq
+
+  def validateBase(
+    feature: BaseFeature,
+    predicted: BasePrediction,
+    actual: BaseActual): BaseValidationUnit
+
+  def validateSetBase(
+    trainingDataParams: BaseTrainingDataParams,
+    validationDataParams: BaseValidationDataParams,
+    validationUnits: Seq[BaseValidationUnit]) : BaseValidationResults
 
   def validateSet(
     trainingDataParams: BaseTrainingDataParams,

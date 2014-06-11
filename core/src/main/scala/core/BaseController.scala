@@ -63,6 +63,13 @@ abstract class BaseAlgorithm[
     new PredictionSeq[F, P, BaseActual](data = output)
   }
 
+  override def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
+    : BasePrediction = {
+    predict(
+      baseModel.asInstanceOf[M],
+      baseFeature.asInstanceOf[F])
+  }
+
   def predict(model: M, feature: F): P
 
 }
@@ -97,6 +104,15 @@ abstract class BaseServer[
     }}
     new PredictionSeq[F, P, BaseActual](data = output)
   }
+
+  def combineBase(
+    baseFeature: BaseFeature,
+    basePredictionSeq: Seq[BasePrediction]) : BasePrediction = {
+      combine(
+        baseFeature.asInstanceOf[F],
+        basePredictionSeq.asInstanceOf[Seq[P]]
+      )
+    }
 
   def combine(feature: F, predictions: Seq[P]): P
 

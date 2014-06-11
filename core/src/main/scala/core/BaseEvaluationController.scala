@@ -63,9 +63,20 @@ abstract class BaseValidator[
     return new ValidationUnitSeq(data = output)
   }
 
+  override def validateBase(
+    feature: BaseFeature,
+    predicted: BasePrediction,
+    actual: BaseActual): BaseValidationUnit = {
+      validate(
+        feature.asInstanceOf[F],
+        predicted.asInstanceOf[P],
+        actual.asInstanceOf[A]
+      )
+    }
+
   def validate(feature: F, predicted: P, actual: A): VU
 
-  override 
+  override
   def validateSet(
     trainingDataParams: BaseTrainingDataParams,
     validationDataParams: BaseValidationDataParams,
@@ -79,8 +90,19 @@ abstract class BaseValidator[
     return new ValidationParamsResults(tdp, vdp, results)
   }
 
+  override def validateSetBase(
+    trainingDataParams: BaseTrainingDataParams,
+    validationDataParams: BaseValidationDataParams,
+    validationUnits: Seq[BaseValidationUnit]) : BaseValidationResults = {
+      validateSet(
+        trainingDataParams.asInstanceOf[TDP],
+        validationDataParams.asInstanceOf[VDP],
+        validationUnits.asInstanceOf[Seq[VU]]
+      )
+    }
+
   def validateSet(
-    trainingDataParams: TDP, 
+    trainingDataParams: TDP,
     validationDataParams: VDP,
     validationUnits: Seq[VU]): VR
 
@@ -90,7 +112,7 @@ abstract class BaseValidator[
     val input = validationParamsResultsSeq
       .map(_.asInstanceOf[ValidationParamsResults[TDP, VDP, VR]])
       .map(e => (e.trainingDataParams, e.validationDataParams, e.data))
-    
+
     crossValidate(input)
   }
 

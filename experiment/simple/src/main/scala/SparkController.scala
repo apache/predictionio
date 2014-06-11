@@ -1,38 +1,40 @@
-package io.prediction.core.BaseDataPreparator
+package io.prediction
 
-trait AbstractSparkDataPreparator {
+import org.apache.spark.rdd.RDD
 
+trait SparkCleanser[
+    -TD <: BaseTrainingData,
+    +CD <: BaseCleansedData,
+    CP <: BaseCleanserParams]
+    extends Cleanser[TD, CD, CP] {
 }
 
-trait SparkDataPreparator[
-  VDP <: BaseValidationDataParams,
-  F <: BaseFeature,
-  A <: BaseActual] {
-
-  def prepareValidationRDDBase
-  def prepareValidationRDD(params: VDP): RDD[(F, A)]
-
-}
-
-trait SparkValidator[
-    VP <: BaseValidationParams,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+trait SparkAlgorithm[
+    -CD <: BaseCleansedData,
     F <: BaseFeature,
     P <: BasePrediction,
-    A <: BaseActual,
-    VU <: BaseValidationUnit,
-    VR <: BaseValidationResults,
-    CVR <: BaseCrossValidationResults]
-    extends BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] {
-  def init(params: VP): Unit
+    M <: BaseModel,
+    AP <: BaseAlgoParams]
+    extends Algorithm[CD, F, P, M, AP] {
 
-  def validate(feature: F, predicted: P, actual: A): VU
+  def predictBatch(model: M, feature: RDD[(Long, F)]): RDD[(Long, P)]
 
-  def validateSet(
-    trainingDataParams: TDP,
-    validationDataParams: VDP,
-    validationUnits: Seq[VU]): VR = EmptyData()
+}
 
-  def crossValidate(validationResultsSeq: Seq[(TDP, VDP, VR)]): CVR
+
+trait SparkServer[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
+    extends Server[F, P, SP] {
+
+}
+
+
+trait SparkDataPreparator[
+    EDP <: BaseEvaluationDataParams,
+    TDP <: BaseTrainingDataParams,
+    VDP <: BaseValidationDataParams,
+    TD <: BaseTrainingData,
+    F <: BaseFeature,
+    A <: BaseActual]
+    extends DataPreparator[EDP, TDP, VDP, TD, F, A] {
+
 }

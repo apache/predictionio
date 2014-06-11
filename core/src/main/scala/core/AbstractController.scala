@@ -48,6 +48,9 @@ trait AbstractAlgorithm {
   def predictSeqBase(baseModel: BaseModel, validationSeq: BaseValidationSeq)
     : BasePredictionSeq
 
+  def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
+    : BasePrediction
+
 }
 
 trait AbstractServer {
@@ -60,6 +63,10 @@ trait AbstractServer {
   // In the batch model, things are run in batch therefore we have seq of seq.
   def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
     : BasePredictionSeq
+
+  def combineBase(
+    baseFeature: BaseFeature,
+    basePredictionSeq: Seq[BasePrediction]) : BasePrediction
 }
 
 class AbstractEngine(

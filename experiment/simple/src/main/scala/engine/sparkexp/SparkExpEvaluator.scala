@@ -1,7 +1,15 @@
 package io.prediction.engines.sparkexp
 
+import io.prediction.core.AbstractEvaluator
+import io.prediction.core.BaseEvaluator
+import io.prediction.SparkDataPreparator
+import io.prediction.EvaluatorFactory
+import io.prediction.Validator
+
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import io.prediction.core.
 
 object SparkExpEvaluator extends EvaluatorFactory {
 
@@ -12,7 +20,7 @@ object SparkExpEvaluator extends EvaluatorFactory {
   }
 }
 
-class SparkExpDataPreparator(implicit val sc: SparkContext)
+class SparkExpDataPreparator(val sc: SparkContext)
   extends SparkDataPreparator[
     EDP,
     TDP,
@@ -28,7 +36,6 @@ class SparkExpDataPreparator(implicit val sc: SparkContext)
   }
 
   override def prepareTraining(params: TDP): TD = {
-    val rand = new Random(0) // random with seed
     val id = Range(0, 10).map(i => s"id${i}").toList
     val d1 = Range(0, 10).map( d => s"${params.s}d1${d}").toList
     val d2 = Range(0, 10).map( d => s"${params.s}d2${d}").toList
@@ -38,15 +45,15 @@ class SparkExpDataPreparator(implicit val sc: SparkContext)
     )
   }
 
-  override def prepareValidation(params: VDP): RDD[(F, A)] = {
+  override def prepareValidation(params: VDP): Seq[(F, A)] = {
     val faList: Seq[(F,A)] = List( (new F(f="id1"), new A(a="a1")),
       (new F(f="id2"), new A(a="a2")) )
-    sc.parallelize(faList)
+    faList
   }
 }
 
 class SparkExpValidator
-  extends SparkValidator[
+  extends Validator[
     EDP,
     TDP,
     VDP,
@@ -59,7 +66,7 @@ class SparkExpValidator
   ] {
 
   override def validate(feature: F, predicted: P, actual: A): VU = {
-    VU(
+    new VU(
       f = feature.f,
       p = predicted.p,
       a = actual.a,
@@ -67,4 +74,20 @@ class SparkExpValidator
     )
   }
 
+  override def validateSet(
+    trainingDataParams: TDP,
+    validationDataParams: VDP,
+    validationUnits: Seq[VU]): VR = {
+      val res = validationUnits.map{ vu => vu.vu }.reduce(_ + _)
+      new VR(vr = res)
+    }
+
+  override def crossValidate(
+    validationResultsSeq: Seq[(TDP, VDP, VR)]): CVR = {
+      val total = validationResultsSeq.map(_._3.vr).sum.toDouble
+      val size = validationResultsSeq.size
+      new CVR(
+        cvr = total/size
+      )
+  }
 }
