@@ -109,7 +109,7 @@ abstract class BaseValidator[
   }
 
   def validateSet(
-    trainingDataParams: TDP, 
+    trainingDataParams: TDP,
     validationDataParams: VDP,
     validationUnits: Seq[VU]): VR
 
@@ -120,7 +120,7 @@ abstract class BaseValidator[
     val input = validationParamsResultsSeq
       .map(_.asInstanceOf[ValidationParamsResults[TDP, VDP, VR]])
       .map(e => (e.trainingDataParams, e.validationDataParams, e.data))
-    
+
     crossValidate(input)
   }
   */

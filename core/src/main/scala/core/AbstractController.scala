@@ -10,6 +10,5 @@ extends Serializable {
   }
 
   def init(params: P): Unit
-
   def paramsClass() = manifest[P]
 }
