@@ -2,6 +2,7 @@ package io.prediction.engines.itemrank
 
 import io.prediction.core.{ BaseEngine }
 import io.prediction.{ DefaultServer, DefaultCleanser }
+import io.prediction.workflow.SparkWorkflow
 //import io.prediction.workflow.EvaluationWorkflow
 
 import com.github.nscala_time.time.Imports._
@@ -55,11 +56,21 @@ object Runner {
       ("rand", randomAlgoParams)
     )
 
+    SparkWorkflow.run(
+      "Thor",
+      evalParams,
+      evalParams, /* validation */
+      null /* cleanserParams */,
+      knnEngineAlgoParamSet,
+      serverParams,
+      knnEngine,
+      evaluator)
+
     /*
     // Comment by yipjustin. Use SparkWorkflow instead
     val evalWorkflow1 = EvaluationWorkflow(
-      "", evalParams, evalParams, 
-      null,  // cleanserParams 
+      "", evalParams, evalParams,
+      null,  // cleanserParams
       knnEngineAlgoParamSet, serverParams,
       knnEngine, evaluator)
 
