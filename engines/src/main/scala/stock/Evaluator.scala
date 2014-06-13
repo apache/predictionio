@@ -114,24 +114,34 @@ class StockDataPreparator
 
   // getData return Option[Series]. It is None when part of the data is not
   // clean within timeIndex.
-  private def getData(timeIndex: IndexTime, ticker: String) = {
-    val itemTrend = itemTrendsDbGetTicker(ticker)
+  private def getData(itemTrend: ItemTrend, timeIndex: IndexTime,
+    ticker: String): Option[Series[DateTime, Double]] = {
     val (price, active) = getPriceSeriesFromItemTrend(timeIndex, itemTrend)
     val allActive = active.values.foldLeft(true)(_ && _)
     // Return None if the data is not clean enough for training
     (if (allActive) Some(price) else None)
   }
 
+  private def getBatchItemTrend(tickers: Seq[String])
+    : Map[String, ItemTrend] = {
+    StockEvaluator.itemTrendsDb.getByIds(appid, tickers).map{ e => {
+      (e.id, e)
+    }}.toMap
+  }
+
+
   def prepareTraining(params: TrainingDataParams): TrainingData = {
     val timeIndex = getTimeIndex(params.baseDate, params.marketTicker).slice(
       params.untilIdx - params.windowSize, params.untilIdx)
+
+    val tickerTrendMap = getBatchItemTrend(params.tickerList)
+    
     val tickerDataSeq = params.tickerList
-      .map(ticker => (ticker, getData(timeIndex, ticker)))
+      .map(t => (t, getData(tickerTrendMap(t), timeIndex, t)))
       .filter { case (ticker, optData) => !optData.isEmpty }
       .map { case (ticker, optData) => (ticker, optData.get) }
-    //new TrainingData(price = Frame(tickerDataSeq: _*))
     TrainingData(price = Frame(tickerDataSeq: _*))
-    //new TrainingData(boxedPrice = MeatLocker(Frame(tickerDataSeq: _*)))
+
   }
 
   // Generate evaluation data set with target data up to idx (exclusive)
@@ -140,10 +150,12 @@ class StockDataPreparator
   //   visible_data = [3,4,5,6,7]
   //   feature use [4,5,6]
   //   target use [6,7], (as target represents daily return)
-  def prepareOneValidation(idx: Int,
+  def prepareOneValidation(
+    tickerTrendMap: Map[String, ItemTrend],
+    idx: Int,
     baseDate: DateTime,
     marketTicker: String, tickerList: Seq[String]): (Feature, Target) = {
-    val featureWindowSize = 60 // engine-specific param
+    val featureWindowSize = 30 // engine-specific param
 
     val featureFromIdx = idx - 1 - featureWindowSize
     val featureUntilIdx = idx - 1
@@ -153,7 +165,7 @@ class StockDataPreparator
 
     // generate (ticker, feature, target)-tuples
     val data = tickerList
-      .map(ticker => (ticker, getData(timeIndex, ticker)))
+      .map(t => (t, getData(tickerTrendMap(t), timeIndex, t)))
       .filter { case (ticker, optPrice) => !optPrice.isEmpty }
       .map {
         case (ticker, optPrice) => {
@@ -175,8 +187,12 @@ class StockDataPreparator
 
   def prepareValidation(params: ValidationDataParams)
   : Seq[(Feature, Target)] = {
+    val tickerTrendMap = getBatchItemTrend(params.tickerList)
+
     (params.fromIdx until params.untilIdx).map(idx =>
-      prepareOneValidation(idx, params.baseDate,
+      prepareOneValidation(
+        tickerTrendMap,
+        idx, params.baseDate,
         params.marketTicker, params.tickerList)
     ).toSeq
   }
