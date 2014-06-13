@@ -21,22 +21,27 @@ object Run {
     val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
-      untilIdx = 710,
-      //untilIdx = 1200,
+      //untilIdx = 710,
+      untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
       marketTicker = "SPY",
       tickerList = tickerList)
 
-    val serverParams = new StockServerParams(i = 2)
+    //val validationParams = new ValidationParams(pThreshold = 0.01)
+
+    val serverParams = new StockServerParams(i = 0)
 
     val engine = StockEngine()
 
-    val evaluator = StockEvaluator()
+    //val evaluator = StockEvaluator()
+    val evaluator = BackTestingEvaluator()
+
+    val validationParams = new BackTestingParams(0.003, 0.00)
 
     val algoParamsSet = Seq(
-      ("random", new RandomAlgoParams(seed = 1, scale = 0.02)),
-      ("random", new RandomAlgoParams(seed = 2, drift = 1)),
+      //("random", new RandomAlgoParams(seed = 1, scale = 0.02)),
+      //("random", new RandomAlgoParams(seed = 2, drift = 1)),
       ("regression", null)
     )
 
@@ -63,7 +68,7 @@ object Run {
       SparkWorkflow.run(
         "Iron Man", 
         evalDataParams, 
-        null /* validation */, 
+        validationParams /* validation */, 
         null /* cleanserParams */, 
         algoParamsSet, 
         serverParams,

@@ -182,7 +182,9 @@ class StockDataPreparator
 
     val featureData = Frame(data.map(e => (e._1, e._2)): _*)
     val targetData = data.map(e => (e._1, e._3)).toMap
-    return (Feature(data = featureData), new Target(data = targetData))
+    return (
+      Feature(data = featureData), 
+      new Target(data = targetData))
   }
 
   def prepareValidation(params: ValidationDataParams)

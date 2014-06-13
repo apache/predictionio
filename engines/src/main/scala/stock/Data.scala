@@ -69,12 +69,6 @@ class TrainingData(
   }
 }
 
-/*
-class ValidationParams(
-  val pThreshold: Double
-) extends BaseValidationParams;
-*/
-
 object TrainingData {
   def apply(price: Frame[DateTime, String, Double]): TrainingData = {
     return new TrainingData(SaddleWrapper.FromFrame(price))
@@ -112,9 +106,9 @@ object SaddleWrapper {
 class Model(
   val data: Map[String, DenseVector[Double]]) extends BaseModel {}
 
+// This is different from TrainingData. This serves as input for algorithm.
+// Hence, the time series should be shorter than that of TrainingData.
 class Feature(
-  // This is different from TrainingData. This serves as input for algorithm.
-  // Hence, the time series should be shorter than that of TrainingData.
   val input: (Array[DateTime], Array[(String, Array[Double])])
   ) extends BaseFeature {
   
@@ -122,6 +116,8 @@ class Feature(
   val tickerPriceSeq: Array[(String, Array[Double])] = input._2
   @transient lazy val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
   //val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
+
+  def today: DateTime = data.rowIx.last.get
 
   override def toString(): String = {
     val firstDate = data.rowIx.first.get
@@ -133,7 +129,8 @@ class Feature(
 }
 
 object Feature {
-  def apply(data: Frame[DateTime, String, Double]): Feature = {
+  def apply(
+    data: Frame[DateTime, String, Double]): Feature = {
     return new Feature(SaddleWrapper.FromFrame(data))
   }
 }
