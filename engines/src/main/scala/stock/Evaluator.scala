@@ -7,7 +7,6 @@ import io.prediction.PIOSettings
 import io.prediction.DataPreparator
 import io.prediction.Validator
 import io.prediction.EvaluatorFactory
-//import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluator
 import io.prediction.BaseValidationParams
 import io.prediction.BaseValidationResults
@@ -45,59 +44,10 @@ object StockEvaluator extends EvaluatorFactory {
       Target,
       ValidationUnit, 
       ValidationResults, 
-      BaseCrossValidationResults] = {
-    //new StockEvaluator
+      CrossValidationResults] = {
     new BaseEvaluator(
       classOf[StockDataPreparator],
       classOf[StockValidator])
-  }
-}
-
-object LocalFileStockEvaluator extends EvaluatorFactory {
-  override def apply() = {
-    new BaseEvaluator(
-      classOf[LocalFileStockDataPreparator],
-      classOf[StockValidator])
-  }
-}
-
-class LocalFileStockDataPreparator
-    extends DataPreparator[
-        EvaluationDataParams, 
-        TrainingDataParams, 
-        ValidationDataParams,
-        TrainingData, 
-        Feature, 
-        Target] {
-  def getParamsSet(params: EvaluationDataParams)
-  : Seq[(TrainingDataParams, ValidationDataParams)] = {
-    Range(params.fromIdx, params.untilIdx, params.evaluationInterval)
-      .map(idx => {
-        val trainParams = new TrainingDataParams(
-          baseDate = params.baseDate,
-          untilIdx = idx - 1,
-          windowSize = params.trainingWindowSize,
-          marketTicker = params.marketTicker,
-          tickerList = params.tickerList)
-        val validationParams = new ValidationDataParams(
-          baseDate = params.baseDate,
-          fromIdx = idx,
-          untilIdx = math.min(
-            idx + params.evaluationInterval,
-            params.untilIdx),
-          marketTicker = params.marketTicker,
-          tickerList = params.tickerList)
-        (trainParams, validationParams)
-      })
-  }
-
-  def prepareTraining(params: TrainingDataParams): TrainingData = {
-    null
-  }
-
-  def prepareValidation(params: ValidationDataParams)
-  : Seq[(Feature, Target)] = {
-    Seq[(Feature, Target)]()
   }
 }
 
@@ -221,9 +171,6 @@ class StockDataPreparator
     val featureData = Frame(data.map(e => (e._1, e._2)): _*)
     val targetData = data.map(e => (e._1, e._3)).toMap
     return (Feature(data = featureData), new Target(data = targetData))
-    //return (new Feature(
-    //  boxedData = MeatLocker(featureData)), 
-    //  new Target(data = targetData))
   }
 
   def prepareValidation(params: ValidationDataParams)
@@ -246,7 +193,7 @@ class StockValidator
         Target,
         ValidationUnit, 
         ValidationResults, 
-        BaseCrossValidationResults] {
+        CrossValidationResults] {
   def init(params: EmptyParams) = {}
 
   def validate(feature: Feature, predicted: Target, actual: Target)
@@ -262,13 +209,24 @@ class StockValidator
     new ValidationUnit(data = data)
   }
 
-  override 
   def validateSet(
     trainingDataParams: TrainingDataParams,
     validationDataParams: ValidationDataParams,
     validationUnits: Seq[ValidationUnit])
     : ValidationResults = {
-    val results: Seq[(Double, Double)] = validationUnits.map(_.data).flatten
+    new ValidationResults(vuSeq = validationUnits)
+  }
+
+  //override
+  def crossValidate(
+    validationResultsSeq
+      : Seq[(TrainingDataParams, ValidationDataParams, ValidationResults)])
+  : CrossValidationResults = {
+
+    val results: Seq[(Double, Double)] = validationResultsSeq
+      .map(_._3.vuSeq.map(_.data).flatten)
+      .flatten
+
     val pThresholds = Seq(-0.01, -0.003, -0.001, -0.0003,
       0.0, 0.0003, 0.001, 0.003, 0.01)
 
@@ -290,16 +248,6 @@ class StockValidator
       println(s)
       s
     })
-    new ValidationResults(data = output)
-  }
-
-  override
-  def crossValidate(
-    validateResultsSeq
-      : Seq[(TrainingDataParams, ValidationDataParams, ValidationResults)])
-  : BaseCrossValidationResults = {
-    println("Cross Validation")
-    validateResultsSeq.map(e => e._3.data.map(println))
-    null
+    new CrossValidationResults(output.mkString("\n"))
   }
 }

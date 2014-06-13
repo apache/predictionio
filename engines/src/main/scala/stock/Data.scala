@@ -11,7 +11,9 @@ import io.prediction.{
   BaseActual,
   BaseModel,
   BaseValidationUnit,
-  BaseValidationResults
+  BaseValidationResults,
+  BaseValidationParams,
+  BaseCrossValidationResults
 }
 
 import org.saddle._
@@ -66,6 +68,12 @@ class TrainingData(
     s"TrainingData $firstDate $lastDate"
   }
 }
+
+/*
+class ValidationParams(
+  val pThreshold: Double
+) extends BaseValidationParams;
+*/
 
 object TrainingData {
   def apply(price: Frame[DateTime, String, Double]): TrainingData = {
@@ -137,4 +145,13 @@ class ValidationUnit(
   val data: Seq[(Double, Double)]) extends BaseValidationUnit {}
 
 class ValidationResults(
-  val data: Seq[String]) extends BaseValidationResults {}
+  val vuSeq: Seq[ValidationUnit]) extends BaseValidationResults {}
+
+class CrossValidationResults(
+  val s: String) extends BaseCrossValidationResults {
+  override def toString() = s
+}
+
+
+
+
