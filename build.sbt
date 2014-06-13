@@ -27,5 +27,4 @@ lazy val core = (project in file("core"))
 lazy val experiment = project in file("experiment/simple") dependsOn(core)
 
 lazy val engines = (project in file("engines")).
-  dependsOn(core, experiment)
-
+  dependsOn(core)
