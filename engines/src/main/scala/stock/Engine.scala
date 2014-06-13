@@ -6,7 +6,7 @@ import io.prediction.DefaultCleanser
 import io.prediction.EngineFactory
 
 object StockEngine extends EngineFactory {
-  override def apply(): BaseEngine[TrainingData,TrainingData,Feature,Target] = {
+  def apply() = {
     new BaseEngine(
       classOf[DefaultCleanser[TrainingData]],
       Map("random" -> classOf[RandomAlgorithm],

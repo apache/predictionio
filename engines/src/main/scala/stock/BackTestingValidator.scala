@@ -7,22 +7,7 @@ import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
 object BackTestingEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
-  //val config = new Config()
-  //val itemTrendsDb = config.getAppdataItemTrends()
-
-  override def apply()
-  : BaseEvaluator[
-      EvaluationDataParams,
-      BackTestingParams,
-      TrainingDataParams,
-      ValidationDataParams,
-      TrainingData,
-      Feature,
-      Target,
-      Target,
-      DailyResults, 
-      SetResults, 
-      BackTestingResults] = {
+  override def apply() = {
     new BaseEvaluator(
       classOf[StockDataPreparator],
       classOf[BackTestingValidator])

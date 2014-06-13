@@ -23,19 +23,7 @@ object ItemRankEvaluator extends EvaluatorFactory {
   val u2iDb = config.getAppdataU2IActions()
   val itemSetsDb = config.getAppdataItemSets()
 
-  //override def apply(): AbstractEvaluator = {
-  override def apply()
-  : BaseEvaluator[EvalParams,
-      EvalParams,
-      TrainDataPrepParams,
-      ValidationDataPrepParams,
-      TrainingData,
-      Feature,
-      Prediction,
-      Actual,
-      ValidationUnit,
-      EmptyData,
-      EmptyData] = {
+  def apply() = {
     new BaseEvaluator(
       classOf[ItemRankDataPreparator],
       classOf[ItemRankValidator])
