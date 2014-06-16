@@ -122,13 +122,21 @@ class StockDataPreparator
     val timeIndex = getTimeIndex(params.baseDate, params.marketTicker).slice(
       params.untilIdx - params.windowSize, params.untilIdx)
 
-    val tickerTrendMap = getBatchItemTrend(params.tickerList)
+    val allTickers = params.tickerList :+ params.marketTicker
+    println(allTickers)
+
+    //val tickerTrendMap = getBatchItemTrend(params.tickerList)
+    val tickerTrendMap = getBatchItemTrend(allTickers)
     
-    val tickerDataSeq = params.tickerList
+    //val tickerDataSeq = params.tickerList
+    val tickerDataSeq = allTickers
       .map(t => (t, getData(tickerTrendMap(t), timeIndex, t)))
       .filter { case (ticker, optData) => !optData.isEmpty }
       .map { case (ticker, optData) => (ticker, optData.get) }
-    TrainingData(price = Frame(tickerDataSeq: _*))
+    TrainingData(
+      tickers = params.tickerList,
+      mktTicker = params.marketTicker,
+      price = Frame(tickerDataSeq: _*))
 
   }
 

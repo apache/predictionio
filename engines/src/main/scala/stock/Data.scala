@@ -55,6 +55,8 @@ class ValidationDataParams(
   val tickerList: Seq[String]) extends BaseValidationDataParams {}
 
 class TrainingData(
+  val tickers: Seq[String],
+  val mktTicker: String,
   val data: (Array[DateTime], Array[(String, Array[Double])]))
   extends BaseTrainingData {
   val timeIndex: Array[DateTime] = data._1
@@ -70,8 +72,14 @@ class TrainingData(
 }
 
 object TrainingData {
-  def apply(price: Frame[DateTime, String, Double]): TrainingData = {
-    return new TrainingData(SaddleWrapper.FromFrame(price))
+  def apply(
+    tickers: Seq[String],
+    mktTicker: String,
+    price: Frame[DateTime, String, Double]): TrainingData = {
+    return new TrainingData(
+      tickers,
+      mktTicker,
+      SaddleWrapper.FromFrame(price))
   }
 }
 
