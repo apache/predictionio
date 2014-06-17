@@ -25,44 +25,8 @@ import com.github.nscala_time.time.Imports._
 import scala.collection.mutable.ArrayBuffer
 import org.saddle.stats.SeriesRollingStats
 
-object Print {
-  import org.apache.spark.mllib.tree.model._
+import scala.collection.mutable.{ Map => MMap }
 
-  def p(model: DecisionTreeModel)(
-    implicit featureMakerSeq: Seq[FeatureMaker]
-    ): Unit = {
-    println("Print model")
-    p("", model.topNode)
-  }
-
-  def p(prefix: String, node: Node)(
-    implicit featureMakerSeq: Seq[FeatureMaker]
-    ): Unit = {
-    if (node.isLeaf) {
-      val stats = node.stats.get
-      val stdev = math.sqrt(stats.impurity)
-      println(
-        f"${prefix}%-8s " +
-        f"impurity = ${stats.impurity}% 6.4f " +
-        f"predict = ${stats.predict}% 6.4f " +
-        f"stdev = $stdev% 6.4f")
-    } else {
-      val split = node.split.get
-      if (split.featureType == FeatureType.Continuous) {
-        println(f"${prefix}%-8s " + 
-          f"f:${featureMakerSeq(split.feature)}%-8s " +
-          f"v:${split.threshold}% 6.4f" )
-      } else {
-        println(f"${prefix}%-8s " + 
-          f"f:${featureMakerSeq(split.feature)}%-8s " +
-          f"c:${split.categories}" )
-      }
-      println(f"         " + node.stats.get)
-      p(prefix + "L", node.leftNode.get)
-      p(prefix + "R", node.rightNode.get)
-    }
-  }
-}
 
 trait FeatureMaker extends Serializable {
   def categories: Int = 0
@@ -125,7 +89,7 @@ class MktReturnFeature(val d: Int) extends FeatureMaker {
 
 
 object SparkStock {
-  val tickerList = Seq("SPY")
+  val tickerList = Seq("MSFT")
   /*
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",
     "HPQ", "INTC", "NTAP", "CSCO", "ORCL",
@@ -248,9 +212,9 @@ object SparkStock {
       new MAFeature(22),
       new MAReturnFeature(5),
       new MAReturnFeature(22),
-      //new MktReturnFeature(1),
-      //new MktReturnFeature(5),
-      //new MktReturnFeature(22)
+      new MktReturnFeature(1),
+      new MktReturnFeature(5),
+      new MktReturnFeature(22),
       new ReturnFeature(1)
     )
 
@@ -258,11 +222,12 @@ object SparkStock {
       e => makeLabeledPoints(e.tickers, e.price, featureMakerSeq)
     )
 
-    val maxDepth = 4
+    val maxDepth = 5
     val strategy = new Strategy(
       algo = Regression, 
       impurity = Variance, 
       maxDepth = maxDepth,
+      maxBins = 10,
       categoricalFeaturesInfo = featureMakerSeq
         .zipWithIndex
         .filter(_._1.categories >= 1)
@@ -275,9 +240,24 @@ object SparkStock {
 
     println("Data size: " + data.count)
 
-    Print.p(model)(featureMakerSeq)
+    DecisionTreePrinter.p(model)(featureMakerSeq)
 
     // Evaluate model on training examples and compute training error
+    
+    var pCount = MMap[Double, Int]()
+    data.collect.map { point => { 
+      val p = model.predict(point.features)
+      //println(p + " <= " + point.features)
+      if (!pCount.contains(p)) {
+        pCount(p) = 0
+      }
+      pCount(p) += 1
+    }}
+
+    pCount.foreach{ case(k, v) => { println(f"$k% 8.6f $v") }}
+
+    
+
     /*
     val valuesAndPreds = data.map { point =>
       val prediction = model.predict(point.features)
