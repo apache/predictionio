@@ -12,7 +12,7 @@ scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
 
 fork in (ThisBuild, run) := true
 
-javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6",
+javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
 

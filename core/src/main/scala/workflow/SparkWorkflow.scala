@@ -125,7 +125,7 @@ object SparkWorkflow {
     baseEngine: BaseEngine[TD1,CD,F1,P1],
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-    ): (Seq[((BaseTrainingDataParams, BaseValidationDataParams), BaseValidationResults)], BaseCrossValidationResults) = {
+    ): (Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
 
     val verbose = true
 
@@ -285,6 +285,7 @@ object SparkWorkflow {
 
     val cvInput = evalValidationResultsMap
       .flatMap { case (i, e) => e.collect }
+      .map{ case (p, e) => (p._1, p._2, e) }
       .toSeq
 
     val crossValidationResults: RDD[BaseCrossValidationResults] = sc
