@@ -32,6 +32,14 @@ object SparkWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
 
+  //type BTD = BaseTrainingData
+  type BTDP = BaseTrainingDataParams
+  type BVDP = BaseValidationDataParams
+  type BF = BaseFeature
+  type BA = BaseActual
+  type BCD = BaseCleansedData
+
+
   type BAlgorithm = BaseAlgorithm[
     _ <: BaseCleansedData,
     _ <: BaseFeature,
@@ -53,6 +61,7 @@ object SparkWorkflow {
     _ <: BaseValidationResults,
     _ <: BaseCrossValidationResults]
 
+      //TD <: BaseTrainingData : Manifest,
   class AlgoServerWrapper(val algos: Array[BAlgorithm], val server: BServer)
   extends Serializable {
     def onePassPredict(
@@ -72,13 +81,10 @@ object SparkWorkflow {
       }}
     }
   }
-
+  
   class ValidatorWrapper(val validator: BValidator) extends Serializable {
-    def validateSet(
-      input: ((BaseTrainingDataParams, BaseValidationDataParams),
-        Iterable[BaseValidationUnit]))
-      : ((BaseTrainingDataParams, BaseValidationDataParams),
-        BaseValidationResults) = {
+    def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
+      : ((BTDP, BVDP), BaseValidationResults) = {
       val results = validator.validateSetBase(
         input._1._1, input._1._2, input._2.toSeq)
       (input._1, results)
@@ -86,14 +92,13 @@ object SparkWorkflow {
 
     def crossValidate(
       input: Array[
-        ((BaseTrainingDataParams, BaseValidationDataParams), BaseValidationResults)
+        ((BTDP, BVDP), BaseValidationResults)
       ]): BaseCrossValidationResults = {
       // maybe sort them.
       val data = input.map(e => (e._1._1, e._1._2, e._2))
       validator.crossValidateBase(data)
     }
   }
-
 
   def run[
       EDP <: BaseEvaluationDataParams : Manifest,
@@ -122,7 +127,7 @@ object SparkWorkflow {
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
     ): (Seq[((BaseTrainingDataParams, BaseValidationDataParams), BaseValidationResults)], BaseCrossValidationResults) = {
 
-    val verbose = false
+    val verbose = true
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
     conf.set("spark.local.dir", "~/tmp/spark")
@@ -130,153 +135,160 @@ object SparkWorkflow {
 
     val sc = new SparkContext(conf)
 
-    val numPartitions = 8
+    val numPartitions = 4
 
     val dataPrep = baseEvaluator.dataPreparatorClass.newInstance
 
-    val localParamsSet = dataPrep
+    val localParamsSet
+    : Map[EI, (BaseTrainingDataParams, BaseValidationDataParams)] = dataPrep
       .getParamsSetBase(evalDataParams)
       .zipWithIndex
       .map(_.swap)
+      .toMap
 
-    val localTrainingParamsSet = localParamsSet.map(e => (e._1, e._2._1))
-    val localValidationParamsSet = localParamsSet.map(e => (e._1, e._2._2))
+    // Data Prep
+    // Now we cast as actual class.... not sure if this is the right way...
+    //val evalDataMap: Map[EI, (TD, RDD[(F, A)])] = localParamsSet
+    //val evalDataMap: Map[EI, (BaseTrainingData, RDD[(F, A)])] = localParamsSet
+    val evalDataMap
+    : Map[EI, (BaseTrainingData, RDD[(BaseFeature, BaseActual)])] = localParamsSet
+    .map{ case (ei, localParams) => {
+      val (localTrainingParams, localValidationParams) = localParams
 
-    var trainingParamsMap: RDD[(EI, BaseTrainingDataParams)] =
-      sc.parallelize(localTrainingParamsSet)
-    var validationParamsMap: RDD[(EI, BaseValidationDataParams)] =
-      sc.parallelize(localValidationParamsSet)
-
-    trainingParamsMap = trainingParamsMap
-      .repartition(numPartitions)
-    validationParamsMap = validationParamsMap
-      .repartition(numPartitions)
-
-    // ParamsSet
-    val paramsMap:
-      RDD[(Int, (BaseTrainingDataParams, BaseValidationDataParams))] =
-        sc.parallelize(localParamsSet)
-
-    // Prepare Training Data
-    val trainingDataMap: RDD[(EI, BaseTrainingData)] =
-      trainingParamsMap.mapValues(dataPrep.prepareTrainingBase)
+      val trainingData = dataPrep.prepareTrainingBase(sc, localTrainingParams)
+      val validationData = dataPrep.prepareValidationBase(sc, localValidationParams)
+      (ei, (trainingData, validationData))
+    }}
+    .toMap
 
     if (verbose) {
-      trainingDataMap.collect.foreach(println)
+      evalDataMap.foreach{ case (ei, data) => {
+        val (trainingData, validationData) = data
+        println(s"TrainingData $ei")
+        println(trainingData)
+        println(s"ValidationData $ei")
+        validationData.collect.foreach(println)
+      }}
     }
-
-    // Prepare Validation Data
-    val validationDataMap: RDD[(EI, (BaseFeature, BaseActual))] =
-      validationParamsMap.flatMapValues(dataPrep.prepareValidationBase)
-
-    validationDataMap.persist
-
-    if (verbose) {
-      validationDataMap.collect.foreach(println)
-    }
-
-    // Cleanse Data
+   
+    // Cleansing
     val cleanser = baseEngine.cleanserClass.newInstance
+    //val cleanser = cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
 
-    val cleansedMap: RDD[(EI, BaseCleansedData)] =
-      trainingDataMap.mapValues(cleanser.cleanseBase)
+    val evalCleansedMap: Map[EI, BaseCleansedData] = evalDataMap
+    .map{ case (ei, data) => (ei, cleanser.cleanseBase(data._1)) }
 
     if (verbose) {
-      cleansedMap.collect.foreach(e => println("cleansed: " + e))
+      evalCleansedMap.foreach{ case (ei, cd) => {
+        println(s"Cleansed $ei")
+        println(cd)
+      }}
     }
 
-    // Model Training, we support multiple algo, hence have to cartesianize data
-    // Array[AlgoInstance]
-    val algoDummy = sc.parallelize(0 until algoParamsList.length)
-
+    // Model Training
     val algoInstanceList: Array[BAlgorithm] = algoParamsList
-      .map{ e => {
-        val (algoName, algoParams) = e
+      .map { case (algoName, algoParams) => {
         val algo = baseEngine.algorithmClassMap(algoName).newInstance
         algo.initBase(algoParams)
         algo
       }}
       .toArray
 
-    // (Eval, (AlgoId, Cleansed))
-    val cleansedMulMap: RDD[(EI, (AI, BaseCleansedData))] = cleansedMap
-      .cartesian(algoDummy)   // ((Eval, CD), Algo)
-      .map(e => (e._1._1, (e._2, e._1._2)))
+    val evalAlgoModelMap: Map[EI, RDD[(AI, BaseModel)]] = evalCleansedMap
+    .map { case (ei, cleansedData) => {
 
-    // Model : (Eval, (Algo, BaseModel))
-    val modelMap: RDD[(EI, (AI, BaseModel))] = cleansedMulMap
-      // (Eval, (Algo, M))
-      .mapValues(e => (e._1, algoInstanceList(e._1).trainBase(e._2)))
+      val algoModelSeq: Seq[RDD[(AI, BaseModel)]] = algoInstanceList
+      .zipWithIndex
+      .map { case (algo, index) => {
+        val model: RDD[BaseModel] = algo.trainBase(cleansedData)
+        model.map(e => (index, e))
+      }}
+      
+      (ei, sc.union(algoModelSeq) )
+    }}
+    .toMap
 
     if (verbose) {
-      modelMap.collect.foreach{ case(evalId, algo) => {
-        println(s"eval: $evalId, algo: ${algo._1} model: ${algo._2}")
+      evalAlgoModelMap.foreach{ case (ei, algoModel) => {
+        println(s"Model: $ei $algoModel")
       }}
     }
+    
+    val server = baseEngine.serverClass.newInstance
+    //val server = serverClass.newInstance
+    server.initBase(serverParams)
 
+    // Prediction
     // Take a more effficient (but potentially less scalabe way
     // We cogroup all model with features, hence make prediction with all algo
     // in one pass, as well as the combine logic of server.
     // Doing this way save one reduce-stage as we don't have to join results.
-    val modelFeatureGroupedMap
-    : RDD[(EI,
-        (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
-      ] = modelMap.cogroup(validationDataMap)
+    val evalPredictionMap
+    : Map[EI, RDD[(BaseFeature, BasePrediction, BaseActual)]] = evalDataMap
+    .map { case (ei, data) => {
+      val validationData: RDD[(Int, (BaseFeature, BaseActual))] = data._2
+        .map(e => (0, e))
+      val algoModel: RDD[(Int, (AI, BaseModel))] = evalAlgoModelMap(ei)
+        .map(e => (0, e))
 
-    val server = baseEngine.serverClass.newInstance
-    server.initBase(serverParams)
+      // group the two things together.
+      val d = algoModel.cogroup(validationData).values
 
-    val onePassWrapper = new AlgoServerWrapper(algoInstanceList, server)
-
-    val predictionMap: RDD[(EI, (BaseFeature, BasePrediction, BaseActual))] =
-      modelFeatureGroupedMap.flatMapValues(onePassWrapper.onePassPredict)
+      val algoServerWrapper = new AlgoServerWrapper(algoInstanceList, server)
+      (ei, d.flatMap(algoServerWrapper.onePassPredict))
+    }}
+    .toMap
 
     if (verbose) {
-      predictionMap.collect.foreach{ case(ei, fpa) => {
-        println(s"Prediction: $ei F: ${fpa._1} P: ${fpa._2} A: ${fpa._3}")
+      evalPredictionMap.foreach{ case(ei, fpa) => {
+        println(s"Prediction $ei $fpa")
       }}
     }
 
-    // Validation
+    // Validation Unit
     val validator = baseEvaluator.validatorClass.newInstance
     validator.initBase(validationParams)
 
-    val validatorWrapper = new ValidatorWrapper(validator)
 
-    val validationUnitMap: RDD[(Int, BaseValidationUnit)]
-      = predictionMap.mapValues(validator.validateBase)
+    val evalValidationUnitMap: Map[Int, RDD[BaseValidationUnit]] =
+      evalPredictionMap.mapValues(_.map(validator.validateBase))
 
     if (verbose) {
-      validationUnitMap.collect.foreach{ case(i, e) => {
+      evalValidationUnitMap.foreach{ case(i, e) => {
         println(s"ValidationUnit: i=$i e=$e")
       }}
     }
 
-    // Validation Results
-    // First join with TrainingData
-    val validationParamsUnitMap = validationUnitMap
-      .groupByKey
-      .join(paramsMap)
-      .mapValues(_.swap)
 
-    val validationSetMap
-    : RDD[(Int,
-      ((BaseTrainingDataParams, BaseValidationDataParams),
-        BaseValidationResults))]
-      = validationParamsUnitMap.mapValues(validatorWrapper.validateSet)
+    // Validation Set
+    val validatorWrapper = new ValidatorWrapper(validator)
+
+    val evalValidationResultsMap
+    : Map[EI, RDD[((BTDP, BVDP), BaseValidationResults)]] = evalValidationUnitMap
+    .map{ case (ei, validationUnits) => {
+      val validationResults
+      : RDD[((BTDP, BVDP), BaseValidationResults)] = validationUnits
+        .coalesce(numPartitions=1)
+        .glom()
+        .map(e => (localParamsSet(ei), e.toIterable))
+        .map(validatorWrapper.validateSet)
+
+      (ei, validationResults)
+    }}
 
     if (verbose) {
-      validationSetMap.collect.foreach{ case(i, e) => {
-        println(s"ValidationResult: i=$i a=${e._1} b=${e._2}")
+      evalValidationResultsMap.foreach{ case(ei, e) => {
+        println(s"ValidationResults $ei $e")
       }}
     }
 
-    val cvInput = validationSetMap.collect.map { case (i, e) => e }
+    val cvInput = evalValidationResultsMap
+      .flatMap { case (i, e) => e.collect }
+      .toSeq
 
-    val crossValidationResults: RDD[BaseCrossValidationResults] =
-      validationSetMap
-      .values
+    val crossValidationResults: RDD[BaseCrossValidationResults] = sc
+      .union(evalValidationResultsMap.values.toSeq)
       .coalesce(numPartitions=1)
       .glom()
       .map(validatorWrapper.crossValidate)

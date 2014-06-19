@@ -7,10 +7,16 @@ import io.prediction.{
   BaseValidationUnit,
   BaseTrainingDataParams,
   BaseValidationDataParams,
-  BaseValidationResults
+  BaseValidationResults,
+  BaseTrainingData,
+  BaseCleansedData
 }
 
 import com.twitter.chill.MeatLocker
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
 
 // Base Params
 //trait BaseParams extends AnyRef {}
@@ -58,5 +64,11 @@ class ValidationParamsResults[
     val validationDataParams: VDP,
     val data: VR) extends BaseValidationParamsResults {}
 
+// RDDWrapper
+class RDDTD[T <: BaseTrainingData](val v: RDD[T]) 
+extends BaseTrainingData
+
+class RDDCD[T <: BaseCleansedData](val v: RDD[T]) 
+extends BaseCleansedData
 
 

@@ -2,6 +2,7 @@ package io.prediction
 
 // FIXME(yipjustin). I am lazy...
 import io.prediction.core._
+    //TD <: BaseTrainingData,
 
 trait DataPreparator[
     EDP <: BaseEvaluationDataParams,
@@ -10,14 +11,14 @@ trait DataPreparator[
     TD <: BaseTrainingData,
     F <: BaseFeature,
     A <: BaseActual]
-    extends BaseDataPreparator[EDP, TDP, VDP, TD, F, A] {
+    //extends BaseDataPreparator[EDP, TDP, VDP, TD, F, A] {
+    extends LocalDataPreparator[EDP, TDP, VDP, TD, F, A] {
   // Data generation
   def getParamsSet(params: EDP): Seq[(TDP, VDP)]
 
   def prepareTraining(params: TDP): TD
 
   def prepareValidation(params: VDP): Seq[(F, A)]
-  
 }
 
 
@@ -46,7 +47,6 @@ trait Validator[
 
 // Factory Methods
 trait EvaluatorFactory {
-  //def apply(): AbstractEvaluator
   def apply(): BaseEvaluator[
     _ <: BaseEvaluationDataParams,
     _ <: BaseValidationParams,

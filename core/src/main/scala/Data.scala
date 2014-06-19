@@ -2,6 +2,10 @@ package io.prediction
 
 import io.prediction.core.BasePersistentData
 import io.prediction.core.BaseParams
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
 
 // Evaluator Params
 trait BaseEvaluationDataParams extends BaseParams {}
@@ -21,7 +25,7 @@ trait BaseServerParams extends BaseParams {}
 
 class DefaultCleanserParams() extends BaseCleanserParams{}
 
-class DefaultServerParams() extends BaseServerParams{}
+//class DefaultServerParams() extends BaseServerParams{}
 
 // Engine Persistent Data
 trait BaseCleansedData extends BasePersistentData {}
@@ -70,3 +74,4 @@ with BaseCrossValidationResults
 object EmptyData {
   def apply() = new EmptyData()
 }
+

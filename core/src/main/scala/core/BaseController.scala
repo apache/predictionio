@@ -4,49 +4,68 @@ import scala.reflect.Manifest
 
 // FIXME(yipjustin). I am being lazy...
 import io.prediction._
-
-abstract class BaseCleanser[
-    -TD <: BaseTrainingData,
-    +CD <: BaseCleansedData,
+import org.apache.spark.rdd.RDD
+import scala.reflect.ClassTag
+    
+abstract 
+class BaseCleanser[
+    TD <: BaseTrainingData,
+    CD <: BaseCleansedData,
     CP <: BaseCleanserParams: Manifest]
   extends AbstractParameterizedDoer[CP] {
 
+  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
+}
+
+
+abstract 
+class LocalCleanser[
+    TD <: BaseTrainingData,
+    CD <: BaseCleansedData : Manifest,
+    CP <: BaseCleanserParams: Manifest]
+  extends BaseCleanser[RDDTD[TD], RDDCD[CD], CP] {
+
   def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
+    println("Local.cleanseBase.")
+    val cd: RDD[CD] = trainingData
+      .asInstanceOf[RDDTD[TD]]
+      .v
+      .map(cleanse)
+    new RDDCD[CD](v = cd)
+  }
+
+  def cleanse(trainingData: TD): CD
+}
+
+abstract
+class SparkCleanser[
+    TD <: BaseTrainingData,
+    CD <: BaseCleansedData,
+    CP <: BaseCleanserParams: Manifest]
+  extends BaseCleanser[TD, CD, CP] {
+
+  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
+    println("SparkCleanser.cleanseBase")
     cleanse(trainingData.asInstanceOf[TD])
   }
 
   def cleanse(trainingData: TD): CD
 }
 
+
+
+
 /* Algorithm */
 
 abstract class BaseAlgorithm[
-    -CD <: BaseCleansedData,
+    CD <: BaseCleansedData,
     F <: BaseFeature,
     P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
 
-  def trainBase(cleansedData: BaseCleansedData): BaseModel =
-    train(cleansedData.asInstanceOf[CD])
-
-  def train(cleansedData: CD): M
-
-  def predictSeqBase(baseModel: BaseModel,
-    validationSeq: BaseValidationSeq): BasePredictionSeq = {
-
-    val input: Seq[(F, BaseActual)] = validationSeq
-      .asInstanceOf[ValidationSeq[F, BaseActual]]
-      .data
-
-    val model = baseModel.asInstanceOf[M]
-    // Algorithm don't know the actual subtype used.
-    val output: Seq[(F, P, BaseActual)] = input.map{ case(f, a) => {
-      (f, predict(model, f), a)
-    }}
-    new PredictionSeq[F, P, BaseActual](data = output)
-  }
+  def trainBase(cleansedData: BaseCleansedData): RDD[BaseModel]
 
   def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
     : BasePrediction = {
@@ -56,8 +75,32 @@ abstract class BaseAlgorithm[
   }
 
   def predict(model: M, feature: F): P
-
 }
+
+abstract class LocalAlgorithm[
+    CD <: BaseCleansedData,
+    F <: BaseFeature,
+    P <: BasePrediction,
+    M <: BaseModel : Manifest,
+    AP <: BaseAlgoParams: Manifest]
+  extends BaseAlgorithm[RDDCD[CD], F, P, M, AP] {
+
+  def trainBase(cleansedData: BaseCleansedData): RDD[BaseModel] = {
+    println("LocalAlgorithm.trainBase")
+    val m: RDD[BaseModel] = cleansedData.asInstanceOf[RDDCD[CD]]
+      .v
+      .map(train)
+      .map(_.asInstanceOf[BaseModel])
+    m
+  }
+
+  def train(cleansedData: CD): M
+  
+  def predict(model: M, feature: F): P
+}
+
+
+
 
 /* Server */
 

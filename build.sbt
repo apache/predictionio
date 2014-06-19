@@ -18,13 +18,13 @@ javacOptions in ThisBuild ++= Seq("-source", "1.6", "-target", "1.6",
 
 lazy val root = project in file(".") aggregate(
   core,
-  engines,
-  experiment
+  engines//,
+  //experiment
   )
 
 lazy val core = (project in file("core"))
 
-lazy val experiment = project in file("experiment/simple") dependsOn(core)
+//lazy val experiment = project in file("experiment/simple") dependsOn(core)
 
 lazy val engines = (project in file("engines")).
   dependsOn(core)

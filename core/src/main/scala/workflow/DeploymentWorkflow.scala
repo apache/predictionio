@@ -28,6 +28,7 @@ import scala.reflect.Manifest
 
 import com.twitter.chill.Externalizer
 
+/*
 object DeploymentWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
@@ -148,3 +149,4 @@ object DeploymentWorkflow {
     modelMap.collect.map { case (evalId, algo) => algo._2 }
   }
 }
+*/

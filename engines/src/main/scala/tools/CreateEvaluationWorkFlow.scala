@@ -8,6 +8,9 @@ import io.prediction.{
   BaseCleanserParams, 
   BaseServerParams
 }
+
+import io.prediction.core._
+import io.prediction._
 //import io.prediction.workflow.EvaluationWorkflow
 import io.prediction.workflow.SparkWorkflow
 
@@ -128,7 +131,10 @@ object CreateEvaluationWorkFlow extends Logging {
     // create engine instance
     val engineModule = runtimeMirror.staticModule(engineFactoryName)
     val engineObject = runtimeMirror.reflectModule(engineModule)
-    val engine = engineObject.instance.asInstanceOf[EngineFactory]()
+    val engine
+    : BaseEngine[_ <: BaseTrainingData, _ <: BaseCleansedData, 
+      _ <: BaseFeature, _ <: BasePrediction] = 
+      engineObject.instance.asInstanceOf[EngineFactory]()
 
     // Params
     val dataPrepParams = getParams(
