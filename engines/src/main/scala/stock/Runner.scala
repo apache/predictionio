@@ -5,10 +5,17 @@ import io.prediction.core.BaseEngine
 //import io.prediction.core.AbstractEngine
 import io.prediction.DefaultServer
 import io.prediction.DefaultCleanser
+import io.prediction.SparkDefaultCleanser
 
 import io.prediction.workflow.SparkWorkflow
 //import io.prediction.workflow.EvaluationWorkflow
 
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+
+// Ugly workaround since generic types require Manifest which imposes a non
+// empty constructor....
 
 object Run {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
@@ -21,8 +28,8 @@ object Run {
     val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
-      //untilIdx = 710,
-      untilIdx = 1200,
+      untilIdx = 630,
+      //untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
       marketTicker = "SPY",
@@ -35,14 +42,18 @@ object Run {
     val engine = StockEngine()
 
     //val evaluator = StockEvaluator()
+    //val evaluator = SparkStockEvaluator()
+
+
     val evaluator = BackTestingEvaluator()
 
     val validationParams = new BackTestingParams(0.003, 0.00)
+    //val validationParams = null
 
     val algoParamsSet = Seq(
-      //("random", new RandomAlgoParams(seed = 1, scale = 0.02)),
-      //("random", new RandomAlgoParams(seed = 2, drift = 1)),
-      ("regression", null)
+      ("regression", null),
+      ("random", new RandomAlgoParams(seed = 1, scale = 0.02)),
+      ("random", new RandomAlgoParams(seed = 2, drift = 1))
     )
 
     /*
@@ -62,7 +73,7 @@ object Run {
       evalWorkflow.run
     }
     */
-    
+
     if (true) {
       // PIO runner
       SparkWorkflow.run(
@@ -73,7 +84,15 @@ object Run {
         algoParamsSet, 
         serverParams,
         engine,
+        /*
+        //engine.cleanserClass,
+        classOf[NoOptCleanser],
+        Map("random" -> classOf[RandomAlgorithm],
+          "regression" -> classOf[RegressionAlgorithm]),
+        classOf[StockServer],
+        */
         evaluator)
+      println("--------------- RUN LOCAL ------------------")
     }
   }
 }

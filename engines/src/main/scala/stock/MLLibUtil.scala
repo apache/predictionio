@@ -2,6 +2,7 @@ package io.prediction.engines.stock
 
 object DecisionTreePrinter {
   import org.apache.spark.mllib.tree.model._
+  import org.apache.spark.mllib.tree.configuration.FeatureType
 
   def p(model: DecisionTreeModel)(
     implicit featureMakerSeq: Seq[FeatureMaker]

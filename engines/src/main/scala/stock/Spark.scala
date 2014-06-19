@@ -181,6 +181,11 @@ object SparkStock {
     val localValidationParams = localValidationParamsSet.head._2
     val localTrainingParams = localTrainingParamsSet.head._2
 
+    /*
+
+    // Commented for the time being.......
+
+
     val localValidationData = dataPrep
       .prepareValidationBase(localValidationParams)
 
@@ -199,11 +204,6 @@ object SparkStock {
     val validationData = sc.parallelize(localValidationData)
     val trainingData = sc.parallelize(Seq(localTrainingData))
 
-    /*
-    validationData.collect.foreach{ e => {
-      println(s"V: ${e._1} ${e._2}")
-    }}
-    */
 
     val featureMakerSeq = Seq(
       new ReturnFeature(5),
@@ -256,16 +256,8 @@ object SparkStock {
 
     pCount.foreach{ case(k, v) => { println(f"$k% 8.6f $v") }}
 
-    
+    */ 
 
-    /*
-    val valuesAndPreds = data.map { point =>
-      val prediction = model.predict(point.features)
-      (point.label, prediction)
-    }
-    val MSE = valuesAndPreds.map{ case(v, p) => math.pow((v - p), 2)}.mean()
-    println("training Mean Squared Error = " + MSE) 
-    */
     
   }
 }

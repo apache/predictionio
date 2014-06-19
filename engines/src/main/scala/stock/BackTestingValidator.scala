@@ -4,11 +4,13 @@ import io.prediction._
 import com.github.nscala_time.time.Imports._
 import io.prediction.core.BaseEvaluator
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
+import io.prediction.core.LocalEvaluator
 
 object BackTestingEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
   override def apply() = {
-    new BaseEvaluator(
+    //new BaseEvaluator(
+    new LocalEvaluator(
       classOf[StockDataPreparator],
       classOf[BackTestingValidator])
   }
