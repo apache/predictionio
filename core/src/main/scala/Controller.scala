@@ -47,17 +47,26 @@ class DefaultServer[F <: BaseFeature, P <: BasePrediction]
 
 
 class DefaultCleanser[TD <: BaseTrainingData : Manifest]()
-    extends Cleanser[TD, TD, DefaultCleanserParams] {
-  def init(params: DefaultCleanserParams): Unit = {}
+    extends LocalCleanser[TD, TD, EmptyParams] {
+  def init(params: EmptyParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
 }
 
 
 class SparkDefaultCleanser[TD <: BaseTrainingData]()
-    extends SparkCleanser[TD, TD, DefaultCleanserParams] {
-  def init(params: DefaultCleanserParams): Unit = {}
+    extends SparkCleanser[TD, TD, EmptyParams] {
+  def init(params: EmptyParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
 }
+
+/*
+class DefaultCleanser[TD <: BaseTrainingData : Manifest]
+    extends Cleanser[TD, TD, EmptyParams] {
+  def init(params: EmptyParams): Unit = {}
+  def cleanseBase(trainingData: BaseTrainingData)
+  : BaseTrainingData = trainingData
+}
+*/
 
 
 // Factory Methods

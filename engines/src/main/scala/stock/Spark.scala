@@ -36,7 +36,8 @@ trait FeatureMaker extends Serializable {
 }
 
 class ReturnFeature(val d: Int) extends FeatureMaker {
-  def make(lgPrice: Series[DateTime, Double]) = {
+  def make(
+    lgPrice: Series[DateTime, Double]) = {
     (lgPrice - lgPrice.shift(d)).fillNA(_ => 0.0)
   }
 

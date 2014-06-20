@@ -201,7 +201,7 @@ object SparkWorkflow {
       val algoModelSeq: Seq[RDD[(AI, BaseModel)]] = algoInstanceList
       .zipWithIndex
       .map { case (algo, index) => {
-        val model: RDD[BaseModel] = algo.trainBase(cleansedData)
+        val model: RDD[BaseModel] = algo.trainBase(sc, cleansedData)
         model.map(e => (index, e))
       }}
       

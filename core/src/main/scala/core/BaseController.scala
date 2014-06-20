@@ -6,6 +6,9 @@ import scala.reflect.Manifest
 import io.prediction._
 import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
     
 abstract 
 class BaseCleanser[
@@ -65,7 +68,9 @@ abstract class BaseAlgorithm[
     AP <: BaseAlgoParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
 
-  def trainBase(cleansedData: BaseCleansedData): RDD[BaseModel]
+  def trainBase(
+    sc: SparkContext, 
+    cleansedData: BaseCleansedData): RDD[BaseModel] 
 
   def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
     : BasePrediction = {
@@ -85,7 +90,9 @@ abstract class LocalAlgorithm[
     AP <: BaseAlgoParams: Manifest]
   extends BaseAlgorithm[RDDCD[CD], F, P, M, AP] {
 
-  def trainBase(cleansedData: BaseCleansedData): RDD[BaseModel] = {
+  def trainBase(
+    sc: SparkContext,
+    cleansedData: BaseCleansedData): RDD[BaseModel] = {
     println("LocalAlgorithm.trainBase")
     val m: RDD[BaseModel] = cleansedData.asInstanceOf[RDDCD[CD]]
       .v
@@ -96,6 +103,26 @@ abstract class LocalAlgorithm[
 
   def train(cleansedData: CD): M
   
+  def predict(model: M, feature: F): P
+}
+
+abstract class SparkAlgorithm[
+    CD <: BaseCleansedData,
+    F <: BaseFeature,
+    P <: BasePrediction,
+    M <: BaseModel : Manifest,
+    AP <: BaseAlgoParams: Manifest]
+  extends BaseAlgorithm[CD, F, P, M, AP] {
+  // train returns a local object M, and we parallelize it.
+  def trainBase(
+    sc: SparkContext, 
+    cleansedData: BaseCleansedData): RDD[BaseModel] = {
+    val m: BaseModel = train(cleansedData.asInstanceOf[CD])
+    sc.parallelize(Array(m))
+  }
+
+  def train(cleansedData: CD): M
+
   def predict(model: M, feature: F): P
 }
 
@@ -153,3 +180,35 @@ class BaseEngine[
         Class[_ <:
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]]) {}
+
+class LocalEngine[
+    TD <: BaseTrainingData,
+    CD <: BaseCleansedData,
+    F <: BaseFeature,
+    P <: BasePrediction](
+    cleanserClass
+      : Class[_ <: LocalCleanser[TD, CD, _ <: BaseCleanserParams]],
+    algorithmClassMap
+      : Map[String,
+        Class[_ <:
+          LocalAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
+    
+class SparkEngine[
+    TD <: BaseTrainingData,
+    CD <: BaseCleansedData,
+    F <: BaseFeature,
+    P <: BasePrediction](
+    cleanserClass
+      : Class[_ <: SparkCleanser[TD, CD, _ <: BaseCleanserParams]],
+    algorithmClassMap
+      : Map[String,
+        Class[_ <:
+          SparkAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
+
+
+
+
