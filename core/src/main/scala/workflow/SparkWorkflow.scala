@@ -39,6 +39,7 @@ object SparkWorkflow {
   type BF = BaseFeature
   type BA = BaseActual
   type BCD = BaseCleansedData
+  type BTD = BaseTrainingData
 
 
   type BAlgorithm = BaseAlgorithm[
@@ -62,7 +63,6 @@ object SparkWorkflow {
     _ <: BaseValidationResults,
     _ <: BaseCrossValidationResults]
 
-      //TD <: BaseTrainingData : Manifest,
   class AlgoServerWrapper(val algos: Array[BAlgorithm], val server: BServer)
   extends Serializable {
     def onePassPredict(
@@ -127,8 +127,8 @@ object SparkWorkflow {
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
     ): (Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
-
-    val verbose = true
+    // Add a flag to disable parallelization.
+    val verbose = false
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
     conf.set("spark.local.dir", "~/tmp/spark")
@@ -147,7 +147,8 @@ object SparkWorkflow {
 
     // Data Prep
     val evalDataMap
-    : Map[EI, (BaseTrainingData, RDD[(BaseFeature, BaseActual)])] = localParamsSet
+    : Map[EI, (BTD, RDD[(BF, BA)])] = localParamsSet
+    .par
     .map{ case (ei, localParams) => {
       val (localTrainingParams, localValidationParams) = localParams
 
@@ -155,6 +156,7 @@ object SparkWorkflow {
       val validationData = dataPrep.prepareValidationBase(sc, localValidationParams)
       (ei, (trainingData, validationData))
     }}
+    .seq
     .toMap
 
     if (verbose) {
@@ -181,7 +183,7 @@ object SparkWorkflow {
       }}
     }
 
-    // Model Training
+    // Instantiate algos
     val algoInstanceList: Array[BAlgorithm] = algoParamsList
       .map { case (algoName, algoParams) => {
         val algo = baseEngine.algorithmClassMap(algoName).newInstance
@@ -190,7 +192,9 @@ object SparkWorkflow {
       }}
       .toArray
 
+    // Model Training
     val evalAlgoModelMap: Map[EI, RDD[(AI, BaseModel)]] = evalCleansedMap
+    .par
     .map { case (ei, cleansedData) => {
 
       val algoModelSeq: Seq[RDD[(AI, BaseModel)]] = algoInstanceList
@@ -202,6 +206,7 @@ object SparkWorkflow {
       
       (ei, sc.union(algoModelSeq) )
     }}
+    .seq
     .toMap
 
     if (verbose) {
@@ -253,7 +258,6 @@ object SparkWorkflow {
         println(s"ValidationUnit: i=$i e=$e")
       }}
     }
-
 
     // Validation Set
     val validatorWrapper = new ValidatorWrapper(validator)

@@ -212,7 +212,7 @@ class SparkTreeAlgorithm
     )
     val treeModel = DecisionTree.train(points, strategy)
 
-    println("Time: $timeIndex")
+    println(s"Time: $timeIndex")
     DecisionTreePrinter.p(treeModel)(maker.featureMakerSeq)
 
     new StockTreeModel(treeModel)
@@ -227,12 +227,12 @@ class SparkTreeAlgorithm
 
     val maker = LabeledPointMaker(market)
 
-
     val length = index.length
 
     println(s"Prediction At ${feature.timeIndex.last}")
 
-    val prediction = feature.tickerList.map{ ticker => {
+    val prediction = feature.tickerList
+    .map{ ticker => {
       val lgPrice: Series[DateTime, Double] = priceFrame
         .firstCol(ticker)
         .mapValues(math.log)
@@ -261,13 +261,14 @@ object RunSpark {
     "CRM", "INTU", "WDC", "SNDK")
   */
 
-  val tickerList = Seq("IBM", "MSFT")
+  val tickerList = Seq("GOOG", "MSFT")
 
   def main(args: Array[String]) {
     val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
       //untilIdx = 630,
+      //untilIdx = 800,
       untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
@@ -309,6 +310,8 @@ object RunSpark {
         
       println("--------------- RUN SPARK ------------------")
     }
+
+    System.exit(0)
   }
 
 

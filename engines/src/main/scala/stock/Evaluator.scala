@@ -34,7 +34,6 @@ object StockEvaluator extends EvaluatorFactory {
   val itemTrendsDb = config.getAppdataItemTrends()
 
   def apply() = {
-    //new BaseEvaluator(
     new LocalEvaluator(
       classOf[StockDataPreparator],
       classOf[StockValidator])
@@ -184,10 +183,14 @@ class StockDataPreparator
 
     val featureData = Frame(data.map(e => (e._1, e._2)): _*)
     val targetData = data.map(e => (e._1, e._3)).toMap
+
+    // Only validate activeTickers
+    val activeTickerList = data.map(_._1).filter(_ != marketTicker)
+
     return (
       Feature(
         mktTicker = marketTicker, 
-        tickerList = tickerList,
+        tickerList = activeTickerList,
         data = featureData), 
       new Target(data = targetData))
   }
