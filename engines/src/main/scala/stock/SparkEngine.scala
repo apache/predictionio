@@ -36,6 +36,7 @@ import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
 
+/******************** Factories ***********************************/
 object SparkStockEvaluator extends EvaluatorFactory {
   def apply() = {
     new SparkEvaluator(
@@ -52,9 +53,6 @@ object SparkBackTestingEvaluator extends EvaluatorFactory {
   }
 }
 
-class SparkNoOptCleanser extends SparkDefaultCleanser[SparkTrainingData] {}
-
-
 object SparkStockEngine extends EngineFactory {
   def apply() = {
     new SparkEngine(
@@ -64,8 +62,8 @@ object SparkStockEngine extends EngineFactory {
   }
 }
 
-//class SparkNoOptCleanser extends SparkDefaultCleanser[SparkTrainingData] {}
-
+/******************** Data ***********************************/
+// For spark algo, it requires spark-specific TrainingData and Model
 class SparkTrainingData (
   val timeIndex: Array[DateTime],  
   val tickers: Seq[String],
@@ -76,6 +74,12 @@ class SparkTrainingData (
   val price: RDD[(String, Array[Double])]
 ) extends BaseTrainingData
 
+class StockTreeModel(val treeModel: DecisionTreeModel) extends BaseModel
+
+/******************** Controllers ***********************************/
+class SparkNoOptCleanser extends SparkDefaultCleanser[SparkTrainingData] {}
+
+// Data Preparator. Mainly based on local-data-prep, but export data in RDD.
 class SparkStockDataPreparator
     extends SparkDataPreparator[
         EvaluationDataParams, 
@@ -112,80 +116,7 @@ class SparkStockDataPreparator
   }
 }
 
-object LabeledPointMaker {
-  def apply(market: Series[DateTime, Double]): LabeledPointMaker = {
-    new LabeledPointMaker(market.index.toVec.contents, market.toVec.contents)
-  }
-
-  def apply(timeArray: Array[DateTime], marketArray: Array[Double])
-  : LabeledPointMaker = {
-    new LabeledPointMaker(timeArray, marketArray)
-  }
-}
-
-
-class LabeledPointMaker(
-  val timeArray: Array[DateTime],
-  val marketArray: Array[Double]
-  ) extends Serializable {
-  @transient lazy val market: Series[DateTime, Double] =
-      Series(Vec(marketArray), IndexTime(Vec(timeArray)))
-
-  val featureMakerSeq = Seq(
-    new ReturnFeature(5),
-    new ReturnFeature(22),
-    new MAFeature(5),
-    new MAFeature(22),
-    new MAReturnFeature(5),
-    new MAReturnFeature(22),
-    new MktReturnFeature(1),
-    new MktReturnFeature(5),
-    new MktReturnFeature(22),
-    new ReturnFeature(1)
-  )
-  @transient lazy val mktLgPrice = market.mapValues(math.log)
-  @transient lazy val timeLength = mktLgPrice.length
-
-  def makeLabeledPoints(data: (String, Array[Double]))
-  : Seq[LabeledPoint] = {
-    val ticker = data._1
-    val lgPrice = Series(Vec(data._2), market.index).mapValues(math.log)
-    val firstIdx = 30
-    val lastIdx = lgPrice.length - 1
-    val points = ArrayBuffer[LabeledPoint]()
-      
-    val fwdRet = new ReturnFeature(-1).make(lgPrice)
-
-    val featureVecs = makeFeatureVectors(ticker, lgPrice)
-
-    (firstIdx until lastIdx).map( i => {
-      val feature = featureVecs.map(_.raw(i)).toArray
-      if (fwdRet.raw(i).isNaN) {
-        println(s"$ticker ${lgPrice.rowIx.raw(i)} ${fwdRet.raw(i)}")
-        assert(false)
-      }
-      val p = new LabeledPoint(fwdRet.raw(i), Vectors.dense(feature))
-      points += p
-    })
-
-    points
-  }
-
-  def makeFeatureVectors(ticker: String, lgPrice: Series[DateTime, Double])
-  : Seq[Series[DateTime, Double]] = {
-    val featureVecs = featureMakerSeq.map{ maker => {
-      val vector = maker.make(lgPrice, mktLgPrice)
-      assert(vector.length == lgPrice.length, 
-        s"${maker} mismatch len. " + 
-        s"t: $ticker a: ${vector.length} e: ${lgPrice.length}")
-      vector
-    }}
-    featureVecs
-  }
-}
-
-class StockTreeModel(val treeModel: DecisionTreeModel) extends BaseModel
-
+// Spark Algo. Based on MLLib's decision tree
 class SparkTreeAlgorithm
     extends SparkAlgorithm[
         SparkTrainingData,
@@ -207,8 +138,7 @@ class SparkTreeAlgorithm
     val strategy = new Strategy(
       algo = Regression, 
       impurity = Variance, 
-      maxDepth = maxDepth//,
-      //maxBins = 10,
+      maxDepth = maxDepth
     )
     val treeModel = DecisionTree.train(points, strategy)
 
@@ -268,8 +198,8 @@ object RunSpark {
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
       //untilIdx = 630,
-      //untilIdx = 800,
-      untilIdx = 1200,
+      untilIdx = 800,
+      //untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
       marketTicker = "SPY",
