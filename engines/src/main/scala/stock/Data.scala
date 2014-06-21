@@ -117,29 +117,33 @@ class Model(
 // This is different from TrainingData. This serves as input for algorithm.
 // Hence, the time series should be shorter than that of TrainingData.
 class Feature(
+  val mktTicker: String,
+  val tickerList: Seq[String],
   val input: (Array[DateTime], Array[(String, Array[Double])])
   ) extends BaseFeature {
   
   val timeIndex: Array[DateTime] = input._1
   val tickerPriceSeq: Array[(String, Array[Double])] = input._2
   @transient lazy val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
-  //val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
 
   def today: DateTime = data.rowIx.last.get
 
   override def toString(): String = {
     val firstDate = data.rowIx.first.get
     val lastDate = data.rowIx.last.get
-    //val firstDate = data.get.rowIx.first.get
-    //val lastDate = data.get.rowIx.last.get
     s"Feature $firstDate $lastDate"
   }
 }
 
 object Feature {
   def apply(
+    mktTicker: String,
+    tickerList: Seq[String],
     data: Frame[DateTime, String, Double]): Feature = {
-    return new Feature(SaddleWrapper.FromFrame(data))
+    return new Feature(
+      mktTicker = mktTicker,
+      tickerList = tickerList,
+      input = SaddleWrapper.FromFrame(data))
   }
 }
 

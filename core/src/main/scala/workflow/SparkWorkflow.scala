@@ -28,6 +28,7 @@ import scala.reflect.Manifest
 
 import com.twitter.chill.Externalizer
 
+
 object SparkWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
@@ -135,8 +136,6 @@ object SparkWorkflow {
 
     val sc = new SparkContext(conf)
 
-    val numPartitions = 4
-
     val dataPrep = baseEvaluator.dataPreparatorClass.newInstance
 
     val localParamsSet
@@ -147,9 +146,6 @@ object SparkWorkflow {
       .toMap
 
     // Data Prep
-    // Now we cast as actual class.... not sure if this is the right way...
-    //val evalDataMap: Map[EI, (TD, RDD[(F, A)])] = localParamsSet
-    //val evalDataMap: Map[EI, (BaseTrainingData, RDD[(F, A)])] = localParamsSet
     val evalDataMap
     : Map[EI, (BaseTrainingData, RDD[(BaseFeature, BaseActual)])] = localParamsSet
     .map{ case (ei, localParams) => {
@@ -173,7 +169,6 @@ object SparkWorkflow {
    
     // Cleansing
     val cleanser = baseEngine.cleanserClass.newInstance
-    //val cleanser = cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
 
     val evalCleansedMap: Map[EI, BaseCleansedData] = evalDataMap
@@ -216,7 +211,6 @@ object SparkWorkflow {
     }
     
     val server = baseEngine.serverClass.newInstance
-    //val server = serverClass.newInstance
     server.initBase(serverParams)
 
     // Prediction

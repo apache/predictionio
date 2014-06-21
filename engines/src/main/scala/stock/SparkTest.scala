@@ -3,9 +3,7 @@ package io.prediction.engines.stock
 import com.github.nscala_time.time.Imports.DateTime
 
 import io.prediction.core.BaseEngine
-//import io.prediction.core.AbstractEngine
 import io.prediction.DefaultServer
-//import io.prediction.DefaultCleanser
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -38,43 +36,19 @@ import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
 
-/*
-// In this case, TD may contain multiple RDDs
-// But still, F and A cannot contain RDD
-abstract class SparkDataPreparator[
-    EDP <: BaseEvaluationDataParams : Manifest,
-    TDP <: BaseTrainingDataParams : Manifest,
-    VDP <: BaseValidationDataParams,
-    TD : Manifest,
-    F <: BaseFeature,
-    A <: BaseActual]
-    extends BaseDataPreparator[EDP, TDP, VDP, RDD[TD], F, A] {
-  def prepareTrainingBase(
-    sc: SparkContext,
-    params: BaseTrainingDataParams): TD = {
-    println("SparkDataPreparator.prepareTrainingBase")
-    val tdp = params.asInstanceOf[TDP]
-    prepareTraining(sc, tdp)
-  }
-
-  def prepareTraining(sc: SparkContext, params: TDP): TD
-
-  def prepareValidationBase(
-    sc: SparkContext,
-    params: BaseValidationDataParams): RDD[(F, A)] = {
-    val vdp = params.asInstanceOf[VDP]
-    prepareValidation(sc, vdp)
-  }
-  
-  def prepareValidation(sc: SparkContext, params: VDP): RDD[(F, A)]
-}
-*/
-
 object SparkStockEvaluator extends EvaluatorFactory {
   def apply() = {
     new SparkEvaluator(
       classOf[SparkStockDataPreparator],
       classOf[StockValidator])
+  }
+}
+
+object SparkBackTestingEvaluator extends EvaluatorFactory {
+  def apply() = {
+    new SparkEvaluator(
+      classOf[SparkStockDataPreparator],
+      classOf[BackTestingValidator])
   }
 }
 
@@ -97,6 +71,8 @@ class SparkTrainingData (
   val tickers: Seq[String],
   val mktTicker: String,
   val market: Array[Double],
+  // price doesn't contain market data, as these are RDD and are operated in
+  // parallel.
   val price: RDD[(String, Array[Double])]
 ) extends BaseTrainingData
 
@@ -116,13 +92,18 @@ class SparkStockDataPreparator
   : SparkTrainingData = {
     val localData: Array[String] = params.tickerList.toArray
     val td = dataPrep.prepareTraining(params)
-    val market = td.data._2.find(_._1 == "SPY").map(_._2).get
+    val priceArray: Array[(String, Array[Double])] = td.data._2
+    val mktTicker = params.marketTicker
+
+    val market = priceArray.find(_._1 == mktTicker).map(_._2).get
+    val price = priceArray.filter(_._1 != mktTicker)
+
     new SparkTrainingData(
       timeIndex = td.data._1,
       tickers = td.tickers,
-      mktTicker = td.mktTicker,
+      mktTicker = mktTicker,
       market = market,
-      price = sc.parallelize(td.data._2))
+      price = sc.parallelize(price))
   }
 
   def prepareValidation(sc: SparkContext, params: ValidationDataParams)
@@ -131,10 +112,25 @@ class SparkStockDataPreparator
   }
 }
 
+object LabeledPointMaker {
+  def apply(market: Series[DateTime, Double]): LabeledPointMaker = {
+    new LabeledPointMaker(market.index.toVec.contents, market.toVec.contents)
+  }
+
+  def apply(timeArray: Array[DateTime], marketArray: Array[Double])
+  : LabeledPointMaker = {
+    new LabeledPointMaker(timeArray, marketArray)
+  }
+}
+
 
 class LabeledPointMaker(
-  val timeIndex: Array[DateTime],
-  val market: Array[Double]) extends Serializable {
+  val timeArray: Array[DateTime],
+  val marketArray: Array[Double]
+  ) extends Serializable {
+  @transient lazy val market: Series[DateTime, Double] =
+      Series(Vec(marketArray), IndexTime(Vec(timeArray)))
+
   val featureMakerSeq = Seq(
     new ReturnFeature(5),
     new ReturnFeature(22),
@@ -147,30 +143,20 @@ class LabeledPointMaker(
     new MktReturnFeature(22),
     new ReturnFeature(1)
   )
-  //val mktPrice: Series[Int, Double] = Series(market)
-  val index = IndexTime(timeIndex:_ *)
-  val mktLgPrice = Series(Vec(market), index).mapValues(math.log)
+  @transient lazy val mktLgPrice = market.mapValues(math.log)
+  @transient lazy val timeLength = mktLgPrice.length
 
-  def makeLabeledPoints(data: (String, Array[Double])): Seq[LabeledPoint] = {
-    //val (ticker, price) = data
+  def makeLabeledPoints(data: (String, Array[Double]))
+  : Seq[LabeledPoint] = {
     val ticker = data._1
-    val lgPrice = Series(Vec(data._2), index).mapValues(math.log)
+    val lgPrice = Series(Vec(data._2), market.index).mapValues(math.log)
     val firstIdx = 30
     val lastIdx = lgPrice.length - 1
-    val timeLength = mktLgPrice.length
     val points = ArrayBuffer[LabeledPoint]()
-      
-    //val lgPrice = price.mapValues(math.log)
       
     val fwdRet = new ReturnFeature(-1).make(lgPrice)
 
-    val featureVecs = featureMakerSeq.map{ maker => {
-      val vector = maker.make(lgPrice, mktLgPrice)
-      assert(vector.length == timeLength, 
-        s"${maker} mismatch len. " + 
-        s"t: $ticker a: ${vector.length} e: $timeLength")
-      vector
-    }}
+    val featureVecs = makeFeatureVectors(ticker, lgPrice)
 
     (firstIdx until lastIdx).map( i => {
       val feature = featureVecs.map(_.raw(i)).toArray
@@ -184,11 +170,21 @@ class LabeledPointMaker(
 
     points
   }
+
+  def makeFeatureVectors(ticker: String, lgPrice: Series[DateTime, Double])
+  : Seq[Series[DateTime, Double]] = {
+    val featureVecs = featureMakerSeq.map{ maker => {
+      val vector = maker.make(lgPrice, mktLgPrice)
+      assert(vector.length == lgPrice.length, 
+        s"${maker} mismatch len. " + 
+        s"t: $ticker a: ${vector.length} e: ${lgPrice.length}")
+      vector
+    }}
+    featureVecs
+  }
 }
 
 class StockTreeModel(val treeModel: DecisionTreeModel) extends BaseModel
-
-//class StockTreeModel extends DecisionTreeModel with BaseModel
 
 class SparkTreeAlgorithm
     extends SparkAlgorithm[
@@ -200,8 +196,12 @@ class SparkTreeAlgorithm
   def init(p: EmptyParams) = {}
 
   def train(data: SparkTrainingData): StockTreeModel = { 
-    val maker = new LabeledPointMaker(data.timeIndex, data.market)
-    val points = data.price.flatMap(maker.makeLabeledPoints)
+    val timeIndex = IndexTime(data.timeIndex)
+    val market = Series(Vec(data.market), index=timeIndex)
+    val price = data.price
+    val maker = LabeledPointMaker(market)
+
+    val points = price.flatMap(maker.makeLabeledPoints)
     
     val maxDepth = 5
     val strategy = new Strategy(
@@ -211,28 +211,64 @@ class SparkTreeAlgorithm
       //maxBins = 10,
     )
     val treeModel = DecisionTree.train(points, strategy)
-    //model.asInstanceOf[StockTreeModel]
+
+    println("Time: $timeIndex")
+    DecisionTreePrinter.p(treeModel)(maker.featureMakerSeq)
+
     new StockTreeModel(treeModel)
   }
 
   def predict(model: StockTreeModel, feature: Feature): Target = {
-    //model.treeModel.predict(feature)
-    null
+    val treeModel = model.treeModel
+    
+    val index = feature.data.rowIx
+    val priceFrame = feature.data
+    val market = priceFrame.firstCol(feature.mktTicker)
+
+    val maker = LabeledPointMaker(market)
+
+
+    val length = index.length
+
+    println(s"Prediction At ${feature.timeIndex.last}")
+
+    val prediction = feature.tickerList.map{ ticker => {
+      val lgPrice: Series[DateTime, Double] = priceFrame
+        .firstCol(ticker)
+        .mapValues(math.log)
+
+      val featureVecs = maker.makeFeatureVectors(ticker, lgPrice)
+
+      val feature = featureVecs.map(_.raw(length - 1)).toArray
+      val p = treeModel.predict(Vectors.dense(feature))
+      println(s"predict: $ticker $p")
+
+      (ticker, p)
+    }}
+    .toMap
+
+    new Target(data = prediction)
   }
 }
 
+
+
 object RunSpark {
+  /*
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",
     "HPQ", "INTC", "NTAP", "CSCO", "ORCL",
     "XRX", "YHOO", "AMAT", "QCOM", "TXN",
     "CRM", "INTU", "WDC", "SNDK")
+  */
+
+  val tickerList = Seq("IBM", "MSFT")
 
   def main(args: Array[String]) {
     val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
-      untilIdx = 630,
-      //untilIdx = 1200,
+      //untilIdx = 630,
+      untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,
       marketTicker = "SPY",
@@ -240,18 +276,17 @@ object RunSpark {
 
     //val validationParams = new ValidationParams(pThreshold = 0.01)
 
-    val serverParams = new StockServerParams(i = 0)
+    //val serverParams = new StockServerParams(i = 0)
+    val serverParams = null
 
-    val engine = StockEngine()
+    val engine = SparkStockEngine()
 
-    //val evaluator = StockEvaluator()
-    val evaluator = SparkStockEvaluator()
+    //val evaluator = SparkStockEvaluator()
+    val evaluator = SparkBackTestingEvaluator()
+    val validationParams = new BackTestingParams(0.003, 0.00)
 
 
-    //val evaluator = BackTestingEvaluator()
-
-    //val validationParams = new BackTestingParams(0.003, 0.00)
-    val validationParams = null
+    //val validationParams = null
 
     val algoParamsSet = Seq(
       //("regression", null),
@@ -270,11 +305,6 @@ object RunSpark {
         algoParamsSet, 
         serverParams,
         engine,
-        /*
-        classOf[SparkNoOptCleanser],
-        Map("random" -> classOf[RandomAlgorithm],
-          "regression" -> classOf[RegressionAlgorithm]),
-        */
         evaluator)
         
       println("--------------- RUN SPARK ------------------")

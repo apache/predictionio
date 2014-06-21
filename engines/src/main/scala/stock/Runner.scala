@@ -47,7 +47,7 @@ object Run {
 
     val evaluator = BackTestingEvaluator()
 
-    val validationParams = new BackTestingParams(0.003, 0.00)
+    val validationParams = new BackTestingParams(0.001, 0.00)
     //val validationParams = null
 
     val algoParamsSet = Seq(
