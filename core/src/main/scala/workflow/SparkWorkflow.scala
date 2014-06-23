@@ -66,8 +66,10 @@ object SparkWorkflow {
   class AlgoServerWrapper(val algos: Array[BAlgorithm], val server: BServer)
   extends Serializable {
     def onePassPredict(
-      input: (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
-    : Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
+      //input: (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
+      input: (Iterable[(AI, BaseModel)], Iterable[(_, _)]))
+    //: Iterable[(BaseFeature, BasePrediction, BaseActual)] = {
+    : Iterable[(_, _, _)] = {
       val modelIter = input._1
       val featureActualIter = input._2
 
@@ -75,9 +77,14 @@ object SparkWorkflow {
 
       featureActualIter.map{ case(feature, actual) => {
         val predictions = algos.zipWithIndex.map{
-          case (algo, i) => algo.predictBase(models(i), feature)
+          case (algo, i) => algo.predictBase(
+            models(i),
+            feature.asInstanceOf[BaseFeature])
+          //case (algo, i) => algo.predictBase(models(i), feature)
         }
-        val prediction = server.combineBase(feature, predictions)
+        val prediction = server.combineBase(
+          feature.asInstanceOf[BaseFeature], 
+          predictions)
         (feature, prediction, actual)
       }}
     }
@@ -140,14 +147,14 @@ object SparkWorkflow {
 
     // Data Prep
     val evalParamsDataMap
-    : Map[EI, (BTDP, BVDP, BTD, RDD[(BF, BA)])] = dataPrep
+    : Map[EI, (BTDP, BVDP, BTD, RDD[(_, _)])] = dataPrep
       .prepareBase(sc, evalDataParams)
 
     val localParamsSet: Map[EI, (BTDP, BVDP)] = evalParamsDataMap.map { 
       case(ei, e) => (ei -> (e._1, e._2))
     }
 
-    val evalDataMap: Map[EI, (BTD, RDD[(BF, BA)])] = evalParamsDataMap.map {
+    val evalDataMap: Map[EI, (BTD, RDD[(_, _)])] = evalParamsDataMap.map {
       case(ei, e) => (ei -> (e._3, e._4))
     }
 
@@ -216,9 +223,10 @@ object SparkWorkflow {
     // in one pass, as well as the combine logic of server.
     // Doing this way save one reduce-stage as we don't have to join results.
     val evalPredictionMap
-    : Map[EI, RDD[(BaseFeature, BasePrediction, BaseActual)]] = evalDataMap
+    //: Map[EI, RDD[(BaseFeature, BasePrediction, BaseActual)]] = evalDataMap
+    : Map[EI, RDD[(_, _, _)]] = evalDataMap
     .map { case (ei, data) => {
-      val validationData: RDD[(Int, (BaseFeature, BaseActual))] = data._2
+      val validationData: RDD[(Int, (_, _))] = data._2
         .map(e => (0, e))
       val algoModel: RDD[(Int, (AI, BaseModel))] = evalAlgoModelMap(ei)
         .map(e => (0, e))
@@ -243,7 +251,13 @@ object SparkWorkflow {
 
 
     val evalValidationUnitMap: Map[Int, RDD[BaseValidationUnit]] =
-      evalPredictionMap.mapValues(_.map(validator.validateBase))
+      evalPredictionMap
+        .mapValues(rdd => rdd.map(
+          e => (
+            e._1.asInstanceOf[BaseFeature],
+            e._2.asInstanceOf[BasePrediction],
+            e._3.asInstanceOf[BaseActual])))
+        .mapValues(_.map(validator.validateBase))
 
     if (verbose) {
       evalValidationUnitMap.foreach{ case(i, e) => {
