@@ -138,26 +138,18 @@ object SparkWorkflow {
 
     val dataPrep = baseEvaluator.dataPreparatorClass.newInstance
 
-    val localParamsSet
-    : Map[EI, (BaseTrainingDataParams, BaseValidationDataParams)] = dataPrep
-      .getParamsSetBase(evalDataParams)
-      .zipWithIndex
-      .map(_.swap)
-      .toMap
-
     // Data Prep
-    val evalDataMap
-    : Map[EI, (BTD, RDD[(BF, BA)])] = localParamsSet
-    .par
-    .map{ case (ei, localParams) => {
-      val (localTrainingParams, localValidationParams) = localParams
+    val evalParamsDataMap
+    : Map[EI, (BTDP, BVDP, BTD, RDD[(BF, BA)])] = dataPrep
+      .prepareBase(sc, evalDataParams)
 
-      val trainingData = dataPrep.prepareTrainingBase(sc, localTrainingParams)
-      val validationData = dataPrep.prepareValidationBase(sc, localValidationParams)
-      (ei, (trainingData, validationData))
-    }}
-    .seq
-    .toMap
+    val localParamsSet: Map[EI, (BTDP, BVDP)] = evalParamsDataMap.map { 
+      case(ei, e) => (ei -> (e._1, e._2))
+    }
+
+    val evalDataMap: Map[EI, (BTD, RDD[(BF, BA)])] = evalParamsDataMap.map {
+      case(ei, e) => (ei -> (e._3, e._4))
+    }
 
     if (verbose) {
       evalDataMap.foreach{ case (ei, data) => {

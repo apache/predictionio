@@ -22,7 +22,41 @@ abstract class BaseDataPreparator[
     A <: BaseActual]
   extends AbstractParameterizedDoer[EDP] {
 
+  type BTDP = BaseTrainingDataParams
+  type BVDP = BaseValidationDataParams
+  type BF = BaseFeature
+  type BA = BaseActual
+
   def init(params: EDP): Unit = {}
+
+  def prepareBase(sc: SparkContext, params: BaseEvaluationDataParams)
+  : Map[Int, (BTDP, BVDP, BTD, RDD[(BF, BA)])] = {
+    val localParamsSet
+    : Map[Int, (BaseTrainingDataParams, BaseValidationDataParams)] =
+      getParamsSetBase(params)
+      .zipWithIndex
+      .map(_.swap)
+      .toMap
+
+    val evalDataMap
+    : Map[Int, (BTD, RDD[(BF, BA)])] = localParamsSet
+    .par
+    .map{ case (ei, localParams) => {
+      val (localTrainingParams, localValidationParams) = localParams
+
+      val trainingData = prepareTrainingBase(sc, localTrainingParams)
+      val validationData = prepareValidationBase(sc, localValidationParams)
+      (ei, (trainingData, validationData))
+    }}
+    .seq
+    .toMap
+
+    evalDataMap.map { case(ei, e) => {
+      val params = localParamsSet(ei)
+      (ei, (params._1, params._2, e._1, e._2))
+    }}
+    .toMap
+  }
 
   def getParamsSetBase(params: BaseEvaluationDataParams)
   : Seq[(TDP, VDP)] = getParamsSet(params.asInstanceOf[EDP])
