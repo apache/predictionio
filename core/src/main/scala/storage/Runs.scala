@@ -1,14 +1,5 @@
 package io.prediction.storage
 
-import io.prediction.{
-  BaseEvaluationDataParams,
-  BaseValidationParams,
-  BaseCleanserParams,
-  BaseAlgoParams,
-  BaseServerParams,
-  BaseCrossValidationResults
-}
-
 import com.github.nscala_time.time.Imports._
 
 /**
@@ -28,12 +19,13 @@ case class Run(
   engineManifestId: String,
   engineManifestVersion: String,
   batch: String,
-  evaluationDataParams: BaseEvaluationDataParams,
-  validationParams: BaseValidationParams,
-  cleanserParams: BaseCleanserParams,
-  algoParamsList: Seq[(String, BaseAlgoParams)],
-  serverParams: BaseServerParams,
-  crossValidationResults: BaseCrossValidationResults)
+  evaluationDataParams: String,
+  validationParams: String,
+  cleanserParams: String,
+  algoParamsList: String,
+  serverParams: String,
+  models: Array[Byte],
+  crossValidationResults: String)
 
 /**
  * Base trait for implementations that interact with Runs in the

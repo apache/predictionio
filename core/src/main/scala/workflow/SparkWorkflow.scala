@@ -82,7 +82,7 @@ object SparkWorkflow {
       }}
     }
   }
-  
+
   class ValidatorWrapper(val validator: BValidator) extends Serializable {
     def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
       : ((BTDP, BVDP), BaseValidationResults) = {
@@ -126,7 +126,7 @@ object SparkWorkflow {
     baseEngine: BaseEngine[TD1,CD,F1,P1],
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-    ): (Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
+    ): (Array[Array[BaseModel]], Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
     // Add a flag to disable parallelization.
     val verbose = false
 
@@ -168,7 +168,7 @@ object SparkWorkflow {
         validationData.collect.foreach(println)
       }}
     }
-   
+
     // Cleansing
     val cleanser = baseEngine.cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
@@ -203,7 +203,7 @@ object SparkWorkflow {
         val model: RDD[BaseModel] = algo.trainBase(sc, cleansedData)
         model.map(e => (index, e))
       }}
-      
+
       (ei, sc.union(algoModelSeq) )
     }}
     .seq
@@ -214,7 +214,13 @@ object SparkWorkflow {
         println(s"Model: $ei $algoModel")
       }}
     }
-    
+
+    val models = evalAlgoModelMap.values.toArray.map { rdd =>
+      rdd.collect.map { p =>
+        p._2
+      }.toArray
+    }
+
     val server = baseEngine.serverClass.newInstance
     server.initBase(serverParams)
 
@@ -296,6 +302,6 @@ object SparkWorkflow {
 
     cvOutput foreach { println }
 
-    (cvInput, cvOutput(0))
+    (models, cvInput, cvOutput(0))
   }
 }

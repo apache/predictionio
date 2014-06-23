@@ -1,20 +1,8 @@
 package io.prediction.storage
 
-import io.prediction.{
-  BaseEvaluationDataParams,
-  BaseValidationParams,
-  BaseCleanserParams,
-  BaseAlgoParams,
-  BaseServerParams,
-  BaseCrossValidationResults
-}
-
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 import com.github.nscala_time.time.Imports._
-import org.json4s._
-import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization.{read, write}
 
 object MongoRuns {
   RegisterJodaTimeConversionHelpers()
@@ -26,7 +14,6 @@ object MongoRuns {
 class MongoRuns(db: MongoDB) extends Runs {
   private val runColl = db("runs")
   private val seq = new MongoSequences(db)
-  implicit private val formats = Serialization.formats(NoTypeHints)
 
   def insert(run: Run): String = {
     val sn = seq.genNextDaily("run")
@@ -42,12 +29,13 @@ class MongoRuns(db: MongoDB) extends Runs {
       "engineManifestId"       -> run.engineManifestId,
       "engineManifestVersion"  -> run.engineManifestVersion,
       "batch"                  -> run.batch,
-      "evaluationDataParams"   -> write(run.evaluationDataParams),
-      "validationParams"       -> write(run.validationParams),
-      "cleanserParams"         -> write(run.cleanserParams),
-      "algoParamsList"         -> write(run.algoParamsList),
-      "serverParams"           -> write(run.serverParams),
-      "crossValidationResults" -> write(run.crossValidationResults))
+      "evaluationDataParams"   -> run.evaluationDataParams,
+      "validationParams"       -> run.validationParams,
+      "cleanserParams"         -> run.cleanserParams,
+      "algoParamsList"         -> run.algoParamsList,
+      "serverParams"           -> run.serverParams,
+      "models"                 -> run.models,
+      "crossValidationResults" -> run.crossValidationResults)
     runColl.save(obj)
     id
   }
@@ -64,17 +52,13 @@ class MongoRuns(db: MongoDB) extends Runs {
     engineManifestId = dbObj.as[String]("engineManifestId"),
     engineManifestVersion = dbObj.as[String]("engineManifestVersion"),
     batch = dbObj.as[String]("batch"),
-    evaluationDataParams = read[BaseEvaluationDataParams](
-      dbObj.as[String]("evaluationDataParams")),
-    validationParams = read[BaseValidationParams](
-      dbObj.as[String]("validationParams")),
-    cleanserParams = read[BaseCleanserParams](
-      dbObj.as[String]("cleanserParams")),
-    algoParamsList = read[Seq[(String, BaseAlgoParams)]](
-      dbObj.as[String]("algoParamsList")),
-    serverParams = read[BaseServerParams](dbObj.as[String]("serverParams")),
-    crossValidationResults = read[BaseCrossValidationResults](
-      dbObj.as[String]("crossValidationResults")))
+    evaluationDataParams = dbObj.as[String]("evaluationDataParams"),
+    validationParams = dbObj.as[String]("validationParams"),
+    cleanserParams = dbObj.as[String]("cleanserParams"),
+    algoParamsList = dbObj.as[String]("algoParamsList"),
+    serverParams = dbObj.as[String]("serverParams"),
+    models = dbObj.as[Array[Byte]]("models"),
+    crossValidationResults = dbObj.as[String]("crossValidationResults"))
 
   class MongoRunIterator(it: MongoCursor) extends Iterator[Run] {
     def next = dbObjToRun(it.next)
