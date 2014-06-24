@@ -162,7 +162,7 @@ object SparkWorkflow {
     //): (Array[Array[BaseModel]], Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
 //>>>>>>> master
     // Add a flag to disable parallelization.
-    val verbose = false
+    val verbose = true
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
     conf.set("spark.local.dir", "~/tmp/spark")
@@ -289,7 +289,7 @@ object SparkWorkflow {
     val validator = baseEvaluator.validatorClass.newInstance
     validator.initBase(validationParams)
 
-
+    /*
     val evalValidationUnitMap: Map[Int, RDD[BaseValidationUnit]] =
       evalPredictionMap
         .mapValues(rdd => rdd.map(
@@ -297,6 +297,18 @@ object SparkWorkflow {
             e._1.asInstanceOf[BaseFeature],
             e._2.asInstanceOf[BasePrediction],
             e._3.asInstanceOf[BaseActual])))
+        .mapValues(_.map(validator.validateBase))
+    */
+
+    val evalValidationUnitMap: Map[Int, RDD[VU]] =
+      evalPredictionMap
+        /*
+        .mapValues(rdd => rdd.map(
+          e => (
+            e._1.asInstanceOf[BaseFeature],
+            e._2.asInstanceOf[BasePrediction],
+            e._3.asInstanceOf[BaseActual])))
+        */
         .mapValues(_.map(validator.validateBase))
 
     if (verbose) {

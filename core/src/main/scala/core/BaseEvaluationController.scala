@@ -236,11 +236,14 @@ abstract class BaseValidator[
   }
   */
 
-  def validateBase(input: (BaseFeature, BasePrediction, BaseActual))
-    : BaseValidationUnit = {
-    validateBase(input._1, input._2, input._3)
+  //def validateBase(input: (BaseFeature, BasePrediction, BaseActual))
+    //: BaseValidationUnit = {
+  def validateBase(input: (F, P, A))
+    : VU = {
+    validate(input._1, input._2, input._3)
   }
-  
+ 
+  /*
   def validateBase(
       feature: BaseFeature, 
       prediction: BasePrediction, 
@@ -252,6 +255,7 @@ abstract class BaseValidator[
       prediction.asInstanceOf[P],
       actual.asInstanceOf[A])
   }
+  */
 
   def validate(feature: F, predicted: P, actual: A): VU
 
@@ -298,21 +302,12 @@ class BaseEvaluator[
     VU,
     VR,
     CVR <: AnyRef](
-    /*
-    TD <: BaseTrainingData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    A <: BaseActual,
-    VU <: BaseValidationUnit,
-    VR <: BaseValidationResults,
-    CVR <: BaseCrossValidationResults](
-    */
   val dataPreparatorClass
     : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
   val validatorClass
     : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]]) {}
 
-
+/*
 class LocalEvaluator[
     EDP <: BaseEvaluationDataParams,
     VP <: BaseValidationParams,
@@ -332,8 +327,6 @@ class LocalEvaluator[
   extends BaseEvaluator[EDP, VP, TDP, VDP, RDD[TD], F, P, A, VU, VR, CVR](
     dataPreparatorClass, validatorClass) {}
 
-    //TD <: BaseTrainingData,
-  
 class SparkEvaluator[
     EDP <: BaseEvaluationDataParams,
     VP <: BaseValidationParams,
@@ -346,19 +339,10 @@ class SparkEvaluator[
     VU,
     VR,
     CVR <: AnyRef](
-    /*
-    TD <: BaseTrainingData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    A <: BaseActual,
-    VU <: BaseValidationUnit,
-    VR <: BaseValidationResults,
-    CVR <: BaseCrossValidationResults](
-    */
   dataPreparatorClass
     : Class[_ <: SparkDataPreparator[EDP, TDP, VDP, TD, F, A]],
   validatorClass
     : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]])
   extends BaseEvaluator[EDP, VP, TDP, VDP, TD, F, P, A, VU, VR, CVR](
     dataPreparatorClass, validatorClass) {}
-
+*/

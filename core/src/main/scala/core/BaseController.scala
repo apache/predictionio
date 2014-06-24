@@ -189,8 +189,9 @@ class BaseEngine[
       : Map[String,
         Class[_ <:
           BaseAlgorithm[CD, F, P, _, _]]],
-    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]]) {}
+    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
 
+/*
 class LocalEngine[
     TD,
     CD,
@@ -218,7 +219,7 @@ class SparkEngine[
           SparkAlgorithm[CD, F, P, _, _]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
-
+*/
 
 
 

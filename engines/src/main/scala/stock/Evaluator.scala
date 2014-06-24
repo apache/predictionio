@@ -8,7 +8,7 @@ import io.prediction.DataPreparator
 import io.prediction.Validator
 import io.prediction.EvaluatorFactory
 import io.prediction.core.BaseEvaluator
-import io.prediction.core.LocalEvaluator
+//import io.prediction.core.LocalEvaluator
 import io.prediction.BaseValidationParams
 import io.prediction.BaseValidationResults
 import io.prediction.BaseCrossValidationResults
@@ -34,7 +34,8 @@ object StockEvaluator extends EvaluatorFactory {
   val itemTrendsDb = config.getAppdataItemTrends()
 
   def apply() = {
-    new LocalEvaluator(
+    //new LocalEvaluator(
+    new BaseEvaluator(
       classOf[StockDataPreparator],
       classOf[StockValidator])
   }

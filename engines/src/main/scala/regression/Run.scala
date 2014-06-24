@@ -15,7 +15,8 @@ import io.prediction.core.BaseDataPreparator
 import io.prediction.core.BaseValidator
 import io.prediction.core.SparkDataPreparator
 import io.prediction._
-import io.prediction.core.SparkEvaluator
+//import io.prediction.core.SparkEvaluator
+import io.prediction.core.BaseEvaluator
 
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int)
@@ -23,7 +24,12 @@ extends BaseEvaluationDataParams
 
 object SparkRegressionEvaluator extends EvaluatorFactory {
   def apply() = {
+    /*
     new SparkEvaluator(
+      classOf[DataPrep],
+      classOf[Validator])
+    */
+    new BaseEvaluator(
       classOf[DataPrep],
       classOf[Validator])
   }
@@ -32,7 +38,8 @@ object SparkRegressionEvaluator extends EvaluatorFactory {
 
 // DataPrep
 class DataPrep 
-    extends SparkDataPreparator[
+    //extends SparkDataPreparator[
+    extends BaseDataPreparator[
         EvalDataParams,
         Null,
         Null,
