@@ -1,6 +1,6 @@
 package io.prediction.tools
 
-import io.prediction.BaseModel
+//import io.prediction.BaseModel
 import io.prediction.{ EngineFactory, EvaluatorFactory }
 import io.prediction.storage.{ Config, EngineManifest, Run }
 
@@ -82,7 +82,8 @@ object RunServer extends Logging {
           val engine = engineObject.instance.asInstanceOf[EngineFactory]()
 
           val algorithmMap = engine.algorithmClassMap.mapValues(_.newInstance)
-          val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[BaseModel]]])
+          //val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[BaseModel]]])
+          val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[Any]]])
 
           debug(run.algoParamsList)
           val algoJsonSeq = Serialization.read[Seq[Map[String, JValue]]](run.algoParamsList)

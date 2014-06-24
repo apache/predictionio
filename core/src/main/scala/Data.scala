@@ -1,6 +1,6 @@
 package io.prediction
 
-import io.prediction.core.BasePersistentData
+//import io.prediction.core.BasePersistentData
 import io.prediction.core.BaseParams
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -23,10 +23,11 @@ trait BaseAlgoParams extends BaseParams {}
 
 trait BaseServerParams extends BaseParams {}
 
-class DefaultCleanserParams() extends BaseCleanserParams{}
+//class DefaultCleanserParams() extends BaseCleanserParams{}
 
 //class DefaultServerParams() extends BaseServerParams{}
 
+/*
 // Engine Persistent Data
 trait BaseCleansedData extends BasePersistentData {}
 
@@ -49,6 +50,7 @@ trait BaseValidationUnit extends BasePersistentData {}
 trait BaseValidationResults extends BasePersistentData {}
 
 trait BaseCrossValidationResults extends BasePersistentData {}
+*/
 
 // Concrete helper classes
 class EmptyParams() extends BaseParams
@@ -60,6 +62,7 @@ with BaseCleanserParams
 with BaseAlgoParams
 with BaseServerParams {}
 
+/*
 class EmptyData() extends BasePersistentData
 with BaseTrainingData
 with BaseFeature
@@ -74,4 +77,4 @@ with BaseCrossValidationResults
 object EmptyData {
   def apply() = new EmptyData()
 }
-
+*/

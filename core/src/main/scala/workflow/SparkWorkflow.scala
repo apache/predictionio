@@ -33,15 +33,10 @@ object SparkWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
 
-  //type BTD = BaseTrainingData
   type BTDP = BaseTrainingDataParams
   type BVDP = BaseValidationDataParams
-  type BF = BaseFeature
-  type BA = BaseActual
-  type BCD = BaseCleansedData
-  type BTD = BaseTrainingData
 
-
+  /*
   type BAlgorithm = BaseAlgorithm[
     _ <: BaseCleansedData,
     _ <: BaseFeature,
@@ -57,6 +52,7 @@ object SparkWorkflow {
     _ <: BaseTrainingDataParams,
     _ <: BaseValidationDataParams,
     _,_,_,_,_,_]
+  */
 
   class AlgoServerWrapper[NF, NP, NA, NCD](
       //val algos: Array[BAlgorithm], 
@@ -92,7 +88,8 @@ object SparkWorkflow {
   }
 //<<<<<<< HEAD
   
-  class ValidatorWrapper[VR, CVR <: AnyRef](
+  //class ValidatorWrapper[VR, CVR <: AnyRef](
+  class ValidatorWrapper[VR, CVR](
     //val validator: BValidator) extends Serializable {
     val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
     //def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
@@ -136,7 +133,8 @@ object SparkWorkflow {
       A : Manifest,
       VU : Manifest,
       VR : Manifest,
-      CVR <: AnyRef : Manifest](
+      CVR: Manifest](
+      //CVR <: AnyRef : Manifest](
     batch: String,
     evalDataParams: BaseEvaluationDataParams,
     validationParams: BaseValidationParams,

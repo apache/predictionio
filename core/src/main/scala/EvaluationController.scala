@@ -8,10 +8,9 @@ trait DataPreparator[
     EDP <: BaseEvaluationDataParams,
     TDP <: BaseTrainingDataParams,
     VDP <: BaseValidationDataParams,
-    TD <: BaseTrainingData,
-    F <: BaseFeature,
-    A <: BaseActual]
-    //extends BaseDataPreparator[EDP, TDP, VDP, TD, F, A] {
+    TD,
+    F,
+    A]
     extends LocalDataPreparator[EDP, TDP, VDP, TD, F, A] {
   // Data generation
   def getParamsSet(params: EDP): Seq[(TDP, VDP)]
@@ -26,12 +25,12 @@ trait Validator[
     VP <: BaseValidationParams,
     TDP <: BaseTrainingDataParams,
     VDP <: BaseValidationDataParams,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    A <: BaseActual,
-    VU <: BaseValidationUnit,
-    VR <: BaseValidationResults,
-    CVR <: BaseCrossValidationResults]
+    F,
+    P,
+    A,
+    VU,
+    VR,
+    CVR <: AnyRef]
     extends BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] {
   def init(params: VP): Unit
 

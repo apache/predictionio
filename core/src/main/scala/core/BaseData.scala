@@ -1,16 +1,7 @@
 package io.prediction.core
 
-import io.prediction.{ 
-  BaseActual, 
-  BaseFeature, 
-  BasePrediction,
-  BaseValidationUnit,
-  BaseTrainingDataParams,
-  BaseValidationDataParams,
-  BaseValidationResults,
-  BaseTrainingData,
-  BaseCleansedData
-}
+import io.prediction.BaseTrainingDataParams
+import io.prediction.BaseValidationDataParams
 
 import com.twitter.chill.MeatLocker
 import org.apache.spark.rdd.RDD
@@ -37,6 +28,7 @@ trait BaseParams extends Serializable {
 
 // Below are internal classes used by PIO workflow
 //trait BasePersistentData extends AnyRef {}
+/*
 trait BasePersistentData extends Serializable {}
 
 trait BaseValidationSeq extends BasePersistentData {}
@@ -63,6 +55,7 @@ class ValidationParamsResults[
     val trainingDataParams: TDP,
     val validationDataParams: VDP,
     val data: VR) extends BaseValidationParamsResults {}
+*/
 
 /*
 // RDDWrapper

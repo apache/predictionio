@@ -26,8 +26,8 @@ abstract class BaseDataPreparator[
 
   type BTDP = BaseTrainingDataParams
   type BVDP = BaseValidationDataParams
-  type BF = BaseFeature
-  type BA = BaseActual
+  //type BF = BaseFeature
+  //type BA = BaseActual
 
   //def init(params: EDP): Unit = {}
 
@@ -223,7 +223,8 @@ abstract class BaseValidator[
     A,
     VU,
     VR,
-    CVR <: AnyRef ]
+    CVR ]
+    //CVR <: AnyRef ]
   extends AbstractParameterizedDoer[VP] {
 
   /*
@@ -301,7 +302,8 @@ class BaseEvaluator[
     A,
     VU,
     VR,
-    CVR <: AnyRef](
+    CVR](
+    //CVR <: AnyRef](
   val dataPreparatorClass
     : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
   val validatorClass
