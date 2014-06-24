@@ -223,8 +223,8 @@ abstract class BaseValidator[
     A,
     VU,
     VR,
-    CVR ]
-    //CVR <: AnyRef ]
+    CVR <: AnyRef ]
+    //CVR ]
   extends AbstractParameterizedDoer[VP] {
 
   /*
@@ -302,8 +302,7 @@ class BaseEvaluator[
     A,
     VU,
     VR,
-    CVR](
-    //CVR <: AnyRef](
+    CVR <: AnyRef](
   val dataPreparatorClass
     : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],
   val validatorClass

@@ -70,7 +70,7 @@ object RunEvaluationWorkflow extends Logging {
         Seq(
           s"${sparkHome}/bin/spark-submit",
           "--verbose",
-          "--master spark://localhost:7077",
+          "--master spark://duckpond:7077",
           "--class io.prediction.tools.CreateEvaluationWorkflow",
           engineManifest.jar,
           "--engineManifestId",
