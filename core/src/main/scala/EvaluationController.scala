@@ -72,6 +72,6 @@ trait EvaluatorFactory {
     _,
     _,
     _,
-    _]
+    _ <: AnyRef]
 }
 

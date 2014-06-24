@@ -90,14 +90,21 @@ object SparkWorkflow {
       }}
     }
   }
+//<<<<<<< HEAD
   
-  class ValidatorWrapper[VR, CVR](
+  class ValidatorWrapper[VR, CVR <: AnyRef](
     //val validator: BValidator) extends Serializable {
     val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
     //def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
     //  : ((BTDP, BVDP), BaseValidationResults) = {
     def validateSet(input: ((BTDP, BVDP), Iterable[Any]))
       : ((BTDP, BVDP), VR) = {
+//=======
+
+//  class ValidatorWrapper(val validator: BValidator) extends Serializable {
+//    def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
+//      : ((BTDP, BVDP), BaseValidationResults) = {
+//>>>>>>> master
       val results = validator.validateSetBase(
         input._1._1, input._1._2, input._2.toSeq)
       (input._1, results)
@@ -120,16 +127,16 @@ object SparkWorkflow {
       TDP <: BaseTrainingDataParams : Manifest,
       VDP <: BaseValidationDataParams : Manifest,
       TD: Manifest,
-      NTD <: BaseTrainingData : Manifest,
-      NCD <: BaseCleansedData : Manifest,
+      NTD : Manifest,
+      NCD : Manifest,
       F : Manifest,
-      NF <: BaseFeature : Manifest,
+      NF : Manifest,
       P : Manifest,
-      NP <: BasePrediction : Manifest,
+      NP : Manifest,
       A : Manifest,
       VU : Manifest,
       VR : Manifest,
-      CVR : Manifest](
+      CVR <: AnyRef : Manifest](
     batch: String,
     evalDataParams: BaseEvaluationDataParams,
     validationParams: BaseValidationParams,
@@ -139,12 +146,21 @@ object SparkWorkflow {
     baseEngine: BaseEngine[NTD,NCD,NF,NP],
     baseEvaluator
       : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
+//<<<<<<< HEAD
+/*
     ): (
     Seq[(
       BaseTrainingDataParams, 
       BaseValidationDataParams, 
       VR)], 
     CVR) = {
+*/
+//=======
+    ): (Array[Array[Any]], 
+    Seq[(BaseTrainingDataParams, BaseValidationDataParams, VR)], 
+    CVR) = {
+    //): (Array[Array[BaseModel]], Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
+//>>>>>>> master
     // Add a flag to disable parallelization.
     val verbose = false
 
@@ -178,7 +194,7 @@ object SparkWorkflow {
         validationData.collect.foreach(println)
       }}
     }
-   
+
     // Cleansing
     val cleanser = baseEngine.cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
@@ -219,7 +235,7 @@ object SparkWorkflow {
           .map(_.asInstanceOf[Any])
         model.map(e => (index, e))
       }}
-      
+
       (ei, sc.union(algoModelSeq) )
     }}
     .seq
@@ -230,7 +246,13 @@ object SparkWorkflow {
         println(s"Model: $ei $algoModel")
       }}
     }
-    
+
+    val models = evalAlgoModelMap.values.toArray.map { rdd =>
+      rdd.collect.map { p =>
+        p._2
+      }.toArray
+    }
+
     val server = baseEngine.serverClass.newInstance
     server.initBase(serverParams)
 
@@ -320,6 +342,6 @@ object SparkWorkflow {
 
     cvOutput foreach { println }
 
-    (cvInput, cvOutput(0))
+    (models, cvInput, cvOutput(0))
   }
 }

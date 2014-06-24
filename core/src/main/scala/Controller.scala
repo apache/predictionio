@@ -5,8 +5,8 @@ import scala.reflect.ClassTag
 import io.prediction.core._
 
 trait Cleanser[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData,
+    TD ,
+    CD ,
     CP <: BaseCleanserParams]
   extends LocalCleanser[TD, CD, CP] {
 
@@ -16,10 +16,10 @@ trait Cleanser[
 }
 
 trait Algorithm[
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    M <: BaseModel,
+    CD ,
+    F ,
+    P ,
+    M ,
     AP <: BaseAlgoParams]
     extends LocalAlgorithm[CD, F, P, M, AP] {
   //def init(algoParams: AP): Unit
@@ -29,7 +29,10 @@ trait Algorithm[
   def predict(model: M, feature: F): P
 }
 
-trait Server[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
+trait Server[
+    F , 
+    P ,
+    SP <: BaseServerParams]
     extends BaseServer[F, P, SP] {
   //def init(serverParams: SP): Unit
 
@@ -37,7 +40,7 @@ trait Server[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
 }
 
 // Below is default implementation.
-class DefaultServer[F <: BaseFeature, P <: BasePrediction]
+class DefaultServer[F , P ]
 //    extends Server[F, P, DefaultServerParams] {
 //  def init(params: DefaultServerParams): Unit = {}
     extends Server[F, P, EmptyParams] {
@@ -46,14 +49,14 @@ class DefaultServer[F <: BaseFeature, P <: BasePrediction]
 }
 
 
-class DefaultCleanser[TD <: BaseTrainingData : Manifest]()
+class DefaultCleanser[TD : Manifest]()
     extends LocalCleanser[TD, TD, EmptyParams] {
   //def init(params: EmptyParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
 }
 
 
-class SparkDefaultCleanser[TD <: BaseTrainingData]()
+class SparkDefaultCleanser[TD ]()
     extends SparkCleanser[TD, TD, EmptyParams] {
   //def init(params: EmptyParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
@@ -72,8 +75,8 @@ class DefaultCleanser[TD <: BaseTrainingData : Manifest]
 // Factory Methods
 trait EngineFactory {
   def apply(): BaseEngine[
-    _ <: BaseTrainingData,
-    _ <: BaseCleansedData,
-    _ <: BaseFeature,
-    _ <: BasePrediction]
+    _ ,
+    _ ,
+    _ ,
+    _ ]
 }

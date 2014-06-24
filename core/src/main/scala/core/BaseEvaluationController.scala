@@ -122,24 +122,25 @@ abstract class LocalDataPreparator[
     EDP <: BaseEvaluationDataParams : Manifest,
     TDP <: BaseTrainingDataParams : Manifest,
     VDP <: BaseValidationDataParams,
-    TD <: BaseTrainingData : Manifest,
-    F <: BaseFeature,
-    A <: BaseActual]
-    extends SlicedDataPreparator[EDP, TDP, VDP, RDDTD[TD], F, A] {
+    TD : Manifest,
+    F ,
+    A ]
+    extends SlicedDataPreparator[EDP, TDP, VDP, RDD[TD], F, A] {
 
   override
   def prepareTrainingBase(
     sc: SparkContext,
-    params: BaseTrainingDataParams): RDDTD[TD] = {
+    params: BaseTrainingDataParams): RDD[TD] = {
     println("LocalDataPreparator.prepareTrainingBase")
     val tdp = params.asInstanceOf[TDP]
     prepareTraining(sc, tdp)
   }
 
-  def prepareTraining(sc: SparkContext, tdp: TDP): RDDTD[TD] = {
+  def prepareTraining(sc: SparkContext, tdp: TDP): RDD[TD] = {
     val sParams = sc.parallelize(Array(tdp))
     val v = sParams.map(prepareTraining)
-    new RDDTD(v = v)
+    v
+    //new RDDTD(v = v)
   }
 
   def prepareTraining(params: TDP): TD
@@ -222,7 +223,7 @@ abstract class BaseValidator[
     A,
     VU,
     VR,
-    CVR]
+    CVR <: AnyRef ]
   extends AbstractParameterizedDoer[VP] {
 
   /*
@@ -296,7 +297,7 @@ class BaseEvaluator[
     A,
     VU,
     VR,
-    CVR](
+    CVR <: AnyRef](
     /*
     TD <: BaseTrainingData,
     F <: BaseFeature,
@@ -317,18 +318,18 @@ class LocalEvaluator[
     VP <: BaseValidationParams,
     TDP <: BaseTrainingDataParams,
     VDP <: BaseValidationDataParams,
-    TD <: BaseTrainingData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    A <: BaseActual,
-    VU <: BaseValidationUnit,
-    VR <: BaseValidationResults,
-    CVR <: BaseCrossValidationResults](
+    TD,
+    F ,
+    P ,
+    A ,
+    VU ,
+    VR ,
+    CVR <: AnyRef ](
   dataPreparatorClass
     : Class[_ <: LocalDataPreparator[EDP, TDP, VDP, TD, F, A]],
   validatorClass
     : Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]])
-  extends BaseEvaluator[EDP, VP, TDP, VDP, RDDTD[TD], F, P, A, VU, VR, CVR](
+  extends BaseEvaluator[EDP, VP, TDP, VDP, RDD[TD], F, P, A, VU, VR, CVR](
     dataPreparatorClass, validatorClass) {}
 
     //TD <: BaseTrainingData,
@@ -344,7 +345,7 @@ class SparkEvaluator[
     A,
     VU,
     VR,
-    CVR](
+    CVR <: AnyRef](
     /*
     TD <: BaseTrainingData,
     F <: BaseFeature,

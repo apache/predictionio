@@ -64,11 +64,12 @@ class ValidationParamsResults[
     val validationDataParams: VDP,
     val data: VR) extends BaseValidationParamsResults {}
 
+/*
 // RDDWrapper
 class RDDTD[T <: BaseTrainingData](val v: RDD[T]) 
 extends BaseTrainingData
 
 class RDDCD[T <: BaseCleansedData](val v: RDD[T]) 
 extends BaseCleansedData
-
+*/
 
