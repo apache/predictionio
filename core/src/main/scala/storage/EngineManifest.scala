@@ -10,7 +10,7 @@ package io.prediction.storage
  * @param version Engine version string.
  * @param name A short and descriptive name for the engine.
  * @param description A long description of the engine.
- * @param jar Absolute path to the engine JAR assembly with all dependencies.
+ * @param jars Paths to engine JARs with all dependencies.
  * @param engineFactory Engine's factory class name.
  * @param evaluatorFactory Engine's evaluator factory class name. (TODO: May refactor.)
  */
@@ -19,7 +19,7 @@ case class EngineManifest(
   version: String,
   name: String,
   description: Option[String],
-  jar: String,
+  jars: Seq[String],
   engineFactory: String,
   evaluatorFactory: String)
 

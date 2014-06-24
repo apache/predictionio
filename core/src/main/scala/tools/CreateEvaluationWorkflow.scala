@@ -20,9 +20,9 @@ import com.github.nscala_time.time.Imports._
 import com.twitter.chill.KryoInjection
 import org.json4s._
 import org.json4s.ext.JodaTimeSerializers
-import org.json4s.jackson.JsonMethods
-import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization.{read, write}
+import org.json4s.native.JsonMethods
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.{read, write}
 
 import scala.io.Source
 import scala.reflect.runtime.universe
@@ -69,7 +69,7 @@ object CreateEvaluationWorkflow extends Logging {
       if (path == "") ""
       else Source.fromFile(jsonDir + path).mkString)
 
-    val json = if (jsonString == "") JsonMethods.parse("{}") else JsonMethods.parse(jsonString)
+    val json = JsonMethods.parse(jsonString)
     val params = Extraction.extract(json)(formats, classManifest)
     info(json)
     info(params)

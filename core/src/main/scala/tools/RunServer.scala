@@ -9,8 +9,8 @@ import com.twitter.chill.ScalaKryoInstantiator
 import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.ext.JodaTimeSerializers
-import org.json4s.jackson.JsonMethods._
-import org.json4s.jackson.Serialization
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization
 
 import java.io.File
 import java.io.ByteArrayInputStream
@@ -70,9 +70,11 @@ object RunServer extends Logging {
           val evaluatorFactoryName = manifest.evaluatorFactory
           val engineFactoryName = manifest.engineFactory
 
-          val engineJarFile = new File(manifest.jar)
-          info(s"Engine JAR file (${manifest.jar}) exists? ${engineJarFile.exists()}")
-          val classLoader = new URLClassLoader(Array(engineJarFile.toURI.toURL))
+          val engineJarFiles = manifest.jars.map(j => new File(j))
+          engineJarFiles foreach { f =>
+            info(s"Engine JAR file (${f}) exists? ${f.exists}")
+          }
+          val classLoader = new URLClassLoader(engineJarFiles.map(_.toURI.toURL).toArray)
           val runtimeMirror = universe.runtimeMirror(classLoader)
           val kryoInstantiator = new KryoInstantiator(classLoader)
           val kryo = KryoInjection.instance(kryoInstantiator)

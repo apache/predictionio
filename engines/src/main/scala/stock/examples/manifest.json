@@ -2,7 +2,11 @@
   "id": "io.prediction.engines.stock",
   "version": "0.8.0-SNAPSHOT",
   "name": "Justin Yip Always Win Stock Engine",
-  "jar": "../engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT.jar",
+  "jars": [
+    "../engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar",
+    "target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar",
+    "../engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar"
+  ],
   "engineFactory": "io.prediction.engines.stock.StockEngine",
   "evaluatorFactory": "io.prediction.engines.stock.StockEvaluator"
 }
