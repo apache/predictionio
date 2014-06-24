@@ -10,6 +10,7 @@ import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.ext.JodaTimeSerializers
 import org.json4s.jackson.JsonMethods._
+import org.json4s.jackson.Serialization
 
 import java.io.File
 import java.io.ByteArrayInputStream
@@ -82,6 +83,15 @@ object RunServer extends Logging {
 
           val algorithmMap = engine.algorithmClassMap.mapValues(_.newInstance)
           val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[BaseModel]]])
+
+          debug(run.algoParamsList)
+          val algoJsonSeq = Serialization.read[Seq[Map[String, JValue]]](run.algoParamsList)
+          debug(algoJsonSeq)
+          val algoNames = algoJsonSeq.map(_.apply("name") match {
+            case JString(s) => s
+            case _ => ""
+          })
+          debug(algoNames)
 
           val server = engine.serverClass.newInstance
           val serverParams = getParams(run.serverParams, server.paramsClass)

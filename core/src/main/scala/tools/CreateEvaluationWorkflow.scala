@@ -18,13 +18,9 @@ import io.prediction.workflow.SparkWorkflow
 import grizzled.slf4j.Logging
 import com.github.nscala_time.time.Imports._
 import com.twitter.chill.KryoInjection
-import org.json4s.ext.JodaTimeSerializers
-import org.json4s.native.JsonMethods
-import org.json4s.DefaultFormats
-import org.json4s.Extraction
-import org.json4s.JValue
-
 import org.json4s._
+import org.json4s.ext.JodaTimeSerializers
+import org.json4s.jackson.JsonMethods
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.{read, write}
 
@@ -73,7 +69,7 @@ object CreateEvaluationWorkflow extends Logging {
       if (path == "") ""
       else Source.fromFile(jsonDir + path).mkString)
 
-    val json = JsonMethods.parse(jsonString)
+    val json = if (jsonString == "") JsonMethods.parse("{}") else JsonMethods.parse(jsonString)
     val params = Extraction.extract(json)(formats, classManifest)
     info(json)
     info(params)
@@ -229,7 +225,7 @@ object CreateEvaluationWorkflow extends Logging {
       evaluationDataParams = write(dataPrepParams),
       validationParams = write(validatorParams),
       cleanserParams = write(cleanserParams),
-      algoParamsList = write(algoParamSet),
+      algoParamsList = write(algoParamSet.map(t => Map("name" -> t._1, "params" -> t._2))),
       serverParams = write(serverParams),
       models = KryoInjection(evalWorkflow1._1),
       crossValidationResults = write(evalWorkflow1._3)
