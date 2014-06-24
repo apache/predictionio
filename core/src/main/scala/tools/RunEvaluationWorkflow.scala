@@ -6,60 +6,69 @@ import grizzled.slf4j.Logging
 
 import scala.sys.process._
 
+import java.io.File
+
 object RunEvaluationWorkflow extends Logging {
   def main(args: Array[String]): Unit = {
     case class Args(
-      sparkSubmit: String = "",
+      sparkHome: String = "",
       id: String = "",
       version: String = "",
       batch: String = "",
-      dataPrepJsonPath: String = "",
-      validatorJsonPath: String = "",
-      cleanserJsonPath: String = "",
-      algoJsonPath: String = "",
-      serverJsonPath: String = "",
-      jsonDir: String = "")
+      dataPrepJsonPath: String = "dataPrepParams.json",
+      validatorJsonPath: String = "validatorParams.json",
+      cleanserJsonPath: String = "cleanserParams.json",
+      algoJsonPath: String = "algoParams.json",
+      serverJsonPath: String = "serverParams.json",
+      jsonDir: String = ".")
 
     val parser = new scopt.OptionParser[Args]("RunEvaluationWorkflow") {
-      arg[String]("<path of spark-submit binary>") action { (x, c) =>
-        c.copy(sparkSubmit = x)
-      } text("path to the spark-submit binary")
       arg[String]("<engine id>") action { (x, c) =>
         c.copy(id = x)
-      } text("the engine's ID")
+      } text("Engine ID.")
       arg[String]("<engine version>") action { (x, c) =>
         c.copy(version = x)
-      } text("the engine's version")
+      } text("Engine version.")
+      opt[String]("spark") action { (x, c) =>
+        c.copy(sparkHome = x)
+      } text("Path to a Apache Spark installation. If not specified, the SPARK_HOME environmental variable will be used.")
       opt[String]("batch") action { (x, c) =>
         c.copy(batch = x)
-      } text("batch label of the run")
-      opt[String]("dp").optional()
-        .valueName("<dataprep param json>").action { (x,c) =>
-          c.copy(dataPrepJsonPath = x)}
-      opt[String]("vp").optional()
-        .valueName("<validator param json>").action { (x,c) =>
-          c.copy(validatorJsonPath = x)}
-      opt[String]("cp").optional()
-        .valueName("<cleanser param json>").action { (x,c) =>
-          c.copy(cleanserJsonPath = x)}
-      opt[String]("ap").optional()
-        .valueName("<algo param json>").action { (x,c) =>
-          c.copy(algoJsonPath = x) }
-      opt[String]("sp").optional()
-        .valueName("<server param json>").action { (x,c) =>
-          c.copy(serverJsonPath = x) }
-      opt[String]("jsonDir").optional()
-        .valueName("<json directory>").action { (x,c) =>
-          c.copy(jsonDir = x) }
-
+      } text("Batch label of the run.")
+      opt[String]("jsonDir") action { (x, c) =>
+        c.copy(jsonDir = x)
+      } text("Base directory of JSON files. Default: .")
+      opt[String]("dp") action { (x, c) =>
+        c.copy(dataPrepJsonPath = x)
+      } text("Data preparator parameters file. Default: dataPrepParams.json")
+      opt[String]("vp") action { (x, c) =>
+        c.copy(validatorJsonPath = x)
+      } text("Validator parameters file. Default: validatorParams.json")
+      opt[String]("cp") action { (x, c) =>
+        c.copy(cleanserJsonPath = x)
+      } text("Cleanser parameters file. Default: cleanserParams.json")
+      opt[String]("ap") action { (x, c) =>
+        c.copy(algoJsonPath = x)
+      } text("Algorithm parameters file. Default: algoParams.json")
+      opt[String]("sp") action { (x, c) =>
+        c.copy(serverJsonPath = x)
+      } text("Server parameters file. Default: serverParams.json")
     }
 
     parser.parse(args, Args()) map { parsedArgs =>
       val config = new Config
       val engineManifests = config.getSettingsEngineManifests
+      val defaults = Args()
       engineManifests.get(parsedArgs.id, parsedArgs.version) map { engineManifest =>
+        val sparkHome = if (parsedArgs.sparkHome != "") parsedArgs.sparkHome else sys.env.get("SPARK_HOME").getOrElse(".")
+        val params = Map(
+          "dp" -> parsedArgs.dataPrepJsonPath,
+          "vp" -> parsedArgs.validatorJsonPath,
+          "cp" -> parsedArgs.cleanserJsonPath,
+          "ap" -> parsedArgs.algoJsonPath,
+          "sp" -> parsedArgs.serverJsonPath)
         Seq(
-          parsedArgs.sparkSubmit,
+          s"${sparkHome}/bin/spark-submit",
           "--verbose",
           "--master spark://localhost:7077",
           "--class io.prediction.tools.CreateEvaluationWorkflow",
@@ -73,16 +82,17 @@ object RunEvaluationWorkflow extends Logging {
           "--engineFactory",
           engineManifest.engineFactory,
           if (parsedArgs.batch != "") "--batch " + parsedArgs.batch else "",
-          if (parsedArgs.dataPrepJsonPath != "") "--dp " + parsedArgs.dataPrepJsonPath else "",
-          if (parsedArgs.validatorJsonPath != "") "--vp " + parsedArgs.validatorJsonPath else "",
-          if (parsedArgs.cleanserJsonPath != "") "--cp " + parsedArgs.cleanserJsonPath else "",
-          if (parsedArgs.algoJsonPath != "") "--ap " + parsedArgs.algoJsonPath else "",
-          if (parsedArgs.serverJsonPath != "") "--sp " + parsedArgs.serverJsonPath else "",
-          if (parsedArgs.jsonDir != "") "--jsonDir " + parsedArgs.jsonDir else ""
+          if (params("dp") == defaults.dataPrepJsonPath && !(new File(withPath(params("dp"), parsedArgs.jsonDir))).exists) "" else "--dp " + withPath(params("dp"), parsedArgs.jsonDir),
+          if (params("vp") == defaults.validatorJsonPath && !(new File(withPath(params("vp"), parsedArgs.jsonDir))).exists) "" else "--vp " + withPath(params("vp"), parsedArgs.jsonDir),
+          if (params("cp") == defaults.cleanserJsonPath && !(new File(withPath(params("cp"), parsedArgs.jsonDir))).exists) "" else "--cp " + withPath(params("cp"), parsedArgs.jsonDir),
+          if (params("ap") == defaults.algoJsonPath && !(new File(withPath(params("ap"), parsedArgs.jsonDir))).exists) "" else "--ap " + withPath(params("ap"), parsedArgs.jsonDir),
+          if (params("sp") == defaults.serverJsonPath && !(new File(withPath(params("sp"), parsedArgs.jsonDir))).exists) "" else "--sp " + withPath(params("sp"), parsedArgs.jsonDir)
         ).mkString(" ").!
       } getOrElse {
         error(s"Engine ${parsedArgs.id} ${parsedArgs.version} is not registered.")
       }
     }
   }
+
+  private def withPath(file: String, path: String) = s"$path/$file"
 }
