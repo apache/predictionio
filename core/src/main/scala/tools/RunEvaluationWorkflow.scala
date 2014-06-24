@@ -12,6 +12,8 @@ object RunEvaluationWorkflow extends Logging {
   def main(args: Array[String]): Unit = {
     case class Args(
       sparkHome: String = "",
+      sparkMasterIP: String = "",
+      sparkMasterPort: String = "",
       id: String = "",
       version: String = "",
       batch: String = "",
@@ -29,9 +31,15 @@ object RunEvaluationWorkflow extends Logging {
       arg[String]("<engine version>") action { (x, c) =>
         c.copy(version = x)
       } text("Engine version.")
-      opt[String]("spark") action { (x, c) =>
+      opt[String]("sparkHome") action { (x, c) =>
         c.copy(sparkHome = x)
       } text("Path to a Apache Spark installation. If not specified, the SPARK_HOME environmental variable will be used.")
+      opt[String]("sparkIP") action { (x, c) =>
+        c.copy(sparkMasterIP = x)
+      } text("Spark master IP. Default: localhost")
+      opt[String]("sparkPort") action { (x, c) =>
+        c.copy(sparkMasterPort = x)
+      } text("Spark master port. Default: 7077")
       opt[String]("batch") action { (x, c) =>
         c.copy(batch = x)
       } text("Batch label of the run.")
@@ -61,6 +69,8 @@ object RunEvaluationWorkflow extends Logging {
       val defaults = Args()
       engineManifests.get(parsedArgs.id, parsedArgs.version) map { engineManifest =>
         val sparkHome = if (parsedArgs.sparkHome != "") parsedArgs.sparkHome else sys.env.get("SPARK_HOME").getOrElse(".")
+        val sparkIP = if (parsedArgs.sparkMasterIP != "") parsedArgs.sparkMasterIP else sys.env.get("SPARK_MASTER_IP").getOrElse("localhost")
+        val sparkPort = if (parsedArgs.sparkMasterPort != "") parsedArgs.sparkMasterPort else sys.env.get("SPARK_MASTER_PORT").getOrElse("7077")
         val params = Map(
           "dp" -> parsedArgs.dataPrepJsonPath,
           "vp" -> parsedArgs.validatorJsonPath,
@@ -70,7 +80,7 @@ object RunEvaluationWorkflow extends Logging {
         Seq(
           s"${sparkHome}/bin/spark-submit",
           "--verbose",
-          "--master spark://localhost:7077",
+          s"--master spark://${sparkIP}:${sparkPort}",
           "--class io.prediction.tools.CreateEvaluationWorkflow",
           engineManifest.jar,
           "--engineManifestId",
