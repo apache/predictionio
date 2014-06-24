@@ -12,29 +12,32 @@ import org.apache.spark.SparkConf
     
 abstract 
 class BaseCleanser[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData,
+    TD ,
+    CD ,
     CP <: BaseCleanserParams: Manifest]
   extends AbstractParameterizedDoer[CP] {
 
-  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
+  //def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData
+  def cleanseBase(trainingData: Any): CD
 }
 
 
 abstract 
 class LocalCleanser[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData : Manifest,
+    TD ,
+    CD : Manifest,
     CP <: BaseCleanserParams: Manifest]
-  extends BaseCleanser[RDDTD[TD], RDDCD[CD], CP] {
+  extends BaseCleanser[RDD[TD], RDD[CD], CP] {
 
-  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
+  //def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
+  def cleanseBase(trainingData: Any): RDD[CD] = {
     println("Local.cleanseBase.")
     val cd: RDD[CD] = trainingData
-      .asInstanceOf[RDDTD[TD]]
-      .v
+      .asInstanceOf[RDD[TD]]
+      //.v
       .map(cleanse)
-    new RDDCD[CD](v = cd)
+    cd
+    //new RDD[CD](v = cd)
   }
 
   def cleanse(trainingData: TD): CD
@@ -42,12 +45,14 @@ class LocalCleanser[
 
 abstract
 class SparkCleanser[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData,
+    TD ,
+    CD ,
     CP <: BaseCleanserParams: Manifest]
   extends BaseCleanser[TD, CD, CP] {
 
-  def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
+  //def cleanseBase(trainingData: BaseTrainingData): BaseCleansedData = {
+  //def cleanseBase(trainingData: BaseTrainingData): CD = {
+  def cleanseBase(trainingData: Any): CD = {
     println("SparkCleanser.cleanseBase")
     cleanse(trainingData.asInstanceOf[TD])
   }
@@ -61,19 +66,19 @@ class SparkCleanser[
 /* Algorithm */
 
 abstract class BaseAlgorithm[
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    M <: BaseModel,
+    CD,
+    F,
+    P,
+    M,
     AP <: BaseAlgoParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
 
   def trainBase(
     sc: SparkContext, 
-    cleansedData: BaseCleansedData): RDD[BaseModel] 
+    cleansedData: CD): RDD[Any] 
 
-  def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
-    : BasePrediction = {
+  def predictBase(baseModel: Any, baseFeature: F)
+    : P = {
     predict(
       baseModel.asInstanceOf[M],
       baseFeature.asInstanceOf[F])
@@ -83,21 +88,23 @@ abstract class BaseAlgorithm[
 }
 
 abstract class LocalAlgorithm[
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    M <: BaseModel : Manifest,
+    CD,
+    F,
+    P,
+    M: Manifest,
     AP <: BaseAlgoParams: Manifest]
-  extends BaseAlgorithm[RDDCD[CD], F, P, M, AP] {
+  extends BaseAlgorithm[RDD[CD], F, P, M, AP] {
 
   def trainBase(
     sc: SparkContext,
-    cleansedData: BaseCleansedData): RDD[BaseModel] = {
+    cleansedData: RDD[CD]): RDD[Any] = {
     println("LocalAlgorithm.trainBase")
-    val m: RDD[BaseModel] = cleansedData.asInstanceOf[RDDCD[CD]]
-      .v
+    val m: RDD[Any] = cleansedData
+      //.asInstanceOf[RDD[CD]]
+      //.v
       .map(train)
-      .map(_.asInstanceOf[BaseModel])
+      .map(_.asInstanceOf[Any])
+      //.map(_.asInstanceOf[BaseModel])
     m
   }
 
@@ -107,17 +114,18 @@ abstract class LocalAlgorithm[
 }
 
 abstract class SparkAlgorithm[
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    M <: BaseModel : Manifest,
+    CD,
+    F,
+    P,
+    M: Manifest,
     AP <: BaseAlgoParams: Manifest]
   extends BaseAlgorithm[CD, F, P, M, AP] {
   // train returns a local object M, and we parallelize it.
   def trainBase(
     sc: SparkContext, 
-    cleansedData: BaseCleansedData): RDD[BaseModel] = {
-    val m: BaseModel = train(cleansedData.asInstanceOf[CD])
+    cleansedData: CD): RDD[Any] = {
+    //val m: M = train(cleansedData.asInstanceOf[CD])
+    val m: Any = train(cleansedData.asInstanceOf[CD]).asInstanceOf[Any]
     sc.parallelize(Array(m))
   }
 
@@ -132,11 +140,12 @@ abstract class SparkAlgorithm[
 /* Server */
 
 abstract class BaseServer[
-    -F <: BaseFeature,
-    P <: BasePrediction,
+    F,
+    P,
     SP <: BaseServerParams: Manifest]
   extends AbstractParameterizedDoer[SP] {
 
+  /*
   def combineSeqBase(basePredictionSeqSeq: Seq[BasePredictionSeq])
     : BasePredictionSeq = {
     val dataSeq: Seq[Seq[(F, P, BaseActual)]] = basePredictionSeqSeq
@@ -152,11 +161,12 @@ abstract class BaseServer[
     }}
     new PredictionSeq[F, P, BaseActual](data = output)
   }
+  */
 
   def combineBase(
-    baseFeature: BaseFeature,
-    basePredictions: Seq[BasePrediction])
-    : BasePrediction = {
+    baseFeature: F,
+    basePredictions: Seq[P])
+    : P = {
     combine(
       baseFeature.asInstanceOf[F],
       basePredictions.map(_.asInstanceOf[P]))
@@ -169,43 +179,43 @@ abstract class BaseServer[
 /* Engine */
 
 class BaseEngine[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction](
+    TD,
+    CD,
+    F,
+    P](
     val cleanserClass
       : Class[_ <: BaseCleanser[TD, CD, _ <: BaseCleanserParams]],
     val algorithmClassMap
       : Map[String,
         Class[_ <:
-          BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
+          BaseAlgorithm[CD, F, P, _, _]]],
     val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]]) {}
 
 class LocalEngine[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction](
+    TD,
+    CD,
+    F,
+    P](
     cleanserClass
       : Class[_ <: LocalCleanser[TD, CD, _ <: BaseCleanserParams]],
     algorithmClassMap
       : Map[String,
         Class[_ <:
-          LocalAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
+          LocalAlgorithm[CD, F, P, _, _]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
     
 class SparkEngine[
-    TD <: BaseTrainingData,
-    CD <: BaseCleansedData,
-    F <: BaseFeature,
-    P <: BasePrediction](
+    TD,
+    CD,
+    F,
+    P](
     cleanserClass
       : Class[_ <: SparkCleanser[TD, CD, _ <: BaseCleanserParams]],
     algorithmClassMap
       : Map[String,
         Class[_ <:
-          SparkAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
+          SparkAlgorithm[CD, F, P, _, _]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
 

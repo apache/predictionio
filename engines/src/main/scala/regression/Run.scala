@@ -12,13 +12,27 @@ import org.apache.spark.rdd.RDD
 
 import io.prediction.BaseEvaluationDataParams
 import io.prediction.core.BaseDataPreparator
+import io.prediction.core.BaseValidator
+import io.prediction.core.SparkDataPreparator
+import io.prediction._
+import io.prediction.core.SparkEvaluator
 
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int)
 extends BaseEvaluationDataParams
 
+object SparkRegressionEvaluator extends EvaluatorFactory {
+  def apply() = {
+    new SparkEvaluator(
+      classOf[DataPrep],
+      classOf[Validator])
+  }
+}
+
+
+// DataPrep
 class DataPrep 
-    extends BaseDataPreparator[
+    extends SparkDataPreparator[
         EvalDataParams,
         Null,
         Null,
@@ -44,6 +58,32 @@ class DataPrep
   }
 }
 
+// Validator
+class Validator 
+    extends BaseValidator[
+        Null, Null, Null,
+        Vector, Double, Double, 
+        (Double, Double), Double, String] {
+
+  def validate(feature: Vector, prediction: Double, actual: Double)
+  : (Double, Double) = {
+    (prediction, actual)
+  }
+
+  def validateSet(tdp: Null, vdp: Null, input: Seq[(Double, Double)])
+  : Double = {
+    val units = input.map(e => math.pow((e._1 - e._2), 2))
+    units.sum / units.length
+  }
+
+  def crossValidate(input: Seq[(Null, Null, Double)]): String = {
+    input.map(e => s"MSE: ${e._3}").mkString("\n")
+  }
+}
+     
+
+// Validator
+
 
 object Runner {
   def main(args: Array[String]) {
@@ -60,6 +100,8 @@ object Runner {
     dataPrep.prepare(sc, evalDataParams).map { case (ei, e) => {
       println(s"$ei $e")
     }}
+
+    val validator = new Validator
   }
   
   def good() {

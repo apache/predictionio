@@ -53,6 +53,7 @@ class BackTestingValidator
         BackTestingResults] {
   var params: BackTestingParams = null
 
+  override
   def init(params: BackTestingParams): Unit = {
     this.params = params
   }

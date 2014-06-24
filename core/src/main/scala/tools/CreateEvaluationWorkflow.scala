@@ -193,7 +193,8 @@ object CreateEvaluationWorkflow extends Logging {
       .map{ ap =>
         val p = Extraction.extract(ap.params)(formats,
           engine.algorithmClassMap(ap.name).newInstance.paramsClass)
-        (ap.name, p)//.asInstanceOf[BaseAlgoParams])
+        //(ap.name, p)//.asInstanceOf[BaseAlgoParams])
+        (ap.name, p.asInstanceOf[BaseAlgoParams])
       }
 
     info(algoJson)

@@ -276,7 +276,7 @@ class ItemRankValidator
       EmptyData,
       EmptyData] {
 
-  def init(params: EvalParams): Unit = {}
+  //def init(params: EvalParams): Unit = {}
 
   // evaluation
 

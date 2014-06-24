@@ -223,7 +223,7 @@ class StockValidator
         ValidationUnit, 
         ValidationResults, 
         CrossValidationResults] {
-  def init(params: EmptyParams) = {}
+  //def init(params: EmptyParams) = {}
 
   def validate(feature: Feature, predicted: Target, actual: Target)
       : ValidationUnit = {

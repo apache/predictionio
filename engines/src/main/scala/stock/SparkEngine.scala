@@ -124,7 +124,7 @@ class SparkTreeAlgorithm
         Target,
         StockTreeModel,
         EmptyParams] {
-  def init(p: EmptyParams) = {}
+  //def init(p: EmptyParams) = {}
 
   def train(data: SparkTrainingData): StockTreeModel = { 
     val timeIndex = IndexTime(data.timeIndex)

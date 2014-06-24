@@ -10,7 +10,7 @@ trait Cleanser[
     CP <: BaseCleanserParams]
   extends LocalCleanser[TD, CD, CP] {
 
-  def init(params: CP): Unit
+  //def init(params: CP): Unit
 
   def cleanse(trainingData: TD): CD
 }
@@ -22,7 +22,7 @@ trait Algorithm[
     M <: BaseModel,
     AP <: BaseAlgoParams]
     extends LocalAlgorithm[CD, F, P, M, AP] {
-  def init(algoParams: AP): Unit
+  //def init(algoParams: AP): Unit
 
   def train(cleansedData: CD): M
 
@@ -31,7 +31,7 @@ trait Algorithm[
 
 trait Server[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
     extends BaseServer[F, P, SP] {
-  def init(serverParams: SP): Unit
+  //def init(serverParams: SP): Unit
 
   def combine(feature: F, predictions: Seq[P]): P
 }
@@ -41,21 +41,21 @@ class DefaultServer[F <: BaseFeature, P <: BasePrediction]
 //    extends Server[F, P, DefaultServerParams] {
 //  def init(params: DefaultServerParams): Unit = {}
     extends Server[F, P, EmptyParams] {
-  def init(params: EmptyParams): Unit = {}
+  //def init(params: EmptyParams): Unit = {}
   override def combine(feature: F, predictions: Seq[P]): P = predictions.head
 }
 
 
 class DefaultCleanser[TD <: BaseTrainingData : Manifest]()
     extends LocalCleanser[TD, TD, EmptyParams] {
-  def init(params: EmptyParams): Unit = {}
+  //def init(params: EmptyParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
 }
 
 
 class SparkDefaultCleanser[TD <: BaseTrainingData]()
     extends SparkCleanser[TD, TD, EmptyParams] {
-  def init(params: EmptyParams): Unit = {}
+  //def init(params: EmptyParams): Unit = {}
   def cleanse(trainingData: TD): TD = trainingData
 }
 

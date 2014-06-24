@@ -20,7 +20,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class RegressionAlgorithm
     extends Algorithm[TrainingData, Feature, Target, Model, EmptyParams] {
-  def init(params: EmptyParams) = {}
+  //def init(params: EmptyParams) = {}
 
   private def getRet(logPrice: Frame[DateTime, String, Double], d: Int) =
     (logPrice - logPrice.shift(d)).mapVec[Double](_.fillNA(_ => 0.0))

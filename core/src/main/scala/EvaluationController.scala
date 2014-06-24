@@ -47,6 +47,7 @@ trait Validator[
 
 // Factory Methods
 trait EvaluatorFactory {
+  /*
   def apply(): BaseEvaluator[
     _ <: BaseEvaluationDataParams,
     _ <: BaseValidationParams,
@@ -59,5 +60,18 @@ trait EvaluatorFactory {
     _ <: BaseValidationUnit,
     _ <: BaseValidationResults,
     _ <: BaseCrossValidationResults]
+  */
+  def apply(): BaseEvaluator[
+    _ <: BaseEvaluationDataParams,
+    _ <: BaseValidationParams,
+    _ <: BaseTrainingDataParams,
+    _ <: BaseValidationDataParams,
+    _,
+    _,
+    _,
+    _,
+    _,
+    _,
+    _]
 }
 

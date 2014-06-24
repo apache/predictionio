@@ -9,6 +9,6 @@ extends Serializable {
     init(params.asInstanceOf[P])
   }
 
-  def init(params: P): Unit
+  def init(params: P): Unit =  {}
   def paramsClass() = manifest[P]
 }
