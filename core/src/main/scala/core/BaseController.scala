@@ -73,7 +73,7 @@ abstract class LocalAlgorithm[CD, F, P, M: Manifest,
   def predict(model: M, feature: F): P
 }
 
-abstract class SparkAlgorithm[CD, F, P, M: Manifest,
+abstract class Spark2LocalAlgorithm[CD, F, P, M: Manifest,
     AP <: BaseAlgoParams: Manifest]
   extends BaseAlgorithm[CD, F, P, M, AP] {
   // train returns a local object M, and we parallelize it.
@@ -111,3 +111,33 @@ class BaseEngine[TD, CD, F, P](
     val algorithmClassMap
       : Map[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _]]],
     val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+
+/*
+class LocalEngine[
+    TD,
+    CD,
+    F,
+    P](
+    cleanserClass
+      : Class[_ <: LocalCleanser[TD, CD, _ <: BaseCleanserParams]],
+    algorithmClassMap
+      : Map[String,
+        Class[_ <:
+          LocalAlgorithm[CD, F, P, _, _]]],
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
+    
+class SparkEngine[
+    TD,
+    CD,
+    F,
+    P](
+    cleanserClass
+      : Class[_ <: SparkCleanser[TD, CD, _ <: BaseCleanserParams]],
+    algorithmClassMap
+      : Map[String,
+        Class[_ <:
+          Spark2LocalAlgorithm[CD, F, P, _, _]]],
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
+*/

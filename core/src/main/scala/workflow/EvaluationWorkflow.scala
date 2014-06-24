@@ -28,8 +28,49 @@ import scala.reflect.Manifest
 
 import com.twitter.chill.Externalizer
 
-
 object SparkWorkflow {
+  @deprecated("Please use EvaluationWorkflow", "20140624")
+  def run[
+      EDP <: BaseEvaluationDataParams : Manifest,
+      VP <: BaseValidationParams : Manifest,
+      TDP <: BaseTrainingDataParams : Manifest,
+      VDP <: BaseValidationDataParams : Manifest,
+      TD: Manifest,
+      NTD : Manifest,
+      NCD : Manifest,
+      F : Manifest,
+      NF : Manifest,
+      P : Manifest,
+      NP : Manifest,
+      A : Manifest,
+      VU : Manifest,
+      VR : Manifest,
+      CVR <: AnyRef : Manifest](
+    batch: String,
+    evalDataParams: BaseEvaluationDataParams,
+    validationParams: BaseValidationParams,
+    cleanserParams: BaseCleanserParams,
+    algoParamsList: Seq[(String, BaseAlgoParams)],
+    serverParams: BaseServerParams,
+    baseEngine: BaseEngine[NTD,NCD,NF,NP],
+    baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
+    ): (Array[Array[Any]], 
+    Seq[(BaseTrainingDataParams, BaseValidationDataParams, VR)], 
+    CVR) = {
+    EvaluationWorkflow.run(
+      batch,
+      evalDataParams,
+      validationParams,
+      cleanserParams,
+      algoParamsList,
+      serverParams,
+      baseEngine,
+      baseEvaluator)
+  }
+}
+
+
+object EvaluationWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
 

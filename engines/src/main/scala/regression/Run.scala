@@ -17,6 +17,12 @@ import io.prediction.core.SparkDataPreparator
 import io.prediction._
 //import io.prediction.core.SparkEvaluator
 import io.prediction.core.BaseEvaluator
+import io.prediction.core.Spark2LocalAlgorithm
+import org.apache.spark.mllib.regression.RegressionModel
+import io.prediction.core.BaseEngine
+import io.prediction.workflow.EvaluationWorkflow
+
+class SparkNoOptCleanser extends SparkDefaultCleanser[RDD[LabeledPoint]] {}
 
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int)
@@ -24,21 +30,14 @@ extends BaseEvaluationDataParams
 
 object SparkRegressionEvaluator extends EvaluatorFactory {
   def apply() = {
-    /*
-    new SparkEvaluator(
-      classOf[DataPrep],
-      classOf[Validator])
-    */
     new BaseEvaluator(
       classOf[DataPrep],
       classOf[Validator])
   }
 }
 
-
 // DataPrep
 class DataPrep 
-    //extends SparkDataPreparator[
     extends BaseDataPreparator[
         EvalDataParams,
         Null,
@@ -87,59 +86,49 @@ class Validator
     input.map(e => s"MSE: ${e._3}").mkString("\n")
   }
 }
-     
 
-// Validator
+// Algorithm
+class Algorithm 
+  extends Spark2LocalAlgorithm[
+      RDD[LabeledPoint], 
+      Vector,
+      Double,
+      RegressionModel,
+      Null] {
+  
+  def train(data: RDD[LabeledPoint]): RegressionModel = {
+    val numIterations = 50
+    LinearRegressionWithSGD.train(data, numIterations)
+  }
+
+  def predict(model: RegressionModel, feature: Vector): Double = {
+    model.predict(feature)
+  }
+}
+
 
 
 object Runner {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName(s"PredictionIO: Regression")
-    conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "8g")
-
-    val sc = new SparkContext(conf)
-
     val filepath = "data/lr_data.txt"
     val evalDataParams = new EvalDataParams(filepath, 2)
 
-    val dataPrep = new DataPrep
-    dataPrep.prepare(sc, evalDataParams).map { case (ei, e) => {
-      println(s"$ei $e")
-    }}
+    val evaluator = SparkRegressionEvaluator()
 
-    val validator = new Validator
+    val engine = new BaseEngine(
+      classOf[SparkNoOptCleanser],
+      Map("algo" -> classOf[Algorithm]),
+      classOf[DefaultServer[Vector, Double]])
+
+    EvaluationWorkflow.run(
+        "Regress Man", 
+        evalDataParams, 
+        null, 
+        null, 
+        Seq(("algo", null)), 
+        null,
+        engine,
+        evaluator)
+
   }
-  
-  def good() {
-    val conf = new SparkConf().setAppName(s"PredictionIO: Regression")
-    conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "8g")
-
-    val sc = new SparkContext(conf)
-
-    
-    // Load and parse the data
-    //val data = sc.textFile("mllib/data/ridge-data/lpsa.data")
-    val data = sc.textFile("data/lr_data.txt")
-    val parsedData = data.map { line =>
-      val parts = line.split(' ')
-      LabeledPoint(
-        parts(0).toDouble, 
-        Vectors.dense(parts.drop(1).map(_.toDouble)))
-    }
-
-    // Building the model
-    val numIterations = 50
-    val model = LinearRegressionWithSGD.train(parsedData, numIterations)
-
-    // Evaluate model on training examples and compute training error
-    val valuesAndPreds = parsedData.map { point =>
-      val prediction = model.predict(point.features)
-      (point.label, prediction)
-    }
-    val MSE = valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean()
-    println("training Mean Squared Error = " + MSE)
-  }
-
 }

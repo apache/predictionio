@@ -14,7 +14,7 @@ import io.prediction.workflow.SparkWorkflow
 import io.prediction.core.SparkDataPreparator
 //import io.prediction.core.SparkEvaluator
 //import io.prediction.core.SparkEngine
-import io.prediction.core.SparkAlgorithm
+import io.prediction.core.Spark2LocalAlgorithm
 import io.prediction._
 import io.prediction.core.BaseEvaluator
 
@@ -122,12 +122,12 @@ class SparkStockDataPreparator
 
 // Spark Algo. Based on MLLib's decision tree
 class SparkTreeAlgorithm
-    extends SparkAlgorithm[
-        SparkTrainingData,
-        Feature,
-        Target,
-        StockTreeModel,
-        EmptyParams] {
+  extends Spark2LocalAlgorithm[
+      SparkTrainingData,
+      Feature,
+      Target,
+      StockTreeModel,
+      EmptyParams] {
   //def init(p: EmptyParams) = {}
 
   def train(data: SparkTrainingData): StockTreeModel = { 

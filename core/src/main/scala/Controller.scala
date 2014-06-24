@@ -35,6 +35,15 @@ class SparkDefaultCleanser[TD]()
   def cleanse(trainingData: TD): TD = trainingData
 }
 
+/*
+class BaseDefaultCleanser[TD]()
+  extends BaseCleanser[TD, TD, EmptyParams] {
+  def cleanseBase(trainingData: Any): TD = {
+    trainingData.asInstanceOf[TD]
+  }
+}
+*/
+
 // Factory Methods
 trait EngineFactory {
   def apply(): BaseEngine[_,_,_,_]
