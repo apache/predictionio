@@ -83,7 +83,7 @@ object RunEvaluationWorkflow extends Logging {
           s"--master spark://${sparkIP}:${sparkPort}",
           "--class io.prediction.tools.CreateEvaluationWorkflow",
           engineManifest.jars.apply(0),
-          if (engineManifest.jars.size > 1) "--jars " + engineManifest.jars.slice(1, engineManifest.jars.size).mkString(","),
+          if (engineManifest.jars.size > 1) "--jars " + engineManifest.jars.slice(1, engineManifest.jars.size).mkString(",") else "",
           "--engineManifestId",
           engineManifest.id,
           "--engineManifestVersion",

@@ -4,10 +4,12 @@ import io.prediction.core.BaseEngine
 import io.prediction.EngineFactory
 import io.prediction.{ DefaultCleanser, DefaultServer }
 
+class NoOptCleanser extends DefaultCleanser[TrainingData] {}
+
 object ItemRankEngine extends EngineFactory {
   def apply() = {
     new BaseEngine(
-      classOf[DefaultCleanser[TrainingData]],
+      classOf[NoOptCleanser],
       Map("knn" -> classOf[KNNAlgorithm],
         "rand" -> classOf[RandomAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]
