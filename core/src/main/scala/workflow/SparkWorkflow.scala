@@ -36,33 +36,12 @@ object SparkWorkflow {
   type BTDP = BaseTrainingDataParams
   type BVDP = BaseValidationDataParams
 
-  /*
-  type BAlgorithm = BaseAlgorithm[
-    _ <: BaseCleansedData,
-    _ <: BaseFeature,
-    _ <: BasePrediction,
-    _ <: BaseModel,
-    _ <: BaseAlgoParams]
-  type BServer = BaseServer[
-    _ <: BaseFeature,
-    _ <: BasePrediction,
-    _ <: BaseServerParams]
-  type BValidator = BaseValidator[
-    _ <: BaseValidationParams,
-    _ <: BaseTrainingDataParams,
-    _ <: BaseValidationDataParams,
-    _,_,_,_,_,_]
-  */
-
   class AlgoServerWrapper[NF, NP, NA, NCD](
-      //val algos: Array[BAlgorithm], 
       val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]], 
-      //val server: BServer)
       val server: BaseServer[NF, NP, _])
   extends Serializable {
 
     def onePassPredict[F, P, A](
-      //input: (Iterable[(AI, BaseModel)], Iterable[(BaseFeature, BaseActual)]))
       input: (Iterable[(AI, Any)], Iterable[(F, A)]))
     : Iterable[(F, P, A)] = {
       val modelIter = input._1
@@ -86,32 +65,17 @@ object SparkWorkflow {
       }}
     }
   }
-//<<<<<<< HEAD
   
   class ValidatorWrapper[VR, CVR <: AnyRef](
-  //class ValidatorWrapper[VR, CVR](
-    //val validator: BValidator) extends Serializable {
     val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
-    //def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
-    //  : ((BTDP, BVDP), BaseValidationResults) = {
     def validateSet(input: ((BTDP, BVDP), Iterable[Any]))
       : ((BTDP, BVDP), VR) = {
-//=======
-
-//  class ValidatorWrapper(val validator: BValidator) extends Serializable {
-//    def validateSet(input: ((BTDP, BVDP), Iterable[BaseValidationUnit]))
-//      : ((BTDP, BVDP), BaseValidationResults) = {
-//>>>>>>> master
       val results = validator.validateSetBase(
         input._1._1, input._1._2, input._2.toSeq)
       (input._1, results)
     }
 
-    def crossValidate(
-      input: Array[
-        //((BTDP, BVDP), BaseValidationResults)
-        ((BTDP, BVDP), VR)
-      ]): CVR = {
+    def crossValidate(input: Array[((BTDP, BVDP), VR)]): CVR = {
       // maybe sort them.
       val data = input.map(e => (e._1._1, e._1._2, e._2))
       validator.crossValidateBase(data)
@@ -134,7 +98,6 @@ object SparkWorkflow {
       VU : Manifest,
       VR : Manifest,
       CVR <: AnyRef : Manifest](
-      //CVR: Manifest](
     batch: String,
     evalDataParams: BaseEvaluationDataParams,
     validationParams: BaseValidationParams,
@@ -142,23 +105,10 @@ object SparkWorkflow {
     algoParamsList: Seq[(String, BaseAlgoParams)],
     serverParams: BaseServerParams,
     baseEngine: BaseEngine[NTD,NCD,NF,NP],
-    baseEvaluator
-      : BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-//<<<<<<< HEAD
-/*
-    ): (
-    Seq[(
-      BaseTrainingDataParams, 
-      BaseValidationDataParams, 
-      VR)], 
-    CVR) = {
-*/
-//=======
+    baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
     ): (Array[Array[Any]], 
     Seq[(BaseTrainingDataParams, BaseValidationDataParams, VR)], 
     CVR) = {
-    //): (Array[Array[BaseModel]], Seq[(BaseTrainingDataParams, BaseValidationDataParams, BaseValidationResults)], BaseCrossValidationResults) = {
-//>>>>>>> master
     // Add a flag to disable parallelization.
     val verbose = true
 
@@ -287,27 +237,8 @@ object SparkWorkflow {
     val validator = baseEvaluator.validatorClass.newInstance
     validator.initBase(validationParams)
 
-    /*
-    val evalValidationUnitMap: Map[Int, RDD[BaseValidationUnit]] =
-      evalPredictionMap
-        .mapValues(rdd => rdd.map(
-          e => (
-            e._1.asInstanceOf[BaseFeature],
-            e._2.asInstanceOf[BasePrediction],
-            e._3.asInstanceOf[BaseActual])))
-        .mapValues(_.map(validator.validateBase))
-    */
-
     val evalValidationUnitMap: Map[Int, RDD[VU]] =
-      evalPredictionMap
-        /*
-        .mapValues(rdd => rdd.map(
-          e => (
-            e._1.asInstanceOf[BaseFeature],
-            e._2.asInstanceOf[BasePrediction],
-            e._3.asInstanceOf[BaseActual])))
-        */
-        .mapValues(_.map(validator.validateBase))
+      evalPredictionMap.mapValues(_.map(validator.validateBase))
 
     if (verbose) {
       evalValidationUnitMap.foreach{ case(i, e) => {
