@@ -76,9 +76,9 @@ class SparkTrainingData (
   // price doesn't contain market data, as these are RDD and are operated in
   // parallel.
   val price: RDD[(String, Array[Double])]
-) extends BaseTrainingData
+) extends Serializable
 
-class StockTreeModel(val treeModel: DecisionTreeModel) extends BaseModel
+class StockTreeModel(val treeModel: DecisionTreeModel) extends Serializable
 
 /******************** Controllers ***********************************/
 class SparkNoOptCleanser extends SparkDefaultCleanser[SparkTrainingData] {}

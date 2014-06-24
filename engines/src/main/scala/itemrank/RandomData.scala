@@ -1,12 +1,9 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{
-  BaseModel,
-  BaseAlgoParams
-}
+import io.prediction.BaseAlgoParams
 
 class RandomAlgoParams() extends BaseAlgoParams {
   override def toString = s"empty"
 }
 
-class RandomModel() extends BaseModel {}
+class RandomModel() extends Serializable {}

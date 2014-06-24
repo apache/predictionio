@@ -29,13 +29,13 @@ class DailyResults(
   val actualReturn: Map[String, Double],  // Tomorrow's return
   val toEnter: Seq[String],
   val toExit: Seq[String])
-extends BaseValidationUnit {}
+extends Serializable {}
 
 class SetResults(val dailySeq: Seq[DailyResults]) 
-extends BaseValidationResults {}
+extends Serializable {}
 
 class BackTestingResults(val s: Seq[String]) 
-extends BaseCrossValidationResults {
+extends Serializable {
   override def toString() = s.mkString("\n")
 }
 

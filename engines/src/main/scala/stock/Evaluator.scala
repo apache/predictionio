@@ -10,8 +10,6 @@ import io.prediction.EvaluatorFactory
 import io.prediction.core.BaseEvaluator
 //import io.prediction.core.LocalEvaluator
 import io.prediction.BaseValidationParams
-import io.prediction.BaseValidationResults
-import io.prediction.BaseCrossValidationResults
 import io.prediction.EmptyParams
 
 import scala.math

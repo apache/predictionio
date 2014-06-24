@@ -8,15 +8,7 @@ import io.prediction.{
   BaseEvaluationDataParams,
   BaseTrainingDataParams,
   BaseValidationDataParams,
-  BaseTrainingData,
-  BaseFeature,
-  BasePrediction,
-  BaseActual,
-  BaseModel,
-  BaseAlgoParams,
-  BaseValidationUnit,
-  BaseValidationResults,
-  BaseCrossValidationResults
+  BaseAlgoParams
 }
 
 // param to evaluator, it applies to both DataPrep and Validator
@@ -89,26 +81,26 @@ class TrainingData(
     //val possibleItems: Set[Int], // iindex
     val rating: Seq[RatingTD],
     val seen: Set[(Int, Int)] // uindex->iindex
-  ) extends BaseTrainingData {}
+  ) extends Serializable
 
 // "Feature" here means prediction Input
 class Feature(
     val uid: String,
     val items: Seq[String] // items to be ranked
-    ) extends BaseFeature {
+    ) extends Serializable {
   override def toString = s"[${uid}, ${items}]"
 }
 
 // prediction output
 class Prediction(
   // the ranked items and score
-    val items: Seq[(String, Double)]) extends BasePrediction {
+    val items: Seq[(String, Double)]) extends Serializable {
   override def toString = s"${items}"
 }
 
 class Actual(
     // actual items the user has performed actions on
-    val items: Seq[String]) extends BaseActual {
+    val items: Seq[String]) extends Serializable {
   override def toString = s"${items}"
 }
 
@@ -118,4 +110,4 @@ class ValidationUnit(
   val a: Actual,
   val score: Double,
   val baseline: Double
-) extends BaseValidationUnit {}
+) extends Serializable

@@ -7,7 +7,7 @@ import io.prediction.core.BaseEvaluator
 import io.prediction.storage.Config
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 import io.prediction.EmptyParams
-import io.prediction.EmptyData
+//import io.prediction.EmptyData
 
 import io.prediction.DataPreparator
 import io.prediction.Validator
@@ -273,8 +273,8 @@ class ItemRankValidator
       Prediction,
       Actual,
       ValidationUnit,
-      EmptyData,
-      EmptyData] {
+      Null,
+      Null] {
 
   //def init(params: EvalParams): Unit = {}
 
@@ -301,7 +301,7 @@ class ItemRankValidator
   override def validateSet(
     trainDataPrepParams: TrainDataPrepParams,
     validationDataPrepParams: ValidationDataPrepParams,
-    validationUnits: Seq[ValidationUnit]): EmptyData = {
+    validationUnits: Seq[ValidationUnit]): Null = {
     // calcualte MAP at k
     val mean = validationUnits.map( eu => eu.score ).sum / validationUnits.size
     val baseMean = validationUnits.map (eu => eu.baseline).sum / validationUnits.size
@@ -321,7 +321,8 @@ class ItemRankValidator
       println(s"${r.mkString(" ")}")
     }
     println(s"baseline MAP@k = ${baseMean}, algo MAP@k = ${mean}")
-    EmptyData()
+    //EmptyData()
+    null
   }
 
   // metric
@@ -347,7 +348,7 @@ class ItemRankValidator
   }
 
   override def crossValidate(
-    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, EmptyData)]
-  ): EmptyData = EmptyData()
+    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, Null)]
+  ): Null = null
 
 }

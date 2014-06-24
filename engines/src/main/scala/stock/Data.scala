@@ -3,17 +3,7 @@ package io.prediction.engines.stock
 import io.prediction.{
   BaseTrainingDataParams,
   BaseEvaluationDataParams,
-  BaseValidationDataParams,
-  BaseTrainingData,
-  BaseCleansedData,
-  BaseFeature,
-  BasePrediction,
-  BaseActual,
-  BaseModel,
-  BaseValidationUnit,
-  BaseValidationResults,
-  BaseValidationParams,
-  BaseCrossValidationResults
+  BaseValidationDataParams
 }
 
 import org.saddle._
@@ -58,7 +48,7 @@ class TrainingData(
   val tickers: Seq[String],
   val mktTicker: String,
   val data: (Array[DateTime], Array[(String, Array[Double])]))
-  extends BaseTrainingData {
+  extends Serializable {
   val timeIndex: Array[DateTime] = data._1
   val tickerPriceSeq: Array[(String, Array[Double])] = data._2
  
@@ -111,8 +101,7 @@ object SaddleWrapper {
 
 
 
-class Model(
-  val data: Map[String, DenseVector[Double]]) extends BaseModel {}
+class Model(val data: Map[String, DenseVector[Double]]) extends Serializable
 
 // This is different from TrainingData. This serves as input for algorithm.
 // Hence, the time series should be shorter than that of TrainingData.
@@ -120,7 +109,7 @@ class Feature(
   val mktTicker: String,
   val tickerList: Seq[String],
   val input: (Array[DateTime], Array[(String, Array[Double])])
-  ) extends BaseFeature {
+  ) extends Serializable {
   
   val timeIndex: Array[DateTime] = input._1
   val tickerPriceSeq: Array[(String, Array[Double])] = input._2
@@ -148,16 +137,15 @@ object Feature {
 }
 
 class Target(
-  val data: Map[String, Double]) extends BasePrediction with BaseActual {}
+  val data: Map[String, Double]) extends Serializable {}
 
 class ValidationUnit(
-  val data: Seq[(Double, Double)]) extends BaseValidationUnit {}
+  val data: Seq[(Double, Double)]) extends Serializable {}
 
 class ValidationResults(
-  val vuSeq: Seq[ValidationUnit]) extends BaseValidationResults {}
+  val vuSeq: Seq[ValidationUnit]) extends Serializable {}
 
-class CrossValidationResults(
-  val s: String) extends BaseCrossValidationResults {
+class CrossValidationResults(val s: String) extends Serializable {
   override def toString() = s
 }
 
