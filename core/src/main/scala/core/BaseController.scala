@@ -11,14 +11,14 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 
-abstract 
+abstract
 class BaseCleanser[TD, CD, CP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[CP] {
   def cleanseBase(trainingData: Any): CD
 }
 
 
-abstract 
+abstract
 class LocalCleanser[TD, CD : Manifest, CP <: BaseParams: Manifest]
   extends BaseCleanser[RDD[TD], RDD[CD], CP] {
 
@@ -46,9 +46,9 @@ class SparkCleanser[TD, CD, CP <: BaseParams: Manifest]
 /* Algorithm */
 abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
-  def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any] 
+  def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any]
 
-  def predictBase(baseModel: Any, baseFeature: F): P = {
+  def predictBase(baseModel: Any, baseFeature: Any): P = {
     predict(
       baseModel.asInstanceOf[M],
       baseFeature.asInstanceOf[F])
@@ -126,8 +126,8 @@ abstract class BaseServer[F, P, SP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[SP] {
 
   def combineBase(
-    baseFeature: F,
-    basePredictions: Seq[P])
+    baseFeature: Any,
+    basePredictions: Seq[Any])
     : P = {
     combine(
       baseFeature.asInstanceOf[F],

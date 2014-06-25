@@ -111,6 +111,7 @@ class MyServiceActor(val run: Run, val manifest: EngineManifest) extends Actor w
   def receive = runRoute(myRoute)
 }
 
+case class AlgoParams(name: String, params: JValue)
 
 // this trait defines our service behavior independently from the service actor
 trait MyService extends HttpService with Logging {
@@ -142,13 +143,15 @@ trait MyService extends HttpService with Logging {
   val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[Any]]]).get
 
   debug(run.algoParamsList)
-  val algoJsonSeq = Serialization.read[Seq[Map[String, JValue]]](run.algoParamsList)
+  val algoJsonSeq = Serialization.read[Seq[AlgoParams]](run.algoParamsList)
   debug(algoJsonSeq)
-  val algoNames = algoJsonSeq.map(_.apply("name") match {
-    case JString(s) => s
-    case _ => ""
-  })
+  val algoNames = algoJsonSeq.map(_.name)
   debug(algoNames)
+  val algoParams = algoJsonSeq.map(m => Extraction.extract(m.params)(formats, algorithmMap(m.name).paramsClass))
+  algoNames.zipWithIndex map { t =>
+    algorithmMap(t._1).initBase(algoParams(t._2))
+  }
+  debug(algoParams)
 
   val server = engine.serverClass.newInstance
   val serverParams = RunServer.getParams(run.serverParams, server.paramsClass)
@@ -159,15 +162,15 @@ trait MyService extends HttpService with Logging {
   debug(featureClass)
 
   debug(algorithmMap)
-  models foreach { e =>
-    e foreach {
+  models foreach { m =>
+    m foreach {
       debug(_)
     }
   }
   debug(server)
   debug(serverParams)
 
-  println(models)
+  debug(models)
 
   val myRoute =
     path("") {
@@ -180,6 +183,17 @@ trait MyService extends HttpService with Logging {
               </body>
             </html>
           }
+        }
+      }
+      post {
+        entity(as[String]) { featureString =>
+          val json = parse(featureString)
+          val feature = Extraction.extract(json)(formats, featureClass)
+          val predictions = algoNames.zipWithIndex map { t =>
+            algorithmMap(t._1).predictBase(models(0)(t._2), feature)
+          }
+          val prediction = server.combineBase(feature, predictions)
+          complete(compact(render(Extraction.decompose(prediction))))
         }
       }
     }
