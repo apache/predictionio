@@ -23,17 +23,17 @@ trait Server[F, P, SP <: BaseParams]
 }
 
 // Below is default implementation.
-class DefaultServer[F, P] extends Server[F, P, Null] {
+class DefaultServer[F, P] extends Server[F, P, EmptyParams] {
   override def combine(feature: F, predictions: Seq[P]): P = predictions.head
 }
 
 class DefaultCleanser[TD : Manifest]()
-  extends LocalCleanser[TD, TD, Null] {
+  extends LocalCleanser[TD, TD, EmptyParams] {
   def cleanse(trainingData: TD): TD = trainingData
 }
 
 class SparkDefaultCleanser[TD]()
-    extends SparkCleanser[TD, TD, Null] {
+    extends SparkCleanser[TD, TD, EmptyParams] {
   def cleanse(trainingData: TD): TD = trainingData
 }
 
