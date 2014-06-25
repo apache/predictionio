@@ -2,6 +2,7 @@ package io.prediction.core
 
 import scala.reflect.Manifest
 
+
 // FIXME(yipjustin). I am being lazy...
 import io.prediction._
 import org.apache.spark.rdd.RDD
@@ -11,14 +12,14 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
     
 abstract 
-class BaseCleanser[TD, CD, CP <: BaseCleanserParams: Manifest]
+class BaseCleanser[TD, CD, CP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[CP] {
   def cleanseBase(trainingData: Any): CD
 }
 
 
 abstract 
-class LocalCleanser[TD, CD : Manifest, CP <: BaseCleanserParams: Manifest]
+class LocalCleanser[TD, CD : Manifest, CP <: BaseParams: Manifest]
   extends BaseCleanser[RDD[TD], RDD[CD], CP] {
 
   def cleanseBase(trainingData: Any): RDD[CD] = {
@@ -32,7 +33,7 @@ class LocalCleanser[TD, CD : Manifest, CP <: BaseCleanserParams: Manifest]
 }
 
 abstract
-class SparkCleanser[TD, CD, CP <: BaseCleanserParams: Manifest]
+class SparkCleanser[TD, CD, CP <: BaseParams: Manifest]
   extends BaseCleanser[TD, CD, CP] {
   def cleanseBase(trainingData: Any): CD = {
     println("SparkCleanser.cleanseBase")
@@ -43,7 +44,7 @@ class SparkCleanser[TD, CD, CP <: BaseCleanserParams: Manifest]
 }
 
 /* Algorithm */
-abstract class BaseAlgorithm[CD, F, P, M, AP <: BaseAlgoParams: Manifest]
+abstract class BaseAlgorithm[CD, F, P, M, AP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
   def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any] 
 
@@ -57,7 +58,7 @@ abstract class BaseAlgorithm[CD, F, P, M, AP <: BaseAlgoParams: Manifest]
 }
 
 abstract class LocalAlgorithm[CD, F, P, M: Manifest,
-    AP <: BaseAlgoParams: Manifest]
+    AP <: BaseParams: Manifest]
   extends BaseAlgorithm[RDD[CD], F, P, M, AP] {
   def trainBase(
     sc: SparkContext,
@@ -74,7 +75,7 @@ abstract class LocalAlgorithm[CD, F, P, M: Manifest,
 }
 
 abstract class Spark2LocalAlgorithm[CD, F, P, M: Manifest,
-    AP <: BaseAlgoParams: Manifest]
+    AP <: BaseParams: Manifest]
   extends BaseAlgorithm[CD, F, P, M, AP] {
   // train returns a local object M, and we parallelize it.
   def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any] = {
@@ -88,7 +89,7 @@ abstract class Spark2LocalAlgorithm[CD, F, P, M: Manifest,
 }
 
 /* Server */
-abstract class BaseServer[F, P, SP <: BaseServerParams: Manifest]
+abstract class BaseServer[F, P, SP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[SP] {
 
   def combineBase(
@@ -107,10 +108,10 @@ abstract class BaseServer[F, P, SP <: BaseServerParams: Manifest]
 /* Engine */
 class BaseEngine[TD, CD, F, P](
     val cleanserClass
-      : Class[_ <: BaseCleanser[TD, CD, _ <: BaseCleanserParams]],
+      : Class[_ <: BaseCleanser[TD, CD, _ <: BaseParams]],
     val algorithmClassMap
       : Map[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _]]],
-    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]])
 
 /*
 class LocalEngine[
@@ -119,12 +120,12 @@ class LocalEngine[
     F,
     P](
     cleanserClass
-      : Class[_ <: LocalCleanser[TD, CD, _ <: BaseCleanserParams]],
+      : Class[_ <: LocalCleanser[TD, CD, _ <: BaseParams]],
     algorithmClassMap
       : Map[String,
         Class[_ <:
           LocalAlgorithm[CD, F, P, _, _]]],
-    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
     
 class SparkEngine[
@@ -133,11 +134,11 @@ class SparkEngine[
     F,
     P](
     cleanserClass
-      : Class[_ <: SparkCleanser[TD, CD, _ <: BaseCleanserParams]],
+      : Class[_ <: SparkCleanser[TD, CD, _ <: BaseParams]],
     algorithmClassMap
       : Map[String,
         Class[_ <:
           Spark2LocalAlgorithm[CD, F, P, _, _]]],
-    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
 */

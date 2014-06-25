@@ -10,18 +10,18 @@ import org.apache.spark.SparkConf
 import io.prediction._
 
 abstract class BaseDataPreparator[
-    EDP <: BaseEvaluationDataParams : Manifest,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+    EDP <: BaseParams : Manifest,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
     BTD, 
     F,
     A]
   extends AbstractParameterizedDoer[EDP] {
 
-  type BTDP = BaseTrainingDataParams
-  type BVDP = BaseValidationDataParams
+  type BTDP = BaseParams
+  type BVDP = BaseParams
 
-  def prepareBase(sc: SparkContext, params: BaseEvaluationDataParams)
+  def prepareBase(sc: SparkContext, params: BaseParams)
   : Map[Int, (BTDP, BVDP, BTD, RDD[(F, A)])] = {
     prepare(sc, params.asInstanceOf[EDP])
     /*
@@ -37,9 +37,9 @@ abstract class BaseDataPreparator[
 
 
 abstract class SlicedDataPreparator[
-    EDP <: BaseEvaluationDataParams : Manifest,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+    EDP <: BaseParams : Manifest,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
     BTD, 
     F,
     A]
@@ -48,7 +48,7 @@ abstract class SlicedDataPreparator[
   def prepare(sc: SparkContext, params: EDP)
   : Map[Int, (BTDP, BVDP, BTD, RDD[(F, A)])] = {
     val localParamsSet
-    : Map[Int, (BaseTrainingDataParams, BaseValidationDataParams)] =
+    : Map[Int, (BaseParams, BaseParams)] =
       getParamsSetBase(params)
       .zipWithIndex
       .map(_.swap)
@@ -75,13 +75,13 @@ abstract class SlicedDataPreparator[
     .toMap
   }
 
-  def getParamsSetBase(params: BaseEvaluationDataParams)
+  def getParamsSetBase(params: BaseParams)
   : Seq[(TDP, VDP)] = getParamsSet(params.asInstanceOf[EDP])
 
   def getParamsSet(params: EDP): Seq[(TDP, VDP)] 
   def prepareTrainingBase(
     sc: SparkContext,
-    params: BaseTrainingDataParams): BTD = {
+    params: BaseParams): BTD = {
     prepareTraining(sc, params.asInstanceOf[TDP])
   }
   
@@ -89,7 +89,7 @@ abstract class SlicedDataPreparator[
   
   def prepareValidationBase(
     sc: SparkContext,
-    params: BaseValidationDataParams): RDD[(F, A)] = {
+    params: BaseParams): RDD[(F, A)] = {
     prepareValidation(sc, params.asInstanceOf[VDP])
   }
   
@@ -98,16 +98,16 @@ abstract class SlicedDataPreparator[
 
 
 abstract class LocalDataPreparator[
-    EDP <: BaseEvaluationDataParams : Manifest,
-    TDP <: BaseTrainingDataParams : Manifest,
-    VDP <: BaseValidationDataParams,
+    EDP <: BaseParams : Manifest,
+    TDP <: BaseParams : Manifest,
+    VDP <: BaseParams,
     TD : Manifest, F, A]
     extends SlicedDataPreparator[EDP, TDP, VDP, RDD[TD], F, A] {
 
   override
   def prepareTrainingBase(
     sc: SparkContext,
-    params: BaseTrainingDataParams): RDD[TD] = {
+    params: BaseParams): RDD[TD] = {
     println("LocalDataPreparator.prepareTrainingBase")
     val tdp = params.asInstanceOf[TDP]
     prepareTraining(sc, tdp)
@@ -123,7 +123,7 @@ abstract class LocalDataPreparator[
   override
   def prepareValidationBase(
     sc: SparkContext,
-    params: BaseValidationDataParams): RDD[(F, A)] = {
+    params: BaseParams): RDD[(F, A)] = {
     val vdp = params.asInstanceOf[VDP]
     prepareValidation(sc, vdp)
   }
@@ -138,16 +138,16 @@ abstract class LocalDataPreparator[
 // In this case, TD may contain multiple RDDs
 // But still, F and A cannot contain RDD
 abstract class SparkDataPreparator[
-    EDP <: BaseEvaluationDataParams : Manifest,
-    TDP <: BaseTrainingDataParams : Manifest,
-    VDP <: BaseValidationDataParams,
+    EDP <: BaseParams : Manifest,
+    TDP <: BaseParams : Manifest,
+    VDP <: BaseParams,
     TD : Manifest, F, A]
   extends SlicedDataPreparator[EDP, TDP, VDP, TD, F, A] {
 
   override
   def prepareTrainingBase(
     sc: SparkContext,
-    params: BaseTrainingDataParams): TD = {
+    params: BaseParams): TD = {
     println("SparkDataPreparator.prepareTrainingBase")
     val tdp = params.asInstanceOf[TDP]
     prepareTraining(sc, tdp)
@@ -158,7 +158,7 @@ abstract class SparkDataPreparator[
   override
   def prepareValidationBase(
     sc: SparkContext,
-    params: BaseValidationDataParams): RDD[(F, A)] = {
+    params: BaseParams): RDD[(F, A)] = {
     val vdp = params.asInstanceOf[VDP]
     prepareValidation(sc, vdp)
   }
@@ -167,9 +167,9 @@ abstract class SparkDataPreparator[
 }
 
 abstract class BaseValidator[
-    VP <: BaseValidationParams : Manifest,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+    VP <: BaseParams : Manifest,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
     F, P, A, VU, VR, CVR <: AnyRef]
   extends AbstractParameterizedDoer[VP] {
 
@@ -180,8 +180,8 @@ abstract class BaseValidator[
   def validate(feature: F, predicted: P, actual: A): VU
 
   def validateSetBase(
-    trainingDataParams: BaseTrainingDataParams,
-    validationDataParams: BaseValidationDataParams,
+    trainingDataParams: BaseParams,
+    validationDataParams: BaseParams,
     validationUnits: Seq[Any]): VR = {
     validateSet(
       trainingDataParams.asInstanceOf[TDP],
@@ -195,7 +195,7 @@ abstract class BaseValidator[
     validationUnits: Seq[VU]): VR
 
   def crossValidateBase(
-    input: Seq[(BaseTrainingDataParams, BaseValidationDataParams,
+    input: Seq[(BaseParams, BaseParams,
       Any)]): CVR = {
     crossValidate(input.map(e => (
       e._1.asInstanceOf[TDP],
@@ -208,10 +208,10 @@ abstract class BaseValidator[
 
 /* Evaluator */
 class BaseEvaluator[
-    EDP <: BaseEvaluationDataParams,
-    VP <: BaseValidationParams,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+    EDP <: BaseParams,
+    VP <: BaseParams,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
     TD, F, P, A, VU, VR, CVR <: AnyRef](
   val dataPreparatorClass
     : Class[_ <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]],

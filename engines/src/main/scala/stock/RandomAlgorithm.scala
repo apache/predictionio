@@ -1,6 +1,6 @@
 package io.prediction.engines.stock
 
-import io.prediction.{ Algorithm, BaseAlgoParams }
+import io.prediction.{ Algorithm, BaseParams }
 
 import scala.util.Random
 
@@ -9,7 +9,7 @@ import scala.util.Random
 class RandomAlgoParams(
   val seed: Long = 709394,
   val scale: Double = 0.01,
-  val drift: Double = 0.0) extends BaseAlgoParams {}
+  val drift: Double = 0.0) extends BaseParams {}
 
 class RandomAlgorithm
     extends Algorithm[TrainingData, Feature, Target, Null, RandomAlgoParams] {

@@ -1,8 +1,8 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.BaseAlgoParams
+import io.prediction.BaseParams
 
-class RandomAlgoParams() extends BaseAlgoParams {
+class RandomAlgoParams() extends BaseParams {
   override def toString = s"empty"
 }
 

@@ -9,7 +9,7 @@ import io.prediction.Validator
 import io.prediction.EvaluatorFactory
 import io.prediction.core.BaseEvaluator
 //import io.prediction.core.LocalEvaluator
-import io.prediction.BaseValidationParams
+//import io.prediction.BaseParams
 import io.prediction.EmptyParams
 
 import scala.math

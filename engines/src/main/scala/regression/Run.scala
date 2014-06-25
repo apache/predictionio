@@ -1,6 +1,6 @@
 package io.prediction.engines.regression
 
-import io.prediction.BaseEvaluationDataParams
+import io.prediction.BaseParams
 import io.prediction._
 import io.prediction.core.BaseDataPreparator
 import io.prediction.core.BaseEngine
@@ -22,7 +22,7 @@ import org.apache.spark.mllib.util.MLUtils
 
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int, val seed: Int = 9527)
-extends BaseEvaluationDataParams
+extends BaseParams
 
 object SparkRegressionEvaluator extends EvaluatorFactory {
   def apply() = {
@@ -83,7 +83,7 @@ class Validator
   }
 }
 
-class AlgoParams(val numIterations: Int = 200) extends BaseAlgoParams
+class AlgoParams(val numIterations: Int = 200) extends BaseParams
 
 // Algorithm
 class Algorithm 

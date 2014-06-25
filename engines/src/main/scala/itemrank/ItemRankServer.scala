@@ -1,10 +1,10 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ Server, BaseServerParams }
+import io.prediction.{ Server, BaseParams }
 
-class ItemRankServer extends Server[Feature, Prediction, BaseServerParams] {
-  //def init(params: BaseServerParams): Unit = {}
-
+// Note from yipjustin: You can simply put
+// classOf[Server[Feature, Prediction, BaseServerParams]] in the EngineFactory.
+class ItemRankServer extends Server[Feature, Prediction, BaseParams] {
   override def combine(feature: Feature,
     predictions: Seq[Prediction]): Prediction = {
       predictions.head

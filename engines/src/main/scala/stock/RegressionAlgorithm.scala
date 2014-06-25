@@ -1,6 +1,7 @@
 package io.prediction.engines.stock
 
-import io.prediction.{ Algorithm, BaseAlgoParams }
+//import io.prediction.{ Algorithm, BaseParams }
+import io.prediction.Algorithm
 import io.prediction.EmptyParams
 
 import scala.math

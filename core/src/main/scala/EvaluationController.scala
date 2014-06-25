@@ -4,9 +4,9 @@ package io.prediction
 import io.prediction.core._
 
 trait DataPreparator[
-    EDP <: BaseEvaluationDataParams,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+    EDP <: BaseParams,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
     TD, F, A]
   extends LocalDataPreparator[EDP, TDP, VDP, TD, F, A] {
   // Data generation
@@ -19,9 +19,9 @@ trait DataPreparator[
 
 
 trait Validator[
-    VP <: BaseValidationParams,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
+    VP <: BaseParams,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
     F, P, A, VU, VR, CVR <: AnyRef]
     extends BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] {
   def init(params: VP): Unit
@@ -39,10 +39,10 @@ trait Validator[
 // Factory Methods
 trait EvaluatorFactory {
   def apply(): BaseEvaluator[
-    _ <: BaseEvaluationDataParams,
-    _ <: BaseValidationParams,
-    _ <: BaseTrainingDataParams,
-    _ <: BaseValidationDataParams,
+    _ <: BaseParams,
+    _ <: BaseParams,
+    _ <: BaseParams,
+    _ <: BaseParams,
     _, _, _, _, _, _, _ <: AnyRef]
 }
 

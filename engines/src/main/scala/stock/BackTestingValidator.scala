@@ -21,7 +21,7 @@ class BackTestingParams(
   val enterThreshold: Double,
   val exitThreshold: Double,
   val maxPositions: Int = 3)
-extends BaseValidationParams {}
+extends BaseParams {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
 class DailyResults(

@@ -1,11 +1,6 @@
 package io.prediction.engines.stock
 
-import io.prediction.{
-  BaseTrainingDataParams,
-  BaseEvaluationDataParams,
-  BaseValidationDataParams
-}
-
+import io.prediction.BaseParams
 import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
@@ -24,14 +19,14 @@ class EvaluationDataParams(
   val trainingWindowSize: Int,
   val evaluationInterval: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseEvaluationDataParams {}
+  val tickerList: Seq[String]) extends BaseParams {}
 
 class TrainingDataParams(
   val baseDate: DateTime,
   val untilIdx: Int,
   val windowSize: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseTrainingDataParams {}
+  val tickerList: Seq[String]) extends BaseParams {}
 
 // Evaluate with data generate up to idx (exclusive). The target data is also
 // restricted by idx. For example, if idx == 10, the data-preparator use data to
@@ -42,7 +37,7 @@ class ValidationDataParams(
   val fromIdx: Int,
   val untilIdx: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseValidationDataParams {}
+  val tickerList: Seq[String]) extends BaseParams {}
 
 class TrainingData(
   val tickers: Seq[String],
@@ -148,7 +143,3 @@ class ValidationResults(
 class CrossValidationResults(val s: String) extends Serializable {
   override def toString() = s
 }
-
-
-
-

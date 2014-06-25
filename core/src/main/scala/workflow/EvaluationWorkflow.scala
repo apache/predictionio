@@ -5,8 +5,7 @@ import scala.language.existentials
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
 
-import io.prediction.BaseEvaluationDataParams
-
+//import io.prediction.BaseEvaluationDataParams
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -31,10 +30,10 @@ import com.twitter.chill.Externalizer
 object SparkWorkflow {
   @deprecated("Please use EvaluationWorkflow", "20140624")
   def run[
-      EDP <: BaseEvaluationDataParams : Manifest,
-      VP <: BaseValidationParams : Manifest,
-      TDP <: BaseTrainingDataParams : Manifest,
-      VDP <: BaseValidationDataParams : Manifest,
+      EDP <: BaseParams : Manifest,
+      VP <: BaseParams : Manifest,
+      TDP <: BaseParams : Manifest,
+      VDP <: BaseParams : Manifest,
       TD: Manifest,
       NTD : Manifest,
       NCD : Manifest,
@@ -47,16 +46,14 @@ object SparkWorkflow {
       VR : Manifest,
       CVR <: AnyRef : Manifest](
     batch: String,
-    evalDataParams: BaseEvaluationDataParams,
-    validationParams: BaseValidationParams,
-    cleanserParams: BaseCleanserParams,
-    algoParamsList: Seq[(String, BaseAlgoParams)],
-    serverParams: BaseServerParams,
+    evalDataParams: BaseParams,
+    validationParams: BaseParams,
+    cleanserParams: BaseParams,
+    algoParamsList: Seq[(String, BaseParams)],
+    serverParams: BaseParams,
     baseEngine: BaseEngine[NTD,NCD,NF,NP],
     baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-    ): (Array[Array[Any]], 
-    Seq[(BaseTrainingDataParams, BaseValidationDataParams, VR)], 
-    CVR) = {
+    ): (Array[Array[Any]], Seq[(BaseParams, BaseParams, VR)], CVR) = {
     EvaluationWorkflow.run(
       batch,
       evalDataParams,
@@ -74,8 +71,9 @@ object EvaluationWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
 
-  type BTDP = BaseTrainingDataParams
-  type BVDP = BaseValidationDataParams
+  type BP = BaseParams
+  //type BTDP = BaseTrainingDataParams
+  //type BVDP = BaseValidationDataParams
 
   class AlgoServerWrapper[NF, NP, NA, NCD](
       val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]], 
@@ -109,14 +107,14 @@ object EvaluationWorkflow {
   
   class ValidatorWrapper[VR, CVR <: AnyRef](
     val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
-    def validateSet(input: ((BTDP, BVDP), Iterable[Any]))
-      : ((BTDP, BVDP), VR) = {
+    def validateSet(input: ((BP, BP), Iterable[Any]))
+      : ((BP, BP), VR) = {
       val results = validator.validateSetBase(
         input._1._1, input._1._2, input._2.toSeq)
       (input._1, results)
     }
 
-    def crossValidate(input: Array[((BTDP, BVDP), VR)]): CVR = {
+    def crossValidate(input: Array[((BP, BP), VR)]): CVR = {
       // maybe sort them.
       val data = input.map(e => (e._1._1, e._1._2, e._2))
       validator.crossValidateBase(data)
@@ -124,10 +122,10 @@ object EvaluationWorkflow {
   }
 
   def run[
-      EDP <: BaseEvaluationDataParams : Manifest,
-      VP <: BaseValidationParams : Manifest,
-      TDP <: BaseTrainingDataParams : Manifest,
-      VDP <: BaseValidationDataParams : Manifest,
+      EDP <: BaseParams : Manifest,
+      VP <: BaseParams : Manifest,
+      TDP <: BaseParams : Manifest,
+      VDP <: BaseParams : Manifest,
       TD: Manifest,
       NTD : Manifest,
       NCD : Manifest,
@@ -140,16 +138,14 @@ object EvaluationWorkflow {
       VR : Manifest,
       CVR <: AnyRef : Manifest](
     batch: String,
-    evalDataParams: BaseEvaluationDataParams,
-    validationParams: BaseValidationParams,
-    cleanserParams: BaseCleanserParams,
-    algoParamsList: Seq[(String, BaseAlgoParams)],
-    serverParams: BaseServerParams,
+    evalDataParams: BaseParams,
+    validationParams: BaseParams,
+    cleanserParams: BaseParams,
+    algoParamsList: Seq[(String, BaseParams)],
+    serverParams: BaseParams,
     baseEngine: BaseEngine[NTD,NCD,NF,NP],
     baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-    ): (Array[Array[Any]], 
-    Seq[(BaseTrainingDataParams, BaseValidationDataParams, VR)], 
-    CVR) = {
+    ): (Array[Array[Any]], Seq[(BP, BP, VR)], CVR) = {
     // Add a flag to disable parallelization.
     val verbose = false
 
@@ -163,10 +159,10 @@ object EvaluationWorkflow {
 
     // Data Prep
     val evalParamsDataMap
-    : Map[EI, (BTDP, BVDP, TD, RDD[(F, A)])] = dataPrep
+    : Map[EI, (BP, BP, TD, RDD[(F, A)])] = dataPrep
       .prepareBase(sc, evalDataParams)
 
-    val localParamsSet: Map[EI, (BTDP, BVDP)] = evalParamsDataMap.map { 
+    val localParamsSet: Map[EI, (BP, BP)] = evalParamsDataMap.map { 
       case(ei, e) => (ei -> (e._1, e._2))
     }
 
@@ -291,10 +287,10 @@ object EvaluationWorkflow {
     val validatorWrapper = new ValidatorWrapper(validator)
 
     val evalValidationResultsMap
-    : Map[EI, RDD[((BTDP, BVDP), VR)]] = evalValidationUnitMap
+    : Map[EI, RDD[((BP, BP), VR)]] = evalValidationUnitMap
     .map{ case (ei, validationUnits) => {
       val validationResults
-      : RDD[((BTDP, BVDP), VR)] = validationUnits
+      : RDD[((BP, BP), VR)] = validationUnits
         .coalesce(numPartitions=1)
         .glom()
         .map(e => (localParamsSet(ei), e.toIterable))

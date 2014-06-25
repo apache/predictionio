@@ -2,6 +2,8 @@ package io.prediction.engines.itemrank
 
 import com.github.nscala_time.time.Imports._
 
+import io.prediction.BaseParams
+/*
 import io.prediction.{
   //BaseEvaluationParams,
   BaseValidationParams,
@@ -10,6 +12,7 @@ import io.prediction.{
   BaseValidationDataParams,
   BaseAlgoParams
 }
+*/
 
 // param to evaluator, it applies to both DataPrep and Validator
 class EvalParams(
@@ -28,7 +31,7 @@ class EvalParams(
     val testStart: DateTime,
     val testUntil: DateTime,
     val goal: Set[String]
-  ) extends BaseEvaluationDataParams with BaseValidationParams {
+  ) extends BaseParams {
 
   override def toString = s"appid=${appid},itypes=${itypes}" +
     s"actions=${actions}, conflict=${conflict}"
@@ -46,7 +49,7 @@ class TrainDataPrepParams(
     //val ignoreInactive: Boolean
     // use all data if None
     val startUntil: Option[Tuple2[DateTime, DateTime]]
-  ) extends BaseTrainingDataParams {
+  ) extends BaseParams {
     override def toString = {
       startUntil.map( x => s"start=${x._1} until=${x._2}").getOrElse("All")
     }
@@ -58,7 +61,7 @@ class ValidationDataPrepParams(
     val itypes: Option[Set[String]],
     val startUntil: Tuple2[DateTime, DateTime],
     val goal: Set[String] // action name
-  ) extends BaseValidationDataParams {
+  ) extends BaseParams {
     override def toString = s"start=${startUntil._1} until=${startUntil._2}"
   }
 
