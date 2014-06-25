@@ -71,12 +71,19 @@ object CreateEvaluationWorkflow extends Logging {
     val jsonString = (
       if (path == "") ""
       else Source.fromFile(jsonDir + path).mkString)
-
-    val json = JsonMethods.parse(jsonString)
-    val params = Extraction.extract(json)(formats, classManifest)
-    info(json)
-    info(params)
-    params
+  
+    try {
+      val json = JsonMethods.parse(jsonString)
+      info(json)
+      val params = Extraction.extract(json)(formats, classManifest)
+      info(params)
+      params
+    } catch {
+      case me: MappingException => {
+        println(s"Error reading parameter $classManifest from file $path.")
+        throw me
+      }
+    }
   }
 
   def main(args: Array[String]) {
