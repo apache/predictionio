@@ -18,8 +18,6 @@ libraryDependencies ++= Seq(
   "org.json4s"        %% "json4s-native"   % "3.2.10",
   "org.json4s"        %% "json4s-ext"      % "3.2.10")
 
-Revolver.settings
-
 packSettings
 
 packMain := Map("runserver" -> "io.prediction.tools.RunServer")
