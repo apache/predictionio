@@ -8,10 +8,8 @@ import io.prediction.DataPreparator
 import io.prediction.Validator
 import io.prediction.EvaluatorFactory
 import io.prediction.core.BaseEvaluator
-import io.prediction.core.LocalEvaluator
-import io.prediction.BaseValidationParams
-import io.prediction.BaseValidationResults
-import io.prediction.BaseCrossValidationResults
+//import io.prediction.core.LocalEvaluator
+//import io.prediction.BaseParams
 import io.prediction.EmptyParams
 
 import scala.math
@@ -34,7 +32,8 @@ object StockEvaluator extends EvaluatorFactory {
   val itemTrendsDb = config.getAppdataItemTrends()
 
   def apply() = {
-    new LocalEvaluator(
+    //new LocalEvaluator(
+    new BaseEvaluator(
       classOf[StockDataPreparator],
       classOf[StockValidator])
   }
@@ -223,7 +222,7 @@ class StockValidator
         ValidationUnit, 
         ValidationResults, 
         CrossValidationResults] {
-  def init(params: EmptyParams) = {}
+  //def init(params: EmptyParams) = {}
 
   def validate(feature: Feature, predicted: Target, actual: Target)
       : ValidationUnit = {

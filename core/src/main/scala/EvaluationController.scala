@@ -2,17 +2,13 @@ package io.prediction
 
 // FIXME(yipjustin). I am lazy...
 import io.prediction.core._
-    //TD <: BaseTrainingData,
 
 trait DataPreparator[
-    EDP <: BaseEvaluationDataParams,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
-    TD <: BaseTrainingData,
-    F <: BaseFeature,
-    A <: BaseActual]
-    //extends BaseDataPreparator[EDP, TDP, VDP, TD, F, A] {
-    extends LocalDataPreparator[EDP, TDP, VDP, TD, F, A] {
+    EDP <: BaseParams,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
+    TD, F, A]
+  extends LocalDataPreparator[EDP, TDP, VDP, TD, F, A] {
   // Data generation
   def getParamsSet(params: EDP): Seq[(TDP, VDP)]
 
@@ -23,15 +19,10 @@ trait DataPreparator[
 
 
 trait Validator[
-    VP <: BaseValidationParams,
-    TDP <: BaseTrainingDataParams,
-    VDP <: BaseValidationDataParams,
-    F <: BaseFeature,
-    P <: BasePrediction,
-    A <: BaseActual,
-    VU <: BaseValidationUnit,
-    VR <: BaseValidationResults,
-    CVR <: BaseCrossValidationResults]
+    VP <: BaseParams,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
+    F, P, A, VU, VR, CVR <: AnyRef]
     extends BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] {
   def init(params: VP): Unit
 
@@ -48,16 +39,10 @@ trait Validator[
 // Factory Methods
 trait EvaluatorFactory {
   def apply(): BaseEvaluator[
-    _ <: BaseEvaluationDataParams,
-    _ <: BaseValidationParams,
-    _ <: BaseTrainingDataParams,
-    _ <: BaseValidationDataParams,
-    _ <: BaseTrainingData,
-    _ <: BaseFeature,
-    _ <: BasePrediction,
-    _ <: BaseActual,
-    _ <: BaseValidationUnit,
-    _ <: BaseValidationResults,
-    _ <: BaseCrossValidationResults]
+    _ <: BaseParams,
+    _ <: BaseParams,
+    _ <: BaseParams,
+    _ <: BaseParams,
+    _, _, _, _, _, _, _ <: AnyRef]
 }
 

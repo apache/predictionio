@@ -3,11 +3,14 @@ package io.prediction.tools
 //import io.prediction.core.{ AbstractEvaluator, AbstractEngine }
 import io.prediction.core.{ BaseEvaluator, BaseEngine }
 import io.prediction.{ EngineFactory, EvaluatorFactory }
+import io.prediction.BaseParams
+/*
 import io.prediction.{
   BaseAlgoParams,
   BaseCleanserParams,
   BaseServerParams
 }
+*/
 import io.prediction.storage.Config
 import io.prediction.storage.Run
 //import io.prediction.workflow.EvaluationWorkflow
@@ -192,7 +195,9 @@ object CreateEvaluationWorkflow extends Logging {
       .map{ ap =>
         val p = Extraction.extract(ap.params)(formats,
           engine.algorithmClassMap(ap.name).newInstance.paramsClass)
-        (ap.name, p)//.asInstanceOf[BaseAlgoParams])
+        //(ap.name, p)//.asInstanceOf[BaseAlgoParams])
+        //(ap.name, p.asInstanceOf[BaseAlgoParams])
+        (ap.name, p.asInstanceOf[BaseParams])
       }
 
     info(algoJson)

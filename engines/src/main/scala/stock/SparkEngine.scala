@@ -12,10 +12,11 @@ import org.apache.spark.SparkConf
 
 import io.prediction.workflow.SparkWorkflow
 import io.prediction.core.SparkDataPreparator
-import io.prediction.core.SparkEvaluator
-import io.prediction.core.SparkEngine
-import io.prediction.core.SparkAlgorithm
+//import io.prediction.core.SparkEvaluator
+//import io.prediction.core.SparkEngine
+import io.prediction.core.Spark2LocalAlgorithm
 import io.prediction._
+import io.prediction.core.BaseEvaluator
 
 import org.apache.spark.mllib.tree.model.DecisionTreeModel
 import org.apache.spark.mllib.tree.DecisionTree
@@ -39,7 +40,8 @@ import com.github.nscala_time.time.Imports._
 /******************** Factories ***********************************/
 object SparkStockEvaluator extends EvaluatorFactory {
   def apply() = {
-    new SparkEvaluator(
+    //new SparkEvaluator(
+    new BaseEvaluator(
       classOf[SparkStockDataPreparator],
       classOf[StockValidator])
   }
@@ -47,7 +49,8 @@ object SparkStockEvaluator extends EvaluatorFactory {
 
 object SparkBackTestingEvaluator extends EvaluatorFactory {
   def apply() = {
-    new SparkEvaluator(
+    new BaseEvaluator(
+    //new SparkEvaluator(
       classOf[SparkStockDataPreparator],
       classOf[BackTestingValidator])
   }
@@ -55,7 +58,8 @@ object SparkBackTestingEvaluator extends EvaluatorFactory {
 
 object SparkStockEngine extends EngineFactory {
   def apply() = {
-    new SparkEngine(
+    //new SparkEngine(
+    new BaseEngine(
       classOf[SparkNoOptCleanser],
       Map("tree" -> classOf[SparkTreeAlgorithm]),
       classOf[DefaultServer[Feature, Target]])
@@ -72,9 +76,9 @@ class SparkTrainingData (
   // price doesn't contain market data, as these are RDD and are operated in
   // parallel.
   val price: RDD[(String, Array[Double])]
-) extends BaseTrainingData
+) extends Serializable
 
-class StockTreeModel(val treeModel: DecisionTreeModel) extends BaseModel
+class StockTreeModel(val treeModel: DecisionTreeModel) extends Serializable
 
 /******************** Controllers ***********************************/
 class SparkNoOptCleanser extends SparkDefaultCleanser[SparkTrainingData] {}
@@ -118,13 +122,13 @@ class SparkStockDataPreparator
 
 // Spark Algo. Based on MLLib's decision tree
 class SparkTreeAlgorithm
-    extends SparkAlgorithm[
-        SparkTrainingData,
-        Feature,
-        Target,
-        StockTreeModel,
-        EmptyParams] {
-  def init(p: EmptyParams) = {}
+  extends Spark2LocalAlgorithm[
+      SparkTrainingData,
+      Feature,
+      Target,
+      StockTreeModel,
+      EmptyParams] {
+  //def init(p: EmptyParams) = {}
 
   def train(data: SparkTrainingData): StockTreeModel = { 
     val timeIndex = IndexTime(data.timeIndex)
@@ -197,8 +201,8 @@ object RunSpark {
     val evalDataParams = new EvaluationDataParams(
       baseDate = new DateTime(2006, 1, 1, 0, 0),
       fromIdx = 600,
-      //untilIdx = 630,
-      untilIdx = 800,
+      untilIdx = 630,
+      //untilIdx = 800,
       //untilIdx = 1200,
       trainingWindowSize = 600,
       evaluationInterval = 20,

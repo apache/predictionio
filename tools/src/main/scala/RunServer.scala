@@ -1,6 +1,5 @@
 package io.prediction.tools
 
-import io.prediction.BaseModel
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServer
 import io.prediction.{ EngineFactory, EvaluatorFactory }
@@ -140,7 +139,7 @@ trait MyService extends HttpService with Logging {
   val engine = engineObject.instance.asInstanceOf[EngineFactory]()
 
   val algorithmMap = engine.algorithmClassMap.mapValues(_.newInstance)
-  val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[BaseModel]]]).get
+  val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[Any]]]).get
 
   debug(run.algoParamsList)
   val algoJsonSeq = Serialization.read[Seq[Map[String, JValue]]](run.algoParamsList)

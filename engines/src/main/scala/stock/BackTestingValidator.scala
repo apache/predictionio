@@ -4,13 +4,13 @@ import io.prediction._
 import com.github.nscala_time.time.Imports._
 import io.prediction.core.BaseEvaluator
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
-import io.prediction.core.LocalEvaluator
+//import io.prediction.core.LocalEvaluator
 
 object BackTestingEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
   override def apply() = {
-    //new BaseEvaluator(
-    new LocalEvaluator(
+    new BaseEvaluator(
+    //new LocalEvaluator(
       classOf[StockDataPreparator],
       classOf[BackTestingValidator])
   }
@@ -21,7 +21,7 @@ class BackTestingParams(
   val enterThreshold: Double,
   val exitThreshold: Double,
   val maxPositions: Int = 3)
-extends BaseValidationParams {}
+extends BaseParams {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
 class DailyResults(
@@ -29,13 +29,13 @@ class DailyResults(
   val actualReturn: Map[String, Double],  // Tomorrow's return
   val toEnter: Seq[String],
   val toExit: Seq[String])
-extends BaseValidationUnit {}
+extends Serializable {}
 
 class SetResults(val dailySeq: Seq[DailyResults]) 
-extends BaseValidationResults {}
+extends Serializable {}
 
 class BackTestingResults(val s: Seq[String]) 
-extends BaseCrossValidationResults {
+extends Serializable {
   override def toString() = s.mkString("\n")
 }
 
@@ -53,6 +53,7 @@ class BackTestingValidator
         BackTestingResults] {
   var params: BackTestingParams = null
 
+  override
   def init(params: BackTestingParams): Unit = {
     this.params = params
   }

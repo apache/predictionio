@@ -1,21 +1,6 @@
 package io.prediction.engines.stock
 
-import io.prediction.{
-  BaseTrainingDataParams,
-  BaseEvaluationDataParams,
-  BaseValidationDataParams,
-  BaseTrainingData,
-  BaseCleansedData,
-  BaseFeature,
-  BasePrediction,
-  BaseActual,
-  BaseModel,
-  BaseValidationUnit,
-  BaseValidationResults,
-  BaseValidationParams,
-  BaseCrossValidationResults
-}
-
+import io.prediction.BaseParams
 import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
@@ -34,14 +19,14 @@ class EvaluationDataParams(
   val trainingWindowSize: Int,
   val evaluationInterval: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseEvaluationDataParams {}
+  val tickerList: Seq[String]) extends BaseParams {}
 
 class TrainingDataParams(
   val baseDate: DateTime,
   val untilIdx: Int,
   val windowSize: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseTrainingDataParams {}
+  val tickerList: Seq[String]) extends BaseParams {}
 
 // Evaluate with data generate up to idx (exclusive). The target data is also
 // restricted by idx. For example, if idx == 10, the data-preparator use data to
@@ -52,13 +37,13 @@ class ValidationDataParams(
   val fromIdx: Int,
   val untilIdx: Int,
   val marketTicker: String,
-  val tickerList: Seq[String]) extends BaseValidationDataParams {}
+  val tickerList: Seq[String]) extends BaseParams {}
 
 class TrainingData(
   val tickers: Seq[String],
   val mktTicker: String,
   val data: (Array[DateTime], Array[(String, Array[Double])]))
-  extends BaseTrainingData {
+  extends Serializable {
   val timeIndex: Array[DateTime] = data._1
   val tickerPriceSeq: Array[(String, Array[Double])] = data._2
  
@@ -111,8 +96,7 @@ object SaddleWrapper {
 
 
 
-class Model(
-  val data: Map[String, DenseVector[Double]]) extends BaseModel {}
+class Model(val data: Map[String, DenseVector[Double]]) extends Serializable
 
 // This is different from TrainingData. This serves as input for algorithm.
 // Hence, the time series should be shorter than that of TrainingData.
@@ -120,7 +104,7 @@ class Feature(
   val mktTicker: String,
   val tickerList: Seq[String],
   val input: (Array[DateTime], Array[(String, Array[Double])])
-  ) extends BaseFeature {
+  ) extends Serializable {
   
   val timeIndex: Array[DateTime] = input._1
   val tickerPriceSeq: Array[(String, Array[Double])] = input._2
@@ -148,19 +132,14 @@ object Feature {
 }
 
 class Target(
-  val data: Map[String, Double]) extends BasePrediction with BaseActual {}
+  val data: Map[String, Double]) extends Serializable {}
 
 class ValidationUnit(
-  val data: Seq[(Double, Double)]) extends BaseValidationUnit {}
+  val data: Seq[(Double, Double)]) extends Serializable {}
 
 class ValidationResults(
-  val vuSeq: Seq[ValidationUnit]) extends BaseValidationResults {}
+  val vuSeq: Seq[ValidationUnit]) extends Serializable {}
 
-class CrossValidationResults(
-  val s: String) extends BaseCrossValidationResults {
+class CrossValidationResults(val s: String) extends Serializable {
   override def toString() = s
 }
-
-
-
-

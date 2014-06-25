@@ -1,18 +1,18 @@
 package io.prediction.engines.stock
 
-import io.prediction.{ Algorithm, BaseModel, BaseAlgoParams }
+import io.prediction.{ Algorithm, BaseParams }
 
 import scala.util.Random
 
-class EmptyModel() extends BaseModel {}
+//class EmptyModel() extends BaseModel {}
 
 class RandomAlgoParams(
   val seed: Long = 709394,
   val scale: Double = 0.01,
-  val drift: Double = 0.0) extends BaseAlgoParams {}
+  val drift: Double = 0.0) extends BaseParams {}
 
 class RandomAlgorithm
-    extends Algorithm[TrainingData, Feature, Target, EmptyModel, RandomAlgoParams] {
+    extends Algorithm[TrainingData, Feature, Target, Null, RandomAlgoParams] {
   var _scale: Double = 0.0
   var _drift: Double = 0.0
   var _seed: Long = 0
@@ -20,18 +20,17 @@ class RandomAlgorithm
   @transient lazy val _random: Random = new Random(_seed)
   override def init(algoParams: RandomAlgoParams): Unit = {
     println("RandomAlgorithm.init")
-    //_random = new Random(algoParams.seed)
     _seed = algoParams.seed
     _scale = algoParams.scale
     _drift = algoParams.drift
   }
 
-  def train(trainingData: TrainingData) = {
+  def train(trainingData: TrainingData): Null = {
     println("RandomAlgorithm.train")
-    new EmptyModel()
+    null
   }
 
-  def predict(model: EmptyModel, feature: Feature): Target = {
+  def predict(model: Null, feature: Feature): Target = {
     println(s"RandomAlgorithm.predict ${_seed} ${_scale} ${_drift}")
     val tickers = feature.data.colIx.toVec.contents
     //val tickers = feature.boxedData.get.colIx.toVec.contents
