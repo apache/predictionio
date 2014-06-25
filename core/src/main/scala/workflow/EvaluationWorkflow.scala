@@ -151,7 +151,7 @@ object EvaluationWorkflow {
     Seq[(BaseTrainingDataParams, BaseValidationDataParams, VR)], 
     CVR) = {
     // Add a flag to disable parallelization.
-    val verbose = true
+    val verbose = false
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
     conf.set("spark.local.dir", "~/tmp/spark")

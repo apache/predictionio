@@ -1,31 +1,29 @@
 package io.prediction.engines.regression
 
-import org.apache.spark.mllib.regression.LinearRegressionWithSGD
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.mllib.linalg.Vector
-
+import io.prediction.BaseEvaluationDataParams
+import io.prediction._
+import io.prediction.core.BaseDataPreparator
+import io.prediction.core.BaseEngine
+import io.prediction.core.BaseEvaluator
+import io.prediction.core.BaseValidator
+import io.prediction.core.Spark2LocalAlgorithm
+import io.prediction.core.SparkDataPreparator
+import io.prediction.workflow.EvaluationWorkflow
+import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD   
-
-import io.prediction.BaseEvaluationDataParams
-import io.prediction.core.BaseDataPreparator
-import io.prediction.core.BaseValidator
-import io.prediction.core.SparkDataPreparator
-import io.prediction._
-//import io.prediction.core.SparkEvaluator
-import io.prediction.core.BaseEvaluator
-import io.prediction.core.Spark2LocalAlgorithm
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 import org.apache.spark.mllib.regression.RegressionModel
-import io.prediction.core.BaseEngine
-import io.prediction.workflow.EvaluationWorkflow
+import org.apache.spark.rdd.RDD   
+import org.apache.spark.mllib.util.MLUtils
 
-class SparkNoOptCleanser extends SparkDefaultCleanser[RDD[LabeledPoint]] {}
+//class SparkNoOptCleanser extends SparkDefaultCleanser[RDD[LabeledPoint]] {}
 
 // Maybe also remove this subclassing too
-class EvalDataParams(val filepath: String, val k: Int)
+class EvalDataParams(val filepath: String, val k: Int, val seed: Int = 9527)
 extends BaseEvaluationDataParams
 
 object SparkRegressionEvaluator extends EvaluatorFactory {
@@ -51,14 +49,14 @@ class DataPrep
       (Null, Null, RDD[LabeledPoint], RDD[(Vector, Double)])] = {
     val input = sc.textFile(params.filepath)
     val points = input.map { line =>
-      val parts = line.split(' ')
-      LabeledPoint(
-        parts(0).toDouble, 
-        Vectors.dense(parts.drop(1).map(_.toDouble)))
+      val parts = line.split(' ').map(_.toDouble)
+      LabeledPoint(parts(0), Vectors.dense(parts.drop(1)))
     }
 
-    (0 until params.k).map { case ei => {
-      (ei, (null, null, points, points.map(p => (p.features, p.label))))
+    MLUtils.kFold(points, params.k, params.seed)
+    .zipWithIndex
+    .map { case (oneEval, ei) => {
+      (ei, (null, null, oneEval._1, oneEval._2.map(p => (p.features, p.label))))
     }}
     .toMap
   }
@@ -83,7 +81,7 @@ class Validator
   }
 
   def crossValidate(input: Seq[(Null, Null, Double)]): String = {
-    input.map(e => s"MSE: ${e._3}").mkString("\n")
+    input.map(e => f"MSE: ${e._3}%8.6f").mkString("\n")
   }
 }
 
@@ -97,7 +95,7 @@ class Algorithm
       Null] {
   
   def train(data: RDD[LabeledPoint]): RegressionModel = {
-    val numIterations = 50
+    val numIterations = 800
     LinearRegressionWithSGD.train(data, numIterations)
   }
 
@@ -111,21 +109,18 @@ class Algorithm
 object Runner {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"
-    val evalDataParams = new EvalDataParams(filepath, 2)
+    val evalDataParams = new EvalDataParams(filepath, 3)
 
     val evaluator = SparkRegressionEvaluator()
 
-    val engine = new BaseEngine(
-      classOf[SparkNoOptCleanser],
-      Map("algo" -> classOf[Algorithm]),
-      classOf[DefaultServer[Vector, Double]])
+    val engine = new Spark2LocalSimpleEngine(classOf[Algorithm])
 
     EvaluationWorkflow.run(
         "Regress Man", 
         evalDataParams, 
         null, 
         null, 
-        Seq(("algo", null)), 
+        Seq(("", null)), 
         null,
         engine,
         evaluator)
