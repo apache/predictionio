@@ -20,8 +20,6 @@ import org.apache.spark.mllib.regression.RegressionModel
 import org.apache.spark.rdd.RDD   
 import org.apache.spark.mllib.util.MLUtils
 
-//class SparkNoOptCleanser extends SparkDefaultCleanser[RDD[LabeledPoint]] {}
-
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int, val seed: Int = 9527)
 extends BaseEvaluationDataParams
@@ -85,17 +83,19 @@ class Validator
   }
 }
 
+class AlgoParams(val numIterations: Int = 200) extends BaseAlgoParams
+
 // Algorithm
 class Algorithm 
   extends Spark2LocalAlgorithm[
-      RDD[LabeledPoint], 
-      Vector,
-      Double,
-      RegressionModel,
-      Null] {
+      RDD[LabeledPoint], Vector, Double, RegressionModel, AlgoParams] {
+  var numIterations: Int = 0
+
+  override def init(params: AlgoParams): Unit = {
+    numIterations = params.numIterations
+  }
   
   def train(data: RDD[LabeledPoint]): RegressionModel = {
-    val numIterations = 800
     LinearRegressionWithSGD.train(data, numIterations)
   }
 
@@ -115,12 +115,14 @@ object Runner {
 
     val engine = new Spark2LocalSimpleEngine(classOf[Algorithm])
 
+    val algoParams = new AlgoParams(numIterations = 300)
+
     EvaluationWorkflow.run(
         "Regress Man", 
         evalDataParams, 
         null, 
         null, 
-        Seq(("", null)), 
+        Seq(("", algoParams)), 
         null,
         engine,
         evaluator)
