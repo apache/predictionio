@@ -104,7 +104,11 @@ class Algorithm
   }
 }
 
-
+object RegressionEngine extends EngineFactory {
+  def apply() = {
+    new Spark2LocalSimpleEngine(classOf[Algorithm])
+  }
+}
 
 object Runner {
   def main(args: Array[String]) {
@@ -113,7 +117,7 @@ object Runner {
 
     val evaluator = SparkRegressionEvaluator()
 
-    val engine = new Spark2LocalSimpleEngine(classOf[Algorithm])
+    val engine = RegressionEngine()
 
     val algoParams = new AlgoParams(numIterations = 300)
 
