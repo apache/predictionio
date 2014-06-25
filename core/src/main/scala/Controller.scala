@@ -29,7 +29,7 @@ trait Algorithm[
   def predict(model: M, feature: F): P
 }
 
-trait Server[-F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
+trait Server[F <: BaseFeature, P <: BasePrediction, SP <: BaseServerParams]
     extends BaseServer[F, P, SP] {
   def init(serverParams: SP): Unit
 

@@ -9,8 +9,8 @@ import scala.reflect.ClassTag
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-    
-abstract 
+
+abstract
 class BaseCleanser[
     TD <: BaseTrainingData,
     CD <: BaseCleansedData,
@@ -21,7 +21,7 @@ class BaseCleanser[
 }
 
 
-abstract 
+abstract
 class LocalCleanser[
     TD <: BaseTrainingData,
     CD <: BaseCleansedData : Manifest,
@@ -62,15 +62,15 @@ class SparkCleanser[
 
 abstract class BaseAlgorithm[
     CD <: BaseCleansedData,
-    F <: BaseFeature,
+    F <: BaseFeature : Manifest,
     P <: BasePrediction,
     M <: BaseModel,
     AP <: BaseAlgoParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
 
   def trainBase(
-    sc: SparkContext, 
-    cleansedData: BaseCleansedData): RDD[BaseModel] 
+    sc: SparkContext,
+    cleansedData: BaseCleansedData): RDD[BaseModel]
 
   def predictBase(baseModel: BaseModel, baseFeature: BaseFeature)
     : BasePrediction = {
@@ -80,11 +80,14 @@ abstract class BaseAlgorithm[
   }
 
   def predict(model: M, feature: F): P
+
+  def featureClass() = manifest[F]
+
 }
 
 abstract class LocalAlgorithm[
     CD <: BaseCleansedData,
-    F <: BaseFeature,
+    F <: BaseFeature : Manifest,
     P <: BasePrediction,
     M <: BaseModel : Manifest,
     AP <: BaseAlgoParams: Manifest]
@@ -102,20 +105,20 @@ abstract class LocalAlgorithm[
   }
 
   def train(cleansedData: CD): M
-  
+
   def predict(model: M, feature: F): P
 }
 
 abstract class SparkAlgorithm[
     CD <: BaseCleansedData,
-    F <: BaseFeature,
+    F <: BaseFeature : Manifest,
     P <: BasePrediction,
     M <: BaseModel : Manifest,
     AP <: BaseAlgoParams: Manifest]
   extends BaseAlgorithm[CD, F, P, M, AP] {
   // train returns a local object M, and we parallelize it.
   def trainBase(
-    sc: SparkContext, 
+    sc: SparkContext,
     cleansedData: BaseCleansedData): RDD[BaseModel] = {
     val m: BaseModel = train(cleansedData.asInstanceOf[CD])
     sc.parallelize(Array(m))
@@ -132,7 +135,7 @@ abstract class SparkAlgorithm[
 /* Server */
 
 abstract class BaseServer[
-    -F <: BaseFeature,
+    F <: BaseFeature,
     P <: BasePrediction,
     SP <: BaseServerParams: Manifest]
   extends AbstractParameterizedDoer[SP] {
@@ -179,7 +182,8 @@ class BaseEngine[
       : Map[String,
         Class[_ <:
           BaseAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
-    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]]) {}
+    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]]) {
+  }
 
 class LocalEngine[
     TD <: BaseTrainingData,
@@ -194,7 +198,7 @@ class LocalEngine[
           LocalAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
-    
+
 class SparkEngine[
     TD <: BaseTrainingData,
     CD <: BaseCleansedData,
@@ -208,7 +212,3 @@ class SparkEngine[
           SparkAlgorithm[CD, F, P, _ <: BaseModel, _ <: BaseAlgoParams]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseServerParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
-
-
-
-
