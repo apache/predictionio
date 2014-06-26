@@ -1,8 +1,8 @@
 package io.prediction.tools
 
+import io.prediction.EngineFactory
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServer
-import io.prediction.{ EngineFactory, EvaluatorFactory }
 import io.prediction.storage.{ Config, EngineManifest, Run }
 
 import com.twitter.chill.KryoInjection
@@ -41,12 +41,14 @@ class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
   }
 }
 
-object RunServer extends Logging {
-  case class Args(
-    id: String = "",
-    version: String = "",
-    run: String = "")
+case class Args(
+  id: String = "",
+  version: String = "",
+  run: String = "",
+  ip: String = "localhost",
+  port: Int = 8000)
 
+object RunServer extends Logging {
   def getParams[A <: AnyRef](
       formats: Formats,
       jsonString: String,
@@ -63,6 +65,12 @@ object RunServer extends Logging {
       opt[String]("version") action { (x, c) =>
         c.copy(version = x)
       } text("engine version")
+      opt[String]("ip") action { (x, c) =>
+        c.copy(ip = x)
+      } text("IP to bind to (default: localhost)")
+      opt[Int]("port") action { (x, c) =>
+        c.copy(port = x)
+      } text("port to bind to (default: 8000)")
       arg[String]("run ID") action { (x, c) =>
         c.copy(run = x)
       }
@@ -77,14 +85,14 @@ object RunServer extends Logging {
         val engineVersion = if (parsed.version != "") parsed.version else run.engineManifestVersion
         engineManifests.get(engineId, engineVersion) map { manifest =>
           // we need an ActorSystem to host our application in
-          implicit val system = ActorSystem("on-spray-can")
+          implicit val system = ActorSystem("predictionio-server")
 
           // create and start our service actor
-          val service = system.actorOf(Props(classOf[MyServiceActor], run, manifest), "demo-service")
+          val service = system.actorOf(Props(classOf[ServerActor], parsed, run, manifest), "server")
 
           implicit val timeout = Timeout(5.seconds)
           // start a new HTTP server on port 8080 with our service actor as the handler
-          IO(Http) ? Http.Bind(service, interface = "localhost", port = 8000)
+          IO(Http) ? Http.Bind(service, interface = parsed.ip, port = parsed.port)
 
         } getOrElse {
           error(s"Invalid Engine ID or version. Aborting server.")
@@ -96,7 +104,7 @@ object RunServer extends Logging {
   }
 }
 
-class MyServiceActor(val run: Run, val manifest: EngineManifest) extends Actor with MyService {
+class ServerActor(val args: Args, val run: Run, val manifest: EngineManifest) extends Actor with Server {
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
   def actorRefFactory = context
@@ -110,11 +118,11 @@ class MyServiceActor(val run: Run, val manifest: EngineManifest) extends Actor w
 case class AlgoParams(name: String, params: JValue)
 
 // this trait defines our service behavior independently from the service actor
-trait MyService extends HttpService with Logging {
+trait Server extends HttpService with Logging {
+  val args: Args
   val run: Run
   val manifest: EngineManifest
 
-  val evaluatorFactoryName = manifest.evaluatorFactory
   val engineFactoryName = manifest.engineFactory
 
   val engineJarFiles = manifest.jars.map(j => new File(j))
@@ -135,16 +143,12 @@ trait MyService extends HttpService with Logging {
   val algorithmMap = engine.algorithmClassMap.mapValues(_.newInstance)
   val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[Any]]]).get
 
-  debug(run.algoParamsList)
   val algoJsonSeq = Serialization.read[Seq[AlgoParams]](run.algoParamsList)
-  debug(algoJsonSeq)
   val algoNames = algoJsonSeq.map(_.name)
-  debug(algoNames)
   val algoParams = algoJsonSeq.map(m => Extraction.extract(m.params)(formats, algorithmMap(m.name).paramsClass))
   algoNames.zipWithIndex map { t =>
     algorithmMap(t._1).initBase(algoParams(t._2))
   }
-  debug(algoParams)
 
   val server = engine.serverClass.newInstance
   val serverParams = RunServer.getParams(formats, run.serverParams, server.paramsClass)
@@ -152,18 +156,6 @@ trait MyService extends HttpService with Logging {
 
   val firstAlgo = algorithmMap(algoNames(0))
   val featureClass = firstAlgo.featureClass
-  debug(featureClass)
-
-  debug(algorithmMap)
-  models foreach { m =>
-    m foreach {
-      debug(_)
-    }
-  }
-  debug(server)
-  debug(serverParams)
-
-  debug(models)
 
   val myRoute =
     path("") {
@@ -171,13 +163,29 @@ trait MyService extends HttpService with Logging {
         respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
           complete {
             <html>
+              <head>
+                <title>PredictionIO Server at {args.ip}:{args.port}</title>
+              </head>
               <body>
-                <h1>Say hello to <i>spray-routing</i> on <i>spray-can</i>!</h1>
+                <h1>PredictionIO Server</h1>
+                <div>
+                  <ul>
+                    <li><strong>URL:</strong> {args.ip}:{args.port}</li>
+                    <li><strong>Run ID:</strong> {args.run}</li>
+                    <li><strong>Engine:</strong> {manifest.id} {manifest.version}</li>
+                    <li><strong>Class:</strong> {engineFactoryName}</li>
+                    <li><strong>JARs:</strong> {engineJarFiles.mkString(" ")}</li>
+                    <li><strong>Algorithms:</strong> {algorithmMap}</li>
+                    <li><strong>Algorithms Parameters:</strong> {algoParams.mkString(" ")}</li>
+                    <li><strong>Models:</strong> {models(0).mkString(" ")}</li>
+                    <li><strong>Server Parameters:</strong> {serverParams}</li>
+                  </ul>
+                </div>
               </body>
             </html>
           }
         }
-      }
+      } ~
       post {
         entity(as[String]) { featureString =>
           val json = parse(featureString)
