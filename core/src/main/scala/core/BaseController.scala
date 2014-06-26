@@ -44,45 +44,36 @@ class SparkCleanser[TD, CD, CP <: BaseParams: Manifest]
 }
 
 /* Algorithm */
+
+trait LocalModelAlgorithm {
+  def getModel(baseModel: Any): RDD[Any]
+}
+
 abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[AP] {
-  def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any]
+  def trainBase(sc: SparkContext, cleansedData: CD): M
 
-  def predictBase(baseModel: Any, baseFeature: Any): P = {
-    predict(
-      baseModel.asInstanceOf[M],
-      baseFeature.asInstanceOf[F])
-  }
-
-  def predict(model: M, feature: F): P
+  def predictBase(baseModel: Any, baseFeature: Any): P
 
   def featureClass() = manifest[F]
 
 }
 
-/*
-<<<<<<< HEAD
-abstract class LocalAlgorithm[
-    CD <: BaseCleansedData,
-    F <: BaseFeature : Manifest,
-    P <: BasePrediction,
-    M <: BaseModel : Manifest,
-    AP <: BaseAlgoParams: Manifest]
-  extends BaseAlgorithm[RDDCD[CD], F, P, M, AP] {
-
-=======
-*/
 abstract class LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
     AP <: BaseParams: Manifest]
-  extends BaseAlgorithm[RDD[CD], F, P, M, AP] {
-//>>>>>>> typeless
-  def trainBase(
-    sc: SparkContext,
-    cleansedData: RDD[CD]): RDD[Any] = {
-    println("LocalAlgorithm.trainBase")
-    cleansedData
-      .map(train)
-      .map(_.asInstanceOf[Any])
+  extends BaseAlgorithm[RDD[CD], F, P, RDD[M], AP] 
+  with LocalModelAlgorithm {
+  def trainBase(sc: SparkContext, cleansedData: RDD[CD]): RDD[M] = {
+    cleansedData.map(train)
+  }
+ 
+  override
+  def predictBase(baseModel: Any, baseFeature: Any): P = {
+    predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
+  }
+  
+  def getModel(baseModel: Any): RDD[Any] = {
+    baseModel.asInstanceOf[RDD[Any]]
   }
 
   def train(cleansedData: CD): M
@@ -90,30 +81,24 @@ abstract class LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
   def predict(model: M, feature: F): P
 }
 
-/*
-<<<<<<< HEAD
-abstract class SparkAlgorithm[
-    CD <: BaseCleansedData,
-    F <: BaseFeature : Manifest,
-    P <: BasePrediction,
-    M <: BaseModel : Manifest,
-    AP <: BaseAlgoParams: Manifest]
-  extends BaseAlgorithm[CD, F, P, M, AP] {
-  // train returns a local object M, and we parallelize it.
-  def trainBase(
-    sc: SparkContext,
-    cleansedData: BaseCleansedData): RDD[BaseModel] = {
-    val m: BaseModel = train(cleansedData.asInstanceOf[CD])
-=======
-*/
 abstract class Spark2LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
     AP <: BaseParams: Manifest]
-  extends BaseAlgorithm[CD, F, P, M, AP] {
+  extends BaseAlgorithm[CD, F, P, RDD[M], AP]
+  with LocalModelAlgorithm {
   // train returns a local object M, and we parallelize it.
-  def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any] = {
-    val m: Any = train(cleansedData.asInstanceOf[CD]).asInstanceOf[Any]
-//>>>>>>> typeless
+  //def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any] = {
+  def trainBase(sc: SparkContext, cleansedData: CD): RDD[M] = {
+    val m: M = train(cleansedData)
     sc.parallelize(Array(m))
+  }
+
+  def getModel(baseModel: Any): RDD[Any] = {
+    baseModel.asInstanceOf[RDD[Any]]
+  }
+  
+  override
+  def predictBase(baseModel: Any, baseFeature: Any): P = {
+    predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
   }
 
   def train(cleansedData: CD): M

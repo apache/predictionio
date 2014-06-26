@@ -36,16 +36,21 @@ object Runner {
     val serverParams = null
 
     val knnEngine = new BaseEngine(
-      classOf[DefaultCleanser[TrainingData]],
+      //classOf[DefaultCleanser[TrainingData]],
+      classOf[NoOptCleanser],
       Map("knn" -> classOf[KNNAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]
     )
 
     val randEngine = new BaseEngine(
-      classOf[DefaultCleanser[TrainingData]],
+      //classOf[DefaultCleanser[TrainingData]],
+      classOf[NoOptCleanser],
       Map("rand" -> classOf[RandomAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]
     )
+
+    val engine = ItemRankEngine()
+
 
     val evaluator = ItemRankEvaluator()
 
@@ -63,7 +68,8 @@ object Runner {
       null /* cleanserParams */,
       knnEngineAlgoParamSet,
       serverParams,
-      knnEngine,
+      //knnEngine,
+      engine,
       evaluator)
 
     /*

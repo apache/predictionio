@@ -264,6 +264,9 @@ class ItemRankDataPreparator
   }
 }
 
+// Comment by yipjustin. I changed CVR from Null to String to prevent spark from
+// crashing due to some weird exception:
+// java.lang.ArrayStoreException: [Ljava.lang.Object;
 class ItemRankValidator
   extends Validator[
       EvalParams,
@@ -274,7 +277,8 @@ class ItemRankValidator
       Actual,
       ValidationUnit,
       Null,
-      Null] {
+      String] {
+      //Null] {
 
   //def init(params: EvalParams): Unit = {}
 
@@ -347,8 +351,14 @@ class ItemRankValidator
     if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
   }
 
+  /*
   override def crossValidate(
     input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, Null)]
   ): Null = null
+  */
+
+  override def crossValidate(
+    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, Null)]
+  ): String = ""
 
 }

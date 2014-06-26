@@ -5,8 +5,6 @@ import scala.language.existentials
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
 
-//import io.prediction.BaseEvaluationDataParams
-
 import com.github.nscala_time.time.Imports.DateTime
 
 import org.apache.spark.SparkContext
@@ -27,59 +25,17 @@ import scala.reflect.Manifest
 
 import com.twitter.chill.Externalizer
 
-object SparkWorkflow {
-  @deprecated("Please use EvaluationWorkflow", "20140624")
-  def run[
-      EDP <: BaseParams : Manifest,
-      VP <: BaseParams : Manifest,
-      TDP <: BaseParams : Manifest,
-      VDP <: BaseParams : Manifest,
-      TD: Manifest,
-      NTD : Manifest,
-      NCD : Manifest,
-      F : Manifest,
-      NF : Manifest,
-      P : Manifest,
-      NP : Manifest,
-      A : Manifest,
-      VU : Manifest,
-      VR : Manifest,
-      CVR <: AnyRef : Manifest](
-    batch: String,
-    evalDataParams: BaseParams,
-    validationParams: BaseParams,
-    cleanserParams: BaseParams,
-    algoParamsList: Seq[(String, BaseParams)],
-    serverParams: BaseParams,
-    baseEngine: BaseEngine[NTD,NCD,NF,NP],
-    baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-    ): (Array[Array[Any]], Seq[(BaseParams, BaseParams, VR)], CVR) = {
-    EvaluationWorkflow.run(
-      batch,
-      evalDataParams,
-      validationParams,
-      cleanserParams,
-      algoParamsList,
-      serverParams,
-      baseEngine,
-      baseEvaluator)
-  }
-}
-
-
 object EvaluationWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
 
   type BP = BaseParams
-  //type BTDP = BaseTrainingDataParams
-  //type BVDP = BaseValidationDataParams
 
   class AlgoServerWrapper[NF, NP, NA, NCD](
       val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]], 
       val server: BaseServer[NF, NP, _])
   extends Serializable {
-
+    
     def onePassPredict[F, P, A](
       input: (Iterable[(AI, Any)], Iterable[(F, A)]))
     : Iterable[(F, P, A)] = {
@@ -102,6 +58,42 @@ object EvaluationWorkflow {
 
         (feature, prediction.asInstanceOf[P], actual)
       }}
+    }
+
+    def predictLocalModel[F, P, A](models: Seq[RDD[Any]], input: RDD[(F, A)])
+    : RDD[(F, P, A)] = {
+      val sc = models.head.context
+
+      val indexedModels: Seq[RDD[(AI, Any)]] = models.zipWithIndex.map { 
+        case (rdd, ai) => rdd.map(m => (ai, m)) 
+      }
+
+      val rddModel: RDD[(Int, (AI, Any))] = sc.union(indexedModels)
+        .map(e => (0, e))
+
+      val validationData: RDD[(Int, (F, A))] = input.map(e => (0, e))
+
+      val d = rddModel.cogroup(validationData).values
+      val p = d.flatMap(onePassPredict[F, P, A])
+      p
+    }
+
+    def predict[F, P, A](models: Seq[Any], input: RDD[(F, A)])
+    : RDD[(F, P, A)] = {
+      // We split the prediction into multiple mode.
+      // If all algo support using local model, we will run against all of them
+      // in one pass.
+      val someNonLocal = algos.exists(!_.isInstanceOf[LocalModelAlgorithm])
+
+      if (!someNonLocal) {
+        val localModelAlgo = algos.map(_.asInstanceOf[LocalModelAlgorithm])
+        val rddModels = localModelAlgo.zip(models)
+          .map{ case (algo, model) => algo.getModel(model) }
+        predictLocalModel[F, P, A](rddModels, input)
+      } else {
+        println("Not implemented!!!!")
+        null
+      }
     }
   }
   
@@ -184,7 +176,6 @@ object EvaluationWorkflow {
     val cleanser = baseEngine.cleanserClass.newInstance
     cleanser.initBase(cleanserParams)
 
-    //val evalCleansedMap: Map[EI, BaseCleansedData] = evalDataMap
     val evalCleansedMap: Map[EI, NCD] = evalDataMap
     .map{ case (ei, data) => (ei, cleanser.cleanseBase(data._1)) }
 
@@ -196,7 +187,6 @@ object EvaluationWorkflow {
     }
 
     // Instantiate algos
-    //val algoInstanceList: Array[BAlgorithm] = algoParamsList
     val algoInstanceList: Array[BaseAlgorithm[NCD, NF, NP, _, _]] = 
     algoParamsList
       .map { case (algoName, algoParams) => {
@@ -208,20 +198,21 @@ object EvaluationWorkflow {
 
     // Model Training
     // Since different algo can have different model data, have to use Any.
-    val evalAlgoModelMap: Map[EI, RDD[(AI, Any)]] = evalCleansedMap
+    val evalAlgoModelMap: Map[EI, Seq[(AI, Any)]] = evalCleansedMap
     .par
     .map { case (ei, cleansedData) => {
 
-      val algoModelSeq: Seq[RDD[(AI, Any)]] = algoInstanceList
+      val algoModelSeq: Seq[(AI, Any)] = algoInstanceList
       .zipWithIndex
       .map { case (algo, index) => {
-        val model: RDD[Any] = algo
-          .trainBase(sc, cleansedData)
-          .map(_.asInstanceOf[Any])
-        model.map(e => (index, e))
+        val model: Any = algo.trainBase(sc, cleansedData)
+        (index, model)
       }}
 
-      (ei, sc.union(algoModelSeq) )
+      println(s"EI: $ei")
+      algoModelSeq.foreach{ e => println(s"${e._1} ${e._2}")}
+
+      (ei, algoModelSeq)
     }}
     .seq
     .toMap
@@ -232,11 +223,17 @@ object EvaluationWorkflow {
       }}
     }
 
+    /*
     val models = evalAlgoModelMap.values.toArray.map { rdd =>
       rdd.collect.map { p =>
         p._2
       }.toArray
     }
+    */
+
+    // FIXME(yipjustin): Deployment uses this trained model. But we have to
+    // handle two cases where the model is local / RDD. Fix later.
+    val models = Array(Array[Any]())
 
     val server = baseEngine.serverClass.newInstance
     server.initBase(serverParams)
@@ -247,20 +244,15 @@ object EvaluationWorkflow {
     // in one pass, as well as the combine logic of server.
     // Doing this way save one reduce-stage as we don't have to join results.
     val evalPredictionMap
-    //: Map[EI, RDD[(BaseFeature, BasePrediction, BaseActual)]] = evalDataMap
-    : Map[EI, RDD[(F, P, A)]] = evalDataMap
-    .map { case (ei, data) => {
-      val validationData: RDD[(Int, (F, A))] = data._2
-        .map(e => (0, e))
-      val algoModel: RDD[(Int, (AI, Any))] = evalAlgoModelMap(ei)
-        .map(e => (0, e))
-
-      // group the two things together.
-      val d = algoModel.cogroup(validationData).values
+    : Map[EI, RDD[(F, P, A)]] = evalDataMap.map { case (ei, data) => {
+      val validationData: RDD[(F, A)] = data._2
+      val algoModel: Seq[Any] = evalAlgoModelMap(ei)
+        .sortBy(_._1)
+        .map(_._2)
 
       val algoServerWrapper = new AlgoServerWrapper[NF, NP, A, NCD](
         algoInstanceList, server)
-      (ei, d.flatMap(algoServerWrapper.onePassPredict[F, P, A]))
+      (ei, algoServerWrapper.predict[F, P, A](algoModel, validationData))
     }}
     .toMap
 
