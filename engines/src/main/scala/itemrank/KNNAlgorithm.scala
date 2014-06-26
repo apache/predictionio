@@ -6,7 +6,18 @@ import breeze.linalg.{ SparseVector, sum => LSum }
 class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
   KNNModel, KNNAlgoParams] {
 
-  override def init(algoParams: KNNAlgoParams): Unit = {} // TODO
+  var _k = 10
+  var _similarity = "cosine"
+  var _minScore = 0.0
+
+  override def init(algoParams: KNNAlgoParams): Unit = {
+    _k = algoParams.k
+    _similarity = algoParams.similarity
+    _similarity match {
+      case "cosine" => _minScore = 0.0
+      case "jaccard" => _minScore = 0.0
+    }
+  }
 
   override def train(trainingData: TrainingData): KNNModel = {
     val rating = trainingData.rating
@@ -53,7 +64,12 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
         val i2Index = sortedItemIndex(j)
         val v1 = itemVectorMap(i1Index)
         val v2 = itemVectorMap(i2Index)
-        val score = cosineSimilarity(v1, v2)
+        val score = _similarity match {
+          case "cosine" => cosineSimilarity(v1, v2)
+          case "jaccard" => jaccardSimilarity(v1, v2)
+          case _ => 0.0
+        }
+
         (i1Index, i2Index, score)
       }).filter(_._3 > 0)
 
@@ -85,26 +101,33 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
   }
 
   override def predict(model: KNNModel, feature: Feature): Prediction = {
-    val nearestK = 10 // TODO: algo param
+    val nearestK = _k
     val uid = feature.uid
     val possibleItems = feature.items
     val history: Map[String, Int] = model.userHistory.getOrElse(uid, Set())
       .toMap
 
-    val rankedItems = possibleItems.toSeq.map { iid =>
+    val itemsScore = possibleItems.toSeq.map { iid =>
       val score = if (model.itemSim.contains(iid) && (!history.isEmpty)) {
         val sims: Seq[(String, Double)] = model.itemSim(iid)
         val rank = sims.filter { case (iid, score) => history.contains(iid) }
           .take(nearestK)
           .map { case (iid, score) => (score * history(iid)) }
           .sum
-        rank
+        Some(rank)
       } else {
-        0.0
+        None
       }
       (iid, score)
-    }.sortBy(_._2)(Ordering.Double.reverse)
-    // TODO: keep same order as input if no score
+    }
+
+    // keep same order as input if no score
+    val (itemsWithScore, itemsNoScore) = itemsScore.partition(_._2 != None)
+    val sorted = itemsWithScore.map{case(iid, score) => (iid, score.get)}
+      .sortBy(_._2)(Ordering.Double.reverse)
+
+    val rankedItems = sorted ++
+      (itemsNoScore.map{ case (iid, score) => (iid, _minScore) })
 
     new Prediction (
       items = rankedItems
@@ -118,5 +141,14 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
       val v1L2Norm = Math.sqrt(LSum(v1 :* v1))
       val v2L2Norm = Math.sqrt(LSum(v2 :* v2))
       p.toDouble / (v1L2Norm * v2L2Norm)
+    }
+
+  private def jaccardSimilarity(v1: SparseVector[Int],
+    v2: SparseVector[Int]): Double = {
+      val set1 = v1.index.toSet
+      val set2 = v2.index.toSet
+      val intersectSize = set1.intersect(set2).size
+      val unionSize = set1.size + set2.size - intersectSize
+      intersectSize.toDouble / unionSize
     }
 }

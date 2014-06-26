@@ -2,8 +2,11 @@ package io.prediction.engines.itemrank
 
 import io.prediction.BaseParams
 
-class KNNAlgoParams(val similarity: String) extends BaseParams {
-  override def toString = s"${similarity}"
+class KNNAlgoParams(
+  val similarity: String,
+  val k: Int
+) extends BaseParams {
+  override def toString = s"${similarity} ${k}"
 }
 
 class KNNModel(
