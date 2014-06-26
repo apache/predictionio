@@ -140,7 +140,7 @@ trait Server extends HttpService with Logging {
 
   implicit val formats = engine.formats
 
-  val algorithmMap = engine.algorithmClassMap.mapValues(_.newInstance)
+  val algorithmMap = engine.algorithmClassMap.map(p => p._1 -> p._2.newInstance)
   val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[Any]]]).get
 
   val algoJsonSeq = Serialization.read[Seq[AlgoParams]](run.algoParamsList)
