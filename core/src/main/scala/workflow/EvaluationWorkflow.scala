@@ -37,11 +37,9 @@ object EvaluationWorkflow {
   extends Serializable {
     
     def onePassPredict[F, P, A](
-      input: (Iterable[(AI, Any)], Iterable[(F, A)]))
-    : Iterable[(F, P, A)] = {
-      val modelIter = input._1
-      val featureActualIter = input._2
-
+      modelIter: Iterator[(AI, Any)], 
+      featureActualIter: Iterator[(F, A)])
+    : Iterator[(F, P, A)] = {
       val models = modelIter.toSeq.sortBy(_._1).map(_._2)
 
       featureActualIter.map{ case(feature, actual) => {
@@ -63,19 +61,16 @@ object EvaluationWorkflow {
     def predictLocalModel[F, P, A](models: Seq[RDD[Any]], input: RDD[(F, A)])
     : RDD[(F, P, A)] = {
       val sc = models.head.context
+      // must have only one partition since we need all models per feature.
+      val reInput = input.repartition(numPartitions = 1)
 
-      val indexedModels: Seq[RDD[(AI, Any)]] = models.zipWithIndex.map { 
-        case (rdd, ai) => rdd.map(m => (ai, m)) 
-      }
+      val indexedModels: Seq[RDD[(AI, Any)]] = models.zipWithIndex
+        .map { case (rdd, ai) => rdd.map(m => (ai, m)) }
 
-      val rddModel: RDD[(Int, (AI, Any))] = sc.union(indexedModels)
-        .map(e => (0, e))
+      val rddModel: RDD[(AI, Any)] = sc.union(indexedModels)
+        .repartition(numPartitions = 1)
 
-      val validationData: RDD[(Int, (F, A))] = input.map(e => (0, e))
-
-      val d = rddModel.cogroup(validationData).values
-      val p = d.flatMap(onePassPredict[F, P, A])
-      p
+      rddModel.zipPartitions(reInput)(onePassPredict[F, P, A])
     }
 
     def predict[F, P, A](models: Seq[Any], input: RDD[(F, A)])

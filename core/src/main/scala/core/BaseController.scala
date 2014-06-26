@@ -57,6 +57,9 @@ abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
 
   def predictBase(baseModel: Any, baseFeature: Any): P
 
+  //def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, Any)])
+  //: RDD[(Long, Any)]
+
   def featureClass() = manifest[F]
 
 }
@@ -73,6 +76,17 @@ abstract class LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
   def predictBase(baseModel: Any, baseFeature: Any): P = {
     predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
   }
+ 
+  /*
+  def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, Any)])
+  : RDD[(Long, Any)] = {
+    val rddModel: RDD[M] = getModel(baseModel).asInstanceOf[RDD[M]]
+      .map(e => (0, e))
+    val rddFeatures: RDD[(Long, F)] = baseFeatures.asInstanceOf[RDD[(Long, F)]]
+  }
+  */
+
+
   
   def getModel(baseModel: Any): RDD[Any] = {
     baseModel.asInstanceOf[RDD[Any]]
