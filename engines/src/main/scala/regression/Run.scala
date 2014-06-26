@@ -12,13 +12,16 @@ import io.prediction.workflow.EvaluationWorkflow
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 import org.apache.spark.mllib.regression.RegressionModel
-import org.apache.spark.rdd.RDD   
+import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.util.MLUtils
+
+import org.json4s._
 
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int, val seed: Int = 9527)
@@ -33,7 +36,7 @@ object SparkRegressionEvaluator extends EvaluatorFactory {
 }
 
 // DataPrep
-class DataPrep 
+class DataPrep
     extends BaseDataPreparator[
         EvalDataParams,
         EmptyParams,
@@ -43,7 +46,7 @@ class DataPrep
         Double] {
   override
   def prepare(sc: SparkContext, params: EvalDataParams)
-  : Map[Int, 
+  : Map[Int,
       (EmptyParams, EmptyParams, RDD[LabeledPoint], RDD[(Vector, Double)])] = {
     val input = sc.textFile(params.filepath)
     val points = input.map { line =>
@@ -54,7 +57,7 @@ class DataPrep
     MLUtils.kFold(points, params.k, params.seed)
     .zipWithIndex
     .map { case (oneEval, ei) => {
-      (ei, (EmptyParams(), EmptyParams(), 
+      (ei, (EmptyParams(), EmptyParams(),
         oneEval._1, oneEval._2.map(p => (p.features, p.label))))
     }}
     .toMap
@@ -62,10 +65,10 @@ class DataPrep
 }
 
 // Validator
-class Validator 
+class Validator
     extends BaseValidator[
         EmptyParams, EmptyParams, EmptyParams,
-        Vector, Double, Double, 
+        Vector, Double, Double,
         (Double, Double), Double, String] {
 
   def validate(feature: Vector, prediction: Double, actual: Double)
@@ -73,7 +76,7 @@ class Validator
     (prediction, actual)
   }
 
-  def validateSet(tdp: EmptyParams, vdp: EmptyParams, 
+  def validateSet(tdp: EmptyParams, vdp: EmptyParams,
     input: Seq[(Double, Double)])
   : Double = {
     val units = input.map(e => math.pow((e._1 - e._2), 2))
@@ -88,7 +91,7 @@ class Validator
 class AlgoParams(val numIterations: Int = 200) extends BaseParams
 
 // Algorithm
-class Algorithm 
+class Algorithm
   extends Spark2LocalAlgorithm[
       RDD[LabeledPoint], Vector, Double, RegressionModel, AlgoParams] {
   var numIterations: Int = 0
@@ -96,7 +99,7 @@ class Algorithm
   override def init(params: AlgoParams): Unit = {
     numIterations = params.numIterations
   }
-  
+
   def train(data: RDD[LabeledPoint]): RegressionModel = {
     LinearRegressionWithSGD.train(data, numIterations)
   }
@@ -106,9 +109,28 @@ class Algorithm
   }
 }
 
+class VectorSerializer extends CustomSerializer[Vector](format => (
+  {
+    case JArray(x) =>
+      val v = x.toArray.map { y =>
+        y match {
+          case JDouble(z) => z
+        }
+      }
+      new DenseVector(v)
+  },
+  {
+    case x: Vector =>
+      JArray(x.toArray.toList.map(d => JDouble(d)))
+  }
+))
+
 object RegressionEngine extends EngineFactory {
   def apply() = {
-    new Spark2LocalSimpleEngine(classOf[Algorithm])
+    new Spark2LocalSimpleEngine(
+      classOf[Algorithm]) {
+      override val formats = Util.json4sDefaultFormats + new VectorSerializer
+    }
   }
 }
 
@@ -124,11 +146,11 @@ object Runner {
     val algoParams = new AlgoParams(numIterations = 300)
 
     EvaluationWorkflow.run(
-        "Regress Man", 
-        evalDataParams, 
-        null, 
-        null, 
-        Seq(("", algoParams)), 
+        "Regress Man",
+        evalDataParams,
+        null,
+        null,
+        Seq(("", algoParams)),
         null,
         engine,
         evaluator)

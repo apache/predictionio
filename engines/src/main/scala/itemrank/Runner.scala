@@ -1,6 +1,7 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.core.{ BaseEngine }
+import io.prediction.{ EmptyParams }
 import io.prediction.{ DefaultServer, DefaultCleanser }
 import io.prediction.workflow.SparkWorkflow
 //import io.prediction.workflow.EvaluationWorkflow
@@ -31,44 +32,26 @@ object Runner {
       goal = Set("conversion", "view")
     )
 
-    val knnAlgoParams = new KNNAlgoParams(similarity="consine")
+    val knnAlgoParams = new KNNAlgoParams(similarity="cosine", k=10)
     val randomAlgoParams = new RandomAlgoParams
-    val serverParams = null
+    val serverParams = new EmptyParams
 
-    val knnEngine = new BaseEngine(
-      //classOf[DefaultCleanser[TrainingData]],
-      classOf[NoOptCleanser],
-      Map("knn" -> classOf[KNNAlgorithm]),
-      classOf[DefaultServer[Feature, Prediction]]
-    )
-
-    val randEngine = new BaseEngine(
-      //classOf[DefaultCleanser[TrainingData]],
-      classOf[NoOptCleanser],
-      Map("rand" -> classOf[RandomAlgorithm]),
-      classOf[DefaultServer[Feature, Prediction]]
-    )
+    val paramSet = Seq(
+      ("knn", knnAlgoParams),
+      ("rand", randomAlgoParams))
 
     val engine = ItemRankEngine()
 
 
     val evaluator = ItemRankEvaluator()
 
-    val knnEngineAlgoParamSet = Seq(
-      ("knn", knnAlgoParams))
-
-    val randEngineAlgoParamSet = Seq(
-      ("rand", randomAlgoParams)
-    )
-
     SparkWorkflow.run(
       "Thor",
       evalParams,
       evalParams, /* validation */
-      null /* cleanserParams */,
-      knnEngineAlgoParamSet,
+      new EmptyParams /* cleanserParams */,
+      paramSet,
       serverParams,
-      //knnEngine,
       engine,
       evaluator)
 

@@ -11,6 +11,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 
+import org.json4s.Formats
+
 abstract
 class BaseCleanser[TD, CD, CP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[CP] {
@@ -129,7 +131,8 @@ class BaseEngine[TD, CD, F, P](
       : Class[_ <: BaseCleanser[TD, CD, _ <: BaseParams]],
     val algorithmClassMap
       : Map[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]]],
-    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]])
+    val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]],
+    val formats: Formats = Util.json4sDefaultFormats)
 
 /*
 class LocalEngine[
