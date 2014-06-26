@@ -47,12 +47,8 @@ object RunServer extends Logging {
     version: String = "",
     run: String = "")
 
-  implicit val formats = new DefaultFormats {
-    override def dateFormatter = new java.text.SimpleDateFormat(
-      "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-  } ++ JodaTimeSerializers.all
-
   def getParams[A <: AnyRef](
+      formats: Formats,
       jsonString: String,
       classManifest: Manifest[A]): A = {
     val json = parse(jsonString)
@@ -118,11 +114,6 @@ trait MyService extends HttpService with Logging {
   val run: Run
   val manifest: EngineManifest
 
-  implicit val formats = new DefaultFormats {
-    override def dateFormatter = new java.text.SimpleDateFormat(
-      "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-  } ++ JodaTimeSerializers.all
-
   val evaluatorFactoryName = manifest.evaluatorFactory
   val engineFactoryName = manifest.engineFactory
 
@@ -139,6 +130,8 @@ trait MyService extends HttpService with Logging {
   val engineObject = runtimeMirror.reflectModule(engineModule)
   val engine = engineObject.instance.asInstanceOf[EngineFactory]()
 
+  implicit val formats = engine.formats
+
   val algorithmMap = engine.algorithmClassMap.mapValues(_.newInstance)
   val models = kryo.invert(run.models).map(_.asInstanceOf[Array[Array[Any]]]).get
 
@@ -154,7 +147,7 @@ trait MyService extends HttpService with Logging {
   debug(algoParams)
 
   val server = engine.serverClass.newInstance
-  val serverParams = RunServer.getParams(run.serverParams, server.paramsClass)
+  val serverParams = RunServer.getParams(formats, run.serverParams, server.paramsClass)
   server.initBase(serverParams)
 
   val firstAlgo = algorithmMap(algoNames(0))
