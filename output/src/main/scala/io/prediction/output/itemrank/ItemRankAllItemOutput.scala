@@ -6,10 +6,11 @@ import io.prediction.commons.settings.{ Algo, App, Engine, OfflineEval }
 import com.github.nscala_time.time.Imports._
 
 object ItemRankAllItemOutput extends ItemRankAlgoOutput {
+  val config = new Config
+
   override def output(uid: String, iids: Seq[String],
     instant: DateTime)(implicit app: App, algo: Algo,
       offlineEval: Option[OfflineEval]): Seq[(String, Double)] = {
-    val config = new Config
     val itemRecScores = offlineEval map { _ =>
       config.getModeldataTrainingItemRecScores
     } getOrElse { config.getModeldataItemRecScores }
