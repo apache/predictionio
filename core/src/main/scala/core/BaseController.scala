@@ -47,8 +47,42 @@ class SparkCleanser[TD, CD, CP <: BaseParams: Manifest]
 
 /* Algorithm */
 
-trait LocalModelAlgorithm {
-  def getModel(baseModel: Any): RDD[Any]
+trait LocalModelAlgorithm[F, P, M] {
+  def getModel(baseModel: Any): RDD[Any] = {
+    baseModel.asInstanceOf[RDD[Any]]
+  }
+
+  // Batch Prediction
+  def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, F)])
+  : RDD[(Long, P)] = {
+    // It is forcing 1 partitions. May expand to more partitions.
+    val rddModel: RDD[M] = getModel(baseModel)
+      .asInstanceOf[RDD[M]]
+      .coalesce(1)
+
+    val rddFeatures: RDD[(Long, F)] = baseFeatures
+      .asInstanceOf[RDD[(Long, F)]]
+      .coalesce(1)
+
+    rddModel.zipPartitions(rddFeatures)(batchPredictWrapper)
+  }
+
+  def batchPredictWrapper(model: Iterator[M], features: Iterator[(Long, F)])
+  : Iterator[(Long, P)] = {
+    batchPredict(model.next, features)
+  }
+
+  def batchPredict(model: M, features: Iterator[(Long, F)])
+  : Iterator[(Long, P)] = {
+    features.map { case (idx, f) => (idx, predict(model, f)) }
+  }
+ 
+  // One Prediction
+  def predictBase(baseModel: Any, baseFeature: Any): P = {
+    predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
+  }
+
+  def predict(model: M, feature: F): P
 }
 
 abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
@@ -57,8 +91,8 @@ abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
 
   def predictBase(baseModel: Any, baseFeature: Any): P
 
-  //def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, Any)])
-  //: RDD[(Long, Any)]
+  def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, F)])
+  : RDD[(Long, P)]
 
   def featureClass() = manifest[F]
 
@@ -67,29 +101,9 @@ abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
 abstract class LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
     AP <: BaseParams: Manifest]
   extends BaseAlgorithm[RDD[CD], F, P, RDD[M], AP] 
-  with LocalModelAlgorithm {
+  with LocalModelAlgorithm[F, P, M] {
   def trainBase(sc: SparkContext, cleansedData: RDD[CD]): RDD[M] = {
     cleansedData.map(train)
-  }
- 
-  override
-  def predictBase(baseModel: Any, baseFeature: Any): P = {
-    predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
-  }
- 
-  /*
-  def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, Any)])
-  : RDD[(Long, Any)] = {
-    val rddModel: RDD[M] = getModel(baseModel).asInstanceOf[RDD[M]]
-      .map(e => (0, e))
-    val rddFeatures: RDD[(Long, F)] = baseFeatures.asInstanceOf[RDD[(Long, F)]]
-  }
-  */
-
-
-  
-  def getModel(baseModel: Any): RDD[Any] = {
-    baseModel.asInstanceOf[RDD[Any]]
   }
 
   def train(cleansedData: CD): M
@@ -100,23 +114,13 @@ abstract class LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
 abstract class Spark2LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
     AP <: BaseParams: Manifest]
   extends BaseAlgorithm[CD, F, P, RDD[M], AP]
-  with LocalModelAlgorithm {
+  with LocalModelAlgorithm[F, P, M] {
   // train returns a local object M, and we parallelize it.
-  //def trainBase(sc: SparkContext, cleansedData: CD): RDD[Any] = {
   def trainBase(sc: SparkContext, cleansedData: CD): RDD[M] = {
     val m: M = train(cleansedData)
     sc.parallelize(Array(m))
   }
-
-  def getModel(baseModel: Any): RDD[Any] = {
-    baseModel.asInstanceOf[RDD[Any]]
-  }
   
-  override
-  def predictBase(baseModel: Any, baseFeature: Any): P = {
-    predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
-  }
-
   def train(cleansedData: CD): M
 
   def predict(model: M, feature: F): P
@@ -176,6 +180,4 @@ class SparkEngine[
           Spark2LocalAlgorithm[CD, F, P, _, _]]],
     serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]])
     extends BaseEngine(cleanserClass, algorithmClassMap, serverClass)
-<<<<<<< HEAD
-=======
 */

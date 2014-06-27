@@ -28,6 +28,7 @@ import com.twitter.chill.Externalizer
 object EvaluationWorkflow {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
+  type FI = Long // Feature Index
 
   type BP = BaseParams
 
@@ -36,6 +37,7 @@ object EvaluationWorkflow {
       val server: BaseServer[NF, NP, _])
   extends Serializable {
     
+    // Use algo.predictBase
     def onePassPredict[F, P, A](
       modelIter: Iterator[(AI, Any)], 
       featureActualIter: Iterator[(F, A)])
@@ -58,19 +60,57 @@ object EvaluationWorkflow {
       }}
     }
 
+    // Use algo.predictBase
     def predictLocalModel[F, P, A](models: Seq[RDD[Any]], input: RDD[(F, A)])
     : RDD[(F, P, A)] = {
+      println("predictionLocalModel")
       val sc = models.head.context
       // must have only one partition since we need all models per feature.
-      val reInput = input.repartition(numPartitions = 1)
+      // todo: duplicate indexedModel into multiple partition.
+      val reInput = input.coalesce(numPartitions = 1)
 
       val indexedModels: Seq[RDD[(AI, Any)]] = models.zipWithIndex
         .map { case (rdd, ai) => rdd.map(m => (ai, m)) }
 
       val rddModel: RDD[(AI, Any)] = sc.union(indexedModels)
-        .repartition(numPartitions = 1)
+        .coalesce(numPartitions = 1)
 
       rddModel.zipPartitions(reInput)(onePassPredict[F, P, A])
+    }
+
+    // Use algo.batchPredictBase
+    def predictParallelModel[F, P, A](models: Seq[Any], input: RDD[(F, A)])
+    : RDD[(F, P, A)] = {
+      println("predictionParallelModel")
+      // Prefixed with "i" stands for "i"ndexed
+      val iInput: RDD[(FI, (F, A))] = input.zipWithUniqueId.map(_.swap)
+
+      val iFeature: RDD[(FI, NF)] = iInput
+        .map(e => (e._1, e._2._1.asInstanceOf[NF]))
+      val sc = input.context
+
+      // Each algo/model is run independely.
+      val iAlgoPredictionSeq: Seq[RDD[(FI, (AI, NP))]] = models
+        .zipWithIndex
+        .map { case (model, ai) => {
+          algos(ai)
+            .batchPredictBase(model, iFeature)
+            .map{ case (fi, p) => (fi, (ai, p)) }
+        }}
+
+      val iAlgoPredictions: RDD[(FI, Seq[NP])] = sc
+        .union(iAlgoPredictionSeq)
+        .groupByKey
+        .mapValues { _.toSeq.sortBy(_._1).map(_._2) }
+      
+      val joined: RDD[(FI, (Seq[NP], (F, A)))] = iAlgoPredictions.join(iInput)
+
+      joined
+      .mapValues{ case (predictions, (feature, actual)) => {
+        val prediction = server.combineBase(feature, predictions)
+        (feature, prediction.asInstanceOf[P], actual)
+      }}
+      .values
     }
 
     def predict[F, P, A](models: Seq[Any], input: RDD[(F, A)])
@@ -78,16 +118,21 @@ object EvaluationWorkflow {
       // We split the prediction into multiple mode.
       // If all algo support using local model, we will run against all of them
       // in one pass.
-      val someNonLocal = algos.exists(!_.isInstanceOf[LocalModelAlgorithm])
+      //val someNonLocal = algos.exists(!_.isInstanceOf[LocalModelAlgorithm])
+      val someNonLocal = algos
+        .exists(!_.isInstanceOf[LocalModelAlgorithm[F, P, _]])
+
+      //if (!someNonLocal && false) {
 
       if (!someNonLocal) {
-        val localModelAlgo = algos.map(_.asInstanceOf[LocalModelAlgorithm])
+        // When algo is local, the model is the only element in RDD[M].
+        val localModelAlgo = algos
+          .map(_.asInstanceOf[LocalModelAlgorithm[F, P, _]])
         val rddModels = localModelAlgo.zip(models)
           .map{ case (algo, model) => algo.getModel(model) }
         predictLocalModel[F, P, A](rddModels, input)
       } else {
-        println("Not implemented!!!!")
-        null
+        predictParallelModel[F, P, A](models, input)
       }
     }
   }
