@@ -2,7 +2,7 @@
 
 # This script should be sourced with $BASE set to the base of the repository
 
-VERSION=0.7.1
+VERSION=0.7.2-SNAPSHOT
 
 # Play framework related
 PLAY_OPTS=
