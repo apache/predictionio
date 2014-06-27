@@ -52,7 +52,9 @@ trait LocalModelAlgorithm[F, P, M] {
     baseModel.asInstanceOf[RDD[Any]]
   }
 
-  // Batch Prediction
+  // Batch Prediction, for local algorithms, it calls batchPredict, whose
+  // default implementation is a map over "predict". Builders can override
+  // batchPredict for performance optimization.
   def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, F)])
   : RDD[(Long, P)] = {
     // It is forcing 1 partitions. May expand to more partitions.
@@ -72,6 +74,7 @@ trait LocalModelAlgorithm[F, P, M] {
     batchPredict(model.next, features)
   }
 
+  // Expected to be overridden
   def batchPredict(model: M, features: Iterator[(Long, F)])
   : Iterator[(Long, P)] = {
     features.map { case (idx, f) => (idx, predict(model, f)) }
@@ -82,6 +85,7 @@ trait LocalModelAlgorithm[F, P, M] {
     predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
   }
 
+  // Expected to be overridden
   def predict(model: M, feature: F): P
 }
 

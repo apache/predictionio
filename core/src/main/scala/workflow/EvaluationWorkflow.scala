@@ -127,7 +127,7 @@ object EvaluationWorkflow {
       if (!someNonLocal) {
         // When algo is local, the model is the only element in RDD[M].
         val localModelAlgo = algos
-          .map(_.asInstanceOf[LocalModelAlgorithm[F, P, _]])
+          .map(_.asInstanceOf[LocalModelAlgorithm[F, P, Any]])
         val rddModels = localModelAlgo.zip(models)
           .map{ case (algo, model) => algo.getModel(model) }
         predictLocalModel[F, P, A](rddModels, input)
