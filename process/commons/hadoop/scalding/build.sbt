@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
 
 // for compiling mongotap
 libraryDependencies ++= Seq(
-  "org.mongodb" %% "casbah" % "2.6.2",
+  "org.mongodb" %% "casbah" % "2.7.2",
   "io.prediction" % "mongo-hadoop-core" % "1.1.0"
 )
 

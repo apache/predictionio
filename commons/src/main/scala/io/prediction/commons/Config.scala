@@ -19,14 +19,25 @@ class Config {
   /** The database type that stores PredictionIO settings. */
   val settingsDbType: String = config.getString("io.prediction.commons.settings.db.type")
 
-  /** The database host that stores PredictionIO settings. */
-  val settingsDbHost: String = settingsDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.settings.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  /** The database host(s) that stores PredictionIO settings. */
+  val settingsDbHost: Seq[String] = settingsDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.settings.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
-  /** The database port that stores PredictionIO settings. */
-  val settingsDbPort: Int = settingsDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.settings.db.port") } catch { case _: Throwable => 27017 }
+  /** The database port(s) that stores PredictionIO settings. */
+  val settingsDbPort: Seq[Int] = settingsDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getIntList("io.prediction.commons.settings.db.port").toSeq.
+          map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO settings. */
@@ -67,14 +78,25 @@ class Config {
   /** The database type that stores PredictionIO appdata. */
   val appdataDbType: String = config.getString("io.prediction.commons.appdata.db.type")
 
-  /** The database host that stores PredictionIO appdata. */
-  val appdataDbHost: String = appdataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  /** The database host(s) that stores PredictionIO appdata. */
+  val appdataDbHost: Seq[String] = appdataDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.appdata.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
-  /** The database port that stores PredictionIO appdata. */
-  val appdataDbPort: Int = appdataDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.db.port") } catch { case _: Throwable => 27017 }
+  /** The database port(s) that stores PredictionIO appdata. */
+  val appdataDbPort: Seq[Int] = appdataDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getIntList("io.prediction.commons.appdata.db.port").toSeq.
+          map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO appdata. */
@@ -92,13 +114,24 @@ class Config {
   val appdataTrainingDbType: String = config.getString("io.prediction.commons.appdata.training.db.type")
 
   /** The database host that stores PredictionIO training appdata. */
-  val appdataTrainingDbHost: String = appdataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.training.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  val appdataTrainingDbHost: Seq[String] = appdataTrainingDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.appdata.training.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
   /** The database port that stores PredictionIO training appdata. */
-  val appdataTrainingDbPort: Int = appdataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.training.db.port") } catch { case _: Throwable => 27017 }
+  val appdataTrainingDbPort: Seq[Int] = appdataTrainingDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getIntList("io.prediction.commons.appdata.training.db.port").toSeq.
+          map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO training appdata. */
@@ -116,13 +149,24 @@ class Config {
   val appdataValidationDbType: String = config.getString("io.prediction.commons.appdata.validation.db.type")
 
   /** The database host that stores PredictionIO validation appdata. */
-  val appdataValidationDbHost: String = appdataValidationDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.validation.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  val appdataValidationDbHost: Seq[String] = appdataValidationDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.appdata.validation.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
   /** The database port that stores PredictionIO validation appdata. */
-  val appdataValidationDbPort: Int = appdataValidationDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.validation.db.port") } catch { case _: Throwable => 27017 }
+  val appdataValidationDbPort: Seq[Int] = appdataValidationDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getIntList("io.prediction.commons.appdata.validation.db.port").
+          toSeq.map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO validation appdata. */
@@ -140,13 +184,25 @@ class Config {
   val appdataTestDbType: String = config.getString("io.prediction.commons.appdata.test.db.type")
 
   /** The database host that stores PredictionIO test appdata. */
-  val appdataTestDbHost: String = appdataTestDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.appdata.test.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  val appdataTestDbHost: Seq[String] = appdataTestDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.appdata.test.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
   /** The database port that stores PredictionIO test appdata. */
-  val appdataTestDbPort: Int = appdataTestDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.appdata.test.db.port") } catch { case _: Throwable => 27017 }
+  val appdataTestDbPort: Seq[Int] = appdataTestDbType match {
+    case dbTypeMongoDb =>
+      try { config.getInt("") } catch { case _: Throwable => 27017 }
+      try {
+        config.getIntList("io.prediction.commons.appdata.test.db.port").toSeq.
+          map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO test appdata. */
@@ -164,13 +220,24 @@ class Config {
   val modeldataDbType: String = config.getString("io.prediction.commons.modeldata.db.type")
 
   /** The database host that stores PredictionIO modeldata. */
-  val modeldataDbHost: String = modeldataDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.modeldata.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  val modeldataDbHost: Seq[String] = modeldataDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.modeldata.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
   /** The database port that stores PredictionIO modeldata. */
-  val modeldataDbPort: Int = modeldataDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.modeldata.db.port") } catch { case _: Throwable => 27017 }
+  val modeldataDbPort: Seq[Int] = modeldataDbType match {
+    case dbTypeMongoDb => try
+      try {
+        config.getIntList("io.prediction.commons.modeldata.db.port").toSeq.
+          map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO modeldata. */
@@ -194,13 +261,24 @@ class Config {
   val modeldataTrainingDbType: String = config.getString("io.prediction.commons.modeldata.training.db.type")
 
   /** The database host that stores PredictionIO modeldata. */
-  val modeldataTrainingDbHost: String = modeldataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getString("io.prediction.commons.modeldata.training.db.host") } catch { case _: Throwable => "127.0.0.1" }
+  val modeldataTrainingDbHost: Seq[String] = modeldataTrainingDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getStringList("io.prediction.commons.modeldata.training.db.host").toSeq
+      } catch {
+        case _: Throwable => Seq("127.0.0.1")
+      }
   }
 
   /** The database port that stores PredictionIO modeldata. */
-  val modeldataTrainingDbPort: Int = modeldataTrainingDbType match {
-    case dbTypeMongoDb => try { config.getInt("io.prediction.commons.modeldata.training.db.port") } catch { case _: Throwable => 27017 }
+  val modeldataTrainingDbPort: Seq[Int] = modeldataTrainingDbType match {
+    case dbTypeMongoDb =>
+      try {
+        config.getIntList("io.prediction.commons.modeldata.training.db.port").
+          toSeq.map(_.toInt)
+      } catch {
+        case _: Throwable => Seq(27017)
+      }
   }
 
   /** The database name that stores PredictionIO modeldata. */
@@ -216,49 +294,77 @@ class Config {
 
   /** If settingsDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val settingsMongoDb: Option[MongoDB] = if (settingsDbType == "mongodb") {
-    val db = MongoClient(settingsDbHost, settingsDbPort)(settingsDbName)
+    val db = (if (settingsDbHost.size > 1) {
+      MongoClient(settingsDbHost.zip(settingsDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(settingsDbHost(0), settingsDbPort(0)))(settingsDbName)
     settingsDbUser map { db.authenticate(_, settingsDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
   /** If appdataDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val appdataMongoDb: Option[MongoDB] = if (appdataDbType == "mongodb") {
-    val db = MongoClient(appdataDbHost, appdataDbPort)(appdataDbName)
+    val db = (if (appdataDbHost.size > 1) {
+      MongoClient(appdataDbHost.zip(appdataDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(appdataDbHost(0), appdataDbPort(0)))(appdataDbName)
     appdataDbUser map { db.authenticate(_, appdataDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
   /** If appdataTrainingDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val appdataTrainingMongoDb: Option[MongoDB] = if (appdataTrainingDbType == "mongodb") {
-    val db = MongoClient(appdataTrainingDbHost, appdataTrainingDbPort)(appdataTrainingDbName)
+    val db = (if (appdataTrainingDbHost.size > 1) {
+      MongoClient(appdataTrainingDbHost.zip(appdataTrainingDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(appdataTrainingDbHost(0), appdataTrainingDbPort(0)))(appdataTrainingDbName)
     appdataTrainingDbUser map { db.authenticate(_, appdataTrainingDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
   /** If appdataTestDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val appdataTestMongoDb: Option[MongoDB] = if (appdataTestDbType == "mongodb") {
-    val db = MongoClient(appdataTestDbHost, appdataTestDbPort)(appdataTestDbName)
+    val db = (if (appdataTestDbHost.size > 1) {
+      MongoClient(appdataTestDbHost.zip(appdataTestDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(appdataTestDbHost(0), appdataTestDbPort(0)))(appdataTestDbName)
     appdataTestDbUser map { db.authenticate(_, appdataTestDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
   /** If appdataValidationDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val appdataValidationMongoDb: Option[MongoDB] = if (appdataValidationDbType == "mongodb") {
-    val db = MongoClient(appdataValidationDbHost, appdataValidationDbPort)(appdataValidationDbName)
+    val db = (if (appdataValidationDbHost.size > 1) {
+      MongoClient(appdataValidationDbHost.zip(appdataValidationDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(appdataValidationDbHost(0), appdataValidationDbPort(0)))(appdataValidationDbName)
     appdataValidationDbUser map { db.authenticate(_, appdataValidationDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
   /** If modeldataDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val modeldataMongoDb: Option[MongoDB] = if (modeldataDbType == "mongodb") {
-    val db = MongoClient(modeldataDbHost, modeldataDbPort)(modeldataDbName)
+    val db = (if (modeldataDbHost.size > 1) {
+      MongoClient(modeldataDbHost.zip(modeldataDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(modeldataDbHost(0), modeldataDbPort(0)))(modeldataDbName)
     modeldataDbUser map { db.authenticate(_, modeldataDbPassword.getOrElse("")) }
     Some(db)
   } else None
 
   /** If modeldataTrainingDbType is "mongodb", this will contain a Some[MongoDB] object. */
   val modeldataTrainingMongoDb: Option[MongoDB] = if (modeldataTrainingDbType == "mongodb") {
-    val db = MongoClient(modeldataTrainingDbHost, modeldataTrainingDbPort)(modeldataTrainingDbName)
+    val db = (if (modeldataTrainingDbHost.size > 1) {
+      MongoClient(modeldataTrainingDbHost.zip(modeldataTrainingDbPort).map(t =>
+        new ServerAddress(t._1, t._2)
+      ).toList)
+    } else MongoClient(modeldataTrainingDbHost(0), modeldataTrainingDbPort(0)))(modeldataTrainingDbName)
     modeldataTrainingDbUser map { db.authenticate(_, modeldataTrainingDbPassword.getOrElse("")) }
     Some(db)
   } else None
