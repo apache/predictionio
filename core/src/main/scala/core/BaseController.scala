@@ -130,6 +130,30 @@ abstract class Spark2LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
   def predict(model: M, feature: F): P
 }
 
+abstract class ParallelAlgorithm[CD, F : Manifest, P, M: Manifest,
+    AP <: BaseParams: Manifest]
+  extends BaseAlgorithm[CD, F, P, M, AP] {
+  def trainBase(sc: SparkContext, cleansedData: CD): M = {
+    train(cleansedData)
+  }
+
+  def predictBase(baseModel: Any, baseFeature: Any): P = {
+    assert(false)
+    baseFeature.asInstanceOf[P]
+  }
+
+  def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, F)])
+  : RDD[(Long, P)] = {
+    batchPredict(baseModel.asInstanceOf[M], baseFeatures)
+  }
+
+  def batchPredict(model:M, features: RDD[(Long, F)])
+  : RDD[(Long, P)] 
+
+  def train(cleansedData: CD): M
+}
+  
+
 /* Server */
 abstract class BaseServer[F, P, SP <: BaseParams: Manifest]
   extends AbstractParameterizedDoer[SP] {
