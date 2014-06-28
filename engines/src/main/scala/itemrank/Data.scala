@@ -114,3 +114,7 @@ class ValidationUnit(
   val score: Double,
   val baseline: Double
 ) extends Serializable
+
+class ValidationResult() extends Serializable
+
+class CrossValidationResult() extends Serializable

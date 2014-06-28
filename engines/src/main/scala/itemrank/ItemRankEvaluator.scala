@@ -264,8 +264,8 @@ class ItemRankDataPreparator
   }
 }
 
-// Comment by yipjustin. I changed CVR from Null to String to prevent spark from
-// crashing due to some weird exception:
+// VR and CVR can't be null
+// will crash due to some weird exception:
 // java.lang.ArrayStoreException: [Ljava.lang.Object;
 class ItemRankValidator
   extends Validator[
@@ -276,9 +276,9 @@ class ItemRankValidator
       Prediction,
       Actual,
       ValidationUnit,
-      Null,
-      String] {
-      //Null] {
+
+      ValidationResult,
+      CrossValidationResult] {
 
   //def init(params: EvalParams): Unit = {}
 
@@ -305,7 +305,7 @@ class ItemRankValidator
   override def validateSet(
     trainDataPrepParams: TrainDataPrepParams,
     validationDataPrepParams: ValidationDataPrepParams,
-    validationUnits: Seq[ValidationUnit]): Null = {
+    validationUnits: Seq[ValidationUnit]): ValidationResult = {
     // calcualte MAP at k
     val mean = validationUnits.map( eu => eu.score ).sum / validationUnits.size
     val baseMean = validationUnits.map (eu => eu.baseline).sum / validationUnits.size
@@ -326,7 +326,7 @@ class ItemRankValidator
     }
     println(s"baseline MAP@k = ${baseMean}, algo MAP@k = ${mean}")
     //EmptyData()
-    null
+    new ValidationResult()
   }
 
   // metric
@@ -351,14 +351,8 @@ class ItemRankValidator
     if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
   }
 
-  /*
   override def crossValidate(
-    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, Null)]
-  ): Null = null
-  */
-
-  override def crossValidate(
-    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, Null)]
-  ): String = ""
+    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, ValidationResult)]
+  ): CrossValidationResult = new CrossValidationResult
 
 }
