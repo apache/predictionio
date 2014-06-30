@@ -9,7 +9,7 @@ class NoOptCleanser extends DefaultCleanser[TrainingData] {}
 object ItemRankEngine extends EngineFactory {
   def apply() = {
     new BaseEngine(
-      classOf[NoOptCleanser],
+      classOf[ItemRankCleanser],
       Map("knn" -> classOf[KNNAlgorithm],
         "rand" -> classOf[RandomAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]

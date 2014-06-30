@@ -3,7 +3,7 @@ package io.prediction.engines.itemrank
 import io.prediction.{ Algorithm }
 import breeze.linalg.{ SparseVector, sum => LSum }
 
-class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
+class KNNAlgorithm extends Algorithm[CleansedData, Feature, Prediction,
   KNNModel, KNNAlgoParams] {
 
   var _k = 10
@@ -19,13 +19,13 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
     }
   }
 
-  override def train(trainingData: TrainingData): KNNModel = {
-    val rating = trainingData.rating
+  override def train(cleansedData: CleansedData): KNNModel = {
+    val rating = cleansedData.rating
 
     if (!rating.isEmpty) {
-      val numOfUsers = trainingData.users.size
-      val items = trainingData.items
-      val users = trainingData.users
+      val numOfUsers = cleansedData.users.size
+      val items = cleansedData.items
+      val users = cleansedData.users
 
       val itemVectorMap = rating.groupBy(_.iindex)
         .mapValues { listOfRating =>
@@ -42,14 +42,7 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
           case (k, listOfRating) =>
             val history = listOfRating.map(r => (items(r.iindex).iid, r.rating))
 
-            (users(k), history.toSet)
-        }
-
-      val seenMap = trainingData.seen.groupBy(_._1)
-        .map {
-          case (k, listOfSeen) =>
-            val seen = listOfSeen.map(s => items(s._2).iid).toSet
-            (users(k), seen)
+            (users(k).uid, history.toSet)
         }
 
       val sortedItemIndex = itemVectorMap.keys.toSeq.sorted
@@ -87,13 +80,11 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
         }.map { case (k, v) => (items(k).iid, v) }
 
       new KNNModel(
-        //userSeen = seenMap,
         userHistory = userHistoryMap,
         itemSim = itemSimMap
       )
     } else {
       new KNNModel(
-        //userSeen = Map(),
         userHistory = Map(),
         itemSim = Map()
       )

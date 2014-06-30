@@ -23,7 +23,7 @@ import org.apache.mahout.cf.taste.impl.similarity.{
   UncenteredCosineSimilarity
 }
 
-class MahoutItemBasedAlgorithm extends Algorithm[TrainingData,
+class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
   Feature, Prediction, MahoutItemBasedModel, MahoutItemBasedAlgoParams] {
 
   var _algoParams = new MahoutItemBasedAlgoParams(
@@ -41,7 +41,7 @@ class MahoutItemBasedAlgorithm extends Algorithm[TrainingData,
   }
 
   override def train(
-    cleansedData: TrainingData): MahoutItemBasedModel = {
+    cleansedData: CleansedData): MahoutItemBasedModel = {
       val numSimilarItems: Int = _algoParams.numSimilarItems
       val recommendationTime: Long = 0 // TODO: freshness for itemrank?
       val freshness = 0
@@ -107,7 +107,7 @@ class MahoutItemBasedAlgorithm extends Algorithm[TrainingData,
             val history = listOfRating.map(r =>
               (itemsMap(r.iindex).iid, r.rating))
 
-            (usersMap(k), history.toSet)
+            (usersMap(k).uid, history.toSet)
         }
 
       new MahoutItemBasedModel (

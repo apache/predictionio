@@ -39,9 +39,6 @@ class ItemRankDataPreparator
       TrainingData,
       Feature,
       Actual] {
-  final val CONFLICT_LATEST: String = "latest"
-  final val CONFLICT_HIGHEST: String = "highest"
-  final val CONFLICT_LOWEST: String = "lowest"
 
   // Connection object makes the class not serializable.
   //@transient val usersDb = ItemRankEvaluator.usersDb
@@ -68,8 +65,6 @@ class ItemRankDataPreparator
         appid = params.appid,
         itypes = params.itypes,
         actions = params.actions,
-        conflict = params.conflict,
-        seenActions = params.seenActions,
         startUntil = Some((params.trainStart, ts))
       )
       val validateP = new ValidationDataPrepParams(
@@ -90,9 +85,12 @@ class ItemRankDataPreparator
     val u2iDb = ItemRankEvaluator.u2iDb
     val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
-    val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
-      .map(_.id).zipWithIndex
-      .map { case (uid, index) => (uid, index + 1) }.toMap
+    val usersMap: Map[String, (UserTD, Int)] = usersDb.getByAppid(params.appid)
+      .zipWithIndex
+      .map { case (user, index) =>
+        val userTD = new UserTD(uid = user.id)
+        (user.id -> (userTD, index + 1))
+      }.toMap
 
     val itemsMap: Map[String, (ItemTD, Int)] = params.itypes.map { itypes =>
       itemsDb.getByAppidAndItypes(params.appid, itypes.toSeq)
@@ -110,21 +108,6 @@ class ItemRankDataPreparator
         (item.id -> (itemTD, index + 1))
     }.toMap
 
-    // NOTE: only contain valid items (eg. valid starttime and endtime,
-    // inactive=false)
-    /*
-    val possibleItems: Set[Int] = itemsMap.filter {
-      case (iid, (itemTD, iindex)) =>
-        val validTime = itemTimeFilter(true,
-          itemTD.starttime, itemTD.endtime,
-          params.recommendationTime)
-
-        validTime && (!itemTD.inactive)
-    }.map {
-      case (iid, (itemTD, iindex)) => iindex
-    }.toSet
-    */
-
     val u2iActions = params.startUntil.map{ startUntil =>
       u2iDb.getByAppidAndTime(params.appid, startUntil._1,
         startUntil._2).toSeq
@@ -132,57 +115,30 @@ class ItemRankDataPreparator
       u2iDb.getAllByAppid(params.appid).toSeq
     }
 
-    val u2iRatings = u2iActions
+    val u2iActionsTDSeq = u2iActions
       .filter { u2i =>
         val validAction = params.actions.contains(u2i.action)
         val validUser = usersMap.contains(u2i.uid)
         val validItem = itemsMap.contains(u2i.iid)
         (validAction && validUser && validItem)
       }.map { u2i =>
-        val rating = params.actions(u2i.action).getOrElse(u2i.v.getOrElse(0))
 
-        new RatingTD(
-          uindex = usersMap(u2i.uid), // map to index
+        new U2IActionTD(
+          uindex = usersMap(u2i.uid)._2, // map to index
           iindex = itemsMap(u2i.iid)._2,
-          rating = rating,
+          action = u2i.action,
+          v = u2i.v,
           t = u2i.t.getMillis
         )
       }
 
-    val ratingReduced = u2iRatings.groupBy(x => (x.iindex, x.uindex))
-      .mapValues { v =>
-        v.reduce { (a, b) =>
-          resolveConflict(a, b, params.conflict)
-        }
-      }.values
-      .toList
-
-    /* write u2i seen */
-    val u2iSeen = u2iActions
-      .filter { u2i =>
-        val validAction = params.seenActions.map(seenActions =>
-          seenActions.contains(u2i.action)).getOrElse(
-          // same as training actions if seenActions is not defined
-          params.actions.contains(u2i.action))
-
-        val validUser = usersMap.contains(u2i.uid)
-        val validItem = itemsMap.contains(u2i.iid)
-        (validAction && validUser && validItem)
-      }
-      // convert to index
-      .map { u2i => (usersMap(u2i.uid), itemsMap(u2i.iid)._2) }
-      .toSet
-
     new TrainingData(
-      users = usersMap.map { case (k, v) => (v, k) },
+      users = usersMap.map { case (k, (v1, v2)) => (v2, v1) },
       items = itemsMap.map { case (k, (v1, v2)) => (v2, v1) },
-      //possibleItems = possibleItems,
-      rating = ratingReduced,
-      seen = u2iSeen
+      u2iActions = u2iActionsTDSeq
     )
   }
 
-  // TODO: use t to generate eval data
   override def prepareValidation(params: ValidationDataPrepParams):
     Seq[(Feature, Actual)] = {
     val usersDb = ItemRankEvaluator.usersDb
@@ -239,15 +195,6 @@ class ItemRankDataPreparator
         (f, t)
       }
     userFT
-  }
-
-  private def resolveConflict(a: RatingTD, b: RatingTD,
-    conflictParam: String) = {
-    conflictParam match {
-      case CONFLICT_LATEST  => if (a.t > b.t) a else b
-      case CONFLICT_HIGHEST => if (a.rating > b.rating) a else b
-      case CONFLICT_LOWEST  => if (a.rating < b.rating) a else b
-    }
   }
 
   private def itemTimeFilter(enable: Boolean, starttime: Option[Long],
