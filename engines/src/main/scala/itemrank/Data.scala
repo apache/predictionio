@@ -3,21 +3,9 @@ package io.prediction.engines.itemrank
 import com.github.nscala_time.time.Imports._
 
 import io.prediction.BaseParams
-/*
-import io.prediction.{
-  //BaseEvaluationParams,
-  BaseValidationParams,
-  BaseEvaluationDataParams,
-  BaseTrainingDataParams,
-  BaseValidationDataParams,
-  BaseAlgoParams
-}
-*/
 
 // param to evaluator, it applies to both DataPrep and Validator
 class EvalParams(
-    // TODO
-    //val iterations: Int
     val appid: Int,
     val itypes: Option[Set[String]],
     // action for training

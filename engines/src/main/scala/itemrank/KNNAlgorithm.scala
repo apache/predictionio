@@ -87,13 +87,13 @@ class KNNAlgorithm extends Algorithm[TrainingData, Feature, Prediction,
         }.map { case (k, v) => (items(k).iid, v) }
 
       new KNNModel(
-        userSeen = seenMap,
+        //userSeen = seenMap,
         userHistory = userHistoryMap,
         itemSim = itemSimMap
       )
     } else {
       new KNNModel(
-        userSeen = Map(),
+        //userSeen = Map(),
         userHistory = Map(),
         itemSim = Map()
       )
