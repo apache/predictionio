@@ -1,6 +1,7 @@
 package io.prediction.commons.modeldata
 
 import io.prediction.commons.Config
+import io.prediction.commons.Spec
 import io.prediction.commons.settings.{ Algo, App }
 
 import org.specs2._
@@ -25,7 +26,7 @@ class ItemSimScoresSpec extends Specification {
     - behave like any ItemSimScores implementation ${itemSimScores(newMongoItemSimScores)}
 
     (clean up database after test)
-    ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+    ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
 
   """
 
@@ -41,7 +42,7 @@ class ItemSimScoresSpec extends Specification {
   val mongoDbName = "predictionio_modeldata_mongoitemsimscore_test"
 
   def newMongoItemSimScores = new mongodb.MongoItemSimScores(
-    new Config, MongoConnection()(mongoDbName))
+    new Config, Spec.mongoClient(mongoDbName))
 
   def insert(itemSimScores: ItemSimScores) = {
     implicit val app = App(

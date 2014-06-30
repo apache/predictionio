@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
@@ -18,7 +20,7 @@ class UsersSpec extends Specification {
 
     MongoUsers should
     - behave like any Users implementation ${users(newMongoUsers)}
-    - (database cleanup) ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
 
   """
 
@@ -48,7 +50,7 @@ class UsersSpec extends Specification {
   """
 
   val mongoDbName = "predictionio_mongousers_test"
-  def newMongoUsers = new mongodb.MongoUsers(MongoConnection()(mongoDbName))
+  def newMongoUsers = new mongodb.MongoUsers(Spec.mongoClient(mongoDbName))
 
   def insert(users: Users) = {
     val name = "insert"

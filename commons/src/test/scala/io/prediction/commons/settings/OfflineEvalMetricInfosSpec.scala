@@ -1,33 +1,41 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class OfflineEvalMetricInfosSpec extends Specification {
-  def is =
-    "PredictionIO OfflineEvalMetricInfos Specification" ^
-      p ^
-      "OfflineEvalMetricInfos can be implemented by:" ^ endp ^
-      "1. MongoOfflineEvalMetricInfos" ^ mongoOfflineEvalMetricInfos ^ end
+  def is = s2"""
 
-  def mongoOfflineEvalMetricInfos = p ^
-    "MongoOfflineEvalMetricInfos should" ^
-    "behave like any OfflineEvalMetricInfos implementation" ^ metricInfos(newMongoOfflineEvalMetricInfos) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO OfflineEvalMetricInfos Specification
 
-  def metricInfos(metricInfos: OfflineEvalMetricInfos) = {
-    t ^
-      "create and get an metric info" ! insertAndGet(metricInfos) ^
-      "get metric info by engine info id" ! getByEngineinfoid(metricInfos) ^
-      "update an metric info" ! update(metricInfos) ^
-      "delete an metric info" ! delete(metricInfos) ^
-      "backup and restore metric infos" ! backuprestore(metricInfos) ^
-      bt
-  }
+    OfflineEvalMetricInfos can be implemented by:
+    - MongoOfflineEvalMetricInfos ${mongoOfflineEvalMetricInfos}
+
+  """
+
+  def mongoOfflineEvalMetricInfos = s2"""
+
+    MongoOfflineEvalMetricInfos should
+    - behave like any OfflineEvalMetricInfos implementation ${metricInfos(newMongoOfflineEvalMetricInfos)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def metricInfos(metricInfos: OfflineEvalMetricInfos) = s2"""
+
+    create and get an metric info ${insertAndGet(metricInfos)}
+    get metric info by engine info id ${getByEngineinfoid(metricInfos)}
+    update an metric info ${update(metricInfos)}
+    delete an metric info ${delete(metricInfos)}
+    backup and restore metric infos ${backuprestore(metricInfos)}
+
+  """
 
   val mongoDbName = "predictionio_mongometricinfos_test"
-  def newMongoOfflineEvalMetricInfos = new mongodb.MongoOfflineEvalMetricInfos(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvalMetricInfos = new mongodb.MongoOfflineEvalMetricInfos(Spec.mongoClient(mongoDbName))
 
   def insertAndGet(metricInfos: OfflineEvalMetricInfos) = {
     val mapk = OfflineEvalMetricInfo(

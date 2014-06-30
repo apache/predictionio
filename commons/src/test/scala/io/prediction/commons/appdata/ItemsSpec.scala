@@ -1,5 +1,7 @@
 package io.prediction.commons.appdata
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 
@@ -7,35 +9,40 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class ItemsSpec extends Specification {
-  def is =
-    "PredictionIO App Data Items Specification" ^
-      p ^
-      "Items can be implemented by:" ^ endp ^
-      "1. MongoItems" ^ mongoItems ^ end
+  def is = s2"""
 
-  def mongoItems = p ^
-    "MongoItems should" ^
-    "behave like any Items implementation" ^ items(newMongoItems) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO App Data Items Specification
 
-  def items(items: Items) = {
-    t ^
-      "inserting and getting an item" ! insert(items) ^
-      "getting items by App ID and geo data" ! getByAppidAndLatlng(items) ^
-      "getting items by App ID and itypes" ! getByAppidAndItypes(items) ^
-      "getting items by IDs" ! getByIds(items) ^
-      "getting items by IDs sorted by start time" ! getRecentByIds(items) ^
-      "updating an item" ! update(items) ^
-      "deleting an item" ! delete(items) ^
-      "deleting items by appid" ! deleteByAppid(items) ^
-      "count items by appid" ! countByAppid(items) ^
-      "getting items by App ID and itypes and time" !
-      getByAppidAndItypesAndTime(items) ^
-      bt
-  }
+    Items can be implemented by:
+    - MongoItems ${mongoItems}
+
+  """
+
+  def mongoItems = s2"""
+
+    MongoItems should
+    - behave like any Items implementation ${items(newMongoItems)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def items(items: Items) = s2"""
+
+    inserting and getting an item ${insert(items)}
+    getting items by App ID and geo data ${getByAppidAndLatlng(items)}
+    getting items by App ID and itypes ${getByAppidAndItypes(items)}
+    getting items by IDs ${getByIds(items)}
+    getting items by IDs sorted by start time ${getRecentByIds(items)}
+    updating an item ${update(items)}
+    deleting an item ${delete(items)}
+    deleting items by appid ${deleteByAppid(items)}
+    count items by appid ${countByAppid(items)}
+    getting items by App ID and itypes and time ${getByAppidAndItypesAndTime(items)}
+
+  """
 
   val mongoDbName = "predictionio_appdata_mongoitems_test"
-  def newMongoItems = new mongodb.MongoItems(MongoConnection()(mongoDbName))
+  def newMongoItems = new mongodb.MongoItems(Spec.mongoClient(mongoDbName))
 
   def insert(items: Items) = {
     val appid = 0

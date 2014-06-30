@@ -5,19 +5,21 @@ import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class ConfigSpec extends Specification {
-  def is =
-    "PredictionIO Config Specification" ^
-      p ^
-      "load an existing config file" ! load() ^
-      "get raw config" ! dbtype() ^
-      "get a MongoUsers implementation" ! getMongoUsers() ^
-      "get a MongoApps implementation" ! getMongoApps() ^
-      "get a MongoEngines implementation" ! getMongoEngines() ^
-      "get a MongoAlgos implementation" ! getMongoAlgos() ^
-      "get a list of job JARs" ! jars() ^
-      "get sharding configuration" ! sharding() ^
-      Step(MongoConnection()(mongoConfig.settingsDbName).dropDatabase())
-  end
+  def is = s2"""
+
+  PredictionIO Config Specification
+
+    load an existing config file ${load()}
+    get raw config ${dbtype()}
+    get a MongoUsers implementation ${getMongoUsers()}
+    get a MongoApps implementation ${getMongoApps()}
+    get a MongoEngines implementation ${getMongoEngines()}
+    get a MongoAlgos implementation ${getMongoAlgos()}
+    get a list of job JARs ${jars()}
+    get sharding configuration ${sharding()}
+    (database cleanup) ${Step(Spec.mongoClient(mongoConfig.settingsDbName).dropDatabase())}
+
+  """
 
   lazy val mongoConfig = new Config
 

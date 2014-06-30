@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 
@@ -7,34 +9,40 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class AlgosSpec extends Specification {
-  def is =
-    "PredictionIO Algos Specification" ^
-      p ^
-      "Algos can be implemented by:" ^ endp ^
-      "1. MongoAlgos" ^ mongoAlgos ^ end
+  def is = s2"""
 
-  def mongoAlgos = p ^
-    "MongoAlgos should" ^
-    "behave like any Algos implementation" ^ algos(newMongoAlgos) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO Algos Specification
 
-  def algos(algos: Algos) = {
-    t ^
-      "create an algo" ! insert(algos) ^
-      "get two algos by engineid" ! getByEngineid(algos) ^
-      "get a deployed algo by engineid" ! getDeployedByEngineid(algos) ^
-      "get two algos by offlineevalid" ! getByOfflineEvalid(algos) ^
-      "get an auto tune subject" ! getTuneSubjectByOfflineTuneid(algos) ^
-      "get by id and engineid" ! getByIdAndEngineid(algos) ^
-      "update an algo" ! update(algos) ^
-      "delete an algo" ! delete(algos) ^
-      "checking existence of algo" ! existsByEngineidAndName(algos) ^
-      "backup and restore existing algos" ! backuprestore(algos) ^
-      bt
-  }
+    Algos can be implemented by:
+    - MongoAlgos ${mongoAlgos}
+
+  """
+
+  def mongoAlgos = s2"""
+
+    MongoAlgos should
+    - behave like any Algos implementation ${algos(newMongoAlgos)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def algos(algos: Algos) = s2"""
+
+    create an algo ${insert(algos)}
+    get two algos by engineid ${getByEngineid(algos)}
+    get a deployed algo by engineid ${getDeployedByEngineid(algos)}
+    get two algos by offlineevalid ${getByOfflineEvalid(algos)}
+    get an auto tune subject ${getTuneSubjectByOfflineTuneid(algos)}
+    get by id and engineid ${getByIdAndEngineid(algos)}
+    update an algo ${update(algos)}
+    delete an algo ${delete(algos)}
+    checking existence of algo ${existsByEngineidAndName(algos)}
+    backup and restore existing algos ${backuprestore(algos)}
+
+  """
 
   val mongoDbName = "predictionio_mongoalgos_test"
-  def newMongoAlgos = new mongodb.MongoAlgos(MongoConnection()(mongoDbName))
+  def newMongoAlgos = new mongodb.MongoAlgos(Spec.mongoClient(mongoDbName))
 
   def insert(algos: Algos) = {
     val algo = Algo(

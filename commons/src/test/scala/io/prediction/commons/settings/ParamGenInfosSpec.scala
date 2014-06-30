@@ -1,32 +1,40 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class ParamGenInfosSpec extends Specification {
-  def is =
-    "PredictionIO ParamGenInfos Specification" ^
-      p ^
-      "ParamGenInfos can be implemented by:" ^ endp ^
-      "1. MongoParamGenInfos" ^ mongoParamGenInfos ^ end
+  def is = s2"""
 
-  def mongoParamGenInfos = p ^
-    "MongoParamGenInfos should" ^
-    "behave like any ParamGenInfos implementation" ^ paramGenInfos(newMongoParamGenInfos) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO ParamGenInfos Specification
 
-  def paramGenInfos(paramGenInfos: ParamGenInfos) = {
-    t ^
-      "create and get a parameter generator info" ! insertAndGet(paramGenInfos) ^
-      "update a parameter generator info" ! update(paramGenInfos) ^
-      "delete a parameter generator info" ! delete(paramGenInfos) ^
-      "backup and restore parameter generator info" ! backuprestore(paramGenInfos) ^
-      bt
-  }
+    ParamGenInfos can be implemented by:
+    - MongoParamGenInfos ${mongoParamGenInfos}
+
+  """
+
+  def mongoParamGenInfos = s2"""
+
+    MongoParamGenInfos should
+    - behave like any ParamGenInfos implementation ${paramGenInfos(newMongoParamGenInfos)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def paramGenInfos(paramGenInfos: ParamGenInfos) = s2"""
+
+    create and get a parameter generator info ${insertAndGet(paramGenInfos)}
+    update a parameter generator info ${update(paramGenInfos)}
+    delete a parameter generator info ${delete(paramGenInfos)}
+    backup and restore parameter generator info ${backuprestore(paramGenInfos)}
+
+  """
 
   val mongoDbName = "predictionio_mongoparamgeninfos_test"
-  def newMongoParamGenInfos = new mongodb.MongoParamGenInfos(MongoConnection()(mongoDbName))
+  def newMongoParamGenInfos = new mongodb.MongoParamGenInfos(Spec.mongoClient(mongoDbName))
 
   def insertAndGet(paramGenInfos: ParamGenInfos) = {
     val mapk = ParamGenInfo(

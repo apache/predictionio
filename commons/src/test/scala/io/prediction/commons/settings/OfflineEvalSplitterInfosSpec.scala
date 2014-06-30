@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
@@ -18,7 +20,7 @@ class OfflineEvalSplitterInfosSpec extends Specification {
 
     MongoOfflineEvalSplitterInfos should
     behave like any OfflineEvalSplitterInfos implementation ${offlineEvalSplitterInfos(newMongoOfflineEvalSplitterInfos)}
-    ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+    ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
 
   """
 
@@ -35,7 +37,7 @@ class OfflineEvalSplitterInfosSpec extends Specification {
 
   val mongoDbName = "predictionio_mongoofflineevalsplitterinfos_test"
   def newMongoOfflineEvalSplitterInfos =
-    new mongodb.MongoOfflineEvalSplitterInfos(MongoConnection()(mongoDbName))
+    new mongodb.MongoOfflineEvalSplitterInfos(Spec.mongoClient(mongoDbName))
 
   def insertAndGet(offlineEvalSplitterInfos: OfflineEvalSplitterInfos) = {
     val mapk = OfflineEvalSplitterInfo(

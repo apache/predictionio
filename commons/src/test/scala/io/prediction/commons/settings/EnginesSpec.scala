@@ -1,35 +1,43 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class EnginesSpec extends Specification {
-  def is =
-    "PredictionIO Engines Specification" ^
-      p ^
-      "Engines can be implemented by:" ^ endp ^
-      "1. MongoEngines" ^ mongoEngines ^ end
+  def is = s2"""
 
-  def mongoEngines = p ^
-    "MongoEngines should" ^
-    "behave like any Engines implementation" ^ engines(newMongoEngines) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO Engines Specification
 
-  def engines(engines: Engines) = {
-    t ^
-      "create an engine" ! insert(engines) ^
-      "get two engines" ! getByAppid(engines) ^
-      "get by id and appid" ! getByIdAndAppid(engines) ^
-      "update an engine" ! update(engines) ^
-      "delete an engine" ! deleteByIdAndAppid(engines) ^
-      "checking existence of engines" ! existsByAppidAndName(engines) ^
-      "backup and restore existing engines" ! backuprestore(engines) ^
-      bt
-  }
+    Engines can be implemented by:
+    - MongoEngines ${mongoEngines}
+
+  """
+
+  def mongoEngines = s2"""
+
+    MongoEngines should
+    - behave like any Engines implementation ${engines(newMongoEngines)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def engines(engines: Engines) = s2"""
+
+    create an engine ${insert(engines)}
+    get two engines ${getByAppid(engines)}
+    get by id and appid ${getByIdAndAppid(engines)}
+    update an engine ${update(engines)}
+    delete an engine ${deleteByIdAndAppid(engines)}
+    checking existence of engines ${existsByAppidAndName(engines)}
+    backup and restore existing engines ${backuprestore(engines)}
+
+  """
 
   val mongoDbName = "predictionio_mongoengines_test"
-  def newMongoEngines = new mongodb.MongoEngines(MongoConnection()(mongoDbName))
+  def newMongoEngines = new mongodb.MongoEngines(Spec.mongoClient(mongoDbName))
 
   def insert(engines: Engines) = {
     val engine = Engine(

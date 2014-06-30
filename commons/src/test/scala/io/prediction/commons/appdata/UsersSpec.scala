@@ -1,5 +1,7 @@
 package io.prediction.commons.appdata
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 
@@ -7,30 +9,36 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class UsersSpec extends Specification {
-  def is =
-    "PredictionIO App Data Users Specification" ^
-      p ^
-      "Users can be implemented by:" ^ endp ^
-      "1. MongoUsers" ^ mongoUsers ^ end
+  def is = s2"""
 
-  def mongoUsers = p ^
-    "MongoUsers should" ^
-    "behave like any Users implementation" ^ users(newMongoUsers) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO App Data Users Specification
 
-  def users(users: Users) = {
-    t ^
-      "inserting and getting a user" ! insert(users) ^
-      "getting all users by App ID" ! getByAppid(users) ^
-      "updating a user" ! update(users) ^
-      "deleting a user" ! delete(users) ^
-      "deleting users by appid" ! deleteByAppid(users) ^
-      "count users by appid" ! countByAppid(users) ^
-      bt
-  }
+    Users can be implemented by:
+    - MongoUsers ${mongoUsers}
+
+  """
+
+  def mongoUsers = s2"""
+
+    MongoUsers should
+    - behave like any Users implementation ${users(newMongoUsers)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def users(users: Users) = s2"""
+
+    inserting and getting a user ${insert(users)}
+    getting all users by App ID ${getByAppid(users)}
+    updating a user ${update(users)}
+    deleting a user ${delete(users)}
+    deleting users by appid ${deleteByAppid(users)}
+    count users by appid ${countByAppid(users)}
+
+  """
 
   val mongoDbName = "predictionio_appdata_mongousers_test"
-  def newMongoUsers = new mongodb.MongoUsers(MongoConnection()(mongoDbName))
+  def newMongoUsers = new mongodb.MongoUsers(Spec.mongoClient(mongoDbName))
 
   def insert(users: Users) = {
     val appid = 0

@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 
@@ -7,31 +9,37 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class OfflineEvalsSpec extends Specification {
-  def is =
-    "PredictionIO OfflineEvals Specification" ^
-      p ^
-      "OfflineEvals can be implemented by:" ^ endp ^
-      "1. MongoOfflineEvals" ^ mongoOfflineEvals ^ end
+  def is = s2"""
 
-  def mongoOfflineEvals = p ^
-    "MongoOfflineEvals should" ^
-    "behave like any OfflineEvals implementation" ^ offlineEvalsTest(newMongoOfflineEvals) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO OfflineEvals Specification
 
-  def offlineEvalsTest(offlineEvals: OfflineEvals) = {
-    t ^
-      "create an OfflineEval" ! insert(offlineEvals) ^
-      "get two OfflineEvals by Engineid" ! getByEngineid(offlineEvals) ^
-      "get two OfflineEvals by Tuneid" ! getByTuneid(offlineEvals) ^
-      "get by id and engineid" ! getByIdAndEngineid(offlineEvals) ^
-      "update an OfflineEval" ! update(offlineEvals) ^
-      "delete an OfflineEval" ! delete(offlineEvals) ^
-      "backup and restore OfflineEvals" ! backuprestore(offlineEvals) ^
-      bt
-  }
+    OfflineEvals can be implemented by:
+    - MongoOfflineEvals ${mongoOfflineEvals}
+
+  """
+
+  def mongoOfflineEvals = s2"""
+
+    MongoOfflineEvals should
+    - behave like any OfflineEvals implementation ${offlineEvalsTest(newMongoOfflineEvals)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def offlineEvalsTest(offlineEvals: OfflineEvals) = s2"""
+
+    create an OfflineEval ${insert(offlineEvals)}
+    get two OfflineEvals by Engineid ${getByEngineid(offlineEvals)}
+    get two OfflineEvals by Tuneid ${getByTuneid(offlineEvals)}
+    get by id and engineid ${getByIdAndEngineid(offlineEvals)}
+    update an OfflineEval ${update(offlineEvals)}
+    delete an OfflineEval ${delete(offlineEvals)}
+    backup and restore OfflineEvals ${backuprestore(offlineEvals)}
+
+  """
 
   val mongoDbName = "predictionio_mongoofflineevals_test"
-  def newMongoOfflineEvals = new mongodb.MongoOfflineEvals(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvals = new mongodb.MongoOfflineEvals(Spec.mongoClient(mongoDbName))
 
   /**
    * insert and get by id

@@ -1,33 +1,41 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class OfflineEvalSplittersSpec extends Specification {
-  def is =
-    "PredictionIO OfflineEvalSplitters Specification" ^
-      p ^
-      "OfflineEvalSplitters can be implemented by:" ^ endp ^
-      "1. MongoOfflineEvalSplitters" ^ mongoOfflineEvalSplitters ^ end
+  def is = s2"""
 
-  def mongoOfflineEvalSplitters = p ^
-    "MongoOfflineEvalSplitters should" ^
-    "behave like any OfflineEvalSplitters implementation" ^ offlineEvalSplitters(newMongoOfflineEvalSplitters) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO OfflineEvalSplitters Specification
 
-  def offlineEvalSplitters(splitters: OfflineEvalSplitters) = {
-    t ^
-      "create an OfflineEvalSplitter" ! insert(splitters) ^
-      "get two OfflineEvalSplitters" ! getByEvalid(splitters) ^
-      "update an OfflineEvalSplitter" ! update(splitters) ^
-      "delete an OfflineEvalSplitter" ! delete(splitters) ^
-      "backup and restore OfflineEvalSplitters" ! backuprestore(splitters) ^
-      bt
-  }
+    OfflineEvalSplitters can be implemented by:
+    - MongoOfflineEvalSplitters ${mongoOfflineEvalSplitters}
+
+  """
+
+  def mongoOfflineEvalSplitters = s2"""
+
+    MongoOfflineEvalSplitters should" ^
+    - behave like any OfflineEvalSplitters implementation ${offlineEvalSplitters(newMongoOfflineEvalSplitters)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def offlineEvalSplitters(splitters: OfflineEvalSplitters) = s2"""
+
+    create an OfflineEvalSplitter ${insert(splitters)}
+    get two OfflineEvalSplitters ${getByEvalid(splitters)}
+    update an OfflineEvalSplitter ${update(splitters)}
+    delete an OfflineEvalSplitter ${delete(splitters)}
+    backup and restore OfflineEvalSplitters ${backuprestore(splitters)}
+
+  """
 
   val mongoDbName = "predictionio_mongoofflineevalsplitters_test"
-  def newMongoOfflineEvalSplitters = new mongodb.MongoOfflineEvalSplitters(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvalSplitters = new mongodb.MongoOfflineEvalSplitters(Spec.mongoClient(mongoDbName))
 
   def insert(splitters: OfflineEvalSplitters) = {
     val splitter = OfflineEvalSplitter(

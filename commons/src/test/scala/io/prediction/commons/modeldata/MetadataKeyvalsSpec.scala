@@ -1,6 +1,7 @@
 package io.prediction.commons.modeldata
 
 import io.prediction.commons.Config
+import io.prediction.commons.Spec
 import io.prediction.commons.settings.{ Algo, App }
 
 import org.specs2._
@@ -22,12 +23,12 @@ class ModelMetadataKeyvals extends Specification {
 
     MongoMetadataKeyvals should
 
-    - behave like any MetadataKeyvals implementation 
+    - behave like any MetadataKeyvals implementation
     ${metadataKeyvals(newMongoMetadataKeyvals)}
-    
+
     (clean up database after test)
-    ${Step(MongoConnection()(mongoDbName).dropDatabase())}
-  
+    ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
   """
 
   def metadataKeyvals(metadataKeyvals: MetadataKeyvals) = s2"""
@@ -39,7 +40,7 @@ class ModelMetadataKeyvals extends Specification {
   val mongoDbName = "predictionio_modeldata_mongometadatakeyval_test"
 
   def newMongoMetadataKeyvals = new mongodb.MongoMetadataKeyvals(
-    new Config, MongoConnection()(mongoDbName))
+    new Config, Spec.mongoClient(mongoDbName))
 
   def upsertAndGet(keyvals: MetadataKeyvals) = {
     val algoid = 1

@@ -1,32 +1,40 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class EngineInfosSpec extends Specification {
-  def is =
-    "PredictionIO EngineInfos Specification" ^
-      p ^
-      "EngineInfos can be implemented by:" ^ endp ^
-      "1. MongoEngineInfos" ^ mongoEngineInfos ^ end
+  def is = s2"""
 
-  def mongoEngineInfos = p ^
-    "MongoEngineInfos should" ^
-    "behave like any EngineInfos implementation" ^ engineInfos(newMongoEngineInfos) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO EngineInfos Specification
 
-  def engineInfos(engineInfos: EngineInfos) = {
-    t ^
-      "create and get an engine info" ! insertAndGet(engineInfos) ^
-      "update an engine info" ! update(engineInfos) ^
-      "delete an engine info" ! delete(engineInfos) ^
-      "backup and restore existing engine info" ! backuprestore(engineInfos) ^
-      bt
-  }
+    EngineInfos can be implemented by:
+    - MongoEngineInfos ${mongoEngineInfos}
+
+  """
+
+  def mongoEngineInfos = s2"""
+
+    MongoEngineInfos should
+    - behave like any EngineInfos implementation ${engineInfos(newMongoEngineInfos)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def engineInfos(engineInfos: EngineInfos) = s2"""
+
+    create and get an engine info ${insertAndGet(engineInfos)}
+    update an engine info ${update(engineInfos)}
+    delete an engine info ${delete(engineInfos)}
+    backup and restore existing engine info ${backuprestore(engineInfos)}
+
+  """
 
   val mongoDbName = "predictionio_mongoengineinfos_test"
-  def newMongoEngineInfos = new mongodb.MongoEngineInfos(MongoConnection()(mongoDbName))
+  def newMongoEngineInfos = new mongodb.MongoEngineInfos(Spec.mongoClient(mongoDbName))
 
   def insertAndGet(engineInfos: EngineInfos) = {
     val itemrec = EngineInfo(

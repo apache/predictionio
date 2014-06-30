@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
@@ -18,7 +20,7 @@ class AppsSpec extends Specification {
 
     MongoApps should
     - behave like any Apps implementation ${apps(newMongoApps)}
-    - (database cleanup) ${Step(MongoConnection()(mongoDbName).dropDatabase())}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
 
   """
 
@@ -41,7 +43,7 @@ class AppsSpec extends Specification {
   """
 
   val mongoDbName = "predictionio_mongoapps_test"
-  def newMongoApps = new mongodb.MongoApps(MongoConnection()(mongoDbName))
+  def newMongoApps = new mongodb.MongoApps(Spec.mongoClient(mongoDbName))
 
   def dummyApp(id: Int, userid: Int, dummy: String) = App(
     id = id,

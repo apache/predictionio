@@ -1,33 +1,41 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class OfflineEvalMetricsSpec extends Specification {
-  def is =
-    "PredictionIO OfflineEvalMetrics Specification" ^
-      p ^
-      "OfflineEvalMetrics can be implemented by:" ^ endp ^
-      "1. MongoOfflineEvalMetrics" ^ mongoOfflineEvalMetrics ^ end
+  def is = s2"""
 
-  def mongoOfflineEvalMetrics = p ^
-    "MongoOfflineEvalMetrics should" ^
-    "behave like any OfflineEvalMetrics implementation" ^ offlineEvalMetricsTest(newMongoOfflineEvalMetrics) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO OfflineEvalMetrics Specification
 
-  def offlineEvalMetricsTest(offlineEvalMetrics: OfflineEvalMetrics) = {
-    t ^
-      "create an OfflineEvalMetric" ! insert(offlineEvalMetrics) ^
-      "get two OfflineEvalMetrics" ! getByEvalid(offlineEvalMetrics) ^
-      "update an OfflineEvalMetric" ! update(offlineEvalMetrics) ^
-      "delete an OfflineEvalMetric" ! delete(offlineEvalMetrics) ^
-      "backup and restore OfflineEvalMetrics" ! backuprestore(offlineEvalMetrics) ^
-      bt
-  }
+    OfflineEvalMetrics can be implemented by:
+    - MongoOfflineEvalMetrics ${mongoOfflineEvalMetrics}
+
+  """
+
+  def mongoOfflineEvalMetrics = s2"""
+
+    MongoOfflineEvalMetrics should
+    - behave like any OfflineEvalMetrics implementation ${offlineEvalMetricsTest(newMongoOfflineEvalMetrics)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def offlineEvalMetricsTest(offlineEvalMetrics: OfflineEvalMetrics) = s2"""
+
+    create an OfflineEvalMetric ${insert(offlineEvalMetrics)}
+    get two OfflineEvalMetrics ${getByEvalid(offlineEvalMetrics)}
+    update an OfflineEvalMetric ${update(offlineEvalMetrics)}
+    delete an OfflineEvalMetric ${delete(offlineEvalMetrics)}
+    backup and restore OfflineEvalMetrics ${backuprestore(offlineEvalMetrics)}
+
+  """
 
   val mongoDbName = "predictionio_mongoofflineevalmetrics_test"
-  def newMongoOfflineEvalMetrics = new mongodb.MongoOfflineEvalMetrics(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvalMetrics = new mongodb.MongoOfflineEvalMetrics(Spec.mongoClient(mongoDbName))
 
   /**
    * insert and get by id

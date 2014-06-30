@@ -1,33 +1,41 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class AlgoInfosSpec extends Specification {
-  def is =
-    "PredictionIO AlgoInfos Specification" ^
-      p ^
-      "Algos can be implemented by:" ^ endp ^
-      "1. MongoAlgoInfos" ^ mongoAlgoInfos ^ end
+  def is = s2"""
 
-  def mongoAlgoInfos = p ^
-    "MongoAlgoInfos should" ^
-    "behave like any AlgoInfos implementation" ^ algoinfos(newMongoAlgoInfos) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO AlgoInfos Specification
 
-  def algoinfos(algoinfos: AlgoInfos) = {
-    t ^
-      "insert and get info of an algo" ! insertAndGet(algoinfos) ^
-      "get info of algos by their engine type" ! getByEngineInfoId(algoinfos) ^
-      "update info of an algo" ! update(algoinfos) ^
-      "delete info of an algo" ! delete(algoinfos) ^
-      "backup and restore existing algoinfos" ! backuprestore(algoinfos) ^
-      bt
-  }
+    Algos can be implemented by:
+    - MongoAlgoInfos ${mongoAlgoInfos}
+
+  """
+
+  def mongoAlgoInfos = s2"""
+
+    MongoAlgoInfos should" ^
+    - behave like any AlgoInfos implementation ${algoinfos(newMongoAlgoInfos)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def algoinfos(algoinfos: AlgoInfos) = s2"""
+
+    insert and get info of an algo ${insertAndGet(algoinfos)}
+    get info of algos by their engine type ${getByEngineInfoId(algoinfos)}
+    update info of an algo ${update(algoinfos)}
+    delete info of an algo ${delete(algoinfos)}
+    backup and restore existing algoinfos ${backuprestore(algoinfos)}
+
+  """
 
   val mongoDbName = "predictionio_mongoalgoinfos_test"
-  def newMongoAlgoInfos = new mongodb.MongoAlgoInfos(MongoConnection()(mongoDbName))
+  def newMongoAlgoInfos = new mongodb.MongoAlgoInfos(Spec.mongoClient(mongoDbName))
 
   def insertAndGet(algoinfos: AlgoInfos) = {
     val ai = AlgoInfo(

@@ -1,5 +1,7 @@
 package io.prediction.commons.appdata
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 
@@ -7,29 +9,35 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class U2IActionsSpec extends Specification {
-  def is =
-    "PredictionIO App Data User-to-item Actions Specification" ^
-      p ^
-      "U2IActions can be implemented by:" ^ endp ^
-      "1. MongoU2IActions" ^ mongoU2IActions ^ end
+  def is = s2"""
 
-  def mongoU2IActions = p ^
-    "MongoU2IActions should" ^
-    "behave like any U2IActions implementation" ^ u2iActions(newMongoU2IActions) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO App Data User-to-item Actions Specification
 
-  def u2iActions(u2iActions: U2IActions) = {
-    t ^
-      "inserting and getting 3 U2IAction's" ! insert(u2iActions) ^
-      "getting U2IActions by App ID, User ID, and Item IDs" ! getAllByAppidAndUidAndIids(u2iActions) ^
-      "getting U2IActions by App ID, Item" ! getAllByAppidAndIid(u2iActions) ^
-      "delete U2IActions by appid" ! deleteByAppid(u2iActions) ^
-      "count U2IActions by appid" ! countByAppid(u2iActions) ^
-      bt
-  }
+    U2IActions can be implemented by:
+    - MongoU2IActions ${mongoU2IActions}
+
+  """
+
+  def mongoU2IActions = s2"""
+
+    MongoU2IActions should" ^
+    - behave like any U2IActions implementation ${u2iActions(newMongoU2IActions)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def u2iActions(u2iActions: U2IActions) = s2"""
+
+    inserting and getting 3 U2IAction's ${insert(u2iActions)}
+    getting U2IActions by App ID, User ID, and Item IDs ${getAllByAppidAndUidAndIids(u2iActions)}
+    getting U2IActions by App ID, Item ${getAllByAppidAndIid(u2iActions)}
+    delete U2IActions by appid ${deleteByAppid(u2iActions)}
+    count U2IActions by appid ${countByAppid(u2iActions)}
+
+  """
 
   val mongoDbName = "predictionio_appdata_mongou2iactions_test"
-  def newMongoU2IActions = new mongodb.MongoU2IActions(MongoConnection()(mongoDbName))
+  def newMongoU2IActions = new mongodb.MongoU2IActions(Spec.mongoClient(mongoDbName))
 
   def insert(u2iActions: U2IActions) = {
     val appid = 0

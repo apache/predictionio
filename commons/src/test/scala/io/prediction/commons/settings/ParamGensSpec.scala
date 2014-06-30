@@ -1,33 +1,41 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class ParamGensSpec extends Specification {
-  def is =
-    "PredictionIO ParamGens Specification" ^
-      p ^
-      "ParamGens can be implemented by:" ^ endp ^
-      "1. MongoParamGens" ^ mongoParamGens ^ end
+  def is = s2"""
 
-  def mongoParamGens = p ^
-    "MongoParamGens should" ^
-    "behave like any ParamGens implementation" ^ paramGensTest(newMongoParamGens) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO ParamGens Specification
 
-  def paramGensTest(paramGens: ParamGens) = {
-    t ^
-      "create an ParamGen" ! insert(paramGens) ^
-      "update an ParamGen" ! update(paramGens) ^
-      "get two ParamGens by Tuneid" ! getByTuneid(paramGens) ^
-      "delete an ParamGen" ! delete(paramGens) ^
-      "backup and restore ParamGens" ! backuprestore(paramGens) ^
-      bt
-  }
+    ParamGens can be implemented by:
+    - MongoParamGens ${mongoParamGens}
+
+  """
+
+  def mongoParamGens = s2"""
+
+    MongoParamGens should
+    - behave like any ParamGens implementation ${paramGensTest(newMongoParamGens)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def paramGensTest(paramGens: ParamGens) = s2"""
+
+    create an ParamGen ${insert(paramGens)}
+    update an ParamGen ${update(paramGens)}
+    get two ParamGens by Tuneid ${getByTuneid(paramGens)}
+    delete an ParamGen ${delete(paramGens)}
+    backup and restore ParamGens ${backuprestore(paramGens)}
+
+  """
 
   val mongoDbName = "predictionio_mongoparamgens_test"
-  def newMongoParamGens = new mongodb.MongoParamGens(MongoConnection()(mongoDbName))
+  def newMongoParamGens = new mongodb.MongoParamGens(Spec.mongoClient(mongoDbName))
 
   /**
    * insert and get by id

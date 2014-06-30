@@ -1,31 +1,39 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 import com.mongodb.casbah.Imports._
 
 class OfflineEvalResultsSpec extends Specification {
-  def is =
-    "PredictionIO OfflineEvalResults Specification" ^
-      p ^
-      "OfflineEvalResults can be implemented by:" ^ endp ^
-      "1. MongoOfflineEvalResults" ^ mongoOfflineEvalResults ^ end
+  def is = s2"""
 
-  def mongoOfflineEvalResults = p ^
-    "MongoOfflineEvalResults should" ^
-    "behave like any OfflineEvalResults implementation" ^ offlineEvalResultsTest(newMongoOfflineEvalResults) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO OfflineEvalResults Specification
 
-  def offlineEvalResultsTest(offlineEvalResults: OfflineEvalResults) = {
-    t ^
-      "get two OfflineEvalResults by evalid" ! getByEvalid(offlineEvalResults) ^
-      "delete two OfflineEvalResults by evalid" ! deleteByEvalid(offlineEvalResults) ^
-      "backup and restore OfflineEvalResults" ! backuprestore(offlineEvalResults) ^
-      bt
-  }
+    OfflineEvalResults can be implemented by:
+    - MongoOfflineEvalResults ${mongoOfflineEvalResults}
+
+  """
+
+  def mongoOfflineEvalResults = s2"""
+
+    MongoOfflineEvalResults should
+    - behave like any OfflineEvalResults implementation ${offlineEvalResultsTest(newMongoOfflineEvalResults)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def offlineEvalResultsTest(offlineEvalResults: OfflineEvalResults) = s2"""
+
+    get two OfflineEvalResults by evalid ${getByEvalid(offlineEvalResults)}
+    delete two OfflineEvalResults by evalid ${deleteByEvalid(offlineEvalResults)}
+    backup and restore OfflineEvalResults ${backuprestore(offlineEvalResults)}
+
+  """
 
   val mongoDbName = "predictionio_mongoofflineevalresults_test"
-  def newMongoOfflineEvalResults = new mongodb.MongoOfflineEvalResults(MongoConnection()(mongoDbName))
+  def newMongoOfflineEvalResults = new mongodb.MongoOfflineEvalResults(Spec.mongoClient(mongoDbName))
 
   /**
    * save a few and get by evalid
@@ -69,22 +77,29 @@ class OfflineEvalResultsSpec extends Specification {
     val id3 = offlineEvalResults.save(obj3)
     val id4 = offlineEvalResults.save(obj4)
 
-    val it = offlineEvalResults.getByEvalid(16)
+    val it = offlineEvalResults.getByEvalid(16).toSeq
 
+    /*
     val itData1 = it.next()
     val itData2 = it.next()
     val itData3 = it.next()
+    */
 
-    val it2 = offlineEvalResults.getByEvalidAndMetricidAndAlgoid(2, 3, 4)
+    val it2 = offlineEvalResults.getByEvalidAndMetricidAndAlgoid(2, 3, 4).toSeq
 
-    val it2Data1 = it2.next()
+    //val it2Data1 = it2.next()
 
+    /*
     itData1 must be equalTo (obj1) and
       (itData2 must be equalTo (obj2)) and
       (itData3 must be equalTo (obj3)) and
       (it.hasNext must be_==(false)) and // make sure it has 2 only
       (it2Data1 must equalTo(obj4)) and
       (it2.hasNext must be_==(false))
+      */
+    it must contain(obj1) and (it must contain(obj2)) and
+      (it must contain(obj3)) and (it.size must be_==(3)) and
+      (it2 must contain(obj4)) and (it2.size must be_==(1))
   }
 
   /**

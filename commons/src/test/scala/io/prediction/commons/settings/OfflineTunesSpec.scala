@@ -1,5 +1,7 @@
 package io.prediction.commons.settings
 
+import io.prediction.commons.Spec
+
 import org.specs2._
 import org.specs2.specification.Step
 
@@ -7,28 +9,34 @@ import com.mongodb.casbah.Imports._
 import com.github.nscala_time.time.Imports._
 
 class OfflineTunesSpec extends Specification {
-  def is =
-    "PredictionIO OfflineTunes Specification" ^
-      p ^
-      "OfflineTunes can be implemented by:" ^ endp ^
-      "1. MongoOfflineTunes" ^ mongoOfflineTunes ^ end
+  def is = s2"""
 
-  def mongoOfflineTunes = p ^
-    "MongoOfflineTunes should" ^
-    "behave like any OfflinTunes implementation" ^ offlineTunesTest(newMongoOfflineTunes) ^
-    Step(MongoConnection()(mongoDbName).dropDatabase())
+  PredictionIO OfflineTunes Specification
 
-  def offlineTunesTest(offlineTunes: OfflineTunes) = {
-    t ^
-      "create an OfflineTune" ! insert(offlineTunes) ^
-      "update an OfflineTune" ! update(offlineTunes) ^
-      "delete an OfflineTune" ! delete(offlineTunes) ^
-      "backup and restore OfflineTunes" ! backuprestore(offlineTunes) ^
-      bt
-  }
+    OfflineTunes can be implemented by:
+    - MongoOfflineTunes ${mongoOfflineTunes}
+
+  """
+
+  def mongoOfflineTunes = s2"""
+
+    MongoOfflineTunes should
+    - behave like any OfflinTunes implementation ${offlineTunesTest(newMongoOfflineTunes)}
+    - (database cleanup) ${Step(Spec.mongoClient(mongoDbName).dropDatabase())}
+
+  """
+
+  def offlineTunesTest(offlineTunes: OfflineTunes) = s2"""
+
+    create an OfflineTune ${insert(offlineTunes)}
+    update an OfflineTune ${update(offlineTunes)}
+    delete an OfflineTune ${delete(offlineTunes)}
+    backup and restore OfflineTunes ${backuprestore(offlineTunes)}
+
+  """
 
   val mongoDbName = "predictionio_mongoofflinetunes_test"
-  def newMongoOfflineTunes = new mongodb.MongoOfflineTunes(MongoConnection()(mongoDbName))
+  def newMongoOfflineTunes = new mongodb.MongoOfflineTunes(Spec.mongoClient(mongoDbName))
 
   /**
    * insert and get by id
