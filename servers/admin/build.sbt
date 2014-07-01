@@ -1,6 +1,6 @@
 name := "predictionio-admin"
 
-version := "0.7.2-SNAPSHOT"
+version := "0.7.2"
 
 organization := "io.prediction"
 
