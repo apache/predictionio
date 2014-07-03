@@ -66,7 +66,6 @@ class DataPrep
   }
 }
 
-
 class AlgoParams(val numIterations: Int = 200) extends BaseParams
 
 // Algorithm
@@ -124,15 +123,10 @@ object Runner {
 
     val algoParams = new AlgoParams(numIterations = 300)
 
-    EvaluationWorkflow.run(
-        "Regress Man",
-        evalDataParams,
-        null,
-        null,
-        Seq(("", algoParams)),
-        null,
-        engine,
-        evaluator)
+    EvaluationWorkflow.run(engine, evaluator,
+        batch = "Regress Man",
+        evalDataParams = evalDataParams,
+        algoParams = algoParams)
 
   }
 }

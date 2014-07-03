@@ -26,6 +26,74 @@ import scala.reflect.Manifest
 import com.twitter.chill.Externalizer
 
 object EvaluationWorkflow {
+  // Wrapper for single algo engine
+  def run[
+      EDP <: BaseParams : Manifest,
+      VP <: BaseParams : Manifest,
+      TDP <: BaseParams : Manifest,
+      VDP <: BaseParams : Manifest,
+      TD: Manifest,
+      NTD : Manifest,
+      NCD : Manifest,
+      F : Manifest,
+      NF : Manifest,
+      P : Manifest,
+      NP : Manifest,
+      A : Manifest,
+      VU : Manifest,
+      VR : Manifest,
+      CVR <: AnyRef : Manifest](
+    singleAlgoEngine: SingleAlgoEngine[NTD,NCD,NF,NP],
+    baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR],
+    batch: String = "",
+    evalDataParams: BaseParams = null,
+    validationParams: BaseParams = null,
+    cleanserParams: BaseParams = null,
+    algoParams: BaseParams = null,
+    serverParams: BaseParams = null
+    ): (Array[Array[Any]], Seq[(TDP, VDP, VR)], CVR) = {
+    val r = EvaluationWorkflowImpl.run(
+      batch, evalDataParams, validationParams, 
+      cleanserParams, Seq(("", algoParams)), serverParams,
+      singleAlgoEngine, baseEvaluator)
+    println("SingleAlgoEngine")
+    r
+  }
+
+  def run[
+      EDP <: BaseParams : Manifest,
+      VP <: BaseParams : Manifest,
+      TDP <: BaseParams : Manifest,
+      VDP <: BaseParams : Manifest,
+      TD: Manifest,
+      NTD : Manifest,
+      NCD : Manifest,
+      F : Manifest,
+      NF : Manifest,
+      P : Manifest,
+      NP : Manifest,
+      A : Manifest,
+      VU : Manifest,
+      VR : Manifest,
+      CVR <: AnyRef : Manifest](
+    batch: String,
+    evalDataParams: BaseParams,
+    validationParams: BaseParams,
+    cleanserParams: BaseParams,
+    algoParamsList: Seq[(String, BaseParams)],
+    serverParams: BaseParams,
+    baseEngine: BaseEngine[NTD,NCD,NF,NP],
+    baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
+    ): (Array[Array[Any]], Seq[(TDP, VDP, VR)], CVR) = {
+    EvaluationWorkflowImpl.run(
+      batch, evalDataParams, validationParams, cleanserParams,
+      algoParamsList, serverParams, baseEngine, baseEvaluator)
+  }
+}
+
+
+
+object EvaluationWorkflowImpl {
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
   type FI = Long // Feature Index
@@ -139,25 +207,23 @@ object EvaluationWorkflow {
   
   class ValidatorWrapper[
       TDP <: BaseParams, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
-    //val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
     val validator: BaseValidator[_,TDP,VDP,_,_,_,VU,VR,CVR]) 
   extends Serializable {
-    //def validateSet(input: ((BP, BP), Iterable[Any]))
     def validateSet(input: ((TDP, VDP), Iterable[VU]))
-      //: ((BP, BP), VR) = {
       : ((TDP, VDP), VR) = {
       val results = validator.validateSetBase(
         input._1._1, input._1._2, input._2.toSeq)
       (input._1, results)
     }
 
-    //def crossValidate(input: Array[((BP, BP), VR)]): CVR = {
     def crossValidate(input: Array[((TDP, VDP), VR)]): CVR = {
       // maybe sort them.
       val data = input.map(e => (e._1._1, e._1._2, e._2))
       validator.crossValidateBase(data)
     }
   }
+
+
 
   def run[
       EDP <: BaseParams : Manifest,
@@ -183,7 +249,7 @@ object EvaluationWorkflow {
     serverParams: BaseParams,
     baseEngine: BaseEngine[NTD,NCD,NF,NP],
     baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
-    ): (Array[Array[Any]], Seq[(BP, BP, VR)], CVR) = {
+    ): (Array[Array[Any]], Seq[(TDP, VDP, VR)], CVR) = {
     // Add a flag to disable parallelization.
     val verbose = false
 
@@ -197,11 +263,9 @@ object EvaluationWorkflow {
 
     // Data Prep
     val evalParamsDataMap
-    //: Map[EI, (BP, BP, TD, RDD[(F, A)])] = dataPrep
     : Map[EI, (TDP, VDP, TD, RDD[(F, A)])] = dataPrep
       .prepareBase(sc, evalDataParams)
 
-    //val localParamsSet: Map[EI, (BP, BP)] = evalParamsDataMap.map { 
     val localParamsSet: Map[EI, (TDP, VDP)] = evalParamsDataMap.map { 
       case(ei, e) => (ei -> (e._1, e._2))
     }
@@ -327,7 +391,6 @@ object EvaluationWorkflow {
     val validatorWrapper = new ValidatorWrapper(validator)
 
     val evalValidationResultsMap
-    //: Map[EI, RDD[((BP, BP), VR)]] = evalValidationUnitMap
     : Map[EI, RDD[((TDP, VDP), VR)]] = evalValidationUnitMap
     .map{ case (ei, validationUnits) => {
       val validationResults

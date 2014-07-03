@@ -125,15 +125,10 @@ object Run {
     val algoParams = new AlgoParams(numIterations = 10)
 
     EvaluationWorkflow.run(
-        "RecommMan",
-        evalDataParams,
-        null,
-        null,
-        Seq(("", algoParams)),
-        null,
-        engine,
-        evaluator)
-
+        engine, evaluator,
+        batch = "RecommMan",
+        evalDataParams = evalDataParams,
+        algoParams = algoParams)
   }
 }
 

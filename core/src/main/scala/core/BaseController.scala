@@ -172,6 +172,8 @@ abstract class BaseServer[F, P, SP <: BaseParams: Manifest]
 }
 
 /* Engine */
+//trait SingleAlgoEngine[TD, CD, F, P]
+
 class BaseEngine[TD, CD, F, P](
     val cleanserClass
       : Class[_ <: BaseCleanser[TD, CD, _ <: BaseParams]],
@@ -179,6 +181,22 @@ class BaseEngine[TD, CD, F, P](
       : Map[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]]],
     val serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]],
     val formats: Formats = Util.json4sDefaultFormats)
+
+  // Simple Engine has only one algo
+class SingleAlgoEngine[TD, CD, F, P] (
+    cleanserClass
+      : Class[_ <: BaseCleanser[TD, CD, _ <: BaseParams]],
+    algorithmClass
+      : Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]],
+    serverClass: Class[_ <: BaseServer[F, P, _ <: BaseParams]],
+    formats: Formats = Util.json4sDefaultFormats
+) extends BaseEngine (
+  cleanserClass,
+  Map("" -> algorithmClass),
+  serverClass,
+  formats
+)
+
 
 /*
 class LocalEngine[
