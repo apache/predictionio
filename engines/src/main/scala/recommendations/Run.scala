@@ -5,7 +5,6 @@ import io.prediction._
 import io.prediction.core.BaseDataPreparator
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
-import io.prediction.core.BaseValidator
 import io.prediction.core.Spark2LocalAlgorithm
 import io.prediction.core.ParallelAlgorithm
 import io.prediction.core.SparkDataPreparator
@@ -31,8 +30,8 @@ import org.apache.spark.mllib.recommendation.MatrixFactorizationModel
 object RecommendationsEvaluator extends EvaluatorFactory {
   def apply() = {
     new BaseEvaluator(
-      classOf[DataPrep],
-      classOf[Validator])
+      classOf[DataPrep], 
+      classOf[RecommendationValidator])
   }
 }
 
@@ -43,13 +42,11 @@ extends BaseParams
 // Feture is (user, product)
 // Target is Double
 class DataPrep 
-  extends BaseDataPreparator[
-      EvalDataParams, EmptyParams, EmptyParams,
-      RDD[Rating], (Int, Int), Double] {
+  extends SimpleParallelDataPreparator[
+      EvalDataParams, RDD[Rating], (Int, Int), Double] {
   override
   def prepare(sc: SparkContext, params: EvalDataParams)
-  : Map[Int, 
-    (EmptyParams, EmptyParams, RDD[Rating], RDD[((Int, Int), Double)])] = {
+  : (RDD[Rating], RDD[((Int, Int), Double)]) = {
     
     val data = sc.textFile(params.filepath)
     val ratings = data.map(_.split("::") match { 
@@ -61,13 +58,12 @@ class DataPrep
       case Rating(user, product, rate) => ((user, product), rate)
     }
 
-    Map(0 -> (EmptyParams(), EmptyParams(), ratings, featureTargets))
+    (ratings, featureTargets)
   }
 }
 
-
-class Validator 
-extends BaseValidator[
+class RecommendationValidator 
+extends Validator[
     EmptyParams, EmptyParams, EmptyParams,
     (Int, Int), Double, Double,
     (Double, Double), Double, String] {

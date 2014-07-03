@@ -24,16 +24,33 @@ trait Validator[
     VDP <: BaseParams,
     F, P, A, VU, VR, CVR <: AnyRef]
     extends BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] {
-  def init(params: VP): Unit
-
+  def validateBase(input: (F, P, A)): VU = {
+    validate(input._1, input._2, input._3)
+  }
+ 
   def validate(feature: F, predicted: P, actual: A): VU
 
+  def validateSetBase(
+    trainingDataParams: TDP,
+    validationDataParams: VDP,
+    validationUnits: Seq[VU]): VR = {
+    validateSet(
+      trainingDataParams,
+      validationDataParams,
+      validationUnits)
+  }
+
   def validateSet(
-    trainingDataParams: TDP, 
+    trainingDataParams: TDP,
     validationDataParams: VDP,
     validationUnits: Seq[VU]): VR
 
-  def crossValidate(validationResultsSeq: Seq[(TDP, VDP, VR)]): CVR
+  def crossValidateBase(
+    input: Seq[(TDP, VDP, VR)]): CVR = {
+    crossValidate(input)
+  }
+
+  def crossValidate(validateResultsSeq: Seq[(TDP, VDP, VR)]): CVR
 }
 
 // Factory Methods

@@ -5,7 +5,6 @@ import io.prediction._
 import io.prediction.core.BaseDataPreparator
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
-import io.prediction.core.BaseValidator
 import io.prediction.core.Spark2LocalAlgorithm
 import io.prediction.core.SparkDataPreparator
 import io.prediction.workflow.EvaluationWorkflow
@@ -31,7 +30,7 @@ object SparkRegressionEvaluator extends EvaluatorFactory {
   def apply() = {
     new BaseEvaluator(
       classOf[DataPrep],
-      classOf[Validator])
+      classOf[RegressionValidator])
   }
 }
 
@@ -45,9 +44,11 @@ class DataPrep
         Vector,
         Double] {
   override
-  def prepare(sc: SparkContext, params: EvalDataParams)
+  def prepareBase(sc: SparkContext, baseParams: BaseParams)
   : Map[Int,
       (EmptyParams, EmptyParams, RDD[LabeledPoint], RDD[(Vector, Double)])] = {
+    val params = baseParams.asInstanceOf[EvalDataParams]
+
     val input = sc.textFile(params.filepath)
     val points = input.map { line =>
       val parts = line.split(' ').map(_.toDouble)
@@ -64,29 +65,17 @@ class DataPrep
   }
 }
 
+
 // Validator
-class Validator
-    extends BaseValidator[
-        EmptyParams, EmptyParams, EmptyParams,
-        Vector, Double, Double,
-        (Double, Double), Double, String] {
-
-  def validate(feature: Vector, prediction: Double, actual: Double)
-  : (Double, Double) = {
-    (prediction, actual)
-  }
-
-  def validateSet(tdp: EmptyParams, vdp: EmptyParams,
-    input: Seq[(Double, Double)])
-  : Double = {
-    val units = input.map(e => math.pow((e._1 - e._2), 2))
-    units.sum / units.length
-  }
-
-  def crossValidate(input: Seq[(EmptyParams, EmptyParams, Double)]): String = {
-    input.map(e => f"MSE: ${e._3}%8.6f").mkString("\n")
+class RegressionValidator
+  extends SimpleValidator[EmptyParams, Vector, Double, Double, String] {
+  def validate(input: Seq[(Vector, Double, Double)]): String = {
+    val units = input.map(e => math.pow((e._2 - e._3), 2))
+    val mse = units.sum / units.length
+    f"MSE: ${mse}%8.6f"
   }
 }
+
 
 class AlgoParams(val numIterations: Int = 200) extends BaseParams
 
@@ -143,7 +132,7 @@ object Runner {
 
     val engine = RegressionEngine()
 
-    val algoParams = new AlgoParams(numIterations = 300)
+    val algoParams = new AlgoParams(numIterations = 1000)
 
     EvaluationWorkflow.run(
         "Regress Man",

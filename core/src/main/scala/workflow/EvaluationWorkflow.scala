@@ -137,16 +137,22 @@ object EvaluationWorkflow {
     }
   }
   
-  class ValidatorWrapper[VR, CVR <: AnyRef](
-    val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
-    def validateSet(input: ((BP, BP), Iterable[Any]))
-      : ((BP, BP), VR) = {
+  class ValidatorWrapper[
+      TDP <: BaseParams, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
+    //val validator: BaseValidator[_,_,_,_,_,_,_,VR,CVR]) extends Serializable {
+    val validator: BaseValidator[_,TDP,VDP,_,_,_,VU,VR,CVR]) 
+  extends Serializable {
+    //def validateSet(input: ((BP, BP), Iterable[Any]))
+    def validateSet(input: ((TDP, VDP), Iterable[VU]))
+      //: ((BP, BP), VR) = {
+      : ((TDP, VDP), VR) = {
       val results = validator.validateSetBase(
         input._1._1, input._1._2, input._2.toSeq)
       (input._1, results)
     }
 
-    def crossValidate(input: Array[((BP, BP), VR)]): CVR = {
+    //def crossValidate(input: Array[((BP, BP), VR)]): CVR = {
+    def crossValidate(input: Array[((TDP, VDP), VR)]): CVR = {
       // maybe sort them.
       val data = input.map(e => (e._1._1, e._1._2, e._2))
       validator.crossValidateBase(data)
@@ -191,10 +197,12 @@ object EvaluationWorkflow {
 
     // Data Prep
     val evalParamsDataMap
-    : Map[EI, (BP, BP, TD, RDD[(F, A)])] = dataPrep
+    //: Map[EI, (BP, BP, TD, RDD[(F, A)])] = dataPrep
+    : Map[EI, (TDP, VDP, TD, RDD[(F, A)])] = dataPrep
       .prepareBase(sc, evalDataParams)
 
-    val localParamsSet: Map[EI, (BP, BP)] = evalParamsDataMap.map { 
+    //val localParamsSet: Map[EI, (BP, BP)] = evalParamsDataMap.map { 
+    val localParamsSet: Map[EI, (TDP, VDP)] = evalParamsDataMap.map { 
       case(ei, e) => (ei -> (e._1, e._2))
     }
 
@@ -319,10 +327,11 @@ object EvaluationWorkflow {
     val validatorWrapper = new ValidatorWrapper(validator)
 
     val evalValidationResultsMap
-    : Map[EI, RDD[((BP, BP), VR)]] = evalValidationUnitMap
+    //: Map[EI, RDD[((BP, BP), VR)]] = evalValidationUnitMap
+    : Map[EI, RDD[((TDP, VDP), VR)]] = evalValidationUnitMap
     .map{ case (ei, validationUnits) => {
       val validationResults
-      : RDD[((BP, BP), VR)] = validationUnits
+      : RDD[((TDP, VDP), VR)] = validationUnits
         .coalesce(numPartitions=1)
         .glom()
         .map(e => (localParamsSet(ei), e.toIterable))
