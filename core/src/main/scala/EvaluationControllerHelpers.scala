@@ -40,3 +40,14 @@ extends BaseValidator[
   def validate(input: Seq[(F, P, A)]): CVR
 }
 
+
+
+// When Prediction and Actual are both double
+class MeanSquareErrorValidator[F]
+  extends SimpleValidator[EmptyParams, F, Double, Double, String] {
+  def validate(input: Seq[(F, Double, Double)]): String = {
+    val units = input.map(e => math.pow((e._2 - e._3), 2))
+    val mse = units.sum / units.length
+    f"MSE: ${mse}%8.6f"
+  }
+}

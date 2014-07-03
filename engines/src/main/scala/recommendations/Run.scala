@@ -31,7 +31,7 @@ object RecommendationsEvaluator extends EvaluatorFactory {
   def apply() = {
     new BaseEvaluator(
       classOf[DataPrep], 
-      classOf[RecommendationValidator])
+      classOf[MeanSquareErrorValidator[(Int, Int)]])
   }
 }
 
@@ -62,25 +62,6 @@ class DataPrep
   }
 }
 
-class RecommendationValidator 
-extends Validator[
-    EmptyParams, EmptyParams, EmptyParams,
-    (Int, Int), Double, Double,
-    (Double, Double), Double, String] {
-  def validate(feature: (Int, Int), prediction: Double, actual: Double)
-  : (Double, Double) = (prediction, actual)
-
-  def validateSet(tdp: EmptyParams, vdp: EmptyParams,
-    input: Seq[(Double, Double)])
-  : Double = {
-    val units = input.map(e => math.pow((e._1 - e._2), 2))
-    units.sum / units.length
-  }
-
-  def crossValidate(input: Seq[(EmptyParams, EmptyParams, Double)]): String = {
-    input.map(e => f"MSE: ${e._3}%8.6f").mkString("\n")
-  }
-}
 
 // Algorithms
 class AlgoParams(
@@ -97,18 +78,18 @@ object RecommendationsEngine extends EngineFactory {
 class Algorithm
   extends ParallelAlgorithm[
       RDD[Rating], (Int, Int), Double, MatrixFactorizationModel, AlgoParams] {
-  var rank: Int = 0
-  var numIterations: Int = 0
-  var lambda: Double = 0.0
+  var _rank: Int = 0
+  var _numIterations: Int = 0
+  var _lambda: Double = 0.0
 
   override def init(params: AlgoParams): Unit = {
-    rank = params.rank
-    numIterations = params.numIterations
-    lambda = params.lambda
+    _rank = params.rank
+    _numIterations = params.numIterations
+    _lambda = params.lambda
   }
 
   def train(data: RDD[Rating]): MatrixFactorizationModel = {
-    ALS.train(data, rank, numIterations, lambda)
+    ALS.train(data, _rank, _numIterations, _lambda)
   }
 
   def batchPredict(
@@ -155,47 +136,4 @@ object Run {
 
   }
 }
-
-object Good {
-  def main(args: Array[String]) {
-    val batch = "ALS" 
-    val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
-    conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "8g")
-
-    val sc = new SparkContext(conf)
-
-    // Load and parse the data
-    //val data = sc.textFile("mllib/data/als/test.data")
-    val data = sc.textFile("data/movielens.txt")
-    val ratings = data.map(_.split("::") match { case Array(user, item, rate) =>
-      Rating(user.toInt, item.toInt, rate.toDouble)
-    })
-  
-    // Build the recommendation model using ALS
-    val rank = 10
-    val numIterations = 20
-    val model = ALS.train(ratings, rank, numIterations, 0.01)
-  
-    // Evaluate the model on rating data
-    val usersProducts = ratings.map { case Rating(user, product, rate) =>
-      (user, product)
-    }
-    val predictions = 
-      model.predict(usersProducts).map { case Rating(user, product, rate) => 
-      ((user, product), rate)
-    }
-    val ratesAndPreds = ratings.map { case Rating(user, product, rate) => 
-      ((user, product), rate)
-    }.join(predictions)
-  
-    val MSE = ratesAndPreds.map { case ((user, product), (r1, r2)) => 
-      val err = (r1 - r2)
-      err * err
-    }.mean()
-    println("Mean Squared Error = " + MSE)
-
-  }
-}
-
 

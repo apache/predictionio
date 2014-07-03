@@ -30,7 +30,8 @@ object SparkRegressionEvaluator extends EvaluatorFactory {
   def apply() = {
     new BaseEvaluator(
       classOf[DataPrep],
-      classOf[RegressionValidator])
+      //classOf[RegressionValidator])
+      classOf[MeanSquareErrorValidator[Vector]])
   }
 }
 
@@ -62,17 +63,6 @@ class DataPrep
         oneEval._1, oneEval._2.map(p => (p.features, p.label))))
     }}
     .toMap
-  }
-}
-
-
-// Validator
-class RegressionValidator
-  extends SimpleValidator[EmptyParams, Vector, Double, Double, String] {
-  def validate(input: Seq[(Vector, Double, Double)]): String = {
-    val units = input.map(e => math.pow((e._2 - e._3), 2))
-    val mse = units.sum / units.length
-    f"MSE: ${mse}%8.6f"
   }
 }
 
@@ -132,7 +122,7 @@ object Runner {
 
     val engine = RegressionEngine()
 
-    val algoParams = new AlgoParams(numIterations = 1000)
+    val algoParams = new AlgoParams(numIterations = 300)
 
     EvaluationWorkflow.run(
         "Regress Man",
