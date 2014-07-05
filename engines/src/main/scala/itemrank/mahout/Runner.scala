@@ -25,6 +25,10 @@ object MahoutRunner {
       goal = Set("conversion", "view")
     )
 
+    val validatorParams = new ValidatorParams(
+      verbose = true
+    )
+
     val cleanserParams = new CleanserParams(
       actions = Map(
         "view" -> Some(3),
@@ -58,7 +62,7 @@ object MahoutRunner {
     SparkWorkflow.run(
       "Thor",
       evalParams,
-      evalParams, /* validation */
+      validatorParams,
       cleanserParams,
       paramSet,
       serverParams,

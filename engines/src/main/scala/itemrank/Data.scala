@@ -21,6 +21,9 @@ class EvalParams(
     s"actions=${actions}"
 }
 
+class ValidatorParams(
+  val verbose: Boolean // print report
+) extends BaseParams {}
 
 // param for preparing training
 class TrainDataPrepParams(
@@ -121,6 +124,17 @@ class ValidationUnit(
   val baseline: Double
 ) extends Serializable
 
-class ValidationResult() extends Serializable
+class ValidationResult(
+  val testStartUntil: Tuple2[DateTime, DateTime],
+  val baselineMean: Double,
+  val baselineStdev: Double,
+  val algoMean: Double,
+  val algoStdev: Double
+) extends Serializable
 
-class CrossValidationResult() extends Serializable
+class CrossValidationResult(
+  val baselineMean: Double,
+  val baselineStdev: Double,
+  val algoMean: Double,
+  val algoStdev: Double
+) extends Serializable

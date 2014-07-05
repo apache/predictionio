@@ -12,6 +12,7 @@ import io.prediction.EmptyParams
 import io.prediction.DataPreparator
 import io.prediction.Validator
 
+import breeze.stats.{ mean, meanAndVariance }
 import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
@@ -216,7 +217,7 @@ class ItemRankDataPreparator
 // java.lang.ArrayStoreException: [Ljava.lang.Object;
 class ItemRankValidator
   extends Validator[
-      EvalParams,
+      ValidatorParams,
       TrainDataPrepParams,
       ValidationDataPrepParams,
       Feature,
@@ -227,7 +228,13 @@ class ItemRankValidator
       ValidationResult,
       CrossValidationResult] {
 
-  //def init(params: EvalParams): Unit = {}
+  var _params = new ValidatorParams(
+    verbose = false
+  )
+
+  override def init(params: ValidatorParams): Unit = {
+    _params = params
+  }
 
   // evaluation
 
@@ -249,31 +256,88 @@ class ItemRankValidator
   private def printDouble(d: Double): String = {
     BigDecimal(d).setScale(4, BigDecimal.RoundingMode.HALF_UP).toString
   }
+
   override def validateSet(
     trainDataPrepParams: TrainDataPrepParams,
     validationDataPrepParams: ValidationDataPrepParams,
     validationUnits: Seq[ValidationUnit]): ValidationResult = {
     // calcualte MAP at k
-    val mean = validationUnits.map( eu => eu.score ).sum / validationUnits.size
-    val baseMean = validationUnits.map (eu => eu.baseline).sum / validationUnits.size
-    // TODO: simply print results for now...
-    val reports = validationUnits.map{ eu =>
-      val flag = if (eu.baseline > eu.score) "x" else ""
-      Seq(eu.f.uid, eu.f.items.mkString(","),
-      eu.p.items.map(_._1).mkString(","),
-       eu.a.items.mkString(","),
-       printDouble(eu.baseline), printDouble(eu.score),
-       flag)
-    }.map { x => x.map(t => s"[${t}]")}
 
-    println("result:")
-    println("uid - basline - ranked - actual - baseline - score")
-    reports.foreach { r =>
-      println(s"${r.mkString(" ")}")
+    val (algoMean, algoVariance, algoCount) = meanAndVariance(
+      validationUnits.map(_.score)
+    )
+    val algoStdev = math.sqrt(algoVariance)
+    val (baselineMean, baselineVariance, baselineCount) = meanAndVariance(
+      validationUnits.map(_.baseline)
+    )
+    val baselineStdev = math.sqrt(baselineVariance)
+
+    //val mean = validationUnits.map( eu => eu.score ).sum / validationUnits.size
+    //val baseMean = validationUnits.map (eu => eu.baseline).sum /
+    //  validationUnits.size
+
+    if (_params.verbose) {
+      val reports = validationUnits.map{ eu =>
+        val flag = if (eu.baseline > eu.score) "x" else ""
+        Seq(eu.f.uid, eu.f.items.mkString(","),
+          eu.p.items.map(_._1).mkString(","),
+          eu.a.items.mkString(","),
+          printDouble(eu.baseline), printDouble(eu.score),
+          flag)
+      }.map { x => x.map(t => s"[${t}]")}
+
+      println("result:")
+      println(s"${trainDataPrepParams.startUntil}")
+      println(s"${validationDataPrepParams.startUntil}")
+      println("uid - basline - ranked - actual - baseline score - algo score")
+      reports.foreach { r =>
+        println(s"${r.mkString(" ")}")
+      }
+      println(s"baseline MAP@k = ${baselineMean} (${baselineStdev}), " +
+        s"algo MAP@k = ${algoMean} (${algoStdev})")
     }
-    println(s"baseline MAP@k = ${baseMean}, algo MAP@k = ${mean}")
-    //EmptyData()
-    new ValidationResult()
+
+    new ValidationResult(
+      testStartUntil = validationDataPrepParams.startUntil,
+      baselineMean = baselineMean,
+      baselineStdev = baselineStdev,
+      algoMean = algoMean,
+      algoStdev = algoStdev
+    )
+  }
+
+  override def crossValidate(
+    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams,
+      ValidationResult)]
+  ): CrossValidationResult = {
+    val vrSeq = input.map(_._3)
+    // calculate mean of MAP@k of each validion result
+    val (algoMean, algoVariance, algoCount) = meanAndVariance(
+      vrSeq.map(_.algoMean)
+    )
+    val algoStdev = math.sqrt(algoVariance)
+
+    val (baselineMean, baselineVariance, baseCount) = meanAndVariance(
+      vrSeq.map(_.baselineMean)
+    )
+    val baselineStdev = math.sqrt(baselineVariance)
+
+    if (_params.verbose) {
+      vrSeq.sortBy(_.testStartUntil).foreach { vr =>
+        println(s"${vr.testStartUntil}")
+        println(s"baseline MAP@k = ${vr.baselineMean} (${vr.baselineStdev}), " +
+          s"algo MAP@k = ${vr.algoMean} (${vr.algoStdev})")
+      }
+      println(s"baseline average = ${baselineMean} (${baselineStdev}), " +
+        s"algo average = ${algoMean} (${algoStdev})")
+    }
+
+    new CrossValidationResult (
+      baselineMean = baselineMean,
+      baselineStdev = baselineStdev,
+      algoMean = algoMean,
+      algoStdev = algoStdev
+    )
   }
 
   // metric
@@ -297,9 +361,5 @@ class ItemRankValidator
     val apAtKDenom = scala.math.min(n, r.size)
     if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
   }
-
-  override def crossValidate(
-    input: Seq[(TrainDataPrepParams, ValidationDataPrepParams, ValidationResult)]
-  ): CrossValidationResult = new CrossValidationResult
 
 }

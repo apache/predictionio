@@ -21,8 +21,12 @@ object Runner {
       hours = 24,//new Period(0, 0, 0, 1, 0, 0, 0, 0),
       trainStart = new DateTime("2014-04-01T00:00:00.000"),
       testStart = new DateTime("2014-04-20T00:00:00.000"),
-      testUntil = new DateTime("2014-04-30T00:00:00.000"),
+      testUntil = new DateTime("2014-04-22T00:00:00.000"),
       goal = Set("conversion", "view")
+    )
+
+    val validatorParams = new ValidatorParams(
+      verbose = true
     )
 
     val cleanserParams = new CleanserParams(
@@ -40,8 +44,8 @@ object Runner {
     val serverParams = new EmptyParams
 
     val paramSet = Seq(
-      ("knn", knnAlgoParams),
-      ("rand", randomAlgoParams))
+      ("knn", knnAlgoParams))
+      //("rand", randomAlgoParams))
 
     val engine = ItemRankEngine()
 
@@ -50,7 +54,7 @@ object Runner {
     SparkWorkflow.run(
       "Thor",
       evalParams,
-      evalParams, /* validation */
+      validatorParams,
       cleanserParams,
       paramSet,
       serverParams,
