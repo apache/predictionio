@@ -7,9 +7,9 @@ import scala.util.Random
 import grizzled.slf4j.Logger
 import com.github.nscala_time.time.Imports._
 
-object SampleData {
+object CreateSampleData {
 
-  val logger = Logger(SampleData.getClass)
+  val logger = Logger(CreateSampleData.getClass)
   val config = new Config
   val rand = new Random(0) // random with seed
 
@@ -18,7 +18,7 @@ object SampleData {
   val u2iDb = config.getAppdataU2IActions
   val itemSetsDb = config.getAppdataItemSets
 
-  def createSampleData(appid: Int) = {
+  def createSampleData(appid: Int, days: Int) = {
 
     // remove old data if exists
     usersDb.deleteByAppid(appid)
@@ -30,7 +30,7 @@ object SampleData {
     val itemIds = Range(0, 100).map(i => s"i${i}").toList
 
     val refTime = new DateTime("2014-04-01T06:10:51.754-07:00")
-    val itemSetIds = Range(0, 30).toList.map { d =>
+    val itemSetIds = Range(0, days).toList.map { d =>
       (s"s${d}", refTime + d.days)
     }
     // each user has higher pref on these 20 items
@@ -89,11 +89,36 @@ object SampleData {
 
   }
 
+  case class Args(
+    appid: Int = 1,
+    days: Int = 30
+  )
+
   def main(args: Array[String]) {
     val argsString = args.mkString(",")
     logger.info(s"${argsString}")
     val appid = 1
-    createSampleData(appid)
+    val parser = new scopt.OptionParser[Args]("CreateSampleData") {
+        head("CreateSampleData", "0.x")
+        help("help") text ("prints this usage text")
+        opt[Int]("appid").optional()
+          .valueName("<app id>").action { (x, c) =>
+            c.copy(appid = x) }
+        opt[Int]("days").optional()
+          .valueName("<number of days>").action { (x, c) =>
+            c.copy(days = x) }
+    }
+
+    val arg: Option[Args] = parser.parse(args, Args())
+
+    if (arg == None) {
+      error("Invalid arguments")
+      System.exit(1)
+    }
+
+    arg.map { a =>
+      createSampleData(a.appid, a.days)
+    }
 
   }
 }

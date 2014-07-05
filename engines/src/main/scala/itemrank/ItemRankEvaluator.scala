@@ -147,40 +147,31 @@ class ItemRankDataPreparator
     val u2iDb = ItemRankEvaluator.u2iDb
     val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
-    val usersMap: Map[String, Int] = usersDb.getByAppid(params.appid)
-      .map(_.id).zipWithIndex
-      .map { case (uid, index) => (uid, index + 1) }.toMap
+    val usersSet: Set[String] = usersDb.getByAppid(params.appid)
+      .map(_.id)
+      .toSet
 
-    val itemsMap: Map[String, (ItemTD, Int)] = params.itypes.map { itypes =>
+    val itemsSet: Set[String] = params.itypes.map { itypes =>
       itemsDb.getByAppidAndItypes(params.appid, itypes.toSeq)
     }.getOrElse {
       itemsDb.getByAppid(params.appid)
-    }.zipWithIndex.map {
-      case (item, index) =>
-        val itemTD = new ItemTD(
-          iid = item.id,
-          itypes = item.itypes,
-          starttime = item.starttime.map[Long](_.getMillis()),
-          endtime = item.endtime.map[Long](_.getMillis()),
-          inactive = item.inactive.getOrElse(false)
-        )
-        (item.id -> (itemTD, index + 1))
-    }.toMap
-
+    }.map(_.id).toSet
 
     // TODO: what if want to rank multiple itemset in each period?
     // only use one itemSet for now (take(1))
-    val itemList = itemSetsDb.getByAppidAndTime(params.appid,
+    val itemSetsSeq = itemSetsDb.getByAppidAndTime(params.appid,
       params.startUntil._1,
-      params.startUntil._2).toList(0).iids
+      params.startUntil._2).toList
+
+    val itemList = if (itemSetsSeq.isEmpty) List() else itemSetsSeq(0).iids
 
     // get u2i within startUntil time
     val userFT = u2iDb.getByAppidAndTime(params.appid,
       params.startUntil._1, params.startUntil._2).toSeq
       .filter { u2i =>
         val validAction = params.goal.contains(u2i.action)
-        val validUser = usersMap.contains(u2i.uid)
-        val validItem = itemsMap.contains(u2i.iid)
+        val validUser = usersSet.contains(u2i.uid)
+        val validItem = itemsSet.contains(u2i.iid)
         (validAction && validUser && validItem)
       }.groupBy { u2i => u2i.uid }
       .mapValues { listOfU2i => listOfU2i.map(_.iid).toSet }
@@ -280,7 +271,7 @@ class ItemRankValidator
       val reports = validationUnits.map{ eu =>
         val flag = if (eu.baseline > eu.score) "x" else ""
         Seq(eu.f.uid, eu.f.items.mkString(","),
-          eu.p.items.map(_._1).mkString(","),
+          eu.p.items.map(p => s"${p._1}(${printDouble(p._2)})").mkString(","),
           eu.a.items.mkString(","),
           printDouble(eu.baseline), printDouble(eu.score),
           flag)

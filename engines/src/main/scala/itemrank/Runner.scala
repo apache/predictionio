@@ -12,7 +12,7 @@ object Runner {
 
   def main(args: Array[String]) {
     val evalParams = new EvalParams(
-      appid = 1,
+      appid = 4,
       itypes = None,
       actions = Set("view", "like", "conversion", "rate"),
       //(int years, int months, int weeks, int days, int hours,
@@ -20,8 +20,8 @@ object Runner {
       // number of hours of each period
       hours = 24,//new Period(0, 0, 0, 1, 0, 0, 0, 0),
       trainStart = new DateTime("2014-04-01T00:00:00.000"),
-      testStart = new DateTime("2014-04-20T00:00:00.000"),
-      testUntil = new DateTime("2014-04-22T00:00:00.000"),
+      testStart = new DateTime("2014-06-20T00:00:00.000"),
+      testUntil = new DateTime("2014-06-30T00:00:00.000"),
       goal = Set("conversion", "view")
     )
 
@@ -39,13 +39,24 @@ object Runner {
       conflict = "latest"
     )
 
-    val knnAlgoParams = new KNNAlgoParams(similarity="cosine", k=10)
+    val knnAlgoParams = new KNNAlgoParams(
+      similarity = "cosine",
+      k = 10)
     val randomAlgoParams = new RandomAlgoParams
+    val mahoutAlgoParams = new MahoutItemBasedAlgoParams(
+      booleanData = true,
+      itemSimilarity = "LogLikelihoodSimilarity",
+      weighted = false,
+      nearestN = 10,
+      threshold = 5e-324,
+      numSimilarItems = 50
+    )
+
     val serverParams = new EmptyParams
 
-    val paramSet = Seq(
-      ("knn", knnAlgoParams))
-      //("rand", randomAlgoParams))
+    val paramSet = Seq(("knn", knnAlgoParams))
+    //val paramSet = Seq(("rand", randomAlgoParams))
+    //val paramSet = Seq(("mahout", mahoutAlgoParams))
 
     val engine = ItemRankEngine()
 

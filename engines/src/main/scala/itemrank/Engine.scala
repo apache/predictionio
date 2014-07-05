@@ -11,7 +11,8 @@ object ItemRankEngine extends EngineFactory {
     new BaseEngine(
       classOf[ItemRankCleanser],
       Map("knn" -> classOf[KNNAlgorithm],
-        "rand" -> classOf[RandomAlgorithm]),
+        "rand" -> classOf[RandomAlgorithm],
+        "mahout" -> classOf[MahoutItemBasedAlgorithm]),
       classOf[DefaultServer[Feature, Prediction]]
     )
   }
