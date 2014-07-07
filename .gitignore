@@ -3,3 +3,4 @@
 target/
 sbt/sbt-launch-*.jar
 ..sxr/
+*.class
