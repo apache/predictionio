@@ -253,11 +253,7 @@ object EvaluationWorkflowImpl {
     // Add a flag to disable parallelization.
     val verbose = false
 
-    val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
-    conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "8g")
-
-    val sc = new SparkContext(conf)
+    val sc = WorkflowContext(batch)
 
     val dataPrep = baseEvaluator.dataPreparatorClass.newInstance
 

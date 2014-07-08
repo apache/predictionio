@@ -1,12 +1,14 @@
 package io.prediction.engines.java.regression;
 
 import io.prediction.java.JavaLocalDataPreparator;
+import io.prediction.java.JavaSimpleLocalDataPreparator;
 
 import scala.Tuple2;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.Iterable;
+
 
 public class DataPreparator
   extends JavaLocalDataPreparator<
@@ -40,5 +42,6 @@ public class DataPreparator
     l.add(new Tuple2<Integer, Integer>(params.n, params.e));
     return l;
   }
+
 }
 

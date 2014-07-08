@@ -14,13 +14,13 @@ abstract class BaseDataPreparator[
     EDP <: BaseParams: Manifest,
     TDP <: BaseParams,
     VDP <: BaseParams,
-    BTD, 
+    TD, 
     F,
     A]
   extends AbstractParameterizedDoer[EDP] {
 
   def prepareBase(sc: SparkContext, params: BaseParams)
-  : Map[Int, (TDP, VDP, BTD, RDD[(F, A)])]
+  : Map[Int, (TDP, VDP, TD, RDD[(F, A)])]
 }
 
 

@@ -10,9 +10,11 @@ import scala.collection.JavaConversions._
 import io.prediction.FirstAlgo
 //import io.prediction.SecondAlgo
 
+import io.prediction.engines.java.regression.SimpleDataPreparator
 import io.prediction.engines.java.regression.DataPreparator
 import io.prediction.engines.java.regression.EvaluationDataParams
 
+import io.prediction.workflow.DebugWorkflow;
 
 abstract class AlgoClass[M] {
   def f(e: Int): Int = {
@@ -94,10 +96,12 @@ object RunJava {
 
   def main(args: Array[String]) {
     val edp = new EvaluationDataParams(15, 4)
-    val dp = new DataPreparator()
-    val r = dp.prepareValidation(edp)
+    //val dp = new DataPreparator()
+    val dp = new SimpleDataPreparator()
+    //val r = dp.prepareValidation(edp)
+    //println(r)
 
-    println(r)
+    DebugWorkflow.dataPrep(dp, "Java DataPrep", edp)
 
   }
 }

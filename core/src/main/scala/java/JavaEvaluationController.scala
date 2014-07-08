@@ -2,6 +2,7 @@ package io.prediction.java
 
 import io.prediction.core.LocalDataPreparator
 import io.prediction.core.SlicedDataPreparator
+import io.prediction.core.BaseDataPreparator
 import io.prediction.BaseParams
 import java.util.{ List => JList }
 import java.lang.{ Iterable => JIterable }
@@ -11,14 +12,15 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import scala.reflect.ClassTag
+import io.prediction._
 
-// Injecting fake manifest to superclass
 abstract class JavaLocalDataPreparator[
     EDP <: BaseParams,
     TDP <: BaseParams,
     VDP <: BaseParams,
     TD, F, A]
     extends SlicedDataPreparator[EDP, TDP, VDP, RDD[TD], F, A]()(
+        // Injecting fake manifest to superclass
         JavaUtils.fakeManifest[EDP]
     ){
 
@@ -45,6 +47,29 @@ abstract class JavaLocalDataPreparator[
 
   def prepareValidation(params: VDP): JIterable[Tuple2[F, A]]
 }
+
+
+abstract class JavaSimpleLocalDataPreparator[
+    EDP <: BaseParams, TD, F, A]
+    extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, RDD[TD], F, A]()(
+        // Injecting fake manifest to superclass
+        JavaUtils.fakeManifest[EDP]
+    ){
+
+  override def prepareBase(sc: SparkContext, params: BaseParams)
+  : Map[Int, (EmptyParams, EmptyParams, RDD[TD], RDD[(F, A)])] = {
+    implicit val fakeTdTag: ClassTag[TD] = JavaUtils.fakeClassTag[TD]
+    val (td, faSeq) = prepare(params.asInstanceOf[EDP])
+    val faRdd = sc.parallelize(faSeq.toSeq)
+    val tdRdd = sc.parallelize(Array(td))
+    Map(0 -> (EmptyParams(), EmptyParams(), tdRdd, faRdd))
+  }
+
+  def prepare(edp: EDP): (TD, JIterable[Tuple2[F, A]])
+}
+
+
+//abstract class
 
 
 

@@ -18,10 +18,26 @@ extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, TD, F, A] {
     Map(0 -> (EmptyParams(), EmptyParams(), td, rdd))
   }
 
-  def prepare(sc: SparkContext, params: EDP): (TD, RDD[(F, A)])
+  def prepare(sc: SparkContext, edp: EDP): (TD, RDD[(F, A)])
+}
+
+abstract class SimpleLocalDataPreparator[
+    EDP <: BaseParams : Manifest, TD : Manifest, F, A]
+extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, RDD[TD], F, A] {
+  override def prepareBase(sc: SparkContext, params: BaseParams)
+  : Map[Int, (EmptyParams, EmptyParams, RDD[TD], RDD[(F, A)])] = {
+    val (td, faSeq) = prepare(params.asInstanceOf[EDP])
+    val faRdd = sc.parallelize(faSeq.toSeq)
+    val tdRdd = sc.parallelize(Array(td))
+    Map(0 -> (EmptyParams(), EmptyParams(), tdRdd, faRdd))
+  }
+
+  def prepare(edp: EDP): (TD, Iterable[(F, A)])
 }
 
 
+
+/*
 abstract class SimpleLocalDataPreparator[
     EDP <: BaseParams : Manifest, TD, F, A]
 extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, TD, F, A] {
@@ -34,10 +50,9 @@ extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, TD, F, A] {
     Map(0 -> (EmptyParams(), EmptyParams(), td, rdd))
   }
 
-  //def prepare(params: EDP): (TD, Seq[(F, A)])
   def prepare(params: EDP): (TD, Iterable[(F, A)])
 }
-
+*/
 
 
 
