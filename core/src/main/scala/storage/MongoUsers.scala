@@ -17,8 +17,6 @@ class MongoUsers(db: MongoDB) extends Users {
   private val emptyObj = MongoDBObject()
   private val userColl = db("users")
 
-  RegisterJodaTimeConversionHelpers()
-
   def insert(user: User) = {
     val id = MongoDBObject("_id" -> idWithAppid(user.appid, user.id))
     val appid = MongoDBObject("appid" -> user.appid)

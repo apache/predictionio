@@ -13,8 +13,6 @@ import com.github.nscala_time.time.Imports._
 class MongoItemSets(db: MongoDB) extends ItemSets {
   private val itemSetColl = db("itemSets")
 
-  RegisterJodaTimeConversionHelpers()
-
   private def dbObjToItemSet(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")
     ItemSet(

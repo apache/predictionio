@@ -18,4 +18,3 @@ class ParallelSimpleEngine[TD, F, P](
   classOf[SparkDefaultCleanser[TD]],
   algorithm,
   classOf[DefaultServer[F, P]])
-

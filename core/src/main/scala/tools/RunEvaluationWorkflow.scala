@@ -1,6 +1,6 @@
 package io.prediction.tools
 
-import io.prediction.storage.Config
+import io.prediction.storage.Settings
 
 import grizzled.slf4j.Logging
 
@@ -64,8 +64,7 @@ object RunEvaluationWorkflow extends Logging {
     }
 
     parser.parse(args, Args()) map { parsedArgs =>
-      val config = new Config
-      val engineManifests = config.getSettingsEngineManifests
+      val engineManifests = Settings.getSettingsEngineManifests
       val defaults = Args()
       engineManifests.get(parsedArgs.id, parsedArgs.version) map { engineManifest =>
         val sparkHome = if (parsedArgs.sparkHome != "") parsedArgs.sparkHome else sys.env.get("SPARK_HOME").getOrElse(".")
@@ -80,6 +79,7 @@ object RunEvaluationWorkflow extends Logging {
         Seq(
           s"${sparkHome}/bin/spark-submit",
           "--verbose",
+          "--deploy-mode client",
           s"--master spark://${sparkIP}:${sparkPort}",
           "--class io.prediction.tools.CreateEvaluationWorkflow",
           engineManifest.jars.apply(0),

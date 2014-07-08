@@ -1,6 +1,6 @@
 package io.prediction.engines.stock
 
-import io.prediction.storage.Config
+import io.prediction.storage.Settings
 import io.prediction.storage.{ ItemTrend, ItemTrends }
 import io.prediction.PIOSettings
 
@@ -28,8 +28,7 @@ import com.twitter.chill.MeatLocker
 
 object StockEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
-  val config = new Config()
-  val itemTrendsDb = config.getAppdataItemTrends()
+  val itemTrendsDb = Settings.getAppdataItemTrends()
 
   def apply() = {
     //new LocalEvaluator(
@@ -41,11 +40,11 @@ object StockEvaluator extends EvaluatorFactory {
 
 class StockDataPreparator
     extends DataPreparator[
-        EvaluationDataParams, 
-        TrainingDataParams, 
+        EvaluationDataParams,
+        TrainingDataParams,
         ValidationDataParams,
-        TrainingData, 
-        Feature, 
+        TrainingData,
+        Feature,
         Target] {
   val appid = PIOSettings.appid
   val itemTrendsDbGetTicker = StockEvaluator.itemTrendsDb.get(appid, _: String).get
@@ -127,7 +126,7 @@ class StockDataPreparator
 
     //val tickerTrendMap = getBatchItemTrend(params.tickerList)
     val tickerTrendMap = getBatchItemTrend(allTickers)
-    
+
     //val tickerDataSeq = params.tickerList
     val tickerDataSeq = allTickers
       .map(t => (t, getData(tickerTrendMap(t), timeIndex, t)))
@@ -188,9 +187,9 @@ class StockDataPreparator
 
     return (
       Feature(
-        mktTicker = marketTicker, 
+        mktTicker = marketTicker,
         tickerList = activeTickerList,
-        data = featureData), 
+        data = featureData),
       new Target(data = targetData))
   }
 
@@ -213,14 +212,14 @@ class StockDataPreparator
 
 class StockValidator
     extends Validator[
-        EmptyParams, 
-        TrainingDataParams, 
+        EmptyParams,
+        TrainingDataParams,
         ValidationDataParams,
-        Feature, 
-        Target, 
+        Feature,
         Target,
-        ValidationUnit, 
-        ValidationResults, 
+        Target,
+        ValidationUnit,
+        ValidationResults,
         CrossValidationResults] {
   //def init(params: EmptyParams) = {}
 

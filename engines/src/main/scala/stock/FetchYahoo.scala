@@ -1,6 +1,6 @@
 package io.prediction.engines.stock
 
-import io.prediction.storage.Config
+import io.prediction.storage.Settings
 import io.prediction.storage.{ ItemTrend, ItemTrends }
 import grizzled.slf4j.Logger
 import scala.io.Source
@@ -160,10 +160,9 @@ object FetchMain {
     "XYL", "YHOO", "YUM", "ZION", "ZMH", "ZTS")
   val marketList = Vector("QQQ", "SPY")
 
-  val config = new Config()
   //val appid = PIOSettings.appid
   val appid = 42
-  val itemTrendsDb = config.getAppdataItemTrends()
+  val itemTrendsDb = Settings.getAppdataItemTrends()
   val itemTrendsDbGetTicker = itemTrendsDb.get(appid, _: String).get
 
   def main(args: Array[String]) {

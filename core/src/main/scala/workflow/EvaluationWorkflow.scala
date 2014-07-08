@@ -53,7 +53,7 @@ object EvaluationWorkflow {
     serverParams: BaseParams = null
     ): (Array[Array[Any]], Seq[(TDP, VDP, VR)], CVR) = {
     val r = EvaluationWorkflowImpl.run(
-      batch, evalDataParams, validationParams, 
+      batch, evalDataParams, validationParams,
       cleanserParams, Seq(("", algoParams)), serverParams,
       singleAlgoEngine, baseEvaluator)
     println("SingleAlgoEngine")
@@ -101,13 +101,13 @@ object EvaluationWorkflowImpl {
   type BP = BaseParams
 
   class AlgoServerWrapper[NF, NP, NA, NCD](
-      val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]], 
+      val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]],
       val server: BaseServer[NF, NP, _])
   extends Serializable {
-    
+
     // Use algo.predictBase
     def onePassPredict[F, P, A](
-      modelIter: Iterator[(AI, Any)], 
+      modelIter: Iterator[(AI, Any)],
       featureActualIter: Iterator[(F, A)])
     : Iterator[(F, P, A)] = {
       val models = modelIter.toSeq.sortBy(_._1).map(_._2)
@@ -170,7 +170,7 @@ object EvaluationWorkflowImpl {
         .union(iAlgoPredictionSeq)
         .groupByKey
         .mapValues { _.toSeq.sortBy(_._1).map(_._2) }
-      
+
       val joined: RDD[(FI, (Seq[NP], (F, A)))] = iAlgoPredictions.join(iInput)
 
       joined
@@ -204,10 +204,10 @@ object EvaluationWorkflowImpl {
       }
     }
   }
-  
+
   class ValidatorWrapper[
       TDP <: BaseParams, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
-    val validator: BaseValidator[_,TDP,VDP,_,_,_,VU,VR,CVR]) 
+    val validator: BaseValidator[_,TDP,VDP,_,_,_,VU,VR,CVR])
   extends Serializable {
     def validateSet(input: ((TDP, VDP), Iterable[VU]))
       : ((TDP, VDP), VR) = {
@@ -266,7 +266,7 @@ object EvaluationWorkflowImpl {
     : Map[EI, (TDP, VDP, TD, RDD[(F, A)])] = dataPrep
       .prepareBase(sc, evalDataParams)
 
-    val localParamsSet: Map[EI, (TDP, VDP)] = evalParamsDataMap.map { 
+    val localParamsSet: Map[EI, (TDP, VDP)] = evalParamsDataMap.map {
       case(ei, e) => (ei -> (e._1, e._2))
     }
 
@@ -299,7 +299,7 @@ object EvaluationWorkflowImpl {
     }
 
     // Instantiate algos
-    val algoInstanceList: Array[BaseAlgorithm[NCD, NF, NP, _, _]] = 
+    val algoInstanceList: Array[BaseAlgorithm[NCD, NF, NP, _, _]] =
     algoParamsList
       .map { case (algoName, algoParams) => {
         val algo = baseEngine.algorithmClassMap(algoName).newInstance

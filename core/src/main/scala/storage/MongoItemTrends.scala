@@ -16,12 +16,6 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 import com.github.nscala_time.time.Imports._
 
-object MongoItemTrends {
-  RegisterJodaTimeConversionHelpers()
-
-  def apply(db: MongoDB): MongoItemTrends = new MongoItemTrends(db)
-}
-
 /** MongoDB implementation of ItemTrends. */
 class MongoItemTrends(db: MongoDB) extends ItemTrends {
   private val itemColl = db("itemTrends")
@@ -61,7 +55,7 @@ class MongoItemTrends(db: MongoDB) extends ItemTrends {
       "priceRaw" -> itemTrend.priceRaw
     )
     */
-  //itemColl.update(idObj, idObj ++ itemTrendObj) 
+  //itemColl.update(idObj, idObj ++ itemTrendObj)
   //}
 
   /*

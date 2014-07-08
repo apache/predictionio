@@ -2,12 +2,6 @@ package io.prediction.storage
 
 import com.mongodb.casbah.Imports._
 
-object MongoEngineManifests {
-  //RegisterJodaTimeConversionHelpers()
-
-  def apply(db: MongoDB): MongoEngineManifests = new MongoEngineManifests(db)
-}
-
 /** MongoDB implementation of EngineManifests. */
 class MongoEngineManifests(db: MongoDB) extends EngineManifests {
   private val coll = db("engineManifests")

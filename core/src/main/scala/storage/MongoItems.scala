@@ -22,8 +22,6 @@ class MongoItems(db: MongoDB) extends Items {
   itemColl.ensureIndex(starttimeIndex)
   itemColl.ensureIndex(lnglatIndex)
 
-  RegisterJodaTimeConversionHelpers()
-
   def insert(item: Item) = {
     val id = MongoDBObject("_id" -> idWithAppid(item.appid, item.id))
     val appid = MongoDBObject("appid" -> item.appid)

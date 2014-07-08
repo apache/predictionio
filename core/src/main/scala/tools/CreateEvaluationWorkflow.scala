@@ -11,7 +11,7 @@ import io.prediction.{
   BaseServerParams
 }
 */
-import io.prediction.storage.Config
+import io.prediction.storage.Settings
 import io.prediction.storage.Run
 //import io.prediction.workflow.EvaluationWorkflow
 import io.prediction.workflow.SparkWorkflow
@@ -71,7 +71,7 @@ object CreateEvaluationWorkflow extends Logging {
     val jsonString = (
       if (path == "") ""
       else Source.fromFile(jsonDir + path).mkString)
-  
+
     try {
       val json = JsonMethods.parse(jsonString)
       info(json)
@@ -210,8 +210,8 @@ object CreateEvaluationWorkflow extends Logging {
     info(algoJson)
     info(algoParamSet)
 
-    val config = new Config
-    val runs = config.getSettingsRuns
+    //val config = new Config
+    val runs = Settings.getSettingsRuns
 
     // FIXME. Use SparkWorkflow
     //val evalWorkflow1 = EvaluationWorkflow(

@@ -1,4 +1,4 @@
-name := "tools"
+name := "deploy"
 
 libraryDependencies ++= Seq(
   "ch.qos.logback"     % "logback-classic" % "1.1.2",
@@ -19,9 +19,9 @@ libraryDependencies ++= Seq(
   "org.apache.spark"  %% "spark-mllib"     % "1.0.0",
   "org.clapper"       %% "grizzled-slf4j"  % "1.0.2",
   "org.mongodb"       %% "casbah"          % "2.7.2",
-  "org.json4s"        %% "json4s-native"   % "3.2.10",
-  "org.json4s"        %% "json4s-ext"      % "3.2.10")
+  "org.json4s"        %% "json4s-native"   % "3.2.6",
+  "org.json4s"        %% "json4s-ext"      % "3.2.6")
 
 packSettings
 
-packMain := Map("runserver" -> "io.prediction.tools.RunServer")
+packMain := Map("runserver" -> "io.prediction.deploy.RunServer")

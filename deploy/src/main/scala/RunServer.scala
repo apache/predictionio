@@ -1,9 +1,9 @@
-package io.prediction.tools
+package io.prediction.deploy
 
 import io.prediction.EngineFactory
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServer
-import io.prediction.storage.{ Config, EngineManifest, Run }
+import io.prediction.storage.{ Settings, EngineManifest, Run }
 
 import com.twitter.chill.KryoInjection
 import com.twitter.chill.ScalaKryoInstantiator
@@ -77,9 +77,8 @@ object RunServer extends Logging {
     }
 
     parser.parse(args, Args()) map { parsed =>
-      val config = new Config
-      val runs = config.getSettingsRuns
-      val engineManifests = config.getSettingsEngineManifests
+      val runs = Settings.getSettingsRuns
+      val engineManifests = Settings.getSettingsEngineManifests
       runs.get(parsed.run) map { run =>
         val engineId = if (parsed.id != "") parsed.id else run.engineManifestId
         val engineVersion = if (parsed.version != "") parsed.version else run.engineManifestVersion
@@ -172,6 +171,8 @@ trait Server extends HttpService with Logging {
                   <ul>
                     <li><strong>URL:</strong> {args.ip}:{args.port}</li>
                     <li><strong>Run ID:</strong> {args.run}</li>
+                    <li><strong>Run Start Time:</strong> {run.startTime}</li>
+                    <li><strong>Run End Time:</strong> {run.endTime}</li>
                     <li><strong>Engine:</strong> {manifest.id} {manifest.version}</li>
                     <li><strong>Class:</strong> {engineFactoryName}</li>
                     <li><strong>JARs:</strong> {engineJarFiles.mkString(" ")}</li>

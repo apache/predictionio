@@ -17,8 +17,6 @@ class MongoU2IActions(db: MongoDB) extends U2IActions {
   private val emptyObj = MongoDBObject()
   private val u2iActionColl = db("u2iActions")
 
-  RegisterJodaTimeConversionHelpers()
-
   def insert(u2iAction: U2IAction) = {
     val appid = MongoDBObject("appid" -> u2iAction.appid)
     val action = MongoDBObject("action" -> u2iAction.action)
