@@ -1,7 +1,6 @@
 package io.prediction.storage
 
 import com.mongodb.casbah.Imports._
-//import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config._
 import grizzled.slf4j.Logging
 import org.elasticsearch.client.Client
