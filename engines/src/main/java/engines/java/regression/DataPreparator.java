@@ -18,7 +18,7 @@ public class DataPreparator
     Integer> {
 
   public List<Tuple2<EvaluationDataParams, EvaluationDataParams>> 
-    jGetParamsSet(EvaluationDataParams params) {
+    getParamsSet(EvaluationDataParams params) {
     List<Tuple2<EvaluationDataParams, EvaluationDataParams>> l = 
       new ArrayList<Tuple2<EvaluationDataParams, EvaluationDataParams>>();
     l.add(new Tuple2<EvaluationDataParams, EvaluationDataParams>(
@@ -27,12 +27,12 @@ public class DataPreparator
     return l;
   }
 
-  public Integer jPrepareTraining(EvaluationDataParams params) {
+  public Integer prepareTraining(EvaluationDataParams params) {
     return new Integer(params.n);
   }
 
   public List<Tuple2<Integer, Integer>> 
-    jPrepareValidation(EvaluationDataParams params) {
+    prepareValidation(EvaluationDataParams params) {
     List<Tuple2<Integer, Integer>> l = 
       new ArrayList<Tuple2<Integer, Integer>>();
 
