@@ -21,6 +21,26 @@ extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, TD, F, A] {
   def prepare(sc: SparkContext, params: EDP): (TD, RDD[(F, A)])
 }
 
+
+abstract class SimpleLocalDataPreparator[
+    EDP <: BaseParams : Manifest, TD, F, A]
+extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, TD, F, A] {
+  override def prepareBase(sc: SparkContext, params: BaseParams)
+  : Map[Int, (EmptyParams, EmptyParams, TD, RDD[(F, A)])] = {
+    val (td, faSeq) = prepare(params.asInstanceOf[EDP])
+
+    val rdd = sc.parallelize(faSeq.toSeq)
+
+    Map(0 -> (EmptyParams(), EmptyParams(), td, rdd))
+  }
+
+  //def prepare(params: EDP): (TD, Seq[(F, A)])
+  def prepare(params: EDP): (TD, Iterable[(F, A)])
+}
+
+
+
+
 // Pass all data to the final stage
 abstract class SimpleValidator[VP <: BaseParams : Manifest, 
     F, P, A, CVR <: AnyRef]
