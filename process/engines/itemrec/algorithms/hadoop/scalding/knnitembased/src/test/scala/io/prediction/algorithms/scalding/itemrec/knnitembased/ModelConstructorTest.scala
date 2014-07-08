@@ -21,8 +21,8 @@ class ModelConstructorTest extends Specification with TupleConversions {
 
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None
-    val dbPort = None
+    val dbHost = Seq()
+    val dbPort = Seq()
     val hdfsRoot = "testroot/"
 
     val outputItemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet) }
@@ -72,7 +72,7 @@ class ModelConstructorTest extends Specification with TupleConversions {
   // i1    B |---------|E
   // i2       C|---------|
   // i3           |---------|
-  //               D        F G  
+  //               D        F G
 
   val tA = 123122
   val tB = 123123

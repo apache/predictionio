@@ -41,7 +41,7 @@ class U2ITrainingTestSplitTimePrep(args: Args) extends U2ITrainingTestSplitCommo
 
   // NOTE: sink to temporary hdfs first
   val u2iSink = U2iActions(appId = evalidArg,
-    dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost = None, dbPort = None)
+    dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost = Seq(), dbPort = Seq())
 
   val countSink = Tsv(U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, "u2iCount.tsv"))
 
@@ -87,18 +87,17 @@ class U2ITrainingTestSplitTimePrep(args: Args) extends U2ITrainingTestSplitCommo
       val newIid = replacePrefix(iid)
 
       /* TODO remove
-      // NOTE: add default value 0 for non-rate acitons to work around the optional v field issue 
-      //       (cascading-mongo tap can't take optional field yet). 
+      // NOTE: add default value 0 for non-rate acitons to work around the optional v field issue
+      //       (cascading-mongo tap can't take optional field yet).
       val newV = if (v == "") "0" else v */
 
       (newUid, newIid, v)
     }
 
-  selectedU2i.then(u2iSink.writeData('action, 'newUid, 'newIid, 't, 'newV, evalidArg) _) // NOTE: appid is replaced by evalid 
+  selectedU2i.then(u2iSink.writeData('action, 'newUid, 'newIid, 't, 'newV, evalidArg) _) // NOTE: appid is replaced by evalid
 
   // count number of u2i
   selectedU2i.groupAll(_.size('count))
     .write(countSink)
 
 }
-

@@ -20,7 +20,7 @@ import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.appdata.U2iActionsSource
 import io.prediction.commons.scalding.appdata.U2iActionsSource.FIELD_SYMBOLS
 
-class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) extends MongoSource(
+class MongoU2iActionsSource(db: String, hosts: Seq[String], ports: Seq[Int], appId: Int) extends MongoSource(
   db = db,
   coll = "u2iActions",
   cols = {
@@ -49,12 +49,12 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
   query = { // read query
     /*
       val builder = MongoDBObject.newBuilder
-      
+
       queryData foreach {
-        case (field, value) => 
+        case (field, value) =>
           builder += field -> value
       }
-      
+
       builder.result
       */
 
@@ -64,8 +64,8 @@ class MongoU2iActionsSource(db: String, host: String, port: Int, appId: Int) ext
 
     u2iQuery
   },
-  host = host, // String
-  port = port // Int
+  hosts = hosts, // String
+  ports = ports // Int
 ) with U2iActionsSource {
 
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL

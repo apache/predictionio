@@ -23,18 +23,18 @@ class ISMAPAtKDataPreparatorTest extends Specification with TupleConversions {
 
     val test_dbType = "file"
     val test_dbName = "testsetpath/"
-    val test_dbHost = None
-    val test_dbPort = None
+    val test_dbHost = Seq()
+    val test_dbPort = Seq()
 
     val training_dbType = "file"
     val training_dbName = "trainingsetpath/"
-    val training_dbHost = None
-    val training_dbPort = None
+    val training_dbHost = Seq()
+    val training_dbPort = Seq()
 
     val modeldata_dbType = "file"
     val modeldata_dbName = "modeldatapath/"
-    val modeldata_dbHost = None
-    val modeldata_dbPort = None
+    val modeldata_dbHost = Seq()
+    val modeldata_dbPort = Seq()
 
     val hdfsRoot = "testroot/"
 

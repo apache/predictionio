@@ -22,7 +22,7 @@ import io.prediction.commons.scalding.appdata.ItemsSource
 import io.prediction.commons.scalding.appdata.ItemsSource.FIELD_SYMBOLS
 import io.prediction.commons.appdata.{ Item }
 
-class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: Option[List[String]]) extends MongoSource(
+class MongoItemsSource(db: String, hosts: Seq[String], ports: Seq[Int], appid: Int, itypes: Option[List[String]]) extends MongoSource(
   db = db,
   coll = "items",
   cols = {
@@ -56,8 +56,8 @@ class MongoItemsSource(db: String, host: String, port: Int, appid: Int, itypes: 
 
     itemsQuery
   },
-  host = host, // String
-  port = port // Int
+  hosts = hosts, // String
+  ports = ports // Int
 ) with ItemsSource {
 
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL

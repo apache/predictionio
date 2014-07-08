@@ -27,8 +27,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None //Option("testhost")
-    val dbPort = None //Option(27017)
+    val dbHost = Seq() //Option("testhost")
+    val dbPort = Seq() //Option(27017)
     val hdfsRoot = "testroot/"
 
     JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator")
@@ -74,8 +74,8 @@ class DataPreparatorTest extends Specification with TupleConversions {
 
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None //Option("testhost")
-    val dbPort = None //Option(27017)
+    val dbHost = Seq() //Option("testhost")
+    val dbPort = Seq() //Option(27017)
     val hdfsRoot = "testroot/"
 
     JobTest("io.prediction.algorithms.scalding.itemsim.itemsimcf.DataPreparator")
@@ -183,7 +183,7 @@ class DataPreparatorTest extends Specification with TupleConversions {
   val test2U2i = List(
     (Rate, "u0", "i0", "123448", "3"),
     (Rate, "u0", "i0", "123449", "4"), // highest
-    (Rate, "u0", "i0", "123451", "2"), // latest 
+    (Rate, "u0", "i0", "123451", "2"), // latest
     (Rate, "u0", "i0", "123450", "1"), // lowest
 
     (Rate, "u0", "i1", "123456", "1"), // lowest

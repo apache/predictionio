@@ -14,7 +14,7 @@ import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.settings.OfflineEvalResultsSource
 import io.prediction.commons.scalding.settings.OfflineEvalResultsSource.FIELD_SYMBOLS
 
-class MongoOfflineEvalResultsSource(db: String, host: String, port: Int) extends MongoSource(
+class MongoOfflineEvalResultsSource(db: String, hosts: Seq[String], ports: Seq[Int]) extends MongoSource(
   db = db,
   coll = "offlineEvalResults",
   cols = {
@@ -42,8 +42,8 @@ class MongoOfflineEvalResultsSource(db: String, host: String, port: Int) extends
     offlineEvalResultsMappings
   },
   query = MongoDBObject(), // don't support read query
-  host = host,
-  port = port
+  hosts = hosts,
+  ports = ports
 ) with OfflineEvalResultsSource {
 
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL

@@ -16,7 +16,7 @@ import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.modeldata.ItemSimScoresSource
 import io.prediction.commons.scalding.modeldata.ItemSimScoresSource.FIELD_SYMBOLS
 
-class MongoItemSimScoresSource(db: String, host: String, port: Int, algoid: Int, modelset: Boolean) extends MongoSource(
+class MongoItemSimScoresSource(db: String, hosts: Seq[String], ports: Seq[Int], algoid: Int, modelset: Boolean) extends MongoSource(
   db = db,
   coll = s"algo_${algoid}_${modelset}",
   cols = {
@@ -44,8 +44,8 @@ class MongoItemSimScoresSource(db: String, host: String, port: Int, algoid: Int,
     itemSimScoreMappings
   },
   query = MongoDBObject(), // don't support read query
-  host = host, // String 
-  port = port // Int
+  hosts = hosts, // String
+  ports = ports // Int
 ) with ItemSimScoresSource {
 
   import com.twitter.scalding.Dsl._

@@ -53,18 +53,18 @@ class U2ITrainingTestSplit(args: Args) extends Job(args) {
    */
   val dbTypeArg = args("dbType")
   val dbNameArg = args("dbName")
-  val dbHostArg = args.optional("dbHost")
-  val dbPortArg = args.optional("dbPort") map (x => x.toInt)
+  val dbHostArg = args.list("dbHost")
+  val dbPortArg = args.list("dbPort") map (x => x.toInt)
 
   val training_dbTypeArg = args("training_dbType")
   val training_dbNameArg = args("training_dbName")
-  val training_dbHostArg = args.optional("training_dbHost")
-  val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt)
+  val training_dbHostArg = args.list("training_dbHost")
+  val training_dbPortArg = args.list("training_dbPort") map (x => x.toInt)
 
   val test_dbTypeArg = args("test_dbType")
   val test_dbNameArg = args("test_dbName")
-  val test_dbHostArg = args.optional("test_dbHost")
-  val test_dbPortArg = args.optional("test_dbPort") map (x => x.toInt)
+  val test_dbHostArg = args.list("test_dbHost")
+  val test_dbPortArg = args.list("test_dbPort") map (x => x.toInt)
 
   val appidArg = args("appid").toInt
   val engineidArg = args("engineid").toInt
@@ -137,10 +137,10 @@ class U2ITrainingTestSplit(args: Args) extends Job(args) {
     }
 
   selectedU2i.filter('randValue) { r: Int => (r < testsizeArg) }
-    .then(testU2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _) // NOTE: appid is repalced by evalid 
+    .then(testU2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _) // NOTE: appid is repalced by evalid
 
   selectedU2i.filter('randValue) { r: Int => ((r >= testsizeArg) && (r < totalSize)) }
-    .then(trainingU2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _) // NOTE: appid is repalced by evalid 
+    .then(trainingU2iSink.writeData('action, 'newUid, 'newIid, 't, 'v, evalidArg) _) // NOTE: appid is repalced by evalid
 
   items.mapTo('item -> 'item) { obj: Item =>
     val iid = obj.id

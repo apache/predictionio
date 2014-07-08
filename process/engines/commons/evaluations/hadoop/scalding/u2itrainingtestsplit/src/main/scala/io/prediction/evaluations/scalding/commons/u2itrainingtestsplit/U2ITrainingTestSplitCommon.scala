@@ -52,23 +52,23 @@ abstract class U2ITrainingTestSplitCommon(args: Args) extends Job(args) {
    */
   val dbTypeArg = args("dbType")
   val dbNameArg = args("dbName")
-  val dbHostArg = args.optional("dbHost")
-  val dbPortArg = args.optional("dbPort") map (x => x.toInt)
+  val dbHostArg = args.list("dbHost")
+  val dbPortArg = args.list("dbPort") map (x => x.toInt)
 
   val training_dbTypeArg = args("training_dbType")
   val training_dbNameArg = args("training_dbName")
-  val training_dbHostArg = args.optional("training_dbHost")
-  val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt)
+  val training_dbHostArg = args.list("training_dbHost")
+  val training_dbPortArg = args.list("training_dbPort") map (x => x.toInt)
 
   val validation_dbTypeArg = args("validation_dbType")
   val validation_dbNameArg = args("validation_dbName")
-  val validation_dbHostArg = args.optional("validation_dbHost")
-  val validation_dbPortArg = args.optional("validation_dbPort") map (x => x.toInt)
+  val validation_dbHostArg = args.list("validation_dbHost")
+  val validation_dbPortArg = args.list("validation_dbPort") map (x => x.toInt)
 
   val test_dbTypeArg = args("test_dbType")
   val test_dbNameArg = args("test_dbName")
-  val test_dbHostArg = args.optional("test_dbHost")
-  val test_dbPortArg = args.optional("test_dbPort") map (x => x.toInt)
+  val test_dbHostArg = args.list("test_dbHost")
+  val test_dbPortArg = args.list("test_dbPort") map (x => x.toInt)
 
   val hdfsRootArg = args("hdfsRoot")
 

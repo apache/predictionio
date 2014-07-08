@@ -52,7 +52,7 @@ class AlgoOutputSelectorSpec extends Specification {
   //"get itemsim output from a valid engine with an unsupported algorithm"    ! itemSimOutputSelectionUnsupportedAlgo(algoOutputSelector) ^
 
   val mongoDbName = "predictionio_algooutputselection_test"
-  val mongoDb = MongoConnection()(mongoDbName)
+  val mongoDb = MongoClient()(mongoDbName)
   val mongoEngines = new MongoEngines(mongoDb)
   val mongoAlgos = new MongoAlgos(mongoDb)
   val mongoItems = new MongoItems(mongoDb)

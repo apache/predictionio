@@ -13,14 +13,14 @@ object Users {
   /**
    * dbName: used as file path in dbType=="file"
    */
-  def apply(appId: Int, dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int]): UsersSource = {
+  def apply(appId: Int, dbType: String, dbName: String, dbHost: Seq[String], dbPort: Seq[Int]): UsersSource = {
     dbType match {
       case "file" => {
         new FileUsersSource(dbName, appId)
       }
       case "mongodb" => {
-        require(((dbHost != None) && (dbPort != None)), "Please specify host and port number for mongodb.")
-        new MongoUsersSource(dbName, dbHost.get, dbPort.get, appId)
+        require(((!dbHost.isEmpty) && (!dbPort.isEmpty)), "Please specify host and port number for mongodb.")
+        new MongoUsersSource(dbName, dbHost, dbPort, appId)
       }
       case _ => {
         throw new RuntimeException("Invalid Users database type: " + dbType)
@@ -35,14 +35,14 @@ object Items {
   /**
    * dbName: used as file path in dbType=="file"
    */
-  def apply(appId: Int, itypes: Option[List[String]], dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int]): ItemsSource = {
+  def apply(appId: Int, itypes: Option[List[String]], dbType: String, dbName: String, dbHost: Seq[String], dbPort: Seq[Int]): ItemsSource = {
     dbType match {
       case "file" => {
         new FileItemsSource(dbName, appId, itypes)
       }
       case "mongodb" => {
-        require(((dbHost != None) && (dbPort != None)), "Please specify host and port number for mongodb.")
-        new MongoItemsSource(dbName, dbHost.get, dbPort.get, appId, itypes)
+        require(((!dbHost.isEmpty) && (!dbPort.isEmpty)), "Please specify host and port number for mongodb.")
+        new MongoItemsSource(dbName, dbHost, dbPort, appId, itypes)
       }
       case _ => {
         throw new RuntimeException("Invalid Items database type: " + dbType)
@@ -57,18 +57,18 @@ object U2iActions {
   /**
    * dbName: used as file path in dbType=="file"
    */
-  def apply(appId: Int, dbType: String, dbName: String, dbHost: Option[String], dbPort: Option[Int]): U2iActionsSource = {
+  def apply(appId: Int, dbType: String, dbName: String, dbHost: Seq[String], dbPort: Seq[Int]): U2iActionsSource = {
     dbType match {
       case "file" => {
         new FileU2iActionsSource(dbName, appId)
       }
       case "mongodb" => {
-        require(((dbHost != None) && (dbPort != None)), "Please specify host and port number for mongodb.")
+        require(((!dbHost.isEmpty) && (!dbPort.isEmpty)), "Please specify host and port number for mongodb.")
         /*
         val opt = evalId.map(x => Map("evalid" -> x)).getOrElse(Map())
         val queryData = Map("appid" -> appId) ++ opt
         */
-        new MongoU2iActionsSource(dbName, dbHost.get, dbPort.get, appId)
+        new MongoU2iActionsSource(dbName, dbHost, dbPort, appId)
       }
       case _ => {
         throw new RuntimeException("Invalid U2iActions database type: " + dbType)

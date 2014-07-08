@@ -21,23 +21,23 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
 
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None
-    val dbPort = None
+    val dbHost = Seq()
+    val dbPort = Seq()
 
     val training_dbType = "file"
     val training_dbName = "trainingsetpath/"
-    val training_dbHost = None
-    val training_dbPort = None
+    val training_dbHost = Seq()
+    val training_dbPort = Seq()
 
     val validation_dbType = "file"
     val validation_dbName = "validationpath/"
-    val validation_dbHost = None
-    val validation_dbPort = None
+    val validation_dbHost = Seq()
+    val validation_dbPort = Seq()
 
     val test_dbType = "file"
     val test_dbName = "testsetpath/"
-    val test_dbHost = None
-    val test_dbPort = None
+    val test_dbHost = Seq()
+    val test_dbPort = Seq()
 
     val hdfsRoot = "testroot/"
 
@@ -89,7 +89,7 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
         }
       }
       .sink[(String, String, String, String, String)](U2iActions(appId = evalid,
-        dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost = None, dbPort = None).getSource) { outputBuffer =>
+        dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost = Seq(), dbPort = Seq()).getSource) { outputBuffer =>
         "correctly write u2iActions" in {
           outputBuffer must containTheSameElementsAs(selectedU2iActions)
         }
@@ -125,7 +125,7 @@ class U2ITrainingTestSplitTimeTest extends Specification with TupleConversions {
         .arg("timeorder", timeorder.toString)
         .arg("totalCount", originalCount.toString)
         .source(U2iActions(appId = evalid,
-          dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost = None, dbPort = None).getSource, selectedU2iActions)
+          dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRoot, appid, engineid, evalid, ""), dbHost = Seq(), dbPort = Seq()).getSource, selectedU2iActions)
         .sink[(String, String, String, String, String)](U2iActions(appId = evalid,
           dbType = training_dbType, dbName = training_dbName, dbHost = training_dbHost, dbPort = training_dbPort).getSource) { outputBuffer =>
           "generate training set" in {

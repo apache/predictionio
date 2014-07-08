@@ -9,14 +9,14 @@ import io.prediction.commons.appdata.{ Item, User }
 class ReadWrite(args: Args) extends Job(args) {
 
   val read_dbNameArg = args("read_dbName")
-  val read_dbHostArg = args("read_dbHost")
-  val read_dbPortArg = args("read_dbPort").toInt
+  val read_dbHostArg = args.list("read_dbHost")
+  val read_dbPortArg = args.list("read_dbPort").map(_.toInt)
 
   val read_appidArg = args("read_appid").toInt
 
   val write_dbNameArg = args("write_dbName")
-  val write_dbHostArg = args("write_dbHost")
-  val write_dbPortArg = args("write_dbPort").toInt
+  val write_dbHostArg = args.list("write_dbHost")
+  val write_dbPortArg = args.list("write_dbPort").map(_.toInt)
 
   val write_appidArg = args("write_appid").toInt
 

@@ -42,8 +42,8 @@ class RandomRankTest extends Specification with TupleConversions {
       .arg("numSimilarItems", numSimilarItems.toString)
       .arg("modelSet", modelSet.toString)
       .arg("recommendationTime", recommendationTime.toString)
-      .source(Items(appId = appid, itypes = Some(itypes), dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, items)
-      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
+      .source(Items(appId = appid, itypes = Some(itypes), dbType = training_dbType, dbName = training_dbName, dbHost = Seq(), dbPort = Seq()).getSource, items)
+      .sink[(String, String, String, String, Int, Boolean)](ItemSimScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = Seq(), dbPort = Seq(), algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
 
         def takeOutScores(d: List[(String, String, String, String, Int, Boolean)]) = {
           // don't check score and itypes.

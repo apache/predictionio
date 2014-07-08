@@ -22,7 +22,7 @@ import io.prediction.commons.scalding.appdata.UsersSource
 import io.prediction.commons.scalding.appdata.UsersSource.FIELD_SYMBOLS
 import io.prediction.commons.appdata.{ User }
 
-class MongoUsersSource(db: String, host: String, port: Int, appid: Int) extends MongoSource(
+class MongoUsersSource(db: String, hosts: Seq[String], ports: Seq[Int], appid: Int) extends MongoSource(
   db = db,
   coll = "users",
   cols = {
@@ -43,13 +43,13 @@ class MongoUsersSource(db: String, host: String, port: Int, appid: Int) extends 
 
     usersMappings
   },
-  query = { // read query 
+  query = { // read query
     val usersQuery = MongoDBObject("appid" -> appid)
 
     usersQuery
   },
-  host = host, // String
-  port = port // Int
+  hosts = hosts, // String
+  ports = ports // Int
 ) with UsersSource {
 
   import com.twitter.scalding.Dsl._ // get all the fancy implicit conversions that define the DSL
@@ -111,4 +111,3 @@ class MongoUsersSource(db: String, host: String, port: Int, appid: Int) extends 
   }
 
 }
-

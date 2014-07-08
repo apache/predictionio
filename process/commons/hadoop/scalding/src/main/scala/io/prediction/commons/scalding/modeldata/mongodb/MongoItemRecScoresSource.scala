@@ -15,7 +15,7 @@ import io.prediction.commons.scalding.MongoSource
 import io.prediction.commons.scalding.modeldata.ItemRecScoresSource
 import io.prediction.commons.scalding.modeldata.ItemRecScoresSource.FIELD_SYMBOLS
 
-class MongoItemRecScoresSource(db: String, host: String, port: Int, algoid: Int, modelset: Boolean) extends MongoSource(
+class MongoItemRecScoresSource(db: String, hosts: Seq[String], ports: Seq[Int], algoid: Int, modelset: Boolean) extends MongoSource(
   db = db,
   coll = s"algo_${algoid}_${modelset}",
   cols = {
@@ -41,8 +41,8 @@ class MongoItemRecScoresSource(db: String, host: String, port: Int, algoid: Int,
     itemRecScoreMappings
   },
   query = MongoDBObject(), // don't support read query
-  host = host, // String
-  port = port // Int
+  hosts = hosts, // String
+  ports = ports // Int
 ) with ItemRecScoresSource {
 
   import com.twitter.scalding.Dsl._

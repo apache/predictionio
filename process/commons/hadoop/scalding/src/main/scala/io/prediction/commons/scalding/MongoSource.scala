@@ -1,5 +1,7 @@
 package io.prediction.commons.scalding
 
+import scala.collection.JavaConversions._
+
 import com.twitter.scalding._
 
 import cascading.tap.Tap
@@ -18,13 +20,13 @@ import java.util.ArrayList
 import java.util.Map
 import java.util.HashMap
 
-case class MongoSource(db: String, coll: String, cols: List[String], mappings: Map[String, String], query: DBObject, host: String = "127.0.0.1", port: Int = 27017) extends Source {
+case class MongoSource(db: String, coll: String, cols: List[String], mappings: Map[String, String], query: DBObject = MongoDBObject(), hosts: Seq[String] = Seq("localhost"), ports: Seq[Int] = Seq(27017)) extends Source {
 
-  val mongoScheme = new MongoDBScheme(host, port, db, coll, cols, mappings, query)
+  val mongoScheme = new MongoDBScheme(hosts.toArray, ports.toArray.map(_.asInstanceOf[Integer]), db, coll, cols, mappings, query)
 
   // auxiliary constructor for no-query case
-  def this(db: String, coll: String, cols: List[String], mappings: Map[String, String], host: String = "127.0.0.1", port: Int = 27017) =
-    this(db, coll, cols, mappings, MongoDBObject(), host, port)
+  //def this(db: String, coll: String, cols: List[String], mappings: Map[String, String], hosts: Seq[String] = Seq("localhost"), ports: Seq[Int] = Seq(27017)) =
+  //  this(db, coll, cols, mappings, MongoDBObject(), hosts, ports)
 
   protected def castMongoTap(tap: MongoDBTap): Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]] = {
     tap.asInstanceOf[Tap[JobConf, RecordReader[_, _], OutputCollector[_, _]]]

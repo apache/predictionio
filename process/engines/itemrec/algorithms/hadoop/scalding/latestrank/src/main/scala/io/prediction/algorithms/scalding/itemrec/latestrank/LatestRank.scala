@@ -47,13 +47,13 @@ class LatestRank(args: Args) extends Job(args) {
    */
   val training_dbTypeArg = args("training_dbType")
   val training_dbNameArg = args("training_dbName")
-  val training_dbHostArg = args.optional("training_dbHost")
-  val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt)
+  val training_dbHostArg = args.list("training_dbHost")
+  val training_dbPortArg = args.list("training_dbPort") map (x => x.toInt)
 
   val modeldata_dbTypeArg = args("modeldata_dbType")
   val modeldata_dbNameArg = args("modeldata_dbName")
-  val modeldata_dbHostArg = args.optional("modeldata_dbHost")
-  val modeldata_dbPortArg = args.optional("modeldata_dbPort") map (x => x.toInt)
+  val modeldata_dbHostArg = args.list("modeldata_dbHost")
+  val modeldata_dbPortArg = args.list("modeldata_dbPort") map (x => x.toInt)
 
   val hdfsRootArg = args("hdfsRoot")
 

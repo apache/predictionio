@@ -52,8 +52,8 @@ class DataPreparator(args: Args) extends Job(args) {
    */
   val dbTypeArg = args("dbType")
   val dbNameArg = args("dbName")
-  val dbHostArg = args.optional("dbHost")
-  val dbPortArg = args.optional("dbPort") map (x => x.toInt) // becomes Option[Int]
+  val dbHostArg = args.list("dbHost")
+  val dbPortArg = args.list("dbPort") map (x => x.toInt) // becomes Option[Int]
 
   val hdfsRootArg = args("hdfsRoot")
 
@@ -80,7 +80,7 @@ class DataPreparator(args: Args) extends Job(args) {
   val dislikeParamArg: Option[Int] = getActionParam("dislikeParam")
   val conversionParamArg: Option[Int] = getActionParam("conversionParam")
 
-  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it, 
+  // When there are conflicting actions, e.g. a user gives an item a rating 5 but later dislikes it,
   // determine which action will be considered as final preference.
   final val CONFLICT_LATEST: String = "latest" // use latest action
   final val CONFLICT_HIGHEST: String = "highest" // use the one with highest score

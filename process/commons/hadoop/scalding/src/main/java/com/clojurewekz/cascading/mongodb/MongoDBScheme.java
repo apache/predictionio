@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import cascading.tuple.FieldsResolverException;
 import cascading.tuple.TupleEntry;
+import com.google.common.base.Joiner;
 import com.mongodb.MongoURI;
 import com.mongodb.hadoop.mapred.MongoOutputFormat;
 import com.mongodb.DBObject;
@@ -53,22 +54,26 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
   private DBObject query;
 
   // with default id, without query
-  public MongoDBScheme(String host, Integer port, String database, String collection, List<String> columnFieldNames, Map<String, String> fieldMappings) {
-    this(host, port, database, collection, "_id", columnFieldNames, fieldMappings);
+  public MongoDBScheme(String[] hosts, Integer[] ports, String database, String collection, List<String> columnFieldNames, Map<String, String> fieldMappings) {
+    this(hosts, ports, database, collection, "_id", columnFieldNames, fieldMappings);
   }
-  
+
   // with default id and query
-  public MongoDBScheme(String host, Integer port, String database, String collection, List<String> columnFieldNames, Map<String, String> fieldMappings, DBObject query) {
-	    this(host, port, database, collection, "_id", columnFieldNames, fieldMappings, query);
+  public MongoDBScheme(String[] hosts, Integer[] ports, String database, String collection, List<String> columnFieldNames, Map<String, String> fieldMappings, DBObject query) {
+    this(hosts, ports, database, collection, "_id", columnFieldNames, fieldMappings, query);
   }
 
   // without query
-  public MongoDBScheme(String host, Integer port, String database, String collection, String keyColumnName, List<String> columnFieldNames, Map<String, String> fieldMappings) {
-	  this(host, port, database, collection, keyColumnName, columnFieldNames, fieldMappings, new BasicDBObject());
+  public MongoDBScheme(String[] hosts, Integer[] ports, String database, String collection, String keyColumnName, List<String> columnFieldNames, Map<String, String> fieldMappings) {
+	  this(hosts, ports, database, collection, keyColumnName, columnFieldNames, fieldMappings, new BasicDBObject());
   }
-		  
-  public MongoDBScheme(String host, Integer port, String database, String collection, String keyColumnName, List<String> columnFieldNames, Map<String, String> fieldMappings, DBObject query) {
-    this.mongoUri = String.format("mongodb://%s:%d/%s.%s", host, port, database, collection);
+
+  public MongoDBScheme(String[] hosts, Integer[] ports, String database, String collection, String keyColumnName, List<String> columnFieldNames, Map<String, String> fieldMappings, DBObject query) {
+    String[] hostsAndPorts = new String[hosts.length];
+    for (int i = 0; i != hosts.length; i++) {
+      hostsAndPorts[i] = hosts[i] + ":" + ports[i];
+    }
+    this.mongoUri = String.format("mongodb://%s/%s.%s", Joiner.on(",").join(hostsAndPorts), database, collection);
     this.pathUUID = UUID.randomUUID().toString();
     this.columnFieldNames = columnFieldNames;
     this.fieldMappings = fieldMappings;
@@ -189,7 +194,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
 
     String keyFieldName = this.fieldMappings.get(this.keyColumnName);
     Object key;
-    
+
     // if fieldMappings doesn't have keyColumnName ("_id") field, then use new ObjectId() as key
     if (keyFieldName == null) {
 	key = null;
@@ -203,7 +208,7 @@ public class MongoDBScheme extends Scheme<JobConf, RecordReader, OutputCollector
     for (String columnFieldName : columnFieldNames) {
       String columnFieldMapping = fieldMappings.get(columnFieldName);
       Object tupleEntryValue = null;
-      
+
       try {
         if (columnFieldMapping != null) {
           // columnFieldMapping is null if no corresponding field name defined in Mappings.

@@ -48,8 +48,8 @@ class ParallelALSModelConstructor(args: Args) extends Job(args) {
    */
   val dbTypeArg = args("dbType")
   val dbNameArg = args("dbName")
-  val dbHostArg = args.optional("dbHost")
-  val dbPortArg = args.optional("dbPort") map (x => x.toInt)
+  val dbHostArg = args.list("dbHost")
+  val dbPortArg = args.list("dbPort") map (x => x.toInt)
 
   val hdfsRootArg = args("hdfsRoot")
 

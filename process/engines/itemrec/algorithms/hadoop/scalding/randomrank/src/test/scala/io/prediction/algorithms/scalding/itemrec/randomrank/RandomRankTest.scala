@@ -44,9 +44,9 @@ class RandomRankTest extends Specification with TupleConversions {
       .arg("modelSet", modelSet.toString)
       .arg("recommendationTime", recommendationTime.toString)
       .source(Items(appId = appid, itypes = Some(itypes),
-        dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, items)
+        dbType = training_dbType, dbName = training_dbName, dbHost = Seq(), dbPort = Seq()).getSource, items)
       .source(Users(appId = appid,
-        dbType = training_dbType, dbName = training_dbName, dbHost = None, dbPort = None).getSource, users)
+        dbType = training_dbType, dbName = training_dbName, dbHost = Seq(), dbPort = Seq()).getSource, users)
       /*
       .sink[(String, String)](Tsv(AlgoFile(hdfsRoot, appid, engineid, algoid, evalid, "itemRecScores.tsv"))) { outputBuffer =>
 
@@ -62,7 +62,7 @@ class RandomRankTest extends Specification with TupleConversions {
         }
 
       }*/
-      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = None, dbPort = None, algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
+      .sink[(String, String, String, String, Int, Boolean)](ItemRecScores(dbType = modeldata_dbType, dbName = modeldata_dbName, dbHost = Seq(), dbPort = Seq(), algoid = algoid, modelset = modelSet).getSource) { outputBuffer =>
 
         def takeOutScores(d: List[(String, String, String, String, Int, Boolean)]) = {
           // don't check score and itypes.

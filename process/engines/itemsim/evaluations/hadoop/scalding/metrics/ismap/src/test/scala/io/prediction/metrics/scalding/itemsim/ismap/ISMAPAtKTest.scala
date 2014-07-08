@@ -23,8 +23,8 @@ class ISMAPAtKTest extends Specification {
     meanAveragePrecision: Double) = {
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None
-    val dbPort = None
+    val dbHost = Seq()
+    val dbPort = Seq()
     val hdfsRoot = "testroot/"
 
     val appid = 20

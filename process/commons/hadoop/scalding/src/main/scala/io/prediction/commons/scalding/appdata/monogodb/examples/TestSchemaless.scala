@@ -8,8 +8,8 @@ import io.prediction.commons.appdata.{ Item, User }
 class TestSchemaless(args: Args) extends Job(args) {
 
   val read_dbNameArg = args("read_dbName")
-  val read_dbHostArg = args("read_dbHost")
-  val read_dbPortArg = args("read_dbPort").toInt
+  val read_dbHostArg = args.list("read_dbHost")
+  val read_dbPortArg = args.list("read_dbPort").map(_.toInt)
 
   val read_appidArg = args("read_appid").toInt
 

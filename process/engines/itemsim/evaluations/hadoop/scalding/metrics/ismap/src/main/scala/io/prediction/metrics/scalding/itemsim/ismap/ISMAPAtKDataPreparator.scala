@@ -64,18 +64,18 @@ import io.prediction.commons.scalding.appdata.U2iActions
 class ISMAPAtKDataPreparator(args: Args) extends Job(args) {
   val test_dbTypeArg = args("test_dbType")
   val test_dbNameArg = args("test_dbName")
-  val test_dbHostArg = args.optional("test_dbHost")
-  val test_dbPortArg = args.optional("test_dbPort") map (x => x.toInt)
+  val test_dbHostArg = args.list("test_dbHost")
+  val test_dbPortArg = args.list("test_dbPort") map (x => x.toInt)
 
   val training_dbTypeArg = args("training_dbType")
   val training_dbNameArg = args("training_dbName")
-  val training_dbHostArg = args.optional("training_dbHost")
-  val training_dbPortArg = args.optional("training_dbPort") map (x => x.toInt)
+  val training_dbHostArg = args.list("training_dbHost")
+  val training_dbPortArg = args.list("training_dbPort") map (x => x.toInt)
 
   val modeldata_dbTypeArg = args("modeldata_dbType")
   val modeldata_dbNameArg = args("modeldata_dbName")
-  val modeldata_dbHostArg = args.optional("modeldata_dbHost")
-  val modeldata_dbPortArg = args.optional("modeldata_dbPort") map (x => x.toInt)
+  val modeldata_dbHostArg = args.list("modeldata_dbHost")
+  val modeldata_dbPortArg = args.list("modeldata_dbPort") map (x => x.toInt)
 
   val hdfsRootArg = args("hdfsRoot")
 

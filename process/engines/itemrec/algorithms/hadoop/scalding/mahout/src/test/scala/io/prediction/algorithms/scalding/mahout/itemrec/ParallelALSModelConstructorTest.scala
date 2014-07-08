@@ -27,8 +27,8 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
 
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None
-    val dbPort = None
+    val dbHost = Seq()
+    val dbPort = Seq()
     val hdfsRoot = "testroot/"
 
     val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet) }
@@ -74,8 +74,8 @@ class ParallelALSModelConstructorTest extends Specification with TupleConversion
 
     val dbType = "file"
     val dbName = "testpath/"
-    val dbHost = None
-    val dbPort = None
+    val dbHost = Seq()
+    val dbPort = Seq()
     val hdfsRoot = "testroot/"
 
     val itemRecScores = output map { case (uid, iid, score, itypes) => (uid, iid, score, itypes, algoid, modelSet) }

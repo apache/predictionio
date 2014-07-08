@@ -39,7 +39,7 @@ class U2ITrainingTestSplitTime(args: Args) extends U2ITrainingTestSplitCommon(ar
 
   // data generated at prep stage
   val u2iSource = U2iActions(appId = evalidArg,
-    dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost = None, dbPort = None)
+    dbType = "file", dbName = U2ITrainingTestSplitFile(hdfsRootArg, appidArg, engineidArg, evalidArg, ""), dbHost = Seq(), dbPort = Seq())
 
   /**
    * sink

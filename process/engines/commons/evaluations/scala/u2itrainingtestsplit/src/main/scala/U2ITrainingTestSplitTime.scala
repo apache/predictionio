@@ -28,7 +28,7 @@ case class U2ITrainingTestSplitTimeConfig(
  *
  * --dbType: <string> appdata DB type
  * --dbName: <string>
- * --dbHost: <string>. optional. (eg. "127.0.0.1")
+ * --dbHost: <string>. optional. (eg. "localhost")
  * --dbPort: <int>. optional. (eg. 27017)
  *
  * --training_dbType: <string> training_appadta DB type

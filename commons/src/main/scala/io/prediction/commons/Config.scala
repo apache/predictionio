@@ -25,7 +25,11 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.settings.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.settings.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
@@ -36,7 +40,11 @@ class Config {
         config.getIntList("io.prediction.commons.settings.db.port").toSeq.
           map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.settings.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
@@ -84,7 +92,11 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.appdata.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.appdata.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
@@ -95,7 +107,11 @@ class Config {
         config.getIntList("io.prediction.commons.appdata.db.port").toSeq.
           map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.appdata.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
@@ -119,7 +135,11 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.appdata.training.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.appdata.training.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
@@ -130,7 +150,11 @@ class Config {
         config.getIntList("io.prediction.commons.appdata.training.db.port").toSeq.
           map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.appdata.training.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
@@ -154,7 +178,11 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.appdata.validation.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.appdata.validation.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
@@ -165,7 +193,11 @@ class Config {
         config.getIntList("io.prediction.commons.appdata.validation.db.port").
           toSeq.map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.appdata.validation.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
@@ -189,19 +221,26 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.appdata.test.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.appdata.test.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
   /** The database port that stores PredictionIO test appdata. */
   val appdataTestDbPort: Seq[Int] = appdataTestDbType match {
     case dbTypeMongoDb =>
-      try { config.getInt("") } catch { case _: Throwable => 27017 }
       try {
         config.getIntList("io.prediction.commons.appdata.test.db.port").toSeq.
           map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.appdata.test.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
@@ -225,7 +264,11 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.modeldata.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.modeldata.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
@@ -236,7 +279,11 @@ class Config {
         config.getIntList("io.prediction.commons.modeldata.db.port").toSeq.
           map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.modeldata.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
@@ -266,7 +313,11 @@ class Config {
       try {
         config.getStringList("io.prediction.commons.modeldata.training.db.host").toSeq
       } catch {
-        case _: Throwable => Seq("127.0.0.1")
+        case _: Throwable => try {
+          Seq(config.getString("io.prediction.commons.modeldata.training.db.host"))
+        } catch {
+          case _: Throwable => Seq("localhost")
+        }
       }
   }
 
@@ -277,7 +328,11 @@ class Config {
         config.getIntList("io.prediction.commons.modeldata.training.db.port").
           toSeq.map(_.toInt)
       } catch {
-        case _: Throwable => Seq(27017)
+        case _: Throwable => try {
+          Seq(config.getInt("io.prediction.commons.modeldata.training.db.port"))
+        } catch {
+          case _: Throwable => Seq(27017)
+        }
       }
   }
 
