@@ -1,7 +1,7 @@
 Running the Server
 ==================
 
-1. sbt/sbt "deploy/run <run ID>"
+1. sbt/sbt "deploy/run RunID"
 2. Go to http://localhost:8000
 3. Send POST request to http://localhost:8000
 
