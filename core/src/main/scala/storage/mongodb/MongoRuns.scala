@@ -1,11 +1,14 @@
-package io.prediction.storage
+package io.prediction.storage.mongodb
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 import com.github.nscala_time.time.Imports._
 
+import io.prediction.storage.{ Run, Runs }
+
 /** MongoDB implementation of Run. */
-class MongoRuns(db: MongoDB) extends Runs {
+class MongoRuns(client: MongoClient, dbname: String) extends Runs {
+  private val db = client(dbname)
   private val runColl = db("runs")
   private val seq = new MongoSequences(db)
 

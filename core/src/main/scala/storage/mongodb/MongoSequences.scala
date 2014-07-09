@@ -1,4 +1,4 @@
-package io.prediction.storage
+package io.prediction.storage.mongodb
 
 import com.github.nscala_time.time.Imports._
 import com.mongodb.casbah.Imports.MongoDB

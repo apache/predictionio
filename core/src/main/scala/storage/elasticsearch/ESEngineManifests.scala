@@ -1,4 +1,4 @@
-package io.prediction.storage
+package io.prediction.storage.elasticsearch
 
 import grizzled.slf4j.Logging
 import org.elasticsearch.ElasticsearchException
@@ -10,6 +10,8 @@ import org.json4s.native.Serialization.{ read, write }
 import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+
+import io.prediction.storage.{ EngineManifest, EngineManifests }
 
 class ESEngineManifests(client: Client, index: String) extends EngineManifests
     with Logging {

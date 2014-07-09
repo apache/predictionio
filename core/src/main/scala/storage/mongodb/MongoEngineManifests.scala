@@ -1,9 +1,12 @@
-package io.prediction.storage
+package io.prediction.storage.mongodb
 
 import com.mongodb.casbah.Imports._
 
+import io.prediction.storage.{ EngineManifest, EngineManifests }
+
 /** MongoDB implementation of EngineManifests. */
-class MongoEngineManifests(db: MongoDB) extends EngineManifests {
+class MongoEngineManifests(client: MongoClient, dbname: String) extends EngineManifests {
+  private val db = client(dbname)
   private val coll = db("engineManifests")
 
   private def dbObjToEngineManifest(dbObj: DBObject) = EngineManifest(

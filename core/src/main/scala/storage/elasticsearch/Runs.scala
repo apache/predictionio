@@ -1,4 +1,4 @@
-package io.prediction.storage
+package io.prediction.storage.elasticsearch
 
 import com.github.nscala_time.time.Imports._
 import com.google.common.io.BaseEncoding
@@ -14,6 +14,8 @@ import org.json4s.native.JsonMethods._
 import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+
+import io.prediction.storage.{ Run, Runs }
 
 class ESRuns(client: Client, index: String) extends Runs with Logging {
   implicit val formats = DefaultFormats ++ JodaTimeSerializers.all

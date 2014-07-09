@@ -1,6 +1,6 @@
-package io.prediction.storage
+package io.prediction.storage.mongodb
 
-import io.prediction.storage.MongoUtils.{
+import io.prediction.storage.mongodb.MongoUtils.{
   emptyObj,
   mongoDbListToListOfString,
   idWithAppid,
@@ -11,6 +11,8 @@ import io.prediction.storage.MongoUtils.{
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 import com.github.nscala_time.time.Imports._
+
+import io.prediction.storage.{ User, Users }
 
 /** MongoDB implementation of Users. */
 class MongoUsers(db: MongoDB) extends Users {

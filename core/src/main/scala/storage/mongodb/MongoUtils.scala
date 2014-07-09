@@ -1,4 +1,4 @@
-package io.prediction.storage
+package io.prediction.storage.mongodb
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
