@@ -4,6 +4,7 @@ import com.typesafe.config._
 import grizzled.slf4j.Logging
 
 import scala.collection.JavaConversions._
+import scala.language.existentials
 import scala.reflect.runtime.universe._
 
 /**
@@ -108,39 +109,66 @@ object Settings extends Logging {
       }
     ).toMap
 
-  private def getClient(
+  def getClient(
       clientConfig: StorageClientConfig,
-      pkg: String,
-      prefix: String = "io.prediction.storage"): BaseStorageClient = {
-    val className = if (prefix == "") pkg else prefix + "." + pkg +
-      ".StorageClient"
-    Class.forName(className).getConstructors()(0).newInstance(clientConfig).
-      asInstanceOf[BaseStorageClient]
+      pkg: String): BaseStorageClient = {
+    val className = "io.prediction.storage." + pkg + ".StorageClient"
+    try {
+      Class.forName(className).getConstructors()(0).newInstance(clientConfig).
+        asInstanceOf[BaseStorageClient]
+    } catch {
+      case e: ClassNotFoundException =>
+        val originalClassName = pkg + ".StorageClient"
+        Class.forName(originalClassName).getConstructors()(0).
+          newInstance(clientConfig).asInstanceOf[BaseStorageClient]
+    }
   }
 
-  private def getDataObject[T](
-      repo: String,
-      pkg: String = "io.prediction.storage")
-      (implicit tag: TypeTag[T]): T = {
+  def getDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoSource = repositoriesDatabase(repo)
-    val repoSourceType = repoSource.tag
-    val classPrefix = storageSources(repoSourceType).client.prefix
+    val repoSourceName = repoSource.tag
+    val repoSourceType = storageSources(repoSourceName).tag
+    val classPrefix = storageSources(repoSourceName).client.prefix
     val originalClassName = tag.tpe.toString.split('.')
-    // below is an attempt to use relative package namespace
-    val className = pkg +
-      (if (pkg == "") ""  else ".") +
-      repoSourceType + "." + classPrefix + originalClassName.last
+    val rawClassName = repoSourceType + "." + classPrefix +
+      originalClassName.last
+    val className = "io.prediction.storage." + rawClassName
+    val clazz = try {
+      Class.forName(className)
+    } catch {
+      case e: ClassNotFoundException => Class.forName(rawClassName)
+    }
+    val constructor = clazz.getConstructors()(0)
     try {
-      Class.forName(className).getConstructors()(0).
-        newInstance(repoSource.stuff: _*).asInstanceOf[T]
+      constructor.newInstance(repoSource.stuff: _*).asInstanceOf[T]
     } catch {
       case e: IllegalArgumentException =>
-        error(s"Unable to instantiate data object with class ${className}." +
-          s" Config keys: ${repoSource}." +
+        error(
+          "Unable to instantiate data object with class '" +
+          constructor.getDeclaringClass.getName + " because its constructor" +
+          " does not have the right number of arguments." +
+          " Number of required constructor arguments: " +
+          repoSource.stuff.size + "." +
+          " Number of existing constructor arguments: " +
+          constructor.getParameterTypes.size + "." +
+          s" Storage source name: ${repoSource.tag}." +
           s" Exception message: ${e.getMessage}).")
         errors += 1
         throw e
     }
+  }
+
+  private def handleIllegalArgumentException(
+      e: IllegalArgumentException,
+      className: String,
+      repoSource: Tagged) = {
+    error(s"Unable to instantiate data object with class '${className}'" +
+      s" because its constructor does not have the right number of arguments." +
+      s" Number of required arguments: ${repoSource.stuff.size}." +
+      s" Source name: ${repoSource.tag}." +
+      s" Exception message: ${e.getMessage}).")
+    errors += 1
+    throw e
   }
 
   /** The base directory of PredictionIO deployment/repository. */
