@@ -1,6 +1,6 @@
 package io.prediction.engines.stock
 
-import io.prediction.storage.Settings
+import io.prediction.storage.Storage
 import io.prediction.storage.{ ItemTrend, ItemTrends }
 import io.prediction.PIOSettings
 
@@ -28,7 +28,7 @@ import com.twitter.chill.MeatLocker
 
 object StockEvaluator extends EvaluatorFactory {
   // Use singleton class here to avoid re-registering hooks in config.
-  val itemTrendsDb = Settings.getAppdataItemTrends()
+  val itemTrendsDb = Storage.getAppdataItemTrends()
 
   def apply() = {
     //new LocalEvaluator(

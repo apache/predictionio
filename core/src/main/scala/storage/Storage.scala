@@ -13,7 +13,7 @@ import scala.reflect.runtime.universe._
  * This class ensures its users that the configuration is free of error, and
  * provides default values as necessary.
  */
-object Settings extends Logging {
+object Storage extends Logging {
   private val config: Config = try {
     ConfigFactory.load()
   } catch {

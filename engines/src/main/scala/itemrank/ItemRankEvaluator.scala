@@ -4,7 +4,7 @@ import io.prediction.{ EvaluatorFactory }
 //import io.prediction.core.AbstractEvaluator
 import io.prediction.core.BaseEvaluator
 //import io.prediction.core.LoalDataPreparator
-import io.prediction.storage.Settings
+import io.prediction.storage.Storage
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 import io.prediction.EmptyParams
 //import io.prediction.EmptyData
@@ -19,10 +19,10 @@ import scala.math.BigDecimal
 
 object ItemRankEvaluator extends EvaluatorFactory {
 
-  val usersDb = Settings.getAppdataUsers()
-  val itemsDb = Settings.getAppdataItems()
-  val u2iDb = Settings.getAppdataU2IActions()
-  val itemSetsDb = Settings.getAppdataItemSets()
+  val usersDb = Storage.getAppdataUsers()
+  val itemsDb = Storage.getAppdataItems()
+  val u2iDb = Storage.getAppdataU2IActions()
+  val itemSetsDb = Storage.getAppdataItemSets()
 
   def apply() = {
     new BaseEvaluator(

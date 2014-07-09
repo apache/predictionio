@@ -11,7 +11,7 @@ import io.prediction.{
   BaseServerParams
 }
 */
-import io.prediction.storage.Settings
+import io.prediction.storage.Storage
 import io.prediction.storage.Run
 //import io.prediction.workflow.EvaluationWorkflow
 import io.prediction.workflow.SparkWorkflow
@@ -211,7 +211,7 @@ object CreateEvaluationWorkflow extends Logging {
     info(algoParamSet)
 
     //val config = new Config
-    val runs = Settings.getSettingsRuns
+    val runs = Storage.getSettingsRuns
 
     // FIXME. Use SparkWorkflow
     //val evalWorkflow1 = EvaluationWorkflow(

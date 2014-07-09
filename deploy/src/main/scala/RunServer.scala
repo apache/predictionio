@@ -3,7 +3,7 @@ package io.prediction.deploy
 import io.prediction.EngineFactory
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServer
-import io.prediction.storage.{ Settings, EngineManifest, Run }
+import io.prediction.storage.{ Storage, EngineManifest, Run }
 
 import com.twitter.chill.KryoInjection
 import com.twitter.chill.ScalaKryoInstantiator
@@ -77,8 +77,8 @@ object RunServer extends Logging {
     }
 
     parser.parse(args, Args()) map { parsed =>
-      val runs = Settings.getSettingsRuns
-      val engineManifests = Settings.getSettingsEngineManifests
+      val runs = Storage.getSettingsRuns
+      val engineManifests = Storage.getSettingsEngineManifests
       runs.get(parsed.run) map { run =>
         val engineId = if (parsed.id != "") parsed.id else run.engineManifestId
         val engineVersion = if (parsed.version != "") parsed.version else run.engineManifestVersion

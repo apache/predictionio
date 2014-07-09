@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.storage.Settings
+import io.prediction.storage.Storage
 import io.prediction.storage.{ User, Item, U2IAction, ItemSet }
 
 import scala.util.Random
@@ -12,10 +12,10 @@ object CreateSampleData {
   val logger = Logger(CreateSampleData.getClass)
   val rand = new Random(0) // random with seed
 
-  val usersDb = Settings.getAppdataUsers
-  val itemsDb = Settings.getAppdataItems
-  val u2iDb = Settings.getAppdataU2IActions
-  val itemSetsDb = Settings.getAppdataItemSets
+  val usersDb = Storage.getAppdataUsers
+  val itemsDb = Storage.getAppdataItems
+  val u2iDb = Storage.getAppdataU2IActions
+  val itemSetsDb = Storage.getAppdataItemSets
 
   def createSampleData(appid: Int, days: Int) = {
 

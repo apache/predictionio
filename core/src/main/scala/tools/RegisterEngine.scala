@@ -6,7 +6,7 @@ import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
-import io.prediction.storage.Settings
+import io.prediction.storage.Storage
 import io.prediction.storage.EngineManifest
 
 object RegisterEngine extends Logging {
@@ -24,7 +24,7 @@ object RegisterEngine extends Logging {
       val jsonString = Source.fromFile(config.jsonManifest).mkString
       val engineManifest = parse(jsonString).extract[EngineManifest]
       info(s"Registering engine ${engineManifest.id} ${engineManifest.version}")
-      val engineManifests = Settings.getSettingsEngineManifests
+      val engineManifests = Storage.getSettingsEngineManifests
       engineManifests.update(engineManifest, true)
     }
   }
