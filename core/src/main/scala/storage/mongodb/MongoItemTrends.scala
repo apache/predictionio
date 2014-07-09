@@ -19,8 +19,11 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.storage.{ ItemTrend, ItemTrends }
 
 /** MongoDB implementation of ItemTrends. */
-class MongoItemTrends(db: MongoDB) extends ItemTrends {
+class MongoItemTrends(client: MongoClient, dbName: String) extends ItemTrends {
+  private val db = client(dbName)
   private val itemColl = db("itemTrends")
+
+  RegisterJodaTimeConversionHelpers()
 
   def insert(itemTrend: ItemTrend) = {
     val itemTrendObj = getIdDbObj(itemTrend.appid, itemTrend.id) ++

@@ -4,8 +4,6 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 
 object MongoUtils {
-  RegisterJodaTimeConversionHelpers()
-
   /** Empty MongoDBObject. */
   val emptyObj = MongoDBObject()
 

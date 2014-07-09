@@ -15,9 +15,12 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.storage.{ User, Users }
 
 /** MongoDB implementation of Users. */
-class MongoUsers(db: MongoDB) extends Users {
+class MongoUsers(client: MongoClient, dbName: String) extends Users {
+  private val db = client(dbName)
   private val emptyObj = MongoDBObject()
   private val userColl = db("users")
+
+  RegisterJodaTimeConversionHelpers()
 
   def insert(user: User) = {
     val id = MongoDBObject("_id" -> idWithAppid(user.appid, user.id))

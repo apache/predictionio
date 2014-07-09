@@ -12,8 +12,11 @@ import com.github.nscala_time.time.Imports._
 
 import io.prediction.storage.{ ItemSet, ItemSets }
 
-class MongoItemSets(db: MongoDB) extends ItemSets {
+class MongoItemSets(client: MongoClient, dbName: String) extends ItemSets {
+  private val db = client(dbName)
   private val itemSetColl = db("itemSets")
+
+  RegisterJodaTimeConversionHelpers()
 
   private def dbObjToItemSet(dbObj: DBObject) = {
     val appid = dbObj.as[Int]("appid")

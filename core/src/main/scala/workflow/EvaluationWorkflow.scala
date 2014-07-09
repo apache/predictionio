@@ -335,17 +335,18 @@ object EvaluationWorkflowImpl {
       }}
     }
 
-    /*
-    val models = evalAlgoModelMap.values.toArray.map { rdd =>
-      rdd.collect.map { p =>
-        p._2
+    val models = evalAlgoModelMap.values.toArray.map { e =>
+      e.map { m =>
+        m._2 match {
+          case rdd: RDD[_] => rdd.collect.head
+          case ppm: PersistentParallelModel[_] => ppm.save("foobar")
+        }
       }.toArray
     }
-    */
 
     // FIXME(yipjustin): Deployment uses this trained model. But we have to
     // handle two cases where the model is local / RDD. Fix later.
-    val models = Array(Array[Any]())
+    //val models = Array(Array[Any]())
 
     val server = baseEngine.serverClass.newInstance
     server.initBase(serverParams)

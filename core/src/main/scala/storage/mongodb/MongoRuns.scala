@@ -12,6 +12,8 @@ class MongoRuns(client: MongoClient, dbname: String) extends Runs {
   private val runColl = db("runs")
   private val seq = new MongoSequences(db)
 
+  RegisterJodaTimeConversionHelpers()
+
   def insert(run: Run): String = {
     val sn = seq.genNextDaily("run")
     val now = DateTime.now

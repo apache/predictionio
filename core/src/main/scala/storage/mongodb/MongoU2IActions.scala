@@ -15,9 +15,12 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.storage.{ U2IAction, U2IActions }
 
 /** MongoDB implementation of Items. */
-class MongoU2IActions(db: MongoDB) extends U2IActions {
+class MongoU2IActions(client: MongoClient, dbName: String) extends U2IActions {
+  private val db = client(dbName)
   private val emptyObj = MongoDBObject()
   private val u2iActionColl = db("u2iActions")
+
+  RegisterJodaTimeConversionHelpers()
 
   def insert(u2iAction: U2IAction) = {
     val appid = MongoDBObject("appid" -> u2iAction.appid)

@@ -13,8 +13,8 @@ import io.prediction.{
 */
 import io.prediction.storage.Storage
 import io.prediction.storage.Run
-//import io.prediction.workflow.EvaluationWorkflow
-import io.prediction.workflow.SparkWorkflow
+import io.prediction.workflow.EvaluationWorkflow
+//import io.prediction.workflow.SparkWorkflow
 //import io.prediction.storage.Config
 //import io.prediction.storage.EngineManifest
 
@@ -216,7 +216,7 @@ object CreateEvaluationWorkflow extends Logging {
     // FIXME. Use SparkWorkflow
     //val evalWorkflow1 = EvaluationWorkflow(
     val starttime = DateTime.now
-    val evalWorkflow1 = SparkWorkflow.run(
+    val evalWorkflow1 = EvaluationWorkflow.run(
       arg.get.batch,  // Batch Name
       dataPrepParams,
       validatorParams,

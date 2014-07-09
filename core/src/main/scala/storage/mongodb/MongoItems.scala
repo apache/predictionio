@@ -15,8 +15,11 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.storage.{ Item, Items }
 
 /** MongoDB implementation of Items. */
-class MongoItems(db: MongoDB) extends Items {
+class MongoItems(client: MongoClient, dbName: String) extends Items {
+  private val db = client(dbName)
   private val itemColl = db("items")
+
+  RegisterJodaTimeConversionHelpers()
 
   /** Indices and hints. */
   val starttimeIndex = MongoDBObject("starttime" -> -1)
