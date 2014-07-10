@@ -129,6 +129,9 @@ object RunJava {
     val server = new regression.Server()
     val sp = EmptyParams()
 
+    val validator = new regression.Validator()
+    val vp = EmptyParams()
+
     DebugWorkflow.run(
       dataPrep = dp, 
       evalDataParams = edp,
@@ -138,6 +141,8 @@ object RunJava {
       algoParamsList = algoParamsList,
       server = server,
       serverParams = sp,
+      validator = validator,
+      validatorParams = vp,
       batch = "Java Workflow"
     )
   }

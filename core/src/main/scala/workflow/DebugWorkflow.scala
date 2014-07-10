@@ -53,6 +53,7 @@ object DebugWorkflow {
   // Probably CP, AP, SP don't require Manifest
   def run[
       EDP <: BaseParams : Manifest,
+      VP <: BaseParams : Manifest,
       TDP <: BaseParams : Manifest,
       VDP <: BaseParams : Manifest,
       CP <: BaseParams: Manifest,
@@ -63,16 +64,21 @@ object DebugWorkflow {
       A: Manifest,
       CD: Manifest,
       M: Manifest,
-      P: Manifest] (
+      P: Manifest,
+      VU : Manifest,
+      VR : Manifest,
+      CVR <: AnyRef : Manifest](
     batch: String = "",
     dataPrep: BaseDataPreparator[EDP, TDP, VDP, TD, F, A] = null,
     cleanser: BaseCleanser[TD, CD, CP] = null,
     algoMap: Map[String, BaseAlgorithm[CD, F, P, _, _ <: BaseParams]] = null,
     server: BaseServer[F, P, SP] = null,
+    validator: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] = null,
     evalDataParams: BaseParams = null,
     cleanserParams: BaseParams = null,
     algoParamsList: Seq[(String, BaseParams)] = null,
-    serverParams: BaseParams = null
+    serverParams: BaseParams = null,
+    validatorParams: BaseParams = null
   ) {
     
     println("DebugWorkflow.run")
@@ -201,6 +207,52 @@ object DebugWorkflow {
       }}
 
     }}
+    
+    if (validator == null) {
+      println("Validator is null. Stop here")
+      return
+    }
+    
+    // Validation Unit
+    //val validator = baseEvaluator.validatorClass.newInstance
+    validator.initBase(validatorParams)
+
+    val evalValidationUnitMap: Map[Int, RDD[VU]] =
+      evalPredictionMap.mapValues(_.map(validator.validateBase))
+
+    evalValidationUnitMap.foreach{ case(i, e) => {
+      println(s"ValidationUnit: i=$i e=$e")
+    }}
+    
+    // Validation Set
+    val validatorWrapper = new ValidatorWrapper(validator)
+
+    val evalValidationResultsMap
+    : Map[EI, RDD[((TDP, VDP), VR)]] = evalValidationUnitMap
+    .map{ case (ei, validationUnits) => {
+      val validationResults
+      : RDD[((TDP, VDP), VR)] = validationUnits
+        .coalesce(numPartitions=1)
+        .glom()
+        .map(e => (localParamsSet(ei), e.toIterable))
+        .map(validatorWrapper.validateSet)
+
+      (ei, validationResults)
+    }}
+
+    evalValidationResultsMap.foreach{ case(ei, e) => {
+      println(s"ValidationResults $ei $e")
+    }}
+
+    val crossValidationResults: RDD[CVR] = sc
+      .union(evalValidationResultsMap.values.toSeq)
+      .coalesce(numPartitions=1)
+      .glom()
+      .map(validatorWrapper.crossValidate)
+
+    val cvOutput: Array[CVR] = crossValidationResults.collect
+
+    cvOutput foreach { println }
     
     println("DebugWorkflow.run completed.")
 

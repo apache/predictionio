@@ -120,7 +120,7 @@ abstract class SparkDataPreparator[
     TD : Manifest, F, A]
   extends SlicedDataPreparator[EDP, TDP, VDP, TD, F, A] {
   
-    def getParamsSetBase(params: EDP): Iterable[(TDP, VDP)] = getParamsSet(params)
+  def getParamsSetBase(params: EDP): Iterable[(TDP, VDP)] = getParamsSet(params)
   
   def getParamsSet(params: EDP): Iterable[(TDP, VDP)] 
 

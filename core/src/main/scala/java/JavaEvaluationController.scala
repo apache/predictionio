@@ -3,6 +3,7 @@ package io.prediction.java
 import io.prediction.core.LocalDataPreparator
 import io.prediction.core.SlicedDataPreparator
 import io.prediction.core.BaseDataPreparator
+import io.prediction.core.BaseValidator
 import io.prediction.BaseParams
 import java.util.{ List => JList }
 import java.lang.{ Iterable => JIterable }
@@ -70,7 +71,44 @@ abstract class JavaSimpleLocalDataPreparator[
 }
 
 
-//abstract class
+abstract class JavaValidator[
+    VP <: BaseParams,
+    TDP <: BaseParams,
+    VDP <: BaseParams,
+    F, P, A, VU, VR, CVR <: AnyRef]
+  extends BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]()(
+    JavaUtils.fakeManifest[VP]) {
+  
+  def validateBase(input: (F, P, A)): VU = {
+    validate(input._1, input._2, input._3)
+  }
+ 
+  def validate(feature: F, predicted: P, actual: A): VU
+
+  def validateSetBase(
+    trainingDataParams: TDP,
+    validationDataParams: VDP,
+    validationUnits: Seq[VU]): VR = {
+    validateSet(
+      trainingDataParams,
+      validationDataParams,
+      validationUnits)
+  }
+
+  def validateSet(
+    trainingDataParams: TDP,
+    validationDataParams: VDP,
+    validationUnits: JIterable[VU]): VR
+
+  def crossValidateBase(
+    input: Seq[(TDP, VDP, VR)]): CVR = {
+    crossValidate(input)
+  }
+
+  def crossValidate(validateResultsSeq: JIterable[Tuple3[TDP, VDP, VR]]): CVR
+  
+
+}
 
 
 
