@@ -1,0 +1,12 @@
+{
+  "id": "io.prediction.engines.recommendations",
+  "version": "0.8.0-SNAPSHOT",
+  "name": "Item Recommendations",
+  "jars": [
+    "../engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar",
+    "../core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar",
+    "../engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar"
+  ],
+  "engineFactory": "io.prediction.engines.recommendations.RecommendationsEngine",
+  "evaluatorFactory": "io.prediction.engines.recommendations.RecommendationsEvaluator"
+}

@@ -340,6 +340,7 @@ object EvaluationWorkflowImpl {
         m._2 match {
           case rdd: RDD[_] => rdd.collect.head
           case ppm: PersistentParallelModel[_] => ppm.save("foobar")
+          case _ => Unit
         }
       }.toArray
     }
