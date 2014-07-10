@@ -25,11 +25,11 @@ In each day (or other time unit), there is a list of items to be shown to users 
 Import Sample data
 ==================
 
-## Start Mongo
+Start Mongo:
 
 	$ mongod
 
-## Run
+At project root directory (**Imagine/**):
 
 	$ sbt/sbt "engines/runMain io.prediction.engines.itemrank.CreateSampleData"
 
@@ -38,5 +38,16 @@ By default, it imports data into mongo with appid=1 and create 30 days of sample
 
 For example, to import to appid=4 with 90 days of data:
 
-	$ sbt/sbt "engines/run io.prediction.engines.itemrank.CreateSampleData --appid 4 --days 90"
+	$ sbt/sbt "engines/runMain io.prediction.engines.itemrank.CreateSampleData --appid 4 --days 90"
+
+
+Run Evaluation
+==============
+
+At project root directory (**Image/**):
+
+	$ sbt/sbt package
+	$ sbt/sbt engines/assemblyPackageDependency
+	$ sbt/sbt "core/runMain io.prediction.tools.RegisterEngine ../engines/src/main/scala/itemrank/examples/manifest.json"
+	$ sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples"
 
