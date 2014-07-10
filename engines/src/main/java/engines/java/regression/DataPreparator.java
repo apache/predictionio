@@ -52,7 +52,8 @@ public class DataPreparator
     List<Tuple2<Double[], Double>> faList = 
       new ArrayList<Tuple2<Double[], Double>>();
 
-    for (int i = 0; i < n; i++) {
+    //for (int i = 0; i < n; i++) {
+    for (int i = 0; i < 10; i++) {
       faList.add(new Tuple2<Double[], Double>(x[i], y[i]));
     }
 

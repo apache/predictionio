@@ -6,10 +6,15 @@ import io.prediction.EmptyParams;
 // This cleanser is just a proof-of-concept.
 // It remove the second half of the input data
 public class Cleanser
-  extends JavaLocalCleanser<TrainingData, TrainingData, EmptyParams> {
+  extends JavaLocalCleanser<TrainingData, TrainingData, CleanserParams> {
+  // Training only with the first r-faction of data.
+  private double r = 1.0;
+  public void init(CleanserParams cp) {
+    r = cp.r;
+  }
 
   public TrainingData cleanse(TrainingData td) {
-    int n = td.r / 2;
+    int n = (int) (td.r * r);
 
     Double[][] x = new Double[n][td.c];
     Double[] y = new Double[n];

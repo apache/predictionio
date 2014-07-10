@@ -16,6 +16,7 @@ import io.prediction.engines.java.test.DataPreparator
 import io.prediction.engines.java.test.EvaluationDataParams
 
 import io.prediction.engines.java.regression
+import io.prediction.DefaultServer
 
 import io.prediction.workflow.DebugWorkflow;
 
@@ -111,18 +112,32 @@ object RunJava {
     val dp = new regression.DataPreparator()
 
     val c = new regression.Cleanser()
-    val cp = EmptyParams()
+    val cp = new regression.CleanserParams(0.8)
     
     val algo = new regression.Algo()
-    val ap = EmptyParams()
+    val ep = EmptyParams()
+
+    val dummyAlgo = new regression.DummyAlgo()
+
+    val algoMap = Map(
+      "" -> algo,
+      "dummy" -> dummyAlgo)
+    val algoParamsList = Seq(
+      ("", ep),
+      ("dummy", ep))
+
+    val server = new regression.Server()
+    val sp = EmptyParams()
 
     DebugWorkflow.run(
       dataPrep = dp, 
       evalDataParams = edp,
       cleanser = c,
       cleanserParams = cp,
-      algo = algo,
-      algoParams = ap,
+      algoMap = algoMap,
+      algoParamsList = algoParamsList,
+      server = server,
+      serverParams = sp,
       batch = "Java Workflow"
     )
   }

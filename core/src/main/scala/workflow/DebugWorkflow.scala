@@ -35,35 +35,29 @@ object WorkflowContext {
 }
 
 object DebugWorkflow {
-  type EI = Int  // Evaluation Index
-  type AI = Int  // Algorithm Index
-  type FI = Long // Feature Index
-
   def debugString[D](data: D): String = {
     val s: String = data match {
       case rdd: RDD[_] => {
-        //println("RDD[_]")
         debugString(rdd.collect)
       }
       case array: Array[_] => {
-        //println("Array[_]")
         "[" + array.map(debugString).mkString(",") + "]"
       }
       case d: AnyRef => {
-        //println("AnyRef")
         d.toString
       }
     }
     s
-    //println(s)
   }
 
+  // Probably CP, AP, SP don't require Manifest
   def run[
       EDP <: BaseParams : Manifest,
       TDP <: BaseParams : Manifest,
       VDP <: BaseParams : Manifest,
       CP <: BaseParams: Manifest,
       AP <: BaseParams: Manifest,
+      SP <: BaseParams: Manifest,
       TD: Manifest, 
       F: Manifest,
       A: Manifest,
@@ -73,10 +67,12 @@ object DebugWorkflow {
     batch: String = "",
     dataPrep: BaseDataPreparator[EDP, TDP, VDP, TD, F, A] = null,
     cleanser: BaseCleanser[TD, CD, CP] = null,
-    algo: BaseAlgorithm[CD, F, P, _, _ <: BaseParams] = null,
+    algoMap: Map[String, BaseAlgorithm[CD, F, P, _, _ <: BaseParams]] = null,
+    server: BaseServer[F, P, SP] = null,
     evalDataParams: BaseParams = null,
     cleanserParams: BaseParams = null,
-    algoParams: BaseParams = null
+    algoParamsList: Seq[(String, BaseParams)] = null,
+    serverParams: BaseParams = null
   ) {
     
     println("DebugWorkflow.run")
@@ -127,15 +123,15 @@ object DebugWorkflow {
       println(debugString(cd))
     }}
 
-    if (algo == null) {
+    if (algoMap == null) {
       println("Algo is null. Stop here")
       return
     }
 
-    println("Algo")
+    println("Algo model construction")
     // fake algo map.
-    val algoMap = Map("" -> algo)
-    val algoParamsList = Seq(("", algoParams))
+    //val algoMap = Map("" -> algo)
+    //val algoParamsList = Seq(("", algoParams))
 
     // Instantiate algos
     val algoInstanceList: Array[BaseAlgorithm[CD, F, P, _, _]] = 
@@ -175,6 +171,36 @@ object DebugWorkflow {
       }}
     }}
 
+    if (server == null) {
+      println("Server is null. Stop here")
+      return
+    }
+
+    println("Algo prediction")
+
+    val evalPredictionMap
+    : Map[EI, RDD[(F, P, A)]] = evalDataMap.map { case (ei, data) => {
+      val validationData: RDD[(F, A)] = data._2
+      val algoModel: Seq[Any] = evalAlgoModelMap(ei)
+        .sortBy(_._1)
+        .map(_._2)
+
+      val algoServerWrapper = new AlgoServerWrapper[F, P, A, CD](
+        algoInstanceList, server, skipOpt = true, verbose = true)
+      (ei, algoServerWrapper.predict[F, P, A](algoModel, validationData))
+    }}
+    .toMap
+
+    evalPredictionMap.foreach{ case(ei, fpaRdd) => {
+      println(s"Prediction $ei $fpaRdd")
+      fpaRdd.collect.foreach{ case(f, p, a) => {
+        val fs = debugString(f)
+        val ps = debugString(p)
+        val as = debugString(a)
+        println(s"F: $fs P: $ps A: $as")
+      }}
+
+    }}
     
     println("DebugWorkflow.run completed.")
 
