@@ -39,14 +39,23 @@ object DebugWorkflow {
   type AI = Int  // Algorithm Index
   type FI = Long // Feature Index
 
-  def pprint[TD](td: TD) {
-    val s: String = td match {
+  def debugString[D](data: D): String = {
+    val s: String = data match {
       case rdd: RDD[_] => {
-        rdd.collect.map(_.toString).mkString 
+        //println("RDD[_]")
+        debugString(rdd.collect)
       }
-      case d: AnyRef => d.toString
+      case array: Array[_] => {
+        //println("Array[_]")
+        "[" + array.map(debugString).mkString(",") + "]"
+      }
+      case d: AnyRef => {
+        //println("AnyRef")
+        d.toString
+      }
     }
-    println(s)
+    s
+    //println(s)
   }
 
   def run[
@@ -54,15 +63,20 @@ object DebugWorkflow {
       TDP <: BaseParams : Manifest,
       VDP <: BaseParams : Manifest,
       CP <: BaseParams: Manifest,
+      AP <: BaseParams: Manifest,
       TD: Manifest, 
       F: Manifest,
       A: Manifest,
-      CD: Manifest] (
+      CD: Manifest,
+      M: Manifest,
+      P: Manifest] (
     batch: String = "",
     dataPrep: BaseDataPreparator[EDP, TDP, VDP, TD, F, A] = null,
     cleanser: BaseCleanser[TD, CD, CP] = null,
+    algo: BaseAlgorithm[CD, F, P, _, _ <: BaseParams] = null,
     evalDataParams: BaseParams = null,
-    cleanserParams: BaseParams = null
+    cleanserParams: BaseParams = null,
+    algoParams: BaseParams = null
   ) {
     
     println("DebugWorkflow.run")
@@ -89,7 +103,7 @@ object DebugWorkflow {
       val (trainingData, validationData) = data
       println(s"TrainingData $ei")
       //println(trainingData)
-      pprint(trainingData)
+      println(debugString(trainingData))
       println(s"ValidationData $ei")
       validationData.collect.foreach(println)
     }}
@@ -110,7 +124,55 @@ object DebugWorkflow {
     evalCleansedMap.foreach{ case (ei, cd) => {
       println(s"Cleansed $ei")
       //println(cd)
-      pprint(cd)
+      println(debugString(cd))
+    }}
+
+    if (algo == null) {
+      println("Algo is null. Stop here")
+      return
+    }
+
+    println("Algo")
+    // fake algo map.
+    val algoMap = Map("" -> algo)
+    val algoParamsList = Seq(("", algoParams))
+
+    // Instantiate algos
+    val algoInstanceList: Array[BaseAlgorithm[CD, F, P, _, _]] = 
+    algoParamsList
+      .map { case (algoName, algoParams) => {
+        val algo = algoMap(algoName)
+        algo.initBase(algoParams)
+        algo
+      }}
+      .toArray
+
+    // Model Training
+    // Since different algo can have different model data, have to use Any.
+    val evalAlgoModelMap: Map[EI, Seq[(AI, Any)]] = evalCleansedMap
+    .par
+    .map { case (ei, cleansedData) => {
+
+      val algoModelSeq: Seq[(AI, Any)] = algoInstanceList
+      .zipWithIndex
+      .map { case (algo, index) => {
+        val model: Any = algo.trainBase(sc, cleansedData)
+        (index, model)
+      }}
+
+      println(s"EI: $ei")
+      algoModelSeq.foreach{ e => println(s"${e._1} ${e._2}")}
+
+      (ei, algoModelSeq)
+    }}
+    .seq
+    .toMap
+
+    evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
+      aiModelSeq.map { case(ai, model) => {
+        println(s"Model ei: $ei ai: $ei")
+        println(debugString(model))
+      }}
     }}
 
     

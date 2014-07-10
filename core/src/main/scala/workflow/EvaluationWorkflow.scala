@@ -94,11 +94,13 @@ object EvaluationWorkflow {
 
 
 object EvaluationWorkflowImpl {
+  /*
   type EI = Int  // Evaluation Index
   type AI = Int  // Algorithm Index
   type FI = Long // Feature Index
 
   type BP = BaseParams
+  */
 
   class AlgoServerWrapper[NF, NP, NA, NCD](
       val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]], 

@@ -112,13 +112,18 @@ object RunJava {
 
     val c = new regression.Cleanser()
     val cp = EmptyParams()
+    
+    val algo = new regression.Algo()
+    val ap = EmptyParams()
 
     DebugWorkflow.run(
-      batch = "Java DataPrep", 
       dataPrep = dp, 
       evalDataParams = edp,
       cleanser = c,
-      cleanserParams = cp
+      cleanserParams = cp,
+      algo = algo,
+      algoParams = ap,
+      batch = "Java Workflow"
     )
   }
 }
