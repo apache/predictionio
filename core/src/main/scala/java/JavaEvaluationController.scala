@@ -58,6 +58,7 @@ abstract class JavaSimpleLocalDataPreparator[
 
   override def prepareBase(sc: SparkContext, params: BaseParams)
   : Map[Int, (EmptyParams, EmptyParams, RDD[TD], RDD[(F, A)])] = {
+    // FIXME. Should parallelize EDP first.
     implicit val fakeTdTag: ClassTag[TD] = JavaUtils.fakeClassTag[TD]
     val (td, faSeq) = prepare(params.asInstanceOf[EDP])
     val faRdd = sc.parallelize(faSeq.toSeq)

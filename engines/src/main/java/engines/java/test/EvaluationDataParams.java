@@ -1,4 +1,4 @@
-package io.prediction.engines.java.regression;
+package io.prediction.engines.java.test;
 import io.prediction.BaseParams;
 
 public class EvaluationDataParams implements BaseParams {

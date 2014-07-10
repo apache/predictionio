@@ -25,7 +25,7 @@ class LocalCleanser[TD, CD : Manifest, CP <: BaseParams: Manifest]
   extends BaseCleanser[RDD[TD], RDD[CD], CP] {
 
   def cleanseBase(trainingData: Any): RDD[CD] = {
-    println("Local.cleanseBase.")
+    //println("Local.cleanseBase.")
     trainingData
       .asInstanceOf[RDD[TD]]
       .map(cleanse)
@@ -38,7 +38,7 @@ abstract
 class SparkCleanser[TD, CD, CP <: BaseParams: Manifest]
   extends BaseCleanser[TD, CD, CP] {
   def cleanseBase(trainingData: Any): CD = {
-    println("SparkCleanser.cleanseBase")
+    //println("SparkCleanser.cleanseBase")
     cleanse(trainingData.asInstanceOf[TD])
   }
 

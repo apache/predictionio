@@ -39,22 +39,37 @@ object DebugWorkflow {
   type AI = Int  // Algorithm Index
   type FI = Long // Feature Index
 
-  def dataPrep[
+  def pprint[TD](td: TD) {
+    val s: String = td match {
+      case rdd: RDD[_] => {
+        rdd.collect.map(_.toString).mkString 
+      }
+      case d: AnyRef => d.toString
+    }
+    println(s)
+  }
+
+  def run[
       EDP <: BaseParams : Manifest,
       TDP <: BaseParams : Manifest,
       VDP <: BaseParams : Manifest,
-      TD: Manifest,
+      CP <: BaseParams: Manifest,
+      TD: Manifest, 
       F: Manifest,
-      A: Manifest](
-    baseDataPrep: BaseDataPreparator[EDP, TDP, VDP, TD, F, A],
+      A: Manifest,
+      CD: Manifest] (
     batch: String = "",
-    evalDataParams: BaseParams) {
-
-    println("DebugWorkflow.dataPrep")
-
+    dataPrep: BaseDataPreparator[EDP, TDP, VDP, TD, F, A] = null,
+    cleanser: BaseCleanser[TD, CD, CP] = null,
+    evalDataParams: BaseParams = null,
+    cleanserParams: BaseParams = null
+  ) {
+    
+    println("DebugWorkflow.run")
+    println("Start spark context")
     val sc = WorkflowContext(batch)
-    val dataPrep = baseDataPrep
 
+    println("Data preparation")
     // Data Prep
     val evalParamsDataMap
     : Map[EI, (TDP, VDP, TD, RDD[(F, A)])] = dataPrep
@@ -73,12 +88,40 @@ object DebugWorkflow {
     evalDataMap.foreach{ case (ei, data) => {
       val (trainingData, validationData) = data
       println(s"TrainingData $ei")
-      println(trainingData)
+      //println(trainingData)
+      pprint(trainingData)
       println(s"ValidationData $ei")
       validationData.collect.foreach(println)
     }}
 
-    println("DebugWorkflow.dataPrep complete")
+    println("DataPreparation complete")
+
+    if (cleanser == null) {
+      println("Cleanser is null. Stop here")
+      return
+    }
+    
+    println("Cleansing")
+    cleanser.initBase(cleanserParams)
+
+    val evalCleansedMap: Map[EI, CD] = evalDataMap
+    .map{ case (ei, data) => (ei, cleanser.cleanseBase(data._1)) }
+
+    evalCleansedMap.foreach{ case (ei, cd) => {
+      println(s"Cleansed $ei")
+      //println(cd)
+      pprint(cd)
+    }}
+
+    
+    println("DebugWorkflow.run completed.")
+
   }
 }
+
+
+
+
+
+
 

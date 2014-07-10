@@ -8,11 +8,14 @@ import java.lang.Integer
 import scala.collection.JavaConversions._
 
 import io.prediction.FirstAlgo
+import io.prediction.EmptyParams
 //import io.prediction.SecondAlgo
 
-import io.prediction.engines.java.regression.SimpleDataPreparator
-import io.prediction.engines.java.regression.DataPreparator
-import io.prediction.engines.java.regression.EvaluationDataParams
+import io.prediction.engines.java.test.SimpleDataPreparator
+import io.prediction.engines.java.test.DataPreparator
+import io.prediction.engines.java.test.EvaluationDataParams
+
+import io.prediction.engines.java.regression
 
 import io.prediction.workflow.DebugWorkflow;
 
@@ -93,16 +96,30 @@ object RunJava {
     val m = algo.get(100)
     println(m)
   }
-
-  def main(args: Array[String]) {
+  
+  def test() {
     val edp = new EvaluationDataParams(15, 4)
     //val dp = new DataPreparator()
     val dp = new SimpleDataPreparator()
     //val r = dp.prepareValidation(edp)
     //println(r)
+    //DebugWorkflow.dataPrep(dp, "Java DataPrep", edp)
+  }
 
-    DebugWorkflow.dataPrep(dp, "Java DataPrep", edp)
+  def main(args: Array[String]) {
+    val edp = new regression.DataParams("data/lr_data.txt")
+    val dp = new regression.DataPreparator()
 
+    val c = new regression.Cleanser()
+    val cp = EmptyParams()
+
+    DebugWorkflow.run(
+      batch = "Java DataPrep", 
+      dataPrep = dp, 
+      evalDataParams = edp,
+      cleanser = c,
+      cleanserParams = cp
+    )
   }
 }
 

@@ -26,6 +26,7 @@ abstract class SimpleLocalDataPreparator[
 extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, RDD[TD], F, A] {
   override def prepareBase(sc: SparkContext, params: BaseParams)
   : Map[Int, (EmptyParams, EmptyParams, RDD[TD], RDD[(F, A)])] = {
+    // FIXME. Should parallelize EDP first.
     val (td, faSeq) = prepare(params.asInstanceOf[EDP])
     val faRdd = sc.parallelize(faSeq.toSeq)
     val tdRdd = sc.parallelize(Array(td))
