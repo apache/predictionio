@@ -9,11 +9,17 @@ import scala.collection.JavaConversions._
 
 import scala.collection.mutable.PriorityQueue
 
-import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.common.Weighting
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity
 import org.apache.mahout.cf.taste.model.DataModel
+import org.apache.mahout.cf.taste.model.Preference
+import org.apache.mahout.cf.taste.model.PreferenceArray
+import org.apache.mahout.cf.taste.impl.model.GenericDataModel
+import org.apache.mahout.cf.taste.impl.model.GenericPreference
+import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel
+import org.apache.mahout.cf.taste.impl.common.FastByIDMap
+
 import org.apache.mahout.cf.taste.impl.similarity.{
   CityBlockSimilarity,
   EuclideanDistanceSimilarity,
@@ -47,20 +53,9 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
       val freshness = 0
       val freshnessTimeUnit: Long = 3600000 // 1 hour
 
-      // write to temp file for loading FileDataModel
-      // TODO: where to get the path?
-      val ratingsFile = "/tmp/mahout/ratings.csv"
-
-      val ratingsWriter = new BufferedWriter(new FileWriter(
-        new File(ratingsFile)))
-
-      cleansedData.rating.foreach { r =>
-        ratingsWriter.write(s"${r.uindex},${r.iindex},${r.rating}\n")
-      }
-
-      ratingsWriter.close()
-
-      val dataModel: DataModel = new FileDataModel(new File(ratingsFile))
+      val dataModel: DataModel = buildDataModel(cleansedData.rating.map{ r =>
+        (r.uindex, r.iindex, r.rating.toFloat)
+      })
       val similarity: ItemSimilarity = buildItemSimilarity(dataModel)
 
       val itemIds = dataModel.getItemIDs.toSeq.map(_.toLong)
@@ -150,6 +145,26 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
         items = rankedItems
       )
     }
+
+  /* Build DataModel with Seq of (uid, iid, rating)
+   */
+  private def buildDataModel(ratingSeq: Seq[(Int, Int, Float)]): DataModel = {
+    val allPrefs = new FastByIDMap[PreferenceArray]()
+    ratingSeq.groupBy(_._1)
+      .foreach { case (uid, ratingList) =>
+        val prefList: Seq[(Preference, Int)] = ratingList.map{ r =>
+          new GenericPreference(r._1.toLong, r._2.toLong, r._3)
+        }.zipWithIndex
+
+        val userPref = new GenericUserPreferenceArray(prefList.size)
+        prefList.foreach { case (pref, i) =>
+          userPref.set(i, pref)
+        }
+
+        allPrefs.put(uid.toLong, userPref)
+      }
+    new GenericDataModel(allPrefs)
+  }
 
   object ScoreOrdering extends Ordering[(Int, Double)] {
     override def compare(a: (Int, Double), b: (Int, Double)) =
