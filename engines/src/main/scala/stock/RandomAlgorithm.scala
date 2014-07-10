@@ -12,7 +12,7 @@ class RandomAlgoParams(
   val drift: Double = 0.0) extends BaseParams {}
 
 class RandomAlgorithm
-    extends Algorithm[TrainingData, Feature, Target, Null, RandomAlgoParams] {
+    extends Algorithm[TrainingData, Feature, Target, Unit, RandomAlgoParams] {
   var _scale: Double = 0.0
   var _drift: Double = 0.0
   var _seed: Long = 0
@@ -25,12 +25,12 @@ class RandomAlgorithm
     _drift = algoParams.drift
   }
 
-  def train(trainingData: TrainingData): Null = {
+  def train(trainingData: TrainingData): Unit = {
     println("RandomAlgorithm.train")
     null
   }
 
-  def predict(model: Null, feature: Feature): Target = {
+  def predict(model: Unit, feature: Feature): Target = {
     println(s"RandomAlgorithm.predict ${_seed} ${_scale} ${_drift}")
     val tickers = feature.data.colIx.toVec.contents
     //val tickers = feature.boxedData.get.colIx.toVec.contents
