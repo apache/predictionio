@@ -15,7 +15,8 @@ class EvalParams(
     val trainStart: DateTime,
     val testStart: DateTime,
     val testUntil: DateTime,
-    val goal: Set[String]
+    val goal: Set[String],
+    val verbose: Boolean // for debug purpose
   ) extends BaseParams {
 
   override def toString = s"appid=${appid},itypes=${itypes}" +
@@ -34,7 +35,8 @@ class TrainDataPrepParams(
     val actions: Set[String],
     // actions within this startUntil time will be included in training
     // use all data if None
-    val startUntil: Option[Tuple2[DateTime, DateTime]]
+    val startUntil: Option[Tuple2[DateTime, DateTime]],
+    val verbose: Boolean // for debug purpose
   ) extends BaseParams {
     override def toString = s"${appid} ${itypes} ${actions} ${startUntil}"
   }
@@ -47,8 +49,7 @@ class ValidationDataPrepParams(
     val startUntil: Tuple2[DateTime, DateTime],
     val goal: Set[String] // action name
   ) extends BaseParams {
-    override def toString = s"${appid} ${itypes}" +
-      s" ${actions} ${startUntil} ${goal}"
+    override def toString = s"${appid} ${itypes} ${startUntil} ${goal}"
   }
 
 class CleanserParams (

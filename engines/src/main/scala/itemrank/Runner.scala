@@ -12,7 +12,7 @@ object Runner {
 
   def main(args: Array[String]) {
     val evalParams = new EvalParams(
-      appid = 4,
+      appid = 1,
       itypes = None,
       actions = Set("view", "like", "conversion", "rate"),
       //(int years, int months, int weeks, int days, int hours,
@@ -20,9 +20,10 @@ object Runner {
       // number of hours of each period
       hours = 24,//new Period(0, 0, 0, 1, 0, 0, 0, 0),
       trainStart = new DateTime("2014-04-01T00:00:00.000"),
-      testStart = new DateTime("2014-06-20T00:00:00.000"),
-      testUntil = new DateTime("2014-06-30T00:00:00.000"),
-      goal = Set("conversion", "view")
+      testStart = new DateTime("2014-04-20T00:00:00.000"),
+      testUntil = new DateTime("2014-04-21T00:00:00.000"),
+      goal = Set("conversion", "view"),
+      verbose = true
     )
 
     val validatorParams = new ValidatorParams(

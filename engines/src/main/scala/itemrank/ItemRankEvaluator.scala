@@ -65,7 +65,8 @@ class ItemRankDataPreparator
         appid = params.appid,
         itypes = params.itypes,
         actions = params.actions,
-        startUntil = Some((params.trainStart, ts))
+        startUntil = Some((params.trainStart, ts)),
+        verbose = params.verbose
       )
       val validateP = new ValidationDataPrepParams(
         appid = params.appid,
@@ -85,12 +86,18 @@ class ItemRankDataPreparator
     val u2iDb = ItemRankEvaluator.u2iDb
     val itemSetsDb = ItemRankEvaluator.itemSetsDb
 
+    if (params.verbose)
+      println(params)
+
     val usersMap: Map[String, (UserTD, Int)] = usersDb.getByAppid(params.appid)
       .zipWithIndex
       .map { case (user, index) =>
         val userTD = new UserTD(uid = user.id)
         (user.id -> (userTD, index + 1))
       }.toMap
+
+    if (params.verbose)
+      println(usersMap.size)
 
     val itemsMap: Map[String, (ItemTD, Int)] = params.itypes.map { itypes =>
       itemsDb.getByAppidAndItypes(params.appid, itypes.toSeq)
@@ -107,6 +114,9 @@ class ItemRankDataPreparator
         )
         (item.id -> (itemTD, index + 1))
     }.toMap
+
+    if (params.verbose)
+      println(itemsMap.size)
 
     val u2iActions = params.startUntil.map{ startUntil =>
       u2iDb.getByAppidAndTime(params.appid, startUntil._1,
@@ -131,6 +141,9 @@ class ItemRankDataPreparator
           t = u2i.t.getMillis
         )
       }
+
+    if (params.verbose)
+      println(u2iActionsTDSeq.size)
 
     new TrainingData(
       users = usersMap.map { case (k, (v1, v2)) => (v2, v1) },

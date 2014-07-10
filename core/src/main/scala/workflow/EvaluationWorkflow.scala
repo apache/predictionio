@@ -255,7 +255,7 @@ object EvaluationWorkflowImpl {
 
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
     conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "8g")
+    conf.set("spark.executor.memory", "6g")
 
     val sc = new SparkContext(conf)
 
