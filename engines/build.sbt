@@ -13,7 +13,9 @@ libraryDependencies ++= Seq(
   "org.json4s"        %% "json4s-native"  % "3.2.6",
   "com.github.scopt"  %% "scopt"          % "3.2.0",
   "org.apache.spark"  %% "spark-core"     % "1.0.0" % "provided",
-  "org.apache.spark"  %% "spark-mllib"    % "1.0.0" % "provided",
+  "org.apache.spark"  %% "spark-mllib"    % "1.0.0"
+    exclude("org.apache.spark", "spark-core_2.10")
+    exclude("org.eclipse.jetty", "jetty-server"),
   "org.apache.mahout"  % "mahout-core"    % "0.9"
   )
 

@@ -7,6 +7,6 @@
     "../core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar",
     "../engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar"
   ],
-  "engineFactory": "io.prediction.engines.recommendations.RecommendationsEngine",
-  "evaluatorFactory": "io.prediction.engines.recommendations.RecommendationsEvaluator"
+  "engineFactory": "org.apache.spark.mllib.recommendation.engine.RecommendationsEngine",
+  "evaluatorFactory": "org.apache.spark.mllib.recommendation.engine.RecommendationsEvaluator"
 }

@@ -1,4 +1,4 @@
-package io.prediction.engines.recommendations
+package org.apache.spark.mllib.recommendation.engine
 
 import io.prediction.BaseParams
 import io.prediction._
@@ -22,7 +22,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.util.MLUtils
 
 import org.json4s._
-    
+
 import org.apache.spark.mllib.recommendation.ALS
 import org.apache.spark.mllib.recommendation.Rating
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel
@@ -30,7 +30,7 @@ import org.apache.spark.mllib.recommendation.MatrixFactorizationModel
 object RecommendationsEvaluator extends EvaluatorFactory {
   def apply() = {
     new BaseEvaluator(
-      classOf[DataPrep], 
+      classOf[DataPrep],
       classOf[MeanSquareErrorValidator[(Int, Int)]])
   }
 }
@@ -41,20 +41,20 @@ extends BaseParams
 // Training Data is RDD[Rating], Rating == user::product::rate
 // Feture is (user, product)
 // Target is Double
-class DataPrep 
+class DataPrep
   extends SimpleParallelDataPreparator[
       EvalDataParams, RDD[Rating], (Int, Int), Double] {
   override
   def prepare(sc: SparkContext, params: EvalDataParams)
   : (RDD[Rating], RDD[((Int, Int), Double)]) = {
-    
+
     val data = sc.textFile(params.filepath)
-    val ratings = data.map(_.split("::") match { 
-      case Array(user, item, rate) => 
+    val ratings = data.map(_.split("::") match {
+      case Array(user, item, rate) =>
         Rating(user.toInt, item.toInt, rate.toDouble)
     })
 
-    val featureTargets = ratings.map { 
+    val featureTargets = ratings.map {
       case Rating(user, product, rate) => ((user, product), rate)
     }
 
@@ -65,19 +65,49 @@ class DataPrep
 
 // Algorithms
 class AlgoParams(
-  val rank: Int = 10, 
+  val rank: Int = 10,
   val numIterations: Int = 20,
   val lambda: Double = 0.01) extends BaseParams
 
+class FeatureSerializer extends CustomSerializer[(Int, Int)](format => (
+  {
+    case JArray(List(JInt(x), JInt(y))) => (x.intValue, y.intValue)
+  },
+  {
+    case x: (Int, Int) => JArray(List(JInt(x._1), JInt(x._2)))
+  }
+))
+
 object RecommendationsEngine extends EngineFactory {
   def apply() = {
-    new ParallelSimpleEngine(classOf[Algorithm])
+    new ParallelSimpleEngine(
+      classOf[Algorithm],
+      DefaultFormats + new FeatureSerializer)
+  }
+}
+
+class PersistentMatrixFactorizationModel(m: MatrixFactorizationModel)
+    extends PersistentParallelModel {
+
+  @transient var model = m
+  val rank: Int = m.rank
+
+  def save(id: String): Unit = {
+    model.productFeatures.saveAsObjectFile("/tmp/productFeatures")
+    model.userFeatures.saveAsObjectFile("/tmp/userFeatures")
+  }
+
+  def load(sc: SparkContext, id: String): Unit = {
+    model = new MatrixFactorizationModel(
+      rank,
+      sc.objectFile("/tmp/userFeatures"),
+      sc.objectFile("/tmp/productFeatures"))
   }
 }
 
 class Algorithm
   extends ParallelAlgorithm[
-      RDD[Rating], (Int, Int), Double, MatrixFactorizationModel, AlgoParams] {
+      RDD[Rating], (Int, Int), Double, PersistentMatrixFactorizationModel, AlgoParams] {
   var _rank: Int = 0
   var _numIterations: Int = 0
   var _lambda: Double = 0.0
@@ -88,19 +118,25 @@ class Algorithm
     _lambda = params.lambda
   }
 
-  def train(data: RDD[Rating]): MatrixFactorizationModel = {
-    ALS.train(data, _rank, _numIterations, _lambda)
+  def train(data: RDD[Rating]): PersistentMatrixFactorizationModel = {
+    new PersistentMatrixFactorizationModel(ALS.train(data, _rank, _numIterations, _lambda))
+  }
+
+  def predict(
+    model: PersistentMatrixFactorizationModel,
+    feature: (Int, Int)): Double = {
+    model.model.predict(feature._1, feature._2)
   }
 
   def batchPredict(
-    model: MatrixFactorizationModel, 
+    model: PersistentMatrixFactorizationModel,
     feature: RDD[(Long, (Int, Int))])
   : RDD[(Long, Double)] = {
     val indexlessFeature = feature.values
 
-    val prediction: RDD[Rating] = model.predict(indexlessFeature)
+    val prediction: RDD[Rating] = model.model.predict(indexlessFeature)
 
-    val p: RDD[((Int, Int), Double)] = prediction.map { 
+    val p: RDD[((Int, Int), Double)] = prediction.map {
       r => ((r.user, r.product), r.rating)
     }
 
@@ -114,7 +150,7 @@ class Algorithm
 object Run {
   def main(args: Array[String]) {
     val filepath = "data/movielens.txt"
-    
+
     val evalDataParams = new EvalDataParams(filepath)
 
     val evaluator = RecommendationsEvaluator()
@@ -131,4 +167,3 @@ object Run {
         algoParams = algoParams)
   }
 }
-

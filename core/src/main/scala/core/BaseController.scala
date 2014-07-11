@@ -79,7 +79,7 @@ trait LocalModelAlgorithm[F, P, M] {
   : Iterator[(Long, P)] = {
     features.map { case (idx, f) => (idx, predict(model, f)) }
   }
- 
+
   // One Prediction
   def predictBase(baseModel: Any, baseFeature: Any): P = {
     predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
@@ -104,7 +104,7 @@ abstract class BaseAlgorithm[CD, F : Manifest, P, M, AP <: BaseParams: Manifest]
 
 abstract class LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
     AP <: BaseParams: Manifest]
-  extends BaseAlgorithm[RDD[CD], F, P, RDD[M], AP] 
+  extends BaseAlgorithm[RDD[CD], F, P, RDD[M], AP]
   with LocalModelAlgorithm[F, P, M] {
   def trainBase(sc: SparkContext, cleansedData: RDD[CD]): RDD[M] = {
     cleansedData.map(train)
@@ -124,7 +124,7 @@ abstract class Spark2LocalAlgorithm[CD, F : Manifest, P, M: Manifest,
     val m: M = train(cleansedData)
     sc.parallelize(Array(m))
   }
-  
+
   def train(cleansedData: CD): M
 
   def predict(model: M, feature: F): P
@@ -138,9 +138,10 @@ abstract class ParallelAlgorithm[CD, F : Manifest, P, M: Manifest,
   }
 
   def predictBase(baseModel: Any, baseFeature: Any): P = {
-    assert(false)
-    baseFeature.asInstanceOf[P]
+    predict(baseModel.asInstanceOf[M], baseFeature.asInstanceOf[F])
   }
+
+  def predict(model: M, feature: F): P
 
   def batchPredictBase(baseModel: Any, baseFeatures: RDD[(Long, F)])
   : RDD[(Long, P)] = {
@@ -148,11 +149,11 @@ abstract class ParallelAlgorithm[CD, F : Manifest, P, M: Manifest,
   }
 
   def batchPredict(model:M, features: RDD[(Long, F)])
-  : RDD[(Long, P)] 
+  : RDD[(Long, P)]
 
   def train(cleansedData: CD): M
 }
-  
+
 
 /* Server */
 abstract class BaseServer[F, P, SP <: BaseParams: Manifest]

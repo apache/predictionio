@@ -1,5 +1,7 @@
 package io.prediction
 
+import org.apache.spark.SparkContext
+
 trait BaseParams extends Serializable {}
 
 // Concrete helper classes
@@ -13,24 +15,21 @@ object EmptyParams {
  * Mix in and implement this trait if you want PredictionIO to persist a model
  * that contains RDD(s).
  */
-abstract class PersistentParallelModel[AI <: Serializable] {
+abstract class PersistentParallelModel {
   /**
    * Save the model to some persistent storage.
    *
    * @param id A globally unique ID provided automatically that identifies a
    *           particular run.
-   * @return Any additional information that you want PredictionIO to save. It
-   *         must be serializable.
    */
-  def save(id: String): AI
+  def save(id: String): Unit
 
   /**
    * Load the model from some persistent storage.
    *
+   * @param sc An Apache SparkContext instance provided automatically.
    * @param id A globally unique ID provided automatically that identifies a
    *           particular run.
-   * @param additionalInfo Any additional information that have been previously
-   *                       saved.
    */
-  def load(id: String, additionalInfo: AI): this.type
+  def load(sc: SparkContext, id: String): Unit
 }
