@@ -1,9 +1,17 @@
 Running the Server
 ==================
 
-1. sbt/sbt "deploy/run RunID"
-2. Go to http://localhost:8000
-3. Send POST request to http://localhost:8000
+Assuming you have finished an evaluation run successfully and you have a run ID available.
+The run ID can be found after a successful run in the console.
+
+```Shell
+sbt/sbt deploy/assembly
+sbt/sbt package
+sbt/sbt engines/assemblyPackageDependency
+spark-submit --jars engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar,engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar --class io.prediction.deploy.RunServer deploy/target/scala-2.10/deploy-assembly-0.8.0-SNAPSHOT.jar RunID
+```
+
+After that, go to http://localhost:8000 and send a POST request.
 
 Regression example:
 
