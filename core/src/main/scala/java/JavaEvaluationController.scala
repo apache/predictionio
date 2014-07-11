@@ -7,6 +7,7 @@ import io.prediction.core.BaseValidator
 import io.prediction.BaseParams
 import java.util.{ List => JList }
 import java.lang.{ Iterable => JIterable }
+import java.util.ArrayList
 import scala.collection.JavaConversions._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -52,10 +53,8 @@ abstract class JavaLocalDataPreparator[
 
 abstract class JavaSimpleLocalDataPreparator[
     EDP <: BaseParams, TD, F, A]
-    extends BaseDataPreparator[EDP, EmptyParams, EmptyParams, RDD[TD], F, A]()(
-        // Injecting fake manifest to superclass
-        JavaUtils.fakeManifest[EDP]
-    ){
+    extends JavaLocalDataPreparator[
+        EDP, EmptyParams, EmptyParams, TD, F, A] {
 
   override def prepareBase(sc: SparkContext, params: BaseParams)
   : Map[Int, (EmptyParams, EmptyParams, RDD[TD], RDD[(F, A)])] = {
@@ -68,6 +67,18 @@ abstract class JavaSimpleLocalDataPreparator[
   }
 
   def prepare(edp: EDP): (TD, JIterable[Tuple2[F, A]])
+
+  final def getParamsSet(params: EDP): JIterable[(EmptyParams, EmptyParams)] = {
+    new ArrayList[(EmptyParams, EmptyParams)]()
+  }
+  
+  def prepareTraining(tdp: EmptyParams): TD = {
+    null.asInstanceOf[TD]
+  }
+  
+  def prepareValidation(params: EmptyParams): JIterable[Tuple2[F, A]] = {
+    new ArrayList[Tuple2[F, A]]()
+  }
 }
 
 
@@ -106,10 +117,5 @@ abstract class JavaValidator[
   }
 
   def crossValidate(validateResultsSeq: JIterable[Tuple3[TDP, VDP, VR]]): CVR
-  
-
 }
-
-
-
 

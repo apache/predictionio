@@ -27,6 +27,8 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.Manifest
 
+import io.prediction.java._
+
 object WorkflowContext {
   def apply(batch: String = ""): SparkContext = {
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
@@ -59,29 +61,37 @@ object JavaDebugWorkflow {
       CVR <: AnyRef ](
     batch: String = "",
     dataPrepClass: 
-      Class[_  <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]] = null,
-    cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]] = null,
+      Class[_  <: JavaLocalDataPreparator[EDP, TDP, VDP, TD, F, A]] = null,
+    cleanserClass: Class[_ <: JavaLocalCleanser[TD, CD, CP]] = null,
     algoClassMap: 
-      JMap[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]]] = null,
-    serverClass: Class[_ <: BaseServer[F, P, SP]] = null,
+      JMap[String, Class[_ <: JavaLocalAlgorithm[CD, F, P, _, _ <: BaseParams]]] = null,
+    serverClass: Class[_ <: JavaServer[F, P, SP]] = null,
     validatorClass: 
-      Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]] = null,
+      Class[_ <: JavaValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]] = null,
     evalDataParams: BaseParams = null,
     cleanserParams: BaseParams = null,
-    algoParamsList: Iterable[(String, BaseParams)] = null,
+    algoParamsList: JIterable[(String, BaseParams)] = null,
     serverParams: BaseParams = null,
     validatorParams: BaseParams = null) {
+    println("JavaDebug")
+
+    val scalaAlgoClassMap = (if (algoClassMap == null) null
+      else Map(algoClassMap.toSeq:_ *))
+      
+    val scalaAlgoParamsList = (
+      if (algoParamsList == null) null
+      else algoParamsList.toSeq)
 
     DebugWorkflow.run(
       batch,
       dataPrepClass,
       cleanserClass,
-      Map(algoClassMap.toSeq:_*),
+      scalaAlgoClassMap,
       serverClass,
       validatorClass,
       evalDataParams,
       cleanserParams,
-      algoParamsList.toSeq,
+      scalaAlgoParamsList,
       serverParams,
       validatorParams)(
       JavaUtils.fakeManifest[EDP],
@@ -91,11 +101,10 @@ object JavaDebugWorkflow {
       JavaUtils.fakeManifest[CP],
       JavaUtils.fakeManifest[AP],
       JavaUtils.fakeManifest[SP],
-
-      JavaUtils.fakeManifest[TD],
+      JavaUtils.fakeManifest[RDD[TD]],
       JavaUtils.fakeManifest[F],
       JavaUtils.fakeManifest[A],
-      JavaUtils.fakeManifest[CD],
+      JavaUtils.fakeManifest[RDD[CD]],
       JavaUtils.fakeManifest[M],
       JavaUtils.fakeManifest[P],
       JavaUtils.fakeManifest[VU],
