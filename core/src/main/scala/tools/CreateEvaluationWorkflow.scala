@@ -227,7 +227,7 @@ object CreateEvaluationWorkflow extends Logging {
       evaluator)
     val endtime = DateTime.now
 
-    runs.insert(Run(
+    val runId = runs.insert(Run(
       id = "",
       startTime = starttime,
       endTime = endtime,
@@ -242,6 +242,8 @@ object CreateEvaluationWorkflow extends Logging {
       models = KryoInjection(evalWorkflow1._1),
       crossValidationResults = write(evalWorkflow1._3)
     ))
+
+    info(s"Run ID: $runId")
 
     //evalWorkflow1.run
     //*/
