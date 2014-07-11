@@ -8,7 +8,7 @@ The run ID can be found after a successful run in the console.
 sbt/sbt deploy/assembly
 sbt/sbt package
 sbt/sbt engines/assemblyPackageDependency
-spark-submit --jars engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar,engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar --class io.prediction.deploy.RunServer deploy/target/scala-2.10/deploy-assembly-0.8.0-SNAPSHOT.jar RunID
+$SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar,engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar --class io.prediction.deploy.RunServer deploy/target/scala-2.10/deploy-assembly-0.8.0-SNAPSHOT.jar RunID
 ```
 
 After that, go to http://localhost:8000 and send a POST request.

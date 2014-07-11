@@ -33,13 +33,13 @@ object RunEvaluationWorkflow extends Logging {
       } text("Engine version.")
       opt[String]("sparkHome") action { (x, c) =>
         c.copy(sparkHome = x)
-      } text("Path to a Apache Spark installation. If not specified, the SPARK_HOME environmental variable will be used.")
+      } text("Path to a Apache Spark installation. If not specified, will try to use the SPARK_HOME environmental variable. If this fails as well, default to current directory.")
       opt[String]("sparkIP") action { (x, c) =>
         c.copy(sparkMasterIP = x)
-      } text("Spark master IP. Default: localhost")
+      } text("Spark master IP. If not specified, will try to use the SPARK_MASTER_IP environmental variable. If this fails as well, default to empty.")
       opt[String]("sparkPort") action { (x, c) =>
         c.copy(sparkMasterPort = x)
-      } text("Spark master port. Default: 7077")
+      } text("Spark master port. If not specified, will try to use the SPARK_MASTER_PORT environmental variable. If this fails as well, default to 7077.")
       opt[String]("batch") action { (x, c) =>
         c.copy(batch = x)
       } text("Batch label of the run.")
@@ -68,7 +68,7 @@ object RunEvaluationWorkflow extends Logging {
       val defaults = Args()
       engineManifests.get(parsedArgs.id, parsedArgs.version) map { engineManifest =>
         val sparkHome = if (parsedArgs.sparkHome != "") parsedArgs.sparkHome else sys.env.get("SPARK_HOME").getOrElse(".")
-        val sparkIP = if (parsedArgs.sparkMasterIP != "") parsedArgs.sparkMasterIP else sys.env.get("SPARK_MASTER_IP").getOrElse("localhost")
+        val sparkIP = if (parsedArgs.sparkMasterIP != "") parsedArgs.sparkMasterIP else sys.env.get("SPARK_MASTER_IP").getOrElse("")
         val sparkPort = if (parsedArgs.sparkMasterPort != "") parsedArgs.sparkMasterPort else sys.env.get("SPARK_MASTER_PORT").getOrElse("7077")
         val params = Map(
           "dp" -> parsedArgs.dataPrepJsonPath,
@@ -80,7 +80,7 @@ object RunEvaluationWorkflow extends Logging {
           s"${sparkHome}/bin/spark-submit",
           "--verbose",
           "--deploy-mode client",
-          s"--master spark://${sparkIP}:${sparkPort}",
+          if (sparkIP != "") s"--master spark://${sparkIP}:${sparkPort}" else "",
           "--class io.prediction.tools.CreateEvaluationWorkflow",
           engineManifest.jars.apply(0),
           if (engineManifest.jars.size > 1) "--jars " + engineManifest.jars.slice(1, engineManifest.jars.size).mkString(",") else "",
