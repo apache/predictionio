@@ -1,12 +1,18 @@
 package io.prediction.java
 
 import java.lang.{ Iterable => JIterable }
+import java.util.{ Map => JMap }
 
 import io.prediction._
 import io.prediction.core.LocalCleanser
 import io.prediction.core.LocalAlgorithm
 import io.prediction.core.BaseServer
+import io.prediction.core.BaseEngine
+import io.prediction.core.BaseAlgorithm
+import io.prediction.core.BaseCleanser
 import scala.collection.JavaConversions._
+import org.apache.spark.rdd.RDD
+
 
 abstract class JavaLocalCleanser[TD, CD, CP <: BaseParams]
 extends LocalCleanser[TD, CD, CP]()(
@@ -41,3 +47,15 @@ extends BaseServer[F, P, SP]()(JavaUtils.fakeManifest[SP]) {
     predictions.head
   }
 }
+
+class JavaLocalEngine[TD, CD, F, P](
+    cleanserClass : Class[_ <: JavaLocalCleanser[TD, CD, _ <: BaseParams]],
+    algorithmClassMap
+      : JMap[String, Class[_ <: JavaLocalAlgorithm[CD, F, P, _, _ <: BaseParams]]],
+    serverClass: Class[_ <: JavaServer[F, P, _ <: BaseParams]])
+extends BaseEngine[RDD[TD], RDD[CD], F, P](
+    cleanserClass,
+    Map(algorithmClassMap.toSeq:_*),
+    serverClass,
+    Util.json4sDefaultFormats)
+

@@ -4,6 +4,7 @@ import scala.language.existentials
 
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
+import io.prediction.java.JavaUtils
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -15,6 +16,9 @@ import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
+import scala.collection.JavaConversions._
+import java.lang.{ Iterable => JIterable }
+import java.util.{ Map => JMap }
 
 import io.prediction.core._
 import io.prediction._
@@ -33,6 +37,73 @@ object WorkflowContext {
     return sc
   }
 }
+  
+
+object JavaDebugWorkflow {
+  def run[
+      EDP <: BaseParams ,
+      VP <: BaseParams ,
+      TDP <: BaseParams ,
+      VDP <: BaseParams ,
+      CP <: BaseParams,
+      AP <: BaseParams,
+      SP <: BaseParams,
+      TD, 
+      F,
+      A,
+      CD,
+      M,
+      P,
+      VU ,
+      VR ,
+      CVR <: AnyRef ](
+    batch: String = "",
+    dataPrepClass: 
+      Class[_  <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]] = null,
+    cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]] = null,
+    algoClassMap: 
+      JMap[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]]] = null,
+    serverClass: Class[_ <: BaseServer[F, P, SP]] = null,
+    validatorClass: 
+      Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]] = null,
+    evalDataParams: BaseParams = null,
+    cleanserParams: BaseParams = null,
+    algoParamsList: Iterable[(String, BaseParams)] = null,
+    serverParams: BaseParams = null,
+    validatorParams: BaseParams = null) {
+
+    DebugWorkflow.run(
+      batch,
+      dataPrepClass,
+      cleanserClass,
+      Map(algoClassMap.toSeq:_*),
+      serverClass,
+      validatorClass,
+      evalDataParams,
+      cleanserParams,
+      algoParamsList.toSeq,
+      serverParams,
+      validatorParams)(
+      JavaUtils.fakeManifest[EDP],
+      JavaUtils.fakeManifest[VP],
+      JavaUtils.fakeManifest[TDP],
+      JavaUtils.fakeManifest[VDP],
+      JavaUtils.fakeManifest[CP],
+      JavaUtils.fakeManifest[AP],
+      JavaUtils.fakeManifest[SP],
+
+      JavaUtils.fakeManifest[TD],
+      JavaUtils.fakeManifest[F],
+      JavaUtils.fakeManifest[A],
+      JavaUtils.fakeManifest[CD],
+      JavaUtils.fakeManifest[M],
+      JavaUtils.fakeManifest[P],
+      JavaUtils.fakeManifest[VU],
+      JavaUtils.fakeManifest[VR],
+      JavaUtils.fakeManifest[CVR]
+    )
+  }
+}
 
 object DebugWorkflow {
   def debugString[D](data: D): String = {
@@ -49,7 +120,7 @@ object DebugWorkflow {
     }
     s
   }
-
+  
   // Probably CP, AP, SP don't require Manifest
   def run[
       EDP <: BaseParams : Manifest,
@@ -69,11 +140,14 @@ object DebugWorkflow {
       VR : Manifest,
       CVR <: AnyRef : Manifest](
     batch: String = "",
-    dataPrep: BaseDataPreparator[EDP, TDP, VDP, TD, F, A] = null,
-    cleanser: BaseCleanser[TD, CD, CP] = null,
-    algoMap: Map[String, BaseAlgorithm[CD, F, P, _, _ <: BaseParams]] = null,
-    server: BaseServer[F, P, SP] = null,
-    validator: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR] = null,
+    dataPrepClass: 
+      Class[_  <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]] = null,
+    cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]] = null,
+    algoClassMap: 
+      Map[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]]] = null,
+    serverClass: Class[_ <: BaseServer[F, P, SP]] = null,
+    validatorClass: 
+      Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]] = null,
     evalDataParams: BaseParams = null,
     cleanserParams: BaseParams = null,
     algoParamsList: Seq[(String, BaseParams)] = null,
@@ -84,6 +158,13 @@ object DebugWorkflow {
     println("DebugWorkflow.run")
     println("Start spark context")
     val sc = WorkflowContext(batch)
+
+    if (dataPrepClass == null) {
+      println("Dataprep is null. Stop here");
+      return
+    }
+
+    val dataPrep = dataPrepClass.newInstance
 
     println("Data preparation")
     // Data Prep
@@ -112,10 +193,12 @@ object DebugWorkflow {
 
     println("DataPreparation complete")
 
-    if (cleanser == null) {
+    if (cleanserClass == null) {
       println("Cleanser is null. Stop here")
       return
     }
+
+    val cleanser = cleanserClass.newInstance
     
     println("Cleansing")
     cleanser.initBase(cleanserParams)
@@ -129,7 +212,7 @@ object DebugWorkflow {
       println(debugString(cd))
     }}
 
-    if (algoMap == null) {
+    if (algoClassMap == null) {
       println("Algo is null. Stop here")
       return
     }
@@ -143,7 +226,7 @@ object DebugWorkflow {
     val algoInstanceList: Array[BaseAlgorithm[CD, F, P, _, _]] = 
     algoParamsList
       .map { case (algoName, algoParams) => {
-        val algo = algoMap(algoName)
+        val algo = algoClassMap(algoName).newInstance
         algo.initBase(algoParams)
         algo
       }}
@@ -177,10 +260,11 @@ object DebugWorkflow {
       }}
     }}
 
-    if (server == null) {
+    if (serverClass == null) {
       println("Server is null. Stop here")
       return
     }
+    val server = serverClass.newInstance
 
     println("Algo prediction")
 
@@ -208,10 +292,12 @@ object DebugWorkflow {
 
     }}
     
-    if (validator == null) {
+    if (validatorClass == null) {
       println("Validator is null. Stop here")
       return
     }
+
+    val validator = validatorClass.newInstance
     
     // Validation Unit
     //val validator = baseEvaluator.validatorClass.newInstance

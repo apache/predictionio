@@ -107,7 +107,8 @@ object RunJava {
     //DebugWorkflow.dataPrep(dp, "Java DataPrep", edp)
   }
 
-  def main(args: Array[String]) {
+  /*
+  def test1() {
     val edp = new regression.DataParams("data/lr_data.txt")
     val dp = new regression.DataPreparator()
 
@@ -145,6 +146,82 @@ object RunJava {
       validatorParams = vp,
       batch = "Java Workflow"
     )
+  }
+  */
+
+  def main(args: Array[String]) {
+    val edp = new regression.DataParams("data/lr_data.txt")
+    val cp = new regression.CleanserParams(0.8)
+    val ep = EmptyParams()
+    val algoParamsList = Seq(
+      ("default", ep),
+      ("dummy", ep))
+
+    // Engine 
+    //val engine = (new regression.Engine()).apply()
+
+
+    val sp = EmptyParams()
+
+    val vp = EmptyParams()
+
+    val algoClassMap = Map(
+      "default" -> classOf[regression.Algo],
+      "dummy" -> classOf[regression.DummyAlgo])
+
+    DebugWorkflow.run(
+      dataPrepClass = classOf[regression.DataPreparator], 
+      evalDataParams = edp,
+      cleanserClass = classOf[regression.Cleanser],
+      cleanserParams = cp,
+      algoClassMap = algoClassMap,
+      algoParamsList = algoParamsList,
+      serverClass = classOf[regression.Server],
+      serverParams = sp,
+      validatorClass = classOf[regression.Validator],
+      validatorParams = vp,
+      batch = "Java Workflow"
+    )
+
+
+    /*
+
+
+    val c = new regression.Cleanser()
+    val cp = new regression.CleanserParams(0.8)
+    
+    val algo = new regression.Algo()
+    val ep = EmptyParams()
+
+    val dummyAlgo = new regression.DummyAlgo()
+
+    val algoMap = Map(
+      "" -> algo,
+      "dummy" -> dummyAlgo)
+    val algoParamsList = Seq(
+      ("", ep),
+      ("dummy", ep))
+
+    val server = new regression.Server()
+    val sp = EmptyParams()
+
+    val validator = new regression.Validator()
+    val vp = EmptyParams()
+
+    DebugWorkflow.run(
+      dataPrep = dp, 
+      evalDataParams = edp,
+      cleanser = c,
+      cleanserParams = cp,
+      algoMap = algoMap,
+      algoParamsList = algoParamsList,
+      server = server,
+      serverParams = sp,
+      validator = validator,
+      validatorParams = vp,
+      batch = "Java Workflow"
+    )
+    */
   }
 }
 
