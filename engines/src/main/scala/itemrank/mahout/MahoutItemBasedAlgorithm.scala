@@ -15,10 +15,12 @@ import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.model.Preference
 import org.apache.mahout.cf.taste.model.PreferenceArray
 import org.apache.mahout.cf.taste.impl.model.GenericDataModel
+import org.apache.mahout.cf.taste.impl.model.GenericBooleanPrefDataModel
 import org.apache.mahout.cf.taste.impl.model.GenericPreference
 import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel
 import org.apache.mahout.cf.taste.impl.common.FastByIDMap
+import org.apache.mahout.cf.taste.impl.common.FastIDSet
 
 import org.apache.mahout.cf.taste.impl.similarity.{
   CityBlockSimilarity,
@@ -53,9 +55,13 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
       val freshness = 0
       val freshnessTimeUnit: Long = 3600000 // 1 hour
 
-      val dataModel: DataModel = buildDataModel(cleansedData.rating.map{ r =>
-        (r.uindex, r.iindex, r.rating.toFloat)
-      })
+      val dataModel: DataModel = if (_algoParams.booleanData) {
+        buildBooleanPrefDataModel(cleansedData.rating.map { r =>
+          (r.uindex, r.iindex, r.t) })
+      } else {
+        buildDataModel(cleansedData.rating.map{ r =>
+          (r.uindex, r.iindex, r.rating.toFloat, r.t) })
+      }
       val similarity: ItemSimilarity = buildItemSimilarity(dataModel)
 
       val itemIds = dataModel.getItemIDs.toSeq.map(_.toLong)
@@ -146,24 +152,72 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
       )
     }
 
-  /* Build DataModel with Seq of (uid, iid, rating)
+  /* Build DataModel with Seq of (uid, iid, rating, timestamp)
+   * NOTE: assume no duplicated rating on same iid by the same user
    */
-  private def buildDataModel(ratingSeq: Seq[(Int, Int, Float)]): DataModel = {
+  private def buildDataModel(
+    ratingSeq: Seq[(Int, Int, Float, Long)]): DataModel = {
+
     val allPrefs = new FastByIDMap[PreferenceArray]()
+    val allTimestamps = new FastByIDMap[FastByIDMap[java.lang.Long]]()
+
     ratingSeq.groupBy(_._1)
       .foreach { case (uid, ratingList) =>
-        val prefList: Seq[(Preference, Int)] = ratingList.map{ r =>
-          new GenericPreference(r._1.toLong, r._2.toLong, r._3)
-        }.zipWithIndex
+        val userID = uid.toLong
+        // preference of items for this user
+        val userPrefs = new GenericUserPreferenceArray(ratingList.size)
+        // timestamp of items for this user
+        val userTimestamps = new FastByIDMap[java.lang.Long]()
 
-        val userPref = new GenericUserPreferenceArray(prefList.size)
-        prefList.foreach { case (pref, i) =>
-          userPref.set(i, pref)
+        ratingList.zipWithIndex
+          .foreach { case (r, i) =>
+            val itemID = r._2.toLong
+            val pref = new GenericPreference(userID, itemID, r._3)
+            userPrefs.set(i, pref)
+            userTimestamps.put(itemID, r._4)
         }
 
-        allPrefs.put(uid.toLong, userPref)
+        allPrefs.put(userID, userPrefs)
+        allTimestamps.put(userID, userTimestamps)
       }
-    new GenericDataModel(allPrefs)
+
+    new GenericDataModel(allPrefs, allTimestamps)
+  }
+
+  /* Build DataModel with Seq of (uid, iid, timestamp)
+   * NOTE: assume no duplicated iid by the same user
+   */
+  private def buildBooleanPrefDataModel(
+    ratingSeq: Seq[(Int, Int, Long)]): DataModel = {
+
+    val allPrefs = new FastByIDMap[FastIDSet]()
+    val allTimestamps = new FastByIDMap[FastByIDMap[java.lang.Long]]()
+
+    ratingSeq.foreach { case (uid, iid, t) =>
+      val userID = uid.toLong
+      val itemID = iid.toLong
+
+      // item
+      val idSet = allPrefs.get(userID)
+      if (idSet == null) {
+        val newIdSet = new FastIDSet()
+        newIdSet.add(itemID)
+        allPrefs.put(userID, newIdSet)
+      } else {
+        idSet.add(itemID)
+      }
+      // timestamp
+      val timestamps = allTimestamps.get(userID)
+      if (timestamps == null) {
+        val newTimestamps = new FastByIDMap[java.lang.Long]
+        newTimestamps.put(itemID, t)
+        allTimestamps.put(userID, newTimestamps)
+      } else {
+        timestamps.put(itemID, t)
+      }
+    }
+
+    new GenericBooleanPrefDataModel(allPrefs, allTimestamps)
   }
 
   object ScoreOrdering extends Ordering[(Int, Double)] {
