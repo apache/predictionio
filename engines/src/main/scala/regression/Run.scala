@@ -19,6 +19,7 @@ import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 import org.apache.spark.mllib.regression.RegressionModel
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.util.MLUtils
+import io.prediction.util.Util
 
 import org.json4s._
 

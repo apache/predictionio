@@ -12,6 +12,7 @@ import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseCleanser
 import scala.collection.JavaConversions._
 import org.apache.spark.rdd.RDD
+import io.prediction.util.Util
 
 
 abstract class JavaLocalCleanser[TD, CD, CP <: BaseParams]

@@ -10,6 +10,7 @@ import com.github.nscala_time.time.Imports.DateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
+import io.prediction.util.Util
 
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream

@@ -4,6 +4,7 @@ import io.prediction.core.BaseEngine
 import io.prediction.core.Spark2LocalAlgorithm
 import io.prediction.core.ParallelAlgorithm
 import io.prediction.core.SingleAlgoEngine
+import io.prediction.util.Util
 
 import org.json4s.Formats
 
