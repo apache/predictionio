@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "org.apache.spark"  %% "spark-mllib"    % "1.0.0"
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"),
-  "org.apache.mahout"  % "mahout-core"    % "0.9"
+  "org.apache.mahout"  % "mahout-core"    % "0.9",
+  "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   )
 
 //addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
