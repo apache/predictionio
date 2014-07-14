@@ -34,12 +34,16 @@ object APIDebugWorkflow {
   def run[
       DSP <: BaseParams,
       DUP <: BaseParams,
+      PP <: BaseParams,
       TD,
+      PD,
       F,
       A](
     batch: String = "",
     dataSourceClass: Class[_ <: BaseDataSource[DSP, DUP, TD, F, A]] = null,
-    dataSourceParams: BaseParams = null
+    dataSourceParams: BaseParams = null,
+    preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
+    preparatorParams: BaseParams = null
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
@@ -55,7 +59,7 @@ object APIDebugWorkflow {
 
     val evalParamsDataMap
     : Map[EI, (DUP, TD, RDD[(F, A)])] = dataSource
-      .prepareBase(sc)
+      .readBase(sc)
       .zipWithIndex
       .map(_.swap)
       .toMap
@@ -73,15 +77,32 @@ object APIDebugWorkflow {
     evalDataMap.foreach{ case (ei, data) => {
       val (trainingData, validationData) = data
       println(s"TrainingData $ei")
-      //println(trainingData)
       println(DebugWorkflow.debugString(trainingData))
       println(s"ValidationData $ei")
-      //validationData.collect.foreach(println)
       validationData.collect.map(DebugWorkflow.debugString).foreach(println)
     }}
 
-    println("DataPreparation complete")
+    println("Data source complete")
+    
+    if (preparatorClass == null) {
+      println("Preparator is null. Stop here")
+      return
+    }
+
+    println("Preparator")
+    val preparator = Doer(preparatorClass, preparatorParams)
+    
+    val evalPreparedMap: Map[EI, PD] = evalDataMap
+    .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
+
+    evalPreparedMap.foreach{ case (ei, pd) => {
+      println(s"Prepared $ei")
+      println(DebugWorkflow.debugString(pd))
+    }}
+  
+    println("Preparator complete")
   }
+
 
 }
 

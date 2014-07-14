@@ -3,7 +3,8 @@ package io.prediction.core
 import io.prediction.BaseParams
 import scala.reflect._
 
-abstract class AbstractDoer[P <: BaseParams : ClassTag](val p: P) {
+abstract class AbstractDoer[P <: BaseParams : ClassTag](val p: P) 
+extends Serializable {
   override def toString() : String = {
     val t = classTag[P].runtimeClass.getName
     val v = p.toString()
