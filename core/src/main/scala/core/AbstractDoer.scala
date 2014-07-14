@@ -1,6 +1,7 @@
 package io.prediction.core
 
 import io.prediction.BaseParams
+import java.lang.NoSuchMethodException
 import scala.reflect._
 
 abstract class AbstractDoer[P <: BaseParams : ClassTag](val p: P) 
@@ -15,11 +16,29 @@ extends Serializable {
 }
 
 object Doer {
-  def apply[C <: AbstractDoer[_ <: BaseParams]](
-    cls: Class[_ <: C],
-    params: BaseParams): C = { 
-    val constr = cls.getConstructors()(0)
-    return constr.newInstance(params).asInstanceOf[C]
+  def apply[C <: AbstractDoer[_ <: BaseParams]] (
+    cls: Class[_ <: C], params: BaseParams): C = {
+
+    // Subclasses only allows two kind of constructors.
+    // 1. Emtpy constructor.
+    // 2. Constructor with P <: BaseParams.
+    // We first try (1), if failed, we try (2).
+    // There is a tech challenge with (2) as it is difficult to get the
+    // constructor directly, as P is erased in this context. Instead, we
+    // brutally extract the first constructor from the constructor list, and
+    // pass params to it.
+
+    // First try get zero constructor
+    try {
+      val zeroConstr = cls.getConstructor()
+      return zeroConstr.newInstance().asInstanceOf[C]
+    } catch {
+      case e: NoSuchMethodException => {
+        // No zero constructor found. Brutally get the first one.
+        val constr = cls.getConstructors()(0)
+        return constr.newInstance(params).asInstanceOf[C]
+      }
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import scala.language.existentials
 
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
+import io.prediction.core.BaseAlgorithm2
 import io.prediction.java.JavaUtils
 
 import com.github.nscala_time.time.Imports.DateTime
@@ -37,13 +38,17 @@ object APIDebugWorkflow {
       PP <: BaseParams,
       TD,
       PD,
-      F,
+      Q,
+      P,
       A](
     batch: String = "",
-    dataSourceClass: Class[_ <: BaseDataSource[DSP, DUP, TD, F, A]] = null,
+    dataSourceClass: Class[_ <: BaseDataSource[DSP, DUP, TD, Q, A]] = null,
     dataSourceParams: BaseParams = null,
     preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
-    preparatorParams: BaseParams = null
+    preparatorParams: BaseParams = null,
+    algorithmClassMap: 
+      Map[String, Class[_ <: BaseAlgorithm2[_ <: BaseParams, PD, _, Q, P]]] = null,
+    algorithmParamsList: Seq[(String, BaseParams)] = null
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
@@ -58,7 +63,7 @@ object APIDebugWorkflow {
     val dataSource = Doer(dataSourceClass, dataSourceParams)
 
     val evalParamsDataMap
-    : Map[EI, (DUP, TD, RDD[(F, A)])] = dataSource
+    : Map[EI, (DUP, TD, RDD[(Q, A)])] = dataSource
       .readBase(sc)
       .zipWithIndex
       .map(_.swap)
@@ -68,7 +73,7 @@ object APIDebugWorkflow {
       case(ei, e) => (ei -> e._1)
     }
 
-    val evalDataMap: Map[EI, (TD, RDD[(F, A)])] = evalParamsDataMap.map {
+    val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
       case(ei, e) => (ei -> (e._2, e._3))
     }
 
@@ -101,6 +106,55 @@ object APIDebugWorkflow {
     }}
   
     println("Preparator complete")
+    
+    if (algorithmClassMap == null) {
+      println("Algo is null. Stop here")
+      return
+    }
+
+    println("Algo model construction")
+    // fake algo map.
+    //val algoMap = Map("" -> algo)
+    //val algoParamsList = Seq(("", algoParams))
+
+    // Instantiate algos
+    val algoInstanceList: Array[BaseAlgorithm2[_, PD, _, Q, P]] =
+    algorithmParamsList
+      .map { 
+        case (algoName, algoParams) => 
+          Doer(algorithmClassMap(algoName), algoParams)
+      }
+      .toArray
+
+    // Model Training
+    // Since different algo can have different model data, have to use Any.
+    // We need to use par here. Since this process allows algorithms to perform
+    // "Actions" 
+    // (see https://spark.apache.org/docs/latest/programming-guide.html#actions)
+    // on RDDs. Meaning that algo may kick off a spark pipeline to for training.
+    // Hence, we parallelize this process.
+    val evalAlgoModelMap: Map[EI, Seq[(AI, Any)]] = evalPreparedMap
+    .par
+    .map { case (ei, preparedData) => {
+
+      val algoModelSeq: Seq[(AI, Any)] = algoInstanceList
+      .zipWithIndex
+      .map { case (algo, index) => {
+        val model: Any = algo.trainBase(sc, preparedData)
+        (index, model)
+      }}
+
+      (ei, algoModelSeq)
+    }}
+    .seq
+    .toMap
+
+    evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
+      aiModelSeq.map { case(ai, model) => {
+        println(s"Model ei: $ei ai: $ei")
+        println(DebugWorkflow.debugString(model))
+      }}
+    }}
   }
 
 

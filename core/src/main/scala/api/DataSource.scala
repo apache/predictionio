@@ -10,29 +10,28 @@ import org.apache.spark.SparkContext._
 import scala.reflect._
 
 abstract class LDataSource[DSP <: BaseParams : ClassTag,
-    TD : Manifest, F, A](dsp: DSP)
-  extends BaseDataSource[DSP, EmptyParams, RDD[TD], F, A](dsp) {
+    TD : Manifest, Q, A](dsp: DSP)
+  extends BaseDataSource[DSP, EmptyParams, RDD[TD], Q, A](dsp) {
 
-  def readBase(sc: SparkContext): Seq[(EmptyParams, RDD[TD], RDD[(F, A)])] = {
-    read.map { case (td, faSeq) => {
-      (EmptyParams(), sc.parallelize(Array(td)), sc.parallelize(faSeq))
+  def readBase(sc: SparkContext): Seq[(EmptyParams, RDD[TD], RDD[(Q, A)])] = {
+    read.map { case (td, qaSeq) => {
+      (EmptyParams(), sc.parallelize(Array(td)), sc.parallelize(qaSeq))
     }}
   }
 
-  def read(): Seq[(TD, Seq[(F, A)])]
+  def read(): Seq[(TD, Seq[(Q, A)])]
 }
 
-abstract class PDataSource[DSP <: BaseParams : Manifest, TD, F, A](dsp: DSP)
-  extends BaseDataSource[DSP, EmptyParams, TD, F, A](dsp) {
+abstract class PDataSource[DSP <: BaseParams : Manifest, TD, Q, A](dsp: DSP)
+  extends BaseDataSource[DSP, EmptyParams, TD, Q, A](dsp) {
 
-  def readBase(sc: SparkContext): Seq[(EmptyParams, TD, RDD[(F, A)])] = {
-    read(sc).map { case (td, faRdd) => {
+  def readBase(sc: SparkContext): Seq[(EmptyParams, TD, RDD[(Q, A)])] = {
+    read(sc).map { case (td, qaRdd) => {
       // TODO(yipjustin). Maybe do a size check on td, to make sure the user
       // doesn't supply a huge TD to the driver program.
-      (EmptyParams(), td, faRdd)
+      (EmptyParams(), td, qaRdd)
     }}
   }
 
-  def read(sc: SparkContext): Seq[(TD, RDD[(F, A)])]
+  def read(sc: SparkContext): Seq[(TD, RDD[(Q, A)])]
 }
-

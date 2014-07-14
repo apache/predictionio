@@ -16,7 +16,7 @@ abstract class LPreparator[
   def prepareBase(sc: SparkContext, rddTd: RDD[TD]): RDD[PD] = {
     rddTd.map(prepare)
   }
-
+  
   def prepare(trainingData: TD): PD
 }
 

@@ -1,8 +1,10 @@
 package io.prediction.engines.regression
 
 import io.prediction.BaseParams
+import io.prediction.EmptyParams
 import io.prediction.api.LDataSource
 import io.prediction.api.LPreparator
+import io.prediction.api.LAlgorithm
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -10,6 +12,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.util.MLUtils
 import io.prediction.util.Util
 import scala.io.Source
+
+import breeze.linalg.DenseMatrix
+import breeze.linalg.DenseVector
+import breeze.linalg.inv
+import nak.regress.LinearRegression
 
 import org.json4s._
 
@@ -55,18 +62,42 @@ class LocalPreparator(val pp: PreparatorParams)
   }
 }
 
+class LocalAlgorithm
+  extends LAlgorithm[
+      EmptyParams, TrainingData, Array[Double], Vector[Double], Double](
+        EmptyParams()) {
+
+  def train(td: TrainingData): Array[Double] = {
+    val xArray: Array[Double] = td.x.foldLeft(Vector[Double]())(_ ++ _).toArray
+    // DenseMatrix.create fills first column, then second.
+    val m = DenseMatrix.create[Double](td.c, td.r, xArray).t
+    val y = DenseVector[Double](td.y.toArray)
+    val result = LinearRegression.regress(m, y)
+    return result.data.toArray
+  }
+
+  def predict(model: Array[Double], query: Vector[Double]) = {
+    model.zip(query).map(e => e._1 * e._2).sum
+  }
+}
+
 
 object LocalAPIRunner {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
+    val emptyParams = EmptyParams()
     
     APIDebugWorkflow.run(
         dataSourceClass = classOf[LocalDataSource],
         dataSourceParams = dataSourceParams,
         preparatorClass = classOf[LocalPreparator],
         preparatorParams = preparatorParams,
+        algorithmClassMap = Map(
+          "" -> classOf[LocalAlgorithm]),
+        algorithmParamsList = Seq(
+          ("", emptyParams)),
         batch = "Regress Man API")
 
   }

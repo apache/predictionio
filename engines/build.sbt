@@ -20,6 +20,11 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   )
 
+resolvers ++= Seq(
+  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+)
+
 //addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
 
 //scalacOptions <<= (scalacOptions, scalaSource in Compile) map { (options, base) =>
