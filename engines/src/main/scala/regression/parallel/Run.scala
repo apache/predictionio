@@ -2,9 +2,11 @@ package io.prediction.engines.regression.parallel
 
 import io.prediction.api.Params
 import io.prediction.api.PDataSource
+import io.prediction.api.P2LAlgorithm
 import io.prediction.api.IdentityPreparator
+import io.prediction.api.AverageServing
+import io.prediction.api.MeanSquareError
 import io.prediction.workflow.APIDebugWorkflow
-
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -41,15 +43,43 @@ class ParallelDataSource(val dsp: DataSourceParams)
   }
 }
 
+case class AlgorithmParams(
+  val numIterations: Int = 200, val stepSize: Double = 0.1) extends Params
+
+class ParallelSGDAlgorithm(val ap: AlgorithmParams)
+  extends P2LAlgorithm[
+      AlgorithmParams, RDD[LabeledPoint], RegressionModel, Vector, Double] {
+
+  def train(data: RDD[LabeledPoint]): RegressionModel = {
+    LinearRegressionWithSGD.train(data, ap.numIterations, ap.stepSize)
+  }
+
+  def predict(model: RegressionModel, feature: Vector): Double = {
+    model.predict(feature)
+  }
+}
+
+
+
+
 object Run {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"
-    val dataSourceParams = new DataSourceParams(filepath, 3)
+    val dataSourceParams = DataSourceParams(filepath, 3)
+    val SGD = "SGD"
+    val algorithmParamsList = Seq(
+      (SGD, AlgorithmParams(stepSize = 0.1)),
+      (SGD, AlgorithmParams(stepSize = 0.2)),
+      (SGD, AlgorithmParams(stepSize = 0.4)))
     
     APIDebugWorkflow.run(
         dataSourceClass = classOf[ParallelDataSource],
         dataSourceParams = dataSourceParams,
         preparatorClass = classOf[IdentityPreparator[RDD[LabeledPoint]]],
+        algorithmClassMap = Map(SGD -> classOf[ParallelSGDAlgorithm]),
+        algorithmParamsList = algorithmParamsList,
+        servingClass = classOf[AverageServing[Vector]],
+        metricsClass = classOf[MeanSquareError[Vector]],
         batch = "Imagine: Parallel Regression")
   }
 }
@@ -58,12 +88,31 @@ object Run {
 
 
 
+/****** TO FIX ******/
 
+import org.json4s._
+
+class VectorSerializer extends CustomSerializer[Vector](format => (
+  {
+    case JArray(x) =>
+      val v = x.toArray.map { y =>
+        y match {
+          case JDouble(z) => z
+        }
+      }
+      new DenseVector(v)
+  },
+  {
+    case x: Vector =>
+      JArray(x.toArray.toList.map(d => JDouble(d)))
+  }
+))
 
 
 
 /****************** OLD *************************/
 
+/*
 import io.prediction.BaseParams
 import io.prediction._
 import io.prediction.core.BaseDataPreparator
@@ -84,9 +133,10 @@ import org.apache.spark.mllib.regression.RegressionModel
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.util.MLUtils
 import io.prediction.util.Util
+*/
 
-import org.json4s._
 
+/*
 // Maybe also remove this subclassing too
 class EvalDataParams(val filepath: String, val k: Int, val seed: Int = 9527)
 extends BaseParams
@@ -151,23 +201,9 @@ class Algorithm
     model.predict(feature)
   }
 }
+*/
 
-class VectorSerializer extends CustomSerializer[Vector](format => (
-  {
-    case JArray(x) =>
-      val v = x.toArray.map { y =>
-        y match {
-          case JDouble(z) => z
-        }
-      }
-      new DenseVector(v)
-  },
-  {
-    case x: Vector =>
-      JArray(x.toArray.toList.map(d => JDouble(d)))
-  }
-))
-
+/*
 object RegressionEngine extends EngineFactory {
   def apply() = {
     new Spark2LocalSimpleEngine(
@@ -176,7 +212,9 @@ object RegressionEngine extends EngineFactory {
     }
   }
 }
+*/
 
+/*
 object Runner {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"
@@ -195,3 +233,4 @@ object Runner {
 
   }
 }
+*/

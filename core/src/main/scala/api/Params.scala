@@ -6,9 +6,8 @@ import io.prediction.BaseParams
 trait Params extends BaseParams {}
 
 // Concrete helper classes
-class EmptyParams() extends Params
-
-object EmptyParams {
-  def apply(): EmptyParams = new EmptyParams()
+case class EmptyParams() extends Params {
+  override
+  def toString(): String = "Empty"
 }
 

@@ -5,8 +5,9 @@ import io.prediction.api.EmptyParams
 import io.prediction.api.LDataSource
 import io.prediction.api.LPreparator
 import io.prediction.api.LAlgorithm
-import io.prediction.api.LServing
-import io.prediction.api.Metrics
+import io.prediction.api.FirstServing
+//import io.prediction.api.Metrics
+import io.prediction.api.MeanSquareError
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -32,8 +33,8 @@ extends Serializable {
 
 class LocalDataSource(val dsp: DataSourceParams)
 extends LDataSource[
-    DataSourceParams, Null, TrainingData, Vector[Double], Double] {
-  def read(): Seq[(Null, TrainingData, Seq[(Vector[Double], Double)])] = {
+    DataSourceParams, Integer, TrainingData, Vector[Double], Double] {
+  def read(): Seq[(Integer, TrainingData, Seq[(Vector[Double], Double)])] = {
     val lines = Source.fromFile(dsp.filepath).getLines
       .toSeq.map(_.split(" ", 2))
 
@@ -43,7 +44,7 @@ extends LDataSource[
 
     val td = TrainingData(Vector(x:_*), Vector(y:_*))
 
-    val oneData = (null, td, x.zip(y))
+    val oneData = (Int.box(0), td, x.zip(y))
     return Seq(oneData)
   }
 }
@@ -81,12 +82,7 @@ class LocalAlgorithm
   }
 }
 
-class Serving extends LServing[EmptyParams, Vector[Double], Double] {
-  def serve(query: Vector[Double], predictions: Seq[Double]): Double = {
-    return predictions.head
-  }
-}
-
+/*
 class MeanSquareError extends Metrics[EmptyParams, Null, 
     Vector[Double], Double, Double, 
     (Double, Double), Seq[(Double, Double)], String] {
@@ -102,14 +98,13 @@ class MeanSquareError extends Metrics[EmptyParams, Null,
     f"MSE: ${mse}%8.6f"
   }
 }
-
+*/
 
 object Run {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
-    //val emptyParams = EmptyParams()
    
     APIDebugWorkflow.run(
         dataSourceClass = classOf[LocalDataSource],
@@ -120,12 +115,9 @@ object Run {
           "" -> classOf[LocalAlgorithm]),
         algorithmParamsList = Seq(
           ("", EmptyParams())),
-        servingClass = classOf[Serving],
-        //servingParams = emptyParams,
-        metricsClass = classOf[MeanSquareError],
-        //metricsParams = emptyParams,
+        servingClass = classOf[FirstServing[Vector[Double], Double]],
+        metricsClass = classOf[MeanSquareError[Vector[Double]]],
         batch = "Imagine: Local Regression")
-
   }
 }
 

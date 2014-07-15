@@ -208,7 +208,7 @@ object APIDebugWorkflow {
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
-    val sc = WorkflowContext()
+    val sc = WorkflowContext(batch)
 
     if (dataSourceClass == null || dataSourceParams == null) {
       println("Dataprep Class or Params is null. Stop here");
@@ -385,6 +385,14 @@ object APIDebugWorkflow {
       .map(metricsWrapper.computeMultipleSets)
 
     val metricsOutput: Array[MMR] = multipleMetricsResults.collect
+
+    println(s"DataSourceParams: $dataSourceParams")
+    println(s"PreparatorParams: $preparatorParams")
+    algorithmParamsList.zipWithIndex.foreach { case (ap, ai) => {
+      println(s"Algo: $ai Name: ${ap._1} Params: ${ap._2}")
+    }}
+    println(s"ServingParams: $servingParams")
+    println(s"MetricsParams: $metricsParams")
 
     metricsOutput foreach { println }
     
