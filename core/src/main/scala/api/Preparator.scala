@@ -10,8 +10,8 @@ import org.apache.spark.SparkContext._
 import scala.reflect._
 
 abstract class LPreparator[
-    PP <: BaseParams : Manifest, TD, PD: ClassTag](pp: PP)
-  extends BasePreparator[PP, RDD[TD], RDD[PD]](pp) {
+    PP <: BaseParams : Manifest, TD, PD: ClassTag]
+  extends BasePreparator[PP, RDD[TD], RDD[PD]] {
 
   def prepareBase(sc: SparkContext, rddTd: RDD[TD]): RDD[PD] = {
     rddTd.map(prepare)

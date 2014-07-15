@@ -294,9 +294,9 @@ object DebugWorkflow {
     evalPredictionMap.foreach{ case(ei, fpaRdd) => {
       println(s"Prediction $ei $fpaRdd")
       fpaRdd.collect.foreach{ case(f, p, a) => {
-        val fs = debugString(f)
-        val ps = debugString(p)
-        val as = debugString(a)
+        val fs = DebugWorkflow.debugString(f)
+        val ps = DebugWorkflow.debugString(p)
+        val as = DebugWorkflow.debugString(a)
         println(s"F: $fs P: $ps A: $as")
       }}
 

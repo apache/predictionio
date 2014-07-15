@@ -9,9 +9,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import scala.reflect._
 
-abstract class LDataSource[DSP <: BaseParams : ClassTag,
-    TD : Manifest, Q, A](dsp: DSP)
-  extends BaseDataSource[DSP, EmptyParams, RDD[TD], Q, A](dsp) {
+abstract class LDataSource[DSP <: BaseParams : ClassTag : Manifest,
+    TD : Manifest, Q, A]
+  extends BaseDataSource[DSP, EmptyParams, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(EmptyParams, RDD[TD], RDD[(Q, A)])] = {
     read.map { case (td, qaSeq) => {
@@ -22,8 +22,8 @@ abstract class LDataSource[DSP <: BaseParams : ClassTag,
   def read(): Seq[(TD, Seq[(Q, A)])]
 }
 
-abstract class PDataSource[DSP <: BaseParams : Manifest, TD, Q, A](dsp: DSP)
-  extends BaseDataSource[DSP, EmptyParams, TD, Q, A](dsp) {
+abstract class PDataSource[DSP <: BaseParams : ClassTag : Manifest, TD, Q, A]
+  extends BaseDataSource[DSP, EmptyParams, TD, Q, A] {
 
   def readBase(sc: SparkContext): Seq[(EmptyParams, TD, RDD[(Q, A)])] = {
     read(sc).map { case (td, qaRdd) => {

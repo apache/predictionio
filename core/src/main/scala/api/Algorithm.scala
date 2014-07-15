@@ -10,8 +10,12 @@ import org.apache.spark.SparkContext._
 import scala.reflect._
 
 abstract class LAlgorithm[
-    AP <: BaseParams : ClassTag, PD, M : ClassTag, Q, P](ap: AP)
-  extends BaseAlgorithm2[AP, RDD[PD], RDD[M], Q, P](ap) {
+    AP <: BaseParams : ClassTag : Manifest, PD, M : ClassTag, Q, P]
+  extends BaseAlgorithm2[AP, RDD[PD], RDD[M], Q, P] {
+  def getModel(baseModel: Any): RDD[Any] = {
+    baseModel.asInstanceOf[RDD[Any]]
+  }
+
   def trainBase(sc: SparkContext, pd: RDD[PD]): RDD[M] = pd.map(train)
 
   def train(pd: PD): M
@@ -34,6 +38,11 @@ abstract class LAlgorithm[
   : Iterator[(Long, P)] = {
     queries.map { case (idx, q) => (idx, predict(model, q)) }
   } 
+
+  // One Prediction
+  def predictBase(localBaseModel: Any, query: Q): P = {
+    predict(localBaseModel.asInstanceOf[M], query) 
+  }
 
   def predict(model: M, query: Q): P
 }

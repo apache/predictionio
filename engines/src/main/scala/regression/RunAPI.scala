@@ -5,6 +5,7 @@ import io.prediction.EmptyParams
 import io.prediction.api.LDataSource
 import io.prediction.api.LPreparator
 import io.prediction.api.LAlgorithm
+import io.prediction.api.LServing
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -31,7 +32,7 @@ extends Serializable {
 
 class LocalDataSource(val dsp: DataSourceParams)
 extends LDataSource[
-    DataSourceParams, TrainingData, Vector[Double], Double](dsp) {
+    DataSourceParams, TrainingData, Vector[Double], Double] {
   def read(): Seq[(TrainingData, Seq[(Vector[Double], Double)])] = {
     val lines = Source.fromFile(dsp.filepath).getLines
       .toSeq.map(_.split(" ", 2))
@@ -51,8 +52,8 @@ extends LDataSource[
 // When n > 0, drop data when index mod n == k
 case class PreparatorParams(n: Int = 0, k: Int = 0) extends BaseParams
 
-class LocalPreparator(val pp: PreparatorParams)
-  extends LPreparator[PreparatorParams, TrainingData, TrainingData](pp) {
+class LocalPreparator(val pp: PreparatorParams = PreparatorParams())
+  extends LPreparator[PreparatorParams, TrainingData, TrainingData] {
   def prepare(td: TrainingData): TrainingData = {
     val xyi: Vector[(Vector[Double], Double)] = td.x.zip(td.y)
       .zipWithIndex
@@ -64,8 +65,7 @@ class LocalPreparator(val pp: PreparatorParams)
 
 class LocalAlgorithm
   extends LAlgorithm[
-      EmptyParams, TrainingData, Array[Double], Vector[Double], Double](
-        EmptyParams()) {
+      EmptyParams, TrainingData, Array[Double], Vector[Double], Double] {
 
   def train(td: TrainingData): Array[Double] = {
     val xArray: Array[Double] = td.x.foldLeft(Vector[Double]())(_ ++ _).toArray
@@ -81,6 +81,12 @@ class LocalAlgorithm
   }
 }
 
+class Serving extends LServing[EmptyParams, Vector[Double], Double] {
+  def serve(query: Vector[Double], predictions: Seq[Double]): Double = {
+    return predictions.head
+  }
+}
+
 
 object LocalAPIRunner {
   def main(args: Array[String]) {
@@ -88,7 +94,7 @@ object LocalAPIRunner {
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
     val emptyParams = EmptyParams()
-    
+   
     APIDebugWorkflow.run(
         dataSourceClass = classOf[LocalDataSource],
         dataSourceParams = dataSourceParams,
@@ -98,6 +104,8 @@ object LocalAPIRunner {
           "" -> classOf[LocalAlgorithm]),
         algorithmParamsList = Seq(
           ("", emptyParams)),
+        servingClass = classOf[Serving],
+        servingParams = emptyParams,
         batch = "Regress Man API")
 
   }

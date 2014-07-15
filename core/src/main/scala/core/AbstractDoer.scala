@@ -3,17 +3,25 @@ package io.prediction.core
 import io.prediction.BaseParams
 import java.lang.NoSuchMethodException
 import scala.reflect._
+  
+import org.json4s._
+import org.json4s.ext.JodaTimeSerializers
+import org.json4s.native.JsonMethods
+import org.json4s.native.JsonMethods._
 
-abstract class AbstractDoer[P <: BaseParams : ClassTag](val p: P) 
+// Manifest should be deprecated. However, json4s still depends on it.
+//abstract class AbstractDoer[P <: BaseParams : ClassTag : Manifest](val p: P) 
+//extends Serializable {
+abstract class AbstractDoer[P <: BaseParams : ClassTag]
 extends Serializable {
   override def toString() : String = {
     val t = classTag[P].runtimeClass.getName
-    val v = p.toString()
-    s"Doer type: $t value: $v"
+    s"Doer type: $t"
   }
   
   def paramsClass() = classTag[P]
 }
+
 
 object Doer {
   def apply[C <: AbstractDoer[_ <: BaseParams]] (
@@ -22,21 +30,15 @@ object Doer {
     // Subclasses only allows two kind of constructors.
     // 1. Emtpy constructor.
     // 2. Constructor with P <: BaseParams.
-    // We first try (1), if failed, we try (2).
-    // There is a tech challenge with (2) as it is difficult to get the
-    // constructor directly, as P is erased in this context. Instead, we
-    // brutally extract the first constructor from the constructor list, and
-    // pass params to it.
-
-    // First try get zero constructor
+    // We first try (2), if failed, we try (1).
     try {
-      val zeroConstr = cls.getConstructor()
-      return zeroConstr.newInstance().asInstanceOf[C]
+      val constr = cls.getConstructor(params.getClass)
+      return constr.newInstance(params).asInstanceOf[C]
     } catch {
       case e: NoSuchMethodException => {
-        // No zero constructor found. Brutally get the first one.
-        val constr = cls.getConstructors()(0)
-        return constr.newInstance(params).asInstanceOf[C]
+        //val constr = cls.getConstructors()(0)
+        val zeroConstr = cls.getConstructor()
+        return zeroConstr.newInstance().asInstanceOf[C]
       }
     }
   }
@@ -44,7 +46,12 @@ object Doer {
 
 /* Below are test functions. To be removed. */
 
-class PDoer(p: Params) extends AbstractDoer[Params](p) {
+class PDoer(p: Params) extends AbstractDoer[Params] {
+}
+
+object PDoer {
+  val p = manifest[Params]
+  def q() = manifest[Params]
 }
 
 case class Params(val a: Int) extends BaseParams {
@@ -52,24 +59,24 @@ case class Params(val a: Int) extends BaseParams {
 
 
 object Test {
+
   def main(args: Array[String]) {
     val a = new PDoer(new Params(20))
 
     val c: Class[_ <: AbstractDoer[_ <: BaseParams]] = classOf[PDoer]
 
-    val p = new Params(20)
+    val pClass = c.getConstructors()(0).getParameterTypes()(0)
 
-    /*
-    val constr = c.getConstructors()(0)
+    //val p = new Params(20)
+    implicit val formats = DefaultFormats
 
-    val ci: AbstractDoer[_] = 
-      constr.newInstance(p).asInstanceOf[AbstractDoer[BaseParams]]
-    */
-    val ci = Doer(c, p)
+    val j = JsonMethods.parse("""{"a" : 1}""")
 
-    println(a)
-
-    println(ci)
+    val z = pClass.cast(
+      Extraction.extract(j, reflect.TypeInfo(pClass, None))(formats))
+       
+    println(z)
+    return
   }
 }
 
