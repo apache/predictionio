@@ -1,8 +1,6 @@
 package io.prediction.api
 
 import io.prediction.core.BaseServing
-import io.prediction.api.EmptyParams
-import io.prediction.api.Params
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext

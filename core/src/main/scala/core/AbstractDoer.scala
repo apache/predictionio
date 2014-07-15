@@ -46,22 +46,22 @@ object Doer {
 
 /* Below are test functions. To be removed. */
 
-class PDoer(p: Params) extends AbstractDoer[Params] {
+class PDoer(p: XParams) extends AbstractDoer[XParams] {
 }
 
 object PDoer {
-  val p = manifest[Params]
-  def q() = manifest[Params]
+  val p = manifest[XParams]
+  def q() = manifest[XParams]
 }
 
-case class Params(val a: Int) extends BaseParams {
+case class XParams(val a: Int) extends BaseParams {
 }
 
 
 object Test {
 
   def main(args: Array[String]) {
-    val a = new PDoer(new Params(20))
+    val a = new PDoer(new XParams(20))
 
     val c: Class[_ <: AbstractDoer[_ <: BaseParams]] = classOf[PDoer]
 

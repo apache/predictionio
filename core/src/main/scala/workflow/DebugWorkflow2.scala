@@ -1,5 +1,6 @@
 package io.prediction.workflow
 
+import io.prediction.api.Params
 import io.prediction.api.EmptyParams
 import io.prediction.core.Doer
 import scala.language.existentials
@@ -161,8 +162,8 @@ extends Serializable {
   }
 }
 
-class MetricsWrapper[MP <: BaseParams, DP, MU, MR, MMR <: AnyRef](
-    //TDP <: BaseParams, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
+class MetricsWrapper[MP <: Params, DP, MU, MR, MMR <: AnyRef](
+    //TDP <: Params, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
   val metrics: BaseMetrics[_,DP,_,_,_,MU,MR,MMR]) 
 extends Serializable {
   def computeSet(input: (DP, Iterable[MU])): (DP, MR) = {
@@ -179,10 +180,10 @@ extends Serializable {
 
 object APIDebugWorkflow {
   def run[
-      DSP <: BaseParams,
-      PP <: BaseParams,
-      SP <: BaseParams,
-      MP <: BaseParams,
+      DSP <: Params,
+      PP <: Params,
+      SP <: Params,
+      MP <: Params,
       DP,
       TD,
       PD,
@@ -195,16 +196,16 @@ object APIDebugWorkflow {
       ](
     batch: String = "",
     dataSourceClass: Class[_ <: BaseDataSource[DSP, DP, TD, Q, A]] = null,
-    dataSourceParams: BaseParams = EmptyParams(),
+    dataSourceParams: Params = EmptyParams(),
     preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
-    preparatorParams: BaseParams = EmptyParams(),
+    preparatorParams: Params = EmptyParams(),
     algorithmClassMap: 
-      Map[String, Class[_ <: BaseAlgorithm2[_ <: BaseParams, PD, _, Q, P]]] = null,
-    algorithmParamsList: Seq[(String, BaseParams)] = null,
+      Map[String, Class[_ <: BaseAlgorithm2[_ <: Params, PD, _, Q, P]]] = null,
+    algorithmParamsList: Seq[(String, Params)] = null,
     servingClass: Class[_ <: BaseServing[SP, Q, P]] = null,
-    servingParams: BaseParams = EmptyParams(),
+    servingParams: Params = EmptyParams(),
     metricsClass: Class[_ <: BaseMetrics[MP, DP, Q, P, A, MU, MR, MMR]] = null,
-    metricsParams: BaseParams = EmptyParams() 
+    metricsParams: Params = EmptyParams() 
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")

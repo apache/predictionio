@@ -1,15 +1,13 @@
 package io.prediction.api
 
 import io.prediction.core.BaseDataSource
-import io.prediction.EmptyParams
-import io.prediction.BaseParams
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import scala.reflect._
 
-abstract class LDataSource[DSP <: BaseParams : ClassTag,
+abstract class LDataSource[DSP <: Params : ClassTag,
     DP, TD : ClassTag, Q, A]
   extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
 
@@ -22,7 +20,7 @@ abstract class LDataSource[DSP <: BaseParams : ClassTag,
   def read(): Seq[(DP, TD, Seq[(Q, A)])]
 }
 
-abstract class PDataSource[DSP <: BaseParams : ClassTag, DP, TD, Q, A]
+abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
   extends BaseDataSource[DSP, DP, TD, Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])] = {
