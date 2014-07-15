@@ -71,13 +71,22 @@ public class GenericItemBased
       }
     }
 
-    return new Model(itemRecScores);
+    Model m = new Model(itemRecScores);
+    logger.info(m.toString());
+    return m;
   }
 
   @Override
   public Prediction predict(Model model, Feature feature) {
 
-    List<RecommendedItem> items = model.itemRecScores.get(feature.uid);
+    List<RecommendedItem> items = model.itemRecScores.get((long) feature.uid);
+
+    logger.info(model.itemRecScores.keySet().toString());
+    if (items != null) {
+      logger.info(items.toString());
+    } else {
+      logger.info("null");
+    }
 
     List<Integer> iids = new ArrayList<Integer>();
     List<Float> scores = new ArrayList<Float>();

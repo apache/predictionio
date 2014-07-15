@@ -6,7 +6,9 @@ import io.prediction.engines.java.itemrec.data.Actual;
 import io.prediction.engines.java.itemrec.data.TrainingData;
 
 import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+import org.apache.mahout.cf.taste.common.TasteException;
 
 import scala.Tuple2;
 import java.io.File;
@@ -37,10 +39,14 @@ public class ItemRecDataPreparator extends JavaLocalDataPreparator<
     File ratingFile = new File(tdp.filePath);
     DataModel dataModel = null;
     try {
-      dataModel = new FileDataModel(ratingFile);
+      DataModel fileDataModel = new FileDataModel(ratingFile);
+      // NOTE: convert to GenericDataModel because FileDataModel is not serializable
+      // (java.io.NotSerializableException: com.google.common.base.Splitter)
+      dataModel = new GenericDataModel(GenericDataModel.toDataMap(fileDataModel));
     } catch (IOException e) {
       logger.error("Caught IOException: " + e.getMessage());
-
+    } catch (TasteException e) {
+      logger.error("Caught IOException: " + e.getMessage());
     }
     return new TrainingData(dataModel);
   }
@@ -48,6 +54,11 @@ public class ItemRecDataPreparator extends JavaLocalDataPreparator<
   @Override
   public Iterable<Tuple2<Feature, Actual>> prepareValidation(EvalParams vdp) {
     // TODO generate validation data
-    return new ArrayList<Tuple2<Feature, Actual>>();
+    List<Tuple2<Feature, Actual>> faList = new ArrayList<Tuple2<Feature, Actual>>();
+    faList.add(new Tuple2<Feature, Actual>(new Feature(1, 10),
+      new Actual(new ArrayList<Integer>())));
+    faList.add(new Tuple2<Feature, Actual>(new Feature(2, 10),
+      new Actual(new ArrayList<Integer>())));
+    return faList;
   }
 }

@@ -17,4 +17,8 @@ public class Model implements Serializable {
     this.itemRecScores = itemRecScores;
   }
 
+  @Override
+  public String toString() {
+    return itemRecScores.toString();
+  }
 }

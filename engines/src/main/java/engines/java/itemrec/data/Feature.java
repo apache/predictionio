@@ -10,4 +10,9 @@ public class Feature implements Serializable {
     this.uid = uid;
     this.n = n;
   }
+
+  @Override
+  public String toString() {
+    return uid + " " + n;
+  }
 }
