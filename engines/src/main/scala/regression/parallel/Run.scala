@@ -1,5 +1,67 @@
 package io.prediction.engines.regression.parallel
 
+import io.prediction.api.Params
+import io.prediction.api.PDataSource
+import io.prediction.workflow.APIDebugWorkflow
+
+
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.regression.LinearRegressionWithSGD
+import org.apache.spark.mllib.regression.RegressionModel
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.rdd.RDD
+
+case class DataSourceParams(
+  val filepath: String, val k: Int = 3, val seed: Int = 9527)
+extends Params
+
+class ParallelDataSource(val dsp: DataSourceParams)
+  extends PDataSource[
+      DataSourceParams, Integer, 
+      RDD[LabeledPoint], Vector, Double] {
+  def read(sc: SparkContext)
+  : Seq[(Integer, RDD[LabeledPoint], RDD[(Vector, Double)])] = {
+    val input = sc.textFile(dsp.filepath)
+    val points = input.map { line =>
+      val parts = line.split(' ').map(_.toDouble)
+      LabeledPoint(parts(0), Vectors.dense(parts.drop(1)))
+    }
+
+    MLUtils.kFold(points, dsp.k, dsp.seed)
+    .zipWithIndex
+    .map { case (dataSet, index) =>
+      (Int.box(index), dataSet._1, dataSet._2.map(p => (p.features, p.label)))
+    }
+  }
+}
+
+object Run {
+  def main(args: Array[String]) {
+    val filepath = "data/lr_data.txt"
+    val dataSourceParams = new DataSourceParams(filepath, 3)
+    
+    APIDebugWorkflow.run(
+        dataSourceClass = classOf[ParallelDataSource],
+        dataSourceParams = dataSourceParams,
+        batch = "Imagine: Parallel Regression")
+  }
+}
+
+
+
+
+
+
+
+
+
+/****************** OLD *************************/
+
 import io.prediction.BaseParams
 import io.prediction._
 import io.prediction.core.BaseDataPreparator

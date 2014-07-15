@@ -1,7 +1,5 @@
 package io.prediction.api
 
-import org.apache.spark.SparkContext
-
 //trait BaseParams extends Serializable {}
 // Will remove BaseParams eventually.
 import io.prediction.BaseParams

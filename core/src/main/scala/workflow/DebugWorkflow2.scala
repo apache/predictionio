@@ -346,10 +346,7 @@ object APIDebugWorkflow {
 
     val metrics = Doer(metricsClass, metricsParams)
     
-    // Validation Unit
-    //val validator = baseEvaluator.validatorClass.newInstance
-    //validator.initBase(validatorParams)
-
+    // Metrics Unit
     val evalMetricsUnitMap: Map[Int, RDD[MU]] =
       evalPredictionMap.mapValues(_.map(metrics.computeUnitBase))
 
@@ -369,7 +366,6 @@ object APIDebugWorkflow {
         .glom()
         .map(e => (localParamsSet(ei), e.toIterable))
         .map(metricsWrapper.computeSet)
-        //.map(validatorWrapper.validateSet)
 
       (ei, metricsResults)
     }}
@@ -388,9 +384,6 @@ object APIDebugWorkflow {
 
     metricsOutput foreach { println }
     
-    println("DebugWorkflow.run completed.") 
+    println("APIDebugWorkflow.run completed.") 
   }
-
-
 }
-

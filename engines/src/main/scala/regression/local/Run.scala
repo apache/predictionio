@@ -124,7 +124,7 @@ object Run {
         servingParams = emptyParams,
         metricsClass = classOf[MeanSquareError],
         metricsParams = emptyParams,
-        batch = "Regress Man API")
+        batch = "Imagine: Local Regression")
 
   }
 }
