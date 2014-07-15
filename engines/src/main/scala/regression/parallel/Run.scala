@@ -1,4 +1,4 @@
-package io.prediction.engines.regression
+package io.prediction.engines.regression.parallel
 
 import io.prediction.BaseParams
 import io.prediction._

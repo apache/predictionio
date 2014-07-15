@@ -1,7 +1,7 @@
-package io.prediction.engines.regression
+package io.prediction.engines.regression.local
 
-import io.prediction.BaseParams
-import io.prediction.EmptyParams
+import io.prediction.api.Params
+import io.prediction.api.EmptyParams
 import io.prediction.api.LDataSource
 import io.prediction.api.LPreparator
 import io.prediction.api.LAlgorithm
@@ -12,7 +12,6 @@ import io.prediction.workflow.APIDebugWorkflow
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.util.MLUtils
-import io.prediction.util.Util
 import scala.io.Source
 
 import breeze.linalg.DenseMatrix
@@ -23,7 +22,7 @@ import nak.regress.LinearRegression
 import org.json4s._
 
 case class DataSourceParams(val filepath: String, val seed: Int = 9527)
-extends BaseParams
+extends Params
 
 case class TrainingData(x: Vector[Vector[Double]], y: Vector[Double])
 extends Serializable {
@@ -51,7 +50,7 @@ extends LDataSource[
 
 // When n = 0, don't drop data
 // When n > 0, drop data when index mod n == k
-case class PreparatorParams(n: Int = 0, k: Int = 0) extends BaseParams
+case class PreparatorParams(n: Int = 0, k: Int = 0) extends Params
 
 class LocalPreparator(val pp: PreparatorParams = PreparatorParams())
   extends LPreparator[PreparatorParams, TrainingData, TrainingData] {
@@ -105,7 +104,7 @@ class MeanSquareError extends Metrics[EmptyParams, Null,
 }
 
 
-object LocalAPIRunner {
+object Run {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"
     val dataSourceParams = new DataSourceParams(filepath)

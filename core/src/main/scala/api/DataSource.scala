@@ -11,7 +11,6 @@ import scala.reflect._
 
 abstract class LDataSource[DSP <: BaseParams : ClassTag : Manifest,
     DP, TD : Manifest, Q, A]
-  //extends BaseDataSource[DSP, EmptyParams, RDD[TD], Q, A] {
   extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
