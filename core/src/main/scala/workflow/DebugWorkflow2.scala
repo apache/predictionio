@@ -157,19 +157,40 @@ extends Serializable {
   }
 }
 
+class MetricsWrapper[MP <: BaseParams, DP, MU, MR, MMR <: AnyRef](
+    //TDP <: BaseParams, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
+  val metrics: BaseMetrics[_,DP,_,_,_,MU,MR,MMR]) 
+extends Serializable {
+  def computeSet(input: (DP, Iterable[MU])): (DP, MR) = {
+    val results = metrics.computeSetBase(input._1, input._2.toSeq)
+    (input._1, results)
+  }
+
+  def computeMultipleSets(input: Array[(DP, MR)]): MMR = {
+    // maybe sort them.
+    //val data = input.map(e => (e._1, e._2))
+    metrics.computeMultipleSetsBase(input)
+  }
+}
+
 object APIDebugWorkflow {
   def run[
       DSP <: BaseParams,
-      DUP <: BaseParams,
       PP <: BaseParams,
       SP <: BaseParams,
+      MP <: BaseParams,
+      DP,
       TD,
       PD,
       Q,
       P,
-      A](
+      A,
+      MU : Manifest,
+      MR : Manifest,
+      MMR <: AnyRef : Manifest
+      ](
     batch: String = "",
-    dataSourceClass: Class[_ <: BaseDataSource[DSP, DUP, TD, Q, A]] = null,
+    dataSourceClass: Class[_ <: BaseDataSource[DSP, DP, TD, Q, A]] = null,
     dataSourceParams: BaseParams = null,
     preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
     preparatorParams: BaseParams = null,
@@ -177,7 +198,9 @@ object APIDebugWorkflow {
       Map[String, Class[_ <: BaseAlgorithm2[_ <: BaseParams, PD, _, Q, P]]] = null,
     algorithmParamsList: Seq[(String, BaseParams)] = null,
     servingClass: Class[_ <: BaseServing[SP, Q, P]] = null,
-    servingParams: BaseParams = null
+    servingParams: BaseParams = null,
+    metricsClass: Class[_ <: BaseMetrics[MP, DP, Q, P, A, MU, MR, MMR]] = null,
+    metricsParams: BaseParams = null
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
@@ -192,13 +215,13 @@ object APIDebugWorkflow {
     val dataSource = Doer(dataSourceClass, dataSourceParams)
 
     val evalParamsDataMap
-    : Map[EI, (DUP, TD, RDD[(Q, A)])] = dataSource
+    : Map[EI, (DP, TD, RDD[(Q, A)])] = dataSource
       .readBase(sc)
       .zipWithIndex
       .map(_.swap)
       .toMap
 
-    val localParamsSet: Map[EI, DUP] = evalParamsDataMap.map { 
+    val localParamsSet: Map[EI, DP] = evalParamsDataMap.map { 
       case(ei, e) => (ei -> e._1)
     }
 
@@ -316,7 +339,56 @@ object APIDebugWorkflow {
 
     }}
     
+    if (metricsClass == null) {
+      println("Metrics is null. Stop here")
+      return
+    }
 
+    val metrics = Doer(metricsClass, metricsParams)
+    
+    // Validation Unit
+    //val validator = baseEvaluator.validatorClass.newInstance
+    //validator.initBase(validatorParams)
+
+    val evalMetricsUnitMap: Map[Int, RDD[MU]] =
+      evalPredictionMap.mapValues(_.map(metrics.computeUnitBase))
+
+    evalMetricsUnitMap.foreach{ case(i, e) => {
+      println(s"MetricsUnit: i=$i e=$e")
+    }}
+    
+    // Metrics Set
+    val metricsWrapper = new MetricsWrapper(metrics)
+
+    val evalMetricsResultsMap
+    : Map[EI, RDD[(DP, MR)]] = evalMetricsUnitMap
+    .map{ case (ei, metricsUnits) => {
+      val metricsResults
+      : RDD[(DP, MR)] = metricsUnits
+        .coalesce(numPartitions=1)
+        .glom()
+        .map(e => (localParamsSet(ei), e.toIterable))
+        .map(metricsWrapper.computeSet)
+        //.map(validatorWrapper.validateSet)
+
+      (ei, metricsResults)
+    }}
+
+    evalMetricsResultsMap.foreach{ case(ei, e) => {
+      println(s"MetricsResults $ei $e")
+    }}
+
+    val multipleMetricsResults: RDD[MMR] = sc
+      .union(evalMetricsResultsMap.values.toSeq)
+      .coalesce(numPartitions=1)
+      .glom()
+      .map(metricsWrapper.computeMultipleSets)
+
+    val metricsOutput: Array[MMR] = multipleMetricsResults.collect
+
+    metricsOutput foreach { println }
+    
+    println("DebugWorkflow.run completed.") 
   }
 
 

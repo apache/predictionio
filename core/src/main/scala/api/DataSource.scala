@@ -10,16 +10,17 @@ import org.apache.spark.SparkContext._
 import scala.reflect._
 
 abstract class LDataSource[DSP <: BaseParams : ClassTag : Manifest,
-    TD : Manifest, Q, A]
-  extends BaseDataSource[DSP, EmptyParams, RDD[TD], Q, A] {
+    DP, TD : Manifest, Q, A]
+  //extends BaseDataSource[DSP, EmptyParams, RDD[TD], Q, A] {
+  extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
 
-  def readBase(sc: SparkContext): Seq[(EmptyParams, RDD[TD], RDD[(Q, A)])] = {
-    read.map { case (td, qaSeq) => {
-      (EmptyParams(), sc.parallelize(Array(td)), sc.parallelize(qaSeq))
+  def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
+    read.map { case (dp, td, qaSeq) => {
+      (dp, sc.parallelize(Array(td)), sc.parallelize(qaSeq))
     }}
   }
 
-  def read(): Seq[(TD, Seq[(Q, A)])]
+  def read(): Seq[(DP, TD, Seq[(Q, A)])]
 }
 
 abstract class PDataSource[DSP <: BaseParams : ClassTag : Manifest, TD, Q, A]

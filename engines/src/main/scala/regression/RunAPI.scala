@@ -6,6 +6,7 @@ import io.prediction.api.LDataSource
 import io.prediction.api.LPreparator
 import io.prediction.api.LAlgorithm
 import io.prediction.api.LServing
+import io.prediction.api.Metrics
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -32,8 +33,8 @@ extends Serializable {
 
 class LocalDataSource(val dsp: DataSourceParams)
 extends LDataSource[
-    DataSourceParams, TrainingData, Vector[Double], Double] {
-  def read(): Seq[(TrainingData, Seq[(Vector[Double], Double)])] = {
+    DataSourceParams, Null, TrainingData, Vector[Double], Double] {
+  def read(): Seq[(Null, TrainingData, Seq[(Vector[Double], Double)])] = {
     val lines = Source.fromFile(dsp.filepath).getLines
       .toSeq.map(_.split(" ", 2))
 
@@ -43,7 +44,7 @@ extends LDataSource[
 
     val td = TrainingData(Vector(x:_*), Vector(y:_*))
 
-    val oneData = (td, x.zip(y))
+    val oneData = (null, td, x.zip(y))
     return Seq(oneData)
   }
 }
@@ -87,6 +88,22 @@ class Serving extends LServing[EmptyParams, Vector[Double], Double] {
   }
 }
 
+class MeanSquareError extends Metrics[EmptyParams, Null, 
+    Vector[Double], Double, Double, 
+    (Double, Double), Seq[(Double, Double)], String] {
+  def computeUnit(q: Vector[Double], p: Double, a: Double)
+  : (Double, Double) = (p, a)
+
+  def computeSet(ep: Null, s: Seq[(Double, Double)]): Seq[(Double, Double)] = s
+
+  def computeMultipleSets(input: Seq[(Null, Seq[(Double, Double)])]): String = {
+    val data: Seq[(Double, Double)] = input.map(_._2).flatten
+    val units = data.map(e => math.pow(e._1 - e._2, 2))
+    val mse = units.sum / units.length
+    f"MSE: ${mse}%8.6f"
+  }
+}
+
 
 object LocalAPIRunner {
   def main(args: Array[String]) {
@@ -106,6 +123,8 @@ object LocalAPIRunner {
           ("", emptyParams)),
         servingClass = classOf[Serving],
         servingParams = emptyParams,
+        metricsClass = classOf[MeanSquareError],
+        metricsParams = emptyParams,
         batch = "Regress Man API")
 
   }
