@@ -21,3 +21,36 @@ abstract class BaseAlgorithm2[AP <: BaseParams : ClassTag,
   def predictBase(baseModel: Any, query: Q): P
 }
 
+trait LModelAlgorithm[M, Q, P] {
+  def getModel(baseModel: Any): RDD[Any] = {
+    baseModel.asInstanceOf[RDD[Any]]
+  }
+
+  def batchPredictBase(baseModel: Any, baseQueries: RDD[(Long, Q)])
+  : RDD[(Long, P)] = {
+    val rddModel: RDD[M] = baseModel.asInstanceOf[RDD[M]].coalesce(1)
+    val rddQueries: RDD[(Long, Q)] = baseQueries.coalesce(1)
+
+    rddModel.zipPartitions(rddQueries)(batchPredictWrapper)
+  }
+
+  def batchPredictWrapper(model: Iterator[M], queries: Iterator[(Long, Q)])
+  : Iterator[(Long, P)] = {
+    batchPredict(model.next, queries)
+  }
+
+  // Expected to be overridden for performance consideration
+  def batchPredict(model: M, queries: Iterator[(Long, Q)])
+  : Iterator[(Long, P)] = {
+    queries.map { case (idx, q) => (idx, predict(model, q)) }
+  } 
+
+  // One Prediction
+  def predictBase(localBaseModel: Any, query: Q): P = {
+    predict(localBaseModel.asInstanceOf[M], query) 
+  }
+  
+  def predict(model: M, query: Q): P
+}
+
+

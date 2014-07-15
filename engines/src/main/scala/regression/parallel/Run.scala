@@ -2,6 +2,7 @@ package io.prediction.engines.regression.parallel
 
 import io.prediction.api.Params
 import io.prediction.api.PDataSource
+import io.prediction.api.IdentityPreparator
 import io.prediction.workflow.APIDebugWorkflow
 
 
@@ -48,6 +49,7 @@ object Run {
     APIDebugWorkflow.run(
         dataSourceClass = classOf[ParallelDataSource],
         dataSourceParams = dataSourceParams,
+        preparatorClass = classOf[IdentityPreparator[RDD[LabeledPoint]]],
         batch = "Imagine: Parallel Regression")
   }
 }

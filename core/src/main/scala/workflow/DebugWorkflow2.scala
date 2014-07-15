@@ -1,11 +1,13 @@
 package io.prediction.workflow
 
+import io.prediction.api.EmptyParams
 import io.prediction.core.Doer
 import scala.language.existentials
 
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseAlgorithm2
+import io.prediction.core.LModelAlgorithm
 import io.prediction.java.JavaUtils
 
 import io.prediction.api.LAlgorithm
@@ -142,12 +144,14 @@ extends Serializable {
     // If all algo support using local model, we will run against all of them
     // in one pass.
     val someNonLocal = algos
-      .exists(!_.isInstanceOf[LAlgorithm[_, _, _, Q, P]])
+      //.exists(!_.isInstanceOf[LAlgorithm[_, _, _, Q, P]])
+      .exists(!_.isInstanceOf[LModelAlgorithm[_, Q, P]])
 
     if (!someNonLocal && !skipOpt) {
       // When algo is local, the model is the only element in RDD[M].
       val localModelAlgo = algos
-        .map(_.asInstanceOf[LAlgorithm[_, _, _, Q, P]])
+        .map(_.asInstanceOf[LModelAlgorithm[_, Q, P]])
+        //.map(_.asInstanceOf[LAlgorithm[_, _, _, Q, P]])
       val rddModels = localModelAlgo.zip(models)
         .map{ case (algo, model) => algo.getModel(model) }
       predictLocalModel(rddModels, input)
@@ -191,16 +195,16 @@ object APIDebugWorkflow {
       ](
     batch: String = "",
     dataSourceClass: Class[_ <: BaseDataSource[DSP, DP, TD, Q, A]] = null,
-    dataSourceParams: BaseParams = null,
+    dataSourceParams: BaseParams = EmptyParams(),
     preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
-    preparatorParams: BaseParams = null,
+    preparatorParams: BaseParams = EmptyParams(),
     algorithmClassMap: 
       Map[String, Class[_ <: BaseAlgorithm2[_ <: BaseParams, PD, _, Q, P]]] = null,
     algorithmParamsList: Seq[(String, BaseParams)] = null,
     servingClass: Class[_ <: BaseServing[SP, Q, P]] = null,
-    servingParams: BaseParams = null,
+    servingParams: BaseParams = EmptyParams(),
     metricsClass: Class[_ <: BaseMetrics[MP, DP, Q, P, A, MU, MR, MMR]] = null,
-    metricsParams: BaseParams = null
+    metricsParams: BaseParams = EmptyParams() 
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
@@ -323,7 +327,7 @@ object APIDebugWorkflow {
         .map(_._2)
 
       val algoServerWrapper = new AlgoServerWrapper2[Q, P, A](
-        algoInstanceList, serving, skipOpt = true, verbose = true)
+        algoInstanceList, serving, skipOpt = false, verbose = true)
       (ei, algoServerWrapper.predict(algoModel, validationData))
     }}
     .toMap

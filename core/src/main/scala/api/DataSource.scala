@@ -10,7 +10,7 @@ import org.apache.spark.SparkContext._
 import scala.reflect._
 
 abstract class LDataSource[DSP <: BaseParams : ClassTag,
-    DP, TD : Manifest, Q, A]
+    DP, TD : ClassTag, Q, A]
   extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {

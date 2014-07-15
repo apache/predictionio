@@ -109,7 +109,7 @@ object Run {
     val filepath = "data/lr_data.txt"
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
-    val emptyParams = EmptyParams()
+    //val emptyParams = EmptyParams()
    
     APIDebugWorkflow.run(
         dataSourceClass = classOf[LocalDataSource],
@@ -119,11 +119,11 @@ object Run {
         algorithmClassMap = Map(
           "" -> classOf[LocalAlgorithm]),
         algorithmParamsList = Seq(
-          ("", emptyParams)),
+          ("", EmptyParams())),
         servingClass = classOf[Serving],
-        servingParams = emptyParams,
+        //servingParams = emptyParams,
         metricsClass = classOf[MeanSquareError],
-        metricsParams = emptyParams,
+        //metricsParams = emptyParams,
         batch = "Imagine: Local Regression")
 
   }
