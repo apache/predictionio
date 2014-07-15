@@ -4,7 +4,7 @@ import io.prediction.api.Params
 import scala.reflect._
 
 abstract class BaseMetrics[MP <: Params : ClassTag, 
-    DP, Q, P, A, MU, MR, MMR <: AnyRef]
+    -DP, Q, P, A, MU, MR, MMR <: AnyRef]
   extends AbstractDoer[MP] {
 
   def computeUnitBase(input: (Q, P, A)): MU

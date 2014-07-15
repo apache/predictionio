@@ -78,8 +78,8 @@ object Run {
         preparatorClass = classOf[IdentityPreparator[RDD[LabeledPoint]]],
         algorithmClassMap = Map(SGD -> classOf[ParallelSGDAlgorithm]),
         algorithmParamsList = algorithmParamsList,
-        servingClass = classOf[AverageServing[Vector]],
-        //metricsClass = classOf[MeanSquareError[Vector]],
+        servingClass = AverageServing(classOf[ParallelSGDAlgorithm]),
+        metricsClass = classOf[MeanSquareError[Vector]],
         batch = "Imagine: Parallel Regression")
   }
 }

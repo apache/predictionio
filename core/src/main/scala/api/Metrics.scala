@@ -31,17 +31,26 @@ abstract class Metrics[MP <: Params : ClassTag,
 }
 
 /****** Helper Functions ******/
-class MeanSquareError[Q] extends Metrics[EmptyParams, Integer, 
+
+// DP is AnyRef. This support any kind of DataParam.
+class MeanSquareError[Q] extends Metrics[EmptyParams, AnyRef, 
     Q, Double, Double, (Double, Double), String, String] {
   def computeUnit(q: Q, p: Double, a: Double): (Double, Double) = (p, a)
 
-  def computeSet(ep: Integer, data: Seq[(Double, Double)]): String = {
+  def computeSet(ep: AnyRef, data: Seq[(Double, Double)]): String = {
     val units = data.map(e => math.pow(e._1 - e._2, 2))
     val mse = units.sum / units.length
     f"Set: $ep Size: ${data.length} MSE: ${mse}%8.6f"
   }
 
-  def computeMultipleSets(input: Seq[(Integer, String)]): String = {
+  def computeMultipleSets(input: Seq[(AnyRef, String)]): String = {
     input.map(_._2).mkString("\n")
+  }
+}
+
+object MeanSquareError {
+  import _root_.io.prediction.core.BaseServing
+  def apply[Q](serving: Class[_ <:  BaseServing[_, Q, _]]) = {
+    classOf[MeanSquareError[Q]]
   }
 }

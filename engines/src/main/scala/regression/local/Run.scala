@@ -8,6 +8,7 @@ import io.prediction.api.LAlgorithm
 import io.prediction.api.FirstServing
 //import io.prediction.api.Metrics
 import io.prediction.api.MeanSquareError
+//import io.prediction.api.MeanSquareError2
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -33,8 +34,8 @@ extends Serializable {
 
 class LocalDataSource(val dsp: DataSourceParams)
 extends LDataSource[
-    DataSourceParams, Integer, TrainingData, Vector[Double], Double] {
-  def read(): Seq[(Integer, TrainingData, Seq[(Vector[Double], Double)])] = {
+    DataSourceParams, String, TrainingData, Vector[Double], Double] {
+  def read(): Seq[(String, TrainingData, Seq[(Vector[Double], Double)])] = {
     val lines = Source.fromFile(dsp.filepath).getLines
       .toSeq.map(_.split(" ", 2))
 
@@ -44,7 +45,7 @@ extends LDataSource[
 
     val td = TrainingData(Vector(x:_*), Vector(y:_*))
 
-    val oneData = (Int.box(0), td, x.zip(y))
+    val oneData = ("The One", td, x.zip(y))
     return Seq(oneData)
   }
 }
@@ -116,7 +117,6 @@ object Run {
         algorithmParamsList = Seq(
           ("", EmptyParams())),
         servingClass = classOf[FirstServing[Vector[Double], Double]],
-        //metricsClass = classOf[MeanSquareError[Vector[Double]]],
         metricsClass = classOf[MeanSquareError[Vector[Double]]],
         batch = "Imagine: Local Regression")
   }
