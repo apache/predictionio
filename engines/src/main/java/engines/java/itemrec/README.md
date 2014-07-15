@@ -12,4 +12,12 @@ Then, at project root (Imagine/):
 
     $ sbt/sbt package
     $ sbt/sbt "project engines" assemblyPackageDependency
+
+
+Run GenericItemBased:
+
     $ $SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "io.prediction.engines.java.itemrec.Runner"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
+
+Run SVDPlusPlus:
+
+    TBD

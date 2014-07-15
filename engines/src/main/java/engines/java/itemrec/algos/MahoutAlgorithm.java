@@ -19,7 +19,8 @@ import java.util.Iterator;
 
 import org.slf4j.Logger;
 
-public abstract class MahoutAlgo<AP extends BaseParams>
+/** Mahout Legacy single machine algorithm */
+public abstract class MahoutAlgorithm<AP extends BaseParams>
   extends JavaLocalAlgorithm<TrainingData, Feature, Prediction,
   Model, AP> {
 

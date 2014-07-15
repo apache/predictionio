@@ -2,6 +2,8 @@ package io.prediction.engines.java.itemrec;
 
 import io.prediction.engines.java.itemrec.algos.GenericItemBased;
 import io.prediction.engines.java.itemrec.algos.GenericItemBasedParams;
+import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
+import io.prediction.engines.java.itemrec.algos.SVDPlusPlusParams;
 import io.prediction.engines.java.itemrec.data.TrainingData;
 import io.prediction.engines.java.itemrec.data.Feature;
 import io.prediction.engines.java.itemrec.data.Prediction;
@@ -19,16 +21,19 @@ public class Runner {
   public static void main(String[] args) {
     EvalParams ep = new EvalParams("/tmp/pio/ratings.csv", 3, true);
     CleanserParams cp = new CleanserParams();
-    GenericItemBasedParams ap = new GenericItemBasedParams(10);
+    GenericItemBasedParams genericItemBasedParams = new GenericItemBasedParams(10);
+    SVDPlusPlusParams svdPlusPlusParams = new SVDPlusPlusParams(10);
     ServerParams sp = new ServerParams();
 
     List<Tuple2<String, BaseParams>> apl = new ArrayList<Tuple2<String, BaseParams>>();
-    apl.add(new Tuple2<String, BaseParams>("genericitembased", ap));
+    //apl.add(new Tuple2<String, BaseParams>("genericitembased", genericItemBasedParams));
+    apl.add(new Tuple2<String, BaseParams>("svdplusplus", svdPlusPlusParams));
 
     Map<String, Class<? extends JavaLocalAlgorithm<TrainingData, Feature, Prediction,
       ?, ? extends BaseParams>>> algoClassMap = new HashMap<>();
 
     algoClassMap.put("genericitembased", GenericItemBased.class);
+    algoClassMap.put("svdplusplus", SVDPlusPlus.class);
 
     JavaDebugWorkflow.run(
       "Native Java",
