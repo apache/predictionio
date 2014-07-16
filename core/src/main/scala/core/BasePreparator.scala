@@ -10,9 +10,4 @@ import scala.reflect._
 abstract class BasePreparator[PP <: BaseParams : ClassTag, TD, PD]
   extends AbstractDoer[PP] {
   def prepareBase(sc: SparkContext, td: TD): PD
-
-  // Not sure if we should wrap it with RDD for LocalPreparator...
-  //def jsonAsTrainingData(json JValue): TD
 }
-
-

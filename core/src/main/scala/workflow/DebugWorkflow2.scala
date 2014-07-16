@@ -9,6 +9,11 @@ import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseAlgorithm2
 import io.prediction.core.LModelAlgorithm
+import io.prediction.api.java.LJavaDataSource
+import io.prediction.api.java.LJavaPreparator
+import io.prediction.api.java.LJavaAlgorithm
+import io.prediction.api.java.LJavaServing
+import io.prediction.api.java.JavaMetrics
 import io.prediction.java.JavaUtils
 
 import io.prediction.api.LAlgorithm
@@ -35,6 +40,8 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.Manifest
 
 import io.prediction.java._
+
+import scala.reflect._
 
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
@@ -179,22 +186,17 @@ extends Serializable {
     metrics.computeMultipleSetsBase(input)
   }
 }
+      //MU : Manifest,
+      //MR : Manifest,
+      //MMR <: AnyRef : Manifest
 
 object APIDebugWorkflow {
   def run[
-      DSP <: Params,
-      PP <: Params,
-      SP <: Params,
-      MP <: Params,
-      DP,
-      TD,
-      PD,
-      Q,
-      P,
-      A,
-      MU : Manifest,
-      MR : Manifest,
-      MMR <: AnyRef : Manifest
+      DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
+      DP, TD, PD, Q, P, A,
+      MU : ClassTag,
+      MR : ClassTag,
+      MMR <: AnyRef :ClassTag 
       ](
     batch: String = "",
     verbose: Int = 2,
@@ -314,7 +316,7 @@ object APIDebugWorkflow {
     if (verbose > 2) {
       evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
         aiModelSeq.map { case(ai, model) => {
-          println(s"Model ei: $ei ai: $ei")
+          println(s"Model ei: $ei ai: $ai")
           println(DebugWorkflow.debugString(model))
         }}
       }}
@@ -418,5 +420,63 @@ object APIDebugWorkflow {
     metricsOutput foreach { println }
     
     println("APIDebugWorkflow.run completed.") 
+  }
+}
+
+object JavaAPIDebugWorkflow {
+  /*
+  Ideally, Java could also act as other scala base class. But the tricky part
+  is in the algorithmClassMap, where javac is not smart enough to match
+  JMap[String, Class[_ <: LJavaAlgorith[...]]] (which is provided by the
+  caller) with JMap[String, Class[_ <: BaseAlgo[...]]] (signature of this
+  function). If we change the caller to use Class[_ <: BaseAlgo[...]], it is
+  difficult for the engine builder, as we wrap data structures with RDD in the
+  base class. Hence, we have to sacrifices here, that all Doers calling
+  JavaAPIDebugWorkflow needs to be Java sub-doers.
+  */
+  def run[
+      DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
+      DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
+    batch: String = "",
+    verbose: Int = 2,
+    dataSourceClass: Class[_ <: LJavaDataSource[DSP, DP, TD, Q, A]] = null,
+    dataSourceParams: Params = EmptyParams(),
+    preparatorClass: Class[_ <: LJavaPreparator[PP, TD, PD]] = null,
+    preparatorParams: Params = EmptyParams(),
+    algorithmClassMap: 
+      JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, PD, _, Q, P]]] = null,
+    algorithmParamsList: JIterable[(String, Params)] = null,
+    servingClass: Class[_ <: LJavaServing[SP, Q, P]] = null,
+    servingParams: Params = EmptyParams(),
+    metricsClass: Class[_ <: JavaMetrics[MP, DP, Q, P, A, MU, MR, MMR]] = null,
+    metricsParams: Params = EmptyParams() 
+  ) = {
+
+    val scalaAlgorithmClassMap = (
+      if (algorithmClassMap == null) null
+      else Map(algorithmClassMap.toSeq:_ *))
+      
+    val scalaAlgorithmParamsList = (
+      if (algorithmParamsList == null) null
+      else algorithmParamsList.toSeq)
+    
+    APIDebugWorkflow.run(
+      batch = batch,
+      verbose = verbose,
+      dataSourceClass = dataSourceClass,
+      dataSourceParams = dataSourceParams,
+      preparatorClass = preparatorClass,
+      preparatorParams = preparatorParams,
+      algorithmClassMap = scalaAlgorithmClassMap,
+      algorithmParamsList = scalaAlgorithmParamsList,
+      servingClass = servingClass,
+      servingParams = servingParams,
+      metricsClass = metricsClass,
+      metricsParams = metricsParams
+    )(
+      JavaUtils.fakeClassTag[MU], 
+      JavaUtils.fakeClassTag[MR],
+      JavaUtils.fakeClassTag[MMR])
+
   }
 }

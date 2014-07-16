@@ -9,9 +9,6 @@ import org.json4s.ext.JodaTimeSerializers
 import org.json4s.native.JsonMethods
 import org.json4s.native.JsonMethods._
 
-// Manifest should be deprecated. However, json4s still depends on it.
-//abstract class AbstractDoer[P <: BaseParams : ClassTag : Manifest](val p: P) 
-//extends Serializable {
 abstract class AbstractDoer[P <: BaseParams : ClassTag]
 extends Serializable {
   override def toString() : String = {

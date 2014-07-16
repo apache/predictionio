@@ -127,6 +127,7 @@ object DebugWorkflow {
       case d: AnyRef => {
         d.toString
       }
+      case null => "null"
     }
     s
   }
