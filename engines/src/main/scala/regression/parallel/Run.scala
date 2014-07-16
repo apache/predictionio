@@ -23,7 +23,7 @@ case class DataSourceParams(
   val filepath: String, val k: Int = 3, val seed: Int = 9527)
 extends Params
 
-class ParallelDataSource(val dsp: DataSourceParams)
+case class ParallelDataSource(val dsp: DataSourceParams)
   extends PDataSource[
       DataSourceParams, Integer, 
       RDD[LabeledPoint], Vector, Double] {
@@ -46,7 +46,7 @@ class ParallelDataSource(val dsp: DataSourceParams)
 case class AlgorithmParams(
   val numIterations: Int = 200, val stepSize: Double = 0.1) extends Params
 
-class ParallelSGDAlgorithm(val ap: AlgorithmParams)
+case class ParallelSGDAlgorithm(val ap: AlgorithmParams)
   extends P2LAlgorithm[
       AlgorithmParams, RDD[LabeledPoint], RegressionModel, Vector, Double] {
 
@@ -58,9 +58,6 @@ class ParallelSGDAlgorithm(val ap: AlgorithmParams)
     model.predict(feature)
   }
 }
-
-
-
 
 object Run {
   def main(args: Array[String]) {

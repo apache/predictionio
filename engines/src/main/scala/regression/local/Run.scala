@@ -32,7 +32,7 @@ extends Serializable {
   val c = x.head.length
 }
 
-class LocalDataSource(val dsp: DataSourceParams)
+case class LocalDataSource(val dsp: DataSourceParams)
 extends LDataSource[
     DataSourceParams, String, TrainingData, Vector[Double], Double] {
   def read(): Seq[(String, TrainingData, Seq[(Vector[Double], Double)])] = {
@@ -54,7 +54,7 @@ extends LDataSource[
 // When n > 0, drop data when index mod n == k
 case class PreparatorParams(n: Int = 0, k: Int = 0) extends Params
 
-class LocalPreparator(val pp: PreparatorParams = PreparatorParams())
+case class LocalPreparator(val pp: PreparatorParams = PreparatorParams())
   extends LPreparator[PreparatorParams, TrainingData, TrainingData] {
   def prepare(td: TrainingData): TrainingData = {
     val xyi: Vector[(Vector[Double], Double)] = td.x.zip(td.y)
@@ -65,7 +65,7 @@ class LocalPreparator(val pp: PreparatorParams = PreparatorParams())
   }
 }
 
-class LocalAlgorithm
+case class LocalAlgorithm()
   extends LAlgorithm[
       EmptyParams, TrainingData, Array[Double], Vector[Double], Double] {
 
