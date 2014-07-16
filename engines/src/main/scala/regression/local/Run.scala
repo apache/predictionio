@@ -83,24 +83,6 @@ class LocalAlgorithm
   }
 }
 
-/*
-class MeanSquareError extends Metrics[EmptyParams, Null, 
-    Vector[Double], Double, Double, 
-    (Double, Double), Seq[(Double, Double)], String] {
-  def computeUnit(q: Vector[Double], p: Double, a: Double)
-  : (Double, Double) = (p, a)
-
-  def computeSet(ep: Null, s: Seq[(Double, Double)]): Seq[(Double, Double)] = s
-
-  def computeMultipleSets(input: Seq[(Null, Seq[(Double, Double)])]): String = {
-    val data: Seq[(Double, Double)] = input.map(_._2).flatten
-    val units = data.map(e => math.pow(e._1 - e._2, 2))
-    val mse = units.sum / units.length
-    f"MSE: ${mse}%8.6f"
-  }
-}
-*/
-
 object Run {
   def main(args: Array[String]) {
     val filepath = "data/lr_data.txt"

@@ -195,6 +195,7 @@ object APIDebugWorkflow {
       MMR <: AnyRef : Manifest
       ](
     batch: String = "",
+    verbose: Int = 2,
     dataSourceClass: Class[_ <: BaseDataSource[DSP, DP, TD, Q, A]] = null,
     dataSourceParams: Params = EmptyParams(),
     preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
@@ -209,6 +210,7 @@ object APIDebugWorkflow {
   ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
+
     val sc = WorkflowContext(batch)
 
     if (dataSourceClass == null || dataSourceParams == null) {
@@ -236,13 +238,15 @@ object APIDebugWorkflow {
 
     println(s"Number of training set: ${localParamsSet.size}")
 
-    evalDataMap.foreach{ case (ei, data) => {
-      val (trainingData, validationData) = data
-      println(s"TrainingData $ei")
-      println(DebugWorkflow.debugString(trainingData))
-      println(s"ValidationData $ei")
-      validationData.collect.map(DebugWorkflow.debugString).foreach(println)
-    }}
+    if (verbose > 2) {
+      evalDataMap.foreach{ case (ei, data) => {
+        val (trainingData, validationData) = data
+        println(s"TrainingData $ei")
+        println(DebugWorkflow.debugString(trainingData))
+        println(s"ValidationData $ei")
+        validationData.collect.map(DebugWorkflow.debugString).foreach(println)
+      }}
+    }
 
     println("Data source complete")
     
@@ -257,10 +261,12 @@ object APIDebugWorkflow {
     val evalPreparedMap: Map[EI, PD] = evalDataMap
     .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
 
-    evalPreparedMap.foreach{ case (ei, pd) => {
-      println(s"Prepared $ei")
-      println(DebugWorkflow.debugString(pd))
-    }}
+    if (verbose > 2) {
+      evalPreparedMap.foreach{ case (ei, pd) => {
+        println(s"Prepared $ei")
+        println(DebugWorkflow.debugString(pd))
+      }}
+    }
   
     println("Preparator complete")
     
@@ -273,7 +279,6 @@ object APIDebugWorkflow {
 
     // Instantiate algos
     val algoInstanceList: Array[BaseAlgorithm2[_, PD, _, Q, P]] =
-    //val algoInstanceList: Array[BaseAlgorithm2[_, _, _, Q, P]] =
     algorithmParamsList
       .map { 
         case (algoName, algoParams) => 
@@ -304,12 +309,14 @@ object APIDebugWorkflow {
     .seq
     .toMap
 
-    evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
-      aiModelSeq.map { case(ai, model) => {
-        println(s"Model ei: $ei ai: $ei")
-        println(DebugWorkflow.debugString(model))
+    if (verbose > 2) {
+      evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
+        aiModelSeq.map { case(ai, model) => {
+          println(s"Model ei: $ei ai: $ei")
+          println(DebugWorkflow.debugString(model))
+        }}
       }}
-    }}
+    }
 
     if (servingClass == null) {
       println("Serving is null. Stop here")
@@ -333,16 +340,17 @@ object APIDebugWorkflow {
     }}
     .toMap
 
-    evalPredictionMap.foreach{ case(ei, fpaRdd) => {
-      println(s"Prediction $ei $fpaRdd")
-      fpaRdd.collect.foreach{ case(f, p, a) => {
-        val fs = DebugWorkflow.debugString(f)
-        val ps = DebugWorkflow.debugString(p)
-        val as = DebugWorkflow.debugString(a)
-        println(s"F: $fs P: $ps A: $as")
+    if (verbose > 2) {
+      evalPredictionMap.foreach{ case(ei, fpaRdd) => {
+        println(s"Prediction $ei $fpaRdd")
+        fpaRdd.collect.foreach{ case(f, p, a) => {
+          val fs = DebugWorkflow.debugString(f)
+          val ps = DebugWorkflow.debugString(p)
+          val as = DebugWorkflow.debugString(a)
+          println(s"F: $fs P: $ps A: $as")
+        }}
       }}
-
-    }}
+    }
     
     if (metricsClass == null) {
       println("Metrics is null. Stop here")
@@ -355,9 +363,11 @@ object APIDebugWorkflow {
     val evalMetricsUnitMap: Map[Int, RDD[MU]] =
       evalPredictionMap.mapValues(_.map(metrics.computeUnitBase))
 
-    evalMetricsUnitMap.foreach{ case(i, e) => {
-      println(s"MetricsUnit: i=$i e=$e")
-    }}
+    if (verbose > 2) {
+      evalMetricsUnitMap.foreach{ case(i, e) => {
+        println(s"MetricsUnit: i=$i e=$e")
+      }}
+    }
     
     // Metrics Set
     val metricsWrapper = new MetricsWrapper(metrics)
@@ -375,9 +385,11 @@ object APIDebugWorkflow {
       (ei, metricsResults)
     }}
 
-    evalMetricsResultsMap.foreach{ case(ei, e) => {
-      println(s"MetricsResults $ei $e")
-    }}
+    if (verbose > 2) {
+      evalMetricsResultsMap.foreach{ case(ei, e) => {
+        println(s"MetricsResults $ei $e")
+      }}
+    }
 
     val multipleMetricsResults: RDD[MMR] = sc
       .union(evalMetricsResultsMap.values.toSeq)
