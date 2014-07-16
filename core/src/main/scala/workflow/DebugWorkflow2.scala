@@ -14,6 +14,8 @@ import io.prediction.api.java.LJavaPreparator
 import io.prediction.api.java.LJavaAlgorithm
 import io.prediction.api.java.LJavaServing
 import io.prediction.api.java.JavaMetrics
+import io.prediction.api.Engine
+import io.prediction.api.EngineParams
 import io.prediction.java.JavaUtils
 
 import io.prediction.api.LAlgorithm
@@ -186,30 +188,53 @@ extends Serializable {
     metrics.computeMultipleSetsBase(input)
   }
 }
-      //MU : Manifest,
-      //MR : Manifest,
-      //MMR <: AnyRef : Manifest
 
 object APIDebugWorkflow {
-  def run[
-      DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
+  def runEngine[
       DP, TD, PD, Q, P, A,
-      MU : ClassTag,
-      MR : ClassTag,
-      MMR <: AnyRef :ClassTag 
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
       ](
     batch: String = "",
     verbose: Int = 2,
-    dataSourceClass: Class[_ <: BaseDataSource[DSP, DP, TD, Q, A]] = null,
+    engine: Engine[TD, DP, PD, Q, P, A],
+    engineParams: EngineParams,
+    metricsClass
+      : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
+    metricsParams: Params = EmptyParams()) {
+    run(
+      batch = batch,
+      verbose = verbose,
+      dataSourceClass = engine.dataSourceClass,
+      dataSourceParams = engineParams.dataSourceParams,
+      preparatorClass = engine.preparatorClass,
+      preparatorParams = engineParams.preparatorParams,
+      algorithmClassMap = engine.algorithmClassMap,
+      algorithmParamsList = engineParams.algorithmParamsList,
+      servingClass = engine.servingClass,
+      servingParams = engineParams.servingParams,
+      metricsClass = metricsClass,
+      metricsParams = metricsParams
+    )
+  }
+      
+  def run[
+      DP, TD, PD, Q, P, A,
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
+      ](
+    batch: String = "",
+    verbose: Int = 2,
+    dataSourceClass
+      : Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]] = null,
     dataSourceParams: Params = EmptyParams(),
-    preparatorClass: Class[_ <: BasePreparator[PP, TD, PD]] = null,
+    preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]] = null,
     preparatorParams: Params = EmptyParams(),
-    algorithmClassMap: 
-      Map[String, Class[_ <: BaseAlgorithm2[_ <: Params, PD, _, Q, P]]] = null,
+    algorithmClassMap
+      : Map[String, Class[_ <: BaseAlgorithm2[_ <: Params, PD, _, Q, P]]] = null,
     algorithmParamsList: Seq[(String, Params)] = null,
-    servingClass: Class[_ <: BaseServing[SP, Q, P]] = null,
+    servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]] = null,
     servingParams: Params = EmptyParams(),
-    metricsClass: Class[_ <: BaseMetrics[MP, DP, Q, P, A, MU, MR, MMR]] = null,
+    metricsClass
+      : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
     metricsParams: Params = EmptyParams() 
   ) {
     println("APIDebugWorkflow.run")

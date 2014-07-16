@@ -1,14 +1,15 @@
 package io.prediction.engines.regression.local
 
-import io.prediction.api.Params
 import io.prediction.api.EmptyParams
+import io.prediction.api.Engine
+import io.prediction.api.EngineFactory
+import io.prediction.api.EngineParams
+import io.prediction.api.FirstServing
+import io.prediction.api.LAlgorithm
 import io.prediction.api.LDataSource
 import io.prediction.api.LPreparator
-import io.prediction.api.LAlgorithm
-import io.prediction.api.FirstServing
-//import io.prediction.api.Metrics
 import io.prediction.api.MeanSquareError
-//import io.prediction.api.MeanSquareError2
+import io.prediction.api.Params
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -83,8 +84,18 @@ case class LocalAlgorithm()
   }
 }
 
+object RegressionEngineFactory extends EngineFactory {
+  def apply() = {
+    new Engine(
+      classOf[LocalDataSource],
+      classOf[LocalPreparator],
+      Map("" -> classOf[LocalAlgorithm]),
+      classOf[FirstServing[Vector[Double], Double]])
+  }
+}
+
 object Run {
-  def main(args: Array[String]) {
+  def runComponents() {
     val filepath = "data/lr_data.txt"
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
@@ -101,6 +112,26 @@ object Run {
         servingClass = classOf[FirstServing[Vector[Double], Double]],
         metricsClass = classOf[MeanSquareError[Vector[Double]]],
         batch = "Imagine: Local Regression")
+  }
+
+  def runEngine() {
+    val filepath = "data/lr_data.txt"
+    val engine = RegressionEngineFactory()
+    val engineParams = new EngineParams(
+      dataSourceParams = DataSourceParams(filepath),
+      preparatorParams = PreparatorParams(n = 2, k = 0),
+      algorithmParamsList = Seq(("", EmptyParams())))
+  
+    APIDebugWorkflow.runEngine(
+      verbose = 3,
+      engine = engine, 
+      engineParams = engineParams, 
+      metricsClass = classOf[MeanSquareError[Vector[Double]]],
+      batch = "Imagine: Local Regression Engine")
+  }
+
+  def main(args: Array[String]) {
+    runEngine()
   }
 }
 
