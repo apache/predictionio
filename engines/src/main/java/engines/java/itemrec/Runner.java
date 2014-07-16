@@ -16,18 +16,33 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 
 public class Runner {
   public static void main(String[] args) {
-    EvalParams ep = new EvalParams("/tmp/pio/ratings.csv", 3, true);
+
+    String filePath = "engines/src/main/java/engines/java/itemrec/examples/ratings.csv";
+    String algoName = "genericitembased";
+
+    if (args.length == 2) {
+      filePath = args[0];
+      algoName = args[1];
+    }
+
+    System.out.println(Arrays.toString(args));
+
+    EvalParams ep = new EvalParams(filePath, 3, true);
     CleanserParams cp = new CleanserParams();
     GenericItemBasedParams genericItemBasedParams = new GenericItemBasedParams(10);
     SVDPlusPlusParams svdPlusPlusParams = new SVDPlusPlusParams(10);
     ServerParams sp = new ServerParams();
 
     List<Tuple2<String, BaseParams>> apl = new ArrayList<Tuple2<String, BaseParams>>();
-    //apl.add(new Tuple2<String, BaseParams>("genericitembased", genericItemBasedParams));
-    apl.add(new Tuple2<String, BaseParams>("svdplusplus", svdPlusPlusParams));
+    if (algoName.equals("genericitembased")) {
+      apl.add(new Tuple2<String, BaseParams>("genericitembased", genericItemBasedParams));
+    } else {
+      apl.add(new Tuple2<String, BaseParams>("svdplusplus", svdPlusPlusParams));
+    }
 
     Map<String, Class<? extends JavaLocalAlgorithm<TrainingData, Feature, Prediction,
       ?, ? extends BaseParams>>> algoClassMap = new HashMap<>();
