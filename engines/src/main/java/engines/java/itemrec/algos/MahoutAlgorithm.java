@@ -26,12 +26,19 @@ public abstract class MahoutAlgorithm<AP extends BaseParams>
 
   abstract public Logger getLogger();
 
-  abstract public Recommender buildRecommender(TrainingData cd);
+  abstract public Recommender buildRecommender(TrainingData cd) throws TasteException;
 
   @Override
   public Model train(TrainingData cd) {
     Logger logger = getLogger();
-    Recommender recommender = buildRecommender(cd);
+    Recommender recommender = null;
+
+    try {
+      recommender = buildRecommender(cd);
+    } catch (TasteException e) {
+      logger.error("Caught TasteException " + e.getMessage());
+    }
+
     Map<Long, List<RecommendedItem>> itemRecScores = new HashMap<Long, List<RecommendedItem>>();
     Iterator<Long> uids;
 

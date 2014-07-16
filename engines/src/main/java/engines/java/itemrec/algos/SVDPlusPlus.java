@@ -23,7 +23,7 @@ public class SVDPlusPlus
   }
 
   @Override
-  public Recommender buildRecommender(TrainingData cd) {
+  public Recommender buildRecommender(TrainingData cd) throws TasteException {
     // TODO: read from params
     int numFeatures = 3;
     double learningRate = 0.01;
