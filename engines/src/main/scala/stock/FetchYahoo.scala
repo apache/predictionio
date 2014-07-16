@@ -170,8 +170,13 @@ object FetchMain {
     val fetcher = YahooFetcher(appid, 1998, 1, 1, 2015, 1, 1)
 
     (sp500List ++ marketList).foreach(ticker => {
-      val itemTrend = fetcher.fetchTicker(ticker)
-      itemTrendsDb.insert(itemTrend)
+      try {
+        val itemTrend = fetcher.fetchTicker(ticker)
+        itemTrendsDb.insert(itemTrend)
+      } catch {
+        case e: java.io.FileNotFoundException =>
+          logger.error(s"${e.getMessage}")
+      }
     })
 
   }
