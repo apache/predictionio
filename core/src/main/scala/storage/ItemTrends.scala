@@ -1,6 +1,7 @@
 package io.prediction.storage
 
 import com.github.nscala_time.time.Imports._
+import org.json4s._
 
 package object stock {
   type DailyTuple = Tuple8[DateTime, Double, Double, Double, Double, Double, Double, Boolean]
@@ -72,3 +73,54 @@ trait ItemTrends {
   /** count number of records by App ID*/
   def countByAppid(appid: Int): Long
 }
+
+class ItemTrendSerializer extends CustomSerializer[ItemTrend](formats => (
+  {
+    case JObject(fields) =>
+      val seed = ItemTrend(
+        id = "",
+        appid = 0,
+        ct = DateTime.now)
+      fields.foldLeft(seed) { case (itemtrend, field) =>
+        field match {
+          case JField("id", JString(id)) => itemtrend.copy(id = id)
+          case JField("appid", JInt(appid)) => itemtrend.copy(
+            appid = appid.intValue)
+          case JField("ct", JString(ct)) => itemtrend.copy(
+            ct = Utils.stringToDateTime(ct))
+          case JField("daily", JArray(d)) => itemtrend.copy(daily =
+            d map { daily =>
+              daily match {
+                case JArray(t) => new stock.DailyTuple(
+                  Utils.stringToDateTime(t(0).asInstanceOf[JString].s),
+                  t(1).asInstanceOf[JDouble].num,
+                  t(2).asInstanceOf[JDouble].num,
+                  t(3).asInstanceOf[JDouble].num,
+                  t(4).asInstanceOf[JDouble].num,
+                  t(5).asInstanceOf[JDouble].num,
+                  t(6).asInstanceOf[JDouble].num,
+                  t(7).asInstanceOf[JBool].value)
+              }
+            }
+          )
+        }
+      }
+  },
+  {
+    case itemtrend: ItemTrend =>
+      JObject(
+        JField("id", JString(itemtrend.id)) ::
+        JField("appid", JInt(itemtrend.appid)) ::
+        JField("ct", JString(itemtrend.ct.toString)) ::
+        JField("daily", JArray(itemtrend.daily.map(d =>
+          JArray(List(
+            JString(d._1.toString),
+            JDouble(d._2),
+            JDouble(d._3),
+            JDouble(d._4),
+            JDouble(d._5),
+            JDouble(d._6),
+            JDouble(d._7),
+            JBool(d._8)))).toList)) :: Nil)
+  }
+))

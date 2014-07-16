@@ -1,6 +1,7 @@
 package io.prediction.storage
 
 import com.github.nscala_time.time.Imports._
+import org.json4s._
 
 /**
  * User-to-item action object.
@@ -49,3 +50,51 @@ trait U2IActions {
   /** count number of records by App ID*/
   def countByAppid(appid: Int): Long
 }
+
+class U2IActionSerializer extends CustomSerializer[U2IAction](format => (
+  {
+    case JObject(fields) =>
+      val seed = U2IAction(
+        appid = 0,
+        action = "",
+        uid = "",
+        iid = "",
+        t = DateTime.now,
+        latlng = None,
+        v = None,
+        price = None)
+      fields.foldLeft(seed) { case (u2iaction, field) =>
+        field match {
+          case JField("appid", JInt(appid)) => u2iaction.copy(
+            appid = appid.intValue)
+          case JField("action", JString(action)) => u2iaction.copy(
+            action = action)
+          case JField("uid", JString(uid)) => u2iaction.copy(uid = uid)
+          case JField("iid", JString(iid)) => u2iaction.copy(iid = iid)
+          case JField("t", JString(t)) => u2iaction.copy(
+            t = Utils.stringToDateTime(t))
+          case JField("latlng", JString(latlng)) => u2iaction.copy(
+            latlng = Some(latlng.split(',') match {
+              case Array(lat, lng) => (lat.toDouble, lng.toDouble) }))
+          case JField("v", JInt(v)) => u2iaction.copy(v = Some(v.intValue))
+          case JField("price", JDouble(price)) => u2iaction.copy(
+            price = Some(price))
+          case _ => u2iaction
+        }
+      }
+  },
+  {
+    case u2iaction: U2IAction =>
+      JObject(
+        JField("appid", JInt(u2iaction.appid)) ::
+        JField("action", JString(u2iaction.action)) ::
+        JField("uid", JString(u2iaction.uid)) ::
+        JField("iid", JString(u2iaction.iid)) ::
+        JField("t", JString(u2iaction.t.toString)) ::
+        JField("latlng", u2iaction.latlng.map(x =>
+          JString(x._1 + "," + x._2)).getOrElse(JNothing)) ::
+        JField("v", u2iaction.v.map(JInt(_)).getOrElse(JNothing)) ::
+        JField("price", u2iaction.price.map(JDouble(_)).getOrElse(JNothing)) ::
+        Nil)
+  }
+))
