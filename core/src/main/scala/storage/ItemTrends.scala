@@ -89,17 +89,24 @@ class ItemTrendSerializer extends CustomSerializer[ItemTrend](formats => (
           case JField("ct", JString(ct)) => itemtrend.copy(
             ct = Utils.stringToDateTime(ct))
           case JField("daily", JArray(d)) => itemtrend.copy(daily =
-            d map { daily =>
-              daily match {
-                case JArray(t) => new stock.DailyTuple(
-                  Utils.stringToDateTime(t(0).asInstanceOf[JString].s),
-                  t(1).asInstanceOf[JDouble].num,
-                  t(2).asInstanceOf[JDouble].num,
-                  t(3).asInstanceOf[JDouble].num,
-                  t(4).asInstanceOf[JDouble].num,
-                  t(5).asInstanceOf[JDouble].num,
-                  t(6).asInstanceOf[JDouble].num,
-                  t(7).asInstanceOf[JBool].value)
+            d map { _ match {
+              case JObject(List(
+                JField("date", JString(date)),
+                JField("open", JDouble(open)),
+                JField("high", JDouble(high)),
+                JField("low", JDouble(low)),
+                JField("close", JDouble(close)),
+                JField("volume", JDouble(volume)),
+                JField("adjclose", JDouble(adjclose)),
+                JField("active", JBool(active)))) => new stock.DailyTuple(
+                Utils.stringToDateTime(date),
+                open,
+                high,
+                low,
+                close,
+                volume,
+                adjclose,
+                active)
               }
             }
           )
@@ -113,14 +120,14 @@ class ItemTrendSerializer extends CustomSerializer[ItemTrend](formats => (
         JField("appid", JInt(itemtrend.appid)) ::
         JField("ct", JString(itemtrend.ct.toString)) ::
         JField("daily", JArray(itemtrend.daily.map(d =>
-          JArray(List(
-            JString(d._1.toString),
-            JDouble(d._2),
-            JDouble(d._3),
-            JDouble(d._4),
-            JDouble(d._5),
-            JDouble(d._6),
-            JDouble(d._7),
-            JBool(d._8)))).toList)) :: Nil)
+          JObject(List(
+            JField("date", JString(d._1.toString)),
+            JField("open", JDouble(d._2)),
+            JField("high", JDouble(d._3)),
+            JField("low", JDouble(d._4)),
+            JField("close", JDouble(d._5)),
+            JField("volume", JDouble(d._6)),
+            JField("adjclose", JDouble(d._7)),
+            JField("active", JBool(d._8))))).toList)) :: Nil)
   }
 ))

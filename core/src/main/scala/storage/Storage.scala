@@ -177,9 +177,6 @@ object Storage extends Logging {
     Seq(client.client, dbName)
   }
 
-  /** The base directory of PredictionIO deployment/repository. */
-  val base: String = config.getString("io.prediction.base")
-
   def getSettingsEngineManifests(): EngineManifests = {
     getDataObject[EngineManifests](SettingsRepository)
   }
