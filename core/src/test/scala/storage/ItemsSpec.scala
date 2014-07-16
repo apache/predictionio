@@ -1,15 +1,13 @@
 package io.prediction.storage
 
+import com.github.nscala_time.time.Imports._
 import org.specs2._
 import org.specs2.specification.Step
-
-import com.mongodb.casbah.Imports._
-import com.github.nscala_time.time.Imports._
 
 class ItemsSpec extends Specification {
   def is = s2"""
 
-  PredictionIO App Data Items Specification
+  PredictionIO Storage Items Specification
 
     Items can be implemented by:
     - ESItems ${esItems}
@@ -48,7 +46,7 @@ class ItemsSpec extends Specification {
 
   """
 
-  val dbName = "test_pio_appdata_items_" + hashCode
+  val dbName = "test_pio_storage_items_" + hashCode
   val esDO = Storage.getDataObject[Items](
     StorageTestUtils.elasticsearchSourceName,
     dbName)

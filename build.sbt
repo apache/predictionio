@@ -18,7 +18,7 @@ javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
 
 lazy val root = project in file(".") aggregate(
   core,
-  deploy,
+  //deploy,
   engines)
 
 lazy val core = (project in file("core"))
