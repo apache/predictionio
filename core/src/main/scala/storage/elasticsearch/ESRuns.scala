@@ -25,7 +25,6 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
   val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get
   if (!typeExistResponse.isExists) {
     val json = (estype -> ("properties" -> ("models" -> ("type" -> "binary"))))
-    info(s"mapping: ${compact(render(json))}")
     indices.preparePutMapping(index).setType(estype).
       setSource(compact(render(json))).get
   }

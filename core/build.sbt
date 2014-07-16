@@ -11,10 +11,11 @@ libraryDependencies ++= Seq(
   "org.apache.spark"       %% "spark-core"      % "1.0.0" % "provided",
   "org.clapper"            %% "grizzled-slf4j"  % "1.0.2",
   "org.elasticsearch"       % "elasticsearch"   % "1.2.1",
+  "org.json4s"             %% "json4s-native"   % "3.2.6",
+  "org.json4s"             %% "json4s-ext"      % "3.2.6",
   "org.mongodb"            %% "casbah"          % "2.7.2",
   "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
-  "org.json4s"             %% "json4s-native"   % "3.2.6",
-  "org.json4s"             %% "json4s-ext"      % "3.2.6")
+  "org.specs2"             %% "specs2"          % "2.3.13" % "test")
 
 //scalacOptions <<= (scalacOptions, scalaSource in Compile) map { (options, base) =>
 //  options :+ ("-P:sxr:base-directory:" + base.getAbsolutePath)
