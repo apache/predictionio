@@ -1,6 +1,7 @@
 package io.prediction.workflow
 
 import scala.language.existentials
+import io.prediction.api.PersistentParallelModel 
 
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine

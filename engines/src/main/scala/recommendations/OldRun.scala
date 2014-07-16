@@ -1,6 +1,8 @@
+/*
 package org.apache.spark.mllib.recommendation.engine
 
 import io.prediction.BaseParams
+import io.prediction.api.PersistentParallelModel
 import io.prediction._
 import io.prediction.core.BaseDataPreparator
 import io.prediction.core.BaseEngine
@@ -86,24 +88,6 @@ object RecommendationsEngine extends EngineFactory {
   }
 }
 
-class PersistentMatrixFactorizationModel(m: MatrixFactorizationModel)
-    extends PersistentParallelModel {
-
-  @transient var model = m
-  val rank: Int = m.rank
-
-  def save(id: String): Unit = {
-    model.productFeatures.saveAsObjectFile("/tmp/productFeatures")
-    model.userFeatures.saveAsObjectFile("/tmp/userFeatures")
-  }
-
-  def load(sc: SparkContext, id: String): Unit = {
-    model = new MatrixFactorizationModel(
-      rank,
-      sc.objectFile("/tmp/userFeatures"),
-      sc.objectFile("/tmp/productFeatures"))
-  }
-}
 
 class Algorithm
   extends ParallelAlgorithm[
@@ -147,7 +131,7 @@ class Algorithm
 }
 
 
-object Run {
+object OldRun {
   def main(args: Array[String]) {
     val filepath = "data/movielens.txt"
 
@@ -167,3 +151,4 @@ object Run {
         algoParams = algoParams)
   }
 }
+*/

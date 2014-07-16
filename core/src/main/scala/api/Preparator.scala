@@ -1,6 +1,7 @@
 package io.prediction.api
 
 import io.prediction.core.BasePreparator
+import io.prediction.core.BaseDataSource
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext
@@ -32,6 +33,11 @@ abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
 /******* Helper Functions ******/
 class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
   def prepareBase(sc: SparkContext, td: TD): TD = td
+}
+
+object IdentityPreparator {
+  def apply[TD](ds: Class[_ <: BaseDataSource[_, _, TD, _, _]]) =
+    classOf[IdentityPreparator[TD]]
 }
     
 

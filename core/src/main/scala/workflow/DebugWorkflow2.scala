@@ -42,7 +42,7 @@ class AlgoServerWrapper2[Q, P, A](
     val algos: Array[_ <: BaseAlgorithm2[_,_,_,Q,P]],
     val serving: BaseServing[_, Q, P],
     val skipOpt: Boolean = false,
-    val verbose: Boolean = false)
+    val verbose: Int = 0)
 extends Serializable {
   
   // Use algo.predictBase
@@ -65,7 +65,9 @@ extends Serializable {
   // Use algo.predictBase
   def predictLocalModel(models: Seq[RDD[Any]], input: RDD[(Q, A)])
   : RDD[(Q, P, A)] = {
-    println("predictionLocalModel")
+    if (verbose > 0) {
+      println("predictionLocalModel")
+    }
     val sc = models.head.context
     // must have only one partition since we need all models per feature.
     // todo: duplicate indexedModel into multiple partition.
@@ -83,7 +85,7 @@ extends Serializable {
   // Use algo.batchPredictBase
   def predictParallelModel(models: Seq[Any], input: RDD[(Q, A)])
   : RDD[(Q, P, A)] = {
-    if (verbose) { 
+    if (verbose > 0) { 
       println("predictionParallelModel")
     }
 
@@ -109,7 +111,7 @@ extends Serializable {
 
     val joined: RDD[(QI, (Seq[P], (Q, A)))] = iAlgoPredictions.join(iInput)
     
-    if (verbose) {
+    if (verbose > 2) {
       println("predictionParallelModel.before combine")
       joined.collect.foreach {  case(fi, (ps, (q, a))) => {
         val pstr = DebugWorkflow.debugString(ps)
@@ -126,7 +128,7 @@ extends Serializable {
       (query, prediction, actual)
     }}
 
-    if (verbose) {
+    if (verbose > 2) {
       println("predictionParallelModel.after combine")
       combined.collect.foreach { case(qi, (q, p, a)) => {
         val qstr = DebugWorkflow.debugString(q)
@@ -323,7 +325,6 @@ object APIDebugWorkflow {
       return
     }
     val serving = Doer(servingClass, servingParams)
-    //val server = serverClass.newInstance
 
     println("Algo prediction")
 
@@ -335,7 +336,7 @@ object APIDebugWorkflow {
         .map(_._2)
 
       val algoServerWrapper = new AlgoServerWrapper2[Q, P, A](
-        algoInstanceList, serving, skipOpt = false, verbose = true)
+        algoInstanceList, serving, skipOpt = false, verbose = verbose)
       (ei, algoServerWrapper.predict(algoModel, validationData))
     }}
     .toMap
@@ -349,6 +350,13 @@ object APIDebugWorkflow {
           val as = DebugWorkflow.debugString(a)
           println(s"F: $fs P: $ps A: $as")
         }}
+      }}
+    }
+
+    if (verbose > 0) {
+      evalPredictionMap.foreach { case(ei, fpaRdd) => {
+        val n = fpaRdd.count()
+        println(s"DP $ei has $n rows")
       }}
     }
     
