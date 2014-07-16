@@ -1,6 +1,7 @@
 package io.prediction.storage
 
 import com.github.nscala_time.time.Imports._
+import org.json4s._
 
 /**
  * Item object.
@@ -80,3 +81,78 @@ trait Items {
   /** count number of records by App ID*/
   def countByAppid(appid: Int): Long
 }
+
+class ItemSerializer extends CustomSerializer[Item](format => (
+  {
+    case JObject(fields) =>
+      val seed = Item(
+        id = "",
+        appid = 0,
+        ct = DateTime.now,
+        itypes = Seq(),
+        starttime = None,
+        endtime = None,
+        price = None,
+        profit = None,
+        latlng = None,
+        inactive = None,
+        attributes = None)
+      fields.foldLeft(seed) { case (item, field) =>
+        field match {
+          case JField("id", JString(id)) => item.copy(id = id)
+          case JField("appid", JInt(appid)) => item.copy(appid = appid.intValue)
+          case JField("ct", JString(ct)) => item.copy(
+            ct = Utils.stringToDateTime(ct))
+          case JField("itypes", JArray(s)) => item.copy(itypes = s.map(t =>
+            t match {
+              case JString(itype) => itype
+              case _ => ""
+            }
+          ))
+          case JField("starttime", JString(starttime)) => item.copy(
+            starttime = Some(Utils.stringToDateTime(starttime)))
+          case JField("endtime", JString(endtime)) => item.copy(
+            endtime = Some(Utils.stringToDateTime(endtime)))
+          case JField("price", JDouble(price)) => item.copy(price = Some(price))
+          case JField("profit", JDouble(profit)) => item.copy(
+            profit = Some(profit))
+          case JField("latlng", JString(latlng)) => item.copy(
+            latlng = Some(latlng.split(',') match {
+              case Array(lat, lng) => (lat.toDouble, lng.toDouble) }))
+          case JField("inactive", JBool(inactive)) => item.copy(
+            inactive = Some(inactive))
+          case JField("attributes", JObject(attributes)) => item.copy(
+            attributes = Some(Utils.removePrefixFromAttributeKeys(
+              attributes.map(x =>
+                x match {
+                  case JField(k, JString(v)) => k -> v
+                }).toMap)))
+          case _ => item
+        }
+      }
+  },
+  {
+    case item: Item =>
+      JObject(
+        JField("id", JString(item.id)) ::
+        JField("appid", JInt(item.appid)) ::
+        JField("ct", JString(item.ct.toString)) ::
+        JField("itypes", JArray(item.itypes.map(x => JString(x)).toList)) ::
+        JField("starttime", item.starttime.map(x =>
+          JString(x.toString)).getOrElse(JNothing)) ::
+        JField("endtime", item.endtime.map(x =>
+          JString(x.toString)).getOrElse(JNothing)) ::
+        JField("price", item.price.map(x => JDouble(x)).getOrElse(JNothing)) ::
+        JField("profit", item.profit.map(x =>
+          JDouble(x)).getOrElse(JNothing)) ::
+        JField("latlng", item.latlng.map(x =>
+          JString(x._1 + "," + x._2)).getOrElse(JNothing)) ::
+        JField("inactive", item.inactive.map(x =>
+          JBool(x)).getOrElse(JNothing)) ::
+        JField("attributes", item.attributes.map(x =>
+          JObject(Utils.addPrefixToAttributeKeys(x).map(y =>
+            JField(y._1, JString(y._2.toString))).toList)).
+          getOrElse(JNothing)) ::
+        Nil)
+  }
+))

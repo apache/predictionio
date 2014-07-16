@@ -27,12 +27,12 @@ object Storage extends Logging {
 
   private def prefixPath(prefix: String, body: String) = s"${prefix}.${body}"
 
-  private val storageSourcesPrefix = "io.prediction.storage.sources"
-  private def storageSourcesPrefixPath(body: String) =
-    prefixPath(storageSourcesPrefix, body)
+  private val sourcesPrefix = "io.prediction.storage.sources"
+  private def sourcesPrefixPath(body: String) =
+    prefixPath(sourcesPrefix, body)
 
-  private val storageSourcesKeys: Seq[String] = try {
-    config.getObject(storageSourcesPrefix).keySet.toSeq
+  private val sourcesKeys: Seq[String] = try {
+    config.getObject(sourcesPrefix).keySet.toSeq
   } catch {
     case e: ConfigException =>
       error(s"Configuration has no valid storage sources! (${e.getMessage})")
@@ -40,13 +40,13 @@ object Storage extends Logging {
       Seq[String]()
   }
 
-  private case class Tagged(tag: String, stuff: Seq[AnyRef])
-  private case class TaggedClient(tag: String, client: BaseStorageClient)
+  private case class ClientMeta(sourceType: String, client: BaseStorageClient)
+  private case class DataObjectMeta(sourceName: String, databaseName: String)
 
-  private val storageSources: Map[String, TaggedClient] =
-    storageSourcesKeys.map(k =>
+  private val sourcesToClientMeta: Map[String, ClientMeta] =
+    sourcesKeys.map(k =>
       try {
-        val keyedPath = storageSourcesPrefixPath(k)
+        val keyedPath = sourcesPrefixPath(k)
         val sourceTypePath = prefixPath(keyedPath, "type")
         val sourceType = config.getString(sourceTypePath)
         val hosts = config.getStringList(prefixPath(keyedPath, "hosts"))
@@ -54,12 +54,12 @@ object Storage extends Logging {
           map(_.intValue)
         val clientConfig = StorageClientConfig(hosts = hosts, ports = ports)
         val client = getClient(clientConfig, sourceType)
-        k -> TaggedClient(sourceType, client)
+        k -> ClientMeta(sourceType, client)
       } catch {
         case e: ConfigException =>
           error(e.getMessage)
           errors += 1
-          k -> TaggedClient("", null)
+          k -> ClientMeta("", null)
       }
     ).toMap
 
@@ -86,15 +86,17 @@ object Storage extends Logging {
       errors += 1
     }
   }
-  private val repositoriesDatabase: Map[String, Tagged] =
+  private val repositoriesToDataObjectMeta: Map[String, DataObjectMeta] =
     repositories.map(r =>
       try {
         val keyedPath = repositoriesPrefixPath(r)
         val name = config.getString(prefixPath(keyedPath, "name"))
         val sourceName = config.getString(prefixPath(keyedPath, "source"))
-        val source = storageSources.get(sourceName)
-        source map { s =>
-          r -> Tagged(sourceName, Seq(s.client.client, name))
+        val clientMeta = sourcesToClientMeta.get(sourceName)
+        clientMeta map { cm =>
+          r -> DataObjectMeta(
+            sourceName = sourceName,
+            databaseName = name)
         } getOrElse {
           throw new ConfigException.BadValue(
             config.getValue(prefixPath(keyedPath, "source")).origin,
@@ -105,7 +107,7 @@ object Storage extends Logging {
         case e: ConfigException =>
           error(e.getMessage)
           errors += 1
-          r -> Tagged("", Seq())
+          r -> DataObjectMeta("", "")
       }
     ).toMap
 
@@ -124,14 +126,24 @@ object Storage extends Logging {
     }
   }
 
+  def getClient(sourceName: String): Option[BaseStorageClient] =
+    sourcesToClientMeta.get(sourceName).map(_.client)
+
   def getDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
-    val repoSource = repositoriesDatabase(repo)
-    val repoSourceName = repoSource.tag
-    val repoSourceType = storageSources(repoSourceName).tag
-    val classPrefix = storageSources(repoSourceName).client.prefix
+    val repoDOMeta = repositoriesToDataObjectMeta(repo)
+    val repoDOSourceName = repoDOMeta.sourceName
+    getDataObject[T](repoDOSourceName, repoDOMeta.databaseName)
+  }
+
+  def getDataObject[T](
+      sourceName: String,
+      databaseName: String)(implicit tag: TypeTag[T]): T = {
+    val clientMeta = sourcesToClientMeta(sourceName)
+    val sourceType = clientMeta.sourceType
+    val ctorArgs = dataObjectCtorArgs(clientMeta.client, databaseName)
+    val classPrefix = clientMeta.client.prefix
     val originalClassName = tag.tpe.toString.split('.')
-    val rawClassName = repoSourceType + "." + classPrefix +
-      originalClassName.last
+    val rawClassName = sourceType + "." + classPrefix + originalClassName.last
     val className = "io.prediction.storage." + rawClassName
     val clazz = try {
       Class.forName(className)
@@ -140,7 +152,8 @@ object Storage extends Logging {
     }
     val constructor = clazz.getConstructors()(0)
     try {
-      constructor.newInstance(repoSource.stuff: _*).asInstanceOf[T]
+      constructor.newInstance(ctorArgs: _*).
+        asInstanceOf[T]
     } catch {
       case e: IllegalArgumentException =>
         error(
@@ -148,27 +161,20 @@ object Storage extends Logging {
           constructor.getDeclaringClass.getName + " because its constructor" +
           " does not have the right number of arguments." +
           " Number of required constructor arguments: " +
-          repoSource.stuff.size + "." +
+          ctorArgs.size + "." +
           " Number of existing constructor arguments: " +
           constructor.getParameterTypes.size + "." +
-          s" Storage source name: ${repoSource.tag}." +
+          s" Storage source name: ${sourceName}." +
           s" Exception message: ${e.getMessage}).")
         errors += 1
         throw e
     }
   }
 
-  private def handleIllegalArgumentException(
-      e: IllegalArgumentException,
-      className: String,
-      repoSource: Tagged) = {
-    error(s"Unable to instantiate data object with class '${className}'" +
-      s" because its constructor does not have the right number of arguments." +
-      s" Number of required arguments: ${repoSource.stuff.size}." +
-      s" Source name: ${repoSource.tag}." +
-      s" Exception message: ${e.getMessage}).")
-    errors += 1
-    throw e
+  private def dataObjectCtorArgs(
+      client: BaseStorageClient,
+      dbName: String): Seq[AnyRef] = {
+    Seq(client.client, dbName)
   }
 
   /** The base directory of PredictionIO deployment/repository. */
