@@ -1,17 +1,15 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.core.{ BaseEngine }
-import io.prediction.{ EmptyParams }
-import io.prediction.{ DefaultServer, DefaultCleanser }
-import io.prediction.workflow.SparkWorkflow
-//import io.prediction.workflow.EvaluationWorkflow
+import io.prediction.api.EmptyParams
+import io.prediction.api.EngineParams
+import io.prediction.workflow.APIDebugWorkflow
 
 import com.github.nscala_time.time.Imports._
 
 object Runner {
 
   def main(args: Array[String]) {
-    val evalParams = new EvalParams(
+    val dsp = new DataSourceParams(
       appid = 1,
       itypes = None,
       actions = Set("view", "like", "conversion", "rate"),
@@ -26,11 +24,11 @@ object Runner {
       verbose = true
     )
 
-    val validatorParams = new ValidatorParams(
+    val mp = new MetricsParams(
       verbose = true
     )
 
-    val cleanserParams = new CleanserParams(
+    val pp = new PreparatorParams(
       actions = Map(
         "view" -> Some(3),
         "like" -> Some(5),
@@ -43,7 +41,7 @@ object Runner {
     val knnAlgoParams = new KNNAlgoParams(
       similarity = "cosine",
       k = 10)
-    val randomAlgoParams = new RandomAlgoParams
+    val randomAlgoParams = new RandomAlgoParams()
     val mahoutAlgoParams = new MahoutItemBasedAlgoParams(
       booleanData = true,
       itemSimilarity = "LogLikelihoodSimilarity",
@@ -53,25 +51,28 @@ object Runner {
       numSimilarItems = 50
     )
 
-    val serverParams = new EmptyParams
-
-    val paramSet = Seq(("knn", knnAlgoParams))
-    //val paramSet = Seq(("rand", randomAlgoParams))
-    //val paramSet = Seq(("mahout", mahoutAlgoParams))
+    val sp = new EmptyParams()
 
     val engine = ItemRankEngine()
+    val engineParams = new EngineParams(
+      dataSourceParams = dsp,
+      preparatorParams = pp,
+      algorithmParamsList = Seq(("knn", knnAlgoParams)),
+      // Seq(("rand", randomAlgoParams))
+      // Seq(("mahout", mahoutAlgoParams))
+      servingParams = sp
+    )
 
-    val evaluator = ItemRankEvaluator()
+    APIDebugWorkflow.runEngine(
+      batch = "Imagine: Local ItemRank Engine",
+      verbose = 3,
+      engine = engine,
+      engineParams = engineParams,
+      metricsClass = classOf[ItemRankMetrics],
+      metricsParams = mp
 
-    SparkWorkflow.run(
-      "Thor",
-      evalParams,
-      validatorParams,
-      cleanserParams,
-      paramSet,
-      serverParams,
-      engine,
-      evaluator)
+    )
+
   }
 
 }

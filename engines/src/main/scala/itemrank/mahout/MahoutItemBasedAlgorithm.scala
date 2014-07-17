@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ Algorithm }
+import io.prediction.api.LAlgorithm
 
 import java.io.File
 import java.io.FileWriter
@@ -31,43 +31,32 @@ import org.apache.mahout.cf.taste.impl.similarity.{
   UncenteredCosineSimilarity
 }
 
-class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
-  Feature, Prediction, MahoutItemBasedModel, MahoutItemBasedAlgoParams] {
+class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
+  extends LAlgorithm[MahoutItemBasedAlgoParams, PreparedData,
+  MahoutItemBasedModel, Query, Prediction] {
 
-  var _algoParams = new MahoutItemBasedAlgoParams(
-    booleanData = true,
-    itemSimilarity = "LogLikelihoodSimilarity",
-    weighted = false,
-    nearestN = 10,
-    threshold = 5e-324,
-    numSimilarItems = 50
-  )
   var _minScore = 0.0
 
-  override def init(params: MahoutItemBasedAlgoParams): Unit ={
-    _algoParams = params;
-  }
-
   override def train(
-    cleansedData: CleansedData): MahoutItemBasedModel = {
-      val numSimilarItems: Int = _algoParams.numSimilarItems
+    pareparedData: PreparedData): MahoutItemBasedModel = {
+      val numSimilarItems: Int = params.numSimilarItems
       val recommendationTime: Long = 0 // TODO: freshness for itemrank?
       val freshness = 0
       val freshnessTimeUnit: Long = 3600000 // 1 hour
 
-      val dataModel: DataModel = if (_algoParams.booleanData) {
-        buildBooleanPrefDataModel(cleansedData.rating.map { r =>
+      val dataModel: DataModel = if (params.booleanData) {
+        buildBooleanPrefDataModel(pareparedData.rating.map { r =>
           (r.uindex, r.iindex, r.t) })
       } else {
-        buildDataModel(cleansedData.rating.map{ r =>
+        buildDataModel(pareparedData.rating.map{ r =>
           (r.uindex, r.iindex, r.rating.toFloat, r.t) })
       }
       val similarity: ItemSimilarity = buildItemSimilarity(dataModel)
 
       val itemIds = dataModel.getItemIDs.toSeq.map(_.toLong)
-      val itemsMap = cleansedData.items
-      val usersMap = cleansedData.users
-      val validItemsSet = cleansedData.items.keySet
+      val itemsMap = pareparedData.items
+      val usersMap = pareparedData.users
+      val validItemsSet = pareparedData.items.keySet
 
       val allTopScores = itemIds.par.map { iid =>
         val simScores = validItemsSet.toSeq
@@ -89,7 +78,7 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
           }
           // filter out invalid score or the same iid itself, < threshold
           .filter { x: (Int, Double) => (!x._2.isNaN()) && (x._1 != iid) &&
-            (x._2 >= _algoParams.threshold) }
+            (x._2 >= params.threshold) }
 
         (iid.toInt, getTopN(simScores, numSimilarItems)(ScoreOrdering.reverse))
       }.toMap
@@ -102,7 +91,7 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
           (itemsMap(iindex).iid, topScoresIid)
       }
 
-      val userHistoryMap = cleansedData.rating.groupBy(_.uindex)
+      val userHistoryMap = pareparedData.rating.groupBy(_.uindex)
         .map {
           case (k, listOfRating) =>
             val history = listOfRating.map(r =>
@@ -118,10 +107,10 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
   }
 
   override def predict(model: MahoutItemBasedModel,
-    feature: Feature): Prediction = {
-      val nearestK = _algoParams.nearestN
-      val uid = feature.uid
-      val possibleItems = feature.items
+    query: Query): Prediction = {
+      val nearestK = params.nearestN
+      val uid = query.uid
+      val possibleItems = query.items
       val history: Map[String, Int] = model.userHistory.getOrElse(uid, Set())
         .toMap
 
@@ -225,7 +214,7 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
       a._2 compare b._2
   }
 
-  def getTopN[T](s: Seq[T], n: Int)(ord: Ordering[T]): Seq[T] = {
+  private def getTopN[T](s: Seq[T], n: Int)(ord: Ordering[T]): Seq[T] = {
     val q = PriorityQueue()(ord)
 
     for (x <- s) {
@@ -244,11 +233,11 @@ class MahoutItemBasedAlgorithm extends Algorithm[CleansedData,
   }
 
   // return Mahout's ItemSimilarity object
-  def buildItemSimilarity(dataModel: DataModel): ItemSimilarity = {
+  private def buildItemSimilarity(dataModel: DataModel): ItemSimilarity = {
 
-    val booleanData: Boolean = _algoParams.booleanData
-    val itemSimilarity: String = _algoParams.itemSimilarity
-    val weighted: Boolean = _algoParams.weighted
+    val booleanData: Boolean = params.booleanData
+    val itemSimilarity: String = params.itemSimilarity
+    val weighted: Boolean = params.weighted
 
     val weightedParam: Weighting = if (weighted)
       Weighting.WEIGHTED

@@ -1,19 +1,17 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.core.BaseEngine
-import io.prediction.EngineFactory
-import io.prediction.{ DefaultCleanser, DefaultServer }
-
-class NoOptCleanser extends DefaultCleanser[TrainingData] {}
+import io.prediction.api.EngineFactory
+import io.prediction.api.Engine
 
 object ItemRankEngine extends EngineFactory {
   def apply() = {
-    new BaseEngine(
-      classOf[ItemRankCleanser],
+    new Engine(
+      classOf[ItemRankDataSource],
+      classOf[ItemRankPreparator],
       Map("knn" -> classOf[KNNAlgorithm],
         "rand" -> classOf[RandomAlgorithm],
         "mahout" -> classOf[MahoutItemBasedAlgorithm]),
-      classOf[DefaultServer[Feature, Prediction]]
+      classOf[ItemRankServing]
     )
   }
 }

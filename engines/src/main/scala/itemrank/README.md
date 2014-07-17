@@ -41,6 +41,16 @@ For example, to import to appid=4 with 90 days of data:
 	$ sbt/sbt "engines/runMain io.prediction.engines.itemrank.CreateSampleData --appid 4 --days 90"
 
 
+Runner with spark-submit
+=========================
+
+At project root directory (**Image/**):
+
+		$ sbt/sbt package
+		$ sbt/sbt engines/assemblyPackageDependency
+		$ $SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,/Users/ckh/dev/mac_dev/pio/Imagine/engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "io.prediction.engines.itemrank.Runner" core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
+
+
 Run Evaluation
 ==============
 
@@ -57,7 +67,7 @@ KNNAlgorithm:
 MahoutItemBasedAlgorithm:
 
 	$ sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap mahoutAlgoParams.json"
-	
+
 RandomAlgorithm:
 
 	sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap randomAlgoParams.json"

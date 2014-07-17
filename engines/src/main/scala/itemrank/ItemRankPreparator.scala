@@ -1,31 +1,18 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ Cleanser }
+import io.prediction.api.LPreparator
 
-class ItemRankCleanser extends Cleanser[TrainingData, CleansedData,
-  CleanserParams] {
+class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
+    PreparatorParams, TrainingData, PreparedData] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"
   final val CONFLICT_LOWEST: String = "lowest"
 
-  var _cleanserParams = new CleanserParams(
-    actions = Map(
-      "view" -> Some(3),
-      "like" -> Some(5),
-      "conversion" -> Some(4),
-      "rate" -> None
-    ),
-    conflict = "latest"
-  )
+  override def prepare(trainingData: TrainingData): PreparedData = {
 
-  override def init(params: CleanserParams) = {
-    _cleanserParams = params
-  }
-
-  override def cleanse(trainingData: TrainingData): CleansedData = {
-    val actionsMap = _cleanserParams.actions
-    val conflict = _cleanserParams.conflict
+    val actionsMap = pp.actions
+    val conflict = pp.conflict
 
     // convert actions to ratings value
     val u2iRatings = trainingData.u2iActions
@@ -52,7 +39,7 @@ class ItemRankCleanser extends Cleanser[TrainingData, CleansedData,
       }.values
       .toList
 
-    new CleansedData(
+    new PreparedData(
       users = trainingData.users,
       items = trainingData.items,
       rating = ratingReduced
