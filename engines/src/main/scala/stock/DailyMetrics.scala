@@ -6,10 +6,10 @@ import breeze.stats.{ mean, meanAndVariance }
 
 // [[[DailyMetrics]]] aggregate the overall return by the strategy.
 class DailyMetrics
-  extends Metrics[EmptyParams, AnyRef, Feature, Target2, Target2,
+  extends Metrics[EmptyParams, AnyRef, Feature, Target, Target,
       Seq[(Double, Double)], Seq[(Double, Double)], String] {
 
-  def computeUnit(query: Feature, predicted: Target2, actual: Target2)
+  def computeUnit(query: Feature, predicted: Target, actual: Target)
     : Seq[(Double, Double)] = {
     val predictedData = predicted.data
     val actualData = actual.data

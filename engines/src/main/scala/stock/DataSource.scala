@@ -67,7 +67,7 @@ case class TestingDataParams(
   val marketTicker: String,
   val tickerList: Seq[String]) extends Serializable {}
 
-class Target2(
+class Target(
   val date: DateTime,
   val data: Map[String, Double]) extends Serializable {
   override def toString(): String = s"Target @$date"
@@ -85,9 +85,10 @@ class StockDataSource(val dsp: DataSourceParams)
     (TrainingDataParams2, TestingDataParams),
     TrainingData,
     Feature,
-    Target2] {
+    Target] {
   @transient lazy val itemTrendsDbGetTicker = 
     Storage.getAppdataItemTrends().get(dsp.appid, _: String).get
+  @transient lazy val itemTrendsDb = Storage.getAppdataItemTrends()
 
   def generateDataParams(): Seq[(TrainingDataParams2, TestingDataParams)] = {
     Range(dsp.fromIdx, dsp.untilIdx, dsp.evaluationInterval)
@@ -111,7 +112,7 @@ class StockDataSource(val dsp: DataSourceParams)
   }
 
   def read(p: (TrainingDataParams2, TestingDataParams))
-  : (TrainingData, Seq[(Feature, Target2)]) = {
+  : (TrainingData, Seq[(Feature, Target)]) = {
     return (prepareTraining(p._1), prepareValidation(p._2))
   }
   
@@ -154,7 +155,7 @@ class StockDataSource(val dsp: DataSourceParams)
 
   private def getBatchItemTrend(tickers: Seq[String])
     : Map[String, ItemTrend] = {
-    StockEvaluator.itemTrendsDb.getByIds(dsp.appid, tickers).map{ e => {
+    itemTrendsDb.getByIds(dsp.appid, tickers).map{ e => {
       (e.id, e)
     }}.toMap
   }
@@ -190,7 +191,7 @@ class StockDataSource(val dsp: DataSourceParams)
     idx: Int,
     baseDate: DateTime,
     marketTicker: String,
-    tickerList: Seq[String]): (Feature, Target2) = {
+    tickerList: Seq[String]): (Feature, Target) = {
     val allTickers: Seq[String] = marketTicker +: tickerList
 
     val featureWindowSize = 30 // engine-specific param
@@ -231,11 +232,11 @@ class StockDataSource(val dsp: DataSourceParams)
         data = featureData,
         tomorrow = timeIndex.last.get
       ),
-      new Target2(date = timeIndex.last.get, data = targetData))
+      new Target(date = timeIndex.last.get, data = targetData))
   }
 
   def prepareValidation(params: TestingDataParams)
-  : Seq[(Feature, Target2)] = {
+  : Seq[(Feature, Target)] = {
     val tickerList: Seq[String] = params.marketTicker +: params.tickerList
     val tickerTrendMap = getBatchItemTrend(tickerList)
 

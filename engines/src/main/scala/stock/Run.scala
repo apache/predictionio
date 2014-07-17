@@ -16,33 +16,31 @@ object Run {
     val dataSourceParams = new DataSourceParams(
         baseDate = new DateTime(2006, 1, 1, 0, 0),
         fromIdx = 600,
-        untilIdx = 900,
+        untilIdx = 800,
         trainingWindowSize = 600,
         evaluationInterval = 20,
         marketTicker = "SPY",
         tickerList = tickerList)
         
-    val algorithmParamsList = Seq(("Regression", EmptyParams()))
+    //val algorithmParamsList = Seq(("Regression", EmptyParams()))
 
-    /*
     val algorithmParamsList = Seq(
           ("Regression", EmptyParams()),
           ("Random", RandomAlgorithmParams(drift = 0.1)),
           ("Random", RandomAlgorithmParams(drift = -0.05)))
-    */
 
     APIDebugWorkflow.run(
         dataSourceClass = classOf[StockDataSource],
         dataSourceParams = dataSourceParams,
         preparatorClass = IdentityPreparator(classOf[StockDataSource]),
         algorithmClassMap = Map(
-          "Random" -> classOf[RandomAlgorithm2],
-          "Regression" -> classOf[RegressionAlgorithm2]),
+          "Random" -> classOf[RandomAlgorithm],
+          "Regression" -> classOf[RegressionAlgorithm]),
         algorithmParamsList = algorithmParamsList,
-        servingClass = FirstServing(classOf[RegressionAlgorithm2]),
+        servingClass = FirstServing(classOf[RegressionAlgorithm]),
         metricsClass = classOf[BackTestingMetrics],
         metricsParams = BackTestingParams(0.002, 0.0),
-        verbose = 3,
+        verbose = 0,
         batch = "Imagine: Stock") 
   }
 }

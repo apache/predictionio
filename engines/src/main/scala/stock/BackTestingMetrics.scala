@@ -12,7 +12,7 @@ case class BackTestingParams(
 extends Params {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
-class DailyResults2(
+class DailyResult(
   val date: DateTime,
   val actualReturn: Map[String, Double],  // Tomorrow's return
   val toEnter: Seq[String],
@@ -20,11 +20,11 @@ class DailyResults2(
 extends Serializable {}
 
 class BackTestingMetrics(val params: BackTestingParams)
-  extends Metrics[BackTestingParams, AnyRef, Feature, Target2, Target2,
-      DailyResults2, Seq[DailyResults2], String] {
+  extends Metrics[BackTestingParams, AnyRef, Feature, Target, Target,
+      DailyResult, Seq[DailyResult], String] {
 
-  def computeUnit(feature: Feature, predicted: Target2, actual: Target2)
-    : DailyResults2 = {
+  def computeUnit(feature: Feature, predicted: Target, actual: Target)
+    : DailyResult = {
     val predictedData = predicted.data
     val actualData = actual.data
 
@@ -45,17 +45,17 @@ class BackTestingMetrics(val params: BackTestingParams)
     val toExit = data.filter(_._2 == -1).map(_._1)
     val actualReturn = data.map(e => (e._1, e._4)).toMap
     
-    new DailyResults2(
+    new DailyResult(
       date = feature.today, 
       actualReturn = actualReturn,
       toEnter = toEnter,
       toExit = toExit)
   }
  
-  def computeSet(dp: AnyRef, input: Seq[DailyResults2])
-    : Seq[DailyResults2] = input
+  def computeSet(dp: AnyRef, input: Seq[DailyResult])
+    : Seq[DailyResult] = input
 
-  def computeMultipleSets(input: Seq[(AnyRef, Seq[DailyResults2])])
+  def computeMultipleSets(input: Seq[(AnyRef, Seq[DailyResult])])
   : String = {
     var dailyResultsSeq = input
       .map(_._2)
@@ -105,7 +105,6 @@ class BackTestingMetrics(val params: BackTestingParams)
       val s = s"$today Nav: $nav Pos: ${positions.size}"
       ss.append(s)
     }
-    //new BackTestingResults(s = ss)
     ss.mkString("\n")
   }
 }
