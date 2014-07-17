@@ -1,9 +1,9 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.EngineFactory
+import io.prediction.api.IEngineFactory
 import io.prediction.api.Engine
 
-object ItemRankEngine extends EngineFactory {
+object ItemRankEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[ItemRankDataSource],
