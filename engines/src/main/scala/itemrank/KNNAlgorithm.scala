@@ -1,31 +1,21 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.{ Algorithm }
+import io.prediction.api.LAlgorithm
 import breeze.linalg.{ SparseVector, sum => LSum }
 
-class KNNAlgorithm extends Algorithm[CleansedData, Feature, Prediction,
-  KNNModel, KNNAlgoParams] {
+class KNNAlgorithm(params: KNNAlgoParams)
+  extends LAlgorithm[KNNAlgoParams, PreparedData, KNNModel, Query,
+  Prediction] {
 
-  var _k = 10
-  var _similarity = "cosine"
-  var _minScore = 0.0
+  val _minScore = 0.0
 
-  override def init(algoParams: KNNAlgoParams): Unit = {
-    _k = algoParams.k
-    _similarity = algoParams.similarity
-    _similarity match {
-      case "cosine" => _minScore = 0.0
-      case "jaccard" => _minScore = 0.0
-    }
-  }
-
-  override def train(cleansedData: CleansedData): KNNModel = {
-    val rating = cleansedData.rating
+  override def train(preparedData: PreparedData): KNNModel = {
+    val rating = preparedData.rating
 
     if (!rating.isEmpty) {
-      val numOfUsers = cleansedData.users.size
-      val items = cleansedData.items
-      val users = cleansedData.users
+      val numOfUsers = preparedData.users.size
+      val items = preparedData.items
+      val users = preparedData.users
 
       val itemVectorMap = rating.groupBy(_.iindex)
         .mapValues { listOfRating =>
@@ -57,7 +47,7 @@ class KNNAlgorithm extends Algorithm[CleansedData, Feature, Prediction,
         val i2Index = sortedItemIndex(j)
         val v1 = itemVectorMap(i1Index)
         val v2 = itemVectorMap(i2Index)
-        val score = _similarity match {
+        val score = params.similarity match {
           case "cosine" => cosineSimilarity(v1, v2)
           case "jaccard" => jaccardSimilarity(v1, v2)
           case _ => 0.0
@@ -91,10 +81,10 @@ class KNNAlgorithm extends Algorithm[CleansedData, Feature, Prediction,
     }
   }
 
-  override def predict(model: KNNModel, feature: Feature): Prediction = {
-    val nearestK = _k
-    val uid = feature.uid
-    val possibleItems = feature.items
+  override def predict(model: KNNModel, query: Query): Prediction = {
+    val nearestK = params.k
+    val uid = query.uid
+    val possibleItems = query.items
     val history: Map[String, Int] = model.userHistory.getOrElse(uid, Set())
       .toMap
 

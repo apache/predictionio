@@ -10,15 +10,17 @@ abstract class UnitSpec extends WordSpec with Matchers with OptionValues with In
 
 class TestItemRankEngine extends UnitSpec {
 
-  "An ItemRankCleanser" should {
-    val data = fromURL(getClass.getResource("/ItemRankCleanserData.json")).mkString
+  "An ItemRankPreparator" should {
+    val data = fromURL(getClass.getResource("/ItemRankPreparatorData.json"))
+      .mkString
     val fixtures = parse(data)
 
     implicit lazy val formats = org.json4s.DefaultFormats
 
     for (fixture <- fixtures.children) {
       val name = (fixture \ "name").extract[String]
-      val cleanserParams = (fixture \ "cleanserParams").extract[CleanserParams]
+      val preparatorParams = (fixture \ "preparatorParams")
+        .extract[PreparatorParams]
       val users = (fixture \ "users").extract[Map[Int, UserTD]]
       val items = (fixture \ "items").extract[Map[Int, ItemTD]]
       val u2iActions = (fixture \ "u2iActions").extract[Seq[U2IActionTD]]
@@ -27,10 +29,9 @@ class TestItemRankEngine extends UnitSpec {
       val expect = (fixture \ "expect").extract[Seq[RatingTD]]
 
       name in {
-        val cleanser = new ItemRankCleanser
-        cleanser.init(cleanserParams)
-        val cleansedData = cleanser.cleanse(trainingData)
-        (cleansedData.rating zip expect).foreach {
+        val preparator = new ItemRankPreparator(preparatorParams)
+        val preparedData = preparator.prepare(trainingData)
+        (preparedData.rating zip expect).foreach {
           g => {
             assert(g._1.uindex == g._2.uindex)
             assert(g._1.iindex == g._2.iindex)

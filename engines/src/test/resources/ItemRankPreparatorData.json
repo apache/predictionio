@@ -1,7 +1,7 @@
 [
   {
-    "name": "cleanse simple data with conflict=latest",
-    "cleanserParams": {
+    "name": "prepare simple data with conflict=latest",
+    "preparatorParams": {
       "actions": { "view": 3, "like" : 5, "conversion" : 5, "rate" : null },
       "conflict": "latest"
     },
@@ -24,7 +24,7 @@
         "t": 0
       }
     ],
-    "expect": [ 
+    "expect": [
       {
         "uindex": 0,
         "iindex": 0,

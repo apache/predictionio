@@ -1,17 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.BaseParams
-
-class MahoutItemBasedCleanserParam(
-) extends BaseParams {}
-/*
-class MoahoutItemBasedCleansedData(
-  val ratingsFile: String, // file path
-  val users: Map[Int, String], // uindex->uid
-  val items: Map[Int, ItemTD] // iindex->itemTD
-  val validItems: Set[Int] // valid candidate items index
-) extends BaseParams {}
-*/
+import io.prediction.api.Params
 
 class MahoutItemBasedAlgoParams(
   val booleanData: Boolean,
@@ -20,8 +9,7 @@ class MahoutItemBasedAlgoParams(
   val nearestN: Int,
   val threshold: Double,
   val numSimilarItems: Int
-) extends BaseParams {}
-
+) extends Params {}
 
 class MahoutItemBasedModel(
   val userHistory: Map[String, Set[(String, Int)]],
