@@ -19,6 +19,6 @@ class EngineParams(
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
     val servingParams: Params = EmptyParams()) extends Serializable
 
-trait EngineFactory {
+trait IEngineFactory {
   def apply(): Engine[_, _, _, _, _, _]
 }

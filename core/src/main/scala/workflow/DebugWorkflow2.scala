@@ -216,7 +216,7 @@ object APIDebugWorkflow {
       metricsParams = metricsParams
     )
   }
-      
+     
   def run[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
@@ -503,5 +503,38 @@ object JavaAPIDebugWorkflow {
       JavaUtils.fakeClassTag[MR],
       JavaUtils.fakeClassTag[MMR])
 
+  }
+
+  def runEngine[DP, TD, PD, Q, P, A](
+    batch: String,
+    verbose: Int,
+    engine: Engine[TD, DP, PD, Q, P, A],
+    engineParams: EngineParams) {
+    APIDebugWorkflow.runEngine(
+      batch = batch,
+      verbose = verbose,
+      engine = engine,
+      engineParams = engineParams)
+  }
+  
+  def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
+    batch: String,
+    verbose: Int,
+    engine: Engine[TD, DP, PD, Q, P, A],
+    engineParams: EngineParams,
+    metricsClass
+      : Class[_ <: JavaMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
+    metricsParams: Params) {
+    APIDebugWorkflow.runEngine(
+      batch = batch,
+      verbose = verbose,
+      engine = engine,
+      engineParams = engineParams,
+      metricsClass = metricsClass,
+      metricsParams = metricsParams
+    )(
+      JavaUtils.fakeClassTag[MU], 
+      JavaUtils.fakeClassTag[MR],
+      JavaUtils.fakeClassTag[MMR])
   }
 }

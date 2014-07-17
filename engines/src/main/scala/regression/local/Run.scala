@@ -2,7 +2,7 @@ package io.prediction.engines.regression.local
 
 import io.prediction.api.EmptyParams
 import io.prediction.api.Engine
-import io.prediction.api.EngineFactory
+import io.prediction.api.IEngineFactory
 import io.prediction.api.EngineParams
 import io.prediction.api.FirstServing
 import io.prediction.api.LAlgorithm
@@ -84,7 +84,7 @@ case class LocalAlgorithm()
   }
 }
 
-object RegressionEngineFactory extends EngineFactory {
+object RegressionEngineFactory extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[LocalDataSource],
