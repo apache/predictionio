@@ -8,6 +8,7 @@ import breeze.linalg.{ DenseMatrix, DenseVector }
 import com.twitter.chill.MeatLocker
 //import com.github.nscala_time.time.Imports._
 
+/*
 // Use data after baseData.
 // Afterwards, slicing uses idx
 // Evaluate fromIdx until untilIdx
@@ -38,6 +39,7 @@ class ValidationDataParams(
   val untilIdx: Int,
   val marketTicker: String,
   val tickerList: Seq[String]) extends BaseParams {}
+*/
 
 class TrainingData(
   val tickers: Seq[String],
@@ -135,6 +137,7 @@ object Feature {
   }
 }
 
+/*
 class Target(
   val data: Map[String, Double]) extends Serializable {}
 
@@ -147,3 +150,4 @@ class ValidationResults(
 class CrossValidationResults(val s: String) extends Serializable {
   override def toString() = s
 }
+*/

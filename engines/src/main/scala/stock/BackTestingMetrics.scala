@@ -19,16 +19,6 @@ class DailyResults2(
   val toExit: Seq[String])
 extends Serializable {}
 
-/*
-class SetResults(val dailySeq: Seq[DailyResults]) 
-extends Serializable {}
-
-class BackTestingResults(val s: Seq[String]) 
-extends Serializable {
-  override def toString() = s.mkString("\n")
-}
-*/
-
 class BackTestingMetrics(val params: BackTestingParams)
   extends Metrics[BackTestingParams, AnyRef, Feature, Target2, Target2,
       DailyResults2, Seq[DailyResults2], String] {
