@@ -17,31 +17,31 @@ public class SVDPlusPlus
 
   final static Logger logger = LoggerFactory.getLogger(SVDPlusPlus.class);
 
-  @Override
-  public Logger getLogger() {
-    return logger;
+  SVDPlusPlusParams params;
+
+  public SVDPlusPlus(SVDPlusPlusParams params) {
+    super(params, logger);
+    this.params = params;
   }
 
   @Override
-  public Recommender buildRecommender(TrainingData cd) throws TasteException {
-    // TODO: read from params
-    int numFeatures = 3;
-    double learningRate = 0.01;
-    double preventOverfitting = 0.1;
-    double randomNoise = 0.01;
-    int numIterations = 3;
-    double learningRateDecay = 1;
-    boolean unseenOnly = false;
+  public Recommender buildRecommender(TrainingData data) throws TasteException {
+    int numFeatures = params.numFeatures;
+    double learningRate = params.learningRate;
+    double preventOverfitting = params.preventOverfitting;
+    double randomNoise = params.randomNoise;
+    int numIterations = params.numIterations;
+    double learningRateDecay = params.learningRateDecay;
 
     Recommender recommender = null;
     // TODO: handle Exception
     try {
     Factorizer factorizer = new SVDPlusPlusFactorizer(
-      cd.dataModel, numFeatures, learningRate, preventOverfitting,
+      data.dataModel, numFeatures, learningRate, preventOverfitting,
       randomNoise, numIterations, learningRateDecay);
 
     // TODO: support other candidate item strategy
-      recommender = new SVDRecommender(cd.dataModel, factorizer);
+      recommender = new SVDRecommender(data.dataModel, factorizer);
     } catch (TasteException e) {
       logger.error("Caught TasteException " + e.getMessage());
     }

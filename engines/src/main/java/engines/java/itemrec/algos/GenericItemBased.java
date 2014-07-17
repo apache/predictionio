@@ -24,17 +24,25 @@ public class GenericItemBased
 
   final static Logger logger = LoggerFactory.getLogger(GenericItemBased.class);
 
-  @Override
-  public Logger getLogger() {
-    return logger;
+  final static String CITY_BLOCK = "CityBlockSimilarity";
+  final static String EUCLIDEAN_DISTANCE = "EuclideanDistanceSimilarity";
+  final static String LOG_LIKELIHOOD = "LogLikelihoodSimilarity";
+  final static String PEARSON_CORRELATION = "PearsonCorrelationSimilarity";
+  final static String TANIMOTO_COEFFICIENT = "TanimotoCoefficientSimilarity";
+  final static String UNCENTERED_COSINE = "UncenteredCosineSimilarity";
+
+  GenericItemBasedParams params;
+
+  public GenericItemBased(GenericItemBasedParams params) {
+    super(params, logger);
+    this.params = params;
   }
 
   @Override
-  public Recommender buildRecommender(TrainingData cd) throws TasteException {
+  public Recommender buildRecommender(TrainingData data) throws TasteException {
 
-    // TODO: read from params
-    String itemSimilarity = "LogLikelihoodSimilarity";
-    boolean weighted = false;
+    String itemSimilarity = params.itemSimilarity;
+    boolean weighted = params.weighted;
 
     Weighting weightedParam;
 
@@ -45,31 +53,33 @@ public class GenericItemBased
 
     ItemSimilarity similarity;
     switch (itemSimilarity) {
-      case "CityBlockSimilarity":
-        similarity = new CityBlockSimilarity(cd.dataModel);
+      case CITY_BLOCK:
+        similarity = new CityBlockSimilarity(data.dataModel);
         break;
-      case "EuclideanDistanceSimilarity":
-        similarity = new EuclideanDistanceSimilarity(cd.dataModel, weightedParam);
+      case EUCLIDEAN_DISTANCE:
+        similarity = new EuclideanDistanceSimilarity(data.dataModel, weightedParam);
         break;
-      case "LogLikelihoodSimilarity":
-        similarity = new LogLikelihoodSimilarity(cd.dataModel);
+      case LOG_LIKELIHOOD:
+        similarity = new LogLikelihoodSimilarity(data.dataModel);
         break;
-      case "PearsonCorrelationSimilarity":
-        similarity = new PearsonCorrelationSimilarity(cd.dataModel, weightedParam);
+      case PEARSON_CORRELATION:
+        similarity = new PearsonCorrelationSimilarity(data.dataModel, weightedParam);
         break;
-      case "TanimotoCoefficientSimilarity":
-        similarity = new TanimotoCoefficientSimilarity(cd.dataModel);
+      case TANIMOTO_COEFFICIENT:
+        similarity = new TanimotoCoefficientSimilarity(data.dataModel);
         break;
-      case "UncenteredCosineSimilarity":
-        similarity = new UncenteredCosineSimilarity(cd.dataModel, weightedParam);
+      case UNCENTERED_COSINE:
+        similarity = new UncenteredCosineSimilarity(data.dataModel, weightedParam);
         break;
       default:
-        similarity = new LogLikelihoodSimilarity(cd.dataModel);
+        logger.error("Invalid itemSimilarity: " + itemSimilarity +
+          ". LogLikelihoodSimilarity is used.");
+        similarity = new LogLikelihoodSimilarity(data.dataModel);
         break;
     }
 
     Recommender recommender = new GenericItemBasedRecommender(
-      cd.dataModel,
+      data.dataModel,
       similarity
       // TODO: support other candidate item strategy
       //AbstractRecommender.getDefaultCandidateItemsStrategy(),
