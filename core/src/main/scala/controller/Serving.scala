@@ -1,7 +1,7 @@
-package io.prediction.api
+package io.prediction.controller
 
 import io.prediction.core.BaseServing
-import io.prediction.core.BaseAlgorithm2
+import io.prediction.core.BaseAlgorithm
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext
@@ -25,7 +25,7 @@ class FirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
 }
 
 object FirstServing {
-  def apply[Q, P](a: Class[_ <: BaseAlgorithm2[_, _, _, Q, P]]) = 
+  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, _, Q, P]]) = 
     classOf[FirstServing[Q, P]]
 }
 
@@ -37,7 +37,7 @@ class AverageServing[Q] extends LServing[EmptyParams, Q, Double] {
 }
 
 object AverageServing {
-  def apply[Q](a: Class[_ <: BaseAlgorithm2[_, _, _, Q, _]]) = 
+  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, _, Q, _]]) = 
     classOf[AverageServing[Q]]
 }
 

@@ -1,9 +1,9 @@
-package io.prediction.api.java;
+package io.prediction.controller.java;
 
 import java.lang.Iterable;
 import java.util.Map;
 import java.util.HashMap;
-import io.prediction.api.Params;
+import io.prediction.controller.Params;
 
 public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
   private Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> dataSourceClass = null;

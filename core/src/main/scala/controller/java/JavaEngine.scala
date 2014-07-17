@@ -1,8 +1,8 @@
-package io.prediction.api.java
+package io.prediction.controller.java
 
-import io.prediction.api.Engine
-import io.prediction.api.Params
-import io.prediction.api.EngineParams
+import io.prediction.controller.Engine
+import io.prediction.controller.Params
+import io.prediction.controller.EngineParams
 
 import scala.collection.JavaConversions._
 import java.lang.{ Iterable => JIterable }

@@ -1,4 +1,4 @@
-package io.prediction.api
+package io.prediction.controller
 
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseDataSource

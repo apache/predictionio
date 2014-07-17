@@ -1,6 +1,6 @@
 package io.prediction.core
 
-import io.prediction.api.Params
+import io.prediction.controller.Params
 import java.lang.NoSuchMethodException
 import scala.reflect._
   

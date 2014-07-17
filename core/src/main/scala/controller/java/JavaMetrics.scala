@@ -1,7 +1,7 @@
-package io.prediction.api.java
+package io.prediction.controller.java
 
 import io.prediction.core.BaseMetrics
-import io.prediction.api.Params
+import io.prediction.controller.Params
 
 import java.util.{ List => JList }
 import java.lang.{ Iterable => JIterable }

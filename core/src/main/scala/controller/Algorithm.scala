@@ -1,6 +1,6 @@
-package io.prediction.api
+package io.prediction.controller
 
-import io.prediction.core.BaseAlgorithm2
+import io.prediction.core.BaseAlgorithm
 import io.prediction.core.LModelAlgorithm
 import org.apache.spark.rdd.RDD
 
@@ -10,7 +10,7 @@ import scala.reflect._
 
 abstract class LAlgorithm[
     AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
-  extends BaseAlgorithm2[AP, RDD[PD], RDD[M], Q, P] 
+  extends BaseAlgorithm[AP, RDD[PD], RDD[M], Q, P] 
   with LModelAlgorithm[M, Q, P] {
 
   def trainBase(sc: SparkContext, pd: RDD[PD]): RDD[M] = pd.map(train)
@@ -22,7 +22,7 @@ abstract class LAlgorithm[
 
 abstract class P2LAlgorithm[
     AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
-  extends BaseAlgorithm2[AP, PD, RDD[M], Q, P] 
+  extends BaseAlgorithm[AP, PD, RDD[M], Q, P] 
   with LModelAlgorithm[M, Q, P] {
   // In train: PD => M, M is a local object. We have to parallelize it.
   def trainBase(sc: SparkContext, pd: PD): RDD[M] = {
@@ -36,7 +36,7 @@ abstract class P2LAlgorithm[
 }
 
 abstract class PAlgorithm[AP <: Params: ClassTag, PD, M, Q : ClassTag, P]
-  extends BaseAlgorithm2[AP, PD, M, Q, P] {
+  extends BaseAlgorithm[AP, PD, M, Q, P] {
   def trainBase(sc: SparkContext, pd: PD): M = train(pd)
 
   def train(pd: PD): M

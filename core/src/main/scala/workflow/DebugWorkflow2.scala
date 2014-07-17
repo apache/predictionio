@@ -1,24 +1,24 @@
 package io.prediction.workflow
 
-import io.prediction.api.Params
-import io.prediction.api.EmptyParams
+import io.prediction.controller.Params
+import io.prediction.controller.EmptyParams
 import io.prediction.core.Doer
 import scala.language.existentials
 
 //import io.prediction.core.BaseEvaluator
 //import io.prediction.core.BaseEngine
-import io.prediction.core.BaseAlgorithm2
+import io.prediction.core.BaseAlgorithm
 import io.prediction.core.LModelAlgorithm
-import io.prediction.api.java.LJavaDataSource
-import io.prediction.api.java.LJavaPreparator
-import io.prediction.api.java.LJavaAlgorithm
-import io.prediction.api.java.LJavaServing
-import io.prediction.api.java.JavaMetrics
-import io.prediction.api.Engine
-import io.prediction.api.EngineParams
-import io.prediction.api.java.JavaUtils
+import io.prediction.controller.java.LJavaDataSource
+import io.prediction.controller.java.LJavaPreparator
+import io.prediction.controller.java.LJavaAlgorithm
+import io.prediction.controller.java.LJavaServing
+import io.prediction.controller.java.JavaMetrics
+import io.prediction.controller.Engine
+import io.prediction.controller.EngineParams
+import io.prediction.controller.java.JavaUtils
 
-import io.prediction.api.LAlgorithm
+import io.prediction.controller.LAlgorithm
 
 import com.github.nscala_time.time.Imports.DateTime
 
@@ -48,7 +48,7 @@ import scala.reflect._
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
 class AlgoServerWrapper2[Q, P, A](
-    val algos: Array[_ <: BaseAlgorithm2[_,_,_,Q,P]],
+    val algos: Array[_ <: BaseAlgorithm[_,_,_,Q,P]],
     val serving: BaseServing[_, Q, P],
     val skipOpt: Boolean = false,
     val verbose: Int = 0)
@@ -189,7 +189,7 @@ extends Serializable {
   }
 }
 
-object APIDebugWorkflow {
+object controllerDebugWorkflow {
   def runEngine[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
@@ -229,7 +229,7 @@ object APIDebugWorkflow {
     preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]] = null,
     preparatorParams: Params = EmptyParams(),
     algorithmClassMap
-      : Map[String, Class[_ <: BaseAlgorithm2[_ <: Params, PD, _, Q, P]]] = null,
+      : Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]] = null,
     algorithmParamsList: Seq[(String, Params)] = null,
     servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]] = null,
     servingParams: Params = EmptyParams(),
@@ -237,7 +237,7 @@ object APIDebugWorkflow {
       : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
     metricsParams: Params = EmptyParams() 
   ) {
-    println("APIDebugWorkflow.run")
+    println("controllerDebugWorkflow.run")
     println("Start spark context")
 
     val sc = WorkflowContext(batch)
@@ -316,7 +316,7 @@ object APIDebugWorkflow {
     println("Algo model construction")
 
     // Instantiate algos
-    val algoInstanceList: Array[BaseAlgorithm2[_, PD, _, Q, P]] =
+    val algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]] =
     algorithmParamsList
       .map { 
         case (algoName, algoParams) => 
@@ -453,11 +453,11 @@ object APIDebugWorkflow {
 
     metricsOutput foreach { println }
     
-    println("APIDebugWorkflow.run completed.") 
+    println("controllerDebugWorkflow.run completed.") 
   }
 }
 
-object JavaAPIDebugWorkflow {
+object JavacontrollerDebugWorkflow {
   /*
   Ideally, Java could also act as other scala base class. But the tricky part
   is in the algorithmClassMap, where javac is not smart enough to match
@@ -466,7 +466,7 @@ object JavaAPIDebugWorkflow {
   function). If we change the caller to use Class[_ <: BaseAlgo[...]], it is
   difficult for the engine builder, as we wrap data structures with RDD in the
   base class. Hence, we have to sacrifices here, that all Doers calling
-  JavaAPIDebugWorkflow needs to be Java sub-doers.
+  JavacontrollerDebugWorkflow needs to be Java sub-doers.
   */
   def run[
       DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
@@ -494,7 +494,7 @@ object JavaAPIDebugWorkflow {
       if (algorithmParamsList == null) null
       else algorithmParamsList.toSeq)
     
-    APIDebugWorkflow.run(
+    controllerDebugWorkflow.run(
       batch = batch,
       verbose = verbose,
       dataSourceClass = dataSourceClass,
@@ -519,7 +519,7 @@ object JavaAPIDebugWorkflow {
     verbose: Int,
     engine: Engine[TD, DP, PD, Q, P, A],
     engineParams: EngineParams) {
-    APIDebugWorkflow.runEngine(
+    controllerDebugWorkflow.runEngine(
       batch = batch,
       verbose = verbose,
       engine = engine,
@@ -534,7 +534,7 @@ object JavaAPIDebugWorkflow {
     metricsClass
       : Class[_ <: JavaMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
     metricsParams: Params) {
-    APIDebugWorkflow.runEngine(
+    controllerDebugWorkflow.runEngine(
       batch = batch,
       verbose = verbose,
       engine = engine,

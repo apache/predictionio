@@ -1,4 +1,4 @@
-package io.prediction.api
+package io.prediction.controller
 
 trait Params extends Serializable {}
 

@@ -1,7 +1,7 @@
-package io.prediction.api.java
+package io.prediction.controller.java
 
-import io.prediction.api.LAlgorithm
-import io.prediction.api.Params
+import io.prediction.controller.LAlgorithm
+import io.prediction.controller.Params
 import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext

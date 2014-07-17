@@ -1,4 +1,4 @@
-package io.prediction.api
+package io.prediction.controller
 
 import io.prediction.core.BaseMetrics
 import org.apache.spark.rdd.RDD

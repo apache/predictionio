@@ -1,4 +1,4 @@
-package io.prediction.api.java
+package io.prediction.controller.java
 
 import scala.collection.JavaConversions._
 import org.apache.spark.rdd.RDD

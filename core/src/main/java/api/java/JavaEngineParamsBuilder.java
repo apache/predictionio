@@ -1,7 +1,7 @@
-package io.prediction.api.java;
+package io.prediction.controller.java;
 
-import io.prediction.api.EmptyParams;
-import io.prediction.api.Params;
+import io.prediction.controller.EmptyParams;
+import io.prediction.controller.Params;
 import java.util.ArrayList;
 import java.util.List;
 import scala.Tuple2;
