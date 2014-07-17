@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ItemRecMetrics extends JavaMetrics<
   EmptyParams, EmptyParams, Query, Prediction, Actual, Float, Float, Float> {
 
-  final static Logger logger = LoggerFactory.getLogger(ItemRecValidator.class);
+  final static Logger logger = LoggerFactory.getLogger(ItemRecMetrics.class);
 
   @Override
   public Float computeUnit(Query query, Prediction predicted, Actual actual) {
