@@ -1,6 +1,5 @@
 package io.prediction.storage
 
-import com.typesafe.config._
 import grizzled.slf4j.Logging
 
 import scala.collection.JavaConversions._
@@ -14,49 +13,41 @@ import scala.reflect.runtime.universe._
  * provides default values as necessary.
  */
 object Storage extends Logging {
-  private val config: Config = try {
-    ConfigFactory.load()
-  } catch {
-    case e: ConfigException =>
-      error(e.getMessage)
-      System.exit(1)
-      throw e // won't actually throw. just to pass type safety check
-  }
-
   private var errors = 0
 
-  private def prefixPath(prefix: String, body: String) = s"${prefix}.${body}"
+  private def prefixPath(prefix: String, body: String) = s"${prefix}_${body}"
 
-  private val sourcesPrefix = "io.prediction.storage.sources"
+  private val sourcesPrefix = "PIO_STORAGE_SOURCES"
   private def sourcesPrefixPath(body: String) =
     prefixPath(sourcesPrefix, body)
 
-  private val sourcesKeys: Seq[String] = try {
-    config.getObject(sourcesPrefix).keySet.toSeq
-  } catch {
-    case e: ConfigException =>
-      error(s"Configuration has no valid storage sources! (${e.getMessage})")
-      errors += 1
-      Seq[String]()
+  private val sourceTypesRegex = """PIO_STORAGE_SOURCES_([^_]+)_TYPE""".r
+
+  private val sourceKeys: Seq[String] = sys.env.keys.toSeq.flatMap { k =>
+    sourceTypesRegex findFirstIn k match {
+      case Some(sourceTypesRegex(sourceType)) => Seq(sourceType)
+      case None => Nil
+    }
   }
+
+  if (sourceKeys.size == 0) warn("There is no properly configured data source.")
 
   private case class ClientMeta(sourceType: String, client: BaseStorageClient)
   private case class DataObjectMeta(sourceName: String, databaseName: String)
 
   private val sourcesToClientMeta: Map[String, ClientMeta] =
-    sourcesKeys.map(k =>
+    sourceKeys.map(k =>
       try {
         val keyedPath = sourcesPrefixPath(k)
-        val sourceTypePath = prefixPath(keyedPath, "type")
-        val sourceType = config.getString(sourceTypePath)
-        val hosts = config.getStringList(prefixPath(keyedPath, "hosts"))
-        val ports = config.getIntList(prefixPath(keyedPath, "ports")).
-          map(_.intValue)
+        val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
+        val hosts = sys.env(prefixPath(keyedPath, "HOSTS")).split(',')
+        val ports = sys.env(prefixPath(keyedPath, "PORTS")).split(',').
+          map(_.toInt)
         val clientConfig = StorageClientConfig(hosts = hosts, ports = ports)
         val client = getClient(clientConfig, sourceType)
         k -> ClientMeta(sourceType, client)
       } catch {
-        case e: ConfigException =>
+        case e: Throwable =>
           error(e.getMessage)
           errors += 1
           k -> ClientMeta("", null)
@@ -64,47 +55,56 @@ object Storage extends Logging {
     ).toMap
 
   /** Reference to the app data repository. */
-  val AppDataRepository = "appdata"
-  /** Reference to the settings repository. */
-  val SettingsRepository = "settings"
+  val AppDataRepository = "APPDATA"
 
-  private val repositoriesPrefix = "io.prediction.storage.repositories"
+  val MetaDataRepository = "METADATA"
+
+  /** Reference to the settings repository. */
+  @deprecated("Use MetaDataRepository instead.", "20140716")
+  val SettingsRepository = MetaDataRepository
+
+  private val repositoriesPrefix = "PIO_STORAGE_REPOSITORIES"
   private def repositoriesPrefixPath(body: String) =
     prefixPath(repositoriesPrefix, body)
-  private val requiredRepositories = Seq(AppDataRepository, SettingsRepository)
-  private val repositories: Seq[String] = try {
-    config.getObject(repositoriesPrefix).keySet.toSeq
-  } catch {
-    case e: ConfigException =>
-      error(s"Configuration has no valid repositories! (${e.getMessage})")
-      errors += 1
-      Seq[String]()
+
+  private val repositoryNamesRegex =
+    """PIO_STORAGE_REPOSITORIES_([^_]+)_NAME""".r
+
+  private val repositoryKeys: Seq[String] = sys.env.keys.toSeq.flatMap { k =>
+    repositoryNamesRegex findFirstIn k match {
+      case Some(repositoryNamesRegex(repositoryName)) => Seq(repositoryName)
+      case None => Nil
+    }
   }
+
+  if (repositoryKeys.size == 0)
+    warn("There is no properly configured repository.")
+
+  private val requiredRepositories = Seq(AppDataRepository, MetaDataRepository)
+
   requiredRepositories foreach { r =>
-    if (!repositories.contains(r)) {
+    if (!repositoryKeys.contains(r)) {
       error(s"Required repository (${r}) configuration is missing.")
       errors += 1
     }
   }
   private val repositoriesToDataObjectMeta: Map[String, DataObjectMeta] =
-    repositories.map(r =>
+    repositoryKeys.map(r =>
       try {
         val keyedPath = repositoriesPrefixPath(r)
-        val name = config.getString(prefixPath(keyedPath, "name"))
-        val sourceName = config.getString(prefixPath(keyedPath, "source"))
+        val name = sys.env(prefixPath(keyedPath, "NAME"))
+        val sourceName = sys.env(prefixPath(keyedPath, "SOURCE"))
         val clientMeta = sourcesToClientMeta.get(sourceName)
         clientMeta map { cm =>
           r -> DataObjectMeta(
             sourceName = sourceName,
             databaseName = name)
         } getOrElse {
-          throw new ConfigException.BadValue(
-            config.getValue(prefixPath(keyedPath, "source")).origin,
-            prefixPath(keyedPath, "source"),
-            s"$sourceName is not a configured storage source.")
+          error(s"$sourceName is not a configured storage source.")
+          r -> DataObjectMeta("", "")
         }
       } catch {
-        case e: ConfigException =>
+        case e: Throwable =>
           error(e.getMessage)
           errors += 1
           r -> DataObjectMeta("", "")

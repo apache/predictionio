@@ -63,8 +63,8 @@ object CreateEvaluationWorkflow extends Logging {
     cleanserJsonPath: String = "",
     algoJsonPath: String = "",
     serverJsonPath: String = "",
-    jsonDir: String = ""
-  )
+    jsonDir: String = "",
+    env: String = "")
 
   def getParams[A <: AnyRef](jsonDir: String, path: String,
     classManifest: Manifest[A]): A = {
@@ -124,6 +124,10 @@ object CreateEvaluationWorkflow extends Logging {
       opt[String]("jsonDir").optional()
         .valueName("<json directory>").action { (x,c) =>
           c.copy(jsonDir = x) }
+      opt[String]("env") action { (x, c) =>
+        c.copy(env = x)
+      } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
+        "format) to pass to SparkConf")
     }
 
     val arg: Option[Args] = parser.parse(args, Args())
@@ -215,9 +219,16 @@ object CreateEvaluationWorkflow extends Logging {
 
     // FIXME. Use SparkWorkflow
     //val evalWorkflow1 = EvaluationWorkflow(
+    val pioEnvVars = arg.get.env.split(',').flatMap(p =>
+      p.split('=') match {
+        case Array(k, v) => List(k -> v)
+        case _ => Nil
+      }
+    ).toMap
     val starttime = DateTime.now
     val evalWorkflow1 = EvaluationWorkflow.run(
       arg.get.batch,  // Batch Name
+      pioEnvVars,
       dataPrepParams,
       validatorParams,
       cleanserParams,

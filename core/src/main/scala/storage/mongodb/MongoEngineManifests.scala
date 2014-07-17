@@ -14,7 +14,7 @@ class MongoEngineManifests(client: MongoClient, dbname: String) extends EngineMa
     version = dbObj.as[String]("version"),
     name = dbObj.as[String]("name"),
     description = dbObj.getAs[String]("description"),
-    jars = dbObj.as[Seq[String]]("jars"),
+    files = dbObj.as[Seq[String]]("files"),
     engineFactory = dbObj.as[String]("engineFactory"),
     evaluatorFactory = dbObj.as[String]("evaluatorFactory"))
 
@@ -24,7 +24,7 @@ class MongoEngineManifests(client: MongoClient, dbname: String) extends EngineMa
       "_id" -> engineManifest.id,
       "version" -> engineManifest.version,
       "name" -> engineManifest.name,
-      "jars" -> engineManifest.jars,
+      "files" -> engineManifest.files,
       "engineFactory" -> engineManifest.engineFactory,
       "evaluatorFactory" -> engineManifest.evaluatorFactory)
 
@@ -43,7 +43,7 @@ class MongoEngineManifests(client: MongoClient, dbname: String) extends EngineMa
     val requiredObj = MongoDBObject(
       "version" -> engineManifest.version,
       "name" -> engineManifest.name,
-      "jars" -> engineManifest.jars,
+      "files" -> engineManifest.files,
       "engineFactory" -> engineManifest.engineFactory,
       "evaluatorFactory" -> engineManifest.evaluatorFactory)
     val descriptionObj = engineManifest.description.map { d => MongoDBObject("description" -> d) } getOrElse MongoUtils.emptyObj

@@ -1,5 +1,7 @@
 package io.prediction.workflow
 
+import grizzled.slf4j.Logging
+
 import scala.language.existentials
 
 import io.prediction.core.BaseEvaluator
@@ -30,9 +32,12 @@ import scala.reflect.Manifest
 import io.prediction.java._
 
 // FIXME: move to better location.
-object WorkflowContext {
-  def apply(batch: String = ""): SparkContext = {
+object WorkflowContext extends Logging {
+  def apply(batch: String = "", env: Map[String, String] = Map()): SparkContext = {
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
+    info(s"Environment received: ${env}")
+    env.map(kv => conf.setExecutorEnv(kv._1, kv._2))
+    info(s"SparkConf executor environment: ${conf.getExecutorEnv}")
     conf.set("spark.local.dir", "~/tmp/spark")
     conf.set("spark.executor.memory", "8g")
 
@@ -40,7 +45,7 @@ object WorkflowContext {
     return sc
   }
 }
-  
+
 
 object JavaDebugWorkflow {
   def run[
@@ -51,7 +56,7 @@ object JavaDebugWorkflow {
       CP <: BaseParams,
       AP <: BaseParams,
       SP <: BaseParams,
-      TD, 
+      TD,
       F,
       A,
       CD,
@@ -61,13 +66,13 @@ object JavaDebugWorkflow {
       VR ,
       CVR <: AnyRef ](
     batch: String = "",
-    dataPrepClass: 
+    dataPrepClass:
       Class[_  <: JavaLocalDataPreparator[EDP, TDP, VDP, TD, F, A]] = null,
     cleanserClass: Class[_ <: JavaLocalCleanser[TD, CD, CP]] = null,
-    algoClassMap: 
+    algoClassMap:
       JMap[String, Class[_ <: JavaLocalAlgorithm[CD, F, P, _, _ <: BaseParams]]] = null,
     serverClass: Class[_ <: JavaServer[F, P, SP]] = null,
-    validatorClass: 
+    validatorClass:
       Class[_ <: JavaValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]] = null,
     evalDataParams: BaseParams = null,
     cleanserParams: BaseParams = null,
@@ -78,7 +83,7 @@ object JavaDebugWorkflow {
 
     val scalaAlgoClassMap = (if (algoClassMap == null) null
       else Map(algoClassMap.toSeq:_ *))
-      
+
     val scalaAlgoParamsList = (
       if (algoParamsList == null) null
       else algoParamsList.toSeq)
@@ -131,7 +136,7 @@ object DebugWorkflow {
     }
     s
   }
-  
+
   // Probably CP, AP, SP don't require Manifest
   def run[
       EDP <: BaseParams : Manifest,
@@ -141,7 +146,7 @@ object DebugWorkflow {
       CP <: BaseParams: Manifest,
       AP <: BaseParams: Manifest,
       SP <: BaseParams: Manifest,
-      TD: Manifest, 
+      TD: Manifest,
       F: Manifest,
       A: Manifest,
       CD: Manifest,
@@ -151,13 +156,13 @@ object DebugWorkflow {
       VR : Manifest,
       CVR <: AnyRef : Manifest](
     batch: String = "",
-    dataPrepClass: 
+    dataPrepClass:
       Class[_  <: BaseDataPreparator[EDP, TDP, VDP, TD, F, A]] = null,
     cleanserClass: Class[_ <: BaseCleanser[TD, CD, CP]] = null,
-    algoClassMap: 
+    algoClassMap:
       Map[String, Class[_ <: BaseAlgorithm[CD, F, P, _, _ <: BaseParams]]] = null,
     serverClass: Class[_ <: BaseServer[F, P, SP]] = null,
-    validatorClass: 
+    validatorClass:
       Class[_ <: BaseValidator[VP, TDP, VDP, F, P, A, VU, VR, CVR]] = null,
     evalDataParams: BaseParams = null,
     cleanserParams: BaseParams = null,
@@ -165,7 +170,7 @@ object DebugWorkflow {
     serverParams: BaseParams = null,
     validatorParams: BaseParams = null
   ) {
-    
+
     println("DebugWorkflow.run")
     println("Start spark context")
     val sc = WorkflowContext(batch)
@@ -183,7 +188,7 @@ object DebugWorkflow {
     : Map[EI, (TDP, VDP, TD, RDD[(F, A)])] = dataPrep
       .prepareBase(sc, evalDataParams)
 
-    val localParamsSet: Map[EI, (TDP, VDP)] = evalParamsDataMap.map { 
+    val localParamsSet: Map[EI, (TDP, VDP)] = evalParamsDataMap.map {
       case(ei, e) => (ei -> (e._1, e._2))
     }
 
@@ -210,7 +215,7 @@ object DebugWorkflow {
     }
 
     val cleanser = cleanserClass.newInstance
-    
+
     println("Cleansing")
     cleanser.initBase(cleanserParams)
 
@@ -234,7 +239,7 @@ object DebugWorkflow {
     //val algoParamsList = Seq(("", algoParams))
 
     // Instantiate algos
-    val algoInstanceList: Array[BaseAlgorithm[CD, F, P, _, _]] = 
+    val algoInstanceList: Array[BaseAlgorithm[CD, F, P, _, _]] =
     algoParamsList
       .map { case (algoName, algoParams) => {
         val algo = algoClassMap(algoName).newInstance
@@ -302,14 +307,14 @@ object DebugWorkflow {
       }}
 
     }}
-    
+
     if (validatorClass == null) {
       println("Validator is null. Stop here")
       return
     }
 
     val validator = validatorClass.newInstance
-    
+
     // Validation Unit
     //val validator = baseEvaluator.validatorClass.newInstance
     validator.initBase(validatorParams)
@@ -320,7 +325,7 @@ object DebugWorkflow {
     evalValidationUnitMap.foreach{ case(i, e) => {
       println(s"ValidationUnit: i=$i e=$e")
     }}
-    
+
     // Validation Set
     val validatorWrapper = new ValidatorWrapper(validator)
 
@@ -350,15 +355,8 @@ object DebugWorkflow {
     val cvOutput: Array[CVR] = crossValidationResults.collect
 
     cvOutput foreach { println }
-    
+
     println("DebugWorkflow.run completed.")
 
   }
 }
-
-
-
-
-
-
-

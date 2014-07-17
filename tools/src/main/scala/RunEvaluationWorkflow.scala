@@ -1,19 +1,22 @@
 package io.prediction.tools
 
-import io.prediction.storage.Storage
-
 import grizzled.slf4j.Logging
+import org.json4s._
+import org.json4s.native.Serialization.{ read, write }
 
 import scala.sys.process._
 
 import java.io.File
 
+import io.prediction.storage.Storage
+import io.prediction.storage.Run
+
 object RunEvaluationWorkflow extends Logging {
   def main(args: Array[String]): Unit = {
     case class Args(
       sparkHome: String = "",
-      sparkMasterIP: String = "",
-      sparkMasterPort: String = "",
+      sparkMaster: String = "local",
+      sparkDeployMode: String = "client",
       id: String = "",
       version: String = "",
       batch: String = "",
@@ -34,12 +37,12 @@ object RunEvaluationWorkflow extends Logging {
       opt[String]("sparkHome") action { (x, c) =>
         c.copy(sparkHome = x)
       } text("Path to a Apache Spark installation. If not specified, will try to use the SPARK_HOME environmental variable. If this fails as well, default to current directory.")
-      opt[String]("sparkIP") action { (x, c) =>
-        c.copy(sparkMasterIP = x)
-      } text("Spark master IP. If not specified, will try to use the SPARK_MASTER_IP environmental variable. If this fails as well, default to empty.")
-      opt[String]("sparkPort") action { (x, c) =>
-        c.copy(sparkMasterPort = x)
-      } text("Spark master port. If not specified, will try to use the SPARK_MASTER_PORT environmental variable. If this fails as well, default to 7077.")
+      opt[String]("sparkMaster") action { (x, c) =>
+        c.copy(sparkMaster = x)
+      } text("Spark master URL. If not specified, default to local.")
+      opt[String]("sparkDeployMode") action { (x, c) =>
+        c.copy(sparkDeployMode = x)
+      } text("Spark deploy mode. If not specified, default to client.")
       opt[String]("batch") action { (x, c) =>
         c.copy(batch = x)
       } text("Batch label of the run.")
@@ -64,26 +67,35 @@ object RunEvaluationWorkflow extends Logging {
     }
 
     parser.parse(args, Args()) map { parsedArgs =>
+      // Collect and serialize PIO_* environmental variables
+      implicit val formats = DefaultFormats
+      val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
+        s"${kv._1}=${kv._2}"
+      ).mkString(",")
+
       val engineManifests = Storage.getSettingsEngineManifests
       val defaults = Args()
       engineManifests.get(parsedArgs.id, parsedArgs.version) map { engineManifest =>
         val sparkHome = if (parsedArgs.sparkHome != "") parsedArgs.sparkHome else sys.env.get("SPARK_HOME").getOrElse(".")
-        val sparkIP = if (parsedArgs.sparkMasterIP != "") parsedArgs.sparkMasterIP else sys.env.get("SPARK_MASTER_IP").getOrElse("")
-        val sparkPort = if (parsedArgs.sparkMasterPort != "") parsedArgs.sparkMasterPort else sys.env.get("SPARK_MASTER_PORT").getOrElse("7077")
         val params = Map(
           "dp" -> parsedArgs.dataPrepJsonPath,
           "vp" -> parsedArgs.validatorJsonPath,
           "cp" -> parsedArgs.cleanserJsonPath,
           "ap" -> parsedArgs.algoJsonPath,
           "sp" -> parsedArgs.serverJsonPath)
-        Seq(
+        val sparkSubmit = Seq(
           s"${sparkHome}/bin/spark-submit",
           "--verbose",
-          "--deploy-mode client",
-          if (sparkIP != "") s"--master spark://${sparkIP}:${sparkPort}" else "",
-          "--class io.prediction.tools.CreateEvaluationWorkflow",
-          engineManifest.jars.apply(0),
-          if (engineManifest.jars.size > 1) "--jars " + engineManifest.jars.slice(1, engineManifest.jars.size).mkString(",") else "",
+          "--deploy-mode",
+          parsedArgs.sparkDeployMode,
+          "--master",
+          parsedArgs.sparkMaster,
+          "--class",
+          "io.prediction.tools.CreateEvaluationWorkflow") ++
+          (if (engineManifest.files.size > 1) Seq("--jars", engineManifest.files.slice(1, engineManifest.files.size).mkString(",")) else Nil) ++ Seq(
+          engineManifest.files.head,
+          "--env",
+          pioEnvVars,
           "--engineManifestId",
           engineManifest.id,
           "--engineManifestVersion",
@@ -91,14 +103,17 @@ object RunEvaluationWorkflow extends Logging {
           "--evaluatorFactory",
           engineManifest.evaluatorFactory,
           "--engineFactory",
-          engineManifest.engineFactory,
-          if (parsedArgs.batch != "") "--batch " + parsedArgs.batch else "",
-          if (params("dp") == defaults.dataPrepJsonPath && !(new File(withPath(params("dp"), parsedArgs.jsonDir))).exists) "" else "--dp " + withPath(params("dp"), parsedArgs.jsonDir),
-          if (params("vp") == defaults.validatorJsonPath && !(new File(withPath(params("vp"), parsedArgs.jsonDir))).exists) "" else "--vp " + withPath(params("vp"), parsedArgs.jsonDir),
-          if (params("cp") == defaults.cleanserJsonPath && !(new File(withPath(params("cp"), parsedArgs.jsonDir))).exists) "" else "--cp " + withPath(params("cp"), parsedArgs.jsonDir),
-          if (params("ap") == defaults.algoJsonPath && !(new File(withPath(params("ap"), parsedArgs.jsonDir))).exists) "" else "--ap " + withPath(params("ap"), parsedArgs.jsonDir),
-          if (params("sp") == defaults.serverJsonPath && !(new File(withPath(params("sp"), parsedArgs.jsonDir))).exists) "" else "--sp " + withPath(params("sp"), parsedArgs.jsonDir)
-        ).mkString(" ").!
+          engineManifest.engineFactory) ++
+          (if (parsedArgs.batch != "") Seq("--batch", parsedArgs.batch) else Nil) ++
+          (if (params("dp") == defaults.dataPrepJsonPath && !(new File(withPath(params("dp"), parsedArgs.jsonDir))).exists) Nil else Seq("--dp", withPath(params("dp"), parsedArgs.jsonDir))) ++
+          (if (params("vp") == defaults.validatorJsonPath && !(new File(withPath(params("vp"), parsedArgs.jsonDir))).exists) Nil else Seq("--vp", withPath(params("vp"), parsedArgs.jsonDir))) ++
+          (if (params("cp") == defaults.cleanserJsonPath && !(new File(withPath(params("cp"), parsedArgs.jsonDir))).exists) Nil else Seq("--cp", withPath(params("cp"), parsedArgs.jsonDir))) ++
+          (if (params("ap") == defaults.algoJsonPath && !(new File(withPath(params("ap"), parsedArgs.jsonDir))).exists) Nil else Seq("--ap", withPath(params("ap"), parsedArgs.jsonDir))) ++
+          (if (params("sp") == defaults.serverJsonPath && !(new File(withPath(params("sp"), parsedArgs.jsonDir))).exists) Nil else Seq("--sp", withPath(params("sp"), parsedArgs.jsonDir)))
+        if (parsedArgs.sparkDeployMode == "cluster")
+          Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).!
+        else
+          Process(sparkSubmit).!
       } getOrElse {
         error(s"Engine ${parsedArgs.id} ${parsedArgs.version} is not registered.")
       }

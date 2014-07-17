@@ -56,6 +56,7 @@ object SparkWorkflow {
     ): (Array[Array[Any]], Seq[(BaseParams, BaseParams, VR)], CVR) = {
     EvaluationWorkflow.run(
       batch,
+      Map[String, String](),
       evalDataParams,
       validationParams,
       cleanserParams,
@@ -65,5 +66,3 @@ object SparkWorkflow {
       baseEvaluator)
   }
 }
-
-

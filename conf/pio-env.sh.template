@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Copy this file as pio-env.sh and edit it for your site's configuration.
+
+# PredictionIO Main Configuration
+#
+# This section controls core behavior of PredictionIO. It is very likely that
+# you need to change these to fit your site.
+
+# HADOOP_CONF_DIR: You must configure this if you intend to run PredictionIO
+#                  with Hadoop 2.
+
+# Filesystem paths where PredictionIO uses as block storage.
+PIO_FS_BASEDIR=./fs
+PIO_FS_ENGINESDIR=$PIO_FS_BASEDIR/engines
+PIO_FS_TMPDIR=$PIO_FS_BASEDIR/tmp
+
+# PredictionIO Storage Configuration
+#
+# This section controls programs that make use of PredictionIO's built-in
+# storage facilities. Default values are shown below.
+
+# Storage Repositories
+PIO_STORAGE_REPOSITORIES_METADATA_NAME=predictionio_metadata
+PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH
+
+# Storage Data Sources
+PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
+PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
+PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
