@@ -1,6 +1,6 @@
 package io.prediction.core
 
-import io.prediction.BaseParams
+import io.prediction.api.Params
 import java.lang.NoSuchMethodException
 import scala.reflect._
   
@@ -9,7 +9,7 @@ import org.json4s.ext.JodaTimeSerializers
 import org.json4s.native.JsonMethods
 import org.json4s.native.JsonMethods._
 
-abstract class AbstractDoer[P <: BaseParams : ClassTag]
+abstract class AbstractDoer[P <: Params : ClassTag]
 extends Serializable {
   override def toString() : String = {
     val t = classTag[P].runtimeClass.getName
@@ -21,19 +21,18 @@ extends Serializable {
 
 
 object Doer {
-  def apply[C <: AbstractDoer[_ <: BaseParams]] (
-    cls: Class[_ <: C], params: BaseParams): C = {
+  def apply[C <: AbstractDoer[_ <: Params]] (
+    cls: Class[_ <: C], params: Params): C = {
 
     // Subclasses only allows two kind of constructors.
-    // 1. Emtpy constructor.
-    // 2. Constructor with P <: BaseParams.
-    // We first try (2), if failed, we try (1).
+    // 1. Constructor with P <: Params.
+    // 2. Emtpy constructor.
+    // First try (1), if failed, try (2).
     try {
       val constr = cls.getConstructor(params.getClass)
       return constr.newInstance(params).asInstanceOf[C]
     } catch {
       case e: NoSuchMethodException => {
-        //val constr = cls.getConstructors()(0)
         val zeroConstr = cls.getConstructor()
         return zeroConstr.newInstance().asInstanceOf[C]
       }
@@ -51,7 +50,7 @@ object PDoer {
   def q() = manifest[XParams]
 }
 
-case class XParams(val a: Int) extends BaseParams {
+case class XParams(val a: Int) extends Params {
 }
 
 
@@ -60,7 +59,7 @@ object Test {
   def main(args: Array[String]) {
     val a = new PDoer(new XParams(20))
 
-    val c: Class[_ <: AbstractDoer[_ <: BaseParams]] = classOf[PDoer]
+    val c: Class[_ <: AbstractDoer[_ <: Params]] = classOf[PDoer]
 
     val pClass = c.getConstructors()(0).getParameterTypes()(0)
 

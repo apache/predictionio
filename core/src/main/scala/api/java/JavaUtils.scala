@@ -21,3 +21,4 @@ object JavaUtils {
     manifest[AnyRef].asInstanceOf[Manifest[T]]
   }
 }
+

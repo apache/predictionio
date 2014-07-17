@@ -5,8 +5,8 @@ import io.prediction.api.EmptyParams
 import io.prediction.core.Doer
 import scala.language.existentials
 
-import io.prediction.core.BaseEvaluator
-import io.prediction.core.BaseEngine
+//import io.prediction.core.BaseEvaluator
+//import io.prediction.core.BaseEngine
 import io.prediction.core.BaseAlgorithm2
 import io.prediction.core.LModelAlgorithm
 import io.prediction.api.java.LJavaDataSource
@@ -16,7 +16,7 @@ import io.prediction.api.java.LJavaServing
 import io.prediction.api.java.JavaMetrics
 import io.prediction.api.Engine
 import io.prediction.api.EngineParams
-import io.prediction.java.JavaUtils
+import io.prediction.api.java.JavaUtils
 
 import io.prediction.api.LAlgorithm
 
@@ -41,7 +41,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.Manifest
 
-import io.prediction.java._
+//import io.prediction.java._
 
 import scala.reflect._
 

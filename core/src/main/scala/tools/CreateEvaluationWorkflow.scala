@@ -1,22 +1,22 @@
 package io.prediction.tools
 
-//import io.prediction.core.{ AbstractEvaluator, AbstractEngine }
+/**
+ * FIXME(yipjustin). This module uses obsolete workflow. Will change to a new
+ * one. But for now, I completely comment it out and clean the code base first.
+ *
+ *
+ *
+ */
+
+
+/*
 import io.prediction.core.{ BaseEvaluator, BaseEngine }
 import io.prediction.{ EngineFactory, EvaluatorFactory }
 import io.prediction.BaseParams
-/*
-import io.prediction.{
-  BaseAlgoParams,
-  BaseCleanserParams,
-  BaseServerParams
-}
-*/
 import io.prediction.storage.Storage
 import io.prediction.storage.Run
 import io.prediction.workflow.EvaluationWorkflow
-//import io.prediction.workflow.SparkWorkflow
-//import io.prediction.storage.Config
-//import io.prediction.storage.EngineManifest
+*/
 
 import grizzled.slf4j.Logging
 import com.github.nscala_time.time.Imports._
@@ -43,6 +43,7 @@ Stock:
 run --evaluatorFactory io.prediction.engines.stock.StockEvaluator --engineFactory io.prediction.engines.stock.StockEngine --dp dataPrepParams.json --sp serverParams.json --ap algoParamArray.json --jsonDir src/main/scala/stock/examples/
 */
 
+/*
 case class AlgoParams(name: String, params: JValue)
 
 object CreateEvaluationWorkflow extends Logging {
@@ -257,7 +258,7 @@ object CreateEvaluationWorkflow extends Logging {
     info(s"Run ID: $runId")
 
     //evalWorkflow1.run
-    //*/
 
   }
 }
+*/

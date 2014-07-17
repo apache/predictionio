@@ -5,7 +5,5 @@ package object workflow {
   type AI = Int  // Algorithm Index
   type FI = Long // Feature Index
   type QI = Long // Query Index
-  
-  type BP = BaseParams
 }
 

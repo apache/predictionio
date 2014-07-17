@@ -1,6 +1,6 @@
 package io.prediction.core
 
-import io.prediction.BaseParams
+import io.prediction.api.Params
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -9,8 +9,7 @@ import scala.reflect._
 // FIXME. The name collides with current BaseAlgorithm. Will remove once the
 // code is completely revamped.
 
-abstract class BaseAlgorithm2[AP <: BaseParams : ClassTag, 
-    PD, M, Q, P]
+abstract class BaseAlgorithm2[AP <: Params : ClassTag, PD, M, Q, P]
   extends AbstractDoer[AP] {
   def trainBase(sc: SparkContext, pd: PD): M
 
