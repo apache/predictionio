@@ -11,11 +11,11 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import io.prediction.storage.{ EngineManifest, EngineManifests }
+import io.prediction.storage.{ EngineManifest, EngineManifests, EngineManifestSerializer }
 
 class ESEngineManifests(client: Client, index: String) extends EngineManifests
     with Logging {
-  implicit val formats = Serialization.formats(NoTypeHints)
+  implicit val formats = DefaultFormats + new EngineManifestSerializer
   private val estype = "engine_manifests"
   private def esid(id: String, version: String) = s"${id} ${version}"
 

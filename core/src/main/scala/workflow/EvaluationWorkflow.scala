@@ -1,7 +1,7 @@
 package io.prediction.workflow
 
 import scala.language.existentials
-import io.prediction.api.PersistentParallelModel 
+import io.prediction.api.PersistentParallelModel
 
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
@@ -48,6 +48,7 @@ object EvaluationWorkflow {
     singleAlgoEngine: SingleAlgoEngine[NTD,NCD,NF,NP],
     baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR],
     batch: String = "",
+    env: Map[String, String],
     evalDataParams: BaseParams = null,
     validationParams: BaseParams = null,
     cleanserParams: BaseParams = null,
@@ -55,7 +56,7 @@ object EvaluationWorkflow {
     serverParams: BaseParams = null
     ): (Array[Array[Any]], Seq[(TDP, VDP, VR)], CVR) = {
     val r = EvaluationWorkflowImpl.run(
-      batch, evalDataParams, validationParams,
+      batch, env, evalDataParams, validationParams,
       cleanserParams, Seq(("", algoParams)), serverParams,
       singleAlgoEngine, baseEvaluator)
     println("SingleAlgoEngine")
@@ -79,6 +80,7 @@ object EvaluationWorkflow {
       VR : Manifest,
       CVR <: AnyRef : Manifest](
     batch: String,
+    env: Map[String, String],
     evalDataParams: BaseParams,
     validationParams: BaseParams,
     cleanserParams: BaseParams,
@@ -88,7 +90,7 @@ object EvaluationWorkflow {
     baseEvaluator: BaseEvaluator[EDP,VP,TDP,VDP,TD,F,P,A,VU,VR,CVR]
     ): (Array[Array[Any]], Seq[(TDP, VDP, VR)], CVR) = {
     EvaluationWorkflowImpl.run(
-      batch, evalDataParams, validationParams, cleanserParams,
+      batch, env, evalDataParams, validationParams, cleanserParams,
       algoParamsList, serverParams, baseEngine, baseEvaluator)
   }
 }
@@ -230,7 +232,7 @@ object EvaluationWorkflowImpl {
   }
 
 =======
-  
+
 >>>>>>> java
 */
 
@@ -251,6 +253,7 @@ object EvaluationWorkflowImpl {
       VR : Manifest,
       CVR <: AnyRef : Manifest](
     batch: String,
+    env: Map[String, String],
     evalDataParams: BaseParams,
     validationParams: BaseParams,
     cleanserParams: BaseParams,
@@ -262,7 +265,7 @@ object EvaluationWorkflowImpl {
     // Add a flag to disable parallelization.
     val verbose = false
 
-    val sc = WorkflowContext(batch)
+    val sc = WorkflowContext(batch, env)
 
     val dataPrep = baseEvaluator.dataPreparatorClass.newInstance
 
@@ -348,7 +351,7 @@ object EvaluationWorkflowImpl {
           case ppm: PersistentParallelModel =>
             ppm.save("foobar")
             ppm
-          case _ => Unit
+          case _ => Unit//ParallelModel(className = m._2.getClass.getName)
         }
       }.toArray
     }
@@ -442,15 +445,15 @@ object EvaluationWorkflowImpl {
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
 class AlgoServerWrapper[NF, NP, NA, NCD](
-    val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]], 
+    val algos: Array[BaseAlgorithm[NCD,NF,NP,_,_]],
     val server: BaseServer[NF, NP, _],
     val skipOpt: Boolean = false,
     val verbose: Boolean = false)
 extends Serializable {
-  
+
   // Use algo.predictBase
   def onePassPredict[F, P, A](
-    modelIter: Iterator[(AI, Any)], 
+    modelIter: Iterator[(AI, Any)],
     featureActualIter: Iterator[(F, A)])
   : Iterator[(F, P, A)] = {
     val models = modelIter.toSeq.sortBy(_._1).map(_._2)
@@ -492,7 +495,7 @@ extends Serializable {
   // Use algo.batchPredictBase
   def predictParallelModel[F, P, A](models: Seq[Any], input: RDD[(F, A)])
   : RDD[(F, P, A)] = {
-    if (verbose) { 
+    if (verbose) {
       println("predictionParallelModel")
     }
 
@@ -517,9 +520,9 @@ extends Serializable {
       .groupByKey
       .mapValues { _.toSeq.sortBy(_._1).map(_._2) }
 
-    
+
     val joined: RDD[(FI, (Seq[NP], (F, A)))] = iAlgoPredictions.join(iInput)
-    
+
     if (verbose) {
       println("predictionParallelModel.before combine")
       joined.collect.foreach {  case(fi, (ps, (f, a))) => {
@@ -571,10 +574,10 @@ extends Serializable {
     }
   }
 }
-  
+
 class ValidatorWrapper[
     TDP <: BaseParams, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
-  val validator: BaseValidator[_,TDP,VDP,_,_,_,VU,VR,CVR]) 
+  val validator: BaseValidator[_,TDP,VDP,_,_,_,VU,VR,CVR])
 extends Serializable {
   def validateSet(input: ((TDP, VDP), Iterable[VU]))
     : ((TDP, VDP), VR) = {
@@ -589,5 +592,3 @@ extends Serializable {
     validator.crossValidateBase(data)
   }
 }
-
-
