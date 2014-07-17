@@ -7,9 +7,12 @@ import io.prediction.engines.java.itemrec.algos.SVDPlusPlusParams;
 import io.prediction.engines.java.itemrec.data.TrainingData;
 import io.prediction.engines.java.itemrec.data.Feature;
 import io.prediction.engines.java.itemrec.data.Prediction;
-import io.prediction.BaseParams;
-import io.prediction.workflow.JavaDebugWorkflow;
-import io.prediction.java.JavaLocalAlgorithm;
+import io.prediction.api.Params;
+import io.prediction.api.EmptyParams;
+import io.prediction.api.java.JavaEngine;
+import io.prediction.api.java.JavaEngineParams;
+import io.prediction.api.java.JavaEngineParamsBuilder;
+import io.prediction.workflow.JavaAPIDebugWorkflow;
 
 import scala.Tuple2;
 import java.util.List;
@@ -31,37 +34,36 @@ public class Runner {
 
     System.out.println(Arrays.toString(args));
 
-    EvalParams ep = new EvalParams(filePath, 3, true);
-    CleanserParams cp = new CleanserParams();
+    DataSourceParams dsp = new DataSourceParams(filePath, 3);
+    EmptyParams pp = new EmptyParams();
     GenericItemBasedParams genericItemBasedParams = new GenericItemBasedParams(10);
     SVDPlusPlusParams svdPlusPlusParams = new SVDPlusPlusParams(10);
-    ServerParams sp = new ServerParams();
+    ServingParams sp = new ServingParams();
 
-    List<Tuple2<String, BaseParams>> apl = new ArrayList<Tuple2<String, BaseParams>>();
+    String algo;
+    Params algoParams;
     if (algoName.equals("genericitembased")) {
-      apl.add(new Tuple2<String, BaseParams>("genericitembased", genericItemBasedParams));
+      algo = "genericitembased";
+      algoParams = genericItemBasedParams;
     } else {
-      apl.add(new Tuple2<String, BaseParams>("svdplusplus", svdPlusPlusParams));
+      algo = "svdplusplus";
+      algoParams = svdPlusPlusParams;
     }
 
-    Map<String, Class<? extends JavaLocalAlgorithm<TrainingData, Feature, Prediction,
-      ?, ? extends BaseParams>>> algoClassMap = new HashMap<>();
+    JavaEngineParams engineParams = new JavaEngineParamsBuilder()
+      .dataSourceParams(dsp)
+      .preparatorParams(pp)
+      .addAlgorithmParams(algo, algoParams)
+      .servingParams(sp)
+      .build();
 
-    algoClassMap.put("genericitembased", GenericItemBased.class);
-    algoClassMap.put("svdplusplus", SVDPlusPlus.class);
-
-    JavaDebugWorkflow.run(
-      "Native Java",
-      ItemRecDataPreparator.class,
-      ItemRecCleanser.class,
-      algoClassMap,
-      ItemRecServer.class,
-      ItemRecValidator.class,
-      ep,
-      cp,
-      apl,
-      sp,
-      ep
-    );
+    JavaAPIDebugWorkflow.runEngine(
+      "Java Itemrec engine",
+      3,  // verbose
+      (new EngineFactory()).apply(),
+      engineParams,
+      ItemRecMetrics.class,
+      new EmptyParams() // metrics param
+      );
   }
 }

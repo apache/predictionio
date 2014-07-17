@@ -24,9 +24,11 @@ public class GenericItemBased
 
   final static Logger logger = LoggerFactory.getLogger(GenericItemBased.class);
 
-  @Override
-  public Logger getLogger() {
-    return logger;
+  GenericItemBasedParams params;
+
+  public GenericItemBased(GenericItemBasedParams params) {
+    super(params, logger);
+    this.params = params;
   }
 
   @Override

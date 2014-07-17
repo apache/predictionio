@@ -17,9 +17,11 @@ public class SVDPlusPlus
 
   final static Logger logger = LoggerFactory.getLogger(SVDPlusPlus.class);
 
-  @Override
-  public Logger getLogger() {
-    return logger;
+  SVDPlusPlusParams params;
+
+  public SVDPlusPlus(SVDPlusPlusParams params) {
+    super(params, logger);
+    this.params = params;
   }
 
   @Override

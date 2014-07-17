@@ -1,11 +1,11 @@
 package io.prediction.engines.java.itemrec.algos;
 
 import io.prediction.engines.java.itemrec.data.TrainingData;
-import io.prediction.engines.java.itemrec.data.Feature;
+import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Prediction;
 import io.prediction.engines.java.itemrec.data.Model;
-import io.prediction.java.JavaLocalAlgorithm;
-import io.prediction.BaseParams;
+import io.prediction.api.java.LJavaAlgorithm;
+import io.prediction.api.Params;
 
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
@@ -20,21 +20,25 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 
 /** Mahout Legacy single machine algorithm */
-public abstract class MahoutAlgorithm<AP extends BaseParams>
-  extends JavaLocalAlgorithm<TrainingData, Feature, Prediction,
-  Model, AP> {
+public abstract class MahoutAlgorithm<AP extends Params>
+  extends LJavaAlgorithm<AP, TrainingData, Model, Query, Prediction> {
 
-  abstract public Logger getLogger();
+  Logger logger;
+  MahoutParams params;
 
-  abstract public Recommender buildRecommender(TrainingData cd) throws TasteException;
+  public MahoutAlgorithm(MahoutParams params, Logger logger) {
+    this.logger = logger;
+    this.params = params;
+  }
+
+  abstract public Recommender buildRecommender(TrainingData data) throws TasteException;
 
   @Override
-  public Model train(TrainingData cd) {
-    Logger logger = getLogger();
+  public Model train(TrainingData data) {
     Recommender recommender = null;
 
     try {
-      recommender = buildRecommender(cd);
+      recommender = buildRecommender(data);
     } catch (TasteException e) {
       logger.error("Caught TasteException " + e.getMessage());
     }
@@ -43,7 +47,7 @@ public abstract class MahoutAlgorithm<AP extends BaseParams>
     Iterator<Long> uids;
 
     try {
-      uids = cd.dataModel.getUserIDs();
+      uids = data.dataModel.getUserIDs();
     } catch (TasteException e){
       logger.error("Caught TasteException " + e.getMessage());
       uids = (new ArrayList<Long>()).iterator();
@@ -53,8 +57,7 @@ public abstract class MahoutAlgorithm<AP extends BaseParams>
       Long uid = uids.next();
       List<RecommendedItem> items;
       try {
-        // TOOD: get numRecommendation from params
-        items = recommender.recommend(uid, 100);
+        items = recommender.recommend(uid, params.numRecommendations);
       } catch (TasteException e) {
         items = new ArrayList<RecommendedItem>();
         logger.error("Caught TasteException " + e.getMessage());
@@ -71,10 +74,8 @@ public abstract class MahoutAlgorithm<AP extends BaseParams>
   }
 
   @Override
-  public Prediction predict(Model model, Feature feature) {
-    Logger logger = getLogger();
-
-    List<RecommendedItem> items = model.itemRecScores.get((long) feature.uid);
+  public Prediction predict(Model model, Query query) {
+    List<RecommendedItem> items = model.itemRecScores.get((long) query.uid);
 
     logger.info(model.itemRecScores.keySet().toString());
     if (items != null) {
@@ -90,7 +91,7 @@ public abstract class MahoutAlgorithm<AP extends BaseParams>
 
       int i = 0;
       for (Iterator<RecommendedItem> it = items.iterator();
-        it.hasNext() && (i < feature.n);
+        it.hasNext() && (i < query.n);
         i++) {
           RecommendedItem item = it.next();
           // TODO: check long to int casting
