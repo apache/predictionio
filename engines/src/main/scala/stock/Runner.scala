@@ -17,7 +17,7 @@ import org.apache.spark.SparkContext._
 // Ugly workaround since generic types require Manifest which imposes a non
 // empty constructor....
 
-object Run {
+object Runner {
   //val tickerList = Seq("GOOG", "AAPL", "FB", "GOOGL", "MSFT")
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",
     "HPQ", "INTC", "NTAP", "CSCO", "ORCL",

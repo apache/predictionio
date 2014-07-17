@@ -269,11 +269,18 @@ object APIDebugWorkflow {
 
     if (verbose > 2) {
       evalDataMap.foreach{ case (ei, data) => {
-        val (trainingData, validationData) = data
-        println(s"TrainingData $ei")
-        println(DebugWorkflow.debugString(trainingData))
-        println(s"ValidationData $ei")
-        validationData.collect.map(DebugWorkflow.debugString).foreach(println)
+        val (trainingData, testingData) = data
+        //val collectedValidationData = testingData.collect
+        val trainingDataStr = DebugWorkflow.debugString(trainingData)
+        val testingDataStrs = testingData.collect
+          .map(DebugWorkflow.debugString)
+
+        println(s"Data Set $ei")
+        println(s"Params: ${localParamsSet(ei)}")
+        println(s"TrainingData:")
+        println(trainingDataStr)
+        println(s"TestingData: (count=${testingDataStrs.length})")
+        testingDataStrs.foreach { println }
       }}
     }
 
@@ -292,8 +299,10 @@ object APIDebugWorkflow {
 
     if (verbose > 2) {
       evalPreparedMap.foreach{ case (ei, pd) => {
-        println(s"Prepared $ei")
-        println(DebugWorkflow.debugString(pd))
+        val s = DebugWorkflow.debugString(pd)
+        println(s"Prepared Data Set $ei")
+        println(s"Params: ${localParamsSet(ei)}")
+        println(s"PreparedData: $s")
       }}
     }
   

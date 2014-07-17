@@ -20,6 +20,24 @@ abstract class LDataSource[DSP <: Params : ClassTag,
   def read(): Seq[(DP, TD, Seq[(Q, A)])]
 }
 
+abstract class LSlicedDataSource[DSP <: Params : ClassTag,
+    DP, TD : ClassTag, Q, A]
+  extends LDataSource[DSP, DP, TD, Q, A] {
+
+  def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
+    generateDataParams().map{ dp => {
+      val slicedData = read(dp)
+      (dp, slicedData._1, slicedData._2)
+    }}
+  }
+
+  def generateDataParams(): Seq[DP]
+
+  def read(dp: DP): (TD, Seq[(Q, A)])
+}
+
+
+
 abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
   extends BaseDataSource[DSP, DP, TD, Q, A] {
 

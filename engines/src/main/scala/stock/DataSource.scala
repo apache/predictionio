@@ -1,16 +1,10 @@
 package io.prediction.engines.stock
 
+import io.prediction.api.Params
+import io.prediction.api.LSlicedDataSource
+import com.github.nscala_time.time.Imports._
 import io.prediction.storage.Storage
 import io.prediction.storage.{ ItemTrend, ItemTrends }
-import io.prediction.PIOSettings
-
-import io.prediction.DataPreparator
-import io.prediction.Validator
-import io.prediction.EvaluatorFactory
-import io.prediction.core.BaseEvaluator
-//import io.prediction.core.LocalEvaluator
-//import io.prediction.BaseParams
-import io.prediction.EmptyParams
 
 import scala.math
 // FIXME(yipjustin). Remove ._ as it is polluting the namespace.
@@ -26,52 +20,101 @@ import nak.regress.LinearRegression
 import scala.collection.mutable.ArrayBuffer
 import com.twitter.chill.MeatLocker
 
-object StockEvaluator extends EvaluatorFactory {
-  // Use singleton class here to avoid re-registering hooks in config.
-  val itemTrendsDb = Storage.getAppdataItemTrends()
+/** Primary parameter for [[[StockDataSource]]].
+  *
+  * @param baseDate identify the beginning of our global time window, and
+  * the rest are use index. 
+  * @param fromIdx the first date for testing
+  * @param untilIdx the last date (exclusive) for testing
+  * @param trainingWindowSize number of days used for training
+  * @param evaluationInterval number of days for each testing data
+  *
+  * [[[StockDataSource]]] chops data into (overlapping) multiple
+  * pieces. Within each piece, it is further splitted into training and testing
+  * set. The testing sets is from <code>fromIdx</code> until
+  * <code>untilIdx</code> with a step size of <code>evaluationInterval</code>.
+  * A concrete example: (from, until, windowSize) = (100, 150, 20), it generates
+  * three testing sets corresponding to time range: [100, 120), [120, 140), [140, 150).
+  * For each testing sets, it also generates the training data set using
+  * <code>trainingWindowSize</code>. Suppose windowSize = 50 and testing set =
+  * [100, 120), the training set draws data in time range [50, 100).
+  */
+case class DataSourceParams(
+  val appid: Int = 42,
+  val baseDate: DateTime,
+  val fromIdx: Int,
+  val untilIdx: Int,
+  val trainingWindowSize: Int,
+  val evaluationInterval: Int,
+  val marketTicker: String,
+  val tickerList: Seq[String]) extends Params {}
 
-  def apply() = {
-    //new LocalEvaluator(
-    new BaseEvaluator(
-      classOf[StockDataPreparator],
-      classOf[StockValidator])
-  }
+case class TrainingDataParams2(
+  val baseDate: DateTime,
+  val untilIdx: Int,
+  val windowSize: Int,
+  val marketTicker: String,
+  val tickerList: Seq[String]) extends Serializable {}
+
+// Testing data generate up to idx (exclusive). The target data is also
+// restricted by idx. For example, if idx == 10, the data-preparator use data to
+// at most time (idx - 1).
+// TestingDataParams specifies idx where idx in [fromIdx, untilIdx).
+case class TestingDataParams(
+  val baseDate: DateTime,
+  val fromIdx: Int,
+  val untilIdx: Int,
+  val marketTicker: String,
+  val tickerList: Seq[String]) extends Serializable {}
+
+class Target2(
+  val date: DateTime,
+  val data: Map[String, Double]) extends Serializable {
+  override def toString(): String = s"Target @$date"
 }
 
-class StockDataPreparator
-    extends DataPreparator[
-        EvaluationDataParams,
-        TrainingDataParams,
-        ValidationDataParams,
-        TrainingData,
-        Feature,
-        Target] {
-  val appid = PIOSettings.appid
-  val itemTrendsDbGetTicker = StockEvaluator.itemTrendsDb.get(appid, _: String).get
+/** StockDataSource generates a series of training / testing data pairs.
+  *
+  * Main parameter: [[[DataSourceParams]]]
+  *
+  * 
+  */
+class StockDataSource(val dsp: DataSourceParams)
+  extends LSlicedDataSource[
+    DataSourceParams,
+    (TrainingDataParams2, TestingDataParams),
+    TrainingData,
+    Feature,
+    Target2] {
+  @transient lazy val itemTrendsDbGetTicker = 
+    Storage.getAppdataItemTrends().get(dsp.appid, _: String).get
 
-  // (predicted, acutal)
-  def getParamsSet(params: EvaluationDataParams)
-  : Seq[(TrainingDataParams, ValidationDataParams)] = {
-    Range(params.fromIdx, params.untilIdx, params.evaluationInterval)
+  def generateDataParams(): Seq[(TrainingDataParams2, TestingDataParams)] = {
+    Range(dsp.fromIdx, dsp.untilIdx, dsp.evaluationInterval)
       .map(idx => {
-        val trainParams = new TrainingDataParams(
-          baseDate = params.baseDate,
+        val trainParams = new TrainingDataParams2(
+          baseDate = dsp.baseDate,
           untilIdx = idx - 1,
-          windowSize = params.trainingWindowSize,
-          marketTicker = params.marketTicker,
-          tickerList = params.tickerList)
-        val validationParams = new ValidationDataParams(
-          baseDate = params.baseDate,
+          windowSize = dsp.trainingWindowSize,
+          marketTicker = dsp.marketTicker,
+          tickerList = dsp.tickerList)
+        val testingParams = new TestingDataParams(
+          baseDate = dsp.baseDate,
           fromIdx = idx,
           untilIdx = math.min(
-            idx + params.evaluationInterval,
-            params.untilIdx),
-          marketTicker = params.marketTicker,
-          tickerList = params.tickerList)
-        (trainParams, validationParams)
+            idx + dsp.evaluationInterval,
+            dsp.untilIdx),
+          marketTicker = dsp.marketTicker,
+          tickerList = dsp.tickerList)
+        (trainParams, testingParams)
       })
   }
 
+  def read(p: (TrainingDataParams2, TestingDataParams))
+  : (TrainingData, Seq[(Feature, Target2)]) = {
+    return (prepareTraining(p._1), prepareValidation(p._2))
+  }
+  
   def getTimeIndex(baseDate: DateTime, marketTicker: String) = {
     val spy = itemTrendsDbGetTicker(marketTicker)
     val timestamps = spy.daily.map(_._1).distinct.filter(_ >= baseDate)
@@ -111,23 +154,20 @@ class StockDataPreparator
 
   private def getBatchItemTrend(tickers: Seq[String])
     : Map[String, ItemTrend] = {
-    StockEvaluator.itemTrendsDb.getByIds(appid, tickers).map{ e => {
+    StockEvaluator.itemTrendsDb.getByIds(dsp.appid, tickers).map{ e => {
       (e.id, e)
     }}.toMap
   }
 
 
-  def prepareTraining(params: TrainingDataParams): TrainingData = {
+  def prepareTraining(params: TrainingDataParams2): TrainingData = {
     val timeIndex = getTimeIndex(params.baseDate, params.marketTicker).slice(
       params.untilIdx - params.windowSize, params.untilIdx)
 
     val allTickers = params.tickerList :+ params.marketTicker
-    println(allTickers)
 
-    //val tickerTrendMap = getBatchItemTrend(params.tickerList)
     val tickerTrendMap = getBatchItemTrend(allTickers)
 
-    //val tickerDataSeq = params.tickerList
     val tickerDataSeq = allTickers
       .map(t => (t, getData(tickerTrendMap(t), timeIndex, t)))
       .filter { case (ticker, optData) => !optData.isEmpty }
@@ -150,7 +190,7 @@ class StockDataPreparator
     idx: Int,
     baseDate: DateTime,
     marketTicker: String,
-    tickerList: Seq[String]): (Feature, Target) = {
+    tickerList: Seq[String]): (Feature, Target2) = {
     val allTickers: Seq[String] = marketTicker +: tickerList
 
     val featureWindowSize = 30 // engine-specific param
@@ -162,7 +202,6 @@ class StockDataPreparator
       .slice(featureFromIdx, idx)
 
     // generate (ticker, feature, target)-tuples
-    //val data = tickerList
     val data = allTickers
       .map(t => (t, getData(tickerTrendMap(t), timeIndex, t)))
       .filter { case (ticker, optPrice) => !optPrice.isEmpty }
@@ -192,11 +231,11 @@ class StockDataPreparator
         data = featureData,
         tomorrow = timeIndex.last.get
       ),
-      new Target(data = targetData))
+      new Target2(date = timeIndex.last.get, data = targetData))
   }
 
-  def prepareValidation(params: ValidationDataParams)
-  : Seq[(Feature, Target)] = {
+  def prepareValidation(params: TestingDataParams)
+  : Seq[(Feature, Target2)] = {
     val tickerList: Seq[String] = params.marketTicker +: params.tickerList
     val tickerTrendMap = getBatchItemTrend(tickerList)
 
@@ -209,74 +248,6 @@ class StockDataPreparator
         params.tickerList)
     ).toSeq
   }
+
 }
-
-
-class StockValidator
-    extends Validator[
-        EmptyParams,
-        TrainingDataParams,
-        ValidationDataParams,
-        Feature,
-        Target,
-        Target,
-        ValidationUnit,
-        ValidationResults,
-        CrossValidationResults] {
-  //def init(params: EmptyParams) = {}
-
-  def validate(feature: Feature, predicted: Target, actual: Target)
-      : ValidationUnit = {
-    val predictedData = predicted.data
-    val actualData = actual.data
-
-    val data = predictedData.map {
-      case (ticker, pValue) => {
-        (pValue, actualData(ticker))
-      }
-    }.toSeq
-    new ValidationUnit(data = data)
-  }
-
-  def validateSet(
-    trainingDataParams: TrainingDataParams,
-    validationDataParams: ValidationDataParams,
-    validationUnits: Seq[ValidationUnit])
-    : ValidationResults = {
-    new ValidationResults(vuSeq = validationUnits)
-  }
-
-  //override
-  def crossValidate(
-    validationResultsSeq
-      : Seq[(TrainingDataParams, ValidationDataParams, ValidationResults)])
-  : CrossValidationResults = {
-
-    val results: Seq[(Double, Double)] = validationResultsSeq
-      .map(_._3.vuSeq.map(_.data).flatten)
-      .flatten
-
-    val pThresholds = Seq(-0.01, -0.003, -0.001, -0.0003,
-      0.0, 0.0003, 0.001, 0.003, 0.01)
-
-    val output = pThresholds.map( pThreshold => {
-      val screened = results.filter(e => e._1 > pThreshold).toSeq
-      val over = screened.filter(e => (e._1 > e._2)).length
-      val under = screened.filter(e => (e._1 < e._2)).length
-      // Sum actual return.
-      val actuals = screened.map(_._2)
-      val (mean_, variance, count) = meanAndVariance(actuals)
-      val stdev = math.sqrt(variance)
-      // 95% CI
-      val ci = 1.96 * stdev / math.sqrt(count)
-
-      val s = (f"Threshold: ${pThreshold}%+.4f " +
-        f"Mean: ${mean_}%+.6f Stdev: ${stdev}%.6f CI: ${ci}%.6f " +
-        f"Total: ${count}%5d Over: $over%5d Under: $under%5d")
-
-      println(s)
-      s
-    })
-    new CrossValidationResults(output.mkString("\n"))
-  }
-}
+        

@@ -52,7 +52,7 @@ class TrainingData(
   override def toString(): String = {
     val firstDate = timeIndex.head
     val lastDate = timeIndex.last
-    s"TrainingData $firstDate $lastDate"
+    s"TrainingData [$firstDate, $lastDate]"
   }
 }
 
@@ -103,7 +103,8 @@ class Model(val data: Map[String, DenseVector[Double]]) extends Serializable
 class Feature(
   val mktTicker: String,
   val tickerList: Seq[String],
-  val input: (Array[DateTime], Array[(String, Array[Double])])
+  val input: (Array[DateTime], Array[(String, Array[Double])]),
+  val tomorrow: DateTime
   ) extends Serializable {
   
   val timeIndex: Array[DateTime] = input._1
@@ -115,7 +116,7 @@ class Feature(
   override def toString(): String = {
     val firstDate = data.rowIx.first.get
     val lastDate = data.rowIx.last.get
-    s"Feature $firstDate $lastDate"
+    s"Feature [$firstDate, $lastDate]"
   }
 }
 
@@ -123,11 +124,14 @@ object Feature {
   def apply(
     mktTicker: String,
     tickerList: Seq[String],
-    data: Frame[DateTime, String, Double]): Feature = {
+    data: Frame[DateTime, String, Double],
+    tomorrow: DateTime): Feature = {
     return new Feature(
       mktTicker = mktTicker,
       tickerList = tickerList,
-      input = SaddleWrapper.FromFrame(data))
+      input = SaddleWrapper.FromFrame(data),
+      tomorrow = tomorrow
+      )
   }
 }
 

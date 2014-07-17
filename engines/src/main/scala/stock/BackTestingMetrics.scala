@@ -1,37 +1,25 @@
 package io.prediction.engines.stock
 
-import io.prediction._
+import io.prediction.api.Params
+import io.prediction.api.Metrics
 import com.github.nscala_time.time.Imports._
-import io.prediction.core.BaseEvaluator
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
-//import io.prediction.core.LocalEvaluator
 
-object BackTestingEvaluator extends EvaluatorFactory {
-  // Use singleton class here to avoid re-registering hooks in config.
-  override def apply() = {
-    new BaseEvaluator(
-    //new LocalEvaluator(
-      classOf[StockDataPreparator],
-      classOf[BackTestingValidator])
-  }
-}
-
-/*
-class BackTestingParams(
+case class BackTestingParams(
   val enterThreshold: Double,
   val exitThreshold: Double,
   val maxPositions: Int = 3)
-extends BaseParams {}
-*/
+extends Params {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
-class DailyResults(
+class DailyResults2(
   val date: DateTime,
   val actualReturn: Map[String, Double],  // Tomorrow's return
   val toEnter: Seq[String],
   val toExit: Seq[String])
 extends Serializable {}
 
+/*
 class SetResults(val dailySeq: Seq[DailyResults]) 
 extends Serializable {}
 
@@ -39,28 +27,14 @@ class BackTestingResults(val s: Seq[String])
 extends Serializable {
   override def toString() = s.mkString("\n")
 }
+*/
 
+class BackTestingMetrics(val params: BackTestingParams)
+  extends Metrics[BackTestingParams, AnyRef, Feature, Target2, Target2,
+      DailyResults2, Seq[DailyResults2], String] {
 
-class BackTestingValidator
-    extends Validator[
-        BackTestingParams, 
-        TrainingDataParams, 
-        ValidationDataParams,
-        Feature, 
-        Target, 
-        Target,
-        DailyResults, 
-        SetResults, 
-        BackTestingResults] {
-  var params: BackTestingParams = null
-
-  override
-  def init(params: BackTestingParams): Unit = {
-    this.params = params
-  }
-
-  def validate(feature: Feature, predicted: Target, actual: Target)
-    : DailyResults = {
+  def computeUnit(feature: Feature, predicted: Target2, actual: Target2)
+    : DailyResults2 = {
     val predictedData = predicted.data
     val actualData = actual.data
 
@@ -81,27 +55,20 @@ class BackTestingValidator
     val toExit = data.filter(_._2 == -1).map(_._1)
     val actualReturn = data.map(e => (e._1, e._4)).toMap
     
-    new DailyResults(
+    new DailyResults2(
       date = feature.today, 
       actualReturn = actualReturn,
       toEnter = toEnter,
       toExit = toExit)
   }
-  
-  def validateSet(
-    trainingDataParams: TrainingDataParams,
-    validationDataParams: ValidationDataParams,
-    validationUnits: Seq[DailyResults])
-    : SetResults = {
-    new SetResults(dailySeq = validationUnits)
-  }
-  
-  def crossValidate(
-    validationResultsSeq
-      : Seq[(TrainingDataParams, ValidationDataParams, SetResults)])
-  : BackTestingResults = {
-    var dailyResultsSeq = validationResultsSeq
-      .map(_._3.dailySeq)
+ 
+  def computeSet(dp: AnyRef, input: Seq[DailyResults2])
+    : Seq[DailyResults2] = input
+
+  def computeMultipleSets(input: Seq[(AnyRef, Seq[DailyResults2])])
+  : String = {
+    var dailyResultsSeq = input
+      .map(_._2)
       .flatten
       .toArray
       .sortBy(_.date)
@@ -148,8 +115,7 @@ class BackTestingValidator
       val s = s"$today Nav: $nav Pos: ${positions.size}"
       ss.append(s)
     }
-    new BackTestingResults(s = ss)
+    //new BackTestingResults(s = ss)
+    ss.mkString("\n")
   }
 }
-
-
