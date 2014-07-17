@@ -1,6 +1,6 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.Params;
+import io.prediction.controller.Params;
 
 public class DefaultAlgorithmParams implements Params {
   public final double v;

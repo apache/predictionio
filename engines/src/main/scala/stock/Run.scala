@@ -2,9 +2,9 @@ package io.prediction.engines.stock
 
 import com.github.nscala_time.time.Imports.DateTime
 import io.prediction.workflow.APIDebugWorkflow
-import io.prediction.api.IdentityPreparator
-import io.prediction.api.EmptyParams
-import io.prediction.api.FirstServing
+import io.prediction.controller.IdentityPreparator
+import io.prediction.controller.EmptyParams
+import io.prediction.controller.FirstServing
 
 object Run {
   val tickerList = Seq("GOOG", "AAPL", "AMZN", "MSFT", "IBM",

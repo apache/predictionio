@@ -4,8 +4,8 @@ import io.prediction.engines.java.itemrec.data.TrainingData;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Prediction;
 import io.prediction.engines.java.itemrec.data.Model;
-import io.prediction.api.java.LJavaAlgorithm;
-import io.prediction.api.Params;
+import io.prediction.controller.java.LJavaAlgorithm;
+import io.prediction.controller.Params;
 
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;

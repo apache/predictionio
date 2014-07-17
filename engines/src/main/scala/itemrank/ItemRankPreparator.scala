@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.LPreparator
+import io.prediction.controller.LPreparator
 
 class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
     PreparatorParams, TrainingData, PreparedData] {

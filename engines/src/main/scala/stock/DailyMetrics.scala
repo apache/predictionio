@@ -1,7 +1,7 @@
 package io.prediction.engines.stock
 
-import io.prediction.api.Metrics
-import io.prediction.api.EmptyParams
+import io.prediction.controller.Metrics
+import io.prediction.controller.EmptyParams
 import breeze.stats.{ mean, meanAndVariance }
 
 // [[[DailyMetrics]]] aggregate the overall return by the strategy.

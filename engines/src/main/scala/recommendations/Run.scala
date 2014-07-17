@@ -1,11 +1,11 @@
 package org.apache.spark.mllib.recommendation.engine
 
-import io.prediction.api.PDataSource
-import io.prediction.api.Params
-import io.prediction.api.PAlgorithm
-import io.prediction.api.IdentityPreparator
-import io.prediction.api.FirstServing
-import io.prediction.api.PersistentParallelModel
+import io.prediction.controller.PDataSource
+import io.prediction.controller.Params
+import io.prediction.controller.PAlgorithm
+import io.prediction.controller.IdentityPreparator
+import io.prediction.controller.FirstServing
+import io.prediction.controller.PersistentParallelModel
 import io.prediction.workflow.APIDebugWorkflow
 
 import org.apache.spark.SparkContext

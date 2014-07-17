@@ -1,6 +1,6 @@
 package io.prediction.engines.java.itemrec;
 
-import io.prediction.api.java.LJavaServing;
+import io.prediction.controller.java.LJavaServing;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Prediction;
 

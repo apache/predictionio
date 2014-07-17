@@ -1,11 +1,11 @@
 package io.prediction.engines.regression.parallel
 
-import io.prediction.api.Params
-import io.prediction.api.PDataSource
-import io.prediction.api.P2LAlgorithm
-import io.prediction.api.IdentityPreparator
-import io.prediction.api.AverageServing
-import io.prediction.api.MeanSquareError
+import io.prediction.controller.Params
+import io.prediction.controller.PDataSource
+import io.prediction.controller.P2LAlgorithm
+import io.prediction.controller.IdentityPreparator
+import io.prediction.controller.AverageServing
+import io.prediction.controller.MeanSquareError
 import io.prediction.workflow.APIDebugWorkflow
 
 import org.apache.spark.SparkContext

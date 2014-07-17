@@ -1,7 +1,7 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.EmptyParams
-import io.prediction.api.EngineParams
+import io.prediction.controller.EmptyParams
+import io.prediction.controller.EngineParams
 import io.prediction.workflow.APIDebugWorkflow
 
 import com.github.nscala_time.time.Imports._

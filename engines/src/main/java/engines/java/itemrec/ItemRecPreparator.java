@@ -1,8 +1,8 @@
 package io.prediction.engines.java.itemrec;
 
 import io.prediction.engines.java.itemrec.data.TrainingData;
-import io.prediction.api.java.LJavaPreparator;
-import io.prediction.api.EmptyParams;
+import io.prediction.controller.java.LJavaPreparator;
+import io.prediction.controller.EmptyParams;
 
 // PD same as TD
 public class ItemRecPreparator extends LJavaPreparator<

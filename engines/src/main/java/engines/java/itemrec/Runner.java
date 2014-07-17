@@ -4,11 +4,11 @@ import io.prediction.engines.java.itemrec.algos.GenericItemBased;
 import io.prediction.engines.java.itemrec.algos.GenericItemBasedParams;
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlusParams;
-import io.prediction.api.Params;
-import io.prediction.api.EmptyParams;
-import io.prediction.api.java.JavaEngine;
-import io.prediction.api.java.JavaEngineParams;
-import io.prediction.api.java.JavaEngineParamsBuilder;
+import io.prediction.controller.Params;
+import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.JavaEngine;
+import io.prediction.controller.java.JavaEngineParams;
+import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.workflow.JavaAPIDebugWorkflow;
 
 import scala.Tuple2;

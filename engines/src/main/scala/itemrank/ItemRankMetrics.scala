@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.Metrics
+import io.prediction.controller.Metrics
 
 import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal

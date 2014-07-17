@@ -1,6 +1,6 @@
 package io.prediction.engines.java.itemrec;
 
-import io.prediction.api.Params;
+import io.prediction.controller.Params;
 
 public class DataSourceParams implements Params {
   public String filePath; // file path

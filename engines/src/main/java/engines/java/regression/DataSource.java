@@ -1,6 +1,6 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.java.LJavaDataSource;
+import io.prediction.controller.java.LJavaDataSource;
 
 import scala.Tuple2;
 import scala.Tuple3;

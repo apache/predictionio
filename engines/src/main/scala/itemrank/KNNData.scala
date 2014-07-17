@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.Params
+import io.prediction.controller.Params
 
 class KNNAlgoParams(
   val similarity: String,

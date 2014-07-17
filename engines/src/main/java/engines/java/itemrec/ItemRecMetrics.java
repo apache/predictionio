@@ -1,7 +1,7 @@
 package io.prediction.engines.java.itemrec;
 
-import io.prediction.api.EmptyParams;
-import io.prediction.api.java.JavaMetrics;
+import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.JavaMetrics;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Prediction;
 import io.prediction.engines.java.itemrec.data.Actual;

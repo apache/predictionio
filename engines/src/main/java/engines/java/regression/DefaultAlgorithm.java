@@ -1,6 +1,6 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.java.LJavaAlgorithm;
+import io.prediction.controller.java.LJavaAlgorithm;
 
 public class DefaultAlgorithm
   extends LJavaAlgorithm<DefaultAlgorithmParams, TrainingData, Object, Double[], Double> {

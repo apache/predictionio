@@ -189,7 +189,7 @@ extends Serializable {
   }
 }
 
-object controllerDebugWorkflow {
+object APIDebugWorkflow {
   def runEngine[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
@@ -237,7 +237,7 @@ object controllerDebugWorkflow {
       : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
     metricsParams: Params = EmptyParams() 
   ) {
-    println("controllerDebugWorkflow.run")
+    println("APIDebugWorkflow.run")
     println("Start spark context")
 
     val sc = WorkflowContext(batch)
@@ -453,11 +453,11 @@ object controllerDebugWorkflow {
 
     metricsOutput foreach { println }
     
-    println("controllerDebugWorkflow.run completed.") 
+    println("APIDebugWorkflow.run completed.") 
   }
 }
 
-object JavacontrollerDebugWorkflow {
+object JavaAPIDebugWorkflow {
   /*
   Ideally, Java could also act as other scala base class. But the tricky part
   is in the algorithmClassMap, where javac is not smart enough to match
@@ -466,7 +466,7 @@ object JavacontrollerDebugWorkflow {
   function). If we change the caller to use Class[_ <: BaseAlgo[...]], it is
   difficult for the engine builder, as we wrap data structures with RDD in the
   base class. Hence, we have to sacrifices here, that all Doers calling
-  JavacontrollerDebugWorkflow needs to be Java sub-doers.
+  JavaAPIDebugWorkflow needs to be Java sub-doers.
   */
   def run[
       DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
@@ -494,7 +494,7 @@ object JavacontrollerDebugWorkflow {
       if (algorithmParamsList == null) null
       else algorithmParamsList.toSeq)
     
-    controllerDebugWorkflow.run(
+    APIDebugWorkflow.run(
       batch = batch,
       verbose = verbose,
       dataSourceClass = dataSourceClass,
@@ -519,7 +519,7 @@ object JavacontrollerDebugWorkflow {
     verbose: Int,
     engine: Engine[TD, DP, PD, Q, P, A],
     engineParams: EngineParams) {
-    controllerDebugWorkflow.runEngine(
+    APIDebugWorkflow.runEngine(
       batch = batch,
       verbose = verbose,
       engine = engine,
@@ -534,7 +534,7 @@ object JavacontrollerDebugWorkflow {
     metricsClass
       : Class[_ <: JavaMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
     metricsParams: Params) {
-    controllerDebugWorkflow.runEngine(
+    APIDebugWorkflow.runEngine(
       batch = batch,
       verbose = verbose,
       engine = engine,

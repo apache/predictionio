@@ -1,8 +1,8 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.IEngineFactory;
-import io.prediction.api.java.JavaEngine;
-import io.prediction.api.java.JavaEngineBuilder;
+import io.prediction.controller.IEngineFactory;
+import io.prediction.controller.java.JavaEngine;
+import io.prediction.controller.java.JavaEngineBuilder;
 
 public class EngineFactory implements IEngineFactory {
   public JavaEngine<TrainingData, Integer, TrainingData, Double[], Double, Double> apply() {

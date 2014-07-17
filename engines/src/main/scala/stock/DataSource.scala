@@ -1,7 +1,7 @@
 package io.prediction.engines.stock
 
-import io.prediction.api.Params
-import io.prediction.api.LSlicedDataSource
+import io.prediction.controller.Params
+import io.prediction.controller.LSlicedDataSource
 import com.github.nscala_time.time.Imports._
 import io.prediction.storage.Storage
 import io.prediction.storage.{ ItemTrend, ItemTrends }

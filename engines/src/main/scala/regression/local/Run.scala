@@ -1,15 +1,15 @@
 package io.prediction.engines.regression.local
 
-import io.prediction.api.EmptyParams
-import io.prediction.api.Engine
-import io.prediction.api.IEngineFactory
-import io.prediction.api.EngineParams
-import io.prediction.api.FirstServing
-import io.prediction.api.LAlgorithm
-import io.prediction.api.LDataSource
-import io.prediction.api.LPreparator
-import io.prediction.api.MeanSquareError
-import io.prediction.api.Params
+import io.prediction.controller.EmptyParams
+import io.prediction.controller.Engine
+import io.prediction.controller.IEngineFactory
+import io.prediction.controller.EngineParams
+import io.prediction.controller.FirstServing
+import io.prediction.controller.LAlgorithm
+import io.prediction.controller.LDataSource
+import io.prediction.controller.LPreparator
+import io.prediction.controller.MeanSquareError
+import io.prediction.controller.Params
 
 import io.prediction.workflow.APIDebugWorkflow
 

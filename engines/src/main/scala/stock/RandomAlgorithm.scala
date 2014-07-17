@@ -1,7 +1,7 @@
 package io.prediction.engines.stock
 
-import io.prediction.api.Params
-import io.prediction.api.LAlgorithm
+import io.prediction.controller.Params
+import io.prediction.controller.LAlgorithm
 import scala.util.Random
 
 case class RandomAlgorithmParams(

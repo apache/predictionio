@@ -1,19 +1,17 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.EmptyParams;
-import io.prediction.api.java.LJavaAlgorithm;
-import io.prediction.core.BaseAlgorithm2;
-import io.prediction.api.Params;
-import io.prediction.workflow.JavaAPIDebugWorkflow;
+import io.prediction.controller.EmptyParams;
+import io.prediction.controller.Params;
+import io.prediction.controller.java.JavaEngineParams;
+import io.prediction.controller.java.JavaEngineParamsBuilder;
+import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.workflow.APIDebugWorkflow;
+import io.prediction.workflow.JavaAPIDebugWorkflow;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import scala.Tuple2;
-import io.prediction.api.java.JavaEngineParams;
-import io.prediction.api.java.JavaEngineParamsBuilder;
-
 
 public class Run {
   public static void runComponents () {

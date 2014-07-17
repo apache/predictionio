@@ -1,6 +1,6 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.java.LJavaPreparator;
+import io.prediction.controller.java.LJavaPreparator;
 
 // This Preparator is just a proof-of-concept. It removes a fraction of the
 // training data to make training more "efficient".

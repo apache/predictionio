@@ -7,10 +7,10 @@ import io.prediction.engines.java.itemrec.data.Actual;
 import io.prediction.engines.java.itemrec.algos.GenericItemBased;
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
 
-import io.prediction.api.IEngineFactory;
-import io.prediction.api.EmptyParams;
-import io.prediction.api.java.JavaEngine;
-import io.prediction.api.java.JavaEngineBuilder;
+import io.prediction.controller.IEngineFactory;
+import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.JavaEngine;
+import io.prediction.controller.java.JavaEngineBuilder;
 
 public class EngineFactory implements IEngineFactory {
   public JavaEngine<TrainingData, EmptyParams, TrainingData, Query, Prediction, Actual> apply() {

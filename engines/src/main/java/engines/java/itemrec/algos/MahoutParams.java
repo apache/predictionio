@@ -1,6 +1,6 @@
 package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.api.Params;
+import io.prediction.controller.Params;
 
 public class MahoutParams implements Params {
   public int numRecommendations;

@@ -1,7 +1,7 @@
 package io.prediction.engines.stock
 
-import io.prediction.api.LAlgorithm
-import io.prediction.api.EmptyParams
+import io.prediction.controller.LAlgorithm
+import io.prediction.controller.EmptyParams
 
 import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.stats.{ mean, meanAndVariance }

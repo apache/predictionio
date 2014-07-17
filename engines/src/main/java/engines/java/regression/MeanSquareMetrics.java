@@ -1,8 +1,8 @@
 package io.prediction.engines.java.regression;
 
-import io.prediction.api.java.JavaMetrics;
+import io.prediction.controller.java.JavaMetrics;
 import java.lang.Iterable;
-import io.prediction.api.EmptyParams;
+import io.prediction.controller.EmptyParams;
 import scala.Tuple2;
 import java.util.List;
 import java.util.ArrayList;

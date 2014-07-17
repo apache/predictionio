@@ -1,4 +1,4 @@
-package io.prediction.api
+package io.prediction.controller
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

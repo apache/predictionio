@@ -2,7 +2,7 @@ package io.prediction.engines.itemrank
 
 import com.github.nscala_time.time.Imports._
 
-import io.prediction.api.Params
+import io.prediction.controller.Params
 
 // param to evaluator, it applies to both DataPrep and Validator
 class DataSourceParams(

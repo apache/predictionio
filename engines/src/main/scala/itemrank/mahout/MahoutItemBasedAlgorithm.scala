@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.LAlgorithm
+import io.prediction.controller.LAlgorithm
 
 import java.io.File
 import java.io.FileWriter

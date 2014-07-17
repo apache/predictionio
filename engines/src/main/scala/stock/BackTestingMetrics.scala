@@ -1,7 +1,7 @@
 package io.prediction.engines.stock
 
-import io.prediction.api.Params
-import io.prediction.api.Metrics
+import io.prediction.controller.Params
+import io.prediction.controller.Metrics
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 

@@ -18,7 +18,7 @@ s=GOOG&d=4&e=7&f=2014&g=d&a=2&b=27&c=2014&ignore=.csv
 class YahooFetcher(appid: Int, fromYear: Int, fromMonth: Int, fromDay: Int,
     toYear: Int, toMonth: Int, toDay: Int) {
   val logger = Logger(YahooFetcher.getClass)
-  // yahoo api use 0-base for month
+  // yahoo.controller.use 0-base for month
   val fromMonth_ = fromMonth - 1
   val toMonth_ = toMonth - 1
 

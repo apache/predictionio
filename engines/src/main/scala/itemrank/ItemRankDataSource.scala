@@ -1,6 +1,6 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.api.LDataSource
+import io.prediction.controller.LDataSource
 import io.prediction.storage.Storage
 import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 
