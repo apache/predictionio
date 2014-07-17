@@ -43,6 +43,7 @@ object WorkflowContext {
   
 
 object JavaDebugWorkflow {
+  @deprecated("Use API Debug", "20140716")
   def run[
       EDP <: BaseParams ,
       VP <: BaseParams ,
@@ -133,6 +134,7 @@ object DebugWorkflow {
   }
   
   // Probably CP, AP, SP don't require Manifest
+  @deprecated("Use API Debug", "20140716")
   def run[
       EDP <: BaseParams : Manifest,
       VP <: BaseParams : Manifest,
