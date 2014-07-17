@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import scala.Tuple2;
 import io.prediction.api.java.JavaEngineParams;
+import io.prediction.api.java.JavaEngineParamsBuilder;
 
 
 public class Run {
@@ -50,19 +51,13 @@ public class Run {
   }
 
   public static void runEngine() {
-    
-    List<Tuple2<String, Params>> algoParamsList = 
-      new ArrayList<Tuple2<String, Params>>();
-    algoParamsList.add(new Tuple2<String, Params>("OLS", new EmptyParams()));
-    algoParamsList.add(new Tuple2<String, Params>("Default", new DefaultAlgorithmParams(0.2)));
-    algoParamsList.add(new Tuple2<String, Params>("Default", new DefaultAlgorithmParams(0.4)));
-
-    JavaEngineParams engineParams = new JavaEngineParams(
-        new DataSourceParams("data/lr_data.txt"),
-        new PreparatorParams(0.3),
-        algoParamsList,
-        new EmptyParams()
-        );
+    JavaEngineParams engineParams = new JavaEngineParamsBuilder()
+      .dataSourceParams(new DataSourceParams("data/lr_data.txt"))
+      .preparatorParams(new PreparatorParams(0.3))
+      .addAlgorithmParams("OLS", new EmptyParams())
+      .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.2))
+      .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.4))
+      .build();
      
     JavaAPIDebugWorkflow.runEngine(
         "java regression engine",

@@ -12,8 +12,7 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
     algorithmClassMap = new HashMap <> ();
   private Class<? extends LJavaServing<? extends Params, Q, P>> servingClass = null;
   
-  public JavaEngineBuilder() {
-  }
+  public JavaEngineBuilder() {}
 
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> dataSourceClass(
       Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> cls) {
