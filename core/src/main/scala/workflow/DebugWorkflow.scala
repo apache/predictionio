@@ -54,7 +54,7 @@ object WorkflowContext extends Logging {
     env.map(kv => conf.setExecutorEnv(kv._1, kv._2))
     info(s"SparkConf executor environment: ${conf.getExecutorEnv}")
     conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "8g")
+    conf.set("spark.executor.memory", "7g")
 
     val sc = new SparkContext(conf)
     return sc
@@ -82,7 +82,7 @@ object DebugWorkflow {
 
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
-class AlgoServerWrapper2[Q, P, A](
+class AlgoServerWrapper[Q, P, A](
     val algos: Array[_ <: BaseAlgorithm[_,_,_,Q,P]],
     val serving: BaseServing[_, Q, P],
     val skipOpt: Boolean = false,
@@ -208,18 +208,27 @@ extends Serializable {
   }
 }
 
-class MetricsWrapper[MP <: Params, DP, MU, MR, MMR <: AnyRef](
-    //TDP <: Params, VDP <: BaseParams, VU, VR, CVR <: AnyRef](
-  val metrics: BaseMetrics[_,DP,_,_,_,MU,MR,MMR]) 
+class MetricsWrapper[
+    MDP, MQ, MP, MA, MU: ClassTag, MR, MMR <: AnyRef](
+    val metrics: BaseMetrics[_,MDP,MQ,MP,MA,MU,MR,MMR]) 
 extends Serializable {
-  def computeSet(input: (DP, Iterable[MU])): (DP, MR) = {
-    val results = metrics.computeSetBase(input._1, input._2.toSeq)
-    (input._1, results)
+  def computeUnit[Q, P, A](input: RDD[(Q, P, A)]): RDD[MU] = {
+    input
+    .map{ e => (
+      e._1.asInstanceOf[MQ],
+      e._2.asInstanceOf[MP],
+      e._3.asInstanceOf[MA]) }
+    .map(metrics.computeUnitBase)
   }
 
-  def computeMultipleSets(input: Array[(DP, MR)]): MMR = {
+  def computeSet[DP](input: (DP, Iterable[MU])): (MDP, MR) = {
+    val mdp = input._1.asInstanceOf[MDP]
+    val results = metrics.computeSetBase(mdp, input._2.toSeq)
+    (mdp, results)
+  }
+
+  def computeMultipleSets(input: Array[(MDP, MR)]): MMR = {
     // maybe sort them.
-    //val data = input.map(e => (e._1, e._2))
     metrics.computeMultipleSetsBase(input)
   }
 }
@@ -229,13 +238,14 @@ object APIDebugWorkflow {
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
       ](
-    batch: String = "",
-    verbose: Int = 2,
-    engine: Engine[TD, DP, PD, Q, P, A],
-    engineParams: EngineParams,
-    metricsClass
-      : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
-    metricsParams: Params = EmptyParams()) {
+      batch: String = "",
+      verbose: Int = 2,
+      engine: Engine[TD, DP, PD, Q, P, A],
+      engineParams: EngineParams,
+      metricsClass
+        : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
+      metricsParams: Params = EmptyParams()) {
+
     run(
       batch = batch,
       verbose = verbose,
@@ -256,22 +266,55 @@ object APIDebugWorkflow {
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
       ](
-    batch: String = "",
-    verbose: Int = 2,
-    dataSourceClass
-      : Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]] = null,
-    dataSourceParams: Params = EmptyParams(),
-    preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]] = null,
-    preparatorParams: Params = EmptyParams(),
-    algorithmClassMap
-      : Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]] = null,
-    algorithmParamsList: Seq[(String, Params)] = null,
-    servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]] = null,
-    servingParams: Params = EmptyParams(),
-    metricsClass
-      : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
-    metricsParams: Params = EmptyParams() 
-  ) {
+      batch: String = "",
+      verbose: Int = 2,
+      dataSourceClass
+        : Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]] = null,
+      dataSourceParams: Params = EmptyParams(),
+      preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]] = null,
+      preparatorParams: Params = EmptyParams(),
+      algorithmClassMap
+        : Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]] = null,
+      algorithmParamsList: Seq[(String, Params)] = null,
+      servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]] = null,
+      servingParams: Params = EmptyParams(),
+      metricsClass
+        : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]] = null,
+      metricsParams: Params = EmptyParams()) {
+    runTypeless(
+        batch, verbose, 
+        dataSourceClass, dataSourceParams,
+        preparatorClass, preparatorParams, 
+        algorithmClassMap, algorithmParamsList, 
+        servingClass, servingParams, 
+        metricsClass, metricsParams)
+  }
+
+  // ***Do not directly call*** this method unless you know what you are doing.
+  // When engine and metrics are instantiated direcly from CLI, the compiler has
+  // no way to know their actual type parameter during compile time. To rememdy
+  // this restriction, we have to let engine and metrics to be casted to their
+  // own type parameters, and force cast their type during runtime.
+  def runTypeless[
+      DP, TD, PD, Q, P, A,
+      MDP, MQ, MP, MA,
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
+      ](
+      batch: String = "",
+      verbose: Int = 2,
+      dataSourceClass
+        : Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]] = null,
+      dataSourceParams: Params = EmptyParams(),
+      preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]] = null,
+      preparatorParams: Params = EmptyParams(),
+      algorithmClassMap
+        : Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]] = null,
+      algorithmParamsList: Seq[(String, Params)] = null,
+      servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]] = null,
+      servingParams: Params = EmptyParams(),
+      metricsClass
+        : Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]] = null,
+      metricsParams: Params = EmptyParams() ) {
     println("APIDebugWorkflow.run")
     println("Start spark context")
 
@@ -406,7 +449,7 @@ object APIDebugWorkflow {
         .sortBy(_._1)
         .map(_._2)
 
-      val algoServerWrapper = new AlgoServerWrapper2[Q, P, A](
+      val algoServerWrapper = new AlgoServerWrapper[Q, P, A](
         algoInstanceList, serving, skipOpt = false, verbose = verbose)
       (ei, algoServerWrapper.predict(algoModel, validationData))
     }}
@@ -437,10 +480,11 @@ object APIDebugWorkflow {
     }
 
     val metrics = Doer(metricsClass, metricsParams)
+    val metricsWrapper = new MetricsWrapper(metrics)
     
     // Metrics Unit
     val evalMetricsUnitMap: Map[Int, RDD[MU]] =
-      evalPredictionMap.mapValues(_.map(metrics.computeUnitBase))
+      evalPredictionMap.mapValues(metricsWrapper.computeUnit)
 
     if (verbose > 2) {
       evalMetricsUnitMap.foreach{ case(i, e) => {
@@ -449,13 +493,11 @@ object APIDebugWorkflow {
     }
     
     // Metrics Set
-    val metricsWrapper = new MetricsWrapper(metrics)
-
     val evalMetricsResultsMap
-    : Map[EI, RDD[(DP, MR)]] = evalMetricsUnitMap
+    : Map[EI, RDD[(MDP, MR)]] = evalMetricsUnitMap
     .map{ case (ei, metricsUnits) => {
       val metricsResults
-      : RDD[(DP, MR)] = metricsUnits
+      : RDD[(MDP, MR)] = metricsUnits
         .coalesce(numPartitions=1)
         .glom()
         .map(e => (localParamsSet(ei), e.toIterable))
