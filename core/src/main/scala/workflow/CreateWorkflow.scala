@@ -3,6 +3,7 @@ package io.prediction.workflow
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
 import io.prediction.controller.IEngineFactory
+import io.prediction.controller.Metrics
 import io.prediction.controller.Params
 
 import grizzled.slf4j.Logging
@@ -18,10 +19,8 @@ object CreateWorkflow extends Logging {
 
   case class WorkflowConfig(
     batch: String = "Transient Lazy Val",
-    /*engineManifestId: String = "",
-    engineManifestVersion: String = "",*/
     engineFactory: String = "",
-    metricClass: Option[String] = None,
+    metricsClass: Option[String] = None,
     dataSourceParamsJsonPath: Option[String] = None,
     preparatorParamsJsonPath: Option[String] = None,
     algorithmsParamsJsonPath: Option[String] = None,
@@ -78,9 +77,9 @@ object CreateWorkflow extends Logging {
       opt[String]("engineFactory") required() action { (x, c) =>
         c.copy(engineFactory = x)
       } text("Class name of the engine's factory.")
-      opt[String]("metricClass") action { (x, c) =>
-        c.copy(metricClass = Some(x))
-      } text("Class name of the run's metric.")
+      opt[String]("metricsClass") action { (x, c) =>
+        c.copy(metricsClass = Some(x))
+      } text("Class name of the run's metrics.")
       opt[String]("dsp") action { (x, c) =>
         c.copy(dataSourceParamsJsonPath = Some(x))
       } text("Path to data source parameters JSON file.")
@@ -95,7 +94,7 @@ object CreateWorkflow extends Logging {
       } text("Path to serving parameters JSON file.")
       opt[String]("mp") action { (x, c) =>
         c.copy(metricsParamsJsonPath = Some(x))
-      } text("Path to metric parameters")
+      } text("Path to metrics parameters")
       opt[String]("jsonBasePath") action { (x, c) =>
         c.copy(jsonBasePath = x)
       } text("Base path to prepend to all parameters JSON files.")
@@ -110,7 +109,18 @@ object CreateWorkflow extends Logging {
       val engineModule = runtimeMirror.staticModule(wfc.engineFactory)
       val engineObject = runtimeMirror.reflectModule(engineModule)
       val engine = engineObject.instance.asInstanceOf[IEngineFactory]()
-
+      val metrics = wfc.metricsClass.map { mc => null
+        /*
+        try {
+          Class.forName(mc).asInstanceOf[Class[Metrics[_ <: Params, _, _, _, _, _, _, _]]]
+        } catch {
+          case e: ClassNotFoundException =>
+            error("Unable to obtain metrics class object ${mc}: " +
+              s"${e.getMessage}. Aborting workflow.")
+            sys.exit(1)
+        }
+        */
+      } getOrElse(null)
       val dataSourceParams = wfc.dataSourceParamsJsonPath.map(p =>
         extractParams(
           stringFromFile(wfc.jsonBasePath, p),
@@ -119,11 +129,6 @@ object CreateWorkflow extends Logging {
         extractParams(
           stringFromFile(wfc.jsonBasePath, p),
           engine.preparatorClass)).getOrElse(EmptyParams())
-      val servingParams = wfc.servingParamsJsonPath.map(p =>
-        extractParams(
-          stringFromFile(wfc.jsonBasePath, p),
-          engine.servingClass)).getOrElse(EmptyParams())
-
       val algorithmsParams: Seq[(String, Params)] =
         wfc.algorithmsParamsJsonPath.map { p =>
           val algorithmsParamsJson = parse(stringFromFile(wfc.jsonBasePath, p))
@@ -140,6 +145,18 @@ object CreateWorkflow extends Logging {
             case _ => Nil
           }
         } getOrElse Seq(("", EmptyParams()))
+      val servingParams = wfc.servingParamsJsonPath.map(p =>
+        extractParams(
+          stringFromFile(wfc.jsonBasePath, p),
+          engine.servingClass)).getOrElse(EmptyParams())
+      val metricsParams = wfc.metricsParamsJsonPath.map(p =>
+        if (metrics == null)
+          EmptyParams()
+        else
+          extractParams(
+            stringFromFile(wfc.jsonBasePath, p),
+            metrics)
+      ) getOrElse EmptyParams()
 
       val engineParams = new EngineParams(
         dataSourceParams = dataSourceParams,
@@ -148,10 +165,12 @@ object CreateWorkflow extends Logging {
         servingParams = servingParams)
 
       APIDebugWorkflow.runEngine(
+        batch = wfc.batch,
         verbose = 3,
         engine = engine,
         engineParams = engineParams,
-        batch = wfc.batch)
+        metricsClass = metrics,
+        metricsParams = metricsParams)
     }
 
     // dszeto: add these features next
