@@ -49,6 +49,7 @@ object RegisterEngine extends Logging {
       val destDir = Seq(enginesdir, engineManifest.id, engineManifest.version)
       val destPath = new Path(destDir.mkString(Path.SEPARATOR_CHAR + ""))
       fs.mkdirs(destPath)
+      localFs.mkdirs(destPath)
       val files = config.engineFiles.flatMap { f =>
         val destFilePath =
           new Path(destDir.:+(f.getName).mkString(Path.SEPARATOR_CHAR + ""))

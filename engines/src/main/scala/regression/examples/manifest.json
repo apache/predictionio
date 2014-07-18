@@ -2,12 +2,5 @@
   "id": "io.prediction.engines.regression",
   "version": "0.8.0-SNAPSHOT",
   "name": "MLLib Regression Engine",
-  "jars": [
-    "../engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar",
-    "../core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar",
-    "../engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar"
-  ],
-  "engineFactory": "io.prediction.engines.regression.RegressionEngine",
-  "evaluatorFactory": "io.prediction.engines.regression.SparkRegressionEvaluator"
+  "engineFactory": "io.prediction.engines.regression.local.RegressionEngineFactory"
 }
-

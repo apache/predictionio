@@ -32,7 +32,10 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
     try {
       val response = client.prepareGet(index, estype, esid(id, version)).
         execute().actionGet()
-      Some(read[EngineManifest](response.getSourceAsString))
+      if (response.isExists)
+        Some(read[EngineManifest](response.getSourceAsString))
+      else
+        None
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
