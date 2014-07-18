@@ -110,7 +110,7 @@ object Run {
         algorithmParamsList = Seq(
           ("", EmptyParams())),
         servingClass = classOf[FirstServing[Vector[Double], Double]],
-        metricsClass = classOf[MeanSquareError[Vector[Double]]],
+        metricsClass = classOf[MeanSquareError],
         batch = "Imagine: Local Regression")
   }
 
@@ -126,7 +126,7 @@ object Run {
       verbose = 3,
       engine = engine, 
       engineParams = engineParams, 
-      metricsClass = classOf[MeanSquareError[Vector[Double]]],
+      metricsClass = classOf[MeanSquareError],
       batch = "Imagine: Local Regression Engine")
   }
 

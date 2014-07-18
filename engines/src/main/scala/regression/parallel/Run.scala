@@ -76,7 +76,7 @@ object Run {
         algorithmClassMap = Map(SGD -> classOf[ParallelSGDAlgorithm]),
         algorithmParamsList = algorithmParamsList,
         servingClass = AverageServing(classOf[ParallelSGDAlgorithm]),
-        metricsClass = classOf[MeanSquareError[Vector]],
+        metricsClass = classOf[MeanSquareError],
         batch = "Imagine: Parallel Regression")
   }
 }
