@@ -68,7 +68,7 @@ object Runner {
       verbose = 3,
       engine = engine,
       engineParams = engineParams,
-      metricsClass = classOf[ItemRankMetrics],
+      metricsClassOpt = Some(classOf[ItemRankMetrics]),
       metricsParams = mp
 
     )

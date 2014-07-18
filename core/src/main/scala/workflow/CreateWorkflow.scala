@@ -109,18 +109,17 @@ object CreateWorkflow extends Logging {
       val engineModule = runtimeMirror.staticModule(wfc.engineFactory)
       val engineObject = runtimeMirror.reflectModule(engineModule)
       val engine = engineObject.instance.asInstanceOf[IEngineFactory]()
-      val metrics = wfc.metricsClass.map { mc => null
-        /*
+      val metrics = wfc.metricsClass.map { mc => //mc => null
         try {
-          Class.forName(mc).asInstanceOf[Class[Metrics[_ <: Params, _, _, _, _, _, _, _]]]
+          Class.forName(mc)
+            .asInstanceOf[Class[Metrics[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
         } catch {
           case e: ClassNotFoundException =>
             error("Unable to obtain metrics class object ${mc}: " +
               s"${e.getMessage}. Aborting workflow.")
             sys.exit(1)
         }
-        */
-      } getOrElse(null)
+      } //getOrElse(null)
       val dataSourceParams = wfc.dataSourceParamsJsonPath.map(p =>
         extractParams(
           stringFromFile(wfc.jsonBasePath, p),
@@ -150,12 +149,13 @@ object CreateWorkflow extends Logging {
           stringFromFile(wfc.jsonBasePath, p),
           engine.servingClass)).getOrElse(EmptyParams())
       val metricsParams = wfc.metricsParamsJsonPath.map(p =>
-        if (metrics == null)
+        //if (metrics == null)
+        if (metrics.isEmpty)
           EmptyParams()
         else
           extractParams(
             stringFromFile(wfc.jsonBasePath, p),
-            metrics)
+            metrics.get)
       ) getOrElse EmptyParams()
 
       val engineParams = new EngineParams(
@@ -164,13 +164,15 @@ object CreateWorkflow extends Logging {
         algorithmParamsList = algorithmsParams,
         servingParams = servingParams)
 
-      APIDebugWorkflow.runEngine(
+      APIDebugWorkflow.runEngineTypeless(
         batch = wfc.batch,
         verbose = 3,
         engine = engine,
         engineParams = engineParams,
-        metricsClass = metrics,
-        metricsParams = metricsParams)
+        null,
+        null)
+        //metricsClass = metrics.getOrElse(null),
+        //metricsParams = metricsParams)
     }
 
     // dszeto: add these features next

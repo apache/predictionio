@@ -97,12 +97,12 @@ object Run {
     val ap = AlgorithmParams()
     
     APIDebugWorkflow.run(
-      dataSourceClass = classOf[DataSource],
+      dataSourceClassOpt = Some(classOf[DataSource]),
       dataSourceParams = dsp,
-      preparatorClass = IdentityPreparator(classOf[DataSource]),
-      algorithmClassMap = Map("" -> classOf[ALSAlgorithm]),
+      preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
+      algorithmClassMapOpt = Some(Map("" -> classOf[ALSAlgorithm])),
       algorithmParamsList = Seq(("", ap)),
-      servingClass = FirstServing(classOf[ALSAlgorithm]),
+      servingClassOpt = Some(FirstServing(classOf[ALSAlgorithm])),
       batch = "Imagine: P Recommendations",
       verbose = 1
     )

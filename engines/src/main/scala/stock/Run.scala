@@ -30,15 +30,15 @@ object Run {
           ("Random", RandomAlgorithmParams(drift = -0.05)))
 
     APIDebugWorkflow.run(
-        dataSourceClass = classOf[StockDataSource],
+        dataSourceClassOpt = Some(classOf[StockDataSource]),
         dataSourceParams = dataSourceParams,
-        preparatorClass = IdentityPreparator(classOf[StockDataSource]),
-        algorithmClassMap = Map(
+        preparatorClassOpt = Some(IdentityPreparator(classOf[StockDataSource])),
+        algorithmClassMapOpt = Some(Map(
           "Random" -> classOf[RandomAlgorithm],
-          "Regression" -> classOf[RegressionAlgorithm]),
+          "Regression" -> classOf[RegressionAlgorithm])),
         algorithmParamsList = algorithmParamsList,
-        servingClass = FirstServing(classOf[RegressionAlgorithm]),
-        metricsClass = classOf[BackTestingMetrics],
+        servingClassOpt = Some(FirstServing(classOf[RegressionAlgorithm])),
+        metricsClassOpt = Some(classOf[BackTestingMetrics]),
         metricsParams = BackTestingParams(0.002, 0.0),
         verbose = 0,
         batch = "Imagine: Stock") 

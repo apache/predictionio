@@ -101,16 +101,15 @@ object Run {
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
    
     APIDebugWorkflow.run(
-        dataSourceClass = classOf[LocalDataSource],
+        dataSourceClassOpt = Some(classOf[LocalDataSource]),
         dataSourceParams = dataSourceParams,
-        preparatorClass = classOf[LocalPreparator],
+        preparatorClassOpt = Some(classOf[LocalPreparator]),
         preparatorParams = preparatorParams,
-        algorithmClassMap = Map(
-          "" -> classOf[LocalAlgorithm]),
+        algorithmClassMapOpt = Some(Map("" -> classOf[LocalAlgorithm])),
         algorithmParamsList = Seq(
           ("", EmptyParams())),
-        servingClass = classOf[FirstServing[Vector[Double], Double]],
-        metricsClass = classOf[MeanSquareError],
+        servingClassOpt = Some(classOf[FirstServing[Vector[Double], Double]]),
+        metricsClassOpt = Some(classOf[MeanSquareError]),
         batch = "Imagine: Local Regression")
   }
 
@@ -126,7 +125,7 @@ object Run {
       verbose = 3,
       engine = engine, 
       engineParams = engineParams, 
-      metricsClass = classOf[MeanSquareError],
+      metricsClassOpt = Some(classOf[MeanSquareError]),
       batch = "Imagine: Local Regression Engine")
   }
 

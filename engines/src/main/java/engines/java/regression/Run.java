@@ -1,7 +1,10 @@
 package io.prediction.engines.java.regression;
 
 import io.prediction.controller.EmptyParams;
+import io.prediction.controller.IEngineFactory;
 import io.prediction.controller.Params;
+import io.prediction.controller.java.JavaEngine;
+import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.LJavaAlgorithm;
@@ -14,37 +17,34 @@ import java.util.Map;
 import scala.Tuple2;
 
 public class Run {
+  // During development, one can build a semi-engine, only add the first few layers. In this
+  // particular example, we only add until Algorithm Layer.
+  private static class HalfBakedEngineFactory implements IEngineFactory {
+    public JavaEngine<TrainingData, Integer, TrainingData, Double[], Double, Double> apply() {
+      return new JavaEngineBuilder<TrainingData, Integer, TrainingData, Double[], Double, Double> ()
+        .dataSourceClass(DataSource.class)
+        .preparatorClass(Preparator.class)
+        .addAlgorithmClass("OLS", OLSAlgorithm.class)
+        .addAlgorithmClass("Default", DefaultAlgorithm.class)
+        .build();
+    }
+  }
+
+  // Deprecated. Use Engine Builder
   public static void runComponents () {
-    DataSourceParams dsp = new DataSourceParams("data/lr_data.txt");
-    PreparatorParams pp = new PreparatorParams(0.3);
+    JavaEngineParams engineParams = new JavaEngineParamsBuilder()
+      .dataSourceParams(new DataSourceParams("data/lr_data.txt"))
+      .preparatorParams(new PreparatorParams(0.3))
+      .addAlgorithmParams("OLS", new EmptyParams())
+      .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.2))
+      .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.4))
+      .build();
     
-    List<Tuple2<String, Params>> algoParamsList = 
-      new ArrayList<Tuple2<String, Params>>();
-    algoParamsList.add(new Tuple2<String, Params>("OLS", new EmptyParams()));
-    algoParamsList.add(new Tuple2<String, Params>("Default", new DefaultAlgorithmParams(0.2)));
-    algoParamsList.add(new Tuple2<String, Params>("Default", new DefaultAlgorithmParams(0.4)));
-    
-    Map<String, 
-      Class<? extends 
-        LJavaAlgorithm<? extends Params, TrainingData, ?, Double[], Double>>> algoClassMap = 
-      new HashMap <> ();
-    
-    algoClassMap.put("OLS", OLSAlgorithm.class);
-    algoClassMap.put("Default", DefaultAlgorithm.class);
-    
-    JavaAPIDebugWorkflow.run(
-        "Native Java",
+    JavaAPIDebugWorkflow.runEngine(
+        "java regression engine",
         3,  // verbose
-        DataSource.class,
-        dsp,
-        Preparator.class,
-        pp,
-        algoClassMap,
-        algoParamsList,
-        Serving.class,
-        new EmptyParams(),
-        MeanSquareMetrics.class,
-        new EmptyParams()
+        (new HalfBakedEngineFactory()).apply(),
+        engineParams
         );
   }
 
@@ -68,6 +68,7 @@ public class Run {
   }
 
   public static void main(String[] args) {
-    runEngine();
+    //runEngine();
+    runComponents();
   }
 }

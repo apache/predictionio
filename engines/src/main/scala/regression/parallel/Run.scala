@@ -70,13 +70,14 @@ object Run {
       (SGD, AlgorithmParams(stepSize = 0.4)))
     
     APIDebugWorkflow.run(
-        dataSourceClass = classOf[ParallelDataSource],
+        dataSourceClassOpt = Some(classOf[ParallelDataSource]),
         dataSourceParams = dataSourceParams,
-        preparatorClass = classOf[IdentityPreparator[RDD[LabeledPoint]]],
-        algorithmClassMap = Map(SGD -> classOf[ParallelSGDAlgorithm]),
+        preparatorClassOpt =
+          Some(classOf[IdentityPreparator[RDD[LabeledPoint]]]),
+        algorithmClassMapOpt = Some(Map(SGD -> classOf[ParallelSGDAlgorithm])),
         algorithmParamsList = algorithmParamsList,
-        servingClass = AverageServing(classOf[ParallelSGDAlgorithm]),
-        metricsClass = classOf[MeanSquareError],
+        servingClassOpt = Some(AverageServing(classOf[ParallelSGDAlgorithm])),
+        metricsClassOpt = Some(classOf[MeanSquareError]),
         batch = "Imagine: Parallel Regression")
   }
 }
