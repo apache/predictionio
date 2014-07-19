@@ -20,6 +20,7 @@ object RunWorkflow extends Logging {
       batch: String = "Transient Lazy Val",
       engineId: String = "",
       engineVersion: String = "",
+      metricsClass: Option[String] = None,
       dataSourceParamsJsonPath: Option[String] = None,
       preparatorParamsJsonPath: Option[String] = None,
       algorithmsParamsJsonPath: Option[String] = None,
@@ -34,6 +35,9 @@ object RunWorkflow extends Logging {
       opt[String]("engineVersion") required() action { (x, c) =>
         c.copy(engineVersion = x)
       } text("Engine version.")
+      opt[String]("metricsClass") action { (x, c) =>
+        c.copy(metricsClass = Some(x))
+      } text("Metrics class name to run.")
       opt[String]("sparkHome") action { (x, c) =>
         c.copy(sparkHome = x)
       } text("Path to a Apache Spark installation. If not specified, will " +
@@ -110,6 +114,8 @@ object RunWorkflow extends Logging {
           pioEnvVars,
           "--engineFactory",
           em.engineFactory) ++
+          wfc.metricsClass.map(x => Seq("--metricsClass", x)).
+            getOrElse(Seq()) ++
           (if (wfc.batch != "") Seq("--batch", wfc.batch) else Seq()) ++ Seq(
           "--jsonBasePath", wfc.jsonBasePath) ++ defaults.flatMap { _ match {
             case (key, (path, default)) =>
