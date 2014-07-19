@@ -21,30 +21,39 @@ public class ItemRecMetrics extends JavaMetrics<
 
   @Override
   public Double computeUnit(Query query, Prediction predicted, Actual actual) {
+    logger.info("computeUnit");
     logger.info(query.toString());
     logger.info(predicted.toString());
-    return MahoutUtil.averagePrecisionAtK(20, predicted.iids, actual.iids);
+    Double ap = MahoutUtil.jAveragePrecisionAtK(20, predicted.iids, actual.iids);
+    logger.info(ap.toString());
+    return ap;
   }
 
   @Override
   public Double computeSet(EmptyParams dataParams, Iterable<Double> metricUnits) {
     Double sum = 0.0;
     int size = 0;
+    logger.info("computeSet");
     Iterator<Double> it = metricUnits.iterator();
     while (it.hasNext()) {
       sum += it.next();
       size += 1;
     }
-    return (sum / size);
+
+    Double mean = (sum / size);
+    logger.info(mean.toString());
+    return mean;
   }
 
   @Override
   public String computeMultipleSets(Iterable<Tuple2<EmptyParams, Double>> input) {
+    logger.info("computeMultipleSets");
     Iterator<Tuple2<EmptyParams, Double>> it = input.iterator();
     List<String> output = new ArrayList<String>();
     while (it.hasNext()) {
       output.add(it.next()._2().toString());
     }
+    logger.info(output.toString());
     return output.toString();
   }
 

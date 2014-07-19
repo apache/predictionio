@@ -77,7 +77,7 @@ public abstract class MahoutAlgorithm<AP extends Params>
   public Prediction predict(Model model, Query query) {
     List<RecommendedItem> items = model.itemRecScores.get((long) query.uid);
 
-    logger.info(model.itemRecScores.keySet().toString());
+    //logger.info(model.itemRecScores.keySet().toString());
     if (items != null) {
       logger.info(items.toString());
     } else {

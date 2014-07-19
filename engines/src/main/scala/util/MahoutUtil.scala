@@ -11,14 +11,17 @@ import org.apache.mahout.cf.taste.impl.common.FastByIDMap
 import org.apache.mahout.cf.taste.impl.common.FastIDSet
 
 import scala.collection.JavaConversions._
-import scala.collection.JavaConversions.asScalaBuffer;
-import scala.collection.JavaConversions.asScalaSet;
-import java.util.{ List => JList };
-import java.util.{ Set => JSet };
+import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConversions.asScalaSet
+import java.util.{ List => JList }
+import java.util.{ Set => JSet }
 
+import grizzled.slf4j.Logger
 
 /** helper funtions for integrating mahout */
 object MahoutUtil {
+
+  val logger = Logger(MahoutUtil.getClass)
 
   class Rating(
     val uid: Int,
@@ -121,7 +124,7 @@ object MahoutUtil {
     if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
   }
 
-  def averagePrecisionAtK[T](k: Integer, p: JList[T], r: JSet[T]): Double = {
-    averagePrecisionAtK(k, asScalaBuffer[T](p).toList, asScalaSet[T](r))
+  def jAveragePrecisionAtK[T](k: Integer, p: JList[T], r: JSet[T]): Double = {
+    averagePrecisionAtK(k, asScalaBuffer[T](p).toList, asScalaSet[T](r).toSet)
   }
 }
