@@ -2,15 +2,18 @@ package io.prediction.controller
 
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.LModelAlgorithm
-import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import scala.reflect._
+import org.apache.spark.rdd.RDD
+import org.json4s.Formats
+import org.json4s.native.Serialization
 
-abstract class LAlgorithm[
-    AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
-  extends BaseAlgorithm[AP, RDD[PD], RDD[M], Q, P] 
+import scala.reflect._
+import scala.reflect.runtime.universe._
+
+abstract class LAlgorithm[AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
+  extends BaseAlgorithm[AP, RDD[PD], RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
 
   def trainBase(sc: SparkContext, pd: RDD[PD]): RDD[M] = pd.map(train)
@@ -18,11 +21,23 @@ abstract class LAlgorithm[
   def train(pd: PD): M
 
   def predict(model: M, query: Q): P
+
+  @transient lazy val formats: Formats = Utils.json4sDefaultFormats
+
+  def stringToPD[PD : TypeTag : ClassTag](pd: String): PD = {
+    implicit val f = formats
+    Serialization.read[PD](pd)
+  }
+
+  def stringToQ[Q : TypeTag : ClassTag](query: String): Q = {
+    implicit val f = formats
+    Serialization.read[Q](query)
+  }
 }
 
 abstract class P2LAlgorithm[
     AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
-  extends BaseAlgorithm[AP, PD, RDD[M], Q, P] 
+  extends BaseAlgorithm[AP, PD, RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
   // In train: PD => M, M is a local object. We have to parallelize it.
   def trainBase(sc: SparkContext, pd: PD): RDD[M] = {
@@ -59,4 +74,3 @@ abstract class PAlgorithm[AP <: Params: ClassTag, PD, M, Q : ClassTag, P]
   // Deployment call this method
   def predict(model: M, query: Q): P
 }
-
