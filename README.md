@@ -4,6 +4,8 @@ Running Evaluation
 The following is a regression example:
 
 - Make sure Elasticsearch is running at localhost:9300, or MongoDB is running at localhost:27017.
+- Make sure you have downloaded and extracted an Apache Spark binary distribution, or have built it from source.
+  You will need to point your environmental SPARK_HOME to the root directory of your Apache Spark installation.
 - You only need to run RegisterEngine once unless you updated your engine's manifest.
 
 First, copy ``conf/pio-env.sh.template`` to ``conf/pio-env.sh``. If you use MongoDB, add these:
