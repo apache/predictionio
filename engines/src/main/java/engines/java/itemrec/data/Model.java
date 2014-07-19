@@ -19,6 +19,6 @@ public class Model implements Serializable {
 
   @Override
   public String toString() {
-    return itemRecScores.toString();
+    return "Model: " +itemRecScores.toString();
   }
 }

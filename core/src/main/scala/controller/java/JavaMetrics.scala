@@ -12,13 +12,13 @@ import scala.reflect._
 abstract class JavaMetrics[MP <: Params, DP, Q, P, A, MU, MR, MMR <: AnyRef]
   extends BaseMetrics[MP, DP, Q, P, A, MU, MR, MMR]()(
     JavaUtils.fakeManifest[MP]) {
-  
+
   def computeUnitBase(input: (Q, P, A)): MU = {
     computeUnit(input._1, input._2, input._3)
   }
 
   def computeUnit(query: Q, predicted: P, actual: A): MU
-  
+
   def computeSetBase(dataParams: DP, metricUnits: Seq[MU]): MR = {
     computeSet(dataParams, metricUnits)
   }

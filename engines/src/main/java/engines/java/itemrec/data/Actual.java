@@ -1,12 +1,17 @@
 package io.prediction.engines.java.itemrec.data;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 public class Actual implements Serializable {
-  public List<Integer> iids;
+  public Set<Integer> iids;
 
-  public Actual(List<Integer> iids) {
+  public Actual(Set<Integer> iids) {
     this.iids = iids;
+  }
+
+  @Override
+  public String toString() {
+    return "Actual: " + iids.toString();
   }
 }

@@ -1,6 +1,7 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.controller.LAlgorithm
+import io.prediction.engines.util.MahoutUtil
 
 import java.io.File
 import java.io.FileWriter
@@ -45,10 +46,10 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
       val freshnessTimeUnit: Long = 3600000 // 1 hour
 
       val dataModel: DataModel = if (params.booleanData) {
-        buildBooleanPrefDataModel(pareparedData.rating.map { r =>
+        MahoutUtil.buildBooleanPrefDataModel(pareparedData.rating.map { r =>
           (r.uindex, r.iindex, r.t) })
       } else {
-        buildDataModel(pareparedData.rating.map{ r =>
+        MahoutUtil.buildDataModel(pareparedData.rating.map{ r =>
           (r.uindex, r.iindex, r.rating.toFloat, r.t) })
       }
       val similarity: ItemSimilarity = buildItemSimilarity(dataModel)
@@ -140,74 +141,6 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
         items = rankedItems
       )
     }
-
-  /* Build DataModel with Seq of (uid, iid, rating, timestamp)
-   * NOTE: assume no duplicated rating on same iid by the same user
-   */
-  private def buildDataModel(
-    ratingSeq: Seq[(Int, Int, Float, Long)]): DataModel = {
-
-    val allPrefs = new FastByIDMap[PreferenceArray]()
-    val allTimestamps = new FastByIDMap[FastByIDMap[java.lang.Long]]()
-
-    ratingSeq.groupBy(_._1)
-      .foreach { case (uid, ratingList) =>
-        val userID = uid.toLong
-        // preference of items for this user
-        val userPrefs = new GenericUserPreferenceArray(ratingList.size)
-        // timestamp of items for this user
-        val userTimestamps = new FastByIDMap[java.lang.Long]()
-
-        ratingList.zipWithIndex
-          .foreach { case (r, i) =>
-            val itemID = r._2.toLong
-            val pref = new GenericPreference(userID, itemID, r._3)
-            userPrefs.set(i, pref)
-            userTimestamps.put(itemID, r._4)
-        }
-
-        allPrefs.put(userID, userPrefs)
-        allTimestamps.put(userID, userTimestamps)
-      }
-
-    new GenericDataModel(allPrefs, allTimestamps)
-  }
-
-  /* Build DataModel with Seq of (uid, iid, timestamp)
-   * NOTE: assume no duplicated iid by the same user
-   */
-  private def buildBooleanPrefDataModel(
-    ratingSeq: Seq[(Int, Int, Long)]): DataModel = {
-
-    val allPrefs = new FastByIDMap[FastIDSet]()
-    val allTimestamps = new FastByIDMap[FastByIDMap[java.lang.Long]]()
-
-    ratingSeq.foreach { case (uid, iid, t) =>
-      val userID = uid.toLong
-      val itemID = iid.toLong
-
-      // item
-      val idSet = allPrefs.get(userID)
-      if (idSet == null) {
-        val newIdSet = new FastIDSet()
-        newIdSet.add(itemID)
-        allPrefs.put(userID, newIdSet)
-      } else {
-        idSet.add(itemID)
-      }
-      // timestamp
-      val timestamps = allTimestamps.get(userID)
-      if (timestamps == null) {
-        val newTimestamps = new FastByIDMap[java.lang.Long]
-        newTimestamps.put(itemID, t)
-        allTimestamps.put(userID, newTimestamps)
-      } else {
-        timestamps.put(itemID, t)
-      }
-    }
-
-    new GenericBooleanPrefDataModel(allPrefs, allTimestamps)
-  }
 
   object ScoreOrdering extends Ordering[(Int, Double)] {
     override def compare(a: (Int, Double), b: (Int, Double)) =

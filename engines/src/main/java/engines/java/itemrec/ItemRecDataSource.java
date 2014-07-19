@@ -5,6 +5,8 @@ import io.prediction.controller.EmptyParams;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Actual;
 import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.util.MahoutUtil;
+import io.prediction.engines.util.MahoutUtil.Rating;
 
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
@@ -13,15 +15,30 @@ import org.apache.mahout.cf.taste.common.TasteException;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.Tuple4;
 import java.io.File;
 import java.lang.Iterable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.util.Random;
+import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.lang.Math;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * This Data Source reads a tab or comma delimited rating file
+ */
 // use EmptyParas as DP
 public class ItemRecDataSource extends LJavaDataSource<
   DataSourceParams, EmptyParams, TrainingData, Query, Actual> {
@@ -37,6 +54,81 @@ public class ItemRecDataSource extends LJavaDataSource<
   @Override
   public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> read() {
     File ratingFile = new File(dsp.filePath);
+    Scanner sc = null;
+
+    try {
+      sc = new Scanner(ratingFile);
+    } catch (FileNotFoundException e) {
+      logger.error("Caught FileNotFoundException " + e.getMessage());
+      System.exit(1);
+    }
+
+    List<Rating> ratings = new ArrayList<Rating>();
+
+    while (sc.hasNext()) {
+      String line = sc.nextLine();
+      String[] tokens = line.split("[\t,]");
+      Rating rating = new Rating(
+        // TODO: parse timestamp
+        Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]), Float.parseFloat(tokens[2]), 0L);
+      ratings.add(rating);
+    }
+
+    Collections.shuffle(ratings, new Random(dsp.seed));
+
+    int size = ratings.size();
+    // cap by original size
+    int trainingEndIndex = Math.min(size,
+      (int) (ratings.size() * dsp.trainingPercentage));
+    int testEndIndex = Math.min( size,
+      trainingEndIndex + (int) (ratings.size() * dsp.testPercentage));
+
+    List<Rating> trainingRatings = ratings.subList(0, trainingEndIndex);
+    List<Rating> testRatings = ratings.subList(trainingEndIndex, testEndIndex);
+
+    DataModel dataModel = MahoutUtil.buildDataModel(trainingRatings);
+    TrainingData td = new TrainingData(dataModel);
+
+    Map<Integer, Set<Integer>> relevantItems = new HashMap<Integer, Set<Integer>>();
+    if (testRatings.size() > 0) {
+      for (Rating rating: testRatings) {
+        if ((rating.rating()) >= dsp.goal) {
+          Set<Integer> items = relevantItems.get(rating.uid());
+          if (items == null) {
+            items = new HashSet<Integer>();
+            items.add(rating.iid());
+            relevantItems.put(rating.uid(), items);
+          } else {
+            items.add(rating.iid());
+          }
+        }
+      }
+    }
+
+    List<Tuple2<Query, Actual>> qaList = new ArrayList<Tuple2<Query, Actual>>();
+    for (Map.Entry<Integer, Set<Integer>> entry : relevantItems.entrySet()) {
+      int key = entry.getKey();
+      Set<Integer> value = entry.getValue();
+      // n=10 is placeholder
+      qaList.add(new Tuple2<Query, Actual>(new Query(key, 10), new Actual(value)));
+    }
+
+    // only one slice
+    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> data = new
+      ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>>();
+
+    data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>(
+      new EmptyParams(), td, qaList));
+
+    return data;
+
+  }
+
+  // TODO: remove
+/*
+  private Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> simpleRead(
+    File ratingFile) {
+
     DataModel dataModel = null;
     try {
       DataModel fileDataModel = new FileDataModel(ratingFile);
@@ -65,6 +157,6 @@ public class ItemRecDataSource extends LJavaDataSource<
       new EmptyParams(), td, qaList));
 
     return data;
-  }
+  }*/
 
 }

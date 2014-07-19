@@ -14,6 +14,6 @@ public class Prediction implements Serializable {
 
   @Override
   public String toString() {
-    return iids.toString() + ";" + scores.toString();
+    return "Prediction: " + iids.toString() + ";" + scores.toString();
   }
 }
