@@ -11,7 +11,8 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import io.prediction.storage.{ EngineManifest, EngineManifests, EngineManifestSerializer }
+import io.prediction.storage.{ EngineManifest, EngineManifests }
+import io.prediction.storage.EngineManifestSerializer
 
 class ESEngineManifests(client: Client, index: String) extends EngineManifests
     with Logging {

@@ -14,7 +14,6 @@ import org.json4s._
  * @param description A long description of the engine.
  * @param files Paths to engine files.
  * @param engineFactory Engine's factory class name.
- * @param evaluatorFactory Engine's evaluator factory class name. (TODO: May refactor.)
  */
 case class EngineManifest(
   id: String,
@@ -22,8 +21,7 @@ case class EngineManifest(
   name: String,
   description: Option[String],
   files: Seq[String],
-  engineFactory: String,
-  evaluatorFactory: String)
+  engineFactory: String)
 
 /** Base trait for implementations that interact with engine manifests in the backend data store. */
 trait EngineManifests {
@@ -52,8 +50,7 @@ class EngineManifestSerializer extends CustomSerializer[EngineManifest](format =
         name = "",
         description = None,
         files = Nil,
-        engineFactory = "",
-        evaluatorFactory = "")
+        engineFactory = "")
       fields.foldLeft(seed) { case (enginemanifest, field) =>
         field match {
           case JField("id", JString(id)) => enginemanifest.copy(id = id)
@@ -71,8 +68,6 @@ class EngineManifestSerializer extends CustomSerializer[EngineManifest](format =
             ))
           case JField("engineFactory", JString(engineFactory)) =>
             enginemanifest.copy(engineFactory = engineFactory)
-          case JField("evaluatorFactory", JString(evaluatorFactory)) =>
-            enginemanifest.copy(evaluatorFactory = evaluatorFactory)
           case _ => enginemanifest
         }
       }
@@ -89,7 +84,6 @@ class EngineManifestSerializer extends CustomSerializer[EngineManifest](format =
         JField("files",
           JArray(enginemanifest.files.map(x => JString(x)).toList)) ::
         JField("engineFactory", JString(enginemanifest.engineFactory)) ::
-        JField("evaluatorFactory", JString(enginemanifest.evaluatorFactory)) ::
         Nil)
   }
 ))
