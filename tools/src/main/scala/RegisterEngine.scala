@@ -32,7 +32,13 @@ object RegisterEngine extends Logging {
 
     parser.parse(args, Args()) map { config =>
       implicit val formats = DefaultFormats + new EngineManifestSerializer
-      val jsonString = Source.fromFile(config.jsonManifest).mkString
+      val jsonString = try {
+        Source.fromFile(config.jsonManifest).mkString
+      } catch {
+        case e: java.io.FileNotFoundException =>
+          error(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
+          sys.exit(1)
+      }
       val engineManifest = read[EngineManifest](jsonString)
 
       // Configure local FS or HDFS
