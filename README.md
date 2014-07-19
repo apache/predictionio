@@ -34,6 +34,6 @@ Once your data store is properly configured, do the following:
 sbt/sbt package
 sbt/sbt engines/assemblyPackageDependency
 sbt/sbt tools/assembly
-bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/scala/regression/examples/manifest.json
+bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/scala/regression/examples/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
 bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/examples
 ```
