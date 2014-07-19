@@ -28,12 +28,37 @@ PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=MONGODB
 PIO_STORAGE_REPOSITORIES_APPDATA_SOURCE=MONGODB
 ```
 
-Once your data store is properly configured, do the following:
+Once your data store is properly configured, build binaries:
 
 ```
 sbt/sbt package
 sbt/sbt engines/assemblyPackageDependency
 sbt/sbt tools/assembly
+```
+
+
+Pure Scala Workflow
+-------------------
+
+```
 bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/scala/regression/examples/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
 bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/examples
+```
+
+
+Pure Java Workflow
+------------------
+
+```
+bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/java/regression/examples/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.engines.java.regression.MeanSquareMetrics
+```
+
+
+### Using a Scala Metrics
+
+Replace the last line in the section above with the following:
+
+```
+bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.controller.MeanSquareError
 ```
