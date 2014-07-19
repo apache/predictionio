@@ -296,12 +296,15 @@ object APIDebugWorkflow {
         metricsClassOpt, metricsParams)
   }
 
-  // ***Do not directly call*** this method unless you know what you are doing.
+  // ***Do not directly call*** any "Typeless" method unless you know exactly
+  // what you are doing.
+  
   // When engine and metrics are instantiated direcly from CLI, the compiler has
   // no way to know their actual type parameter during compile time. To rememdy
   // this restriction, we have to let engine and metrics to be casted to their
   // own type parameters, and force cast their type during runtime.
-      //MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
+  // In particular, metrics needs to be instantiated to keep scala compiler
+  // happy.
   def runEngineTypeless[
       DP, TD, PD, Q, P, A,
       MDP, MQ, MP, MA,
@@ -311,13 +314,8 @@ object APIDebugWorkflow {
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
-      /*
-      metricsClassOpt
-        : Option[Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
-        = None,
-      */
-      metricsClass
-        : Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]],
+      metrics
+        : BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
       metricsParams: Params = EmptyParams()) {
 
     runTypeless(
@@ -331,9 +329,8 @@ object APIDebugWorkflow {
       algorithmParamsList = engineParams.algorithmParamsList,
       servingClassOpt = Some(engine.servingClass),
       servingParams = engineParams.servingParams,
-      //metricsClassOpt = Some(metricsClass),
-      //metricsParams = metricsParams
-      metricsClassOpt = None
+      metricsClassOpt = (if (metrics == null) None else Some(metrics.getClass)),
+      metricsParams = metricsParams
     )(
       JavaUtils.fakeClassTag[MU], 
       JavaUtils.fakeClassTag[MR],

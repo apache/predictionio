@@ -4,6 +4,8 @@ import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Metrics
+import io.prediction.core.Doer
+import io.prediction.core.BaseMetrics
 import io.prediction.controller.Params
 
 import grizzled.slf4j.Logging
@@ -112,14 +114,14 @@ object CreateWorkflow extends Logging {
       val metrics = wfc.metricsClass.map { mc => //mc => null
         try {
           Class.forName(mc)
-            .asInstanceOf[Class[Metrics[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
+            .asInstanceOf[Class[BaseMetrics[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
         } catch {
           case e: ClassNotFoundException =>
             error("Unable to obtain metrics class object ${mc}: " +
               s"${e.getMessage}. Aborting workflow.")
             sys.exit(1)
         }
-      } //getOrElse(null)
+      } 
       val dataSourceParams = wfc.dataSourceParamsJsonPath.map(p =>
         extractParams(
           stringFromFile(wfc.jsonBasePath, p),
@@ -149,7 +151,6 @@ object CreateWorkflow extends Logging {
           stringFromFile(wfc.jsonBasePath, p),
           engine.servingClass)).getOrElse(EmptyParams())
       val metricsParams = wfc.metricsParamsJsonPath.map(p =>
-        //if (metrics == null)
         if (metrics.isEmpty)
           EmptyParams()
         else
@@ -164,15 +165,17 @@ object CreateWorkflow extends Logging {
         algorithmParamsList = algorithmsParams,
         servingParams = servingParams)
 
+      val metricsInstance = metrics
+        .map(m => Doer(m, metricsParams))
+        .getOrElse(null)
+
       APIDebugWorkflow.runEngineTypeless(
         batch = wfc.batch,
         verbose = 3,
         engine = engine,
         engineParams = engineParams,
-        null,
-        null)
-        //metricsClass = metrics.getOrElse(null),
-        //metricsParams = metricsParams)
+        metrics = metricsInstance,
+        metricsParams = metricsParams)
     }
 
     // dszeto: add these features next
