@@ -204,8 +204,18 @@ object CreateWorkflow extends Logging {
         .map(m => Doer(m, metricsParams))
         .getOrElse(null)
 
+      val pioEnvVars = wfc.env.map(e =>
+        e.split(',').flatMap(p =>
+          p.split('=') match {
+            case Array(k, v) => List(k -> v)
+            case _ => Nil
+          }
+        ).toMap
+      ).getOrElse(Map())
+
       APIDebugWorkflow.runEngineTypeless(
         batch = wfc.batch,
+        env = pioEnvVars,
         verbose = 3,
         engine = engine,
         engineParams = engineParams,
@@ -215,12 +225,6 @@ object CreateWorkflow extends Logging {
 
     // dszeto: add these features next
     /*
-    val pioEnvVars = arg.get.env.split(',').flatMap(p =>
-      p.split('=') match {
-        case Array(k, v) => List(k -> v)
-        case _ => Nil
-      }
-    ).toMap
     val starttime = DateTime.now
     val evalWorkflow1 = EvaluationWorkflow.run(
       arg.get.batch,

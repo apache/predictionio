@@ -33,7 +33,7 @@ import java.io.FileInputStream
 import java.io.ObjectInputStream
 import scala.collection.JavaConversions._
 import java.lang.{ Iterable => JIterable }
-import java.util.{ Map => JMap }
+import java.util.{ HashMap => JHashMap, Map => JMap }
 
 import io.prediction.core._
 import io.prediction._
@@ -89,10 +89,10 @@ class AlgoServerWrapper[Q, P, A](
     val skipOpt: Boolean = false,
     val verbose: Int = 0)
 extends Serializable {
-  
+
   // Use algo.predictBase
   def onePassPredict(
-    modelIter: Iterator[(AI, Any)], 
+    modelIter: Iterator[(AI, Any)],
     queryActualIter: Iterator[(Q, A)])
   : Iterator[(Q, P, A)] = {
     val models = modelIter.toSeq.sortBy(_._1).map(_._2)
@@ -130,7 +130,7 @@ extends Serializable {
   // Use algo.batchPredictBase
   def predictParallelModel(models: Seq[Any], input: RDD[(Q, A)])
   : RDD[(Q, P, A)] = {
-    if (verbose > 0) { 
+    if (verbose > 0) {
       println("predictionParallelModel")
     }
 
@@ -155,7 +155,7 @@ extends Serializable {
       .mapValues { _.toSeq.sortBy(_._1).map(_._2) }
 
     val joined: RDD[(QI, (Seq[P], (Q, A)))] = iAlgoPredictions.join(iInput)
-    
+
     if (verbose > 2) {
       println("predictionParallelModel.before combine")
       joined.collect.foreach {  case(fi, (ps, (q, a))) => {
@@ -211,7 +211,7 @@ extends Serializable {
 
 class MetricsWrapper[
     MDP, MQ, MP, MA, MU: ClassTag, MR, MMR <: AnyRef](
-    val metrics: BaseMetrics[_,MDP,MQ,MP,MA,MU,MR,MMR]) 
+    val metrics: BaseMetrics[_,MDP,MQ,MP,MA,MU,MR,MMR])
 extends Serializable {
   def computeUnit[Q, P, A](input: RDD[(Q, P, A)]): RDD[MU] = {
     input
@@ -237,9 +237,10 @@ extends Serializable {
 object APIDebugWorkflow {
   def runEngine[
       DP, TD, PD, Q, P, A,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
+      env: Map[String, String] = Map(),
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -250,6 +251,7 @@ object APIDebugWorkflow {
 
     run(
       batch = batch,
+      env = env,
       verbose = verbose,
       dataSourceClassOpt = Some(engine.dataSourceClass),
       dataSourceParams = engineParams.dataSourceParams,
@@ -263,12 +265,13 @@ object APIDebugWorkflow {
       metricsParams = metricsParams
     )
   }
-     
+
   def run[
       DP, TD, PD, Q, P, A,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
+      env: Map[String, String] = Map(),
       verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
@@ -277,7 +280,7 @@ object APIDebugWorkflow {
         : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
       preparatorParams: Params = EmptyParams(),
       algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]] 
+        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
       servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
@@ -288,17 +291,17 @@ object APIDebugWorkflow {
         = None,
       metricsParams: Params = EmptyParams()) {
     runTypeless(
-        batch, verbose, 
+        batch, env, verbose,
         dataSourceClassOpt, dataSourceParams,
-        preparatorClassOpt, preparatorParams, 
-        algorithmClassMapOpt, algorithmParamsList, 
-        servingClassOpt, servingParams, 
+        preparatorClassOpt, preparatorParams,
+        algorithmClassMapOpt, algorithmParamsList,
+        servingClassOpt, servingParams,
         metricsClassOpt, metricsParams)
   }
 
   // ***Do not directly call*** any "Typeless" method unless you know exactly
   // what you are doing.
-  
+
   // When engine and metrics are instantiated direcly from CLI, the compiler has
   // no way to know their actual type parameter during compile time. To rememdy
   // this restriction, we have to let engine and metrics to be casted to their
@@ -311,6 +314,7 @@ object APIDebugWorkflow {
       MU, MR, MMR <: AnyRef
       ](
       batch: String = "",
+      env: Map[String, String] = Map(),
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -320,6 +324,7 @@ object APIDebugWorkflow {
 
     runTypeless(
       batch = batch,
+      env = env,
       verbose = verbose,
       dataSourceClassOpt = Some(engine.dataSourceClass),
       dataSourceParams = engineParams.dataSourceParams,
@@ -332,7 +337,7 @@ object APIDebugWorkflow {
       metricsClassOpt = (if (metrics == null) None else Some(metrics.getClass)),
       metricsParams = metricsParams
     )(
-      JavaUtils.fakeClassTag[MU], 
+      JavaUtils.fakeClassTag[MU],
       JavaUtils.fakeClassTag[MR],
       JavaUtils.fakeClassTag[MMR])
   }
@@ -342,9 +347,10 @@ object APIDebugWorkflow {
   def runTypeless[
       DP, TD, PD, Q, P, A,
       MDP, MQ, MP, MA,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag 
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
+      env: Map[String, String] = Map(),
       verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
@@ -353,7 +359,7 @@ object APIDebugWorkflow {
         : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
       preparatorParams: Params = EmptyParams(),
       algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]] 
+        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
       servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
@@ -366,14 +372,14 @@ object APIDebugWorkflow {
     println("APIDebugWorkflow.run")
     println("Start spark context")
 
-    val sc = WorkflowContext(batch)
+    val sc = WorkflowContext(batch, env)
 
     //if (dataSourceClass == null || dataSourceParams == null) {
     if (dataSourceClassOpt.isEmpty) {
       println("Dataprep Class or Params is null. Stop here");
       return
     }
-    
+
     println("Data Source")
     val dataSource = Doer(dataSourceClassOpt.get, dataSourceParams)
 
@@ -384,7 +390,7 @@ object APIDebugWorkflow {
       .map(_.swap)
       .toMap
 
-    val localParamsSet: Map[EI, DP] = evalParamsDataMap.map { 
+    val localParamsSet: Map[EI, DP] = evalParamsDataMap.map {
       case(ei, e) => (ei -> e._1)
     }
 
@@ -412,7 +418,7 @@ object APIDebugWorkflow {
     }
 
     println("Data source complete")
-    
+
     if (preparatorClassOpt.isEmpty) {
       println("Preparator is null. Stop here")
       return
@@ -420,7 +426,7 @@ object APIDebugWorkflow {
 
     println("Preparator")
     val preparator = Doer(preparatorClassOpt.get, preparatorParams)
-    
+
     val evalPreparedMap: Map[EI, PD] = evalDataMap
     .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
 
@@ -432,9 +438,9 @@ object APIDebugWorkflow {
         println(s"PreparedData: $s")
       }}
     }
-  
+
     println("Preparator complete")
-    
+
     if (algorithmClassMapOpt.isEmpty) {
       println("Algo is null. Stop here")
       return
@@ -445,8 +451,8 @@ object APIDebugWorkflow {
     // Instantiate algos
     val algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]] =
     algorithmParamsList
-      .map { 
-        case (algoName, algoParams) => 
+      .map {
+        case (algoName, algoParams) =>
           Doer(algorithmClassMapOpt.get(algoName), algoParams)
       }
       .toArray
@@ -459,7 +465,7 @@ object APIDebugWorkflow {
     // Model Training
     // Since different algo can have different model data, have to use Any.
     // We need to use par here. Since this process allows algorithms to perform
-    // "Actions" 
+    // "Actions"
     // (see https://spark.apache.org/docs/latest/programming-guide.html#actions)
     // on RDDs. Meaning that algo may kick off a spark pipeline to for training.
     // Hence, we parallelize this process.
@@ -527,7 +533,7 @@ object APIDebugWorkflow {
         println(s"DP $ei has $n rows")
       }}
     }
-    
+
     if (metricsClassOpt.isEmpty) {
       println("Metrics is null. Stop here")
       return
@@ -535,7 +541,7 @@ object APIDebugWorkflow {
 
     val metrics = Doer(metricsClassOpt.get, metricsParams)
     val metricsWrapper = new MetricsWrapper(metrics)
-    
+
     // Metrics Unit
     val evalMetricsUnitMap: Map[Int, RDD[MU]] =
       evalPredictionMap.mapValues(metricsWrapper.computeUnit)
@@ -545,7 +551,7 @@ object APIDebugWorkflow {
         println(s"MetricsUnit: i=$i e=$e")
       }}
     }
-    
+
     // Metrics Set
     val evalMetricsResultsMap
     : Map[EI, RDD[(MDP, MR)]] = evalMetricsUnitMap
@@ -583,8 +589,8 @@ object APIDebugWorkflow {
     println(s"MetricsParams: $metricsParams")
 
     metricsOutput foreach { println }
-    
-    println("APIDebugWorkflow.run completed.") 
+
+    println("APIDebugWorkflow.run completed.")
   }
 }
 
@@ -593,7 +599,7 @@ object APIDebugWorkflow {
     dataSourceParams: Params,
     preparatorClass: Class[_ <: LJavaPreparator[PP, TD, PD]],
     preparatorParams: Params,
-    algorithmClassMap: 
+    algorithmClassMap:
       JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, PD, _, Q, P]]],
     algorithmParamsList: JIterable[(String, Params)],
     servingClass: Class[_ <: LJavaServing[SP, Q, P]],
@@ -624,12 +630,13 @@ object JavaAPIDebugWorkflow {
   def run[
       DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
     batch: String = "",
+    env: JMap[String, String] = new JHashMap(),
     verbose: Int = 2,
     dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
     dataSourceParams: Params,
     preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]],
     preparatorParams: Params,
-    algorithmClassMap: 
+    algorithmClassMap:
       JMap[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]],
     algorithmParamsList: JIterable[(String, Params)],
     servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]],
@@ -641,13 +648,14 @@ object JavaAPIDebugWorkflow {
     val scalaAlgorithmClassMap = (
       if (algorithmClassMap == null) null
       else Map(algorithmClassMap.toSeq:_ *))
-      
+
     val scalaAlgorithmParamsList = (
       if (algorithmParamsList == null) null
       else algorithmParamsList.toSeq)
-    
+
     APIDebugWorkflow.run(
       batch = batch,
+      env = mapAsScalaMap(env).toMap,
       verbose = verbose,
       dataSourceClassOpt = noneIfNull(dataSourceClass),
       dataSourceParams = dataSourceParams,
@@ -660,7 +668,7 @@ object JavaAPIDebugWorkflow {
       metricsClassOpt = noneIfNull(metricsClass),
       metricsParams = metricsParams
     )(
-      JavaUtils.fakeClassTag[MU], 
+      JavaUtils.fakeClassTag[MU],
       JavaUtils.fakeClassTag[MR],
       JavaUtils.fakeClassTag[MMR])
 
@@ -668,11 +676,13 @@ object JavaAPIDebugWorkflow {
 
   def runEngine[DP, TD, PD, Q, P, A](
     batch: String,
+    env: JMap[String, String],
     verbose: Int,
     engine: Engine[TD, DP, PD, Q, P, A],
     engineParams: EngineParams) {
     runEngine(
       batch = batch,
+      env = env,
       verbose = verbose,
       engine = engine,
       engineParams = engineParams,
@@ -680,9 +690,10 @@ object JavaAPIDebugWorkflow {
       metricsParams = null
     )
   }
-  
+
   def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
       batch: String,
+      env: JMap[String, String],
       verbose: Int,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -691,6 +702,7 @@ object JavaAPIDebugWorkflow {
       metricsParams: Params) {
     run(
       batch = batch,
+      env = env,
       verbose = verbose,
       dataSourceClass = engine.dataSourceClass,
       dataSourceParams = engineParams.dataSourceParams,
@@ -712,7 +724,7 @@ object JavaAPIDebugWorkflow {
       metricsClass = metricsClass,
       metricsParams = metricsParams
     )(
-      JavaUtils.fakeClassTag[MU], 
+      JavaUtils.fakeClassTag[MU],
       JavaUtils.fakeClassTag[MR],
       JavaUtils.fakeClassTag[MMR])
     */

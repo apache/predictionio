@@ -39,9 +39,10 @@ public class Run {
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.2))
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.4))
       .build();
-    
+
     JavaAPIDebugWorkflow.runEngine(
         "java regression engine",
+        new HashMap<String, String>(),
         3,  // verbose
         (new HalfBakedEngineFactory()).apply(),
         engineParams
@@ -56,9 +57,10 @@ public class Run {
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.2))
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.4))
       .build();
-     
+
     JavaAPIDebugWorkflow.runEngine(
         "java regression engine",
+        new HashMap<String, String>(),
         3,  // verbose
         (new EngineFactory()).apply(),
         engineParams,

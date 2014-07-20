@@ -100,6 +100,7 @@ public class Runner {
 
     JavaAPIDebugWorkflow.runEngine(
       "Java Itemrec engine",
+      new HashMap<String, String>(),
       3,  // verbose
       (new EngineFactory()).apply(),
       engineParams,
