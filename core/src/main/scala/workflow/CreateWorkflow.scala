@@ -129,7 +129,7 @@ object CreateWorkflow extends Logging {
       val engine = try {
         engineObject.instance.asInstanceOf[IEngineFactory]()
       } catch {
-        case e: NoSuchFieldException => try {
+        case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
           engineRunMode = "java"
           Class.forName(wfc.engineFactory).newInstance.asInstanceOf[IEngineFactory]()
         } catch {
