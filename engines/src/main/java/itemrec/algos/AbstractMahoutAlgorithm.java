@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -122,33 +123,28 @@ public abstract class AbstractMahoutAlgorithm<AP extends Params>
 
     int numProcessors = Runtime.getRuntime().availableProcessors();
     ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
+    ExecutorCompletionService<Map<Long, List<RecommendedItem>>> pool =
+      new ExecutorCompletionService<Map<Long, List<RecommendedItem>>>(executor);
 
     // TODO: configure batchSize
     List<List<Long>> batches = createBatches(uids, 50);
-    List<Future<Map<Long, List<RecommendedItem>>>> results =
-      new ArrayList<Future<Map<Long, List<RecommendedItem>>>>();
 
     for (List<Long> batch : batches) {
       RecommendTask task = new RecommendTask(batch, recommender);
-      results.add(executor.submit(task));
+      pool.submit(task);
     }
 
     // reduce stage
     Map<Long, List<RecommendedItem>> itemRecScores = new HashMap<Long, List<RecommendedItem>>();
-    for (Future<Map<Long, List<RecommendedItem>>> r : results) {
+    for (int i = 0; i < batches.size(); i++) {
       try {
-        itemRecScores.putAll(r.get());
+        itemRecScores.putAll(pool.take().get());
       } catch (Exception e) {
         logger.error("Caught Exception: " + e.getMessage());
       }
     }
-
     executor.shutdown();
-    try {
-      executor.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      logger.error("Caught Exception: " + e.getMessage());
-    }
+
     return itemRecScores;
   }
 
