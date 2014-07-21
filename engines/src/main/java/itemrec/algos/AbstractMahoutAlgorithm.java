@@ -126,8 +126,7 @@ public abstract class AbstractMahoutAlgorithm<AP extends Params>
     ExecutorCompletionService<Map<Long, List<RecommendedItem>>> pool =
       new ExecutorCompletionService<Map<Long, List<RecommendedItem>>>(executor);
 
-    // TODO: configure batchSize
-    List<List<Long>> batches = createBatches(uids, 50);
+    List<List<Long>> batches = createBatchesByNumber(uids, numProcessors);
 
     for (List<Long> batch : batches) {
       RecommendTask task = new RecommendTask(batch, recommender);
@@ -148,7 +147,46 @@ public abstract class AbstractMahoutAlgorithm<AP extends Params>
     return itemRecScores;
   }
 
-  private List<List<Long>> createBatches(List<Long> data, int batchSize) {
+  /**
+   * Create batches by specifing number of batches
+   * @param data List of Data
+   * @param num Number of batches
+   */
+  private List<List<Long>> createBatchesByNumber(List<Long> data, int num) {
+    List<List<Long>> batches = new ArrayList<List<Long>>();
+
+    // example cases data.sie()/num:
+    // 21/4 = 5 => 5, 5, 5, 6
+    // 8/4 = 2 => 2, 2, 2, 2
+    // 6/4 = 1 => 1, 1, 1, 3
+    // 4/4 = 1 => 1, 1, 1, 1
+    // 1/4 = 0 => 1
+    // 0/4 = 0 => empty
+    int total = data.size();
+    int batchSize = 1; // min batchSize is 1;
+
+    if (total > num)
+      batchSize = total / num;
+
+    int from = 0;
+    int batchNum = 0; // last batch indicator
+    int until;
+    while (from < total) {
+      batchNum += 1;
+      if (batchNum == num) // if last batch, just put reamining to the batch
+        until = total;
+      else
+        until = Math.min(total, from + batchSize); // cap by total size
+      List<Long> subList = data.subList(from, until);
+      logger.info("Create Batch: [" + from + ", " + until + ")");
+      batches.add(subList);
+      from = until;
+    }
+    return batches;
+  }
+
+/*
+  private List<List<Long>> createBatchesBySize(List<Long> data, int batchSize) {
     List<List<Long>> batches = new ArrayList<List<Long>>();
 
     int i = 0;
@@ -173,7 +211,7 @@ public abstract class AbstractMahoutAlgorithm<AP extends Params>
     }
     logger.info("batches size: " + batches.size());
     return batches;
-  }
+  }*/
 
   private class RecommendTask implements Callable<Map<Long, List<RecommendedItem>>> {
 
