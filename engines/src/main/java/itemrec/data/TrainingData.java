@@ -1,6 +1,5 @@
 package io.prediction.engines.java.itemrec.data;
 
-import io.prediction.engines.util.MahoutUtil.Rating;
 import java.io.Serializable;
 import java.util.List;
 import org.apache.mahout.cf.taste.model.DataModel;

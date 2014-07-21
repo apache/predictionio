@@ -5,8 +5,7 @@ import io.prediction.controller.EmptyParams;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Actual;
 import io.prediction.engines.java.itemrec.data.TrainingData;
-import io.prediction.engines.util.MahoutUtil;
-import io.prediction.engines.util.MahoutUtil.Rating;
+import io.prediction.engines.java.itemrec.data.Rating;
 
 import scala.Tuple2;
 import scala.Tuple3;
@@ -121,14 +120,14 @@ public class ItemRecDataSource extends LJavaDataSource<
     Map<Integer, Set<Integer>> relevantItems = new HashMap<Integer, Set<Integer>>();
     if (testRatings.size() > 0) {
       for (Rating rating: testRatings) {
-        if ((rating.rating()) >= dsp.goal) {
-          Set<Integer> items = relevantItems.get(rating.uid());
+        if (rating.rating >= dsp.goal) {
+          Set<Integer> items = relevantItems.get(rating.uid);
           if (items == null) {
             items = new HashSet<Integer>();
-            items.add(rating.iid());
-            relevantItems.put(rating.uid(), items);
+            items.add(rating.iid);
+            relevantItems.put(rating.uid, items);
           } else {
-            items.add(rating.iid());
+            items.add(rating.iid);
           }
         }
       }

@@ -38,7 +38,7 @@ public class Runner {
 
     System.out.println(Arrays.toString(args));
 
-    DataSourceParams dsp = new DataSourceParams(filePath, 2, 0.8f, 0.2f, 0, 3);
+    DataSourceParams dsp = new DataSourceParams(filePath, 1, 0.8f, 0.2f, 0, 3);
     EmptyParams pp = new EmptyParams();
     GenericItemBasedParams genericItemBasedParams = new GenericItemBasedParams(10);
     SVDPlusPlusParams svdPlusPlusParams = new SVDPlusPlusParams(10);

@@ -15,6 +15,9 @@ import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConversions.asScalaSet
 import java.util.{ List => JList }
 import java.util.{ Set => JSet }
+import java.lang.{ Integer => JInteger }
+import java.lang.{ Float => JFloat }
+import java.lang.{ Long => JLong }
 
 import grizzled.slf4j.Logger
 
@@ -23,15 +26,13 @@ object MahoutUtil {
 
   val logger = Logger(MahoutUtil.getClass)
 
-  class Rating(
-    val uid: Int,
-    val iid: Int,
-    val rating: Float,
-    val t: Long
-  ) extends Serializable
+  /** Java version of buildDataModel */
+  def jBuildDataModel(ratingSeq: JList[Tuple4[JInteger, JInteger, JFloat, JLong]]): DataModel = {
+    buildDataModel(asScalaBuffer(ratingSeq).toList.asInstanceOf[List[(Int, Int, Float, Long)]])
+  }
 
-  def buildDataModel(d: JList[Rating]): DataModel = {
-    buildDataModel(asScalaBuffer(d).toList.map(r => (r.uid, r.iid, r.rating, r.t)))
+  def jBuildBooleanPrefDataModel(ratingSeq: JList[Tuple3[JInteger, JInteger, JLong]]): DataModel = {
+    buildBooleanPrefDataModel(asScalaBuffer(ratingSeq).toList.asInstanceOf[List[(Int, Int, Long)]])
   }
 
   /** Build DataModel with Seq of (uid, iid, rating, timestamp)
