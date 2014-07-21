@@ -32,7 +32,12 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * This Data Source reads a tab or comma delimited rating file
+ * This Data Source reads a tab or comma delimited rating file:
+ *   uid, iid, rating(, timestamp)
+ * uid: int
+ * iid: int
+ * rating: float
+ * timestamp: long. it's optional
  */
 // use EmptyParas as DP
 public class ItemRecDataSource extends LJavaDataSource<
@@ -63,13 +68,20 @@ public class ItemRecDataSource extends LJavaDataSource<
     while (sc.hasNext()) {
       String line = sc.nextLine();
       String[] tokens = line.split("[\t,]");
-      Rating rating = new Rating(
-        // TODO: parse timestamp
-        Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]), Float.parseFloat(tokens[2]), 0L);
-      ratings.add(rating);
+      try {
+        Long timestamp = 0L;
+        if (tokens.length >= 4) {
+          timestamp = Long.parseLong(tokens[3]);
+        }
+        Rating rating = new Rating(
+          Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]),
+          Float.parseFloat(tokens[2]), timestamp);
+        ratings.add(rating);
+      } catch (Exception e) {
+        logger.error("Can't parse rating file. Caught Exception: " + e.getMessage());
+        System.exit(1);
+      }
     }
-
-    Collections.shuffle(ratings, new Random(dsp.seed));
 
     int size = ratings.size();
     // cap by original size
@@ -78,11 +90,33 @@ public class ItemRecDataSource extends LJavaDataSource<
     int testEndIndex = Math.min( size,
       trainingEndIndex + (int) (ratings.size() * dsp.testPercentage));
 
-    // create a new ArrayList because subList() is view and only not serialzable
-    List<Rating> trainingRatings = new ArrayList<Rating>(ratings.subList(0, trainingEndIndex));
-    List<Rating> testRatings = ratings.subList(trainingEndIndex, testEndIndex);
+    Random rand = new Random(dsp.seed);
 
-    TrainingData td = new TrainingData(trainingRatings);
+    // only one slice
+    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> data = new
+      ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>>();
+
+    for (int i = 0; i < dsp.iterations; i++) {
+      Collections.shuffle(ratings, new Random(rand.nextInt()));
+
+      // create a new ArrayList because subList() returns view and not serialzable
+      List<Rating> trainingRatings = new ArrayList<Rating>(ratings.subList(0, trainingEndIndex));
+      List<Rating> testRatings = ratings.subList(trainingEndIndex, testEndIndex);
+      TrainingData td = prepareTraining(trainingRatings);
+      List<Tuple2<Query, Actual>> qaList = prepareValidation(testRatings);
+
+      data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>(
+        new EmptyParams(), td, qaList));
+    }
+
+    return data;
+  }
+
+  private TrainingData prepareTraining(List<Rating> trainingRatings) {
+    return new TrainingData(trainingRatings);
+  }
+
+  private List<Tuple2<Query, Actual>> prepareValidation(List<Rating> testRatings) {
 
     Map<Integer, Set<Integer>> relevantItems = new HashMap<Integer, Set<Integer>>();
     if (testRatings.size() > 0) {
@@ -104,19 +138,11 @@ public class ItemRecDataSource extends LJavaDataSource<
     for (Map.Entry<Integer, Set<Integer>> entry : relevantItems.entrySet()) {
       int key = entry.getKey();
       Set<Integer> value = entry.getValue();
-      // n=10 is placeholder
+      // TODO: n=10 is placeholder, should be replaced by metric during evaluation
       qaList.add(new Tuple2<Query, Actual>(new Query(key, 10), new Actual(value)));
     }
 
-    // only one slice
-    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> data = new
-      ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>>();
-
-    data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>(
-      new EmptyParams(), td, qaList));
-
-    return data;
-
+    return qaList;
   }
 
 }

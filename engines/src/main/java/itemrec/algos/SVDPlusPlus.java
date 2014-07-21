@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SVDPlusPlus
-  extends MahoutAlgorithm<SVDPlusPlusParams> {
+  extends AbstractMahoutAlgorithm<SVDPlusPlusParams> {
 
   final static Logger logger = LoggerFactory.getLogger(SVDPlusPlus.class);
 

@@ -20,13 +20,13 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 
 /** Mahout Legacy single machine algorithm */
-public abstract class MahoutAlgorithm<AP extends Params>
+public abstract class AbstractMahoutAlgorithm<AP extends Params>
   extends LJavaAlgorithm<AP, PreparedData, Model, Query, Prediction> {
 
   Logger logger;
   MahoutParams params;
 
-  public MahoutAlgorithm(MahoutParams params, Logger logger) {
+  public AbstractMahoutAlgorithm(MahoutParams params, Logger logger) {
     this.logger = logger;
     this.params = params;
   }

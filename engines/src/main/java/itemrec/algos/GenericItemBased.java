@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 // use TrainigData as CD for now
 public class GenericItemBased
-  extends MahoutAlgorithm<GenericItemBasedParams> {
+  extends AbstractMahoutAlgorithm<GenericItemBasedParams> {
 
   final static Logger logger = LoggerFactory.getLogger(GenericItemBased.class);
 
