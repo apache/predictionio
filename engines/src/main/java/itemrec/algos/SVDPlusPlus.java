@@ -1,6 +1,6 @@
 package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
 
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -25,7 +25,7 @@ public class SVDPlusPlus
   }
 
   @Override
-  public Recommender buildRecommender(TrainingData data) throws TasteException {
+  public Recommender buildRecommender(PreparedData data) throws TasteException {
     int numFeatures = params.numFeatures;
     double learningRate = params.learningRate;
     double preventOverfitting = params.preventOverfitting;

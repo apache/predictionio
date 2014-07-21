@@ -4,6 +4,7 @@ import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Actual;
 import io.prediction.engines.java.itemrec.data.Prediction;
 import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
 import io.prediction.engines.java.itemrec.algos.GenericItemBased;
 import io.prediction.engines.java.itemrec.algos.GenericItemBasedParams;
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
@@ -58,7 +59,7 @@ public class Runner {
 
     Map<String,
       Class<? extends
-        LJavaAlgorithm<? extends Params, TrainingData, ?, Query, Prediction>>> algoClassMap =
+        LJavaAlgorithm<? extends Params, PreparedData, ?, Query, Prediction>>> algoClassMap =
       new HashMap <> ();
     if (algoName.equals("genericitembased")) {
       algoClassMap.put(algo, GenericItemBased.class);

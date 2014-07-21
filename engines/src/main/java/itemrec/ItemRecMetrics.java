@@ -5,7 +5,7 @@ import io.prediction.controller.java.JavaMetrics;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Prediction;
 import io.prediction.engines.java.itemrec.data.Actual;
-import io.prediction.engines.util.MahoutUtil;
+import io.prediction.engines.util.MathUtil;
 
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +24,7 @@ public class ItemRecMetrics extends JavaMetrics<
     logger.info("computeUnit");
     logger.info(query.toString());
     logger.info(predicted.toString());
-    Double ap = MahoutUtil.jAveragePrecisionAtK(20, predicted.iids, actual.iids);
+    Double ap = MathUtil.jAveragePrecisionAtK(20, predicted.iids, actual.iids);
     logger.info(ap.toString());
     return ap;
   }

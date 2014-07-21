@@ -1,6 +1,6 @@
 package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
 
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
@@ -39,7 +39,7 @@ public class GenericItemBased
   }
 
   @Override
-  public Recommender buildRecommender(TrainingData data) throws TasteException {
+  public Recommender buildRecommender(PreparedData data) throws TasteException {
 
     String itemSimilarity = params.itemSimilarity;
     boolean weighted = params.weighted;

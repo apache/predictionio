@@ -1,12 +1,15 @@
 package io.prediction.engines.java.itemrec.data;
 
+import io.prediction.engines.util.MahoutUtil.Rating;
 import java.io.Serializable;
+import java.util.List;
 import org.apache.mahout.cf.taste.model.DataModel;
 
 public class TrainingData implements Serializable {
-  public DataModel dataModel;
+  public List<Rating> ratings;
 
-  public TrainingData(DataModel dataModel) {
-    this.dataModel = dataModel;
+  // TODO: add more other trainiig data, such as item types data, user data, etc
+  public TrainingData(List<Rating> ratings) {
+    this.ratings = ratings;
   }
 }

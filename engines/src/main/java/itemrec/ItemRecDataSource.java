@@ -8,11 +8,6 @@ import io.prediction.engines.java.itemrec.data.TrainingData;
 import io.prediction.engines.util.MahoutUtil;
 import io.prediction.engines.util.MahoutUtil.Rating;
 
-import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
-import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
-import org.apache.mahout.cf.taste.common.TasteException;
-
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple4;
@@ -83,11 +78,11 @@ public class ItemRecDataSource extends LJavaDataSource<
     int testEndIndex = Math.min( size,
       trainingEndIndex + (int) (ratings.size() * dsp.testPercentage));
 
-    List<Rating> trainingRatings = ratings.subList(0, trainingEndIndex);
+    // create a new ArrayList because subList() is view and only not serialzable
+    List<Rating> trainingRatings = new ArrayList<Rating>(ratings.subList(0, trainingEndIndex));
     List<Rating> testRatings = ratings.subList(trainingEndIndex, testEndIndex);
 
-    DataModel dataModel = MahoutUtil.buildDataModel(trainingRatings);
-    TrainingData td = new TrainingData(dataModel);
+    TrainingData td = new TrainingData(trainingRatings);
 
     Map<Integer, Set<Integer>> relevantItems = new HashMap<Integer, Set<Integer>>();
     if (testRatings.size() > 0) {
@@ -123,40 +118,5 @@ public class ItemRecDataSource extends LJavaDataSource<
     return data;
 
   }
-
-  // TODO: remove
-/*
-  private Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> simpleRead(
-    File ratingFile) {
-
-    DataModel dataModel = null;
-    try {
-      DataModel fileDataModel = new FileDataModel(ratingFile);
-      // NOTE: convert to GenericDataModel because FileDataModel is not serializable
-      // (java.io.NotSerializableException: com.google.common.base.Splitter)
-      dataModel = new GenericDataModel(GenericDataModel.toDataMap(fileDataModel));
-    } catch (IOException e) {
-      logger.error("Caught IOException: " + e.getMessage());
-    } catch (TasteException e) {
-      logger.error("Caught IOException: " + e.getMessage());
-    }
-    TrainingData td = new TrainingData(dataModel);
-
-    // TODO generate validation data, hardcode for now...
-    List<Tuple2<Query, Actual>> qaList = new ArrayList<Tuple2<Query, Actual>>();
-    qaList.add(new Tuple2<Query, Actual>(new Query(1, 10),
-      new Actual(new ArrayList<Integer>())));
-    qaList.add(new Tuple2<Query, Actual>(new Query(2, 10),
-      new Actual(new ArrayList<Integer>())));
-
-    // only one slice
-    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> data = new
-      ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>>();
-
-    data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>(
-      new EmptyParams(), td, qaList));
-
-    return data;
-  }*/
 
 }

@@ -18,7 +18,7 @@ import java.util.{ Set => JSet }
 
 import grizzled.slf4j.Logger
 
-/** helper funtions for integrating mahout */
+/** Mahout Integration helper functions */
 object MahoutUtil {
 
   val logger = Logger(MahoutUtil.getClass)
@@ -28,14 +28,14 @@ object MahoutUtil {
     val iid: Int,
     val rating: Float,
     val t: Long
-  )
+  ) extends Serializable
 
   def buildDataModel(d: JList[Rating]): DataModel = {
     buildDataModel(asScalaBuffer(d).toList.map(r => (r.uid, r.iid, r.rating, r.t)))
   }
 
-  /* Build DataModel with Seq of (uid, iid, rating, timestamp)
-   * NOTE: assume no duplicated rating on same iid by the same user
+  /** Build DataModel with Seq of (uid, iid, rating, timestamp)
+   *  NOTE: assume no duplicated rating on same iid by the same user
    */
   def buildDataModel(
     ratingSeq: Seq[(Int, Int, Float, Long)]): DataModel = {
@@ -66,8 +66,8 @@ object MahoutUtil {
     new GenericDataModel(allPrefs, allTimestamps)
   }
 
-  /* Build DataModel with Seq of (uid, iid, timestamp)
-   * NOTE: assume no duplicated iid by the same user
+  /** Build DataModel with Seq of (uid, iid, timestamp)
+   *  NOTE: assume no duplicated iid by the same user
    */
   def buildBooleanPrefDataModel(
     ratingSeq: Seq[(Int, Int, Long)]): DataModel = {
@@ -102,7 +102,13 @@ object MahoutUtil {
     new GenericBooleanPrefDataModel(allPrefs, allTimestamps)
   }
 
-  // TODO: move it to somewhere instead of mahout specific
+}
+
+
+/** Math helper functions */
+object MathUtil {
+
+  /** Average precision at k */
   def averagePrecisionAtK[T](k: Int, p: Seq[T], r: Set[T]): Double = {
     // supposedly the predictedItems.size should match k
     // NOTE: what if predictedItems is less than k? use the avaiable items as k.
@@ -124,6 +130,7 @@ object MahoutUtil {
     if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
   }
 
+  /** Java's Average precision at k */
   def jAveragePrecisionAtK[T](k: Integer, p: JList[T], r: JSet[T]): Double = {
     averagePrecisionAtK(k, asScalaBuffer[T](p).toList, asScalaSet[T](r).toSet)
   }

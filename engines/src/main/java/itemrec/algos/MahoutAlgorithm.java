@@ -1,6 +1,6 @@
 package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
 import io.prediction.engines.java.itemrec.data.Query;
 import io.prediction.engines.java.itemrec.data.Prediction;
 import io.prediction.engines.java.itemrec.data.Model;
@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 
 /** Mahout Legacy single machine algorithm */
 public abstract class MahoutAlgorithm<AP extends Params>
-  extends LJavaAlgorithm<AP, TrainingData, Model, Query, Prediction> {
+  extends LJavaAlgorithm<AP, PreparedData, Model, Query, Prediction> {
 
   Logger logger;
   MahoutParams params;
@@ -31,10 +31,10 @@ public abstract class MahoutAlgorithm<AP extends Params>
     this.params = params;
   }
 
-  abstract public Recommender buildRecommender(TrainingData data) throws TasteException;
+  abstract public Recommender buildRecommender(PreparedData data) throws TasteException;
 
   @Override
-  public Model train(TrainingData data) {
+  public Model train(PreparedData data) {
     Recommender recommender = null;
 
     try {

@@ -1,4 +1,7 @@
 {
   "filePath" : "",
+  "trainingPercentage" : 1.0,
+  "testPercentage" : 0.0,
+  "seed" : 0,
   "goal": 3
 }
