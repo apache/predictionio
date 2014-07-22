@@ -112,6 +112,10 @@ object RunWorkflow extends Logging {
           em.files.head,
           "--env",
           pioEnvVars,
+          "--engineId",
+          wfc.engineId,
+          "--engineVersion",
+          wfc.engineVersion,
           "--engineFactory",
           em.engineFactory) ++
           wfc.metricsClass.map(x => Seq("--metricsClass", x)).

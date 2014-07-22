@@ -4,15 +4,18 @@ import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Metrics
+import io.prediction.controller.Params
 import io.prediction.core.Doer
 import io.prediction.core.BaseMetrics
-import io.prediction.controller.Params
+import io.prediction.storage.Run
 
+import com.github.nscala_time.time.Imports._
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization.{ read, write }
 
 import scala.io.Source
 import scala.language.existentials
@@ -24,6 +27,8 @@ object CreateWorkflow extends Logging {
 
   case class WorkflowConfig(
     batch: String = "Transient Lazy Val",
+    engineId: String = "",
+    engineVersion: String = "",
     engineFactory: String = "",
     metricsClass: Option[String] = None,
     dataSourceParamsJsonPath: Option[String] = None,
@@ -91,6 +96,12 @@ object CreateWorkflow extends Logging {
       opt[String]("batch") action { (x, c) =>
         c.copy(batch = x)
       } text("Batch label of the workflow run.")
+      opt[String]("engineId") required() action { (x, c) =>
+        c.copy(engineId = x)
+      } text("Engine's ID.")
+      opt[String]("engineVersion") required() action { (x, c) =>
+        c.copy(engineVersion = x)
+      } text("Engine's version.")
       opt[String]("engineFactory") required() action { (x, c) =>
         c.copy(engineFactory = x)
       } text("Class name of the engine's factory.")
@@ -213,6 +224,24 @@ object CreateWorkflow extends Logging {
         ).toMap
       ).getOrElse(Map())
 
+      val run = Run(
+        id = "",
+        startTime = DateTime.now,
+        endTime = DateTime.now,
+        engineId = wfc.engineId,
+        engineVersion = wfc.engineVersion,
+        engineFactory = wfc.engineFactory,
+        metricsClass = wfc.metricsClass.getOrElse(""),
+        batch = wfc.batch,
+        env = pioEnvVars,
+        dataSourceParams = write(dataSourceParams),
+        preparatorParams = write(preparatorParams),
+        algorithmsParams = write(algorithmsParams),
+        servingParams = write(servingParams),
+        metricsParams = write(metricsParams),
+        models = Array[Byte](),
+        multipleMetricsResults = "")
+
       APIDebugWorkflow.runEngineTypeless(
         batch = wfc.batch,
         env = pioEnvVars,
@@ -220,42 +249,8 @@ object CreateWorkflow extends Logging {
         engine = engine,
         engineParams = engineParams,
         metrics = metricsInstance,
-        metricsParams = metricsParams)
+        metricsParams = metricsParams,
+        run = Some(run))
     }
-
-    // dszeto: add these features next
-    /*
-    val starttime = DateTime.now
-    val evalWorkflow1 = EvaluationWorkflow.run(
-      arg.get.batch,
-      pioEnvVars,
-      dataPrepParams,
-      validatorParams,
-      cleanserParams,
-      algoParamSet,
-      serverParams,
-      engine,
-      evaluator)
-    val endtime = DateTime.now
-
-    val runId = runs.insert(Run(
-      id = "",
-      startTime = starttime,
-      endTime = endtime,
-      engineManifestId = arg.get.engineManifestId,
-      engineManifestVersion = arg.get.engineManifestVersion,
-      batch = arg.get.batch,
-      evaluationDataParams = write(dataPrepParams),
-      validationParams = write(validatorParams),
-      cleanserParams = write(cleanserParams),
-      algoParamsList = write(algoParamSet.map(t => Map("name" -> t._1, "params" -> t._2))),
-      serverParams = write(serverParams),
-      models = KryoInjection(evalWorkflow1._1),
-      crossValidationResults = write(evalWorkflow1._3)
-    ))
-
-    info(s"Run ID: $runId")
-    */
-
   }
 }

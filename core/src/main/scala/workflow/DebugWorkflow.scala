@@ -1,51 +1,45 @@
 package io.prediction.workflow
 
-import io.prediction.controller.Params
 import io.prediction.controller.EmptyParams
-import io.prediction.core.Doer
-import scala.language.existentials
-
-//import io.prediction.core.BaseEvaluator
-//import io.prediction.core.BaseEngine
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.LModelAlgorithm
+import io.prediction.controller.Engine
+import io.prediction.controller.EngineParams
+import io.prediction.controller.Params
+import io.prediction.controller.LAlgorithm
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.JavaMetrics
-import io.prediction.controller.Engine
-import io.prediction.controller.EngineParams
 import io.prediction.controller.java.JavaUtils
 import io.prediction.controller.java.JavaEngine
-
-import io.prediction.controller.LAlgorithm
+import io.prediction.core.BaseAlgorithm
+import io.prediction.core.BaseDataSource
+import io.prediction.core.BaseMetrics
+import io.prediction.core.BasePreparator
+import io.prediction.core.BaseServing
+import io.prediction.core.Doer
+import io.prediction.core.LModelAlgorithm
+import io.prediction.storage.{ Run, Runs, Storage }
 
 import com.github.nscala_time.time.Imports.DateTime
-
+import com.twitter.chill.KryoInjection
+import grizzled.slf4j.{ Logger, Logging }
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
+import org.apache.spark.rdd.RDD
+
+import scala.collection.JavaConversions._
+import scala.language.existentials
+import scala.reflect.ClassTag
+import scala.reflect.Manifest
 
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
-import scala.collection.JavaConversions._
 import java.lang.{ Iterable => JIterable }
 import java.util.{ HashMap => JHashMap, Map => JMap }
-
-import io.prediction.core._
-import io.prediction._
-
-import org.apache.spark.rdd.RDD
-
-import scala.reflect.Manifest
-
-import grizzled.slf4j.Logging
-//import io.prediction.java._
-
-import scala.reflect._
 
 // FIXME: move to better location.
 object WorkflowContext extends Logging {
@@ -89,7 +83,7 @@ class AlgoServerWrapper[Q, P, A](
     val skipOpt: Boolean = false,
     val verbose: Int = 0)
 extends Serializable {
-
+  @transient lazy val logger = Logger[this.type]
   // Use algo.predictBase
   def onePassPredict(
     modelIter: Iterator[(AI, Any)],
@@ -111,7 +105,7 @@ extends Serializable {
   def predictLocalModel(models: Seq[RDD[Any]], input: RDD[(Q, A)])
   : RDD[(Q, P, A)] = {
     if (verbose > 0) {
-      println("predictionLocalModel")
+      logger.info("predictionLocalModel")
     }
     val sc = models.head.context
     // must have only one partition since we need all models per feature.
@@ -131,7 +125,7 @@ extends Serializable {
   def predictParallelModel(models: Seq[Any], input: RDD[(Q, A)])
   : RDD[(Q, P, A)] = {
     if (verbose > 0) {
-      println("predictionParallelModel")
+      logger.info("predictionParallelModel")
     }
 
     // Prefixed with "i" stands for "i"ndexed
@@ -157,13 +151,13 @@ extends Serializable {
     val joined: RDD[(QI, (Seq[P], (Q, A)))] = iAlgoPredictions.join(iInput)
 
     if (verbose > 2) {
-      println("predictionParallelModel.before combine")
+      logger.info("predictionParallelModel.before combine")
       joined.collect.foreach {  case(fi, (ps, (q, a))) => {
         val pstr = DebugWorkflow.debugString(ps)
         val qstr = DebugWorkflow.debugString(q)
         val astr = DebugWorkflow.debugString(a)
-        //e => println(DebugWorkflow.debugString(e))
-        println(s"I: $fi Q: $qstr A: $astr Ps: $pstr")
+        //e => debug(DebugWorkflow.debugString(e))
+        logger.info(s"I: $fi Q: $qstr A: $astr Ps: $pstr")
       }}
     }
 
@@ -174,12 +168,12 @@ extends Serializable {
     }}
 
     if (verbose > 2) {
-      println("predictionParallelModel.after combine")
+      logger.info("predictionParallelModel.after combine")
       combined.collect.foreach { case(qi, (q, p, a)) => {
         val qstr = DebugWorkflow.debugString(q)
         val pstr = DebugWorkflow.debugString(p)
         val astr = DebugWorkflow.debugString(a)
-        println(s"I: $qi Q: $qstr A: $astr P: $pstr")
+        logger.info(s"I: $qi Q: $qstr A: $astr P: $pstr")
       }}
     }
 
@@ -235,6 +229,7 @@ extends Serializable {
 }
 
 object APIDebugWorkflow {
+  @transient lazy val logger = Logger[this.type]
   def runEngine[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
@@ -320,7 +315,8 @@ object APIDebugWorkflow {
       engineParams: EngineParams,
       metrics
         : BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
-      metricsParams: Params = EmptyParams()) {
+      metricsParams: Params = EmptyParams(),
+      run: Option[Run] = None) {
 
     runTypeless(
       batch = batch,
@@ -335,7 +331,8 @@ object APIDebugWorkflow {
       servingClassOpt = Some(engine.servingClass),
       servingParams = engineParams.servingParams,
       metricsClassOpt = (if (metrics == null) None else Some(metrics.getClass)),
-      metricsParams = metricsParams
+      metricsParams = metricsParams,
+      run = run
     )(
       JavaUtils.fakeClassTag[MU],
       JavaUtils.fakeClassTag[MR],
@@ -368,19 +365,20 @@ object APIDebugWorkflow {
       metricsClassOpt
         : Option[Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
         = None,
-      metricsParams: Params = EmptyParams()) {
-    println("APIDebugWorkflow.run")
-    println("Start spark context")
+      metricsParams: Params = EmptyParams(),
+      run: Option[Run] = None) {
+    logger.info("APIDebugWorkflow.run")
+    logger.info("Start spark context")
 
     val sc = WorkflowContext(batch, env)
 
     //if (dataSourceClass == null || dataSourceParams == null) {
     if (dataSourceClassOpt.isEmpty) {
-      println("Dataprep Class or Params is null. Stop here");
+      logger.info("Dataprep Class or Params is null. Stop here");
       return
     }
 
-    println("Data Source")
+    logger.info("Data Source")
     val dataSource = Doer(dataSourceClassOpt.get, dataSourceParams)
 
     val evalParamsDataMap
@@ -398,7 +396,7 @@ object APIDebugWorkflow {
       case(ei, e) => (ei -> (e._2, e._3))
     }
 
-    println(s"Number of training set: ${localParamsSet.size}")
+    logger.info(s"Number of training set: ${localParamsSet.size}")
 
     if (verbose > 2) {
       evalDataMap.foreach{ case (ei, data) => {
@@ -408,23 +406,23 @@ object APIDebugWorkflow {
         val testingDataStrs = testingData.collect
           .map(DebugWorkflow.debugString)
 
-        println(s"Data Set $ei")
-        println(s"Params: ${localParamsSet(ei)}")
-        println(s"TrainingData:")
-        println(trainingDataStr)
-        println(s"TestingData: (count=${testingDataStrs.length})")
-        testingDataStrs.foreach { println }
+        logger.info(s"Data Set $ei")
+        logger.info(s"Params: ${localParamsSet(ei)}")
+        logger.info(s"TrainingData:")
+        logger.info(trainingDataStr)
+        logger.info(s"TestingData: (count=${testingDataStrs.length})")
+        testingDataStrs.foreach { logger.info(_) }
       }}
     }
 
-    println("Data source complete")
+    logger.info("Data source complete")
 
     if (preparatorClassOpt.isEmpty) {
-      println("Preparator is null. Stop here")
+      logger.info("Preparator is null. Stop here")
       return
     }
 
-    println("Preparator")
+    logger.info("Preparator")
     val preparator = Doer(preparatorClassOpt.get, preparatorParams)
 
     val evalPreparedMap: Map[EI, PD] = evalDataMap
@@ -433,20 +431,20 @@ object APIDebugWorkflow {
     if (verbose > 2) {
       evalPreparedMap.foreach{ case (ei, pd) => {
         val s = DebugWorkflow.debugString(pd)
-        println(s"Prepared Data Set $ei")
-        println(s"Params: ${localParamsSet(ei)}")
-        println(s"PreparedData: $s")
+        logger.info(s"Prepared Data Set $ei")
+        logger.info(s"Params: ${localParamsSet(ei)}")
+        logger.info(s"PreparedData: $s")
       }}
     }
 
-    println("Preparator complete")
+    logger.info("Preparator complete")
 
     if (algorithmClassMapOpt.isEmpty) {
-      println("Algo is null. Stop here")
+      logger.info("Algo is null. Stop here")
       return
     }
 
-    println("Algo model construction")
+    logger.info("Algo model construction")
 
     // Instantiate algos
     val algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]] =
@@ -458,7 +456,7 @@ object APIDebugWorkflow {
       .toArray
 
     if (algoInstanceList.length == 0) {
-      println("AlgoList has zero length. Stop here")
+      logger.info("AlgoList has zero length. Stop here")
       return
     }
 
@@ -488,19 +486,19 @@ object APIDebugWorkflow {
     if (verbose > 2) {
       evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
         aiModelSeq.map { case(ai, model) => {
-          println(s"Model ei: $ei ai: $ai")
-          println(DebugWorkflow.debugString(model))
+          logger.info(s"Model ei: $ei ai: $ai")
+          logger.info(DebugWorkflow.debugString(model))
         }}
       }}
     }
 
     if (servingClassOpt.isEmpty) {
-      println("Serving is null. Stop here")
+      logger.info("Serving is null. Stop here")
       return
     }
     val serving = Doer(servingClassOpt.get, servingParams)
 
-    println("Algo prediction")
+    logger.info("Algo prediction")
 
     val evalPredictionMap
     : Map[EI, RDD[(Q, P, A)]] = evalDataMap.map { case (ei, data) => {
@@ -517,12 +515,12 @@ object APIDebugWorkflow {
 
     if (verbose > 2) {
       evalPredictionMap.foreach{ case(ei, fpaRdd) => {
-        println(s"Prediction $ei $fpaRdd")
+        logger.info(s"Prediction $ei $fpaRdd")
         fpaRdd.collect.foreach{ case(f, p, a) => {
           val fs = DebugWorkflow.debugString(f)
           val ps = DebugWorkflow.debugString(p)
           val as = DebugWorkflow.debugString(a)
-          println(s"F: $fs P: $ps A: $as")
+          logger.info(s"F: $fs P: $ps A: $as")
         }}
       }}
     }
@@ -530,12 +528,12 @@ object APIDebugWorkflow {
     if (verbose > 0) {
       evalPredictionMap.foreach { case(ei, fpaRdd) => {
         val n = fpaRdd.count()
-        println(s"DP $ei has $n rows")
+        logger.info(s"DP $ei has $n rows")
       }}
     }
 
     if (metricsClassOpt.isEmpty) {
-      println("Metrics is null. Stop here")
+      logger.info("Metrics is null. Stop here")
       return
     }
 
@@ -548,7 +546,7 @@ object APIDebugWorkflow {
 
     if (verbose > 2) {
       evalMetricsUnitMap.foreach{ case(i, e) => {
-        println(s"MetricsUnit: i=$i e=$e")
+        logger.info(s"MetricsUnit: i=$i e=$e")
       }}
     }
 
@@ -568,7 +566,7 @@ object APIDebugWorkflow {
 
     if (verbose > 2) {
       evalMetricsResultsMap.foreach{ case(ei, e) => {
-        println(s"MetricsResults $ei $e")
+        logger.info(s"MetricsResults $ei $e")
       }}
     }
 
@@ -580,17 +578,26 @@ object APIDebugWorkflow {
 
     val metricsOutput: Array[MMR] = multipleMetricsResults.collect
 
-    println(s"DataSourceParams: $dataSourceParams")
-    println(s"PreparatorParams: $preparatorParams")
+    logger.info(s"DataSourceParams: $dataSourceParams")
+    logger.info(s"PreparatorParams: $preparatorParams")
     algorithmParamsList.zipWithIndex.foreach { case (ap, ai) => {
-      println(s"Algo: $ai Name: ${ap._1} Params: ${ap._2}")
+      logger.info(s"Algo: $ai Name: ${ap._1} Params: ${ap._2}")
     }}
-    println(s"ServingParams: $servingParams")
-    println(s"MetricsParams: $metricsParams")
+    logger.info(s"ServingParams: $servingParams")
+    logger.info(s"MetricsParams: $metricsParams")
 
-    metricsOutput foreach { println }
+    metricsOutput foreach { logger.info(_) }
 
-    println("APIDebugWorkflow.run completed.")
+    logger.info("APIDebugWorkflow.run completed.")
+
+    run.map { r =>
+      val runs = Storage.getMetaDataRuns
+      val id = runs.insert(r.copy(
+        endTime = DateTime.now,
+        models = KryoInjection(evalAlgoModelMap),
+        multipleMetricsResults = metricsOutput.mkString("\n")))
+      logger.info(s"Workflow completed. Run information saved with ID: $id")
+    }
   }
 }
 

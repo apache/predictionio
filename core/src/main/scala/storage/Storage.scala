@@ -80,7 +80,7 @@ object Storage extends Logging {
   if (repositoryKeys.size == 0)
     warn("There is no properly configured repository.")
 
-  private val requiredRepositories = Seq(AppDataRepository, MetaDataRepository)
+  private val requiredRepositories = Seq(MetaDataRepository)
 
   requiredRepositories foreach { r =>
     if (!repositoryKeys.contains(r)) {
@@ -181,9 +181,7 @@ object Storage extends Logging {
     getDataObject[EngineManifests](SettingsRepository)
   }
 
-  def getSettingsRuns(): Runs = {
-    getDataObject[Runs](SettingsRepository)
-  }
+  def getMetaDataRuns(): Runs = getDataObject[Runs](MetaDataRepository)
 
   /** Obtains an ItemTrends object with configured backend type. */
   def getAppdataItemTrends(): ItemTrends = {

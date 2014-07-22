@@ -25,16 +25,19 @@ class MongoRuns(client: MongoClient, dbname: String) extends Runs {
       "_id"                    -> id,
       "startTime"              -> run.startTime,
       "endTime"                -> run.endTime,
-      "engineManifestId"       -> run.engineManifestId,
-      "engineManifestVersion"  -> run.engineManifestVersion,
+      "engineId"               -> run.engineId,
+      "engineVersion"          -> run.engineVersion,
+      "engineFactory"          -> run.engineFactory,
+      "metricsClass"           -> run.metricsClass,
       "batch"                  -> run.batch,
-      "evaluationDataParams"   -> run.evaluationDataParams,
-      "validationParams"       -> run.validationParams,
-      "cleanserParams"         -> run.cleanserParams,
-      "algoParamsList"         -> run.algoParamsList,
-      "serverParams"           -> run.serverParams,
+      "env"                    -> run.env,
+      "dataSourceParams"       -> run.dataSourceParams,
+      "preparatorParams"       -> run.preparatorParams,
+      "algorithmsParams"       -> run.algorithmsParams,
+      "servingParams"          -> run.servingParams,
+      "metricsParams"          -> run.metricsParams,
       "models"                 -> run.models,
-      "crossValidationResults" -> run.crossValidationResults)
+      "multipleMetricsResults" -> run.multipleMetricsResults)
     runColl.save(obj)
     id
   }
@@ -42,22 +45,46 @@ class MongoRuns(client: MongoClient, dbname: String) extends Runs {
   def get(id: String): Option[Run] =
     runColl.findOne(MongoDBObject("_id" -> id)) map { dbObjToRun(_) }
 
+  def update(run: Run): Unit = {
+    val obj = MongoDBObject(
+      "_id"                    -> run.id,
+      "startTime"              -> run.startTime,
+      "endTime"                -> run.endTime,
+      "engineId"               -> run.engineId,
+      "engineVersion"          -> run.engineVersion,
+      "engineFactory"          -> run.engineFactory,
+      "metricsClass"           -> run.metricsClass,
+      "batch"                  -> run.batch,
+      "env"                    -> run.env,
+      "dataSourceParams"       -> run.dataSourceParams,
+      "preparatorParams"       -> run.preparatorParams,
+      "algorithmsParams"       -> run.algorithmsParams,
+      "servingParams"          -> run.servingParams,
+      "metricsParams"          -> run.metricsParams,
+      "models"                 -> run.models,
+      "multipleMetricsResults" -> run.multipleMetricsResults)
+    runColl.save(obj)
+  }
+
   def delete(id: String): Unit = runColl.remove(MongoDBObject("_id" -> id))
 
   private def dbObjToRun(dbObj: DBObject): Run = Run(
     id = dbObj.as[String]("_id"),
     startTime = dbObj.as[DateTime]("startTime"),
     endTime = dbObj.as[DateTime]("endTime"),
-    engineManifestId = dbObj.as[String]("engineManifestId"),
-    engineManifestVersion = dbObj.as[String]("engineManifestVersion"),
+    engineId = dbObj.as[String]("engineId"),
+    engineVersion = dbObj.as[String]("engineVersion"),
+    engineFactory = dbObj.as[String]("engineFactory"),
+    metricsClass = dbObj.as[String]("metricsClass"),
     batch = dbObj.as[String]("batch"),
-    evaluationDataParams = dbObj.as[String]("evaluationDataParams"),
-    validationParams = dbObj.as[String]("validationParams"),
-    cleanserParams = dbObj.as[String]("cleanserParams"),
-    algoParamsList = dbObj.as[String]("algoParamsList"),
-    serverParams = dbObj.as[String]("serverParams"),
+    env = dbObj.as[Map[String, String]]("env"),
+    dataSourceParams = dbObj.as[String]("dataSourceParams"),
+    preparatorParams = dbObj.as[String]("preparatorParams"),
+    algorithmsParams = dbObj.as[String]("algorithmsParams"),
+    servingParams = dbObj.as[String]("servingParams"),
+    metricsParams = dbObj.as[String]("metricsParams"),
     models = dbObj.as[Array[Byte]]("models"),
-    crossValidationResults = dbObj.as[String]("crossValidationResults"))
+    multipleMetricsResults = dbObj.as[String]("multipleMetricsResults"))
 
   class MongoRunIterator(it: MongoCursor) extends Iterator[Run] {
     def next = dbObjToRun(it.next)
