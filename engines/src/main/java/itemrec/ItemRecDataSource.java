@@ -137,8 +137,7 @@ public class ItemRecDataSource extends LJavaDataSource<
     for (Map.Entry<Integer, Set<Integer>> entry : relevantItems.entrySet()) {
       int key = entry.getKey();
       Set<Integer> value = entry.getValue();
-      // TODO: n=10 is placeholder, should be replaced by metric during evaluation
-      qaList.add(new Tuple2<Query, Actual>(new Query(key, 10), new Actual(value)));
+      qaList.add(new Tuple2<Query, Actual>(new Query(key, dsp.k), new Actual(value)));
     }
 
     return qaList;

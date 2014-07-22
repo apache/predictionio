@@ -19,13 +19,18 @@ public class ItemRecMetrics extends JavaMetrics<
 
   final static Logger logger = LoggerFactory.getLogger(ItemRecMetrics.class);
 
+  MetricsParams params;
+
+  public ItemRecMetrics(MetricsParams params) {
+    this.params = params;
+  }
+
   @Override
   public Double computeUnit(Query query, Prediction predicted, Actual actual) {
     logger.info("computeUnit");
     logger.info(query.toString());
     logger.info(predicted.toString());
-    // TODO: get k from param
-    Double ap = MathUtil.jAveragePrecisionAtK(20, predicted.iids, actual.iids);
+    Double ap = MathUtil.jAveragePrecisionAtK(this.params.k, predicted.iids, actual.iids);
     logger.info(ap.toString());
     return ap;
   }
