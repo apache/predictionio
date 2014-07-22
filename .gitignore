@@ -1,7 +1,7 @@
 .DS_Store
+.pio_store
 *.swp
 conf/pio-env.sh
-fs/
 target/
 sbt/sbt-launch-*.jar
 ..sxr/
