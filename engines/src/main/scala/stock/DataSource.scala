@@ -67,12 +67,6 @@ case class TestingDataParams(
   val marketTicker: String,
   val tickerList: Seq[String]) extends Serializable {}
 
-class Target(
-  val date: DateTime,
-  val data: Map[String, Double]) extends Serializable {
-  override def toString(): String = s"Target @$date"
-}
-
 /** StockDataSource generates a series of training / testing data pairs.
   *
   * Main parameter: [[[DataSourceParams]]]

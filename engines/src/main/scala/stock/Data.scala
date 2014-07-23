@@ -99,3 +99,9 @@ object Query {
       )
   }
 }
+
+class Target(
+  val date: DateTime,
+  val data: Map[String, Double]) extends Serializable {
+  override def toString(): String = s"Target @$date"
+}
