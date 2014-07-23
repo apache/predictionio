@@ -61,36 +61,40 @@ object SaddleWrapper {
 
 // This is different from TrainingData. This serves as input for algorithm.
 // Hence, the time series should be shorter than that of TrainingData.
-class Feature(
+class Query(
   val mktTicker: String,
   val tickerList: Seq[String],
-  val input: (Array[DateTime], Array[(String, Array[Double])]),
+  val timeIndex: Array[DateTime],
+  val price: Array[(String, Array[Double])],
   val tomorrow: DateTime
   ) extends Serializable {
   
-  val timeIndex: Array[DateTime] = input._1
-  val tickerPriceSeq: Array[(String, Array[Double])] = input._2
-  @transient lazy val data = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
+  @transient lazy val priceFrame = SaddleWrapper.ToFrame(timeIndex, price)
 
-  def today: DateTime = data.rowIx.last.get
+  val today: DateTime = priceFrame.rowIx.last.get
 
   override def toString(): String = {
-    val firstDate = data.rowIx.first.get
-    val lastDate = data.rowIx.last.get
+    val firstDate = timeIndex.head
+    val lastDate = timeIndex.last
     s"Feature [$firstDate, $lastDate]"
   }
 }
 
-object Feature {
+object Query {
   def apply(
     mktTicker: String,
     tickerList: Seq[String],
-    data: Frame[DateTime, String, Double],
-    tomorrow: DateTime): Feature = {
-    return new Feature(
+    priceFrame: Frame[DateTime, String, Double],
+    tomorrow: DateTime): Query = {
+    
+    val data: (Array[DateTime], Array[(String, Array[Double])]) =
+      SaddleWrapper.FromFrame(priceFrame)
+
+    return new Query(
       mktTicker = mktTicker,
       tickerList = tickerList,
-      input = SaddleWrapper.FromFrame(data),
+      timeIndex = data._1,
+      price = data._2,
       tomorrow = tomorrow
       )
   }

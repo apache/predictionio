@@ -15,7 +15,7 @@ import scala.math
 
 class RegressionAlgorithm
     extends LAlgorithm[EmptyParams, TrainingData, Map[String, DenseVector[Double]], 
-    Feature, Target] {
+    Query, Target] {
 
   private def getRet(logPrice: Frame[DateTime, String, Double], d: Int) =
     (logPrice - logPrice.shift(d)).mapVec[Double](_.fillNA(_ => 0.0))
@@ -81,9 +81,9 @@ class RegressionAlgorithm
     return p
   }
 
-  def predict(model: Map[String, DenseVector[Double]], feature: Feature)
+  def predict(model: Map[String, DenseVector[Double]], query: Query)
     : Target = {
-    val price: Frame[DateTime, String, Double] = feature.data
+    val price: Frame[DateTime, String, Double] = query.priceFrame
     val prediction = price.colIx.toVec.contents
       // If model doesn't have the data, skip
       .filter { ticker => model.contains(ticker) }
@@ -95,6 +95,6 @@ class RegressionAlgorithm
           (ticker, p)
         }
       }.toMap
-    new Target(date = feature.tomorrow, data = prediction)
+    new Target(date = query.tomorrow, data = prediction)
   }
 }

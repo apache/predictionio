@@ -20,10 +20,10 @@ class DailyResult(
 extends Serializable {}
 
 class BackTestingMetrics(val params: BackTestingParams)
-  extends Metrics[BackTestingParams, AnyRef, Feature, Target, Target,
+  extends Metrics[BackTestingParams, AnyRef, Query, Target, Target,
       DailyResult, Seq[DailyResult], String] {
 
-  def computeUnit(feature: Feature, predicted: Target, actual: Target)
+  def computeUnit(query: Query, predicted: Target, actual: Target)
     : DailyResult = {
     val predictedData = predicted.data
     val actualData = actual.data
@@ -46,7 +46,7 @@ class BackTestingMetrics(val params: BackTestingParams)
     val actualReturn = data.map(e => (e._1, e._4)).toMap
     
     new DailyResult(
-      date = feature.today, 
+      date = query.today, 
       actualReturn = actualReturn,
       toEnter = toEnter,
       toExit = toExit)

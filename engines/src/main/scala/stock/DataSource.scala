@@ -49,7 +49,7 @@ case class DataSourceParams(
   val marketTicker: String,
   val tickerList: Seq[String]) extends Params {}
 
-case class TrainingDataParams2(
+case class TrainingDataParams(
   val baseDate: DateTime,
   val untilIdx: Int,
   val windowSize: Int,
@@ -82,18 +82,18 @@ class Target(
 class StockDataSource(val dsp: DataSourceParams)
   extends LSlicedDataSource[
     DataSourceParams,
-    (TrainingDataParams2, TestingDataParams),
+    (TrainingDataParams, TestingDataParams),
     TrainingData,
-    Feature,
+    Query,
     Target] {
   @transient lazy val itemTrendsDbGetTicker = 
     Storage.getAppdataItemTrends().get(dsp.appid, _: String).get
   @transient lazy val itemTrendsDb = Storage.getAppdataItemTrends()
 
-  def generateDataParams(): Seq[(TrainingDataParams2, TestingDataParams)] = {
+  def generateDataParams(): Seq[(TrainingDataParams, TestingDataParams)] = {
     Range(dsp.fromIdx, dsp.untilIdx, dsp.evaluationInterval)
       .map(idx => {
-        val trainParams = new TrainingDataParams2(
+        val trainParams = new TrainingDataParams(
           baseDate = dsp.baseDate,
           untilIdx = idx - 1,
           windowSize = dsp.trainingWindowSize,
@@ -111,8 +111,8 @@ class StockDataSource(val dsp: DataSourceParams)
       })
   }
 
-  def read(p: (TrainingDataParams2, TestingDataParams))
-  : (TrainingData, Seq[(Feature, Target)]) = {
+  def read(p: (TrainingDataParams, TestingDataParams))
+  : (TrainingData, Seq[(Query, Target)]) = {
     return (prepareTraining(p._1), prepareValidation(p._2))
   }
   
@@ -161,7 +161,7 @@ class StockDataSource(val dsp: DataSourceParams)
   }
 
 
-  def prepareTraining(params: TrainingDataParams2): TrainingData = {
+  def prepareTraining(params: TrainingDataParams): TrainingData = {
     val timeIndex = getTimeIndex(params.baseDate, params.marketTicker).slice(
       params.untilIdx - params.windowSize, params.untilIdx)
 
@@ -191,7 +191,7 @@ class StockDataSource(val dsp: DataSourceParams)
     idx: Int,
     baseDate: DateTime,
     marketTicker: String,
-    tickerList: Seq[String]): (Feature, Target) = {
+    tickerList: Seq[String]): (Query, Target) = {
     val allTickers: Seq[String] = marketTicker +: tickerList
 
     val featureWindowSize = 30 // engine-specific param
@@ -219,24 +219,24 @@ class StockDataSource(val dsp: DataSourceParams)
         }
       }
 
-    val featureData = Frame(data.map(e => (e._1, e._2)): _*)
+    val queryData = Frame(data.map(e => (e._1, e._2)): _*)
     val targetData = data.map(e => (e._1, e._3)).toMap
 
     // Only validate activeTickers
     val activeTickerList = data.map(_._1).filter(_ != marketTicker)
 
     return (
-      Feature(
+      Query(
         mktTicker = marketTicker,
         tickerList = activeTickerList,
-        data = featureData,
+        priceFrame = queryData,
         tomorrow = timeIndex.last.get
       ),
       new Target(date = timeIndex.last.get, data = targetData))
   }
 
   def prepareValidation(params: TestingDataParams)
-  : Seq[(Feature, Target)] = {
+  : Seq[(Query, Target)] = {
     val tickerList: Seq[String] = params.marketTicker +: params.tickerList
     val tickerTrendMap = getBatchItemTrend(tickerList)
 

@@ -16,7 +16,7 @@ object Run {
     val dataSourceParams = new DataSourceParams(
         baseDate = new DateTime(2002, 1, 1, 0, 0),
         fromIdx = 600,
-        untilIdx = 1200,
+        untilIdx = 900,
         trainingWindowSize = 300,
         evaluationInterval = 20,
         marketTicker = "SPY",
