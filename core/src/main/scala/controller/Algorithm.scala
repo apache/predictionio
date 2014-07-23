@@ -12,7 +12,7 @@ import org.json4s.native.Serialization
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
-abstract class LAlgorithm[AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
+abstract class LAlgorithm[AP <: Params: ClassTag, PD, M : ClassTag, Q : Manifest, P]
   extends BaseAlgorithm[AP, RDD[PD], RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
 
@@ -36,7 +36,7 @@ abstract class LAlgorithm[AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
 }
 
 abstract class P2LAlgorithm[
-    AP <: Params: ClassTag, PD, M : ClassTag, Q, P]
+    AP <: Params: ClassTag, PD, M : ClassTag, Q : Manifest, P]
   extends BaseAlgorithm[AP, PD, RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
   // In train: PD => M, M is a local object. We have to parallelize it.
@@ -50,7 +50,7 @@ abstract class P2LAlgorithm[
   def predict(model: M, query: Q): P
 }
 
-abstract class PAlgorithm[AP <: Params: ClassTag, PD, M, Q : ClassTag, P]
+abstract class PAlgorithm[AP <: Params: ClassTag, PD, M, Q : Manifest, P]
   extends BaseAlgorithm[AP, PD, M, Q, P] {
   def trainBase(sc: SparkContext, pd: PD): M = train(pd)
 

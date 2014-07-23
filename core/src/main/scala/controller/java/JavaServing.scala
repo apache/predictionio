@@ -13,8 +13,6 @@ abstract class LJavaServing[SP <: Params, Q, P]
   extends BaseServing[SP, Q, P]()(JavaUtils.fakeClassTag[SP]) {
 
   def serveBase(q: Q, ps: Seq[P]): P = serve(q, seqAsJavaList(ps))
-  
+
   def serve(query: Q, predictions: JIterable[P]): P
 }
-
-

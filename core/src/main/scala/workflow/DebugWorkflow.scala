@@ -591,10 +591,16 @@ object APIDebugWorkflow {
     logger.info("APIDebugWorkflow.run completed.")
 
     run.map { r =>
+      val models: Seq[Seq[Any]] = evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
+        evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
+          // handle only local algorithms now
+          model.asInstanceOf[RDD[Any]].collect.head
+        }
+      }
       val runs = Storage.getMetaDataRuns
       val id = runs.insert(r.copy(
         endTime = DateTime.now,
-        models = KryoInjection(evalAlgoModelMap),
+        models = KryoInjection(models),
         multipleMetricsResults = metricsOutput.mkString("\n")))
       logger.info(s"Workflow completed. Run information saved with ID: $id")
     }

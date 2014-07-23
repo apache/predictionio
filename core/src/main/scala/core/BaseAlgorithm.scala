@@ -1,15 +1,17 @@
 package io.prediction.core
 
 import io.prediction.controller.Params
-import org.apache.spark.rdd.RDD
+import io.prediction.controller.Utils
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 // FIXME. The name collides with current BaseAlgorithm. Will remove once the
 // code is completely revamped.
 
-abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q, P]
+abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   extends AbstractDoer[AP] {
   def trainBase(sc: SparkContext, pd: PD): M
 
@@ -18,6 +20,10 @@ abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q, P]
 
   // One Prediction
   def predictBase(baseModel: Any, query: Q): P
+
+  def queryManifest(): Manifest[Q] = manifest[Q]
+
+  val querySerializer = Utils.json4sDefaultFormats
 }
 
 trait LModelAlgorithm[M, Q, P] {
@@ -42,14 +48,12 @@ trait LModelAlgorithm[M, Q, P] {
   def batchPredict(model: M, queries: Iterator[(Long, Q)])
   : Iterator[(Long, P)] = {
     queries.map { case (idx, q) => (idx, predict(model, q)) }
-  } 
+  }
 
   // One Prediction
   def predictBase(localBaseModel: Any, query: Q): P = {
-    predict(localBaseModel.asInstanceOf[M], query) 
+    predict(localBaseModel.asInstanceOf[M], query)
   }
-  
+
   def predict(model: M, query: Q): P
 }
-
-
