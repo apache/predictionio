@@ -5,6 +5,7 @@ import io.prediction.controller.Engine
 import io.prediction.controller.EngineParams
 import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
+import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
@@ -28,6 +29,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
+import org.json4s._
+import org.json4s.native.Serialization.write
 
 import scala.collection.JavaConversions._
 import scala.language.existentials
@@ -597,9 +600,19 @@ object APIDebugWorkflow {
           model.asInstanceOf[RDD[Any]].collect.head
         }
       }
+      implicit val f = Utils.json4sDefaultFormats
+      val translatedAlgorithmsParams = write(
+        algorithmParamsList.zip(algoInstanceList).map {
+          case ((name, params), inst) =>
+            if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _, _]])
+              (name -> WorkflowUtils.javaObjectToJValue(params))
+            else
+              (name -> params)
+        })
       val runs = Storage.getMetaDataRuns
       val id = runs.insert(r.copy(
         endTime = DateTime.now,
+        algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models),
         multipleMetricsResults = metricsOutput.mkString("\n")))
       logger.info(s"Workflow completed. Run information saved with ID: $id")

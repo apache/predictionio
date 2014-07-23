@@ -96,6 +96,12 @@ object WorkflowUtils extends Logging {
       }
     }
   }
+
+  /** Converts Java (non-Scala) objects to a JSON4S JValue.
+    *
+    * @param params The Java object to be converted.
+    */
+  def javaObjectToJValue(params: AnyRef): JValue = parse(gson.toJson(params))
 }
 
 object EngineLanguage extends Enumeration {
