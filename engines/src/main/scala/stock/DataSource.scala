@@ -176,7 +176,7 @@ class StockDataSource(val dsp: DataSourceParams)
     TrainingData(
       tickers = params.tickerList,
       mktTicker = params.marketTicker,
-      price = Frame(tickerDataSeq: _*))
+      priceFrame = Frame(tickerDataSeq: _*))
 
   }
 

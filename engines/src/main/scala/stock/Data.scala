@@ -8,12 +8,11 @@ import breeze.linalg.{ DenseMatrix, DenseVector }
 class TrainingData(
   val tickers: Seq[String],
   val mktTicker: String,
-  val data: (Array[DateTime], Array[(String, Array[Double])]))
+  val timeIndex: Array[DateTime],
+  val price: Array[(String, Array[Double])])
   extends Serializable {
-  val timeIndex: Array[DateTime] = data._1
-  val tickerPriceSeq: Array[(String, Array[Double])] = data._2
  
-  @transient lazy val price = SaddleWrapper.ToFrame(timeIndex, tickerPriceSeq)
+  @transient lazy val priceFrame = SaddleWrapper.ToFrame(timeIndex, price)
 
   override def toString(): String = {
     val firstDate = timeIndex.head
@@ -26,11 +25,11 @@ object TrainingData {
   def apply(
     tickers: Seq[String],
     mktTicker: String,
-    price: Frame[DateTime, String, Double]): TrainingData = {
-    return new TrainingData(
-      tickers,
-      mktTicker,
-      SaddleWrapper.FromFrame(price))
+    priceFrame: Frame[DateTime, String, Double]): TrainingData = {
+  
+    val data: (Array[DateTime], Array[(String, Array[Double])]) =
+      SaddleWrapper.FromFrame(priceFrame)
+    return new TrainingData(tickers, mktTicker, data._1, data._2)
   }
 }
 

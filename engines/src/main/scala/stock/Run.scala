@@ -14,14 +14,14 @@ object Run {
 
   def main(args: Array[String]) {
     val dataSourceParams = new DataSourceParams(
-        baseDate = new DateTime(2006, 1, 1, 0, 0),
+        baseDate = new DateTime(2002, 1, 1, 0, 0),
         fromIdx = 600,
-        untilIdx = 800,
-        trainingWindowSize = 600,
+        untilIdx = 1200,
+        trainingWindowSize = 300,
         evaluationInterval = 20,
         marketTicker = "SPY",
         tickerList = tickerList)
-        
+
     //val algorithmParamsList = Seq(("Regression", EmptyParams()))
 
     val algorithmParamsList = Seq(
@@ -41,7 +41,6 @@ object Run {
         metricsClassOpt = Some(classOf[BackTestingMetrics]),
         metricsParams = BackTestingParams(0.002, 0.0),
         verbose = 0,
-        batch = "Imagine: Stock") 
+        batch = "Imagine: Stock")
   }
 }
-
