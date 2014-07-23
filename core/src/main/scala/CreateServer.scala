@@ -4,6 +4,7 @@ import io.prediction.controller.IEngineFactory
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
 import io.prediction.controller.Params
+import io.prediction.controller.java.LJavaAlgorithm
 //import io.prediction.PersistentParallelModel
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
@@ -16,7 +17,7 @@ import akka.actor.{ Actor, ActorSystem, Props }
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
-
+import com.google.gson.Gson
 import com.twitter.chill.KryoInjection
 import com.twitter.chill.ScalaKryoInstantiator
 import grizzled.slf4j.Logging
@@ -192,6 +193,7 @@ object CreateServer extends Logging {
         sc,
         run,
         engine,
+        engineLanguage,
         manifest,
         algorithms,
         algorithmsParams,
@@ -210,12 +212,16 @@ class ServerActor[Q, P](
     val args: ServerConfig,
     val run: Run,
     val engine: Engine[_, _, _, Q, P, _],
+    val engineLanguage: EngineLanguage.Value,
     val manifest: EngineManifest,
     val algorithms: Seq[BaseAlgorithm[_ <: Params, _, _, Q, P]],
     val algorithmsParams: Seq[Params],
     val models: Seq[Seq[Any]],
     val serving: BaseServing[_ <: Params, Q, P],
     val servingParams: Params) extends Actor with HttpService {
+
+  lazy val gson = new Gson
+
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
   def actorRefFactory = context
@@ -257,16 +263,24 @@ class ServerActor[Q, P](
       } ~
       post {
         entity(as[String]) { queryString =>
-          val json = parse(queryString)
-          val query = Extraction.extract(json)(
-            algorithms.head.querySerializer,
-            algorithms.head.queryManifest)
+          val firstAlgorithm = algorithms.head
+          val query =
+            if (firstAlgorithm.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
+              gson.fromJson(
+                queryString,
+                firstAlgorithm.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].
+                  queryClass)
+            } else {
+              Extraction.extract(parse(queryString))(
+                firstAlgorithm.querySerializer,
+                firstAlgorithm.queryManifest)
+            }
           val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
             a.predictBase(models.head(ai), query)
           }
           val prediction = serving.serveBase(query, predictions)
           complete(compact(render(
-            Extraction.decompose(prediction)(algorithms.head.querySerializer))))
+            Extraction.decompose(prediction)(firstAlgorithm.querySerializer))))
         }
       }
     }
