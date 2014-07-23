@@ -91,7 +91,7 @@ object RunWorkflow extends Logging {
         "sp" -> (wfc.servingParamsJsonPath, "servingParams.json"),
         "mp" -> (wfc.metricsParamsJsonPath, "metricsParams.json"))
 
-      val engineManifests = Storage.getSettingsEngineManifests
+      val engineManifests = Storage.getMetaDataEngineManifests
       engineManifests.get(wfc.engineId, wfc.engineVersion) map { em =>
         val sparkHome =
           if (wfc.sparkHome != "") wfc.sparkHome

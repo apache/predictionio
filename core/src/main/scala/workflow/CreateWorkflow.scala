@@ -19,6 +19,7 @@ import org.json4s.native.Serialization.{ read, write }
 
 import scala.io.Source
 import scala.language.existentials
+import scala.reflect.Manifest
 import scala.reflect.runtime.universe
 
 import java.io.File
@@ -44,7 +45,7 @@ object CreateWorkflow extends Logging {
   implicit lazy val formats = DefaultFormats
   lazy val gson = new Gson
 
-  private def extractParams(
+  def extractParams(
       mode: String, json: String, clazz: Class[_]): Params = {
     val pClass = clazz.getConstructors.head.getParameterTypes
     if (pClass.size == 0) {
@@ -55,6 +56,10 @@ object CreateWorkflow extends Logging {
       EmptyParams()
     } else {
       val apClass = pClass.head
+      if (apClass == classOf[Manifest[_]]) {
+        info(s"${clazz.getName}'s constructor accepts a Manifest. Skipping extraction and stubbing with empty parameters.")
+        return EmptyParams()
+      }
       mode match {
         case "java" => try {
           gson.fromJson(json, apClass)

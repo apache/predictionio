@@ -79,7 +79,7 @@ object RegisterEngine extends Logging {
       }
 
       info(s"Registering engine ${engineManifest.id} ${engineManifest.version}")
-      val engineManifests = Storage.getSettingsEngineManifests
+      val engineManifests = Storage.getMetaDataEngineManifests
       engineManifests.update(engineManifest.copy(files = files), true)
 
     }

@@ -10,6 +10,7 @@ import io.prediction.controller.LDataSource
 import io.prediction.controller.LPreparator
 import io.prediction.controller.MeanSquareError
 import io.prediction.controller.Params
+import io.prediction.controller.Utils
 
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -82,7 +83,24 @@ case class LocalAlgorithm()
   def predict(model: Array[Double], query: Vector[Double]) = {
     model.zip(query).map(e => e._1 * e._2).sum
   }
+
+  @transient override lazy val querySerializer =
+    Utils.json4sDefaultFormats + new VectorSerializer
 }
+
+class VectorSerializer extends CustomSerializer[Vector[Double]](format => (
+  {
+    case JArray(s) =>
+      s.map {
+        case JDouble(x) => x
+        case _ => 0
+      }.toVector
+  },
+  {
+    case x: Vector[Double] =>
+      JArray(x.toList.map(y => JDouble(y)))
+  }
+))
 
 object RegressionEngineFactory extends IEngineFactory {
   def apply() = {
@@ -99,7 +117,7 @@ object Run {
     val filepath = "data/lr_data.txt"
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
-   
+
     APIDebugWorkflow.run(
         dataSourceClassOpt = Some(classOf[LocalDataSource]),
         dataSourceParams = dataSourceParams,
@@ -120,11 +138,11 @@ object Run {
       dataSourceParams = DataSourceParams(filepath),
       preparatorParams = PreparatorParams(n = 2, k = 0),
       algorithmParamsList = Seq(("", EmptyParams())))
-  
+
     APIDebugWorkflow.runEngine(
       verbose = 3,
-      engine = engine, 
-      engineParams = engineParams, 
+      engine = engine,
+      engineParams = engineParams,
       metricsClassOpt = Some(classOf[MeanSquareError]),
       batch = "Imagine: Local Regression Engine")
   }
@@ -133,4 +151,3 @@ object Run {
     runEngine()
   }
 }
-

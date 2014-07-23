@@ -11,9 +11,9 @@ import scala.reflect._
 
 abstract class AbstractDoer[P <: Params : ClassTag]
 extends Serializable {
-  override def toString() : String = {
+  override def toString(): String = {
     val t = classTag[P].runtimeClass.getName
-    s"Doer type: $t"
+    s"${this.getClass.getName}(${t})"
   }
 
   def paramsClass() = classTag[P]

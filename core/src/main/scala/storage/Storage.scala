@@ -177,8 +177,8 @@ object Storage extends Logging {
     Seq(client.client, dbName)
   }
 
-  def getSettingsEngineManifests(): EngineManifests = {
-    getDataObject[EngineManifests](SettingsRepository)
+  def getMetaDataEngineManifests(): EngineManifests = {
+    getDataObject[EngineManifests](MetaDataRepository)
   }
 
   def getMetaDataRuns(): Runs = getDataObject[Runs](MetaDataRepository)
