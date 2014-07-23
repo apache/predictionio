@@ -1,14 +1,19 @@
-Running Evaluation
-==================
+Running Evaluation and Server
+=============================
 
 The following is a regression example:
 
-- Make sure Elasticsearch is running at localhost:9300, or MongoDB is running at localhost:27017.
-- Make sure you have downloaded and extracted an Apache Spark binary distribution, or have built it from source.
-  You will need to point your environmental SPARK_HOME to the root directory of your Apache Spark installation.
-- You only need to run RegisterEngine once unless you updated your engine's manifest.
+- Make sure Elasticsearch is running at localhost:9300, or MongoDB is running at
+  localhost:27017.
+- Make sure you have downloaded and extracted an Apache Spark binary
+  distribution, or have built it from source. You will need to point your
+  environmental SPARK_HOME to the root directory of your Apache Spark
+  installation.
+- You only need to run RegisterEngine once unless you updated your engine's
+  manifest.
 
-First, copy ``conf/pio-env.sh.template`` to ``conf/pio-env.sh``. If you use MongoDB, add these:
+First, copy ``conf/pio-env.sh.template`` to ``conf/pio-env.sh``. If you use
+MongoDB, add these:
 
 ```
 PIO_STORAGE_SOURCES_MONGODB_TYPE=mongodb
@@ -57,10 +62,31 @@ bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId
 ```
 
 
-### Using a Scala Metrics
+### Using Scala Metrics
 
 Replace the last line in the section above with the following:
 
 ```
 bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.controller.MeanSquareError
+```
+
+
+Deploying a Server
+------------------
+
+Following from instructions above, you should have obtained a run ID after
+your workflow finished.
+
+```
+bin/pio-class io.prediction.tools.RunServer --runId RUN_ID_HERE
+```
+
+This will create a server that by default binds to http://localhost:8000. You
+can visit that page in your web browser to check its status.
+
+To perform real-time predictions, try the following:
+
+```
+curl -H "Content-Type: application/json" -d '[2.1419053154730548, 1.919407948982788, 0.0501333631091041, -0.10699028639933772, 1.2809776380727795, 1.6846227956326554, 0.18277859260127316, -0.39664340267804343, 0.8090554869291249, 2.48621339239065]' http://localhost:8000
+curl -H "Content-Type: application/json" -d '[-0.8600615539670898, -1.0084357652346345, -1.3088407119560064, -1.9340485539299312, -0.6246990990796732, -2.325746651211032, -0.28429904752434976, -0.1272785164794058, -1.3787859877532718, -0.24374419289538318]' http://localhost:8000
 ```
