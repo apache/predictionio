@@ -6,12 +6,12 @@ import java.util.HashMap;
 import io.prediction.controller.Params;
 
 public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
-  private Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> dataSourceClass = null;
-  private Class<? extends LJavaPreparator<? extends Params, TD, PD>> preparatorClass = null;
-  private Map<String, Class<? extends LJavaAlgorithm<? extends Params, PD, ?, Q, P>>> 
+  protected Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> dataSourceClass = null;
+  protected Class<? extends LJavaPreparator<? extends Params, TD, PD>> preparatorClass = null;
+  protected Map<String, Class<? extends LJavaAlgorithm<? extends Params, PD, ?, Q, P>>>
     algorithmClassMap = new HashMap <> ();
-  private Class<? extends LJavaServing<? extends Params, Q, P>> servingClass = null;
-  
+  protected Class<? extends LJavaServing<? extends Params, Q, P>> servingClass = null;
+
   public JavaEngineBuilder() {}
 
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> dataSourceClass(
@@ -19,7 +19,7 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
     dataSourceClass = cls;
     return this;
   }
-  
+
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> preparatorClass(
       Class<? extends LJavaPreparator<? extends Params, TD, PD>> cls) {
     preparatorClass = cls;
@@ -46,5 +46,5 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
     return "JavaEngineBuilder ds=" + dataSourceClass + " p=" + preparatorClass + " algo=" +
       algorithmClassMap + " s=" + servingClass;
   }
-}
 
+}

@@ -2,6 +2,7 @@ package io.prediction.controller.java
 
 import io.prediction.core.BasePreparator
 import io.prediction.controller.Params
+import io.prediction.controller.EmptyParams
 
 import java.util.{ List => JList }
 import java.lang.{ Iterable => JIterable }
@@ -26,3 +27,12 @@ abstract class LJavaPreparator[PP <: Params, TD, PD]
   def prepare(td: TD): PD
 }
 
+/****** Helpers ******/
+class LJavaIdentityPreparator[TD] extends LJavaPreparator[EmptyParams, TD, TD] {
+  override def prepare(td: TD): TD = td
+}
+
+object LJavaIdentityPreparator {
+  def apply[TD](ds: Class[_ <: LJavaDataSource[_, _, TD, _, _]]) =
+    classOf[LJavaIdentityPreparator[TD]]
+}

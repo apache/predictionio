@@ -15,7 +15,7 @@ class JavaEngine[TD, DP, PD, Q, P, A](
       : JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, PD, _, Q, P]]],
     servingClass: Class[_ <: LJavaServing[_ <: Params, Q, P]]
 ) extends Engine(
-    dataSourceClass, 
+    dataSourceClass,
     preparatorClass,
     Map(algorithmClassMap.toSeq: _*),
     servingClass)
@@ -30,5 +30,16 @@ class JavaEngineParams(
     preparatorParams,
     algorithmParamsList.toSeq,
     servingParams)
-    
 
+// JavaEngine with IdentityPreparator
+class JavaSimpleEngine[TD, DP, Q, P, A](
+    dataSourceClass: Class[_ <: LJavaDataSource[_ <: Params, DP, TD, Q, A]],
+    preparatorClass: Class[_ <: LJavaPreparator[_ <: Params, TD, TD]],
+    algorithmClassMap
+      : JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, TD, _, Q, P]]],
+    servingClass: Class[_ <: LJavaServing[_ <: Params, Q, P]]
+) extends JavaEngine[TD, DP, TD, Q, P, A](
+    dataSourceClass,
+    preparatorClass,
+    Map(algorithmClassMap.toSeq: _*),
+    servingClass)

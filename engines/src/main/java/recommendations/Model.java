@@ -13,4 +13,10 @@ public class Model implements Serializable {
     this.itemSimilarity = itemSimilarity;
     this.userHistory = userHistory;
   }
+
+  @Override
+  public String toString() {
+    return "Model: [itemSimilarity: " + itemSimilarity.toString() + "]\n"
+      +"[userHistory: " + userHistory.toString() + "]";
+  }
 }

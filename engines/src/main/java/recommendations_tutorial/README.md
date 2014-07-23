@@ -75,7 +75,40 @@ Create Algorithm.java and copy the following code:
 ```
 
 
-## Step 2. Add Implmentation
+## Step 4. Test run DataSource
+
+Create testdata/ratings.csv:
+
+```
+test data
+```
+
+Create Runner.java and copy following:
+
+```java
+// code
+```
+
+Compile the code:
+
+```
+sbt/sbt package
+sbt/sbt "project engines" assemblyPackageDependency
+```
+
+Execute the following:
+
+```
+$SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "myrecommendations.Runner"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
+```
+
+## Step 5. Test run Algorithm
+
+Modify Runner.java to add Algorithm class:
+
+```java
+// code
+```
 
 
 ## Step 3. Create Engine manifest and parameter json files

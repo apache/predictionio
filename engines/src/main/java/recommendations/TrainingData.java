@@ -10,7 +10,12 @@ public class TrainingData implements Serializable {
     this.ratings = ratings;
   }
 
-  public static class Rating {
+  @Override
+  public String toString() {
+    return "TrainingData: " + ratings.toString();
+  }
+
+  public static class Rating implements Serializable {
     public int uid; // user ID
     public int iid; // item ID
     public float rating;
@@ -19,6 +24,11 @@ public class TrainingData implements Serializable {
       this.uid = uid;
       this.iid = iid;
       this.rating = rating;
+    }
+
+    @Override
+    public String toString() {
+      return "(" + uid + "," + iid + "," + rating + ")";
     }
   }
 }

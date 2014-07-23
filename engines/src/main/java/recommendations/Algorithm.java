@@ -23,14 +23,6 @@ public class Algorithm extends
     int itemIndex = 0;
     int userIndex = 0;
     for (TrainingData.Rating r : data.ratings) {
-      /*
-      Integer i = itemIndexMap.get(r.iid);
-      if (i == null) {
-        // new item
-        itemIndexMap.put(r.iid, itemIndex);
-        itemIndex += 1;
-      }
-      */
       Map<Integer, Float> userRating = itemMap.get(r.iid);
       if (userRating == null) {
         // new item
