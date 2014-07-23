@@ -15,16 +15,12 @@ fork in (ThisBuild, run) := true
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
-
 lazy val root = project in file(".") aggregate(
   core,
-  //deploy,
   engines,
   tools)
 
 lazy val core = (project in file("core"))
-
-lazy val deploy = project in file("deploy") dependsOn(core)
 
 lazy val engines = (project in file("engines")).
   dependsOn(core)
