@@ -9,7 +9,8 @@ import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.storage.{ Storage, EngineManifest, Run }
-import io.prediction.workflow.CreateWorkflow
+import io.prediction.workflow.EngineLanguage
+import io.prediction.workflow.WorkflowUtils
 
 import akka.actor.{ Actor, ActorSystem, Props }
 import akka.io.IO
@@ -93,16 +94,17 @@ object CreateServer extends Logging {
           val engineFactoryName = manifest.engineFactory
           val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
           val kryo = KryoInjection.instance(kryoInstantiator)
-
-          val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
-          val engineModule = runtimeMirror.staticModule(engineFactoryName)
-          val engineObject = runtimeMirror.reflectModule(engineModule)
-          val engine = engineObject.instance.asInstanceOf[IEngineFactory]()
-
+          val (engineLanguage, engine) =
+            WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
           val models = kryo.invert(run.models).get.asInstanceOf[Seq[Seq[Any]]]
 
           models.head.foreach { m =>
-            info(s"Loaded model instance: ${m.getClass.getName}")
+            try {
+              info(s"Loaded model instance: ${m.getClass.getName}")
+            } catch {
+              case e: NullPointerException =>
+                warn(s"Null model detected: ${m} (${e.getMessage})")
+            }
           }
 
           /*
@@ -133,6 +135,7 @@ object CreateServer extends Logging {
             sc = sc,
             run = run,
             engine = engine,
+            engineLanguage = engineLanguage,
             manifest = manifest,
             models = models)
 
@@ -149,14 +152,15 @@ object CreateServer extends Logging {
     sc: ServerConfig,
     run: Run,
     engine: Engine[_, _, _, Q, P, _],
+    engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest,
     models: Seq[Seq[Any]]): Unit = {
     implicit val formats = DefaultFormats
     val algorithmsParamsWithNames =
       read[Seq[(String, JValue)]](run.algorithmsParams).map {
         case (algoName, params) =>
-          val extractedParams = CreateWorkflow.extractParams(
-            "scala",
+          val extractedParams = WorkflowUtils.extractParams(
+            engineLanguage,
             compact(render(params)),
             engine.algorithmClassMap(algoName))
           (algoName, extractedParams)
@@ -172,8 +176,8 @@ object CreateServer extends Logging {
       if (run.servingParams == "")
         EmptyParams()
       else
-        CreateWorkflow.extractParams(
-          "scala",
+        WorkflowUtils.extractParams(
+          engineLanguage,
           run.servingParams,
           engine.servingClass)
     val serving = Doer(engine.servingClass, servingParams)

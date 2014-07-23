@@ -5,13 +5,12 @@ import io.prediction.controller.EngineParams
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
+import io.prediction.controller.Utils
 import io.prediction.core.Doer
 import io.prediction.core.BaseMetrics
 import io.prediction.storage.Run
 
 import com.github.nscala_time.time.Imports._
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -42,46 +41,7 @@ object CreateWorkflow extends Logging {
 
   case class AlgorithmParams(name: String, params: JValue)
 
-  implicit lazy val formats = DefaultFormats
-  lazy val gson = new Gson
-
-  def extractParams(
-      mode: String, json: String, clazz: Class[_]): Params = {
-    val pClass = clazz.getConstructors.head.getParameterTypes
-    if (pClass.size == 0) {
-      if (json != "")
-        warn(s"Non-empty parameters supplied to ${clazz.getName}, but its " +
-          "constructor does not accept any arguments. Stubbing with empty " +
-          "parameters.")
-      EmptyParams()
-    } else {
-      val apClass = pClass.head
-      if (apClass == classOf[Manifest[_]]) {
-        info(s"${clazz.getName}'s constructor accepts a Manifest. Skipping extraction and stubbing with empty parameters.")
-        return EmptyParams()
-      }
-      mode match {
-        case "java" => try {
-          gson.fromJson(json, apClass)
-        } catch {
-          case e: JsonSyntaxException =>
-            error(s"Unable to extract parameters for ${apClass.getName} from " +
-              s"JSON string: ${json}. Aborting workflow.")
-            sys.exit(1)
-        }
-        case _ => try {
-          Extraction.extract(parse(json), reflect.TypeInfo(apClass, None)).
-            asInstanceOf[Params]
-        } catch {
-          case me: MappingException => {
-            error(s"Unable to extract parameters for ${apClass.getName} from " +
-              s"JSON string: ${json}. Aborting workflow.")
-            sys.exit(1)
-          }
-        }
-      }
-    }
-  }
+  implicit lazy val formats = Utils.json4sDefaultFormats
 
   private def stringFromFile(basePath: String, filePath: String): String = {
     try {
@@ -138,24 +98,12 @@ object CreateWorkflow extends Logging {
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
-      val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
-      val engineModule = runtimeMirror.staticModule(wfc.engineFactory)
-      val engineObject = runtimeMirror.reflectModule(engineModule)
-      var engineRunMode = "scala"
-      val engine = try {
-        engineObject.instance.asInstanceOf[IEngineFactory]()
+      val (engineLanguage, engine) = try {
+        WorkflowUtils.getEngine(wfc.engineFactory, getClass.getClassLoader)
       } catch {
-        case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
-          engineRunMode = "java"
-          Class.forName(wfc.engineFactory).newInstance.asInstanceOf[IEngineFactory]()
-        } catch {
-          case e: ClassNotFoundException =>
-            error(s"${e.getMessage}")
-            sys.exit(1)
-          case e: NoSuchMethodException =>
-            error(s"${e.getMessage}")
-            sys.exit(1)
-        }
+        case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
+          error(s"Unable to obtain engine: ${e.getMessage}. Aborting workflow.")
+          sys.exit(1)
       }
       val metrics = wfc.metricsClass.map { mc => //mc => null
         try {
@@ -169,13 +117,13 @@ object CreateWorkflow extends Logging {
         }
       }
       val dataSourceParams = wfc.dataSourceParamsJsonPath.map(p =>
-        extractParams(
-          engineRunMode,
+        WorkflowUtils.extractParams(
+          engineLanguage,
           stringFromFile(wfc.jsonBasePath, p),
           engine.dataSourceClass)).getOrElse(EmptyParams())
       val preparatorParams = wfc.preparatorParamsJsonPath.map(p =>
-        extractParams(
-          engineRunMode,
+        WorkflowUtils.extractParams(
+          engineLanguage,
           stringFromFile(wfc.jsonBasePath, p),
           engine.preparatorClass)).getOrElse(EmptyParams())
       val algorithmsParams: Seq[(String, Params)] =
@@ -186,8 +134,8 @@ object CreateWorkflow extends Logging {
               val eap = algorithmParamsJValue.extract[AlgorithmParams]
               (
                 eap.name,
-                extractParams(
-                  engineRunMode,
+                WorkflowUtils.extractParams(
+                  engineLanguage,
                   compact(render(eap.params)),
                   engine.algorithmClassMap(eap.name))
               )
@@ -196,16 +144,16 @@ object CreateWorkflow extends Logging {
           }
         } getOrElse Seq(("", EmptyParams()))
       val servingParams = wfc.servingParamsJsonPath.map(p =>
-        extractParams(
-          engineRunMode,
+        WorkflowUtils.extractParams(
+          engineLanguage,
           stringFromFile(wfc.jsonBasePath, p),
           engine.servingClass)).getOrElse(EmptyParams())
       val metricsParams = wfc.metricsParamsJsonPath.map(p =>
         if (metrics.isEmpty)
           EmptyParams()
         else
-          extractParams(
-            engineRunMode,
+          WorkflowUtils.extractParams(
+            engineLanguage,
             stringFromFile(wfc.jsonBasePath, p),
             metrics.get)
       ) getOrElse EmptyParams()
