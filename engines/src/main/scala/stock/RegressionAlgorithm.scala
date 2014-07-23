@@ -14,8 +14,9 @@ import scala.collection.mutable.{ Map => MMap }
 import scala.math
 
 class RegressionAlgorithm
-    extends LAlgorithm[EmptyParams, TrainingData, Map[String, DenseVector[Double]], 
-    Query, Target] {
+  extends StockAlgorithm[EmptyParams, Map[String, DenseVector[Double]]] {
+    //extends LAlgorithm[EmptyParams, TrainingData, Map[String, DenseVector[Double]], 
+    //Query, Target] {
 
   private def getRet(logPrice: Frame[DateTime, String, Double], d: Int) =
     (logPrice - logPrice.shift(d)).mapVec[Double](_.fillNA(_ => 0.0))

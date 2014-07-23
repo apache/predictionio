@@ -11,8 +11,9 @@ case class RandomAlgorithmParams(
 
 
 class RandomAlgorithm(val params: RandomAlgorithmParams)
-    extends LAlgorithm[RandomAlgorithmParams, TrainingData, Unit, 
-        Query, Target] {
+  extends StockAlgorithm[RandomAlgorithmParams, Unit] {
+    //extends LAlgorithm[RandomAlgorithmParams, TrainingData, Unit, 
+    //    Query, Target] {
   @transient lazy val _random: Random = new Random(params.seed)
 
   def train(trainingData: TrainingData): Unit = {}

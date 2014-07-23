@@ -1,5 +1,9 @@
 package io.prediction.engines.stock
 
+import io.prediction.controller.LAlgorithm
+import io.prediction.controller.Params
+import scala.reflect._
+
 object Settings {
   val appid = 1008
   
@@ -53,5 +57,13 @@ object Settings {
     "WU", "WY", "WYN", "WYNN", "X", "XEL", "XL", "XLNX", "XOM", "XRAY", "XRX",
     "XYL", "YHOO", "YUM", "ZION", "ZMH", "ZTS")
   val marketList = Vector("QQQ", "SPY")
-
 }
+
+abstract class StockAlgorithm[P <: Params : ClassTag, M : ClassTag] 
+  extends LAlgorithm[P, TrainingData, M, Query, Target] {
+  def train(trainingData: TrainingData): M
+
+  def predict(model: M, query: Query): Target
+}
+
+
