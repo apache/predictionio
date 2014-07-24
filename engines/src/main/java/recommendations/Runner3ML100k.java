@@ -7,39 +7,32 @@ import io.prediction.controller.java.JavaSimpleEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.workflow.JavaAPIDebugWorkflow;
+
 import java.util.HashMap;
 
-public class Runner1 {
+import io.prediction.controller.IdentityPreparator;
 
-  // During development, one can build a semi-engine, only add the first few layers. In this
-  // particular example, we only add until dataSource layer
-  private static class HalfBakedEngineFactory implements IEngineFactory {
-    public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, Object> apply() {
-      return new JavaSimpleEngineBuilder<
-        TrainingData, EmptyParams, Query, Float, Object> ()
-        .dataSourceClass(DataSource.class)
-        .build();
-    }
-  }
+public class Runner3ML100k {
 
-  public static void runComponents() {
+  public static void runEvaluation() {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
       .dataSourceParams(new DataSourceParams(
-        "engines/src/main/java/recommendations/testdata/ratings.csv"))
+        "engines/src/main/java/recommendations/testdata/u.data"))
+      .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.1))
       .build();
 
     JavaAPIDebugWorkflow.runEngine(
       "MyEngine",
       new HashMap<String, String>(),
       3, // verbose
-      (new HalfBakedEngineFactory()).apply(),
+      (new EvaluationEngineFactory()).apply(),
       engineParams,
-      null,
+      Metrics.class,
       new EmptyParams()
     );
   }
 
   public static void main(String[] args) {
-    runComponents();
+    runEvaluation();
   }
 }

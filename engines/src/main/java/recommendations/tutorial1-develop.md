@@ -72,45 +72,138 @@ The DataSource component needs to extend io.prediction.controller.java.LJavaData
 
 ```java
 public class DataSource extends LJavaDataSource<
-  DataSourceParams, EmptyParams, TrainingData, Query, Object>
+  DataSourceParams, EmptyParams, TrainingData, Query, Object> {
+    // ...
+  }
 ```
 
 You need to specify the types of the data in LJavaDataSource. You can ignore the EmptyParams and Object for now. They are used for evaluation which will be explained in later tutorials.
 
-You need to override a DataSouce's read() function (as defined in DataSource.java):
+The only function you need to implement is LJavaDataSource's read() method (as defined in DataSource.java):
+
+It reads comma or tab delimited rating file and return TrainingData which will be used by the Algorithm for training.
 
 ```java
-// code
+@Override
+public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> read() {
+
+  File ratingFile = new File(params.filePath);
+  Scanner sc = null;
+
+  try {
+    sc = new Scanner(ratingFile);
+  } catch (FileNotFoundException e) {
+    logger.error("Caught FileNotFoundException " + e.getMessage());
+    System.exit(1);
+  }
+
+  List<TrainingData.Rating> ratings = new ArrayList<TrainingData.Rating>();
+
+  while (sc.hasNext()) {
+    String line = sc.nextLine();
+    String[] tokens = line.split("[\t,]");
+    try {
+      TrainingData.Rating rating = new TrainingData.Rating(
+        Integer.parseInt(tokens[0]),
+        Integer.parseInt(tokens[1]),
+        Float.parseFloat(tokens[2]));
+      ratings.add(rating);
+    } catch (Exception e) {
+      logger.error("Can't parse rating file. Caught Exception: " + e.getMessage());
+      System.exit(1);
+    }
+  }
+
+  List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> data =
+    new ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>>();
+
+  data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>(
+    new EmptyParams(),
+    new TrainingData(ratings),
+    new ArrayList<Tuple2<Query, Object>>()
+  ));
+
+  return data;
+}
 ```
+
+
 
 ## Step 3. Implement Algorithm
 
-In this example, a simple item based collaborative filtering algorithm is implemented.
-This algorithm reads a list of ratings value as defined in Training Data and generate a Model.
-
-Create a Model.java and copy the following code:
-
-```java
-// code
-```
-
-The Algorithm class must extend io.prediction.controller.java.LJavaAlgorithm and override two functions: train() and predict().
-
-In this example, the algorithm doesn't take any parameters (EmptyParams is used).
-
-Create Algorithm.java and copy the following code:
+In this example, a simple item based collaborative filtering algorithm is implemented for
+demonstration purpose. The algorithm will take a threshold as parameter and discard any item pairs
+with similarity lower than this threshold.  The algorithm param is defined in AlgoParams.java:
 
 ```java
-// code
+public class AlgoParams implements Params {
+  public double threshold;
+
+  public AlgoParams(double threshold) {
+    this.threshold = threshold;
+  }
+}
 ```
 
+This algorithm reads a list of Rating as defined in TrainingData and generate
+a Model which  consists of ItemSimilarity matrix and user History matrix, which will later be used for generating Prediction.
+
+The Model is defined in Model.java:
+
+```java
+public class Model implements Serializable {
+  public Map<Integer, RealVector> itemSimilarity;
+  public Map<Integer, RealVector> userHistory;
+
+  public Model(Map<Integer, RealVector> itemSimilarity,
+    Map<Integer, RealVector> userHistory) {
+    this.itemSimilarity = itemSimilarity;
+    this.userHistory = userHistory;
+  }
+}
+```
+
+The Algorithm class must extend io.prediction.controller.java.LJavaAlgorithm.
+Similarily, LJavaAlgorithm stands for Local (Single machine) Java Algorithm.
+
+
+```java
+public class Algorithm extends
+  LJavaAlgorithm<AlgoParams, TrainingData, Model, Query, Float> {
+  // ...
+}
+```
+
+You need to implement two functions of LJavaAlgorithm:
+
+* train
+
+```java
+@Override
+public Model train(TrainingData data) {
+  // ...
+}
+```
+
+* predict
+
+```java
+@Override
+public Float predict(Model model, Query query) {
+  // ...
+}
+```
 
 ## Step 4. Test run DataSource
 
-Create testdata/ratings.csv:
+A very simple testdata/ratings.csv is provided inside testdata/ directory for quick testing.
+
+It is comma-delimited rating file. Each row represents user ID, item ID, and the rating value.
 
 ```
-test data
+1,1,2
+1,2,3
+1,3,4 ...
 ```
 
 Create Runner.java and copy following:
@@ -130,10 +223,9 @@ Execute the following:
 
 ```
 bin/pio-run io.prediction.engines.java.recommendations.Runner1
-
-
-$SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "io.prediction.engines.java.recommendations.Runner"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
 ```
+
+
 
 ## Step 5. Test run Algorithm
 

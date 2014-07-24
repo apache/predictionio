@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Algorithm extends
-  LJavaAlgorithm<EmptyParams, TrainingData, Model, Query, Float> {
+  LJavaAlgorithm<AlgoParams, TrainingData, Model, Query, Float> {
 
   final static Logger logger = LoggerFactory.getLogger(Algorithm.class);
 
@@ -23,7 +23,7 @@ public class Algorithm extends
   public Algorithm(AlgoParams params) {
     this.params = params;
   }
-  
+
   @Override
   public Model train(TrainingData data) {
     // pre-process
