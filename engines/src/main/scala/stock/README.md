@@ -132,33 +132,34 @@ repeatedly open new ones with maximum predicted value until it reaches
 evaluation, you have to specify two sets of parameters:
 
 1. `DataSourceParams` governs the ticker and the time window you wish to
-evaluate. Here is the parameter we used in stock.Demo1.
-```scala
-val dataSourceParams = new DataSourceParams(
-  baseDate = new DateTime(2004, 1, 1, 0, 0),
-  fromIdx = 400,
-  untilIdx = 1000,
-  trainingWindowSize = 300,
-  evaluationInterval = 20,
-  marketTicker = "SPY",
-  tickerList = Seq("AAPL"))
-```
-This means we start our evaluation at 400 market days after the first day of
-2004 until 1200 days. Our `evalutionInterval` is 20 and `trainingWindowSize` is
-300, meaning that we use day 100 until day 400 as *the first slice* of training
-data, and evaluate with data from day 400 until 420. Then, this process repeats,
-day 120 until 420 for training, and evaluation with data from day 420 until 440,
-until it reaches `untilIdx`. We only specify one ticker GOOGL for now, but our
-stock engine actually supports multiple tickers.
+   evaluate. Here is the parameter we used in stock.Demo1.
+   ```scala
+   val dataSourceParams = new DataSourceParams(
+     baseDate = new DateTime(2004, 1, 1, 0, 0),
+     fromIdx = 400,
+     untilIdx = 1000,
+     trainingWindowSize = 300,
+     evaluationInterval = 20,
+     marketTicker = "SPY",
+     tickerList = Seq("AAPL"))
+   ```
+   This means we start our evaluation at 400 market days after the first day of
+   2004 until 1200 days. Our `evalutionInterval` is 20 and `trainingWindowSize`
+   is 300, meaning that we use day 100 until day 400 as *the first slice* of
+   training data, and evaluate with data from day 400 until 420. Then, this
+   process repeats, day 120 until 420 for training, and evaluation with data
+   from day 420 until 440, until it reaches `untilIdx`. We only specify one
+   ticker GOOGL for now, but our stock engine actually supports multiple
+   tickers.
 
 2. `BacktestingParams` governs the backtesting evaluation.
-```scala
-val backtestingParams = BacktestingParams(enterThreshold = 0.001,
-                                          exitThreshold = 0.0)
-```
-As explained above, the backtesting evaluator opens a new long position when the
-prediction of stock is higher than 0.001, and will exit such position when the
-prediction is lower than 0.0.
+   ```scala
+   val backtestingParams = BacktestingParams(enterThreshold = 0.001,
+                                             exitThreshold = 0.0)
+   ```
+   As explained above, the backtesting evaluator opens a new long position when
+   the prediction of stock is higher than 0.001, and will exit such position
+   when the prediction is lower than 0.0.
 
 You can run the evaluation with the following command.
 ```
