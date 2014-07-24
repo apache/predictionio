@@ -1,11 +1,14 @@
 package io.prediction.engines.regression.parallel
 
+import io.prediction.controller.Engine
 import io.prediction.controller.Params
 import io.prediction.controller.PDataSource
 import io.prediction.controller.P2LAlgorithm
 import io.prediction.controller.IdentityPreparator
+import io.prediction.controller.IEngineFactory
 import io.prediction.controller.AverageServing
 import io.prediction.controller.MeanSquareError
+import io.prediction.controller.Utils
 import io.prediction.workflow.APIDebugWorkflow
 
 import org.apache.spark.SparkContext
@@ -18,6 +21,7 @@ import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 import org.apache.spark.mllib.regression.RegressionModel
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
+import org.json4s._
 
 case class DataSourceParams(
   val filepath: String, val k: Int = 3, val seed: Int = 9527)
@@ -25,7 +29,7 @@ extends Params
 
 case class ParallelDataSource(val dsp: DataSourceParams)
   extends PDataSource[
-      DataSourceParams, Integer, 
+      DataSourceParams, Integer,
       RDD[LabeledPoint], Vector, Double] {
   def read(sc: SparkContext)
   : Seq[(Integer, RDD[LabeledPoint], RDD[(Vector, Double)])] = {
@@ -57,6 +61,19 @@ case class ParallelSGDAlgorithm(val ap: AlgorithmParams)
   def predict(model: RegressionModel, feature: Vector): Double = {
     model.predict(feature)
   }
+
+  @transient override lazy val querySerializer =
+    Utils.json4sDefaultFormats + new VectorSerializer
+}
+
+object RegressionEngineFactory extends IEngineFactory {
+  def apply() = {
+    new Engine(
+      classOf[ParallelDataSource],
+      classOf[IdentityPreparator[RDD[LabeledPoint]]],
+      Map("SGD" -> classOf[ParallelSGDAlgorithm]),
+      AverageServing(classOf[ParallelSGDAlgorithm]))
+  }
 }
 
 object Run {
@@ -68,7 +85,7 @@ object Run {
       (SGD, AlgorithmParams(stepSize = 0.1)),
       (SGD, AlgorithmParams(stepSize = 0.2)),
       (SGD, AlgorithmParams(stepSize = 0.4)))
-    
+
     APIDebugWorkflow.run(
         dataSourceClassOpt = Some(classOf[ParallelDataSource]),
         dataSourceParams = dataSourceParams,
@@ -81,14 +98,6 @@ object Run {
         batch = "Imagine: Parallel Regression")
   }
 }
-
-
-
-
-
-/****** TO FIX ******/
-
-import org.json4s._
 
 class VectorSerializer extends CustomSerializer[Vector](format => (
   {
