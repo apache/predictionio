@@ -10,7 +10,9 @@ favorite stock data source.
 
 Specify environment. (Temporary.)
 ```
+$ set -a
 $ source conf/pio-env.sh
+$ set +a
 ```
 
 Run the fetch script.
