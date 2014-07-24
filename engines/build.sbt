@@ -5,20 +5,20 @@ assemblySettings
 name := "engines"
 
 libraryDependencies ++= Seq(
-  "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
-  "org.scala-saddle"  %% "saddle-core"    % "1.3.2",
-  "org.scalanlp"      %% "breeze"         % "0.7",
-  "org.scalanlp"      %% "breeze-natives" % "0.7",
-  "org.scalanlp"       % "nak"            % "1.2.1",
-  "org.json4s"        %% "json4s-native"  % "3.2.6",
   "com.github.scopt"  %% "scopt"          % "3.2.0",
+  "commons-io"         % "commons-io"     % "2.4",
+  "org.apache.mahout"  % "mahout-core"    % "0.9",
   "org.apache.spark"  %% "spark-core"     % "1.0.0" % "provided",
   "org.apache.spark"  %% "spark-mllib"    % "1.0.0"
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"),
-  "org.apache.mahout"  % "mahout-core"    % "0.9",
-  "org.scalatest" %% "scalatest" % "2.2.0" % "test"
-  )
+  "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
+  "org.json4s"        %% "json4s-native"  % "3.2.6",
+  "org.scala-saddle"  %% "saddle-core"    % "1.3.2",
+  "org.scalanlp"      %% "breeze"         % "0.7",
+  "org.scalanlp"      %% "breeze-natives" % "0.7",
+  "org.scalanlp"       % "nak"            % "1.2.1",
+  "org.scalatest"     %% "scalatest"      % "2.2.0" % "test")
 
 resolvers ++= Seq(
   "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",

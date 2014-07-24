@@ -6,6 +6,7 @@ import io.prediction.controller.EngineParams
 import io.prediction.controller.LAlgorithm
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
+import io.prediction.controller.PersistentModel
 import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
@@ -540,7 +541,16 @@ object APIDebugWorkflow {
       evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
         evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
           if (algoInstanceList(ai).isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
-            Unit
+            if (model.isInstanceOf[PersistentModel[_]]) {
+              if (model.asInstanceOf[PersistentModel[Params]].save(
+                  r.id,
+                  algorithmParamsList(ai)._2))
+                PersistentModelManifest(className = model.getClass.getName)
+              else
+                Unit
+            } else {
+              Unit
+            }
           } else {
             model.asInstanceOf[RDD[Any]].collect.head
           }
@@ -559,13 +569,13 @@ object APIDebugWorkflow {
               (name -> params)
         })
       val runs = Storage.getMetaDataRuns
-      val id = runs.insert(run.get.copy(
+      runs.update(run.get.copy(
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models.get),
         multipleMetricsResults = metricsOutput))
-      logger.info(s"Run information saved with ID: $id")
-      id
+      logger.info(s"Run information saved with ID: ${run.get.id}")
+      run.get.id
     }
 
     if (metricsClassOpt.isEmpty) {

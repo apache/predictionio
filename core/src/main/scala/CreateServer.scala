@@ -13,6 +13,7 @@ import io.prediction.core.Doer
 import io.prediction.storage.{ Storage, EngineManifest, Run }
 import io.prediction.workflow.EI
 import io.prediction.workflow.EngineLanguage
+import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.WorkflowContext
 import io.prediction.workflow.WorkflowUtils
 
@@ -100,30 +101,6 @@ object CreateServer extends Logging {
           val (engineLanguage, engine) =
             WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
 
-          /*
-          val ppmExists = models.head.exists(
-            _.isInstanceOf[PersistentParallelModel])
-
-          info(s"Persistent parallel model exists? ${ppmExists}")
-
-          val sc: Option[SparkContext] = if (ppmExists) {
-            val conf = new SparkConf()
-            conf.setAppName(
-              s"PredictionIO Server: ${manifest.id} ${manifest.version}")
-            if (parsed.sparkMaster != "")
-              conf.setMaster(parsed.sparkMaster)
-            conf.set("spark.executor.memory", parsed.sparkExecutorMemory)
-            Some(new SparkContext(conf))
-          } else None
-
-          models.head foreach {
-            case ppm: PersistentParallelModel =>
-              info(s"Loading persisted parallel model: ${ppm.getClass.getName}")
-              ppm.load(sc.get, run.id)
-            case _ =>
-          }
-          */
-
           createServerWithEngine(
             sc = sc,
             run = run,
@@ -173,8 +150,10 @@ object CreateServer extends Logging {
           engine.servingClass)
     val serving = Doer(engine.servingClass, servingParams)
 
-    val pAlgorithmExists = algorithms.exists(_.isInstanceOf[PAlgorithm[_, PD, _, Q, P]])
-    val sparkContext = if (pAlgorithmExists) Some(WorkflowContext(run.batch, run.env)) else None
+    val pAlgorithmExists =
+      algorithms.exists(_.isInstanceOf[PAlgorithm[_, PD, _, Q, P]])
+    val sparkContext =
+      if (pAlgorithmExists) Some(WorkflowContext(run.batch, run.env)) else None
     val evalPreparedMap = sparkContext.map { sc =>
       logger.info("Data Source")
       val dataSourceParams = WorkflowUtils.extractParams(
@@ -208,14 +187,24 @@ object CreateServer extends Logging {
     val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
     val kryo = KryoInjection.instance(kryoInstantiator)
     val modelsFromRun = kryo.invert(run.models).get.asInstanceOf[Seq[Seq[Any]]]
-    val models = modelsFromRun.head.zip(algorithms).map {
-      case (m, a) =>
+    val models = modelsFromRun.head.zip(algorithms).zip(algorithmsParams).map {
+      case ((m, a), p) =>
         if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
           info(s"Parallel model detected for algorithm ${a.getClass.getName}")
-          a.trainBase(sparkContext.get, evalPreparedMap.get(0))
+          if (m.isInstanceOf[PersistentModelManifest]) {
+            WorkflowUtils.getPersistentModel(
+              m.asInstanceOf[PersistentModelManifest],
+              run.id,
+              p,
+              sparkContext.get,
+              getClass.getClassLoader)
+          } else {
+            a.trainBase(sparkContext.get, evalPreparedMap.get(0))
+          }
         } else {
           try {
-            info(s"Loaded model ${m.getClass.getName} for algorithm ${a.getClass.getName}")
+            info(s"Loaded model ${m.getClass.getName} for algorithm " +
+              s"${a.getClass.getName}")
             m
           } catch {
             case e: NullPointerException =>

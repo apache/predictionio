@@ -2,15 +2,17 @@ package org.apache.spark.mllib.recommendation.engine
 
 import io.prediction.controller.Engine
 import io.prediction.controller.IEngineFactory
+import io.prediction.controller.IPersistentModel
 import io.prediction.controller.PDataSource
 import io.prediction.controller.Params
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.FirstServing
-import io.prediction.controller.PersistentParallelModel
+import io.prediction.controller.PersistentModel
 import io.prediction.controller.Utils
 import io.prediction.workflow.APIDebugWorkflow
 
+import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -18,6 +20,10 @@ import org.apache.spark.mllib.recommendation.ALS
 import org.apache.spark.mllib.recommendation.Rating
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel
 import org.json4s._
+
+import scala.io.Source
+
+import java.io.File
 
 case class DataSourceParams(val filepath: String) extends Params
 
@@ -43,37 +49,51 @@ case class DataSource(val dsp: DataSourceParams)
 case class AlgorithmParams(
   val rank: Int = 10,
   val numIterations: Int = 20,
-  val lambda: Double = 0.01) extends Params
+  val lambda: Double = 0.01,
+  val persistModel: Boolean = false) extends Params
 
-class PersistentMatrixFactorizationModel(m: MatrixFactorizationModel)
-    extends PersistentParallelModel {
-
-  @transient var model = m
-  val rank: Int = m.rank
-
-  def save(id: String): Unit = {
-    model.productFeatures.saveAsObjectFile("/tmp/productFeatures")
-    model.userFeatures.saveAsObjectFile("/tmp/userFeatures")
+class PMatrixFactorizationModel(rank: Int,
+    userFeatures: RDD[(Int, Array[Double])],
+    productFeatures: RDD[(Int, Array[Double])])
+  extends MatrixFactorizationModel(rank, userFeatures, productFeatures)
+  with PersistentModel[AlgorithmParams] {
+  def save(id: String, params: AlgorithmParams): Boolean = {
+    if (params.persistModel) {
+      FileUtils.writeStringToFile(
+        new File(s"/tmp/${id}/rank"),
+        rank.toString,
+        "UTF-8")
+      userFeatures.saveAsObjectFile(s"/tmp/${id}/userFeatures")
+      productFeatures.saveAsObjectFile(s"/tmp/${id}/productFeatures")
+    }
+    params.persistModel
   }
+}
 
-  def load(sc: SparkContext, id: String): Unit = {
-    model = new MatrixFactorizationModel(
-      rank,
-      sc.objectFile("/tmp/userFeatures"),
-      sc.objectFile("/tmp/productFeatures"))
+object PMatrixFactorizationModel
+  extends IPersistentModel[AlgorithmParams, PMatrixFactorizationModel] {
+  def apply(id: String, params: AlgorithmParams, sc: SparkContext) = {
+    new PMatrixFactorizationModel(
+      rank = Source.fromFile(s"/tmp/${id}/rank").mkString.toInt,
+      userFeatures = sc.objectFile(s"/tmp/${id}/userFeatures"),
+      productFeatures = sc.objectFile(s"/tmp/${id}/productFeatures"))
   }
 }
 
 class ALSAlgorithm(val ap: AlgorithmParams)
   extends PAlgorithm[AlgorithmParams, RDD[Rating],
-      MatrixFactorizationModel, (Int, Int), Double] {
+      PMatrixFactorizationModel, (Int, Int), Double] {
 
-  def train(data: RDD[Rating]): MatrixFactorizationModel = {
-    ALS.train(data, ap.rank, ap.numIterations, ap.lambda)
+  def train(data: RDD[Rating]): PMatrixFactorizationModel = {
+    val m = ALS.train(data, ap.rank, ap.numIterations, ap.lambda)
+    new PMatrixFactorizationModel(
+      rank = m.rank,
+      userFeatures = m.userFeatures,
+      productFeatures = m.productFeatures)
   }
 
   def batchPredict(
-    model: MatrixFactorizationModel,
+    model: PMatrixFactorizationModel,
     feature: RDD[(Long, (Int, Int))]): RDD[(Long, Double)] = {
     val indexlessFeature = feature.values
 
@@ -89,7 +109,7 @@ class ALSAlgorithm(val ap: AlgorithmParams)
   }
 
   def predict(
-    model: MatrixFactorizationModel, feature: (Int, Int)): Double = {
+    model: PMatrixFactorizationModel, feature: (Int, Int)): Double = {
     model.predict(feature._1, feature._2)
   }
 

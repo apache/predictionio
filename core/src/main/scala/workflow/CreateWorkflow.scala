@@ -9,6 +9,7 @@ import io.prediction.controller.Utils
 import io.prediction.core.Doer
 import io.prediction.core.BaseMetrics
 import io.prediction.storage.Run
+import io.prediction.storage.Storage
 
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
@@ -194,6 +195,7 @@ object CreateWorkflow extends Logging {
         metricsParams = write(metricsParams),
         models = Array[Byte](),
         multipleMetricsResults = "")
+      val runId = Storage.getMetaDataRuns.insert(run)
 
       APIDebugWorkflow.runEngineTypeless(
         batch = wfc.batch,
@@ -203,7 +205,7 @@ object CreateWorkflow extends Logging {
         engineParams = engineParams,
         metrics = metricsInstance,
         metricsParams = metricsParams,
-        run = Some(run))
+        run = Some(run.copy(id = runId)))
     }
   }
 }
