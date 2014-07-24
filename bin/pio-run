@@ -11,4 +11,10 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+if [ ! -f engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar ]; then
+  sbt/sbt engines/assemblyPackageDependency
+fi
+
+sbt/sbt package
+
 $SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --class "$@"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
