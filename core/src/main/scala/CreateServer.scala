@@ -3,6 +3,7 @@ package io.prediction.deploy
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
+import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.java.LJavaAlgorithm
 //import io.prediction.PersistentParallelModel
@@ -10,7 +11,9 @@ import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.storage.{ Storage, EngineManifest, Run }
+import io.prediction.workflow.EI
 import io.prediction.workflow.EngineLanguage
+import io.prediction.workflow.WorkflowContext
 import io.prediction.workflow.WorkflowUtils
 
 import akka.actor.{ Actor, ActorSystem, Props }
@@ -24,6 +27,7 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
@@ -93,20 +97,8 @@ object CreateServer extends Logging {
         engineManifests.get(engineId, engineVersion) map { manifest =>
 
           val engineFactoryName = manifest.engineFactory
-          val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
-          val kryo = KryoInjection.instance(kryoInstantiator)
           val (engineLanguage, engine) =
             WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
-          val models = kryo.invert(run.models).get.asInstanceOf[Seq[Seq[Any]]]
-
-          models.head.foreach { m =>
-            try {
-              info(s"Loaded model instance: ${m.getClass.getName}")
-            } catch {
-              case e: NullPointerException =>
-                warn(s"Null model detected: ${m} (${e.getMessage})")
-            }
-          }
 
           /*
           val ppmExists = models.head.exists(
@@ -137,8 +129,7 @@ object CreateServer extends Logging {
             run = run,
             engine = engine,
             engineLanguage = engineLanguage,
-            manifest = manifest,
-            models = models)
+            manifest = manifest)
 
         } getOrElse {
           error(s"Invalid Engine ID or version. Aborting server.")
@@ -149,13 +140,12 @@ object CreateServer extends Logging {
     }
   }
 
-  def createServerWithEngine[Q, P](
+  def createServerWithEngine[TD, DP, PD, Q, P, A](
     sc: ServerConfig,
     run: Run,
-    engine: Engine[_, _, _, Q, P, _],
+    engine: Engine[TD, DP, PD, Q, P, A],
     engineLanguage: EngineLanguage.Value,
-    manifest: EngineManifest,
-    models: Seq[Seq[Any]]): Unit = {
+    manifest: EngineManifest): Unit = {
     implicit val formats = DefaultFormats
     val algorithmsParamsWithNames =
       read[Seq[(String, JValue)]](run.algorithmsParams).map {
@@ -182,6 +172,58 @@ object CreateServer extends Logging {
           run.servingParams,
           engine.servingClass)
     val serving = Doer(engine.servingClass, servingParams)
+
+    val pAlgorithmExists = algorithms.exists(_.isInstanceOf[PAlgorithm[_, PD, _, Q, P]])
+    val sparkContext = if (pAlgorithmExists) Some(WorkflowContext(run.batch, run.env)) else None
+    val evalPreparedMap = sparkContext.map { sc =>
+      logger.info("Data Source")
+      val dataSourceParams = WorkflowUtils.extractParams(
+        engineLanguage,
+        run.dataSourceParams,
+        engine.dataSourceClass)
+      val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
+      val evalParamsDataMap
+      : Map[EI, (DP, TD, RDD[(Q, A)])] = dataSource
+        .readBase(sc)
+        .zipWithIndex
+        .map(_.swap)
+        .toMap
+      val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
+        case(ei, e) => (ei -> (e._2, e._3))
+      }
+      logger.info("Preparator")
+      val preparatorParams = WorkflowUtils.extractParams(
+        engineLanguage,
+        run.preparatorParams,
+        engine.preparatorClass)
+      val preparator = Doer(engine.preparatorClass, preparatorParams)
+
+      val evalPreparedMap: Map[EI, PD] = evalDataMap
+      .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
+      logger.info("Preparator complete")
+
+      evalPreparedMap
+    }
+
+    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
+    val kryo = KryoInjection.instance(kryoInstantiator)
+    val modelsFromRun = kryo.invert(run.models).get.asInstanceOf[Seq[Seq[Any]]]
+    val models = modelsFromRun.head.zip(algorithms).map {
+      case (m, a) =>
+        if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
+          info("Parallel model detected for algorithm ${a.getClass.getName}")
+          a.trainBase(sparkContext.get, evalPreparedMap.get(0))
+        } else {
+          try {
+            info(s"Loaded model ${m.getClass.getName} for algorithm ${a.getClass.getName}")
+            m
+          } catch {
+            case e: NullPointerException =>
+              warn(s"Null model detected for algorithm ${a.getClass.getName}")
+              m
+          }
+        }
+    }
 
     // we need an ActorSystem to host our application in
     implicit val system = ActorSystem("predictionio-server")
@@ -216,7 +258,7 @@ class ServerActor[Q, P](
     val manifest: EngineManifest,
     val algorithms: Seq[BaseAlgorithm[_ <: Params, _, _, Q, P]],
     val algorithmsParams: Seq[Params],
-    val models: Seq[Seq[Any]],
+    val models: Seq[Any],
     val serving: BaseServing[_ <: Params, Q, P],
     val servingParams: Params) extends Actor with HttpService {
 
@@ -252,7 +294,7 @@ class ServerActor[Q, P](
                     <li><strong>Files:</strong> {manifest.files.mkString(" ")}</li>
                     <li><strong>Algorithms:</strong> {algorithms.mkString(" ")}</li>
                     <li><strong>Algorithms Parameters:</strong> {algorithmsParams.mkString(" ")}</li>
-                    <li><strong>Models:</strong> {models.head.mkString(" ")}</li>
+                    <li><strong>Models:</strong> {models.mkString(" ")}</li>
                     <li><strong>Server Parameters:</strong> {servingParams}</li>
                   </ul>
                 </div>
@@ -276,7 +318,7 @@ class ServerActor[Q, P](
                 firstAlgorithm.queryManifest)
             }
           val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-            a.predictBase(models.head(ai), query)
+            a.predictBase(models(ai), query)
           }
           val prediction = serving.serveBase(query, predictions)
           complete(compact(render(

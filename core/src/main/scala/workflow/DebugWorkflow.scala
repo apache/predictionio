@@ -3,8 +3,9 @@ package io.prediction.workflow
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
 import io.prediction.controller.EngineParams
-import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
+import io.prediction.controller.PAlgorithm
+import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
@@ -535,8 +536,41 @@ object APIDebugWorkflow {
       }}
     }
 
+    val models: Option[Seq[Seq[Any]]] = run.map { r =>
+      evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
+        evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
+          if (algoInstanceList(ai).isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
+            Unit
+          } else {
+            model.asInstanceOf[RDD[Any]].collect.head
+          }
+        }
+      }
+    }
+
+    def saveRun(metricsOutput: String): String = {
+      implicit val f = Utils.json4sDefaultFormats
+      val translatedAlgorithmsParams = write(
+        algorithmParamsList.zip(algoInstanceList).map {
+          case ((name, params), inst) =>
+            if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _, _]])
+              (name -> WorkflowUtils.javaObjectToJValue(params))
+            else
+              (name -> params)
+        })
+      val runs = Storage.getMetaDataRuns
+      val id = runs.insert(run.get.copy(
+        endTime = DateTime.now,
+        algorithmsParams = translatedAlgorithmsParams,
+        models = KryoInjection(models.get),
+        multipleMetricsResults = metricsOutput))
+      logger.info(s"Run information saved with ID: $id")
+      id
+    }
+
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
+      run.map { r => saveRun("") }
       return
     }
 
@@ -593,30 +627,7 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    run.map { r =>
-      val models: Seq[Seq[Any]] = evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
-        evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
-          // handle only local algorithms now
-          model.asInstanceOf[RDD[Any]].collect.head
-        }
-      }
-      implicit val f = Utils.json4sDefaultFormats
-      val translatedAlgorithmsParams = write(
-        algorithmParamsList.zip(algoInstanceList).map {
-          case ((name, params), inst) =>
-            if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _, _]])
-              (name -> WorkflowUtils.javaObjectToJValue(params))
-            else
-              (name -> params)
-        })
-      val runs = Storage.getMetaDataRuns
-      val id = runs.insert(r.copy(
-        endTime = DateTime.now,
-        algorithmsParams = translatedAlgorithmsParams,
-        models = KryoInjection(models),
-        multipleMetricsResults = metricsOutput.mkString("\n")))
-      logger.info(s"Workflow completed. Run information saved with ID: $id")
-    }
+    run.map { r => saveRun(metricsOutput.mkString("\n")) }
   }
 }
 

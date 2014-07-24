@@ -1,11 +1,14 @@
 package org.apache.spark.mllib.recommendation.engine
 
+import io.prediction.controller.Engine
+import io.prediction.controller.IEngineFactory
 import io.prediction.controller.PDataSource
 import io.prediction.controller.Params
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.FirstServing
 import io.prediction.controller.PersistentParallelModel
+import io.prediction.controller.Utils
 import io.prediction.workflow.APIDebugWorkflow
 
 import org.apache.spark.SparkContext
@@ -14,6 +17,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.ALS
 import org.apache.spark.mllib.recommendation.Rating
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel
+import org.json4s._
 
 case class DataSourceParams(val filepath: String) extends Params
 
@@ -61,20 +65,19 @@ class PersistentMatrixFactorizationModel(m: MatrixFactorizationModel)
 }
 
 class ALSAlgorithm(val ap: AlgorithmParams)
-  extends PAlgorithm[AlgorithmParams, RDD[Rating], 
-      PersistentMatrixFactorizationModel, (Int, Int), Double] {
+  extends PAlgorithm[AlgorithmParams, RDD[Rating],
+      MatrixFactorizationModel, (Int, Int), Double] {
 
-  def train(data: RDD[Rating]): PersistentMatrixFactorizationModel = {
-    new PersistentMatrixFactorizationModel(
-      ALS.train(data, ap.rank, ap.numIterations, ap.lambda))
+  def train(data: RDD[Rating]): MatrixFactorizationModel = {
+    ALS.train(data, ap.rank, ap.numIterations, ap.lambda)
   }
-  
+
   def batchPredict(
-    model: PersistentMatrixFactorizationModel,
+    model: MatrixFactorizationModel,
     feature: RDD[(Long, (Int, Int))]): RDD[(Long, Double)] = {
     val indexlessFeature = feature.values
 
-    val prediction: RDD[Rating] = model.model.predict(indexlessFeature)
+    val prediction: RDD[Rating] = model.predict(indexlessFeature)
 
     val p: RDD[((Int, Int), Double)] = prediction.map {
       r => ((r.user, r.product), r.rating)
@@ -86,16 +89,19 @@ class ALSAlgorithm(val ap: AlgorithmParams)
   }
 
   def predict(
-    model: PersistentMatrixFactorizationModel, feature: (Int, Int)): Double = {
-    model.model.predict(feature._1, feature._2)
+    model: MatrixFactorizationModel, feature: (Int, Int)): Double = {
+    model.predict(feature._1, feature._2)
   }
+
+  @transient override lazy val querySerializer =
+    Utils.json4sDefaultFormats + new Tuple2IntSerializer
 }
 
 object Run {
   def main(args: Array[String]) {
     val dsp = DataSourceParams("data/movielens.txt")
     val ap = AlgorithmParams()
-    
+
     APIDebugWorkflow.run(
       dataSourceClassOpt = Some(classOf[DataSource]),
       dataSourceParams = dsp,
@@ -109,10 +115,18 @@ object Run {
   }
 }
 
-/***** FIXME. Serializer ****/
-import org.json4s._
+object RecommendationEngine extends IEngineFactory {
+  def apply() = {
+    new Engine(
+      classOf[DataSource],
+      IdentityPreparator(classOf[DataSource]),
+      Map("" -> classOf[ALSAlgorithm]),
+      FirstServing(classOf[ALSAlgorithm]))
+  }
+}
 
-class FeatureSerializer extends CustomSerializer[(Int, Int)](format => (
+
+class Tuple2IntSerializer extends CustomSerializer[(Int, Int)](format => (
   {
     case JArray(List(JInt(x), JInt(y))) => (x.intValue, y.intValue)
   },
@@ -120,4 +134,3 @@ class FeatureSerializer extends CustomSerializer[(Int, Int)](format => (
     case x: (Int, Int) => JArray(List(JInt(x._1), JInt(x._2)))
   }
 ))
-
