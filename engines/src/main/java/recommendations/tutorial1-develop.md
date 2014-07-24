@@ -2,8 +2,6 @@
 
 In this tutorial, we will build a simple **Java single machine recommendation algorithm ** to demonstrate how you could develop your own algorithm and prediction engine with PredictionIO. Movie-lens 100k data set will be used.
 
-The purpose of this tutorial is to help you to get familiar with the PredictionIO framework.
-
 We will implement two basic controller components: DataSource and Algorithm.
 
 ## Step 1. Define the data class type
