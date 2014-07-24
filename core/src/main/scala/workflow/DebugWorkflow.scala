@@ -48,16 +48,14 @@ import java.util.{ HashMap => JHashMap, Map => JMap }
 
 // FIXME: move to better location.
 object WorkflowContext extends Logging {
-  def apply(batch: String = "", env: Map[String, String] = Map()): SparkContext = {
+  def apply(
+      batch: String = "",
+      env: Map[String, String] = Map()): SparkContext = {
     val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
     info(s"Environment received: ${env}")
     env.map(kv => conf.setExecutorEnv(kv._1, kv._2))
     info(s"SparkConf executor environment: ${conf.getExecutorEnv}")
-    conf.set("spark.local.dir", "~/tmp/spark")
-    conf.set("spark.executor.memory", "7g")
-
-    val sc = new SparkContext(conf)
-    return sc
+    new SparkContext(conf)
   }
 }
 
