@@ -1,3 +1,8 @@
+Tutorials
+=========
+
+- [Recommendation Engine with RDD-based Model using MLlib's ALS](engines/src/main/scala/recommendations/README.md)
+
 Running Evaluation and Server
 =============================
 
