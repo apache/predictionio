@@ -80,3 +80,70 @@ abstract class StockAlgorithm[P <: Params : ClassTag, M : ClassTag]
 
 #### RegressionAlgorithm
 [RegressionAlgrotihm](RegressionAlgorithm.scala) creates a linear model for each stock using a vector comprised of the 1-day, 1-week, and 1-month return of the stock.
+
+#### RandomAlgorithm
+[RandomAlgorithm](RandomAlgorithm.scala) produces a gaussian random variable with scaling and drift.
+
+### Evaluation: Backtesting Metrics
+This is the most common method in quantitative equity research. We test the stock prediction algorithm against historical data. For each day in the evaluation period, we open or close positions according to the prediction of the algorithm. This allows us to simulate the daily P/L, volatility, and drawdown of the prediction algorithm.
+
+[BacktestingMetrics](BacktestingMetrics.scala) takes three parameters: `enterThreshold` the minimum predicted return to open a new position, `exitThreshold` the maximum predicted return to close a existing position, and `maxPositions` is the maximum number of open positions.
+Every day, this metrics adjusts its portfolio based on the stock algorithm's prediction `Target`. For an current position, if its predicted return is lower than `exitThreshold`, then metrics will close this positions. On the other hand, metrics will look at all stocks that have predicted return higher than `enterThreshold`, and will repeatedly open new ones with maximum predicted value until it reaches `maxPositions`.
+
+##### First Evaluation: Demo1
+[stock.Demo1](Demo1.scala) shows a sample Runner program. To run this evaluation, you have to specify two sets of parameters:
+
+1. `DataSourceParams` governs the ticker and the time window you wish to evaluate. Here is the parameter we used in stock.Demo1.
+```scala
+val dataSourceParams = new DataSourceParams(
+  baseDate = new DateTime(2004, 1, 1, 0, 0),
+  fromIdx = 400,
+  untilIdx = 1000,
+  trainingWindowSize = 300,
+  evaluationInterval = 20,
+  marketTicker = "SPY",
+  tickerList = Seq("AAPL"))
+```
+This means we start our evaluation at 400 market days after the first day of 2004 until 1200 days. Our `evalutionInterval` is 20 and `trainingWindowSize` is 300, meaning that we use day 100 until day 400 as *the first slice* of training data, and evaluate with data from day 400 until 420.
+Then, this process repeats, day 120 until 420 for training, and evaluation with data from day 420 until 440, until it reaches `untilIdx`. We only specify one ticker GOOGL for now, but our stock engine actually supports multiple tickers.
+
+2. `BacktestingParams` governs the backtesting evaluation.
+```scala
+val backtestingParams = BacktestingParams(enterThreshold = 0.001,
+                                          exitThreshold = 0.0)
+```
+As explained above, the backtesting evaluator opens a new long position when the prediction of stock is higher than 0.001, and will exit such position when the prediction is lower than 0.0.
+
+You can run the evaluation with the following command. (Assuming you already have started a local spark cluster)
+```
+$ bin/pio-run io.prediction.engines.stock.Demo1
+```
+
+You should see that we are trading from April 2005 until Dec 2007, the NAV went from $1,000,000 to $1,433,449.24, YaY!!!
+
+(**Disclaimer**: I cherrypicked this parameter to make the demo look nice. A buy-and-hold strategy of AAPL from April 2005 until 2007 performs even better. And, you will lose money if you let it run for longer: set `untilIdx = 1400`.)
+
+##### Second Evaluation
+[stock.Demo2](Demo2.scala) shows us how to run backtesting against a basket of stocks. You simply specify a list of tickers in the tickerList. `DataSource` wil l handle cases where the ticker was absent.
+
+In `BacktestingParams`, you may allow more stocks to be hold concurrently. The backtesting class essentially divide the current NAV by the `maxPositions`. The demo is run the same way, by specifying the running main class.
+```
+$ bin/pio-run io.prediction.engines.stock.Demo2
+```
+
+The result is not as great, of course.
+
+##### Third Evaluation
+Now, you may start wondering what actually contribute to the profit, and may want to dive deeper into the data. [DailyMetrics](DailyMetrics.scala) is a helper metrics which helps you to understand the performance of different parameter settings. It aggregates the prediction results for different `enterThreshold`, and output the average / stdev return of the prediction algorithm.
+
+All you need is to change the `metrics` variable to `DailyMetrics`. [Demo3](Demo3.scala) shows the actual code. Try it out with:
+```
+$ bin/pio-run io.prediction.engines.stock.Demo3
+```
+
+### Last Words
+The current version is only a proof-of-concept for a stock engine using Prediction.IO infrastructure. *A lot of* possible improvements can be done:
+- Use spark broadcast variable to deliver the whole dataset, instead of repeatedly copy to each Query and TrainingData. StockEngine should wrap around the data object and provide the correct slice of data and prevent look-ahead bias.
+- Better backtesting metrics report. Should also calculate various important metrics like daily / annual return and volatility, sharpe and other metrics, drawdown, etc.
+- Better backtesting method. Should be able to handle cost of capital, margin, transaction costs, variable position sizes, etc.
+- And a lot more.....

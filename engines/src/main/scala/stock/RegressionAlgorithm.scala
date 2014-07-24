@@ -96,6 +96,7 @@ class RegressionAlgorithm
     val prediction = price.colIx.toVec.contents
       // If model doesn't have the data, skip
       .filter { ticker => model.contains(ticker) }
+      .filter { _ != query.mktTicker }
       .map { ticker =>
         {
           val p = predictOne(
