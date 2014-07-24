@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
-set +x
+FWDIR="$(cd `dirname $0`/..; pwd)"
+
+export PIO_HOME="$FWDIR"
+
+. $FWDIR/bin/load-pio-env.sh
+
+if [ -z "$1" ]; then
+  echo "Usage: pio-run <runner-class>" 1>&2
+  exit 1
+fi
 
 $SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --class "$@"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
