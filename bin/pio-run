@@ -19,4 +19,8 @@ fi
 
 sbt/sbt package
 
-$SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --class "$@"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
+CLASSNAME=$1
+
+shift
+
+$SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --class $CLASSNAME  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar "$@"
