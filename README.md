@@ -57,16 +57,16 @@ Pure Scala Workflow
 ### Local
 
 ```
-bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/scala/regression/local/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
-bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params --metricsClass io.prediction.controller.MeanSquareError
+bin/register-engine engines/src/main/scala/regression/local/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params --metricsClass io.prediction.controller.MeanSquareError
 ```
 
 
 ### Parallel
 
 ```
-bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/scala/regression/parallel/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
-bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression.parallel --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/parallel/params --metricsClass io.prediction.controller.MeanSquareError
+bin/register-engine engines/src/main/scala/regression/parallel/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression.parallel --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/parallel/params --metricsClass io.prediction.controller.MeanSquareError
 ```
 
 
@@ -74,8 +74,8 @@ Pure Java Workflow
 ------------------
 
 ```
-bin/pio-class io.prediction.tools.RegisterEngine engines/src/main/java/regression/examples/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
-bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.engines.java.regression.MeanSquareMetrics
+bin/register-engine engines/src/main/java/regression/examples/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.engines.java.regression.MeanSquareMetrics
 ```
 
 
@@ -84,7 +84,7 @@ bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId
 Replace the last line in the section above with the following:
 
 ```
-bin/pio-class io.prediction.tools.RunWorkflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.controller.MeanSquareError
+bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/regression/examples --metricsClass io.prediction.controller.MeanSquareError
 ```
 
 
@@ -95,7 +95,7 @@ Following from instructions above, you should have obtained a run ID after
 your workflow finished.
 
 ```
-bin/pio-class io.prediction.tools.RunServer --runId RUN_ID_HERE
+bin/run-server --runId RUN_ID_HERE
 ```
 
 This will create a server that by default binds to http://localhost:8000. You
