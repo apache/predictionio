@@ -2,7 +2,7 @@ Tutorials
 =========
 
 - [Recommendation Engine with RDD-based Model using MLlib's ALS](engines/src/main/scala/recommendations/README.md)
-- [Stock Prediction Engine with customizable algorithms](engines/src/main/stock/README.md)
+- [Stock Prediction Engine with customizable algorithms](engines/src/main/scala/stock/README.md)
 
 Running Evaluation and Server
 =============================
