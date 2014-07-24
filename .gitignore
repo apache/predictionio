@@ -8,3 +8,4 @@ sbt/sbt-launch-*.jar
 *.class
 core/data
 *.orig
+data/ml-*

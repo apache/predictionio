@@ -1,3 +1,11 @@
+## Download Data from GroupLens
+
+Download movie-lens 100-k data to data/ml-100k/.
+```
+$ engines/src/main/java/recommendations/fetch.sh
+```
+
+
 ## Tutorials
 
 The purpose of this tutorial is to help you to get familiar with each components of the PredictionIO framework.
