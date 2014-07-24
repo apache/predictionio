@@ -1,0 +1,6 @@
+{
+  "id": "myrecommendations",
+  "version": "0.8.0-SNAPSHOT",
+  "name": "ItemRec Engine",
+  "engineFactory": "myrecommendations.EngineFactory"
+}

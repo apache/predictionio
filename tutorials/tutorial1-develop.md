@@ -1,4 +1,6 @@
-# Tutorial 1 - Single Machine Java Recommendation Engine
+# Tutorial 1 - Develop and Integrate Algorithm with PredictionIO
+
+## Single Machine Java Recommendation Engine
 
 In this tutorial, we will demonstrate how to build a single machine recommendation algorithm written in Java and integrate it with PredictionIO. Movie-lens 100k data set will be used.
 
@@ -110,15 +112,14 @@ Modify Runner.java to add Algorithm class:
 // code
 ```
 
+Execute:
 
-## Step 3. Create Engine manifest and parameter json files
+```
+// command
+```
 
-TBD
+You should see the following model printed
 
-## Step 4. Compile and Run Evaluation
-
-TBD
-
-## Step 5. Deploy Engine
-
-TBD
+```
+// sample output
+```
