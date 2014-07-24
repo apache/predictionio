@@ -71,7 +71,7 @@ object RunServer extends Logging {
             "--master",
             sc.sparkMaster,
             "--class",
-            "io.prediction.deploy.CreateServer") ++ (
+            "io.prediction.workflow.CreateServer") ++ (
               if (em.files.size > 1) Seq(
                 "--jars",
                 em.files.drop(1).mkString(","))

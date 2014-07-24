@@ -1,4 +1,4 @@
-package io.prediction.deploy
+package io.prediction.workflow
 
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.EmptyParams
@@ -6,16 +6,10 @@ import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.java.LJavaAlgorithm
-//import io.prediction.PersistentParallelModel
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.storage.{ Storage, EngineManifest, Run }
-import io.prediction.workflow.EI
-import io.prediction.workflow.EngineLanguage
-import io.prediction.workflow.PersistentModelManifest
-import io.prediction.workflow.WorkflowContext
-import io.prediction.workflow.WorkflowUtils
 
 import akka.actor.{ Actor, ActorSystem, Props }
 import akka.io.IO
