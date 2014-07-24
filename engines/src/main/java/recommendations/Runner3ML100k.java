@@ -17,7 +17,7 @@ public class Runner3ML100k {
   public static void runEvaluation() {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
       .dataSourceParams(new DataSourceParams(
-        "engines/src/main/java/recommendations/testdata/u.data"))
+        "engines/src/main/java/recommendations/testdata/ml-100k/u.data"))
       .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.1))
       .build();
 
