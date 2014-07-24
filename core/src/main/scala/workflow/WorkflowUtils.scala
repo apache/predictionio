@@ -2,10 +2,9 @@ package io.prediction.workflow
 
 import io.prediction.controller.Engine
 import io.prediction.controller.IEngineFactory
-import io.prediction.controller.IPersistentModel
+import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Params
-import io.prediction.controller.PersistentModel
 import io.prediction.controller.Utils
 
 import com.google.gson.Gson
@@ -61,14 +60,14 @@ object WorkflowUtils extends Logging {
     val pmmModule = runtimeMirror.staticModule(pmm.className)
     val pmmObject = runtimeMirror.reflectModule(pmmModule)
     try {
-      pmmObject.instance.asInstanceOf[IPersistentModel[AP, M]](
+      pmmObject.instance.asInstanceOf[IPersistentModelLoader[AP, M]](
         runId,
         params,
         sc)
     } catch {
       case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
         Class.forName(pmm.className).newInstance.
-          asInstanceOf[IPersistentModel[AP, M]](runId, params, sc)
+          asInstanceOf[IPersistentModelLoader[AP, M]](runId, params, sc)
       }
     }
   }

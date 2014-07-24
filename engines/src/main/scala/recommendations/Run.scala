@@ -3,12 +3,12 @@ package org.apache.spark.mllib.recommendation.engine
 import io.prediction.controller.Engine
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.IPersistentModel
+import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.PDataSource
 import io.prediction.controller.Params
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.FirstServing
-import io.prediction.controller.PersistentModel
 import io.prediction.controller.Utils
 import io.prediction.workflow.APIDebugWorkflow
 
@@ -56,7 +56,7 @@ class PMatrixFactorizationModel(rank: Int,
     userFeatures: RDD[(Int, Array[Double])],
     productFeatures: RDD[(Int, Array[Double])])
   extends MatrixFactorizationModel(rank, userFeatures, productFeatures)
-  with PersistentModel[AlgorithmParams] {
+  with IPersistentModel[AlgorithmParams] {
   def save(id: String, params: AlgorithmParams): Boolean = {
     if (params.persistModel) {
       FileUtils.writeStringToFile(
@@ -71,7 +71,7 @@ class PMatrixFactorizationModel(rank: Int,
 }
 
 object PMatrixFactorizationModel
-  extends IPersistentModel[AlgorithmParams, PMatrixFactorizationModel] {
+  extends IPersistentModelLoader[AlgorithmParams, PMatrixFactorizationModel] {
   def apply(id: String, params: AlgorithmParams, sc: SparkContext) = {
     new PMatrixFactorizationModel(
       rank = Source.fromFile(s"/tmp/${id}/rank").mkString.toInt,
