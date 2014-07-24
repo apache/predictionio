@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 FWDIR="$(cd `dirname $0`/..; pwd)"
 
 export PIO_HOME="$FWDIR"
