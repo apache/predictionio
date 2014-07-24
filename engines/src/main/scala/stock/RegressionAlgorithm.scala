@@ -2,6 +2,8 @@ package io.prediction.engines.stock
 
 import io.prediction.controller.LAlgorithm
 import io.prediction.controller.EmptyParams
+import io.prediction.controller.IEngineFactory
+import io.prediction.controller.SimpleEngine
 
 import breeze.linalg.{ DenseMatrix, DenseVector }
 import breeze.stats.{ mean, meanAndVariance }
@@ -12,6 +14,12 @@ import org.saddle.index.IndexTime
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.{ Map => MMap }
 import scala.math
+
+object RegressionEngineFactory extends IEngineFactory {
+  def apply() = {
+    new SimpleEngine(classOf[StockDataSource], classOf[RegressionAlgorithm])
+  }
+}
 
 class RegressionAlgorithm
   extends StockAlgorithm[EmptyParams, Map[String, DenseVector[Double]]] {
