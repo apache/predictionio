@@ -1,15 +1,15 @@
 package io.prediction.controller.java
 
-import io.prediction.core.BaseServing
-import io.prediction.core.BaseAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.EmptyParams
+import io.prediction.core.BaseServing
+import io.prediction.core.BaseAlgorithm
 
-import java.util.{ List => JList }
-import java.lang.{ Iterable => JIterable }
 import scala.collection.JavaConversions._
-
 import scala.reflect._
+
+import java.lang.{ Iterable => JIterable }
+import java.util.{ List => JList }
 
 abstract class LJavaServing[SP <: Params, Q, P]
   extends BaseServing[SP, Q, P]()(JavaUtils.fakeClassTag[SP]) {
@@ -29,8 +29,8 @@ class LJavaFirstServing[Q, P] extends LJavaServing[EmptyParams, Q, P] {
 
 object LJavaFirstServing {
   def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, _, Q, P]]) =
-    classOf[FirstServing[Q, P]]
+    classOf[LJavaFirstServing[Q, P]]
 
   def apply[Q, P, B <: JavaEngineBuilder[_, _, _, Q, P, _]](b: B) =
-    classOf[FirstServing[Q, P]]
+    classOf[LJavaFirstServing[Q, P]]
 }
