@@ -65,5 +65,3 @@ abstract class StockAlgorithm[P <: Params : ClassTag, M : ClassTag]
 
   def predict(model: M, query: Query): Target
 }
-
-

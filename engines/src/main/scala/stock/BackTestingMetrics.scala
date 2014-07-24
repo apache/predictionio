@@ -5,10 +5,10 @@ import io.prediction.controller.Metrics
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
-case class BackTestingParams(
+case class BacktestingParams(
   val enterThreshold: Double,
   val exitThreshold: Double,
-  val maxPositions: Int = 3)
+  val maxPositions: Int = 1)
 extends Params {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
@@ -19,8 +19,8 @@ class DailyResult(
   val toExit: Seq[String])
 extends Serializable {}
 
-class BackTestingMetrics(val params: BackTestingParams)
-  extends Metrics[BackTestingParams, AnyRef, Query, Target, Target,
+class BacktestingMetrics(val params: BacktestingParams)
+  extends Metrics[BacktestingParams, AnyRef, Query, Target, Target,
       DailyResult, Seq[DailyResult], String] {
 
   def computeUnit(query: Query, predicted: Target, actual: Target)

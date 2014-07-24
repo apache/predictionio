@@ -38,8 +38,8 @@ object Run {
           "Regression" -> classOf[RegressionAlgorithm])),
         algorithmParamsList = algorithmParamsList,
         servingClassOpt = Some(FirstServing(classOf[RegressionAlgorithm])),
-        metricsClassOpt = Some(classOf[BackTestingMetrics]),
-        metricsParams = BackTestingParams(0.002, 0.0),
+        metricsClassOpt = Some(classOf[BacktestingMetrics]),
+        metricsParams = BacktestingParams(0.002, 0.0),
         verbose = 0,
         batch = "Imagine: Stock")
   }

@@ -19,6 +19,24 @@ class EngineParams(
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
     val servingParams: Params = EmptyParams()) extends Serializable
 
+// SimpleEngine has only one algorithm, and uses default preparator and serving
+// layer.
+class SimpleEngine[TD, DP, Q, P, A](
+    dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
+    algorithmClass: Class[_ <: BaseAlgorithm[_ <: Params, TD, _, Q, P]])
+  extends Engine(
+      dataSourceClass,
+      IdentityPreparator(dataSourceClass),
+      Map("" -> algorithmClass),
+      FirstServing(algorithmClass))
+
+class SimpleEngineParams(
+    dataSourceParams: Params = EmptyParams(),
+    algorithmParams: Params = EmptyParams())
+  extends EngineParams(
+      dataSourceParams = dataSourceParams,
+      algorithmParamsList = Seq(("", algorithmParams)))
+
 trait IEngineFactory {
   def apply(): Engine[_, _, _, _, _, _]
 }

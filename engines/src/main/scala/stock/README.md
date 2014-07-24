@@ -66,3 +66,17 @@ class Query(
 
 #### Target
 [Target](Data.scala) is the output for prediction. It is essentially a map from ticker to predicted return. Notice that the prediction need not to match `Query`, if an algorithm cannot make prediction some symbols, it can just leave them out.
+
+### The Algorithm
+Stock prediction algorithms should extends [StockAlgorithm](Stock.scala) class.
+
+```scala
+abstract class StockAlgorithm[P <: Params : ClassTag, M : ClassTag]
+  extends LAlgorithm[P, TrainingData, M, Query, Target] {
+  def train(trainingData: TrainingData): M
+  def predict(model: M, query: Query): Target
+}
+```
+
+#### RegressionAlgorithm
+[RegressionAlgrotihm](RegressionAlgorithm.scala) creates a linear model for each stock using a vector comprised of the 1-day, 1-week, and 1-month return of the stock.
