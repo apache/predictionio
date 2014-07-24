@@ -91,7 +91,6 @@ public class ItemRecDataSource extends LJavaDataSource<
 
     Random rand = new Random(dsp.seed);
 
-    // only one slice
     List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>> data = new
       ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Actual>>>>();
 

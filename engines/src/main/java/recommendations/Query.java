@@ -1,4 +1,4 @@
-package myrecommendations;
+package io.prediction.engines.java.recommendations;
 
 import java.io.Serializable;
 
@@ -9,5 +9,10 @@ public class Query implements Serializable {
   public Query(int uid, int iid) {
     this.uid = uid;
     this.iid = iid;
+  }
+
+  @Override
+  public String toString() {
+    return "(" + uid + "," + iid + ")";
   }
 }

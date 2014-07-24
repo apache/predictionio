@@ -1,8 +1,6 @@
 # Tutorial 1 - Develop and Integrate Algorithm with PredictionIO
 
-## Single Machine Java Recommendation Engine
-
-In this tutorial, we will demonstrate how to build a single machine recommendation algorithm written in Java and integrate it with PredictionIO. Movie-lens 100k data set will be used.
+In this tutorial, we will build a simple **Java single machine recommendation algorithm ** to demonstrate how your could develop your own algorithm and integrate it with PredictionIO. Movie-lens 100k data set will be used.
 
 This prediction Engine will take user ID and item ID as input and return the predicted preference value of the item by the user. In this example, we will implement two minimal controller components required by PredictionIO framework: DataSource and Algorithm.
 
@@ -101,7 +99,10 @@ sbt/sbt "project engines" assemblyPackageDependency
 Execute the following:
 
 ```
-$SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "myrecommendations.Runner"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
+bin/pio-run io.prediction.engines.java.recommendations.Runner1
+
+
+$SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "io.prediction.engines.java.recommendations.Runner"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
 ```
 
 ## Step 5. Test run Algorithm

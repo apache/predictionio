@@ -1,4 +1,4 @@
-package myrecommendations;
+package io.prediction.engines.java.recommendations;
 
 import java.io.Serializable;
 import java.util.List;

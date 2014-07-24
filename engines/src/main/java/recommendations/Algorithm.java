@@ -1,4 +1,4 @@
-package myrecommendations;
+package io.prediction.engines.java.recommendations;
 
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.EmptyParams;
@@ -9,10 +9,21 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Algorithm extends
   LJavaAlgorithm<EmptyParams, TrainingData, Model, Query, Float> {
 
+  final static Logger logger = LoggerFactory.getLogger(Algorithm.class);
+
+  AlgoParams params;
+
+  public Algorithm(AlgoParams params) {
+    this.params = params;
+  }
+  
   @Override
   public Model train(TrainingData data) {
     // pre-process
@@ -81,9 +92,11 @@ public class Algorithm extends
         RealVector vector1 = itemVectors.get(itemID1);
         RealVector vector2 = itemVectors.get(itemID2);
         double score = vector1.cosine(vector2);
-        Integer index2 = itemIndexMap.get(itemID2);
-        setItemSimilarity(itemSimilarity, itemID1, index2, score, numOfItems);
-        setItemSimilarity(itemSimilarity, itemID2, index1, score, numOfItems);
+        if (score > params.threshold) {
+          Integer index2 = itemIndexMap.get(itemID2);
+          setItemSimilarity(itemSimilarity, itemID1, index2, score, numOfItems);
+          setItemSimilarity(itemSimilarity, itemID2, index1, score, numOfItems);
+        }
       }
     }
 
@@ -102,6 +115,35 @@ public class Algorithm extends
 
   @Override
   public Float predict(Model model, Query query) {
-    return 0.0f;
+    RealVector itemVector = model.itemSimilarity.get(query.iid);
+    RealVector userVector = model.userHistory.get(query.uid);
+    if (itemVector == null) {
+      // cold start item, can't be handled by this algo, return hard code value.
+      return 0.0f;
+    } else if (userVector == null) {
+      // new user, can't be handled by this algo, return hard code value.
+      return 0.0f;
+    } else {
+      //logger.info("(" + query.uid + "," + query.iid + ")");
+      //logger.info(itemVector.toString());
+      //logger.info(userVector.toString());
+      double accum = 0.0;
+      double accumSim = 0.0;
+      for (int i = 0; i < itemVector.getDimension(); i++) {
+        double weight = itemVector.getEntry(i);
+        double rating = userVector.getEntry(i);
+        if ((weight != 0) && (rating != 0)) {
+          accum += weight * rating;
+          accumSim += Math.abs(weight);
+        }
+      }
+
+      if (accumSim == 0.0) {
+        return 0.0f;
+      } else {
+        return (float) (accum / accumSim);
+      }
+    }
   }
+
 }

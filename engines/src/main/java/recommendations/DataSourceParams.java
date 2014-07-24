@@ -1,4 +1,4 @@
-package myrecommendations;
+package io.prediction.engines.java.recommendations;
 
 import io.prediction.controller.Params;
 

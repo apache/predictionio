@@ -1,4 +1,4 @@
-package myrecommendations;
+package io.prediction.engines.java.recommendations;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 import io.prediction.controller.IdentityPreparator;
 
-public class Runner {
+public class Runner1 {
 
   // During development, one can build a semi-engine, only add the first few layers. In this
   // particular example, we only add until dataSource layer
@@ -21,7 +21,6 @@ public class Runner {
       return new JavaSimpleEngineBuilder<
         TrainingData, EmptyParams, Query, Float, EmptyData> ()
         .dataSourceClass(DataSource.class)
-        //.addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
         .build();
     }
   }
@@ -30,7 +29,6 @@ public class Runner {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
       .dataSourceParams(new DataSourceParams(
         "engines/src/main/java/recommendations/testdata/ratings.csv"))
-      //.addAlgorithmParams("MyRecommendationAlgo", new EmptyParams())
       .build();
 
     JavaAPIDebugWorkflow.runEngine(
@@ -45,7 +43,6 @@ public class Runner {
   }
 
   public static void main(String[] args) {
-    //runEngine();
     runComponents();
   }
 }

@@ -1,6 +1,6 @@
 {
-  "id": "myrecommendations",
+  "id": "io.prediction.engines.java.recommendations",
   "version": "0.8.0-SNAPSHOT",
-  "name": "ItemRec Engine",
-  "engineFactory": "myrecommendations.EngineFactory"
+  "name": "Recommendations Engine",
+  "engineFactory": "io.prediction.engines.java.recommendations.EngineFactory"
 }
