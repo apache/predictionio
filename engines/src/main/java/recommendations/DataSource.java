@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataSource extends LJavaDataSource<
-  DataSourceParams, EmptyParams, TrainingData, Query, EmptyData> {
+  DataSourceParams, EmptyParams, TrainingData, Query, Object> {
 
   final static Logger logger = LoggerFactory.getLogger(DataSource.class);
 
@@ -25,7 +25,7 @@ public class DataSource extends LJavaDataSource<
   }
 
   @Override
-  public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, EmptyData>>>> read() {
+  public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> read() {
 
     File ratingFile = new File(params.filePath);
     Scanner sc = null;
@@ -54,13 +54,13 @@ public class DataSource extends LJavaDataSource<
       }
     }
 
-    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, EmptyData>>>> data =
-      new ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, EmptyData>>>>();
+    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> data =
+      new ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>>();
 
-    data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, EmptyData>>>(
+    data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>(
       new EmptyParams(),
       new TrainingData(ratings),
-      new ArrayList<Tuple2<Query, EmptyData>>()
+      new ArrayList<Tuple2<Query, Object>>()
     ));
 
     return data;

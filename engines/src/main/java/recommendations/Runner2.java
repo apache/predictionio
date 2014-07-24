@@ -17,9 +17,9 @@ public class Runner2 {
   // During development, one can build a semi-engine, only add the first few layers. In this
   // particular example, we only add until dataSource layer
   private static class HalfBakedEngineFactory implements IEngineFactory {
-    public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, EmptyData> apply() {
+    public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, Object> apply() {
       return new JavaSimpleEngineBuilder<
-        TrainingData, EmptyParams, Query, Float, EmptyData> ()
+        TrainingData, EmptyParams, Query, Float, Object> ()
         .dataSourceClass(DataSource.class)
         .addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
         .build();

@@ -47,7 +47,7 @@ Create a DataSourceParams.java file and copy the following code:
 
 Create a DataSource.java and copy the following code. The DataSource extends io.prediction.controller.java.LJavaDataSource and must override the read() function which is repsonsible for reading the data from the source file and generating Training Data.
 
-You can ignore the EmptyParams and EmptyData for now. They are used for evaluation which will be explained in later tutorials.
+You can ignore the EmptyParams and Object for now. They are used for evaluation which will be explained in later tutorials.
 
 ```java
 // code

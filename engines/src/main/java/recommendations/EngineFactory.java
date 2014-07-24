@@ -6,9 +6,9 @@ import io.prediction.controller.java.JavaSimpleEngine;
 import io.prediction.controller.java.JavaSimpleEngineBuilder;
 
 public class EngineFactory implements IEngineFactory {
-  public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, EmptyData> apply() {
+  public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, Object> apply() {
     return new JavaSimpleEngineBuilder<
-      TrainingData, EmptyParams, Query, Float, EmptyData> ()
+      TrainingData, EmptyParams, Query, Float, Object> ()
       .dataSourceClass(DataSource.class)
       .addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
       .servingClass()
