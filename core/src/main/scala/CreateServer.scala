@@ -211,7 +211,7 @@ object CreateServer extends Logging {
     val models = modelsFromRun.head.zip(algorithms).map {
       case (m, a) =>
         if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
-          info("Parallel model detected for algorithm ${a.getClass.getName}")
+          info(s"Parallel model detected for algorithm ${a.getClass.getName}")
           a.trainBase(sparkContext.get, evalPreparedMap.get(0))
         } else {
           try {
