@@ -46,5 +46,6 @@ public class Runner2 {
 
   public static void main(String[] args) {
     runComponents();
+    System.exit(0); // clean shutdown is needed for spark
   }
 }

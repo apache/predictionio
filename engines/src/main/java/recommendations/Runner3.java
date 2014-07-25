@@ -10,8 +10,6 @@ import io.prediction.workflow.JavaAPIDebugWorkflow;
 
 import java.util.HashMap;
 
-import io.prediction.controller.IdentityPreparator;
-
 public class Runner3 {
 
   public static void runEvaluation() {
@@ -34,5 +32,6 @@ public class Runner3 {
 
   public static void main(String[] args) {
     runEvaluation();
+    System.exit(0); // clean shutdown is needed for spark
   }
 }

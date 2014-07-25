@@ -34,5 +34,6 @@ public class Runner3ML100k {
 
   public static void main(String[] args) {
     runEvaluation();
+    System.exit(0); // clean shutdown is needed for spark
   }
 }

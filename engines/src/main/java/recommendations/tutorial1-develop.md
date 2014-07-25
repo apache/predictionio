@@ -79,9 +79,7 @@ public class DataSource extends LJavaDataSource<
 
 You need to specify the types of the data in LJavaDataSource. You can ignore the EmptyParams and Object for now. They are used for evaluation which will be explained in later tutorials.
 
-The only function you need to implement is LJavaDataSource's read() method (as defined in DataSource.java):
-
-It reads comma or tab delimited rating file and return TrainingData which will be used by the Algorithm for training.
+The only function you need to implement is LJavaDataSource's read() method (as defined in DataSource.java). It reads comma or tab delimited rating file and return TrainingData which will be used by the Algorithm for training:
 
 ```java
 @Override
@@ -196,9 +194,9 @@ public Float predict(Model model, Query query) {
 
 ## Step 4. Test run DataSource
 
-A very simple testdata/ratings.csv is provided inside testdata/ directory for quick testing.
+Before you deploy algorithm with PredictionIO workflow for deployment, you may wanna run some tests to go through the data pipeline step by step to make sure things are working fine.
 
-It is comma-delimited rating file. Each row represents user ID, item ID, and the rating value.
+A very simple testdata/ratings.csv is provided for quick testing. Each row of the file represents user ID, item ID, and the rating value.
 
 ```
 1,1,2
@@ -206,43 +204,108 @@ It is comma-delimited rating file. Each row represents user ID, item ID, and the
 1,3,4 ...
 ```
 
-Create Runner.java and copy following:
+You can use JavaSimpleEngineBuilder to create an engine instance and JavaEngineParamsBuilder to build the parameters for the engine. Because we only want to test the Data Source component, only dataSourceClass and dataSourceParams are specified and leaving other components empty (Eg. Algorthim).
 
 ```java
-// code
+public class Runner1 {
+
+  // During development, one can build a semi-engine, only add the first few layers. In this
+  // particular example, we only add until dataSource layer
+  private static class HalfBakedEngineFactory implements IEngineFactory {
+    public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, Object> apply() {
+      return new JavaSimpleEngineBuilder<
+        TrainingData, EmptyParams, Query, Float, Object> ()
+        .dataSourceClass(DataSource.class)
+        .build();
+    }
+  }
+
+  public static void runComponents() {
+    JavaEngineParams engineParams = new JavaEngineParamsBuilder()
+      .dataSourceParams(new DataSourceParams(
+        "engines/src/main/java/recommendations/testdata/ratings.csv"))
+      .build();
+
+    JavaAPIDebugWorkflow.runEngine(
+      "MyEngine",
+      new HashMap<String, String>(),
+      3, // verbose
+      (new HalfBakedEngineFactory()).apply(),
+      engineParams,
+      null,
+      new EmptyParams()
+    );
+  }
+
+  public static void main(String[] args) {
+    runComponents();
+  }
+}
 ```
 
-Compile the code:
-
-```
-sbt/sbt package
-sbt/sbt "project engines" assemblyPackageDependency
-```
-
-Execute the following:
+Execute the following command to run:
 
 ```
 bin/pio-run io.prediction.engines.java.recommendations.Runner1
 ```
 
+If it runs successfully, you should see the following console output at the end. It prints out the TrainigData the DataSource has generated.
 
+```
+14/07/24 14:43:12 INFO SparkContext: Job finished: collect at DebugWorkflow.scala:409, took 0.022313 s
+14/07/24 14:43:12 INFO APIDebugWorkflow$: Data Set 0
+14/07/24 14:43:12 INFO APIDebugWorkflow$: Params: Empty
+14/07/24 14:43:12 INFO APIDebugWorkflow$: TrainingData:
+14/07/24 14:43:12 INFO APIDebugWorkflow$: [TrainingData: [(1,1,2.0), (1,2,3.0), (1,3,4.0), (2,3,4.0), (2,4,1.0), (3,2,2.0), (3,3,1.0), (3,4,3.0), (4,1,5.0), (4,2,3.0), (4,4,2.0)]]
+14/07/24 14:43:12 INFO APIDebugWorkflow$: TestingData: (count=0)
+14/07/24 14:43:12 INFO APIDebugWorkflow$: Data source complete
+14/07/24 14:43:12 INFO APIDebugWorkflow$: Preparator is null. Stop here
+```
 
 ## Step 5. Test run Algorithm
 
-Modify Runner.java to add Algorithm class:
+Next step is to test the Algorithm component. You could simply add algorithmClass and algorithmParams in the JavaSimpleEngineBuilder and JavaEngineParamsBuilder. As shown in the following (in Runner2.java):
+
+An algorithm named **"MyRecommendationAlgo"** is added to JavaSimpleEngineBuilder.
+The method addAlgorithmClass() takes the name of the algorithm and the class of the algorithm as arguments:
 
 ```java
-// code
+return new JavaSimpleEngineBuilder<
+  TrainingData, EmptyParams, Query, Float, Object> ()
+  .dataSourceClass(DataSource.class)
+  .addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
+  .build();
+```
+Similarly, the method addAlgorithmParams() takes the same name of the algorithm as specified in addAlgorithmClass() and the parameters for this algorithm. The engine will create a algorithm instance using this parameter:
+
+```java
+JavaEngineParams engineParams = new JavaEngineParamsBuilder()
+  .dataSourceParams(new DataSourceParams(
+    "engines/src/main/java/recommendations/testdata/ratings.csv"))
+  .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.1))
+  .build();
 ```
 
-Execute:
+Note that an engine can contain multiple algorithm classes and you can specify multiple algoithm parameters for the same or different algorithm classes (This will be demonstrated in later turtorial).
+
+Execute the following command to run:
 
 ```
-// command
+bin/pio-run io.prediction.engines.java.recommendations.Runner2
 ```
 
-You should see the following model printed
+You should see the Model generated by the Algorithm at the end of the console output:
 
 ```
-// sample output
+14/07/24 15:38:08 INFO TaskSetManager: Finished TID 15 in 31 ms on localhost (progress: 4/4)
+14/07/24 15:38:08 INFO TaskSchedulerImpl: Removed TaskSet 3.0, whose tasks have all completed, from pool
+14/07/24 15:38:08 INFO DAGScheduler: Stage 3 (collect at DebugWorkflow.scala:66) finished in 0.035 s
+14/07/24 15:38:08 INFO SparkContext: Job finished: collect at DebugWorkflow.scala:66, took 0.047056 s
+14/07/24 15:38:08 INFO APIDebugWorkflow$: [Model: [itemSimilarity: {1={0; 0.8313979616; 0.2586032735; 0.496291667}, 2={0.8313979616; 0; 0.5195887333; 0.6837634588}, 3={0.2586032735; 0.5195887333; 0; 0.3256694736}, 4={0.496291667; 0.6837634588; 0.3256694736; 0}}]
+[userHistory: {1={2; 3; 4; 0}, 2={0; 0; 4; 1}, 3={0; 2; 1; 3}, 4={5; 3; 0; 2}}]]
+14/07/24 15:38:08 INFO APIDebugWorkflow$: Serving is null. Stop here
 ```
+
+After some basic testing, we are ready to deploy this engine to serve real time request!
+
+Next: [Tutorial 2 - Deploy Engine](tutorial2-deploy.md)
