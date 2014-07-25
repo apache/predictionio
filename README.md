@@ -19,10 +19,11 @@ API Documentation
 
 1.  Run this command.
     ```
-    sbt/sbt core/doc
+    sbt/sbt unidoc
     ```
 
-2.  Point your web browser at `core/target/scala-2.10/api/index.html`.
+2.  Point your web browser at `target/scala-2.10/unidoc/index.html` for
+    ScalaDoc, or `target/javaunidoc/index.html` for Javadoc.
 
 
 Running Evaluation and Server

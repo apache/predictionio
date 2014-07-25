@@ -21,15 +21,4 @@ libraryDependencies ++= Seq(
   "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
   "org.specs2"             %% "specs2"          % "2.3.13" % "test")
 
-scalacOptions in (Compile, doc) := Seq(
-  "-groups",
-  "-skip-packages",
-  "akka",
-  "-doc-title",
-  "PredictionIO ScalaDoc",
-  "-doc-version",
-  version.value,
-  "-doc-root-content",
-  "core/rootdoc.txt") 
-
 net.virtualvoid.sbt.graph.Plugin.graphSettings
