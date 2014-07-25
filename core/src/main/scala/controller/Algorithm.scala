@@ -12,14 +12,45 @@ import org.json4s.native.Serialization
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
-abstract class LAlgorithm[AP <: Params: ClassTag, PD, M : ClassTag, Q : Manifest, P]
+/** Base class of a local algorithm.
+  *
+  * A local algorithm runs locally within a single machine and produces a model
+  * that can fit within a single machine.
+  *
+  * @tparam AP Algorithm parameters class.
+  * @tparam PD Prepared data class.
+  * @tparam M Trained model class.
+  * @tparam Q Input query class.
+  * @tparam P Output prediction class.
+  */
+abstract class LAlgorithm[
+    AP <: Params : ClassTag,
+    PD,
+    M : ClassTag,
+    Q : Manifest,
+    P]
   extends BaseAlgorithm[AP, RDD[PD], RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
 
+  /** Do not use directly or override this method, as this is called by
+    * PredictionIO workflow to train a model.
+    */
   def trainBase(sc: SparkContext, pd: RDD[PD]): RDD[M] = pd.map(train)
 
+  /** Implement this method to produce a model from prepared data.
+    *
+    * @param pd Prepared data for model training.
+    * @return Trained model.
+    */
   def train(pd: PD): M
 
+  /** Implement this method to produce a prediction from a query and trained
+    * model.
+    *
+    * @param model Trained model produced by `train(pd)`.
+    * @param query An input query.
+    * @return A prediction.
+    */
   def predict(model: M, query: Q): P
 
   @transient lazy val formats: Formats = Utils.json4sDefaultFormats
@@ -35,42 +66,110 @@ abstract class LAlgorithm[AP <: Params: ClassTag, PD, M : ClassTag, Q : Manifest
   }
 }
 
+/** Base class of a parallel-to-local algorithm.
+  *
+  * A parallel-to-local algorithm can be run in parallel on a cluster and
+  * produces a model that can fit within a single machine.
+  *
+  * @tparam AP Algorithm parameters class.
+  * @tparam PD Prepared data class.
+  * @tparam M Trained model class.
+  * @tparam Q Input query class.
+  * @tparam P Output prediction class.
+  */
 abstract class P2LAlgorithm[
-    AP <: Params: ClassTag, PD, M : ClassTag, Q : Manifest, P]
+    AP <: Params : ClassTag, PD, M : ClassTag, Q : Manifest, P]
   extends BaseAlgorithm[AP, PD, RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
-  // In train: PD => M, M is a local object. We have to parallelize it.
+
+  /** Do not use directly or override this method, as this is called by
+    * PredictionIO workflow to train a model.
+    *
+    * Developer note:
+    * In train: PD => M, M is a local object. We have to parallelize it.
+    */
   def trainBase(sc: SparkContext, pd: PD): RDD[M] = {
     val m: M = train(pd)
     sc.parallelize(Array(m))
   }
 
+  /** Implement this method to produce a model from prepared data.
+    *
+    * @param pd Prepared data for model training.
+    * @return Trained model.
+    */
   def train(pd: PD): M
 
+  /** Implement this method to produce a prediction from a query and trained
+    * model.
+    *
+    * @param model Trained model produced by `train(pd)`.
+    * @param query An input query.
+    * @return A prediction.
+    */
   def predict(model: M, query: Q): P
 }
 
-abstract class PAlgorithm[AP <: Params: ClassTag, PD, M, Q : Manifest, P]
+/** Base class of a parallel algorithm.
+  *
+  * A parallel algorithm can be run in parallel on a cluster and produces a
+  * model that can also be distributed across a cluster.
+  *
+  * @tparam AP Algorithm parameters class.
+  * @tparam PD Prepared data class.
+  * @tparam M Trained model class.
+  * @tparam Q Input query class.
+  * @tparam P Output prediction class.
+  */
+abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   extends BaseAlgorithm[AP, PD, M, Q, P] {
+
+  /** Do not use directly or override this method, as this is called by
+    * PredictionIO workflow to train a model.
+    */
   def trainBase(sc: SparkContext, pd: PD): M = train(pd)
 
+  /** Implement this method to produce a model from prepared data.
+    *
+    * @param pd Prepared data for model training.
+    * @return Trained model.
+    */
   def train(pd: PD): M
 
+  /** Do not use directly or override this method, as this is called by
+    * PredictionIO workflow to perform batch prediction.
+    */
   def batchPredictBase(baseModel: Any, indexedQueries: RDD[(Long, Q)])
   : RDD[(Long, P)] = {
     batchPredict(baseModel.asInstanceOf[M], indexedQueries)
   }
 
-  // Evaluation call this method. Since in PAlgorithm, M may contain RDDs, it
-  // is impossible to call the "predict" method without localizing queries
-  // (which is very inefficient). Hence, engine builders using PAlgorithms need
-  // to implement "batchPredict" for evaluation purpose.
+  /** Implement this method to produce predictions from batch queries.
+    *
+    * Evaluation call this method. Since in PAlgorithm, M may contain RDDs, it
+    * is impossible to call `predict(model, query)` without localizing queries
+    * (which is very inefficient). Hence, engine builders using PAlgorithm need
+    * to implement this method for evaluation purpose.
+    *
+    * @param model Trained model produced by `train(pd)`.
+    * @param indexedQueries Batch of queries with indices.
+    * @return An RDD of indexed predictions.
+    */
   def batchPredict(model: M, indexedQueries: RDD[(Long, Q)]): RDD[(Long, P)]
 
+  /** Do not use directly or override this method, as this is called by
+    * PredictionIO workflow to perform prediction.
+    */
   def predictBase(baseModel: Any, query: Q): P = {
     predict(baseModel.asInstanceOf[M], query)
   }
 
-  // Deployment call this method
+  /** Implement this method to produce a prediction from a query and trained
+    * model.
+    *
+    * @param model Trained model produced by `train(pd)`.
+    * @param query An input query.
+    * @return A prediction.
+    */
   def predict(model: M, query: Q): P
 }

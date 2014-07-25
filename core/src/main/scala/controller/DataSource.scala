@@ -1,14 +1,30 @@
 package io.prediction.controller
 
 import io.prediction.core.BaseDataSource
-import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
+
 import scala.reflect._
 
-abstract class LDataSource[DSP <: Params : ClassTag,
-    DP, TD : ClassTag, Q, A]
+/** Base class of a local data source.
+  *
+  * A local data source runs locally within a single machine and return data
+  * that can fit within a single machine.
+  *
+  * @tparam DSP Data source parameters class.
+  * @tparam DP Data parameters data class.
+  * @tparam TD Training data class.
+  * @tparam Q Input query class.
+  * @tparam A Actual value class.
+  */
+abstract class LDataSource[
+    DSP <: Params : ClassTag,
+    DP,
+    TD : ClassTag,
+    Q,
+    A]
   extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
@@ -17,27 +33,65 @@ abstract class LDataSource[DSP <: Params : ClassTag,
     }}
   }
 
+  /** Implement this method to return data from a data source. Returned data
+    * can optionally include a sequence of query and actual value pairs for
+    * evaluation purpose.
+    */
   def read(): Seq[(DP, TD, Seq[(Q, A)])]
 }
 
-abstract class LSlicedDataSource[DSP <: Params : ClassTag,
-    DP, TD : ClassTag, Q, A]
+/** Base class of a local sliced data source.
+  *
+  * A local sliced data source runs locally within a single machine and return a
+  * single slice of data that can fit within a single machine.
+  *
+  * @tparam DSP Data source parameters class.
+  * @tparam DP Data parameters data class.
+  * @tparam TD Training data class.
+  * @tparam Q Input query class.
+  * @tparam A Actual value class.
+  */
+abstract class LSlicedDataSource[
+    DSP <: Params : ClassTag,
+    DP,
+    TD : ClassTag,
+    Q,
+    A]
   extends LDataSource[DSP, DP, TD, Q, A] {
 
   def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
-    generateDataParams().map{ dp => {
+    generateDataParams().map { dp =>
       val slicedData = read(dp)
       (dp, slicedData._1, slicedData._2)
-    }}
+    }
   }
 
+  /** Implement this method to return a sequence of data parameters. Each of
+    * these can be supplied to `read(dp)` to obtain a single slice of training
+    * data.
+    */
   def generateDataParams(): Seq[DP]
 
+  /** Implement this method to return data from a data source with given data
+    * parameters. Returned data slice can optionally include a sequence of query
+    * and actual value pairs for evaluation purpose.
+    *
+    * @param dp Data parameters.
+    */
   def read(dp: DP): (TD, Seq[(Q, A)])
 }
 
-
-
+/** Base class of a parallel data source.
+  *
+  * A parallel data source runs locally within a single machine, or in parallel
+  * on a cluster, to return data that is distributed across a cluster.
+  *
+  * @tparam DSP Data source parameters class.
+  * @tparam DP Data parameters data class.
+  * @tparam TD Training data class.
+  * @tparam Q Input query class.
+  * @tparam A Actual value class.
+  */
 abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
   extends BaseDataSource[DSP, DP, TD, Q, A] {
 
@@ -49,5 +103,9 @@ abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
     }}
   }
 
+  /** Implement this method to return data from a data source. Returned data
+    * can optionally include a sequence of query and actual value pairs for
+    * evaluation purpose.
+    */
   def read(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])]
 }
