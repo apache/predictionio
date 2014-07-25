@@ -38,4 +38,13 @@ Finally, the serving layer `Serving` combines result from multiple algorithms, a
 This tutorial implements a simple `Preparator` for feature generation, a feature based algorithm, and a serving layer which ensembles multiple predictions.
 
 ## DataSource
-We have to amend the `DataSource` to take into account of more information from MovieLens.
+We have to amend the [`DataSource`](../DataSource.java) to take into account of more information from MovieLens. We use the genre of movies as its feature vector. This part is simliar to earlier tutorial.
+
+```
+bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4a
+```
+
+## Preparator
+As we have read the raw data from `DataSource`, we can *preprocess* the raw data into a more useable form. In this tutorial, we generate a feature vector for movies based on its genre.
+
+You need to implement two classes: `Preparator` and `PreparedData`. `Preparator` is a class implementing a method `prepare` which transform `TrainingData` into `PreparedData`; `PreparedData` is the output and the object being passed to `Algorithms` for training. `PreparedData` can be anything, very often it is equivalent to `TrainingData`, or subclass of it. Here, `PreparedData` is a subclass of `TrainingData`, it adds a map from items (movies) to feature vectors. The merit of using subclass is that, it makes the original `TrainingData` easily accessible.

@@ -1,5 +1,6 @@
 package io.prediction.engines.java.recommendations.multialgo;
 
+import java.util.Arrays;
 import io.prediction.controller.java.LJavaDataSource;
 import io.prediction.controller.EmptyParams;
 import scala.Tuple2;
@@ -10,10 +11,19 @@ import java.lang.Iterable;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import java.io.FileReader;
+import java.io.BufferedReader;
+
 
 public class DataSource extends LJavaDataSource<
   DataSourceParams, EmptyParams, TrainingData, Query, Object> {
@@ -29,11 +39,16 @@ public class DataSource extends LJavaDataSource<
   public List<String[]> readFile(String filepath, String delimiter) {
     List<String[]> tokensList = new ArrayList<String[]>();
     try {
-      File ratingFile = new File(filepath);
-      Scanner sc = new Scanner(ratingFile);
+      List<String> lines = new ArrayList<String>();
+      BufferedReader in = new BufferedReader(new FileReader(filepath));
 
-      while (sc.hasNext()) {
-        String line = sc.nextLine();
+      while (in.ready()) {
+        String s = in.readLine();
+        lines.add(s);
+      }
+      in.close();
+
+      for (String line: lines) {
         String[] tokens = line.split(delimiter);
         tokensList.add(tokens);
       }
@@ -42,7 +57,8 @@ public class DataSource extends LJavaDataSource<
       logger.error("Caught FileNotFoundException " + e.getMessage());
       System.exit(1);
     } catch (Exception e) {
-      logger.error("Can't parse file. Caught Exception: " + e.getMessage());
+      logger.error("Can't parse file. Caught Exception: " + e.getMessage() 
+          + "Trace: " + Arrays.toString(e.getStackTrace()));
       System.exit(1);
     }
 
@@ -64,30 +80,39 @@ public class DataSource extends LJavaDataSource<
   public List<String> getGenres() {
     List<String> genres = new ArrayList<String>();
     for (String[] tokens: readFile(params.dir + "u.genre", "[\t,]")) {
-      genres.add(tokens[0]);
+      if (!tokens[0].equals("")) {
+        genres.add(tokens[0]);
+      }
     }
     return genres;
   }
 
   public Map<Integer, String[]> getItemInfo() {
-    List<String[]> tokensList = readFile(params.dir + "u.item", "\\|");
+    List<String[]> tokensList = readFile(params.dir + "u.item", "[\\|]");
     Map<Integer, String[]> itemInfo = new HashMap <> ();
     for (String[] tokens : tokensList) {
       itemInfo.put(Integer.parseInt(tokens[0]), tokens);
     }
     return itemInfo;
   }
+  
+  public Map<Integer, String[]> getUserInfo() {
+    List<String[]> tokensList = readFile(params.dir + "u.user", "\\|");
+    Map<Integer, String[]> userInfo = new HashMap <> ();
+    for (String[] tokens : tokensList) {
+      userInfo.put(Integer.parseInt(tokens[0]), tokens);
+    }
+    return userInfo;
+  }
 
   @Override
   public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> read() {
-
-
     List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> data =
       new ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>>();
 
     data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>(
       new EmptyParams(),
-      new TrainingData(getRatings(), getGenres(), getItemInfo()),
+      new TrainingData(getRatings(), getGenres(), getItemInfo(), getUserInfo()),
       new ArrayList<Tuple2<Query, Object>>()
     ));
 
