@@ -17,7 +17,7 @@ import scala.reflect.runtime.universe._
   * A local algorithm runs locally within a single machine and produces a model
   * that can fit within a single machine.
   *
-  * @tparam AP Algorithm parameter class.
+  * @tparam AP Algorithm parameters class.
   * @tparam PD Prepared data class.
   * @tparam M Trained model class.
   * @tparam Q Input query class.
@@ -71,7 +71,7 @@ abstract class LAlgorithm[
   * A parallel-to-local algorithm can be run in parallel on a cluster and
   * produces a model that can fit within a single machine.
   *
-  * @tparam AP Algorithm parameter class.
+  * @tparam AP Algorithm parameters class.
   * @tparam PD Prepared data class.
   * @tparam M Trained model class.
   * @tparam Q Input query class.
@@ -115,7 +115,7 @@ abstract class P2LAlgorithm[
   * A parallel algorithm can be run in parallel on a cluster and produces a
   * model that can also be distributed across a cluster.
   *
-  * @tparam AP Algorithm parameter class.
+  * @tparam AP Algorithm parameters class.
   * @tparam PD Prepared data class.
   * @tparam M Trained model class.
   * @tparam Q Input query class.
