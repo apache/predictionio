@@ -47,7 +47,7 @@ abstract class LAlgorithm[
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param query An input query.
     * @return A prediction.
     */
@@ -103,7 +103,7 @@ abstract class P2LAlgorithm[
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param query An input query.
     * @return A prediction.
     */
@@ -151,7 +151,7 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
     * (which is very inefficient). Hence, engine builders using PAlgorithm need
     * to implement this method for evaluation purpose.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param indexedQueries Batch of queries with indices.
     * @return An RDD of indexed predictions.
     */
@@ -167,7 +167,7 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param query An input query.
     * @return A prediction.
     */
