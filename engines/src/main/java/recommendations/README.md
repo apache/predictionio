@@ -18,4 +18,4 @@ The purpose of this tutorial is to help you to get familiar with each components
 
 * [Tutorial 3 - Evaluation](tutorial3-evaluation.md)
 
-* [Tutorial 4 - Multiple Algorithms in Engine](tutorial4-multialgo.md)
+* [Tutorial 4 - Multiple Algorithms Engine](tutorial4-multialgo.md)

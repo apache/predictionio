@@ -12,10 +12,9 @@ import java.util.HashMap;
 
 public class Runner3 {
 
-  public static void runEvaluation() {
+  public static void runEvaluation(String filePath) {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(new DataSourceParams(
-        "engines/src/main/java/recommendations/testdata/ratings.csv"))
+      .dataSourceParams(new DataSourceParams(filePath))
       .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.1))
       .build();
 
@@ -31,7 +30,11 @@ public class Runner3 {
   }
 
   public static void main(String[] args) {
-    runEvaluation();
+    if (args.length == 0) {
+      System.out.println("Error: Please specify the file path as argument");
+      System.exit(1);
+    }
+    runEvaluation(args[0]);
     System.exit(0); // clean shutdown is needed for spark
   }
 }

@@ -1,8 +1,18 @@
 Tutorials
 =========
 
-- [Recommendation Engine with RDD-based Model using MLlib's ALS](engines/src/main/scala/recommendations/README.md)
+The purpose of the tutorials 1-4 is to help you to get familiar with each components of the PredictionIO framework.
+
+- [Tutorial 1 - Develop and Integrate Algorithm with PredictionIO
+](engines/src/main/java/recommendations/tutorial1-develop.md)
+- [Tutorial 2 - Deploy Engine
+](engines/src/main/java/recommendations/tutorial2-deploy.md)
+- [Tutorial 3 - Evaluation](engines/src/main/java/recommendations/tutorial3-evaluation.md)
+- [Tutorial 4 - Multiple Algorithms Engine](engines/src/main/java/recommendations/tutorial4-multialgo.md)
+
+More interesting examples:
 - [Stock Prediction Engine with customizable algorithms](engines/src/main/scala/stock/README.md)
+- [Distributed Recommendation Engine with RDD-based Model using MLlib's ALS](engines/src/main/scala/recommendations/README.md)
 
 API Documentation
 =================

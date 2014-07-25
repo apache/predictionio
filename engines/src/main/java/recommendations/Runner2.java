@@ -26,10 +26,9 @@ public class Runner2 {
     }
   }
 
-  public static void runComponents() {
+  public static void runComponents(String filePath) {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(new DataSourceParams(
-        "engines/src/main/java/recommendations/testdata/ratings.csv"))
+      .dataSourceParams(new DataSourceParams(filePath))
       .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.1))
       .build();
 
@@ -45,7 +44,11 @@ public class Runner2 {
   }
 
   public static void main(String[] args) {
-    runComponents();
+    if (args.length == 0) {
+      System.out.println("Error: Please specify the file path as argument");
+      System.exit(1);
+    }
+    runComponents(args[0]);
     System.exit(0); // clean shutdown is needed for spark
   }
 }

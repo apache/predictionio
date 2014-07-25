@@ -1,7 +1,5 @@
 # Tutorial 2 - Deploy Engine
 
-This tutorial continues from Tutorial1.
-
 ## Step 1. Create Engine Factory class
 
 PredictionIO framework requires the Engine has a EngineFactory class which returns an engine definition for deployment.
