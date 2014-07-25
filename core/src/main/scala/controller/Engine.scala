@@ -12,7 +12,6 @@ import io.prediction.core.BaseServing
   *
   * {{{
   * object ItemRankEngine extends IEngineFactory {
-  *
   *   def apply() = {
   *     new Engine(
   *       classOf[ItemRankDataSource],
@@ -23,7 +22,6 @@ import io.prediction.core.BaseServing
   *         "mahout" -> classOf[MahoutItemBasedAlgorithm]),
   *       classOf[ItemRankServing])
   *   }
-  *
   * }
   * }}}
   *
