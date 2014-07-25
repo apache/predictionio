@@ -17,8 +17,10 @@ public class TrainingData implements Serializable {
 
   @Override
   public String toString() {
-    return "TrainingData: " + ratings.toString() + "\nGenres: " + genres.toString() 
-      + "\nItemInfo: " + itemInfo.toString();
+    return "TrainingData: rating.size=" + ratings.size() + " genres.size=" + genres.size()
+      + " itemInfo.size=" + itemInfo.size();
+    //return "TrainingData: " + ratings.toString() + "\nGenres: " + genres.toString() 
+    //  + "\nItemInfo: " + itemInfo.toString();
   }
 
   public static class Rating implements Serializable {

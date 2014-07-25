@@ -2,8 +2,6 @@ package io.prediction.engines.java.recommendations.multialgo;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;
-import io.prediction.controller.java.JavaSimpleEngine;
-import io.prediction.controller.java.JavaSimpleEngineBuilder;
 import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
@@ -14,12 +12,12 @@ import java.util.HashMap;
 
 import io.prediction.controller.IdentityPreparator;
 
-public class Runner4 {
+public class Runner4a {
   
   private static class HalfBakedEngineFactory implements IEngineFactory {
-    public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, Object> apply() {
-      return new JavaSimpleEngineBuilder<
-        TrainingData, EmptyParams, Query, Float, Object> ()
+    public JavaEngine<TrainingData, EmptyParams, TrainingData, Query, Float, Object> apply() {
+      return new JavaEngineBuilder<
+        TrainingData, EmptyParams, TrainingData, Query, Float, Object> ()
         .dataSourceClass(DataSource.class)
         .build();
     }

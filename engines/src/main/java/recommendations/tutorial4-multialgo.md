@@ -29,6 +29,13 @@ Algo1.predict Algo2.predict Algo3.predict <- (Query)
               Serving.serve
               (Prediction)
 ```
+`Preparator` is the class which preprocess the training data which will be used by multiple algorithms. For example, it can be a NLP processor which generates useful n-grams, or it can be some business logics.
 
+Engine is designed to support multiple algorithms. The need to take the same `PreparedData` as input for model construction, but each algorithm can have its own model class). Algorithm takes a common `Query` as input and return a `Prediction` as output.
+
+Finally, the serving layer `Serving` combines result from multiple algorithms, and possible apply some final business logic before returning.
+
+This tutorial implements a simple `Preparator` for feature generation, a feature based algorithm, and a serving layer which ensembles multiple predictions.
 
 ## DataSource
+We have to amend the `DataSource` to take into account of more information from MovieLens.
