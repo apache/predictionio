@@ -58,5 +58,6 @@ javacOptions in (JavaUnidoc, unidoc) := Seq(
   "Java Controllers",
   "io.prediction.controller.java",
   "-overview",
-  "docs/javadoc-overview.html"
-  )
+  "docs/javadoc-overview.html",
+  "-noqualifier",
+  "java.lang")
