@@ -5,9 +5,9 @@ libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"           % "3.2.0",
   "com.google.code.gson"    % "gson"            % "2.2.4",
   "com.google.guava"        % "guava"           % "17.0",
-  "com.twitter"            %% "chill"           % "0.3.6" exclude("com.esotericsoftware.minlog", "minlog"),
+  "com.twitter"            %% "chill"           % "0.3.6"
+    exclude("com.esotericsoftware.minlog", "minlog"),
   "com.twitter"            %% "chill-bijection" % "0.3.6",
-  "com.typesafe"            % "config"          % "1.0.2", // must fix to this version for elasticsearch to work
   "commons-io"              % "commons-io"      % "2.4",
   "io.spray"                % "spray-can"       % "1.2.1",
   "io.spray"                % "spray-routing"   % "1.2.1",
@@ -21,19 +21,15 @@ libraryDependencies ++= Seq(
   "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
   "org.specs2"             %% "specs2"          % "2.3.13" % "test")
 
-//scalacOptions <<= (scalacOptions, scalaSource in Compile) map { (options, base) =>
-//  options :+ ("-P:sxr:base-directory:" + base.getAbsolutePath)
-//}
-
-//run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
-
-//resolvers += Resolver.url(
-//  "Typesafe Releases",
-//  url("http://repo.typesafe.com/typesafe/ivy-releases"))(
-//    Resolver.ivyStylePatterns)
-
-resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
-
-//addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
+scalacOptions in (Compile, doc) := Seq(
+  "-groups",
+  "-skip-packages",
+  "akka",
+  "-doc-title",
+  "PredictionIO ScalaDoc",
+  "-doc-version",
+  version.value,
+  "-doc-root-content",
+  "core/rootdoc.txt") 
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings

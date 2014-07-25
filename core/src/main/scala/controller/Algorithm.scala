@@ -22,6 +22,7 @@ import scala.reflect.runtime.universe._
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Algorithm
   */
 abstract class LAlgorithm[
     AP <: Params : ClassTag,
@@ -47,7 +48,7 @@ abstract class LAlgorithm[
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param query An input query.
     * @return A prediction.
     */
@@ -76,6 +77,7 @@ abstract class LAlgorithm[
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Algorithm
   */
 abstract class P2LAlgorithm[
     AP <: Params : ClassTag, PD, M : ClassTag, Q : Manifest, P]
@@ -103,7 +105,7 @@ abstract class P2LAlgorithm[
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param query An input query.
     * @return A prediction.
     */
@@ -120,6 +122,7 @@ abstract class P2LAlgorithm[
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Algorithm
   */
 abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   extends BaseAlgorithm[AP, PD, M, Q, P] {
@@ -151,7 +154,7 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
     * (which is very inefficient). Hence, engine builders using PAlgorithm need
     * to implement this method for evaluation purpose.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param indexedQueries Batch of queries with indices.
     * @return An RDD of indexed predictions.
     */
@@ -167,7 +170,7 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by `train(pd)`.
+    * @param model Trained model produced by [[train]].
     * @param query An input query.
     * @return A prediction.
     */

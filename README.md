@@ -4,6 +4,17 @@ Tutorials
 - [Recommendation Engine with RDD-based Model using MLlib's ALS](engines/src/main/scala/recommendations/README.md)
 - [Stock Prediction Engine with customizable algorithms](engines/src/main/scala/stock/README.md)
 
+API Documentation
+=================
+
+1.  Run this command.
+    ```
+    sbt/sbt core/doc
+    ```
+
+2.  Point your web browser at `core/target/scala-2.10/api/index.html`.
+
+
 Running Evaluation and Server
 =============================
 
