@@ -69,15 +69,15 @@ abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
   def prepare(sc: SparkContext, trainingData: TD): PD
 }
 
-/** A helper concrete implementation of [[io.prediction.core.BasePreparator]] that pass training
-  * data through without any special preparation.
+/** A helper concrete implementation of [[io.prediction.core.BasePreparator]]
+  * that pass training data through without any special preparation.
   */
 class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
   def prepareBase(sc: SparkContext, td: TD): TD = td
 }
 
-/** A helper concrete implementation of [[io.prediction.core.BasePreparator]] that pass training
-  * data through without any special preparation.
+/** A helper concrete implementation of [[io.prediction.core.BasePreparator]]
+  * that pass training data through without any special preparation.
   */
 object IdentityPreparator {
   /** Produces an instance of [[IdentityPreparator]].
