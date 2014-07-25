@@ -41,7 +41,7 @@ This tutorial implements a simple `Preparator` for feature generation, a feature
 We have to amend the [`DataSource`](multialgo/DataSource.java) to take into account of more information from MovieLens. We use the genre of movies as its feature vector. This part is simliar to earlier tutorial.
 
 ```
-bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4a
+$ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4a
 ```
 
 ## Preparator
@@ -63,5 +63,5 @@ return new JavaEngineBuilder<
 And you can test it out with
 
 ```
-bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4b
+$ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4b
 ```
