@@ -24,6 +24,7 @@ import scala.reflect.runtime.universe._
   * @tparam MU Metrics unit class.
   * @tparam MR Metrics result class.
   * @tparam MMR Multiple metrics results class.
+  * @group Metrics
   */
 abstract class Metrics[
     MP <: Params : ClassTag, DP, Q, P, A, MU, MR, MMR <: AnyRef]
@@ -83,10 +84,10 @@ abstract class Metrics[
   }
 }
 
-/****** Helper Functions ******/
-
 /** An implementation of mean square error metrics. `DP` is `AnyRef`. This
   * support any kind of data parameters.
+  *
+  * @group Metrics
   */
 class MeanSquareError extends Metrics[EmptyParams, AnyRef,
     AnyRef, Double, Double, (Double, Double), String, String] {

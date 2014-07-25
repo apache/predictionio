@@ -20,6 +20,7 @@ import scala.reflect.runtime.universe._
   * @tparam PP Preparator parameters class.
   * @tparam TD Training data class.
   * @tparam PD Prepared data class.
+  * @group Preparator
   */
 abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
   extends BasePreparator[PP, RDD[TD], RDD[PD]] {
@@ -51,6 +52,7 @@ abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
   * @tparam PP Preparator parameters class.
   * @tparam TD Training data class.
   * @tparam PD Prepared data class.
+  * @group Preparator
   */
 abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
   extends BasePreparator[PP, TD, PD] {
@@ -71,6 +73,8 @@ abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
 
 /** A helper concrete implementation of [[io.prediction.core.BasePreparator]]
   * that pass training data through without any special preparation.
+  *
+  * @group Preparator
   */
 class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
   def prepareBase(sc: SparkContext, td: TD): TD = td
@@ -78,6 +82,8 @@ class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
 
 /** A helper concrete implementation of [[io.prediction.core.BasePreparator]]
   * that pass training data through without any special preparation.
+  *
+  * @group Preparator
   */
 object IdentityPreparator {
   /** Produces an instance of [[IdentityPreparator]].

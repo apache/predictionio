@@ -22,6 +22,7 @@ import scala.reflect.runtime.universe._
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Algorithm
   */
 abstract class LAlgorithm[
     AP <: Params : ClassTag,
@@ -76,6 +77,7 @@ abstract class LAlgorithm[
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Algorithm
   */
 abstract class P2LAlgorithm[
     AP <: Params : ClassTag, PD, M : ClassTag, Q : Manifest, P]
@@ -120,6 +122,7 @@ abstract class P2LAlgorithm[
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Algorithm
   */
 abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   extends BaseAlgorithm[AP, PD, M, Q, P] {

@@ -18,6 +18,7 @@ import scala.reflect._
   * @tparam TD Training data class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
+  * @group Data Source
   */
 abstract class LDataSource[
     DSP <: Params : ClassTag,
@@ -50,6 +51,7 @@ abstract class LDataSource[
   * @tparam TD Training data class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
+  * @group Data Source
   */
 abstract class LSlicedDataSource[
     DSP <: Params : ClassTag,
@@ -91,6 +93,7 @@ abstract class LSlicedDataSource[
   * @tparam TD Training data class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
+  * @group Data Source
   */
 abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
   extends BaseDataSource[DSP, DP, TD, Q, A] {

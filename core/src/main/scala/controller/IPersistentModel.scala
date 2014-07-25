@@ -23,6 +23,7 @@ import org.apache.spark.SparkContext
   *
   * @tparam AP Algorithm parameters class.
   * @see [[IPersistentModelLoader]]
+  * @group Algorithm
   */
 trait IPersistentModel[AP <: Params] {
   /** Save the model to some persistent storage.
@@ -46,6 +47,7 @@ trait IPersistentModel[AP <: Params] {
   * @tparam AP Algorithm parameters class.
   * @tparam M Model class.
   * @see [[IPersistentModel]]
+  * @group Algorithm
   */
 trait IPersistentModelLoader[AP <: Params, M] {
   /** Implement this method to restore a persisted model that extends the

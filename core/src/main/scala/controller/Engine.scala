@@ -38,6 +38,7 @@ import io.prediction.core.BaseServing
   * @param preparatorClass Preparator class.
   * @param algorithmClassMap Map of algorithm names to classes.
   * @param servingClass Serving class.
+  * @group Engine
   */
 class Engine[TD, DP, PD, Q, P, A](
     val dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
@@ -53,6 +54,7 @@ class Engine[TD, DP, PD, Q, P, A](
   * @param preparatorParams Preparator parameters.
   * @param algorithmParamsList List of algorithm name-parameter pairs.
   * @param servingParams Serving parameters.
+  * @group Engine
   */
 class EngineParams(
     val dataSourceParams: Params = EmptyParams(),
@@ -73,6 +75,7 @@ class EngineParams(
   * @tparam A Actual value class.
   * @param dataSourceClass Data source class.
   * @param algorithmClassMap Map of algorithm names to classes.
+  * @group Engine
   */
 class SimpleEngine[TD, DP, Q, P, A](
     dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
@@ -87,6 +90,7 @@ class SimpleEngine[TD, DP, Q, P, A](
   *
   * @param dataSourceParams Data source parameters.
   * @param algorithmParamsList List of algorithm name-parameter pairs.
+  * @group Engine
   */
 class SimpleEngineParams(
     dataSourceParams: Params = EmptyParams(),
@@ -98,6 +102,8 @@ class SimpleEngineParams(
 /** If you intend to let PredictionIO create workflow and deploy serving
   * automatically, you will need to implement an object that extends this trait
   * and return an [[Engine]].
+  *
+  * @group Engine
   */
 trait IEngineFactory {
   /** Creates an instance of an [[Engine]]. */

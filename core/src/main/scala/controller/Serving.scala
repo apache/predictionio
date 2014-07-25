@@ -18,6 +18,7 @@ import scala.reflect.runtime.universe._
   * @tparam AP Algorithm parameters class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
+  * @group Serving
   */
 abstract class LServing[AP <: Params : ClassTag, Q, P]
   extends BaseServing[AP, Q, P] {
@@ -43,6 +44,8 @@ abstract class LServing[AP <: Params : ClassTag, Q, P]
 
 /** A concrete implementation of [[LServing]] returning the first algorithm's
   * prediction result directly without any modification.
+  *
+  * @group Serving
   */
 class FirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
   /** Returns the first algorithm's prediction. */
@@ -51,6 +54,8 @@ class FirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
 
 /** A concrete implementation of [[LServing]] returning the first algorithm's
   * prediction result directly without any modification.
+  *
+  * @group Serving
   */
 object FirstServing {
   /** Returns an instance of [[FirstServing]]. */
@@ -60,6 +65,8 @@ object FirstServing {
 
 /** A concrete implementation of [[LServing]] returning the average of all
   * algorithms' predictions. The output prediction class is Double.
+  *
+  * @group Serving
   */
 class AverageServing[Q] extends LServing[EmptyParams, Q, Double] {
   /** Returns the average of all algorithms' predictions. */
@@ -70,6 +77,8 @@ class AverageServing[Q] extends LServing[EmptyParams, Q, Double] {
 
 /** A concrete implementation of [[LServing]] returning the average of all
   * algorithms' predictions. The output prediction class is Double.
+  *
+  * @group Serving
   */
 object AverageServing {
   /** Returns an instance of [[AverageServing]]. */
