@@ -23,7 +23,7 @@ As SP500 constituents change all the time, the hardcoded list may not reflect
 the current state and the script may fail to extract delisted tickers. Whilst
 the stock engine is designed to accomodate missing / incomplete data, you may as
 well update the ticker list in [stock engine
-settings](/engines/src/main/scala/stock/Settings.scala).
+settings](/engines/src/main/scala/stock/Stock.scala).
 
 ### High Level Description
 A stock prediction algorithms employs a *rolling window* estimation method. For
