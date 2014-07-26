@@ -11,31 +11,28 @@ import io.prediction.controller.LPreparator
 import io.prediction.controller.MeanSquareError
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
-
 import io.prediction.workflow.APIDebugWorkflow
-
-import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.util.MLUtils
-import scala.io.Source
 
 import breeze.linalg.DenseMatrix
 import breeze.linalg.DenseVector
 import breeze.linalg.inv
 import nak.regress.LinearRegression
-
+import org.apache.spark.rdd.RDD
 import org.json4s._
 
+import scala.io.Source
+
 case class DataSourceParams(val filepath: String, val seed: Int = 9527)
-extends Params
+  extends Params
 
 case class TrainingData(x: Vector[Vector[Double]], y: Vector[Double])
-extends Serializable {
+  extends Serializable {
   val r = x.length
   val c = x.head.length
 }
 
 case class LocalDataSource(val dsp: DataSourceParams)
-extends LDataSource[
+  extends LDataSource[
     DataSourceParams, String, TrainingData, Vector[Double], Double] {
   def read(): Seq[(String, TrainingData, Seq[(Vector[Double], Double)])] = {
     val lines = Source.fromFile(dsp.filepath).getLines
