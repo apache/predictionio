@@ -4,6 +4,7 @@ import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
+/** Internal Java utilities. */
 object JavaUtils {
   // This "fake" tags are adopted from Spark's Java API.
   // Scala requires manifest or classtag for some data. But Prediction.IO

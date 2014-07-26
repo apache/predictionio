@@ -14,7 +14,7 @@ import java.util.HashMap;
  * @param <PD> Prepared Data
  * @param <Q> Input Query
  * @param <P> Output Prediction
- * @param <A> Actual Value (for evaluation)
+ * @param <A> Actual Value
  */
 public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /** Data Source class. Default to null. */
