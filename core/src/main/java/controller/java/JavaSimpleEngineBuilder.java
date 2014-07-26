@@ -1,14 +1,28 @@
 package io.prediction.controller.java;
 
-import java.lang.Iterable;
-import java.util.Map;
-import java.util.HashMap;
 import io.prediction.controller.Params;
 import io.prediction.controller.EmptyParams;
 
+import java.util.Map;
+import java.util.HashMap;
+
+/**
+ * A convenient builder class for linking up Data Source, Preparator, Algorithm,
+ * and Serving classes as an Engine. This builder further simplify the process
+ * by supplying default identity data preparator and first serving classes.
+ *
+ * @param <TD> Training Data
+ * @param <DP> Data Parameters
+ * @param <Q> Input Query
+ * @param <P> Output Prediction
+ * @param <A> Actual Value (for evaluation)
+ */
 public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
   extends JavaEngineBuilder<TD, DP, TD, Q, P, A> {
 
+  /**
+   * Set the Data Source class of this Engine.
+   */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> dataSourceClass(
       Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> cls) {
@@ -16,6 +30,9 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
     return this;
   }
 
+  /**
+   * Set the Preparator class of this Engine.
+   */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> preparatorClass(
       Class<? extends LJavaPreparator<? extends Params, TD, TD>> cls) {
@@ -23,6 +40,10 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
     return this;
   }
 
+  /**
+   * Add an Algorithm class to this Engine. If the engine does not already have
+   * a preparator, it will add an identity preparator to the engine.
+   */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> addAlgorithmClass(
       String name, Class<? extends LJavaAlgorithm<? extends Params, TD, ?, Q, P>> cls) {
@@ -33,6 +54,9 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
     return this;
   }
 
+  /**
+   * Set the Serving class of this Engine.
+   */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> servingClass(
       Class<? extends LJavaServing<? extends Params, Q, P>> cls) {
@@ -40,12 +64,17 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
     return this;
   }
 
-  /** Add FirstServing as default */
+  /**
+   * Set the Serving class of this Engine as FirstServing.
+   */
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> servingClass() {
     super.servingClass = LJavaFirstServing.apply(this);
     return this;
   }
 
+  /**
+   * Build and return an Engine instance.
+   */
   @Override
   public JavaSimpleEngine<TD, DP, Q, P, A> build() {
     return new JavaSimpleEngine<TD, DP, Q, P, A> (
