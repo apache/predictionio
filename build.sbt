@@ -35,6 +35,12 @@ lazy val tools = (project in file("tools")).
 
 scalaJavaUnidocSettings
 
+unidocAllSources in (JavaUnidoc, unidoc) := {
+  (unidocAllSources in (JavaUnidoc, unidoc)).value
+    .map(_.filterNot(_.getName.contains("$")))
+    .map(_.filterNot(_.getCanonicalPath.contains("engines")))
+}
+
 scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
   "-groups",
   "-skip-packages",
