@@ -6,8 +6,6 @@ import io.prediction.core.BaseServing
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.json4s.Formats
-import org.json4s.native.Serialization
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
@@ -33,13 +31,6 @@ abstract class LServing[AP <: Params : ClassTag, Q, P]
     * @param predictions A list of algorithms' predictions.
     */
   def serve(query: Q, predictions: Seq[P]): P
-
-  @transient lazy val formats: Formats = Utils.json4sDefaultFormats
-
-  def stringToQ[Q : TypeTag : ClassTag](query: String): Q = {
-    implicit val f = formats
-    Serialization.read[Q](query)
-  }
 }
 
 /** A concrete implementation of [[LServing]] returning the first algorithm's

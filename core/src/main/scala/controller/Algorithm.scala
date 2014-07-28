@@ -6,8 +6,6 @@ import io.prediction.core.LModelAlgorithm
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.json4s.Formats
-import org.json4s.native.Serialization
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
@@ -53,18 +51,6 @@ abstract class LAlgorithm[
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
-
-  @transient lazy val formats: Formats = Utils.json4sDefaultFormats
-
-  def stringToPD[PD : TypeTag : ClassTag](pd: String): PD = {
-    implicit val f = formats
-    Serialization.read[PD](pd)
-  }
-
-  def stringToQ[Q : TypeTag : ClassTag](query: String): Q = {
-    implicit val f = formats
-    Serialization.read[Q](query)
-  }
 }
 
 /** Base class of a parallel-to-local algorithm.

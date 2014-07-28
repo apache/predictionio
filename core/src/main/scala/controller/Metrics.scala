@@ -5,8 +5,6 @@ import io.prediction.core.BaseMetrics
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.json4s.Formats
-import org.json4s.native.Serialization
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
@@ -65,23 +63,6 @@ abstract class Metrics[
     * @param input A list of data parameters and metric unit pairs to aggregate.
     */
   def computeMultipleSets(input: Seq[(DP, MR)]): MMR
-
-  @transient lazy val formats: Formats = Utils.json4sDefaultFormats
-
-  def stringToQ[Q : TypeTag : ClassTag](query: String): Q = {
-    implicit val f = formats
-    Serialization.read[Q](query)
-  }
-
-  def stringToP[P : TypeTag : ClassTag](prediction: String): P = {
-    implicit val f = formats
-    Serialization.read[P](prediction)
-  }
-
-  def stringToA[A : TypeTag : ClassTag](actual: String): A = {
-    implicit val f = formats
-    Serialization.read[A](actual)
-  }
 }
 
 /** An implementation of mean square error metrics. `DP` is `AnyRef`. This

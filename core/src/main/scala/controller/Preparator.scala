@@ -6,8 +6,6 @@ import io.prediction.core.BasePreparator
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.json4s.Formats
-import org.json4s.native.Serialization
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
@@ -35,13 +33,6 @@ abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
     * @param trainingData Training data to be prepared.
     */
   def prepare(trainingData: TD): PD
-
-  @transient lazy val formats: Formats = Utils.json4sDefaultFormats
-
-  def stringToTD[TD : TypeTag : ClassTag](trainingData: String): TD = {
-    implicit val f = formats
-    Serialization.read[TD](trainingData)
-  }
 }
 
 /** Base class of a parallel preparator.
