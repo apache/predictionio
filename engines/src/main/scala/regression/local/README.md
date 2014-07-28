@@ -8,7 +8,7 @@ Prerequisite
 ------------
 
 Make sure you have built PredictionIO and setup storage described
-[here](/#storage-setup).
+[here](/README.md).
 
 
 High Level Description
