@@ -1,7 +1,6 @@
-package io.prediction.engines.java.recommendations;
+package io.prediction.engines.java.recommendations.tutorial1;
 
 import io.prediction.controller.java.LJavaDataSource;
-import io.prediction.controller.EmptyParams;
 import scala.Tuple2;
 import scala.Tuple3;
 import java.io.File;
@@ -14,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataSource extends LJavaDataSource<
-  DataSourceParams, EmptyParams, TrainingData, Query, Object> {
+  DataSourceParams, Object, TrainingData, Query, Object> {
 
   final static Logger logger = LoggerFactory.getLogger(DataSource.class);
 
@@ -25,7 +24,7 @@ public class DataSource extends LJavaDataSource<
   }
 
   @Override
-  public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> read() {
+  public Iterable<Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Object>>>> read() {
 
     File ratingFile = new File(params.filePath);
     Scanner sc = null;
@@ -54,11 +53,11 @@ public class DataSource extends LJavaDataSource<
       }
     }
 
-    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>> data =
-      new ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>>();
+    List<Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Object>>>> data =
+      new ArrayList<Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Object>>>>();
 
-    data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Object>>>(
-      new EmptyParams(),
+    data.add(new Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Object>>>(
+      null,
       new TrainingData(ratings),
       new ArrayList<Tuple2<Query, Object>>()
     ));

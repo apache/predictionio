@@ -1,4 +1,7 @@
-package io.prediction.engines.java.recommendations;
+package io.prediction.engines.java.recommendations.tutorial3;
+
+import io.prediction.engines.java.recommendations.tutorial1.DataSourceParams;
+import io.prediction.engines.java.recommendations.tutorial1.AlgoParams;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;
@@ -15,14 +18,14 @@ public class Runner3 {
   public static void runEvaluation(String filePath) {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
       .dataSourceParams(new DataSourceParams(filePath))
-      .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.1))
+      .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.2))
       .build();
 
     JavaAPIDebugWorkflow.runEngine(
       "MyEngine",
       new HashMap<String, String>(),
       3, // verbose
-      (new EvaluationEngineFactory()).apply(),
+      (new EngineFactory()).apply(),
       engineParams,
       Metrics.class,
       new EmptyParams()

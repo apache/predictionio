@@ -1,7 +1,6 @@
-package io.prediction.engines.java.recommendations;
+package io.prediction.engines.java.recommendations.tutorial1;
 
 import io.prediction.controller.java.LJavaAlgorithm;
-import io.prediction.controller.EmptyParams;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import scala.Tuple2;

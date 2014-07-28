@@ -1,5 +1,6 @@
-package  io.prediction.engines.java.recommendations;
+package io.prediction.engines.java.recommendations.tutorial3;
 
+import io.prediction.engines.java.recommendations.tutorial1.Query;
 import io.prediction.controller.java.JavaMetrics;
 import io.prediction.controller.EmptyParams;
 
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /** Root mean square error */
 public class Metrics
-  extends JavaMetrics<EmptyParams, EmptyParams, Query, Float, Float,
+  extends JavaMetrics<EmptyParams, Object, Query, Float, Float,
   Double, Double, String> {
 
   final static Logger logger = LoggerFactory.getLogger(Metrics.class);
@@ -25,7 +26,7 @@ public class Metrics
   }
 
   @Override
-  public Double computeSet(EmptyParams dataParams, Iterable<Double> metricUnits) {
+  public Double computeSet(Object dataParams, Iterable<Double> metricUnits) {
     double sum = 0.0;
     int count = 0;
     for (double squareError : metricUnits) {
@@ -37,7 +38,7 @@ public class Metrics
 
   @Override
   public String computeMultipleSets(
-    Iterable<Tuple2<EmptyParams, Double>> input) {
+    Iterable<Tuple2<Object, Double>> input) {
     return Arrays.toString(IteratorUtils.toArray(input.iterator()));
   }
 }

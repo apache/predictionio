@@ -1,7 +1,10 @@
-package io.prediction.engines.java.recommendations;
+package io.prediction.engines.java.recommendations.tutorial3;
+
+import io.prediction.engines.java.recommendations.tutorial1.TrainingData;
+import io.prediction.engines.java.recommendations.tutorial1.Query;
+import io.prediction.engines.java.recommendations.tutorial1.DataSourceParams;
 
 import io.prediction.controller.java.LJavaDataSource;
-import io.prediction.controller.EmptyParams;
 import scala.Tuple2;
 import scala.Tuple3;
 import java.io.File;
@@ -16,19 +19,19 @@ import org.slf4j.LoggerFactory;
 import java.util.Random;
 import java.util.Collections;
 
-public class EvaluationDataSource extends LJavaDataSource<
-  DataSourceParams, EmptyParams, TrainingData, Query, Float> {
+public class DataSource extends LJavaDataSource<
+  DataSourceParams, Object, TrainingData, Query, Float> {
 
-  final static Logger logger = LoggerFactory.getLogger(EvaluationDataSource.class);
+  final static Logger logger = LoggerFactory.getLogger(DataSource.class);
 
   DataSourceParams params;
 
-  public EvaluationDataSource(DataSourceParams params) {
+  public DataSource(DataSourceParams params) {
     this.params = params;
   }
 
   @Override
-  public Iterable<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Float>>>> read() {
+  public Iterable<Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Float>>>> read() {
 
     File ratingFile = new File(params.filePath);
     Scanner sc = null;
@@ -68,11 +71,11 @@ public class EvaluationDataSource extends LJavaDataSource<
     int testEndIndex = Math.min(size,
       trainingEndIndex + (int) (ratings.size() * testPercentage));
       // trainingEndIndex + 10);
-    
+
     Random rand = new Random(0); // seed
 
-    List<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Float>>>> data = new
-      ArrayList<Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Float>>>>();
+    List<Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Float>>>> data = new
+      ArrayList<Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Float>>>>();
 
     for (int i = 0; i < iterations; i++) {
       Collections.shuffle(ratings, new Random(rand.nextInt()));
@@ -84,8 +87,8 @@ public class EvaluationDataSource extends LJavaDataSource<
       TrainingData td = new TrainingData(trainingRatings);
       List<Tuple2<Query, Float>> qaList = prepareValidation(testRatings);
 
-      data.add(new Tuple3<EmptyParams, TrainingData, Iterable<Tuple2<Query, Float>>>(
-        new EmptyParams(), td, qaList));
+      data.add(new Tuple3<Object, TrainingData, Iterable<Tuple2<Query, Float>>>(
+        null, td, qaList));
     }
 
     return data;
