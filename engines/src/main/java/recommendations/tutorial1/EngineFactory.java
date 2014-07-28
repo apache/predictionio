@@ -9,8 +9,9 @@ public class EngineFactory implements IEngineFactory {
     return new JavaSimpleEngineBuilder<
       TrainingData, Object, Query, Float, Object> ()
       .dataSourceClass(DataSource.class)
+      .preparatorClass() // Use default Preparator
       .addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
-      .servingClass()
+      .servingClass() // Use default Serving
       .build();
   }
 }

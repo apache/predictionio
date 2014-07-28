@@ -225,6 +225,7 @@ public class EngineFactory implements IEngineFactory {
     return new JavaSimpleEngineBuilder<
       TrainingData, Object, Query, Float, Object> ()
       .dataSourceClass(DataSource.class)
+      .preparatorClass() // Use default Preparator
       .addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
       .servingClass() // Use default Serving
       .build();
@@ -272,10 +273,10 @@ The `engineFactory` is the class name of the `EngineFactory` class created above
 Execute the following command to register the engine:
 
 ```
-bin/register-engine engines/src/main/java/recommendations/simple/jsons/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+bin/register-engine engines/src/main/java/recommendations/tutorial1/jsons/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
 ```
 
-The `register-engine` command takes the engine manifest file and the required jar files as arguments. Note that you only need to register the engine once unless you have changed the jar path or updated the engine manifest.
+The `register-engine` command takes the engine manifest file and the required jar files as arguments. Note that you need to register the engine again if you have modified and re-cmopiled the codes.
 
 ## Step 6. Define Parameters for the Engine
 
@@ -320,7 +321,7 @@ We use `bin/run-workflow` to run the *Engine*, which builds and saves the algori
 Execute the following commands:
 
 ```
-bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.recommendations.tutorial1 --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/simple/jsons
+bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.recommendations.tutorial1 --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/tutorial1/jsons
 ```
 
 The `--engineId` and `--engineVersion` corresponds to the `id` and `version` defined in the engine's  `manifest.json`. The `--jsonBasePath` is the base directory of parameters JSON files.

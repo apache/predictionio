@@ -41,15 +41,20 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
   }
 
   /**
+   * Set the Preparator class of this Engine as IdentityPreparator
+   */
+  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> preparatorClass() {
+    super.preparatorClass = LJavaIdentityPreparator.apply(this);
+    return this;
+  }
+
+  /**
    * Add an Algorithm class to this Engine. If the engine does not already have
    * a preparator, it will add an identity preparator to the engine.
    */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> addAlgorithmClass(
       String name, Class<? extends LJavaAlgorithm<? extends Params, TD, ?, Q, P>> cls) {
-    if (super.preparatorClass == null) {
-      super.preparatorClass = LJavaIdentityPreparator.apply(super.dataSourceClass);
-    }
     super.algorithmClassMap.put(name, cls);
     return this;
   }

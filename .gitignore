@@ -9,3 +9,4 @@ sbt/sbt-launch-*.jar
 core/data
 *.orig
 data/ml-*
+fs/

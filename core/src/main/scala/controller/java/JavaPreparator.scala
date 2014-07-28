@@ -59,4 +59,12 @@ object LJavaIdentityPreparator {
   /** Produces an instance of {@link LJavaIdentityPreparator}. */
   def apply[TD](ds: Class[_ <: LJavaDataSource[_, _, TD, _, _]]) =
     classOf[LJavaIdentityPreparator[TD]]
+
+  /**
+   * Returns an instance of {@link LJavaIdentityPreparator} by taking a {@link
+   * JavaEngineBuilder} as argument.
+   */
+  def apply[TD, B <: JavaEngineBuilder[TD, _, TD, _, _, _]](b: B) =
+    classOf[LJavaIdentityPreparator[TD]]
+
 }
