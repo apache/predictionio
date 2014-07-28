@@ -7,7 +7,7 @@ This document describes a Scala-based single-machine linear regression engine.
 Prerequisite
 ------------
 
-You should have setup the storage for PredictionIO described
+Make sure you have built PredictionIO and setup storage described
 [here](/#storage-setup).
 
 
