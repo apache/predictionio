@@ -2,7 +2,7 @@
 
 ## Overview
 
-These series of tutorials will walk through each components of **PredicionIO Framework**. We will demonstrate how to develop your machine learning algorithms and prediction engines, deploy them and serve real time prediction queries, develop your metrics to run offline evaluations, and improve prediction engine by using multiple algoritms. We will build a simple **Java single machine recommendation engine** which predicts item's rating value rated by the user. [MovieLens 100k](http://grouplens.org/datasets/movielens/) data set will be used as an example.
+These series of tutorials will walk through each components of **PredictionIO Framework**. We will demonstrate how to develop your machine learning algorithms and prediction engines, deploy them and serve real time prediction queries, develop your metrics to run offline evaluations, and improve prediction engine by using multiple algoritms. We will build a simple **Java single machine recommendation engine** which predicts item's rating value rated by the user. [MovieLens 100k](http://grouplens.org/datasets/movielens/) data set will be used as an example.
 
 ## Concept
 
@@ -257,11 +257,11 @@ sbt/sbt engines/assemblyPackageDependency
 
 Next, we need to register this Item Recommendation Engine into PredictionIO.
 
-An engine Manifest manifest.json is needed to describe the Engine (defined in `jsons/manifest.json`):
+An engine Manifest manifest.json is needed to describe the Engine (defined in `manifest.json`):
 
 ```json
 {
-  "id": "io.prediction.engines.java.recommendations.tutorial1",
+  "id": "io.prediction.engines.java.recommendations.tutorial1.EngineFactory",
   "version": "0.8.0-SNAPSHOT",
   "name": "Simple Recommendations Engine",
   "engineFactory": "io.prediction.engines.java.recommendations.tutorial1.EngineFactory"
@@ -273,7 +273,7 @@ The `engineFactory` is the class name of the `EngineFactory` class created above
 Execute the following command to register the engine:
 
 ```
-bin/register-engine engines/src/main/java/recommendations/tutorial1/jsons/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+bin/register-engine engines/src/main/java/recommendations/tutorial1/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
 ```
 
 The `register-engine` command takes the engine manifest file and the required jar files as arguments. Note that you need to register the engine again if you have modified and re-cmopiled the codes.
@@ -282,7 +282,7 @@ The `register-engine` command takes the engine manifest file and the required ja
 
 Our `DataSource` and `Algorithm` class requires parameters. We can use JSON files to specify these parameters. Also, we need to specify the name of the algorithm within the *Engine* we want to deploy with.
 
-In this tutorial, the `DataSourceParams` has a parameter which is the file path of the ratings file. The JSON is defined as following (`jsons/dataSourceParams.json`):
+In this tutorial, the `DataSourceParams` has a parameter which is the file path of the ratings file. The JSON is defined as following (`params/dataSourceParams.json`):
 
 ```json
 { "filePath" :  "data/test/ratings.csv" }
@@ -290,7 +290,7 @@ In this tutorial, the `DataSourceParams` has a parameter which is the file path 
 
 Note that the key name (`filePath`) must be the same as the corresponding field name defined in the `DataSourceParams` class.
 
-For algorithms, we need to define a JSON array (`jsons/algoParams.json`):
+For algorithms, we need to define a JSON array (`params/algoParams.json`):
 
 ```json
 [
@@ -321,7 +321,7 @@ We use `bin/run-workflow` to run the *Engine*, which builds and saves the algori
 Execute the following commands:
 
 ```
-bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.recommendations.tutorial1 --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/tutorial1/jsons
+bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.recommendations.tutorial1.EngineFactory --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/tutorial1/params
 ```
 
 The `--engineId` and `--engineVersion` corresponds to the `id` and `version` defined in the engine's  `manifest.json`. The `--jsonBasePath` is the base directory of parameters JSON files.
