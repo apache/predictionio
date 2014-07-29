@@ -280,7 +280,7 @@ The `register-engine` command takes the engine manifest file and the required ja
 
 ## Step 6. Define Parameters for the Engine
 
-Our `DataSource` and `Algorithm` class requires parameters. We can use JSON files to specify these parameters. Also, we need to specify the name of the algorithm within the *Engine* we want to deploy with.
+Our `DataSource` and `Algorithm` classes require parameters, which can be specified with JSON files.
 
 In this tutorial, the `DataSourceParams` has a parameter which is the file path of the ratings file. The JSON is defined as following (`params/dataSourceParams.json`):
 
@@ -290,7 +290,7 @@ In this tutorial, the `DataSourceParams` has a parameter which is the file path 
 
 Note that the key name (`filePath`) must be the same as the corresponding field name defined in the `DataSourceParams` class.
 
-For algorithms, we need to define a JSON array (`params/algoParams.json`):
+For algorithms, we need to define a JSON array (`params/algorithmsParams.json`):
 
 ```json
 [
@@ -300,7 +300,7 @@ For algorithms, we need to define a JSON array (`params/algoParams.json`):
 ]
 ```
 
-The key `name` is the name of the algorithm which should match the one defined in the `EngineFactory` class in above step. The `params` defines the parameters for this algorithm.
+The key `name` is the name of the algorithm which should match the one defined in the `EngineFactory` class in above step, which specifies the name of the algorithm of the *Engine* we want to deploy. The `params` defines the parameters for this algorithm.
 
 Note that if your algorithm takes no parameter, you still need to put empty JSON `{}`. For example:
 
