@@ -1,14 +1,28 @@
 # Tutorial 4 - Multiple Algorithms Engine
 
-At this point you have already tasted a sense of implementing, deploying, and evaluating a recommendation system with collaborative filtering techniques. However, this technique suffers from a cold-start problem where new items have no user action history. In this tutorial, we introduce a feature-based recommendation technique to remedy this problem by constructing a user-profile for each users. In addition, Prediction.IO infrastructure allows you to combine multiple recommendation systems together in a single engine. For a history-rich items, the engine can use results from the collaborative filtering algorithm, and for history-absent items, the engine returns prediction from the feature-based recommendation algorithm, moreover, we can ensemble multiple predictions too.
+At this point you have already tasted a sense of implementing, deploying, and
+evaluating a recommendation system with collaborative filtering techniques.
+However, this technique suffers from a cold-start problem where new items have
+no user action history. In this tutorial, we introduce a feature-based
+recommendation technique to remedy this problem by constructing a user-profile
+for each users. In addition, Prediction.IO infrastructure allows you to combine
+  multiple recommendation systems together in a single engine. For a
+  history-rich items, the engine can use results from the collaborative
+  filtering algorithm, and for history-absent items, the engine returns
+  prediction from the feature-based recommendation algorithm, moreover, we can
+  ensemble multiple predictions too.
 
-This tutorial guides you toward incorporating a feature-based algorithm into the existing CF-recommendation engine introduced in tutorial 1, 2, and 3.
+This tutorial guides you toward incorporating a feature-based algorithm into
+the existing CF-recommendation engine introduced in tutorial 1, 2, and 3.
 
-All code can be found in the [engines.java.recommendations.multialgo](engines/src/main/java/recommendations/multialgo/)
+All code can be found in the
+[engines.java.recommendations.tutorial4](engines/src/main/java/recommendations/tutorial4/)
 directory.
 
 ## Overview
-In the previous tutorial, we have covered `DataSource` and `Algorithm` as crucial part of an engine. A complete engine workflows looks like the following figure:
+In the previous tutorial, we have covered `DataSource` and `Algorithm` as
+crucial part of an engine. A complete engine workflows looks like the following
+figure:
 ```
             DataSource.read
              (TrainingData)
@@ -29,29 +43,52 @@ Algo1.predict Algo2.predict Algo3.predict <- (Query)
               Serving.serve
               (Prediction)
 ```
-`Preparator` is the class which preprocess the training data which will be used by multiple algorithms. For example, it can be a NLP processor which generates useful n-grams, or it can be some business logics.
+`Preparator` is the class which preprocess the training data which will be used
+by multiple algorithms. For example, it can be a NLP processor which generates
+useful n-grams, or it can be some business logics.
 
-Engine is designed to support multiple algorithms. The need to take the same `PreparedData` as input for model construction, but each algorithm can have its own model class). Algorithm takes a common `Query` as input and return a `Prediction` as output.
+Engine is designed to support multiple algorithms. The need to take the same
+`PreparedData` as input for model construction, but each algorithm can have its
+own model class). Algorithm takes a common `Query` as input and return a
+`Prediction` as output.
 
-Finally, the serving layer `Serving` combines result from multiple algorithms, and possible apply some final business logic before returning.
+Finally, the serving layer `Serving` combines result from multiple algorithms,
+and possible apply some final business logic before returning.
 
-This tutorial implements a simple `Preparator` for feature generation, a feature based algorithm, and a serving layer which ensembles multiple predictions.
+This tutorial implements a simple `Preparator` for feature generation, a
+feature based algorithm, and a serving layer which ensembles multiple
+predictions.
 
 ## DataSource
-We have to amend the [`DataSource`](multialgo/DataSource.java) to take into account of more information from MovieLens, as well as adding some fake data for demonstration. We use the genre of movies as its feature vector. This part is simliar to earlier tutorial.
+We have to amend the [`DataSource`](tutorial4/DataSource.java) to
+take into account of more information from MovieLens, as well as adding some
+fake data for demonstration. We use the genre of movies as its feature vector.
+This part is simliar to earlier tutorial.
 
 ```
-$ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4a
+$ bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4a
 ```
 
 ## Preparator
-As we have read the raw data from `DataSource`, we can *preprocess* the raw data into a more useable form. In this tutorial, we generate a feature vector for movies based on its genre.
+As we have read the raw data from `DataSource`, we can *preprocess* the raw
+data into a more useable form. In this tutorial, we generate a feature vector
+for movies based on its genre.
 
-You need to implement two classes: `Preparator` and `PreparedData`. `Preparator` is a class implementing a method `prepare` which transform `TrainingData` into `PreparedData`; `PreparedData` is the output and the object being passed to `Algorithms` for training. `PreparedData` can be anything, very often it is equivalent to `TrainingData`, or subclass of it. Here, [`PreparedData`](multialgo/PreparedData.java) is a subclass of `TrainingData`, it adds a map from items (movies) to feature vectors. The merit of using subclass is that, it makes the original `TrainingData` easily accessible.
+You need to implement two classes: `Preparator` and `PreparedData`.
+`Preparator` is a class implementing a method `prepare` which transform
+`TrainingData` into `PreparedData`; `PreparedData` is the output and the object
+being passed to `Algorithms` for training. `PreparedData` can be anything, very
+often it is equivalent to `TrainingData`, or subclass of it. Here,
+[`PreparedData`](tutorial4/PreparedData.java) is a subclass of `TrainingData`,
+it adds a map from items (movies) to feature vectors. The merit of using
+subclass is that, it makes the original `TrainingData` easily accessible.
 
-The [`Preparator`](multialgo/Preparator.java) class simply examines item info and extract a feature vector from item info.
+The [`Preparator`](tutorial4/Preparator.java) class simply examines item info
+and extract a feature vector from item info.
 
-After implementing these two classes, you can add them to the workflow and try out if things are really working. Add the preparator class to the engine builder, as shown in [Runner4b.java](multialgo/Runner4b.java):
+After implementing these two classes, you can add them to the workflow and try
+out if things are really working. Add the preparator class to the engine
+builder, as shown in [Runner4b.java](tutorial4/Runner4b.java):
 ```java
 return new JavaEngineBuilder<
     TrainingData, EmptyParams, PreparedData, Query, Float, Object> ()
@@ -63,13 +100,17 @@ return new JavaEngineBuilder<
 And you can test it out with
 
 ```
-$ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4b
+$ bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4b
 ```
 
 ## Feature-Based Algorithm
-This algorithm creates a feature profile for every user using the feature vector in `PreparedData`. More specifically, if a user has rated 5 stars on *Toy Story* but 1 star on *The Crucible*, the user profile would reflect that this user likes comedy and animation but dislikes drama.
+This algorithm creates a feature profile for every user using the feature
+vector in `PreparedData`. More specifically, if a user has rated 5 stars on
+*Toy Story* but 1 star on *The Crucible*, the user profile would reflect that
+this user likes comedy and animation but dislikes drama.
 
-The movie lens rating is an integer ranged from 1 to 5, we incorporate it into the algorithm with the following parameters:
+The movie lens rating is an integer ranged from 1 to 5, we incorporate it into
+the algorithm with the following parameters:
 ```java
 public class FeatureBasedAlgorithmParams implements Params {
   public final double min;
@@ -79,9 +120,15 @@ public class FeatureBasedAlgorithmParams implements Params {
   ...
 }
 ```
-We only consider rating from `min` to `max`, and we normalize the rating with this function: `f(rating) = (rating - drift) * scale`. As each movie is associated with a binary feature vector, the user feature vector is essentially a rating-weighted sum of all movies (s)he rated.
-After that, we normalize all user feature vector by L-inf norm, this will ensure that user feature is bounded by [-1, 1]. In laymen term, -1 indicates that the user hates that feature, whilst 1 suggests the opposite.
-The following code snippet illustrate the actual code. `data` is an instance of `PreparedData` that is passed as argument to the `train` function.
+We only consider rating from `min` to `max`, and we normalize the rating with
+this function: `f(rating) = (rating - drift) * scale`. As each movie is
+associated with a binary feature vector, the user feature vector is essentially
+a rating-weighted sum of all movies (s)he rated.  After that, we normalize all
+user feature vector by L-inf norm, this will ensure that user feature is
+bounded by [-1, 1]. In laymen term, -1 indicates that the user hates that
+feature, whilst 1 suggests the opposite.  The following code snippet illustrate
+the actual code. `data` is an instance of `PreparedData` that is passed as
+argument to the `train` function.
 
 ```java
 for (Integer uid : data.userInfo.keySet()) {
@@ -109,28 +156,34 @@ for (Integer uid : userFeatures.keySet()) {
 }
 ```
 
-[Runner4c.scala](multialgo/Runner4c.java) illustrates the engine factory up to this point. We use a default serving class as we only have one algorithm. (We will demonstrate how to combine prediction results from multiple algorithm is in the section). We are able to define [an end-to-end engine](multialgo/SingleEngineFactory.java).
+[Runner4c.scala](tutorial4/Runner4c.java) illustrates the engine factory up to
+this point. We use a default serving class as we only have one algorithm. (We
+will demonstrate how to combine prediction results from multiple algorithm is
+in the section). We are able to define [an end-to-end
+engine](tutorial4/SingleEngineFactory.java).
 ```
-$ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4c
+$ bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4c
 ```
 
 ## Deployment
-Likewise in tutorial 1, we can deploy this feature based engine. We have a [engine manifest](multialgo/single-manifest.json), and we register it:
+Likewise in tutorial 1, we can deploy this feature based engine. We have a
+[engine manifest](tutorial4/single-manifest.json), and we register it:
 ```
-$ bin/register-engine engines/src/main/java/recommendations/multialgo/single-manifest.json
+$ bin/register-engine engines/src/main/java/recommendations/tutorial4/single-manifest.json
 ```
-The script automatically recompiles updated code. You will need to re-run this script if you have update any code in your engine.
+The script automatically recompiles updated code. You will need to re-run this
+script if you have update any code in your engine.
 
 ### Specify Engine Parameters
 We need to use json files for deployment.
-  1. [dataSourceParams.json](multialgo/single-jsons/dataSourceParams.json):
+  1. [dataSourceParams.json](tutorial4/single-jsons/dataSourceParams.json):
   ```json
   {
     "dir" :  "data/ml-100k/",
     "addFakeData": true
   }
   ```
-  2. [algorithmsParams.json](multialgo/single-jsons/algorithmsParams.json):
+  2. [algorithmsParams.json](tutorial4/single-jsons/algorithmsParams.json):
   ```json
   [
     {
@@ -144,14 +197,18 @@ We need to use json files for deployment.
     }
   ]
   ```
-  Recall that we support multiple algorithms. This json file is actually a list of name-params pair where the name is the identifier of algorithm defined in EngineFactory, and the params value correspond to the algorithm parameter.
+  Recall that we support multiple algorithms. This json file is actually a list
+  of name-params pair where the name is the identifier of algorithm defined in
+  EngineFactory, and the params value correspond to the algorithm parameter.
 
 ### Start training
-The following command kick-starts the training, which will return an id when the training is completed.
+The following command kick-starts the training, which will return an id when
+the training is completed.
 ```
 $ bin/run-workflow --sparkHome $SPARK_HOME \
---engineId io.prediction.engines.java.recommendations.multialgo.SingleEngineFactory \ --engineVersion 0.8.0-SNAPSHOT \
---jsonBasePath engines/src/main/java/recommendations/multialgo/single-jsons/
+--engineId io.prediction.engines.java.recommendations.tutorial4.SingleEngineFactory \
+--engineVersion 0.8.0-SNAPSHOT \
+--jsonBasePath engines/src/main/java/recommendations/tutorial4/single-jsons/
 ```
 You should be able to find the run id from console, something like this:
 ```
@@ -165,18 +222,29 @@ $ bin/run-server --runId 201407280006
 ```
 
 ### Try a few things
-Fake user -1 (see [DataSource.FakeData](multialgo/DataSource.java)) loves action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e. 1). You can use our script bin/cjson to send the json request. The first parameter is the json request, and the second parameter is the server address.
+Fake user -1 (see [DataSource.FakeData](tutorial4/DataSource.java)) loves
+action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e.
+1). You can use our script bin/cjson to send the json request. The first
+parameter is the json request, and the second parameter is the server address.
 ```
 $ bin/cjson '{ "uid" : -1, "iid" : 27}' http://localhost:8000
 ```
-Fake item -2 is a cold item (i.e. has no rating). But from its data, we know that it is a movie catagorized under "Action" genre, hence, it should also have a high rating with Fake user -1.
+Fake item -2 is a cold item (i.e. has no rating). But from its data, we know
+that it is a movie catagorized under "Action" genre, hence, it should also have
+a high rating with Fake user -1.
 ```
 $ bin/cjson '{ "uid" : -1, "iid" : -2}' http://localhost:8000
 ```
-However, there is nothing we can do with a cold user. Fake user -3 has no rating history, we know nothing about him. If we request any rating with fake user -3, we will get a NaN.
+However, there is nothing we can do with a cold user. Fake user -3 has no
+rating history, we know nothing about him. If we request any rating with fake
+user -3, we will get a NaN.
 ```
 $ bin/cjson '{ "uid" : -3, "iid" : 1}' http://localhost:8000
 ```
 
 ## Multiple Algorithms
-We have two algorithms available, one is a collaborative filtering algorithm and the other is a feature-based algorithm. Prediction.IO allows you to create a engine that ensembles multiple algorithms prediction, you may use feature-based algorithm for cold-start items (as CF algos cannot handle items with no ratings), and use both algorithms for others.
+We have two algorithms available, one is a collaborative filtering algorithm
+and the other is a feature-based algorithm. Prediction.IO allows you to create
+a engine that ensembles multiple algorithms prediction, you may use
+feature-based algorithm for cold-start items (as CF algos cannot handle items
+with no ratings), and use both algorithms for others.
