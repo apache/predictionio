@@ -21,6 +21,23 @@ import org.apache.spark.SparkContext
   * }
   * }}}
   *
+  * In Java, all you need to do is to implement this interface, and add a static
+  * method with 3 arguments of type String, [[Params]], and SparkContext.
+  *
+  * {{{
+  * public class MyModel implements IPersistentModel<MyParams>, Serializable {
+  *   ...
+  *   public void save(String id, MyParams params) {
+  *     ...
+  *   }
+  *
+  *   public static MyModel load(String id, Params params, SparkContext sc) {
+  *     ...
+  *   }
+  *   ...
+  * }
+  * }}}
+  *
   * @tparam AP Algorithm parameters class.
   * @see [[IPersistentModelLoader]]
   * @group Algorithm
