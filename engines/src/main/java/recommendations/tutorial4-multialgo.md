@@ -16,7 +16,7 @@ This tutorial guides you toward incorporating a feature-based algorithm into
 the existing CF-recommendation engine introduced in tutorial 1, 2, and 3.
 
 All code can be found in the
-[engines.java.recommendations.tutorial4](engines/src/main/java/recommendations/tutorial4/)
+[engines.java.recommendations.tutorial4](tutorial4/)
 directory.
 
 ## Overview
