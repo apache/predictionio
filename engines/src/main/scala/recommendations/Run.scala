@@ -72,11 +72,11 @@ class PMatrixFactorizationModel(rank: Int,
 
 object PMatrixFactorizationModel
   extends IPersistentModelLoader[AlgorithmParams, PMatrixFactorizationModel] {
-  def apply(id: String, params: AlgorithmParams, sc: SparkContext) = {
+  def apply(id: String, params: AlgorithmParams, sc: Option[SparkContext]) = {
     new PMatrixFactorizationModel(
       rank = Source.fromFile(s"/tmp/${id}/rank").mkString.toInt,
-      userFeatures = sc.objectFile(s"/tmp/${id}/userFeatures"),
-      productFeatures = sc.objectFile(s"/tmp/${id}/productFeatures"))
+      userFeatures = sc.get.objectFile(s"/tmp/${id}/userFeatures"),
+      productFeatures = sc.get.objectFile(s"/tmp/${id}/productFeatures"))
   }
 }
 
