@@ -205,7 +205,7 @@ We need to use json files for deployment.
 The following command kick-starts the training, which will return an id when
 the training is completed.
 ```
-$ bin/run-workflow --sparkHome $SPARK_HOME \
+$ bin/run-train \
 --engineId io.prediction.engines.java.recommendations.tutorial4.SingleEngineFactory \
 --engineVersion 0.8.0-SNAPSHOT \
 --jsonBasePath engines/src/main/java/recommendations/tutorial4/single-jsons/
@@ -337,8 +337,7 @@ Now, we can specify the engine instance by passing the set of parameters to the 
 This json contains three algorithm parameters. The first two correspond to the feature-based algorithm, and the third corresponds to the collaborative filtering algorithm. The first allows all 5 ratings, and the second allows only ratings higher than or equals to 4. This gives a bit more weight on the high-rating features. Once [all parameter files are specified](tutorial4/jsons/), we can start the training phase and start the API server:
 
 ```
-$ bin/run-workflow \
---sparkHome $SPARK_HOME \
+$ bin/run-train \
 --engineId io.prediction.engines.java.recommendations.tutorial4.EngineFactory \
 --engineVersion 0.8.0-SNAPSHOT  \
 --jsonBasePath engines/src/main/java/recommendations/tutorial4/jsons/

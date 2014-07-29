@@ -3,9 +3,9 @@ Building
 
 Run the following to build PredictionIO.
 ```
-sbt/sbt package
-sbt/sbt engines/assemblyPackageDependency
-sbt/sbt tools/assembly
+$ sbt/sbt package
+$ sbt/sbt engines/assemblyPackageDependency
+$ sbt/sbt tools/assembly
 ```
 
 
@@ -71,7 +71,7 @@ API Documentation
 
 1.  Run this command.
     ```
-    sbt/sbt unidoc
+    $ sbt/sbt unidoc
     ```
 
 2.  Point your web browser at `target/scala-2.10/unidoc/index.html` for

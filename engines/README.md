@@ -7,7 +7,7 @@ There are three main components:
 
 The first two jar only requires one time compile, while the engine jar needs to be re-compiled everytime you change the code.
 
-### Compiling external dependencies 
+### Compiling external dependencies
 Only need to do this once, unless you have updated the external dependency jar. Assuming you are at the repository root.
 ```
 $ sbt/sbt "project engines" assemblyPackageDependency
@@ -25,28 +25,28 @@ PredictionIO leverages the Spark infrastructure. In this example, we will use th
 
 Start master server:
 ```
-./sbin/start-master.sh
+$ ./sbin/start-master.sh
 ```
 
 You should be able to find the webui in [http://localhost:8080](http://localhost:8080). Now, we add workers to the master:
 ```
-./bin/spark-class org.apache.spark.deploy.worker.Worker spark://IP:PORT
+$ ./bin/spark-class org.apache.spark.deploy.worker.Worker spark://IP:PORT
 ```
 where you can find `spark://IP:PORT` in the master UI page. Once you have started the worker, you should be able to see something under the "Workers" table in UI page.
 
 
 ### Running an engine
-Let's try to run the example regression engine. You can find the code from [this link](https://github.com/PredictionIO/Imagine/blob/master/engines/src/main/scala/regression/Run.scala): 
+Let's try to run the example regression engine. You can find the code from [this link](https://github.com/PredictionIO/Imagine/blob/master/engines/src/main/scala/regression/Run.scala):
 
 The following command kick starts the evaluation workflow for the regression engine. Change two things:
-- Replace `spark://Justins-MacBook-Pro.local:7077` by your spark master url. 
+- Replace `spark://Justins-MacBook-Pro.local:7077` by your spark master url.
 - Replace `io.prediction.engines.regression.Runner` with the main runner class of your engine. Don't have to change for the current example.
 ```
 $ spark-submit --verbose \
 --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar \
 --class "io.prediction.engines.regression.Runner" \
 --master spark://Justins-MacBook-Pro.local:7077 \
-core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar 
+core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
 ```
 
 You will see a lot of logging messages, and towards the end, you will see `MSE: 25169010958286325000000000000000000000.000000`, the number can be a whatever large number. It is the output of the evaluation workflow, and MSE stands for mean-square-error. This large error is expected, because in the default program, it doesn't have enough iteration to coverage to a point where the regression gives resonable output.
@@ -59,11 +59,3 @@ When you start the job, `spark-submit` may loops forever and the debug message m
 1. You have specified the wrong spark master. The best way is to copy and paste the `spark://your-hostname:your-port` string directly from the master UI page.
 2. There is no workers in the master node. Make sure you have also connected the workers node to the master. Starting master alone is not sufficient, as it is just a resource manager.
 3. By default, (which will be fix in near future), PredictionIO uses 8G of memory. This may exceed the amount of memory in your computer, and Spark by default uses (n-1) GB where n = GB RAM in your computer. You can change it to a lower value in [this line](https://github.com/PredictionIO/Imagine/blob/master/core/src/main/scala/workflow/EvaluationWorkflow.scala#L258).
-
-
-
-
-
-
-
-

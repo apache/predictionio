@@ -70,4 +70,4 @@ MahoutItemBasedAlgorithm:
 
 RandomAlgorithm:
 
-	sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap randomAlgoParams.json"
+	$ sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap randomAlgoParams.json"

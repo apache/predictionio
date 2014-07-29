@@ -134,7 +134,7 @@ JavaAPIDebugWorkflow.runEngine(
 Execute the following command:
 
 ```
-bin/pio-run io.prediction.engines.java.recommendations.tutorial3.Runner3 data/test/ratings.csv
+$ bin/pio-run io.prediction.engines.java.recommendations.tutorial3.Runner3 data/test/ratings.csv
 ```
 
 You should see the following output, the Metric Result (RMSE score) of each iteration is printed at the end.
@@ -155,13 +155,13 @@ You should see the following output, the Metric Result (RMSE score) of each iter
 Run the following to fetch the data set. The ml-100k will be downloaded into the `data/` directory.
 
 ```
-engines/src/main/java/recommendations/fetch.sh
+$ engines/src/main/java/recommendations/fetch.sh
 ```
 
 Re-run Runner3 with the ml-100k data set:
 
 ```
-bin/pio-run io.prediction.engines.java.recommendations.tutorial3.Runner3 data/ml-100k/u.data
+$ bin/pio-run io.prediction.engines.java.recommendations.tutorial3.Runner3 data/ml-100k/u.data
 ```
 
 You should see the following when it completes. The RMSE metric scores of each iteration is printed at the end:

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -x
+
+export PIO_HOME="$(cd `dirname $0`/..; pwd)"
+
+exec $PIO_HOME/bin/pio-class io.prediction.tools.RunWorkflow "$@"

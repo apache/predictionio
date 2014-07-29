@@ -61,15 +61,15 @@ subdirectory.
 Before training, you must let PredictionIO know about the engine. Run the
 following command to register the engine.
 ```
-cd $PIO_HOME
-bin/register-engine engines/src/main/scala/regression/local/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+$ cd $PIO_HOME
+$ bin/register-engine engines/src/main/scala/regression/local/manifest.json
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 To start training, use the following command.
 ```
-cd $PIO_HOME
-bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params
+$ cd $PIO_HOME
+$ bin/run-train --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params
 ```
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
@@ -87,8 +87,8 @@ Running Evaluation Metrics
 
 To run evaluation metrics, simply add an argument to the `run-workflow` command.
 ```
-cd $PIO_HOME
-bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params --metricsClass io.prediction.controller.MeanSquareError
+$ cd $PIO_HOME
+$ bin/run-eval --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params --metricsClass io.prediction.controller.MeanSquareError
 ```
 Notice that we have appended `--metricsClass
 io.prediction.controller.MeanSquareError` to the end of the command. This
@@ -108,16 +108,16 @@ Deploying a Real-time Prediction Server
 Following from instructions above, you should have obtained a run ID after
 your workflow finished. Use the following command to start a server.
 ```
-cd $PIO_HOME
-bin/run-server --runId RUN_ID_HERE
+$ cd $PIO_HOME
+$ bin/run-server --runId RUN_ID_HERE
 ```
 This will create a server that by default binds to http://localhost:8000. You
 can visit that page in your web browser to check its status.
 
 To perform real-time predictions, try the following.
 ```
-curl -H "Content-Type: application/json" -d '[2.1419053154730548, 1.919407948982788, 0.0501333631091041, -0.10699028639933772, 1.2809776380727795, 1.6846227956326554, 0.18277859260127316, -0.39664340267804343, 0.8090554869291249, 2.48621339239065]' http://localhost:8000
-curl -H "Content-Type: application/json" -d '[-0.8600615539670898, -1.0084357652346345, -1.3088407119560064, -1.9340485539299312, -0.6246990990796732, -2.325746651211032, -0.28429904752434976, -0.1272785164794058, -1.3787859877532718, -0.24374419289538318]' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '[2.1419053154730548, 1.919407948982788, 0.0501333631091041, -0.10699028639933772, 1.2809776380727795, 1.6846227956326554, 0.18277859260127316, -0.39664340267804343, 0.8090554869291249, 2.48621339239065]' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '[-0.8600615539670898, -1.0084357652346345, -1.3088407119560064, -1.9340485539299312, -0.6246990990796732, -2.325746651211032, -0.28429904752434976, -0.1272785164794058, -1.3787859877532718, -0.24374419289538318]' http://localhost:8000
 ```
 Congratulations! You have just trained a linear regression model and is able to
 perform real time prediction.

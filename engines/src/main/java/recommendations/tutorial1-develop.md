@@ -246,16 +246,7 @@ Note that the `addAlgorithmClass()` requires the name of algorithm ( "MyRecommen
 
 ## Step 5. Compile and Register Engine
 
-Now, we have implemented all the necessary blocks to deploy this Item Recommendation Engine. Let's compile the code!
-
-Execute the following commands:
-
-```
-sbt/sbt package
-sbt/sbt engines/assemblyPackageDependency
-```
-
-Next, we need to register this Item Recommendation Engine into PredictionIO.
+We have implemented all the necessary blocks to deploy this Item Recommendation Engine. Next, we need to register this Item Recommendation Engine into PredictionIO.
 
 An engine Manifest manifest.json is needed to describe the Engine (defined in `manifest.json`):
 
@@ -270,10 +261,10 @@ An engine Manifest manifest.json is needed to describe the Engine (defined in `m
 
 The `engineFactory` is the class name of the `EngineFactory` class created above. The `id` and `version` will be referenced later when we run the engine.
 
-Execute the following command to register the engine:
+Execute the following command to compile and register the engine:
 
 ```
-bin/register-engine engines/src/main/java/recommendations/tutorial1/manifest.json core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
+$ bin/register-engine engines/src/main/java/recommendations/tutorial1/manifest.json
 ```
 
 The `register-engine` command takes the engine manifest file and the required jar files as arguments. Note that you need to register the engine again if you have modified and re-cmopiled the codes.
@@ -316,12 +307,12 @@ Note that if your algorithm takes no parameter, you still need to put empty JSON
 
 Now, we have everything in place. Let's run it!
 
-We use `bin/run-workflow` to run the *Engine*, which builds and saves the algorithm *Model* for serving real time requests.
+We use `bin/run-train` to train the *Engine*, which builds and saves the algorithm *Model* for serving real time requests.
 
 Execute the following commands:
 
 ```
-bin/run-workflow --sparkHome $SPARK_HOME --engineId io.prediction.engines.java.recommendations.tutorial1.EngineFactory --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/tutorial1/params
+$ bin/run-train --engineId io.prediction.engines.java.recommendations.tutorial1.EngineFactory --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/tutorial1/params
 ```
 
 The `--engineId` and `--engineVersion` corresponds to the `id` and `version` defined in the engine's  `manifest.json`. The `--jsonBasePath` is the base directory of parameters JSON files.
@@ -339,7 +330,7 @@ Note that there is `ID` returned at the end. In this example, it's `201407240001
 Next, execute the `bin/run-server` command with the returned `ID`:
 
 ```
-bin/run-server --runId 201407240001
+$ bin/run-server --runId 201407240001
 ```
 
 This will create a server that by default binds to http://localhost:8000. You can visit that page in your web browser to check its status.
@@ -349,7 +340,7 @@ Now you can retrive prediction result by sending a HTTP request to the server wi
 For example, retrieve the predicted preference for item ID 3 by user ID 1. Run the following in terminal:
 
 ```
-curl -H "Content-Type: application/json" -d '{ "uid" : 1, "iid" : 3}' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "uid" : 1, "iid" : 3}' http://localhost:8000
 ```
 
 You should see the predicted preference value returned:
