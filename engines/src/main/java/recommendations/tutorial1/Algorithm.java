@@ -88,22 +88,6 @@ public class Algorithm extends
     Map<Integer, RealVector> itemSimilarity = new HashMap<Integer, RealVector>();
     List<Integer> item1List = new ArrayList<Integer>(itemIndexMap.keySet());
     List<Integer> item2List = new ArrayList<Integer>(item1List);
-/*
-    for (Integer itemID1 : item1List) {
-      item2List.remove(0);
-      Integer index1 = itemIndexMap.get(itemID1);
-      for (Integer itemID2: item2List) {
-        RealVector vector1 = itemVectors.get(itemID1);
-        RealVector vector2 = itemVectors.get(itemID2);
-        double score = vector1.cosine(vector2);
-        if (score > params.threshold) {
-          Integer index2 = itemIndexMap.get(itemID2);
-          setItemSimilarity(itemSimilarity, itemID1, index2, score, numOfItems);
-          setItemSimilarity(itemSimilarity, itemID2, index1, score, numOfItems);
-        }
-      }
-    }
-*/
 
     int numSimilarItems = 100;
     Comparator<IndexAndScore> comparator = new IndexAndScoreComparator();
@@ -138,16 +122,6 @@ public class Algorithm extends
     }
 
     return new Model(itemSimilarity, userHistory);
-  }
-
-  private void setItemSimilarity(Map<Integer, RealVector> itemSimilarity,
-    Integer itemID1, Integer index2, double score, int dimension) {
-      RealVector vector = itemSimilarity.get(itemID1);
-      if (vector == null) {
-        vector = new OpenMapRealVector(dimension);
-        itemSimilarity.put(itemID1, vector);
-      }
-    vector.setEntry(index2, score);
   }
 
   private class IndexAndScore {
