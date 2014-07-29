@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.multialgo;
+package io.prediction.engines.java.recommendations.tutorial4;
 
 import io.prediction.controller.java.LJavaAlgorithm;
 import org.slf4j.Logger;

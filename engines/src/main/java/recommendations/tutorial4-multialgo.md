@@ -123,30 +123,28 @@ The script automatically recompiles updated code. You will need to re-run this s
 
 ### Specify Engine Parameters
 We need to use json files for deployment.
-
-1. [dataSourceParams.json](multialgo/single-jsons/dataSourceParams.json):
-   ```json
-   {
-     "dir" :  "data/ml-100k/",
-     "addFakeData": true
-   }
-   ```
-
-2. [algorithmsParams.json](multialgo/single-jsons/algorithmsParams.json):
-   ```json
-   [
-     {
-       "name": "featurebased",
-       "params": {
-         "min": 1.0,
-         "max": 5.0,
-         "drift": 3.0,
-         "scale": 0.5
-       }
-     }
-   ]
-   ```
-   Recall that we support multiple algorithms. This json file is actually a list of name-params pair where the name is the identifier of algorithm defined in EngineFactory, and the params value correspond to the algorithm parameter.
+  1. [dataSourceParams.json](multialgo/single-jsons/dataSourceParams.json):
+  ```json
+  {
+    "dir" :  "data/ml-100k/",
+    "addFakeData": true
+  }
+  ```
+  2. [algorithmsParams.json](multialgo/single-jsons/algorithmsParams.json):
+  ```json
+  [
+    {
+      "name": "featurebased",
+      "params": {
+        "min": 1.0,
+        "max": 5.0,
+        "drift": 3.0,
+        "scale": 0.5
+      }
+    }
+  ]
+  ```
+  Recall that we support multiple algorithms. This json file is actually a list of name-params pair where the name is the identifier of algorithm defined in EngineFactory, and the params value correspond to the algorithm parameter.
 
 ### Start training
 The following command kick-starts the training, which will return an id when the training is completed.
@@ -179,3 +177,6 @@ However, there is nothing we can do with a cold user. Fake user -3 has no rating
 ```
 $ bin/cjson '{ "uid" : -3, "iid" : 1}' http://localhost:8000
 ```
+
+## Multiple Algorithms
+We have two algorithms available, one is a collaborative filtering algorithm and the other is a feature-based algorithm. Prediction.IO allows you to create a engine that ensembles multiple algorithms prediction, you may use feature-based algorithm for cold-start items (as CF algos cannot handle items with no ratings), and use both algorithms for others.

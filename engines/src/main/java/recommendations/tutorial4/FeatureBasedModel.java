@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.multialgo;
+package io.prediction.engines.java.recommendations.tutorial4;
 
 import java.io.Serializable;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.multialgo;
+package io.prediction.engines.java.recommendations.tutorial4;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;
@@ -22,7 +22,7 @@ public class Runner4c {
       .build();
 
     JavaAPIDebugWorkflow.runEngine(
-      "Recommendation.multialgo",
+      "Recommendation.tutorial4.Runner4c", 
       new HashMap<String, String>(),
       3, // verbose
       (new SingleEngineFactory()).apply(),

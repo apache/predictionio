@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.multialgo;
+package io.prediction.engines.java.recommendations.tutorial4;
 
 import java.util.Map;
 import org.apache.commons.math3.linear.RealVector;

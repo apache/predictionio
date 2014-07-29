@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.multialgo;
+package io.prediction.engines.java.recommendations.tutorial4;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;
