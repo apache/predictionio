@@ -1,19 +1,19 @@
-/*
-package io.prediction.engines.java.recommendations;
+package io.prediction.engines.java.recommendations.tutorial4;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;
-import io.prediction.controller.java.JavaSimpleEngine;
-import io.prediction.controller.java.JavaSimpleEngineBuilder;
+import io.prediction.controller.java.JavaEngine;
+import io.prediction.controller.java.JavaEngineBuilder;
 
 public class EngineFactory implements IEngineFactory {
-  public JavaSimpleEngine<TrainingData, EmptyParams, Query, Float, Object> apply() {
-    return new JavaSimpleEngineBuilder<
-      TrainingData, EmptyParams, Query, Float, Object> ()
+  public JavaEngine<TrainingData, EmptyParams, PreparedData, Query, Float, Object> apply() {
+    return new JavaEngineBuilder<
+      TrainingData, EmptyParams, PreparedData, Query, Float, Object> ()
       .dataSourceClass(DataSource.class)
-      .addAlgorithmClass("MyRecommendationAlgo", Algorithm.class)
-      .servingClass()
+      .preparatorClass(Preparator.class)
+      .addAlgorithmClass("featurebased", FeatureBasedAlgorithm.class)
+      .addAlgorithmClass("collaborative", CollaborativeFilteringAlgorithm.class)
+      .servingClass(Serving.class)
       .build();
   }
 }
-*/

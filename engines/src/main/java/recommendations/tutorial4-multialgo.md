@@ -248,3 +248,106 @@ and the other is a feature-based algorithm. Prediction.IO allows you to create
 a engine that ensembles multiple algorithms prediction, you may use
 feature-based algorithm for cold-start items (as CF algos cannot handle items
 with no ratings), and use both algorithms for others.
+
+### Combining Algorithms Output
+[Serving Layer](tutorial4/Serving.java) is the last step of the pipeline. It
+takes prediction results from all algorithms, combine it and return. In the
+current case, we take an average of all valid (i.e. not NaN) predictions. In the
+extreme case where all algorithms return NaN, we also return NaN. Engine
+builders need to implement the `serve` method. We demonstrate with our case:
+```scala
+public Float serve(Query query, Iterable<Float> predictions) {
+  float sum = 0.0f;
+  int count = 0;
+
+  for (Float v: predictions) {
+    if (!v.isNaN()) {
+      sum += v;
+      count += 1;
+    }
+  }
+  return (count == 0) ? Float.NaN : sum / count;
+}
+```
+
+### Complete Engine Factory
+[EngineFactory.java](tutorial4/EngineFactory.java) demonstrates how to specify multiple algorithms in the same engine. When we add algorithms to the builder instance, we also need to specify a String which is served as the identifier. For example, we use "featurebased" for the feature-based algorithm, and "collaborative" for the collaborative-filtering algorithm.
+
+```scala
+public class EngineFactory implements IEngineFactory {
+  public JavaEngine<TrainingData, EmptyParams, PreparedData, Query, Float, Object> apply() {
+    return new JavaEngineBuilder<
+      TrainingData, EmptyParams, PreparedData, Query, Float, Object> ()
+      .dataSourceClass(DataSource.class)
+      .preparatorClass(Preparator.class)
+      .addAlgorithmClass("featurebased", FeatureBasedAlgorithm.class)
+      .addAlgorithmClass("collaborative", CollaborativeFilteringAlgorithm.class)
+      .servingClass(Serving.class)
+      .build();
+  }
+}
+```
+
+Similar to the earlier example, we need to write a manifest of the engine, and register it with Prediction.IO. Manifest:
+```json
+{
+  "id": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory",
+  "version": "0.8.0-SNAPSHOT",
+  "name": "FeatureBased Recommendations Engine",
+  "engineFactory": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory"
+}
+```
+The following script register the engines. Important to note that, the script
+also copies all related files (jars, resources) of this engine to a permanent
+storage, if you have updated the engine code or add new dependencies, you need
+to rerun this command.
+```
+$ bin/register-engine engines/src/main/java/recommendations/tutorial4/manifest.json
+```
+
+Now, we can specify the engine instance by passing the set of parameters to the engine. Our engine can support multiple algorithms, and in addition, it also support multiple instance of the same algorithms. We illustrates with [algorithmsParams.json](tutorial4/jsons/algorithmsParams.json):
+```json
+[
+  {
+    "name": "featurebased",
+    "params": {
+      "min": 1.0,
+      "max": 5.0,
+      "drift": 3.0,
+      "scale": 0.5
+    }
+  },
+  {
+    "name": "featurebased",
+    "params": {
+      "min": 4.0,
+      "max": 5.0,
+      "drift": 3.0,
+      "scale": 0.5
+    }
+  },
+  {
+    "name": "collaborative",
+    "params": {
+      "threshold": 0.2
+    }
+  }
+]
+```
+This json contains three algorithm parameters. The first two correspond to the feature-based algorithm, and the third corresponds to the collaborative filtering algorithm. The first allows all 5 ratings, and the second allows only ratings higher than or equals to 4. This gives a bit more weight on the high-rating features. Once [all parameter files are specified](tutorial4/jsons/), we can start the training phase and start the API server:
+
+```
+$ bin/run-workflow \
+--sparkHome $SPARK_HOME \
+--engineId io.prediction.engines.java.recommendations.tutorial4.EngineFactory \
+--engineVersion 0.8.0-SNAPSHOT  \
+--jsonBasePath engines/src/main/java/recommendations/tutorial4/jsons/
+
+14/07/28 21:55:35 INFO APIDebugWorkflow$: Run information saved with ID: xxxxxxxxxxxx
+
+$ bin/run-server --runId xxxxxxxxxxxx
+```
+
+By default, the server starts on port 8000. Open it with your browser and you will see all the meta information about this engine instance.
+
+You can submit various queries to the server and see what you get.
