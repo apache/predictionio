@@ -14,21 +14,9 @@ import java.util.HashMap;
 import io.prediction.controller.IdentityPreparator;
 
 public class Runner4c {
-  private static class HalfBakedEngineFactory implements IEngineFactory {
-    public JavaEngine<TrainingData, EmptyParams, PreparedData, Query, Float, Object> apply() {
-      return new JavaEngineBuilder<
-        TrainingData, EmptyParams, PreparedData, Query, Float, Object> ()
-        .dataSourceClass(DataSource.class)
-        .preparatorClass(Preparator.class)
-        .addAlgorithmClass("featurebased", FeatureBasedAlgorithm.class)
-        .servingClass(LJavaFirstServing.apply(FeatureBasedAlgorithm.class))
-        .build();
-    }
-  }
-
   public static void main(String[] args) {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(new DataSourceParams("data/ml-100k/"))
+      .dataSourceParams(new DataSourceParams("data/ml-100k/", true))
       // 1 -> -1., 2 -> -.5, 3 -> 0., 4 -> .5, 5 -> 1.
       .addAlgorithmParams("featurebased", new FeatureBasedAlgorithmParams(1.0, 5.0, 3.0, 0.5))
       .build();
@@ -37,7 +25,7 @@ public class Runner4c {
       "Recommendation.multialgo",
       new HashMap<String, String>(),
       3, // verbose
-      (new HalfBakedEngineFactory()).apply(),
+      (new SingleEngineFactory()).apply(),
       engineParams
     );
   }

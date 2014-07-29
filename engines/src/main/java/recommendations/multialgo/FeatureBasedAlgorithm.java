@@ -33,9 +33,7 @@ public class FeatureBasedAlgorithm
       final double rate = rating.rating;
 
       // Skip features outside the range.
-      if (!(params.min <= rate && rate <= params.max)) {
-        continue;
-      }
+      if (!(params.min <= rate && rate <= params.max)) continue;
 
       final double actualRate = (rate - params.drift) * params.scale;
       final RealVector userFeature = userFeatures.get(uid);

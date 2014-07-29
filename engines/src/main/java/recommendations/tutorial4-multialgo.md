@@ -38,7 +38,7 @@ Finally, the serving layer `Serving` combines result from multiple algorithms, a
 This tutorial implements a simple `Preparator` for feature generation, a feature based algorithm, and a serving layer which ensembles multiple predictions.
 
 ## DataSource
-We have to amend the [`DataSource`](multialgo/DataSource.java) to take into account of more information from MovieLens. We use the genre of movies as its feature vector. This part is simliar to earlier tutorial.
+We have to amend the [`DataSource`](multialgo/DataSource.java) to take into account of more information from MovieLens, as well as adding some fake data for demonstration. We use the genre of movies as its feature vector. This part is simliar to earlier tutorial.
 
 ```
 $ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4a
@@ -64,4 +64,116 @@ And you can test it out with
 
 ```
 $ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4b
+```
+
+## Feature-Based Algorithm
+This algorithm creates a feature profile for every user using the feature vector in `PreparedData`. More specifically, if a user has rated 5 stars on *Toy Story* but 1 star on *The Crucible*, the user profile would reflect that this user likes comedy and animation but dislikes drama.
+
+The movie lens rating is an integer ranged from 1 to 5, we incorporate it into the algorithm with the following parameters:
+```java
+public class FeatureBasedAlgorithmParams implements Params {
+  public final double min;
+  public final double max;
+  public final double drift;
+  public final double scale;
+  ...
+}
+```
+We only consider rating from `min` to `max`, and we normalize the rating with this function: `f(rating) = (rating - drift) * scale`. As each movie is associated with a binary feature vector, the user feature vector is essentially a rating-weighted sum of all movies (s)he rated.
+After that, we normalize all user feature vector by L-inf norm, this will ensure that user feature is bounded by [-1, 1]. In laymen term, -1 indicates that the user hates that feature, whilst 1 suggests the opposite.
+The following code snippet illustrate the actual code. `data` is an instance of `PreparedData` that is passed as argument to the `train` function.
+
+```java
+for (Integer uid : data.userInfo.keySet()) {
+  userFeatures.put(uid, new ArrayRealVector(data.featureCount));
+}
+
+for (TrainingData.Rating rating : data.ratings) {
+  final int uid = rating.uid;
+  final int iid = rating.iid;
+  final double rate = rating.rating;
+
+  // Skip features outside the range.
+  if (!(params.min <= rate && rate <= params.max))  continue;
+
+  final double actualRate = (rate - params.drift) * params.scale;
+  final RealVector userFeature = userFeatures.get(uid);
+  final RealVector itemFeature = data.itemFeatures.get(iid);
+  userFeature.combineToSelf(1, actualRate, itemFeature);
+}
+
+// Normalize userFeatures by l-inf-norm
+for (Integer uid : userFeatures.keySet()) {
+  final RealVector feature = userFeatures.get(uid);
+  feature.mapDivideToSelf(feature.getLInfNorm());
+}
+```
+
+[Runner4c.scala](multialgo/Runner4c.java) illustrates the engine factory up to this point. We use a default serving class as we only have one algorithm. (We will demonstrate how to combine prediction results from multiple algorithm is in the section). We are able to define [an end-to-end engine](multialgo/SingleEngineFactory.java).
+```
+$ bin/pio-run io.prediction.engines.java.recommendations.multialgo.Runner4c
+```
+
+## Deployment
+Likewise in tutorial 1, we can deploy this feature based engine. We have a [engine manifest](multialgo/single-manifest.json), and we register it:
+```
+$ bin/register-engine engines/src/main/java/recommendations/multialgo/single-manifest.json
+```
+The script automatically recompiles updated code. You will need to re-run this script if you have update any code in your engine.
+
+### Specify Engine Parameters
+We need to use json files for deployment.
+  1. [dataSourceParams.json](multialgo/single-jsons/dataSourceParams.json):
+  ```json
+  {
+    "dir" :  "data/ml-100k/",
+    "addFakeData": true
+  }
+  ```
+  2. [algorithmsParams.json](multialgo/single-jsons/algorithmsParams.json):
+  ```json
+  [
+    {
+      "name": "featurebased",
+      "params": {
+        "min": 1.0,
+        "max": 5.0,
+        "drift": 3.0,
+        "scale": 0.5
+      }
+    }
+  ]
+  ```
+  Recall that we support multiple algorithms. This json file is actually a list of name-params pair where the name is the identifier of algorithm defined in EngineFactory, and the params value correspond to the algorithm parameter.
+
+### Start training
+The following command kick-starts the training, which will return an id when the training is completed.
+```
+$ bin/run-workflow --sparkHome $SPARK_HOME \
+--engineId io.prediction.engines.java.recommendations.multialgo.SingleEngineFactory \ --engineVersion 0.8.0-SNAPSHOT \
+--jsonBasePath engines/src/main/java/recommendations/multialgo/single-jsons/
+```
+You should be able to find the run id from console, something like this:
+```
+14/07/28 17:39:59 INFO APIDebugWorkflow$: Run information saved with ID: 201407280006
+```
+
+### Start server
+As the training is completed, you can start a server
+```
+$ bin/run-server --runId 201407280006
+```
+
+### Try a few things
+Fake user -1 (see [DataSource.FakeData](multialgo/DataSource.java)) loves action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e. 1). You can use our script bin/cjson to send the json request. The first parameter is the json request, and the second parameter is the server address.
+```
+$ bin/cjson '{ "uid" : -1, "iid" : 27}' http://localhost:8000
+```
+Fake item -2 is a cold item (i.e. has no rating). But from its data, we know that it is a movie catagorized under "Action" genre, hence, it should also have a high rating with Fake user -1.
+```
+$ bin/cjson '{ "uid" : -1, "iid" : -2}' http://localhost:8000
+```
+However, there is nothing we can do with a cold user. Fake user -3 has no rating history, we know nothing about him. If we request any rating with fake user -3, we will get a NaN.
+```
+$ bin/cjson '{ "uid" : -3, "iid" : 1}' http://localhost:8000
 ```

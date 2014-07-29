@@ -25,7 +25,7 @@ public class Runner4a {
 
   public static void main(String[] args) {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(new DataSourceParams("data/ml-100k/"))
+      .dataSourceParams(new DataSourceParams("data/ml-100k/", true))
       .build();
 
     JavaAPIDebugWorkflow.runEngine(

@@ -32,14 +32,38 @@ public class DataSource extends LJavaDataSource<
 
   DataSourceParams params;
 
+  public static class FakeData {
+    // User -1 is a action movie lover. He should have high ratings for Item -2 ("Cold Action
+    // Movie"). Notice that Item -2 is new, hence have no rating. Feature-based algorithm should be
+    // able to return a high rating using user profile.
+    public static final List<String> itemData = Arrays.asList(
+        "-1|Action Movie (2046)|01-Jan-2046||http://i.dont.exist/|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+        "-2|Cold Action Movie II(2047)|01-Jan-2047||http://i.dont.exist/|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0",
+        "-3|Documentary (1997)|01-July-1997||http://no.pun.intended/|0|0|0|0|0|0|0|1|0|0|0|0|0|0|0|0|0|0|0");
+    public static final List<String> userData = Arrays.asList(
+        "-1|30|M|action_lover|94087",
+        "-2|30|M|documentary_lover|94087",
+        "-3|30|M|cold|94087");
+    public static final List<String> ratingData = Arrays.asList(
+        "-1,-1,5,881250949",
+        "-2,-3,5,881250949",
+        "-2,1,5,881250949");
+  }
+
   public DataSource(DataSourceParams params) {
     this.params = params;
   }
 
   public List<String[]> readFile(String filepath, String delimiter) {
+    return readFile(filepath, delimiter, new ArrayList<String>());
+  }
+
+  public List<String[]> readFile(String filepath, String delimiter, List<String> fakeData) {
     List<String[]> tokensList = new ArrayList<String[]>();
     try {
       List<String> lines = new ArrayList<String>();
+      lines.addAll(fakeData);
+
       BufferedReader in = new BufferedReader(new FileReader(filepath));
 
       while (in.ready()) {
@@ -67,13 +91,18 @@ public class DataSource extends LJavaDataSource<
 
   public List<TrainingData.Rating> getRatings() {
     List<TrainingData.Rating> ratings = new ArrayList<TrainingData.Rating>();
-    for (String[] tokens: readFile(params.dir + "u.data", "[\t,]")) {
+    
+    List<String[]> tokensList = readFile(params.dir + "u.data", "[\t,]",
+        (params.addFakeData) ? FakeData.ratingData : new ArrayList<String>());
+
+    for (String[] tokens: tokensList) {
       TrainingData.Rating rating = new TrainingData.Rating(
           Integer.parseInt(tokens[0]),
           Integer.parseInt(tokens[1]),
           Float.parseFloat(tokens[2]));
       ratings.add(rating);
     }
+
     return ratings;
   }
 
@@ -88,16 +117,22 @@ public class DataSource extends LJavaDataSource<
   }
 
   public Map<Integer, String[]> getItemInfo() {
-    List<String[]> tokensList = readFile(params.dir + "u.item", "[\\|]");
+    List<String[]> tokensList = readFile(params.dir + "u.item", "[\\|]",
+        (params.addFakeData) ? FakeData.itemData : new ArrayList<String>());
+
+    
     Map<Integer, String[]> itemInfo = new HashMap <> ();
     for (String[] tokens : tokensList) {
       itemInfo.put(Integer.parseInt(tokens[0]), tokens);
     }
+    
     return itemInfo;
   }
   
   public Map<Integer, String[]> getUserInfo() {
-    List<String[]> tokensList = readFile(params.dir + "u.user", "\\|");
+    List<String[]> tokensList = readFile(params.dir + "u.user", "[\\|]",
+        (params.addFakeData) ? FakeData.userData : new ArrayList<String>());
+
     Map<Integer, String[]> userInfo = new HashMap <> ();
     for (String[] tokens : tokensList) {
       userInfo.put(Integer.parseInt(tokens[0]), tokens);
@@ -118,5 +153,4 @@ public class DataSource extends LJavaDataSource<
 
     return data;
   }
-
 }
