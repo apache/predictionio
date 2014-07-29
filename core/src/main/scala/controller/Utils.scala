@@ -19,6 +19,13 @@ object Utils {
   /** Default JSON4S serializers for PredictionIO controllers. */
   val json4sDefaultFormats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
+  /** Save a model object as a file to a temporary location on local filesystem.
+    * It will first try to use the location indicated by the environmental
+    * variable PIO_FS_TMPDIR, then fall back to the java.io.tmpdir property.
+    *
+    * @param id Used as the filename of the file.
+    * @param model Model object.
+    */
   def save(id: String, model: Any): Unit = {
     val tmpdir = sys.env.get("PIO_FS_TMPDIR").getOrElse(
       System.getProperty("java.io.tmpdir"))
@@ -29,6 +36,13 @@ object Utils {
     fos.close
   }
 
+  /** Load a model object from a file in a temporary location on local
+    * filesystem. It will first try to use the location indicated by the
+    * environmental variable PIO_FS_TMPDIR, then fall back to the java.io.tmpdir
+    * property.
+    *
+    * @param id Used as the filename of the file.
+    */
   def load(id: String): Any = {
     val tmpdir = sys.env.get("PIO_FS_TMPDIR").getOrElse(
       System.getProperty("java.io.tmpdir"))

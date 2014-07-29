@@ -62,6 +62,25 @@ trait IPersistentModelLoader[AP <: Params, M] {
   def apply(id: String, params: AP, sc: Option[SparkContext]): M
 }
 
+/** Mix in this trait if your model cannot be persisted to PredictionIO's
+  * metadata store for any reason and want to have it persisted to local
+  * filesystem instead. These traits contain concrete implementation and need
+  * not be implemented.
+  *
+  * {{{
+  * class MyModel extends IFSPersistentModel[MyParams] {
+  *   ...
+  * }
+  *
+  * object MyModel extends IFSPersistentModelLoader[MyParams, MyModel] {
+  *   ...
+  * }
+  * }}}
+  *
+  * @tparam AP Algorithm parameters class.
+  * @see [[IFSPersistentModelLoader]]
+  * @group Algorithm
+  */
 trait IFSPersistentModel[AP <: Params] extends IPersistentModel[AP] {
   def save(id: String, params: AP) = {
     Utils.save(id, this)
@@ -69,6 +88,14 @@ trait IFSPersistentModel[AP <: Params] extends IPersistentModel[AP] {
   }
 }
 
+/** Implement an object that extends this trait for PredictionIO to support
+  * loading a persisted model from local filesystem during serving deployment.
+  *
+  * @tparam AP Algorithm parameters class.
+  * @tparam M Model class.
+  * @see [[IFSPersistentModel]]
+  * @group Algorithm
+  */
 trait IFSPersistentModelLoader[AP <: Params, M]
   extends IPersistentModelLoader[AP, M] {
   def apply(id: String, params: AP, sc: Option[SparkContext]): M = {

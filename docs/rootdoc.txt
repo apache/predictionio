@@ -1,3 +1,4 @@
-This is the documentation for the PredictionIO controller API.
+This is the API documentation of PredictionIO.
 
-The most interesting package is [[io.prediction.controller]].
+If you are building a prediction engine, the most interesting package would be
+[[io.prediction.controller]].
