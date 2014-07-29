@@ -3,12 +3,16 @@ package io.prediction.engines.java.recommendations.tutorial1;
 import io.prediction.controller.java.LJavaAlgorithm;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.OpenMapRealVector;
 import scala.Tuple2;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Queue;
+import java.util.PriorityQueue;
+import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +75,7 @@ public class Algorithm extends
         // update user History
         RealVector user = userHistory.get(userID);
         if (user == null) {
-          user = new ArrayRealVector(numOfItems);
+          user = new OpenMapRealVector(numOfItems);
           userHistory.put(userID, user);
         }
         user.setEntry(iindex, rating);
@@ -80,10 +84,11 @@ public class Algorithm extends
     }
 
     // calculate sim
+
     Map<Integer, RealVector> itemSimilarity = new HashMap<Integer, RealVector>();
     List<Integer> item1List = new ArrayList<Integer>(itemIndexMap.keySet());
     List<Integer> item2List = new ArrayList<Integer>(item1List);
-
+/*
     for (Integer itemID1 : item1List) {
       item2List.remove(0);
       Integer index1 = itemIndexMap.get(itemID1);
@@ -98,6 +103,39 @@ public class Algorithm extends
         }
       }
     }
+*/
+
+    int numSimilarItems = 100;
+    Comparator<IndexAndScore> comparator = new IndexAndScoreComparator();
+    Map<Integer, Queue<IndexAndScore>> topItemSimilarity =
+      new HashMap<Integer, Queue<IndexAndScore>>();
+
+    for (Integer itemID1 : item1List) {
+      item2List.remove(0);
+      Integer index1 = itemIndexMap.get(itemID1);
+      for (Integer itemID2: item2List) {
+        RealVector vector1 = itemVectors.get(itemID1);
+        RealVector vector2 = itemVectors.get(itemID2);
+        double score = vector1.cosine(vector2);
+        if (score > params.threshold) {
+          Integer index2 = itemIndexMap.get(itemID2);
+          setTopItemSimilarity(topItemSimilarity, itemID1, index2, score, numSimilarItems,
+            comparator);
+          setTopItemSimilarity(topItemSimilarity, itemID2, index1, score, numSimilarItems,
+            comparator);
+        }
+      }
+    }
+
+    for (Map.Entry<Integer, Queue<IndexAndScore>> entry : topItemSimilarity.entrySet()) {
+      Iterator<IndexAndScore> it = entry.getValue().iterator();
+      RealVector vector = new OpenMapRealVector(numOfItems);
+      while (it.hasNext()) {
+        IndexAndScore d = it.next();
+        vector.setEntry(d.index, d.score);
+      }
+      itemSimilarity.put(entry.getKey(), vector);
+    }
 
     return new Model(itemSimilarity, userHistory);
   }
@@ -106,10 +144,48 @@ public class Algorithm extends
     Integer itemID1, Integer index2, double score, int dimension) {
       RealVector vector = itemSimilarity.get(itemID1);
       if (vector == null) {
-        vector = new ArrayRealVector(dimension);
+        vector = new OpenMapRealVector(dimension);
         itemSimilarity.put(itemID1, vector);
       }
     vector.setEntry(index2, score);
+  }
+
+  private class IndexAndScore {
+    int index;
+    double score;
+    public IndexAndScore(int index, double score) {
+      this.index = index;
+      this.score = score;
+    }
+  }
+
+  private class IndexAndScoreComparator implements Comparator<IndexAndScore> {
+    @Override
+    public int compare(IndexAndScore o1, IndexAndScore o2) {
+      int r = 0;
+      if (o1.score < o2.score)
+        r = -1;
+      else if (o1.score > o2.score)
+        r = 1;
+      return r;
+    }
+  }
+
+  private void setTopItemSimilarity(Map<Integer, Queue<IndexAndScore>> topItemSimilarity,
+    Integer itemID1, Integer index2, double score, int capacity,
+    Comparator<IndexAndScore> comparator) {
+    Queue<IndexAndScore> queue = topItemSimilarity.get(itemID1);
+    if (queue == null) {
+      queue = new PriorityQueue<IndexAndScore>(capacity, comparator);
+      topItemSimilarity.put(itemID1, queue);
+    }
+    IndexAndScore entry = new IndexAndScore(index2, score);
+    if (queue.size() < capacity)
+      queue.add(entry);
+    else if (comparator.compare(queue.peek(), entry) < 0) {
+      queue.poll();
+      queue.add(entry);
+    }
   }
 
   @Override
@@ -118,10 +194,10 @@ public class Algorithm extends
     RealVector userVector = model.userHistory.get(query.uid);
     if (itemVector == null) {
       // cold start item, can't be handled by this algo, return hard code value.
-      return 0.0f;
+      return Float.NaN;
     } else if (userVector == null) {
       // new user, can't be handled by this algo, return hard code value.
-      return 0.0f;
+      return Float.NaN;
     } else {
       //logger.info("(" + query.uid + "," + query.iid + ")");
       //logger.info(itemVector.toString());
@@ -138,7 +214,7 @@ public class Algorithm extends
       }
 
       if (accumSim == 0.0) {
-        return 0.0f;
+        return Float.NaN;
       } else {
         return (float) (accum / accumSim);
       }

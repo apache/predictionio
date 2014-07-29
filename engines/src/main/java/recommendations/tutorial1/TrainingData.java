@@ -12,7 +12,12 @@ public class TrainingData implements Serializable {
 
   @Override
   public String toString() {
-    return "TrainingData: " + ratings.toString();
+    String s;
+    if (ratings.size() > 20)
+      s = "TrainingData.size=" + ratings.size();
+    else
+      s = ratings.toString();
+    return s;
   }
 
   public static class Rating implements Serializable {
