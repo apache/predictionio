@@ -15,6 +15,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 
 import scala.language.existentials
+import scala.reflect._
 import scala.reflect.runtime.universe
 
 /** Collection of reusable workflow related utilities. */
@@ -54,7 +55,7 @@ object WorkflowUtils extends Logging {
       pmm: PersistentModelManifest,
       runId: String,
       params: AP,
-      sc: SparkContext,
+      sc: Option[SparkContext],
       cl: ClassLoader): M = {
     val runtimeMirror = universe.runtimeMirror(cl)
     val pmmModule = runtimeMirror.staticModule(pmm.className)
@@ -66,8 +67,20 @@ object WorkflowUtils extends Logging {
         sc)
     } catch {
       case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
-        Class.forName(pmm.className).newInstance.
-          asInstanceOf[IPersistentModelLoader[AP, M]](runId, params, sc)
+        val loadMethod = Class.forName(pmm.className).getMethod(
+          "load",
+          classOf[String],
+          classOf[Params],
+          classOf[SparkContext])
+        loadMethod.invoke(null, runId, params, sc.getOrElse(null)).asInstanceOf[M]
+      } catch {
+        case e: ClassNotFoundException =>
+          error(s"Model class ${pmm.className} cannot be found.")
+          throw e
+        case e: NoSuchMethodException =>
+          error(
+            "The load(String, Params, SparkContext) method cannot be found.")
+          throw e
       }
     }
   }

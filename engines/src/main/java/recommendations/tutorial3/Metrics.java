@@ -21,7 +21,11 @@ public class Metrics
   public Double computeUnit(Query query, Float predicted, Float actual) {
     logger.info("Q: " + query.toString() + " P: " + predicted + " A: " + actual);
     // return squared error
-    double error = predicted - actual;
+    double error;
+    if (predicted.isNaN())
+      error = -actual;
+    else
+      error = predicted - actual;
     return (error * error);
   }
 

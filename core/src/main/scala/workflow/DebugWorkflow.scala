@@ -550,7 +550,17 @@ object APIDebugWorkflow {
               Unit
             }
           } else {
-            model.asInstanceOf[RDD[Any]].collect.head
+            val m = model.asInstanceOf[RDD[Any]].collect.head
+            if (m.isInstanceOf[IPersistentModel[_]]) {
+              if (m.asInstanceOf[IPersistentModel[Params]].save(
+                  r.id,
+                  algorithmParamsList(ai)._2))
+                PersistentModelManifest(className = m.getClass.getName)
+              else
+                m
+            } else {
+              m
+            }
           }
         }
       }

@@ -148,7 +148,7 @@ object CreateServer extends Logging {
       algorithms.exists(_.isInstanceOf[PAlgorithm[_, PD, _, Q, P]])
     val sparkContext =
       if (pAlgorithmExists) Some(WorkflowContext(run.batch, run.env)) else None
-    val evalPreparedMap = sparkContext.map { sc =>
+    val evalPreparedMap = sparkContext map { sc =>
       logger.info("Data Source")
       val dataSourceParams = WorkflowUtils.extractParams(
         engineLanguage,
@@ -183,18 +183,18 @@ object CreateServer extends Logging {
     val modelsFromRun = kryo.invert(run.models).get.asInstanceOf[Seq[Seq[Any]]]
     val models = modelsFromRun.head.zip(algorithms).zip(algorithmsParams).map {
       case ((m, a), p) =>
-        if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
+        if (m.isInstanceOf[PersistentModelManifest]) {
+          info("Custom-persisted model detected for algorithm " +
+            a.getClass.getName)
+          WorkflowUtils.getPersistentModel(
+            m.asInstanceOf[PersistentModelManifest],
+            run.id,
+            p,
+            sparkContext,
+            getClass.getClassLoader)
+        } else if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
           info(s"Parallel model detected for algorithm ${a.getClass.getName}")
-          if (m.isInstanceOf[PersistentModelManifest]) {
-            WorkflowUtils.getPersistentModel(
-              m.asInstanceOf[PersistentModelManifest],
-              run.id,
-              p,
-              sparkContext.get,
-              getClass.getClassLoader)
-          } else {
-            a.trainBase(sparkContext.get, evalPreparedMap.get(0))
-          }
+          a.trainBase(sparkContext.get, evalPreparedMap.get(0))
         } else {
           try {
             info(s"Loaded model ${m.getClass.getName} for algorithm " +
