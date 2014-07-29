@@ -69,7 +69,10 @@ where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 To start training, use the following command.
 ```
 $ cd $PIO_HOME
-$ bin/run-train --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params
+$ bin/run-train \
+--engineId io.prediction.engines.regression \
+--engineVersion 0.8.0-SNAPSHOT \
+--jsonBasePath engines/src/main/scala/regression/local/params
 ```
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
@@ -88,7 +91,10 @@ Running Evaluation Metrics
 To run evaluation metrics, simply add an argument to the `run-workflow` command.
 ```
 $ cd $PIO_HOME
-$ bin/run-eval --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/scala/regression/local/params --metricsClass io.prediction.controller.MeanSquareError
+$ bin/run-eval --engineId io.prediction.engines.regression \
+--engineVersion 0.8.0-SNAPSHOT \
+--jsonBasePath engines/src/main/scala/regression/local/params \
+--metricsClass io.prediction.controller.MeanSquareError
 ```
 Notice that we have appended `--metricsClass
 io.prediction.controller.MeanSquareError` to the end of the command. This

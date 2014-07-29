@@ -9,7 +9,7 @@ To run *Offline Evaluation*, we need *Training and Test Set* data. We will modif
 Recall that the `io.prediction.controller.java.LJavaDataSource` takes the following type parameters:
 
 ```java
-abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
+public abstract class LJavaDataSource<DSP extends Params,DP,TD,Q,A>
 ```
 - `DSP`: *DataSource Parameters* class.
 - `DP`: *Data Parameters* class. It is used to describe the generated *Training Data* and the Test Data *Query and Actual*, which is used by *Metrics* during evaluation.
@@ -45,7 +45,7 @@ Note that the *Test Data* is actually an `Iterable` of input *Query* and *Actual
 We will implement a Root Mean Square Error (RMSE) metric. You can find the implementation in `Metrics.java`. The *Metrics* extends `io.prediction.controller.java.JavaMetrics`, which requires the following type parameters:
 
 ```java
-abstract class JavaMetrics[MP <: Params, DP, Q, P, A, MU, MR, MMR <: AnyRef]
+public abstract class JavaMetrics<MP extends Params,DP,Q,P,A,MU,MR,MMR>
 ```
 - `MP`: *Metrics Parameters* class.
 - `DP`: *Data Parameters* class.
@@ -59,15 +59,12 @@ abstract class JavaMetrics[MP <: Params, DP, Q, P, A, MU, MR, MMR <: AnyRef]
 and overrides the following methods:
 
 ```java
-abstract def computeUnit(query: Q, predicted: P, actual: A): MU
+public abstract MU computeUnit(Q query, P predicted, A actual)
 
-abstract def computeSet(dataParams: DP, metricUnits: Iterable[MU]): MR
+public abstract MR computeSet(DP dataParams, Iterable<MU> metricUnits)
 
-abstract def computeMultipleSets(input: Iterable[(DP, MR)]): MMR
+public abstract MMR computeMultipleSets(Iterable<scala.Tuple2<DP,MR>> input)
 ```
-
-
-
 
 The method `computeUnit()` computes the *Metric Unit (MU)* for each *Prediction* and *Actual* results of the input *Query*.
 

@@ -4,6 +4,12 @@
 
 These series of tutorials will walk through each components of **PredictionIO Framework**. We will demonstrate how to develop your machine learning algorithms and prediction engines, deploy them and serve real time prediction queries, develop your metrics to run offline evaluations, and improve prediction engine by using multiple algoritms. We will build a simple **Java single machine recommendation engine** which predicts item's rating value rated by the user. [MovieLens 100k](http://grouplens.org/datasets/movielens/) data set will be used as an example.
 
+Execute the following command to download MovieLens 100k to data/ml-100k/.
+
+```
+$ engines/src/main/java/recommendations/fetch.sh
+```
+
 ## Concept
 
 A prediction **Engine** consists of the following controller components: **DataSource**, **Preparator**, **Alogithm**, and **Serving**. Another component **Metrics** is used to evaluate the
@@ -106,7 +112,7 @@ public class DataSourceParams implements Params {
 The *DataSource* component must extend `io.prediction.controller.java.LJavaDataSource`:
 
 ```java
-abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
+public abstract class LJavaDataSource<DSP extends Params,DP,TD,Q,A>
 ```
 
 `LJavaDataSource` stands for *Local Java DataSource*, meaning that it is a Java *DataSource* component which can be run in single machine, which requires the following type parameters:
@@ -127,10 +133,10 @@ public class DataSource extends LJavaDataSource<
 The only function you need to implement is `LJavaDataSource`'s `read()` method.
 
 ```java
-abstract def read(): Iterable[(DP, TD, Iterable[(Q, A)])]
+public abstract Iterable<scala.Tuple3<DP,TD,Iterable<scala.Tuple2<Q,A>>>> read()
 ```
 
-The `read()` method should read data from the source (Eg. database or text file, etc) and return the *Training Data* (`TD`) and *Test Data* (`Iterable[(Q, A)]`) with a *Data Parameters* (`DP`) associated with this *Training and Test Data Set*.
+The `read()` method should read data from the source (Eg. database or text file, etc) and return the *Training Data* (`TD`) and *Test Data* (`Iterable<scala.Tuple2<Q,A>>`) with a *Data Parameters* (`DP`) associated with this *Training and Test Data Set*.
 
 Note that the `read()` method's return type is `Iterable` because it could return one or more of *Training and Test Data Set*. For example, we may want to evaluate the engine with multiple iterations of random training and test split. In this case, each set corresponds to each split.
 
@@ -174,7 +180,7 @@ public class Model implements Serializable {
 The *Algorithm* component must extend `io.prediction.controller.java.LJavaAlgorithm`.
 
 ```java
-abstract class LJavaAlgorithm[AP <: Params, PD, M, Q, P]
+public abstract class LJavaAlgorithm<AP extends Params,PD,M,Q,P>
 ```
 Similar to `LJavaDataSource`, `LJavaAlgorithm` stands for *Local Java Algorithm*, meaning that it is a Java *Algorithm* component which can be run in single machine, which requires the following type parameters:
 
@@ -196,7 +202,7 @@ You need to implement two methods of `LJavaAlgorithm`:
 - `train` method:
 
 ```java
-abstract def train(pd: PD): M
+public abstract M train(PD pd)
 ```
 
 The `train` method produces a *Model* of type `M` from *Prepared Data* of type `PD`.
@@ -205,7 +211,7 @@ The `train` method produces a *Model* of type `M` from *Prepared Data* of type `
 - `predict` method:
 
 ```java
-abstract def predict(model: M, query: Q): P
+public abstract P predict(M model, Q query)
 ```
 
 The `predict` method produces a *Prediction* of type `P` from a *Query* of type `Q` and trained *Model* of type `M`.
@@ -276,7 +282,7 @@ Our `DataSource` and `Algorithm` classes require parameters, which can be specif
 In this tutorial, the `DataSourceParams` has a parameter which is the file path of the ratings file. The JSON is defined as following (`params/dataSourceParams.json`):
 
 ```json
-{ "filePath" :  "data/test/ratings.csv" }
+{ "filePath" :  "data/ml-100k/u.data" }
 ```
 
 Note that the key name (`filePath`) must be the same as the corresponding field name defined in the `DataSourceParams` class.
@@ -312,7 +318,10 @@ We use `bin/run-train` to train the *Engine*, which builds and saves the algorit
 Execute the following commands:
 
 ```
-$ bin/run-train --engineId io.prediction.engines.java.recommendations.tutorial1.EngineFactory --engineVersion 0.8.0-SNAPSHOT --jsonBasePath engines/src/main/java/recommendations/tutorial1/params
+$ bin/run-train \
+--engineId io.prediction.engines.java.recommendations.tutorial1.EngineFactory \
+--engineVersion 0.8.0-SNAPSHOT \
+--jsonBasePath engines/src/main/java/recommendations/tutorial1/params
 ```
 
 The `--engineId` and `--engineVersion` corresponds to the `id` and `version` defined in the engine's  `manifest.json`. The `--jsonBasePath` is the base directory of parameters JSON files.
@@ -320,7 +329,7 @@ The `--engineId` and `--engineVersion` corresponds to the `id` and `version` def
 When it finishes, you should see the following at the end of terminal output:
 
 ```
-14/07/24 16:55:13 INFO SparkContext: Job finished: collect at DebugWorkflow.scala:553, took 0.014837 s
+14/07/24 16:55:13 INFO SparkContext: Job finished: collect at DebugWorkflow.scala:553, took 4.785843 s
 14/07/24 16:55:13 INFO APIDebugWorkflow$: Metrics is null. Stop here
 14/07/24 16:55:13 INFO APIDebugWorkflow$: Run information saved with ID: 201407240001
 ```
@@ -346,7 +355,7 @@ $ curl -H "Content-Type: application/json" -d '{ "uid" : 1, "iid" : 3}' http://l
 You should see the predicted preference value returned:
 
 ```
-2.667687177658081
+3.9377410411834717
 ```
 
 Congratulations! Now you have built a prediction engine which uses the trained model to serve real-time queries and returns prediction results!

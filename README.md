@@ -8,6 +8,21 @@ $ sbt/sbt engines/assemblyPackageDependency
 $ sbt/sbt tools/assembly
 ```
 
+Spark Setup
+===========
+
+Download [Spark's pre-built **"For Hadoop 2 (HDP2, CDH5)"** package](http://spark.apache.org/downloads.html). Unzip the file.
+
+Set the `$SPARK_HOME` shell variable to the path of the unzipped Spark directory:
+```
+$ export SPARK_HOME=<your spark directory>
+```
+
+For example,
+```
+$ export SPARK_HOME=/Users/abc/Downloads/spark-1.0.1-bin-hadoop2
+```
+
 
 Storage Setup
 =============

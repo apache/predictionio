@@ -1,7 +1,7 @@
 
 ## Download Data from GroupLens
 
-Download movie-lens 100-k data to data/ml-100k/.
+Execute the following command to download MovieLens 100k to data/ml-100k/.
 ```
 $ engines/src/main/java/recommendations/fetch.sh
 ```
