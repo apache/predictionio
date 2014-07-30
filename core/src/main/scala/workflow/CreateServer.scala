@@ -118,6 +118,9 @@ object CreateServer extends Logging {
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): Unit = {
     implicit val formats = DefaultFormats
+    
+    WorkflowUtils.checkUpgrade("deployment")
+
     val algorithmsParamsWithNames =
       read[Seq[(String, JValue)]](run.algorithmsParams).map {
         case (algoName, params) =>

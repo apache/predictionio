@@ -373,6 +373,8 @@ object APIDebugWorkflow {
     logger.info("APIDebugWorkflow.run")
     logger.info("Start spark context")
 
+    WorkflowUtils.checkUpgrade("evaluation")
+
     val sc = WorkflowContext(batch, env)
 
     //if (dataSourceClass == null || dataSourceParams == null) {

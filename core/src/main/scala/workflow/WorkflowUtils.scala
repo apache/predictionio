@@ -18,6 +18,11 @@ import scala.language.existentials
 import scala.reflect._
 import scala.reflect.runtime.universe
 
+import scala.io.Source
+import java.io.FileNotFoundException
+import java.util.concurrent.Callable
+import java.lang.Thread
+
 /** Collection of reusable workflow related utilities. */
 object WorkflowUtils extends Logging {
   @transient private lazy val gson = new Gson
@@ -139,7 +144,30 @@ object WorkflowUtils extends Logging {
     * @param params The Java object to be converted.
     */
   def javaObjectToJValue(params: AnyRef): JValue = parse(gson.toJson(params))
+
+  private [prediction] def checkUpgrade(component: String = "core"): Unit = {
+    val runner = new Thread(new UpgradeCheckRunner(component))
+    runner.start
+  }
 }
+
+class UpgradeCheckRunner(val component: String) extends Runnable with Logging {
+  val version = "0.8.0-SNAPSHOT"
+  val versionsHost = "http://direct.prediction.io/"
+
+  def run(): Unit = {
+    val url = s"${versionsHost}${version}/${component}.json"
+    try {
+      val upgradeData = Source.fromURL(url)
+    } catch {
+      case e: FileNotFoundException => {
+        warn("Update metainfo not found. $url")
+      }
+    }
+    // TODO: Implement upgrade logic
+  }
+}
+
 
 object EngineLanguage extends Enumeration {
   val Scala, Java = Value
