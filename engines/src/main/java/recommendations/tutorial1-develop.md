@@ -275,7 +275,7 @@ $ bin/register-engine engines/src/main/java/recommendations/tutorial1/manifest.j
 
 The `register-engine` command takes the engine manifest file and the required jar files as arguments. Note that you need to register the engine again if you have modified and re-cmopiled the codes.
 
-## Step 6. Define Parameters for the Engine
+## Step 6. Specify Parameters for the Engine
 
 Our `DataSource` and `Algorithm` classes require parameters, which can be specified with JSON files.
 
@@ -309,7 +309,7 @@ Note that if your algorithm takes no parameter, you still need to put empty JSON
 ]
 ```
 
-## Step 7. Run WorkFlow and Server
+## Step 7. Train Engine and Deploy Server
 
 Now, we have everything in place. Let's run it!
 

@@ -3,9 +3,14 @@ Building
 
 Run the following to build PredictionIO.
 ```
-$ sbt/sbt package
-$ sbt/sbt engines/assemblyPackageDependency
-$ sbt/sbt tools/assembly
+$ bin/pio-build
+```
+
+You should see something like the following when it finishes building successfully.
+```
+...
+[info] Done packaging.
+[success] Total time: 42 s, completed Jul 29, 2014 4:53:00 PM
 ```
 
 Spark Setup
