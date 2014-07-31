@@ -238,7 +238,7 @@ object APIDebugWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -269,7 +269,7 @@ object APIDebugWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
@@ -312,7 +312,7 @@ object APIDebugWorkflow {
       MU, MR, MMR <: AnyRef
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -350,7 +350,7 @@ object APIDebugWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,

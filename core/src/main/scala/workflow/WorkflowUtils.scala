@@ -139,6 +139,10 @@ object WorkflowUtils extends Logging {
     }
   }
 
+  /** Grab environmental variables that starts with 'PIO_'. */
+  def pioEnvVars: Map[String, String] =
+    sys.env.filter(kv => kv._1.startsWith("PIO_"))
+
   /** Converts Java (non-Scala) objects to a JSON4S JValue.
     *
     * @param params The Java object to be converted.
