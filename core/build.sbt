@@ -1,7 +1,6 @@
 name := "core"
 
 libraryDependencies ++= Seq(
-  "ch.qos.logback"          % "logback-classic" % "1.1.2",
   "com.github.scopt"       %% "scopt"           % "3.2.0",
   "com.google.code.gson"    % "gson"            % "2.2.4",
   "com.google.guava"        % "guava"           % "17.0",
