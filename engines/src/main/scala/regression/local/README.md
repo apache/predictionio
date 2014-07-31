@@ -129,15 +129,15 @@ Congratulations! You have just trained a linear regression model and is able to
 perform real time prediction.
 
 
-Bonus: Automatic Prediction Server Restart
-------------------------------------------
+Bonus: Production Prediction Server Deployment
+----------------------------------------------
 
 The prediction server you have launched in the previous section hosts an
 immutable model in memory, i.e. you cannot update the model without restarting
 the server.
 
 Being immutable and stateless are important properties for horizontal scaling.
-The server is decided in a way such that you can run other automation tools or
+The server is designed in a way such that you can run other automation tools or
 monitors to manage its lifecycle.
 
 In this example, we will use [Supervisor](http://supervisord.org/) to manage our
@@ -184,7 +184,8 @@ section before proceeding to the following steps.**
     ```
 4.  Using your web browser, go to http://localhost:9001. You should see a
     Supervisor status screen, showing that the `pio` process is stopped.
-5.  Run training or evaluation.
+5.  Run training or evaluation. These scripts have been written to detect the
+    existence of Supervisor and will automatically (re)start our prediction server.
     ```
     $ cd $PIO_HOME
     $ bin/run-train \
@@ -203,8 +204,8 @@ section before proceeding to the following steps.**
 6.  Refresh the Supervisor status screen. You should now see the server as
     running. If you go to http://localhost:8000, you should see the prediction
     server status page.
-7.  Repeat steps 5 to 6 to see the prediction server getting automatically
-    restarted after every training/evaluation.
+7.  Repeat steps 5 to 6 to see the prediction server restarted automatically
+    after every training/evaluation.
 
 Congratulations! You have just deployed a production-ready setup that can
 restart itself automatically after every training! Simply add the training or
