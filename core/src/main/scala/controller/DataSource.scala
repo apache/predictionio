@@ -22,16 +22,28 @@ import scala.reflect._
   */
 abstract class LDataSource[
     DSP <: Params : ClassTag,
-    DP,
+    DP : ClassTag,
     TD : ClassTag,
     Q,
     A]
   extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
+    val datasets = sc.parallelize(Array(None)).flatMap(_ => read()).zipWithIndex
+    datasets.cache
+    val dps = datasets.map(t => t._2 -> t._1._1).collect.toMap
+    dps.map { t =>
+      val dataset = datasets.filter(_._2 == t._1).map(_._1)
+      val dp = t._2
+      val td = dataset.map(_._2)
+      val qa = dataset.map(_._3).flatMap(identity)
+      (dp, td, qa)
+    }.toSeq
+    /*
     read.map { case (dp, td, qaSeq) => {
       (dp, sc.parallelize(Array(td)), sc.parallelize(qaSeq))
     }}
+    */
   }
 
   /** Implement this method to return data from a data source. Returned data
@@ -55,7 +67,7 @@ abstract class LDataSource[
   */
 abstract class LSlicedDataSource[
     DSP <: Params : ClassTag,
-    DP,
+    DP : ClassTag,
     TD : ClassTag,
     Q,
     A]
