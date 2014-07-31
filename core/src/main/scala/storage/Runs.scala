@@ -17,6 +17,7 @@ import org.json4s.native.Serialization
  */
 case class Run(
   id: String,
+  status: String,
   startTime: DateTime,
   endTime: DateTime,
   engineId: String,
@@ -44,6 +45,9 @@ trait Runs {
   /** Get a Run by ID. */
   def get(id: String): Option[Run]
 
+  /** Get a run that is started the latest and has run to completion. */
+  def getLatestCompleted(engineId: String, engineVersion: String): Option[Run]
+
   /** Update a Run. */
   def update(run: Run): Unit
 
@@ -57,6 +61,7 @@ class RunSerializer extends CustomSerializer[Run](format => (
       implicit val formats = DefaultFormats
       val seed = Run(
           id = "",
+          status = "",
           startTime = DateTime.now,
           endTime = DateTime.now,
           engineId = "",
@@ -75,6 +80,7 @@ class RunSerializer extends CustomSerializer[Run](format => (
       fields.foldLeft(seed) { case (run, field) =>
         field match {
           case JField("id", JString(id)) => run.copy(id = id)
+          case JField("status", JString(status)) => run.copy(status = status)
           case JField("startTime", JString(startTime)) =>
             run.copy(startTime = Utils.stringToDateTime(startTime))
           case JField("endTime", JString(endTime)) =>
@@ -112,6 +118,7 @@ class RunSerializer extends CustomSerializer[Run](format => (
     case run: Run =>
       JObject(
         JField("id", JString(run.id)) ::
+        JField("status", JString(run.status)) ::
         JField("startTime", JString(run.startTime.toString)) ::
         JField("endTime", JString(run.endTime.toString)) ::
         JField("engineId", JString(run.engineId)) ::

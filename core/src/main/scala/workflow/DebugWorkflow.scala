@@ -580,6 +580,7 @@ object APIDebugWorkflow {
         })
       val runs = Storage.getMetaDataRuns
       runs.update(run.get.copy(
+        status = "COMPLETED",
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models.get),
