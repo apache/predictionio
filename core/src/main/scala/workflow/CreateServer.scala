@@ -59,11 +59,11 @@ case class ServerConfig(
 
 object CreateServer extends Logging {
   def main(args: Array[String]): Unit = {
-    val parser = new scopt.OptionParser[ServerConfig]("RunServer") {
+    val parser = new scopt.OptionParser[ServerConfig]("CreateServer") {
       opt[String]("engineId") action { (x, c) =>
         c.copy(engineId = Some(x))
       } text("Engine ID.")
-      opt[String]("version") action { (x, c) =>
+      opt[String]("engineVersion") action { (x, c) =>
         c.copy(engineVersion = Some(x))
       } text("Engine version.")
       opt[String]("ip") action { (x, c) =>

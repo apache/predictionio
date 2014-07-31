@@ -17,7 +17,7 @@ object RunServer extends Logging {
       sparkHome: String = "",
       sparkMaster: String = "local",
       sparkDeployMode: String = "client",
-      runId: String = "",
+      runId: Option[String] = None,
       engineId: Option[String] = None,
       engineVersion: Option[String] = None,
       ip: String = "localhost",
@@ -35,8 +35,8 @@ object RunServer extends Logging {
       opt[String]("sparkDeployMode") action { (x, c) =>
         c.copy(sparkDeployMode = x)
       } text("Apache Spark deploy mode. If not specified, default to client.")
-      opt[String]("runId") required() action { (x, c) =>
-        c.copy(runId = x)
+      opt[String]("runId") action { (x, c) =>
+        c.copy(runId = Some(x))
       } text("Run ID.")
       opt[String]("engineId") action { (x, c) =>
         c.copy(engineId = Some(x))
@@ -55,49 +55,69 @@ object RunServer extends Logging {
     parser.parse(args, RunServerConfig()) map { sc =>
       val runs = Storage.getMetaDataRuns
       val engineManifests = Storage.getMetaDataEngineManifests
-      runs.get(sc.runId).map { run =>
-        engineManifests.get(run.engineId, run.engineVersion).map { em =>
-          val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
-            s"${kv._1}=${kv._2}"
-          ).mkString(",")
-          val sparkHome =
-            if (sc.sparkHome != "") sc.sparkHome
-            else sys.env.get("SPARK_HOME").getOrElse(".")
-          val sparkSubmit = Seq(
-            s"${sparkHome}/bin/spark-submit",
-            "--verbose",
-            "--deploy-mode",
-            sc.sparkDeployMode,
-            "--master",
-            sc.sparkMaster,
-            "--class",
-            "io.prediction.workflow.CreateServer") ++ (
-              if (em.files.size > 1) Seq(
-                "--jars",
-                em.files.drop(1).mkString(","))
-              else Nil) ++ Seq(
-            em.files.head,
-            //"--env",
-            //pioEnvVars,
-            "--runId",
-            sc.runId,
-            "--ip",
-            sc.ip,
-            "--port",
-            sc.port.toString) ++
-            sc.engineId.map(x => Seq("--engineId", x)).getOrElse(Seq()) ++
-            sc.engineVersion.map(x => Seq("--engineVersion", x)).getOrElse(Seq())
-
-          if (sc.sparkDeployMode == "cluster")
-            Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).!
-          else
-            Process(sparkSubmit).!
-        } getOrElse {
-          error(s"Engine ${run.engineId} ${run.engineVersion} is not registered.")
+      val run = sc.runId.map { runId =>
+        runs.get(runId).getOrElse {
+          error(s"${runId} is not a valid run ID!")
+          sys.exit(1)
         }
       } getOrElse {
-        error(s"Run ID ${sc.runId} is not valid!")
+        (sc.engineId, sc.engineVersion) match {
+          case (Some(engineId), Some(engineVersion)) =>
+            runs.getLatestCompleted(engineId, engineVersion).getOrElse {
+              error(s"No valid run found for ${engineId} ${engineVersion}!")
+              sys.exit(1)
+            }
+          case _ =>
+            error("If --runId was not specified, both --engineId and --engineVersion must be specified.")
+            sys.exit(1)
+        }
       }
+      val em = engineManifests.get(run.engineId, run.engineVersion).getOrElse {
+        error(s"${run.engineId} ${run.engineVersion} is not registered!")
+        sys.exit(1)
+      }
+
+      val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
+        s"${kv._1}=${kv._2}"
+      ).mkString(",")
+      val sparkHome =
+        if (sc.sparkHome != "") sc.sparkHome
+        else sys.env.get("SPARK_HOME").getOrElse(".")
+      val sparkSubmit = Seq(
+        s"${sparkHome}/bin/spark-submit",
+        "--verbose",
+        "--deploy-mode",
+        sc.sparkDeployMode,
+        "--master",
+        sc.sparkMaster,
+        "--class",
+        "io.prediction.workflow.CreateServer") ++ (
+          if (em.files.size > 1) Seq(
+            "--jars",
+            em.files.drop(1).mkString(","))
+          else Nil) ++ Seq(
+        em.files.head,
+        //"--env",
+        //pioEnvVars,
+        "--runId",
+        run.id,
+        "--ip",
+        sc.ip,
+        "--port",
+        sc.port.toString) ++
+        sc.engineId.map(x => Seq("--engineId", x)).getOrElse(Seq()) ++
+        sc.engineVersion.map(x => Seq("--engineVersion", x)).getOrElse(Seq())
+
+      val proc = if (sc.sparkDeployMode == "cluster")
+        Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run
+      else
+        Process(sparkSubmit).run
+      Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+        def run(): Unit = {
+          proc.destroy
+        }
+      }))
+      proc.exitValue
     }
   }
 }

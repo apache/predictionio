@@ -161,7 +161,7 @@ class UpgradeCheckRunner(val component: String) extends Runnable with Logging {
       val upgradeData = Source.fromURL(url)
     } catch {
       case e: FileNotFoundException => {
-        warn("Update metainfo not found. $url")
+        warn(s"Update metainfo not found. $url")
       }
     }
     // TODO: Implement upgrade logic
