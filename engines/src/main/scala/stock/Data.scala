@@ -34,10 +34,11 @@ object TrainingData {
 }
 
 object SaddleWrapper {
-  def ToFrame(
+  def ToFrame[A](
     timeIndex: Array[DateTime],
-    tickerPriceSeq: Array[(String, Array[Double])]
-    ): Frame[DateTime, String, Double] = {
+    tickerPriceSeq: Array[(String, Array[A])]
+    )(implicit st: ST[A])
+  : Frame[DateTime, String, A] = {
     val index = IndexTime(timeIndex:_ *)
     val seriesList = tickerPriceSeq.map{ case(ticker, price) => {
       val series = Series(Vec(price), index)
@@ -46,8 +47,8 @@ object SaddleWrapper {
     Frame(seriesList:_*)
   }
 
-  def FromFrame(data: Frame[DateTime, String, Double]
-    ): (Array[DateTime], Array[(String, Array[Double])]) = {
+  def FromFrame[A](data: Frame[DateTime, String, A]
+    ): (Array[DateTime], Array[(String, Array[A])]) = {
     val timeIndex = data.rowIx.toVec.contents
     val tickers = data.colIx.toVec.contents
 
