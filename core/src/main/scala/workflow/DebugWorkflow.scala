@@ -456,7 +456,21 @@ object APIDebugWorkflow {
     algorithmParamsList
       .map {
         case (algoName, algoParams) =>
-          Doer(algorithmClassMapOpt.get(algoName), algoParams)
+          try {
+            Doer(algorithmClassMapOpt.get(algoName), algoParams)
+          } catch {
+            case e: java.util.NoSuchElementException =>
+              if (algoName == "")
+                logger.error("Empty algorithm name supplied but it could not " +
+                  "match with any algorithm in the engine's definition. " +
+                  "Existing algorithm name(s) are: " +
+                  s"${algorithmClassMapOpt.get.keys.mkString(", ")}. Aborting.")
+              else
+                logger.error(s"${algoName} cannot be found in the engine's " +
+                  "definition. Existing algorithm name(s) are: " +
+                  s"${algorithmClassMapOpt.get.keys.mkString(", ")}. Aborting.")
+              sys.exit(1)
+          }
       }
       .toArray
 
