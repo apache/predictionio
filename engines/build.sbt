@@ -15,7 +15,8 @@ libraryDependencies ++= Seq(
     exclude("org.eclipse.jetty", "jetty-server"),
   "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
   "org.json4s"        %% "json4s-native"  % "3.2.6",
-  "org.scala-saddle"  %% "saddle-core"    % "1.3.2",
+  "org.scala-saddle"  %% "saddle-core"    % "1.3.2"
+    exclude("ch.qos.logback", "logback-classic"),
   "org.scalanlp"      %% "breeze"         % "0.7",
   "org.scalanlp"      %% "breeze-natives" % "0.7",
   "org.scalanlp"       % "nak"            % "1.2.1",
@@ -29,3 +30,5 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
+
+net.virtualvoid.sbt.graph.Plugin.graphSettings
