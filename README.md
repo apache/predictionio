@@ -1,22 +1,26 @@
 Building
 ========
 
-Run the following to build PredictionIO.
+Run the following to build PredictionIO and its binary distribution.
 ```
-$ bin/pio-build
+$ ./make-distribution.sh
 ```
 
-You should see something like the following when it finishes building successfully.
+You should see something like the following when it finishes building
+successfully.
 ```
 ...
-[info] Done packaging.
-[success] Total time: 42 s, completed Jul 29, 2014 4:53:00 PM
+a imagine/bin/run-eval
+a imagine/bin/run-server
+a imagine/bin/run-train
+PredictionIO binary distribution created at imagine.tar.gz
 ```
 
 Spark Setup
 ===========
 
-Download [Spark's pre-built **"For Hadoop 2 (HDP2, CDH5)"** package](http://spark.apache.org/downloads.html). Unzip the file.
+Download [Spark's pre-built **"For Hadoop 2 (HDP2, CDH5)"**
+package](http://spark.apache.org/downloads.html). Unzip the file.
 
 Set the `$SPARK_HOME` shell variable to the path of the unzipped Spark directory:
 ```
@@ -40,7 +44,9 @@ functioning properly on your computer.
 
 1. Copy ``conf/pio-env.sh.template`` to ``conf/pio-env.sh``.
 
-2. If you use Elasticsearch (default), change the following to fit your setup.
+2. If you are using Elasticsearch and its default settings, you may stop here.
+
+3. Otherwise, change the following to fit your setup.
    ```
    PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
    PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
@@ -53,7 +59,7 @@ functioning properly on your computer.
    PIO_STORAGE_SOURCES_MONGODB_PORTS=27017
    ```
 
-3. The following points the storage repositories to their respective backend
+4. The following points the storage repositories to their respective backend
    data sources. By default, they point to Elasticsearch.
    ```
    PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH
@@ -65,25 +71,30 @@ functioning properly on your computer.
    PIO_STORAGE_REPOSITORIES_APPDATA_SOURCE=MONGODB
    ```
 
-4. Save ``conf/pio-env.sh`` and you are done!
+5. Save ``conf/pio-env.sh`` and you are done!
 
 
 Tutorials
 =========
 
-The purpose of the tutorials 1-4 is to help you to get familiar with each components of the PredictionIO framework.
+The purpose of the tutorials 1-4 is to help you to get familiar with each
+components of the PredictionIO framework.
 
 - [Tutorial 1 - Develop and Integrate Algorithm with PredictionIO
-](engines/src/main/java/recommendations/tutorial1-develop.md)
+  ](engines/src/main/java/recommendations/tutorial1-develop.md)
 - [Tutorial 2 - Test Engine Components
-](engines/src/main/java/recommendations/tutorial2-runner.md)
-- [Tutorial 3 - Evaluation](engines/src/main/java/recommendations/tutorial3-evaluation.md)
-- [Tutorial 4 - Multiple Algorithms Engine](engines/src/main/java/recommendations/tutorial4-multialgo.md)
+  ](engines/src/main/java/recommendations/tutorial2-runner.md)
+- [Tutorial 3 -
+  Evaluation](engines/src/main/java/recommendations/tutorial3-evaluation.md)
+- [Tutorial 4 - Multiple Algorithms
+  Engine](engines/src/main/java/recommendations/tutorial4-multialgo.md)
 
 More interesting tutorials:
-- [Stock Prediction Engine with customizable algorithms](engines/src/main/scala/stock/README.md)
+- [Stock Prediction Engine with customizable
+  algorithms](engines/src/main/scala/stock/README.md)
 - [Linear Regression Engine](engines/src/main/scala/regression/local/README.md)
-- [Distributed Recommendation Engine with RDD-based Model using MLlib's ALS](engines/src/main/scala/recommendations/README.md)
+- [Distributed Recommendation Engine with RDD-based Model using MLlib's
+  ALS](engines/src/main/scala/recommendations/README.md)
 
 
 API Documentation
