@@ -23,7 +23,7 @@ import com.twitter.chill.MeatLocker
 /** Primary parameter for [[[StockDataSource]]].
   *
   * @param baseDate identify the beginning of our global time window, and
-  * the rest are use index. 
+  * the rest are use index.
   * @param fromIdx the first date for testing
   * @param untilIdx the last date (exclusive) for testing
   * @param trainingWindowSize number of days used for training
@@ -40,7 +40,7 @@ import com.twitter.chill.MeatLocker
   * [100, 120), the training set draws data in time range [50, 100).
   */
 case class DataSourceParams(
-  val appid: Int = 42,
+  val appid: Int = Settings.appid,
   val baseDate: DateTime,
   val fromIdx: Int,
   val untilIdx: Int,
@@ -71,7 +71,7 @@ case class TestingDataParams(
   *
   * Main parameter: [[[DataSourceParams]]]
   *
-  * 
+  *
   */
 class StockDataSource(val dsp: DataSourceParams)
   extends LSlicedDataSource[
@@ -80,7 +80,7 @@ class StockDataSource(val dsp: DataSourceParams)
     TrainingData,
     Query,
     Target] {
-  @transient lazy val itemTrendsDbGetTicker = 
+  @transient lazy val itemTrendsDbGetTicker =
     Storage.getAppdataItemTrends().get(dsp.appid, _: String).get
   @transient lazy val itemTrendsDb = Storage.getAppdataItemTrends()
 
@@ -109,7 +109,7 @@ class StockDataSource(val dsp: DataSourceParams)
   : (TrainingData, Seq[(Query, Target)]) = {
     return (prepareTraining(p._1), prepareValidation(p._2))
   }
-  
+
   def getTimeIndex(baseDate: DateTime, marketTicker: String) = {
     val spy = itemTrendsDbGetTicker(marketTicker)
     val timestamps = spy.daily.map(_._1).distinct.filter(_ >= baseDate)
@@ -245,4 +245,3 @@ class StockDataSource(val dsp: DataSourceParams)
   }
 
 }
-        
