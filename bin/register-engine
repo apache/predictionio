@@ -8,16 +8,21 @@ export PIO_HOME="$FWDIR"
 
 . $FWDIR/bin/load-pio-env.sh
 
+SBT=sbt
+
+if [ -x $FWDIR/sbt/sbt ]; then
+  SBT=$FWDIR/sbt/sbt
+fi
+
 if [ -z "$1" ]; then
   echo "Usage: register-engine <engine-manifest.json>" 1>&2
   exit 1
 fi
 
-if [ ! -f engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar ]; then
-  sbt/sbt engines/assemblyPackageDependency
+if [ ! -f target/scala*/*-assembly-*-deps.jar ]; then
+  $SBT assemblyPackageDependency
 fi
 
-sbt/sbt package
+$SBT package
 
-exec $PIO_HOME/bin/pio-class io.prediction.tools.RegisterEngine $@ core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar
-
+exec $PIO_HOME/bin/pio-class io.prediction.tools.RegisterEngine $@ target/scala*/*.jar

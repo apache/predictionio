@@ -11,3 +11,4 @@ core/data
 data/ml-*
 fs/
 supervisord.conf
+assembly/
