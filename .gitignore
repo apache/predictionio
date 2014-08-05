@@ -8,7 +8,8 @@ sbt/sbt-launch-*.jar
 *.class
 core/data
 *.orig
-data/ml-*
+examples/data/ml-*
 fs/
 supervisord.conf
 assembly/
+dist/
