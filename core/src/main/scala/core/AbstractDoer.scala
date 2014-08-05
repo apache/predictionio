@@ -15,8 +15,6 @@ extends Serializable {
     val t = classTag[P].runtimeClass.getName
     s"${this.getClass.getName}(${t})"
   }
-
-  def paramsClass() = classTag[P]
 }
 
 
@@ -43,41 +41,5 @@ object Doer extends Logging {
           sys.exit(1)
       }
     }
-  }
-}
-
-/* Below are test functions. To be removed. */
-
-class PDoer(p: XParams) extends AbstractDoer[XParams] {
-}
-
-object PDoer {
-  val p = manifest[XParams]
-  def q() = manifest[XParams]
-}
-
-case class XParams(val a: Int) extends Params {
-}
-
-
-object Test {
-
-  def main(args: Array[String]) {
-    val a = new PDoer(new XParams(20))
-
-    val c: Class[_ <: AbstractDoer[_ <: Params]] = classOf[PDoer]
-
-    val pClass = c.getConstructors()(0).getParameterTypes()(0)
-
-    //val p = new Params(20)
-    implicit val formats = DefaultFormats
-
-    val j = parse("""{"a" : 1}""")
-
-    val z = pClass.cast(
-      Extraction.extract(j, reflect.TypeInfo(pClass, None))(formats))
-
-    println(z)
-    return
   }
 }

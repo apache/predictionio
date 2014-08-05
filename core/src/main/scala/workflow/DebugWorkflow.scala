@@ -238,7 +238,7 @@ object APIDebugWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -269,7 +269,7 @@ object APIDebugWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
@@ -312,7 +312,7 @@ object APIDebugWorkflow {
       MU, MR, MMR <: AnyRef
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
@@ -350,7 +350,7 @@ object APIDebugWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       batch: String = "",
-      env: Map[String, String] = Map(),
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
       verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
@@ -456,7 +456,21 @@ object APIDebugWorkflow {
     algorithmParamsList
       .map {
         case (algoName, algoParams) =>
-          Doer(algorithmClassMapOpt.get(algoName), algoParams)
+          try {
+            Doer(algorithmClassMapOpt.get(algoName), algoParams)
+          } catch {
+            case e: java.util.NoSuchElementException =>
+              if (algoName == "")
+                logger.error("Empty algorithm name supplied but it could not " +
+                  "match with any algorithm in the engine's definition. " +
+                  "Existing algorithm name(s) are: " +
+                  s"${algorithmClassMapOpt.get.keys.mkString(", ")}. Aborting.")
+              else
+                logger.error(s"${algoName} cannot be found in the engine's " +
+                  "definition. Existing algorithm name(s) are: " +
+                  s"${algorithmClassMapOpt.get.keys.mkString(", ")}. Aborting.")
+              sys.exit(1)
+          }
       }
       .toArray
 
@@ -580,6 +594,7 @@ object APIDebugWorkflow {
         })
       val runs = Storage.getMetaDataRuns
       runs.update(run.get.copy(
+        status = "COMPLETED",
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models.get),

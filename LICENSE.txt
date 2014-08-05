@@ -1,0 +1,112 @@
+Important: PredictionIO is 100% committed to open source and the official
+release of version 0.8 will be under a proper open source license. This license
+is just a temporary measure for our early-access preview of “Imagine”.
+
+--
+
+TappingStone, Inc. Software Evaluation License Agreement for PredictionIO 0.8
+Preview 1
+
+BY ACCESSING, DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING THE
+PREDICTIONIO SOFTWARE AND DOCUMENTATION THAT ACCOMPANY THIS AGREEMENT (THE
+"SOFTWARE"), YOU ARE AGREEING TO ALL OF THE TERMS OF THIS AGREEMENT. IF YOU DO
+NOT AGREE TO ALL OF THE TERMS OF THIS AGREEMENT, YOU MAY NOT ACCESS, DOWNLOAD,
+INSTALL, COPY OR USE THE SOFTWARE.
+
+INTERNAL EVALUATION USE ONLY: Your use of the Software is limited to internal
+evaluation purposes only. Deployment or external exposure of works which use the
+Software is not permitted under the terms of this Agreement. You must acquire a
+deployment license for the Software from PredictionIO in order to deploy such
+works. Contact support@prediction.io for more information.
+
+1. LICENSE GRANTS Subject to all the terms of this Agreement, PredictionIO
+hereby grants to you a one-time, royalty-free, non-exclusive, non-transferable,
+non-sublicenseable license to copy and use the Software solely for internal
+evaluation purposes for a period of 60 DAYS from your first access, download,
+installation, or use of the Software ("Evaluation Period"). You may (i) access,
+download, install, and copy the Software on a reasonable number of development
+systems within your company; and (ii) use the Software only for internal
+evaluation purposes.
+
+2. LICENSE OBLIGATIONS You agree that you shall not: (i) reverse compile,
+reverse engineer, disassemble, unobfuscate, reformat, or otherwise attempt to
+read or make readable the Object Code or Source Code (or the underlying ideas,
+algorithms, structure or organization) of the Software, in whole or in part;
+(ii) modify the Software or create any derivative work based on the Software;
+(iii) rent, lease, sell, sublicense, grant a security interest in, or otherwise
+transfer any rights in the Software; (iv) remove or alter any marks or
+proprietary notices or labels contained in the Software; (v) use the Software in
+any manner that violates any intellectual property or privacy rights of any
+third party; or (vi) use the Software in any manner that violates any applicable
+international, federal, state or local law or regulation.
+
+3. TITLE PredictionIO and its suppliers retain all right, title and interest in
+and to the Software, including, without limitation, all copyrights, trademarks,
+patents, trade secrets, proprietary and other intellectual property rights
+contained in or associated with the Software, all copies thereof, and all
+enhancements or modifications thereto.
+
+4. WARRANTY; LIMITATION OF LIABILITY The Software is provided "AS IS" and
+without any warranty of any kind. PREDICTIONIO DISCLAIMS ALL WARRANTIES AND
+CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, WITH RESPECT TO THE SOFTWARE. The
+Software is provided gratuitously and, therefore, PredictionIO shall not be
+liable or obligated to you or any other party with respect to any subject matter
+of this Agreement for any direct, indirect, incidental, special, punitive or
+consequential damages under any theory of liability whether in tort, contract,
+negligence, strict liability or otherwise even if advised of the possibility of
+such damages.
+
+5. TERMINATION; SURVIVAL The license granted hereunder shall terminate at the
+earliest of (i) the end of the specified Evaluation Period, if any; (ii)
+immediately upon your failure to comply with all of the terms and limitations
+described herein; or (iii) immediately upon written notice of termination by
+PredictionIO, with or without cause. Upon termination for any reason, you shall
+destroy all copies of the Software. Sections 2, 3, 4, 5, and 6 shall survive any
+termination or expiration of this Agreement or the license granted hereunder.
+
+6. EXPORT REQUIREMENTS The export and re-export of PredictionIO products are
+controlled by the United States Export Administration Regulations and such
+software may not be exported or re-exported to Cuba, Iran, North Korea, Sudan,
+Syria, or any country to which the United States embargoes goods. In addition,
+PredictionIO software may not be distributed to persons on the Table of Denial
+Orders, the Entity List, or the List of Specially Designated Nationals.
+
+By downloading or using an PredictionIO software product you are certifying that
+you are not a national of Cuba, Iran, North Korea, Sudan, Syria, or any country
+to which the United States embargoes goods and that you are not a person on the
+Table of Denial Orders, the Entity List, or the List of Specially Designated
+Nationals.
+
+7. GENERAL (a) This Agreement is the entire agreement between you and
+PredictionIO concerning this subject matter. This Agreement may not be amended
+except in writing signed by an authorized representative of PredictionIO. (b)
+Neither this Agreement nor any of your rights or obligations hereunder may be
+assigned by you in whole or in part without PredictionIO's prior written
+consent. (c) This Agreement shall be governed by and interpreted in accordance
+with the laws of the State of California without giving effect to its choice of
+law principles. Any legal action regarding this Agreement will be heard in the
+state or federal courts having jurisdiction in San Francisco County, California,
+and you hereby submit to the personal jurisdiction and venue of such courts. The
+United Nations Convention on Contracts for the International Sale of Goods shall
+not apply to this Agreement and is expressly disclaimed. (d) The prevailing
+party in any action or proceeding to enforce the provisions of this Agreement
+shall be entitled to recover all reasonable attorneys' fees and expenses
+incurred in connection therewith. (e) In the event of a breach of this
+Agreement, monetary damages may not be a sufficient remedy, and PredictionIO
+shall be entitled, without waiving any other rights or remedies, to such
+injunctive or equitable relief (without posting of a bond) as may be deemed
+proper by a court of competent jurisdiction. (f) If any provision of this
+Agreement is held to be invalid or unenforceable by a court of competent
+jurisdiction, that provision shall be limited or eliminated to the minimum
+extent necessary so that the remaining provisions remain in full force and
+effect. (g) The failure of PredictionIO to require your performance of any
+provision herein shall not affect the full right to require such performance at
+any time thereafter; nor shall the waiver by PredictionIO of a breach of any
+provision herein be taken or held to be a waiver of the provision itself.
+
+THIRD-PARTY COMPONENTS: The Software may include third-party components provided
+under terms and conditions which are different from those of this Agreement.
+These third-party components and their licensing terms and conditions can be
+found in the ~/PredictionIO/Imagine/README.md file.
+
+Copyright 2014 TappingStone, Inc. Last revised July 28, 2008.

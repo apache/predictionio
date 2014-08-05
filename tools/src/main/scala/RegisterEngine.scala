@@ -48,7 +48,8 @@ object RegisterEngine extends Logging {
       val enginesdir = sys.env.get("PIO_FS_ENGINESDIR") match {
         case Some(s) => s
         case None =>
-          error("Environmental variable PIO_FS_ENGINESDIR is not set!")
+          error("Environmental variable PIO_FS_ENGINESDIR is not set. Is " +
+            "conf/pio-env.sh present?")
           sys.exit(1)
       }
 
@@ -62,7 +63,8 @@ object RegisterEngine extends Logging {
         val destPathString = fs.makeQualified(destFilePath).toString
         if (fs.exists(destFilePath) &&
           f.length == fs.getFileStatus(destFilePath).getLen)
-          info(s"Skip copying ${f.toURI} because ${destPathString} exists and their file sizes are equal")
+          info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
+            "and their file sizes are equal")
         else {
           info(s"Copying ${f.toURI} to ${destPathString}")
           fs.copyFromLocalFile(new Path(f.toURI), destPath)
@@ -70,7 +72,8 @@ object RegisterEngine extends Logging {
         val localDestPathString = localFs.makeQualified(destFilePath).toString
         if (localFs.exists(destFilePath) &&
           f.length == localFs.getFileStatus(destFilePath).getLen)
-          info(s"Skip copying ${f.toURI} because ${destPathString} exists and their file sizes are equal")
+          info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
+            "and their file sizes are equal")
         else {
           info(s"Copying ${f.toURI} to ${localDestPathString}")
           localFs.copyFromLocalFile(new Path(f.toURI), destPath)

@@ -5,6 +5,9 @@ import com.google.common.io.BaseEncoding
 import grizzled.slf4j.Logging
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
+import org.elasticsearch.index.query.FilterBuilders._
+import org.elasticsearch.search.sort.SortBuilders._
+import org.elasticsearch.search.sort.SortOrder
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
@@ -23,7 +26,14 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
   val indices = client.admin.indices
   val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get
   if (!typeExistResponse.isExists) {
-    val json = (estype -> ("properties" -> ("models" -> ("type" -> "binary"))))
+    val json =
+      (estype ->
+        ("properties" ->
+          ("models" -> ("type" -> "binary")) ~
+          ("engineId" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("engineVersion" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
     indices.preparePutMapping(index).setType(estype).
       setSource(compact(render(json))).get
   }
@@ -47,6 +57,25 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
         Some(read[Run](response.getSourceAsString))
       else
         None
+    } catch {
+      case e: ElasticsearchException =>
+        error(e.getMessage)
+        None
+    }
+  }
+
+  def getLatestCompleted(engineId: String, engineVersion: String) = {
+    try {
+      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
+        andFilter(
+          termFilter("status", "COMPLETED"),
+          termFilter("engineId", engineId),
+          termFilter("engineVersion", engineVersion))).
+        addSort("startTime", SortOrder.DESC).get
+      val hits = response.getHits().hits()
+      if (hits.size > 0) {
+        Some(read[Run](hits.head.getSourceAsString))
+      } else None
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)

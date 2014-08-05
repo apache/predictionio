@@ -2,11 +2,5 @@
   "id": "io.prediction.engines.itemrank",
   "version": "0.8.0-SNAPSHOT",
   "name": "Kenneth Chan Smart Item Ranking Engine",
-  "jars": [
-    "../engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar",
-    "../core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar",
-    "../engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar"
-  ],
-  "engineFactory": "io.prediction.engines.itemrank.ItemRankEngine",
-  "evaluatorFactory": "io.prediction.engines.itemrank.ItemRankEvaluator"
+  "engineFactory": "io.prediction.engines.itemrank.ItemRankEngine"
 }

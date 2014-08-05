@@ -16,3 +16,4 @@ The purpose of this tutorial is to help you to get familiar with each components
 ](tutorial2-runner.md)
 * [Tutorial 3 - Evaluation](tutorial3-evaluation.md)
 * [Tutorial 4 - Multiple Algorithms Engine](tutorial4-multialgo.md)
+* [Tutorial 5 - Integrate Mahout's Recommendation Algorithm](tutorial5-mahout.md)

@@ -180,6 +180,7 @@ object CreateWorkflow extends Logging {
 
       val run = Run(
         id = "",
+        status = "INIT",
         startTime = DateTime.now,
         endTime = DateTime.now,
         engineId = wfc.engineId,

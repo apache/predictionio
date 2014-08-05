@@ -70,9 +70,9 @@ To start training, use the following command.
 ```
 $ cd $PIO_HOME
 $ bin/run-train \
---engineId io.prediction.engines.regression \
---engineVersion 0.8.0-SNAPSHOT \
---jsonBasePath engines/src/main/scala/regression/local/params
+  --engineId io.prediction.engines.regression \
+  --engineVersion 0.8.0-SNAPSHOT \
+  --jsonBasePath engines/src/main/scala/regression/local/params
 ```
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
@@ -92,9 +92,9 @@ To run evaluation metrics, simply add an argument to the `run-workflow` command.
 ```
 $ cd $PIO_HOME
 $ bin/run-eval --engineId io.prediction.engines.regression \
---engineVersion 0.8.0-SNAPSHOT \
---jsonBasePath engines/src/main/scala/regression/local/params \
---metricsClass io.prediction.controller.MeanSquareError
+  --engineVersion 0.8.0-SNAPSHOT \
+  --jsonBasePath engines/src/main/scala/regression/local/params \
+  --metricsClass io.prediction.controller.MeanSquareError
 ```
 Notice that we have appended `--metricsClass
 io.prediction.controller.MeanSquareError` to the end of the command. This
@@ -127,3 +127,87 @@ $ curl -H "Content-Type: application/json" -d '[-0.8600615539670898, -1.00843576
 ```
 Congratulations! You have just trained a linear regression model and is able to
 perform real time prediction.
+
+
+Bonus: Production Prediction Server Deployment
+----------------------------------------------
+
+The prediction server you have launched in the previous section hosts an
+immutable model in memory, i.e. you cannot update the model without restarting
+the server.
+
+Being immutable and stateless are important properties for horizontal scaling.
+The server is designed in a way such that you can run other automation tools or
+monitors to manage its lifecycle.
+
+In this example, we will use [Supervisor](http://supervisord.org/) to manage our
+prediction server.
+
+**Make sure you have killed the server if you have launched one in the previous
+section before proceeding to the following steps.**
+
+1.  Start by installing Supervisor following instructions on its [web
+    site](http://supervisord.org/).
+2.  Create a Supervisor configuration at `$PIO_HOME/supervisord.conf` with the
+    following content.
+    ```
+    [unix_http_server]
+    file=/tmp/supervisor.sock
+
+    [inet_http_server]
+    port=127.0.0.1:9001
+
+    [supervisord]
+    logfile=/tmp/supervisord.log
+    logfile_maxbytes=50MB
+    logfile_backups=10
+    loglevel=info
+    pidfile=/tmp/supervisord.pid
+    nodaemon=false
+    minfds=1024
+    minprocs=200
+
+    [rpcinterface:supervisor]
+    supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+    [supervisorctl]
+    serverurl=unix:///tmp/supervisor.sock
+
+    [program:pio]
+    command=bin/run-server --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT
+    autostart=false
+    ```
+3.  Launch Supervisor at `$PIO_HOME`.
+    ```
+    $ cd $PIO_HOME
+    $ supervisord
+    ```
+4.  Using your web browser, go to http://localhost:9001. You should see a
+    Supervisor status screen, showing that the `pio` process is stopped.
+5.  Run training or evaluation. These scripts have been written to detect the
+    existence of Supervisor and will automatically (re)start our prediction server.
+    ```
+    $ cd $PIO_HOME
+    $ bin/run-train \
+      --engineId io.prediction.engines.regression \
+      --engineVersion 0.8.0-SNAPSHOT \
+      --jsonBasePath engines/src/main/scala/regression/local/params
+    ```
+    or
+    ```
+    $ cd $PIO_HOME
+    $ bin/run-eval --engineId io.prediction.engines.regression \
+      --engineVersion 0.8.0-SNAPSHOT \
+      --jsonBasePath engines/src/main/scala/regression/local/params \
+      --metricsClass io.prediction.controller.MeanSquareError
+    ```
+6.  Refresh the Supervisor status screen. You should now see the server as
+    running. If you go to http://localhost:8000, you should see the prediction
+    server status page.
+7.  Repeat steps 5 to 6 to see the prediction server restarted automatically
+    after every training/evaluation.
+
+Congratulations! You have just deployed a production-ready setup that can
+restart itself automatically after every training! Simply add the training or
+evaluation command to your `crontab`, and your setup will be able to re-deploy
+itself automatically in a regular interval.

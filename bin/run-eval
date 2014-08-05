@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-set -x
+set -e
 
 export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 
-exec $PIO_HOME/bin/pio-class io.prediction.tools.RunWorkflow "$@"
+$PIO_HOME/bin/pio-class io.prediction.tools.RunWorkflow "$@"
+
+if hash supervisorctl 2>&-; then
+  echo "Found supervisorctl. Trying to restart prediction server..."
+  supervisorctl restart pio
+fi

@@ -23,6 +23,7 @@ class MongoRuns(client: MongoClient, dbname: String) extends Runs {
     val id = f"$year%04d$month%02d$day%02d$sn%04d"
     val obj = MongoDBObject(
       "_id"                    -> id,
+      "status"                 -> run.status,
       "startTime"              -> run.startTime,
       "endTime"                -> run.endTime,
       "engineId"               -> run.engineId,
@@ -45,9 +46,19 @@ class MongoRuns(client: MongoClient, dbname: String) extends Runs {
   def get(id: String): Option[Run] =
     runColl.findOne(MongoDBObject("_id" -> id)) map { dbObjToRun(_) }
 
+  def getLatestCompleted(engineId: String, engineVersion: String) = {
+    runColl.findOne(
+      o = MongoDBObject(
+        "status" -> "COMPLETED",
+        "engineId" -> engineId,
+        "engineVersion" -> engineVersion),
+      orderBy = MongoDBObject("startTime" -> -1)) map { dbObjToRun(_) }
+  }
+
   def update(run: Run): Unit = {
     val obj = MongoDBObject(
       "_id"                    -> run.id,
+      "status"                 -> run.status,
       "startTime"              -> run.startTime,
       "endTime"                -> run.endTime,
       "engineId"               -> run.engineId,
@@ -70,6 +81,7 @@ class MongoRuns(client: MongoClient, dbname: String) extends Runs {
 
   private def dbObjToRun(dbObj: DBObject): Run = Run(
     id = dbObj.as[String]("_id"),
+    status = dbObj.as[String]("status"),
     startTime = dbObj.as[DateTime]("startTime"),
     endTime = dbObj.as[DateTime]("endTime"),
     engineId = dbObj.as[String]("engineId"),

@@ -10,3 +10,4 @@ core/data
 *.orig
 data/ml-*
 fs/
+supervisord.conf

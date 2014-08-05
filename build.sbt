@@ -31,8 +31,6 @@ lazy val engines = (project in file("engines")).
 lazy val tools = (project in file("tools")).
   dependsOn(core)
 
-//lazy val experiment = project in file("experiment/simple") dependsOn(core)
-
 scalaJavaUnidocSettings
 
 unidocAllSources in (JavaUnidoc, unidoc) := {
