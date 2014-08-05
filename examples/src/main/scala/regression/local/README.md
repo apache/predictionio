@@ -148,6 +148,7 @@ section before proceeding to the following steps.**
 
 1.  Start by installing Supervisor following instructions on its [web
     site](http://supervisord.org/).
+
 2.  Create a Supervisor configuration at `$PIO_HOME/examples/supervisord.conf`
     with the following content.
     ```
@@ -177,13 +178,16 @@ section before proceeding to the following steps.**
     command=../bin/run-server --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT
     autostart=false
     ```
+
 3.  Launch Supervisor at `$PIO_HOME/examples`.
     ```
     $ cd $PIO_HOME/examples
     $ supervisord
     ```
+
 4.  Using your web browser, go to http://localhost:9001. You should see a
     Supervisor status screen, showing that the `pio` process is stopped.
+
 5.  Run training or evaluation. These scripts have been written to detect the
     existence of Supervisor and will automatically (re)start our prediction server.
     ```
@@ -193,7 +197,9 @@ section before proceeding to the following steps.**
       --engineVersion 0.8.0-SNAPSHOT \
       --jsonBasePath src/main/scala/regression/local/params
     ```
+
     or
+
     ```
     $ cd $PIO_HOME/examples
     $ ../bin/run-eval --engineId io.prediction.engines.regression \
@@ -201,6 +207,7 @@ section before proceeding to the following steps.**
       --jsonBasePath src/main/scala/regression/local/params \
       --metricsClass io.prediction.controller.MeanSquareError
     ```
+
 6.  Refresh the Supervisor status screen. You should now see the server as
     running. If you go to http://localhost:8000, you should see the prediction
     server status page.
