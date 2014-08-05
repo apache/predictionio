@@ -90,8 +90,8 @@ components of the PredictionIO framework.
   Engine](examples/src/main/java/recommendations/tutorial4-multialgo.md)
 
 More interesting tutorials:
-- [Stock Prediction Engine with customizable
-  algorithms](examples/src/main/scala/stock/README.md)
+- [Stock Prediction Engine with Customizable
+  Algorithms](examples/src/main/scala/stock/README.md)
 - [Linear Regression Engine](examples/src/main/scala/regression/local/README.md)
 - [Distributed Recommendation Engine with RDD-based Model using MLlib's
   ALS](examples/src/main/scala/recommendations/README.md)

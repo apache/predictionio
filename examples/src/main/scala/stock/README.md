@@ -10,14 +10,16 @@ with your favorite stock data source.
 
 Specify environment. (Temporary.)
 ```
+$ cd $PIO_HOME/examples
 $ set -a
-$ source conf/pio-env.sh
+$ source ../conf/pio-env.sh
 $ set +a
 ```
+where `$PIO_HOME` is the root directory of PredictionIO's code tree.
 
 Run the fetch script.
 ```
-$ sbt/sbt "engines/runMain io.prediction.engines.stock.FetchMain"
+$ ../sbt/sbt "runMain io.prediction.engines.stock.FetchMain"
 ```
 As SP500 constituents change all the time, the hardcoded list may not reflect
 the current state and the script may fail to extract delisted tickers. Whilst
@@ -163,7 +165,8 @@ evaluation, you have to specify two sets of parameters:
 
 You can run the evaluation with the following command.
 ```
-$ bin/pio-run io.prediction.engines.stock.Demo1
+$ cd $PIO_HOME/examples
+$ ../bin/pio-run io.prediction.engines.stock.Demo1
 ```
 
 You should see that we are trading from April 2005 until Dec 2007, the NAV went
@@ -182,7 +185,8 @@ In `BacktestingParams`, you may allow more stocks to be held concurrently. The
 backtesting class essentially divides the current NAV by the `maxPositions`. The
 demo is run the same way, by specifying the running main class.
 ```
-$ bin/pio-run io.prediction.engines.stock.Demo2
+$ cd $PIO_HOME/examples
+$ ../bin/pio-run io.prediction.engines.stock.Demo2
 ```
 
 The result is not as great, of course.
@@ -198,7 +202,8 @@ algorithm.
 All you need is to change the `metrics` variable to `DailyMetrics`.
 [Demo3](Demo3.scala) shows the actual code. Try it out with:
 ```
-$ bin/pio-run io.prediction.engines.stock.Demo3
+$ cd $PIO_HOME/examples
+$ ../bin/pio-run io.prediction.engines.stock.Demo3
 ```
 
 ### Last Words
