@@ -66,8 +66,11 @@ fake data for demonstration. We use the genre of movies as its feature vector.
 This part is simliar to earlier tutorial.
 
 ```
-$ bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4a
+$ cd $PIO_HOME/examples
+$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4a
 ```
+where `$PIO_HOME` is the root directory of the PredictionIO code tree.
+
 
 ## Preparator
 As we have read the raw data from `DataSource`, we can *preprocess* the raw
@@ -100,8 +103,10 @@ return new JavaEngineBuilder<
 And you can test it out with
 
 ```
-$ bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4b
+$ cd $PIO_HOME/examples
+$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4b
 ```
+
 
 ## Feature-Based Algorithm
 This algorithm creates a feature profile for every user using the feature
@@ -162,84 +167,93 @@ will demonstrate how to combine prediction results from multiple algorithm is
 in the section). We are able to define [an end-to-end
 engine](tutorial4/SingleEngineFactory.java).
 ```
-$ bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4c
+$ cd $PIO_HOME/examples
+$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4c
 ```
 
 ## Deployment
 Likewise in tutorial 1, we can deploy this feature based engine. We have a
 [engine manifest](tutorial4/single-manifest.json), and we register it:
 ```
-$ bin/register-engine engines/src/main/java/recommendations/tutorial4/single-manifest.json
+$ cd $PIO_HOME/examples
+$ ../bin/register-engine src/main/java/recommendations/tutorial4/single-manifest.json
 ```
 The script automatically recompiles updated code. You will need to re-run this
 script if you have update any code in your engine.
 
 ### Specify Engine Parameters
-We need to use json files for deployment.
-  1. [dataSourceParams.json](tutorial4/single-jsons/dataSourceParams.json):
-  ```json
-  {
-    "dir" :  "data/ml-100k/",
-    "addFakeData": true
-  }
-  ```
-  2. [algorithmsParams.json](tutorial4/single-jsons/algorithmsParams.json):
-  ```json
-  [
+We need to use JSON files for deployment.
+
+1.  [dataSourceParams.json](tutorial4/single-jsons/dataSourceParams.json):
+    ```json
     {
-      "name": "featurebased",
-      "params": {
-        "min": 1.0,
-        "max": 5.0,
-        "drift": 3.0,
-        "scale": 0.5
-      }
+      "dir" :  "data/ml-100k/",
+      "addFakeData": true
     }
-  ]
-  ```
-  Recall that we support multiple algorithms. This json file is actually a list
-  of name-params pair where the name is the identifier of algorithm defined in
-  EngineFactory, and the params value correspond to the algorithm parameter.
+    ```
+
+2.  [algorithmsParams.json](tutorial4/single-jsons/algorithmsParams.json):
+    ```json
+    [
+      {
+        "name": "featurebased",
+        "params": {
+          "min": 1.0,
+          "max": 5.0,
+          "drift": 3.0,
+          "scale": 0.5
+        }
+      }
+    ]
+    ```
+    Recall that we support multiple algorithms. This JSON file is actually a
+    list of name-params pair where the name is the identifier of algorithm
+    defined in EngineFactory, and the params value correspond to the algorithm
+    parameter.
+
 
 ### Start training
 The following command kick-starts the training, which will return an id when
 the training is completed.
 ```
-$ bin/run-train \
---engineId io.prediction.engines.java.recommendations.tutorial4.SingleEngineFactory \
---engineVersion 0.8.0-SNAPSHOT \
---jsonBasePath engines/src/main/java/recommendations/tutorial4/single-jsons/
+$ ../bin/run-train \
+  --engineId io.prediction.engines.java.recommendations.tutorial4.SingleEngineFactory \
+  --engineVersion 0.8.0-SNAPSHOT \
+  --jsonBasePath src/main/java/recommendations/tutorial4/single-jsons/
 ```
 You should be able to find the run id from console, something like this:
 ```
-14/07/28 17:39:59 INFO APIDebugWorkflow$: Run information saved with ID: 201407280006
+2014-08-05 15:36:50,521 INFO  APIDebugWorkflow$ - Run information saved with ID: xTFSs5seQBSKoAaq5k8G-A
 ```
 
 ### Start server
 As the training is completed, you can start a server
 ```
-$ bin/run-server --runId 201407280006
+$ ../bin/run-server --runId xTFSs5seQBSKoAaq5k8G-A
 ```
 
 ### Try a few things
 Fake user -1 (see [DataSource.FakeData](tutorial4/DataSource.java)) loves
 action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e.
-1). You can use our script bin/cjson to send the json request. The first
-parameter is the json request, and the second parameter is the server address.
+1). You can use our script bin/cjson to send the JSON request. The first
+parameter is the JSON request, and the second parameter is the server address.
 ```
-$ bin/cjson '{ "uid" : -1, "iid" : 27}' http://localhost:8000
+$ cd $PIO_HOME/examples
+$ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000
 ```
 Fake item -2 is a cold item (i.e. has no rating). But from its data, we know
 that it is a movie catagorized under "Action" genre, hence, it should also have
 a high rating with Fake user -1.
 ```
-$ bin/cjson '{ "uid" : -1, "iid" : -2}' http://localhost:8000
+$ cd $PIO_HOME/examples
+$ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000
 ```
 However, there is nothing we can do with a cold user. Fake user -3 has no
 rating history, we know nothing about him. If we request any rating with fake
 user -3, we will get a NaN.
 ```
-$ bin/cjson '{ "uid" : -3, "iid" : 1}' http://localhost:8000
+$ cd $PIO_HOME/examples
+$ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000
 ```
 
 ## Multiple Algorithms
@@ -255,7 +269,7 @@ takes prediction results from all algorithms, combine it and return. In the
 current case, we take an average of all valid (i.e. not NaN) predictions. In the
 extreme case where all algorithms return NaN, we also return NaN. Engine
 builders need to implement the `serve` method. We demonstrate with our case:
-```scala
+```java
 public Float serve(Query query, Iterable<Float> predictions) {
   float sum = 0.0f;
   int count = 0;
@@ -271,9 +285,13 @@ public Float serve(Query query, Iterable<Float> predictions) {
 ```
 
 ### Complete Engine Factory
-[EngineFactory.java](tutorial4/EngineFactory.java) demonstrates how to specify multiple algorithms in the same engine. When we add algorithms to the builder instance, we also need to specify a String which is served as the identifier. For example, we use "featurebased" for the feature-based algorithm, and "collaborative" for the collaborative-filtering algorithm.
+[EngineFactory.java](tutorial4/EngineFactory.java) demonstrates how to specify
+multiple algorithms in the same engine. When we add algorithms to the builder
+instance, we also need to specify a String which is served as the identifier.
+For example, we use "featurebased" for the feature-based algorithm, and
+"collaborative" for the collaborative-filtering algorithm.
 
-```scala
+```java
 public class EngineFactory implements IEngineFactory {
   public JavaEngine<TrainingData, EmptyParams, PreparedData, Query, Float, Object> apply() {
     return new JavaEngineBuilder<
@@ -288,7 +306,8 @@ public class EngineFactory implements IEngineFactory {
 }
 ```
 
-Similar to the earlier example, we need to write a manifest of the engine, and register it with Prediction.IO. Manifest:
+Similar to the earlier example, we need to write a manifest of the engine, and
+register it with PredictionIO. Manifest:
 ```json
 {
   "id": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory",
@@ -302,10 +321,14 @@ also copies all related files (jars, resources) of this engine to a permanent
 storage, if you have updated the engine code or add new dependencies, you need
 to rerun this command.
 ```
-$ bin/register-engine engines/src/main/java/recommendations/tutorial4/manifest.json
+$ cd $PIO_HOME/examples
+$ ../bin/register-engine src/main/java/recommendations/tutorial4/manifest.json
 ```
 
-Now, we can specify the engine instance by passing the set of parameters to the engine. Our engine can support multiple algorithms, and in addition, it also support multiple instance of the same algorithms. We illustrates with [algorithmsParams.json](tutorial4/jsons/algorithmsParams.json):
+Now, we can specify the engine instance by passing the set of parameters to the
+engine. Our engine can support multiple algorithms, and in addition, it also
+support multiple instance of the same algorithms. We illustrates with
+[algorithmsParams.json](tutorial4/jsons/algorithmsParams.json):
 ```json
 [
   {
@@ -334,19 +357,30 @@ Now, we can specify the engine instance by passing the set of parameters to the 
   }
 ]
 ```
-This json contains three algorithm parameters. The first two correspond to the feature-based algorithm, and the third corresponds to the collaborative filtering algorithm. The first allows all 5 ratings, and the second allows only ratings higher than or equals to 4. This gives a bit more weight on the high-rating features. Once [all parameter files are specified](tutorial4/jsons/), we can start the training phase and start the API server:
+This JSON contains three algorithm parameters. The first two correspond to the
+feature-based algorithm, and the third corresponds to the collaborative
+filtering algorithm. The first allows all 5 ratings, and the second allows only
+ratings higher than or equals to 4. This gives a bit more weight on the
+high-rating features. Once [all parameter files are
+specified](tutorial4/jsons/), we can start the training phase and start the API
+server:
 
 ```
-$ bin/run-train \
---engineId io.prediction.engines.java.recommendations.tutorial4.EngineFactory \
---engineVersion 0.8.0-SNAPSHOT  \
---jsonBasePath engines/src/main/java/recommendations/tutorial4/jsons/
+$ cd $PIO_HOME/examples
+$ ../bin/run-train \
+  --engineId io.prediction.engines.java.recommendations.tutorial4.EngineFactory \
+  --engineVersion 0.8.0-SNAPSHOT  \
+  --jsonBasePath src/main/java/recommendations/tutorial4/jsons/
 
-14/07/28 21:55:35 INFO APIDebugWorkflow$: Run information saved with ID: xxxxxxxxxxxx
+...
+2014-08-05 15:41:58,479 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:569, took 4.168001 s
+2014-08-05 15:41:58,479 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
+2014-08-05 15:41:59,447 INFO  APIDebugWorkflow$ - Run information saved with ID: 41205x9wSo20Fsxm4Ic8BQ
 
-$ bin/run-server --runId xxxxxxxxxxxx
+$ ../bin/run-server --runId 41205x9wSo20Fsxm4Ic8BQ
 ```
 
-By default, the server starts on port 8000. Open it with your browser and you will see all the meta information about this engine instance.
+By default, the server starts on port 8000. Open it with your browser and you
+will see all the meta information about this engine instance.
 
 You can submit various queries to the server and see what you get.
