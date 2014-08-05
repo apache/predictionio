@@ -163,7 +163,7 @@ Execute the following command:
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial3.Runner3 data/test/ratings.csv
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial3.Runner3 data/test/ratings.csv
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
@@ -172,9 +172,9 @@ iteration is printed at the end.
 
 ```
 2014-08-05 15:30:47,557 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:651, took 0.058738 s
-2014-08-05 15:30:47,557 INFO  APIDebugWorkflow$ - DataSourceParams: io.prediction.engines.java.recommendations.tutorial1.DataSourceParams@2f01a5c4
+2014-08-05 15:30:47,557 INFO  APIDebugWorkflow$ - DataSourceParams: io.prediction.examples.java.recommendations.tutorial1.DataSourceParams@2f01a5c4
 2014-08-05 15:30:47,558 INFO  APIDebugWorkflow$ - PreparatorParams: Empty
-2014-08-05 15:30:47,558 INFO  APIDebugWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.engines.java.recommendations.tutorial1.AlgoParams@2b2cecab
+2014-08-05 15:30:47,558 INFO  APIDebugWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.examples.java.recommendations.tutorial1.AlgoParams@2b2cecab
 2014-08-05 15:30:47,559 INFO  APIDebugWorkflow$ - ServingParams: Empty
 2014-08-05 15:30:47,559 INFO  APIDebugWorkflow$ - MetricsParams: Empty
 2014-08-05 15:30:47,560 INFO  APIDebugWorkflow$ - [(null,1.0), (null,3.8078865529319543), (null,1.5811388300841898)]
@@ -193,7 +193,7 @@ $ src/main/java/recommendations/fetch.sh
 Re-run Runner3 with the ml-100k data set:
 
 ```
-$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial3.Runner3 data/ml-100k/u.data
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial3.Runner3 data/ml-100k/u.data
 ```
 
 You should see the following when it completes. The RMSE metric scores of each
@@ -201,9 +201,9 @@ iteration is printed at the end:
 
 ```
 2014-08-05 15:32:39,168 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:651, took 14.643584 s
-2014-08-05 15:32:39,169 INFO  APIDebugWorkflow$ - DataSourceParams: io.prediction.engines.java.recommendations.tutorial1.DataSourceParams@62a2cb43
+2014-08-05 15:32:39,169 INFO  APIDebugWorkflow$ - DataSourceParams: io.prediction.examples.java.recommendations.tutorial1.DataSourceParams@62a2cb43
 2014-08-05 15:32:39,169 INFO  APIDebugWorkflow$ - PreparatorParams: Empty
-2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.engines.java.recommendations.tutorial1.AlgoParams@f7136f7
+2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.examples.java.recommendations.tutorial1.AlgoParams@f7136f7
 2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - ServingParams: Empty
 2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - MetricsParams: Empty
 2014-08-05 15:32:39,171 INFO  APIDebugWorkflow$ - [(null,1.052046904037191), (null,1.042766938101085), (null,1.0490312745374106)]

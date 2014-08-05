@@ -1,4 +1,4 @@
-package io.prediction.engines.regression.parallel
+package io.prediction.examples.regression.parallel
 
 import io.prediction.controller.Engine
 import io.prediction.controller.Params

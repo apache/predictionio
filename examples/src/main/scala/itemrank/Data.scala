@@ -1,4 +1,4 @@
-package io.prediction.engines.itemrank
+package io.prediction.examples.itemrank
 
 import com.github.nscala_time.time.Imports._
 

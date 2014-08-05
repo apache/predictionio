@@ -1,11 +1,11 @@
-package io.prediction.engines.java.itemrec;
+package io.prediction.examples.java.itemrec;
 
-import io.prediction.engines.java.itemrec.data.PreparedData;
-import io.prediction.engines.java.itemrec.data.TrainingData;
-import io.prediction.engines.java.itemrec.data.Rating;
+import io.prediction.examples.java.itemrec.data.PreparedData;
+import io.prediction.examples.java.itemrec.data.TrainingData;
+import io.prediction.examples.java.itemrec.data.Rating;
 import io.prediction.controller.java.LJavaPreparator;
 import io.prediction.controller.EmptyParams;
-import io.prediction.engines.util.MahoutUtil;
+import io.prediction.examples.util.MahoutUtil;
 
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.impl.model.GenericDataModel;

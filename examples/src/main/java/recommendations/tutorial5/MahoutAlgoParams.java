@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.tutorial5;
+package io.prediction.examples.java.recommendations.tutorial5;
 
 import io.prediction.controller.Params;
 

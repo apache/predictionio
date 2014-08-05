@@ -40,11 +40,11 @@ Let's try to run the example regression engine. You can find the code from [this
 
 The following command kick starts the evaluation workflow for the regression engine. Change two things:
 - Replace `spark://Justins-MacBook-Pro.local:7077` by your spark master url.
-- Replace `io.prediction.engines.regression.Runner` with the main runner class of your engine. Don't have to change for the current example.
+- Replace `io.prediction.examples.regression.Runner` with the main runner class of your engine. Don't have to change for the current example.
 ```
 $ spark-submit --verbose \
 --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar \
---class "io.prediction.engines.regression.Runner" \
+--class "io.prediction.examples.regression.Runner" \
 --master spark://Justins-MacBook-Pro.local:7077 \
 core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
 ```

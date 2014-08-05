@@ -1,4 +1,4 @@
-package io.prediction.engines.stock
+package io.prediction.examples.stock
 
 import com.github.nscala_time.time.Imports.DateTime
 import io.prediction.workflow.APIDebugWorkflow

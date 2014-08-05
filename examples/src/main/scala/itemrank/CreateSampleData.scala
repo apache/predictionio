@@ -1,4 +1,4 @@
-package io.prediction.engines.itemrank
+package io.prediction.examples.itemrank
 
 import io.prediction.storage.Storage
 import io.prediction.storage.{ User, Item, U2IAction, ItemSet }

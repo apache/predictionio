@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.tutorial1;
+package io.prediction.examples.java.recommendations.tutorial1;
 
 import io.prediction.controller.java.LJavaAlgorithm;
 import org.apache.commons.math3.linear.RealVector;

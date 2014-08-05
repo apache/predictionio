@@ -1,4 +1,4 @@
-package io.prediction.engines.regression.local
+package io.prediction.examples.regression.local
 
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine

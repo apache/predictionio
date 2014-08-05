@@ -1,4 +1,4 @@
-package io.prediction.engines.java.regression;
+package io.prediction.examples.java.regression;
 
 import java.io.Serializable;
 import java.util.Arrays;

@@ -67,7 +67,7 @@ This part is simliar to earlier tutorial.
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4a
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4a
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
@@ -104,7 +104,7 @@ And you can test it out with
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4b
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4b
 ```
 
 
@@ -168,7 +168,7 @@ in the section). We are able to define [an end-to-end
 engine](tutorial4/SingleEngineFactory.java).
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.java.recommendations.tutorial4.Runner4c
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4c
 ```
 
 ## Deployment
@@ -217,7 +217,7 @@ The following command kick-starts the training, which will return an id when
 the training is completed.
 ```
 $ ../bin/run-train \
-  --engineId io.prediction.engines.java.recommendations.tutorial4.SingleEngineFactory \
+  --engineId io.prediction.examples.java.recommendations.tutorial4.SingleEngineFactory \
   --engineVersion 0.8.0-SNAPSHOT \
   --jsonBasePath src/main/java/recommendations/tutorial4/single-jsons/
 ```
@@ -310,10 +310,10 @@ Similar to the earlier example, we need to write a manifest of the engine, and
 register it with PredictionIO. Manifest:
 ```json
 {
-  "id": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory",
+  "id": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory",
   "version": "0.8.0-SNAPSHOT",
   "name": "FeatureBased Recommendations Engine",
-  "engineFactory": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory"
+  "engineFactory": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory"
 }
 ```
 The following script register the engines. Important to note that, the script
@@ -368,7 +368,7 @@ server:
 ```
 $ cd $PIO_HOME/examples
 $ ../bin/run-train \
-  --engineId io.prediction.engines.java.recommendations.tutorial4.EngineFactory \
+  --engineId io.prediction.examples.java.recommendations.tutorial4.EngineFactory \
   --engineVersion 0.8.0-SNAPSHOT  \
   --jsonBasePath src/main/java/recommendations/tutorial4/jsons/
 

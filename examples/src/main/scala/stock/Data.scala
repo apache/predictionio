@@ -1,4 +1,4 @@
-package io.prediction.engines.stock
+package io.prediction.examples.stock
 
 import org.saddle._
 import org.saddle.index.IndexTime

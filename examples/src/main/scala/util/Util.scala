@@ -1,4 +1,4 @@
-package io.prediction.engines.util
+package io.prediction.examples.util
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.model.Preference

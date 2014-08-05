@@ -1,4 +1,4 @@
-package io.prediction.engines.itemrank
+package io.prediction.examples.itemrank
 
 import io.prediction.controller.LDataSource
 import io.prediction.storage.Storage

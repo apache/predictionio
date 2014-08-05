@@ -19,7 +19,7 @@ where `$PIO_HOME` is the root directory of PredictionIO's code tree.
 
 Run the fetch script.
 ```
-$ ../sbt/sbt "runMain io.prediction.engines.stock.FetchMain"
+$ ../sbt/sbt "runMain io.prediction.examples.stock.FetchMain"
 ```
 As SP500 constituents change all the time, the hardcoded list may not reflect
 the current state and the script may fail to extract delisted tickers. Whilst
@@ -166,7 +166,7 @@ evaluation, you have to specify two sets of parameters:
 You can run the evaluation with the following command.
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.stock.Demo1
+$ ../bin/pio-run io.prediction.examples.stock.Demo1
 ```
 
 You should see that we are trading from April 2005 until Dec 2007, the NAV went
@@ -186,7 +186,7 @@ backtesting class essentially divides the current NAV by the `maxPositions`. The
 demo is run the same way, by specifying the running main class.
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.stock.Demo2
+$ ../bin/pio-run io.prediction.examples.stock.Demo2
 ```
 
 The result is not as great, of course.
@@ -203,7 +203,7 @@ All you need is to change the `metrics` variable to `DailyMetrics`.
 [Demo3](Demo3.scala) shows the actual code. Try it out with:
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.engines.stock.Demo3
+$ ../bin/pio-run io.prediction.examples.stock.Demo3
 ```
 
 ### Last Words

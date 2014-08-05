@@ -1,4 +1,4 @@
-package io.prediction.engines.java.recommendations.tutorial4;
+package io.prediction.examples.java.recommendations.tutorial4;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;

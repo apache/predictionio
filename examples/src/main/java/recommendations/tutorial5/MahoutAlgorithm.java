@@ -1,10 +1,10 @@
-package io.prediction.engines.java.recommendations.tutorial5;
+package io.prediction.examples.java.recommendations.tutorial5;
 
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.EmptyParams;
-import io.prediction.engines.java.recommendations.tutorial1.TrainingData;
-import io.prediction.engines.java.recommendations.tutorial1.Query;
-import io.prediction.engines.util.MahoutUtil;
+import io.prediction.examples.java.recommendations.tutorial1.TrainingData;
+import io.prediction.examples.java.recommendations.tutorial1.Query;
+import io.prediction.examples.util.MahoutUtil;
 
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.model.DataModel;

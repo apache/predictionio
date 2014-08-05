@@ -1,12 +1,12 @@
-package io.prediction.engines.java.itemrec;
+package io.prediction.examples.java.itemrec;
 
-import io.prediction.engines.java.itemrec.data.TrainingData;
-import io.prediction.engines.java.itemrec.data.PreparedData;
-import io.prediction.engines.java.itemrec.data.Query;
-import io.prediction.engines.java.itemrec.data.Prediction;
-import io.prediction.engines.java.itemrec.data.Actual;
-import io.prediction.engines.java.itemrec.algos.GenericItemBased;
-import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
+import io.prediction.examples.java.itemrec.data.TrainingData;
+import io.prediction.examples.java.itemrec.data.PreparedData;
+import io.prediction.examples.java.itemrec.data.Query;
+import io.prediction.examples.java.itemrec.data.Prediction;
+import io.prediction.examples.java.itemrec.data.Actual;
+import io.prediction.examples.java.itemrec.algos.GenericItemBased;
+import io.prediction.examples.java.itemrec.algos.SVDPlusPlus;
 
 import io.prediction.controller.IEngineFactory;
 import io.prediction.controller.EmptyParams;

@@ -346,10 +346,10 @@ An engine Manifest manifest.json is needed to describe the Engine (defined in
 
 ```json
 {
-  "id": "io.prediction.engines.java.recommendations.tutorial1.EngineFactory",
+  "id": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory",
   "version": "0.8.0-SNAPSHOT",
   "name": "Simple Recommendations Engine",
-  "engineFactory": "io.prediction.engines.java.recommendations.tutorial1.EngineFactory"
+  "engineFactory": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory"
 }
 ```
 
@@ -425,7 +425,7 @@ Execute the following commands:
 ```
 $ cd $PIO_HOME/examples
 $ ../bin/run-train \
-  --engineId io.prediction.engines.java.recommendations.tutorial1.EngineFactory \
+  --engineId io.prediction.examples.java.recommendations.tutorial1.EngineFactory \
   --engineVersion 0.8.0-SNAPSHOT \
   --jsonBasePath src/main/java/recommendations/tutorial1/params
 ```

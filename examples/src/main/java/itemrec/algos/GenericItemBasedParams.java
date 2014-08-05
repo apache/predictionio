@@ -1,4 +1,4 @@
-package io.prediction.engines.java.itemrec.algos;
+package io.prediction.examples.java.itemrec.algos;
 
 public class GenericItemBasedParams extends MahoutParams {
   String itemSimilarity;

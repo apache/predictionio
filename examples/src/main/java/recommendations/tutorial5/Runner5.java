@@ -1,7 +1,7 @@
-package io.prediction.engines.java.recommendations.tutorial5;
+package io.prediction.examples.java.recommendations.tutorial5;
 
-import io.prediction.engines.java.recommendations.tutorial1.DataSourceParams;
-import io.prediction.engines.java.recommendations.tutorial3.Metrics;
+import io.prediction.examples.java.recommendations.tutorial1.DataSourceParams;
+import io.prediction.examples.java.recommendations.tutorial3.Metrics;
 
 import io.prediction.controller.EmptyParams;
 import io.prediction.controller.IEngineFactory;

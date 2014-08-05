@@ -1,6 +1,6 @@
 {
-  "id": "io.prediction.engines.regression.parallel",
+  "id": "io.prediction.examples.regression.parallel",
   "version": "0.8.0-SNAPSHOT",
   "name": "MLLib Parallelized Regression Engine",
-  "engineFactory": "io.prediction.engines.regression.parallel.RegressionEngineFactory"
+  "engineFactory": "io.prediction.examples.regression.parallel.RegressionEngineFactory"
 }

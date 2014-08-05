@@ -1,11 +1,11 @@
-package io.prediction.engines.java.itemrec;
+package io.prediction.examples.java.itemrec;
 
 import io.prediction.controller.java.LJavaDataSource;
 import io.prediction.controller.EmptyParams;
-import io.prediction.engines.java.itemrec.data.Query;
-import io.prediction.engines.java.itemrec.data.Actual;
-import io.prediction.engines.java.itemrec.data.TrainingData;
-import io.prediction.engines.java.itemrec.data.Rating;
+import io.prediction.examples.java.itemrec.data.Query;
+import io.prediction.examples.java.itemrec.data.Actual;
+import io.prediction.examples.java.itemrec.data.TrainingData;
+import io.prediction.examples.java.itemrec.data.Rating;
 
 import scala.Tuple2;
 import scala.Tuple3;

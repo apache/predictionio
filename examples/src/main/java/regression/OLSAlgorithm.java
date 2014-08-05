@@ -1,4 +1,4 @@
-package io.prediction.engines.java.regression;
+package io.prediction.examples.java.regression;
 
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.linear.RealVector;

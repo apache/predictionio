@@ -70,7 +70,7 @@ To start training, use the following command.
 ```
 $ cd $PIO_HOME/examples
 $ ../bin/run-train \
-  --engineId io.prediction.engines.regression \
+  --engineId io.prediction.examples.regression \
   --engineVersion 0.8.0-SNAPSHOT \
   --jsonBasePath src/main/scala/regression/local/params
 ```
@@ -91,7 +91,7 @@ Running Evaluation Metrics
 To run evaluation metrics, simply add an argument to the `run-workflow` command.
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/run-eval --engineId io.prediction.engines.regression \
+$ ../bin/run-eval --engineId io.prediction.examples.regression \
   --engineVersion 0.8.0-SNAPSHOT \
   --jsonBasePath src/main/scala/regression/local/params \
   --metricsClass io.prediction.controller.MeanSquareError
@@ -175,7 +175,7 @@ section before proceeding to the following steps.**
     serverurl=unix:///tmp/supervisor.sock
 
     [program:pio]
-    command=../bin/run-server --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT
+    command=../bin/run-server --engineId io.prediction.examples.regression --engineVersion 0.8.0-SNAPSHOT
     autostart=false
     ```
 
@@ -193,7 +193,7 @@ section before proceeding to the following steps.**
     ```
     $ cd $PIO_HOME/examples
     $ ../bin/run-train \
-      --engineId io.prediction.engines.regression \
+      --engineId io.prediction.examples.regression \
       --engineVersion 0.8.0-SNAPSHOT \
       --jsonBasePath src/main/scala/regression/local/params
     ```
@@ -202,7 +202,7 @@ section before proceeding to the following steps.**
 
     ```
     $ cd $PIO_HOME/examples
-    $ ../bin/run-eval --engineId io.prediction.engines.regression \
+    $ ../bin/run-eval --engineId io.prediction.examples.regression \
       --engineVersion 0.8.0-SNAPSHOT \
       --jsonBasePath src/main/scala/regression/local/params \
       --metricsClass io.prediction.controller.MeanSquareError

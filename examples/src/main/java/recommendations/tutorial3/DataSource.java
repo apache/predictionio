@@ -1,8 +1,8 @@
-package io.prediction.engines.java.recommendations.tutorial3;
+package io.prediction.examples.java.recommendations.tutorial3;
 
-import io.prediction.engines.java.recommendations.tutorial1.TrainingData;
-import io.prediction.engines.java.recommendations.tutorial1.Query;
-import io.prediction.engines.java.recommendations.tutorial1.DataSourceParams;
+import io.prediction.examples.java.recommendations.tutorial1.TrainingData;
+import io.prediction.examples.java.recommendations.tutorial1.Query;
+import io.prediction.examples.java.recommendations.tutorial1.DataSourceParams;
 
 import io.prediction.controller.java.LJavaDataSource;
 import scala.Tuple2;

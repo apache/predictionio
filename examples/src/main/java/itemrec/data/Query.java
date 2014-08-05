@@ -1,4 +1,4 @@
-package io.prediction.engines.java.itemrec.data;
+package io.prediction.examples.java.itemrec.data;
 
 import java.io.Serializable;
 

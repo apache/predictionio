@@ -1,6 +1,6 @@
 {
-  "id": "io.prediction.engines.itemrank",
+  "id": "io.prediction.examples.itemrank",
   "version": "0.8.0-SNAPSHOT",
   "name": "Kenneth Chan Smart Item Ranking Engine",
-  "engineFactory": "io.prediction.engines.itemrank.ItemRankEngine"
+  "engineFactory": "io.prediction.examples.itemrank.ItemRankEngine"
 }
