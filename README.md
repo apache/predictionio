@@ -81,20 +81,20 @@ The purpose of the tutorials 1-4 is to help you to get familiar with each
 components of the PredictionIO framework.
 
 - [Tutorial 1 - Develop and Integrate Algorithm with PredictionIO
-  ](engines/src/main/java/recommendations/tutorial1-develop.md)
+  ](examples/src/main/java/recommendations/tutorial1-develop.md)
 - [Tutorial 2 - Test Engine Components
-  ](engines/src/main/java/recommendations/tutorial2-runner.md)
+  ](examples/src/main/java/recommendations/tutorial2-runner.md)
 - [Tutorial 3 -
-  Evaluation](engines/src/main/java/recommendations/tutorial3-evaluation.md)
+  Evaluation](examples/src/main/java/recommendations/tutorial3-evaluation.md)
 - [Tutorial 4 - Multiple Algorithms
-  Engine](engines/src/main/java/recommendations/tutorial4-multialgo.md)
+  Engine](examples/src/main/java/recommendations/tutorial4-multialgo.md)
 
 More interesting tutorials:
 - [Stock Prediction Engine with customizable
-  algorithms](engines/src/main/scala/stock/README.md)
-- [Linear Regression Engine](engines/src/main/scala/regression/local/README.md)
+  algorithms](examples/src/main/scala/stock/README.md)
+- [Linear Regression Engine](examples/src/main/scala/regression/local/README.md)
 - [Distributed Recommendation Engine with RDD-based Model using MLlib's
-  ALS](engines/src/main/scala/recommendations/README.md)
+  ALS](examples/src/main/scala/recommendations/README.md)
 
 
 API Documentation
