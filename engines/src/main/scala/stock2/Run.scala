@@ -7,17 +7,21 @@ import io.prediction.controller.FirstServing
 import com.github.nscala_time.time.Imports._
 
 object Run {
+  /*
   val tickerList = Seq(
-      "GOOG", "GOOG", "FB", "AAPL", "AMZN", "MSFT", "IBM", "HPQ", "INTC",
+      "GOOG", "GOOGL", "FB", "AAPL", "AMZN", "MSFT", "IBM", "HPQ", "INTC",
       "NTAP", "CSCO", "ORCL", "XRX", "YHOO", "AMAT", "QCOM", "TXN", "CRM",
       "INTU", "WDC", "SNDK")
+  */
+  val tickerList = Seq(
+      "GOOG", "GOOGL", "FB", "AAPL", "AMZN", "MSFT", "IBM", "HPQ", "INTC")
 
   def main(args: Array[String]) {
     val dataSourceParams = new DataSourceParams(
-      baseDate = new DateTime(2004, 1, 1, 0, 0),
-      fromIdx = 400,
-      untilIdx = 600,
-      trainingWindowSize = 300,
+      baseDate = new DateTime(2011, 1, 1, 0, 0),
+      fromIdx = 300,
+      untilIdx = 350,
+      trainingWindowSize = 200,
       maxTestingWindowSize = 20,
       marketTicker = "SPY",
       tickerList = tickerList)

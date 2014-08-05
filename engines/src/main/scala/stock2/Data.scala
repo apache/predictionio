@@ -20,6 +20,10 @@ class RawData(
 
   lazy val _priceFrame: Frame[DateTime, String, Double] =
     SaddleWrapper.ToFrame(timeIndex, _price)
+
+  // FIXME. Fill NA of result.
+  lazy val _retFrame: Frame[DateTime, String, Double] = 
+    _priceFrame.shift(1) / _priceFrame
   
   lazy val _activeFrame: Frame[DateTime, String, Boolean] =
     SaddleWrapper.ToFrame(timeIndex, _active)
@@ -39,11 +43,20 @@ class RawData(
 // This clas takes the whole RawData reference, hence should *not* be serialized
 case class DataView(val rawData: RawData, val idx: Int, val maxWindowSize: Int) {
   def today(): DateTime = rawData.timeIndex(idx)
+
+  val tickers = rawData.tickers
+  val mktTicker = rawData.mktTicker
   
   def priceFrame(windowSize: Int = 1)
   : Frame[DateTime, String, Double] = {
     // Check windowSize <= maxWindowSize
     rawData._priceFrame.rowSlice(idx - windowSize + 1, idx + 1)
+  }
+  
+  def retFrame(windowSize: Int = 1)
+  : Frame[DateTime, String, Double] = {
+    // Check windowSize <= maxWindowSize
+    rawData._retFrame.rowSlice(idx - windowSize + 1, idx + 1)
   }
   
   def activeFrame(windowSize: Int = 1)

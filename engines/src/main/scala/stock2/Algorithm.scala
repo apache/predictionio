@@ -32,8 +32,8 @@ abstract class StockStrategy[M: ClassTag]
 
     val rawData = trainingData.rawDataB.value
 
-    val dataView: DataView = rawData.view(
-      queryDate.idx, trainingData.maxWindowSize)
+    val dataView: DataView = 
+      rawData.view(queryDate.idx, trainingData.maxWindowSize)
 
     /*
     val dataView: DataView = DataView(
@@ -44,9 +44,17 @@ abstract class StockStrategy[M: ClassTag]
 
     //val dataView = rawData.view
 
-    val active = dataView.activeFrame()
-    println(dataView)
-    println(active)
+    val active = dataView.activeFrame().rowAt(0)
+
+    //println(dataView)
+    //println(active)
+
+    val filtered = active.filter(identity)
+    //println(filtered)
+    
+    
+    //println(active.index)
+    //println(filtered.index)
 
     val query = Query(
       idx = queryDate.idx, 
@@ -65,13 +73,15 @@ class Strategy extends StockStrategy[AnyRef] {
   def createModel(dataView: DataView): AnyRef = {
     //val priceFrame = dataView.priceFrame(10)
     println(dataView.today)
-    println(dataView)
+    //println(dataView)
+    println(dataView.priceFrame(10))
+    println(dataView.retFrame(10))
     None
   }
 
   //def onClose(model: Anyref, query: Query, dataView: DataView): Orders = {
   def onClose(model: AnyRef, query: Query): Orders = {
-    println("onClose: " + query.dataView.today)
+    //println("onClose: " + query.dataView.today)
     Orders(0, Map[String, Double]())
   }
   
