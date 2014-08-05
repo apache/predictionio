@@ -2,9 +2,14 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "engines"
+name := "examples"
+
+organization := "io.prediction"
+
+resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= Seq(
+  "io.prediction"     %% "core"           % "0.8.0-SNAPSHOT",
   "com.github.scopt"  %% "scopt"          % "3.2.0",
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",
@@ -26,9 +31,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case PathList("scala", xs @ _*) => MergeStrategy.discard
     case PathList("org", "xmlpull", xs @ _*) => MergeStrategy.last
-    //case s if s.endsWith(".class") => MergeStrategy.last
     case x => old(x)
   }
 }
-
-net.virtualvoid.sbt.graph.Plugin.graphSettings
