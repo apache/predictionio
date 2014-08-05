@@ -23,11 +23,11 @@ All code definition can be found [here](Run.scala).
 
 ### Data Source
 
-Training data is located at `/data/lr_data.txt`. The first column are values of
-the dependent variable, and the rest are values of explanatory variables. In
-this example, they are represented by the `TrainingData` case class as a vector
-of double (all rows of the first column), and a vector of vector of double (all
-rows of the remaining columns) respectively.
+Training data is located at `/examples/data/lr_data.txt`. The first column are
+values of the dependent variable, and the rest are values of explanatory
+variables. In this example, they are represented by the `TrainingData` case
+class as a vector of double (all rows of the first column), and a vector of
+vector of double (all rows of the remaining columns) respectively.
 
 
 ### Preparator
@@ -61,25 +61,25 @@ subdirectory.
 Before training, you must let PredictionIO know about the engine. Run the
 following command to register the engine.
 ```
-$ cd $PIO_HOME
-$ bin/register-engine engines/src/main/scala/regression/local/manifest.json
+$ cd $PIO_HOME/examples
+$ ../bin/register-engine src/main/scala/regression/local/manifest.json
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 To start training, use the following command.
 ```
-$ cd $PIO_HOME
-$ bin/run-train \
+$ cd $PIO_HOME/examples
+$ ../bin/run-train \
   --engineId io.prediction.engines.regression \
   --engineVersion 0.8.0-SNAPSHOT \
-  --jsonBasePath engines/src/main/scala/regression/local/params
+  --jsonBasePath src/main/scala/regression/local/params
 ```
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
 ```
-14/07/28 14:57:27 INFO SparkContext: Job finished: collect at DebugWorkflow.scala:553, took 0.038936 s
-14/07/28 14:57:27 INFO APIDebugWorkflow$: Metrics is null. Stop here
-14/07/28 14:57:28 INFO APIDebugWorkflow$: Run information saved with ID: rO3kuBnmTi6zYBej5x1MWg
+2014-08-05 14:01:28,312 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:569, took 0.043905 s
+2014-08-05 14:01:28,313 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
+2014-08-05 14:01:28,482 INFO  APIDebugWorkflow$ - Run information saved with ID: qGGlujG0SMOkvCaA-YZmEw
 ```
 Take a note of the ID
 for later use.
@@ -90,10 +90,10 @@ Running Evaluation Metrics
 
 To run evaluation metrics, simply add an argument to the `run-workflow` command.
 ```
-$ cd $PIO_HOME
-$ bin/run-eval --engineId io.prediction.engines.regression \
+$ cd $PIO_HOME/examples
+$ ../bin/run-eval --engineId io.prediction.engines.regression \
   --engineVersion 0.8.0-SNAPSHOT \
-  --jsonBasePath engines/src/main/scala/regression/local/params \
+  --jsonBasePath src/main/scala/regression/local/params \
   --metricsClass io.prediction.controller.MeanSquareError
 ```
 Notice that we have appended `--metricsClass
@@ -102,9 +102,9 @@ instructs the workflow runner to run the specified metrics after training is
 done. When you look at the console output again, you should be able to see a
 mean square error computed, like the following.
 ```
-14/07/28 14:58:16 INFO APIDebugWorkflow$: Set: The One Size: 1000 MSE: 0.092519
-14/07/28 14:58:16 INFO APIDebugWorkflow$: APIDebugWorkflow.run completed.
-14/07/28 14:58:16 INFO APIDebugWorkflow$: Run information saved with ID: HT_35CSbTEa91bx04nWwuQ
+2014-08-05 14:02:04,848 INFO  APIDebugWorkflow$ - Set: The One Size: 1000 MSE: 0.092519
+2014-08-05 14:02:04,848 INFO  APIDebugWorkflow$ - APIDebugWorkflow.run completed.
+2014-08-05 14:02:04,940 INFO  APIDebugWorkflow$ - Run information saved with ID: CM4y41D8TT-Ovh1l9PGRrw
 ```
 
 
@@ -114,8 +114,8 @@ Deploying a Real-time Prediction Server
 Following from instructions above, you should have obtained a run ID after
 your workflow finished. Use the following command to start a server.
 ```
-$ cd $PIO_HOME
-$ bin/run-server --runId RUN_ID_HERE
+$ cd $PIO_HOME/examples
+$ ../bin/run-server --runId RUN_ID_HERE
 ```
 This will create a server that by default binds to http://localhost:8000. You
 can visit that page in your web browser to check its status.
@@ -148,8 +148,8 @@ section before proceeding to the following steps.**
 
 1.  Start by installing Supervisor following instructions on its [web
     site](http://supervisord.org/).
-2.  Create a Supervisor configuration at `$PIO_HOME/supervisord.conf` with the
-    following content.
+2.  Create a Supervisor configuration at `$PIO_HOME/examples/supervisord.conf`
+    with the following content.
     ```
     [unix_http_server]
     file=/tmp/supervisor.sock
@@ -174,12 +174,12 @@ section before proceeding to the following steps.**
     serverurl=unix:///tmp/supervisor.sock
 
     [program:pio]
-    command=bin/run-server --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT
+    command=../bin/run-server --engineId io.prediction.engines.regression --engineVersion 0.8.0-SNAPSHOT
     autostart=false
     ```
-3.  Launch Supervisor at `$PIO_HOME`.
+3.  Launch Supervisor at `$PIO_HOME/examples`.
     ```
-    $ cd $PIO_HOME
+    $ cd $PIO_HOME/examples
     $ supervisord
     ```
 4.  Using your web browser, go to http://localhost:9001. You should see a
@@ -187,18 +187,18 @@ section before proceeding to the following steps.**
 5.  Run training or evaluation. These scripts have been written to detect the
     existence of Supervisor and will automatically (re)start our prediction server.
     ```
-    $ cd $PIO_HOME
-    $ bin/run-train \
+    $ cd $PIO_HOME/examples
+    $ ../bin/run-train \
       --engineId io.prediction.engines.regression \
       --engineVersion 0.8.0-SNAPSHOT \
-      --jsonBasePath engines/src/main/scala/regression/local/params
+      --jsonBasePath src/main/scala/regression/local/params
     ```
     or
     ```
-    $ cd $PIO_HOME
-    $ bin/run-eval --engineId io.prediction.engines.regression \
+    $ cd $PIO_HOME/examples
+    $ ../bin/run-eval --engineId io.prediction.engines.regression \
       --engineVersion 0.8.0-SNAPSHOT \
-      --jsonBasePath engines/src/main/scala/regression/local/params \
+      --jsonBasePath src/main/scala/regression/local/params \
       --metricsClass io.prediction.controller.MeanSquareError
     ```
 6.  Refresh the Supervisor status screen. You should now see the server as
