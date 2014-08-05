@@ -1,3 +1,7 @@
+import SonatypeKeys._
+
+sonatypeSettings
+
 name := "core"
 
 libraryDependencies ++= Seq(

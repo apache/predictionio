@@ -23,4 +23,6 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   }}
 }
 
+outputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile / "assembly" / (outputPath in assembly).value.getName
+
 net.virtualvoid.sbt.graph.Plugin.graphSettings
