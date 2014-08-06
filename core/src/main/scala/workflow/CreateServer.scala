@@ -11,7 +11,8 @@ import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.storage.{ Storage, EngineManifest, Run }
 
-import akka.actor.{ Actor, ActorSystem, Props }
+import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
+import akka.event.Logging
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
@@ -32,6 +33,7 @@ import spray.http._
 import spray.http.MediaTypes._
 
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.existentials
 import scala.reflect.runtime.universe
 
@@ -56,6 +58,9 @@ case class ServerConfig(
   port: Int = 8000,
   sparkMaster: String = "local",
   sparkExecutorMemory: String = "4g")
+
+case class StartServer(ip: String, port: Int)
+case class StopServer(reason: String)
 
 object CreateServer extends Logging {
   def main(args: Array[String]): Unit = {
@@ -118,7 +123,7 @@ object CreateServer extends Logging {
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): Unit = {
     implicit val formats = DefaultFormats
-    
+
     WorkflowUtils.checkUpgrade("deployment")
 
     val algorithmsParamsWithNames =
@@ -230,9 +235,42 @@ object CreateServer extends Logging {
         servingParams),
       "server")
 
+    val master = system.actorOf(
+      Props(
+        classOf[MasterActor],
+        service,
+        sc),
+      "master")
+
     implicit val timeout = Timeout(5.seconds)
     // start a new HTTP server on port 8080 with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = sc.ip, port = sc.port)
+    //IO(Http) ? Http.Bind(service, interface = sc.ip, port = sc.port)
+    master ? StartServer(ip = sc.ip, port = sc.port)
+  }
+}
+
+class MasterActor(service: ActorRef, sc: ServerConfig) extends Actor {
+  val log = Logging(context.system, this)
+  implicit val system = context.system
+  var sprayHttpListener: Option[ActorRef] = None
+  def receive = {
+    case StartServer(ip, port) =>
+      IO(Http) ! Http.Bind(service, interface = ip, port = port)
+    case StopServer(reason) =>
+      log.info(s"Stop server command received. Reason: $reason")
+      sprayHttpListener.map { l =>
+        log.info("Server is shutting down.")
+        l ! Http.Unbind(5.seconds)
+        system.shutdown
+      } getOrElse {
+        log.warning("Stop server command received with no active server running.")
+      }
+    case x: Http.Bound =>
+      log.info("Bind successful. Ready to serve.")
+      sprayHttpListener = Some(sender)
+    case x: Http.CommandFailed =>
+      log.error("Bind failed. Shutting down.")
+      system.shutdown
   }
 }
 
@@ -309,6 +347,16 @@ class ServerActor[Q, P](
           val prediction = serving.serveBase(query, predictions)
           complete(compact(render(
             Extraction.decompose(prediction)(firstAlgorithm.querySerializer))))
+        }
+      }
+    } ~
+    path("stop") {
+      get {
+        complete {
+          context.system.scheduler.scheduleOnce(1.seconds) {
+            context.actorSelection("/user/master") ! StopServer("user initiated")
+          }
+          "Dying..."
         }
       }
     }
