@@ -1,4 +1,4 @@
-package io.prediction.engines.stock2
+package io.prediction.examples.stock2
 
 import io.prediction.workflow.APIDebugWorkflow
 import io.prediction.controller.IdentityPreparator
@@ -67,7 +67,7 @@ object Run {
           trainingWindowSize = 200,
           maxTestingWindowSize = 20,
           marketTicker = "SPY",
-          tickerList = io.prediction.engines.stock.Settings.sp500List)
+          tickerList = io.prediction.examples.stock.Settings.sp500List)
       })
 
     val momentumParams = MomentumStrategyParams(20, 3)

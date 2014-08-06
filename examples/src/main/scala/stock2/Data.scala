@@ -1,4 +1,4 @@
-package io.prediction.engines.stock2
+package io.prediction.examples.stock2
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -8,7 +8,7 @@ import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
 
-import _root_.io.prediction.engines.stock.SaddleWrapper
+import _root_.io.prediction.examples.stock.SaddleWrapper
 
 class RawData(
   val tickers: Array[String],
@@ -92,14 +92,5 @@ case class Query(
   val tickers: Array[String],
   val mktTicker: String)
 
-
 // Prediction
-case class Prediction(val data: Map[String, Double])
-  extends Serializable {}
-
-/*
-case class PredictionActual(
-  val idx: Int,
-  val prediction: Prediction,
-  val actual: Map[String, Double])
-*/
+case class Prediction(val data: Map[String, Double]) extends Serializable {}

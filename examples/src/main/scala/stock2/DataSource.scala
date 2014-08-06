@@ -1,13 +1,9 @@
-package io.prediction.engines.stock2
+package io.prediction.examples.stock2
 
 import io.prediction.controller.Params
 import io.prediction.controller.PDataSource
 import io.prediction.controller.LDataSource
 import io.prediction.controller.EmptyParams
-
-//import io.prediction.engines.stock.DataSourceParams
-//import io.prediction.engines.stock.TrainingDataParams
-//import io.prediction.engines.stock.TestingDataParams
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -117,15 +113,12 @@ class DataSource(val dsp: DataSourceParams)
   }
 
   def readRawData(): RawData = {
-    println("read raw data")
     val allTickers = dsp.tickerList :+ dsp.marketTicker
 
     val tickerTrends: Map[String, ItemTrend] = itemTrendsDb
       .getByIds(dsp.appid, allTickers)
       .map { e => (e.id, e) }
       .toMap
-
-    println("after loading")
 
     val market = tickerTrends(dsp.marketTicker)
     val timestampArray = market.daily
@@ -151,21 +144,6 @@ class DataSource(val dsp: DataSourceParams)
       _price = price,
       _active = active)
 
-    //println(rawData)
-    
     rawData
   }
-
-
-  /*
-  def readMongo(ticker: String): String = {
-    val mongoConn = MongoConnection("localhost")
-
-    val coll = mongoConn("predictionio_appdata")("itemTrends")
-
-    val x = coll.findOne(MongoDBObject("_id" -> "10_SPY"))
-    println(x)
-    ticker
-  }
-  */
 }

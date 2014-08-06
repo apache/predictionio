@@ -1,4 +1,4 @@
-package io.prediction.engines.stock2
+package io.prediction.examples.stock2
 
 import io.prediction.controller.Params
 import io.prediction.controller.Metrics
