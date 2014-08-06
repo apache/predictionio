@@ -108,12 +108,12 @@ fi
 # export JAVA_OPTS
 # Attention: when changing the way the JAVA_OPTS are assembled, the change must be reflected in CommandUtils.scala!
 
-TOOLS_DIR="$FWDIR"/tools
-PIO_TOOLS_JAR=""
-if [ -e "$TOOLS_DIR"/target/scala-$SCALA_VERSION/tools-assembly*[0-9Tg].jar ]; then
+# TOOLS_DIR="$FWDIR"/tools
+# PIO_TOOLS_JAR=""
+# if [ -e "$TOOLS_DIR"/target/scala-$SCALA_VERSION/tools-assembly*[0-9Tg].jar ]; then
   # Use the JAR from the SBT build
-  export PIO_TOOLS_JAR=`ls "$TOOLS_DIR"/target/scala-$SCALA_VERSION/tools-assembly*[0-9Tg].jar`
-fi
+#   export PIO_TOOLS_JAR=`ls "$TOOLS_DIR"/target/scala-$SCALA_VERSION/tools-assembly*[0-9Tg].jar`
+# fi
 # if [ -e "$TOOLS_DIR"/target/tools*[0-9Tg].jar ]; then
 #   # Use the JAR from the Maven build
 #   # TODO: this also needs to become an assembly!
@@ -129,14 +129,14 @@ else
   CLASSPATH=$classpath_output
 fi
 
-if [[ "$1" =~ io.prediction.tools.* ]]; then
-  if test -z "$PIO_TOOLS_JAR"; then
-    echo "Failed to find PredictionIO Tools JAR in $FWDIR/tools/target/scala-$SCALA_VERSION/" 1>&2
-    echo "You need to build PredictionIO before running $1." 1>&2
-    exit 1
-  fi
-  CLASSPATH="$CLASSPATH:$PIO_TOOLS_JAR"
-fi
+# if [[ "$1" =~ io.prediction.tools.* ]]; then
+#   if test -z "$PIO_TOOLS_JAR"; then
+#     echo "Failed to find PredictionIO Tools JAR in $FWDIR/tools/target/scala-$SCALA_VERSION/" 1>&2
+#     echo "You need to build PredictionIO before running $1." 1>&2
+#     exit 1
+#   fi
+#   CLASSPATH="$CLASSPATH:$PIO_TOOLS_JAR"
+# fi
 
 # if $cygwin; then
 #   CLASSPATH=`cygpath -wp $CLASSPATH`

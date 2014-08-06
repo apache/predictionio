@@ -31,7 +31,7 @@ FWDIR="$(cd `dirname $0`/..; pwd)"
 #CLASSPATH="$SPARK_CLASSPATH:$SPARK_SUBMIT_CLASSPATH:$FWDIR/conf"
 CLASSPATH="$FWDIR/conf"
 
-ASSEMBLY_DIR="$FWDIR/assembly/target/scala-$SCALA_VERSION"
+ASSEMBLY_DIR="$FWDIR/assembly"
 
 if [ -n "$JAVA_HOME" ]; then
   JAR_CMD="$JAVA_HOME/bin/jar"
@@ -57,11 +57,11 @@ fi
 # fi
 
 # Use spark-assembly jar from either RELEASE or assembly directory
-# if [ -f "$FWDIR/RELEASE" ]; then
-#   assembly_folder="$FWDIR"/lib
-# else
-#   assembly_folder="$ASSEMBLY_DIR"
-# fi
+if [ -f "$FWDIR/RELEASE" ]; then
+  assembly_folder="$FWDIR"/lib
+else
+  assembly_folder="$ASSEMBLY_DIR"
+fi
 
 # num_jars=$(ls "$assembly_folder" | grep "spark-assembly.*hadoop.*\.jar" | wc -l)
 # if [ "$num_jars" -eq "0" ]; then
@@ -77,7 +77,7 @@ fi
 #   exit 1
 # fi
 #
-# ASSEMBLY_JAR=$(ls "$assembly_folder"/spark-assembly*hadoop*.jar 2>/dev/null)
+ASSEMBLY_JAR=$(ls "$assembly_folder"/tools-assembly*.jar 2>/dev/null)
 
 # Verify that versions of java used to build the jars and run Spark are compatible
 # jar_error_check=$("$JAR_CMD" -tf "$ASSEMBLY_JAR" nonexistent/class/path 2>&1)
@@ -89,7 +89,7 @@ fi
 #   exit 1
 # fi
 #
-# CLASSPATH="$CLASSPATH:$ASSEMBLY_JAR"
+CLASSPATH="$CLASSPATH:$ASSEMBLY_JAR"
 
 # When Hive support is needed, Datanucleus jars must be included on the classpath.
 # Datanucleus jars do not work if only included in the uber jar as plugin.xml metadata is lost.

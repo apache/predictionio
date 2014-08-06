@@ -1,6 +1,0 @@
-{
-  "id": "io.prediction.engines.java.recommendations.tutorial5.EngineFactory",
-  "version": "0.8.0-SNAPSHOT",
-  "name": "Simple Mahout Recommendations Engine",
-  "engineFactory": "io.prediction.engines.java.recommendations.tutorial5.EngineFactory"
-}

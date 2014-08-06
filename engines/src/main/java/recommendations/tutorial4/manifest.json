@@ -1,7 +1,0 @@
-{
-  "id": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory",
-  "version": "0.8.0-SNAPSHOT",
-  "name": "FeatureBased Recommendations Engine",
-  "engineFactory": "io.prediction.engines.java.recommendations.tutorial4.EngineFactory"
-}
-

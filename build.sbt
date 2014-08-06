@@ -19,14 +19,14 @@ javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
 
 lazy val root = project in file(".") aggregate(
   core,
-  engines,
+  //engines,
   tools)
 
 lazy val core = (project in file("core")).
   settings(genjavadocSettings: _*)
 
-lazy val engines = (project in file("engines")).
-  dependsOn(core)
+//lazy val engines = (project in file("engines")).
+//  dependsOn(core)
 
 lazy val tools = (project in file("tools")).
   dependsOn(core)
