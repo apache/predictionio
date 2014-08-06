@@ -4,7 +4,17 @@ set -e
 
 export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 
-$PIO_HOME/bin/pio-class io.prediction.tools.RunWorkflow "$@"
+ASSEMBLY_DIR="$FWDIR/assembly"
+
+if [ -f "$FWDIR/RELEASE" ]; then
+  assembly_folder="$FWDIR"/lib
+else
+  assembly_folder="$ASSEMBLY_DIR"
+fi
+
+ASSEMBLY_JAR=$(ls "$assembly_folder"/tools-assembly*.jar 2>&-)
+
+$PIO_HOME/bin/pio-class io.prediction.tools.RunWorkflow --core $ASSEMBLY_JAR "$@"
 
 if hash supervisorctl 2>&-; then
   echo "Found supervisorctl. Trying to restart prediction server..."

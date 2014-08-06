@@ -9,7 +9,7 @@ organization := "io.prediction"
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= Seq(
-  "io.prediction"     %% "core"           % "0.8.0-SNAPSHOT",
+  "io.prediction"     %% "core"           % "0.8.0-SNAPSHOT" % "provided",
   "com.github.scopt"  %% "scopt"          % "3.2.0",
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",

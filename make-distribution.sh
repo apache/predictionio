@@ -15,7 +15,7 @@ mkdir -p $DISTDIR/lib
 
 cp $FWDIR/bin/* $DISTDIR/bin
 cp $FWDIR/conf/* $DISTDIR/conf
-cp $FWDIR/tools/target/scala*/*assembly*jar $DISTDIR/lib
+cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
 
 rm $DISTDIR/conf/pio-env.sh
 

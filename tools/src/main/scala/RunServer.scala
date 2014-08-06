@@ -14,6 +14,7 @@ import java.io.File
 object RunServer extends Logging {
   def main(args: Array[String]): Unit = {
     case class RunServerConfig(
+      core: String = "",
       sparkHome: String = "",
       sparkMaster: String = "local",
       sparkDeployMode: String = "client",
@@ -24,6 +25,9 @@ object RunServer extends Logging {
       port: Int = 8000)
 
     val parser = new scopt.OptionParser[RunServerConfig]("RunServer") {
+      opt[String]("core") required() action { (x, c) =>
+        c.copy(core = x)
+      } text("PredictionIO core assembly.")
       opt[String]("sparkHome") action { (x, c) =>
         c.copy(sparkHome = x)
       } text("Path to a Apache Spark installation. If not specified, will " +
@@ -91,12 +95,10 @@ object RunServer extends Logging {
         "--master",
         sc.sparkMaster,
         "--class",
-        "io.prediction.workflow.CreateServer") ++ (
-          if (em.files.size > 1) Seq(
-            "--jars",
-            em.files.drop(1).mkString(","))
-          else Nil) ++ Seq(
-        em.files.head,
+        "io.prediction.workflow.CreateServer",
+        "--jars",
+        em.files.mkString(","),
+        sc.core,
         //"--env",
         //pioEnvVars,
         "--runId",

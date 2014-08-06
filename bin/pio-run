@@ -25,8 +25,20 @@ fi
 
 $SBT package
 
+ASSEMBLY_DIR="$FWDIR/assembly"
+
+if [ -f "$FWDIR/RELEASE" ]; then
+  assembly_folder="$FWDIR"/lib
+else
+  assembly_folder="$ASSEMBLY_DIR"
+fi
+
+ASSEMBLY_JAR=$(ls "$assembly_folder"/tools-assembly*.jar 2>&-)
+
+ENGINE_DEPS_JAR=$(ls target/scala*/*-assembly-*-deps.jar 2>&-)
+
 CLASSNAME=$1
 
 shift
 
-$SPARK_HOME/bin/spark-submit --jars target/scala*/*-assembly-*-deps.jar --class $CLASSNAME target/scala*/*_*-*.jar "$@"
+$SPARK_HOME/bin/spark-submit --jars $ASSEMBLY_JAR,$ENGINE_DEPS_JAR --class $CLASSNAME target/scala*/*_*-*.jar "$@"

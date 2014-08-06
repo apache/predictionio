@@ -14,6 +14,7 @@ import java.io.File
 object RunWorkflow extends Logging {
   def main(args: Array[String]): Unit = {
     case class RunWorkflowConfig(
+      core: String = "",
       sparkHome: String = "",
       sparkMaster: String = "local",
       sparkDeployMode: String = "client",
@@ -29,6 +30,9 @@ object RunWorkflow extends Logging {
       jsonBasePath: String = ".")
 
     val parser = new scopt.OptionParser[RunWorkflowConfig]("RunWorkflow") {
+      opt[String]("core") required() action { (x, c) =>
+        c.copy(core = x)
+      } text("PredictionIO core assembly.")
       opt[String]("engineId") required() action { (x, c) =>
         c.copy(engineId = x)
       } text("Engine ID.")
@@ -104,12 +108,10 @@ object RunWorkflow extends Logging {
           "--master",
           wfc.sparkMaster,
           "--class",
-          "io.prediction.workflow.CreateWorkflow") ++ (
-            if (em.files.size > 1) Seq(
-              "--jars",
-              em.files.drop(1).mkString(","))
-            else Nil) ++ Seq(
-          em.files.head,
+          "io.prediction.workflow.CreateWorkflow",
+          "--jars",
+          em.files.mkString(","),
+          wfc.core,
           "--env",
           pioEnvVars,
           "--engineId",
