@@ -81,6 +81,8 @@ case class TrainingData(
   def view(): DataView = DataView(rawDataB.value, untilIdx - 1, maxWindowSize)
 }
 
+case class DataParams(val rawDataB: Broadcast[RawData]) extends Serializable
+
 // Date
 case class QueryDate(val idx: Int) extends Serializable {}
 
@@ -90,7 +92,14 @@ case class Query(
   val tickers: Array[String],
   val mktTicker: String)
 
+
 // Prediction
-case class Orders(val idx: Int, val data: Map[String, Double])
+case class Prediction(val data: Map[String, Double])
   extends Serializable {}
 
+/*
+case class PredictionActual(
+  val idx: Int,
+  val prediction: Prediction,
+  val actual: Map[String, Double])
+*/

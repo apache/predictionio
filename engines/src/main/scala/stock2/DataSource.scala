@@ -57,7 +57,7 @@ case class DataSourceParams(
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[
       DataSourceParams,
-      AnyRef,
+      DataParams,
       RDD[TrainingData],
       QueryDate,
       AnyRef] {
@@ -66,11 +66,13 @@ class DataSource(val dsp: DataSourceParams)
   @transient lazy val itemTrendsDb = Storage.getAppdataItemTrends()
 
   def read(sc: SparkContext)
-  : Seq[(AnyRef, RDD[TrainingData], RDD[(QueryDate, AnyRef)])] = {
+  : Seq[(DataParams, RDD[TrainingData], RDD[(QueryDate, AnyRef)])] = {
     val rawData = readRawData()
 
     // Broadcast it.
     val rawDataB = sc.broadcast(rawData)
+
+    val dataParams = DataParams(rawDataB)
 
     val dataSet: Seq[(TrainingData, Seq[(QueryDate, AnyRef)])] =
       Range(dsp.fromIdx, dsp.untilIdx, dsp.maxTestingWindowSize).map { idx => {
@@ -79,15 +81,18 @@ class DataSource(val dsp: DataSourceParams)
           maxWindowSize = dsp.trainingWindowSize,
           rawDataB = rawDataB)
 
+        // cannot evaluate the last item as data view only last until untilIdx.
         val testingUntilIdx = math.min(
-          idx + dsp.maxTestingWindowSize, dsp.untilIdx)
+          idx + dsp.maxTestingWindowSize, 
+          dsp.untilIdx - 1)  
+        
         val queries = (idx until testingUntilIdx)
           .map { idx => (QueryDate(idx), None) }
         (trainingData, queries)
       }}
 
     dataSet.map { case (trainingData, queries) =>
-      (None, 
+      (dataParams, 
         sc.parallelize(Array(trainingData)), 
         sc.parallelize(queries))
     }
@@ -112,12 +117,15 @@ class DataSource(val dsp: DataSourceParams)
   }
 
   def readRawData(): RawData = {
+    println("read raw data")
     val allTickers = dsp.tickerList :+ dsp.marketTicker
 
     val tickerTrends: Map[String, ItemTrend] = itemTrendsDb
       .getByIds(dsp.appid, allTickers)
       .map { e => (e.id, e) }
       .toMap
+
+    println("after loading")
 
     val market = tickerTrends(dsp.marketTicker)
     val timestampArray = market.daily
@@ -143,7 +151,7 @@ class DataSource(val dsp: DataSourceParams)
       _price = price,
       _active = active)
 
-    println(rawData)
+    //println(rawData)
     
     rawData
   }

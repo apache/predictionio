@@ -18,16 +18,15 @@ abstract class StockStrategy[M: ClassTag]
       TrainingData, 
       (TrainingData, M), 
       QueryDate, 
-      AnyRef] {
-
+      Prediction] {
   def train(trainingData: TrainingData): (TrainingData, M) = {
     (trainingData, createModel(trainingData.view))
   }
 
   def createModel(dataView: DataView): M
 
-
-  def predict(dataModel: (TrainingData, M), queryDate: QueryDate): AnyRef = {
+  def predict(dataModel: (TrainingData, M), queryDate: QueryDate)
+  : Prediction = {
     val (trainingData, model) = dataModel
 
     val rawData = trainingData.rawDataB.value
@@ -35,55 +34,29 @@ abstract class StockStrategy[M: ClassTag]
     val dataView: DataView = 
       rawData.view(queryDate.idx, trainingData.maxWindowSize)
 
-    /*
-    val dataView: DataView = DataView(
-      rawData, 
-      queryDate.idx, 
-      trainingData.maxWindowSize)
-    */
+    val activeTickers = dataView
+      .activeFrame().rowAt(0)
+      .filter(identity)
+      .index.toVec.contents
 
-    //val dataView = rawData.view
-
-    val active = dataView.activeFrame().rowAt(0)
-
-    //println(dataView)
-    //println(active)
-
-    val filtered = active.filter(identity)
-    //println(filtered)
-    
-    
-    //println(active.index)
-    //println(filtered.index)
 
     val query = Query(
       idx = queryDate.idx, 
       dataView = dataView,
-      tickers = Array[String](),
-      mktTicker = "")
+      tickers = activeTickers,
+      mktTicker = rawData.mktTicker)
 
-    onClose(model, query)
-    None
+    val prediction: Prediction = onClose(model, query)
+
+    return prediction
   }
 
-  def onClose(model: M, query: Query): Orders
+  def onClose(model: M, query: Query): Prediction
 }
 
-class Strategy extends StockStrategy[AnyRef] {
-  def createModel(dataView: DataView): AnyRef = {
-    //val priceFrame = dataView.priceFrame(10)
-    println(dataView.today)
-    //println(dataView)
-    println(dataView.priceFrame(10))
-    println(dataView.retFrame(10))
-    None
-  }
+class EmptyStrategy extends StockStrategy[AnyRef] {
+  def createModel(dataView: DataView): AnyRef = None
 
-  //def onClose(model: Anyref, query: Query, dataView: DataView): Orders = {
-  def onClose(model: AnyRef, query: Query): Orders = {
-    //println("onClose: " + query.dataView.today)
-    Orders(0, Map[String, Double]())
-  }
-  
+  def onClose(model: AnyRef, query: Query): Prediction = 
+    Prediction(Map[String, Double]())
 }
-
