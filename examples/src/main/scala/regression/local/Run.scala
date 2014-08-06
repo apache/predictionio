@@ -34,6 +34,7 @@ case class TrainingData(x: Vector[Vector[Double]], y: Vector[Double])
 case class LocalDataSource(val dsp: DataSourceParams)
   extends LDataSource[
     DataSourceParams, String, TrainingData, Vector[Double], Double] {
+  override
   def read(): Seq[(String, TrainingData, Seq[(Vector[Double], Double)])] = {
     val lines = Source.fromFile(dsp.filepath).getLines
       .toSeq.map(_.split(" ", 2))

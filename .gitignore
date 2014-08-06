@@ -13,3 +13,4 @@ fs/
 supervisord.conf
 assembly/
 dist/
+imagine.tar.gz

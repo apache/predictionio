@@ -1,0 +1,6 @@
+{
+  "id": "io.prediction.engines.helloworld",
+  "version": "0.8.0-SNAPSHOT",
+  "name": "Hello World Engine",
+  "engineFactory": "io.prediction.engines.helloworld.MyEngineFactory"
+}

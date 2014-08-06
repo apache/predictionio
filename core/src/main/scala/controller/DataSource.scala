@@ -46,12 +46,24 @@ abstract class LDataSource[
     */
   }
 
-  /** Implement this method to return data from a data source. Returned data
-    * can optionally include a sequence of query and actual value pairs for
-    * evaluation purpose.
+  /** Implement this method to only return training data from a data source.
     */
-  def read(): Seq[(DP, TD, Seq[(Q, A)])]
+  def readTraining(): TD = null.asInstanceOf[TD]
+
+  /** Implement this method to return one set of training data and test data (
+    * a sequence of query and actual value pairs) from a data source.
+    */
+  def readSet(): (DP, TD, Seq[(Q, A)]) =
+    (null.asInstanceOf[DP], readTraining(), Seq.empty[(Q, A)])
+
+  /** Implement this method to return multiple sets of training data
+    * and test data (a sequence of query and actual value pairs) from a
+    * data source.
+    */
+  def read(): Seq[(DP, TD, Seq[(Q, A)])] = Seq(readSet())
+
 }
+
 
 /** Base class of a local sliced data source.
   *
@@ -73,7 +85,7 @@ abstract class LSlicedDataSource[
     A]
   extends LDataSource[DSP, DP, TD, Q, A] {
 
-  def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
+  override def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
     generateDataParams().map { dp =>
       val slicedData = read(dp)
       (dp, slicedData._1, slicedData._2)
