@@ -129,67 +129,20 @@ Congratulations! You have just trained a linear regression model and is able to
 perform real time prediction.
 
 
-Bonus: Production Prediction Server Deployment
-----------------------------------------------
+Production Prediction Server Deployment
+---------------------------------------
 
-The prediction server you have launched in the previous section hosts an
-immutable model in memory, i.e. you cannot update the model without restarting
-the server.
+Prediction servers support reloading models on the fly with the latest completed
+run.
 
-Being immutable and stateless are important properties for horizontal scaling.
-The server is designed in a way such that you can run other automation tools or
-monitors to manage its lifecycle.
+1.  Assuming you already have a running prediction server from the previous
+    section, go to http://localhost:8000 to check its status. Take note of the
+    **Run ID** at the top.
 
-In this example, we will use [Supervisor](http://supervisord.org/) to manage our
-prediction server.
+2.  Run training or evaluation again. These scripts will always send a reload
+    request to our prediction server at http://localhost:8000/reload when
+    training/evaluation is done.
 
-**Make sure you have killed the server if you have launched one in the previous
-section before proceeding to the following steps.**
-
-1.  Start by installing Supervisor following instructions on its [web
-    site](http://supervisord.org/).
-
-2.  Create a Supervisor configuration at `$PIO_HOME/examples/supervisord.conf`
-    with the following content.
-    ```
-    [unix_http_server]
-    file=/tmp/supervisor.sock
-
-    [inet_http_server]
-    port=127.0.0.1:9001
-
-    [supervisord]
-    logfile=/tmp/supervisord.log
-    logfile_maxbytes=50MB
-    logfile_backups=10
-    loglevel=info
-    pidfile=/tmp/supervisord.pid
-    nodaemon=false
-    minfds=1024
-    minprocs=200
-
-    [rpcinterface:supervisor]
-    supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
-
-    [supervisorctl]
-    serverurl=unix:///tmp/supervisor.sock
-
-    [program:pio]
-    command=../bin/run-server --engineId io.prediction.examples.regression --engineVersion 0.8.0-SNAPSHOT
-    autostart=false
-    ```
-
-3.  Launch Supervisor at `$PIO_HOME/examples`.
-    ```
-    $ cd $PIO_HOME/examples
-    $ supervisord
-    ```
-
-4.  Using your web browser, go to http://localhost:9001. You should see a
-    Supervisor status screen, showing that the `pio` process is stopped.
-
-5.  Run training or evaluation. These scripts have been written to detect the
-    existence of Supervisor and will automatically (re)start our prediction server.
     ```
     $ cd $PIO_HOME/examples
     $ ../bin/run-train \
@@ -208,13 +161,10 @@ section before proceeding to the following steps.**
       --metricsClass io.prediction.controller.MeanSquareError
     ```
 
-6.  Refresh the Supervisor status screen. You should now see the server as
-    running. If you go to http://localhost:8000, you should see the prediction
-    server status page.
-7.  Repeat steps 5 to 6 to see the prediction server restarted automatically
-    after every training/evaluation.
+3.  Refresh the page at http://localhost:8000, you should see the prediction
+    server status page with a new **Run ID** at the top.
 
-Congratulations! You have just deployed a production-ready setup that can
-restart itself automatically after every training! Simply add the training or
-evaluation command to your `crontab`, and your setup will be able to re-deploy
+Congratulations! You have just experienced a production-ready setup that can
+reload itself automatically after every training! Simply add the training or
+evaluation command to your *crontab*, and your setup will be able to re-deploy
 itself automatically in a regular interval.
