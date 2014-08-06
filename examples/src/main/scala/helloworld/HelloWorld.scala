@@ -1,10 +1,6 @@
 package org.sample.helloworld
 
-import io.prediction.controller.LDataSource
-import io.prediction.controller.LAlgorithm
-import io.prediction.controller.EmptyParams
-import io.prediction.controller.SimpleEngine
-import io.prediction.controller.IEngineFactory
+import io.prediction.controller._
 
 import scala.io.Source
 import scala.collection.immutable.HashMap
@@ -30,8 +26,8 @@ class MyPrediction(
 ) extends Serializable
 
 // controller components
-class MyDataSource extends LDataSource[EmptyParams, Any, MyTrainingData,
-  MyQuery, Any] {
+class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
+  MyTrainingData, MyQuery, EmptyActual] {
 
   /* override this to return Training Data only */
   override
@@ -46,8 +42,8 @@ class MyDataSource extends LDataSource[EmptyParams, Any, MyTrainingData,
   }
 }
 
-class MyAlgorithm extends LAlgorithm[EmptyParams, MyTrainingData, MyModel,
-  MyQuery, MyPrediction] {
+class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
+  MyModel, MyQuery, MyPrediction] {
 
   override
   def train(pd: MyTrainingData): MyModel = {

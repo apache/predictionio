@@ -50,17 +50,21 @@ abstract class LDataSource[
     */
   def readTraining(): TD = null.asInstanceOf[TD]
 
-  /** Implement this method to return one set of training data and test data (
+  /** Implement this method to return one set of test data (
     * a sequence of query and actual value pairs) from a data source.
+    * Should also implement readTraining to return correponding training data.
     */
-  def readSet(): (DP, TD, Seq[(Q, A)]) =
-    (null.asInstanceOf[DP], readTraining(), Seq.empty[(Q, A)])
+  def readTest(): (DP, Seq[(Q, A)]) =
+    (null.asInstanceOf[DP], Seq.empty[(Q, A)])
 
-  /** Implement this method to return multiple sets of training data
+  /** Implement this method to return one or more sets of training data
     * and test data (a sequence of query and actual value pairs) from a
     * data source.
     */
-  def read(): Seq[(DP, TD, Seq[(Q, A)])] = Seq(readSet())
+  def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
+    lazy val (dp, qa) = readTest()
+    Seq((dp, readTraining(), qa))
+  }
 
 }
 
