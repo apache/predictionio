@@ -22,11 +22,12 @@ Train:
 
 ```
 $ ../bin/run-train \
-  --engineId io.prediction.engines.helloworld \
-  --engineVersion 0.8.0-SNAPSHOT
+  --engineId org.sample.helloworld \
+  --engineVersion 0.1
 ```
 
-Example output
+Example output:
+
 ```
 2014-08-05 17:06:02,638 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
 2014-08-05 17:06:02,769 INFO  APIDebugWorkflow$ - Run information saved with ID: 201408050005

@@ -1,4 +1,4 @@
-package io.prediction.engines.helloworld
+package org.sample.helloworld
 
 import io.prediction.controller.LDataSource
 import io.prediction.controller.LAlgorithm
