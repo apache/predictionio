@@ -16,7 +16,5 @@ ASSEMBLY_JAR=$(ls "$assembly_folder"/tools-assembly*.jar 2>&-)
 
 $PIO_HOME/bin/pio-class io.prediction.tools.RunWorkflow --core $ASSEMBLY_JAR "$@"
 
-if hash supervisorctl 2>&-; then
-  echo "Found supervisorctl. Trying to restart prediction server..."
-  supervisorctl restart pio
-fi
+echo "Reloading prediction server at http://localhost:8000 if one exists..."
+curl http://localhost:8000/reload

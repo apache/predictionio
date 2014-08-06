@@ -11,7 +11,7 @@ import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.storage.{ Storage, EngineManifest, Run }
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
+import akka.actor.{ Actor, ActorRef, ActorSystem, Kill, Props }
 import akka.event.Logging
 import akka.io.IO
 import akka.pattern.ask
@@ -59,10 +59,15 @@ case class ServerConfig(
   sparkMaster: String = "local",
   sparkExecutorMemory: String = "4g")
 
-case class StartServer(ip: String, port: Int)
-case class StopServer(reason: String)
+case class StartServer()
+case class StopServer()
+case class ReloadServer()
 
 object CreateServer extends Logging {
+  val actorSystem = ActorSystem("pio-server")
+  val runs = Storage.getMetaDataRuns
+  val engineManifests = Storage.getMetaDataEngineManifests
+
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ServerConfig]("CreateServer") {
       opt[String]("engineId") action { (x, c) =>
@@ -89,24 +94,21 @@ object CreateServer extends Logging {
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
-      val runs = Storage.getMetaDataRuns
-      val engineManifests = Storage.getMetaDataEngineManifests
       runs.get(sc.runId) map { run =>
         val engineId = sc.engineId.getOrElse(run.engineId)
         val engineVersion = sc.engineVersion.getOrElse(run.engineVersion)
         engineManifests.get(engineId, engineVersion) map { manifest =>
-
+          WorkflowUtils.checkUpgrade("deployment")
           val engineFactoryName = manifest.engineFactory
-          val (engineLanguage, engine) =
-            WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
-
-          createServerWithEngine(
-            sc = sc,
-            run = run,
-            engine = engine,
-            engineLanguage = engineLanguage,
-            manifest = manifest)
-
+          val master = actorSystem.actorOf(Props(
+            classOf[MasterActor],
+            sc,
+            run,
+            engineFactoryName,
+            manifest),
+          "master")
+          implicit val timeout = Timeout(5.seconds)
+          master ? StartServer()
         } getOrElse {
           error(s"Invalid Engine ID or version. Aborting server.")
         }
@@ -116,15 +118,13 @@ object CreateServer extends Logging {
     }
   }
 
-  def createServerWithEngine[TD, DP, PD, Q, P, A](
+  def createServerActorWithEngine[TD, DP, PD, Q, P, A](
     sc: ServerConfig,
     run: Run,
     engine: Engine[TD, DP, PD, Q, P, A],
     engineLanguage: EngineLanguage.Value,
-    manifest: EngineManifest): Unit = {
+    manifest: EngineManifest): ActorRef = {
     implicit val formats = DefaultFormats
-
-    WorkflowUtils.checkUpgrade("deployment")
 
     val algorithmsParamsWithNames =
       read[Seq[(String, JValue)]](run.algorithmsParams).map {
@@ -216,11 +216,7 @@ object CreateServer extends Logging {
         }
     }
 
-    // we need an ActorSystem to host our application in
-    implicit val system = ActorSystem("predictionio-server")
-
-    // create and start our service actor
-    val service = system.actorOf(
+    actorSystem.actorOf(
       Props(
         classOf[ServerActor[Q, P]],
         sc,
@@ -232,38 +228,52 @@ object CreateServer extends Logging {
         algorithmsParams,
         models,
         serving,
-        servingParams),
-      "server")
-
-    val master = system.actorOf(
-      Props(
-        classOf[MasterActor],
-        service,
-        sc),
-      "master")
-
-    implicit val timeout = Timeout(5.seconds)
-    // start a new HTTP server on port 8080 with our service actor as the handler
-    //IO(Http) ? Http.Bind(service, interface = sc.ip, port = sc.port)
-    master ? StartServer(ip = sc.ip, port = sc.port)
+        servingParams))
   }
 }
 
-class MasterActor(service: ActorRef, sc: ServerConfig) extends Actor {
+class MasterActor(
+    sc: ServerConfig,
+    run: Run,
+    engineFactoryName: String,
+    manifest: EngineManifest) extends Actor {
   val log = Logging(context.system, this)
   implicit val system = context.system
   var sprayHttpListener: Option[ActorRef] = None
+  var currentServerActor: Option[ActorRef] = None
   def receive = {
-    case StartServer(ip, port) =>
-      IO(Http) ! Http.Bind(service, interface = ip, port = port)
-    case StopServer(reason) =>
-      log.info(s"Stop server command received. Reason: $reason")
+    case x: StartServer =>
+      val actor = createServerActor(sc, run, engineFactoryName, manifest)
+      IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
+      currentServerActor = Some(actor)
+    case x: StopServer =>
+      log.info(s"Stop server command received.")
       sprayHttpListener.map { l =>
         log.info("Server is shutting down.")
         l ! Http.Unbind(5.seconds)
         system.shutdown
       } getOrElse {
-        log.warning("Stop server command received with no active server running.")
+        log.warning("No active server is running.")
+      }
+    case x: ReloadServer =>
+      log.info("Reload server command received.")
+      val latestRun = CreateServer.runs.getLatestCompleted(
+        manifest.id,
+        manifest.version)
+      latestRun map { lr =>
+        val actor = createServerActor(sc, lr, engineFactoryName, manifest)
+        sprayHttpListener.map { l =>
+          l ! Http.Unbind(5.seconds)
+          IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
+          currentServerActor.get ! Kill
+          currentServerActor = Some(actor)
+        } getOrElse {
+          log.warning("No active server is running. Abort reloading.")
+        }
+      } getOrElse {
+        log.warning(
+          s"No latest completed run for ${manifest.id} ${manifest.version}. " +
+          "Abort reloading.")
       }
     case x: Http.Bound =>
       log.info("Bind successful. Ready to serve.")
@@ -271,6 +281,21 @@ class MasterActor(service: ActorRef, sc: ServerConfig) extends Actor {
     case x: Http.CommandFailed =>
       log.error("Bind failed. Shutting down.")
       system.shutdown
+  }
+
+  def createServerActor(
+      sc: ServerConfig,
+      run: Run,
+      engineFactoryName: String,
+      manifest: EngineManifest): ActorRef = {
+    val (engineLanguage, engine) =
+      WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
+    CreateServer.createServerActorWithEngine(
+      sc,
+      run,
+      engine,
+      engineLanguage,
+      manifest)
   }
 }
 
@@ -288,19 +313,14 @@ class ServerActor[Q, P](
 
   lazy val gson = new Gson
 
-  // the HttpService trait defines only one abstract member, which
-  // connects the services environment to the enclosing actor or test
   def actorRefFactory = context
 
-  // this actor only runs our route, but you could add
-  // other things here, like request stream processing
-  // or timeout handling
   def receive = runRoute(myRoute)
 
   val myRoute =
     path("") {
       get {
-        respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
+        respondWithMediaType(`text/html`) {
           complete {
             <html>
               <head>
@@ -310,7 +330,7 @@ class ServerActor[Q, P](
                 <h1>PredictionIO Server at {args.ip}:{args.port}</h1>
                 <div>
                   <ul>
-                    <li><strong>Run ID:</strong> {args.runId}</li>
+                    <li><strong>Run ID:</strong> {run.id}</li>
                     <li><strong>Run Start Time:</strong> {run.startTime}</li>
                     <li><strong>Run End Time:</strong> {run.endTime}</li>
                     <li><strong>Engine:</strong> {manifest.id} {manifest.version}</li>
@@ -350,13 +370,21 @@ class ServerActor[Q, P](
         }
       }
     } ~
+    path("reload") {
+      get {
+        complete {
+          context.actorSelection("/user/master") ! ReloadServer()
+          "Reloading..."
+        }
+      }
+    } ~
     path("stop") {
       get {
         complete {
           context.system.scheduler.scheduleOnce(1.seconds) {
-            context.actorSelection("/user/master") ! StopServer("user initiated")
+            context.actorSelection("/user/master") ! StopServer()
           }
-          "Dying..."
+          "Shutting down..."
         }
       }
     }
