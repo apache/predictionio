@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+export PIO_HOME="$(cd `dirname $0`/..; pwd)"
+
+PIO_COMMAND=$1
+
+shift
+
+exec $PIO_HOME/bin/pio-class io.prediction.tools.Console $PIO_COMMAND --pio-home $PIO_HOME $@

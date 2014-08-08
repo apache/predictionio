@@ -6,7 +6,7 @@ FWDIR="$(cd `dirname $0`; pwd)"
 DISTDIR="$FWDIR/dist"
 
 cd $FWDIR
-sbt/sbt tools/assembly
+sbt/sbt core/publishLocal tools/assembly
 
 rm -rf $DISTDIR
 mkdir -p $DISTDIR/bin
