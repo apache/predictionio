@@ -1,5 +1,6 @@
 package io.prediction.tools
 
+import io.prediction.storage.EngineManifest
 import io.prediction.storage.Run
 import io.prediction.storage.Storage
 
@@ -125,9 +126,9 @@ object RunServer extends Logging {
 
   def runServer(
       ca: ConsoleArgs,
-      runId: String,
       core: File,
-      files: Seq[File]): Unit = {
+      em: EngineManifest,
+      runId: String): Unit = {
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"
     ).mkString(",")
@@ -140,7 +141,7 @@ object RunServer extends Logging {
       "--class",
       "io.prediction.workflow.CreateServer",
       "--jars",
-      files.map(_.getCanonicalPath).mkString(","),
+      em.files.mkString(","),
       core.getCanonicalPath,
       "--runId",
       runId,
@@ -148,6 +149,8 @@ object RunServer extends Logging {
       ca.ip,
       "--port",
       ca.port.toString)
+
+    info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 
     val proc =
       Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run

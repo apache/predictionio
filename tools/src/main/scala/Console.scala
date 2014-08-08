@@ -238,31 +238,34 @@ object Console {
     RegisterEngine.registerEngine(ca.engineJson, jarFiles)
   }
 
-  def train(ca: ConsoleArgs): Unit =
-    RunWorkflow.runWorkflow(
-      ca,
-      coreAssembly(ca.pioHome.get),
-      readEngineJson(ca.engineJson),
-      jarFilesForScala)
+  def train(ca: ConsoleArgs): Unit = {
+    withRegisteredManifest(ca.engineJson) { em =>
+      RunWorkflow.runWorkflow(
+        ca,
+        coreAssembly(ca.pioHome.get),
+        em)
+    }
+  }
 
   def deploy(ca: ConsoleArgs): Unit = {
-    val runs = Storage.getMetaDataRuns
-    val run = ca.engineInstanceId map { eid =>
-      runs.get(eid)
-    } getOrElse {
-      val em = readEngineJson(ca.engineJson)
-      runs.getLatestCompleted(em.id, em.version)
-    }
-    run map { r =>
-      undeploy(ca)
-      RunServer.runServer(
-        ca,
-        r.id,
-        coreAssembly(ca.pioHome.get),
-        jarFilesForScala)
-    } getOrElse {
-      println(s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
-      sys.exit(1)
+    withRegisteredManifest(ca.engineJson) { em =>
+      val runs = Storage.getMetaDataRuns
+      val run = ca.engineInstanceId map { eid =>
+        runs.get(eid)
+      } getOrElse {
+        runs.getLatestCompleted(em.id, em.version)
+      }
+      run map { r =>
+        undeploy(ca)
+        RunServer.runServer(
+          ca,
+          coreAssembly(ca.pioHome.get),
+          em,
+          r.id)
+      } getOrElse {
+        println(s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
+        sys.exit(1)
+      }
     }
   }
 
@@ -307,6 +310,17 @@ object Console {
         println(s"${json.getCanonicalPath} has invalid content: " +
           e.getMessage)
         sys.exit(1)
+    }
+  }
+
+  def withRegisteredManifest(json: File)(op: EngineManifest => Unit): Unit = {
+    val ej = readEngineJson(json)
+    Storage.getMetaDataEngineManifests.get(ej.id, ej.version) map {
+      op
+    } getOrElse {
+      println(s"Engine ${ej.id} ${ej.version} is not registered.")
+      println("Have you run the 'register' command yet?")
+      sys.exit(1)
     }
   }
 

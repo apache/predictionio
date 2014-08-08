@@ -146,8 +146,7 @@ object RunWorkflow extends Logging {
   def runWorkflow(
       ca: ConsoleArgs,
       core: File,
-      em: EngineManifest,
-      files: Seq[File]): Unit = {
+      em: EngineManifest): Unit = {
     // Collect and serialize PIO_* environmental variables
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"
@@ -168,7 +167,7 @@ object RunWorkflow extends Logging {
       "--class",
       "io.prediction.workflow.CreateWorkflow",
       "--jars",
-      files.map(_.getCanonicalPath).mkString(","),
+      em.files.mkString(","),
       core.getCanonicalPath,
       "--env",
       pioEnvVars,
