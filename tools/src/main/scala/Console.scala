@@ -19,6 +19,7 @@ case class ConsoleArgs(
   pioHome: Option[String] = None,
   sparkHome: Option[String] = None,
   engineJson: File = new File("engine.json"),
+  sbt: Option[File] = None,
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -63,6 +64,14 @@ object Console {
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to an engine JSON file. Default: engine.json")
+      opt[File]("sbt") action { (x, c) =>
+        c.copy(sbt = Some(x))
+      } validate { x =>
+        if (x.exists)
+          success
+        else
+          failure(s"${x.getCanonicalPath} does not exist.")
+      } text("Path to sbt. Default: sbt")
       note("")
       cmd("register").
         text("Build and register an engine at the current directory.").
@@ -207,26 +216,20 @@ object Console {
   }
 
   def register(ca: ConsoleArgs): Unit = {
-    // Detect sbt. Try to use PIO's sbt, then fall back to search path.
-    val sbtAtHome = ca.pioHome map { pioHome =>
-      val pioSbt = Seq(pioHome, "sbt", "sbt").mkString(File.separator)
-      val pioSbtFile = new File(pioSbt)
-      if (new File(pioSbt).canExecute)
-        pioSbt
-    }
+    val sbt = ca.sbt map { _.getCanonicalPath } getOrElse { "sbt" }
 
-    val sbt = sbtAtHome.getOrElse {
-      if (new File("sbt").canExecute) {
-        "sbt"
-      } else {
-        println("Failed to find executable sbt. Aborting.")
-        sys.exit(1)
-      }
+    println(s"Using ${sbt} to build.")
+    println("If the path above is incorrect, this process will fail.")
+    val r1 = s"${sbt} assemblyPackageDependency".!
+    if (r1 != 0) {
+      println(s"Return code of previous step is ${r1}. Aborting.")
+      sys.exit(1)
     }
-
-    println(s"Detected sbt at ${sbt}. Using it to build project.")
-    s"${sbt} assemblyPackageDependency".!
-    s"${sbt} package".!
+    val r2 = s"${sbt} package".!
+    if (r2 != 0) {
+      println(s"Return code of previous step is ${r2}. Aborting.")
+      sys.exit(1)
+    }
 
     println("Build finished.")
 
