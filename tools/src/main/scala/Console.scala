@@ -233,6 +233,10 @@ object Console {
     println("Locating files to be registered.")
 
     val jarFiles = jarFilesForScala
+    if (jarFiles.size == 0) {
+      println("No files can be found for registration. Aborting.")
+      sys.exit(1)
+    }
     jarFiles foreach { f => println(s"Found ${f.getName}")}
 
     RegisterEngine.registerEngine(ca.engineJson, jarFiles)
@@ -331,7 +335,8 @@ object Console {
   def jarFilesForScala: Array[File] = jarFilesAt(new File("target"))
 
   def recursiveListFiles(f: File): Array[File] = {
-    val these = f.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+    Option(f.listFiles) map { these =>
+      these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+    } getOrElse Array[File]()
   }
 }
