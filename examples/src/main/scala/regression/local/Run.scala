@@ -21,6 +21,7 @@ import org.apache.spark.rdd.RDD
 import org.json4s._
 
 import scala.io.Source
+import java.io.File
 
 case class DataSourceParams(val filepath: String, val seed: Int = 9527)
   extends Params
@@ -112,7 +113,7 @@ object RegressionEngineFactory extends IEngineFactory {
 
 object Run {
   def runComponents() {
-    val filepath = "data/lr_data.txt"
+    val filepath = new File("data/lr_data.txt").getCanonicalPath
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
 
@@ -130,7 +131,7 @@ object Run {
   }
 
   def runEngine() {
-    val filepath = "data/lr_data.txt"
+    val filepath = new File("data/lr_data.txt").getCanonicalPath
     val engine = RegressionEngineFactory()
     val engineParams = new EngineParams(
       dataSourceParams = DataSourceParams(filepath),
