@@ -5,6 +5,7 @@ import io.prediction.storage.EngineManifest
 import io.prediction.storage.EngineManifestSerializer
 import io.prediction.storage.Storage
 
+import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
@@ -33,7 +34,7 @@ case class ConsoleArgs(
   ip: String = "localhost",
   port: Int = 8000)
 
-object Console {
+object Console extends Logging {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError = false
@@ -206,7 +207,7 @@ object Console {
         case Seq("undeploy") =>
           undeploy(ca)
         case _ =>
-          System.err.println(
+          error(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
           System.err.println(parser.usage)
           sys.exit(1)
@@ -218,29 +219,24 @@ object Console {
   def register(ca: ConsoleArgs): Unit = {
     val sbt = ca.sbt map { _.getCanonicalPath } getOrElse { "sbt" }
 
-    println(s"Using ${sbt} to build.")
-    println("If the path above is incorrect, this process will fail.")
-    val r1 = s"${sbt} assemblyPackageDependency".!
-    if (r1 != 0) {
-      println(s"Return code of previous step is ${r1}. Aborting.")
+    info(s"Using command '${sbt}' at the current working directory to build.")
+    info("If the path above is incorrect, this process will fail.")
+    val cmd = s"${sbt} package assemblyPackageDependency"
+    info(s"Going to run: ${cmd}")
+    val r = cmd.!(ProcessLogger(
+      line => info(line), line => error(line)))
+    if (r != 0) {
+      error(s"Return code of previous step is ${r}. Aborting.")
       sys.exit(1)
     }
-    val r2 = s"${sbt} package".!
-    if (r2 != 0) {
-      println(s"Return code of previous step is ${r2}. Aborting.")
-      sys.exit(1)
-    }
-
-    println("Build finished.")
-
-    println("Locating files to be registered.")
+    info("Build finished successfully. Locating files to be registered.")
 
     val jarFiles = jarFilesForScala
     if (jarFiles.size == 0) {
-      println("No files can be found for registration. Aborting.")
+      error("No files can be found for registration. Aborting.")
       sys.exit(1)
     }
-    jarFiles foreach { f => println(s"Found ${f.getName}")}
+    jarFiles foreach { f => info(s"Found ${f.getName}")}
 
     RegisterEngine.registerEngine(ca.engineJson, jarFiles)
   }
@@ -271,10 +267,10 @@ object Console {
           r.id)
       } getOrElse {
         ca.engineInstanceId map { eid =>
-          println(
+          error(
             s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
         } getOrElse {
-          println(
+          error(
             s"No valid engine instance found for engine ${em.id} " +
               s"${em.version}.\nTry running 'train' before 'deploy'. Aborting.")
         }
@@ -285,13 +281,13 @@ object Console {
 
   def undeploy(ca: ConsoleArgs): Unit = {
     val serverUrl = s"http://${ca.ip}:${ca.port}"
-    println(
+    info(
       s"Undeploying any existing engine instance at ${serverUrl}")
     try {
       Http(s"${serverUrl}/stop").asString
     } catch {
       case e: java.net.ConnectException =>
-        println(s"Nothing at ${serverUrl}")
+        warn(s"Nothing at ${serverUrl}")
     }
   }
 
@@ -304,9 +300,9 @@ object Console {
     if (detectedCore.size == 1) {
       detectedCore.head
     } else {
-      println(s"More than one JAR found: ${detectedCore.mkString(", ")}")
-      println("Please remove all JARs except the PredictionIO Core Assembly.")
-      println("Aborting.")
+      error(s"More than one JAR found: ${detectedCore.mkString(", ")}")
+      error("Please remove all JARs except the PredictionIO Core Assembly. " +
+        "Aborting.")
       sys.exit(1)
     }
   }
@@ -318,10 +314,10 @@ object Console {
       read[EngineManifest](Source.fromFile(json).mkString)
     } catch {
       case e: java.io.FileNotFoundException =>
-        println(s"${json.getCanonicalPath} does not exist. Aborting.")
+        error(s"${json.getCanonicalPath} does not exist. Aborting.")
         sys.exit(1)
       case e: MappingException =>
-        println(s"${json.getCanonicalPath} has invalid content: " +
+        error(s"${json.getCanonicalPath} has invalid content: " +
           e.getMessage)
         sys.exit(1)
     }
@@ -332,8 +328,8 @@ object Console {
     Storage.getMetaDataEngineManifests.get(ej.id, ej.version) map {
       op
     } getOrElse {
-      println(s"Engine ${ej.id} ${ej.version} is not registered.")
-      println("Have you run the 'register' command yet?")
+      error(s"Engine ${ej.id} ${ej.version} is not registered.")
+      error("Have you run the 'register' command yet?")
       sys.exit(1)
     }
   }
