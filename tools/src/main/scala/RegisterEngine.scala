@@ -90,9 +90,10 @@ object RegisterEngine extends Logging {
       }
       Seq(destPathString, localDestPathString)
     }
+    val uniqueFiles = files.groupBy(identity).map(_._2.head).toSeq
 
     info(s"Registering engine ${engineManifest.id} ${engineManifest.version}")
     val engineManifests = Storage.getMetaDataEngineManifests
-    engineManifests.update(engineManifest.copy(files = files), true)
+    engineManifests.update(engineManifest.copy(files = uniqueFiles), true)
   }
 }
