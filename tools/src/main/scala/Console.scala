@@ -7,6 +7,7 @@ import io.prediction.storage.Storage
 
 import org.json4s._
 import org.json4s.native.Serialization.{read, write}
+import scalaj.http.Http
 
 import scala.io.Source
 import scala.sys.process._
@@ -159,6 +160,19 @@ object Console {
             c.copy(port = x)
           } text("Port to bind to. Default: 8000")
         )
+      note("")
+      cmd("undeploy").
+        text("Undeploy an engine instance as a prediction server.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "undeploy")
+        } children(
+          opt[String]("ip") action { (x, c) =>
+            c.copy(ip = x)
+          } text("IP to unbind from. Default: localhost"),
+          opt[Int]("port") action { (x, c) =>
+            c.copy(port = x)
+          } text("Port to unbind from. Default: 8000")
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -180,6 +194,8 @@ object Console {
           train(ca)
         case Seq("deploy") =>
           deploy(ca)
+        case Seq("undeploy") =>
+          undeploy(ca)
         case _ =>
           System.err.println(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -238,6 +254,7 @@ object Console {
       runs.getLatestCompleted(em.id, em.version)
     }
     run map { r =>
+      undeploy(ca)
       RunServer.runServer(
         ca,
         r.id,
@@ -246,6 +263,18 @@ object Console {
     } getOrElse {
       println(s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
       sys.exit(1)
+    }
+  }
+
+  def undeploy(ca: ConsoleArgs): Unit = {
+    val serverUrl = s"http://${ca.ip}:${ca.port}"
+    println(
+      s"Undeploying any existing engine instance at ${serverUrl}")
+    try {
+      Http(s"${serverUrl}/stop").asString
+    } catch {
+      case e: java.net.ConnectException =>
+        println(s"Nothing at ${serverUrl}")
     }
   }
 
