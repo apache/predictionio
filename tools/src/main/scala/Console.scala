@@ -19,8 +19,6 @@ case class ConsoleArgs(
   sparkHome: Option[String] = None,
   engineJson: File = new File("engine.json"),
   commands: Seq[String] = Seq(),
-  engineId: Option[String] = None,
-  engineVersion: Option[String] = None,
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
   dataSourceParamsJsonPath: Option[String] = None,
@@ -28,12 +26,14 @@ case class ConsoleArgs(
   algorithmsParamsJsonPath: Option[String] = None,
   servingParamsJsonPath: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
-  paramsPath: String = ".")
+  paramsPath: String = "params")
 
 object Console {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
+      override def showUsageOnError = false
       head("PredictionIO Command Line Interface Console\n")
+      help("help")
       note("Note that it is possible to supply pass-through arguments at\n" +
         "the end of the command by using a '--' separator, e.g.\n\n" +
         "pio train --params-path params -- --master spark://mycluster:7077\n" +
@@ -59,12 +59,13 @@ object Console {
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to an engine JSON file. Default: engine.json")
-      note("\n")
+      note("")
       cmd("register").
-        text("Build and register an engine at the current directory.\n").
+        text("Build and register an engine at the current directory.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "register")
         }
+      note("")
       cmd("train").
         text("Kick off a training using an engine. This will produce an\n" +
           "engine instance. This command will pass all pass-through\n" +
@@ -77,7 +78,7 @@ object Console {
           } text("Batch label of the run."),
           opt[String]("params-path") action { (x, c) =>
             c.copy(paramsPath = x)
-          } text("Directory to lookup parameters JSON files. Default: ."),
+          } text("Directory to lookup parameters JSON files. Default: params"),
           opt[String]("datasource-params") abbr("dsp") action { (x, c) =>
             c.copy(dataSourceParamsJsonPath = Some(x))
           } text("Data source parameters JSON file. Will try to use\n" +
@@ -99,25 +100,52 @@ object Console {
           } text("Metrics parameters JSON file. Will try to use\n" +
             "        metrics.json in the base path.")
         )
-      /*
-      cmd("metadata") text("commands to retrieve metadata\n") action { (_, c) =>
-        c.copy(commands = c.commands :+ "metadata") } children(
-        cmd("latest-completed-run") text("get the latest run ID given engine information") action { (_, c) =>
-          c.copy(commands = c.commands :+ "latest-completed-run") } children(
-          opt[String]("engine-id") required() action { (x, c) => c.copy(engineId = Some(x)) },
-          opt[String]("engine-version") required() action { (x, c) => c.copy(engineVersion = Some(x)) }
-        ),
-        cmd("engine-files") text("get files required to run an engine") action { (_, c) =>
-          c.copy(commands = c.commands :+ "engine-files") } children(
-          opt[String]("engine-id") required() action { (x, c) => c.copy(engineId = Some(x)) },
-          opt[String]("engine-version") required() action { (x, c) => c.copy(engineVersion = Some(x)) }
+      note("")
+      cmd("eval").
+        text("Kick off an evaluation using an engine. This will produce an\n" +
+          "engine instance. This command will pass all pass-through\n" +
+          "arguments to its underlying spark-submit command.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "eval")
+        } children(
+          opt[String]("batch") action { (x, c) =>
+            c.copy(batch = x)
+          } text("Batch label of the run."),
+          opt[String]("params-path") action { (x, c) =>
+            c.copy(paramsPath = x)
+          } text("Directory to lookup parameters JSON files. Default: params"),
+          opt[String]("metrics-class") required() action { (x, c) =>
+            c.copy(metricsClass = Some(x))
+          } text("Name of metrics class to run."),
+          opt[String]("datasource-params") abbr("dsp") action { (x, c) =>
+            c.copy(dataSourceParamsJsonPath = Some(x))
+          } text("Data source parameters JSON file. Will try to use\n" +
+            "        datasource.json in the base path."),
+          opt[String]("preparator-params") abbr("pp") action { (x, c) =>
+            c.copy(preparatorParamsJsonPath = Some(x))
+          } text("Preparator parameters JSON file. Will try to use\n" +
+            "        preparator.json in the base path."),
+          opt[String]("algorithms-params") abbr("ap") action { (x, c) =>
+            c.copy(algorithmsParamsJsonPath = Some(x))
+          } text("Algorithms parameters JSON file. Will try to use\n" +
+            "        algorithms.json in the base path."),
+          opt[String]("serving-params") abbr("sp") action { (x, c) =>
+            c.copy(servingParamsJsonPath = Some(x))
+          } text("Serving parameters JSON file. Will try to use\n" +
+            "        serving.json in the base path."),
+          opt[String]("metrics-params") abbr("mp") action { (x, c) =>
+            c.copy(metricsParamsJsonPath = Some(x))
+          } text("Metrics parameters JSON file. Will try to use\n" +
+            "        metrics.json in the base path.")
         )
-      )
-      */
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
-    val (consoleArgs, theRest) = args.splitAt(separatorIndex)
+    val (consoleArgs, theRest) =
+      if (separatorIndex == -1)
+        (args, Array[String]())
+      else
+        args.splitAt(separatorIndex)
     val passThroughArgs = theRest.drop(1)
 
     parser.parse(consoleArgs, ConsoleArgs()) map { pca =>
@@ -127,21 +155,11 @@ object Console {
           register(ca)
         case Seq("train") =>
           train(ca)
-        case Seq("metadata", "latest-completed-run") =>
-          Storage.getMetaDataRuns.getLatestCompleted(ca.engineId.get, ca.engineVersion.get) map { run =>
-            println(run.id)
-          } getOrElse {
-            System.err.println(s"No valid run found for ${ca.engineId.get} ${ca.engineVersion.get}!")
-            sys.exit(1)
-          }
-        case Seq("metadata", "engine-files") =>
-          Storage.getMetaDataEngineManifests.get(ca.engineId.get, ca.engineVersion.get).map { em =>
-            println(em.files.mkString(" "))
-          } getOrElse {
-            System.err.println(s"Engine ${ca.engineId.get} ${ca.engineVersion.get} is not registered.")
-            sys.exit(1)
-          }
+        case Seq("eval") =>
+          train(ca)
         case _ =>
+          System.err.println(
+            s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
           System.err.println(parser.usage)
           sys.exit(1)
       }
