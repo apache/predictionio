@@ -1,11 +1,10 @@
 package io.prediction.tools
 
+import io.prediction.storage.EngineManifest
 import io.prediction.storage.Run
 import io.prediction.storage.Storage
 
 import grizzled.slf4j.Logging
-import org.json4s._
-import org.json4s.native.Serialization.{ read, write }
 
 import scala.sys.process._
 
@@ -83,7 +82,6 @@ object RunWorkflow extends Logging {
 
     parser.parse(args, RunWorkflowConfig()) map { wfc =>
       // Collect and serialize PIO_* environmental variables
-      implicit val formats = DefaultFormats
       val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
         s"${kv._1}=${kv._2}"
       ).mkString(",")
@@ -144,4 +142,55 @@ object RunWorkflow extends Logging {
 
   private def withPath(file: String, path: String) =
     path + File.separator + file
+
+  def runWorkflow(
+      ca: ConsoleArgs,
+      core: File,
+      em: EngineManifest,
+      files: Seq[File]): Unit = {
+    // Collect and serialize PIO_* environmental variables
+    val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
+      s"${kv._1}=${kv._2}"
+    ).mkString(",")
+
+    val defaults = Map(
+      "dsp" -> (ca.dataSourceParamsJsonPath, "datasource.json"),
+      "pp" -> (ca.preparatorParamsJsonPath, "preparator.json"),
+      "ap" -> (ca.algorithmsParamsJsonPath, "algorithms.json"),
+      "sp" -> (ca.servingParamsJsonPath, "serving.json"),
+      "mp" -> (ca.metricsParamsJsonPath, "metrics.json"))
+
+    val sparkHome = ca.sparkHome.getOrElse(
+      sys.env.get("SPARK_HOME").getOrElse("."))
+
+    val sparkSubmit = Seq(
+      s"${sparkHome}/bin/spark-submit") ++ ca.passThrough ++ Seq(
+      "--class",
+      "io.prediction.workflow.CreateWorkflow",
+      "--jars",
+      files.map(_.getCanonicalPath).mkString(","),
+      core.getCanonicalPath,
+      "--env",
+      pioEnvVars,
+      "--engineId",
+      em.id,
+      "--engineVersion",
+      em.version,
+      "--engineFactory",
+      em.engineFactory) ++
+      ca.metricsClass.map(x => Seq("--metricsClass", x)).
+        getOrElse(Seq()) ++
+      (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++ Seq(
+      "--jsonBasePath", ca.paramsPath) ++ defaults.flatMap { _ match {
+        case (key, (path, default)) =>
+          path.map(p => Seq(s"--$key", p)).getOrElse {
+          if (new File(withPath(default, ca.paramsPath)).exists)
+            Seq(s"--$key", default)
+          else
+            Seq()
+        }
+      }}
+    info(s"Submission command: ${sparkSubmit.mkString(" ")}")
+    Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).!
+  }
 }

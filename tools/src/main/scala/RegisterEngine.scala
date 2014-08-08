@@ -17,13 +17,18 @@ import io.prediction.storage.EngineManifestSerializer
 
 object RegisterEngine extends Logging {
   case class Args(
-    jsonManifest: String = "",
+    jsonManifest: File = new File("engine.json"),
     engineFiles: Seq[File] = Seq())
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[Args]("RegisterEngine") {
-      arg[String]("<engine manifest JSON file>") action { (x, c) =>
+      arg[File]("<engine manifest JSON file>") action { (x, c) =>
         c.copy(jsonManifest = x)
+      } validate { x =>
+        if (x.exists)
+          success
+        else
+          failure(s"${x.getCanonicalPath} was not found.")
       } text("the JSON file that contains the engine's manifest")
       arg[File]("<engine files>...") unbounded() action { (x, c) =>
         c.copy(engineFiles = c.engineFiles :+ x)
@@ -35,7 +40,7 @@ object RegisterEngine extends Logging {
     }
   }
 
-  def registerEngine(jsonManifest: String, engineFiles: Seq[File]): Unit = {
+  def registerEngine(jsonManifest: File, engineFiles: Seq[File]): Unit = {
     implicit val formats = DefaultFormats + new EngineManifestSerializer
     val jsonString = try {
       Source.fromFile(jsonManifest).mkString
