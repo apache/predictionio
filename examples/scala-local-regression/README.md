@@ -59,20 +59,17 @@ mentioned in the previous section. They are located inside the `params`
 subdirectory.
 
 Before training, you must let PredictionIO know about the engine. Run the
-following command to register the engine.
+following command to build and register the engine.
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/register-engine src/main/scala/regression/local/manifest.json
+$ cd $PIO_HOME/examples/scala-local-regression
+$ ../../bin/pio register
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 To start training, use the following command.
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/run-train \
-  --engineId io.prediction.examples.regression \
-  --engineVersion 0.8.0-SNAPSHOT \
-  --jsonBasePath src/main/scala/regression/local/params
+$ cd $PIO_HOME/examples/scala-local-regression
+$ ../../bin/pio train
 ```
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
@@ -81,26 +78,21 @@ that when the run is completed, it will display a run ID, like below.
 2014-08-05 14:01:28,313 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
 2014-08-05 14:01:28,482 INFO  APIDebugWorkflow$ - Run information saved with ID: qGGlujG0SMOkvCaA-YZmEw
 ```
-Take a note of the ID
-for later use.
 
 
 Running Evaluation Metrics
 --------------------------
 
-To run evaluation metrics, simply add an argument to the `run-workflow` command.
+To run evaluation metrics, use the following command.
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/run-eval --engineId io.prediction.examples.regression \
-  --engineVersion 0.8.0-SNAPSHOT \
-  --jsonBasePath src/main/scala/regression/local/params \
-  --metricsClass io.prediction.controller.MeanSquareError
+$ cd $PIO_HOME/examples/scala-local-regression
+$ ../../bin/pio eval --metrics-class io.prediction.controller.MeanSquareError
 ```
-Notice that we have appended `--metricsClass
-io.prediction.controller.MeanSquareError` to the end of the command. This
-instructs the workflow runner to run the specified metrics after training is
-done. When you look at the console output again, you should be able to see a
-mean square error computed, like the following.
+Notice the extra required argument `--metrics-class
+io.prediction.controller.MeanSquareError` for the `eval` command. This instructs
+PredictionIO to run the specified metrics during evaluation. When you look at
+the console output again, you should be able to see a mean square error
+computed, like the following.
 ```
 2014-08-05 14:02:04,848 INFO  APIDebugWorkflow$ - Set: The One Size: 1000 MSE: 0.092519
 2014-08-05 14:02:04,848 INFO  APIDebugWorkflow$ - APIDebugWorkflow.run completed.
@@ -111,11 +103,11 @@ mean square error computed, like the following.
 Deploying a Real-time Prediction Server
 ---------------------------------------
 
-Following from instructions above, you should have obtained a run ID after
-your workflow finished. Use the following command to start a server.
+Following from instructions above, you should have trained a model. Use the
+following command to start a server.
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/run-server --runId RUN_ID_HERE
+$ cd $PIO_HOME/examples/scala-local-regression
+$ ../../bin/pio deploy
 ```
 This will create a server that by default binds to http://localhost:8000. You
 can visit that page in your web browser to check its status.
@@ -139,26 +131,12 @@ run.
     section, go to http://localhost:8000 to check its status. Take note of the
     **Run ID** at the top.
 
-2.  Run training or evaluation again. These scripts will always send a reload
-    request to our prediction server at http://localhost:8000/reload when
-    training/evaluation is done.
+2.  Run training and deploy again.
 
     ```
-    $ cd $PIO_HOME/examples
-    $ ../bin/run-train \
-      --engineId io.prediction.examples.regression \
-      --engineVersion 0.8.0-SNAPSHOT \
-      --jsonBasePath src/main/scala/regression/local/params
-    ```
-
-    or
-
-    ```
-    $ cd $PIO_HOME/examples
-    $ ../bin/run-eval --engineId io.prediction.examples.regression \
-      --engineVersion 0.8.0-SNAPSHOT \
-      --jsonBasePath src/main/scala/regression/local/params \
-      --metricsClass io.prediction.controller.MeanSquareError
+    $ cd $PIO_HOME/examples/scala-local-regression
+    $ ../../bin/pio train
+    $ ../../bin/pio deploy
     ```
 
 3.  Refresh the page at http://localhost:8000, you should see the prediction
