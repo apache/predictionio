@@ -26,7 +26,10 @@ case class ConsoleArgs(
   algorithmsParamsJsonPath: Option[String] = None,
   servingParamsJsonPath: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
-  paramsPath: String = "params")
+  paramsPath: String = "params",
+  engineInstanceId: Option[String] = None,
+  ip: String = "localhost",
+  port: Int = 8000)
 
 object Console {
   def main(args: Array[String]): Unit = {
@@ -138,6 +141,24 @@ object Console {
           } text("Metrics parameters JSON file. Will try to use\n" +
             "        metrics.json in the base path.")
         )
+      note("")
+      cmd("deploy").
+        text("Deploy an engine instance as a prediction server. This\n" +
+          "command will pass all pass-through arguments to its underlying\n" +
+          "spark-submit command.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "deploy")
+        } children(
+          opt[String]("engine-instance-id") action { (x, c) =>
+            c.copy(engineInstanceId = Some(x))
+          } text("Engine instance ID."),
+          opt[String]("ip") action { (x, c) =>
+            c.copy(ip = x)
+          } text("IP to bind to. Default: localhost"),
+          opt[Int]("port") action { (x, c) =>
+            c.copy(port = x)
+          } text("Port to bind to. Default: 8000")
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -157,6 +178,8 @@ object Console {
           train(ca)
         case Seq("eval") =>
           train(ca)
+        case Seq("deploy") =>
+          deploy(ca)
         case _ =>
           System.err.println(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -205,6 +228,26 @@ object Console {
       coreAssembly(ca.pioHome.get),
       readEngineJson(ca.engineJson),
       jarFilesForScala)
+
+  def deploy(ca: ConsoleArgs): Unit = {
+    val runs = Storage.getMetaDataRuns
+    val run = ca.engineInstanceId map { eid =>
+      runs.get(eid)
+    } getOrElse {
+      val em = readEngineJson(ca.engineJson)
+      runs.getLatestCompleted(em.id, em.version)
+    }
+    run map { r =>
+      RunServer.runServer(
+        ca,
+        r.id,
+        coreAssembly(ca.pioHome.get),
+        jarFilesForScala)
+    } getOrElse {
+      println(s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
+      sys.exit(1)
+    }
+  }
 
   def coreAssembly(pioHome: String) = {
     val detectedCore =

@@ -122,4 +122,40 @@ object RunServer extends Logging {
       proc.exitValue
     }
   }
+
+  def runServer(
+      ca: ConsoleArgs,
+      runId: String,
+      core: File,
+      files: Seq[File]): Unit = {
+    val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
+      s"${kv._1}=${kv._2}"
+    ).mkString(",")
+
+    val sparkHome = ca.sparkHome.getOrElse(
+      sys.env.get("SPARK_HOME").getOrElse("."))
+
+    val sparkSubmit = Seq(
+      s"${sparkHome}/bin/spark-submit") ++ ca.passThrough ++ Seq(
+      "--class",
+      "io.prediction.workflow.CreateServer",
+      "--jars",
+      files.map(_.getCanonicalPath).mkString(","),
+      core.getCanonicalPath,
+      "--runId",
+      runId,
+      "--ip",
+      ca.ip,
+      "--port",
+      ca.port.toString)
+
+    val proc =
+      Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run
+    Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+      def run(): Unit = {
+        proc.destroy
+      }
+    }))
+    proc.exitValue
+  }
 }
