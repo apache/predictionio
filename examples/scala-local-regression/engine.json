@@ -1,6 +1,6 @@
 {
-  "id": "io.prediction.examples.regression",
+  "id": "io.prediction.examples.regression.local",
   "version": "0.8.0-SNAPSHOT",
-  "name": "MLLib Regression Engine",
+  "name": "Nak-based Regression Engine",
   "engineFactory": "io.prediction.examples.regression.local.RegressionEngineFactory"
 }
