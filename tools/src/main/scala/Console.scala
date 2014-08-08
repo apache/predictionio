@@ -267,7 +267,14 @@ object Console {
           em,
           r.id)
       } getOrElse {
-        println(s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
+        ca.engineInstanceId map { eid =>
+          println(
+            s"Invalid engine instance ID ${ca.engineInstanceId}. Aborting.")
+        } getOrElse {
+          println(
+            s"No valid engine instance found for engine ${em.id} " +
+              s"${em.version}.\nTry running 'train' before 'deploy'. Aborting.")
+        }
         sys.exit(1)
       }
     }
