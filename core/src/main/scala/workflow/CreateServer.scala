@@ -390,7 +390,9 @@ class ServerActor[Q, P](
             compact(render(Extraction.decompose(prediction)(
               scalaAlgorithms.head.querySerializer)))
           }
-          complete(json)
+          respondWithMediaType(`application/json`) {
+            complete(json)
+          }
         }
       }
     } ~
