@@ -1,10 +1,5 @@
 # My First "Hello World" Engine
 
-## 1. DataSource
-
-## 2. Algorithm
-
-## 3. Deploy
 
 Prepare training data:
 ```
@@ -15,14 +10,14 @@ $ cp data/helloworld/data1.csv data/helloworld/data.csv
 Register engine:
 
 ```
-$ ../bin/register-engine src/main/scala/helloworld/engine.json
+$ ../bin/register-engine src/main/java/helloworld/engine.json
 ```
 
 Train:
 
 ```
 $ ../bin/run-train \
-  --engineId org.sample.helloworld \
+  --engineId org.sample.java.helloworld \
   --engineVersion 0.1
 ```
 
@@ -62,15 +57,3 @@ Output:
 ```
 {"temperature":80.5}
 ```
-
-## 4. Re-training
-
-TBD
-
-New data comes in:
-```
-$ cd $PIO_HOME/examples
-$ cp data/helloworld/data2.csv data/helloworld/data.csv
-```
-
-Retrieve prediction:

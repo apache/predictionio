@@ -62,7 +62,7 @@ abstract class LDataSource[
     * data source.
     */
   def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
-    lazy val (dp, qa) = readTest()
+    val (dp, qa) = readTest()
     Seq((dp, readTraining(), qa))
   }
 

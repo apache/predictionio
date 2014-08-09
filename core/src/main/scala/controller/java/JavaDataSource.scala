@@ -8,6 +8,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import java.util.{ List => JList }
+import java.util.{ ArrayList => JArrayList }
+import java.util.{ Collections => JCollections }
 import java.lang.{ Iterable => JIterable }
 
 import scala.collection.JavaConversions._
@@ -34,6 +36,24 @@ abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
       (e._1, sc.parallelize(Seq(e._2)), sc.parallelize(e._3.toSeq)))
   }
 
-  /** Implement this method to return data from a data source. */
-  def read(): JIterable[Tuple3[DP, TD, JIterable[Tuple2[Q, A]]]]
+  /** Implement this method to only return training data from a data source.
+    */
+  def readTraining(): TD = null.asInstanceOf[TD]
+
+  /** Implement this method to return one set of test data (
+    * an Iterable of query and actual value pairs) from a data source.
+    * Should also implement readTraining to return correponding training data.
+    */
+  def readTest(): Tuple2[DP, JIterable[Tuple2[Q, A]]] =
+    (null.asInstanceOf[DP], JCollections.emptyList())
+
+  /** Implement this method to return one or more sets of training data
+    * and test data (an Iterable of query and actual value pairs) from a
+    * data source.
+    */
+  def read(): JIterable[Tuple3[DP, TD, JIterable[Tuple2[Q, A]]]] = {
+    val (dp, qa) = readTest()
+    List((dp, readTraining(), qa))
+  }
+
 }

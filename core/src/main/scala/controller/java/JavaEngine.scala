@@ -3,6 +3,7 @@ package io.prediction.controller.java
 import io.prediction.controller.Engine
 import io.prediction.controller.Params
 import io.prediction.controller.EngineParams
+import io.prediction.controller.IEngineFactory
 
 import java.lang.{ Iterable => JIterable }
 import java.util.{ Map => JMap }
@@ -63,3 +64,12 @@ class JavaSimpleEngine[TD, DP, Q, P, A](
     preparatorClass,
     Map(algorithmClassMap.toSeq: _*),
     servingClass)
+
+/** If you intend to let PredictionIO create workflow and deploy serving
+  * automatically, you will need to implement an object that extends this trait
+  * and return an [[Engine]].
+  */
+trait IJavaEngineFactory extends IEngineFactory {
+  /** Creates an instance of an [[Engine]]. */
+  def apply(): Engine[_, _, _, _, _, _]
+}
