@@ -1,7 +1,7 @@
 package io.prediction.tools
 
+import io.prediction.storage.EngineInstance
 import io.prediction.storage.EngineManifest
-import io.prediction.storage.Run
 import io.prediction.storage.Storage
 
 import grizzled.slf4j.Logging
@@ -19,7 +19,7 @@ object RunServer extends Logging {
       sparkHome: String = "",
       sparkMaster: String = "local",
       sparkDeployMode: String = "client",
-      runId: Option[String] = None,
+      engineInstanceId: Option[String] = None,
       engineId: Option[String] = None,
       engineVersion: Option[String] = None,
       ip: String = "localhost",
@@ -40,9 +40,9 @@ object RunServer extends Logging {
       opt[String]("sparkDeployMode") action { (x, c) =>
         c.copy(sparkDeployMode = x)
       } text("Apache Spark deploy mode. If not specified, default to client.")
-      opt[String]("runId") action { (x, c) =>
-        c.copy(runId = Some(x))
-      } text("Run ID.")
+      opt[String]("engineInstanceId") action { (x, c) =>
+        c.copy(engineInstanceId = Some(x))
+      } text("Engine instance ID.")
       opt[String]("engineId") action { (x, c) =>
         c.copy(engineId = Some(x))
       } text("Engine ID.")
@@ -58,27 +58,32 @@ object RunServer extends Logging {
     }
 
     parser.parse(args, RunServerConfig()) map { sc =>
-      val runs = Storage.getMetaDataRuns
+      val engineInstances = Storage.getMetaDataEngineInstances
       val engineManifests = Storage.getMetaDataEngineManifests
-      val run = sc.runId.map { runId =>
-        runs.get(runId).getOrElse {
-          error(s"${runId} is not a valid run ID!")
+      val engineInstance = sc.engineInstanceId.map { engineInstanceId =>
+        engineInstances.get(engineInstanceId).getOrElse {
+          error(s"${engineInstanceId} is not a valid engine instance ID!")
           sys.exit(1)
         }
       } getOrElse {
         (sc.engineId, sc.engineVersion) match {
           case (Some(engineId), Some(engineVersion)) =>
-            runs.getLatestCompleted(engineId, engineVersion).getOrElse {
-              error(s"No valid run found for ${engineId} ${engineVersion}!")
-              sys.exit(1)
-            }
+            engineInstances.getLatestCompleted(engineId, engineVersion).
+              getOrElse {
+                error(s"No valid engine instance found for ${engineId} ${engineVersion}!")
+                sys.exit(1)
+              }
           case _ =>
-            error("If --runId was not specified, both --engineId and --engineVersion must be specified.")
+            error("If --engineInstanceId was not specified, both --engineId " +
+              "and --engineVersion must be specified.")
             sys.exit(1)
         }
       }
-      val em = engineManifests.get(run.engineId, run.engineVersion).getOrElse {
-        error(s"${run.engineId} ${run.engineVersion} is not registered!")
+      val em = engineManifests.get(
+        engineInstance.engineId,
+        engineInstance.engineVersion).getOrElse {
+        error(s"${engineInstance.engineId} ${engineInstance.engineVersion} " +
+          "is not registered!")
         sys.exit(1)
       }
 
@@ -102,8 +107,8 @@ object RunServer extends Logging {
         sc.core,
         //"--env",
         //pioEnvVars,
-        "--runId",
-        run.id,
+        "--engineInstanceId",
+        engineInstance.id,
         "--ip",
         sc.ip,
         "--port",
@@ -128,7 +133,7 @@ object RunServer extends Logging {
       ca: ConsoleArgs,
       core: File,
       em: EngineManifest,
-      runId: String): Unit = {
+      engineInstanceId: String): Unit = {
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"
     ).mkString(",")
@@ -143,8 +148,8 @@ object RunServer extends Logging {
       "--jars",
       em.files.mkString(","),
       core.getCanonicalPath,
-      "--runId",
-      runId,
+      "--engineInstanceId",
+      engineInstanceId,
       "--ip",
       ca.ip,
       "--port",

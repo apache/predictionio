@@ -8,7 +8,7 @@ import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.core.Doer
 import io.prediction.core.BaseMetrics
-import io.prediction.storage.Run
+import io.prediction.storage.EngineInstance
 import io.prediction.storage.Storage
 
 import com.github.nscala_time.time.Imports._
@@ -178,7 +178,7 @@ object CreateWorkflow extends Logging {
         ).toMap
       ).getOrElse(Map())
 
-      val run = Run(
+      val engineInstance = EngineInstance(
         id = "",
         status = "INIT",
         startTime = DateTime.now,
@@ -196,7 +196,8 @@ object CreateWorkflow extends Logging {
         metricsParams = write(metricsParams),
         models = Array[Byte](),
         multipleMetricsResults = "")
-      val runId = Storage.getMetaDataRuns.insert(run)
+      val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
+        engineInstance)
 
       APIDebugWorkflow.runEngineTypeless(
         batch = wfc.batch,
@@ -206,7 +207,7 @@ object CreateWorkflow extends Logging {
         engineParams = engineParams,
         metrics = metricsInstance,
         metricsParams = metricsParams,
-        run = Some(run.copy(id = runId)))
+        engineInstance = Some(engineInstance.copy(id = engineInstanceId)))
     }
   }
 }

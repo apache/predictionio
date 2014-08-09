@@ -1,5 +1,9 @@
 package io.prediction.storage.elasticsearch
 
+import io.prediction.storage.EngineInstance
+import io.prediction.storage.EngineInstances
+import io.prediction.storage.EngineInstanceSerializer
+
 import com.github.nscala_time.time.Imports._
 import com.google.common.io.BaseEncoding
 import grizzled.slf4j.Logging
@@ -17,11 +21,10 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import io.prediction.storage.{ Run, Runs, RunSerializer }
-
-class ESRuns(client: Client, index: String) extends Runs with Logging {
-  implicit val formats = DefaultFormats + new RunSerializer
-  private val estype = "runs"
+class ESEngineInstances(client: Client, index: String)
+  extends EngineInstances with Logging {
+  implicit val formats = DefaultFormats + new EngineInstanceSerializer
+  private val estype = "engine_instances"
 
   val indices = client.admin.indices
   val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get
@@ -38,10 +41,10 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
       setSource(compact(render(json))).get
   }
 
-  def insert(run: Run): String = {
+  def insert(i: EngineInstance): String = {
     try {
       val response = client.prepareIndex(index, estype).
-        setSource(write(run)).get
+        setSource(write(i)).get
       response.getId
     } catch {
       case e: ElasticsearchException =>
@@ -54,7 +57,7 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
     try {
       val response = client.prepareGet(index, estype, id).get
       if (response.isExists)
-        Some(read[Run](response.getSourceAsString))
+        Some(read[EngineInstance](response.getSourceAsString))
       else
         None
     } catch {
@@ -74,7 +77,7 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
         addSort("startTime", SortOrder.DESC).get
       val hits = response.getHits().hits()
       if (hits.size > 0) {
-        Some(read[Run](hits.head.getSourceAsString))
+        Some(read[EngineInstance](hits.head.getSourceAsString))
       } else None
     } catch {
       case e: ElasticsearchException =>
@@ -83,9 +86,9 @@ class ESRuns(client: Client, index: String) extends Runs with Logging {
     }
   }
 
-  def update(run: Run): Unit = {
+  def update(i: EngineInstance): Unit = {
     try {
-      client.prepareUpdate(index, estype, run.id).setDoc(write(run)).get
+      client.prepareUpdate(index, estype, i.id).setDoc(write(i)).get
     } catch {
       case e: ElasticsearchException => error(e.getMessage)
     }

@@ -9,7 +9,9 @@ import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
-import io.prediction.storage.{ Storage, EngineManifest, Run }
+import io.prediction.storage.EngineInstance
+import io.prediction.storage.EngineManifest
+import io.prediction.storage.Storage
 
 import akka.actor.{ Actor, ActorRef, ActorSystem, Kill, Props }
 import akka.event.Logging
@@ -51,7 +53,7 @@ class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
 }
 
 case class ServerConfig(
-  runId: String = "",
+  engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
   ip: String = "localhost",
@@ -65,7 +67,7 @@ case class ReloadServer()
 
 object CreateServer extends Logging {
   val actorSystem = ActorSystem("pio-server")
-  val runs = Storage.getMetaDataRuns
+  val engineInstances = Storage.getMetaDataEngineInstances
   val engineManifests = Storage.getMetaDataEngineManifests
 
   def main(args: Array[String]): Unit = {
@@ -88,46 +90,47 @@ object CreateServer extends Logging {
       opt[String]("sparkExecutorMemory") action { (x, c) =>
         c.copy(sparkExecutorMemory = x)
       } text("Apache Spark executor memory (default: 4g)")
-      opt[String]("runId") required() action { (x, c) =>
-        c.copy(runId = x)
-      } text("Run ID.")
+      opt[String]("engineInstanceId") required() action { (x, c) =>
+        c.copy(engineInstanceId = x)
+      } text("Engine instance ID.")
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
-      runs.get(sc.runId) map { run =>
-        val engineId = sc.engineId.getOrElse(run.engineId)
-        val engineVersion = sc.engineVersion.getOrElse(run.engineVersion)
+      engineInstances.get(sc.engineInstanceId) map { engineInstance =>
+        val engineId = sc.engineId.getOrElse(engineInstance.engineId)
+        val engineVersion = sc.engineVersion.getOrElse(
+          engineInstance.engineVersion)
         engineManifests.get(engineId, engineVersion) map { manifest =>
           WorkflowUtils.checkUpgrade("deployment")
           val engineFactoryName = manifest.engineFactory
           val master = actorSystem.actorOf(Props(
             classOf[MasterActor],
             sc,
-            run,
+            engineInstance,
             engineFactoryName,
             manifest),
           "master")
           implicit val timeout = Timeout(5.seconds)
           master ? StartServer()
         } getOrElse {
-          error(s"Invalid Engine ID or version. Aborting server.")
+          error(s"Invalid engine ID or version. Aborting server.")
         }
       } getOrElse {
-        error(s"Invalid Run ID. Aborting server.")
+        error(s"Invalid engine instance ID. Aborting server.")
       }
     }
   }
 
   def createServerActorWithEngine[TD, DP, PD, Q, P, A](
     sc: ServerConfig,
-    run: Run,
+    engineInstance: EngineInstance,
     engine: Engine[TD, DP, PD, Q, P, A],
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): ActorRef = {
     implicit val formats = DefaultFormats
 
     val algorithmsParamsWithNames =
-      read[Seq[(String, JValue)]](run.algorithmsParams).map {
+      read[Seq[(String, JValue)]](engineInstance.algorithmsParams).map {
         case (algoName, params) =>
           val extractedParams = WorkflowUtils.extractParams(
             engineLanguage,
@@ -143,24 +146,27 @@ object CreateServer extends Logging {
     }
 
     val servingParams =
-      if (run.servingParams == "")
+      if (engineInstance.servingParams == "")
         EmptyParams()
       else
         WorkflowUtils.extractParams(
           engineLanguage,
-          run.servingParams,
+          engineInstance.servingParams,
           engine.servingClass)
     val serving = Doer(engine.servingClass, servingParams)
 
     val pAlgorithmExists =
       algorithms.exists(_.isInstanceOf[PAlgorithm[_, PD, _, Q, P]])
     val sparkContext =
-      if (pAlgorithmExists) Some(WorkflowContext(run.batch, run.env)) else None
+      if (pAlgorithmExists)
+        Some(WorkflowContext(engineInstance.batch, engineInstance.env))
+      else
+        None
     val evalPreparedMap = sparkContext map { sc =>
       logger.info("Data Source")
       val dataSourceParams = WorkflowUtils.extractParams(
         engineLanguage,
-        run.dataSourceParams,
+        engineInstance.dataSourceParams,
         engine.dataSourceClass)
       val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
       val evalParamsDataMap
@@ -175,7 +181,7 @@ object CreateServer extends Logging {
       logger.info("Preparator")
       val preparatorParams = WorkflowUtils.extractParams(
         engineLanguage,
-        run.preparatorParams,
+        engineInstance.preparatorParams,
         engine.preparatorClass)
       val preparator = Doer(engine.preparatorClass, preparatorParams)
 
@@ -188,39 +194,41 @@ object CreateServer extends Logging {
 
     val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
     val kryo = KryoInjection.instance(kryoInstantiator)
-    val modelsFromRun = kryo.invert(run.models).get.asInstanceOf[Seq[Seq[Any]]]
-    val models = modelsFromRun.head.zip(algorithms).zip(algorithmsParams).map {
-      case ((m, a), p) =>
-        if (m.isInstanceOf[PersistentModelManifest]) {
-          info("Custom-persisted model detected for algorithm " +
-            a.getClass.getName)
-          WorkflowUtils.getPersistentModel(
-            m.asInstanceOf[PersistentModelManifest],
-            run.id,
-            p,
-            sparkContext,
-            getClass.getClassLoader)
-        } else if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
-          info(s"Parallel model detected for algorithm ${a.getClass.getName}")
-          a.trainBase(sparkContext.get, evalPreparedMap.get(0))
-        } else {
-          try {
-            info(s"Loaded model ${m.getClass.getName} for algorithm " +
-              s"${a.getClass.getName}")
-            m
-          } catch {
-            case e: NullPointerException =>
-              warn(s"Null model detected for algorithm ${a.getClass.getName}")
+    val modelsFromEngineInstance = kryo.invert(engineInstance.models).get.
+      asInstanceOf[Seq[Seq[Any]]]
+    val models = modelsFromEngineInstance.head.zip(algorithms).
+      zip(algorithmsParams).map {
+        case ((m, a), p) =>
+          if (m.isInstanceOf[PersistentModelManifest]) {
+            info("Custom-persisted model detected for algorithm " +
+              a.getClass.getName)
+            WorkflowUtils.getPersistentModel(
+              m.asInstanceOf[PersistentModelManifest],
+              engineInstance.id,
+              p,
+              sparkContext,
+              getClass.getClassLoader)
+          } else if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
+            info(s"Parallel model detected for algorithm ${a.getClass.getName}")
+            a.trainBase(sparkContext.get, evalPreparedMap.get(0))
+          } else {
+            try {
+              info(s"Loaded model ${m.getClass.getName} for algorithm " +
+                s"${a.getClass.getName}")
               m
+            } catch {
+              case e: NullPointerException =>
+                warn(s"Null model detected for algorithm ${a.getClass.getName}")
+                m
+            }
           }
-        }
-    }
+      }
 
     actorSystem.actorOf(
       Props(
         classOf[ServerActor[Q, P]],
         sc,
-        run,
+        engineInstance,
         engine,
         engineLanguage,
         manifest,
@@ -234,7 +242,7 @@ object CreateServer extends Logging {
 
 class MasterActor(
     sc: ServerConfig,
-    run: Run,
+    engineInstance: EngineInstance,
     engineFactoryName: String,
     manifest: EngineManifest) extends Actor {
   val log = Logging(context.system, this)
@@ -243,7 +251,11 @@ class MasterActor(
   var currentServerActor: Option[ActorRef] = None
   def receive = {
     case x: StartServer =>
-      val actor = createServerActor(sc, run, engineFactoryName, manifest)
+      val actor = createServerActor(
+        sc,
+        engineInstance,
+        engineFactoryName,
+        manifest)
       IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
       currentServerActor = Some(actor)
     case x: StopServer =>
@@ -257,10 +269,11 @@ class MasterActor(
       }
     case x: ReloadServer =>
       log.info("Reload server command received.")
-      val latestRun = CreateServer.runs.getLatestCompleted(
-        manifest.id,
-        manifest.version)
-      latestRun map { lr =>
+      val latestEngineInstance =
+        CreateServer.engineInstances.getLatestCompleted(
+          manifest.id,
+          manifest.version)
+      latestEngineInstance map { lr =>
         val actor = createServerActor(sc, lr, engineFactoryName, manifest)
         sprayHttpListener.map { l =>
           l ! Http.Unbind(5.seconds)
@@ -272,8 +285,8 @@ class MasterActor(
         }
       } getOrElse {
         log.warning(
-          s"No latest completed run for ${manifest.id} ${manifest.version}. " +
-          "Abort reloading.")
+          s"No latest completed engine instance for ${manifest.id} " +
+          s"${manifest.version}. Abort reloading.")
       }
     case x: Http.Bound =>
       log.info("Bind successful. Ready to serve.")
@@ -285,14 +298,14 @@ class MasterActor(
 
   def createServerActor(
       sc: ServerConfig,
-      run: Run,
+      engineInstance: EngineInstance,
       engineFactoryName: String,
       manifest: EngineManifest): ActorRef = {
     val (engineLanguage, engine) =
       WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
     CreateServer.createServerActorWithEngine(
       sc,
-      run,
+      engineInstance,
       engine,
       engineLanguage,
       manifest)
@@ -301,7 +314,7 @@ class MasterActor(
 
 class ServerActor[Q, P](
     val args: ServerConfig,
-    val run: Run,
+    val engineInstance: EngineInstance,
     val engine: Engine[_, _, _, Q, P, _],
     val engineLanguage: EngineLanguage.Value,
     val manifest: EngineManifest,
@@ -330,9 +343,9 @@ class ServerActor[Q, P](
                 <h1>PredictionIO Server at {args.ip}:{args.port}</h1>
                 <div>
                   <ul>
-                    <li><strong>Run ID:</strong> {run.id}</li>
-                    <li><strong>Run Start Time:</strong> {run.startTime}</li>
-                    <li><strong>Run End Time:</strong> {run.endTime}</li>
+                    <li><strong>Engine Instance ID:</strong> {engineInstance.id}</li>
+                    <li><strong>Engine Instance Training Start Time:</strong> {engineInstance.startTime}</li>
+                    <li><strong>Engine Instance Training End Time:</strong> {engineInstance.endTime}</li>
                     <li><strong>Engine:</strong> {manifest.id} {manifest.version}</li>
                     <li><strong>Class:</strong> {manifest.engineFactory}</li>
                     <li><strong>Files:</strong> {manifest.files.mkString(" ")}</li>

@@ -22,7 +22,9 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.core.LModelAlgorithm
-import io.prediction.storage.{ Run, Runs, Storage }
+import io.prediction.storage.EngineInstance
+import io.prediction.storage.EngineInstances
+import io.prediction.storage.Storage
 
 import com.github.nscala_time.time.Imports.DateTime
 import com.twitter.chill.KryoInjection
@@ -319,7 +321,7 @@ object APIDebugWorkflow {
       metrics
         : BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
       metricsParams: Params = EmptyParams(),
-      run: Option[Run] = None) {
+      engineInstance: Option[EngineInstance] = None) {
 
     runTypeless(
       batch = batch,
@@ -335,7 +337,7 @@ object APIDebugWorkflow {
       servingParams = engineParams.servingParams,
       metricsClassOpt = (if (metrics == null) None else Some(metrics.getClass)),
       metricsParams = metricsParams,
-      run = run
+      engineInstance = engineInstance
     )(
       JavaUtils.fakeClassTag[MU],
       JavaUtils.fakeClassTag[MR],
@@ -369,7 +371,7 @@ object APIDebugWorkflow {
         : Option[Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
         = None,
       metricsParams: Params = EmptyParams(),
-      run: Option[Run] = None) {
+      engineInstance: Option[EngineInstance] = None) {
     logger.info("APIDebugWorkflow.run")
     logger.info("Start spark context")
 
@@ -551,7 +553,7 @@ object APIDebugWorkflow {
       }}
     }
 
-    val models: Option[Seq[Seq[Any]]] = run.map { r =>
+    val models: Option[Seq[Seq[Any]]] = engineInstance.map { r =>
       evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
         evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
           if (algoInstanceList(ai).isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
@@ -582,7 +584,7 @@ object APIDebugWorkflow {
       }
     }
 
-    def saveRun(metricsOutput: String): String = {
+    def saveEngineInstance(metricsOutput: String): String = {
       implicit val f = Utils.json4sDefaultFormats
       val translatedAlgorithmsParams = write(
         algorithmParamsList.zip(algoInstanceList).map {
@@ -592,20 +594,20 @@ object APIDebugWorkflow {
             else
               (name -> params)
         })
-      val runs = Storage.getMetaDataRuns
-      runs.update(run.get.copy(
+      val engineInstances = Storage.getMetaDataEngineInstances
+      engineInstances.update(engineInstance.get.copy(
         status = "COMPLETED",
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models.get),
         multipleMetricsResults = metricsOutput))
-      logger.info(s"Run information saved with ID: ${run.get.id}")
-      run.get.id
+      logger.info(s"Saved engine instance with ID: ${engineInstance.get.id}")
+      engineInstance.get.id
     }
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
-      run.map { r => saveRun("") }
+      engineInstance.map { r => saveEngineInstance("") }
       return
     }
 
@@ -662,7 +664,7 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    run.map { r => saveRun(metricsOutput.mkString("\n")) }
+    engineInstance.map { r => saveEngineInstance(metricsOutput.mkString("\n")) }
   }
 }
 

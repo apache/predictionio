@@ -252,13 +252,13 @@ object Console extends Logging {
 
   def deploy(ca: ConsoleArgs): Unit = {
     withRegisteredManifest(ca.engineJson) { em =>
-      val runs = Storage.getMetaDataRuns
-      val run = ca.engineInstanceId map { eid =>
-        runs.get(eid)
+      val engineInstances = Storage.getMetaDataEngineInstances
+      val engineInstance = ca.engineInstanceId map { eid =>
+        engineInstances.get(eid)
       } getOrElse {
-        runs.getLatestCompleted(em.id, em.version)
+        engineInstances.getLatestCompleted(em.id, em.version)
       }
-      run map { r =>
+      engineInstance map { r =>
         undeploy(ca)
         RunServer.runServer(
           ca,

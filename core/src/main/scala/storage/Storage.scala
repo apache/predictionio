@@ -177,35 +177,30 @@ object Storage extends Logging {
     Seq(client.client, dbName)
   }
 
-  def getMetaDataEngineManifests(): EngineManifests = {
+  def getMetaDataEngineManifests(): EngineManifests =
     getDataObject[EngineManifests](MetaDataRepository)
-  }
 
-  def getMetaDataRuns(): Runs = getDataObject[Runs](MetaDataRepository)
+  def getMetaDataEngineInstances(): EngineInstances =
+    getDataObject[EngineInstances](MetaDataRepository)
 
   /** Obtains an ItemTrends object with configured backend type. */
-  def getAppdataItemTrends(): ItemTrends = {
+  def getAppdataItemTrends(): ItemTrends =
     getDataObject[ItemTrends](AppDataRepository)
-  }
 
   /** Obtains a Users object with configured backend type. */
-  def getAppdataUsers(): Users = {
+  def getAppdataUsers(): Users =
     getDataObject[Users](AppDataRepository)
-  }
 
   /** Obtains an Items object with configured backend type. */
-  def getAppdataItems(): Items = {
+  def getAppdataItems(): Items =
     getDataObject[Items](AppDataRepository)
-  }
 
   /** Obtains a U2IActions object with configured backend type. */
-  def getAppdataU2IActions(): U2IActions = {
+  def getAppdataU2IActions(): U2IActions =
     getDataObject[U2IActions](AppDataRepository)
-  }
 
-  def getAppdataItemSets(): ItemSets = {
+  def getAppdataItemSets(): ItemSets =
     getDataObject[ItemSets](AppDataRepository)
-  }
 
   if (errors > 0) {
     error(s"There were $errors configuration errors. Exiting.")
