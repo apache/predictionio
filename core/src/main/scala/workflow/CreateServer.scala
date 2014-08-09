@@ -336,28 +336,14 @@ class ServerActor[Q, P](
       get {
         respondWithMediaType(`text/html`) {
           complete {
-            <html>
-              <head>
-                <title>{manifest.id} {manifest.version} - PredictionIO Server at {args.ip}:{args.port}</title>
-              </head>
-              <body>
-                <h1>PredictionIO Server at {args.ip}:{args.port}</h1>
-                <div>
-                  <ul>
-                    <li><strong>Engine Instance ID:</strong> {engineInstance.id}</li>
-                    <li><strong>Engine Instance Training Start Time:</strong> {engineInstance.startTime}</li>
-                    <li><strong>Engine Instance Training End Time:</strong> {engineInstance.endTime}</li>
-                    <li><strong>Engine:</strong> {manifest.id} {manifest.version}</li>
-                    <li><strong>Class:</strong> {manifest.engineFactory}</li>
-                    <li><strong>Files:</strong> {manifest.files.mkString(" ")}</li>
-                    <li><strong>Algorithms:</strong> {algorithms.mkString(" ")}</li>
-                    <li><strong>Algorithms Parameters:</strong> {algorithmsParams.mkString(" ")}</li>
-                    <li><strong>Models:</strong> {models.mkString(" ")}</li>
-                    <li><strong>Server Parameters:</strong> {servingParams}</li>
-                  </ul>
-                </div>
-              </body>
-            </html>
+            html.index(
+              args,
+              manifest,
+              engineInstance,
+              algorithms.map(_.toString),
+              algorithmsParams.map(_.toString),
+              models.map(_.toString),
+              servingParams.toString).toString
           }
         }
       } ~
@@ -413,5 +399,8 @@ class ServerActor[Q, P](
           "Shutting down..."
         }
       }
+    } ~
+    pathPrefix("assets") {
+      getFromResourceDirectory("assets")
     }
 }
