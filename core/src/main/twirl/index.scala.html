@@ -1,6 +1,7 @@
 @import io.prediction.storage.EngineInstance
 @import io.prediction.storage.EngineManifest
 @import io.prediction.workflow.ServerConfig
+@import org.joda.time.format.DateTimeFormat
 @(args: ServerConfig,
   manifest: EngineManifest,
   engineInstance: EngineInstance,
@@ -26,8 +27,8 @@
       <h2>Engine Instance Information</h2>
       <table class="table table-bordered table-striped">
         <tr><th>ID</th><td>@{engineInstance.id}</td></tr>
-        <tr><th>Training Start Time</th><td>@{engineInstance.startTime}</td></tr>
-        <tr><th>Training End Time</th><td>@{engineInstance.endTime}</td></tr>
+        <tr><th>Training Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.startTime)}</td></tr>
+        <tr><th>Training End Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.endTime)}</td></tr>
       </table>
       <h2>Engine Information</h2>
       <table class="table table-bordered table-striped">
