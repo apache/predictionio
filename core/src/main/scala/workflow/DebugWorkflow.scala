@@ -584,7 +584,7 @@ object APIDebugWorkflow {
       }
     }
 
-    def saveEngineInstance(metricsOutput: String): String = {
+    def saveEngineInstance(metricsOutput: Option[String]): String = {
       implicit val f = Utils.json4sDefaultFormats
       val translatedAlgorithmsParams = write(
         algorithmParamsList.zip(algoInstanceList).map {
@@ -596,18 +596,18 @@ object APIDebugWorkflow {
         })
       val engineInstances = Storage.getMetaDataEngineInstances
       engineInstances.update(engineInstance.get.copy(
-        status = "COMPLETED",
+        status = metricsOutput.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models.get),
-        multipleMetricsResults = metricsOutput))
+        multipleMetricsResults = metricsOutput.getOrElse("")))
       logger.info(s"Saved engine instance with ID: ${engineInstance.get.id}")
       engineInstance.get.id
     }
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
-      engineInstance.map { r => saveEngineInstance("") }
+      engineInstance.map { r => saveEngineInstance(None) }
       return
     }
 
@@ -664,7 +664,9 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    engineInstance.map { r => saveEngineInstance(metricsOutput.mkString("\n")) }
+    engineInstance.map { r =>
+      saveEngineInstance(Some(metricsOutput.mkString("\n")))
+    }
   }
 }
 
