@@ -17,7 +17,6 @@ import breeze.linalg.DenseMatrix
 import breeze.linalg.DenseVector
 import breeze.linalg.inv
 import nak.regress.LinearRegression
-import org.apache.spark.rdd.RDD
 import org.json4s._
 
 import scala.io.Source
