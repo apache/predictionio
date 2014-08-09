@@ -6,6 +6,7 @@ import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.java.LJavaAlgorithm
+import io.prediction.controller.java.LJavaServing
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
@@ -362,24 +363,34 @@ class ServerActor[Q, P](
       } ~
       post {
         entity(as[String]) { queryString =>
-          val firstAlgorithm = algorithms.head
-          val query =
-            if (firstAlgorithm.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
-              gson.fromJson(
-                queryString,
-                firstAlgorithm.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].
-                  queryClass)
-            } else {
-              Extraction.extract(parse(queryString))(
-                firstAlgorithm.querySerializer,
-                firstAlgorithm.queryManifest)
-            }
+          val (javaAlgorithms, scalaAlgorithms) =
+            algorithms.partition(_.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
+          val javaQuery = if (!javaAlgorithms.isEmpty) {
+            Some(gson.fromJson(
+              queryString,
+              javaAlgorithms.head.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].
+                queryClass))
+          } else None
+          val scalaQuery = if (!scalaAlgorithms.isEmpty) {
+            Some(Extraction.extract(parse(queryString))(
+              scalaAlgorithms.head.querySerializer,
+              scalaAlgorithms.head.queryManifest))
+          } else None
           val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-            a.predictBase(models(ai), query)
+            if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
+              a.predictBase(models(ai), javaQuery.get)
+            else
+              a.predictBase(models(ai), scalaQuery.get)
           }
-          val prediction = serving.serveBase(query, predictions)
-          complete(compact(render(
-            Extraction.decompose(prediction)(firstAlgorithm.querySerializer))))
+          val json = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
+            val prediction = serving.serveBase(javaQuery.get, predictions)
+            gson.toJson(prediction)
+          } else {
+            val prediction = serving.serveBase(scalaQuery.get, predictions)
+            compact(render(Extraction.decompose(prediction)(
+              scalaAlgorithms.head.querySerializer)))
+          }
+          complete(json)
         }
       }
     } ~
