@@ -74,9 +74,9 @@ $ ../../bin/pio train
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
 ```
-2014-08-05 14:01:28,312 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:569, took 0.043905 s
-2014-08-05 14:01:28,313 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
-2014-08-05 14:01:28,482 INFO  APIDebugWorkflow$ - Run information saved with ID: qGGlujG0SMOkvCaA-YZmEw
+2014-08-08 17:18:09,399 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:571, took 0.046796 s
+2014-08-08 17:18:09,399 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
+2014-08-08 17:18:09,498 INFO  APIDebugWorkflow$ - Saved engine instance with ID: CHURP-cvQta5VKxorx_9Aw
 ```
 
 
@@ -94,9 +94,9 @@ PredictionIO to run the specified metrics during evaluation. When you look at
 the console output again, you should be able to see a mean square error
 computed, like the following.
 ```
-2014-08-05 14:02:04,848 INFO  APIDebugWorkflow$ - Set: The One Size: 1000 MSE: 0.092519
-2014-08-05 14:02:04,848 INFO  APIDebugWorkflow$ - APIDebugWorkflow.run completed.
-2014-08-05 14:02:04,940 INFO  APIDebugWorkflow$ - Run information saved with ID: CM4y41D8TT-Ovh1l9PGRrw
+2014-08-08 17:21:01,042 INFO  APIDebugWorkflow$ - Set: The One Size: 1000 MSE: 0.092519
+2014-08-08 17:21:01,042 INFO  APIDebugWorkflow$ - APIDebugWorkflow.run completed.
+2014-08-08 17:21:01,140 INFO  APIDebugWorkflow$ - Saved engine instance with ID: icfEp9njR76NQOrvowC-dQ
 ```
 
 
