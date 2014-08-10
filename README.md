@@ -94,7 +94,7 @@ More interesting tutorials:
   Algorithms](examples/src/main/scala/stock/README.md)
 - [Linear Regression Engine](examples/scala-local-regression/README.md)
 - [Distributed Recommendation Engine with RDD-based Model using MLlib's
-  ALS](examples/src/main/scala/recommendations/README.md)
+  ALS](examples/scala-recommendations/README.md)
 
 
 API Documentation
