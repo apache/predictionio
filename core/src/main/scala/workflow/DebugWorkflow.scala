@@ -235,6 +235,25 @@ extends Serializable {
 
 object APIDebugWorkflow {
   @transient lazy val logger = Logger[this.type]
+  @transient lazy val engineInstanceStub = EngineInstance(
+    id = "",
+    status = "INIT",
+    startTime = DateTime.now,
+    endTime = DateTime.now,
+    engineId = "",
+    engineVersion = "",
+    engineFactory = "",
+    metricsClass = "",
+    batch = "",
+    env = Map(),
+    dataSourceParams = "",
+    preparatorParams = "",
+    algorithmsParams = "",
+    servingParams = "",
+    metricsParams = "",
+    models = Array[Byte](),
+    multipleMetricsResults = "")
+
   def runEngine[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
@@ -378,6 +397,24 @@ object APIDebugWorkflow {
     WorkflowUtils.checkUpgrade("evaluation")
 
     val sc = WorkflowContext(batch, env)
+
+    // Create an engine instance even for runner as well
+    implicit val f = Utils.json4sDefaultFormats
+    val realEngineInstance = engineInstance getOrElse {
+      val i = engineInstanceStub.copy(
+        startTime = DateTime.now,
+        engineFactory = getClass.getName,
+        metricsClass = metricsClassOpt.map(_.getName).getOrElse(""),
+        batch = batch,
+        env = env,
+        dataSourceParams = write(dataSourceParams),
+        preparatorParams = write(preparatorParams),
+        algorithmsParams = write(algorithmParamsList),
+        servingParams = write(servingParams),
+        metricsParams = write(metricsParams))
+      val iid = Storage.getMetaDataEngineInstances.insert(i)
+      i.copy(id = iid)
+    }
 
     //if (dataSourceClass == null || dataSourceParams == null) {
     if (dataSourceClassOpt.isEmpty) {
@@ -553,13 +590,13 @@ object APIDebugWorkflow {
       }}
     }
 
-    val models: Option[Seq[Seq[Any]]] = engineInstance.map { r =>
+    val models: Seq[Seq[Any]] =
       evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
         evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
           if (algoInstanceList(ai).isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
             if (model.isInstanceOf[IPersistentModel[_]]) {
               if (model.asInstanceOf[IPersistentModel[Params]].save(
-                  r.id,
+                  realEngineInstance.id,
                   algorithmParamsList(ai)._2))
                 PersistentModelManifest(className = model.getClass.getName)
               else
@@ -571,7 +608,7 @@ object APIDebugWorkflow {
             val m = model.asInstanceOf[RDD[Any]].collect.head
             if (m.isInstanceOf[IPersistentModel[_]]) {
               if (m.asInstanceOf[IPersistentModel[Params]].save(
-                  r.id,
+                  realEngineInstance.id,
                   algorithmParamsList(ai)._2))
                 PersistentModelManifest(className = m.getClass.getName)
               else
@@ -582,10 +619,8 @@ object APIDebugWorkflow {
           }
         }
       }
-    }
 
     def saveEngineInstance(metricsOutput: Option[String]): String = {
-      implicit val f = Utils.json4sDefaultFormats
       val translatedAlgorithmsParams = write(
         algorithmParamsList.zip(algoInstanceList).map {
           case ((name, params), inst) =>
@@ -595,19 +630,19 @@ object APIDebugWorkflow {
               (name -> params)
         })
       val engineInstances = Storage.getMetaDataEngineInstances
-      engineInstances.update(engineInstance.get.copy(
+      engineInstances.update(realEngineInstance.copy(
         status = metricsOutput.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
-        models = KryoInjection(models.get),
+        models = KryoInjection(models),
         multipleMetricsResults = metricsOutput.getOrElse("")))
-      logger.info(s"Saved engine instance with ID: ${engineInstance.get.id}")
-      engineInstance.get.id
+      logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
+      realEngineInstance.id
     }
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
-      engineInstance.map { r => saveEngineInstance(None) }
+      saveEngineInstance(None)
       return
     }
 
@@ -664,9 +699,7 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    engineInstance.map { r =>
-      saveEngineInstance(Some(metricsOutput.mkString("\n")))
-    }
+    saveEngineInstance(Some(metricsOutput.mkString("\n")))
   }
 }
 
