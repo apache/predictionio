@@ -1,6 +1,7 @@
 @import io.prediction.storage.EngineInstance
 @import io.prediction.storage.EngineManifest
 @import io.prediction.workflow.ServerConfig
+@import org.joda.time.DateTime
 @import org.joda.time.format.DateTimeFormat
 @(args: ServerConfig,
   manifest: EngineManifest,
@@ -8,7 +9,8 @@
   algorithms: Seq[String],
   algorithmsParams: Seq[String],
   models: Seq[String],
-  servingParams: String)
+  servingParams: String,
+  serverStartTime: DateTime)
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -30,11 +32,12 @@
         <tr><th>Training Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.startTime)}</td></tr>
         <tr><th>Training End Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.endTime)}</td></tr>
       </table>
-      <h2>Engine Information</h2>
+      <h2>Server Information</h2>
       <table class="table table-bordered table-striped">
-        <tr><th>Factory Class (Scala/Java)</th><td>@{manifest.engineFactory}</td></tr>
+        <tr><th>Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(serverStartTime)}</td></tr>
+        <tr><th>Engine Factory Class (Scala/Java)</th><td>@{manifest.engineFactory}</td></tr>
         <tr>
-          <th rowspan="@(manifest.files.size)">Files</th>
+          <th rowspan="@(manifest.files.size)">Library Files</th>
           <td>@{manifest.files.head}</td>
         </tr>
         @for(f <- manifest.files.drop(1)) {

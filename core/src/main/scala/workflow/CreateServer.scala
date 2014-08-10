@@ -19,6 +19,7 @@ import akka.event.Logging
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
+import com.github.nscala_time.time.Imports.DateTime
 import com.google.gson.Gson
 import com.twitter.chill.KryoInjection
 import com.twitter.chill.ScalaKryoInstantiator
@@ -326,6 +327,7 @@ class ServerActor[Q, P](
     val servingParams: Params) extends Actor with HttpService {
 
   lazy val gson = new Gson
+  val serverStartTime = DateTime.now
 
   def actorRefFactory = context
 
@@ -343,7 +345,8 @@ class ServerActor[Q, P](
               algorithms.map(_.toString),
               algorithmsParams.map(_.toString),
               models.map(_.toString),
-              servingParams.toString).toString
+              servingParams.toString,
+              serverStartTime).toString
           }
         }
       } ~
