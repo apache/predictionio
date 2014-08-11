@@ -57,7 +57,8 @@ Output:
 ```
 
 
-Re-train with new data2:
+Re-train with new data:
+
 ```
 $ cd $PIO_HOME/examples/java-local-helloworld
 $ cp ../data/helloworld/data2.csv ../data/helloworld/data.csv

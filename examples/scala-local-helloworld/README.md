@@ -8,22 +8,20 @@
 
 Prepare training data:
 ```
-$ cd $PIO_HOME/examples
-$ cp data/helloworld/data1.csv data/helloworld/data.csv
+$ cd $PIO_HOME/examples/scala-local-helloworld
+$ cp ../data/helloworld/data1.csv ../data/helloworld/data.csv
 ```
 
 Register engine:
 
 ```
-$ ../bin/register-engine src/main/scala/helloworld/engine.json
+$ ../../bin/pio register
 ```
 
 Train:
 
 ```
-$ ../bin/run-train \
-  --engineId org.sample.helloworld \
-  --engineVersion 0.1
+$ ../../bin/pio train
 ```
 
 Example output:
@@ -33,11 +31,10 @@ Example output:
 2014-08-05 17:06:02,769 INFO  APIDebugWorkflow$ - Run information saved with ID: 201408050005
 ```
 
-Note the retuned ID at the end.
-Use the returned ID to Start server:
+Deploy:
 
 ```
-$ ../bin/run-server --runId <replaced by the ID>
+$ ../../bin/pio deploy
 ```
 
 Retrieve prediction:
@@ -65,12 +62,20 @@ Output:
 
 ## 4. Re-training
 
-TBD
+Re-train with new data:
 
-New data comes in:
 ```
-$ cd $PIO_HOME/examples
-$ cp data/helloworld/data2.csv data/helloworld/data.csv
+$ cd $PIO_HOME/examples/scala-local-helloworld
+$ cp ../data/helloworld/data2.csv ../data/helloworld/data.csv
 ```
 
-Retrieve prediction:
+```
+$ ../../bin/pio train
+$ ../../bin/pio deploy
+```
+
+```
+$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000
+
+{"temperature":76.66666666666667}
+```

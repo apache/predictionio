@@ -32,7 +32,7 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
   /* override this to return Training Data only */
   override
   def readTraining(): MyTrainingData = {
-    val lines = Source.fromFile("./data/helloworld/data.csv").getLines()
+    val lines = Source.fromFile("../data/helloworld/data.csv").getLines()
       .toList.map{ line =>
         val data = line.split(",")
         (data(0), data(1).toDouble)
