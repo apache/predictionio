@@ -45,9 +45,6 @@ public class MyAlgorithm extends LJavaAlgorithm<
   @Override
   public MyPrediction predict(MyModel model, MyQuery query) {
     Double temp = model.temperatures.get(query.day);
-    System.out.println(query.day + "" + model.temperatures.toString() + ":" + temp);
-    MyPrediction p = new MyPrediction(temp);
-    System.out.println(p.temperature + "");
-    return p;
+    return  new MyPrediction(temp);
   }
 }

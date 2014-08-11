@@ -21,7 +21,7 @@ public class MyDataSource extends LJavaDataSource<
       new ArrayList<MyTrainingData.DayTemperature>();
 
     try {
-      BufferedReader reader = new BufferedReader(new FileReader("./data/helloworld/data.csv"));
+      BufferedReader reader = new BufferedReader(new FileReader("../data/helloworld/data.csv"));
       String line;
       while ((line = reader.readLine()) != null) {
         String[] tokens = line.split(",");

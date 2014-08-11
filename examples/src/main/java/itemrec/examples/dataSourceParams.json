@@ -1,5 +1,5 @@
 {
-  "filePath" : "engines/src/main/java/itemrec/examples/ratings.csv",
+  "filePath" : "src/main/java/itemrec/examples/ratings.csv",
   "iterations" : 1,
   "trainingPercentage" : 0.8,
   "testPercentage" : 0.2,

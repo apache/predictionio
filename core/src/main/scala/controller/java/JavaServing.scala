@@ -1,7 +1,6 @@
 package io.prediction.controller.java
 
 import io.prediction.controller.Params
-import io.prediction.controller.EmptyParams
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseAlgorithm
 

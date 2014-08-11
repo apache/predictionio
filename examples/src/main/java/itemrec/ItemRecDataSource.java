@@ -1,7 +1,7 @@
 package io.prediction.examples.java.itemrec;
 
 import io.prediction.controller.java.LJavaDataSource;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 import io.prediction.examples.java.itemrec.data.Query;
 import io.prediction.examples.java.itemrec.data.Actual;
 import io.prediction.examples.java.itemrec.data.TrainingData;

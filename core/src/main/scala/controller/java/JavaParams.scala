@@ -2,7 +2,9 @@ package io.prediction.controller.java
 
 import io.prediction.controller.Params
 
-class EmptyParams() extends Params {
+trait JavaParams extends Params
+
+class EmptyParams() extends JavaParams {
   override def toString(): String = "Empty"
 }
 

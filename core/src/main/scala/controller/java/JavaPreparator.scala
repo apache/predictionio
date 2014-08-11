@@ -2,7 +2,6 @@ package io.prediction.controller.java
 
 import io.prediction.core.BasePreparator
 import io.prediction.controller.Params
-import io.prediction.controller.EmptyParams
 
 import java.util.{ List => JList }
 import java.lang.{ Iterable => JIterable }

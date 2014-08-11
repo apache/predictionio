@@ -1,8 +1,8 @@
 package io.prediction.examples.java.itemrec;
 
-import io.prediction.controller.Params;
+import io.prediction.controller.java.JavaParams;
 
-public class DataSourceParams implements Params {
+public class DataSourceParams implements JavaParams {
   public String filePath; // file path
   public int iterations; // number of interations
   public float trainingPercentage;

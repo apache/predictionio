@@ -9,8 +9,8 @@ import io.prediction.examples.java.itemrec.algos.GenericItemBased;
 import io.prediction.examples.java.itemrec.algos.GenericItemBasedParams;
 import io.prediction.examples.java.itemrec.algos.SVDPlusPlus;
 import io.prediction.examples.java.itemrec.algos.SVDPlusPlusParams;
-import io.prediction.controller.Params;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.JavaParams;
+import io.prediction.controller.java.EmptyParams;
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
@@ -28,7 +28,7 @@ import java.util.Arrays;
 public class Runner {
   public static void main(String[] args) {
 
-    String filePath = "engines/src/main/java/itemrec/examples/ratings.csv";
+    String filePath = "src/main/java/itemrec/examples/ratings.csv";
     String algoName = "genericitembased";
 
     if (args.length == 2) {
@@ -45,7 +45,7 @@ public class Runner {
     ServingParams sp = new ServingParams();
 
     String algo;
-    Params algoParams;
+    JavaParams algoParams;
     if (algoName.equals("genericitembased")) {
       algo = "genericitembased";
       algoParams = genericItemBasedParams;
@@ -53,20 +53,20 @@ public class Runner {
       algo = "svdplusplus";
       algoParams = svdPlusPlusParams;
     }
-
-    List<Tuple2<String, Params>> algoParamsList = new ArrayList<Tuple2<String, Params>>();
-    algoParamsList.add(new Tuple2<String, Params>(algo, algoParams));
+/*
+    List<Tuple2<String, JavaParams>> algoParamsList = new ArrayList<Tuple2<String, JavaParams>>();
+    algoParamsList.add(new Tuple2<String, JavaParams>(algo, algoParams));
 
     Map<String,
       Class<? extends
-        LJavaAlgorithm<? extends Params, PreparedData, ?, Query, Prediction>>> algoClassMap =
+        LJavaAlgorithm<? extends JavaParams, PreparedData, ?, Query, Prediction>>> algoClassMap =
       new HashMap <> ();
     if (algoName.equals("genericitembased")) {
       algoClassMap.put(algo, GenericItemBased.class);
     } else{
       algoClassMap.put(algo, SVDPlusPlus.class);
     }
-
+*/
 /*
     JavaEngine<TrainingData, EmptyParams, TrainingData, Query, Prediction, Actual> engine =
       new JavaEngineBuilder<

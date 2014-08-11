@@ -1,6 +1,6 @@
 package io.prediction.examples.java.itemrec;
 
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 import io.prediction.controller.java.JavaMetrics;
 import io.prediction.examples.java.itemrec.data.Query;
 import io.prediction.examples.java.itemrec.data.Prediction;

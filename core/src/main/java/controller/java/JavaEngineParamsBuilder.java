@@ -1,6 +1,5 @@
 package io.prediction.controller.java;
 
-import io.prediction.controller.EmptyParams;
 import io.prediction.controller.Params;
 
 import java.util.ArrayList;
