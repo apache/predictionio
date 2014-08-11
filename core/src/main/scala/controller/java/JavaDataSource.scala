@@ -32,8 +32,20 @@ abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
     JavaUtils.fakeClassTag[DSP]) {
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
     implicit val fakeTdTag: ClassTag[TD] = JavaUtils.fakeClassTag[TD]
+    val datasets = sc.parallelize(Array(None)).flatMap(_ => read().toSeq).zipWithIndex
+    datasets.cache
+    val dps = datasets.map(t => t._2 -> t._1._1).collect.toMap
+    dps.map { t =>
+      val dataset = datasets.filter(_._2 == t._1).map(_._1)
+      val dp = t._2
+      val td = dataset.map(_._2)
+      val qa = dataset.map(_._3.toSeq).flatMap(identity)
+      (dp, td, qa)
+    }.toSeq
+    /*
     read().toSeq.map(e =>
       (e._1, sc.parallelize(Seq(e._2)), sc.parallelize(e._3.toSeq)))
+    */
   }
 
   /** Implement this method to only return training data from a data source.
