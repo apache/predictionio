@@ -73,6 +73,11 @@ functioning properly on your computer.
 
 5. Save ``conf/pio-env.sh`` and you are done!
 
+Quickstart
+===========
+
+* [Scala - Hello World](examples/scala-local-helloworld/README.md)
+* [Java - Hello World](examples/java-local-helloworld/README.md)
 
 Tutorials
 =========
