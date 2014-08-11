@@ -2,7 +2,7 @@ package io.prediction.examples.java.regression;
 
 import io.prediction.controller.java.JavaMetrics;
 import java.lang.Iterable;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 import scala.Tuple2;
 import java.util.List;
 import java.util.ArrayList;

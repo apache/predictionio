@@ -2,7 +2,7 @@ package io.prediction.examples.java.recommendations.tutorial4;
 
 import java.util.Arrays;
 import io.prediction.controller.java.LJavaDataSource;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 import scala.Tuple2;
 import scala.Tuple3;
 import java.io.File;
@@ -81,7 +81,7 @@ public class DataSource extends LJavaDataSource<
       logger.error("Caught FileNotFoundException " + e.getMessage());
       System.exit(1);
     } catch (Exception e) {
-      logger.error("Can't parse file. Caught Exception: " + e.getMessage() 
+      logger.error("Can't parse file. Caught Exception: " + e.getMessage()
           + "Trace: " + Arrays.toString(e.getStackTrace()));
       System.exit(1);
     }
@@ -91,7 +91,7 @@ public class DataSource extends LJavaDataSource<
 
   public List<TrainingData.Rating> getRatings() {
     List<TrainingData.Rating> ratings = new ArrayList<TrainingData.Rating>();
-    
+
     List<String[]> tokensList = readFile(params.dir + "u.data", "[\t,]",
         (params.addFakeData) ? FakeData.ratingData : new ArrayList<String>());
 
@@ -120,15 +120,15 @@ public class DataSource extends LJavaDataSource<
     List<String[]> tokensList = readFile(params.dir + "u.item", "[\\|]",
         (params.addFakeData) ? FakeData.itemData : new ArrayList<String>());
 
-    
+
     Map<Integer, String[]> itemInfo = new HashMap <> ();
     for (String[] tokens : tokensList) {
       itemInfo.put(Integer.parseInt(tokens[0]), tokens);
     }
-    
+
     return itemInfo;
   }
-  
+
   public Map<Integer, String[]> getUserInfo() {
     List<String[]> tokensList = readFile(params.dir + "u.user", "[\\|]",
         (params.addFakeData) ? FakeData.userData : new ArrayList<String>());

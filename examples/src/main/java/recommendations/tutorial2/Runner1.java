@@ -5,8 +5,8 @@ import io.prediction.examples.java.recommendations.tutorial1.Query;
 import io.prediction.examples.java.recommendations.tutorial1.DataSource;
 import io.prediction.examples.java.recommendations.tutorial1.DataSourceParams;
 
-import io.prediction.controller.EmptyParams;
-import io.prediction.controller.IEngineFactory;
+import io.prediction.controller.java.EmptyParams;
+import io.prediction.controller.java.IJavaEngineFactory;
 import io.prediction.controller.java.JavaSimpleEngine;
 import io.prediction.controller.java.JavaSimpleEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
@@ -18,7 +18,7 @@ public class Runner1 {
 
   // During development, one can build a semi-engine, only add the first few layers. In this
   // particular example, we only add until dataSource layer
-  private static class HalfBakedEngineFactory implements IEngineFactory {
+  private static class HalfBakedEngineFactory implements IJavaEngineFactory {
     public JavaSimpleEngine<TrainingData, Object, Query, Float, Object> apply() {
       return new JavaSimpleEngineBuilder<
         TrainingData, Object, Query, Float, Object> ()

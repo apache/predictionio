@@ -13,7 +13,7 @@ To test the *DataSource* component, we can simply create an Engine with the
 *DataSource* component only and leave other components empty:
 
 ```java
-private static class HalfBakedEngineFactory implements IEngineFactory {
+private static class HalfBakedEngineFactory implements IJavaEngineFactory {
   public JavaSimpleEngine<TrainingData, Object, Query, Float, Object> apply() {
     return new JavaSimpleEngineBuilder<
       TrainingData, Object, Query, Float, Object> ()
@@ -90,7 +90,7 @@ By simply adding `addAlgorithmClass()` and `addAlgorithmParams()` in the
 `Algorithm` class in the workflow as well, as shown in `Runner2.java`:
 
 ```java
-private static class HalfBakedEngineFactory implements IEngineFactory {
+private static class HalfBakedEngineFactory implements IJavaEngineFactory {
   public JavaSimpleEngine<TrainingData, Object, Query, Float, Object> apply() {
     return new JavaSimpleEngineBuilder<
       TrainingData, Object, Query, Float, Object> ()

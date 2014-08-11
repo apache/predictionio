@@ -3,8 +3,8 @@ package io.prediction.examples.java.recommendations.tutorial5;
 import io.prediction.examples.java.recommendations.tutorial1.DataSourceParams;
 import io.prediction.examples.java.recommendations.tutorial3.Metrics;
 
-import io.prediction.controller.EmptyParams;
-import io.prediction.controller.IEngineFactory;
+import io.prediction.controller.java.EmptyParams;
+import io.prediction.controller.java.IJavaEngineFactory;
 import io.prediction.controller.java.JavaSimpleEngine;
 import io.prediction.controller.java.JavaSimpleEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;

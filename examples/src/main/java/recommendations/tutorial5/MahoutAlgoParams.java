@@ -1,8 +1,8 @@
 package io.prediction.examples.java.recommendations.tutorial5;
 
-import io.prediction.controller.Params;
+import io.prediction.controller.java.JavaParams;
 
-public class MahoutAlgoParams implements Params {
+public class MahoutAlgoParams implements JavaParams {
 
   String itemSimilarity;
 

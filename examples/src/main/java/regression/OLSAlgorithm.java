@@ -3,7 +3,7 @@ package io.prediction.examples.java.regression;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.linear.RealVector;
 import java.util.Arrays;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 
 import io.prediction.controller.java.LJavaAlgorithm;
 

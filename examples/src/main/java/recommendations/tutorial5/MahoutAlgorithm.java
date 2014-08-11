@@ -1,7 +1,7 @@
 package io.prediction.examples.java.recommendations.tutorial5;
 
 import io.prediction.controller.java.LJavaAlgorithm;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 import io.prediction.examples.java.recommendations.tutorial1.TrainingData;
 import io.prediction.examples.java.recommendations.tutorial1.Query;
 import io.prediction.examples.util.MahoutUtil;

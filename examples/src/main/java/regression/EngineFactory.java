@@ -1,10 +1,10 @@
 package io.prediction.examples.java.regression;
 
-import io.prediction.controller.IEngineFactory;
+import io.prediction.controller.java.IJavaEngineFactory;
 import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
 
-public class EngineFactory implements IEngineFactory {
+public class EngineFactory implements IJavaEngineFactory {
   public JavaEngine<TrainingData, Integer, TrainingData, Double[], Double, Double> apply() {
     return new JavaEngineBuilder<TrainingData, Integer, TrainingData, Double[], Double, Double> ()
       .dataSourceClass(DataSource.class)

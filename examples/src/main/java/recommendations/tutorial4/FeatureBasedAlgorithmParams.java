@@ -1,10 +1,10 @@
 package io.prediction.examples.java.recommendations.tutorial4;
 
-import io.prediction.controller.Params;
+import io.prediction.controller.java.JavaParams;
 
 // actual score = (rating - drift) / scale if min <= rating <= max
 // if rating is outside [min, max], that scoring will not be used.
-public class FeatureBasedAlgorithmParams implements Params {
+public class FeatureBasedAlgorithmParams implements JavaParams {
   public final double min;
   public final double max;
   public final double drift;

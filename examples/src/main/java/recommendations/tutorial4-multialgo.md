@@ -117,7 +117,7 @@ this user likes comedy and animation but dislikes drama.
 The movie lens rating is an integer ranged from 1 to 5, we incorporate it into
 the algorithm with the following parameters:
 ```java
-public class FeatureBasedAlgorithmParams implements Params {
+public class FeatureBasedAlgorithmParams implements JavaParams {
   public final double min;
   public final double max;
   public final double drift;
@@ -229,7 +229,7 @@ You should be able to find the run id from console, something like this:
 ### Start server
 As the training is completed, you can start a server
 ```
-$ ../bin/run-server --runId xTFSs5seQBSKoAaq5k8G-A
+$ ../bin/run-server --engineInstanceId xTFSs5seQBSKoAaq5k8G-A
 ```
 
 ### Try a few things
@@ -292,7 +292,7 @@ For example, we use "featurebased" for the feature-based algorithm, and
 "collaborative" for the collaborative-filtering algorithm.
 
 ```java
-public class EngineFactory implements IEngineFactory {
+public class EngineFactory implements IJavaEngineFactory {
   public JavaEngine<TrainingData, EmptyParams, PreparedData, Query, Float, Object> apply() {
     return new JavaEngineBuilder<
       TrainingData, EmptyParams, PreparedData, Query, Float, Object> ()
@@ -377,7 +377,7 @@ $ ../bin/run-train \
 2014-08-05 15:41:58,479 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
 2014-08-05 15:41:59,447 INFO  APIDebugWorkflow$ - Run information saved with ID: 41205x9wSo20Fsxm4Ic8BQ
 
-$ ../bin/run-server --runId 41205x9wSo20Fsxm4Ic8BQ
+$ ../bin/run-server --engineInstanceId 41205x9wSo20Fsxm4Ic8BQ
 ```
 
 By default, the server starts on port 8000. Open it with your browser and you

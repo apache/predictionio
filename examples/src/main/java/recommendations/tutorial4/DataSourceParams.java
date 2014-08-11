@@ -1,8 +1,8 @@
 package io.prediction.examples.java.recommendations.tutorial4;
 
-import io.prediction.controller.Params;
+import io.prediction.controller.java.JavaParams;
 
-public class DataSourceParams implements Params {
+public class DataSourceParams implements JavaParams {
   public String dir;
   public boolean addFakeData;
 

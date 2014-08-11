@@ -2,7 +2,7 @@ package io.prediction.examples.java.recommendations.tutorial3;
 
 import io.prediction.examples.java.recommendations.tutorial1.Query;
 import io.prediction.controller.java.JavaMetrics;
-import io.prediction.controller.EmptyParams;
+import io.prediction.controller.java.EmptyParams;
 
 import scala.Tuple2;
 import java.util.Arrays;

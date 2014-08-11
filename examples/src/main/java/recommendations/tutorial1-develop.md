@@ -137,13 +137,13 @@ the path of file containing the rating data.
 Note that each controller component (*DataSource, Preparator, Algorithm, Serving
 and Metrics*) is restricted to having empty constructor or constructor which
 takes exactly one argument which must implement the
-`io.prediction.controller.Params` interface.
+`io.prediction.controller.java.JavaParams` interface.
 
 We can define the DataSource parameter class as following (in
 `DataSourceParams.java`):
 
 ```java
-public class DataSourceParams implements Params {
+public class DataSourceParams implements JavaParams {
   public String filePath; // file path
 
   public DataSourceParams(String path) {
@@ -219,7 +219,7 @@ similarity lower than this threshold. The algorithm parameters class is defined
 in `AlgoParams.java`:
 
 ```java
-public class AlgoParams implements Params {
+public class AlgoParams implements JavaParams {
   public double threshold;
 
   public AlgoParams(double threshold) {
@@ -297,11 +297,11 @@ PredictionIO framework requires an *Engine Factory* which returns an *Engine*
 with the controller components defined.
 
 The *Engine Factory* must implement the
-`io.prediction.controller.IEngineFactory` interface and implements the `apply()`
+`io.prediction.controller.java.IJavaEngineFactory` interface and implements the `apply()`
 method (as shown in `EngineFactory.java`):
 
 ```java
-public class EngineFactory implements IEngineFactory {
+public class EngineFactory implements IJavaEngineFactory {
   public JavaSimpleEngine<TrainingData, Object, Query, Float, Object> apply() {
     return new JavaSimpleEngineBuilder<
       TrainingData, Object, Query, Float, Object> ()
@@ -448,7 +448,7 @@ Note that there is `ID` returned at the end. In this example, it's
 Next, execute the `../bin/run-server` command with the returned `ID`:
 
 ```
-$ ../bin/run-server --runId J9h0h4aUQKGVEwRm7pHF5A
+$ ../bin/run-server --engineInstanceId J9h0h4aUQKGVEwRm7pHF5A
 ```
 
 This will create a server that by default binds to http://localhost:8000. You

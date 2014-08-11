@@ -1,7 +1,7 @@
 package io.prediction.examples.java.recommendations.tutorial4;
 
-import io.prediction.controller.EmptyParams;
-import io.prediction.controller.IEngineFactory;
+import io.prediction.controller.java.EmptyParams;
+import io.prediction.controller.java.IJavaEngineFactory;
 import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
