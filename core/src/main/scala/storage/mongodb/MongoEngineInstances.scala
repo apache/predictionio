@@ -7,7 +7,8 @@ import com.mongodb.casbah.commons.conversions.scala._
 import com.github.nscala_time.time.Imports._
 
 /** MongoDB implementation of EngineInstances. */
-class MongoRuns(client: MongoClient, dbname: String) extends EngineInstances {
+class MongoEngineInstances(client: MongoClient, dbname: String)
+  extends EngineInstances {
   private val db = client(dbname)
   private val engineInstanceColl = db("engineInstances")
   private val seq = new MongoSequences(db)
