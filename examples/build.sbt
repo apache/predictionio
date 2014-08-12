@@ -35,4 +35,13 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
+run in Compile <<= Defaults.runTask(
+  fullClasspath in Compile,
+  mainClass in (Compile, run),
+  runner in (Compile, run))
+
+runMain in Compile <<= Defaults.runMainTask(
+  fullClasspath in Compile,
+  runner in (Compile, run))
+
 lazy val root = (project in file(".")).enablePlugins(SbtTwirl)

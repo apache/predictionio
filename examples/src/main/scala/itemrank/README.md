@@ -22,7 +22,27 @@ In each day (or other time unit), there is a list of items to be shown to users 
 * U2IActions
 * ItemSets - the list of items at each day (or other time unit)
 
-Import Sample data
+Import Sample Data
+==================
+Run under examples.
+```
+examples$ set -a
+examples$ source ../conf/pio-env.sh
+examples$ set +a
+
+examples$ ../sbt/sbt "runMain io.prediction.examples.itemrank.CreateSampleData"
+```
+
+
+Run Evaluation
+==============
+```
+../bin/pio-run  io.prediction.examples.itemrank.DetailedRunner
+
+../bin/pio-run  io.prediction.examples.itemrank.Runner
+```
+
+Import Sample data (Obsolete)
 ==================
 
 Start Mongo:
@@ -41,7 +61,7 @@ For example, to import to appid=4 with 90 days of data:
 	$ sbt/sbt "engines/runMain io.prediction.examples.itemrank.CreateSampleData --appid 4 --days 90"
 
 
-Runner with spark-submit
+Runner with spark-submit (Obsolete)
 =========================
 
 At project root directory (**Image/**):
@@ -51,7 +71,7 @@ At project root directory (**Image/**):
 		$ $SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,/Users/ckh/dev/mac_dev/pio/Imagine/engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "io.prediction.examples.itemrank.Runner" core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
 
 
-Run Evaluation
+Run Evaluation (Obsolete)
 ==============
 
 At project root directory (**Image/**):
