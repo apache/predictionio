@@ -34,3 +34,12 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
+
+run in Compile <<= Defaults.runTask(
+  fullClasspath in Compile,
+  mainClass in (Compile, run),
+  runner in (Compile, run))
+
+runMain in Compile <<= Defaults.runMainTask(
+  fullClasspath in Compile,
+  runner in (Compile, run))
