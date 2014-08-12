@@ -1,0 +1,44 @@
+@import io.prediction.examples.itemrank.DetailedMetricsData
+@(data: DetailedMetricsData)
+
+<html>
+  <head>
+    <title>ItemRankMetrics</title>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+
+      table, td, th {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <div>Algo Mean: @data.algoMean</div>
+    <div>Baseline Mean: @data.baselineMean</div>
+    
+    @for(aggregation <- data.aggregations) {
+    <div>
+      <h4>@aggregation._1</h4>
+      <table>
+        <tr>
+          <th>Key</th>
+          <th>Average</th>
+          <th>Count</th>
+        </tr>
+        @for(kv <- aggregation._2) {
+        @defining(kv) { case(k, v) => 
+        <tr>
+          <td>@k</td>
+          <td>@{f"${v.average}%.4f"}</td>
+          <td>@v.count</td>
+        </tr>
+        }
+        }
+      </table>
+    </div>
+    }
+  </body>
+</html>
+

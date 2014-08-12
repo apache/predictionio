@@ -34,3 +34,5 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
+
+lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
