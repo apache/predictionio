@@ -59,9 +59,7 @@ case class ServerConfig(
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
   ip: String = "localhost",
-  port: Int = 8000,
-  sparkMaster: String = "local",
-  sparkExecutorMemory: String = "4g")
+  port: Int = 8000)
 
 case class StartServer()
 case class StopServer()
@@ -86,12 +84,6 @@ object CreateServer extends Logging {
       opt[Int]("port") action { (x, c) =>
         c.copy(port = x)
       } text("Port to bind to (default: 8000).")
-      opt[String]("sparkMaster") action { (x, c) =>
-        c.copy(sparkMaster = x)
-      } text("Apache Spark master URL (default: local).")
-      opt[String]("sparkExecutorMemory") action { (x, c) =>
-        c.copy(sparkExecutorMemory = x)
-      } text("Apache Spark executor memory (default: 4g)")
       opt[String]("engineInstanceId") required() action { (x, c) =>
         c.copy(engineInstanceId = x)
       } text("Engine instance ID.")

@@ -64,6 +64,11 @@ trait EngineInstances {
   def getLatestCompleted(engineId: String, engineVersion: String):
     Option[EngineInstance]
 
+  /** Get instances that are produced by evaluation and have run to completion,
+    * reverse sorted by the start time.
+    */
+  def getEvalCompleted(): Seq[EngineInstance]
+
   /** Update a EngineInstance. */
   def update(i: EngineInstance): Unit
 

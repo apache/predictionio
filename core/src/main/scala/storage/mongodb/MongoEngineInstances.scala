@@ -60,6 +60,13 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       }
   }
 
+  def getEvalCompleted() = {
+    engineInstanceColl.find(MongoDBObject("status" -> "EVALCOMPLETED")).sort(
+      MongoDBObject("startTime" -> -1)).map {
+        dbObjToEngineInstance(_)
+      }.toSeq
+  }
+
   def update(i: EngineInstance): Unit = {
     val obj = MongoDBObject(
       "_id"                    -> i.id,

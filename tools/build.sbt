@@ -5,13 +5,16 @@ assemblySettings
 name := "tools"
 
 libraryDependencies ++= Seq(
-  "com.github.scopt"       %% "scopt"           % "3.2.0",
-  "org.apache.hadoop"       % "hadoop-common"   % "2.4.1",
-  "org.apache.hadoop"       % "hadoop-hdfs"     % "2.4.1",
-  "org.clapper"            %% "grizzled-slf4j"  % "1.0.2",
-  "org.json4s"             %% "json4s-native"   % "3.2.6",
-  "org.json4s"             %% "json4s-ext"      % "3.2.6",
-  "org.scalaj"             %% "scalaj-http"     % "0.3.16")
+  "com.github.scopt"       %% "scopt"          % "3.2.0",
+  "io.spray"                % "spray-can"      % "1.2.1",
+  "io.spray"                % "spray-routing"  % "1.2.1",
+  "org.apache.hadoop"       % "hadoop-common"  % "2.4.1",
+  "org.apache.hadoop"       % "hadoop-hdfs"    % "2.4.1",
+  "org.clapper"            %% "grizzled-slf4j" % "1.0.2",
+  "org.json4s"             %% "json4s-native"  % "3.2.6",
+  "org.json4s"             %% "json4s-ext"     % "3.2.6",
+  "org.scalaj"             %% "scalaj-http"    % "0.3.16",
+  "org.spark-project.akka" %% "akka-actor"     % "2.2.3-shaded-protobuf")
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {

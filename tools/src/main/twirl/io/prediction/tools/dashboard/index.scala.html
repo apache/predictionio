@@ -1,0 +1,61 @@
+@import io.prediction.storage.EngineInstance
+@import io.prediction.tools.dashboard.DashboardConfig
+@import org.joda.time.DateTime
+@import org.joda.time.format.DateTimeFormat
+@(dc: DashboardConfig,
+  dashboardStartTime: DateTime,
+  env: Map[String, String],
+  evalCompletedInstances: Seq[EngineInstance])
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PredictionIO Dashboard at @{dc.ip}:@{dc.port}</title>
+    <link href="/assets/favicon.png" rel="shortcut icon" />
+    <link href="/assets/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="page-header">
+        <h1>PredictionIO Dashboard at @{dc.ip}:@{dc.port}</h1>
+        <p class="lead">Started on: @{DateTimeFormat.forStyle("FF").print(dashboardStartTime)}</p>
+      </div>
+      <h2>Completed Evaluations</h2>
+      <table class="table table-bordered table-striped">
+        <tr>
+          <th>ID</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Batch</th>
+          <th>Engine ID</th>
+          <th>Engine Version</th>
+          <th>Metrics Class</th>
+          <th>View Metrics Results As</th>
+        </tr>
+        @for(i <- evalCompletedInstances) {
+        <tr>
+          <td>@{i.id}</td>
+          <td>@{DateTimeFormat.forStyle("MM").print(i.startTime)}</td>
+          <td>@{DateTimeFormat.forStyle("MM").print(i.endTime)}</td>
+          <td>@{i.batch}</td>
+          <td>@{i.engineId}</td>
+          <td>@{i.engineVersion}</td>
+          <td>@{i.metricsClass}</td>
+          <td>
+            <a href="/engine_instances/@{i.id}/metrics_results.html" class="btn btn-primary">HTML</a>
+            <a href="/engine_instances/@{i.id}/metrics_results.txt" class="btn btn-success">Plain Text</a>
+          </td>
+        </tr>
+        }
+      </table>
+      <h2>Environment</h2>
+      <p>The following values are accurate up to the time when the dashboard was launched.</p>
+      <table class="table table-bordered table-striped">
+        @for(k <- env.keys.toSeq.sorted) {
+        <tr><th>@{k}</th><td>@{env(k)}</td></tr>
+        }
+      </table>
+    </div>
+    <script src="/assets/jquery-1.11.1.min.js"></script>
+    <script src="/assets/bootstrap-3.2.0-dist/js/bootstrap.min.js"></script>
+  </body>
+</html>

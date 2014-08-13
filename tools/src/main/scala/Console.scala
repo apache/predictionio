@@ -4,6 +4,8 @@ import io.prediction.controller.Utils
 import io.prediction.storage.EngineManifest
 import io.prediction.storage.EngineManifestSerializer
 import io.prediction.storage.Storage
+import io.prediction.tools.dashboard.Dashboard
+import io.prediction.tools.dashboard.DashboardConfig
 
 import grizzled.slf4j.Logging
 import org.json4s._
@@ -183,6 +185,19 @@ object Console extends Logging {
             c.copy(port = x)
           } text("Port to unbind from. Default: 8000")
         )
+      note("")
+      cmd("dashboard").
+        text("Launch a dashboard at the specific IP and port.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "dashboard")
+        } children(
+          opt[String]("ip") action { (x, c) =>
+            c.copy(ip = x)
+          } text("IP to bind to. Default: localhost"),
+          opt[Int]("port") action { (x, c) =>
+            c.copy(port = x)
+          } text("Port to bind to. Default: 8000")
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -206,6 +221,8 @@ object Console extends Logging {
           deploy(ca)
         case Seq("undeploy") =>
           undeploy(ca)
+        case Seq("dashboard") =>
+          dashboard(ca)
         case _ =>
           error(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -277,6 +294,13 @@ object Console extends Logging {
         sys.exit(1)
       }
     }
+  }
+
+  def dashboard(ca: ConsoleArgs): Unit = {
+    info(s"Creating dashboard at ${ca.ip}:${ca.port}")
+    Dashboard.createDashboard(DashboardConfig(
+      ip = ca.ip,
+      port = ca.port))
   }
 
   def undeploy(ca: ConsoleArgs): Unit = {

@@ -86,6 +86,20 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
+  def getEvalCompleted() = {
+    try {
+      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
+        termFilter("status", "EVALCOMPLETED")).
+        addSort("startTime", SortOrder.DESC).get
+      val hits = response.getHits().hits().toSeq
+      hits.map(h => read[EngineInstance](h.getSourceAsString))
+    } catch {
+      case e: ElasticsearchException =>
+        error(e.getMessage)
+        Seq()
+    }
+  }
+
   def update(i: EngineInstance): Unit = {
     try {
       client.prepareUpdate(index, estype, i.id).setDoc(write(i)).get

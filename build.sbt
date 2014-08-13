@@ -26,7 +26,8 @@ lazy val core = (project in file("core")).
   enablePlugins(SbtTwirl)
 
 lazy val tools = (project in file("tools")).
-  dependsOn(core)
+  dependsOn(core).
+  enablePlugins(SbtTwirl)
 
 scalaJavaUnidocSettings
 
