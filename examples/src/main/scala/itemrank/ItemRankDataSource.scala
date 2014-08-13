@@ -7,23 +7,14 @@ import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
 import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._
 
-object ItemRankDataSource {
-  /*
-  @transient lazy val usersDb = Storage.getAppdataUsers()
-  @transient lazy val itemsDb = Storage.getAppdataItems()
-  @transient lazy val u2iDb = Storage.getAppdataU2IActions()
-  @transient lazy val itemSetsDb = Storage.getAppdataItemSets()
-*/
-  @transient lazy val usersDb = Storage.getAppdataUsers()
-  @transient lazy val itemsDb = Storage.getAppdataItems()
-  @transient lazy val u2iDb = Storage.getAppdataU2IActions()
-  @transient lazy val itemSetsDb = Storage.getAppdataItemSets()
-
-}
-
 class ItemRankDataSource(dsp: DataSourceParams)
   extends LDataSource[DataSourceParams,
     DataParams, TrainingData, Query, Actual] {
+  
+  @transient lazy val usersDb = Storage.getAppdataUsers()
+  @transient lazy val itemsDb = Storage.getAppdataItems()
+  @transient lazy val u2iDb = Storage.getAppdataU2IActions()
+  @transient lazy val itemSetsDb = Storage.getAppdataItemSets()
 
   override def read(): Seq[(DataParams, TrainingData,
     Seq[(Query, Actual)])] = {
@@ -69,11 +60,6 @@ class ItemRankDataSource(dsp: DataSourceParams)
   }
 
   private def prepareTraining(params: TrainingDataParams): TrainingData = {
-    val usersDb = ItemRankDataSource.usersDb
-    val itemsDb = ItemRankDataSource.itemsDb
-    val u2iDb = ItemRankDataSource.u2iDb
-    val itemSetsDb = ItemRankDataSource.itemSetsDb
-
     if (params.verbose)
       println(params)
 
@@ -142,11 +128,6 @@ class ItemRankDataSource(dsp: DataSourceParams)
 
   private def prepareValidation(params: ValidationDataParams):
     Seq[(Query, Actual)] = {
-    val usersDb = ItemRankDataSource.usersDb
-    val itemsDb = ItemRankDataSource.itemsDb
-    val u2iDb = ItemRankDataSource.u2iDb
-    val itemSetsDb = ItemRankDataSource.itemSetsDb
-
     val usersSet: Set[String] = usersDb.getByAppid(params.appid)
       .map(_.id)
       .toSet
