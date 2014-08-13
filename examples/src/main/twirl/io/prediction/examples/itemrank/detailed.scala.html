@@ -1,5 +1,5 @@
 @import io.prediction.examples.itemrank.DetailedMetricsData
-@(data: DetailedMetricsData)
+@(data: DetailedMetricsData, json: String)
 
 <html>
   <head>
@@ -17,6 +17,10 @@
   <body>
     <div>Algo Mean: @data.algoMean</div>
     <div>Baseline Mean: @data.baselineMean</div>
+
+    <script>
+      var data = @Html(json);
+    </script>
     
     @for(aggregation <- data.aggregations) {
     <div>

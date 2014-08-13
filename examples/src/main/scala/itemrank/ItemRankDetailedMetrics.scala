@@ -7,13 +7,11 @@ import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
 import breeze.stats.{ mean, meanAndVariance }
 
-/*
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{read, write}
 import org.json4s.native.Serialization
-*/
 
 import java.io.FileOutputStream
 import java.io.ObjectOutputStream
@@ -35,7 +33,10 @@ case class DetailedMetricsData(
   val aggregations: Seq[(String, Seq[(String, Stats)])])
   extends Serializable {
  
-  override def toString(): String = html.detailed(this).toString
+  override def toString(): String = {
+    implicit val formats = DefaultFormats
+    html.detailed(this, write(this)).toString
+  }
 }
 
 // optOutputPath is used for debug purpose. If specified, metrics will output
@@ -188,11 +189,10 @@ object ItemRankDetailedMain {
   }
 
   def render(data: DetailedMetricsData, path: String) {
-    val content = html.detailed(data)
     val outputPath = s"${path}.html"
     println("OutputPath: " + outputPath)
     val writer = new PrintWriter(new File(outputPath))
-    writer.write(content.toString)
+    writer.write(data.toString)
     writer.close()
   }
 
