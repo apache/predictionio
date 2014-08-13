@@ -18,10 +18,11 @@ import java.io.ObjectOutputStream
 import java.io.FileInputStream
 import java.io.ObjectInputStream
 
-
 import scala.io.Source
 import java.io.PrintWriter
 import java.io.File
+
+import io.prediction.examples.util.{ MetricsVisualization => MV }
 
 case class Stats(val average: Double, val count: Int) extends Serializable
 
@@ -128,8 +129,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     // FIXME: Use param opt path
     params.optOutputPath.map { path => 
-      ItemRankDetailedMain.save(outputData, path)
-      println("Output to: $path")
+      MV.save(outputData, path)
     }
 
     outputData
@@ -163,40 +163,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
 }
 
-// Work around for classNotFound error.
-class ObjectInputStreamWithCustomClassLoader(
-  fileInputStream: FileInputStream
-) extends ObjectInputStream(fileInputStream) {
-  override def resolveClass(desc: java.io.ObjectStreamClass): Class[_] = {
-    try { Class.forName(desc.getName, false, getClass.getClassLoader) }
-    catch { case ex: ClassNotFoundException => super.resolveClass(desc) }
-  }
-}
-
-// Helper for rendering pre-calcuated data.
 object ItemRankDetailedMain {
-  def save(data: DetailedMetricsData, path: String) {
-    val oos = new ObjectOutputStream(new FileOutputStream(path))
-    oos.writeObject(data)
-    oos.close()
-  }
-
-  def load(path: String): DetailedMetricsData = {
-    val ois = new ObjectInputStreamWithCustomClassLoader(new FileInputStream(path))
-    val obj = ois.readObject().asInstanceOf[DetailedMetricsData]
-    ois.close
-    return obj
-  }
-
-  def render(data: DetailedMetricsData, path: String) {
-    val outputPath = s"${path}.html"
-    println("OutputPath: " + outputPath)
-    val writer = new PrintWriter(new File(outputPath))
-    writer.write(data.toString)
-    writer.close()
-  }
-
   def main(args: Array[String]) {
-    render(load(args(0)), args(0))
+    MV.render(MV.load[DetailedMetricsData](args(0)), args(0))
   }
 }
+
+

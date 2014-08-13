@@ -20,6 +20,14 @@ import java.lang.{ Float => JFloat }
 import java.lang.{ Long => JLong }
 
 import grizzled.slf4j.Logger
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
+import java.io.FileInputStream
+import java.io.ObjectInputStream
+
+import scala.io.Source
+import java.io.PrintWriter
+import java.io.File
 
 /** Mahout Integration helper functions */
 object MahoutUtil {
@@ -134,5 +142,38 @@ object MathUtil {
   /** Java's Average precision at k */
   def jAveragePrecisionAtK[T](k: Integer, p: JList[T], r: JSet[T]): Double = {
     averagePrecisionAtK(k, asScalaBuffer[T](p).toList, asScalaSet[T](r).toSet)
+  }
+}
+
+object MetricsVisualization {
+  class ObjectInputStreamWithCustomClassLoader(
+    fileInputStream: FileInputStream
+  ) extends ObjectInputStream(fileInputStream) {
+    override def resolveClass(desc: java.io.ObjectStreamClass): Class[_] = {
+      try { Class.forName(desc.getName, false, getClass.getClassLoader) }
+      catch { case ex: ClassNotFoundException => super.resolveClass(desc) }
+    }
+  }
+
+  def save[T](data: T, path: String) {
+    println(s"Output to: $path")
+    val oos = new ObjectOutputStream(new FileOutputStream(path))
+    oos.writeObject(data)
+    oos.close()
+  }
+
+  def load[T](path: String): T = {
+    val ois = new ObjectInputStreamWithCustomClassLoader(new FileInputStream(path))
+    val obj = ois.readObject().asInstanceOf[T]
+    ois.close
+    return obj
+  }
+
+  def render[T](data: T, path: String) {
+    val outputPath = s"${path}.html"
+    println(s"OutputPath: $outputPath")
+    val writer = new PrintWriter(new File(outputPath))
+    writer.write(data.toString)
+    writer.close()
   }
 }
