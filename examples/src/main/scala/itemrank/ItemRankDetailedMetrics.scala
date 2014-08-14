@@ -24,7 +24,13 @@ import java.io.File
 
 import io.prediction.examples.util.{ MetricsVisualization => MV }
 
-case class Stats(val average: Double, val count: Int) extends Serializable
+case class Stats(
+  val average: Double, 
+  val count: Long,
+  val stdev: Double,
+  val min: Double,
+  val max: Double
+) extends Serializable
 
 case class DetailedMetricsData(
   val baselineMean: Double,
@@ -71,7 +77,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     metricUnits: Seq[MetricUnit]): Seq[MetricUnit] = metricUnits
   
   def calculate(values: Seq[Double]): Stats = {
-    Stats(values.sum / values.size, values.size)
+    val (mean, variance, count) = meanAndVariance(values)
+    Stats(mean, count, math.sqrt(variance), values.min, values.max)
+    //Stats(values.sum / values.size, values.size)
   }
 
   def aggregate(

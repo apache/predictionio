@@ -12,10 +12,16 @@
       table, td, th {
         border: 1px solid black;
       }
-      #mid div {
+      #mid>div {
         display:inline-block;
         vertical-align: top;
         margin: 4px;
+        border-style:solid;
+        border-width:thin;
+        border-color:#aaa;
+      }
+      #mid p {
+        margin: 0;
       }
     </style>
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
@@ -61,23 +67,38 @@
           var aggData = aggregation._2;
           
           var data = new google.visualization.DataTable();
-          data.addColumn('string', name);
+          //data.addColumn('string', name);
+          data.addColumn('string', 'Key');
           data.addColumn('number', 'Average');
+          data.addColumn('number', 'Stdev');
           data.addColumn('number', 'Count');
+          data.addColumn('number', 'Min');
+          data.addColumn('number', 'Max');
 
           for (i=0; i < aggData.length; i++) {
             var row = aggData[i];
-            data.addRow([row._1, row._2.average, row._2.count]);
+            data.addRow([row._1, row._2.average, row._2.stdev, row._2.count,
+                row._2.min, row._2.max]);
           }
 
           var formatter = new google.visualization.NumberFormat(
               {fractionDigits: 4})
-          formatter.format(data, 1); // Apply formatter to second column
+          formatter.format(data, 1); 
+          formatter.format(data, 2); 
+          formatter.format(data, 4); 
+          formatter.format(data, 5); 
 
           var newDiv = document.createElement('div');
           document.getElementById('mid').appendChild(newDiv);
-          var newTable = new google.visualization.Table(newDiv);
-          newTable.draw(data, {showRowNumber: true, width: '300px'});
+
+          var headerDiv = document.createElement('p');
+          headerDiv.innerHTML = name;
+          newDiv.appendChild(headerDiv);
+          
+          var tableDiv = document.createElement('div');
+          newDiv.appendChild(tableDiv);
+          var newTable = new google.visualization.Table(tableDiv);
+          newTable.draw(data, {showRowNumber: true, width: '480px'});
         }
 
       }
