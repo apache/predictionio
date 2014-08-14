@@ -27,16 +27,39 @@ class ESEngineInstances(client: Client, index: String)
   private val estype = "engine_instances"
 
   val indices = client.admin.indices
+  val indexExistResponse = indices.prepareExists(index).get
+  if (!indexExistResponse.isExists) {
+    indices.prepareCreate(index).get
+  }
   val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get
   if (!typeExistResponse.isExists) {
     val json =
       (estype ->
         ("properties" ->
-          ("models" -> ("type" -> "binary")) ~
+          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("startTime" -> ("type" -> "date")) ~
+          ("endTime" -> ("type" -> "date")) ~
           ("engineId" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("engineVersion" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
+          ("engineFactory" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("metricsClass" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("batch" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("dataSourceParams" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("preparatorParams" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("algorithmsParams" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("servingParams" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("metricsParams" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("models" -> ("type" -> "binary"))))
     indices.preparePutMapping(index).setType(estype).
       setSource(compact(render(json))).get
   }
