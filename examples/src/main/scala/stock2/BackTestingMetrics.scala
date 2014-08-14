@@ -5,11 +5,22 @@ import io.prediction.controller.Metrics
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization
+//import org.json4s.native.Serialization.{read, write}
+
+import io.prediction.examples.util.{ MetricsVisualization => MV }
+
+import breeze.stats.{ mean, meanAndVariance }
+
 case class BacktestingParams(
   val enterThreshold: Double,
   val exitThreshold: Double,
-  val maxPositions: Int = 1)
-extends Params {}
+  val maxPositions: Int = 1,
+  val optOutputPath: Option[String] = None
+) extends Params {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
 class DailyResult(
@@ -19,10 +30,35 @@ class DailyResult(
   val toExit: Seq[String])
 extends Serializable {}
 
+case class DailyStat (
+  val time: Long,
+  val nav: Double,
+  val ret: Double,
+  val market: Double,
+  val positionCount: Int
+) extends Serializable
+
+case class OverallStat (
+  val ret: Double,
+  val vol: Double,
+  val sharpe: Double,
+  val days: Int
+) extends Serializable
+
+case class BacktestingResult(
+  val daily: Seq[DailyStat],
+  val overall: OverallStat
+) extends Serializable {
+  override def toString(): String = {
+    implicit val formats = DefaultFormats
+    html.backtesting(this, Serialization.write(this)).toString
+  }
+}
+
 class BacktestingMetrics(val params: BacktestingParams)
   extends Metrics[
       BacktestingParams, DataParams, QueryDate, Prediction, AnyRef,
-      DailyResult, Seq[DailyResult], String] {
+      DailyResult, Seq[DailyResult], BacktestingResult] {
 
   def computeUnit(queryDate: QueryDate, prediction: Prediction, 
     unusedActual: AnyRef)
@@ -56,7 +92,7 @@ class BacktestingMetrics(val params: BacktestingParams)
     : Seq[DailyResult] = input
 
   def computeMultipleSets(input: Seq[(DataParams, Seq[DailyResult])])
-  : String = {
+  : BacktestingResult = {
     var dailyResultsSeq = input
       .map(_._2)
       .flatten
@@ -66,11 +102,14 @@ class BacktestingMetrics(val params: BacktestingParams)
     var rawData = input.head._1.rawDataB.value
     val retFrame = rawData._retFrame
     val priceFrame = rawData._priceFrame
+    val mktTicker = rawData.mktTicker
 
     val dailyNavs = ArrayBuffer[Double]()
-    val ss = ArrayBuffer[String]()
 
-    var cash = 1000000.0
+    val dailyStats = ArrayBuffer[DailyStat]()
+
+    val initCash = 1000000.0
+    var cash = initCash
     // Ticker to current size
     val positions = MMap[String, Double]()
     val maxPositions = params.maxPositions
@@ -79,10 +118,7 @@ class BacktestingMetrics(val params: BacktestingParams)
       val todayIdx = daily.dateIdx
       val today = rawData.timeIndex(todayIdx)
       val todayRet = retFrame.rowAt(todayIdx)
-
-      println(today)
-      println(todayRet)
-      println(priceFrame.rowAt(todayIdx))
+      val todayPrice = priceFrame.rowAt(todayIdx)
 
       // Update price change
       positions.keys.foreach { ticker => {
@@ -94,8 +130,6 @@ class BacktestingMetrics(val params: BacktestingParams)
         if (positions.contains(ticker)) {
           val money = positions.remove(ticker).get
           cash += money
-          val s = s"Exit . D: $today T: $ticker M: $money"
-          ss.append(s)
         }
       }}
 
@@ -108,15 +142,57 @@ class BacktestingMetrics(val params: BacktestingParams)
       .map{ ticker => {
         cash -= money
         positions += (ticker -> money)
-        val s = s"Enter. D: $today T: $ticker M: $money"
-        ss.append(s)
       }}
 
       // Book keeping
       val nav = cash + positions.values.sum     
-      val s = s"$today Nav: $nav Pos: ${positions.size}"
-      ss.append(s)
+
+      val ret = (if (dailyStats.isEmpty) 0 else {
+        val yestStats = dailyStats.last
+        val yestNav = yestStats.nav
+        (nav - yestNav) / nav - 1
+        })
+
+      dailyStats.append(DailyStat(
+        time = today.getMillis(),
+        nav = nav,
+        ret = ret,
+        market = todayPrice.first(mktTicker).get,
+        positionCount = positions.size
+      ))
     }
-    ss.mkString("\n")
+    // FIXME. Force Close the last day.
+
+    val lastStat = dailyStats.last
+
+    val dailyVariance = meanAndVariance(dailyStats.map(_.ret))._2
+    val dailyVol = math.sqrt(dailyVariance)
+    val annualVol = dailyVariance * math.sqrt(252.0)
+    val n = dailyStats.size
+    val totalReturn = lastStat.nav / initCash
+    
+    val annualReturn = math.pow(totalReturn, 252.0 / n) - 1
+    val sharpe = annualReturn / annualVol
+    
+    val overall = OverallStat(
+      annualReturn, 
+      annualVol, 
+      sharpe, 
+      n)
+
+    val result = BacktestingResult(
+      daily = dailyStats,
+      overall = overall
+    )
+    
+    params.optOutputPath.map { path => MV.save(result, path) }
+
+    result
+  }
+}
+
+object RenderMain {
+  def main(args: Array[String]) {
+    MV.render(MV.load[BacktestingResult](args(0)), args(0))
   }
 }
