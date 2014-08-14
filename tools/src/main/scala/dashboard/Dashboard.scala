@@ -58,6 +58,7 @@ trait DashboardService extends HttpService {
   val dc: DashboardConfig
   val engineInstances = Storage.getMetaDataEngineInstances
   val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_"))
+  val serverStartTime = DateTime.now
   val dashboardRoute =
     path("") {
       get {
@@ -66,7 +67,7 @@ trait DashboardService extends HttpService {
             val evalCompletedInstances = engineInstances.getEvalCompleted
             html.index(
               dc,
-              DateTime.now,
+              serverStartTime,
               pioEnvVars,
               evalCompletedInstances).toString
           }
