@@ -12,37 +12,76 @@
       table, td, th {
         border: 1px solid black;
       }
+      #mid div {
+        display:inline-block;
+        vertical-align: top;
+        margin: 4px;
+      }
     </style>
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script>
+      google.load('visualization', '1', {packages:['table', 'corechart']});
+    </script>
+    <script>
+      var rawData = @Html(json);
+    </script>
   </head>
   <body>
-    <div>Algo Mean: @data.algoMean</div>
-    <div>Baseline Mean: @data.baselineMean</div>
+    <h3>Item Rank Metrics</h3>
 
-    <script>
-      var data = @Html(json);
+    <div id='top'></div>
+    <div id='mid'></div>
+  
+    <script type='text/javascript'>
+      google.setOnLoadCallback(drawTable);
+      function drawTable() {
+        // Main data
+        var newDiv = document.createElement('div');
+        document.getElementById('top').appendChild(newDiv);
+        var newTable = new google.visualization.Table(newDiv);
+        newTable.draw(data, {showRowNumber: true, width: '300px'});
+        
+        var data = google.visualization.arrayToDataTable([
+            ['Name', 'Score', { role: 'annotation' }],
+            ['Baseline Mean', rawData.baselineMean, rawData.baselineMean],
+            ['Algo Mean', rawData.algoMean, rawData.algoMean]]);
+
+        var options = {
+          title: 'Algorithm Performance'
+        };
+
+        var chart = new google.visualization.BarChart(newDiv);
+        chart.draw(data, options);
+
+        // Aggregation Tables
+        for (aggIdx = 0; aggIdx < rawData.aggregations.length; aggIdx++) {
+
+          var aggregation = rawData.aggregations[aggIdx];
+          var name = aggregation._1;
+          var aggData = aggregation._2;
+          
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', name);
+          data.addColumn('number', 'Average');
+          data.addColumn('number', 'Count');
+
+          for (i=0; i < aggData.length; i++) {
+            var row = aggData[i];
+            data.addRow([row._1, row._2.average, row._2.count]);
+          }
+
+          var formatter = new google.visualization.NumberFormat(
+              {fractionDigits: 4})
+          formatter.format(data, 1); // Apply formatter to second column
+
+          var newDiv = document.createElement('div');
+          document.getElementById('mid').appendChild(newDiv);
+          var newTable = new google.visualization.Table(newDiv);
+          newTable.draw(data, {showRowNumber: true, width: '300px'});
+        }
+
+      }
     </script>
-    
-    @for(aggregation <- data.aggregations) {
-    <div>
-      <h4>@aggregation._1</h4>
-      <table>
-        <tr>
-          <th>Key</th>
-          <th>Average</th>
-          <th>Count</th>
-        </tr>
-        @for(kv <- aggregation._2) {
-        @defining(kv) { case(k, v) => 
-        <tr>
-          <td>@k</td>
-          <td>@{f"${v.average}%.4f"}</td>
-          <td>@v.count</td>
-        </tr>
-        }
-        }
-      </table>
-    </div>
-    }
   </body>
 </html>
 
