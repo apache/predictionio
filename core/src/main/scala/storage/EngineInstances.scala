@@ -27,6 +27,8 @@ import org.json4s.native.Serialization
  * @param metricsParams Metrics parameters of the instance.
  * @param models Trained models of all algorithms of this instance.
  * @param multipleMetricsResults Results of metrics on all data sets.
+ * @param multipleMetricsResultsHTML HTML results of metrics on all data sets.
+ * @param multipleMetricsResultsJSON JSON results of metrics on all data sets.
  */
 case class EngineInstance(
   id: String,
@@ -45,7 +47,9 @@ case class EngineInstance(
   servingParams: String,
   metricsParams: String,
   models: Array[Byte],
-  multipleMetricsResults: String)
+  multipleMetricsResults: String,
+  multipleMetricsResultsHTML: String,
+  multipleMetricsResultsJSON: String)
 
 /**
  * Base trait for implementations that interact with EngineInstances in the
@@ -97,7 +101,9 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
           servingParams = "",
           metricsParams = "",
           models = Array[Byte](),
-          multipleMetricsResults = "")
+          multipleMetricsResults = "",
+          multipleMetricsResultsHTML = "",
+          multipleMetricsResultsJSON = "")
       fields.foldLeft(seed) { case (i, field) =>
         field match {
           case JField("id", JString(id)) => i.copy(id = id)
@@ -129,8 +135,15 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
             i.copy(metricsParams = metricsParams)
           case JField("models", JString(models)) =>
             i.copy(models = BaseEncoding.base64.decode(models))
-          case JField("multipleMetricsResults", JString(multipleMetricsResults)) =>
-            i.copy(multipleMetricsResults = multipleMetricsResults)
+          case JField("multipleMetricsResults",
+            JString(multipleMetricsResults)) =>
+              i.copy(multipleMetricsResults = multipleMetricsResults)
+          case JField("multipleMetricsResultsHTML",
+            JString(multipleMetricsResultsHTML)) =>
+              i.copy(multipleMetricsResultsHTML = multipleMetricsResultsHTML)
+          case JField("multipleMetricsResultsJSON",
+            JString(multipleMetricsResultsJSON)) =>
+              i.copy(multipleMetricsResultsJSON = multipleMetricsResultsJSON)
           case _ => i
         }
       }
@@ -155,6 +168,10 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
         JField("metricsParams", JString(i.metricsParams)) ::
         JField("models", JString(BaseEncoding.base64.encode(i.models))) ::
         JField("multipleMetricsResults", JString(i.multipleMetricsResults)) ::
+        JField("multipleMetricsResultsHTML",
+          JString(i.multipleMetricsResultsHTML)) ::
+        JField("multipleMetricsResultsJSON",
+          JString(i.multipleMetricsResultsJSON)) ::
         Nil)
   }
 ))

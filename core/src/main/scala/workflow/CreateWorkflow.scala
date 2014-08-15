@@ -195,7 +195,9 @@ object CreateWorkflow extends Logging {
         servingParams = write(servingParams),
         metricsParams = write(metricsParams),
         models = Array[Byte](),
-        multipleMetricsResults = "")
+        multipleMetricsResults = "",
+        multipleMetricsResultsHTML = "",
+        multipleMetricsResultsJSON = "")
       val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
         engineInstance)
 
