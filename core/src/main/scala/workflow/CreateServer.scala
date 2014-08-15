@@ -69,6 +69,7 @@ object CreateServer extends Logging {
   val actorSystem = ActorSystem("pio-server")
   val engineInstances = Storage.getMetaDataEngineInstances
   val engineManifests = Storage.getMetaDataEngineManifests
+  val modeldata = Storage.getModelDataModels
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ServerConfig]("CreateServer") {
@@ -188,8 +189,9 @@ object CreateServer extends Logging {
 
     val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
     val kryo = KryoInjection.instance(kryoInstantiator)
-    val modelsFromEngineInstance = kryo.invert(engineInstance.models).get.
-      asInstanceOf[Seq[Seq[Any]]]
+    val modelsFromEngineInstance =
+      kryo.invert(modeldata.get(engineInstance.id).get.models).get.
+        asInstanceOf[Seq[Seq[Any]]]
     val models = modelsFromEngineInstance.head.zip(algorithms).
       zip(algorithmsParams).map {
         case ((m, a), p) =>

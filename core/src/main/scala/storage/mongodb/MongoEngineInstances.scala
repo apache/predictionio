@@ -38,7 +38,6 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       "algorithmsParams"       -> i.algorithmsParams,
       "servingParams"          -> i.servingParams,
       "metricsParams"          -> i.metricsParams,
-      "models"                 -> i.models,
       "multipleMetricsResults" -> i.multipleMetricsResults,
       "multipleMetricsResultsHTML" -> i.multipleMetricsResultsHTML,
       "multipleMetricsResultsJSON" -> i.multipleMetricsResultsJSON)
@@ -86,7 +85,6 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       "algorithmsParams"       -> i.algorithmsParams,
       "servingParams"          -> i.servingParams,
       "metricsParams"          -> i.metricsParams,
-      "models"                 -> i.models,
       "multipleMetricsResults" -> i.multipleMetricsResults,
       "multipleMetricsResultsHTML" -> i.multipleMetricsResultsHTML,
       "multipleMetricsResultsJSON" -> i.multipleMetricsResultsJSON)
@@ -113,7 +111,6 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       algorithmsParams = dbObj.as[String]("algorithmsParams"),
       servingParams = dbObj.as[String]("servingParams"),
       metricsParams = dbObj.as[String]("metricsParams"),
-      models = dbObj.as[Array[Byte]]("models"),
       multipleMetricsResults = dbObj.as[String]("multipleMetricsResults"),
       multipleMetricsResultsHTML =
         dbObj.as[String]("multipleMetricsResultsHTML"),

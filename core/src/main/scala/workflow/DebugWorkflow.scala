@@ -24,6 +24,7 @@ import io.prediction.core.Doer
 import io.prediction.core.LModelAlgorithm
 import io.prediction.storage.EngineInstance
 import io.prediction.storage.EngineInstances
+import io.prediction.storage.Model
 import io.prediction.storage.Storage
 
 import com.github.nscala_time.time.Imports.DateTime
@@ -251,7 +252,6 @@ object APIDebugWorkflow {
     algorithmsParams = "",
     servingParams = "",
     metricsParams = "",
-    models = Array[Byte](),
     multipleMetricsResults = "",
     multipleMetricsResultsHTML = "",
     multipleMetricsResultsJSON = "")
@@ -631,12 +631,14 @@ object APIDebugWorkflow {
             else
               (name -> params)
         })
+      Storage.getModelDataModels.insert(Model(
+        id = realEngineInstance.id,
+        models = KryoInjection(models)))
       val engineInstances = Storage.getMetaDataEngineInstances
       engineInstances.update(realEngineInstance.copy(
         status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
-        models = KryoInjection(models),
         multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
         multipleMetricsResultsHTML = mmr map { m =>
           try {

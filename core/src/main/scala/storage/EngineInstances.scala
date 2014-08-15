@@ -25,7 +25,6 @@ import org.json4s.native.Serialization
  * @param algorithmsParams Algorithms parameters of the instance.
  * @param servingParams Serving parameters of the instance.
  * @param metricsParams Metrics parameters of the instance.
- * @param models Trained models of all algorithms of this instance.
  * @param multipleMetricsResults Results of metrics on all data sets.
  * @param multipleMetricsResultsHTML HTML results of metrics on all data sets.
  * @param multipleMetricsResultsJSON JSON results of metrics on all data sets.
@@ -46,7 +45,6 @@ case class EngineInstance(
   algorithmsParams: String,
   servingParams: String,
   metricsParams: String,
-  models: Array[Byte],
   multipleMetricsResults: String,
   multipleMetricsResultsHTML: String,
   multipleMetricsResultsJSON: String)
@@ -100,7 +98,6 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
           algorithmsParams = "",
           servingParams = "",
           metricsParams = "",
-          models = Array[Byte](),
           multipleMetricsResults = "",
           multipleMetricsResultsHTML = "",
           multipleMetricsResultsJSON = "")
@@ -133,8 +130,6 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
             i.copy(servingParams = servingParams)
           case JField("metricsParams", JString(metricsParams)) =>
             i.copy(metricsParams = metricsParams)
-          case JField("models", JString(models)) =>
-            i.copy(models = BaseEncoding.base64.decode(models))
           case JField("multipleMetricsResults",
             JString(multipleMetricsResults)) =>
               i.copy(multipleMetricsResults = multipleMetricsResults)
@@ -166,7 +161,6 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
         JField("algorithmsParams", JString(i.algorithmsParams)) ::
         JField("servingParams", JString(i.servingParams)) ::
         JField("metricsParams", JString(i.metricsParams)) ::
-        JField("models", JString(BaseEncoding.base64.encode(i.models))) ::
         JField("multipleMetricsResults", JString(i.multipleMetricsResults)) ::
         JField("multipleMetricsResultsHTML",
           JString(i.multipleMetricsResultsHTML)) ::

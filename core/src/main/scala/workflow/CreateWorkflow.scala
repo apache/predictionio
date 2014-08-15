@@ -194,7 +194,6 @@ object CreateWorkflow extends Logging {
         algorithmsParams = write(algorithmsParams),
         servingParams = write(servingParams),
         metricsParams = write(metricsParams),
-        models = Array[Byte](),
         multipleMetricsResults = "",
         multipleMetricsResultsHTML = "",
         multipleMetricsResultsJSON = "")

@@ -56,12 +56,8 @@ object Storage extends Logging {
 
   /** Reference to the app data repository. */
   val AppDataRepository = "APPDATA"
-
+  val ModelDataRepository = "MODELDATA"
   val MetaDataRepository = "METADATA"
-
-  /** Reference to the settings repository. */
-  @deprecated("Use MetaDataRepository instead.", "20140716")
-  val SettingsRepository = MetaDataRepository
 
   private val repositoriesPrefix = "PIO_STORAGE_REPOSITORIES"
   private def repositoriesPrefixPath(body: String) =
@@ -182,6 +178,9 @@ object Storage extends Logging {
 
   def getMetaDataEngineInstances(): EngineInstances =
     getDataObject[EngineInstances](MetaDataRepository)
+
+  def getModelDataModels(): Models =
+    getDataObject[Models](ModelDataRepository)
 
   /** Obtains an ItemTrends object with configured backend type. */
   def getAppdataItemTrends(): ItemTrends =
