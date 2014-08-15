@@ -74,7 +74,62 @@ trait DashboardService extends HttpService {
         }
       }
     } ~
-    pathPrefix("engine_instances"/ Segment) { instanceId =>
+    pathPrefix("engine_instances" / Segment) { instanceId =>
+      path("data_source_params.json") {
+        get {
+          respondWithMediaType(`application/json`) {
+            engineInstances.get(instanceId).map { i =>
+              complete(i.dataSourceParams)
+            } getOrElse {
+              complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
+      path("preparator_params.json") {
+        get {
+          respondWithMediaType(`application/json`) {
+            engineInstances.get(instanceId).map { i =>
+              complete(i.preparatorParams)
+            } getOrElse {
+              complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
+      path("algorithms_params.json") {
+        get {
+          respondWithMediaType(`application/json`) {
+            engineInstances.get(instanceId).map { i =>
+              complete(i.algorithmsParams)
+            } getOrElse {
+              complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
+      path("serving_params.json") {
+        get {
+          respondWithMediaType(`application/json`) {
+            engineInstances.get(instanceId).map { i =>
+              complete(i.servingParams)
+            } getOrElse {
+              complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
+      path("metrics_params.json") {
+        get {
+          respondWithMediaType(`application/json`) {
+            engineInstances.get(instanceId).map { i =>
+              complete(i.metricsParams)
+            } getOrElse {
+              complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
       path("metrics_results.txt") {
         get {
           respondWithMediaType(`text/plain`) {
@@ -90,7 +145,18 @@ trait DashboardService extends HttpService {
         get {
           respondWithMediaType(`text/html`) {
             engineInstances.get(instanceId).map { i =>
-              complete(i.multipleMetricsResults)
+              complete(i.multipleMetricsResultsHTML)
+            } getOrElse {
+              complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
+      path("metrics_results.json") {
+        get {
+          respondWithMediaType(`application/json`) {
+            engineInstances.get(instanceId).map { i =>
+              complete(i.multipleMetricsResultsJSON)
             } getOrElse {
               complete(StatusCodes.NotFound)
             }
