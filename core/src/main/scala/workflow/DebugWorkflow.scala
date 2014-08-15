@@ -252,7 +252,9 @@ object APIDebugWorkflow {
     servingParams = "",
     metricsParams = "",
     models = Array[Byte](),
-    multipleMetricsResults = "")
+    multipleMetricsResults = "",
+    multipleMetricsResultsHTML = "",
+    multipleMetricsResultsJSON = "")
 
   def runEngine[
       DP, TD, PD, Q, P, A,
@@ -620,7 +622,7 @@ object APIDebugWorkflow {
         }
       }
 
-    def saveEngineInstance(metricsOutput: Option[String]): String = {
+    def saveEngineInstance(mmr: Option[MMR]): String = {
       val translatedAlgorithmsParams = write(
         algorithmParamsList.zip(algoInstanceList).map {
           case ((name, params), inst) =>
@@ -631,11 +633,31 @@ object APIDebugWorkflow {
         })
       val engineInstances = Storage.getMetaDataEngineInstances
       engineInstances.update(realEngineInstance.copy(
-        status = metricsOutput.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
+        status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         models = KryoInjection(models),
-        multipleMetricsResults = metricsOutput.getOrElse("")))
+        multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
+        multipleMetricsResultsHTML = mmr map { m =>
+          try {
+            m.getClass.getMethod("toHTML", null).invoke(m).asInstanceOf[String]
+          } catch {
+            case e: NoSuchMethodException =>
+              logger.warn(
+                s"${m.getClass.getName} does not have a toHTML method.")
+              ""
+          }
+        } getOrElse(""),
+        multipleMetricsResultsJSON = mmr map { m =>
+          try {
+            m.getClass.getMethod("toJSON", null).invoke(m).asInstanceOf[String]
+          } catch {
+            case e: NoSuchMethodException =>
+              logger.warn(
+                s"${m.getClass.getName} does not have a toJSON method.")
+              ""
+          }
+        } getOrElse("")))
       logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
       realEngineInstance.id
     }
@@ -699,7 +721,7 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    saveEngineInstance(Some(metricsOutput.mkString("\n")))
+    saveEngineInstance(Some(metricsOutput.head))
   }
 }
 
