@@ -7,7 +7,7 @@ import io.prediction.controller.FirstServing
 import io.prediction.controller.Params
 import com.github.nscala_time.time.Imports._
 import scala.collection.immutable.HashMap
-
+import java.io.File
 
 // Buy if l-days daily return is high than s-days daily-return
 case class MomentumStrategyParams(val l: Int, val s: Int) extends Params
@@ -52,7 +52,7 @@ object Run {
         new DataSourceParams(
           baseDate = new DateTime(2002, 1, 1, 0, 0),
           fromIdx = 300,
-          untilIdx = 350,
+          untilIdx = 400,
           trainingWindowSize = 200,
           maxTestingWindowSize = 20,
           marketTicker = "SPY",
@@ -72,7 +72,12 @@ object Run {
 
     val momentumParams = MomentumStrategyParams(20, 3)
 
-    val metricsParams = BacktestingParams(0.01, 0.0, 10)
+    val metricsParams = BacktestingParams(
+      enterThreshold = 0.01, 
+      exitThreshold = 0.0, 
+      maxPositions = 10,
+      optOutputPath = Some(new File("metrics_results").getCanonicalPath)
+    )
 
     APIDebugWorkflow.run(
       dataSourceClassOpt = Some(classOf[DataSource]),
