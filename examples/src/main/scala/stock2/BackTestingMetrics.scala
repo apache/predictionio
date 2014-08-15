@@ -49,9 +49,16 @@ case class BacktestingResult(
   val daily: Seq[DailyStat],
   val overall: OverallStat
 ) extends Serializable {
-  override def toString(): String = {
+  override def toString(): String = overall.toString
+
+  def toHTML(): String = {
     implicit val formats = DefaultFormats
-    html.backtesting(this, Serialization.write(this)).toString
+    html.backtesting().toString
+  }
+
+  def toJSON(): String = {
+    implicit val formats = DefaultFormats
+    Serialization.write(this)
   }
 }
 

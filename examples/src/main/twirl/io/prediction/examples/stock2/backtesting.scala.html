@@ -1,9 +1,9 @@
 @import io.prediction.examples.stock2.BacktestingResult
-@(data: BacktestingResult, json: String)
 <html>
   <head>
-    <script>var rawData = @Html(json);</script>
     <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+    <script
+      src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
     <script type='text/javascript'>
       google.load('visualization', '1', 
           {'packages':['annotatedtimeline', 'table', 'corechart']});
@@ -21,8 +21,18 @@
       google.setOnLoadCallback(draw);
       var tChart;
       var bChart;
+      
+      var rawData; 
 
       function draw() {
+        var jsonData = $.ajax({
+          url: 'metrics_results.json',
+          dataType: 'json',
+          async: false,
+        }).responseText; 
+
+        rawData = JSON.parse(jsonData);
+
         drawOverall();
         drawTimeline();
       }

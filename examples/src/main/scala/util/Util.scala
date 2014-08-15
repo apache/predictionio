@@ -170,10 +170,19 @@ object MetricsVisualization {
   }
 
   def render[T](data: T, path: String) {
-    val outputPath = s"${path}.html"
-    println(s"OutputPath: $outputPath")
-    val writer = new PrintWriter(new File(outputPath))
-    writer.write(data.toString)
-    writer.close()
+    val htmlPath = s"${path}.html"
+    println(s"OutputPath: $htmlPath")
+    val dataClass = data.getClass
+
+    val htmlWriter = new PrintWriter(new File(htmlPath))
+    val html = dataClass.getMethod("toHTML").invoke(data).asInstanceOf[String]
+    htmlWriter.write(html)
+    htmlWriter.close()
+    
+    val jsonPath = s"${path}.json"
+    val jsonWriter = new PrintWriter(new File(jsonPath))
+    val json = dataClass.getMethod("toJSON").invoke(data).asInstanceOf[String]
+    jsonWriter.write(json)
+    jsonWriter.close()
   }
 }
