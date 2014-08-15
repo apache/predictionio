@@ -640,7 +640,7 @@ object APIDebugWorkflow {
         multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
         multipleMetricsResultsHTML = mmr map { m =>
           try {
-            m.getClass.getMethod("toHTML", null).invoke(m).asInstanceOf[String]
+            m.getClass.getMethod("toHTML").invoke(m).asInstanceOf[String]
           } catch {
             case e: NoSuchMethodException =>
               logger.warn(
@@ -650,7 +650,7 @@ object APIDebugWorkflow {
         } getOrElse(""),
         multipleMetricsResultsJSON = mmr map { m =>
           try {
-            m.getClass.getMethod("toJSON", null).invoke(m).asInstanceOf[String]
+            m.getClass.getMethod("toJSON").invoke(m).asInstanceOf[String]
           } catch {
             case e: NoSuchMethodException =>
               logger.warn(
