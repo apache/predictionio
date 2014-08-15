@@ -8,6 +8,7 @@ import io.prediction.controller.LAlgorithm
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
+import io.prediction.controller.NiceRendering
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
@@ -635,31 +636,28 @@ object APIDebugWorkflow {
         id = realEngineInstance.id,
         models = KryoInjection(models)))
       val engineInstances = Storage.getMetaDataEngineInstances
+
+      val (multipleMetricsResultsHTML, multipleMetricsResultsJSON) =
+        mmr.map ( mmr =>
+          if (mmr.isInstanceOf[NiceRendering]) {
+            val niceRenderingResult = mmr.asInstanceOf[NiceRendering]
+            (niceRenderingResult.toHTML, niceRenderingResult.toJSON)
+          } else {
+            logger.warn(
+              s"${mmr.getClass.getName} is not a NiceRendering instance.")
+            ("", "")
+          }
+        ).getOrElse(("", ""))
+        
       engineInstances.update(realEngineInstance.copy(
         status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
         endTime = DateTime.now,
         algorithmsParams = translatedAlgorithmsParams,
         multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
-        multipleMetricsResultsHTML = mmr map { m =>
-          try {
-            m.getClass.getMethod("toHTML").invoke(m).asInstanceOf[String]
-          } catch {
-            case e: NoSuchMethodException =>
-              logger.warn(
-                s"${m.getClass.getName} does not have a toHTML method.")
-              ""
-          }
-        } getOrElse(""),
-        multipleMetricsResultsJSON = mmr map { m =>
-          try {
-            m.getClass.getMethod("toJSON").invoke(m).asInstanceOf[String]
-          } catch {
-            case e: NoSuchMethodException =>
-              logger.warn(
-                s"${m.getClass.getName} does not have a toJSON method.")
-              ""
-          }
-        } getOrElse("")))
+        multipleMetricsResultsHTML = multipleMetricsResultsHTML,
+        multipleMetricsResultsJSON = multipleMetricsResultsJSON
+        ))
+
       logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
       realEngineInstance.id
     }

@@ -2,6 +2,7 @@ package io.prediction.examples.stock2
 
 import io.prediction.controller.Params
 import io.prediction.controller.Metrics
+import io.prediction.controller.NiceRendering
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
 
@@ -48,7 +49,7 @@ case class OverallStat (
 case class BacktestingResult(
   val daily: Seq[DailyStat],
   val overall: OverallStat
-) extends Serializable {
+) extends Serializable with NiceRendering {
   override def toString(): String = overall.toString
 
   def toHTML(): String = {

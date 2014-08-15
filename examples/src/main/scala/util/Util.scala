@@ -1,5 +1,7 @@
 package io.prediction.examples.util
 
+import io.prediction.controller.NiceRendering
+
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.model.Preference
 import org.apache.mahout.cf.taste.model.PreferenceArray
@@ -169,7 +171,7 @@ object MetricsVisualization {
     return obj
   }
 
-  def render[T](data: T, path: String) {
+  def render[T <: NiceRendering](data: NiceRendering, path: String) {
     val htmlPath = s"${path}.html"
     println(s"OutputPath: $htmlPath")
     val dataClass = data.getClass

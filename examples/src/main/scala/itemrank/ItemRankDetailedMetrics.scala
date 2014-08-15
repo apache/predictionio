@@ -2,6 +2,7 @@ package io.prediction.examples.itemrank
 
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
+import io.prediction.controller.NiceRendering
 
 import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
@@ -38,12 +39,15 @@ case class DetailedMetricsData(
   val algoMean: Double,
   val algoStdev: Double,
   val aggregations: Seq[(String, Seq[(String, Stats)])])
-  extends Serializable {
+  extends Serializable with NiceRendering {
  
   override def toString(): String = {
     implicit val formats = DefaultFormats
     html.detailed(this, write(this)).toString
   }
+
+  def toHTML(): String = "<body>Nothing!</body>"
+  def toJSON(): String = ""
 }
 
 // optOutputPath is used for debug purpose. If specified, metrics will output

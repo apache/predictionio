@@ -65,6 +65,17 @@ abstract class Metrics[
   def computeMultipleSets(input: Seq[(DP, MR)]): MMR
 }
 
+/** Trait for nice metrics results
+  *
+  * Metrics result can be rendered nicely by implementing toHTML and toJSON
+  * methods.
+  */
+
+trait NiceRendering {
+  def toHTML(): String
+  def toJSON(): String
+}
+
 /** An implementation of mean square error metrics. `DP` is `AnyRef`. This
   * support any kind of data parameters.
   *
