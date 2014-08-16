@@ -2,6 +2,7 @@ package io.prediction.examples.itemrank
 
 import com.github.nscala_time.time.Imports._
 
+
 class ItemTD(
   val iid: String,
   val itypes: Seq[String],
@@ -61,13 +62,19 @@ class Query(
 // prediction output
 class Prediction(
   // the ranked items and score
-    val items: Seq[(String, Double)]) extends Serializable {
+    val items: Seq[(String, Double)],
+    val isOriginal: Boolean = false
+  ) extends Serializable {
   override def toString = s"${items}"
 }
 
 class Actual(
     // actual items the user has performed actions on
-    val items: Seq[String]) extends Serializable {
+    val items: Seq[String],
+    // other data that maybe used by metrics.
+    val previousActionCount: Int = -1,
+    val localDate: LocalDate = new LocalDate(0)
+  ) extends Serializable {
   override def toString = s"${items}"
 }
 

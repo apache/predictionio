@@ -137,8 +137,11 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
       val rankedItems = sorted ++
         (itemsNoScore.map{ case (iid, score) => (iid, _minScore) })
 
+      val isOriginal = (itemsWithScore.size == 0)
+
       new Prediction (
-        items = rankedItems
+        items = rankedItems,
+        isOriginal = isOriginal
       )
     }
 

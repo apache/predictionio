@@ -34,26 +34,30 @@ case class Stats(
 ) extends Serializable
 
 case class DetailedMetricsData(
+  val name: String,
   val baselineMean: Double,
   val baselineStdev: Double,
   val algoMean: Double,
   val algoStdev: Double,
   val aggregations: Seq[(String, Seq[(String, Stats)])])
   extends Serializable with NiceRendering {
- 
-  override def toString(): String = {
-    implicit val formats = DefaultFormats
-    html.detailed(this, write(this)).toString
-  }
 
-  def toHTML(): String = "<body>Nothing!</body>"
-  def toJSON(): String = ""
+  override def toString(): String = f"DetailedMetricsData $name $algoMean%.4f"
+
+  def toHTML(): String = html.detailed().toString
+
+  def toJSON(): String = {
+    implicit val formats = DefaultFormats
+    Serialization.write(this)
+  }
 }
 
 // optOutputPath is used for debug purpose. If specified, metrics will output
 // the data class to the specified path, and the renderer can generate the html
 // independently.
-class DetailedMetricsParams(val optOutputPath: Option[String] = None) 
+class DetailedMetricsParams(
+  val name: String = "",
+  val optOutputPath: Option[String] = None) 
   extends Params {}
 
 class ItemRankDetailedMetrics(params: DetailedMetricsParams)
@@ -86,6 +90,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     //Stats(values.sum / values.size, values.size)
   }
 
+  /*
   def aggregate(
     units: Seq[MetricUnit],
     groupByFunc: MetricUnit => String): Seq[(String, Stats)] = {
@@ -96,7 +101,41 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       .toSeq
       .sortBy(-_._2.average)
   } 
+  */
 
+  def aggregateMU(units: Seq[MetricUnit], groupByFunc: MetricUnit => String)
+  : Seq[(String, Stats)] = 
+    aggregate[MetricUnit](units, _.score, groupByFunc)
+
+  def aggregate[T](
+    units: Seq[T],
+    scoreFunc: T => Double,
+    groupByFunc: T => String): Seq[(String, Stats)] = {
+    units
+      .groupBy(groupByFunc)
+      .mapValues(_.map(e => scoreFunc(e)))
+      .map{ case(k, l) => (k, calculate(l)) }
+      .toSeq
+      .sortBy(-_._2.average)
+  } 
+
+  // return a double to key map based on boundaries.
+  def groupByRange(values: Array[Double], format: String = "%f")
+  : Double => String = {
+    val keys: Array[String] = (0 to values.size).map { i =>
+      val s = (if (i == 0) Double.NegativeInfinity else values(i-1))
+      val e = (if (i < values.size) values(i) else Double.PositiveInfinity)
+      //s"[$s, $e)"
+      "[" + format.format(s) + ", " + format.format(e) + ")"
+    }.toArray
+  
+    def f(v: Double): String = {
+      // FIXME. Use binary search.
+      val i: Option[Int] = (0 until values.size).find(i => v < values(i))
+      keys(i.getOrElse(values.size))
+    }
+    return f
+  }
 
   override def computeMultipleSets(
     input: Seq[(DataParams, Seq[MetricUnit])]): DetailedMetricsData = {
@@ -124,18 +163,39 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       .toSeq
       .sortBy(-_._2.average)
 
+    val scoreAggregation = aggregateMU(
+      allUnits,
+      mu => groupByRange((0.0 until 1.0 by 0.1).toArray, "%.2f")(mu.score))
 
+    val actionCountAggregation = aggregateMU(
+      allUnits, 
+      mu => groupByRange(Array(0, 1, 3, 10, 30, 100, 300), "%.0f")
+        (mu.a.previousActionCount))
+
+    val itemCountAggregation = aggregate[(String, MetricUnit)](
+      allUnits.flatMap(mu => mu.a.items.map(item => (item, mu))),
+      _._2.score,
+      _._1)
+
+    val dateAggregation = aggregateMU(
+      allUnits,
+      _.a.localDate.toString)
+
+    val isOriginalAggregation = aggregateMU(allUnits, _.p.isOriginal.toString)
+      
     val outputData = DetailedMetricsData (
+      name = params.name,
       baselineMean = baselineMean,
       baselineStdev = baselineStdev,
       algoMean = algoMean,
       algoStdev = algoStdev,
       aggregations = Seq(
-        ("ByActualSize", aggregate(allUnits, _.a.items.size.toString)),
-        ("ByScore", aggregate(allUnits, mu => {
-            val d = (mu.score * 10).toInt
-            f"[${d / 10.0}%.1f, ${(d + 1)/10.0}%.1f)"
-          }))
+        ("ByActualSize", aggregateMU(allUnits, _.a.items.size.toString)),
+        ("ByScore", scoreAggregation),
+        ("ByActionCount", actionCountAggregation),
+        ("ByFlattenItem", itemCountAggregation),
+        ("ByDate", dateAggregation),
+        ("ByIsOriginal", isOriginalAggregation)
       )
     )
 

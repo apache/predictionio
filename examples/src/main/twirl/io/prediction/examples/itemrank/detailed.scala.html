@@ -1,6 +1,3 @@
-@import io.prediction.examples.itemrank.DetailedMetricsData
-@(data: DetailedMetricsData, json: String)
-
 <html>
   <head>
     <title>ItemRankMetrics</title>
@@ -25,21 +22,61 @@
       }
     </style>
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script
+      src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
     <script>
       google.load('visualization', '1', {packages:['table', 'corechart']});
-    </script>
-    <script>
-      var rawData = @Html(json);
     </script>
   </head>
   <body>
     <h3>Item Rank Metrics</h3>
+    <h4 id='params'></h4>
 
     <div id='top'></div>
     <div id='mid'></div>
   
     <script type='text/javascript'>
-      google.setOnLoadCallback(drawTable);
+      google.setOnLoadCallback(draw);
+      var rawData; 
+      var algoParams;
+
+      function draw() {
+        loadData();
+        drawHead();
+        drawTable();
+      };
+
+      function loadData() {
+        rawData = JSON.parse(
+            $.ajax({
+              url: 'metrics_results.json',
+              dataType: 'json',
+              async: false,
+            }).responseText);
+
+        algoParams = JSON.parse(
+            $.ajax({
+              url: 'algorithms_params.json',
+              dataType: 'json',
+              async: false,
+            }).responseText);
+      };
+      
+      function drawHead() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Algorithm');
+        data.addColumn('string', 'Params');
+
+        for (i = 0; i < algoParams.length; i++) {
+          data.addRow([algoParams[i]._1, JSON.stringify(algoParams[i]._2)]);
+        }
+
+        var tableDiv = document.createElement('div');
+        document.getElementById('params').appendChild(tableDiv);
+        var newTable = new google.visualization.Table(tableDiv);
+        newTable.draw(data, {showRowNumber: true, width: '1024px'});
+      }
+
       function drawTable() {
         // Main data
         var newDiv = document.createElement('div');
@@ -61,13 +98,13 @@
 
         // Aggregation Tables
         for (aggIdx = 0; aggIdx < rawData.aggregations.length; aggIdx++) {
+          var width = '480px';
 
           var aggregation = rawData.aggregations[aggIdx];
           var name = aggregation._1;
           var aggData = aggregation._2;
           
           var data = new google.visualization.DataTable();
-          //data.addColumn('string', name);
           data.addColumn('string', 'Key');
           data.addColumn('number', 'Average');
           data.addColumn('number', 'Stdev');
@@ -91,14 +128,22 @@
           var newDiv = document.createElement('div');
           document.getElementById('mid').appendChild(newDiv);
 
+          var tableId = 'aggregation_' + aggIdx;
+
           var headerDiv = document.createElement('p');
           headerDiv.innerHTML = name;
+          headerDiv.target = '#' + tableId;
+          headerDiv.onclick = function(e) {
+            $(e.target.target).toggle();
+          };
           newDiv.appendChild(headerDiv);
           
           var tableDiv = document.createElement('div');
+          tableDiv.id = tableId;
           newDiv.appendChild(tableDiv);
           var newTable = new google.visualization.Table(tableDiv);
-          newTable.draw(data, {showRowNumber: true, width: '480px'});
+          newTable.draw(data, {showRowNumber: true, width: width});
+          $('#' + tableId).toggle();
         }
 
       }
