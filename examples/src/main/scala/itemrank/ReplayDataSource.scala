@@ -133,6 +133,10 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
         HashMap[Int, UserTD]() ++ ui2UserTd,
         HashMap[Int, ItemTD]() ++ ii2ItemTd,
         Vector[U2IActionTD]() ++ trainingActions)
+      
+      val uiActionsMap: Map[Int, Int] = trainingActions
+        .groupBy(_.uindex)
+        .mapValues(_.size)
 
       val queryActionList: Seq[(Query, Actual)] =
       Range(idx, math.min(idx + dsp.testingWindowSize, dsp.untilIdx))
@@ -152,9 +156,11 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
             .sortBy(identity)
 
           val query = new Query(uid, possibleIids)
+          val ui = uid2ui(uid)
+
           val actual = new Actual(
             items = iids.toSeq,
-            previousActionCount = 0,
+            previousActionCount = uiActionsMap.getOrElse(ui, 0),
             localDate = queryDate)
           (query, actual)
         }}
@@ -171,31 +177,6 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
       println("Testing Size: " + queryActionList.size)
       (dp, trainingData, queryActionList)
     }}
-  }
-}
-
-object ReplayMain {
-  def main(args: Array[String]) {
-    val dsp = ReplayDataSourceParams(
-      "/Users/yipjustin/data/munchery/users.20140805.csv",
-      "/Users/yipjustin/data/munchery/items.20140805.csv",
-      "/Users/yipjustin/data/munchery/u2i.20140805.csv",
-      new LocalDate(2014, 7, 14),
-      fromIdx = 0,
-      untilIdx = 20,
-      testingWindowSize = 3,
-      Seq("Complete Meal"),
-      //Seq("Complete Meal", "Kids Meal", "Dessert", "Appetizer",
-      //  "Side", "Vegan", "Vegetarian"),
-      "conversion")
-
-
-    APIDebugWorkflow.run(
-      batch = "Imagine: ItemRankReplay",
-      dataSourceClassOpt = Some(classOf[ReplayDataSource]),
-      dataSourceParams = dsp,
-      verbose = 0
-    )
   }
 }
 
