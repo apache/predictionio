@@ -14,3 +14,6 @@ supervisord.conf
 assembly/
 dist/
 imagine.tar.gz
+
+# Ignore source files whose name prefixed with "Private"
+Private*.scala
