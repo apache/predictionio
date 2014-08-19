@@ -1,0 +1,70 @@
+package io.prediction.dataapi
+
+import org.json4s.ext.JodaTimeSerializers
+import com.github.nscala_time.time.Imports._
+import org.json4s._
+import org.json4s.native.Serialization.{ read, write }
+
+case class Event(
+  val entityId: String,
+  val targetEntityId: Option[String],
+  val event: String,
+  val properties: JObject, //Map[String, Any], // TODO: don't use JObject
+  val eventTime: DateTime,
+  val tags: Seq[String],
+  val appId: Int,
+  val predictionKey: Option[String]
+)
+
+// json4s serializer
+class EventSeriliazer extends CustomSerializer[Event](format => (
+  {
+    case jv: JValue => {
+      implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
+      val entityId = (jv \ "entityId").extract[String]
+      val targetEntityId = (jv \ "targetEntityId").extract[Option[String]]
+      val event = (jv \ "event").extract[String]
+      val properties = (jv \ "properties").extract[JObject]
+      val eventTime = (jv \ "eventTime").extract[DateTime]
+      val tags = (jv \ "tags").extract[Seq[String]]
+      val appId = (jv \ "appId").extract[Int]
+      val predictionKey = (jv \ "predictionKey").extract[Option[String]]
+      Event(
+        entityId = entityId,
+        targetEntityId = targetEntityId,
+        event = event,
+        properties = properties,
+        eventTime = eventTime,
+        tags = tags,
+        appId = appId,
+        predictionKey = predictionKey)
+    }
+  },
+  {
+    case d: Event => {
+      implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
+      JObject(
+        JField("entityId", JString(d.entityId)) ::
+        JField("targetEntityId",
+          d.targetEntityId.map(JString(_)).getOrElse(JNothing)) ::
+        JField("event", JString(d.event)) ::
+        JField("properties", d.properties) ::
+        JField("eventTime", JString(write(d.eventTime))) ::
+        JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
+        JField("appId", JInt(d.appId)) ::
+        JField("predictionKey",
+          d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+        Nil)
+      }
+  }
+))
+
+trait Events {
+
+  def insert(event: Event): Option[String]
+
+  def get(eventId: String): Option[Event]
+
+  def delete(eventId: String): Boolean
+
+}
