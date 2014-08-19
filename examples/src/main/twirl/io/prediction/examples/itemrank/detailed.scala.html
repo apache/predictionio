@@ -43,6 +43,7 @@
       function draw() {
         loadData();
         drawHead();
+        drawTop();
         drawTable();
       };
 
@@ -77,24 +78,53 @@
         newTable.draw(data, {showRowNumber: true, width: '1024px'});
       }
 
-      function drawTable() {
+      function drawTop() {
         // Main data
         var newDiv = document.createElement('div');
         document.getElementById('top').appendChild(newDiv);
         var newTable = new google.visualization.Table(newDiv);
         newTable.draw(data, {showRowNumber: true, width: '300px'});
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Key');
+        data.addColumn('number', 'Algo');
+        data.addColumn({type: 'number', role: 'annotation'});
+        //data.addColumn({type: 'number', role: 'interval'});
+        //data.addColumn({type: 'number', role: 'interval'});
+        data.addColumn('number', 'Baseline');
+        //data.addColumn({type: 'number', role: 'annotation'});
+        //data.addColumn({type: 'number', role: 'interval'});
+        //data.addColumn({type: 'number', role: 'interval'});
+
+        for (runIdx = 0; runIdx < rawData.runs.length; runIdx++) {
+          var run = rawData.runs[runIdx];
+          var algo = run._2;
+          var base = run._3;
+          data.addRow([
+              run._1, 
+              algo.average, algo.count,
+              //algo.average - algo.stdev, algo.average + algo.stdev,
+              base.average, 
+              //base.count,
+              //base.average - base.stdev, base.average + base.stdev
+              ]);
+        }
         
-        var data = google.visualization.arrayToDataTable([
-            ['Name', 'Score', { role: 'annotation' }],
-            ['Baseline Mean', rawData.baselineMean, rawData.baselineMean],
-            ['Algo Mean', rawData.algoMean, rawData.algoMean]]);
+        var formatter = new google.visualization.NumberFormat(
+          {fractionDigits: 4})
+        formatter.format(data, 1); 
+        formatter.format(data, 3); 
 
         var options = {
-          title: 'Algorithm Performance'
+          title: 'Algorithm Performance. Bracket is the data point count.',
+          height: 50 + rawData.runs.length * 50
         };
 
         var chart = new google.visualization.BarChart(newDiv);
         chart.draw(data, options);
+      }
+
+      function drawTable() {
 
         // Aggregation Tables
         for (aggIdx = 0; aggIdx < rawData.aggregations.length; aggIdx++) {

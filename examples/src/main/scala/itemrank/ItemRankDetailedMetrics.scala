@@ -35,10 +35,14 @@ case class Stats(
 
 case class DetailedMetricsData(
   val name: String,
+  /*
   val baselineMean: Double,
   val baselineStdev: Double,
   val algoMean: Double,
   val algoStdev: Double,
+  */
+  val algoMean: Double,
+  val runs: Seq[(String, Stats, Stats)],  // name, algo, baseline
   val aggregations: Seq[(String, Seq[(String, Stats)])])
   extends Serializable with NiceRendering {
 
@@ -139,23 +143,23 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
   override def computeMultipleSets(
     input: Seq[(DataParams, Seq[MetricUnit])]): DetailedMetricsData = {
-
-    val algoMeanList = input
-      .map(_._2.map(_.score))
-      .map(mus => meanAndVariance(mus)._1)  // get mean
-    val (algoMean, algoVariance, algoCount) = meanAndVariance(algoMeanList)
-    val algoStdev = math.sqrt(algoVariance)
-      
-    val baselineMeanList = input
-      .map(_._2.map(_.baseline))
-      .map(mus => meanAndVariance(mus)._1)  // get mean
-    val (baselineMean, baselineVariance, baselineCount) = 
-      meanAndVariance(baselineMeanList)
-    val baselineStdev = math.sqrt(baselineVariance)
-
     val allUnits: Seq[MetricUnit] = input.flatMap(_._2) 
 
+    //val overallStats = ("Overall", calculate(allUnits.map(_.score)))
+    //val baselineStats = ("Baseline", calculate(allUnits.map(_.baseline)))
 
+    // Run Stats
+    val overallStats = (
+      "Overall", 
+      calculate(allUnits.map(_.score)),
+      calculate(allUnits.map(_.baseline)))
+
+    val runsStats: Seq[(String, Stats, Stats)] = input
+    .map { case(dp, mus) => 
+      (dp.name, calculate(mus.map(_.score)), calculate(mus.map(_.baseline)))
+    }
+
+    // Aggregation Stats
     val aggregateByActualSize: Seq[(String, Stats)] = allUnits
       .groupBy(_.a.items.size)
       .mapValues(_.map(_.score))
@@ -185,10 +189,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       
     val outputData = DetailedMetricsData (
       name = params.name,
-      baselineMean = baselineMean,
-      baselineStdev = baselineStdev,
-      algoMean = algoMean,
-      algoStdev = algoStdev,
+      algoMean = overallStats._2.average,
+      //runs = Seq(overallStats, baselineStats) ++ runsStats,
+      runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
         ("ByActualSize", aggregateMU(allUnits, _.a.items.size.toString)),
         ("ByScore", scoreAggregation),

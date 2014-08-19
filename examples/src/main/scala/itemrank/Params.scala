@@ -53,7 +53,8 @@ class ValidationDataParams(
 
 class DataParams(
   val tdp: TrainingDataParams,
-  val vdp: ValidationDataParams
+  val vdp: ValidationDataParams,
+  val name: String = ""
 ) extends Params {
   override def toString = s"TDP: ${tdp} VDP: ${vdp}"
 }

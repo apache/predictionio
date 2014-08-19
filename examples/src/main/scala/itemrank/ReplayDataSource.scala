@@ -170,8 +170,10 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
       val trainingUntilDT = trainingUntilDate.toDateTimeAtStartOfDay
 
       val dp: DataParams = new DataParams(
-        new TrainingDataParams(0, None, Set[String](), None, true),
-        new ValidationDataParams(
+        name = trainingUntilDate.toString(),
+        tdp = new TrainingDataParams(
+          0, None, Set[String](), None, true),
+        vdp = new ValidationDataParams(
           0, None, (trainingUntilDT, trainingUntilDT), Set[String]()))
 
       println("Testing Size: " + queryActionList.size)
