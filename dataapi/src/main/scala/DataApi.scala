@@ -5,17 +5,23 @@ import akka.actor.Actor
 import akka.actor.Props
 import akka.io.IO
 import akka.event.Logging
+import akka.pattern.ask
+import akka.util.Timeout
+
+import scala.concurrent.duration._
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
 import org.json4s.ext.JodaTimeSerializers
 
+import spray.http.StatusCodes
+import spray.http.MediaTypes
+import spray.http.HttpResponse
 import spray.httpx.Json4sSupport
 import spray.can.Http
 import spray.routing._
 import Directives._
-import spray.http.MediaTypes
 
 class DataServiceActor extends HttpServiceActor {
 
@@ -30,6 +36,14 @@ class DataServiceActor extends HttpServiceActor {
 
   val eventClient = StorageClient.eventClient
 
+  // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
+  // Futures
+  implicit def executionContext = actorRefFactory.dispatcher
+  implicit val timeout = Timeout(5 seconds)
+
+  val testServiceActor = actorRefFactory.actorOf(Props[TestServiceActor],
+    "TestServiceActor")
+
   val route: Route =
     pathSingleSlash {
       get {
@@ -42,37 +56,125 @@ class DataServiceActor extends HttpServiceActor {
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete {
-            log.info("get called.")
-            val e = eventClient.get(eventId).get
-            e
+            log.info(s"GET event ${eventId}.")
+            val data = eventClient.futureGet(eventId).map { r =>
+              r match {
+                case Left(StorageError(message)) =>
+                  (StatusCodes.InternalServerError, ("message" -> message))
+                case Right(eventOpt) => {
+                  eventOpt.map( event =>
+                    (StatusCodes.OK, event)
+                  ).getOrElse(
+                    (StatusCodes.NotFound, None)
+                  )
+                }
+              }
+            }
+            data
           }
         }
       } ~
       delete {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete {
-            log.info("delete called.")
-            val r = eventClient.delete(eventId)
-            s"""{"found" : ${r}}"""
+            log.info(s"DELETE event ${eventId}.")
+            val data = eventClient.futureDelete(eventId).map { r =>
+              r match {
+                case Left(StorageError(message)) =>
+                  (StatusCodes.InternalServerError, ("message" -> message))
+                case Right(found) =>
+                  if (found) {
+                    (StatusCodes.OK, ("found" -> found))
+                  } else {
+                    (StatusCodes.NotFound, None)
+                  }
+              }
+            }
+            data
           }
         }
       }
     } ~
     path("events") {
       post {
-        // TODO: non blocking
         entity(as[Event]) { event =>
           //val event = jsonObj.extract[Event]
-          val id = eventClient.insert(event).get
-          complete("eventId" -> s"${id}")
+          complete {
+            log.info(s"POST events")
+            val data = eventClient.futureInsert(event).map { r =>
+              r match {
+                case Left(StorageError(message)) =>
+                  (StatusCodes.InternalServerError, ("message" -> message))
+                case Right(id) =>
+                  (StatusCodes.Created, ("eventId" -> s"${id}"))
+              }
+            }
+            data
+          }
         }
 
+      }
+    } ~
+    path ("test" / Segment ) { testId =>
+      get {
+        respondWithMediaType(MediaTypes.`application/json`) {
+          complete{
+            TestServiceClient.test(TestMessage(testId)).map { m =>
+              m match {
+                case TestMessage("OK") => (StatusCodes.OK, m)
+                case TestMessage("BAD") => (StatusCodes.BadRequest, m)
+              }
+            }
+            /*(testServiceActor ? TestMessage(testId)).mapTo[TestMessage].map(
+              x => (StatusCodes.OK, x)
+            )*/
+          }
+        }
       }
     }
 
   def receive = runRoute(route)
 
 }
+
+object TestServiceClient {
+
+  import scala.concurrent._
+  import ExecutionContext.Implicits.global
+
+  def test(msg: TestMessage) = {
+    Future {
+      msg match {
+        case TestMessage("0") => TestMessage("OK")
+        case TestMessage("1") => TestMessage("BAD")
+      }
+    }
+  }
+}
+
+case class TestMessage(val msg: String)
+
+class TestServiceActor extends Actor {
+  val log = Logging(context.system, this)
+
+  def receive = {
+    case TestMessage("1") => {
+      log.info(s"received 1")
+      //sender ! HttpResponse(StatusCodes.BadRequest,
+        //entity = "test bad")
+      sender ! TestMessage("test bad")
+    }
+    case TestMessage("0") => {
+      log.info("received 0")
+      //sender ! HttpResponse(StatusCodes.OK,
+      //  entity = "test ok")
+      sender ! TestMessage("test ok")// OK
+    }
+    case _ => sender ! TestMessage("test error")
+  }
+}
+
+
 
 /* message */
 case class StartServer(

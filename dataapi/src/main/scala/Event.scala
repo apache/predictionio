@@ -5,6 +5,10 @@ import com.github.nscala_time.time.Imports._
 import org.json4s._
 import org.json4s.native.Serialization.{ read, write }
 
+import scala.concurrent.Future
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
 case class Event(
   val entityId: String,
   val targetEntityId: Option[String],
@@ -59,12 +63,32 @@ class EventSeriliazer extends CustomSerializer[Event](format => (
   }
 ))
 
+
+case class StorageError(val message: String)
+
 trait Events {
 
-  def insert(event: Event): Option[String]
+  def futureInsert(event: Event): Future[Either[StorageError, String]]
 
+  def futureGet(eventId: String): Future[Either[StorageError, Option[Event]]]
+
+  def futureDelete(eventId: String): Future[Either[StorageError, Boolean]]
+
+  def insert(event: Event): Either[StorageError, String] = {
+    Await.result(futureInsert(event), Duration(5, "seconds"))
+  }
+
+  def get(eventId: String): Either[StorageError, Option[Event]] = {
+    Await.result(futureGet(eventId), Duration(5, "seconds"))
+  }
+
+  def delete(eventId: String): Either[StorageError, Boolean] = {
+    Await.result(futureDelete(eventId), Duration(5, "seconds"))
+  }
+
+/* old code
   def get(eventId: String): Option[Event]
 
   def delete(eventId: String): Boolean
-
+*/
 }
