@@ -145,7 +145,12 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
         println(
           s"Testing: ${queryDate.toString} DOW(${queryDate.getDayOfWeek})")
         val u2is = date2u2iList.getOrElse(queryDate, Seq[U2I]())
-        val user2iids = u2is.groupBy(_.uid).mapValues(_.map(_.iid))
+        val uid2Actions: Map[String, Seq[U2I]] = u2is.groupBy(_.uid)
+
+        val user2iids = uid2Actions.mapValues(_.map(_.iid))
+        // Use first action time.
+        val user2LocalDT = uid2Actions
+          .mapValues(_.map(_.dt.toLocalDateTime).min)
         
         val todayItems: Seq[String] = 
           dailyServedItems(queryDate).take(10).map(_._1)
@@ -161,7 +166,9 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
           val actual = new Actual(
             items = iids.toSeq,
             previousActionCount = uiActionsMap.getOrElse(ui, 0),
-            localDate = queryDate)
+            localDate = queryDate,
+            localDateTime = user2LocalDT(uid)
+          )
           (query, actual)
         }}
       }}

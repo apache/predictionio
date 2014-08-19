@@ -185,6 +185,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       allUnits,
       _.a.localDate.toString)
 
+    val localHourAggregation = aggregateMU(
+      allUnits,
+      _.a.localDateTime.getHourOfDay.toString)
+
     val isOriginalAggregation = aggregateMU(allUnits, _.p.isOriginal.toString)
       
     val outputData = DetailedMetricsData (
@@ -198,6 +202,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         ("ByActionCount", actionCountAggregation),
         ("ByFlattenItem", itemCountAggregation),
         ("ByDate", dateAggregation),
+        ("ByLocalHour", localHourAggregation),
         ("ByIsOriginal", isOriginalAggregation)
       )
     )
