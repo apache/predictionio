@@ -809,42 +809,4 @@ object JavaAPIDebugWorkflow {
       JavaUtils.fakeClassTag[MMR])
 
   }
-
-  /*
-  def runEngine[DP, TD, PD, Q, P, A](
-    env: JMap[String, String],
-    engine: Engine[TD, DP, PD, Q, P, A],
-    engineParams: EngineParams,
-    params: WorkflowParams
-  ) {
-    runEngine(
-      env = env,
-      engine = engine,
-      engineParams = engineParams,
-      metricsClass = null,
-      metricsParams = null
-    )
-  }
-
-  def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
-      env: JMap[String, String],
-      engine: Engine[TD, DP, PD, Q, P, A],
-      engineParams: EngineParams,
-      metricsClass
-        : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
-      metricsParams: Params) {
-    run(
-      env = env,
-      dataSourceClass = engine.dataSourceClass,
-      dataSourceParams = engineParams.dataSourceParams,
-      preparatorClass = engine.preparatorClass,
-      preparatorParams = engineParams.preparatorParams,
-      algorithmClassMap = engine.algorithmClassMap,
-      algorithmParamsList = engineParams.algorithmParamsList,
-      servingClass = engine.servingClass,
-      servingParams = engineParams.servingParams,
-      metricsClass = metricsClass,
-      metricsParams = metricsParams)
-  }
-  */
 }

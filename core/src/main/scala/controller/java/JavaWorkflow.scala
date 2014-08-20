@@ -11,13 +11,11 @@ import scala.collection.JavaConversions._
 
 object JavaWorkflow {
   def runEngine[DP, TD, PD, Q, P, A](
-    //env: JMap[String, String],
     engine: Engine[TD, DP, PD, Q, P, A],
     engineParams: EngineParams,
     params: WorkflowParams
   ) {
     runEngine(
-      //env = env,
       engine = engine,
       engineParams = engineParams,
       metricsClass = null,
@@ -27,7 +25,6 @@ object JavaWorkflow {
   }
 
   def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
-      //env: JMap[String, String],
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       metricsClass
@@ -36,7 +33,6 @@ object JavaWorkflow {
       params: WorkflowParams
     ) {
     JavaAPIDebugWorkflow.run(
-      //env = env,
       dataSourceClass = engine.dataSourceClass,
       dataSourceParams = engineParams.dataSourceParams,
       preparatorClass = engine.preparatorClass,
