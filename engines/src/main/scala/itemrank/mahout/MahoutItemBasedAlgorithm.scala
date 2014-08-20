@@ -39,25 +39,25 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
   var _minScore = 0.0
 
   override def train(
-    pareparedData: PreparedData): MahoutItemBasedModel = {
+    preparedData: PreparedData): MahoutItemBasedModel = {
       val numSimilarItems: Int = params.numSimilarItems
       val recommendationTime: Long = 0 // TODO: freshness for itemrank?
       val freshness = 0
       val freshnessTimeUnit: Long = 3600000 // 1 hour
 
       val dataModel: DataModel = if (params.booleanData) {
-        MahoutUtil.buildBooleanPrefDataModel(pareparedData.rating.map { r =>
+        MahoutUtil.buildBooleanPrefDataModel(preparedData.rating.map { r =>
           (r.uindex, r.iindex, r.t) })
       } else {
-        MahoutUtil.buildDataModel(pareparedData.rating.map{ r =>
+        MahoutUtil.buildDataModel(preparedData.rating.map{ r =>
           (r.uindex, r.iindex, r.rating.toFloat, r.t) })
       }
       val similarity: ItemSimilarity = buildItemSimilarity(dataModel)
 
       val itemIds = dataModel.getItemIDs.toSeq.map(_.toLong)
-      val itemsMap = pareparedData.items
-      val usersMap = pareparedData.users
-      val validItemsSet = pareparedData.items.keySet
+      val itemsMap = preparedData.items
+      val usersMap = preparedData.users
+      val validItemsSet = preparedData.items.keySet
 
       val allTopScores = itemIds.par.map { iid =>
         val simScores = validItemsSet.toSeq
@@ -92,7 +92,7 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
           (itemsMap(iindex).iid, topScoresIid)
       }
 
-      val userHistoryMap = pareparedData.rating.groupBy(_.uindex)
+      val userHistoryMap = preparedData.rating.groupBy(_.uindex)
         .map {
           case (k, listOfRating) =>
             val history = listOfRating.map(r =>

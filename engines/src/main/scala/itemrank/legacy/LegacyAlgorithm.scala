@@ -126,30 +126,30 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
   extends LAlgorithm[LegacyAlgorithmParams, PreparedData,
   LegacyAlgorithmModel, Query, Prediction] {
 
-  override def train(pareparedData: PreparedData): LegacyAlgorithmModel = {
+  override def train(preparedData: PreparedData): LegacyAlgorithmModel = {
 
     val dataModel: DataModel = if (params.booleanData) {
-      MahoutUtil.buildBooleanPrefDataModel(pareparedData.rating.map { r =>
+      MahoutUtil.buildBooleanPrefDataModel(preparedData.rating.map { r =>
         (r.uindex, r.iindex, r.t) })
     } else {
-      MahoutUtil.buildDataModel(pareparedData.rating.map{ r =>
+      MahoutUtil.buildDataModel(preparedData.rating.map{ r =>
         (r.uindex, r.iindex, r.rating.toFloat, r.t) })
     }
 
     // don't have seperated seen actions data for now
     val seenDataModel: DataModel = dataModel
 
-    val validItemsMap: Map[Long, ItemModel] = pareparedData.items
+    val validItemsMap: Map[Long, ItemModel] = preparedData.items
       .map{ case (k, v) =>
         (k.toLong, ItemModel(
           v.iid,
           v.starttime.getOrElse(params.recommendationTime)))
       }
-    val usersMap: Map[String, UserModel] = pareparedData.users
+    val usersMap: Map[String, UserModel] = preparedData.users
       .map {case (k,v) =>
         (v.uid, UserModel(k.toLong))
       }
-    val itemCount = pareparedData.items.size
+    val itemCount = preparedData.items.size
 
     new LegacyAlgorithmModel(
       dataModel,
