@@ -1,7 +1,7 @@
-package io.prediction.examples.itemrank
+package io.prediction.engines.itemrank
 
 import io.prediction.controller.LAlgorithm
-import io.prediction.examples.util.MahoutUtil
+import io.prediction.engines.util.MahoutUtil
 
 import java.io.File
 import java.io.FileWriter

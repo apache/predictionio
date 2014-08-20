@@ -1,4 +1,4 @@
-package io.prediction.examples.itemrank
+package io.prediction.engines.itemrank
 
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
@@ -23,7 +23,7 @@ import scala.io.Source
 import java.io.PrintWriter
 import java.io.File
 
-import io.prediction.examples.util.{ MetricsVisualization => MV }
+import io.prediction.engines.util.{ MetricsVisualization => MV }
 
 case class Stats(
   val average: Double, 

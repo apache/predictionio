@@ -8,6 +8,10 @@ DISTDIR="$FWDIR/dist"
 cd $FWDIR
 sbt/sbt core/publishLocal tools/assembly
 
+cd $FWDIR/engines
+../sbt/sbt publishLocal
+
+cd $FWDIR
 rm -rf $DISTDIR
 mkdir -p $DISTDIR/bin
 mkdir -p $DISTDIR/conf

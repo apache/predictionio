@@ -1,4 +1,4 @@
-package io.prediction.examples.itemrank
+package io.prediction.engines.itemrank
 
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams

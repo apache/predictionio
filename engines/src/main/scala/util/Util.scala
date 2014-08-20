@@ -1,4 +1,4 @@
-package io.prediction.examples.util
+package io.prediction.engines.util
 
 import io.prediction.controller.NiceRendering
 
