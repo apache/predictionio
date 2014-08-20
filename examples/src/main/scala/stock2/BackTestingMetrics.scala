@@ -12,7 +12,7 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 //import org.json4s.native.Serialization.{read, write}
 
-import io.prediction.examples.util.{ MetricsVisualization => MV }
+import io.prediction.engines.util.{ MetricsVisualization => MV }
 
 import breeze.stats.{ mean, meanAndVariance }
 
@@ -68,7 +68,7 @@ class BacktestingMetrics(val params: BacktestingParams)
       BacktestingParams, DataParams, QueryDate, Prediction, AnyRef,
       DailyResult, Seq[DailyResult], BacktestingResult] {
 
-  def computeUnit(queryDate: QueryDate, prediction: Prediction, 
+  def computeUnit(queryDate: QueryDate, prediction: Prediction,
     unusedActual: AnyRef)
     : DailyResult = {
 
@@ -89,13 +89,13 @@ class BacktestingMetrics(val params: BacktestingParams)
 
     val toEnter = data.filter(_._2 == 1).map(_._1)
     val toExit = data.filter(_._2 == -1).map(_._1)
-    
+
     new DailyResult(
       dateIdx = todayIdx,
       toEnter = toEnter,
       toExit = toExit)
   }
- 
+
   def computeSet(dp: DataParams, input: Seq[DailyResult])
     : Seq[DailyResult] = input
 
@@ -153,7 +153,7 @@ class BacktestingMetrics(val params: BacktestingParams)
       }}
 
       // Book keeping
-      val nav = cash + positions.values.sum     
+      val nav = cash + positions.values.sum
 
       val ret = (if (dailyStats.isEmpty) 0 else {
         val yestStats = dailyStats.last
@@ -178,21 +178,21 @@ class BacktestingMetrics(val params: BacktestingParams)
     val annualVol = dailyVariance * math.sqrt(252.0)
     val n = dailyStats.size
     val totalReturn = lastStat.nav / initCash
-    
+
     val annualReturn = math.pow(totalReturn, 252.0 / n) - 1
     val sharpe = annualReturn / annualVol
-    
+
     val overall = OverallStat(
-      annualReturn, 
-      annualVol, 
-      sharpe, 
+      annualReturn,
+      annualVol,
+      sharpe,
       n)
 
     val result = BacktestingResult(
       daily = dailyStats,
       overall = overall
     )
-    
+
     params.optOutputPath.map { path => MV.save(result, path) }
 
     result

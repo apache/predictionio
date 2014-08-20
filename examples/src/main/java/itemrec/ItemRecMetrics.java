@@ -5,7 +5,7 @@ import io.prediction.controller.java.JavaMetrics;
 import io.prediction.examples.java.itemrec.data.Query;
 import io.prediction.examples.java.itemrec.data.Prediction;
 import io.prediction.examples.java.itemrec.data.Actual;
-import io.prediction.examples.util.MathUtil;
+import io.prediction.engines.util.MathUtil;
 
 import java.util.Iterator;
 import java.util.List;

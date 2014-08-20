@@ -15,7 +15,11 @@ import org.elasticsearch.transport.ConnectTransportException
 import org.elasticsearch.action.index.IndexResponse
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.delete.DeleteResponse
+import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse
 import org.elasticsearch.action.ActionListener
+import org.elasticsearch.index.query.FilterBuilders
+import org.elasticsearch.index.query.QueryBuilders
 
 import org.json4s._
 import org.json4s.JsonDSL._
@@ -83,6 +87,48 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
       .recover {
         case e: Exception => Left(StorageError(e.toString))
       }
+  }
+
+  def futureGetByAppId(appId: Int):
+    Future[Either[StorageError, Iterator[Event]]] = {
+    val response = Promise[SearchResponse]
+
+    client.prepareSearch(index).setTypes(typeName)
+      .setPostFilter(FilterBuilders.termFilter("appId", appId))
+      .execute(new ESActionListener(response))
+
+    response.future
+      .map{ r =>
+        val dataIt = r.getHits().hits()
+          .map(h => read[Event](h.getSourceAsString)).toIterator
+        Right(dataIt)
+      }.recover {
+        case e: Exception => Left(StorageError(e.toString))
+      }
+
+  }
+
+  def futureDeleteByAppId(appId: Int):
+    Future[Either[StorageError, Unit]] = {
+
+    val response = Promise[DeleteByQueryResponse]
+
+    client.prepareDeleteByQuery(index).setTypes(typeName)
+      .setQuery(QueryBuilders.termQuery("appId", appId))
+      .execute(new ESActionListener(response))
+
+    response.future
+      .map { r =>
+        val indexResponse = r.getIndex(index)
+        val numFailures = indexResponse.getFailedShards()
+        if (numFailures != 0)
+          Left(StorageError(s"Failed to delete ${numFailures} shards."))
+        else
+          Right(())
+      }.recover {
+        case e: Exception => Left(StorageError(e.toString))
+      }
+
   }
 
 /* old code
@@ -190,6 +236,26 @@ object TestEvents {
       case _ => {println("match error")}
     }
 
+    val i1 = eventConnector.insert(e)
+    println(i1)
+    val i2 = eventConnector.insert(e)
+    println(i2)
+    val i3 = eventConnector.insert(e)
+    println(i3)
+
+    // force refresh index for testing, else get may not have result
+    client.admin().indices().prepareRefresh("testindex").get()
+
+    val all = eventConnector.getByAppId(4)
+    println(all.right.map{ x =>
+      val l = x.toList
+      s"size ${l.size}, ${l}"
+    })
+
+    val delAll = eventConnector.deleteByAppId(4)
+    println(delAll)
+    val all2 = eventConnector.getByAppId(4)
+    println(all2)
     client.close()
   }
 }
