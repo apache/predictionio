@@ -1,4 +1,4 @@
-package io.prediction.examples.itemrank
+package io.prediction.engines.itemrank
 
 // This module allows users to evaluate their algorithm data with their acutal
 // data. It takes the mongodb dump (from Version 0.7 or before) of the three key

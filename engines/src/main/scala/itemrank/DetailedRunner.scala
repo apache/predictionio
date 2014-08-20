@@ -1,4 +1,4 @@
-package io.prediction.examples.itemrank
+package io.prediction.engines.itemrank
 
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
@@ -7,7 +7,7 @@ import io.prediction.controller.WorkflowParams
 
 import com.github.nscala_time.time.Imports._
 
-object Runner {
+object DetailedRunner {
 
   def main(args: Array[String]) {
     val dsp = new DataSourceParams(
@@ -25,9 +25,6 @@ object Runner {
       verbose = true
     )
 
-    val mp = new MetricsParams(
-      verbose = true
-    )
 
     val pp = new PreparatorParams(
       actions = Map(
@@ -64,17 +61,15 @@ object Runner {
       servingParams = sp
     )
 
+    val mp = new DetailedMetricsParams()
     Workflow.runEngine(
       params = WorkflowParams(
         batch = "Imagine: Local ItemRank Engine",
         verbose = 3),
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[ItemRankMetrics]),
+      metricsClassOpt = Some(classOf[ItemRankDetailedMetrics]),
       metricsParams = mp
-
     )
-
   }
-
 }

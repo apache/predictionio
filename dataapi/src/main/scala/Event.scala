@@ -14,13 +14,19 @@ case class Event(
   val targetEntityId: Option[String],
   val event: String,
   val properties: JObject, //Map[String, Any], // TODO: don't use JObject
-  val eventTime: DateTime,
-  val tags: Seq[String],
+  val eventTime: DateTime = DateTime.now, // default to current time
+  val tags: Seq[String] = Seq(),
   val appId: Int,
   val predictionKey: Option[String]
-)
+) {
+  require(!entityId.isEmpty, "entityId must not be empty string.")
+  require(targetEntityId.map(!_.isEmpty).getOrElse(true),
+    "targetEntityId must not be empty string.")
+  require(!event.isEmpty, "event must not be empty.")
+}
 
 // json4s serializer
+/* TODO: No need */
 class EventSeriliazer extends CustomSerializer[Event](format => (
   {
     case jv: JValue => {

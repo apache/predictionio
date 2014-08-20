@@ -1,8 +1,8 @@
-package io.prediction.examples.itemrank
+package io.prediction.engines.itemrank
 
 import io.prediction.controller._
 
-import io.prediction.examples.itemrank._
+import io.prediction.engines.itemrank._
 
 import breeze.linalg.SparseVector
 import breeze.linalg.inv
