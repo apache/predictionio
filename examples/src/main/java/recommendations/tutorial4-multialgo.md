@@ -67,7 +67,7 @@ This part is simliar to earlier tutorial.
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4a
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4a $PWD/data/ml-100k/ 
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
@@ -104,7 +104,7 @@ And you can test it out with
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4b
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4b $PWD/data/ml-100k/ 
 ```
 
 
@@ -168,7 +168,7 @@ in the section). We are able to define [an end-to-end
 engine](tutorial4/SingleEngineFactory.java).
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4c
+$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial4.Runner4c $PWD/data/ml-100k/ 
 ```
 
 ## Deployment
