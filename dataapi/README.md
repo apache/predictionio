@@ -7,12 +7,20 @@ Start server:
 dataapi $ sbt "run-main io.prediction.dataapi.Run"
 ```
 
-You can hit any key to exit the server.
+Stop server:
+
+You may hit any key to stop the server.
 
 ### Check server status
 
 ```
 $ curl -i -X GET http://localhost:8081
+```
+
+Sample response:
+```
+HTTP/1.1 200 OK
+{"status":"alive"}
 ```
 
 ### Create event

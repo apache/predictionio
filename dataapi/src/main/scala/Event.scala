@@ -80,6 +80,11 @@ trait Events {
 
   def futureDelete(eventId: String): Future[Either[StorageError, Boolean]]
 
+  def futureGetByAppId(appId: Int):
+    Future[Either[StorageError, Iterator[Event]]]
+
+  def futureDeleteByAppId(appId: Int): Future[Either[StorageError, Unit]]
+
   def insert(event: Event): Either[StorageError, String] = {
     Await.result(futureInsert(event), Duration(5, "seconds"))
   }
@@ -90,6 +95,14 @@ trait Events {
 
   def delete(eventId: String): Either[StorageError, Boolean] = {
     Await.result(futureDelete(eventId), Duration(5, "seconds"))
+  }
+
+  def getByAppId(appId: Int): Either[StorageError, Iterator[Event]] = {
+    Await.result(futureGetByAppId(appId), Duration(5, "seconds"))
+  }
+
+  def deleteByAppId(appId: Int): Either[StorageError, Unit] = {
+    Await.result(futureDeleteByAppId(appId), Duration(5, "seconds"))
   }
 
 /* old code
