@@ -1,12 +1,42 @@
+
 ## Data Collection API
+
+Start server:
+
+```
+dataapi $ sbt "run-main io.prediction.dataapi.Run"
+```
+
+You can hit any key to exit the server.
 
 ### Check server status
 
 ```
-curl -i -X GET http://localhost:8081
+$ curl -i -X GET http://localhost:8081
 ```
 
 ### Create event
+
+Event of one entity:
+
+```
+$ curl -i -X POST http://localhost:8081/events \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "my_event",
+  "entityId" : "my_entity_id",
+  "properties" : {
+    "prop1" : "value1",
+    "prop2" : "value2"
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+```
+
+Event between two entities (with **targetEntityId**):
 
 ```
 curl -i -X POST http://localhost:8081/events \
@@ -26,6 +56,18 @@ curl -i -X POST http://localhost:8081/events \
 }'
 
 ```
+
+Sample response:
+
+```
+HTTP/1.1 201 Created
+{"eventId":"pBXkP-GkRfShh-xIRTIG2A"}
+```
+
+The following fields are optional:
+* **"eventTime"** : current time will be used if it's not specified
+* **"tags"**: empty list of tag will be used if it's not specified
+
 
 ## For Debug Purpose
 
