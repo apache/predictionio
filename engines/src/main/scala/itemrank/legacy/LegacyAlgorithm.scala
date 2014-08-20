@@ -21,6 +21,10 @@ import org.apache.mahout.cf.taste.impl.similarity.{
   TanimotoCoefficientSimilarity,
   UncenteredCosineSimilarity
 }
+import org.apache.mahout.cf.taste.common.NoSuchUserException
+import org.apache.mahout.cf.taste.recommender.RecommendedItem
+
+import grizzled.slf4j.Logger
 
 import com.github.nscala_time.time.Imports._
 
@@ -56,6 +60,7 @@ class LegacyAlgorithmModel(
   val params: LegacyAlgorithmParams
 ) extends Serializable {
 
+  @transient lazy val logger = Logger[this.type]
   @transient lazy val recommender: Recommender = buildRecommender()
   @transient lazy val freshnessRescorer = new FreshnessRescorer(
       params.freshness,
@@ -64,7 +69,7 @@ class LegacyAlgorithmModel(
       validItemsMap)
 
   private def buildRecommender(): Recommender = {
-
+    logger.info("Building recommender...")
     val weightedParam: Weighting = if (params.weighted) Weighting.WEIGHTED
       else Weighting.UNWEIGHTED
 
@@ -104,6 +109,9 @@ class LegacyAlgorithmModel(
   class FreshnessRescorer(freshness: Int, recommendationTime: Long,
     freshnessTimeUnit: Long,
     itemsMap: Map[Long, ItemModel]) extends IDRescorer {
+
+    logger.info("Building FreshnessRescorer...")
+
     def isFiltered(id: Long): Boolean = false
 
     def rescore(id: Long, originalScore: Double): Double = {
@@ -125,6 +133,8 @@ class LegacyAlgorithmModel(
 class LegacyAlgorithm(params: LegacyAlgorithmParams)
   extends LAlgorithm[LegacyAlgorithmParams, PreparedData,
   LegacyAlgorithmModel, Query, Prediction] {
+
+  @transient lazy val logger = Logger[this.type]
 
   override def train(preparedData: PreparedData): LegacyAlgorithmModel = {
 
@@ -165,14 +175,31 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
     query: Query): Prediction = {
 
     val recomender = model.recommender
-    val uindex = model.usersMap(query.uid).index
-    // List[RecommendedItem] // getItemID(), getValue()
-    val rec = if (params.freshness != 0)
-      recomender.recommend(uindex, model.itemCount, model.freshnessRescorer)
-    else
-      recomender.recommend(uindex, model.itemCount)
+    val rec: List[RecommendedItem] = model.usersMap.get(query.uid)
+      .map { user =>
+        val uindex = user.index
+        // List[RecommendedItem] // getItemID(), getValue()
+        try {
+          if (params.freshness != 0)
+            recomender.recommend(uindex, model.itemCount,
+              model.freshnessRescorer).toList
+          else
+            recomender.recommend(uindex, model.itemCount).toList
+        } catch {
+          case e: NoSuchUserException => {
+            logger.info(
+              s"NoSuchUserException ${query.uid} (index ${uindex}) in model.")
+            List()
+          }
+          case e: Throwable => throw new RuntimeException(e)
+        }
+      }.getOrElse{
+        logger.info(s"Unknow user id ${query.uid}")
+        List()
+      }
 
-    val all: Seq[(String, Double)] = rec.toList.map { r =>
+
+    val all: Seq[(String, Double)] = rec.map { r =>
       val iid = model.validItemsMap(r.getItemID()).id
       (iid, r.getValue().toDouble)
     }

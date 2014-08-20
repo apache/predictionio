@@ -102,4 +102,9 @@ class MultipleMetricResult(
   val baselineStdev: Double,
   val algoMean: Double,
   val algoStdev: Double
-) extends Serializable
+) extends Serializable {
+  override def toString = s"baselineMean=${baselineMean} " +
+    s"baselineStdDev=${baselineStdev} " +
+    s"algoMean=${algoMean} " +
+    s"algoStdev=${algoStdev}"
+}
