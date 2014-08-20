@@ -1,7 +1,7 @@
 package io.prediction.examples.itemrank
 
 import io.prediction.storage.Storage
-import io.prediction.storage.{ User, Item, U2IAction, ItemSet }
+import io.prediction.storage.{ User => SUser , Item => SItem, U2IAction, ItemSet }
 
 import scala.util.Random
 import grizzled.slf4j.Logger
@@ -68,7 +68,7 @@ object CreateSampleData {
     }
 
     userIds.foreach { uid =>
-      usersDb.insert(User(
+      usersDb.insert(SUser(
         id = uid,
         appid = appid,
         ct = refTime
@@ -76,7 +76,7 @@ object CreateSampleData {
     }
 
     itemIds.foreach { iid =>
-      itemsDb.insert(Item(
+      itemsDb.insert(SItem(
         id = iid,
         appid = appid,
         ct = DateTime.now,

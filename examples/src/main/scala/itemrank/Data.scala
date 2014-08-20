@@ -74,7 +74,9 @@ class Actual(
     // other data that maybe used by metrics.
     val previousActionCount: Int = -1,
     val localDate: LocalDate = new LocalDate(0),
-    val localDateTime: LocalDateTime = new LocalDateTime(0)
+    val localDateTime: LocalDateTime = new LocalDateTime(0),
+    val averageOrderSize: Double = -1,
+    val previousOrders: Int = -1
   ) extends Serializable {
   override def toString = s"${items}"
 }

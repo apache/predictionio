@@ -190,6 +190,16 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       _.a.localDateTime.getHourOfDay.toString)
 
     val isOriginalAggregation = aggregateMU(allUnits, _.p.isOriginal.toString)
+
+    val avgOrderSizeAggregation = aggregateMU(
+      allUnits,
+      mu => groupByRange(Array(0, 1, 2, 3, 5, 8, 13), "%.0f")
+        (mu.a.averageOrderSize))
+    
+    val previousOrdersAggregation = aggregateMU(
+      allUnits,
+      mu => groupByRange(Array(0, 1, 3, 10, 30, 100), "%.0f")
+        (mu.a.previousOrders))
       
     val outputData = DetailedMetricsData (
       name = params.name,
@@ -203,7 +213,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         ("ByFlattenItem", itemCountAggregation),
         ("ByDate", dateAggregation),
         ("ByLocalHour", localHourAggregation),
-        ("ByIsOriginal", isOriginalAggregation)
+        ("ByIsOriginal", isOriginalAggregation),
+        ("ByAvgOrderSize", avgOrderSizeAggregation),
+        ("ByPreviousOrders", previousOrdersAggregation)
       )
     )
 

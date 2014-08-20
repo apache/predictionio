@@ -122,9 +122,11 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
     Range(dsp.fromIdx, dsp.untilIdx, dsp.testingWindowSize).map { idx => {
       val trainingUntilDate: LocalDate = dsp.baseDate.plusDays(idx)
       println("TrainingUntil: " + trainingUntilDate.toString)
-      
-      val trainingActions: Vector[U2IActionTD] = date2Actions
-        .filterKeys(k => k.isBefore(trainingUntilDate))
+
+      val trainingDate2Actions: Map[LocalDate, Seq[U2IActionTD]] = 
+        date2Actions.filterKeys(k => k.isBefore(trainingUntilDate))
+
+      val trainingActions: Vector[U2IActionTD] = trainingDate2Actions
         .values
         .flatMap(identity)
         .toVector
@@ -137,6 +139,26 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
       val uiActionsMap: Map[Int, Int] = trainingActions
         .groupBy(_.uindex)
         .mapValues(_.size)
+
+      // Seq[(Int, Int)]: (User, Order Size)
+      val date2OrderSizeMap: Map[LocalDate, Seq[(Int, Int)]] = 
+      trainingDate2Actions
+        .mapValues { 
+          _.groupBy(_.uindex).mapValues(_.size).toSeq
+        }
+
+      val uiAverageSizeMap: Map[Int, Double] = date2OrderSizeMap
+        .values
+        .flatMap(identity)
+        .groupBy(_._1)
+        .mapValues( l => l.map(_._2).sum.toDouble / l.size )
+      
+      val uiPreviousOrdersMap: Map[Int, Int] = date2OrderSizeMap
+        .values
+        .flatMap(identity)
+        .groupBy(_._1)
+        .mapValues(_.size)
+
 
       val queryActionList: Seq[(Query, Actual)] =
       Range(idx, math.min(idx + dsp.testingWindowSize, dsp.untilIdx))
@@ -167,7 +189,9 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
             items = iids.toSeq,
             previousActionCount = uiActionsMap.getOrElse(ui, 0),
             localDate = queryDate,
-            localDateTime = user2LocalDT(uid)
+            localDateTime = user2LocalDT(uid),
+            averageOrderSize = uiAverageSizeMap.getOrElse(ui, 0),
+            previousOrders = uiPreviousOrdersMap.getOrElse(ui, 0)
           )
           (query, actual)
         }}
