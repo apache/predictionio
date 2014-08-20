@@ -1,7 +1,6 @@
 package io.prediction.examples.stock
 
 import io.prediction.controller._
-import io.prediction.workflow.APIDebugWorkflow
 import com.github.nscala_time.time.Imports.DateTime
 
 object Demo2 {
@@ -32,7 +31,7 @@ object Demo2 {
       maxPositions = 3)
     
     // Invoke workflow
-    APIDebugWorkflow.runEngine(
+    Workflow.runEngine(
       batch = "stock.Demo2", 
       verbose = 0,
       engine = engine,

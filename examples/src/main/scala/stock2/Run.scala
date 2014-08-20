@@ -1,6 +1,6 @@
 package io.prediction.examples.stock2
 
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.controller.Workflow
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.FirstServing
@@ -79,7 +79,7 @@ object Run {
       optOutputPath = Some(new File("metrics_results").getCanonicalPath)
     )
 
-    APIDebugWorkflow.run(
+    Workflow.run(
       dataSourceClassOpt = Some(classOf[DataSource]),
       dataSourceParams = dataSourceParams,
       preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),

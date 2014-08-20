@@ -2,7 +2,7 @@ package io.prediction.examples.itemrank
 
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.controller.Workflow
 
 import com.github.nscala_time.time.Imports._
 
@@ -63,7 +63,7 @@ object Runner {
       servingParams = sp
     )
 
-    APIDebugWorkflow.runEngine(
+    Workflow.runEngine(
       batch = "Imagine: Local ItemRank Engine",
       verbose = 3,
       engine = engine,

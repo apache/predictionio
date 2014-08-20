@@ -9,7 +9,7 @@ import io.prediction.controller.IEngineFactory
 import io.prediction.controller.AverageServing
 import io.prediction.controller.MeanSquareError
 import io.prediction.controller.Utils
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.controller.Workflow
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -86,7 +86,7 @@ object Run {
       (SGD, AlgorithmParams(stepSize = 0.2)),
       (SGD, AlgorithmParams(stepSize = 0.4)))
 
-    APIDebugWorkflow.run(
+    Workflow.run(
         dataSourceClassOpt = Some(classOf[ParallelDataSource]),
         dataSourceParams = dataSourceParams,
         preparatorClassOpt =

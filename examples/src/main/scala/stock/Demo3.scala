@@ -1,7 +1,6 @@
 package io.prediction.examples.stock
 
 import io.prediction.controller._
-import io.prediction.workflow.APIDebugWorkflow
 import com.github.nscala_time.time.Imports.DateTime
 
 object Demo3 {
@@ -28,7 +27,7 @@ object Demo3 {
     val metrics = Some(classOf[DailyMetrics])
     
     // Invoke workflow
-    APIDebugWorkflow.runEngine(
+    Workflow.runEngine(
       batch = "stock.Demo3", 
       verbose = 0,
       engine = engine,

@@ -1,7 +1,6 @@
 package io.prediction.examples.stock
 
 import io.prediction.controller._
-import io.prediction.workflow.APIDebugWorkflow
 import com.github.nscala_time.time.Imports.DateTime
 
 object Demo1 {
@@ -25,7 +24,7 @@ object Demo1 {
       enterThreshold = 0.001, exitThreshold = 0.0)
     
     // Invoke workflow
-    APIDebugWorkflow.runEngine(
+    Workflow.runEngine(
       batch = "stock.Demo1", 
       verbose = 0,
       engine = engine,

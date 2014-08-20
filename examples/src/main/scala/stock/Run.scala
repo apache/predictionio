@@ -1,7 +1,7 @@
 package io.prediction.examples.stock
 
 import com.github.nscala_time.time.Imports.DateTime
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.controller.Workflow
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.FirstServing
@@ -29,7 +29,7 @@ object Run {
           ("Random", RandomAlgorithmParams(drift = 0.1)),
           ("Random", RandomAlgorithmParams(drift = -0.05)))
 
-    APIDebugWorkflow.run(
+    Workflow.run(
         dataSourceClassOpt = Some(classOf[StockDataSource]),
         dataSourceParams = dataSourceParams,
         preparatorClassOpt = Some(IdentityPreparator(classOf[StockDataSource])),

@@ -257,70 +257,6 @@ object APIDebugWorkflow {
     multipleMetricsResultsHTML = "",
     multipleMetricsResultsJSON = "")
 
-  def runEngine[
-      DP, TD, PD, Q, P, A,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
-      ](
-      batch: String = "",
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      verbose: Int = 2,
-      engine: Engine[TD, DP, PD, Q, P, A],
-      engineParams: EngineParams,
-      metricsClassOpt
-        : Option[Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
-        = None,
-      metricsParams: Params = EmptyParams()) {
-
-    run(
-      batch = batch,
-      env = env,
-      verbose = verbose,
-      dataSourceClassOpt = Some(engine.dataSourceClass),
-      dataSourceParams = engineParams.dataSourceParams,
-      preparatorClassOpt = Some(engine.preparatorClass),
-      preparatorParams = engineParams.preparatorParams,
-      algorithmClassMapOpt = Some(engine.algorithmClassMap),
-      algorithmParamsList = engineParams.algorithmParamsList,
-      servingClassOpt = Some(engine.servingClass),
-      servingParams = engineParams.servingParams,
-      metricsClassOpt = metricsClassOpt,
-      metricsParams = metricsParams
-    )
-  }
-
-  def run[
-      DP, TD, PD, Q, P, A,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
-      ](
-      batch: String = "",
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      verbose: Int = 2,
-      dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
-      dataSourceParams: Params = EmptyParams(),
-      preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
-      preparatorParams: Params = EmptyParams(),
-      algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
-        = None,
-      algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
-        = None,
-      servingParams: Params = EmptyParams(),
-      metricsClassOpt
-        : Option[Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
-        = None,
-      metricsParams: Params = EmptyParams()) {
-    runTypeless(
-        batch, env, verbose,
-        dataSourceClassOpt, dataSourceParams,
-        preparatorClassOpt, preparatorParams,
-        algorithmClassMapOpt, algorithmParamsList,
-        servingClassOpt, servingParams,
-        metricsClassOpt, metricsParams)
-  }
-
   // ***Do not directly call*** any "Typeless" method unless you know exactly
   // what you are doing.
 
@@ -708,11 +644,13 @@ object APIDebugWorkflow {
 
     val evalIds: Seq[EI] = evalAlgoModelMap.keys.toSeq.sorted
 
+    /*
     return evalIds.map { ei =>
       evalAlgoModelMap(ei).map { x => 
         Unit
       }.toSeq
     }.toSeq
+    */
 
     // Notice that the following code runs in parallel (.par) as collect is a
     // blocking call. 
@@ -735,7 +673,10 @@ object APIDebugWorkflow {
           }
         } else {  // Local Model
           // Local Model is wrap inside a single RDD object
-          val m = model.asInstanceOf[RDD[Any]].collect.head
+          val m = model.asInstanceOf[RDD[Any]]
+            .coalesce(numPartitions = 1, shuffle = true)
+            .collect
+            .head
           if (m.isInstanceOf[IPersistentModel[_]]) {
             getPersistentModel(m, realEngineInstance.id, algoParams)
           } else {
@@ -848,7 +789,8 @@ object JavaAPIDebugWorkflow {
       if (algorithmParamsList == null) null
       else algorithmParamsList.toSeq)
 
-    APIDebugWorkflow.run(
+    //APIDebugWorkflow.run(
+    APIDebugWorkflow.runTypeless(
       batch = batch,
       env = mapAsScalaMap(env).toMap,
       verbose = verbose,
