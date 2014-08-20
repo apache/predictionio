@@ -403,7 +403,7 @@ object APIDebugWorkflow {
 
     // Create an engine instance even for runner as well
     implicit val f = Utils.json4sDefaultFormats
-    val realEngineInstance = engineInstance getOrElse {
+    val realEngineInstance: EngineInstance = engineInstance getOrElse {
       val i = engineInstanceStub.copy(
         startTime = DateTime.now,
         engineFactory = getClass.getName,
@@ -593,78 +593,17 @@ object APIDebugWorkflow {
       }}
     }
 
-    val models: Seq[Seq[Any]] =
-      evalAlgoModelMap.keys.toSeq.sorted.map { ei =>
-        evalAlgoModelMap(ei).sortBy(_._1).map { case (ai, model) =>
-          if (algoInstanceList(ai).isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
-            if (model.isInstanceOf[IPersistentModel[_]]) {
-              if (model.asInstanceOf[IPersistentModel[Params]].save(
-                  realEngineInstance.id,
-                  algorithmParamsList(ai)._2))
-                PersistentModelManifest(className = model.getClass.getName)
-              else
-                Unit
-            } else {
-              Unit
-            }
-          } else {
-            val m = model.asInstanceOf[RDD[Any]].collect.head
-            if (m.isInstanceOf[IPersistentModel[_]]) {
-              if (m.asInstanceOf[IPersistentModel[Params]].save(
-                  realEngineInstance.id,
-                  algorithmParamsList(ai)._2))
-                PersistentModelManifest(className = m.getClass.getName)
-              else
-                m
-            } else {
-              m
-            }
-          }
-        }
-      }
-
-    def saveEngineInstance(mmr: Option[MMR]): String = {
-      val translatedAlgorithmsParams = write(
-        algorithmParamsList.zip(algoInstanceList).map {
-          case ((name, params), inst) =>
-            if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _, _]])
-              (name -> WorkflowUtils.javaObjectToJValue(params))
-            else
-              (name -> params)
-        })
-      Storage.getModelDataModels.insert(Model(
-        id = realEngineInstance.id,
-        models = KryoInjection(models)))
-      val engineInstances = Storage.getMetaDataEngineInstances
-
-      val (multipleMetricsResultsHTML, multipleMetricsResultsJSON) =
-        mmr.map ( mmr =>
-          if (mmr.isInstanceOf[NiceRendering]) {
-            val niceRenderingResult = mmr.asInstanceOf[NiceRendering]
-            (niceRenderingResult.toHTML, niceRenderingResult.toJSON)
-          } else {
-            logger.warn(
-              s"${mmr.getClass.getName} is not a NiceRendering instance.")
-            ("", "")
-          }
-        ).getOrElse(("", ""))
-        
-      engineInstances.update(realEngineInstance.copy(
-        status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
-        endTime = DateTime.now,
-        algorithmsParams = translatedAlgorithmsParams,
-        multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
-        multipleMetricsResultsHTML = multipleMetricsResultsHTML,
-        multipleMetricsResultsJSON = multipleMetricsResultsJSON
-        ))
-
-      logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
-      realEngineInstance.id
-    }
+    val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
+      evalAlgoModelMap, algorithmParamsList, algoInstanceList)
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
-      saveEngineInstance(None)
+      saveEngineInstance(
+        realEngineInstance,
+        algorithmParamsList, 
+        algoInstanceList,
+        models,
+        None)
       return
     }
 
@@ -721,23 +660,134 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    saveEngineInstance(Some(metricsOutput.head))
+    saveEngineInstance(
+      realEngineInstance,
+      algorithmParamsList,
+      algoInstanceList,
+      models,
+      Some(metricsOutput.head))
   }
+    
+  /** Extract model for persistent layer.
+    *
+    * PredictionIO presist models for future use.  It allows custom
+    * implementation for persisting models. You need to implement the
+    * [[IPersistentModel]] interface. This method traverses all models in the
+    * workflow. If the model is a [[IPersistentModel]], it calls the save method
+    * for custom persistence logic.
+    *
+    * For model doesn't support custom logic, PredictionIO serializes the whole
+    * model if the corresponding algorithm is local. On the other hand, if the
+    * model is parallel (i.e. model associated with a number of huge RDDS), this
+    * method return Unit, in which case PredictionIO will retrain the whole
+    * model from scratch next time it is used.
+    */
+
+  def extractPersistentModels[PD, Q, P](
+    realEngineInstance: EngineInstance,
+    evalAlgoModelMap: Map[EI, Seq[(AI, Any)]],
+    algorithmParamsList: Seq[(String, Params)],
+    algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]]): Seq[Seq[Any]] = {
+
+    def getPersistentModel(model: Any, instanceId: String, algoParams: Params)
+    : Any = {
+      if (model.asInstanceOf[IPersistentModel[Params]].save(
+          realEngineInstance.id, algoParams))
+        PersistentModelManifest(className = model.getClass.getName)
+      else
+        Unit
+    }
+
+    val evalIds: Seq[EI] = evalAlgoModelMap.keys.toSeq.sorted
+
+    // Notice that the following code runs in parallel (.par) as collect is a
+    // blocking call. 
+    evalIds
+    .par
+    .map { ei =>
+      val algoModels: Seq[(AI, Any)] = evalAlgoModelMap(ei).sortBy(_._1)
+      algoModels
+      .par
+      .map { case(ai, model) =>
+        val algo = algoInstanceList(ai)
+        val algoParams = algorithmParamsList(ai)._2
+        
+        // Parallel Model
+        if (algo.isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
+          if (model.isInstanceOf[IPersistentModel[_]]) {
+            getPersistentModel(model, realEngineInstance.id, algoParams)
+          } else {
+            Unit
+          }
+        } else {  // Local Model
+          // Local Model is wrap inside a single RDD object
+          val m = model.asInstanceOf[RDD[Any]].collect.head
+          if (m.isInstanceOf[IPersistentModel[_]]) {
+            getPersistentModel(m, realEngineInstance.id, algoParams)
+          } else {
+            m
+          }
+        }
+      }
+      .seq
+    }
+    .seq
+  }
+
+  def saveEngineInstance[
+      PD, Q, P,
+      MMR <: AnyRef : ClassTag
+      ](
+      realEngineInstance: EngineInstance,
+      algorithmParamsList: Seq[(String, Params)],
+      algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]],
+      models: Seq[Seq[Any]],
+      mmr: Option[MMR]
+      ): String = {
+    implicit val f = Utils.json4sDefaultFormats
+
+    val translatedAlgorithmsParams = write(
+      algorithmParamsList.zip(algoInstanceList).map {
+        case ((name, params), inst) =>
+          if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _, _]])
+            (name -> WorkflowUtils.javaObjectToJValue(params))
+          else
+            (name -> params)
+      })
+    Storage.getModelDataModels.insert(Model(
+      id = realEngineInstance.id,
+      models = KryoInjection(models)))
+    val engineInstances = Storage.getMetaDataEngineInstances
+
+    val (multipleMetricsResultsHTML, multipleMetricsResultsJSON) =
+      mmr.map ( mmr =>
+        if (mmr.isInstanceOf[NiceRendering]) {
+          val niceRenderingResult = mmr.asInstanceOf[NiceRendering]
+          (niceRenderingResult.toHTML, niceRenderingResult.toJSON)
+        } else {
+          logger.warn(
+            s"${mmr.getClass.getName} is not a NiceRendering instance.")
+          ("", "")
+        }
+      ).getOrElse(("", ""))
+      
+    engineInstances.update(realEngineInstance.copy(
+      status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
+      endTime = DateTime.now,
+      algorithmsParams = translatedAlgorithmsParams,
+      multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
+      multipleMetricsResultsHTML = multipleMetricsResultsHTML,
+      multipleMetricsResultsJSON = multipleMetricsResultsJSON
+      ))
+
+    logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
+    realEngineInstance.id
+  }
+
 }
 
-/*
-    dataSourceClass: Class[_ <: LJavaDataSource[DSP, DP, TD, Q, A]],
-    dataSourceParams: Params,
-    preparatorClass: Class[_ <: LJavaPreparator[PP, TD, PD]],
-    preparatorParams: Params,
-    algorithmClassMap:
-      JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, PD, _, Q, P]]],
-    algorithmParamsList: JIterable[(String, Params)],
-    servingClass: Class[_ <: LJavaServing[SP, Q, P]],
-    servingParams: Params,
-    metricsClass: Class[_ <: JavaMetrics[MP, DP, Q, P, A, MU, MR, MMR]],
-    metricsParams: Params
-*/
+
+
 
 /*
 Ideally, Java could also act as other scala base class. But the tricky part
