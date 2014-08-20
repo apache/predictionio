@@ -593,11 +593,14 @@ object APIDebugWorkflow {
       }}
     }
 
-    val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
-      evalAlgoModelMap, algorithmParamsList, algoInstanceList)
+    //val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
+    //  evalAlgoModelMap, algorithmParamsList, algoInstanceList)
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
+      val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
+        evalAlgoModelMap, algorithmParamsList, algoInstanceList)
+
       saveEngineInstance(
         realEngineInstance,
         algorithmParamsList, 
@@ -626,7 +629,9 @@ object APIDebugWorkflow {
     .map{ case (ei, metricsUnits) => {
       val metricsResults
       : RDD[(MDP, MR)] = metricsUnits
-        .coalesce(numPartitions=1)
+        // shuffle must be true, otherwise all upstream stage will be forced to
+        // use a single partition.
+        .coalesce(numPartitions=1, shuffle = true)
         .glom()
         .map(e => (localParamsSet(ei), e.toIterable))
         .map(metricsWrapper.computeSet)
@@ -642,7 +647,7 @@ object APIDebugWorkflow {
 
     val multipleMetricsResults: RDD[MMR] = sc
       .union(evalMetricsResultsMap.values.toSeq)
-      .coalesce(numPartitions=1)
+      .coalesce(numPartitions=1, shuffle = true)
       .glom()
       .map(metricsWrapper.computeMultipleSets)
 
@@ -659,6 +664,9 @@ object APIDebugWorkflow {
     metricsOutput foreach { logger.info(_) }
 
     logger.info("APIDebugWorkflow.run completed.")
+
+    val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
+      evalAlgoModelMap, algorithmParamsList, algoInstanceList)
 
     saveEngineInstance(
       realEngineInstance,
@@ -699,6 +707,12 @@ object APIDebugWorkflow {
     }
 
     val evalIds: Seq[EI] = evalAlgoModelMap.keys.toSeq.sorted
+
+    return evalIds.map { ei =>
+      evalAlgoModelMap(ei).map { x => 
+        Unit
+      }.toSeq
+    }.toSeq
 
     // Notice that the following code runs in parallel (.par) as collect is a
     // blocking call. 
