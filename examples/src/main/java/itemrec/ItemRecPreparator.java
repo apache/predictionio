@@ -5,7 +5,7 @@ import io.prediction.examples.java.itemrec.data.TrainingData;
 import io.prediction.examples.java.itemrec.data.Rating;
 import io.prediction.controller.java.LJavaPreparator;
 import io.prediction.controller.java.EmptyParams;
-import io.prediction.examples.util.MahoutUtil;
+import io.prediction.engines.util.MahoutUtil;
 
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
