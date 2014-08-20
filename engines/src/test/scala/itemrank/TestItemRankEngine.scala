@@ -1,6 +1,6 @@
-package io.prediction.examples.itemrank.test
+package io.prediction.engines.itemrank.test
 
-import io.prediction.examples.itemrank._
+import io.prediction.engines.itemrank._
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.scalatest._

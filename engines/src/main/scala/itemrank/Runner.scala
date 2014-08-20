@@ -51,6 +51,17 @@ object Runner {
       threshold = 5e-324,
       numSimilarItems = 50
     )
+    val legacyAlgoParams = new legacy.LegacyAlgorithmParams(
+      booleanData = true,
+      itemSimilarity = "LogLikelihoodSimilarity",
+      weighted = false,
+      threshold = Double.MinPositiveValue,
+      nearestN = 10,
+      unseenOnly = false,
+      freshness = 0,
+      freshnessTimeUnit = 86400,
+      recommendationTime = DateTime.now.millis
+    )
 
     val sp = new EmptyParams()
 
@@ -61,6 +72,7 @@ object Runner {
       algorithmParamsList = Seq(("knn", knnAlgoParams)),
       // Seq(("rand", randomAlgoParams))
       // Seq(("mahout", mahoutAlgoParams))
+      // Seq(("legacy", legacyAlgoParams))
       servingParams = sp
     )
 

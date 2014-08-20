@@ -24,13 +24,13 @@ libraryDependencies ++= Seq(
   "org.json4s"        %% "json4s-native"  % "3.2.6",
   "org.scalatest"     %% "scalatest"      % "2.2.0" % "test")
 
-//mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
-//  {
-//    case PathList("scala", xs @ _*) => MergeStrategy.discard
-//    case PathList("org", "xmlpull", xs @ _*) => MergeStrategy.last
-//    case x => old(x)
-//  }
-//}
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+  {
+    case PathList("scala", xs @ _*) => MergeStrategy.discard
+    case PathList("org", "xmlpull", xs @ _*) => MergeStrategy.last
+    case x => old(x)
+  }
+}
 
 run in Compile <<= Defaults.runTask(
   fullClasspath in Compile,
