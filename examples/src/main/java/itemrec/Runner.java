@@ -16,7 +16,8 @@ import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
-import io.prediction.workflow.JavaAPIDebugWorkflow;
+import io.prediction.controller.java.JavaWorkflow;
+import io.prediction.controller.java.WorkflowParamsBuilder;
 
 import scala.Tuple2;
 import java.util.List;
@@ -99,14 +100,12 @@ public class Runner {
       .servingParams(sp)
       .build();
 
-    JavaAPIDebugWorkflow.runEngine(
-      "Java Itemrec engine",
-      new HashMap<String, String>(),
-      3,  // verbose
+    JavaWorkflow.runEngine(
       (new EngineFactory()).apply(),
       engineParams,
       ItemRecMetrics.class,
-      new MetricsParams(k)
+      new MetricsParams(k),
+      new WorkflowParamsBuilder().batch("Java Itemrec engine").verbose(3).build()
       );
   }
 

@@ -3,6 +3,7 @@ package io.prediction.examples.itemrank
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
 import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
 
 import com.github.nscala_time.time.Imports._
 
@@ -64,8 +65,9 @@ object Runner {
     )
 
     Workflow.runEngine(
-      batch = "Imagine: Local ItemRank Engine",
-      verbose = 3,
+      params = WorkflowParams(
+        batch = "Imagine: Local ItemRank Engine",
+        verbose = 3),
       engine = engine,
       engineParams = engineParams,
       metricsClassOpt = Some(classOf[ItemRankMetrics]),

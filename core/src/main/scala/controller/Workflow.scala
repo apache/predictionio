@@ -11,14 +11,17 @@ import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.APIDebugWorkflow
 import scala.reflect.ClassTag
 
+case class WorkflowParams(
+  batch: String = "",
+  verbose: Int = 2,
+  saveModel: Boolean = false)
+
 object Workflow {
   def runEngine[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
-      batch: String = "",
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      verbose: Int = 2,
+      params: WorkflowParams = WorkflowParams(),
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       metricsClassOpt
@@ -27,9 +30,6 @@ object Workflow {
       metricsParams: Params = EmptyParams()) {
 
     run(
-      batch = batch,
-      env = env,
-      verbose = verbose,
       dataSourceClassOpt = Some(engine.dataSourceClass),
       dataSourceParams = engineParams.dataSourceParams,
       preparatorClassOpt = Some(engine.preparatorClass),
@@ -39,7 +39,8 @@ object Workflow {
       servingClassOpt = Some(engine.servingClass),
       servingParams = engineParams.servingParams,
       metricsClassOpt = metricsClassOpt,
-      metricsParams = metricsParams
+      metricsParams = metricsParams,
+      params = params
     )
   }
 
@@ -47,9 +48,6 @@ object Workflow {
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
-      batch: String = "",
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
@@ -66,15 +64,18 @@ object Workflow {
       metricsClassOpt
         : Option[Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
         = None,
-      metricsParams: Params = EmptyParams()) {
+      metricsParams: Params = EmptyParams(),
+      params: WorkflowParams = WorkflowParams()
+    ) {
 
     APIDebugWorkflow.runTypeless(
-        batch, env, verbose,
         dataSourceClassOpt, dataSourceParams,
         preparatorClassOpt, preparatorParams,
         algorithmClassMapOpt, algorithmParamsList,
         servingClassOpt, servingParams,
-        metricsClassOpt, metricsParams)
+        metricsClassOpt, metricsParams,
+        params = params
+      )
   }
 
 }

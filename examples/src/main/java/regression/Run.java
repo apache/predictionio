@@ -8,8 +8,8 @@ import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.LJavaAlgorithm;
-import io.prediction.workflow.APIDebugWorkflow;
-import io.prediction.workflow.JavaAPIDebugWorkflow;
+import io.prediction.controller.java.JavaWorkflow;
+import io.prediction.controller.java.WorkflowParamsBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,12 +40,10 @@ public class Run {
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.4))
       .build();
 
-    JavaAPIDebugWorkflow.runEngine(
-        "java regression engine",
-        new HashMap<String, String>(),
-        3,  // verbose
+    JavaWorkflow.runEngine(
         (new HalfBakedEngineFactory()).apply(),
-        engineParams
+        engineParams,
+        new WorkflowParamsBuilder().batch("java regression engine").verbose(3).build()
         );
   }
 
@@ -58,14 +56,12 @@ public class Run {
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.4))
       .build();
 
-    JavaAPIDebugWorkflow.runEngine(
-        "java regression engine",
-        new HashMap<String, String>(),
-        3,  // verbose
+    JavaWorkflow.runEngine(
         (new EngineFactory()).apply(),
         engineParams,
         MeanSquareMetrics.class,
-        new EmptyParams()
+        new EmptyParams(),
+        new WorkflowParamsBuilder().batch("java regression engine").verbose(3).build()
         );
   }
 

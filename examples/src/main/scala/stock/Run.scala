@@ -2,6 +2,7 @@ package io.prediction.examples.stock
 
 import com.github.nscala_time.time.Imports.DateTime
 import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.FirstServing
@@ -40,7 +41,8 @@ object Run {
         servingClassOpt = Some(FirstServing(classOf[RegressionAlgorithm])),
         metricsClassOpt = Some(classOf[BacktestingMetrics]),
         metricsParams = BacktestingParams(0.002, 0.0),
-        verbose = 0,
-        batch = "Imagine: Stock")
+        params = WorkflowParams(
+          verbose = 0,
+          batch = "Imagine: Stock"))
   }
 }

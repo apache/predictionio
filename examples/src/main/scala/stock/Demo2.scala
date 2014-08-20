@@ -32,8 +32,9 @@ object Demo2 {
     
     // Invoke workflow
     Workflow.runEngine(
-      batch = "stock.Demo2", 
-      verbose = 0,
+      params = WorkflowParams(
+        batch = "stock.Demo2", 
+        verbose = 0),
       engine = engine,
       engineParams = engineParams,
       metricsClassOpt = metrics,

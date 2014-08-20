@@ -5,7 +5,8 @@ import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
-import io.prediction.workflow.JavaAPIDebugWorkflow;
+import io.prediction.controller.java.JavaWorkflow;
+import io.prediction.controller.java.WorkflowParamsBuilder;
 
 import myengine.MyParams.DataSourceParams;
 import myengine.MyParams.DataParams;
@@ -42,14 +43,12 @@ public class Runner {
       .servingParams(new ServingParams())
       .build();
 
-    JavaAPIDebugWorkflow.runEngine(
-      "MyEngine",
-      new HashMap<String, String>(),
-      3, // verbose
+    JavaWorkflow.runEngine(
       (new HalfBakedEngineFactory()).apply(),
       engineParams,
       Metrics.class,
-      new MetricsParams()
+      new MetricsParams(),
+      new WorkflowParamsBuilder().batch("MyEngine").verbose(3).build()
     );
   }
 
@@ -61,14 +60,12 @@ public class Runner {
       .servingParams(new ServingParams())
       .build();
 
-    JavaAPIDebugWorkflow.runEngine(
-      "MyEngine",
-      new HashMap<String, String>(),
-      3, // verbose
+    JavaWorkflow.runEngine(
       (new EngineFactory()).apply(),
       engineParams,
       Metrics.class,
-      new MetricsParams()
+      new MetricsParams(),
+      new WorkflowParamsBuilder().batch("MyEngine").verbose(3).build()
     );
 
   }

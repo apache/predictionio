@@ -6,6 +6,7 @@ import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
+import io.prediction.controller.WorkflowParams
 import io.prediction.core.Doer
 import io.prediction.core.BaseMetrics
 import io.prediction.storage.EngineInstance
@@ -201,9 +202,10 @@ object CreateWorkflow extends Logging {
         engineInstance)
 
       APIDebugWorkflow.runEngineTypeless(
-        batch = wfc.batch,
         env = pioEnvVars,
-        verbose = 3,
+        params = WorkflowParams(
+          verbose = 3,
+          batch = wfc.batch),
         engine = engine,
         engineParams = engineParams,
         metrics = metricsInstance,

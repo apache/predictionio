@@ -16,6 +16,7 @@ import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.JavaMetrics
 import io.prediction.controller.java.JavaUtils
 import io.prediction.controller.java.JavaEngine
+import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseMetrics
@@ -271,20 +272,19 @@ object APIDebugWorkflow {
       MDP, MQ, MP, MA,
       MU, MR, MMR <: AnyRef
       ](
-      batch: String = "",
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      verbose: Int = 2,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       metrics
         : BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
       metricsParams: Params = EmptyParams(),
-      engineInstance: Option[EngineInstance] = None) {
+      engineInstance: Option[EngineInstance] = None,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()
+    ) {
 
     runTypeless(
-      batch = batch,
       env = env,
-      verbose = verbose,
+      params = params,
       dataSourceClassOpt = Some(engine.dataSourceClass),
       dataSourceParams = engineParams.dataSourceParams,
       preparatorClassOpt = Some(engine.preparatorClass),
@@ -309,9 +309,6 @@ object APIDebugWorkflow {
       MDP, MQ, MP, MA,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
-      batch: String = "",
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      verbose: Int = 2,
       dataSourceClassOpt
         : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
@@ -329,13 +326,18 @@ object APIDebugWorkflow {
         : Option[Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
         = None,
       metricsParams: Params = EmptyParams(),
-      engineInstance: Option[EngineInstance] = None) {
+      engineInstance: Option[EngineInstance] = None,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()
+    ) {
     logger.info("APIDebugWorkflow.run")
     logger.info("Start spark context")
 
     WorkflowUtils.checkUpgrade("evaluation")
 
-    val sc = WorkflowContext(batch, env)
+    val verbose = params.verbose
+
+    val sc = WorkflowContext(params.batch, env)
 
     // Create an engine instance even for runner as well
     implicit val f = Utils.json4sDefaultFormats
@@ -344,7 +346,7 @@ object APIDebugWorkflow {
         startTime = DateTime.now,
         engineFactory = getClass.getName,
         metricsClass = metricsClassOpt.map(_.getName).getOrElse(""),
-        batch = batch,
+        batch = params.batch,
         env = env,
         dataSourceParams = write(dataSourceParams),
         preparatorParams = write(preparatorParams),
@@ -616,7 +618,7 @@ object APIDebugWorkflow {
     *
     * PredictionIO presist models for future use.  It allows custom
     * implementation for persisting models. You need to implement the
-    * [[IPersistentModel]] interface. This method traverses all models in the
+    * [[io.prediction.controller.IPersistentModel]] interface. This method traverses all models in the
     * workflow. If the model is a [[IPersistentModel]], it calls the save method
     * for custom persistence logic.
     *
@@ -765,9 +767,7 @@ object JavaAPIDebugWorkflow {
       //DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
   def run[
       DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
-    batch: String = "",
     env: JMap[String, String] = new JHashMap(),
-    verbose: Int = 2,
     dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
     dataSourceParams: Params,
     preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]],
@@ -778,7 +778,8 @@ object JavaAPIDebugWorkflow {
     servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]],
     servingParams: Params,
     metricsClass: Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
-    metricsParams: Params
+    metricsParams: Params,
+    params: WorkflowParams
   ) = {
 
     val scalaAlgorithmClassMap = (
@@ -789,11 +790,9 @@ object JavaAPIDebugWorkflow {
       if (algorithmParamsList == null) null
       else algorithmParamsList.toSeq)
 
-    //APIDebugWorkflow.run(
     APIDebugWorkflow.runTypeless(
-      batch = batch,
       env = mapAsScalaMap(env).toMap,
-      verbose = verbose,
+      params = params,
       dataSourceClassOpt = noneIfNull(dataSourceClass),
       dataSourceParams = dataSourceParams,
       preparatorClassOpt = noneIfNull(preparatorClass),
@@ -811,16 +810,15 @@ object JavaAPIDebugWorkflow {
 
   }
 
+  /*
   def runEngine[DP, TD, PD, Q, P, A](
-    batch: String,
     env: JMap[String, String],
-    verbose: Int,
     engine: Engine[TD, DP, PD, Q, P, A],
-    engineParams: EngineParams) {
+    engineParams: EngineParams,
+    params: WorkflowParams
+  ) {
     runEngine(
-      batch = batch,
       env = env,
-      verbose = verbose,
       engine = engine,
       engineParams = engineParams,
       metricsClass = null,
@@ -829,18 +827,14 @@ object JavaAPIDebugWorkflow {
   }
 
   def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
-      batch: String,
       env: JMap[String, String],
-      verbose: Int,
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       metricsClass
         : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
       metricsParams: Params) {
     run(
-      batch = batch,
       env = env,
-      verbose = verbose,
       dataSourceClass = engine.dataSourceClass,
       dataSourceParams = engineParams.dataSourceParams,
       preparatorClass = engine.preparatorClass,
@@ -851,19 +845,6 @@ object JavaAPIDebugWorkflow {
       servingParams = engineParams.servingParams,
       metricsClass = metricsClass,
       metricsParams = metricsParams)
-
-    /*
-    APIDebugWorkflow.runEngine(
-      batch = batch,
-      verbose = verbose,
-      engine = engine,
-      engineParams = engineParams,
-      metricsClass = metricsClass,
-      metricsParams = metricsParams
-    )(
-      JavaUtils.fakeClassTag[MU],
-      JavaUtils.fakeClassTag[MR],
-      JavaUtils.fakeClassTag[MMR])
-    */
   }
+  */
 }

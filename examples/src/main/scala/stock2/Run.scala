@@ -1,6 +1,7 @@
 package io.prediction.examples.stock2
 
 import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.FirstServing
@@ -90,8 +91,9 @@ object Run {
       servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
       metricsClassOpt = Some(classOf[BacktestingMetrics]),
       metricsParams = metricsParams,
-      verbose = 0,
-      batch = "Imagine: Stock II")
+      params = WorkflowParams(
+        verbose = 0,
+        batch = "Imagine: Stock II"))
   }
 }
 

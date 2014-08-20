@@ -10,6 +10,7 @@ import io.prediction.controller.AverageServing
 import io.prediction.controller.MeanSquareError
 import io.prediction.controller.Utils
 import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -95,7 +96,8 @@ object Run {
         algorithmParamsList = algorithmParamsList,
         servingClassOpt = Some(AverageServing(classOf[ParallelSGDAlgorithm])),
         metricsClassOpt = Some(classOf[MeanSquareError]),
-        batch = "Imagine: Parallel Regression")
+        params = WorkflowParams(
+          batch = "Imagine: Parallel Regression"))
   }
 }
 

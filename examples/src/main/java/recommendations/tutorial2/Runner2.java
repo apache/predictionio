@@ -13,7 +13,8 @@ import io.prediction.controller.java.JavaSimpleEngine;
 import io.prediction.controller.java.JavaSimpleEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
-import io.prediction.workflow.JavaAPIDebugWorkflow;
+import io.prediction.controller.java.JavaWorkflow;
+import io.prediction.controller.java.WorkflowParamsBuilder;
 
 import java.util.HashMap;
 
@@ -40,14 +41,12 @@ public class Runner2 {
       .addAlgorithmParams("MyRecommendationAlgo", new AlgoParams(0.2)) // Add Algorithm Params
       .build();
 
-    JavaAPIDebugWorkflow.runEngine(
-      "MyEngine",
-      new HashMap<String, String>(),
-      3, // verbose
+    JavaWorkflow.runEngine(
       (new HalfBakedEngineFactory()).apply(),
       engineParams,
       null,
-      new EmptyParams()
+      new EmptyParams(),
+      new WorkflowParamsBuilder().batch("MyEngine").verbose(3).build()
     );
   }
 
