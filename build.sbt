@@ -17,12 +17,18 @@ fork in (ThisBuild, run) := true
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
+lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
+  sourceGenerators in Compile <+= buildInfo,
+  buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+  buildInfoPackage := "io.prediction")
+
 lazy val root = project in file(".") aggregate(
   core,
   tools)
 
 lazy val core = (project in file("core")).
   settings(genjavadocSettings: _*).
+  settings(pioBuildInfoSettings: _*).
   enablePlugins(SbtTwirl)
 
 lazy val tools = (project in file("tools")).

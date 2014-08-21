@@ -1,5 +1,6 @@
 package io.prediction.tools
 
+import io.prediction.BuildInfo
 import io.prediction.controller.Utils
 import io.prediction.storage.EngineManifest
 import io.prediction.storage.EngineManifestSerializer
@@ -40,7 +41,7 @@ object Console extends Logging {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError = false
-      head("PredictionIO Command Line Interface Console\n")
+      head("PredictionIO Command Line Interface Console", BuildInfo.version)
       help("help")
       note("Note that it is possible to supply pass-through arguments at\n" +
         "the end of the command by using a '--' separator, e.g.\n\n" +
