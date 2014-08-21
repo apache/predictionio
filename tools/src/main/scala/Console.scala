@@ -253,10 +253,10 @@ object Console extends Logging {
   }
 
   def register(ca: ConsoleArgs): Unit = {
-    val sbt = ca.sbt map { _.getCanonicalPath } getOrElse { "sbt" }
-
+    val sbt = detectSbt(ca)
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
+
     val cmd = s"${sbt} package assemblyPackageDependency"
     info(s"Going to run: ${cmd}")
     val r = cmd.!(ProcessLogger(
