@@ -4,14 +4,7 @@ assemblySettings
 
 name := "engines"
 
-organization := "io.prediction"
-
-version := "0.8.0-SNAPSHOT"
-
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 libraryDependencies ++= Seq(
-  "io.prediction"     %% "core"           % "0.8.0-SNAPSHOT" % "provided",
   "com.github.scopt"  %% "scopt"          % "3.2.0",
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",
@@ -26,7 +19,7 @@ libraryDependencies ++= Seq(
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
-    case PathList("scala", xs @ _*) => MergeStrategy.discard
+    case PathList("scala", "reflect", "api", xs @ _*) => MergeStrategy.last
     case PathList("org", "xmlpull", xs @ _*) => MergeStrategy.last
     case x => old(x)
   }
@@ -40,5 +33,3 @@ run in Compile <<= Defaults.runTask(
 runMain in Compile <<= Defaults.runMainTask(
   fullClasspath in Compile,
   runner in (Compile, run))
-
-lazy val root = (project in file(".")).enablePlugins(SbtTwirl)

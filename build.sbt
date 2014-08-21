@@ -24,11 +24,16 @@ lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
 
 lazy val root = project in file(".") aggregate(
   core,
+  engines,
   tools)
 
 lazy val core = (project in file("core")).
   settings(genjavadocSettings: _*).
   settings(pioBuildInfoSettings: _*).
+  enablePlugins(SbtTwirl)
+
+lazy val engines = (project in file("engines")).
+  dependsOn(core).
   enablePlugins(SbtTwirl)
 
 lazy val tools = (project in file("tools")).

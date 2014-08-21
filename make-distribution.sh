@@ -6,10 +6,7 @@ FWDIR="$(cd `dirname $0`; pwd)"
 DISTDIR="$FWDIR/dist"
 
 cd $FWDIR
-sbt/sbt core/publishLocal tools/assembly
-
-cd $FWDIR/engines
-../sbt/sbt publishLocal
+sbt/sbt core/publishLocal engines/publishLocal engines/assemblyPackageDependency tools/assembly
 
 cd $FWDIR
 rm -rf $DISTDIR
@@ -20,7 +17,10 @@ mkdir -p $DISTDIR/lib
 cp $FWDIR/bin/* $DISTDIR/bin
 cp $FWDIR/conf/* $DISTDIR/conf
 cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
+cp $FWDIR/engines/target/scala-2.10/engines*jar $DISTDIR/lib
 
+rm $DISTDIR/lib/*javadoc.jar
+rm $DISTDIR/lib/*sources.jar
 rm $DISTDIR/conf/pio-env.sh
 
 touch $DISTDIR/RELEASE
