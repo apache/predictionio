@@ -54,6 +54,7 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
   Seq(
     "akka",
     "breeze",
+    "html",
     "io.prediction.engines",
     "myengine",
     "org").mkString(":"),
