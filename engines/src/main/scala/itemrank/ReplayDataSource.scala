@@ -159,6 +159,9 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
         .groupBy(_._1)
         .mapValues(_.size)
 
+      val uiVarietyMap: Map[Int, Int] = trainingActions
+        .groupBy(_.uindex)
+        .mapValues(_.map(_.iindex).distinct.size)
 
       val queryActionList: Seq[(Query, Actual)] =
       Range(idx, math.min(idx + dsp.testingWindowSize, dsp.untilIdx))
@@ -191,7 +194,8 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
             localDate = queryDate,
             localDateTime = user2LocalDT(uid),
             averageOrderSize = uiAverageSizeMap.getOrElse(ui, 0),
-            previousOrders = uiPreviousOrdersMap.getOrElse(ui, 0)
+            previousOrders = uiPreviousOrdersMap.getOrElse(ui, 0),
+            variety = uiVarietyMap.getOrElse(ui, 0)
           )
           (query, actual)
         }}

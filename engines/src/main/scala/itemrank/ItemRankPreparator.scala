@@ -42,7 +42,8 @@ class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
     new PreparedData(
       users = trainingData.users,
       items = trainingData.items,
-      rating = ratingReduced
+      rating = ratingReduced,
+      ratingOriginal = u2iRatings
     )
   }
 

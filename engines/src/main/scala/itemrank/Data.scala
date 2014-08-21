@@ -47,7 +47,8 @@ class RatingTD(
 class PreparedData(
   val users: Map[Int, UserTD],
   val items: Map[Int, ItemTD],
-  val rating: Seq[RatingTD]
+  val rating: Seq[RatingTD],
+  val ratingOriginal: Seq[RatingTD]  // Non-deduped ratings
 ) extends Serializable {
   override def toString = s"U: ${users} I: ${items} R: ${rating}"
 }
@@ -76,7 +77,8 @@ class Actual(
     val localDate: LocalDate = new LocalDate(0),
     val localDateTime: LocalDateTime = new LocalDateTime(0),
     val averageOrderSize: Double = -1,
-    val previousOrders: Int = -1
+    val previousOrders: Int = -1,
+    val variety: Int = -1
   ) extends Serializable {
   override def toString = s"${items}"
 }
@@ -86,7 +88,9 @@ class MetricUnit(
   val p: Prediction,
   val a: Actual,
   val score: Double,
-  val baseline: Double
+  val baseline: Double,
+  // a hashing function to bucketing uids
+  val uidHash: Int = 0
 ) extends Serializable
 
 class MetricResult(

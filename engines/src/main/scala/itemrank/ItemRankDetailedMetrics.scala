@@ -24,13 +24,15 @@ import java.io.PrintWriter
 import java.io.File
 
 import io.prediction.engines.util.{ MetricsVisualization => MV }
+import scala.util.hashing.MurmurHash3
 
 case class Stats(
   val average: Double, 
   val count: Long,
   val stdev: Double,
   val min: Double,
-  val max: Double
+  val max: Double,
+  val ci: Double = 0.0
 ) extends Serializable
 
 case class DetailedMetricsData(
@@ -81,7 +83,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       score = averagePrecisionAtK(k, prediction.items.map(_._1),
         actual.items.toSet),
       baseline = averagePrecisionAtK(k, query.items,
-        actual.items.toSet))
+        actual.items.toSet),
+      uidHash = MurmurHash3.stringHash(query.uid)
+    )
   }
 
   // calcualte MAP at k
@@ -90,7 +94,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   
   def calculate(values: Seq[Double]): Stats = {
     val (mean, variance, count) = meanAndVariance(values)
-    Stats(mean, count, math.sqrt(variance), values.min, values.max)
+    val stdev = math.sqrt(variance)
+    Stats(mean, count, stdev, values.min, values.max)
     //Stats(values.sum / values.size, values.size)
   }
 
@@ -106,6 +111,25 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       .sortBy(-_._2.average)
   } 
   */
+
+  def calculateResample(values: Seq[(Int, Double)], n: Int = 20): Stats = {
+    // Simpleset method for now. Chopping into n buckets, then calcuate
+    // variance.
+    val segmentMeanMap: Map[Int, Double] = values
+      .map{ case(k, v) => (k % n, v) }
+      .groupBy(_._1)
+      .mapValues(l => mean(l.map(_._2)))
+
+    // 95-percentile and assume the mean is normal distributed
+    val (m, v, c) = meanAndVariance(segmentMeanMap.values)
+    val stdev = math.sqrt(v)
+    //val ci = 1.96 * v / stdev 
+
+    // min and max doesn't make a lot of sense anyway...
+    //return Stats(m, values.size, stdev, 0.0, 0.0)
+    return Stats(m, n, stdev, 0.0, 0.0)
+  }
+  
 
   def aggregateMU(units: Seq[MetricUnit], groupByFunc: MetricUnit => String)
   : Seq[(String, Stats)] = 
@@ -153,6 +177,11 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       "Overall", 
       calculate(allUnits.map(_.score)),
       calculate(allUnits.map(_.baseline)))
+    
+    val overallResampledStats = (
+      "Overall Resampled", 
+      calculateResample(allUnits.map(mu => (mu.uidHash, mu.score))),
+      calculateResample(allUnits.map(mu => (mu.uidHash, mu.baseline))))
 
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) => 
@@ -200,12 +229,17 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       allUnits,
       mu => groupByRange(Array(0, 1, 3, 10, 30, 100), "%.0f")
         (mu.a.previousOrders))
+
+    val varietyAggregation = aggregateMU(
+      allUnits,
+      mu => groupByRange(Array(0, 1, 2, 3, 5, 8, 13, 21), "%.0f")
+        (mu.a.variety))
       
     val outputData = DetailedMetricsData (
       name = params.name,
       algoMean = overallStats._2.average,
       //runs = Seq(overallStats, baselineStats) ++ runsStats,
-      runs = Seq(overallStats) ++ runsStats,
+      runs = Seq(overallStats, overallResampledStats) ++ runsStats,
       aggregations = Seq(
         ("ByActualSize", aggregateMU(allUnits, _.a.items.size.toString)),
         ("ByScore", scoreAggregation),
@@ -215,7 +249,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         ("ByLocalHour", localHourAggregation),
         ("ByIsOriginal", isOriginalAggregation),
         ("ByAvgOrderSize", avgOrderSizeAggregation),
-        ("ByPreviousOrders", previousOrdersAggregation)
+        ("ByPreviousOrders", previousOrdersAggregation),
+        ("ByVariety", varietyAggregation)
       )
     )
 

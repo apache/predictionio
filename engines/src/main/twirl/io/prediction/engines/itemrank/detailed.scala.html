@@ -88,7 +88,10 @@
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Key');
         data.addColumn('number', 'Algo');
-        data.addColumn({type: 'number', role: 'annotation'});
+        //data.addColumn({type: 'number', role: 'annotation'});
+        data.addColumn({type: 'number', role: 'interval'});
+        data.addColumn({type: 'number', role: 'interval'});
+        data.addColumn({type: 'string', role: 'style'});
         //data.addColumn({type: 'number', role: 'interval'});
         //data.addColumn({type: 'number', role: 'interval'});
         data.addColumn('number', 'Baseline');
@@ -102,7 +105,11 @@
           var base = run._3;
           data.addRow([
               run._1, 
-              algo.average, algo.count,
+              algo.average, 
+              algo.average - 1.96 * algo.stdev / Math.sqrt(algo.count),
+              algo.average + 1.96 * algo.stdev / Math.sqrt(algo.count),
+              'opacity: 0.4',
+              //algo.count,
               //algo.average - algo.stdev, algo.average + algo.stdev,
               base.average, 
               //base.count,
