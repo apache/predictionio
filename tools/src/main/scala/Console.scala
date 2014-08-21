@@ -339,7 +339,7 @@ object Console extends Logging {
       info("Development tree detected. Building built-in engines.")
 
       val sbt = detectSbt(ca)
-      info(s"Using command '${sbt}' at the ${ca.pioHome.get} to build.")
+      info(s"Using command '${sbt}' at ${ca.pioHome.get} to build.")
       info("If the path above is incorrect, this process will fail.")
 
       val cmd = Process(
@@ -359,6 +359,26 @@ object Console extends Logging {
           error(s"${e.getMessage}")
           sys.exit(1)
       }
+    }
+
+    val sbt = detectSbt(ca)
+    info(s"Using command '${sbt}' at the current working directory to build.")
+    info("If the path above is incorrect, this process will fail.")
+
+    val buildCmd = s"${sbt} ${ca.sbtExtra.getOrElse("")} package"
+    info(s"Going to run: ${buildCmd}")
+    try {
+      val r = buildCmd.!(ProcessLogger(
+        line => info(line), line => error(line)))
+      if (r != 0) {
+        error(s"Return code of previous step is ${r}. Aborting.")
+        sys.exit(1)
+      }
+      info("Build finished successfully.")
+    } catch {
+      case e: java.io.IOException =>
+        error(s"${e.getMessage}")
+        sys.exit(1)
     }
 
     val jarFiles = jarFilesForScala
