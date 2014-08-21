@@ -41,6 +41,9 @@
           return '<span class="' + cls + '">' + match + '</span>';
         });
       }
+      function shorternClassName(className) {
+        return className.replace(/(\w)\w*\./g, "$1."); 
+      }
     </script>
   </head>
   <body>
@@ -69,10 +72,15 @@
           <td>@{i.batch}</td>
           <td>@{i.engineId}</td>
           <td>@{i.engineVersion}</td>
-          <td>@{i.metricsClass}</td>
           <td>
-            <a href="/engine_instances/@{i.id}/metrics_results.html" class="btn btn-primary">HTML</a>
-            <a href="/engine_instances/@{i.id}/metrics_results.txt" class="btn btn-success">Plain Text</a>
+            <script type="text/javascript">document.write(shorternClassName("@{i.metricsClass}"));</script>
+          </td>
+          <td>
+            <div>@{i.multipleMetricsResults}</div>
+            <div> 
+              <a href="/engine_instances/@{i.id}/metrics_results.html" class="btn btn-primary">HTML</a>
+              <a href="/engine_instances/@{i.id}/metrics_results.txt" class="btn btn-success">Plain Text</a>
+            </div>
           </td>
         </tr>
         <tr>
