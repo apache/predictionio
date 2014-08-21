@@ -24,6 +24,7 @@ case class ConsoleArgs(
   sparkHome: Option[String] = None,
   engineJson: File = new File("engine.json"),
   sbt: Option[File] = None,
+  sbtExtra: Option[String] = None,
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -35,7 +36,8 @@ case class ConsoleArgs(
   paramsPath: String = "params",
   engineInstanceId: Option[String] = None,
   ip: String = "localhost",
-  port: Int = 8000)
+  port: Int = 8000,
+  mainClass: Option[String] = None)
 
 object Console extends Logging {
   def main(args: Array[String]): Unit = {
@@ -199,6 +201,20 @@ object Console extends Logging {
             c.copy(port = x)
           } text("Port to bind to. Default: 8000")
         )
+      note("")
+      cmd("run").
+        text("Launch a driver program. This command will pass all\n" +
+          "pass-through arguments to its underlying spark-submit command.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "run")
+        } children(
+          arg[String]("<main class>") action { (x, c) =>
+            c.copy(mainClass = Some(x))
+          } text("Main class name of the driver program."),
+          opt[String]("sbtExtra") action { (x, c) =>
+            c.copy(sbtExtra = Some(x))
+          } text("Extra command to pass to SBT.")
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -224,6 +240,8 @@ object Console extends Logging {
           undeploy(ca)
         case Seq("dashboard") =>
           dashboard(ca)
+        case Seq("run") =>
+          run(ca)
         case _ =>
           error(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -235,10 +253,10 @@ object Console extends Logging {
   }
 
   def register(ca: ConsoleArgs): Unit = {
-    val sbt = ca.sbt map { _.getCanonicalPath } getOrElse { "sbt" }
-
+    val sbt = detectSbt(ca)
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
+
     val cmd = s"${sbt} package assemblyPackageDependency"
     info(s"Going to run: ${cmd}")
     val r = cmd.!(ProcessLogger(
@@ -316,18 +334,88 @@ object Console extends Logging {
     }
   }
 
-  def coreAssembly(pioHome: String) = {
-    val detectedCore =
+  def run(ca: ConsoleArgs): Unit = {
+    if (!new File(ca.pioHome.get + File.separator + "RELEASE").exists) {
+      info("Development tree detected. Building built-in engines.")
+
+      val sbt = detectSbt(ca)
+      info(s"Using command '${sbt}' at the ${ca.pioHome.get} to build.")
+      info("If the path above is incorrect, this process will fail.")
+
+      val cmd = Process(
+        s"${sbt} ${ca.sbtExtra.getOrElse("")} engines/package",
+        new File(ca.pioHome.get))
+      info(s"Going to run: ${cmd}")
+      try {
+        val r = cmd.!(ProcessLogger(
+          line => info(line), line => error(line)))
+        if (r != 0) {
+          error(s"Return code of previous step is ${r}. Aborting.")
+          sys.exit(1)
+        }
+        info("Build finished successfully.")
+      } catch {
+        case e: java.io.IOException =>
+          error(s"${e.getMessage}")
+          sys.exit(1)
+      }
+    }
+
+    val jarFiles = jarFilesForScala
+    jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
+    val allJarFiles = jarFiles ++ builtinEngines(ca.pioHome.get)
+    val cmd = s"${getSparkHome(ca.sparkHome)}/bin/spark-submit --jars " +
+      s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
+      s"${ca.mainClass.get} ${coreAssembly(ca.pioHome.get)} " +
+      ca.passThrough.mkString(" ")
+    val r = cmd.!(ProcessLogger(
+      line => info(line), line => error(line)))
+    if (r != 0) {
+      error(s"Return code of previous step is ${r}. Aborting.")
+      sys.exit(1)
+    }
+  }
+
+  def coreAssembly(pioHome: String): File = {
+    val fn = s"tools-assembly-${BuildInfo.version}.jar"
+    val core =
       if (new File(pioHome + File.separator + "RELEASE").exists)
-        jarFilesAt(new File(pioHome + File.separator + "lib"))
+        new File(Seq(pioHome, "lib", fn).mkString(File.separator))
       else
-        jarFilesAt(new File(pioHome + File.separator + "assembly"))
-    if (detectedCore.size == 1) {
-      detectedCore.head
+        new File(Seq(pioHome, "assembly", fn).mkString(File.separator))
+    if (core.exists) {
+      core
     } else {
-      error(s"More than one JAR found: ${detectedCore.mkString(", ")}")
-      error("Please remove all JARs except the PredictionIO Core Assembly. " +
-        "Aborting.")
+      error(s"PredictionIO Core Assembly (${core.getCanonicalPath}) does not " +
+        "exist. Aborting.")
+      sys.exit(1)
+    }
+  }
+
+  def builtinEngines(pioHome: String): Seq[File] = {
+    val engine = s"engines_${scalaVersionNoPatch}-${BuildInfo.version}.jar"
+    val engineDeps = s"engines-assembly-${BuildInfo.version}-deps.jar"
+    val engineDir =
+      if (new File(pioHome + File.separator + "RELEASE").exists)
+        new File(pioHome + File.separator + "lib")
+      else
+        new File(Seq(
+          pioHome,
+          "engines",
+          "target",
+          s"scala-${scalaVersionNoPatch}").mkString(File.separator))
+    val engineFiles = Seq(
+      new File(engineDir, engine),
+      new File(engineDir, engineDeps))
+    val allPresent = !engineFiles.exists(!_.exists)
+    if (allPresent) {
+      engineFiles
+    } else {
+      engineFiles foreach { f =>
+        if (!f.exists) error(s"${f.getCanonicalPath} does not exist.")
+      }
+      error(s"Built-in PredictionIO engine JAR file(s) listed above is " +
+        "missing. Aborting.")
       sys.exit(1)
     }
   }
@@ -363,11 +451,41 @@ object Console extends Logging {
     _.getName.toLowerCase.endsWith(".jar")
   }
 
-  def jarFilesForScala: Array[File] = jarFilesAt(new File("target"))
+  def jarFilesForScala: Array[File] = jarFilesAt(new File("target")).
+    filterNot { f =>
+      f.getName.toLowerCase.endsWith("-javadoc.jar") ||
+      f.getName.toLowerCase.endsWith("-sources.jar")
+    }
 
   def recursiveListFiles(f: File): Array[File] = {
     Option(f.listFiles) map { these =>
       these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
     } getOrElse Array[File]()
+  }
+
+  def getSparkHome(sparkHome: Option[String]): String = {
+    sparkHome getOrElse {
+      sys.env.get("SPARK_HOME").getOrElse(".")
+    }
+  }
+
+  def versionNoPatch(fullVersion: String): String = {
+    val v = """^(\d+\.\d+)""".r
+    val versionNoPatch = for {
+      v(np) <- v findFirstIn fullVersion
+    } yield np
+    versionNoPatch.getOrElse(fullVersion)
+  }
+
+  def scalaVersionNoPatch: String = versionNoPatch(BuildInfo.scalaVersion)
+
+  def detectSbt(ca: ConsoleArgs): String = {
+    ca.sbt map {
+      _.getCanonicalPath
+    } getOrElse {
+      val f = new File(Seq(ca.pioHome.get, "sbt", "sbt").mkString(
+        File.separator))
+      if (f.exists) f.getCanonicalPath else "sbt"
+    }
   }
 }

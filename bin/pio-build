@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-
-sbt/sbt package
-sbt/sbt engines/assemblyPackageDependency
-sbt/sbt tools/assembly
