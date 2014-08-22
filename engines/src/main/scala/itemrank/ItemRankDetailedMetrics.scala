@@ -37,12 +37,6 @@ case class Stats(
 
 case class DetailedMetricsData(
   val name: String,
-  /*
-  val baselineMean: Double,
-  val baselineStdev: Double,
-  val algoMean: Double,
-  val algoStdev: Double,
-  */
   val algoMean: Double,
   val runs: Seq[(String, Stats, Stats)],  // name, algo, baseline
   val aggregations: Seq[(String, Seq[(String, Stats)])])
@@ -63,7 +57,9 @@ case class DetailedMetricsData(
 // independently.
 class DetailedMetricsParams(
   val name: String = "",
-  val optOutputPath: Option[String] = None) 
+  val optOutputPath: Option[String] = None,
+  val buckets: Int = 10
+) 
   extends Params {}
 
 class ItemRankDetailedMetrics(params: DetailedMetricsParams)
@@ -96,38 +92,29 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val (mean, variance, count) = meanAndVariance(values)
     val stdev = math.sqrt(variance)
     Stats(mean, count, stdev, values.min, values.max)
-    //Stats(values.sum / values.size, values.size)
   }
 
-  /*
-  def aggregate(
-    units: Seq[MetricUnit],
-    groupByFunc: MetricUnit => String): Seq[(String, Stats)] = {
-    units
-      .groupBy(groupByFunc)
-      .mapValues(_.map(_.score))
-      .map{ case(k, l) => (k, calculate(l)) }
-      .toSeq
-      .sortBy(-_._2.average)
-  } 
-  */
-
-  def calculateResample(values: Seq[(Int, Double)], n: Int = 20): Stats = {
-    // Simpleset method for now. Chopping into n buckets, then calcuate
-    // variance.
-    val segmentMeanMap: Map[Int, Double] = values
-      .map{ case(k, v) => (k % n, v) }
+  def calculateResample(values: Seq[(Int, Double)]): Stats = {
+    // JackKnife resampling.
+    val segmentSumCountMap: Map[Int, (Double, Int)] = values
+      .map{ case(k, v) => (k % params.buckets, v) }
       .groupBy(_._1)
-      .mapValues(l => mean(l.map(_._2)))
+      .mapValues(l => (l.map(_._2).sum, l.size))
 
-    // 95-percentile and assume the mean is normal distributed
-    val (m, v, c) = meanAndVariance(segmentMeanMap.values)
+    val sum = values.map(_._2).sum
+    val count = values.size
+
+    val segmentMeanMap: Map[Int, Double] = segmentSumCountMap
+      .mapValues { case(sSum, sCount) => (sum - sSum) / (count - sCount) }
+
+    val segmentValues = segmentMeanMap.values
+
+    // Assume the mean is normal distributed
+    val (m, v, c) = meanAndVariance(segmentValues)
     val stdev = math.sqrt(v)
-    //val ci = 1.96 * v / stdev 
 
-    // min and max doesn't make a lot of sense anyway...
-    //return Stats(m, values.size, stdev, 0.0, 0.0)
-    return Stats(m, n, stdev, 0.0, 0.0)
+    // Stats describes the properties of the buckets
+    return Stats(m, params.buckets, stdev, segmentValues.min, segmentValues.max)
   }
   
 
@@ -169,23 +156,16 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     input: Seq[(DataParams, Seq[MetricUnit])]): DetailedMetricsData = {
     val allUnits: Seq[MetricUnit] = input.flatMap(_._2) 
 
-    //val overallStats = ("Overall", calculate(allUnits.map(_.score)))
-    //val baselineStats = ("Baseline", calculate(allUnits.map(_.baseline)))
-
-    // Run Stats
     val overallStats = (
       "Overall", 
-      calculate(allUnits.map(_.score)),
-      calculate(allUnits.map(_.baseline)))
-    
-    val overallResampledStats = (
-      "Overall Resampled", 
       calculateResample(allUnits.map(mu => (mu.uidHash, mu.score))),
       calculateResample(allUnits.map(mu => (mu.uidHash, mu.baseline))))
 
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) => 
-      (dp.name, calculate(mus.map(_.score)), calculate(mus.map(_.baseline)))
+      (dp.name, 
+        calculateResample(mus.map(mu => (mu.uidHash, mu.score))),
+        calculateResample(mus.map(mu => (mu.uidHash, mu.baseline))))
     }
 
     // Aggregation Stats
@@ -239,7 +219,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       name = params.name,
       algoMean = overallStats._2.average,
       //runs = Seq(overallStats, baselineStats) ++ runsStats,
-      runs = Seq(overallStats, overallResampledStats) ++ runsStats,
+      //runs = Seq(overallStats, overallResampledStats) ++ runsStats,
+      runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
         ("ByActualSize", aggregateMU(allUnits, _.a.items.size.toString)),
         ("ByScore", scoreAggregation),
