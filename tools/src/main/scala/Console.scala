@@ -25,6 +25,7 @@ case class ConsoleArgs(
   engineJson: File = new File("engine.json"),
   sbt: Option[File] = None,
   sbtExtra: Option[String] = None,
+  engineAssemblyPackageDependency: Boolean = false,
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -211,9 +212,12 @@ object Console extends Logging {
           arg[String]("<main class>") action { (x, c) =>
             c.copy(mainClass = Some(x))
           } text("Main class name of the driver program."),
-          opt[String]("sbtExtra") action { (x, c) =>
+          opt[String]("sbt-extra") action { (x, c) =>
             c.copy(sbtExtra = Some(x))
-          } text("Extra command to pass to SBT.")
+          } text("Extra command to pass to SBT when it builds your driver."),
+          opt[Unit]("asm") action { (x, c) =>
+            c.copy(engineAssemblyPackageDependency = true)
+          } text("Rebuild built-in engines dependencies assembly.")
         )
     }
 
@@ -342,8 +346,13 @@ object Console extends Logging {
       info(s"Using command '${sbt}' at ${ca.pioHome.get} to build.")
       info("If the path above is incorrect, this process will fail.")
 
+      val asm =
+        if (ca.engineAssemblyPackageDependency)
+          " engines/assemblyPackageDependency"
+        else
+          ""
       val cmd = Process(
-        s"${sbt} ${ca.sbtExtra.getOrElse("")} engines/package",
+        s"${sbt} engines/publishLocal${asm}",
         new File(ca.pioHome.get))
       info(s"Going to run: ${cmd}")
       try {
