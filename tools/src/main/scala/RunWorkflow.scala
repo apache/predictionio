@@ -28,21 +28,23 @@ object RunWorkflow extends Logging {
     val sparkHome = ca.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
-    val sparkSubmit = Seq(
-      s"${sparkHome}/bin/spark-submit") ++ ca.passThrough ++ Seq(
-      "--class",
-      "io.prediction.workflow.CreateWorkflow",
-      "--jars",
-      em.files.mkString(","),
-      core.getCanonicalPath,
-      "--env",
-      pioEnvVars,
-      "--engineId",
-      em.id,
-      "--engineVersion",
-      em.version,
-      "--engineFactory",
-      em.engineFactory) ++
+    val sparkSubmit =
+      Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
+      ca.passThrough ++
+      Seq(
+        "--class",
+        "io.prediction.workflow.CreateWorkflow",
+        "--jars",
+        em.files.mkString(","),
+        core.getCanonicalPath,
+        "--env",
+        pioEnvVars,
+        "--engineId",
+        em.id,
+        "--engineVersion",
+        em.version,
+        "--engineFactory",
+        em.engineFactory) ++
       ca.metricsClass.map(x => Seq("--metricsClass", x)).
         getOrElse(Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++ Seq(

@@ -21,19 +21,21 @@ object RunServer extends Logging {
     val sparkHome = ca.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
-    val sparkSubmit = Seq(
-      s"${sparkHome}/bin/spark-submit") ++ ca.passThrough ++ Seq(
-      "--class",
-      "io.prediction.workflow.CreateServer",
-      "--jars",
-      em.files.mkString(","),
-      core.getCanonicalPath,
-      "--engineInstanceId",
-      engineInstanceId,
-      "--ip",
-      ca.ip,
-      "--port",
-      ca.port.toString)
+    val sparkSubmit =
+      Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
+      ca.passThrough ++
+      Seq(
+        "--class",
+        "io.prediction.workflow.CreateServer",
+        "--jars",
+        em.files.mkString(","),
+        core.getCanonicalPath,
+        "--engineInstanceId",
+        engineInstanceId,
+        "--ip",
+        ca.ip,
+        "--port",
+        ca.port.toString)
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 
