@@ -11,7 +11,8 @@ import io.prediction.controller.LPreparator
 import io.prediction.controller.MeanSquareError
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
 
 import breeze.linalg.DenseMatrix
 import breeze.linalg.DenseVector
@@ -111,22 +112,27 @@ object RegressionEngineFactory extends IEngineFactory {
 }
 
 object Run {
+  val workflowParams = WorkflowParams(
+    batch = "Imagine: Local Regression",
+    verbose = 3,
+    saveModel = true)
+
   def runComponents() {
     val filepath = new File("data/lr_data.txt").getCanonicalPath
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
 
-    APIDebugWorkflow.run(
-        dataSourceClassOpt = Some(classOf[LocalDataSource]),
-        dataSourceParams = dataSourceParams,
-        preparatorClassOpt = Some(classOf[LocalPreparator]),
-        preparatorParams = preparatorParams,
-        algorithmClassMapOpt = Some(Map("" -> classOf[LocalAlgorithm])),
-        algorithmParamsList = Seq(
-          ("", EmptyParams())),
-        servingClassOpt = Some(classOf[FirstServing[Vector[Double], Double]]),
-        metricsClassOpt = Some(classOf[MeanSquareError]),
-        batch = "Imagine: Local Regression")
+    Workflow.run(
+      params = workflowParams,
+      dataSourceClassOpt = Some(classOf[LocalDataSource]),
+      dataSourceParams = dataSourceParams,
+      preparatorClassOpt = Some(classOf[LocalPreparator]),
+      preparatorParams = preparatorParams,
+      algorithmClassMapOpt = Some(Map("" -> classOf[LocalAlgorithm])),
+      algorithmParamsList = Seq(
+        ("", EmptyParams())),
+      servingClassOpt = Some(classOf[FirstServing[Vector[Double], Double]]),
+      metricsClassOpt = Some(classOf[MeanSquareError]))
   }
 
   def runEngine() {
@@ -137,12 +143,11 @@ object Run {
       preparatorParams = PreparatorParams(n = 2, k = 0),
       algorithmParamsList = Seq(("", EmptyParams())))
 
-    APIDebugWorkflow.runEngine(
-      verbose = 3,
+    Workflow.runEngine(
+      params = workflowParams,
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[MeanSquareError]),
-      batch = "Imagine: Local Regression Engine")
+      metricsClassOpt = Some(classOf[MeanSquareError]))
   }
 
   def main(args: Array[String]) {

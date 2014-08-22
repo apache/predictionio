@@ -26,6 +26,7 @@ case class ConsoleArgs(
   sbt: Option[File] = None,
   sbtExtra: Option[String] = None,
   engineAssemblyPackageDependency: Boolean = false,
+  engineClean: Boolean = false,
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -84,7 +85,11 @@ object Console extends Logging {
         text("Build and register an engine at the current directory.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "register")
-        }
+        } children(
+          opt[String]("sbt-extra") action { (x, c) =>
+            c.copy(sbtExtra = Some(x))
+          } text("Extra command to pass to SBT when it builds your engine.")
+        )
       note("")
       cmd("train").
         text("Kick off a training using an engine. This will produce an\n" +
@@ -215,6 +220,9 @@ object Console extends Logging {
           opt[String]("sbt-extra") action { (x, c) =>
             c.copy(sbtExtra = Some(x))
           } text("Extra command to pass to SBT when it builds your driver."),
+          opt[Unit]("clean") action { (x, c) =>
+            c.copy(engineClean = true)
+          } text("Clean all built-in engine builds."),
           opt[Unit]("asm") action { (x, c) =>
             c.copy(engineAssemblyPackageDependency = true)
           } text("Rebuild built-in engines dependencies assembly.")
@@ -261,7 +269,8 @@ object Console extends Logging {
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
 
-    val cmd = s"${sbt} package assemblyPackageDependency"
+    val cmd =
+      s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
     info(s"Going to run: ${cmd}")
     val r = cmd.!(ProcessLogger(
       line => info(line), line => error(line)))
@@ -351,8 +360,13 @@ object Console extends Logging {
           " engines/assemblyPackageDependency"
         else
           ""
+      val clean =
+        if (ca.engineClean)
+          " engines/clean"
+        else
+          ""
       val cmd = Process(
-        s"${sbt} engines/publishLocal${asm}",
+        s"${sbt}${clean} engines/publishLocal${asm}",
         new File(ca.pioHome.get))
       info(s"Going to run: ${cmd}")
       try {
@@ -397,8 +411,7 @@ object Console extends Logging {
       s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
       s"${ca.mainClass.get} ${coreAssembly(ca.pioHome.get)} " +
       ca.passThrough.mkString(" ")
-    val r = cmd.!(ProcessLogger(
-      line => info(line), line => error(line)))
+    val r = cmd.!
     if (r != 0) {
       error(s"Return code of previous step is ${r}. Aborting.")
       sys.exit(1)
@@ -406,17 +419,18 @@ object Console extends Logging {
   }
 
   def coreAssembly(pioHome: String): File = {
-    val fn = s"tools-assembly-${BuildInfo.version}.jar"
-    val core =
+    val core = s"pio-assembly-${BuildInfo.version}.jar"
+    val coreDir =
       if (new File(pioHome + File.separator + "RELEASE").exists)
-        new File(Seq(pioHome, "lib", fn).mkString(File.separator))
+        new File(pioHome + File.separator + "lib")
       else
-        new File(Seq(pioHome, "assembly", fn).mkString(File.separator))
-    if (core.exists) {
-      core
+        new File(pioHome + File.separator + "assembly")
+    val coreFile = new File(coreDir, core)
+    if (coreFile.exists) {
+      coreFile
     } else {
-      error(s"PredictionIO Core Assembly (${core.getCanonicalPath}) does not " +
-        "exist. Aborting.")
+      error(s"PredictionIO Core Assembly (${coreFile.getCanonicalPath}) does " +
+        "not exist. Aborting.")
       sys.exit(1)
     }
   }

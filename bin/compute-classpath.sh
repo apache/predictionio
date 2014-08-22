@@ -77,7 +77,7 @@ fi
 #   exit 1
 # fi
 #
-ASSEMBLY_JAR=$(ls "$assembly_folder"/tools-assembly*.jar 2>/dev/null)
+ASSEMBLY_JAR=$(ls "$assembly_folder"/pio-assembly*.jar 2>/dev/null)
 
 # Verify that versions of java used to build the jars and run Spark are compatible
 # jar_error_check=$("$JAR_CMD" -tf "$ASSEMBLY_JAR" nonexistent/class/path 2>&1)
