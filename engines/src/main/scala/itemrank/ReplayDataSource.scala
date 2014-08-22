@@ -23,6 +23,7 @@ import org.json4s.native.JsonMethods._
 import scala.io.Source
 import scala.collection.immutable.HashMap
 import io.prediction.workflow.APIDebugWorkflow
+import scala.util.hashing.MurmurHash3
 
 case class ReplayDataSourceParams(
   val userPath: String,
@@ -32,6 +33,8 @@ case class ReplayDataSourceParams(
   val fromIdx: Int,
   val untilIdx: Int, 
   val testingWindowSize: Int,
+  // Mix top x sold items in Query
+  val numTopSoldItems: Int,
   // Only items belonging to this whitelist is considered.
   val whitelistItypes: Seq[String],
   // Only u2i belonging to this single action is considered.
@@ -87,6 +90,8 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
     val (userList, itemList, date2u2iList)
     : (Vector[User], Vector[Item], Map[LocalDate, Seq[U2I]]) 
     = preprocess(load())
+
+    //val random = new scala.util.Random(0)
 
     val ui2UserTd: Map[Int, UserTD] = userList
       .zipWithIndex
@@ -177,15 +182,22 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
         val user2LocalDT = uid2Actions
           .mapValues(_.map(_.dt.toLocalDateTime).min)
         
-        val todayItems: Seq[String] = 
-          dailyServedItems(queryDate).take(10).map(_._1)
+        val todayItems: Seq[String] = dailyServedItems(queryDate)
+          .take(dsp.numTopSoldItems)
+          .map(_._1)
 
         user2iids.map { case (uid, iids) => {
           val possibleIids = (iids ++ todayItems)
             .distinct
-            .sortBy(identity)
 
-          val query = new Query(uid, possibleIids)
+          //val sortedIids = random.shuffle(possibleIids)
+          // Introduce some kind of stable randomness 
+          val sortedIids = possibleIids
+            .sortBy(iid => MurmurHash3.stringHash(iid))
+          //val sortedIids = possibleIids.sortBy(identity)
+
+          //val query = new Query(uid, possibleIids)
+          val query = new Query(uid, sortedIids)
           val ui = uid2ui(uid)
 
           val actual = new Actual(
@@ -204,8 +216,9 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
 
       val trainingUntilDT = trainingUntilDate.toDateTimeAtStartOfDay
 
+      val dow = trainingUntilDate.dayOfWeek.getAsShortText
       val dp: DataParams = new DataParams(
-        name = trainingUntilDate.toString(),
+        name = s"${trainingUntilDate.toString()} $dow",
         tdp = new TrainingDataParams(
           0, None, Set[String](), None, true),
         vdp = new ValidationDataParams(

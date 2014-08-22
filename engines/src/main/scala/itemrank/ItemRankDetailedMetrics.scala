@@ -38,11 +38,17 @@ case class Stats(
 case class DetailedMetricsData(
   val name: String,
   val algoMean: Double,
+  val algoStats: Stats,
   val runs: Seq[(String, Stats, Stats)],  // name, algo, baseline
   val aggregations: Seq[(String, Seq[(String, Stats)])])
   extends Serializable with NiceRendering {
 
-  override def toString(): String = f"DetailedMetricsData $name $algoMean%.4f"
+  override def toString(): String = {
+    val b = 1.96 * algoStats.stdev / Math.sqrt(algoStats.count)
+    val lb = algoStats.average - b
+    val ub = algoStats.average + b
+    f"MAP@k $name ${algoStats.average}%.4f [$lb%.4f, $ub%.4f]"
+  }
 
   def toHTML(): String = html.detailed().toString
 
@@ -167,6 +173,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         calculateResample(mus.map(mu => (mu.uidHash, mu.score))),
         calculateResample(mus.map(mu => (mu.uidHash, mu.baseline))))
     }
+    .sortBy(_._1)
 
     // Aggregation Stats
     val aggregateByActualSize: Seq[(String, Stats)] = allUnits
@@ -218,6 +225,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val outputData = DetailedMetricsData (
       name = params.name,
       algoMean = overallStats._2.average,
+      algoStats = overallStats._2,
       //runs = Seq(overallStats, baselineStats) ++ runsStats,
       //runs = Seq(overallStats, overallResampledStats) ++ runsStats,
       runs = Seq(overallStats) ++ runsStats,
