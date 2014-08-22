@@ -411,8 +411,7 @@ object Console extends Logging {
       s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
       s"${ca.mainClass.get} ${coreAssembly(ca.pioHome.get)} " +
       ca.passThrough.mkString(" ")
-    val r = cmd.!(ProcessLogger(
-      line => info(line), line => error(line)))
+    val r = cmd.!
     if (r != 0) {
       error(s"Return code of previous step is ${r}. Aborting.")
       sys.exit(1)
