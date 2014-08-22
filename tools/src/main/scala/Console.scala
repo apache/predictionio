@@ -85,7 +85,11 @@ object Console extends Logging {
         text("Build and register an engine at the current directory.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "register")
-        }
+        } children(
+          opt[String]("sbt-extra") action { (x, c) =>
+            c.copy(sbtExtra = Some(x))
+          } text("Extra command to pass to SBT when it builds your engine.")
+        )
       note("")
       cmd("train").
         text("Kick off a training using an engine. This will produce an\n" +
@@ -265,7 +269,8 @@ object Console extends Logging {
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
 
-    val cmd = s"${sbt} package assemblyPackageDependency"
+    val cmd =
+      s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
     info(s"Going to run: ${cmd}")
     val r = cmd.!(ProcessLogger(
       line => info(line), line => error(line)))
