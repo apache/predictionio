@@ -22,11 +22,21 @@
       }
     </style>
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+   
+     <script type="text/javascript"
+       src="http://systemsbiology-visualizations.googlecode.com/svn/trunk/src/main/js/load.js"></script>
+    <script>
+      google.load('visualization', '1', {packages:['table', 'corechart',]});
+    </script>
+    <script>
+      google.load("visualization", "1", {});
+      google.load("prototype", "1.6");  
+    </script>
+    <script>
+      systemsbiology.load("visualization", "1.0", {packages:["bioheatmap"]});
+    </script>
     <script
       src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
-    <script>
-      google.load('visualization', '1', {packages:['table', 'corechart']});
-    </script>
   </head>
   <body>
     <h3>Item Rank Metrics</h3>
@@ -34,6 +44,7 @@
 
     <div id='top'></div>
     <div id='mid'></div>
+    <div id='bot'></div>
   
     <script type='text/javascript'>
       google.setOnLoadCallback(draw);
@@ -45,6 +56,7 @@
         drawHead();
         drawTop();
         drawTable();
+        drawBot();
       };
 
       function loadData() {
@@ -124,7 +136,7 @@
 
         var options = {
           title: 'Algorithm Performance. The range denotes the 95% confidence internval.',
-          height: 50 + rawData.runs.length * 50,
+          height: 50 + rawData.runs.length * 15,
           colors: ['green', 'blue']
         };
 
@@ -184,6 +196,39 @@
           $('#' + tableId).toggle();
         }
 
+      }
+  
+      function drawBot() {
+        var data = new google.visualization.DataTable();
+        var heatMap = rawData.heatMap;
+
+        var columnCount = heatMap.columns.length;
+
+        data.addColumn('string', 'Key');
+        for (i = 0; i < heatMap.columns.length; i++) {
+          data.addColumn('number', heatMap.columns[i]);
+        }
+
+        data.addRows(heatMap.data.length);
+        for (r = 0; r < heatMap.data.length; r++) {
+          var row = heatMap.data[r];
+
+          data.setCell(r, 0, row._1);
+          for (c = 0; c < columnCount; c++) {
+            data.setCell(r, c+1, row._2[c]);
+          }
+        }
+
+        var options = {
+          'startColor': {r:255, g:255, b:255, a:1},
+          'endColor': {r:60, g:180, b:0, a:1},
+          'passThroughBlack': false,
+          'cellWidth': 25,
+          'cellHeight': 25,
+        }
+        heatmap = new org.systemsbiology.visualization.BioHeatMap(document.getElementById('bot'));
+        heatmap.draw(data, options);
+         
       }
     </script>
   </body>

@@ -25,20 +25,27 @@ import java.io.File
 
 import io.prediction.engines.util.{ MetricsVisualization => MV }
 import scala.util.hashing.MurmurHash3
+import scala.collection.immutable.NumericRange
+import scala.collection.immutable.Range
 
 case class Stats(
   val average: Double, 
   val count: Long,
   val stdev: Double,
   val min: Double,
-  val max: Double,
-  val ci: Double = 0.0
+  val max: Double
+) extends Serializable
+
+case class HeatMapData (
+  val columns: Array[String],
+  val data: Seq[(String, Array[Double])]
 ) extends Serializable
 
 case class DetailedMetricsData(
   val name: String,
   val algoMean: Double,
   val algoStats: Stats,
+  val heatMap: HeatMapData,
   val runs: Seq[(String, Stats, Stats)],  // name, algo, baseline
   val aggregations: Seq[(String, Seq[(String, Stats)])])
   extends Serializable with NiceRendering {
@@ -100,7 +107,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     Stats(mean, count, stdev, values.min, values.max)
   }
 
-  def calculateResample(values: Seq[(Int, Double)]): Stats = {
+  def calculateResample(
+    values: Seq[(Int, Double)]
+  ): Stats = {
     // JackKnife resampling.
     val segmentSumCountMap: Map[Int, (Double, Int)] = values
       .map{ case(k, v) => (k % params.buckets, v) }
@@ -119,11 +128,19 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val (m, v, c) = meanAndVariance(segmentValues)
     val stdev = math.sqrt(v)
 
+    // Double => String
+    /*
+    val groupByFunc = groupByRange((0.0 until 1.0 by 0.1).toArray, "%.2f")
+    val bucketByScoreMap: Map[String, Int] = values
+      .map(_._2).map(groupByFunc)
+      .groupBy(identity).mapValues(_.size)
+    */
+
+
     // Stats describes the properties of the buckets
     return Stats(m, params.buckets, stdev, segmentValues.min, segmentValues.max)
   }
-  
-
+ 
   def aggregateMU(units: Seq[MetricUnit], groupByFunc: MetricUnit => String)
   : Seq[(String, Stats)] = 
     aggregate[MetricUnit](units, _.score, groupByFunc)
@@ -151,11 +168,45 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     }.toArray
   
     def f(v: Double): String = {
-      // FIXME. Use binary search.
+      // FIXME. Use binary search or indexWhere
       val i: Option[Int] = (0 until values.size).find(i => v < values(i))
       keys(i.getOrElse(values.size))
     }
     return f
+  }
+
+  def computeHeatMap(
+    input: Seq[(String, Seq[Double])],
+    boundaries: Array[Double],
+    format: String = "%.2f") : HeatMapData = {
+
+    val bCount: Int = boundaries.size
+ 
+    val columns: Array[String] = (0 to bCount).map { i =>
+      val s = (if (i == 0) Double.NegativeInfinity else boundaries(i-1))
+      val e = (
+        if (i < boundaries.size) boundaries(i) 
+        else Double.PositiveInfinity)
+      "[" + format.format(s) + ", " + format.format(e) + ")"
+    }.toArray
+
+    val data: Seq[(String, Array[Double])] = input
+    .map { case(key, values) => {
+      val sum = values.size
+      //val distributions: Array[Double] = values
+      val distributions: Map[Int, Double] = values
+        .map { v => 
+          val i = boundaries.indexWhere(b => (v <= b))
+          (if (i == -1) bCount else i)
+        }
+        .groupBy(identity)
+        .mapValues(_.size.toDouble)
+        .mapValues(v => v / sum)
+      
+      (key, (0 to bCount).map { i => distributions.getOrElse(i, 0.0) }.toArray)
+    }}
+
+    HeatMapData(columns = columns, data = data)
   }
 
   override def computeMultipleSets(
@@ -221,6 +272,14 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       allUnits,
       mu => groupByRange(Array(0, 1, 2, 3, 5, 8, 13, 21), "%.0f")
         (mu.a.variety))
+
+    val heatMapInput: Seq[(String, Seq[Double])] = input
+      .map { case(k, mus) => (k.name, mus.map(_.score)) }
+
+    val heatMap: HeatMapData = computeHeatMap(
+      heatMapInput,
+      (0.0 until 1.0 by 0.0333).toArray,
+      "%.2f")
       
     val outputData = DetailedMetricsData (
       name = params.name,
@@ -228,6 +287,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       algoStats = overallStats._2,
       //runs = Seq(overallStats, baselineStats) ++ runsStats,
       //runs = Seq(overallStats, overallResampledStats) ++ runsStats,
+      heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
         ("ByActualSize", aggregateMU(allUnits, _.a.items.size.toString)),
