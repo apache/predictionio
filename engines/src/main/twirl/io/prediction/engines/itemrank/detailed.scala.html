@@ -135,7 +135,8 @@
         formatter.format(data, 7); 
 
         var options = {
-          title: 'Algorithm Performance. The range denotes the 95% confidence internval.',
+          title: 'Algorithm Performance: Measure ' + rawData.measureType + '.'
+                   + ' The range denotes the 95% confidence internval.',
           height: 50 + rawData.runs.length * 15,
           colors: ['green', 'blue']
         };

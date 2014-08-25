@@ -53,7 +53,7 @@ class PreparedData(
   override def toString = s"U: ${users} I: ${items} R: ${rating}"
 }
 
-class Query(
+case class Query(
     val uid: String,
     val items: Seq[String] // items to be ranked
     ) extends Serializable {
@@ -61,7 +61,7 @@ class Query(
 }
 
 // prediction output
-class Prediction(
+case class Prediction(
   // the ranked items and score
     val items: Seq[(String, Double)],
     val isOriginal: Boolean = false
@@ -69,7 +69,7 @@ class Prediction(
   override def toString = s"${items}"
 }
 
-class Actual(
+case class Actual(
     // actual items the user has performed actions on
     val items: Seq[String],
     // other data that maybe used by metrics.
