@@ -60,11 +60,11 @@ class ESEngineInstances(client: Client, index: String)
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("multipleMetricsResults" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+            ("type" -> "string") ~ ("index" -> "no")) ~
           ("multipleMetricsResultsHTML" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+            ("type" -> "string") ~ ("index" -> "no")) ~
           ("multipleMetricsResultsJSON" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed"))))
+            ("type" -> "string") ~ ("index" -> "no"))))
     indices.preparePutMapping(index).setType(estype).
       setSource(compact(render(json))).get
   }
