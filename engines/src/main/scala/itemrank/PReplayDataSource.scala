@@ -9,16 +9,15 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.github.nscala_time.time.Imports._
 
-class PReplayDataSource(val dsp: ReplayDataSourceParams)
+class PReplayDataSource(val dsp: ReplayDataSource.Params)
   extends PDataSource[
-      DataSourceParams,
+      ReplayDataSource.Params,
       ReplaySliceParams,
       RDD[TrainingData],
       Query,
       Actual] {
 
-  override
-  def readBase(sc: SparkContext)
+  def read(sc: SparkContext)
   : Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])] = {
     implicit val formats = DefaultFormats
     
@@ -56,48 +55,26 @@ class PReplayDataSource(val dsp: ReplayDataSourceParams)
 
     val inputData: RDD[(Array[User], Array[Item], Array[U2I])] =
       userList.zip(itemList).zip(u2iList).map { e => (e._1._1, e._1._2, e._2) }
-    require(inputData.count == 1, "Must reside in one partition")
 
     val preprocessed
-    //: RDD[(Array[User], Array[Item], Map[LocalDate, Array[U2I]])] =
     : RDD[ReplayDataSource.PreprocessedData] = inputData.map(ds.preprocess)
+    preprocessed.cache
     require(preprocessed.count == 1, "Must reside in one partition")
 
-    // This is a terrible DataSource implementation, as it depends on
-    // LDataSource. Indeed, it should a separate logic. First generate the
-    // DataParams, then, based on the data-param, generate TrainingData and
-    // QueryActualArray in parallel.
-    val generated
-    : RDD[((ReplaySliceParams, TrainingData, Array[(Query, Actual)]), Long)] = 
-      preprocessed.flatMap(ds.generate).zipWithIndex
-    generated.cache
 
-    val dataParams: Seq[(ReplaySliceParams, Long)] = generated
-      .map{ e => (e._1._1, e._2) }
-      .collect
+    val dataParams: Seq[ReplaySliceParams] = ds.generateParams
 
-    dataParams.map { case(dp, index) => {
-      val trainingData: RDD[TrainingData] = generated
-        .filter(_._2 == index)
-        .map(_._1._2)
+    dataParams.map { dp =>
+      val sliceData = preprocessed.map(p => ds.generateOne((p, dp)))
+      
+      val trainingData: RDD[TrainingData] = sliceData.map(_._2)
+      val qaRdd: RDD[(Query, Actual)] = sliceData.flatMap(_._3)
       trainingData.cache
-
-      val qaRdd: RDD[(Query, Actual)] = generated
-        .filter(_._2 == index)
-        .flatMap(_._1._3)
-      // persist?
       qaRdd.cache
-
       (dp, trainingData, qaRdd)
-    }}
+    }
     .toSeq
   }
-
-  // of course I know what I am doing..
-  def read(sc: SparkContext)
-  : Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])] = 
-    Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])]()
-
 }
 
 
