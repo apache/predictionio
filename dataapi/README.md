@@ -79,9 +79,10 @@ HTTP/1.1 201 Created
 ```
 
 The following fields are optional:
-* **"eventTime"** : current time will be used if it's not specified
-* **"tags"**: empty list of tag will be used if it's not specified
-
+* **eventTime** : current time will be used if it's not specified
+* **tags**: empty list of tag will be used if it's not specified
+* **predictionKey**
+* **properties**
 
 ## For Debug Purpose
 
