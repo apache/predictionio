@@ -199,8 +199,40 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
 object HBEventTests {
 
   def main (args: Array[String]) {
-    //test()
-    testHBEvent()
+    //testEmptyPut()
+    test()
+    //testHBEvent()
+  }
+
+  def testEmptyPut() = {
+    import org.apache.hadoop.hbase.HBaseConfiguration
+    import org.apache.hadoop.hbase.client.HBaseAdmin
+
+    println("test")
+
+    val conf = HBaseConfiguration.create();
+    val admin = new HBaseAdmin(conf)
+
+    val listtables = admin.listTables()
+    listtables.foreach(println)
+
+    val tableName = "newtable"
+    if (!admin.tableExists(tableName)) {
+      // create table
+      val tableDesr = new HTableDescriptor(TableName.valueOf(tableName))
+      tableDesr.addFamily(new HColumnDescriptor("cf1"))
+      tableDesr.addFamily(new HColumnDescriptor("cf2"))
+      admin.createTable(tableDesr)
+    }
+
+
+    val table = new HTable(conf, tableName)
+
+    val p2 = new Put(Bytes.toBytes("rowEMPTY"))
+    table.put(p2)
+    table.flushCommits()
+    table.close()
+
   }
 
   def test() = {
@@ -223,7 +255,6 @@ object HBEventTests {
       tableDesr.addFamily(new HColumnDescriptor("cf2"))
       admin.createTable(tableDesr)
     }
-
 
     val table = new HTable(conf, tableName)
     val p = new Put(Bytes.toBytes("row1"))
@@ -324,4 +355,5 @@ object HBEventTests {
     println(all2)
 
   }
+
 }
