@@ -46,38 +46,38 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
   extends LDataSource[
       DataSourceParams, DataParams, TrainingData, Query, Actual] {
 
-  def load(): (Vector[User], Vector[Item], Vector[U2I]) = {
+  def load(): (Array[User], Array[Item], Array[U2I]) = {
     implicit val formats = DefaultFormats
     
     val u2iList = Source
       .fromFile(dsp.u2iPath).getLines
       .map { s => parse(s).extract[U2I] }
-      .toVector
+      .toArray
 
     val userList = Source
       .fromFile(dsp.userPath).getLines
       .map { s => parse(s).extract[User] }
-      .toVector
+      .toArray
     
     val itemList = Source
       .fromFile(dsp.itemPath)
       .getLines
       .map { s => parse(s).extract[Item] }
-      .toVector
+      .toArray
 
     return (userList, itemList, u2iList)
   }
 
-  def preprocess(input: (Vector[User],  Vector[Item], Vector[U2I]))
-  : (Vector[User], Vector[Item], Map[LocalDate, Seq[U2I]]) = {
+  def preprocess(input: (Array[User],  Array[Item], Array[U2I]))
+  : (Array[User], Array[Item], Map[LocalDate, Array[U2I]]) = {
     val (users, items, u2is) = input
 
     val whitelistItypeSet = Set(dsp.whitelistItypes:_*)
-    val validItems: Vector[Item] = items
+    val validItems: Array[Item] = items
       .filter(_.itypes.find(it => whitelistItypeSet(it)) != None)
     val validIidSet: Set[String] = validItems.map(_._id).toSet
 
-    val date2Actions: Map[LocalDate, Seq[U2I]] = u2is
+    val date2Actions: Map[LocalDate, Array[U2I]] = u2is
       .filter(u2i => validIidSet(u2i.iid))
       .filter(u2i => u2i.action == dsp.whitelistAction)
       .groupBy(_.dt.toLocalDate)
@@ -85,13 +85,19 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
     (users, validItems, date2Actions)
   }
 
-  override
-  def read(): Seq[(DataParams, TrainingData, Seq[(Query, Actual)])] = {
-    val (userList, itemList, date2u2iList)
-    : (Vector[User], Vector[Item], Map[LocalDate, Seq[U2I]]) 
-    = preprocess(load())
-
+  def generate(input: (Array[User], Array[Item], Map[LocalDate, Array[U2I]]))
+    //userList: Array[User], 
+    //itemList: Array[Item],
+    //date2u2iList: Map[LocalDate, Seq[U2I]])
+  : Seq[(DataParams, TrainingData, Array[(Query, Actual)])] = {
     //val random = new scala.util.Random(0)
+    
+    //val (userList: Array[User], 
+    //  itemList: Array[Item],
+    //  date2u2iList: Map[LocalDate, Seq[U2I]]) = input
+
+    val (userList, itemList, date2u2iList)
+    : (Array[User], Array[Item], Map[LocalDate, Array[U2I]]) = input
 
     val ui2UserTd: Map[Int, UserTD] = userList
       .zipWithIndex
@@ -110,7 +116,7 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
     val ii2iid: Map[Int, String] = ii2ItemTd.mapValues(_.iid)
     val iid2ii: Map[String, Int] = ii2iid.map(_.swap)
 
-    val date2Actions: Map[LocalDate, Seq[U2IActionTD]] = date2u2iList
+    val date2Actions: Map[LocalDate, Array[U2IActionTD]] = date2u2iList
       .mapValues(
         _.map(u2i => new U2IActionTD(
           uid2ui(u2i.uid), 
@@ -119,48 +125,50 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
           None,
           u2i.t.$date)))
       
-    val dailyServedItems: Map[LocalDate, Seq[(String, Int)]] = date2u2iList
+    val dailyServedItems: Map[LocalDate, Array[(String, Int)]] = date2u2iList
       .mapValues(
-        _.map(_.iid).groupBy(identity).mapValues(_.size).toSeq.sortBy(-_._2)
+        _.map(_.iid).groupBy(identity).mapValues(_.size).toArray.sortBy(-_._2)
       )
     
     Range(dsp.fromIdx, dsp.untilIdx, dsp.testingWindowSize).map { idx => {
       val trainingUntilDate: LocalDate = dsp.baseDate.plusDays(idx)
       println("TrainingUntil: " + trainingUntilDate.toString)
 
-      val trainingDate2Actions: Map[LocalDate, Seq[U2IActionTD]] = 
+      val trainingDate2Actions: Map[LocalDate, Array[U2IActionTD]] = 
         date2Actions.filterKeys(k => k.isBefore(trainingUntilDate))
 
-      val trainingActions: Vector[U2IActionTD] = trainingDate2Actions
+      val trainingActions: Array[U2IActionTD] = trainingDate2Actions
         .values
-        .flatMap(identity)
-        .toVector
+        .flatMap(_.toSeq)
+        .toArray
 
       val trainingData = new TrainingData(
         HashMap[Int, UserTD]() ++ ui2UserTd,
         HashMap[Int, ItemTD]() ++ ii2ItemTd,
-        Vector[U2IActionTD]() ++ trainingActions)
+        Array[U2IActionTD]() ++ trainingActions)
       
       val uiActionsMap: Map[Int, Int] = trainingActions
         .groupBy(_.uindex)
         .mapValues(_.size)
 
       // Seq[(Int, Int)]: (User, Order Size)
-      val date2OrderSizeMap: Map[LocalDate, Seq[(Int, Int)]] = 
+      val date2OrderSizeMap: Map[LocalDate, Array[(Int, Int)]] = 
       trainingDate2Actions
         .mapValues { 
-          _.groupBy(_.uindex).mapValues(_.size).toSeq
+          _.groupBy(_.uindex).mapValues(_.size).toArray
         }
 
       val uiAverageSizeMap: Map[Int, Double] = date2OrderSizeMap
         .values
-        .flatMap(identity)
+        //.flatMap(identity)
+        .flatMap(_.toSeq)
         .groupBy(_._1)
         .mapValues( l => l.map(_._2).sum.toDouble / l.size )
       
       val uiPreviousOrdersMap: Map[Int, Int] = date2OrderSizeMap
         .values
-        .flatMap(identity)
+        //.flatMap(identity)
+        .flatMap(_.toSeq)
         .groupBy(_._1)
         .mapValues(_.size)
 
@@ -168,14 +176,14 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
         .groupBy(_.uindex)
         .mapValues(_.map(_.iindex).distinct.size)
 
-      val queryActionList: Seq[(Query, Actual)] =
+      val queryActionList: Array[(Query, Actual)] =
       Range(idx, math.min(idx + dsp.testingWindowSize, dsp.untilIdx))
       .map { queryIdx => dsp.baseDate.plusDays(queryIdx) }
       .flatMap { queryDate => {
         println(
           s"Testing: ${queryDate.toString} DOW(${queryDate.getDayOfWeek})")
-        val u2is = date2u2iList.getOrElse(queryDate, Seq[U2I]())
-        val uid2Actions: Map[String, Seq[U2I]] = u2is.groupBy(_.uid)
+        val u2is = date2u2iList.getOrElse(queryDate, Array[U2I]())
+        val uid2Actions: Map[String, Array[U2I]] = u2is.groupBy(_.uid)
 
         val user2iids = uid2Actions.mapValues(_.map(_.iid))
         // Use first action time.
@@ -212,7 +220,7 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
           (query, actual)
         }}
       }}
-      .toSeq
+      .toArray
 
       val trainingUntilDT = trainingUntilDate.toDateTimeAtStartOfDay
 
@@ -227,6 +235,17 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
       println("Testing Size: " + queryActionList.size)
       (dp, trainingData, queryActionList)
     }}
+
+  }
+
+  override
+  def read(): Seq[(DataParams, TrainingData, Seq[(Query, Actual)])] = {
+    val (userList, itemList, date2u2iList)
+    : (Array[User], Array[Item], Map[LocalDate, Array[U2I]]) 
+    = preprocess(load())
+
+    generate((userList, itemList, date2u2iList))
+    .map(e => (e._1, e._2, e._3.toSeq))
   }
 }
 
