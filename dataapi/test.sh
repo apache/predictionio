@@ -81,6 +81,15 @@ curl -i -X POST http://localhost:8081/events \
   "appId" : 4
 }'
 
+# minimum
+curl -i -X POST http://localhost:8081/events \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "my_event",
+  "entityId" : "my_entity_id",
+  "appId" : 4
+}'
+
 # error
 curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
