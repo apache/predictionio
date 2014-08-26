@@ -536,8 +536,13 @@ object APIDebugWorkflow {
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
-      val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
-        evalAlgoModelMap, algorithmParamsList, algoInstanceList)
+      val models: Seq[Seq[Any]] = extractPersistentModels(
+        realEngineInstance, 
+        evalAlgoModelMap, 
+        algorithmParamsList, 
+        algoInstanceList,
+        params
+      )
 
       saveEngineInstance(
         realEngineInstance,
@@ -603,8 +608,12 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
-      evalAlgoModelMap, algorithmParamsList, algoInstanceList)
+    val models: Seq[Seq[Any]] = extractPersistentModels(
+      realEngineInstance, 
+      evalAlgoModelMap, 
+      algorithmParamsList, 
+      algoInstanceList,
+      params)
 
     saveEngineInstance(
       realEngineInstance,
@@ -633,7 +642,9 @@ object APIDebugWorkflow {
     realEngineInstance: EngineInstance,
     evalAlgoModelMap: Map[EI, Seq[(AI, Any)]],
     algorithmParamsList: Seq[(String, Params)],
-    algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]]): Seq[Seq[Any]] = {
+    algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]],
+    params: WorkflowParams
+  ): Seq[Seq[Any]] = {
 
     def getPersistentModel(model: Any, instanceId: String, algoParams: Params)
     : Any = {
@@ -646,14 +657,16 @@ object APIDebugWorkflow {
 
     val evalIds: Seq[EI] = evalAlgoModelMap.keys.toSeq.sorted
 
-    /*
-    return evalIds.map { ei =>
-      evalAlgoModelMap(ei).map { x => 
-        Unit
-      }.toSeq
-    }.toSeq
-    */
-
+    // Two cases. If params.saveModel is true, it will attempts to collect all
+    // model in all evaluations; if it is false, it will create the same
+    // array size with Unit.
+    
+    // Case where saveModel == false, return early.
+    if (!params.saveModel) {
+      return evalIds.map(ei => evalAlgoModelMap(ei).map(_ => Unit))
+    }
+    
+    // Below code handles the case where saveModel == true
     // Notice that the following code runs in parallel (.par) as collect is a
     // blocking call. 
     evalIds

@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
 case class WorkflowParams(
   batch: String = "",
   verbose: Int = 2,
-  saveModel: Boolean = false)
+  saveModel: Boolean = true)
 
 object Workflow {
   def runEngine[
