@@ -59,8 +59,8 @@ class PReplayDataSource(val dsp: ReplayDataSourceParams)
     require(inputData.count == 1, "Must reside in one partition")
 
     val preprocessed
-    : RDD[(Array[User], Array[Item], Map[LocalDate, Array[U2I]])] =
-      inputData.map(ds.preprocess)
+    //: RDD[(Array[User], Array[Item], Map[LocalDate, Array[U2I]])] =
+    : RDD[ReplayDataSource.PreprocessedData] = inputData.map(ds.preprocess)
     require(preprocessed.count == 1, "Must reside in one partition")
 
     // This is a terrible DataSource implementation, as it depends on
