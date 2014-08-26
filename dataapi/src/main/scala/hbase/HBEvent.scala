@@ -161,8 +161,10 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
 
   def futureDelete(eventId: String): Future[Either[StorageError, Boolean]] = {
     Future {
-      table.delete(new Delete(Bytes.toBytes(eventIdToRowKey(eventId))))
-      Right(true)
+      val rowKeyBytes = Bytes.toBytes(eventIdToRowKey(eventId))
+      val exists = table.exists(new Get(rowKeyBytes))
+      table.delete(new Delete(rowKeyBytes))
+      Right(exists)
     }
   }
 
@@ -178,7 +180,17 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
 
   def futureDeleteByAppId(appId: Int): Future[Either[StorageError, Unit]] = {
     Future {
-      Left(StorageError("Not Implmented yet."))
+      // TODO: better way to handle range delete
+      val (start, stop) = appIdToStartStopRowKey(appId)
+      val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
+      val scanner = table.getScanner(scan)
+      val it = scanner.iterator()
+      while (it.hasNext()) {
+        val result = it.next()
+        table.delete(new Delete(result.getRow()))
+      }
+      scanner.close()
+      Right(())
     }
   }
 

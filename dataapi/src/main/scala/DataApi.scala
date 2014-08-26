@@ -112,7 +112,45 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
             data
           }
         }
-
+      } ~
+      get {
+        parameter('appId.as[Int]) { appId =>
+          respondWithMediaType(MediaTypes.`application/json`) {
+            complete {
+              log.info(s"GET events of appId=${appId}")
+              val data = eventClient.futureGetByAppId(appId).map { r =>
+                r match {
+                  case Left(StorageError(message)) =>
+                    (StatusCodes.InternalServerError, ("message" -> message))
+                  case Right(eventIter) =>
+                    if (eventIter.hasNext)
+                      (StatusCodes.OK, eventIter.toArray)
+                    else
+                      (StatusCodes.NotFound, None)
+                }
+              }
+              data
+            }
+          }
+        }
+      } ~
+      delete {
+        parameter('appId.as[Int]) { appId =>
+          respondWithMediaType(MediaTypes.`application/json`) {
+            complete {
+              log.info(s"DELETE events of appId=${appId}")
+              val data = eventClient.futureDeleteByAppId(appId).map { r =>
+                r match {
+                  case Left(StorageError(message)) =>
+                    (StatusCodes.InternalServerError, ("message" -> message))
+                  case Right(()) =>
+                    (StatusCodes.OK, None)
+                }
+              }
+              data
+            }
+          }
+        }
       }
     } ~
     path ("test" / Segment ) { testId =>

@@ -35,7 +35,6 @@ import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
-// blocking
 class ESEvents(client: Client, index: String) extends Events with Logging {
 
   implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
