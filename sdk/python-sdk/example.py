@@ -7,15 +7,15 @@ import argparse
 def import_testdata(app_id, api_url):
   client = predictionio.Client(app_id, 1, api_url)
   predictionio.connection.enable_log("test.log")
-  client.create_user("u0")
-  client.create_user("u1")
-  client.create_user("u2")
-  client.create_user("u3")
+  client.set_user("u0")
+  client.set_user("u1")
+  client.set_user("u2")
+  client.set_user("u3")
 
-  client.create_item("i0", ["t1"], {"custom1": "i0c1"})
-  client.create_item("i1", ["t1","t2"], {"custom1": "i1c1", "custom2": "i1c2"})
-  client.create_item("i2", ["t1","t2"], {"custom2": "i2c2"})
-  client.create_item("i3", ["t1"])
+  client.set_item("i0", ["t1"], {"custom1": "i0c1"})
+  client.set_item("i1", ["t1","t2"], {"custom1": "i1c1", "custom2": "i1c2"})
+  client.set_item("i2", ["t1","t2"], {"custom2": "i2c2"})
+  client.set_item("i3", ["t1"])
 
   ##
   client.record_user_action_on_item("rate", "u0", "i0", { "pio_rate": 2 })

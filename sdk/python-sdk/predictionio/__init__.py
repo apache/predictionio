@@ -100,19 +100,38 @@ class Client(object):
     self._connection.make_request(request)
     return request
 
-  def arecord_user(self, uid, params={}):
+  def aset_user(self, uid, params={}):
+    """set properties of an user"""
     return self.acreate_event({
       "event" : "$set",
       "entityId" : uid,
       "properties" : params,
-      "tags" : [ "user" ],
       "appId" : self.appid
     })
 
-  def arecord_item(self, iid, itypes=[], params={}):
-    tags = [ "items" ] + itypes
+  def aunset_user(self, uid, params={}):
+    """unset properties of an user"""
+    return self.acreate_event({
+      "event" : "$unset",
+      "entityId" : uid,
+      "properties" : params,
+      "appId" : self.appid
+    })
+
+  def aset_item(self, iid, itypes=[], params={}):
+    tags = itypes # TODO: itypes should be in tags ? or params?
     return self.acreate_event({
       "event" : "$set",
+      "entityId" : iid,
+      "properties" : params,
+      "tags" : tags,
+      "appId" : self.appid
+    })
+
+  def aunset_item(self, iid, itypes=[], params={}):
+    tags = itypes # TODO: itypes should be in tags ? or params?
+    return self.acreate_event({
+      "event" : "$unset",
       "entityId" : iid,
       "properties" : params,
       "tags" : tags,
@@ -128,14 +147,21 @@ class Client(object):
       "appId" : self.appid
     })
 
-  def create_user(self, uid, params={}):
-    return self.arecord_user(uid, params).get_response()
+  def set_user(self, uid, params={}):
+    return self.aset_user(uid, params).get_response()
 
-  def create_item(self, iid, itypes=[], params={}):
-    return self.arecord_item(iid, itypes, params).get_response()
+  def set_item(self, iid, itypes=[], params={}):
+    return self.aset_item(iid, itypes, params).get_response()
+
+  def unset_user(self, uid, params={}):
+    return self.aunset_user(uid, params).get_response()
+
+  def unset_item(self, iid, itypes=[], params={}):
+    return self.aunset_item(iid, itypes, params).get_response()
 
   def record_user_action_on_item(self, action, uid, iid, params={}):
-    return self.arecord_user_action_on_item(action, uid, iid, params).get_response()
+    return self.arecord_user_action_on_item(
+      action, uid, iid, params).get_response()
 
   def _acreate_resp(self, response):
     if response.error is not None:
