@@ -28,6 +28,10 @@ import scala.util.hashing.MurmurHash3
 import scala.collection.immutable.NumericRange
 import scala.collection.immutable.Range
 
+trait HasName {
+  def name: String
+}
+
 case class Stats(
   val average: Double, 
   val count: Long,
@@ -146,7 +150,7 @@ class DetailedMetricsParams(
 
 class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   extends Metrics[DetailedMetricsParams,
-    DataParams, Query, Prediction, Actual,
+    HasName, Query, Prediction, Actual,
       MetricUnit, Seq[MetricUnit], DetailedMetricsData] {
 
   val measure: ItemRankMeasure = params.measureType match {
@@ -183,6 +187,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       uidHash = MurmurHash3.stringHash(query.uid)
     )
 
+    /*
     if (mu.score > 0.80 && mu.score < 1.00) {
       println()
       println(mu.score)
@@ -190,12 +195,13 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       println(mu.p)
       println(mu.a)
     }
+    */
 
     mu
   }
 
   // calcualte MAP at k
-  override def computeSet(dataParams: DataParams,
+  override def computeSet(dataParams: HasName,
     metricUnits: Seq[MetricUnit]): Seq[MetricUnit] = metricUnits
   
   def calculate(values: Seq[Double]): Stats = {
@@ -307,7 +313,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   }
 
   override def computeMultipleSets(
-    input: Seq[(DataParams, Seq[MetricUnit])]): DetailedMetricsData = {
+    input: Seq[(HasName, Seq[MetricUnit])]): DetailedMetricsData = {
     val allUnits: Seq[MetricUnit] = input.flatMap(_._2) 
 
     val overallStats = (

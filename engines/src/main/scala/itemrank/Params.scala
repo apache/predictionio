@@ -55,7 +55,7 @@ class DataParams(
   val tdp: TrainingDataParams,
   val vdp: ValidationDataParams,
   val name: String = ""
-) extends Params {
+) extends Params with HasName {
   override def toString = s"TDP: ${tdp} VDP: ${vdp}"
 }
 

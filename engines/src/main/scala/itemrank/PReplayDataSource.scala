@@ -12,14 +12,14 @@ import com.github.nscala_time.time.Imports._
 class PReplayDataSource(val dsp: ReplayDataSourceParams)
   extends PDataSource[
       DataSourceParams,
-      DataParams,
+      ReplaySliceParams,
       RDD[TrainingData],
       Query,
       Actual] {
 
   override
   def readBase(sc: SparkContext)
-  : Seq[(DataParams, RDD[TrainingData], RDD[(Query, Actual)])] = {
+  : Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])] = {
     implicit val formats = DefaultFormats
     
     val ds = new ReplayDataSource(dsp)
@@ -68,11 +68,11 @@ class PReplayDataSource(val dsp: ReplayDataSourceParams)
     // DataParams, then, based on the data-param, generate TrainingData and
     // QueryActualArray in parallel.
     val generated
-    : RDD[((DataParams, TrainingData, Array[(Query, Actual)]), Long)] = 
+    : RDD[((ReplaySliceParams, TrainingData, Array[(Query, Actual)]), Long)] = 
       preprocessed.flatMap(ds.generate).zipWithIndex
     generated.cache
 
-    val dataParams: Seq[(DataParams, Long)] = generated
+    val dataParams: Seq[(ReplaySliceParams, Long)] = generated
       .map{ e => (e._1._1, e._2) }
       .collect
 
@@ -95,8 +95,8 @@ class PReplayDataSource(val dsp: ReplayDataSourceParams)
 
   // of course I know what I am doing..
   def read(sc: SparkContext)
-  : Seq[(DataParams, RDD[TrainingData], RDD[(Query, Actual)])] = 
-    Seq[(DataParams, RDD[TrainingData], RDD[(Query, Actual)])]()
+  : Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])] = 
+    Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])]()
 
 }
 

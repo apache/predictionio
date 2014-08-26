@@ -25,6 +25,8 @@ import scala.collection.immutable.HashMap
 import io.prediction.workflow.APIDebugWorkflow
 import scala.util.hashing.MurmurHash3
 
+case class ReplaySliceParams(val name: String) extends Serializable with HasName
+
 case class ReplayDataSourceParams(
   val userPath: String,
   val itemPath: String,
@@ -44,7 +46,7 @@ case class ReplayDataSourceParams(
 
 class ReplayDataSource(val dsp: ReplayDataSourceParams)
   extends LDataSource[
-      DataSourceParams, DataParams, TrainingData, Query, Actual] {
+      DataSourceParams, ReplaySliceParams, TrainingData, Query, Actual] {
 
   def load(): (Array[User], Array[Item], Array[U2I]) = {
     implicit val formats = DefaultFormats
@@ -89,7 +91,7 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
     //userList: Array[User], 
     //itemList: Array[Item],
     //date2u2iList: Map[LocalDate, Seq[U2I]])
-  : Seq[(DataParams, TrainingData, Array[(Query, Actual)])] = {
+  : Seq[(ReplaySliceParams, TrainingData, Array[(Query, Actual)])] = {
     //val random = new scala.util.Random(0)
     
     //val (userList: Array[User], 
@@ -225,12 +227,7 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
       val trainingUntilDT = trainingUntilDate.toDateTimeAtStartOfDay
 
       val dow = trainingUntilDate.dayOfWeek.getAsShortText
-      val dp: DataParams = new DataParams(
-        name = s"${trainingUntilDate.toString()} $dow",
-        tdp = new TrainingDataParams(
-          0, None, Set[String](), None, true),
-        vdp = new ValidationDataParams(
-          0, None, (trainingUntilDT, trainingUntilDT), Set[String]()))
+      val dp = ReplaySliceParams(s"${trainingUntilDate.toString()} $dow")
 
       println("Testing Size: " + queryActionList.size)
       (dp, trainingData, queryActionList)
@@ -239,7 +236,7 @@ class ReplayDataSource(val dsp: ReplayDataSourceParams)
   }
 
   override
-  def read(): Seq[(DataParams, TrainingData, Seq[(Query, Actual)])] = {
+  def read(): Seq[(ReplaySliceParams, TrainingData, Seq[(Query, Actual)])] = {
     val (userList, itemList, date2u2iList)
     : (Array[User], Array[Item], Map[LocalDate, Array[U2I]]) 
     = preprocess(load())
