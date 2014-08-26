@@ -8,7 +8,7 @@ import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.core.LModelAlgorithm
 import io.prediction.workflow.WorkflowUtils
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.workflow.CoreWorkflow
 import scala.reflect.ClassTag
 
 case class WorkflowParams(
@@ -68,7 +68,7 @@ object Workflow {
       params: WorkflowParams = WorkflowParams()
     ) {
 
-    APIDebugWorkflow.runTypeless(
+    CoreWorkflow.runTypeless(
         dataSourceClassOpt, dataSourceParams,
         preparatorClassOpt, preparatorParams,
         algorithmClassMapOpt, algorithmParamsList,

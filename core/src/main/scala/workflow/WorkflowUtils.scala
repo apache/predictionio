@@ -13,6 +13,8 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 
 import scala.language.existentials
 import scala.reflect._
@@ -152,6 +154,23 @@ object WorkflowUtils extends Logging {
   private [prediction] def checkUpgrade(component: String = "core"): Unit = {
     val runner = new Thread(new UpgradeCheckRunner(component))
     runner.start
+  }
+
+  // Extract debug string by recusively traversing the data.
+  def debugString[D](data: D): String = {
+    val s: String = data match {
+      case rdd: RDD[_] => {
+        debugString(rdd.collect)
+      }
+      case array: Array[_] => {
+        "[" + array.map(debugString).mkString(",") + "]"
+      }
+      case d: AnyRef => {
+        d.toString
+      }
+      case null => "null"
+    }
+    s
   }
 }
 

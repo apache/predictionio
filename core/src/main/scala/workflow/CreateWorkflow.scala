@@ -201,7 +201,7 @@ object CreateWorkflow extends Logging {
       val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
         engineInstance)
 
-      APIDebugWorkflow.runEngineTypeless(
+      CoreWorkflow.runEngineTypeless(
         env = pioEnvVars,
         params = WorkflowParams(
           verbose = 3,
