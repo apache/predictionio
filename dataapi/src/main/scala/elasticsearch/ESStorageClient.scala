@@ -1,19 +1,16 @@
-package io.prediction.dataapi
+package io.prediction.dataapi.elasticsearch
 
-import io.prediction.dataapi.elasticsearch.ESEvents
+import io.prediction.dataapi.BaseStorageClient
+import io.prediction.dataapi.StorageClientConfig
 
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.node.NodeBuilder.nodeBuilder
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.transport.ConnectTransportException
 
-object StorageClient {
-  case class StorageClientConfig(
-    hosts: Seq[String],
-    ports: Seq[Int])
+class ESStorageClient(val config: StorageClientConfig)
+  extends BaseStorageClient {
 
-  val config = StorageClientConfig(Seq("localhost"), Seq(9300))
-  
   val client = try {
     val transportClient = new TransportClient()
     (config.hosts zip config.ports) foreach { hp =>
@@ -27,4 +24,7 @@ object StorageClient {
   }
 
   val eventClient = new ESEvents(client, "testindex")
+
+  override
+  val prefix = "ES"
 }

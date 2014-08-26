@@ -23,7 +23,7 @@ import spray.can.Http
 import spray.routing._
 import Directives._
 
-class DataServiceActor extends HttpServiceActor {
+class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats.lossless ++
@@ -34,7 +34,7 @@ class DataServiceActor extends HttpServiceActor {
 
   val log = Logging(context.system, this)
 
-  val eventClient = StorageClient.eventClient
+  //val eventClient = Storage.eventClient
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
@@ -182,9 +182,11 @@ case class StartServer(
   val port: Int
 )
 
-class DataServerActor extends Actor {
+class DataServerActor(val eventClient: Events) extends Actor {
   val log = Logging(context.system, this)
-  val child = context.actorOf(Props[DataServiceActor], "DataServiceActor")
+  val child = context.actorOf(
+    Props(classOf[DataServiceActor], eventClient),
+    "DataServiceActor")
   implicit val system = context.system
 
   def receive = {
@@ -202,7 +204,12 @@ object Run {
 
   def main (args: Array[String]) {
     implicit val system = ActorSystem("DataAPISystem")
-    val serverActor = system.actorOf(Props[DataServerActor], "DataServerActor")
+
+    val eventClient = Storage.eventClient(args(0))
+
+    val serverActor = system.actorOf(
+      Props(classOf[DataServerActor], eventClient),
+      "DataServerActor")
     serverActor ! StartServer("localhost", 8081)
 
     println("[ Hit any key to exit. ]")

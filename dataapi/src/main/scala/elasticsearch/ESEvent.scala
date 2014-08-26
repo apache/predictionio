@@ -194,7 +194,7 @@ class ESActionListener[T](val p: Promise[T]) extends ActionListener[T]{
 
 object TestEvents {
 
-  import io.prediction.dataapi.StorageClient
+  import io.prediction.dataapi.StorageClientConfig
 
   def main(args: Array[String]) {
     val e = Event(
@@ -212,8 +212,11 @@ object TestEvents {
       predictionKey = None
     )
 
-    val client = StorageClient.client
-    val eventConnector = new ESEvents(client, "testindex")
+    val config = StorageClientConfig(Seq("localhost"), Seq(9300))
+    val storageClient = new ESStorageClient(config)
+    val client = storageClient.client
+    val eventConnector = storageClient.eventClient
+    // new ESEvents(client, "testindex")
     implicit val formats = eventConnector.formats
 
     client.prepareGet("testindex", "events", "Abcdef").get()

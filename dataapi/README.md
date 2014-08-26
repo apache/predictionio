@@ -7,9 +7,15 @@ Start server:
 dataapi $ sbt "run-main io.prediction.dataapi.Run"
 ```
 
+start with HBase:
+
+```
+dataapi $ sbt "run-main io.prediction.dataapi.Run HB"
+```
+
 Stop server:
 
-You may hit any key to stop the server.
+    You may hit any key to stop the server.
 
 ### Check server status
 
