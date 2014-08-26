@@ -10,10 +10,10 @@ import org.json4s.native.JsonMethods._
 import com.github.nscala_time.time.Imports._
 
 class PReplayDataSource(val dsp: ReplayDataSource.Params)
-  extends PDataSource[
+  extends P2LDataSource[
       ReplayDataSource.Params,
       ReplaySliceParams,
-      RDD[TrainingData],
+      TrainingData,
       Query,
       Actual] {
 
