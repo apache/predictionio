@@ -85,6 +85,7 @@ trait Events {
 
   def futureDeleteByAppId(appId: Int): Future[Either[StorageError, Unit]]
 
+  // following is blocking
   def insert(event: Event): Either[StorageError, String] = {
     Await.result(futureInsert(event), Duration(5, "seconds"))
   }

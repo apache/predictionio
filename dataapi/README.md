@@ -100,3 +100,16 @@ curl -i -X GET http://localhost:8081/events/<your_eventId> \
 ```
 curl -i -X DELETE http://localhost:8081/events/<your_eventId>
 ```
+
+### Get all events of appId
+(*use cautiously*)
+
+```
+curl -i -X GET http://localhost:8081/events?appId=<your_appId> \
+-H "Content-Type: application/json"
+```
+
+### Delete all events of appId
+```
+curl -i -X DELETE http://localhost:8081/events?appId=<your_appId>
+```
