@@ -5,7 +5,7 @@ import io.prediction.controller.java.EmptyParams;
 import java.lang.Iterable;
 
 public class Serving extends LJavaServing<EmptyParams, Query, Float> {
-  public Serving(EmptyParams ep) {}
+  public Serving() {}
 
   public Float serve(Query query, Iterable<Float> predictions) {
     float sum = 0.0f;
