@@ -16,10 +16,10 @@ object Storage {
 
   val config = StorageClientConfig(Seq("localhost"), Seq(9300))
 
-  val esStorageClient: BaseStorageClient =
+  lazy val esStorageClient: BaseStorageClient =
     new elasticsearch.ESStorageClient(config)
 
-  val hbStorageClient: BaseStorageClient =
+  lazy val hbStorageClient: BaseStorageClient =
     new hbase.HBStorageClient(config)
 
   def storageClient(storageType: String): BaseStorageClient = {
