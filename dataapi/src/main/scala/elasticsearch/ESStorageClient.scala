@@ -23,7 +23,7 @@ class ESStorageClient(val config: StorageClientConfig)
       throw new Exception(e.getMessage)
   }
 
-  val eventClient = new ESEvents(client, "testindex")
+  val eventClient = new ESEvents(client, "predictionio_appdata")
 
   override
   val prefix = "ES"

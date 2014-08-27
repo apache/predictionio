@@ -24,7 +24,7 @@ class HBStorageClient(val config: StorageClientConfig)
     admin = new HBaseAdmin(conf)
   )
 
-  private val namespace = "testnamespace"
+  private val namespace = "predictionio_appdata"
 
   val nameDesc = NamespaceDescriptor.create(namespace).build()
 
