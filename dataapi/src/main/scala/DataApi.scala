@@ -243,7 +243,8 @@ object Run {
   def main (args: Array[String]) {
     implicit val system = ActorSystem("DataAPISystem")
 
-    val eventClient = Storage.eventClient(args(0))
+    val storageType = if (args.isEmpty) "ES" else args(0)
+    val eventClient = Storage.eventClient(storageType)
 
     val serverActor = system.actorOf(
       Props(classOf[DataServerActor], eventClient),
