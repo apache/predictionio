@@ -29,7 +29,7 @@ A prediction **Engine** consists of the following controller components:
   text file, etc) and prepare the **Training Data (TD)**.
 - *Preparator* takes the *Training Data* and generates **Prepared Data (PD)**
   for the *Algorithm*
-- *Algorithm* takes the *Prepared data* to trains a **Model (M)** which is used
+- *Algorithm* takes the *Prepared Data* to train a **Model (M)** which is used
   make **Prediction (P)** outputs based on input **Query (Q)**.
 - *Serving* serves the input *Query* with *Algorithm*'s *Prediction* outputs.
 
@@ -65,11 +65,11 @@ find all sources code of this tutorial in the directory
 
 ## Step 1. Define the data class type
 
-For this Item Recommendation Engine, the data class types are defined as
+For this Item Recommendation Engine, the data class types are defined as the
 following:
 
 - *Training Data (TD)*: List of user ID, item ID and ratings, as defined in
-  `Training.java`.
+  `TrainingData.java`.
 
   ```java
   public class TrainingData implements Serializable {
@@ -215,7 +215,7 @@ users' rating history will be used to compute the predicted rating value of an
 item by the user.
 
 This algorithm takes a threshold as parameter and discard any item pairs with
-similarity lower than this threshold. The algorithm parameters class is defined
+similarity score lower than this threshold. The algorithm parameters class is defined
 in `AlgoParams.java`:
 
 ```java
@@ -314,12 +314,12 @@ public class EngineFactory implements IJavaEngineFactory {
 }
 ```
 
-To build an *Engine*, we need to define the class of each component. An
+To build an *Engine*, we need to define the class of each component. A
 `JavaEngineBuilder` is used for this purpose. In this tutorial, because the
 *Prepared Data* is the same as *Training Data*, we can use
 `JavaSimpleEngineBuilder`.
 
-As you can see, we specifies the class the `DataSource` and `Algorithm` we just
+As you can see, we specify the class the `DataSource` and `Algorithm` we just
 implemented in above steps.
 
 To deploy engine, we also need a serving layer. For `JavaSimpleEngine` with
@@ -330,7 +330,7 @@ the method `servingClass()` without specifying any class name. Building a custom
 Note that an *Engine* can contain different algorithms. This will be
 demonstrated in later tutorials.
 
-Note that the `addAlgorithmClass()` requires the name of algorithm (
+The `addAlgorithmClass()` method requires the name of algorithm (
 "MyRecommendationAlgo" in this case) which will be used later when we specify
 the parameters for this algorithm.
 
@@ -341,8 +341,7 @@ We have implemented all the necessary blocks to deploy this Item Recommendation
 Engine. Next, we need to register this Item Recommendation Engine into
 PredictionIO.
 
-An engine Manifest manifest.json is needed to describe the Engine (defined in
-`manifest.json`):
+An engine manifest `engine.json` is needed to describe the Engine:
 
 ```json
 {
@@ -360,12 +359,11 @@ Execute the following command to compile and register the engine:
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/register-engine src/main/java/recommendations/tutorial1/manifest.json
+$ ../bin/pio register --engine-json src/main/java/recommendations/tutorial1/engine.json
 ```
 
-The `register-engine` command takes the engine manifest file and the required
-JAR files as arguments. Note that you need to register the engine again if you
-have modified and re-cmopiled the codes.
+The `register` command takes the engine JSON file (with the `--engine-json` parameter). Note that you need to register the engine again if you
+have modified and re-compiled the codes.
 
 ## Step 6. Specify Parameters for the Engine
 
@@ -374,16 +372,16 @@ specified with JSON files.
 
 In this tutorial, the `DataSourceParams` has a parameter which is the file path
 of the ratings file. The JSON is defined as following
-(`params/dataSourceParams.json`):
+(`params/datasource.json`):
 
 ```json
-{"filePath": "data/ml-100k/u.data"}
+{ "filePath": "data/ml-100k/u.data" }
 ```
 
 Note that the key name (`filePath`) must be the same as the corresponding field
 name defined in the `DataSourceParams` class.
 
-For algorithms, we need to define a JSON array (`params/algorithmsParams.json`):
+For `Algorithms`, we need to define a JSON array (`params/algorithms.json`):
 
 ```json
 [
@@ -417,38 +415,31 @@ Note that if your algorithm takes no parameter, you still need to put empty JSON
 
 Now, we have everything in place. Let's run it!
 
-We use `../bin/run-train` to train the *Engine*, which builds and saves the
+We use `../bin/pio train` to train the *Engine*, which builds and saves the
 algorithm *Model* for serving real time requests.
 
 Execute the following commands:
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/run-train \
-  --engineId io.prediction.examples.java.recommendations.tutorial1.EngineFactory \
-  --engineVersion 0.8.0-SNAPSHOT \
-  --jsonBasePath src/main/java/recommendations/tutorial1/params
+$ ../bin/pio train \
+  --engine-json src/main/java/recommendations/tutorial1/engine.json \
+  --params-path src/main/java/recommendations/tutorial1/params
 ```
 
-The `--engineId` and `--engineVersion` corresponds to the `id` and `version`
-defined in the engine's  `manifest.json`. The `--jsonBasePath` is the base
-directory of parameters JSON files.
+The `--engine-json` points to the JSON file `engine.json`. The `--params-path` is the base directory of parameters JSON files.
 
 When it finishes, you should see the following at the end of terminal output:
 
 ```
-2014-08-05 15:14:22,505 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:569, took 4.104455 s
-2014-08-05 15:14:22,506 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
-2014-08-05 15:14:23,281 INFO  APIDebugWorkflow$ - Run information saved with ID: J9h0h4aUQKGVEwRm7pHF5A
+2014-08-26 01:51:30,330 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:680, took 4.390852803 s
+2014-08-26 01:51:30,579 INFO  APIDebugWorkflow$ - Saved engine instance with ID: 1SYjXuWKQTyxKdFOOXmQiw
 ```
 
-Note that there is `ID` returned at the end. In this example, it's
-`J9h0h4aUQKGVEwRm7pHF5A`.
-
-Next, execute the `../bin/run-server` command with the returned `ID`:
+Next, execute the `../bin/pio deploy` command with the returned `ID`:
 
 ```
-$ ../bin/run-server --engineInstanceId J9h0h4aUQKGVEwRm7pHF5A
+$ ../bin/pio deploy --engine-json src/main/java/recommendations/tutorial1/engine.json
 ```
 
 This will create a server that by default binds to http://localhost:8000. You
@@ -459,7 +450,7 @@ with the `Query` as JSON payload. Remember that our `Query` class is defined
 with `uid` and `iid` fields. The JSON key name must be the same as the field
 names of the `Query` class (`uid` and `iid` in this example).
 
-For example, retrieve the predicted preference for item ID 3 by user ID 1. Run
+For example, to retrieve the predicted preference for item ID 3 by user ID 1, run
 the following in terminal:
 
 ```
@@ -469,7 +460,7 @@ $ curl -H "Content-Type: application/json" -d '{"uid": 1, "iid": 3}' http://loca
 You should see the predicted preference value returned:
 
 ```
-3.9377410411834717
+3.937741
 ```
 
 Congratulations! Now you have built a prediction engine which uses the trained

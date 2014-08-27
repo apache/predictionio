@@ -7,12 +7,12 @@ the Item Recommendation Engine developed in Tutorial1 as example and implement a
 
 ## Step 1 - Training and Test Set Split
 
-To run *Offline Evaluation*, we need *Training and Test Set* data. We will
-modify the `DataSource.java` to do random split of the rating data to generate
-the *Test Set*. For demonstration purpose, we have created a separated file
+To run *Offline Evaluation*, we need *Training* and *Test Set* data. We will
+modify `DataSource.java` to do a random split of the rating data to generate
+the *Test Set*. For demonstration purpose, the modified `DataSource.java is put
 under directory `tutorial3/`.
 
-Recall that the `io.prediction.controller.java.LJavaDataSource` takes the
+Recall that `io.prediction.controller.java.LJavaDataSource` takes the
 following type parameters:
 
 ```java
@@ -45,19 +45,19 @@ public class DataSource extends LJavaDataSource<
 ```
 
 As explained in earlier tutorials, the `read()` method should read data from the
-source (Eg. database or text file, etc) and return the *Training Data* (`TD`)
+source (e.g. database or text file, etc) and return the *Training Data* (`TD`)
 and *Test Data* (`Iterable[(Q, A)]`) with a *Data Parameters* (`DP`) associated
 with this *Training and Test Data Set*.
 
 Note that the `read()` method's return type is `Iterable` because it could
 return one or more of *Training and Test Data Set*. For example, we may want to
 evaluate the engine with multiple iterations of random training and test data
-split. In this case, each set corresponds to each split.
+split. In this case, each set corresponds to one such random split.
 
 Note that the *Test Data* is actually an `Iterable` of input *Query* and
 *Actual* result. During evaluation, PredictionIO sends the *Query* to the engine
 and retrieve *Prediction* output, which will be evaluated against the *Actual*
-result by the *Metrics*.
+result by the *Metric*.
 
 
 ## Step 2 - Metrics
@@ -92,15 +92,19 @@ public abstract MMR computeMultipleSets(Iterable<scala.Tuple2<DP,MR>> input)
 The method `computeUnit()` computes the *Metric Unit (MU)* for each *Prediction*
 and *Actual* results of the input *Query*.
 
-For this RMSE Metrics, `computeUnit()` returns the square error of each
+For this RMSE metric, `computeUnit()` returns the square error of each
 predicted rating and actual rating.
 
 ```java
 @Override
 public Double computeUnit(Query query, Float predicted, Float actual) {
-  logger.info("Q: " + query.toString() + " P: " + predicted + " A: " + actual);
+  logger.info("Q: " + query.toString() + " P: " + predicted + " A: " + actual);   
   // return squared error
-  double error = predicted - actual;
+  double error;
+  if (predicted.isNaN())
+    error = -actual;
+  else
+    error = predicted - actual;
   return (error * error);
 }
 ```
@@ -108,8 +112,8 @@ public Double computeUnit(Query query, Float predicted, Float actual) {
 The method `computeSet()` takes all of the *Metric Unit (MU)* of the same set to
 compute the *Metric Result (MR)* for this set.
 
-For this RMSE metrics, `computeSet()` calculates the square root mean of all
-square error of the same set and then return it.
+For this RMSE metric, `computeSet()` calculates the square root mean of all
+square errors of the same set and then return it.
 
 ```java
 @Override
@@ -142,79 +146,92 @@ public String computeMultipleSets(
 ## Step 3 - Run Evaluation
 
 To run evaluation with metric, simply add the `Metrics` class to the
-`runEngin()` in `JavaAPIDebugWorkflow.runEngine()` (as shown in `Runner3.java`).
+`runEngine()` in `JavaWorkflow.runEngine()` (as shown in `Runner3.java`).
 
 Because our `Metrics` class doesn't take parameter, `EmptyParams` class is used.
 
 ```java
-JavaAPIDebugWorkflow.runEngine(
-  "MyEngine",
-  new HashMap<String, String>(),
-  3, // verbose
-  (new EvaluationEngineFactory()).apply(),
+JavaWorkflow.runEngine(
+  (new EngineFactory()).apply(),
   engineParams,
-  Metrics.class, // Add the Metrics class
-  new EmptyParams() // Metrics Parameters
+  Metrics.class,
+  new EmptyParams(),
+  new WorkflowParamsBuilder().batch("MyEngine").verbose(3).build()
 );
-
 ```
 
 Execute the following command:
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial3.Runner3 data/test/ratings.csv
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- data/test/ratings.csv
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
-You should see the following output, the Metric Result (RMSE score) of each
-iteration is printed at the end.
+You should see the following output when it finishes running.
 
 ```
-2014-08-05 15:30:47,557 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:651, took 0.058738 s
-2014-08-05 15:30:47,557 INFO  APIDebugWorkflow$ - DataSourceParams: io.prediction.examples.java.recommendations.tutorial1.DataSourceParams@2f01a5c4
-2014-08-05 15:30:47,558 INFO  APIDebugWorkflow$ - PreparatorParams: Empty
-2014-08-05 15:30:47,558 INFO  APIDebugWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.examples.java.recommendations.tutorial1.AlgoParams@2b2cecab
-2014-08-05 15:30:47,559 INFO  APIDebugWorkflow$ - ServingParams: Empty
-2014-08-05 15:30:47,559 INFO  APIDebugWorkflow$ - MetricsParams: Empty
-2014-08-05 15:30:47,560 INFO  APIDebugWorkflow$ - [(null,1.0), (null,3.8078865529319543), (null,1.5811388300841898)]
-2014-08-05 15:30:47,560 INFO  APIDebugWorkflow$ - APIDebugWorkflow.run completed.
+2014-08-26 22:27:35,471 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:680, took 0.105194049 s
+2014-08-26 22:27:35,720 WARN  APIDebugWorkflow$ - java.lang.String is not a NiceRendering instance.
+2014-08-26 22:27:35,731 INFO  APIDebugWorkflow$ - Saved engine instance with ID: ka_oDJuLRnq3qDynEYcRCw
 ```
+
+To view the Metric Result (RMSE score), start the dashboard with the `pio dashboard` command:
+
+```
+$ cd $PIO_HOME/examples
+$ ../bin/pio dashboard
+```
+
+Then point your browser to `localhost:8000` to view the result. You should see the result
+
+```
+[(null,1.0), (null,3.8078865529319543), (null,1.5811388300841898)]
+```
+in the page.
 
 ## Step 4 - Running with MovieLens 100K data set:
 
-Run the following to fetch the data set. The ml-100k will be downloaded into the `data/` directory.
+Run the following to fetch the data set. The `ml-100k` will be downloaded into the `data/` directory.
 
 ```
 $ cd $PIO_HOME/examples
 $ src/main/java/recommendations/fetch.sh
 ```
 
-Re-run Runner3 with the ml-100k data set:
+Re-run `Runner3` with the `ml-100k` data set:
 
 ```
-$ ../bin/pio-run io.prediction.examples.java.recommendations.tutorial3.Runner3 data/ml-100k/u.data
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- data/ml-100k/u.data
 ```
 
-You should see the following when it completes. The RMSE metric scores of each
-iteration is printed at the end:
+You should see the following output when it finishes running.
 
 ```
-2014-08-05 15:32:39,168 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:651, took 14.643584 s
-2014-08-05 15:32:39,169 INFO  APIDebugWorkflow$ - DataSourceParams: io.prediction.examples.java.recommendations.tutorial1.DataSourceParams@62a2cb43
-2014-08-05 15:32:39,169 INFO  APIDebugWorkflow$ - PreparatorParams: Empty
-2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.examples.java.recommendations.tutorial1.AlgoParams@f7136f7
-2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - ServingParams: Empty
-2014-08-05 15:32:39,170 INFO  APIDebugWorkflow$ - MetricsParams: Empty
-2014-08-05 15:32:39,171 INFO  APIDebugWorkflow$ - [(null,1.052046904037191), (null,1.042766938101085), (null,1.0490312745374106)]
-2014-08-05 15:32:39,171 INFO  APIDebugWorkflow$ - APIDebugWorkflow.run completed.
+2014-08-26 22:35:41,131 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:680, took 4.175164176 s
+2014-08-26 22:35:41,511 WARN  APIDebugWorkflow$ - java.lang.String is not a NiceRendering instance.
+2014-08-26 22:35:41,520 INFO  APIDebugWorkflow$ - Saved engine instance with ID: XG2sfCeXQ4WY2W1pXNSPCg
 ```
+
+To view the Metric Result (RMSE score), start the dashboard with the `pio dashboard` command:
+
+```
+$ cd $PIO_HOME/examples
+$ ../bin/pio dashboard
+```
+
+Then point your browser to `localhost:8000` to view the result. You should see the result
+
+```
+[(null,1.052046904037191), (null,1.042766938101085), (null,1.0490312745374106)]
+```
+in the page.
 
 Up to this point, you should be familiar with basic components of PredictionIO
-(*DataSource, Algorithm and Metrics*) and know how to develop your algorithms
+(*DataSource*, *Algorithm* and *Metrics*) and know how to develop your algorithms
 and prediction engines, deploy them and serve real time prediction queries.
 
-In next tutorial, we will demonstrate how to use *Preparator* to do
+In the next tutorial, we will demonstrate how to use *Preparator* to do
 pre-processing of *Training Data* for the *Algorithm*, incorporate multiple
 *Algorithms* into the *Engine* and create a custom *Serving* component.
 
