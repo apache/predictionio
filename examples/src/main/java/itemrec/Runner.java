@@ -54,44 +54,6 @@ public class Runner {
       algo = "svdplusplus";
       algoParams = svdPlusPlusParams;
     }
-/*
-    List<Tuple2<String, JavaParams>> algoParamsList = new ArrayList<Tuple2<String, JavaParams>>();
-    algoParamsList.add(new Tuple2<String, JavaParams>(algo, algoParams));
-
-    Map<String,
-      Class<? extends
-        LJavaAlgorithm<? extends JavaParams, PreparedData, ?, Query, Prediction>>> algoClassMap =
-      new HashMap <> ();
-    if (algoName.equals("genericitembased")) {
-      algoClassMap.put(algo, GenericItemBased.class);
-    } else{
-      algoClassMap.put(algo, SVDPlusPlus.class);
-    }
-*/
-/*
-    JavaEngine<TrainingData, EmptyParams, TrainingData, Query, Prediction, Actual> engine =
-      new JavaEngineBuilder<
-        TrainingData, EmptyParams, TrainingData, Query, Prediction, Actual>()
-        .dataSourceClass(ItemRecDataSource.class)
-        //.preparatorClass(ItemRecPreparator.class)
-        //.addAlgorithmClass("genericitembased", GenericItemBased.class)
-        //.addAlgorithmClass("svdplusplus", SVDPlusPlus.class)
-        //.servingClass(ItemRecServing.class)
-        .build();
-
-    JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(dsp)
-      .build();
-
-    JavaAPIDebugWorkflow.runEngine(
-      "Java Itemrec engine",
-      3,  // verbose
-      engine,
-      engineParams,
-      null,
-      null
-      );
-*/
 
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
       .dataSourceParams(dsp)

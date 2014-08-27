@@ -7,7 +7,6 @@ import io.prediction.controller.java.JavaEngineBuilder;
 import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.LJavaFirstServing;
-import io.prediction.workflow.JavaAPIDebugWorkflow;
 import io.prediction.controller.java.JavaWorkflow;
 import io.prediction.controller.java.WorkflowParamsBuilder;
 

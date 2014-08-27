@@ -23,7 +23,6 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import scala.io.Source
 import scala.collection.immutable.HashMap
-import io.prediction.workflow.APIDebugWorkflow
 import scala.util.hashing.MurmurHash3
 
 case class ReplaySliceParams(

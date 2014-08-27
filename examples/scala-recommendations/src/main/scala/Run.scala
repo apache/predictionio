@@ -10,7 +10,7 @@ import io.prediction.controller.PAlgorithm
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.FirstServing
 import io.prediction.controller.Utils
-import io.prediction.workflow.APIDebugWorkflow
+import io.prediction.controller.Workflow
 
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
@@ -122,7 +122,7 @@ object Run {
     val dsp = DataSourceParams("data/movielens.txt")
     val ap = AlgorithmParams()
 
-    APIDebugWorkflow.run(
+    Workflow.run(
       dataSourceClassOpt = Some(classOf[DataSource]),
       dataSourceParams = dsp,
       preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),

@@ -311,7 +311,7 @@ object CoreWorkflow {
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()
     ) {
-    logger.info("APIDebugWorkflow.run")
+    logger.info("CoreWorkflow.run")
     logger.info("Start spark context")
 
     WorkflowUtils.checkUpgrade("evaluation")
@@ -587,7 +587,7 @@ object CoreWorkflow {
 
     metricsOutput foreach { logger.info(_) }
 
-    logger.info("APIDebugWorkflow.run completed.")
+    logger.info("CoreWorkflow.run completed.")
 
     val models: Seq[Seq[Any]] = extractPersistentModels(
       realEngineInstance, 
@@ -748,7 +748,7 @@ caller) with JMap[String, Class[_ <: BaseAlgo[...]]] (signature of this
 function). If we change the caller to use Class[_ <: BaseAlgo[...]], it is
 difficult for the engine builder, as we wrap data structures with RDD in the
 base class. Hence, we have to sacrifices here, that all Doers calling
-JavaAPIDebugWorkflow needs to be Java sub-doers.
+JavaCoreWorkflow needs to be Java sub-doers.
 */
 object JavaCoreWorkflow {
   def noneIfNull[T](t: T): Option[T] = (if (t == null) None else Some(t))
