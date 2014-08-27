@@ -66,7 +66,10 @@ $ ../../bin/pio register
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
-To start training, use the following command.
+To start training, use the following command. You need to install the
+[`gfortran`](https://github.com/mikiobraun/jblas/wiki/Missing-Libraries)
+runtime library if it is not already present on your nodes. For Debian and
+Ubuntu systems this would be "`sudo apt-get install libgfortran3`".
 ```
 $ cd $PIO_HOME/examples/scala-recommendations
 $ ../../bin/pio train
@@ -74,9 +77,8 @@ $ ../../bin/pio train
 This will train a model and save it in PredictionIO's metadata storage. Notice
 that when the run is completed, it will display a run ID, like below.
 ```
-2014-08-09 18:24:27,070 INFO  SparkContext - Job finished: saveAsObjectFile at Run.scala:67, took 0.362254 s
-2014-08-09 18:24:27,099 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
-2014-08-09 18:24:27,199 INFO  APIDebugWorkflow$ - Saved engine instance with ID: LG0tzG4mSY267sLGgp6L0A
+2014-08-27 23:13:54,596 INFO  SparkContext - Job finished: saveAsObjectFile at Run.scala:68, took 0.299989372 s
+2014-08-27 23:13:54,736 INFO  APIDebugWorkflow$ - Saved engine instance with ID: txHBY2XRQTKFnxC-lYoVgA
 ```
 
 
@@ -92,7 +94,7 @@ $ ../../bin/pio deploy
 This will create a server that by default binds to http://localhost:8000. You
 can visit that page in your web browser to check its status.
 
-To perform real-time predictions, try the following.
+To perform real-time predictions, try the following. This predicts on how user 1 will rate item (movie) 4. As in all collaborative filtering algorithms, it will not handle the case of a cold user (when the user has not rated any movies).
 ```
 $ curl -H "Content-Type: application/json" -d '[1,4]' http://localhost:8000
 ```
@@ -110,7 +112,7 @@ run.
     section, go to http://localhost:8000 to check its status. Take note of the
     **Run ID** at the top.
 
-2.  Run training and deploy again.
+2.  Run training and deploy again. There is no need to manually terminate the previous deploy instance.
 
     ```
     $ cd $PIO_HOME/examples/scala-recommendations
@@ -124,4 +126,4 @@ run.
 Congratulations! You have just experienced a production-ready setup that can
 reload itself automatically after every training! Simply add the training or
 evaluation command to your *crontab*, and your setup will be able to re-deploy
-itself automatically in a regular interval.
+itself automatically at a regular interval.

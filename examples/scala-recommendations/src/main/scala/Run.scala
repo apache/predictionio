@@ -11,6 +11,7 @@ import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.FirstServing
 import io.prediction.controller.Utils
 import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
 
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
@@ -129,8 +130,10 @@ object Run {
       algorithmClassMapOpt = Some(Map("" -> classOf[ALSAlgorithm])),
       algorithmParamsList = Seq(("", ap)),
       servingClassOpt = Some(FirstServing(classOf[ALSAlgorithm])),
-      batch = "Imagine: P Recommendations",
-      verbose = 1
+      params = WorkflowParams(
+	batch = "Imagine: P Recommendations",
+        verbose = 1
+      )
     )
   }
 }
