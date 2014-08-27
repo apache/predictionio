@@ -22,9 +22,10 @@
       }
     </style>
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
-   
-     <script type="text/javascript"
-       src="http://systemsbiology-visualizations.googlecode.com/svn/trunk/src/main/js/load.js"></script>
+
+    <script type="text/javascript"
+      src="http://systemsbiology-visualizations.googlecode.com/svn/trunk/src/main/js/load.js"></script>
+
     <script>
       google.load('visualization', '1', {packages:['table', 'corechart',]});
     </script>
@@ -39,7 +40,7 @@
       src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
   </head>
   <body>
-    <h3>Item Rank Metrics</h3>
+    <h3>Item Rank Metrics !</h3>
     <h4 id='params'></h4>
 
     <div id='top'></div>
@@ -50,6 +51,15 @@
       google.setOnLoadCallback(draw);
       var rawData; 
       var algoParams;
+      var paramsObj = {};
+      var paramsList = [];
+
+      var paramsList = [
+        'data_source',
+        'preparator',
+        'algorithms',
+        'serving',
+        'metrics'];
 
       function draw() {
         loadData();
@@ -61,27 +71,41 @@
 
       function loadData() {
         rawData = JSON.parse(
-            $.ajax({
+            jQuery.ajax({
               url: 'metrics_results.json',
               dataType: 'json',
               async: false,
-            }).responseText);
+              }).responseText);
 
-        algoParams = JSON.parse(
-            $.ajax({
-              url: 'algorithms_params.json',
+        for (i = 0; i < paramsList.length; i++) {
+          var params = paramsList[i];
+
+          paramsObj[params] = JSON.parse(
+            jQuery.ajax({
+              url: params + '_params.json',
               dataType: 'json',
               async: false,
             }).responseText);
+        }
       };
       
       function drawHead() {
         var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Algorithm');
+        data.addColumn('string', 'Component');
         data.addColumn('string', 'Params');
 
-        for (i = 0; i < algoParams.length; i++) {
-          data.addRow([algoParams[i]._1, JSON.stringify(algoParams[i]._2)]);
+        for (i = 0; i < paramsList.length; i++) {
+          var params = paramsList[i];
+          if (params == 'algorithms') {
+            var algoParams = paramsObj[params];
+
+            for (j = 0; j < algoParams.length; j++) {
+              var algoName = 'algorithm ' + j + ' : ' + algoParams[j]._1;
+              data.addRow([algoName, JSON.stringify(algoParams[j]._2)]);
+            }
+          } else {
+            data.addRow([params, JSON.stringify(paramsObj[params])]);
+          }
         }
 
         var tableDiv = document.createElement('div');
