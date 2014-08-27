@@ -28,6 +28,10 @@ import scala.util.hashing.MurmurHash3
 import scala.collection.immutable.NumericRange
 import scala.collection.immutable.Range
 
+trait HasName {
+  def name: String
+}
+
 case class Stats(
   val average: Double, 
   val count: Long,
@@ -43,6 +47,7 @@ case class HeatMapData (
 
 case class DetailedMetricsData(
   val name: String,
+  val measureType: String,
   val algoMean: Double,
   val algoStats: Stats,
   val heatMap: HeatMapData,
@@ -54,7 +59,7 @@ case class DetailedMetricsData(
     val b = 1.96 * algoStats.stdev / Math.sqrt(algoStats.count)
     val lb = algoStats.average - b
     val ub = algoStats.average + b
-    f"MAP@k $name ${algoStats.average}%.4f [$lb%.4f, $ub%.4f]"
+    f"$measureType $name ${algoStats.average}%.4f [$lb%.4f, $ub%.4f]"
   }
 
   def toHTML(): String = html.detailed().toString
@@ -65,40 +70,138 @@ case class DetailedMetricsData(
   }
 }
 
+object MeasureType extends Enumeration {
+  type Type = Value
+  val MeanAveragePrecisionAtK, PrecisionAtK = Value
+}
+
+abstract class ItemRankMeasure extends Serializable {
+  def calculate(query: Query, prediction: Prediction, actual: Actual): Double
+}
+
+// If k == -1, use query size. Otherwise, use k.
+class ItemRankMAP(val k: Int) extends ItemRankMeasure {
+  def calculate(query: Query, prediction: Prediction, actual: Actual)
+  : Double = {
+    val kk = (if (k == -1) query.items.size else k) 
+
+    averagePrecisionAtK(
+      kk,
+      prediction.items.map(_._1),
+      actual.items.toSet)
+  }
+
+  override def toString(): String = s"MAP@$k"
+  
+  // metric
+  private def averagePrecisionAtK[T](k: Int, p: Seq[T], r: Set[T]): Double = {
+    // supposedly the predictedItems.size should match k
+    // NOTE: what if predictedItems is less than k? use the avaiable items as k.
+    val n = scala.math.min(p.size, k)
+
+    // find if each element in the predictedItems is one of the relevant items
+    // if so, map to 1. else map to 0
+    // (0, 1, 0, 1, 1, 0, 0)
+    val rBin: Seq[Int] = p.take(n).map { x => if (r(x)) 1 else 0 }
+    val pAtKNom = rBin.scanLeft(0)(_ + _)
+      .drop(1) // drop 1st one which is initial 0
+      .zip(rBin)
+      .map(t => if (t._2 != 0) t._1.toDouble else 0.0)
+    // ( number of hits at this position if hit or 0 if miss )
+
+    val pAtKDenom = 1 to rBin.size
+    val pAtK = pAtKNom.zip(pAtKDenom).map { t => t._1 / t._2 }
+    val apAtKDenom = scala.math.min(n, r.size)
+    if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
+  }
+}
+
+class ItemRankPrecision(val k: Int) extends ItemRankMeasure {
+  override def toString(): String = s"Precision@$k"
+
+  def calculate(query: Query, prediction: Prediction, actual: Actual)
+  : Double = {
+    val kk = (if (k == -1) query.items.size else k) 
+
+    val actualItems: Set[String] = actual.items.toSet
+
+    val relevantCount = prediction.items.take(kk)
+      .map(_._1)
+      .filter(iid => actualItems(iid))
+      .size
+
+    val denominator = Seq(kk, prediction.items.size, actualItems.size).min
+
+    relevantCount.toDouble / denominator
+  }
+}
+
+
 // optOutputPath is used for debug purpose. If specified, metrics will output
 // the data class to the specified path, and the renderer can generate the html
 // independently.
 class DetailedMetricsParams(
   val name: String = "",
   val optOutputPath: Option[String] = None,
-  val buckets: Int = 10
-) 
-  extends Params {}
+  val buckets: Int = 10,
+  val measureType: MeasureType.Type = MeasureType.MeanAveragePrecisionAtK,
+  val measureK: Int = -1
+) extends Params {}
 
 class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   extends Metrics[DetailedMetricsParams,
-    DataParams, Query, Prediction, Actual,
+    HasName, Query, Prediction, Actual,
       MetricUnit, Seq[MetricUnit], DetailedMetricsData] {
+
+  val measure: ItemRankMeasure = params.measureType match {
+    case MeasureType.MeanAveragePrecisionAtK => {
+      new ItemRankMAP(params.measureK)
+    }
+    case MeasureType.PrecisionAtK => {
+      new ItemRankPrecision(params.measureK)
+    }
+    case _ => {
+      throw new NotImplementedError(
+        s"MeasureType ${params.measureType} not implemented")
+    }
+  }
 
   override def computeUnit(query: Query, prediction: Prediction,
     actual: Actual): MetricUnit  = {
 
     val k = query.items.size
+
+    val score = measure.calculate(query, prediction, actual)
+    // For calculating baseline, we use the input order of query.
+    val baseline = measure.calculate(
+      query, 
+      Prediction(query.items.map(e => (e, 0.0)), isOriginal = false),
+      actual)
     
-    new MetricUnit(
+    val mu = new MetricUnit(
       q = query,
       p = prediction,
       a = actual,
-      score = averagePrecisionAtK(k, prediction.items.map(_._1),
-        actual.items.toSet),
-      baseline = averagePrecisionAtK(k, query.items,
-        actual.items.toSet),
+      score = score,
+      baseline = baseline,
       uidHash = MurmurHash3.stringHash(query.uid)
     )
+
+    /*
+    if (mu.score > 0.80 && mu.score < 1.00) {
+      println()
+      println(mu.score)
+      println(mu.q)
+      println(mu.p)
+      println(mu.a)
+    }
+    */
+
+    mu
   }
 
   // calcualte MAP at k
-  override def computeSet(dataParams: DataParams,
+  override def computeSet(dataParams: HasName,
     metricUnits: Seq[MetricUnit]): Seq[MetricUnit] = metricUnits
   
   def calculate(values: Seq[Double]): Stats = {
@@ -210,7 +313,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   }
 
   override def computeMultipleSets(
-    input: Seq[(DataParams, Seq[MetricUnit])]): DetailedMetricsData = {
+    input: Seq[(HasName, Seq[MetricUnit])]): DetailedMetricsData = {
     val allUnits: Seq[MetricUnit] = input.flatMap(_._2) 
 
     val overallStats = (
@@ -283,6 +386,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       
     val outputData = DetailedMetricsData (
       name = params.name,
+      measureType = measure.toString,
       algoMean = overallStats._2.average,
       algoStats = overallStats._2,
       //runs = Seq(overallStats, baselineStats) ++ runsStats,
@@ -314,29 +418,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   private def printDouble(d: Double): String = {
     BigDecimal(d).setScale(4, BigDecimal.RoundingMode.HALF_UP).toString
   }
-
-  // metric
-  private def averagePrecisionAtK[T](k: Int, p: Seq[T], r: Set[T]): Double = {
-    // supposedly the predictedItems.size should match k
-    // NOTE: what if predictedItems is less than k? use the avaiable items as k.
-    val n = scala.math.min(p.size, k)
-
-    // find if each element in the predictedItems is one of the relevant items
-    // if so, map to 1. else map to 0
-    // (0, 1, 0, 1, 1, 0, 0)
-    val rBin: Seq[Int] = p.take(n).map { x => if (r(x)) 1 else 0 }
-    val pAtKNom = rBin.scanLeft(0)(_ + _)
-      .drop(1) // drop 1st one which is initial 0
-      .zip(rBin)
-      .map(t => if (t._2 != 0) t._1.toDouble else 0.0)
-    // ( number of hits at this position if hit or 0 if miss )
-
-    val pAtKDenom = 1 to rBin.size
-    val pAtK = pAtKNom.zip(pAtKDenom).map { t => t._1 / t._2 }
-    val apAtKDenom = scala.math.min(n, r.size)
-    if (apAtKDenom == 0) 0 else pAtK.sum / apAtKDenom
-  }
-
 }
 
 object ItemRankDetailedMain {

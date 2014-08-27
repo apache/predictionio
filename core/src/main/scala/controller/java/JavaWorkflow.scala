@@ -1,7 +1,6 @@
 package io.prediction.controller.java;
 
-import io.prediction.workflow.JavaAPIDebugWorkflow;
-//import java.util.{ HashMap => JHashMap, Map => JMap }
+import io.prediction.workflow.JavaCoreWorkflow;
 import io.prediction.controller.Engine
 import io.prediction.controller.EngineParams
 import io.prediction.controller.WorkflowParams
@@ -32,7 +31,7 @@ object JavaWorkflow {
       metricsParams: Params,
       params: WorkflowParams
     ) {
-    JavaAPIDebugWorkflow.run(
+    JavaCoreWorkflow.run(
       dataSourceClass = engine.dataSourceClass,
       dataSourceParams = engineParams.dataSourceParams,
       preparatorClass = engine.preparatorClass,

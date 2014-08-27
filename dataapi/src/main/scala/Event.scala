@@ -13,7 +13,7 @@ case class Event(
   val entityId: String,
   val targetEntityId: Option[String],
   val event: String,
-  val properties: JObject, //Map[String, Any], // TODO: don't use JObject
+  val properties: JObject = JObject(List()), //Map[String, Any], // TODO: don't use JObject
   val eventTime: DateTime = DateTime.now, // default to current time
   val tags: Seq[String] = Seq(),
   val appId: Int,
@@ -85,6 +85,7 @@ trait Events {
 
   def futureDeleteByAppId(appId: Int): Future[Either[StorageError, Unit]]
 
+  // following is blocking
   def insert(event: Event): Either[StorageError, String] = {
     Await.result(futureInsert(event), Duration(5, "seconds"))
   }

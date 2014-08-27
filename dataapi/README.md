@@ -7,9 +7,15 @@ Start server:
 dataapi $ sbt "run-main io.prediction.dataapi.Run"
 ```
 
+start with HBase:
+
+```
+dataapi $ sbt "run-main io.prediction.dataapi.Run HB"
+```
+
 Stop server:
 
-You may hit any key to stop the server.
+    You may hit any key to stop the server.
 
 ### Check server status
 
@@ -73,9 +79,10 @@ HTTP/1.1 201 Created
 ```
 
 The following fields are optional:
-* **"eventTime"** : current time will be used if it's not specified
-* **"tags"**: empty list of tag will be used if it's not specified
-
+* **eventTime** : current time will be used if it's not specified
+* **tags**: empty list of tag will be used if it's not specified
+* **predictionKey**
+* **properties**
 
 ## For Debug Purpose
 
@@ -92,4 +99,17 @@ curl -i -X GET http://localhost:8081/events/<your_eventId> \
 
 ```
 curl -i -X DELETE http://localhost:8081/events/<your_eventId>
+```
+
+### Get all events of appId
+(*use cautiously*)
+
+```
+curl -i -X GET http://localhost:8081/events?appId=<your_appId> \
+-H "Content-Type: application/json"
+```
+
+### Delete all events of appId
+```
+curl -i -X DELETE http://localhost:8081/events?appId=<your_appId>
 ```

@@ -64,25 +64,6 @@ object WorkflowContext extends Logging {
   }
 }
 
-object DebugWorkflow {
-  def debugString[D](data: D): String = {
-    val s: String = data match {
-      case rdd: RDD[_] => {
-        debugString(rdd.collect)
-      }
-      case array: Array[_] => {
-        "[" + array.map(debugString).mkString(",") + "]"
-      }
-      case d: AnyRef => {
-        d.toString
-      }
-      case null => "null"
-    }
-    s
-  }
-}
-
-
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
 class AlgoServerWrapper[Q, P, A](
@@ -161,10 +142,10 @@ extends Serializable {
     if (verbose > 2) {
       logger.info("predictionParallelModel.before combine")
       joined.collect.foreach {  case(fi, (ps, (q, a))) => {
-        val pstr = DebugWorkflow.debugString(ps)
-        val qstr = DebugWorkflow.debugString(q)
-        val astr = DebugWorkflow.debugString(a)
-        //e => debug(DebugWorkflow.debugString(e))
+        val pstr = WorkflowUtils.debugString(ps)
+        val qstr = WorkflowUtils.debugString(q)
+        val astr = WorkflowUtils.debugString(a)
+        //e => debug(WorkflowUtils.debugString(e))
         logger.info(s"I: $fi Q: $qstr A: $astr Ps: $pstr")
       }}
     }
@@ -178,9 +159,9 @@ extends Serializable {
     if (verbose > 2) {
       logger.info("predictionParallelModel.after combine")
       combined.collect.foreach { case(qi, (q, p, a)) => {
-        val qstr = DebugWorkflow.debugString(q)
-        val pstr = DebugWorkflow.debugString(p)
-        val astr = DebugWorkflow.debugString(a)
+        val qstr = WorkflowUtils.debugString(q)
+        val pstr = WorkflowUtils.debugString(p)
+        val astr = WorkflowUtils.debugString(a)
         logger.info(s"I: $qi Q: $qstr A: $astr P: $pstr")
       }}
     }
@@ -236,7 +217,7 @@ extends Serializable {
   }
 }
 
-object APIDebugWorkflow {
+object CoreWorkflow {
   @transient lazy val logger = Logger[this.type]
   @transient lazy val engineInstanceStub = EngineInstance(
     id = "",
@@ -387,9 +368,9 @@ object APIDebugWorkflow {
       evalDataMap.foreach{ case (ei, data) => {
         val (trainingData, testingData) = data
         //val collectedValidationData = testingData.collect
-        val trainingDataStr = DebugWorkflow.debugString(trainingData)
+        val trainingDataStr = WorkflowUtils.debugString(trainingData)
         val testingDataStrs = testingData.collect
-          .map(DebugWorkflow.debugString)
+          .map(WorkflowUtils.debugString)
 
         logger.info(s"Data Set $ei")
         logger.info(s"Params: ${localParamsSet(ei)}")
@@ -415,7 +396,7 @@ object APIDebugWorkflow {
 
     if (verbose > 2) {
       evalPreparedMap.foreach{ case (ei, pd) => {
-        val s = DebugWorkflow.debugString(pd)
+        val s = WorkflowUtils.debugString(pd)
         logger.info(s"Prepared Data Set $ei")
         logger.info(s"Params: ${localParamsSet(ei)}")
         logger.info(s"PreparedData: $s")
@@ -486,7 +467,7 @@ object APIDebugWorkflow {
       evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
         aiModelSeq.map { case(ai, model) => {
           logger.info(s"Model ei: $ei ai: $ai")
-          logger.info(DebugWorkflow.debugString(model))
+          logger.info(WorkflowUtils.debugString(model))
         }}
       }}
     }
@@ -516,9 +497,9 @@ object APIDebugWorkflow {
       evalPredictionMap.foreach{ case(ei, fpaRdd) => {
         logger.info(s"Prediction $ei $fpaRdd")
         fpaRdd.collect.foreach{ case(f, p, a) => {
-          val fs = DebugWorkflow.debugString(f)
-          val ps = DebugWorkflow.debugString(p)
-          val as = DebugWorkflow.debugString(a)
+          val fs = WorkflowUtils.debugString(f)
+          val ps = WorkflowUtils.debugString(p)
+          val as = WorkflowUtils.debugString(a)
           logger.info(s"F: $fs P: $ps A: $as")
         }}
       }}
@@ -536,8 +517,13 @@ object APIDebugWorkflow {
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
-      val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
-        evalAlgoModelMap, algorithmParamsList, algoInstanceList)
+      val models: Seq[Seq[Any]] = extractPersistentModels(
+        realEngineInstance, 
+        evalAlgoModelMap, 
+        algorithmParamsList, 
+        algoInstanceList,
+        params
+      )
 
       saveEngineInstance(
         realEngineInstance,
@@ -603,8 +589,12 @@ object APIDebugWorkflow {
 
     logger.info("APIDebugWorkflow.run completed.")
 
-    val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
-      evalAlgoModelMap, algorithmParamsList, algoInstanceList)
+    val models: Seq[Seq[Any]] = extractPersistentModels(
+      realEngineInstance, 
+      evalAlgoModelMap, 
+      algorithmParamsList, 
+      algoInstanceList,
+      params)
 
     saveEngineInstance(
       realEngineInstance,
@@ -633,7 +623,9 @@ object APIDebugWorkflow {
     realEngineInstance: EngineInstance,
     evalAlgoModelMap: Map[EI, Seq[(AI, Any)]],
     algorithmParamsList: Seq[(String, Params)],
-    algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]]): Seq[Seq[Any]] = {
+    algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]],
+    params: WorkflowParams
+  ): Seq[Seq[Any]] = {
 
     def getPersistentModel(model: Any, instanceId: String, algoParams: Params)
     : Any = {
@@ -646,14 +638,16 @@ object APIDebugWorkflow {
 
     val evalIds: Seq[EI] = evalAlgoModelMap.keys.toSeq.sorted
 
-    /*
-    return evalIds.map { ei =>
-      evalAlgoModelMap(ei).map { x => 
-        Unit
-      }.toSeq
-    }.toSeq
-    */
-
+    // Two cases. If params.saveModel is true, it will attempts to collect all
+    // model in all evaluations; if it is false, it will create the same
+    // array size with Unit.
+    
+    // Case where saveModel == false, return early.
+    if (!params.saveModel) {
+      return evalIds.map(ei => evalAlgoModelMap(ei).map(_ => Unit))
+    }
+    
+    // Below code handles the case where saveModel == true
     // Notice that the following code runs in parallel (.par) as collect is a
     // blocking call. 
     evalIds
@@ -756,7 +750,7 @@ difficult for the engine builder, as we wrap data structures with RDD in the
 base class. Hence, we have to sacrifices here, that all Doers calling
 JavaAPIDebugWorkflow needs to be Java sub-doers.
 */
-object JavaAPIDebugWorkflow {
+object JavaCoreWorkflow {
   def noneIfNull[T](t: T): Option[T] = (if (t == null) None else Some(t))
 
   // Java doesn't support default parameters. If you only want to test, say,
@@ -790,7 +784,7 @@ object JavaAPIDebugWorkflow {
       if (algorithmParamsList == null) null
       else algorithmParamsList.toSeq)
 
-    APIDebugWorkflow.runTypeless(
+    CoreWorkflow.runTypeless(
       env = mapAsScalaMap(env).toMap,
       params = params,
       dataSourceClassOpt = noneIfNull(dataSourceClass),

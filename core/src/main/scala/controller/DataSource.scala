@@ -140,3 +140,36 @@ abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
     */
   def read(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])]
 }
+
+/** Base class of a parallel-to-local data source.
+  *
+  * A parallel-to-local data source reads data from a distributed environment,
+  * and return training data that can fit within a single machine for being used
+  * by local algorithms.
+  *
+  * @tparam DSP Data source parameters class.
+  * @tparam DP Data parameters data class.
+  * @tparam TD Training data class.
+  * @tparam Q Input query class.
+  * @tparam A Actual value class.
+  * @group Data Source
+  */
+abstract class P2LDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
+  extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
+
+  def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
+    read(sc).map { case (dp, tdRdd, qaRdd) => {
+      // TODO(yipjustin). The trainingData is used by local algorithm. It should
+      // contain exactly one element. Maybe perform a check here.
+      (dp, tdRdd, qaRdd)
+    }}
+  }
+
+  /** Implement this method to return data from a data source. Returned data
+    * can optionally include a sequence of query and actual value pairs for
+    * evaluation purpose.
+    */
+  def read(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])]
+
+}
+
