@@ -433,7 +433,12 @@ object Console extends Logging {
       s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
       s"${ca.mainClass.get} ${coreAssembly(ca.pioHome.get)} " +
       ca.passThrough.mkString(" ")
-    val r = cmd.!
+    val proc = Process(
+      cmd,
+      None,
+      "SPARK_YARN_USER_ENV" -> sys.env.filter(kv => kv._1.startsWith("PIO_")).
+        map(kv => s"${kv._1}=${kv._2}").mkString(","))
+    val r = proc.!
     if (r != 0) {
       error(s"Return code of previous step is ${r}. Aborting.")
       sys.exit(1)
