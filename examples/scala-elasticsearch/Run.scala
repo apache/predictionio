@@ -26,7 +26,7 @@ case class DataSource
       classOf[Text], 
       classOf[Text])
 
-    esRDD.take(10).foreach(println)
+    esRDD.map(_._2.toString).collect.foreach(println)
 
     Seq[(AnyRef, AnyRef, RDD[(AnyRef, AnyRef)])]()
   }
