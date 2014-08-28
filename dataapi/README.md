@@ -4,13 +4,13 @@
 Start server:
 
 ```
-dataapi $ sbt "run-main io.prediction.dataapi.Run"
+dataapi $ sbt "run-main io.prediction.dataapi.api.Run"
 ```
 
 start with HBase:
 
 ```
-dataapi $ sbt "run-main io.prediction.dataapi.Run HB"
+dataapi $ sbt "run-main io.prediction.dataapi.api.Run HB"
 ```
 
 Stop server:

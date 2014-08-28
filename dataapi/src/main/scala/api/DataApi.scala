@@ -1,4 +1,9 @@
-package io.prediction.dataapi
+package io.prediction.dataapi.api
+
+import io.prediction.dataapi.storage.Events
+import io.prediction.dataapi.storage.Event
+import io.prediction.dataapi.storage.StorageError
+import io.prediction.dataapi.storage.Storage
 
 import akka.actor.ActorSystem
 import akka.actor.Actor

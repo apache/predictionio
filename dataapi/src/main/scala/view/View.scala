@@ -1,4 +1,8 @@
-package io.prediction.dataapi
+package io.prediction.dataapi.view
+
+import io.prediction.dataapi.storage.Event
+import io.prediction.dataapi.storage.Events
+import io.prediction.dataapi.storage.Storage
 
 import org.json4s._
 import org.json4s.native.JsonMethods._

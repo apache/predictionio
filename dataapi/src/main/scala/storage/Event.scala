@@ -1,4 +1,4 @@
-package io.prediction.dataapi
+package io.prediction.dataapi.storage
 
 import org.json4s.ext.JodaTimeSerializers
 import com.github.nscala_time.time.Imports._
