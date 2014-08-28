@@ -22,4 +22,6 @@ libraryDependencies ++= Seq(
   "org.apache.hbase" % "hbase-common" % "0.98.5-hadoop2",
   "org.apache.hbase" % "hbase-client" % "0.98.5-hadoop2")
 
+  //"org.scala-lang" %% "scala-pickling" % "0.8.0")
+
 resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
