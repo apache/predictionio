@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import org.apache.hadoop.io.Text
+import org.apache.hadoop.io.MapWritable
 import org.apache.hadoop.conf.Configuration
 import org.elasticsearch.hadoop.mr.EsInputFormat
 
@@ -22,9 +23,9 @@ case class DataSource
 
     val esRDD = sc.newAPIHadoopRDD(
       conf, 
-      classOf[EsInputFormat[Text, Text]],
+      classOf[EsInputFormat[Text, MapWritable]],
       classOf[Text], 
-      classOf[Text])
+      classOf[MapWritable])
 
     esRDD.map(_._2.toString).collect.foreach(println)
 
