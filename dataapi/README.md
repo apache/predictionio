@@ -40,8 +40,12 @@ $ curl -i -X POST http://localhost:8081/events \
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "properties" : {
-    "prop1" : "value1",
-    "prop2" : "value2"
+    "prop1" : 1,
+    "prop2" : "value2",
+    "prop3" : [1, 2, 3],
+    "prop4" : true,
+    "prop5" : ["a", "b", "c"],
+    "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "tags" : ["tag1", "tag2"],

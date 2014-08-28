@@ -37,8 +37,8 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
 class ESEvents(client: Client, index: String) extends Events with Logging {
 
-  implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
-  // new EventSeriliazer
+  implicit val formats = DefaultFormats.lossless ++
+    JodaTimeSerializers.all //+ new EventSerializer
 
   val typeName = "events"
 
@@ -200,11 +200,17 @@ object TestEvents {
       entityId = "abc",
       targetEntityId = None,
       event = "$set",
-      properties = parse("""
+      properties = /*Map(
+        "numbers" -> List(1, 2, 3, 4),
+        "abc" -> "some_string",
+        "def" -> 4,
+         "k" -> false
+      ),*/
+      parse("""
         { "numbers" : [1, 2, 3, 4],
           "abc" : "some_string",
           "def" : 4, "k" : false
-        } """).asInstanceOf[JObject],
+        } """).asInstanceOf[JObject].obj.toMap,
       eventTime = DateTime.now,
       tags = List("tag1", "tag2"),
       appId = 4,
