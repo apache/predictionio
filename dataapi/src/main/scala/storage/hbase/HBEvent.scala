@@ -1,8 +1,8 @@
-package io.prediction.dataapi.hbase
+package io.prediction.dataapi.storage.hbase
 
-import io.prediction.dataapi.Event
-import io.prediction.dataapi.StorageError
-import io.prediction.dataapi.Events
+import io.prediction.dataapi.storage.Event
+import io.prediction.dataapi.storage.StorageError
+import io.prediction.dataapi.storage.Events
 
 import grizzled.slf4j.Logging
 
@@ -70,7 +70,7 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       entityId = data(3),
       targetEntityId = None, // partial
       event = data(2),
-      properties = JObject(List()), // partial
+      properties = Map(),//JObject(List()), // partial
       eventTime = new DateTime(data(1).toLong),
       tags = Seq(), // partial
       appId = data(0).toInt,
@@ -94,7 +94,7 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       // TODO: better way to handle event.properties?
       // serialize whole properties as string for now..
       put.add(Bytes.toBytes("p"), Bytes.toBytes("p"),
-        Bytes.toBytes(write(event.properties)))
+        Bytes.toBytes(write(JObject(event.properties.toList))))
       event.tags.foreach { tag =>
         put.add(Bytes.toBytes("tag"), Bytes.toBytes(tag), Bytes.toBytes(true))
       }
@@ -122,7 +122,8 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       if (tid != null) Some(Bytes.toString(tid)) else None
     } else None
 
-    val properties = read[JObject](Bytes.toString(p.get(Bytes.toBytes("p"))))
+    val properties: Map[String, JValue] =
+      read[JObject](Bytes.toString(p.get(Bytes.toBytes("p")))).obj.toMap
 
     val tags = if (tag != null)
       tag.keySet.toSeq.map(Bytes.toString(_))
@@ -298,7 +299,7 @@ object HBEventTests {
   }
 
   def testHBEvent() = {
-    import io.prediction.dataapi.StorageClientConfig
+    import io.prediction.dataapi.storage.StorageClientConfig
 
     println("testHBEvent")
 
@@ -310,7 +311,7 @@ object HBEventTests {
         { "numbers" : [1, 2, 3, 4],
           "abc" : "some_string",
           "def" : 4, "k" : false
-        } """).asInstanceOf[JObject],
+        } """).asInstanceOf[JObject].obj.toMap,
       eventTime = DateTime.now,
       tags = List("tag1", "tag2"),
       appId = 4,

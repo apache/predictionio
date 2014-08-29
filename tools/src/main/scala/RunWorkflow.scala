@@ -3,6 +3,9 @@ package io.prediction.tools
 import io.prediction.storage.EngineManifest
 
 import grizzled.slf4j.Logging
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 
 import scala.sys.process._
 
@@ -28,12 +31,17 @@ object RunWorkflow extends Logging {
     val sparkHome = ca.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
+    val hadoopConf = new Configuration
+    val hdfs = FileSystem.get(hadoopConf)
+
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
       ca.passThrough ++
       Seq(
         "--class",
         "io.prediction.workflow.CreateWorkflow",
+        "--name",
+        s"PredictionIO: ${em.id} ${em.version} (${ca.batch})",
         "--jars",
         em.files.mkString(","),
         core.getCanonicalPath,
@@ -51,7 +59,7 @@ object RunWorkflow extends Logging {
       "--jsonBasePath", ca.paramsPath) ++ defaults.flatMap { _ match {
         case (key, (path, default)) =>
           path.map(p => Seq(s"--$key", p)).getOrElse {
-          if (new File(new File(ca.paramsPath), default).exists)
+          if (hdfs.exists(new Path(ca.paramsPath + Path.SEPARATOR + default)))
             Seq(s"--$key", default)
           else
             Seq()

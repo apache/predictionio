@@ -48,6 +48,7 @@ object Storage extends Logging {
         k -> ClientMeta(sourceType, client)
       } catch {
         case e: Throwable =>
+          error(s"Error initializing storage client for source ${k}")
           error(e.getMessage)
           errors += 1
           k -> ClientMeta("", null)
@@ -119,6 +120,8 @@ object Storage extends Logging {
         val originalClassName = pkg + ".StorageClient"
         Class.forName(originalClassName).getConstructors()(0).
           newInstance(clientConfig).asInstanceOf[BaseStorageClient]
+      case e: java.lang.reflect.InvocationTargetException =>
+        throw e.getCause
     }
   }
 

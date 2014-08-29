@@ -208,6 +208,22 @@ object Console extends Logging {
           } text("Port to bind to. Default: 8000")
         )
       note("")
+      cmd("compile").
+        text("Compile a driver program.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "compile")
+        } children(
+          opt[String]("sbt-extra") action { (x, c) =>
+            c.copy(sbtExtra = Some(x))
+          } text("Extra command to pass to SBT when it builds your driver."),
+          opt[Unit]("clean") action { (x, c) =>
+            c.copy(engineClean = true)
+          } text("Clean all built-in engine builds."),
+          opt[Unit]("asm") action { (x, c) =>
+            c.copy(engineAssemblyPackageDependency = true)
+          } text("Rebuild built-in engines dependencies assembly.")
+        )
+      note("")
       cmd("run").
         text("Launch a driver program. This command will pass all\n" +
           "pass-through arguments to its underlying spark-submit command.").
@@ -252,6 +268,8 @@ object Console extends Logging {
           undeploy(ca)
         case Seq("dashboard") =>
           dashboard(ca)
+        case Seq("compile") =>
+          compile(ca)
         case Seq("run") =>
           run(ca)
         case _ =>
@@ -347,7 +365,7 @@ object Console extends Logging {
     }
   }
 
-  def run(ca: ConsoleArgs): Unit = {
+  def compile(ca: ConsoleArgs): Unit = {
     if (!new File(ca.pioHome.get + File.separator + "RELEASE").exists) {
       info("Development tree detected. Building built-in engines.")
 
@@ -403,6 +421,10 @@ object Console extends Logging {
         error(s"${e.getMessage}")
         sys.exit(1)
     }
+  }
+
+  def run(ca: ConsoleArgs): Unit = {
+    compile(ca)
 
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
@@ -411,7 +433,12 @@ object Console extends Logging {
       s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
       s"${ca.mainClass.get} ${coreAssembly(ca.pioHome.get)} " +
       ca.passThrough.mkString(" ")
-    val r = cmd.!
+    val proc = Process(
+      cmd,
+      None,
+      "SPARK_YARN_USER_ENV" -> sys.env.filter(kv => kv._1.startsWith("PIO_")).
+        map(kv => s"${kv._1}=${kv._2}").mkString(","))
+    val r = proc.!
     if (r != 0) {
       error(s"Return code of previous step is ${r}. Aborting.")
       sys.exit(1)

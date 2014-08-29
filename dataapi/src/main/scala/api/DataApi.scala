@@ -1,4 +1,9 @@
-package io.prediction.dataapi
+package io.prediction.dataapi.api
+
+import io.prediction.dataapi.storage.Events
+import io.prediction.dataapi.storage.Event
+import io.prediction.dataapi.storage.StorageError
+import io.prediction.dataapi.storage.Storage
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -27,14 +32,12 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats.lossless ++
-      JodaTimeSerializers.all
+      JodaTimeSerializers.all //+ new EventSerializer
   }
 
   import Json4sProtocol._
 
   val log = Logging(context.system, this)
-
-  //val eventClient = Storage.eventClient
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures

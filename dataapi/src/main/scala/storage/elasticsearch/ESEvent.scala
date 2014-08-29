@@ -1,8 +1,8 @@
-package io.prediction.dataapi.elasticsearch
+package io.prediction.dataapi.storage.elasticsearch
 
-import io.prediction.dataapi.Event
-import io.prediction.dataapi.StorageError
-import io.prediction.dataapi.Events
+import io.prediction.dataapi.storage.Event
+import io.prediction.dataapi.storage.StorageError
+import io.prediction.dataapi.storage.Events
 
 import grizzled.slf4j.Logging
 
@@ -37,8 +37,8 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
 class ESEvents(client: Client, index: String) extends Events with Logging {
 
-  implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
-  // new EventSeriliazer
+  implicit val formats = DefaultFormats.lossless ++
+    JodaTimeSerializers.all //+ new EventSerializer
 
   val typeName = "events"
 
@@ -193,18 +193,24 @@ class ESActionListener[T](val p: Promise[T]) extends ActionListener[T]{
 
 object TestEvents {
 
-  import io.prediction.dataapi.StorageClientConfig
+  import io.prediction.dataapi.storage.StorageClientConfig
 
   def main(args: Array[String]) {
     val e = Event(
       entityId = "abc",
       targetEntityId = None,
       event = "$set",
-      properties = parse("""
+      properties = /*Map(
+        "numbers" -> List(1, 2, 3, 4),
+        "abc" -> "some_string",
+        "def" -> 4,
+         "k" -> false
+      ),*/
+      parse("""
         { "numbers" : [1, 2, 3, 4],
           "abc" : "some_string",
           "def" : 4, "k" : false
-        } """).asInstanceOf[JObject],
+        } """).asInstanceOf[JObject].obj.toMap,
       eventTime = DateTime.now,
       tags = List("tag1", "tag2"),
       appId = 4,

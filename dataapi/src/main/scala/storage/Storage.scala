@@ -1,4 +1,4 @@
-package io.prediction.dataapi
+package io.prediction.dataapi.storage
 
 case class StorageClientConfig(
   hosts: Seq[String],

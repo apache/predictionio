@@ -22,14 +22,6 @@ libraryDependencies ++= Seq(
   "org.apache.hbase" % "hbase-common" % "0.98.5-hadoop2",
   "org.apache.hbase" % "hbase-client" % "0.98.5-hadoop2")
 
-  //"org.apache.hadoop" % "hadoop-core" % "0.20.2",
-  //"org.apache.hbase" % "hbase" % "0.98.1-hadoop2")
-
-  //"org.apache.hbase" % "hbase" % "0.98.1-hadoop2")
-  //"org.apache.hbase" % "hbase" % "0.94.22")
+  //"org.scala-lang" %% "scala-pickling" % "0.8.0")
 
 resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
-
-//resolvers += "Apache HBase" at "https://repository.apache.org/content/repositories/releases"
-
-//resolvers += "Thrift" at "http://people.apache.org/~rawson/repo/"
