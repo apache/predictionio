@@ -16,7 +16,10 @@ import scala.io.Source
 import java.io.File
 
 object RegisterEngine extends Logging {
-  def registerEngine(jsonManifest: File, engineFiles: Seq[File]): Unit = {
+  def registerEngine(
+      jsonManifest: File,
+      engineFiles: Seq[File],
+      copyLocal: Boolean = false): Unit = {
     implicit val formats = DefaultFormats + new EngineManifestSerializer
     val jsonString = try {
       Source.fromFile(jsonManifest).mkString
@@ -29,8 +32,11 @@ object RegisterEngine extends Logging {
 
     // Configure local FS or HDFS
     val conf = new Configuration
-    val localFs = FileSystem.getLocal(conf)
-    val fs = FileSystem.get(conf)
+    val fss =
+      if (copyLocal)
+        Seq(FileSystem.get(conf), FileSystem.getLocal(conf))
+      else
+        Seq(FileSystem.get(conf))
     val enginesdir = sys.env.get("PIO_FS_ENGINESDIR") match {
       case Some(s) => s
       case None =>
@@ -41,30 +47,24 @@ object RegisterEngine extends Logging {
 
     val destDir = Seq(enginesdir, engineManifest.id, engineManifest.version)
     val destPath = new Path(destDir.mkString(Path.SEPARATOR_CHAR + ""))
-    fs.mkdirs(destPath)
-    localFs.mkdirs(destPath)
-    val files = engineFiles.flatMap { f =>
-      val destFilePath =
-        new Path(destDir.:+(f.getName).mkString(Path.SEPARATOR_CHAR + ""))
-      val destPathString = fs.makeQualified(destFilePath).toString
-      if (fs.exists(destFilePath) &&
-        f.length == fs.getFileStatus(destFilePath).getLen)
-        info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
-          "and their file sizes are equal")
-      else {
-        info(s"Copying ${f.toURI} to ${destPathString}")
-        fs.copyFromLocalFile(new Path(f.toURI), destPath)
+    fss foreach { fs =>
+      fs.mkdirs(destPath)
+    }
+    val files = fss flatMap { fs =>
+      engineFiles map { f =>
+        val destFilePath =
+          new Path(destDir.:+(f.getName).mkString(Path.SEPARATOR_CHAR + ""))
+        val destPathString = fs.makeQualified(destFilePath).toString
+        if (fs.exists(destFilePath) &&
+          f.length == fs.getFileStatus(destFilePath).getLen)
+          info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
+            "and their file sizes are equal")
+        else {
+          info(s"Copying ${f.toURI} to ${destPathString}")
+          fs.copyFromLocalFile(new Path(f.toURI), destPath)
+        }
+        destPathString
       }
-      val localDestPathString = localFs.makeQualified(destFilePath).toString
-      if (localFs.exists(destFilePath) &&
-        f.length == localFs.getFileStatus(destFilePath).getLen)
-        info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
-          "and their file sizes are equal")
-      else {
-        info(s"Copying ${f.toURI} to ${localDestPathString}")
-        localFs.copyFromLocalFile(new Path(f.toURI), destPath)
-      }
-      Seq(destPathString, localDestPathString)
     }
     val uniqueFiles = files.groupBy(identity).map(_._2.head).toSeq
 
