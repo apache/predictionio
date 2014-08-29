@@ -19,9 +19,9 @@ cp $FWDIR/conf/* $DISTDIR/conf
 cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
 cp $FWDIR/engines/target/scala-2.10/engines*jar $DISTDIR/lib
 
-rm $DISTDIR/lib/*javadoc.jar
-rm $DISTDIR/lib/*sources.jar
-rm $DISTDIR/conf/pio-env.sh
+rm -f $DISTDIR/lib/*javadoc.jar
+rm -f $DISTDIR/lib/*sources.jar
+rm -f $DISTDIR/conf/pio-env.sh
 
 touch $DISTDIR/RELEASE
 
