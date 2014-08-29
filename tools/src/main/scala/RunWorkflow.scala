@@ -34,6 +34,7 @@ object RunWorkflow extends Logging {
     val hadoopConf = new Configuration
     val hdfs = FileSystem.get(hadoopConf)
 
+    val workMode = ca.metricsClass.map(_ => "Evaluation").getOrElse("Training")
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
       ca.passThrough ++
@@ -41,7 +42,7 @@ object RunWorkflow extends Logging {
         "--class",
         "io.prediction.workflow.CreateWorkflow",
         "--name",
-        s"PredictionIO: ${em.id} ${em.version} (${ca.batch})",
+        s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.batch})",
         "--jars",
         em.files.mkString(","),
         core.getCanonicalPath,

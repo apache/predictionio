@@ -27,6 +27,8 @@ object RunServer extends Logging {
       Seq(
         "--class",
         "io.prediction.workflow.CreateServer",
+        "--name",
+        s"PredictionIO Engine Instance: ${engineInstanceId}",
         "--jars",
         em.files.mkString(","),
         core.getCanonicalPath,
