@@ -112,3 +112,4 @@ class ESItemTrends(client: Client, index: String) extends ItemTrends with Loggin
     }
   }
 }
+
