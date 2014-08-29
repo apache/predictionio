@@ -107,6 +107,7 @@ object CreateServer extends Logging {
           "master")
           implicit val timeout = Timeout(5.seconds)
           master ? StartServer()
+          actorSystem.awaitTermination
         } getOrElse {
           error(s"Invalid engine ID or version. Aborting server.")
         }
