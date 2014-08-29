@@ -512,22 +512,22 @@ object CoreWorkflow {
       }}
     }
 
-    //val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance, 
+    //val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance,
     //  evalAlgoModelMap, algorithmParamsList, algoInstanceList)
 
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
       val models: Seq[Seq[Any]] = extractPersistentModels(
-        realEngineInstance, 
-        evalAlgoModelMap, 
-        algorithmParamsList, 
+        realEngineInstance,
+        evalAlgoModelMap,
+        algorithmParamsList,
         algoInstanceList,
         params
       )
 
       saveEngineInstance(
         realEngineInstance,
-        algorithmParamsList, 
+        algorithmParamsList,
         algoInstanceList,
         models,
         None)
@@ -590,9 +590,9 @@ object CoreWorkflow {
     logger.info("CoreWorkflow.run completed.")
 
     val models: Seq[Seq[Any]] = extractPersistentModels(
-      realEngineInstance, 
-      evalAlgoModelMap, 
-      algorithmParamsList, 
+      realEngineInstance,
+      evalAlgoModelMap,
+      algorithmParamsList,
       algoInstanceList,
       params)
 
@@ -603,13 +603,14 @@ object CoreWorkflow {
       models,
       Some(metricsOutput.head))
   }
-    
+
   /** Extract model for persistent layer.
     *
     * PredictionIO presist models for future use.  It allows custom
     * implementation for persisting models. You need to implement the
-    * [[io.prediction.controller.IPersistentModel]] interface. This method traverses all models in the
-    * workflow. If the model is a [[IPersistentModel]], it calls the save method
+    * [[io.prediction.controller.IPersistentModel]] interface. This method
+    * traverses all models in the workflow. If the model is a
+    * [[io.prediction.controller.IPersistentModel]], it calls the save method
     * for custom persistence logic.
     *
     * For model doesn't support custom logic, PredictionIO serializes the whole
@@ -618,7 +619,6 @@ object CoreWorkflow {
     * method return Unit, in which case PredictionIO will retrain the whole
     * model from scratch next time it is used.
     */
-
   def extractPersistentModels[PD, Q, P](
     realEngineInstance: EngineInstance,
     evalAlgoModelMap: Map[EI, Seq[(AI, Any)]],
@@ -641,15 +641,15 @@ object CoreWorkflow {
     // Two cases. If params.saveModel is true, it will attempts to collect all
     // model in all evaluations; if it is false, it will create the same
     // array size with Unit.
-    
+
     // Case where saveModel == false, return early.
     if (!params.saveModel) {
       return evalIds.map(ei => evalAlgoModelMap(ei).map(_ => Unit))
     }
-    
+
     // Below code handles the case where saveModel == true
     // Notice that the following code runs in parallel (.par) as collect is a
-    // blocking call. 
+    // blocking call.
     evalIds
     .par
     .map { ei =>
@@ -659,7 +659,7 @@ object CoreWorkflow {
       .map { case(ai, model) =>
         val algo = algoInstanceList(ai)
         val algoParams = algorithmParamsList(ai)._2
-        
+
         // Parallel Model
         if (algo.isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
           if (model.isInstanceOf[IPersistentModel[_]]) {
@@ -721,7 +721,7 @@ object CoreWorkflow {
           ("", "")
         }
       ).getOrElse(("", ""))
-      
+
     engineInstances.update(realEngineInstance.copy(
       status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
       endTime = DateTime.now,
