@@ -13,12 +13,15 @@ import io.prediction.storage.EngineInstance
 import io.prediction.storage.Storage
 
 import com.github.nscala_time.time.Imports._
+import com.google.common.io.ByteStreams
 import grizzled.slf4j.Logging
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
 
-import scala.io.Source
 import scala.language.existentials
 import scala.reflect.Manifest
 import scala.reflect.runtime.universe
@@ -45,14 +48,19 @@ object CreateWorkflow extends Logging {
 
   implicit lazy val formats = Utils.json4sDefaultFormats
 
+  val hadoopConf = new Configuration
+  val hdfs = FileSystem.get(hadoopConf)
+
   private def stringFromFile(basePath: String, filePath: String): String = {
     try {
-      if (basePath == "")
-        Source.fromFile(filePath).mkString
-      else
-        Source.fromFile(basePath + File.separator + filePath).mkString
+      val p =
+        if (basePath == "")
+          new Path(filePath)
+        else
+          new Path(basePath + Path.SEPARATOR + filePath)
+      new String(ByteStreams.toByteArray(hdfs.open(p)).map(_.toChar))
     } catch {
-      case e: java.io.FileNotFoundException =>
+      case e: java.io.IOException =>
         error(s"Error reading from file: ${e.getMessage}. Aborting workflow.")
         sys.exit(1)
     }

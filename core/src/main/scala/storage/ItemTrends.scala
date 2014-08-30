@@ -2,6 +2,8 @@ package io.prediction.storage
 
 import com.github.nscala_time.time.Imports._
 import org.json4s._
+import org.apache.hadoop.io._
+import scala.collection.JavaConversions._  
 
 package object stock {
   type DailyTuple = Tuple8[DateTime, Double, Double, Double, Double, Double, Double, Boolean]
@@ -72,6 +74,49 @@ trait ItemTrends {
 
   /** count number of records by App ID*/
   def countByAppid(appid: Int): Long
+}
+
+object ItemTrendSerializer {
+  def apply(mapWritable: MapWritable): ItemTrend = {
+    val seed = ItemTrend(id = "", appid = 0, ct = DateTime.now)
+
+    mapWritable.entrySet.foldLeft(seed) { case (itemtrend, field) => {
+      val key: String = field.getKey.asInstanceOf[Text].toString
+      val value: Writable = field.getValue
+      key match {
+        case "appid" => {
+          itemtrend.copy(appid = value.asInstanceOf[LongWritable].get.toInt)
+        }
+        case "id" => {
+          itemtrend.copy(id = value.asInstanceOf[Text].toString)
+        }
+        case "ct" => {
+          val ctStr: String = value.asInstanceOf[Text].toString
+          val ct: DateTime = Utils.stringToDateTime(ctStr)
+          itemtrend.copy(ct = ct)
+        }
+        case "daily" => {
+          val array: Array[Writable] = value.asInstanceOf[ArrayWritable].get
+          val daily = array.map { d => {
+            val m: Map[String, Writable] = d.asInstanceOf[MapWritable]
+              .entrySet
+              .map(kv => (kv.getKey.toString, kv.getValue))
+              .toMap
+            new stock.DailyTuple(
+              Utils.stringToDateTime(m("date").asInstanceOf[Text].toString),
+              m("open").asInstanceOf[DoubleWritable].get,
+              m("high").asInstanceOf[DoubleWritable].get,
+              m("low").asInstanceOf[DoubleWritable].get,
+              m("close").asInstanceOf[DoubleWritable].get,
+              m("volume").asInstanceOf[DoubleWritable].get,
+              m("adjclose").asInstanceOf[DoubleWritable].get,
+              m("active").asInstanceOf[BooleanWritable].get)
+          }}
+          itemtrend.copy(daily = daily)
+        }
+      }
+    }}
+  }
 }
 
 class ItemTrendSerializer extends CustomSerializer[ItemTrend](formats => (
