@@ -8,7 +8,21 @@ import io.prediction.core.BaseMetrics
 import io.prediction.controller.Params
 import scala.collection.JavaConversions._
 
+/** Collection of workflow creation methods. */
 object JavaWorkflow {
+  /** Creates a workflow that runs an engine.
+    *
+    * @tparam DP Data preparator class.
+    * @tparam TD Training data class.
+    * @tparam PD Prepared data class.
+    * @tparam Q Input query class.
+    * @tparam P Output prediction class.
+    * @tparam A Actual value class.
+    *
+    * @param engine An instance of [[Engine]].
+    * @param engineParams Engine parameters.
+    * @param params Workflow parameters.
+    */
   def runEngine[DP, TD, PD, Q, P, A](
     engine: Engine[TD, DP, PD, Q, P, A],
     engineParams: EngineParams,
@@ -23,6 +37,21 @@ object JavaWorkflow {
     )
   }
 
+  /** Creates a workflow that runs an engine.
+    *
+    * @tparam DP Data preparator class.
+    * @tparam TD Training data class.
+    * @tparam PD Prepared data class.
+    * @tparam Q Input query class.
+    * @tparam P Output prediction class.
+    * @tparam A Actual value class.
+    *
+    * @param engine An instance of [[Engine]].
+    * @param engineParams Engine parameters.
+    * @param metricsClass Metrics class.
+    * @param metricsParams Metrics parameters.
+    * @param params Workflow parameters.
+    */
   def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
