@@ -4,6 +4,7 @@ import io.prediction.dataapi.storage.Events
 import io.prediction.dataapi.storage.Event
 import io.prediction.dataapi.storage.StorageError
 import io.prediction.dataapi.storage.Storage
+import io.prediction.dataapi.storage.EventJson4sSupport
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -12,18 +13,23 @@ import akka.io.IO
 import akka.event.Logging
 import akka.pattern.ask
 import akka.util.Timeout
-
-import scala.concurrent.duration._
+import java.util.concurrent.TimeUnit
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
-import org.json4s.ext.JodaTimeSerializers
+//import org.json4s.ext.JodaTimeSerializers
+
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 import spray.http.StatusCodes
 import spray.http.MediaTypes
+import spray.http.HttpCharsets
+import spray.http.HttpEntity
 import spray.http.HttpResponse
 import spray.httpx.Json4sSupport
+import spray.httpx.unmarshalling.Unmarshaller
 import spray.can.Http
 import spray.routing._
 import Directives._
@@ -31,8 +37,10 @@ import Directives._
 class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
-    implicit def json4sFormats: Formats = DefaultFormats.lossless ++
-      JodaTimeSerializers.all //+ new EventSerializer
+    implicit def json4sFormats: Formats = DefaultFormats +
+      new EventJson4sSupport.APISerializer
+    //implicit def json4sFormats: Formats = DefaultFormats.lossless ++
+    //  JodaTimeSerializers.all
   }
 
   import Json4sProtocol._
@@ -42,10 +50,28 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
   implicit def executionContext = actorRefFactory.dispatcher
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(5, TimeUnit.SECONDS)
+
+  private def stringToDateTime(dt: String): DateTime =
+    ISODateTimeFormat.dateTimeParser.parseDateTime(dt)
 
   val testServiceActor = actorRefFactory.actorOf(Props[TestServiceActor],
     "TestServiceActor")
+
+  val rejectionHandler = RejectionHandler {
+    case MalformedRequestContentRejection(msg, _) :: _ =>
+      complete(StatusCodes.BadRequest, ("message" -> msg))
+  }
+
+  implicit val TestMessageUnmarshaller =
+    Unmarshaller[TestMessage](MediaTypes.`application/json`) {
+      case x: HttpEntity.NonEmpty => {
+        val json = read[JValue](
+          x.asString(defaultCharset = HttpCharsets.`UTF-8`))
+        val msg = (json \ "msg").extract[String]
+        TestMessage(msg)
+      }
+    }
 
   val route: Route =
     pathSingleSlash {
@@ -117,24 +143,48 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
         }
       } ~
       get {
-        parameter('appId.as[Int]) { appId =>
+        parameters('appId.as[Int], 'startTime.as[Option[String]],
+          'untilTime.as[Option[String]]) {
+          (appId, startTimeStr, untilTimeStr) =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
-              log.info(s"GET events of appId=${appId}")
-              val data = eventClient.futureGetByAppId(appId).map { r =>
-                r match {
-                  case Left(StorageError(message)) =>
-                    (StatusCodes.InternalServerError, ("message" -> message))
-                  case Right(eventIter) =>
-                    if (eventIter.hasNext)
-                      (StatusCodes.OK, eventIter.toArray)
-                    else
-                      (StatusCodes.NotFound, None)
+              log.info(
+                s"GET events of appId=${appId} ${startTimeStr} ${untilTimeStr}")
+
+              // TODO: handle parse datetime error
+              val startTime = startTimeStr.map(stringToDateTime(_))
+              val untilTime = untilTimeStr.map(stringToDateTime(_))
+
+              val data = if ((startTime != None) || (untilTime != None)) {
+                eventClient.futureGetByAppIdAndTime(appId,
+                  startTime, untilTime).map { r =>
+                  r match {
+                    case Left(StorageError(message)) =>
+                      (StatusCodes.InternalServerError, ("message" -> message))
+                    case Right(eventIter) =>
+                      if (eventIter.hasNext)
+                        (StatusCodes.OK, eventIter.toArray)
+                      else
+                        (StatusCodes.NotFound, None)
+                  }
+                }
+              } else {
+                eventClient.futureGetByAppId(appId).map { r =>
+                  r match {
+                    case Left(StorageError(message)) =>
+                      (StatusCodes.InternalServerError, ("message" -> message))
+                    case Right(eventIter) =>
+                      if (eventIter.hasNext)
+                        (StatusCodes.OK, eventIter.toArray)
+                      else
+                        (StatusCodes.NotFound, None)
+                  }
                 }
               }
               data
             }
           }
+
         }
       } ~
       delete {
@@ -172,6 +222,22 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
           }
         }
       }
+    } ~
+    path ("test") {
+      post {
+        respondWithMediaType(MediaTypes.`application/json`) {
+          handleRejections(rejectionHandler) {
+            entity(as[TestMessage]) { obj =>
+              //val map = obj.obj.toMap
+              complete {
+                log.info(s"receve ${obj}")
+                (StatusCodes.OK, None)
+              }
+
+            }
+          }
+        }
+      }
     }
 
   def receive = runRoute(route)
@@ -193,7 +259,9 @@ object TestServiceClient {
   }
 }
 
-case class TestMessage(val msg: String)
+case class TestMessage(val msg: String) {
+  require(!msg.isEmpty, "Can't be empty")
+}
 
 class TestServiceActor extends Actor {
   val log = Logging(context.system, this)

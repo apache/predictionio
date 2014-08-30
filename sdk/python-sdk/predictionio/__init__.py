@@ -100,68 +100,68 @@ class Client(object):
     self._connection.make_request(request)
     return request
 
-  def aset_user(self, uid, params={}):
+  def aset_user(self, uid, properties={}):
     """set properties of an user"""
     return self.acreate_event({
       "event" : "$set",
       "entityId" : uid,
-      "properties" : params,
+      "properties" : properties,
       "appId" : self.appid
     })
 
-  def aunset_user(self, uid, params={}):
+  def aunset_user(self, uid, properties={}):
     """unset properties of an user"""
     return self.acreate_event({
       "event" : "$unset",
       "entityId" : uid,
-      "properties" : params,
+      "properties" : properties,
       "appId" : self.appid
     })
 
-  def aset_item(self, iid, itypes=[], params={}):
-    tags = itypes # TODO: itypes should be in tags ? or params?
+  def aset_item(self, iid, properties={}):
+    #tags = itypes # TODO: itypes should be in tags ? or properties?
     return self.acreate_event({
       "event" : "$set",
       "entityId" : iid,
-      "properties" : params,
-      "tags" : tags,
+      "properties" : properties,
+      #"tags" : tags,
       "appId" : self.appid
     })
 
-  def aunset_item(self, iid, itypes=[], params={}):
-    tags = itypes # TODO: itypes should be in tags ? or params?
+  def aunset_item(self, iid, properties={}):
+    # tags = itypes # TODO: itypes should be in tags ? or properties?
     return self.acreate_event({
       "event" : "$unset",
       "entityId" : iid,
-      "properties" : params,
-      "tags" : tags,
+      "properties" : properties,
+      #"tags" : tags,
       "appId" : self.appid
     })
 
-  def arecord_user_action_on_item(self, action, uid, iid, params={}):
+  def arecord_user_action_on_item(self, action, uid, iid, properties={}):
     return self.acreate_event({
       "event" : action,
       "entityId" : uid,
       "targetEntityId": iid,
-      "properties" : params,
+      "properties" : properties,
       "appId" : self.appid
     })
 
-  def set_user(self, uid, params={}):
-    return self.aset_user(uid, params).get_response()
+  def set_user(self, uid, properties={}):
+    return self.aset_user(uid, properties).get_response()
 
-  def set_item(self, iid, itypes=[], params={}):
-    return self.aset_item(iid, itypes, params).get_response()
+  def set_item(self, iid, properties={}):
+    return self.aset_item(iid, properties).get_response()
 
-  def unset_user(self, uid, params={}):
-    return self.aunset_user(uid, params).get_response()
+  def unset_user(self, uid, properties={}):
+    return self.aunset_user(uid, properties).get_response()
 
-  def unset_item(self, iid, itypes=[], params={}):
-    return self.aunset_item(iid, itypes, params).get_response()
+  def unset_item(self, iid, properties={}):
+    return self.aunset_item(iid, properties).get_response()
 
-  def record_user_action_on_item(self, action, uid, iid, params={}):
+  def record_user_action_on_item(self, action, uid, iid, properties={}):
     return self.arecord_user_action_on_item(
-      action, uid, iid, params).get_response()
+      action, uid, iid, properties).get_response()
 
   def _acreate_resp(self, response):
     if response.error is not None:

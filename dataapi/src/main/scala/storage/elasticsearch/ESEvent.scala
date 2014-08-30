@@ -3,6 +3,7 @@ package io.prediction.dataapi.storage.elasticsearch
 import io.prediction.dataapi.storage.Event
 import io.prediction.dataapi.storage.StorageError
 import io.prediction.dataapi.storage.Events
+import io.prediction.dataapi.storage.EventJson4sSupport
 
 import grizzled.slf4j.Logging
 
@@ -26,7 +27,7 @@ import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{ read, write }
-import org.json4s.ext.JodaTimeSerializers
+//import org.json4s.ext.JodaTimeSerializers
 
 import com.github.nscala_time.time.Imports._
 
@@ -37,11 +38,12 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
 class ESEvents(client: Client, index: String) extends Events with Logging {
 
-  implicit val formats = DefaultFormats.lossless ++
-    JodaTimeSerializers.all //+ new EventSerializer
+  implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
+  //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
   val typeName = "events"
 
+  override
   def futureInsert(event: Event): Future[Either[StorageError, String]] = {
     val response = Promise[IndexResponse]
 
@@ -56,6 +58,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
       }
   }
 
+  override
   def futureGet(eventId: String):
     Future[Either[StorageError, Option[Event]]] = {
 
@@ -75,6 +78,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
       }
   }
 
+  override
   def futureDelete(eventId: String): Future[Either[StorageError, Boolean]] = {
     val response = Promise[DeleteResponse]
 
@@ -88,6 +92,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
       }
   }
 
+  override
   def futureGetByAppId(appId: Int):
     Future[Either[StorageError, Iterator[Event]]] = {
     val response = Promise[SearchResponse]
@@ -107,6 +112,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
 
   }
 
+  override
   def futureDeleteByAppId(appId: Int):
     Future[Either[StorageError, Unit]] = {
 

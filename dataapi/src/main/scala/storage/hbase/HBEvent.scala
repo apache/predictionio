@@ -3,6 +3,7 @@ package io.prediction.dataapi.storage.hbase
 import io.prediction.dataapi.storage.Event
 import io.prediction.dataapi.storage.StorageError
 import io.prediction.dataapi.storage.Events
+import io.prediction.dataapi.storage.EventJson4sSupport
 
 import grizzled.slf4j.Logging
 
@@ -11,9 +12,10 @@ import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{ read, write }
-import org.json4s.ext.JodaTimeSerializers
+//import org.json4s.ext.JodaTimeSerializers
 
 import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTimeZone
 
 import org.apache.hadoop.hbase.HTableDescriptor
 import org.apache.hadoop.hbase.HColumnDescriptor
@@ -35,7 +37,8 @@ import java.util.UUID
 
 class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
 
-  implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
+  implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
+  //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
   val tableName = TableName.valueOf(namespace, "events")
   val table = new HTable(client.conf, tableName)
@@ -59,8 +62,16 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       event.event + "-" + event.entityId + "-" + uuid
   }
 
-  private def appIdToStartStopRowKey(appId: Int): (String, String) = {
-    (appId + "-", (appId+1) + "-")
+  private def startStopRowKey(appId: Int, startTime: Option[DateTime],
+    untilTime: Option[DateTime]) = {
+
+    (appId, startTime, untilTime) match {
+      case (x, None, None) => (x + "-", (x+1) + "-")
+      case (x, Some(start), None) => (x + "-" + start.getMillis, (x+1) + "-")
+      case (x, None, Some(end)) => (x + "-", x + "-" + end.getMillis)
+      case (x, Some(start), Some(end)) =>
+        (x + "-" + start.getMillis, x + "-" + end.getMillis)
+    }
   }
 
   private def rowKeyToPartialEvent(rowKey: String): Event = {
@@ -71,7 +82,7 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       targetEntityId = None, // partial
       event = data(2),
       properties = Map(),//JObject(List()), // partial
-      eventTime = new DateTime(data(1).toLong),
+      eventTime = new DateTime(data(1).toLong, DateTimeZone.UTC),
       tags = Seq(), // partial
       appId = data(0).toInt,
       predictionKey = None // partial
@@ -82,6 +93,7 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
 
   private def eventIdToRowKey(eventId: String): String = eventId
 
+  override
   def futureInsert(event: Event): Future[Either[StorageError, String]] = {
     Future {
       val table = new HTable(client.conf, tableName)
@@ -144,6 +156,7 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
     event
   }
 
+  override
   def futureGet(eventId: String):
     Future[Either[StorageError, Option[Event]]] = {
       Future {
@@ -160,6 +173,7 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       }
     }
 
+  override
   def futureDelete(eventId: String): Future[Either[StorageError, Boolean]] = {
     Future {
       val rowKeyBytes = Bytes.toBytes(eventIdToRowKey(eventId))
@@ -169,20 +183,35 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
     }
   }
 
+  override
   def futureGetByAppId(appId: Int):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
-        val (start, stop) = appIdToStartStopRowKey(appId)
+        val (start, stop) = startStopRowKey(appId, None, None)
         val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
         val scanner = table.getScanner(scan)
         Right(scanner.iterator().map { resultToEvent(_) })
       }
     }
 
+  override
+  def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
+    untilTime: Option[DateTime]):
+    Future[Either[StorageError, Iterator[Event]]] = {
+      Future {
+        val (start, stop) = startStopRowKey(appId, startTime, untilTime)
+        println(start, stop)
+        val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
+        val scanner = table.getScanner(scan)
+        Right(scanner.iterator().map { resultToEvent(_) })
+      }
+  }
+
+  override
   def futureDeleteByAppId(appId: Int): Future[Either[StorageError, Unit]] = {
     Future {
       // TODO: better way to handle range delete
-      val (start, stop) = appIdToStartStopRowKey(appId)
+      val (start, stop) = startStopRowKey(appId, None, None)
       val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
       val scanner = table.getScanner(scan)
       val it = scanner.iterator()

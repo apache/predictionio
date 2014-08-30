@@ -5,6 +5,11 @@ import io.prediction.dataapi.view.LBatchView
 
 import org.json4s.JInt
 import org.json4s.JBool
+import org.json4s.JArray
+import org.json4s.JString
+
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 // engine's Data
 class ItemTD(
@@ -51,7 +56,10 @@ case class DataSourceParams(
 
 class DataSource(val params: DataSourceParams) {
 
-  @transient lazy val eventsClient = Storage.eventClient("ES")
+  @transient lazy val eventsClient = Storage.eventClient("HB")
+
+  private def stringToDateTime(dt: String): DateTime =
+    ISODateTimeFormat.dateTimeParser.parseDateTime(dt)
 
   def readTraining(): TrainingData = {
 
@@ -69,9 +77,14 @@ class DataSource(val params: DataSourceParams) {
     val items = itemMap.map { case (k,v) =>
       (k, new ItemTD(
         iid = k,
-        itypes = Seq(), // TODO: itypes from properties
-        starttime = None,
-        endtime = None,
+        itypes = v.get("pio_itypes")
+          .map(_.asInstanceOf[JArray].arr.map(_.asInstanceOf[JString].s))
+          .getOrElse(List()),
+        //Seq(), // TODO: itypes from properties
+        starttime = v.get("starttime")
+          .map(j => stringToDateTime(j.asInstanceOf[JString].s).getMillis),
+        endtime = v.get("endtime")
+          .map(j => stringToDateTime(j.asInstanceOf[JString].s).getMillis),
         inactive = v.get("inactive")
           .map(_.asInstanceOf[JBool].value)
           .getOrElse(false) // TODO: customizable field name ?

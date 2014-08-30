@@ -1,12 +1,41 @@
 #!/usr/bin/env bash
 
-set -e
+function checkGET () {
+  status=$( curl -i -s -X GET http://localhost:8081$1 | grep HTTP/1.1)
+  exp=$2
+  if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
+  echo "[pass] GET $1 $status"
+  else
+  echo "[fail] GET $1 $status"
+  echo "expect $exp"
+  exit -1
+  fi
+}
 
-## valid scenario:
 
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+function checkPOST () {
+  status=$( curl -i -s -X POST http://localhost:8081$1 \
+  -H "Content-Type: application/json" \
+  -d "$2" | grep HTTP/1.1 )
+  exp=$3
+  if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
+  #echo "POST $1 $2 good $status"
+  echo "[pass] POST $1 $status"
+  else
+  echo "[fail] POST $1 $2 $status"
+  echo "expect $exp"
+  exit -1
+  fi
+}
+
+checkGET "/" 200
+
+# ---------------
+# valid scenario
+# ----------------
+
+# full
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
@@ -24,23 +53,36 @@ curl -i -X POST http://localhost:8081/events \
   "predictionKey" : "my_prediction_key"
 }'
 
+checkPOST "/events" "$testdata" 201
+
 # no properties
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "tags" : ["tag1", "tag2"],
+  "appId" : 6,
+  "predictionKey" : "my_prediction_key"
+}'
+
+checkPOST "/events" "$testdata" 201
+
+testdata='{
+  "event" : "my_event",
+  "entityId" : "my_entity_id",
+  "targetEntityId" : "my_target_entity_id",
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "properties": {}
+  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
+
+checkPOST "/events" "$testdata" 201
 
 # no tags
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
@@ -52,11 +94,11 @@ curl -i -X POST http://localhost:8081/events \
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
+
+checkPOST "/events" "$testdata" 201
 
 ## no eventTIme
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
@@ -68,11 +110,11 @@ curl -i -X POST http://localhost:8081/events \
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
+
+checkPOST "/events" "$testdata" 201
 
 ## no prediction key
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
@@ -85,19 +127,23 @@ curl -i -X POST http://localhost:8081/events \
   "appId" : 4
 }'
 
+checkPOST "/events" "$testdata" 201
+
 # minimum
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "appId" : 4
 }'
 
+checkPOST "/events" "$testdata" 201
+
+# -------
 # error
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+# -------
+
+# missing entityId
+testdata='{
   "event" : "my_event",
   "properties" : {
     "prop1" : "value1",
@@ -109,11 +155,10 @@ curl -i -X POST http://localhost:8081/events \
   "predictionKey" : "my_prediction_key"
 }'
 
+checkPOST "/events" "$testdata" 400
 
 # missing appId
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+testdata='{
   "event" : "my_event",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
@@ -127,10 +172,10 @@ curl -i -X POST http://localhost:8081/events \
 }'
 
 
-## empty event string
-curl -i -X POST http://localhost:8081/events \
--H "Content-Type: application/json" \
--d '{
+checkPOST "/events" "$testdata" 400
+
+# empty event string
+testdata='{
   "event" : "",
   "entityId" : "my_entity_id",
   "targetEntityId" : "my_target_entity_id",
@@ -143,3 +188,17 @@ curl -i -X POST http://localhost:8081/events \
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
+
+checkPOST "/events" "$testdata" 400
+
+# empty
+testdata='{}'
+checkPOST "/events" "$testdata" 400
+
+# empty
+testdata=''
+checkPOST "/events" "$testdata" 400
+
+# invalid data
+testdata='asfd'
+checkPOST "/events" "$testdata" 400
