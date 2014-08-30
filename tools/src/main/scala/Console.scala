@@ -1,7 +1,7 @@
 package io.prediction.tools
 
-import io.prediction.BuildInfo
 import io.prediction.controller.Utils
+import io.prediction.core.BuildInfo
 import io.prediction.storage.EngineManifest
 import io.prediction.storage.EngineManifestSerializer
 import io.prediction.storage.Storage

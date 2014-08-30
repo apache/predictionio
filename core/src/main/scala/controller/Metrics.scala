@@ -68,11 +68,14 @@ abstract class Metrics[
 /** Trait for nice metrics results
   *
   * Metrics result can be rendered nicely by implementing toHTML and toJSON
-  * methods.
+  * methods. These results are rendered through dashboard.
+  * @group Metrics
   */
-
 trait NiceRendering {
+  /** HTML portion of the rendered metrics results. */
   def toHTML(): String
+
+  /** JSON portion of the rendered metrics results. */
   def toJSON(): String
 }
 

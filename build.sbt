@@ -20,7 +20,7 @@ javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
 lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
   sourceGenerators in Compile <+= buildInfo,
   buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-  buildInfoPackage := "io.prediction")
+  buildInfoPackage := "io.prediction.core")
 
 lazy val root = project in file(".") aggregate(
   core,
@@ -55,15 +55,13 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "akka",
     "breeze",
     "html",
-    "io.prediction.engines",
-    "myengine",
-    "org").mkString(":"),
+    "io.prediction.tools").mkString(":"),
   "-doc-title",
   "PredictionIO ScalaDoc",
   "-doc-version",
   version.value,
   "-doc-root-content",
-  "docs/rootdoc.txt")
+  "docs/scaladoc/rootdoc.txt")
 
 javacOptions in (JavaUnidoc, unidoc) := Seq(
   "-windowtitle",
@@ -72,6 +70,6 @@ javacOptions in (JavaUnidoc, unidoc) := Seq(
   "Java Controllers",
   "io.prediction.controller.java",
   "-overview",
-  "docs/javadoc-overview.html",
+  "docs/javadoc/javadoc-overview.html",
   "-noqualifier",
   "java.lang")

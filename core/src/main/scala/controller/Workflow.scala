@@ -11,12 +11,39 @@ import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.CoreWorkflow
 import scala.reflect.ClassTag
 
+/** Workflow parameters.
+  *
+  * @param batch Batch label of the run.
+  * @param verbose Verbosity level.
+  * @param saveModel Controls whether trained models are persisted.
+  * @group Workflow
+  */
 case class WorkflowParams(
   batch: String = "",
   verbose: Int = 2,
   saveModel: Boolean = true)
 
+/** Collection of workflow creation methods.
+  * @group Workflow
+  */
 object Workflow {
+  /** Creates a workflow that runs an engine.
+    *
+    * @tparam DP Data preparator class.
+    * @tparam TD Training data class.
+    * @tparam PD Prepared data class.
+    * @tparam Q Input query class.
+    * @tparam P Output prediction class.
+    * @tparam A Actual value class.
+    * @tparam MU Metrics unit class.
+    * @tparam MR Metrics result class.
+    * @tparam MMR Multiple metrics results class.
+    * @param params Workflow parameters.
+    * @param engine An instance of [[Engine]].
+    * @param engineParams Engine parameters.
+    * @param metricsClassOpt Optional metrics class.
+    * @param metricsParams Metrics parameters.
+    */
   def runEngine[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
@@ -44,6 +71,30 @@ object Workflow {
     )
   }
 
+  /** Creates a workflow that runs a collection of engine components.
+    *
+    * @tparam DP Data preparator class.
+    * @tparam TD Training data class.
+    * @tparam PD Prepared data class.
+    * @tparam Q Input query class.
+    * @tparam P Output prediction class.
+    * @tparam A Actual value class.
+    * @tparam MU Metrics unit class.
+    * @tparam MR Metrics result class.
+    * @tparam MMR Multiple metrics results class.
+    * @param dataSourceClassOpt Optional data source class.
+    * @param dataSourceParams Data source parameters.
+    * @param preparatorClassOpt Optional preparator class.
+    * @param preparatorParams Preparator parameters.
+    * @param algorithmClassMapOpt Optional map of algorithm names to classes.
+    * @param algorithmParamsList List of instantiated algorithms and their
+    *                            parameters.
+    * @param servingClassOpt Optional serving class.
+    * @param servingParams Serving parameters.
+    * @param metricsClassOpt Optional metrics class.
+    * @param metricsParams Metrics parameters.
+    * @param params Workflow parameters.
+    */
   def run[
       DP, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
@@ -79,4 +130,3 @@ object Workflow {
   }
 
 }
-
