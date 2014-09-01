@@ -1,0 +1,14 @@
+# Site settings
+title: PredictionIO Documentation
+email: support@prediction.io
+description: > 
+  PredictionIO tech documentation
+  PredictionIO is a Machine Learning Server for developers
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "" # the base hostname & protocol for your site
+permalink: /:title
+highlighter: true
+exclude: ['bin', 'README.md']
+markdown: redcarpet
+redcarpet:
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data", 'strikethrough', 'superscript']

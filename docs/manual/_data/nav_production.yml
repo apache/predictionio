@@ -1,0 +1,14 @@
+- title: "Production deployment"
+  href: "#"
+  
+- title: "Deploying with Chef"
+  href: "#"
+
+- title: "Setting up AWS cluster"
+  href: "#"  
+
+- title: "Scheduling model update"
+  href: "#"  
+    
+- title: "Backing up the data"
+  href: "#"  
