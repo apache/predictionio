@@ -1,7 +1,7 @@
 PredictionIO Documentation
 ======================
 
-PredictionIO's online documentation project is built on Jekyll.
+PredictionIO's online documentation project is built on [Jekyll](http://jekyllrb.com/).
 
 1.  Run this command at the project's root.
     ```
