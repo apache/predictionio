@@ -46,3 +46,7 @@
 #docsContainer h6 {
     font-size: 80%;
 }
+
+pre {
+    word-break: normal!important;
+}
