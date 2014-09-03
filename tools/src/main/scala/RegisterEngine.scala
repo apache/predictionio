@@ -16,11 +16,14 @@ import scala.io.Source
 import java.io.File
 
 object RegisterEngine extends Logging {
+
+  val engineManifests = Storage.getMetaDataEngineManifests
+  implicit val formats = DefaultFormats + new EngineManifestSerializer
+
   def registerEngine(
       jsonManifest: File,
       engineFiles: Seq[File],
       copyLocal: Boolean = false): Unit = {
-    implicit val formats = DefaultFormats + new EngineManifestSerializer
     val jsonString = try {
       Source.fromFile(jsonManifest).mkString
     } catch {
@@ -69,7 +72,37 @@ object RegisterEngine extends Logging {
     val uniqueFiles = files.groupBy(identity).map(_._2.head).toSeq
 
     info(s"Registering engine ${engineManifest.id} ${engineManifest.version}")
-    val engineManifests = Storage.getMetaDataEngineManifests
     engineManifests.update(engineManifest.copy(files = uniqueFiles), true)
+  }
+
+  def unregisterEngine(jsonManifest: File): Unit = {
+    val jsonString = try {
+      Source.fromFile(jsonManifest).mkString
+    } catch {
+      case e: java.io.FileNotFoundException =>
+        error(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
+        sys.exit(1)
+    }
+    val fileEngineManifest = read[EngineManifest](jsonString)
+    val engineManifest = engineManifests.get(
+      fileEngineManifest.id,
+      fileEngineManifest.version)
+
+    engineManifest map { em =>
+      val conf = new Configuration
+      val fs = FileSystem.get(conf)
+
+      em.files foreach { f =>
+        val path = new Path(f)
+        info(s"Removing ${f}")
+        fs.delete(path)
+      }
+
+      engineManifests.delete(em.id, em.version)
+      info(s"Unregistered engine ${em.id} ${em.version}")
+    } getOrElse {
+      error(s"${fileEngineManifest.id} ${fileEngineManifest.version} is not " +
+        "registered.")
+    }
   }
 }

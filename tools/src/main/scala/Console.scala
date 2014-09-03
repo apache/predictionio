@@ -91,6 +91,12 @@ object Console extends Logging {
           } text("Extra command to pass to SBT when it builds your engine.")
         )
       note("")
+      cmd("unregister").
+        text("Unregister an engine at the current directory.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "unregister")
+        }
+      note("")
       cmd("train").
         text("Kick off a training using an engine. This will produce an\n" +
           "engine instance. This command will pass all pass-through\n" +
@@ -258,6 +264,8 @@ object Console extends Logging {
       ca.commands match {
         case Seq("register") =>
           register(ca)
+        case Seq("unregister") =>
+          unregister(ca)
         case Seq("train") =>
           train(ca)
         case Seq("eval") =>
@@ -306,6 +314,10 @@ object Console extends Logging {
     jarFiles foreach { f => info(s"Found ${f.getName}")}
 
     RegisterEngine.registerEngine(ca.engineJson, jarFiles)
+  }
+
+  def unregister(ca: ConsoleArgs): Unit = {
+    RegisterEngine.unregisterEngine(ca.engineJson)
   }
 
   def train(ca: ConsoleArgs): Unit = {
