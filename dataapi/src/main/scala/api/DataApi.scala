@@ -5,6 +5,7 @@ import io.prediction.dataapi.storage.Event
 import io.prediction.dataapi.storage.StorageError
 import io.prediction.dataapi.storage.Storage
 import io.prediction.dataapi.storage.EventJson4sSupport
+import io.prediction.dataapi.Utils
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -20,9 +21,6 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
 //import org.json4s.ext.JodaTimeSerializers
 
-import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
-
 import spray.http.StatusCodes
 import spray.http.MediaTypes
 import spray.http.HttpCharsets
@@ -33,6 +31,8 @@ import spray.httpx.unmarshalling.Unmarshaller
 import spray.can.Http
 import spray.routing._
 import Directives._
+
+import scala.concurrent.Future
 
 class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
 
@@ -52,9 +52,6 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
   implicit def executionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
-  private def stringToDateTime(dt: String): DateTime =
-    ISODateTimeFormat.dateTimeParser.parseDateTime(dt)
-
   val testServiceActor = actorRefFactory.actorOf(Props[TestServiceActor],
     "TestServiceActor")
 
@@ -72,6 +69,16 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
         TestMessage(msg)
       }
     }
+
+  val TestMessageUnmarshaller2 =
+    Unmarshaller[TestMessage](MediaTypes.`text/plain`) {
+      case x: HttpEntity.NonEmpty => {
+        val d = x.asString(defaultCharset = HttpCharsets.`UTF-8`)
+        log.info(s"${d}")
+        TestMessage("tset")
+      }
+    }
+
 
   val route: Route =
     pathSingleSlash {
@@ -151,40 +158,48 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
               log.info(
                 s"GET events of appId=${appId} ${startTimeStr} ${untilTimeStr}")
 
-              // TODO: handle parse datetime error
-              val startTime = startTimeStr.map(stringToDateTime(_))
-              val untilTime = untilTimeStr.map(stringToDateTime(_))
-
-              val data = if ((startTime != None) || (untilTime != None)) {
-                eventClient.futureGetByAppIdAndTime(appId,
-                  startTime, untilTime).map { r =>
-                  r match {
-                    case Left(StorageError(message)) =>
-                      (StatusCodes.InternalServerError, ("message" -> message))
-                    case Right(eventIter) =>
-                      if (eventIter.hasNext)
-                        (StatusCodes.OK, eventIter.toArray)
-                      else
-                        (StatusCodes.NotFound, None)
-                  }
-                }
-              } else {
-                eventClient.futureGetByAppId(appId).map { r =>
-                  r match {
-                    case Left(StorageError(message)) =>
-                      (StatusCodes.InternalServerError, ("message" -> message))
-                    case Right(eventIter) =>
-                      if (eventIter.hasNext)
-                        (StatusCodes.OK, eventIter.toArray)
-                      else
-                        (StatusCodes.NotFound, None)
-                  }
-                }
+              val parseTime = Future {
+                val startTime = startTimeStr.map(Utils.stringToDateTime(_))
+                val untilTime = untilTimeStr.map(Utils.stringToDateTime(_))
+                (startTime, untilTime)
               }
-              data
+
+              parseTime.flatMap { case (startTime, untilTime) =>
+                val data = if ((startTime != None) || (untilTime != None)) {
+                  eventClient.futureGetByAppIdAndTime(appId,
+                    startTime, untilTime).map { r =>
+                    r match {
+                      case Left(StorageError(message)) =>
+                        (StatusCodes.InternalServerError,
+                          ("message" -> message))
+                      case Right(eventIter) =>
+                        if (eventIter.hasNext)
+                          (StatusCodes.OK, eventIter.toArray)
+                        else
+                          (StatusCodes.NotFound, ("message" -> "Not Found"))
+                    }
+                  }
+                } else {
+                  eventClient.futureGetByAppId(appId).map { r =>
+                    r match {
+                      case Left(StorageError(message)) =>
+                        (StatusCodes.InternalServerError,
+                          ("message" -> message))
+                      case Right(eventIter) =>
+                        if (eventIter.hasNext)
+                          (StatusCodes.OK, eventIter.toArray)
+                        else
+                          (StatusCodes.NotFound, ("message" -> "Not Found"))
+                    }
+                  }
+                }
+                data
+              }.recover {
+                case e: Exception =>
+                  (StatusCodes.BadRequest, ("message" -> s"${e}"))
+              }
             }
           }
-
         }
       } ~
       delete {

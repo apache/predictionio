@@ -67,10 +67,11 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
 
     (appId, startTime, untilTime) match {
       case (x, None, None) => (x + "-", (x+1) + "-")
-      case (x, Some(start), None) => (x + "-" + start.getMillis, (x+1) + "-")
-      case (x, None, Some(end)) => (x + "-", x + "-" + end.getMillis)
+      case (x, Some(start), None) => (x + "-" + start.getMillis + "-",
+        (x+1) + "-")
+      case (x, None, Some(end)) => (x + "-", x + "-" + end.getMillis + "-")
       case (x, Some(start), Some(end)) =>
-        (x + "-" + start.getMillis, x + "-" + end.getMillis)
+        (x + "-" + start.getMillis + "-", x + "-" + end.getMillis + "-")
     }
   }
 

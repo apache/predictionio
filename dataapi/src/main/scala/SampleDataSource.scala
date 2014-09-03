@@ -2,6 +2,7 @@ package io.prediction.dataapi.sample
 
 import io.prediction.dataapi.storage.Storage
 import io.prediction.dataapi.view.LBatchView
+import io.prediction.dataapi.Utils
 
 import org.json4s.JInt
 import org.json4s.JBool
@@ -9,7 +10,6 @@ import org.json4s.JArray
 import org.json4s.JString
 
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 
 // engine's Data
 class ItemTD(
@@ -59,7 +59,7 @@ class DataSource(val params: DataSourceParams) {
   @transient lazy val eventsClient = Storage.eventClient("HB")
 
   private def stringToDateTime(dt: String): DateTime =
-    ISODateTimeFormat.dateTimeParser.parseDateTime(dt)
+    Utils.stringToDateTime(dt)
 
   def readTraining(): TrainingData = {
 

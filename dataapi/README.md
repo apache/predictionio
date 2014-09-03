@@ -117,3 +117,26 @@ curl -i -X GET http://localhost:8081/events?appId=<your_appId> \
 ```
 curl -i -X DELETE http://localhost:8081/events?appId=<your_appId>
 ```
+
+### Get all events of appId within time range
+* eventTime >= startTime:
+
+```
+http://localhost:8081/events?appId=<your_appId>&startTime=<time in ISO8601 format>
+```
+* eventTime < untilTime:
+
+```
+http://localhost:8081/events?appId=<your_appId>&untilTime=<time in ISO8601 format>
+```
+
+* eventTime >= startTime && eventTime < untilTime:
+
+```
+http://localhost:8081/events?appId=2&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
+```
+
+Example,
+```
+http://localhost:8081/events?appId=2&startTime=2014-08-30T08:45:51.566Z&untilTime=2014-08-30T08:45:51.591Z
+```

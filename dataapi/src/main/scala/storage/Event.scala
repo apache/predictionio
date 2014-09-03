@@ -1,5 +1,7 @@
 package io.prediction.dataapi.storage
 
+import io.prediction.dataapi.Utils
+
 //import org.json4s.ext.JodaTimeSerializers
 import com.github.nscala_time.time.Imports._
 import org.json4s._
@@ -10,7 +12,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
@@ -58,9 +59,6 @@ object EventJson4sSupport {
 
   implicit val formats = DefaultFormats
 
-  private def stringToDateTime(dt: String): DateTime =
-    ISODateTimeFormat.dateTimeParser.parseDateTime(dt)
-
   def readJson: PartialFunction[JValue, Event] = {
     case JObject(x) => {
       val fields = new DataMap(x.toMap)
@@ -75,7 +73,7 @@ object EventJson4sSupport {
         val eventTime = fields.getOpt[String]("eventTime")
           .map{ s =>
             try {
-              stringToDateTime(s)
+              Utils.stringToDateTime(s)
             } catch {
               case _: Exception =>
                 throw new MappingException(s"Fail to extract time")
@@ -108,7 +106,7 @@ object EventJson4sSupport {
       val targetEntityId = (jv \ "targetEntityId").extract[Option[String]]
       val event = (jv \ "event").extract[String]
       val properties = (jv \ "properties").extract[JObject].obj.toMap
-      val eventTime = stringToDateTime((jv \ "eventTime").extract[String])
+      val eventTime = Utils.stringToDateTime((jv \ "eventTime").extract[String])
       val tags = (jv \ "tags").extract[Seq[String]]
       val appId = (jv \ "appId").extract[Int]
       val predictionKey = (jv \ "predictionKey").extract[Option[String]]
@@ -132,7 +130,7 @@ object EventJson4sSupport {
         JField("targetEntityId",
           d.targetEntityId.map(JString(_)).getOrElse(JNothing)) ::
         JField("properties", JObject(d.properties.toList)) ::
-        JField("eventTime", JString(d.eventTime.toString)) ::
+        JField("eventTime", JString(Utils.dateTimeToString(d.eventTime))) ::
         JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
         JField("appId", JInt(d.appId)) ::
         JField("predictionKey",
