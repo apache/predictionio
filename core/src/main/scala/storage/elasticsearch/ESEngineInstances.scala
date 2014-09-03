@@ -9,6 +9,7 @@ import com.google.common.io.BaseEncoding
 import grizzled.slf4j.Logging
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
+import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.index.query.FilterBuilders._
 import org.elasticsearch.search.sort.SortBuilders._
 import org.elasticsearch.search.sort.SortOrder
@@ -116,11 +117,21 @@ class ESEngineInstances(client: Client, index: String)
 
   def getEvalCompleted() = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
+      val scrollLife = new TimeValue(60000)
+      val allResults = scala.collection.mutable.ArrayBuffer[EngineInstance]()
+      var response = client.prepareSearch(index).setTypes(estype).setPostFilter(
         termFilter("status", "EVALCOMPLETED")).
-        addSort("startTime", SortOrder.DESC).get
-      val hits = response.getHits().hits().toSeq
-      hits.map(h => read[EngineInstance](h.getSourceAsString))
+        addSort("startTime", SortOrder.DESC).
+        setScroll(scrollLife).get
+      var hits = response.getHits().hits().toSeq
+      allResults ++= hits.map(h => read[EngineInstance](h.getSourceAsString))
+      while (hits.size > 0) {
+        response = client.prepareSearchScroll(response.getScrollId).
+          setScroll(scrollLife).get
+        hits = response.getHits().hits().toSeq
+        allResults ++= hits.map(h => read[EngineInstance](h.getSourceAsString))
+      }
+      allResults
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
