@@ -1,4 +1,4 @@
-package io.prediction.dataapi
+package io.prediction.data
 
 import org.json4s._
 import org.json4s.JsonDSL._

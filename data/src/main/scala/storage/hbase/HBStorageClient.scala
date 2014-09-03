@@ -1,7 +1,7 @@
-package io.prediction.dataapi.storage.hbase
+package io.prediction.data.storage.hbase
 
-import io.prediction.dataapi.storage.BaseStorageClient
-import io.prediction.dataapi.storage.StorageClientConfig
+import io.prediction.data.storage.BaseStorageClient
+import io.prediction.data.storage.StorageClientConfig
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin

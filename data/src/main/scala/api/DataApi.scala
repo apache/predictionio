@@ -1,11 +1,11 @@
-package io.prediction.dataapi.api
+package io.prediction.data.api
 
-import io.prediction.dataapi.storage.Events
-import io.prediction.dataapi.storage.Event
-import io.prediction.dataapi.storage.StorageError
-import io.prediction.dataapi.storage.Storage
-import io.prediction.dataapi.storage.EventJson4sSupport
-import io.prediction.dataapi.Utils
+import io.prediction.data.storage.Events
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.StorageError
+import io.prediction.data.storage.Storage
+import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.Utils
 
 import akka.actor.ActorSystem
 import akka.actor.Actor

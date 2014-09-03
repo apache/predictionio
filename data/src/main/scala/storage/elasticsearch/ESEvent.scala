@@ -1,9 +1,9 @@
-package io.prediction.dataapi.storage.elasticsearch
+package io.prediction.data.storage.elasticsearch
 
-import io.prediction.dataapi.storage.Event
-import io.prediction.dataapi.storage.StorageError
-import io.prediction.dataapi.storage.Events
-import io.prediction.dataapi.storage.EventJson4sSupport
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.StorageError
+import io.prediction.data.storage.Events
+import io.prediction.data.storage.EventJson4sSupport
 
 import grizzled.slf4j.Logging
 
@@ -199,7 +199,7 @@ class ESActionListener[T](val p: Promise[T]) extends ActionListener[T]{
 
 object TestEvents {
 
-  import io.prediction.dataapi.storage.StorageClientConfig
+  import io.prediction.data.storage.StorageClientConfig
 
   def main(args: Array[String]) {
     val e = Event(

@@ -1,4 +1,4 @@
-package io.prediction.dataapi
+package io.prediction.data
 
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat

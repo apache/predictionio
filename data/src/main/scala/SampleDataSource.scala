@@ -1,8 +1,8 @@
-package io.prediction.dataapi.sample
+package io.prediction.data.sample
 
-import io.prediction.dataapi.storage.Storage
-import io.prediction.dataapi.view.LBatchView
-import io.prediction.dataapi.Utils
+import io.prediction.data.storage.Storage
+import io.prediction.data.view.LBatchView
+import io.prediction.data.Utils
 
 import org.json4s.JInt
 import org.json4s.JBool

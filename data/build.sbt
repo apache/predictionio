@@ -1,4 +1,4 @@
-name := "dataapi"
+name := "data"
 
 version := "0.8-SNAPSHOT"
 

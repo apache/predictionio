@@ -1,9 +1,9 @@
-package io.prediction.dataapi.storage.hbase
+package io.prediction.data.storage.hbase
 
-import io.prediction.dataapi.storage.Event
-import io.prediction.dataapi.storage.StorageError
-import io.prediction.dataapi.storage.Events
-import io.prediction.dataapi.storage.EventJson4sSupport
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.StorageError
+import io.prediction.data.storage.Events
+import io.prediction.data.storage.EventJson4sSupport
 
 import grizzled.slf4j.Logging
 
@@ -329,7 +329,7 @@ object HBEventTests {
   }
 
   def testHBEvent() = {
-    import io.prediction.dataapi.storage.StorageClientConfig
+    import io.prediction.data.storage.StorageClientConfig
 
     println("testHBEvent")
 

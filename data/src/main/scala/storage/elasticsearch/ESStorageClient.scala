@@ -1,7 +1,7 @@
-package io.prediction.dataapi.storage.elasticsearch
+package io.prediction.data.storage.elasticsearch
 
-import io.prediction.dataapi.storage.BaseStorageClient
-import io.prediction.dataapi.storage.StorageClientConfig
+import io.prediction.data.storage.BaseStorageClient
+import io.prediction.data.storage.StorageClientConfig
 
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.node.NodeBuilder.nodeBuilder
