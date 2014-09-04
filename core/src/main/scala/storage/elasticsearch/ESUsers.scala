@@ -65,10 +65,9 @@ class ESUsers(client: Client, index: String) extends Users with Logging {
 
   def getByAppid(appid: Int) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
-        setPostFilter(termFilter("appid", appid)).get()
-      val hits = response.getHits().hits()
-      hits.map(h => read[User](h.getSourceAsString)).toIterator
+      val builder = client.prepareSearch(index).setTypes(estype).
+        setPostFilter(termFilter("appid", appid))
+      ESUtils.getAll[User](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)

@@ -52,10 +52,9 @@ class ESItemSets(client: Client, index: String) extends ItemSets with Logging {
 
   def getByAppid(appid: Int) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
-        setPostFilter(termFilter("appid", appid)).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[ItemSet](h.getSourceAsString)).toIterator
+      val builder = client.prepareSearch(index).setTypes(estype).
+        setPostFilter(termFilter("appid", appid))
+      ESUtils.getAll[ItemSet](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -68,12 +67,11 @@ class ESItemSets(client: Client, index: String) extends ItemSets with Logging {
       startTime: DateTime,
       untilTime: DateTime) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
+      val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
         andFilter(
           termFilter("appid", appid),
-          rangeFilter("t").gte(startTime).lt(untilTime))).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[ItemSet](h.getSourceAsString)).toIterator
+          rangeFilter("t").gte(startTime).lt(untilTime)))
+      ESUtils.getAll[ItemSet](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)

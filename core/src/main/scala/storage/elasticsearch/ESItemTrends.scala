@@ -54,10 +54,9 @@ class ESItemTrends(client: Client, index: String) extends ItemTrends with Loggin
 
   def getByAppid(appid: Int) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
-        setPostFilter(termFilter("appid", appid)).get()
-      val hits = response.getHits().hits()
-      hits.map(h => read[ItemTrend](h.getSourceAsString)).toIterator
+      val builder = client.prepareSearch(index).setTypes(estype).
+        setPostFilter(termFilter("appid", appid))
+      ESUtils.getAll[ItemTrend](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -112,4 +111,3 @@ class ESItemTrends(client: Client, index: String) extends ItemTrends with Loggin
     }
   }
 }
-

@@ -45,9 +45,14 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
   }
 
   def getAll() = {
-    val response = client.prepareSearch().execute().actionGet()
-    val hits = response.getHits().hits()
-    hits.map(h => read[EngineManifest](h.getSourceAsString))
+    try {
+      var builder = client.prepareSearch()
+      ESUtils.getAll[EngineManifest](client, builder)
+    } catch {
+      case e: ElasticsearchException =>
+        error(e.getMessage)
+        Seq()
+    }
   }
 
   def update(engineManifest: EngineManifest, upsert: Boolean = false) =

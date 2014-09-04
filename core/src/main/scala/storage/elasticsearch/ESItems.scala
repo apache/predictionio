@@ -65,10 +65,9 @@ class ESItems(client: Client, index: String) extends Items with Logging {
 
   def getByAppid(appid: Int) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
-        setPostFilter(termFilter("appid", appid)).get()
-      val hits = response.getHits().hits()
-      hits.map(h => read[Item](h.getSourceAsString)).toIterator
+      val builder = client.prepareSearch(index).setTypes(estype).
+        setPostFilter(termFilter("appid", appid))
+      ESUtils.getAll[Item](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -91,11 +90,10 @@ class ESItems(client: Client, index: String) extends Items with Logging {
               case "mi" => DistanceUnit.MILES
             }.getOrElse(DistanceUnit.KILOMETERS))
         }).flatten
-      val response = client.prepareSearch(index).setTypes(estype).
+      val builder = client.prepareSearch(index).setTypes(estype).
         setPostFilter(andFilter(filters: _*)).
-        addSort(geoDistanceSort("latlng").point(latlng._1, latlng._2)).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[Item](h.getSourceAsString)).toIterator
+        addSort(geoDistanceSort("latlng").point(latlng._1, latlng._2))
+      ESUtils.getAll[Item](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -105,12 +103,11 @@ class ESItems(client: Client, index: String) extends Items with Logging {
 
   def getByAppidAndItypes(appid: Int, itypes: Seq[String]) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
+      val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
         andFilter(
           termFilter("appid", appid),
-          inFilter("itypes", itypes: _*))).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[Item](h.getSourceAsString)).toIterator
+          inFilter("itypes", itypes: _*)))
+      ESUtils.getAll[Item](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -133,10 +130,9 @@ class ESItems(client: Client, index: String) extends Items with Logging {
               missingFilter("endtime"),
               rangeFilter("endtime").gt(s)))
         }).flatten
-      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
-        andFilter(filters: _*)).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[Item](h.getSourceAsString)).toIterator
+      val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
+        andFilter(filters: _*))
+      ESUtils.getAll[Item](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -160,11 +156,10 @@ class ESItems(client: Client, index: String) extends Items with Logging {
 
   def getRecentByIds(appid: Int, ids: Seq[String]) = {
     try {
-      val response = client.prepareSearch(index).setPostFilter(
+      val builder = client.prepareSearch(index).setPostFilter(
         idsFilter(estype).ids(ids.map(id => Utils.idWithAppid(appid, id)): _*)).
-        addSort("starttime", SortOrder.DESC).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[Item](h.getSourceAsString))
+        addSort("starttime", SortOrder.DESC)
+      ESUtils.getAll[Item](client, builder)
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)

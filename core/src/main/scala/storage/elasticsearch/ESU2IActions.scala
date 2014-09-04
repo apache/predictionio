@@ -48,10 +48,9 @@ class ESU2IActions(client: Client, index: String) extends U2IActions with Loggin
 
   def getAllByAppid(appid: Int) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
-        setPostFilter(termFilter("appid", appid)).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[U2IAction](h.getSourceAsString)).toIterator
+      val builder = client.prepareSearch(index).setTypes(estype).
+        setPostFilter(termFilter("appid", appid))
+      ESUtils.getAll[U2IAction](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -61,12 +60,11 @@ class ESU2IActions(client: Client, index: String) extends U2IActions with Loggin
 
   def getByAppidAndTime(appid: Int, startTime: DateTime, untilTime: DateTime) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
+      val builder = client.prepareSearch(index).setTypes(estype).
         setPostFilter(andFilter(
           termFilter("appid", appid),
-          rangeFilter("t").gte(startTime).lt(untilTime))).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[U2IAction](h.getSourceAsString)).toIterator
+          rangeFilter("t").gte(startTime).lt(untilTime)))
+      ESUtils.getAll[U2IAction](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -76,13 +74,12 @@ class ESU2IActions(client: Client, index: String) extends U2IActions with Loggin
 
   def getAllByAppidAndUidAndIids(appid: Int, uid: String, iids: Seq[String]) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).
+      val builder = client.prepareSearch(index).setTypes(estype).
         setPostFilter(andFilter(
           termFilter("appid", appid),
           termFilter("uid", uid),
-          inFilter("iid", iids: _*))).get
-      val hits = response.getHits().hits()
-      hits.map(h => read[U2IAction](h.getSourceAsString)).toIterator
+          inFilter("iid", iids: _*)))
+      ESUtils.getAll[U2IAction](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -92,14 +89,12 @@ class ESU2IActions(client: Client, index: String) extends U2IActions with Loggin
 
   def getAllByAppidAndIid(appid: Int, iid: String, sortedByUid: Boolean = true) = {
     try {
-      val request = client.prepareSearch(index).setTypes(estype).
+      val builder = client.prepareSearch(index).setTypes(estype).
         setPostFilter(andFilter(
           termFilter("appid", appid),
           termFilter("iid", iid)))
-      if (sortedByUid) request.addSort("uid", SortOrder.ASC)
-      val response = request.get
-      val hits = response.getHits().hits()
-      hits.map(h => read[U2IAction](h.getSourceAsString)).toIterator
+      if (sortedByUid) builder.addSort("uid", SortOrder.ASC)
+      ESUtils.getAll[U2IAction](client, builder).toIterator
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
