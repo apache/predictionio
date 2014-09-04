@@ -35,7 +35,7 @@ class HBStorageClient(val config: StorageClientConfig)
     case e: Exception => throw new RuntimeException(e)
   }
 
-  val eventClient = new HBEvent(client, namespace)
+  val eventClient = new HBEvents(client, namespace)
 
   override
   val prefix = "HB"

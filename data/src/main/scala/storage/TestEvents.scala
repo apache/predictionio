@@ -13,7 +13,7 @@ import org.joda.time.DateTime
 object TestEvents {
 
   def main(args: Array[String]) {
-    testESEvent()
+    testESEvents()
   }
 
   val e = Event(
@@ -31,13 +31,12 @@ object TestEvents {
     predictionKey = None
   )
 
-  def testESEvent() {
+  def testESEvents() {
 
     val config = StorageClientConfig(Seq("localhost"), Seq(9300))
     val storageClient = new ESStorageClient(config)
     val client = storageClient.client
     val eventConnector = storageClient.eventClient
-    // new ESEvents(client, "testindex")
     implicit val formats = eventConnector.formats
 
     client.prepareGet("testindex", "events", "Abcdef").get()
@@ -83,9 +82,9 @@ object TestEvents {
     client.close()
   }
 
-  def testHBEvent() = {
+  def testHBEvents() = {
 
-    println("testHBEvent")
+    println("testHBEvents")
 
     val config = StorageClientConfig(Seq("localhost"), Seq(9300))
     val storageClient = new HBStorageClient(config)

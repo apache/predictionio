@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
 import java.util.UUID
 
-class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
+class HBEvents(client: HBClient, namespace: String) extends Events with Logging {
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
   //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
@@ -225,109 +225,6 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       scanner.close()
       Right(())
     }
-  }
-
-}
-
-object HBEventTests {
-
-  def main (args: Array[String]) {
-    //testEmptyPut()
-    test()
-    //testHBEvent()
-  }
-
-  def testEmptyPut() = {
-    import org.apache.hadoop.hbase.HBaseConfiguration
-    import org.apache.hadoop.hbase.client.HBaseAdmin
-
-    println("test")
-
-    val conf = HBaseConfiguration.create();
-    val admin = new HBaseAdmin(conf)
-
-    val listtables = admin.listTables()
-    listtables.foreach(println)
-
-    val tableName = "newtable"
-    if (!admin.tableExists(tableName)) {
-      // create table
-      val tableDesr = new HTableDescriptor(TableName.valueOf(tableName))
-      tableDesr.addFamily(new HColumnDescriptor("cf1"))
-      tableDesr.addFamily(new HColumnDescriptor("cf2"))
-      admin.createTable(tableDesr)
-    }
-
-
-    val table = new HTable(conf, tableName)
-
-    val p2 = new Put(Bytes.toBytes("rowEMPTY"))
-    table.put(p2)
-    table.flushCommits()
-    table.close()
-
-  }
-
-  def test() = {
-    import org.apache.hadoop.hbase.HBaseConfiguration
-    import org.apache.hadoop.hbase.client.HBaseAdmin
-
-    println("test")
-
-    val conf = HBaseConfiguration.create();
-    val admin = new HBaseAdmin(conf)
-
-    val listtables = admin.listTables()
-    listtables.foreach(println)
-
-    val tableName = "newtable"
-    if (!admin.tableExists(tableName)) {
-      // create table
-      val tableDesr = new HTableDescriptor(TableName.valueOf(tableName))
-      tableDesr.addFamily(new HColumnDescriptor("cf1"))
-      tableDesr.addFamily(new HColumnDescriptor("cf2"))
-      admin.createTable(tableDesr)
-    }
-
-    val table = new HTable(conf, tableName)
-    val p = new Put(Bytes.toBytes("row1"))
-    p.add(Bytes.toBytes("cf1"), Bytes.toBytes("qa1"),
-      Bytes.toBytes("value1"))
-    p.add(Bytes.toBytes("cf1"), Bytes.toBytes("qa2"),
-      Bytes.toBytes("value2"))
-    p.add(Bytes.toBytes("cf2"), Bytes.toBytes("qaA"),
-      Bytes.toBytes("valueA"))
-    table.put(p)
-    table.flushCommits()
-    table.close()
-
-    val g = new Get(Bytes.toBytes("row1"))
-    g.addFamily(Bytes.toBytes("cf1"))
-    g.setMaxVersions(3)
-    val result = table.get(g)
-    println(result.getExists())
-    println(result.isEmpty())
-    println(result)
-    val m = result.getFamilyMap(Bytes.toBytes("cf1"))
-    println(m.get(Bytes.toBytes("qa1")))
-    println(m.get(Bytes.toBytes("qaX")))
-    println(result.getFamilyMap(Bytes.toBytes("cfx")))
-
-
-    val result2 = table.get(new Get(Bytes.toBytes("rowX")))
-    println(result2.getExists())
-    println(result2.isEmpty())
-    println(result2.getMap())
-    println(result2)
-
-    val g4 = new Get(Bytes.toBytes("row1"))
-    val result4 = table.get(g4)
-    println(result4)
-
-    val d = new Delete(Bytes.toBytes("row1"))
-    table.delete(d)
-
-    admin.close()
   }
 
 }
