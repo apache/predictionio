@@ -16,9 +16,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import java.util.concurrent.TimeUnit
 
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.DefaultFormats
 //import org.json4s.ext.JodaTimeSerializers
 
 import spray.http.StatusCodes
@@ -30,14 +28,14 @@ import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling.Unmarshaller
 import spray.can.Http
 import spray.routing._
-import Directives._
+import spray.routing.Directives._
 
 import scala.concurrent.Future
 
 class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
-    implicit def json4sFormats: Formats = DefaultFormats +
+    implicit def json4sFormats = DefaultFormats +
       new EventJson4sSupport.APISerializer
     //implicit def json4sFormats: Formats = DefaultFormats.lossless ++
     //  JodaTimeSerializers.all
@@ -52,33 +50,11 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
   implicit def executionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
-  val testServiceActor = actorRefFactory.actorOf(Props[TestServiceActor],
-    "TestServiceActor")
-
+  // for better message response
   val rejectionHandler = RejectionHandler {
     case MalformedRequestContentRejection(msg, _) :: _ =>
       complete(StatusCodes.BadRequest, ("message" -> msg))
   }
-
-  implicit val TestMessageUnmarshaller =
-    Unmarshaller[TestMessage](MediaTypes.`application/json`) {
-      case x: HttpEntity.NonEmpty => {
-        val json = read[JValue](
-          x.asString(defaultCharset = HttpCharsets.`UTF-8`))
-        val msg = (json \ "msg").extract[String]
-        TestMessage(msg)
-      }
-    }
-
-  val TestMessageUnmarshaller2 =
-    Unmarshaller[TestMessage](MediaTypes.`text/plain`) {
-      case x: HttpEntity.NonEmpty => {
-        val d = x.asString(defaultCharset = HttpCharsets.`UTF-8`)
-        log.info(s"${d}")
-        TestMessage("tset")
-      }
-    }
-
 
   val route: Route =
     pathSingleSlash {
@@ -133,19 +109,21 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
     } ~
     path("events") {
       post {
-        entity(as[Event]) { event =>
-          //val event = jsonObj.extract[Event]
-          complete {
-            log.info(s"POST events")
-            val data = eventClient.futureInsert(event).map { r =>
-              r match {
-                case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, ("message" -> message))
-                case Right(id) =>
-                  (StatusCodes.Created, ("eventId" -> s"${id}"))
+        handleRejections(rejectionHandler) {
+          entity(as[Event]) { event =>
+            //val event = jsonObj.extract[Event]
+            complete {
+              log.info(s"POST events")
+              val data = eventClient.futureInsert(event).map { r =>
+                r match {
+                  case Left(StorageError(message)) =>
+                    (StatusCodes.InternalServerError, ("message" -> message))
+                  case Right(id) =>
+                    (StatusCodes.Created, ("eventId" -> s"${id}"))
+                }
               }
+              data
             }
-            data
           }
         }
       } ~
@@ -220,84 +198,11 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
           }
         }
       }
-    } ~
-    path ("test" / Segment ) { testId =>
-      get {
-        respondWithMediaType(MediaTypes.`application/json`) {
-          complete{
-            TestServiceClient.test(TestMessage(testId)).map { m =>
-              m match {
-                case TestMessage("OK") => (StatusCodes.OK, m)
-                case TestMessage("BAD") => (StatusCodes.BadRequest, m)
-              }
-            }
-            /*(testServiceActor ? TestMessage(testId)).mapTo[TestMessage].map(
-              x => (StatusCodes.OK, x)
-            )*/
-          }
-        }
-      }
-    } ~
-    path ("test") {
-      post {
-        respondWithMediaType(MediaTypes.`application/json`) {
-          handleRejections(rejectionHandler) {
-            entity(as[TestMessage]) { obj =>
-              //val map = obj.obj.toMap
-              complete {
-                log.info(s"receve ${obj}")
-                (StatusCodes.OK, None)
-              }
-
-            }
-          }
-        }
-      }
     }
 
   def receive = runRoute(route)
 
 }
-
-object TestServiceClient {
-
-  import scala.concurrent._
-  import ExecutionContext.Implicits.global
-
-  def test(msg: TestMessage) = {
-    Future {
-      msg match {
-        case TestMessage("0") => TestMessage("OK")
-        case TestMessage("1") => TestMessage("BAD")
-      }
-    }
-  }
-}
-
-case class TestMessage(val msg: String) {
-  require(!msg.isEmpty, "Can't be empty")
-}
-
-class TestServiceActor extends Actor {
-  val log = Logging(context.system, this)
-
-  def receive = {
-    case TestMessage("1") => {
-      log.info(s"received 1")
-      //sender ! HttpResponse(StatusCodes.BadRequest,
-        //entity = "test bad")
-      sender ! TestMessage("test bad")
-    }
-    case TestMessage("0") => {
-      log.info("received 0")
-      //sender ! HttpResponse(StatusCodes.OK,
-      //  entity = "test ok")
-      sender ! TestMessage("test ok")// OK
-    }
-    case _ => sender ! TestMessage("test error")
-  }
-}
-
 
 
 /* message */

@@ -2,6 +2,7 @@ package io.prediction.data.view
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.Events
+import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Storage
 
 import org.json4s._
@@ -11,21 +12,19 @@ import org.json4s.ext.JodaTimeSerializers
 
 class LBatchView {
 
-  type Properties = Map[String, JValue]
-
   def entityPropertiesView(
-    events: Iterator[Event]): Map[String, Properties] = {
+    events: Iterator[Event]): Map[String, DataMap] = {
 
     def eventFilter(e: Event) = (e.event == "$set") || (e.event == "$unset")
 
-    def aggregate(p: Properties, e: Event): Properties = {
+    def aggregate(p: DataMap, e: Event): DataMap = {
       e.event match {
         case "$set" => p ++ e.properties
         case "$unset" => p -- e.properties.keySet
       }
     }
 
-    aggregateByEntityOrdered[Properties](events, eventFilter, Map(), aggregate)
+    aggregateByEntityOrdered[DataMap](events, eventFilter, DataMap(), aggregate)
   }
 
   def aggregateByEntityOrdered[T](
@@ -87,7 +86,7 @@ object TestLBatchView {
     def map(e: Event): RateAction = {
       RateAction(
         iid = e.targetEntityId.get,
-        rate = e.properties("pio_rate").asInstanceOf[JInt].num.toInt,
+        rate = e.properties.get[Int]("pio_rate"),
         t = e.eventTime.getMillis
       )
     }

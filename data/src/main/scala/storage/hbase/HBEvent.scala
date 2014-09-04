@@ -1,20 +1,18 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.DataMap
+import io.prediction.data.storage.StorageError
 
 import grizzled.slf4j.Logging
 
-import org.json4s._
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
+import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.{ read, write }
 //import org.json4s.ext.JodaTimeSerializers
 
-import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import org.apache.hadoop.hbase.HTableDescriptor
@@ -78,15 +76,13 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
   private def rowKeyToPartialEvent(rowKey: String): Event = {
     val data = rowKey.split("-")
 
+    // incomplete info:
+    // targetEntityId, properties, tags and predictionKey
     Event(
       entityId = data(3),
-      targetEntityId = None, // partial
       event = data(2),
-      properties = Map(),//JObject(List()), // partial
       eventTime = new DateTime(data(1).toLong, DateTimeZone.UTC),
-      tags = Seq(), // partial
-      appId = data(0).toInt,
-      predictionKey = None // partial
+      appId = data(0).toInt
     )
   }
 
@@ -106,8 +102,11 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       }
       // TODO: better way to handle event.properties?
       // serialize whole properties as string for now..
+      /*put.add(Bytes.toBytes("p"), Bytes.toBytes("p"),
+        Bytes.toBytes(write(JObject(event.properties.toList))))*/
       put.add(Bytes.toBytes("p"), Bytes.toBytes("p"),
-        Bytes.toBytes(write(JObject(event.properties.toList))))
+        Bytes.toBytes(write(event.properties)))
+
       event.tags.foreach { tag =>
         put.add(Bytes.toBytes("tag"), Bytes.toBytes(tag), Bytes.toBytes(true))
       }
@@ -135,8 +134,11 @@ class HBEvent(client: HBClient, namespace: String) extends Events with Logging {
       if (tid != null) Some(Bytes.toString(tid)) else None
     } else None
 
-    val properties: Map[String, JValue] =
-      read[JObject](Bytes.toString(p.get(Bytes.toBytes("p")))).obj.toMap
+    //val properties: Map[String, JValue] =
+    //  read[JObject](Bytes.toString(p.get(Bytes.toBytes("p")))).obj.toMap
+
+    val properties: DataMap =
+      read[DataMap](Bytes.toString(p.get(Bytes.toBytes("p"))))
 
     val tags = if (tag != null)
       tag.keySet.toSeq.map(Bytes.toString(_))
@@ -326,65 +328,6 @@ object HBEventTests {
     table.delete(d)
 
     admin.close()
-  }
-
-  def testHBEvent() = {
-    import io.prediction.data.storage.StorageClientConfig
-
-    println("testHBEvent")
-
-    val e = Event(
-      entityId = "abc",
-      targetEntityId = None,
-      event = "$set",
-      properties = parse("""
-        { "numbers" : [1, 2, 3, 4],
-          "abc" : "some_string",
-          "def" : 4, "k" : false
-        } """).asInstanceOf[JObject].obj.toMap,
-      eventTime = DateTime.now,
-      tags = List("tag1", "tag2"),
-      appId = 4,
-      predictionKey = None
-    )
-
-    val config = StorageClientConfig(Seq("localhost"), Seq(9300))
-    val storageClient = new HBStorageClient(config)
-    val client = storageClient.client
-    val eventConnector = storageClient.eventClient
-
-    val de = eventConnector.insert(e)
-    println(de)
-    de match {
-      case Right(d) => {
-        val e2 = eventConnector.get(d)
-        println(e2)
-        val k = eventConnector.delete(d)
-        println(k)
-        val k2 = eventConnector.delete(d)
-        println(k2)
-      }
-      case _ => {println("match error")}
-    }
-
-    val i1 = eventConnector.insert(e)
-    println(i1)
-    val i2 = eventConnector.insert(e)
-    println(i2)
-    val i3 = eventConnector.insert(e)
-    println(i3)
-
-    val all = eventConnector.getByAppId(4)
-    println(all.right.map{ x =>
-      val l = x.toList
-      s"size ${l.size}, ${l}"
-    })
-
-    val delAll = eventConnector.deleteByAppId(4)
-    println(delAll)
-    val all2 = eventConnector.getByAppId(4)
-    println(all2)
-
   }
 
 }

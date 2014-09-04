@@ -4,11 +4,6 @@ import io.prediction.data.storage.Storage
 import io.prediction.data.view.LBatchView
 import io.prediction.data.Utils
 
-import org.json4s.JInt
-import org.json4s.JBool
-import org.json4s.JArray
-import org.json4s.JString
-
 import org.joda.time.DateTime
 
 // engine's Data
@@ -77,17 +72,14 @@ class DataSource(val params: DataSourceParams) {
     val items = itemMap.map { case (k,v) =>
       (k, new ItemTD(
         iid = k,
-        itypes = v.get("pio_itypes")
-          .map(_.asInstanceOf[JArray].arr.map(_.asInstanceOf[JString].s))
-          .getOrElse(List()),
+        itypes = v.getOrElse[List[String]]("pio_itypes", List()),
         //Seq(), // TODO: itypes from properties
-        starttime = v.get("starttime")
-          .map(j => stringToDateTime(j.asInstanceOf[JString].s).getMillis),
-        endtime = v.get("endtime")
-          .map(j => stringToDateTime(j.asInstanceOf[JString].s).getMillis),
-        inactive = v.get("inactive")
-          .map(_.asInstanceOf[JBool].value)
-          .getOrElse(false) // TODO: customizable field name ?
+        starttime = v.getOpt[String]("starttime")
+          .map(j => stringToDateTime(j).getMillis),
+        endtime = v.getOpt[String]("endtime")
+          .map(j => stringToDateTime(j).getMillis),
+        // TODO: how to support customizable field name ?
+        inactive = v.getOrElse[Boolean]("inactive", false)
       ))}
 
     val result2 = eventsClient.getByAppId(params.appId)
@@ -103,7 +95,7 @@ class DataSource(val params: DataSourceParams) {
         iid = e.targetEntityId.get,
         action = e.event,
         // TODO: better way to handle type casting. Don't use JValue?
-        v = e.properties.get("pio_rate").map(_.asInstanceOf[JInt].num.toInt),
+        v = e.properties.getOpt[Int]("pio_rate"),
         t = e.eventTime.getMillis
       ))
 

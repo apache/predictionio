@@ -11,6 +11,8 @@ trait BaseStorageClient {
   val prefix: String = ""
 }
 
+case class StorageError(val message: String)
+
 object Storage {
   // TODO: read from env or configuration
 

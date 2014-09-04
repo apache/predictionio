@@ -22,14 +22,9 @@ import org.elasticsearch.action.ActionListener
 import org.elasticsearch.index.query.FilterBuilders
 import org.elasticsearch.index.query.QueryBuilders
 
-import org.json4s._
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
+import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.{ read, write }
 //import org.json4s.ext.JodaTimeSerializers
-
-import com.github.nscala_time.time.Imports._
 
 import scala.util.Try
 import scala.concurrent.Future
@@ -136,54 +131,6 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
 
   }
 
-/* old code
-
-  def insert(event: Event): Option[String] = {
-    try {
-      val response = client.prepareIndex(index, typeName)
-        .setSource(write(event)).get
-      Some(response.getId())
-    } catch {
-      case e: ElasticsearchException => {
-        error(e.getMessage)
-        println(e)
-        None
-      }
-    }
-  }
-
-  override
-  def get(eventId: String): Option[Event] = {
-    try {
-      val response = client.prepareGet(index, typeName, eventId).get()
-      if (response.isExists)
-        Some(read[Event](response.getSourceAsString))
-      else
-        None
-    } catch {
-      case e : ElasticsearchException => {
-        error(e.getMessage)
-        println(e.getMessage)
-        None
-      }
-    }
-  }
-
-  override
-  def delete(eventId: String): Boolean = {
-    try {
-      val response = client.prepareDelete(index, typeName, eventId).get()
-      response.isFound()
-    } catch {
-      case e: ElasticsearchException => {
-        error(e.getMessage)
-        println(e.getMessage)
-        false
-      }
-    }
-  }
-*/
-
 }
 
 
@@ -193,83 +140,5 @@ class ESActionListener[T](val p: Promise[T]) extends ActionListener[T]{
   }
   override def onFailure(e: Throwable) = {
     p.failure(e)
-  }
-}
-
-
-object TestEvents {
-
-  import io.prediction.data.storage.StorageClientConfig
-
-  def main(args: Array[String]) {
-    val e = Event(
-      entityId = "abc",
-      targetEntityId = None,
-      event = "$set",
-      properties = /*Map(
-        "numbers" -> List(1, 2, 3, 4),
-        "abc" -> "some_string",
-        "def" -> 4,
-         "k" -> false
-      ),*/
-      parse("""
-        { "numbers" : [1, 2, 3, 4],
-          "abc" : "some_string",
-          "def" : 4, "k" : false
-        } """).asInstanceOf[JObject].obj.toMap,
-      eventTime = DateTime.now,
-      tags = List("tag1", "tag2"),
-      appId = 4,
-      predictionKey = None
-    )
-
-    val config = StorageClientConfig(Seq("localhost"), Seq(9300))
-    val storageClient = new ESStorageClient(config)
-    val client = storageClient.client
-    val eventConnector = storageClient.eventClient
-    // new ESEvents(client, "testindex")
-    implicit val formats = eventConnector.formats
-
-    client.prepareGet("testindex", "events", "Abcdef").get()
-
-    val x = write(e)
-    println(x)
-    println(x.getClass)
-
-    val de = eventConnector.insert(e)
-    println(de)
-    de match {
-      case Right(d) => {
-        val e2 = eventConnector.get(d)
-        println(e2)
-        val k = eventConnector.delete(d)
-        println(k)
-        val k2 = eventConnector.delete(d)
-        println(k2)
-      }
-      case _ => {println("match error")}
-    }
-
-    val i1 = eventConnector.insert(e)
-    println(i1)
-    val i2 = eventConnector.insert(e)
-    println(i2)
-    val i3 = eventConnector.insert(e)
-    println(i3)
-
-    // force refresh index for testing, else get may not have result
-    client.admin().indices().prepareRefresh("testindex").get()
-
-    val all = eventConnector.getByAppId(4)
-    println(all.right.map{ x =>
-      val l = x.toList
-      s"size ${l.size}, ${l}"
-    })
-
-    val delAll = eventConnector.deleteByAppId(4)
-    println(delAll)
-    val all2 = eventConnector.getByAppId(4)
-    println(all2)
-    client.close()
   }
 }
