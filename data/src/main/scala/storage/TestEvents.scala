@@ -8,6 +8,8 @@ import org.json4s.JObject
 import org.json4s.native.JsonMethods.parse
 import org.json4s.native.Serialization.{ read, write }
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import org.joda.time.DateTime
 
 object TestEvents {

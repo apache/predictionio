@@ -6,6 +6,8 @@ import io.prediction.data.Utils
 
 import org.joda.time.DateTime
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 // engine's Data
 class ItemTD(
   val iid: String,

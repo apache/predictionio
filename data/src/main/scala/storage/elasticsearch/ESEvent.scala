@@ -29,7 +29,7 @@ import org.json4s.native.Serialization.{ read, write }
 import scala.util.Try
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import scala.concurrent.ExecutionContext.Implicits.global // TODO
+import scala.concurrent.ExecutionContext
 
 class ESEvents(client: Client, index: String) extends Events with Logging {
 
@@ -39,7 +39,8 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   val typeName = "events"
 
   override
-  def futureInsert(event: Event): Future[Either[StorageError, String]] = {
+  def futureInsert(event: Event)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, String]] = {
     val response = Promise[IndexResponse]
 
     client.prepareIndex(index, typeName)
@@ -54,7 +55,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   }
 
   override
-  def futureGet(eventId: String):
+  def futureGet(eventId: String)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] = {
 
     val response = Promise[GetResponse]
@@ -74,7 +75,8 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   }
 
   override
-  def futureDelete(eventId: String): Future[Either[StorageError, Boolean]] = {
+  def futureDelete(eventId: String)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Boolean]] = {
     val response = Promise[DeleteResponse]
 
     client.prepareDelete(index, typeName, eventId)
@@ -88,7 +90,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   }
 
   override
-  def futureGetByAppId(appId: Int):
+  def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
     val response = Promise[SearchResponse]
 
@@ -108,7 +110,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   }
 
   override
-  def futureDeleteByAppId(appId: Int):
+  def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = {
 
     val response = Promise[DeleteByQueryResponse]

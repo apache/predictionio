@@ -10,6 +10,8 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
 import org.json4s.ext.JodaTimeSerializers
 
+import scala.concurrent.ExecutionContext.Implicits.global // TODO
+
 class LBatchView {
 
   def entityPropertiesView(

@@ -29,7 +29,7 @@ import org.apache.hadoop.hbase.util.Bytes
 import scala.collection.JavaConversions._
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global // TODO
+import scala.concurrent.ExecutionContext
 
 import java.util.UUID
 
@@ -91,7 +91,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   private def eventIdToRowKey(eventId: String): String = eventId
 
   override
-  def futureInsert(event: Event): Future[Either[StorageError, String]] = {
+  def futureInsert(event: Event)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, String]] = {
     Future {
       val table = new HTable(client.conf, tableName)
       val rowKey = eventToRowKey(event)
@@ -160,7 +161,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   }
 
   override
-  def futureGet(eventId: String):
+  def futureGet(eventId: String)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] = {
       Future {
         val get = new Get(Bytes.toBytes(eventId))
@@ -177,7 +178,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     }
 
   override
-  def futureDelete(eventId: String): Future[Either[StorageError, Boolean]] = {
+  def futureDelete(eventId: String)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Boolean]] = {
     Future {
       val rowKeyBytes = Bytes.toBytes(eventIdToRowKey(eventId))
       val exists = table.exists(new Get(rowKeyBytes))
@@ -187,7 +189,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   }
 
   override
-  def futureGetByAppId(appId: Int):
+  def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
         val (start, stop) = startStopRowKey(appId, None, None)
@@ -199,7 +201,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
 
   override
   def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime]):
+    untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
         val (start, stop) = startStopRowKey(appId, startTime, untilTime)
@@ -211,7 +213,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   }
 
   override
-  def futureDeleteByAppId(appId: Int): Future[Either[StorageError, Unit]] = {
+  def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Unit]] = {
     Future {
       // TODO: better way to handle range delete
       val (start, stop) = startStopRowKey(appId, None, None)
