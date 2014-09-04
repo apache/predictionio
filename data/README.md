@@ -1,16 +1,14 @@
 
+## Requirement
+
+Install and run HBase
+
 ## Data Collection API
 
 Start server:
 
 ```
 data $ sbt "run-main io.prediction.data.api.Run"
-```
-
-start with HBase:
-
-```
-data $ sbt "run-main io.prediction.data.api.Run HB"
 ```
 
 Stop server:

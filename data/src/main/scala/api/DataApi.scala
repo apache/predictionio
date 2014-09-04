@@ -229,22 +229,36 @@ class DataServerActor(val eventClient: Events) extends Actor {
 }
 
 
-object Run {
+case class DataAPIConfig(
+  ip: String = "localhost",
+  port: Int = 8081
+)
 
-  def main (args: Array[String]) {
+object DataAPI {
+  def createDataAPI(config: DataAPIConfig) = {
     implicit val system = ActorSystem("DataAPISystem")
 
-    val storageType = if (args.isEmpty) "ES" else args(0)
-    val eventClient = Storage.eventClient(storageType)
+    //val storageType = if (args.isEmpty) "ES" else args(0)
+    val eventClient = Storage.eventClient("HB")
 
     val serverActor = system.actorOf(
       Props(classOf[DataServerActor], eventClient),
       "DataServerActor")
     serverActor ! StartServer("localhost", 8081)
 
-    println("[ Hit any key to exit. ]")
+    println("[ Hit enter to exit. ]")
     val result = readLine()
     system.shutdown()
+  }
+}
+
+
+object Run {
+
+  def main (args: Array[String]) {
+    DataAPI.createDataAPI(DataAPIConfig(
+      ip = "localhost",
+      port = 8081))
   }
 
 }
