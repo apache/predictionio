@@ -28,6 +28,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { Seq(
     "asm-3.1.jar",
+    "commons-beanutils-1.7.0.jar",
     "commons-collections-3.2.1.jar") contains _.data.getName
   }
 }
