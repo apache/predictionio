@@ -1,8 +1,10 @@
 package io.prediction.data.storage
 
-import io.prediction.data.Utils
-import io.prediction.data.storage.elasticsearch.ESStorageClient
-import io.prediction.data.storage.hbase.HBStorageClient
+//import io.prediction.data.storage.elasticsearch.ESStorageClient
+//import io.prediction.data.storage.hbase.HBStorageClient
+
+import io.prediction.data.storage.elasticsearch.ESEvents
+import io.prediction.data.storage.hbase.HBEvents
 
 import org.json4s.JObject
 import org.json4s.native.JsonMethods.parse
@@ -35,13 +37,14 @@ object TestEvents {
 
   def testESEvents() {
 
-    val config = StorageClientConfig(Seq("localhost"), Seq(9300))
+    /*val config = StorageClientConfig(Seq("localhost"), Seq(9300))
     val storageClient = new ESStorageClient(config)
     val client = storageClient.client
-    val eventConnector = storageClient.eventClient
+    val eventConnector = storageClient.eventClient*/
+    val eventConnector = Storage.getDataObject[Events]("predictionio_events_es").asInstanceOf[ESEvents]
     implicit val formats = eventConnector.formats
 
-    client.prepareGet("testindex", "events", "Abcdef").get()
+    //client.prepareGet("testindex", "events", "Abcdef").get()
 
     val x = write(e)
     println(x)
@@ -69,7 +72,7 @@ object TestEvents {
     println(i3)
 
     // force refresh index for testing, else get may not have result
-    client.admin().indices().prepareRefresh("testindex").get()
+    //client.admin().indices().prepareRefresh("testindex").get()
 
     val all = eventConnector.getByAppId(4)
     println(all.right.map{ x =>
@@ -81,17 +84,18 @@ object TestEvents {
     println(delAll)
     val all2 = eventConnector.getByAppId(4)
     println(all2)
-    client.close()
+    //client.close()
   }
 
   def testHBEvents() = {
 
     println("testHBEvents")
 
-    val config = StorageClientConfig(Seq("localhost"), Seq(9300))
+    /*val config = StorageClientConfig(Seq("localhost"), Seq(9300))
     val storageClient = new HBStorageClient(config)
     val client = storageClient.client
-    val eventConnector = storageClient.eventClient
+    val eventConnector = storageClient.eventClient*/
+    val eventConnector = Storage.getDataObject[Events]("predictionio_events_hb").asInstanceOf[HBEvents]
 
     val de = eventConnector.insert(e)
     println(de)

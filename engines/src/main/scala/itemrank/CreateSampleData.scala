@@ -1,7 +1,7 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.storage.Storage
-import io.prediction.storage.{ User => SUser , Item => SItem, U2IAction, ItemSet }
+import io.prediction.data.storage.Storage
+import io.prediction.data.storage.{ User => SUser , Item => SItem, U2IAction, ItemSet }
 
 import scala.util.Random
 import grizzled.slf4j.Logger

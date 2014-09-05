@@ -11,8 +11,8 @@ import org.elasticsearch.hadoop.mr.EsInputFormat
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.io.MapWritable
 
-import io.prediction.storage.ItemTrend
-import io.prediction.storage.ItemTrendSerializer
+import io.prediction.data.storage.ItemTrend
+import io.prediction.data.storage.ItemTrendSerializer
 
 class PItemTrends(
     @transient val sc: SparkContext, val resource: String, val appid: Int) {

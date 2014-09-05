@@ -1,8 +1,8 @@
 package io.prediction.tools
 
-import io.prediction.storage.Storage
-import io.prediction.storage.EngineManifest
-import io.prediction.storage.EngineManifestSerializer
+import io.prediction.data.storage.Storage
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.EngineManifestSerializer
 
 import grizzled.slf4j.Logging
 import org.apache.hadoop.conf.Configuration

@@ -1,6 +1,6 @@
 package io.prediction.tools.dashboard
 
-import io.prediction.storage.Storage
+import io.prediction.data.storage.Storage
 
 import akka.actor.Actor
 import akka.actor.ActorSystem

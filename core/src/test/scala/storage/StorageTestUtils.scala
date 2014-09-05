@@ -1,4 +1,4 @@
-package io.prediction.storage
+package io.prediction.data.storage
 
 import com.mongodb.casbah.Imports._
 import org.elasticsearch.client.Client

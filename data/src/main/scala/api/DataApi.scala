@@ -238,8 +238,7 @@ object DataAPI {
   def createDataAPI(config: DataAPIConfig) = {
     implicit val system = ActorSystem("DataAPISystem")
 
-    //val storageType = if (args.isEmpty) "ES" else args(0)
-    val eventClient = Storage.eventClient("HB")
+    val eventClient = Storage.getEventDataEvents
 
     val serverActor = system.actorOf(
       Props(classOf[DataServerActor], eventClient),

@@ -1,4 +1,4 @@
-package io.prediction.storage
+package io.prediction.data.storage
 
 import com.github.nscala_time.time.Imports._
 import org.specs2._

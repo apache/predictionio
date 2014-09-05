@@ -1,5 +1,6 @@
 package io.prediction.data.sample
 
+import io.prediction.data.storage.Events
 import io.prediction.data.storage.Storage
 import io.prediction.data.view.LBatchView
 import io.prediction.data.Utils
@@ -53,7 +54,7 @@ case class DataSourceParams(
 
 class DataSource(val params: DataSourceParams) {
 
-  @transient lazy val eventsClient = Storage.eventClient("HB")
+  @transient lazy val eventsClient = Storage.getDataObject[Events]("predictionio_events")
 
   private def stringToDateTime(dt: String): DateTime =
     Utils.stringToDateTime(dt)

@@ -2,9 +2,9 @@ package io.prediction.tools
 
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
-import io.prediction.storage.EngineManifest
-import io.prediction.storage.EngineManifestSerializer
-import io.prediction.storage.Storage
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.EngineManifestSerializer
+import io.prediction.data.storage.Storage
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.DataAPI

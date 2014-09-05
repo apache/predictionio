@@ -3,8 +3,8 @@ package io.prediction.examples.stock
 import io.prediction.controller.Params
 import io.prediction.controller.LSlicedDataSource
 import com.github.nscala_time.time.Imports._
-import io.prediction.storage.Storage
-import io.prediction.storage.{ ItemTrend, ItemTrends }
+import io.prediction.data.storage.Storage
+import io.prediction.data.storage.{ ItemTrend, ItemTrends }
 
 import scala.math
 // FIXME(yipjustin). Remove ._ as it is polluting the namespace.

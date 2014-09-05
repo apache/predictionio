@@ -10,8 +10,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.broadcast.Broadcast
 
-import io.prediction.storage.Storage
-import io.prediction.storage.{ ItemTrend, ItemTrends }
+import io.prediction.data.storage.Storage
+import io.prediction.data.storage.{ ItemTrend, ItemTrends }
 
 import com.mongodb.casbah.Imports._
 import org.saddle._
@@ -22,7 +22,7 @@ import com.github.nscala_time.time.Imports._
 /** Primary parameter for [[[DataSource]]].
   *
   * @param baseDate identify the beginning of our global time window, and
-  * the rest are use index. 
+  * the rest are use index.
   * @param fromIdx the first date for testing
   * @param untilIdx the last date (exclusive) for testing
   * @param trainingWindowSize number of days used for training
@@ -40,7 +40,7 @@ import com.github.nscala_time.time.Imports._
   */
 
 case class DataSourceParams(
-  val appid: Int = 42,
+  val appid: Int = 1008,
   val baseDate: DateTime,
   val fromIdx: Int,
   val untilIdx: Int,
@@ -57,7 +57,7 @@ class DataSource(val dsp: DataSourceParams)
       RDD[TrainingData],
       QueryDate,
       AnyRef] {
-  @transient lazy val itemTrendsDbGetTicker = 
+  @transient lazy val itemTrendsDbGetTicker =
     Storage.getAppdataItemTrends().get(1008, _: String).get
   @transient lazy val itemTrendsDb = Storage.getAppdataItemTrends()
 
@@ -79,17 +79,17 @@ class DataSource(val dsp: DataSourceParams)
 
         // cannot evaluate the last item as data view only last until untilIdx.
         val testingUntilIdx = math.min(
-          idx + dsp.maxTestingWindowSize, 
-          dsp.untilIdx - 1)  
-        
+          idx + dsp.maxTestingWindowSize,
+          dsp.untilIdx - 1)
+
         val queries = (idx until testingUntilIdx)
           .map { idx => (QueryDate(idx), None) }
         (trainingData, queries)
       }}
 
     dataSet.map { case (trainingData, queries) =>
-      (dataParams, 
-        sc.parallelize(Array(trainingData)), 
+      (dataParams,
+        sc.parallelize(Array(trainingData)),
         sc.parallelize(queries))
     }
   }
@@ -127,7 +127,7 @@ class DataSource(val dsp: DataSourceParams)
       .filter(dsp.baseDate <= _)
       .sorted
       .take(dsp.untilIdx)
-    
+
     val timeIndex: IndexTime = IndexTime(timestampArray: _*)
 
     val tickerData

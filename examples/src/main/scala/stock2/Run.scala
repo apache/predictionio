@@ -15,7 +15,7 @@ case class MomentumStrategyParams(val l: Int, val s: Int) extends Params
 
 class MomentumStrategy(val p: MomentumStrategyParams)
   extends StockStrategy[AnyRef] {
-  
+
   def createModel(dataView: DataView): AnyRef = None
 
   def onClose(model: AnyRef, query: Query): Prediction = {
@@ -53,7 +53,7 @@ object Run {
         new DataSourceParams(
           baseDate = new DateTime(2002, 1, 1, 0, 0),
           fromIdx = 300,
-          untilIdx = 400,
+          untilIdx = 2000,
           trainingWindowSize = 200,
           maxTestingWindowSize = 20,
           marketTicker = "SPY",
@@ -74,8 +74,8 @@ object Run {
     val momentumParams = MomentumStrategyParams(20, 3)
 
     val metricsParams = BacktestingParams(
-      enterThreshold = 0.01, 
-      exitThreshold = 0.0, 
+      enterThreshold = 0.01,
+      exitThreshold = 0.0,
       maxPositions = 10,
       optOutputPath = Some(new File("metrics_results").getCanonicalPath)
     )
@@ -96,5 +96,3 @@ object Run {
         batch = "Imagine: Stock II"))
   }
 }
-
-

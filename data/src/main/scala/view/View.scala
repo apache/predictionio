@@ -60,7 +60,7 @@ object TestLBatchView {
   def main(args: Array[String]) {
     println("view run")
     val storageType = if (args.isEmpty) "ES" else args(0)
-    val eventClient = Storage.eventClient(storageType)
+    val eventClient = Storage.getDataObject[Events](storageType)
 
     test(eventClient)
   }

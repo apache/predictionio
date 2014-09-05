@@ -1,6 +1,6 @@
 package io.prediction.tools
 
-import io.prediction.storage.EngineManifest
+import io.prediction.data.storage.EngineManifest
 
 import grizzled.slf4j.Logging
 

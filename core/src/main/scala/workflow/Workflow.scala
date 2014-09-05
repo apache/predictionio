@@ -24,10 +24,10 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.core.LModelAlgorithm
-import io.prediction.storage.EngineInstance
-import io.prediction.storage.EngineInstances
-import io.prediction.storage.Model
-import io.prediction.storage.Storage
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EngineInstances
+import io.prediction.data.storage.Model
+import io.prediction.data.storage.Storage
 
 import com.github.nscala_time.time.Imports.DateTime
 import com.twitter.chill.KryoInjection

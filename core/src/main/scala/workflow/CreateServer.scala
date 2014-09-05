@@ -10,9 +10,9 @@ import io.prediction.controller.java.LJavaServing
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
-import io.prediction.storage.EngineInstance
-import io.prediction.storage.EngineManifest
-import io.prediction.storage.Storage
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.Storage
 
 import akka.actor.{ Actor, ActorRef, ActorSystem, Kill, Props }
 import akka.event.Logging

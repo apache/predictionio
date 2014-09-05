@@ -29,6 +29,7 @@ lazy val root = project in file(".") aggregate(
   tools)
 
 lazy val core = (project in file("core")).
+  dependsOn(data).
   settings(genjavadocSettings: _*).
   settings(pioBuildInfoSettings: _*).
   enablePlugins(SbtTwirl)

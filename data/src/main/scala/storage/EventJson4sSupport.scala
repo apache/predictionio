@@ -1,6 +1,6 @@
 package io.prediction.data.storage
 
-import io.prediction.data.Utils
+import io.prediction.data.{ Utils => DataUtils }
 
 import org.json4s._
 import org.json4s.native.Serialization.{ read, write }
@@ -27,7 +27,7 @@ object EventJson4sSupport {
         val eventTime = fields.getOpt[String]("eventTime")
           .map{ s =>
             try {
-              Utils.stringToDateTime(s)
+              DataUtils.stringToDateTime(s)
             } catch {
               case _: Exception =>
                 throw new MappingException(s"Fail to extract time")
@@ -60,7 +60,7 @@ object EventJson4sSupport {
       val targetEntityId = (jv \ "targetEntityId").extract[Option[String]]
       val event = (jv \ "event").extract[String]
       val properties = (jv \ "properties").extract[JObject]
-      val eventTime = Utils.stringToDateTime((jv \ "eventTime").extract[String])
+      val eventTime = DataUtils.stringToDateTime((jv \ "eventTime").extract[String])
       val tags = (jv \ "tags").extract[Seq[String]]
       val appId = (jv \ "appId").extract[Int]
       val predictionKey = (jv \ "predictionKey").extract[Option[String]]
@@ -84,7 +84,7 @@ object EventJson4sSupport {
         JField("targetEntityId",
           d.targetEntityId.map(JString(_)).getOrElse(JNothing)) ::
         JField("properties", d.properties.toJObject) ::
-        JField("eventTime", JString(Utils.dateTimeToString(d.eventTime))) ::
+        JField("eventTime", JString(DataUtils.dateTimeToString(d.eventTime))) ::
         JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
         JField("appId", JInt(d.appId)) ::
         JField("predictionKey",

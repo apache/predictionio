@@ -1,7 +1,7 @@
 package io.prediction.examples.stock
 
-import io.prediction.storage.Storage
-import io.prediction.storage.{ ItemTrend, ItemTrends }
+import io.prediction.data.storage.Storage
+import io.prediction.data.storage.{ ItemTrend, ItemTrends }
 import grizzled.slf4j.Logger
 import scala.io.Source
 

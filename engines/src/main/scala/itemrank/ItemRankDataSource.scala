@@ -1,8 +1,8 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.controller.LDataSource
-import io.prediction.storage.Storage
-//import io.prediction.storage.{ Item, U2IAction, User, ItemSet }
+import io.prediction.data.storage.Storage
+//import io.prediction.data.storage.{ Item, U2IAction, User, ItemSet }
 
 import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._

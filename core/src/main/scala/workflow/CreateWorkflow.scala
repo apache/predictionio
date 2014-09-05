@@ -9,8 +9,8 @@ import io.prediction.controller.Utils
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.Doer
 import io.prediction.core.BaseMetrics
-import io.prediction.storage.EngineInstance
-import io.prediction.storage.Storage
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.Storage
 
 import com.github.nscala_time.time.Imports._
 import com.google.common.io.ByteStreams
