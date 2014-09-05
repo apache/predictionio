@@ -25,6 +25,13 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+  cp filter { Seq(
+    "asm-3.1.jar",
+    "commons-collections-3.2.1.jar") contains _.data.getName
+  }
+}
+
 run in Compile <<= Defaults.runTask(
   fullClasspath in Compile,
   mainClass in (Compile, run),
@@ -33,3 +40,5 @@ run in Compile <<= Defaults.runTask(
 runMain in Compile <<= Defaults.runMainTask(
   fullClasspath in Compile,
   runner in (Compile, run))
+
+net.virtualvoid.sbt.graph.Plugin.graphSettings

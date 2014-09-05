@@ -7,7 +7,7 @@ name := "core"
 libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"           % "3.2.0",
   "com.google.code.gson"    % "gson"            % "2.2.4",
-  "com.google.guava"        % "guava"           % "17.0",
+  "com.google.guava"        % "guava"           % "18.0",
   "com.twitter"            %% "chill"           % "0.3.6"
     exclude("com.esotericsoftware.minlog", "minlog"),
   "com.twitter"            %% "chill-bijection" % "0.3.6",
