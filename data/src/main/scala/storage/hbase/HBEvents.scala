@@ -15,6 +15,8 @@ import org.json4s.native.Serialization.{ read, write }
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
+import org.apache.hadoop.hbase.NamespaceDescriptor
+import org.apache.hadoop.hbase.NamespaceExistException
 import org.apache.hadoop.hbase.HTableDescriptor
 import org.apache.hadoop.hbase.HColumnDescriptor
 import org.apache.hadoop.hbase.TableName
@@ -34,6 +36,15 @@ import scala.concurrent.ExecutionContext
 import java.util.UUID
 
 class HBEvents(client: HBClient, namespace: String) extends Events with Logging {
+
+  val nameDesc = NamespaceDescriptor.create(namespace).build()
+
+  try {
+    client.admin.createNamespace(nameDesc)
+  } catch {
+    case e: NamespaceExistException => ()
+    case e: Exception => throw new RuntimeException(e)
+  }
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
   //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all

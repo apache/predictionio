@@ -7,13 +7,20 @@ Install and run HBase
 
 Start server:
 
+At home directory
+```
+$ pio dataapi
+```
+
+or:
+
 ```
 data $ sbt "run-main io.prediction.data.api.Run"
 ```
 
 Stop server:
 
-    You may hit any key to stop the server.
+    [ Hit enter to exit. ]
 
 ### Check server status
 
