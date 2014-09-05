@@ -7,6 +7,8 @@ import io.prediction.storage.EngineManifestSerializer
 import io.prediction.storage.Storage
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
+import io.prediction.data.api.DataAPI
+import io.prediction.data.api.DataAPIConfig
 
 import grizzled.slf4j.Logging
 import org.json4s._
@@ -214,6 +216,20 @@ object Console extends Logging {
           } text("Port to bind to. Default: 8000")
         )
       note("")
+      cmd("dataapi").
+        text("Launch a data api server at the specific IP and port.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "dataapi",
+            port = 8081)
+        } children(
+          opt[String]("ip") action { (x, c) =>
+            c.copy(ip = x)
+          } text("IP to bind to. Default: localhost"),
+          opt[Int]("port") action { (x, c) =>
+            c.copy(port = x)
+          } text("Port to bind to. Default: 8081")
+        )
+      note("")
       cmd("compile").
         text("Compile a driver program.").
         action { (_, c) =>
@@ -276,6 +292,8 @@ object Console extends Logging {
           undeploy(ca)
         case Seq("dashboard") =>
           dashboard(ca)
+        case Seq("dataapi") =>
+          dataapi(ca)
         case Seq("compile") =>
           compile(ca)
         case Seq("run") =>
@@ -361,6 +379,13 @@ object Console extends Logging {
   def dashboard(ca: ConsoleArgs): Unit = {
     info(s"Creating dashboard at ${ca.ip}:${ca.port}")
     Dashboard.createDashboard(DashboardConfig(
+      ip = ca.ip,
+      port = ca.port))
+  }
+
+  def dataapi(ca: ConsoleArgs): Unit = {
+    info(s"Creating DataAPI server at ${ca.ip}:${ca.port}")
+    DataAPI.createDataAPI(DataAPIConfig(
       ip = ca.ip,
       port = ca.port))
   }
