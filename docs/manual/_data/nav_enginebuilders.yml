@@ -1,0 +1,30 @@
+- title: "Building the HelloWorld Engine"
+  href: "/tutorials/local-helloworld.html"
+  
+- title: "DASE Architecture Overview"
+  href: "#"
+  
+- title: "Learning by examples"
+  href: "#"
+  
+- title: "Creating a new Engine"
+  href: "#"
+
+- title: "[D] Preparing the Data"
+  href: "/enginebuilders/data.html"
+
+- title: "[A] Adding an new Algorithm"
+  href: "#"
+
+- title: "[S] Serving the prediction"
+  href: "#"
+
+- title: "[E] Adding an new Evaluation Metrics"
+  href: "#"
+  
+- title: "Testing an Engine"
+  href: "#"
+
+- title: "Packaging a sharable Engine"
+  href: "#"
+  

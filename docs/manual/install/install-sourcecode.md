@@ -61,9 +61,7 @@ $ cd elasticsearch-1.3.2
 $ bin/elasticsearch
 ```
 
-You may change the settings or even use another data store such as [MongoDB](http://www.mongodb.org/).
-
-For details, please read [Changing the Data Store](config-datastore.html).
+You may change the settings or even use another data store such as [MongoDB](http://www.mongodb.org/). For details, please read [Changing the Data Store](config-datastore.html).
 
 
 Now you have installed everything you need to run PredictionIO!
