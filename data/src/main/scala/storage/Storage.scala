@@ -37,8 +37,8 @@ object Storage extends Logging {
   private case class ClientMeta(sourceType: String, client: BaseStorageClient)
   private case class DataObjectMeta(sourceName: String, databaseName: String)
 
-  private val sourcesToClientMeta: Map[String, ClientMeta] =
-    sourceKeys.map(k =>
+  private val sourcesToClientMeta = sourceKeys.map { k =>
+    lazy val s2cm = () =>
       try {
         val keyedPath = sourcesPrefixPath(k)
         val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
@@ -47,15 +47,16 @@ object Storage extends Logging {
           map(_.toInt)
         val clientConfig = StorageClientConfig(hosts = hosts, ports = ports)
         val client = getClient(clientConfig, sourceType)
-        k -> ClientMeta(sourceType, client)
+        ClientMeta(sourceType, client)
       } catch {
         case e: Throwable =>
           error(s"Error initializing storage client for source ${k}")
           error(e.getMessage)
           errors += 1
-          k -> ClientMeta("", null)
+          ClientMeta("", null)
       }
-    ).toMap
+    (k -> s2cm)
+  }.toMap
 
   /** Reference to the app data repository. */
   val AppDataRepository = "APPDATA"
@@ -129,7 +130,7 @@ object Storage extends Logging {
   }
 
   def getClient(sourceName: String): Option[BaseStorageClient] =
-    sourcesToClientMeta.get(sourceName).map(_.client)
+    sourcesToClientMeta.get(sourceName).map(_().client)
 
   def getDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
@@ -140,7 +141,7 @@ object Storage extends Logging {
   def getDataObject[T](
       sourceName: String,
       databaseName: String)(implicit tag: TypeTag[T]): T = {
-    val clientMeta = sourcesToClientMeta(sourceName)
+    val clientMeta = sourcesToClientMeta(sourceName)()
     val sourceType = clientMeta.sourceType
     val ctorArgs = dataObjectCtorArgs(clientMeta.client, databaseName)
     val classPrefix = clientMeta.client.prefix
