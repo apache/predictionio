@@ -34,6 +34,8 @@ case class DataMap (
   def -- (that: GenTraversableOnce[String]) =
     DataMap(this.fields -- that)
 
+  def isEmpty = fields.isEmpty
+  
   def keySet = this.fields.keySet
 
   def toList(): List[(String, JValue)] = fields.toList

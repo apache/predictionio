@@ -10,19 +10,28 @@ import org.json4s.Formats
 import scala.concurrent.ExecutionContext
 
 case class Event(
-  val entityId: String,
-  val targetEntityId: Option[String] = None,
   val event: String,
-  val properties: DataMap = DataMap(), //Map[String, JValue] = Map(),
+  val entityType: String,
+  val entityId: String,
+  val targetEntityType: Option[String] = None,
+  val targetEntityId: Option[String] = None,
+  val properties: DataMap = DataMap(), // default empty
   val eventTime: DateTime = DateTime.now, // default to current time
   val tags: Seq[String] = Seq(),
   val appId: Int,
   val predictionKey: Option[String] = None
 ) {
+  require(!event.isEmpty, "event must not be empty.")
+  require(!entityType.isEmpty, "entityType must not be empty string.")
   require(!entityId.isEmpty, "entityId must not be empty string.")
+  require(targetEntityType.map(!_.isEmpty).getOrElse(true),
+    "targetEntityType must not be empty string")
   require(targetEntityId.map(!_.isEmpty).getOrElse(true),
     "targetEntityId must not be empty string.")
-  require(!event.isEmpty, "event must not be empty.")
+  require(!((targetEntityType != None) && (targetEntityId == None)),
+    "targetEntityType and targetEntityId must be specified together.")
+  require(!((targetEntityType == None) && (targetEntityId != None)),
+    "targetEntityType and targetEntityId must be specified together.")
 }
 
 

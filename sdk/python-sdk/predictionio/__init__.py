@@ -104,6 +104,7 @@ class Client(object):
     """set properties of an user"""
     return self.acreate_event({
       "event" : "$set",
+      "entityType" : "user",
       "entityId" : uid,
       "properties" : properties,
       "appId" : self.appid
@@ -113,6 +114,7 @@ class Client(object):
     """unset properties of an user"""
     return self.acreate_event({
       "event" : "$unset",
+      "entityType" : "user",
       "entityId" : uid,
       "properties" : properties,
       "appId" : self.appid
@@ -122,6 +124,7 @@ class Client(object):
     #tags = itypes # TODO: itypes should be in tags ? or properties?
     return self.acreate_event({
       "event" : "$set",
+      "entityType" : "item",
       "entityId" : iid,
       "properties" : properties,
       #"tags" : tags,
@@ -132,6 +135,7 @@ class Client(object):
     # tags = itypes # TODO: itypes should be in tags ? or properties?
     return self.acreate_event({
       "event" : "$unset",
+      "entityType" : "item",
       "entityId" : iid,
       "properties" : properties,
       #"tags" : tags,
@@ -141,7 +145,9 @@ class Client(object):
   def arecord_user_action_on_item(self, action, uid, iid, properties={}):
     return self.acreate_event({
       "event" : action,
+      "entityType" : "user",
       "entityId" : uid,
+      "targetEntityType" : "item",
       "targetEntityId": iid,
       "properties" : properties,
       "appId" : self.appid

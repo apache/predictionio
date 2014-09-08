@@ -19,9 +19,11 @@ object EventJson4sSupport {
       // use get() if requried in json
       // use getOpt() if not required in json
       try {
-        val entityId = fields.get[String]("entityId")
-        val targetEntityId = fields.getOpt[String]("targetEntityId")
         val event = fields.get[String]("event")
+        val entityType = fields.get[String]("entityType")
+        val entityId = fields.get[String]("entityId")
+        val targetEntityType = fields.getOpt[String]("targetEntityType")
+        val targetEntityId = fields.getOpt[String]("targetEntityId")
         val properties = fields.getOpt[Map[String, JValue]]("properties")
           .getOrElse(Map())
         val eventTime = fields.getOpt[String]("eventTime")
@@ -37,9 +39,11 @@ object EventJson4sSupport {
         val appId = fields.get[Int]("appId")
         val predictionKey = fields.getOpt[String]("predictionKey")
         Event(
-          entityId = entityId,
-          targetEntityId = targetEntityId,
           event = event,
+          entityType = entityType,
+          entityId = entityId,
+          targetEntityType = targetEntityType,
+          targetEntityId = targetEntityId,
           properties = DataMap(properties),
           eventTime = eventTime,
           appId = appId,
@@ -56,18 +60,23 @@ object EventJson4sSupport {
 
   def deserializeFromJValue: PartialFunction[JValue, Event] = {
     case jv: JValue => {
-      val entityId = (jv \ "entityId").extract[String]
-      val targetEntityId = (jv \ "targetEntityId").extract[Option[String]]
       val event = (jv \ "event").extract[String]
+      val entityType = (jv \ "entityType").extract[String]
+      val entityId = (jv \ "entityId").extract[String]
+      val targetEntityType = (jv \ "targetEntityType").extract[Option[String]]
+      val targetEntityId = (jv \ "targetEntityId").extract[Option[String]]
       val properties = (jv \ "properties").extract[JObject]
-      val eventTime = DataUtils.stringToDateTime((jv \ "eventTime").extract[String])
+      val eventTime = DataUtils.stringToDateTime(
+        (jv \ "eventTime").extract[String])
       val tags = (jv \ "tags").extract[Seq[String]]
       val appId = (jv \ "appId").extract[Int]
       val predictionKey = (jv \ "predictionKey").extract[Option[String]]
       Event(
-        entityId = entityId,
-        targetEntityId = targetEntityId,
         event = event,
+        entityType = entityType,
+        entityId = entityId,
+        targetEntityType = targetEntityType,
+        targetEntityId = targetEntityId,
         properties = DataMap(properties),
         eventTime = eventTime,
         tags = tags,
@@ -80,7 +89,10 @@ object EventJson4sSupport {
     case d: Event => {
       JObject(
         JField("event", JString(d.event)) ::
+        JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
+        JField("targetEntityType",
+          d.targetEntityType.map(JString(_)).getOrElse(JNothing)) ::
         JField("targetEntityId",
           d.targetEntityId.map(JString(_)).getOrElse(JNothing)) ::
         JField("properties", d.properties.toJObject) ::

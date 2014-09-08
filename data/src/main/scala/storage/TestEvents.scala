@@ -17,13 +17,16 @@ import org.joda.time.DateTime
 object TestEvents {
 
   def main(args: Array[String]) {
-    testESEvents()
+    //testESEvents()
+    testHBEvents()
   }
 
   val e = Event(
-    entityId = "abc",
-    targetEntityId = None,
     event = "$set",
+    entityType = "axx",
+    entityId = "abc",
+    targetEntityType = None,
+    targetEntityId = None,
     properties = DataMap(parse("""
       { "numbers" : [1, 2, 3, 4],
         "abc" : "some_string",
@@ -34,6 +37,8 @@ object TestEvents {
     appId = 4,
     predictionKey = None
   )
+
+  val e2 = e.copy(properties=DataMap())
 
   def testESEvents() {
 
@@ -95,7 +100,13 @@ object TestEvents {
     val storageClient = new HBStorageClient(config)
     val client = storageClient.client
     val eventConnector = storageClient.eventClient*/
-    val eventConnector = Storage.getDataObject[Events]("predictionio_events_hb").asInstanceOf[HBEvents]
+    val storageClient = new hbase.StorageClient(StorageClientConfig(
+      hosts = Seq("localhost"),
+      ports = Seq(1234)))
+
+    val eventConnector = new hbase.HBEvents(storageClient.client,
+      "predictionio_events_hb")
+      //Storage.getDataObject[Events]("predictionio_events_hb").asInstanceOf[HBEvents]
 
     val de = eventConnector.insert(e)
     println(de)
@@ -128,6 +139,14 @@ object TestEvents {
     println(delAll)
     val all2 = eventConnector.getByAppId(4)
     println(all2)
+
+    (eventConnector.insert(e2) match {
+      case Right(id) => eventConnector.get(id)
+      case Left(x) => Left(x)
+    }) match {
+      case Right(e) => println(e)
+      case _ => println("error")
+    }
 
   }
 }

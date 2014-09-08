@@ -243,7 +243,7 @@ object DataAPI {
     val serverActor = system.actorOf(
       Props(classOf[DataServerActor], eventClient),
       "DataServerActor")
-    serverActor ! StartServer("localhost", 8081)
+    serverActor ! StartServer(config.ip, config.port)
 
     println("[ Hit enter to exit. ]")
     val result = readLine()

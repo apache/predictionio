@@ -9,6 +9,7 @@ import io.prediction.data.storage.StorageError
 import grizzled.slf4j.Logging
 
 import org.json4s.DefaultFormats
+import org.json4s.JObject
 import org.json4s.native.Serialization.{ read, write }
 //import org.json4s.ext.JodaTimeSerializers
 
@@ -55,7 +56,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   // create table if not exist
   if (!client.admin.tableExists(tableName)) {
     val tableDesc = new HTableDescriptor(tableName)
-    tableDesc.addFamily(new HColumnDescriptor("e")) // e:tid
+    tableDesc.addFamily(new HColumnDescriptor("e")) // e:ttype, e:tid
     tableDesc.addFamily(new HColumnDescriptor("p"))
     tableDesc.addFamily(new HColumnDescriptor("tag")) // tag
     tableDesc.addFamily(new HColumnDescriptor("o")) // others
@@ -67,8 +68,14 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     // TODO: hash entityId and event to avoid arbitaray string length
     // and conflict with delimiter
     val uuid: Long = UUID.randomUUID().getLeastSignificantBits
-    event.appId + "-" + event.eventTime.getMillis + "-" +
-      event.event + "-" + event.entityId + "-" + uuid
+    Seq(
+      event.appId,
+      event.eventTime.getMillis,
+      event.event,
+      event.entityType,
+      event.entityId,
+      uuid
+    ).mkString("-")
   }
 
   private def startStopRowKey(appId: Int, startTime: Option[DateTime],
@@ -88,10 +95,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     val data = rowKey.split("-")
 
     // incomplete info:
-    // targetEntityId, properties, tags and predictionKey
+    // targetEntityType, targetEntityId, properties, tags and predictionKey
     Event(
-      entityId = data(3),
       event = data(2),
+      entityType = data(3),
+      entityId = data(4),
       eventTime = new DateTime(data(1).toLong, DateTimeZone.UTC),
       appId = data(0).toInt
     )
@@ -108,16 +116,24 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
       val table = new HTable(client.conf, tableName)
       val rowKey = eventToRowKey(event)
       val put = new Put(Bytes.toBytes(rowKey))
+      if (event.targetEntityType != None) {
+        put.add(Bytes.toBytes("e"), Bytes.toBytes("ttype"),
+          Bytes.toBytes(event.targetEntityType.get))
+      }
       if (event.targetEntityId != None) {
         put.add(Bytes.toBytes("e"), Bytes.toBytes("tid"),
           Bytes.toBytes(event.targetEntityId.get))
       }
-      // TODO: better way to handle event.properties?
-      // serialize whole properties as string for now..
-      /*put.add(Bytes.toBytes("p"), Bytes.toBytes("p"),
-        Bytes.toBytes(write(JObject(event.properties.toList))))*/
-      put.add(Bytes.toBytes("p"), Bytes.toBytes("p"),
-        Bytes.toBytes(write(event.properties)))
+
+      // HBase doesn't allow insert row withou any column,
+      // insert zero-length byte column if empty properties
+      val propBytes = if (event.properties.isEmpty) {
+        Array[Byte]()
+      } else {
+        Bytes.toBytes(write(event.properties.toJObject))
+      }
+
+      put.add(Bytes.toBytes("p"), Bytes.toBytes("p"), propBytes)
 
       event.tags.foreach { tag =>
         put.add(Bytes.toBytes("tag"), Bytes.toBytes(tag), Bytes.toBytes(true))
@@ -141,16 +157,22 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     val tag = result.getFamilyMap(Bytes.toBytes("tag"))
     val o = result.getFamilyMap(Bytes.toBytes("o"))
 
+    val targetEntityType = if (e != null) {
+      val ttype = e.get(Bytes.toBytes("ttype"))
+      if (ttype != null) Some(Bytes.toString(ttype)) else None
+    } else None
+
     val targetEntityId = if (e != null) {
       val tid = e.get(Bytes.toBytes("tid"))
       if (tid != null) Some(Bytes.toString(tid)) else None
     } else None
 
-    //val properties: Map[String, JValue] =
-    //  read[JObject](Bytes.toString(p.get(Bytes.toBytes("p")))).obj.toMap
-
-    val properties: DataMap =
-      read[DataMap](Bytes.toString(p.get(Bytes.toBytes("p"))))
+    val properties: DataMap = if (result.containsEmptyColumn(
+      Bytes.toBytes("p"), Bytes.toBytes("p"))) DataMap()
+    else {
+      val prop = p.get(Bytes.toBytes("p"))
+      DataMap(read[JObject](Bytes.toString(prop)))
+    }
 
     val tags = if (tag != null)
       tag.keySet.toSeq.map(Bytes.toString(_))
@@ -163,6 +185,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
 
     val partialEvent = rowKeyToPartialEvent(rowKey)
     val event = partialEvent.copy(
+      targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
       properties = properties,
       tags = tags,

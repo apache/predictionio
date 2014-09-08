@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
+# simple test script for dataapi
+
 function checkGET () {
-  status=$( curl -i -s -X GET "http://localhost:8081$1" | grep HTTP/1.1)
+  resp=$( curl -i -s -X GET "http://localhost:8081$1" )
+  status=$( echo "$resp" | grep HTTP/1.1 )
   exp=$2
   if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
   echo "[pass] GET $1 $status"
   else
-  echo "[fail] GET $1 $status"
+  echo "[fail] GET $1 $resp"
   echo "expect $exp"
   exit -1
   fi
@@ -14,28 +17,30 @@ function checkGET () {
 
 
 function checkPOST () {
-  status=$( curl -i -s -X POST http://localhost:8081$1 \
+  resp=$( curl -i -s -X POST http://localhost:8081$1 \
   -H "Content-Type: application/json" \
-  -d "$2" | grep HTTP/1.1 )
+  -d "$2" )
+  status=$( echo "$resp" | grep HTTP/1.1 )
   exp=$3
   if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
   #echo "POST $1 $2 good $status"
   echo "[pass] POST $1 $status"
   else
-  echo "[fail] POST $1 $2 $status"
+  echo "[fail] POST $1 $2 $resp"
   echo "expect $exp"
   exit -1
   fi
 }
 
 function checkDELETE () {
-  status=$( curl -i -s -X DELETE "http://localhost:8081$1" | grep HTTP/1.1)
+  resp=$( curl -i -s -X DELETE "http://localhost:8081$1" )
+  status=$( echo "$resp" | grep HTTP/1.1 )
   exp=$2
   if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
   #echo "POST $1 $2 good $status"
   echo "[pass] DELETE $1 $status"
   else
-  echo "[fail] DELETE $1 $2 $status"
+  echo "[fail] DELETE $1 $2 $resp"
   echo "expect $exp"
   exit -1
   fi
@@ -56,7 +61,9 @@ checkGET "/" 200
 # full
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "properties" : {
     "prop1" : 1,
@@ -77,11 +84,13 @@ checkPOST "/events" "$testdata" 201
 # no properties
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "tags" : ["tag1", "tag2"],
-  "appId" : 6,
+  "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
 
@@ -89,7 +98,9 @@ checkPOST "/events" "$testdata" 201
 
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
@@ -103,7 +114,9 @@ checkPOST "/events" "$testdata" 201
 # no tags
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "properties" : {
     "prop1" : "value1",
@@ -119,7 +132,9 @@ checkPOST "/events" "$testdata" 201
 ## no eventTIme
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "properties" : {
     "prop1" : "value1",
@@ -135,7 +150,9 @@ checkPOST "/events" "$testdata" 201
 ## no prediction key
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "properties" : {
     "prop1" : "value1",
@@ -151,6 +168,7 @@ checkPOST "/events" "$testdata" 201
 # minimum
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
   "appId" : 4
 }'
@@ -162,9 +180,50 @@ checkPOST "/events" "$testdata" 201
 # create events error cases
 # ----------------------------
 
+# missing event
+testdata='{
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : "value2",
+    "prop3" : [1, 2, 3],
+    "prop4" : true,
+    "prop5" : ["a", "b", "c"],
+    "prop6" : 4.56
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+
+# missing entityType
+testdata='{
+  "event" : "my_event",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : "value2",
+    "prop3" : [1, 2, 3],
+    "prop4" : true,
+    "prop5" : ["a", "b", "c"],
+    "prop6" : 4.56
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+
 # missing entityId
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "properties" : {
     "prop1" : "value1",
     "prop2" : "value2"
@@ -180,7 +239,9 @@ checkPOST "/events" "$testdata" 400
 # missing appId
 testdata='{
   "event" : "my_event",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "properties" : {
     "prop1" : "value1",
@@ -197,7 +258,9 @@ checkPOST "/events" "$testdata" 400
 # empty event string
 testdata='{
   "event" : "",
+  "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "properties" : {
     "prop1" : "value1",

@@ -43,7 +43,8 @@ $ curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
-  "entityId" : "my_entity_id",
+  "entityType" : "user"
+  "entityId" : "uid",
   "properties" : {
     "prop1" : 1,
     "prop2" : "value2",
@@ -66,8 +67,10 @@ curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
-  "entityId" : "my_entity_id",
-  "targetEntityId" : "my_target_entity_id",
+  "entityType" : "user",
+  "entityId" : "uid",
+  "targetEntityType" : "item",
+  "targetEntityId" : "iid",
   "properties" : {
     "prop1" : "value1",
     "prop2" : "value2"
@@ -92,6 +95,43 @@ The following fields are optional:
 * **tags**: empty list of tag will be used if it's not specified
 * **predictionKey**
 * **properties**
+
+Note:
+* **entityType + entityId** becomes the unique identifier of the entity. For example, you may have entityType named "user". In this entityType, you have different entities with different entityId, say 1 and 2. Then user-1 and user-2 uniquely identifies these two entities.
+
+* **properties** can be associated with either the **entity** or the **event**.
+
+* **properties** associated with **entity**: For example, entity user-1 may have properties of "gender" and "address". To set and unset properties for the entity, use special event **$set** and **$unset** to create an event of the entity. For example,
+
+  ```
+  '{
+    "event" : "$set",
+    "entityType" : "user"
+    "entityId" : "1",
+    "properties" : {
+      "birthday" : "1984-10-11",
+      "address" : "1234 Street, San Francisco, CA 94107"
+    }
+  }'
+  ```
+
+* **properties** associated with **events**: For example, user-1 may have "rate" event on item-1 with rating value of 4.5.
+
+  ```
+  '{
+    "event" : "rate",
+    "entityType" : "user"
+    "entityId" : "1",
+    "targetEntityType" : "item",
+    "targetEntityId" : "1"
+    "properties" : {
+      "rating" : 4.5
+    }
+  }'
+  ```
+
+
+
 
 ## For Debug Purpose
 
