@@ -6,10 +6,10 @@ import com.mongodb.casbah.Imports._
 import org.elasticsearch.client.Client
 
 object StorageTestUtils {
-  val elasticsearchSourceName = "elasticsearch"
-  val mongodbSourceName = "mongodb"
+  val elasticsearchSourceName = "ELASTICSEARCH"
+  val mongodbSourceName = "MONGODB"
   val hbaseSourceName = "hbase"
-
+  
   def dropElasticsearchIndex(indexName: String) = {
     Storage.getClient(elasticsearchSourceName).get.client.asInstanceOf[Client].
       admin.indices.prepareDelete(indexName).get
@@ -32,5 +32,4 @@ object StorageTestUtils {
     }
     hbClient.admin.deleteNamespace(namespace)
   }
-
 }

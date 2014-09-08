@@ -2,13 +2,8 @@
   href: "/install/"
 
 - title: "Loading Data"
-  href: "#"
-  subsec:
-    - title: "Through Data API"
-      href: "/dataapi.html"
-    - title: "From existing data source"
-      href: "#"
-
+  href: "/dataapi.html"
+  
 - title: "Anatomy of an Engine"
   href: "#"
   
