@@ -15,12 +15,13 @@ PredictionIO runs on JVM, so it runs on most platforms. Choose your platform bel
 [//]: # (* Installing PredictionIO on Linux)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
 
-You may also use one of the community-contributed packages to install PredictionIO:
+[//]: # (You may also use one of the community-contributed packages to install PredictionIO:)
 
-* *(coming soon)* Installing PredictionIO with Docker
-* *(coming soon)* Installing PredictionIO with Vagrant (VirtualBox)
-* *(coming soon)* Installing PredictionIO with Homebrew    
+[//]: # (* *(coming soon)* Installing PredictionIO with Docker)
+[//]: # (* *(coming soon)* Installing PredictionIO with Vagrant (VirtualBox))
+[//]: # (* *(coming soon)* Installing PredictionIO with Homebrew)
 
 ```
-Upgrade Note: (coming soon)
+Upgrade Note:
+Upgrade instruction from 0.7 to 0.8 is coming soon.
 ```

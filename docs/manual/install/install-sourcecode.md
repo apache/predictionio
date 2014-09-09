@@ -38,15 +38,15 @@ Apache Spark is the default processing engine for PredictionIO.  Download [Spark
 package](http://spark.apache.org/downloads.html). Unzip the file. Set the `$SPARK_HOME` shell variable to the path of the unzipped Spark directory:
 
 ```
-$ wget http://d3kbcqa49mib13.cloudfront.net/spark-1.0.2-bin-hadoop2.tgz
-$ tar zxvf spark-1.0.2-bin-hadoop2.tgz
+$ wget http://d3kbcqa49mib13.cloudfront.net/{{ site.spark_download_filename }}.tgz
+$ tar zxvf {{ site.spark_download_filename }}.tgz
 $ export SPARK_HOME=<your spark directory>
 ```
 
 For example,
 
 ```
-$ export SPARK_HOME=/Users/abc/Downloads/spark-1.0.1-bin-hadoop2
+$ export SPARK_HOME=/Users/abc/Downloads/{{ site.spark_download_filename }}
 ```
 
 Storage Setup
@@ -55,9 +55,9 @@ Storage Setup
 By default, PredictionIO uses ElasticSearch at localhost as the data store to store its metadata. Simply install and run [ElasticSearch](http://www.elasticsearch.org/), which looks like this:
 
 ```
-$ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.3.2.tar.gz
-$ tar zxvf elasticsearch-1.3.2.tar.gz
-$ cd elasticsearch-1.3.2
+$ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/{{ site.elasticsearch_download_filename }}.tar.gz
+$ tar zxvf {{ site.elasticsearch_download_filename }}.tar.gz
+$ cd {{ site.elasticsearch_download_filename }}
 $ bin/elasticsearch
 ```
 
