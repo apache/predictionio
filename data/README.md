@@ -19,6 +19,7 @@ $ python sdk/python-sdk/itemrec_example.py --appid <appid>
 Run Sample ItemRankDataSource:
 ```
 $ set -a
-$ sbt/sbt "data/run-main io.prediction.data.sample.ItemRankDataSource <appid>"
+$ source conf/pio-env.sh
 $ set +a
+$ sbt/sbt "data/run-main io.prediction.data.sample.ItemRankDataSource <appid>"
 ```
