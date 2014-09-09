@@ -22,6 +22,9 @@
 - title: "Learning by examples"
   href: "/enginebuilders/examples.html"
 
+- title: "Dev API for Engine Builders"
+  href: "/enginebuilders/api.html"
+
 - title: "Packaging a sharable Engine"
   href: "/enginebuilders/sharable.html"
   
