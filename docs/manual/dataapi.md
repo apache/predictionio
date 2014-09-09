@@ -8,7 +8,7 @@ title: Data API
 Data API is designed to import and collect data into PredictionIO in event-based style.
 All PredictionIO-compliant engines support the data store and data format used by the Data API.
 
-> You may also modify the [DataSource](/enginebuilders/data.html) of an engine to read data directly from your existing data store.
+> You may also [modify DataSource](/cookbook/existingdatasource.html) of an engine to read data directly from your existing data store.
 
 ## Launching Data API Server
 
@@ -37,7 +37,9 @@ You may connect to the Data API with HTTP request or by using one of the `Predic
 
 Event of one entity:
 
-```
+<div class="codetabs">
+<div data-lang="HTTP">
+{% highlight bash %}
 $ curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
 -d '{
@@ -57,11 +59,30 @@ $ curl -i -X POST http://localhost:8081/events \
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
-```
+{% endhighlight %}
+</div>
+<div data-lang="Python-SDK">
+{% highlight bash %}
+(TODO)
+{% endhighlight %}
+</div>
+<div data-lang="Ruby-SDK">
+{% highlight bash %}
+(TODO)
+{% endhighlight %}
+</div>
+<div data-lang="Java-SDK">
+{% highlight bash %}
+(TODO)
+{% endhighlight %}
+</div>
+</div>
 
 Event between two entities (with **targetEntityId**):
 
-```
+<div class="codetabs">
+<div data-lang="HTTP">
+{% highlight bash %}
 $ curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
 -d '{
@@ -79,8 +100,25 @@ $ curl -i -X POST http://localhost:8081/events \
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
+{% endhighlight %}
+</div>
+<div data-lang="Python-SDK">
+{% highlight bash %}
+(TODO)
+{% endhighlight %}
+</div>
+<div data-lang="Ruby-SDK">
+{% highlight bash %}
+(TODO)
+{% endhighlight %}
+</div>
+<div data-lang="Java-SDK">
+{% highlight bash %}
+(TODO)
+{% endhighlight %}
+</div>
+</div>
 
-```
 
 Sample response:
 

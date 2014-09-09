@@ -5,8 +5,7 @@ title: Installing PredictionIO from source code
 
 # Installing PredictionIO from Source Code
 
-Building
-========
+## Building
 
 Run the following to download and build PredictionIO from its source code.
 
@@ -28,11 +27,9 @@ PredictionIO binary distribution created at imagine.tar.gz
 ```
 
 
-Installing Dependencies
-=======================
+## Installing Dependencies
 
-Spark Setup
------------
+### Spark Setup
 
 Apache Spark is the default processing engine for PredictionIO.  Download [Spark's pre-built **"For Hadoop 2 (HDP2, CDH5)"**
 package](http://spark.apache.org/downloads.html). Unzip the file. Set the `$SPARK_HOME` shell variable to the path of the unzipped Spark directory:
@@ -49,8 +46,9 @@ For example,
 $ export SPARK_HOME=/Users/abc/Downloads/{{ site.spark_download_filename }}
 ```
 
-Storage Setup
--------------
+### Storage Setup
+
+#### ElasticSearch Setup
 
 By default, PredictionIO uses ElasticSearch at localhost as the data store to store its metadata. Simply install and run [ElasticSearch](http://www.elasticsearch.org/), which looks like this:
 
@@ -63,5 +61,13 @@ $ bin/elasticsearch
 
 You may change the settings or even use another data store such as [MongoDB](http://www.mongodb.org/). For details, please read [Changing the Data Store](config-datastore.html).
 
+#### HBase Setup
+
+By default, PredictionIO's Data API uses HBase at localhost as the data store for event data.
+
+(TODO)
+
 
 Now you have installed everything you need to run PredictionIO!
+
+Next: [Loading Data](/dataapi.html)
