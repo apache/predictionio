@@ -2,29 +2,26 @@
   href: "/enginebuilders/"
   
 - title: "Building the HelloWorld Engine"
-  href: "/tutorials/local-helloworld.html"
-  
-- title: "Learning by examples"
-  href: "#"
-  
-- title: "Creating a new Engine"
-  href: "#"
+  href: "/tutorials/enginebuilders/local-helloworld.html"
+
+- title: "Step-by-step Engine Building"
+  href: "/tutorials/enginebuilders/stepbystep/"
   subsec:
-    - title: "[D] Preparing the Data"
-      href: "/enginebuilders/data.html"
+    - title: "Data and Algorithm"
+      href: "/tutorials/enginebuilders/stepbystep/dataalgorithm.html"
 
-    - title: "[A] Adding an Algorithm"
-      href: "/enginebuilders/data.html"
-
-    - title: "[S] Serving the prediction"
-      href: "/enginebuilders/data.html"
-
-    - title: "[E] Adding an Evaluation Metrics"
-      href: "/enginebuilders/data.html"
-
-- title: "Testing an Engine"
-  href: "#"
+    - title: "Testing Engine Components"
+      href: "/tutorials/enginebuilders/stepbystep/testcomponents.html"
+          
+    - title: "Evaluation"
+      href: "/tutorials/enginebuilders/stepbystep/evaluation.html"
+      
+    - title: "Serving: Combining Algorithms"
+      href: "/tutorials/enginebuilders/stepbystep/combiningalgorithms.html"
+      
+- title: "Learning by examples"
+  href: "/enginebuilders/examples.html"
 
 - title: "Packaging a sharable Engine"
-  href: "#"
+  href: "/enginebuilders/sharable.html"
   

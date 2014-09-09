@@ -2,10 +2,10 @@
   href: "/engines/tutorials.html"
 
 - title: "Item Ranking"
-  href: "#"
+  href: "/engines/itemrank"
 
 - title: "Item Recommendation"
-  href: "#"
+  href: "/engines/itemrec"
 
 - title: "Item Similarity"
-  href: "#"
+  href: "/engines/itemsim"

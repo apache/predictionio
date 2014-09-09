@@ -1,14 +1,14 @@
 - title: "Production deployment"
-  href: "#"
+  href: "/production/deploy.html"
   
 - title: "Deploying with Chef"
-  href: "#"
+  href: "/production/deploy-chef.html"
 
+- title: "Deploying with Puppet"
+  href: "/production/deploy-puppet.html"
+  
 - title: "Setting up AWS cluster"
-  href: "#"  
-
-- title: "Scheduling model update"
-  href: "#"  
+  href: "/production/deploy-aws.html"  
     
 - title: "Backing up the data"
-  href: "#"  
+  href: "/production/databackup.html"  

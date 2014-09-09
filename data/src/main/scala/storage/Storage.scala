@@ -37,26 +37,36 @@ object Storage extends Logging {
   private case class ClientMeta(sourceType: String, client: BaseStorageClient)
   private case class DataObjectMeta(sourceName: String, databaseName: String)
 
-  private val sourcesToClientMeta = sourceKeys.map { k =>
-    lazy val s2cm = () =>
-      try {
-        val keyedPath = sourcesPrefixPath(k)
-        val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
-        val hosts = sys.env(prefixPath(keyedPath, "HOSTS")).split(',')
-        val ports = sys.env(prefixPath(keyedPath, "PORTS")).split(',').
-          map(_.toInt)
-        val clientConfig = StorageClientConfig(hosts = hosts, ports = ports)
-        val client = getClient(clientConfig, sourceType)
-        ClientMeta(sourceType, client)
-      } catch {
-        case e: Throwable =>
-          error(s"Error initializing storage client for source ${k}")
-          error(e.getMessage)
-          errors += 1
-          ClientMeta("", null)
-      }
-    (k -> s2cm)
-  }.toMap
+  private val s2cm = scala.collection.mutable.Map[String, Option[ClientMeta]]()
+  private def updateS2CM(k: String): Option[ClientMeta] = {
+    try {
+      val keyedPath = sourcesPrefixPath(k)
+      val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
+      val hosts = sys.env(prefixPath(keyedPath, "HOSTS")).split(',')
+      val ports = sys.env(prefixPath(keyedPath, "PORTS")).split(',').
+        map(_.toInt)
+      val clientConfig = StorageClientConfig(hosts = hosts, ports = ports)
+      val client = getClient(clientConfig, sourceType)
+      Some(ClientMeta(sourceType, client))
+    } catch {
+      case e: Throwable =>
+        error(s"Error initializing storage client for source ${k}")
+        error(e.getMessage)
+        errors += 1
+        None
+    }
+  }
+  private def sourcesToClientMetaGet(source: String): Option[ClientMeta] = {
+    s2cm.getOrElseUpdate(source, updateS2CM(source))
+  }
+  private def sourcesToClientMeta(source: String): ClientMeta =
+    sourcesToClientMetaGet(source).get
+
+  /*
+  if (sys.env.get("PIO_STORAGE_INIT_SOURCES").getOrElse(false)) {
+    sourcesToClientMeta.
+  }
+  */
 
   /** Reference to the app data repository. */
   val AppDataRepository = "APPDATA"
@@ -95,12 +105,11 @@ object Storage extends Logging {
         val keyedPath = repositoriesPrefixPath(r)
         val name = sys.env(prefixPath(keyedPath, "NAME"))
         val sourceName = sys.env(prefixPath(keyedPath, "SOURCE"))
-        val clientMeta = sourcesToClientMeta.get(sourceName)
-        clientMeta map { cm =>
+        if (sourceKeys.contains(sourceName)) {
           r -> DataObjectMeta(
             sourceName = sourceName,
             databaseName = name)
-        } getOrElse {
+        } else {
           error(s"$sourceName is not a configured storage source.")
           r -> DataObjectMeta("", "")
         }
@@ -130,7 +139,7 @@ object Storage extends Logging {
   }
 
   def getClient(sourceName: String): Option[BaseStorageClient] =
-    sourcesToClientMeta.get(sourceName).map(_().client)
+    sourcesToClientMetaGet(sourceName).map(_.client)
 
   def getDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
@@ -141,7 +150,7 @@ object Storage extends Logging {
   def getDataObject[T](
       sourceName: String,
       databaseName: String)(implicit tag: TypeTag[T]): T = {
-    val clientMeta = sourcesToClientMeta(sourceName)()
+    val clientMeta = sourcesToClientMeta(sourceName)
     val sourceType = clientMeta.sourceType
     val ctorArgs = dataObjectCtorArgs(clientMeta.client, databaseName)
     val classPrefix = clientMeta.client.prefix
