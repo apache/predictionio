@@ -244,10 +244,8 @@ object DataAPI {
       Props(classOf[DataServerActor], eventClient),
       "DataServerActor")
     serverActor ! StartServer(config.ip, config.port)
+    system.awaitTermination
 
-    println("[ Hit enter to exit. ]")
-    val result = readLine()
-    system.shutdown()
   }
 }
 
