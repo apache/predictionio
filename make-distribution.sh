@@ -5,6 +5,10 @@ set -e
 FWDIR="$(cd `dirname $0`; pwd)"
 DISTDIR="$FWDIR/dist"
 
+VERSION=$(grep version build.sbt | grep ThisBuild | grep -o '".*"' | sed 's/"//g')
+
+echo "Building binary distribution for PredictionIO $VERSION..."
+
 cd $FWDIR
 sbt/sbt core/publishLocal data/publishLocal engines/publishLocal engines/assemblyPackageDependency tools/assembly
 
@@ -25,7 +29,7 @@ rm -f $DISTDIR/conf/pio-env.sh
 
 touch $DISTDIR/RELEASE
 
-TARNAME=imagine.tar.gz
+TARNAME="PredictionIO-$VERSION.tar.gz"
 TARDIR=imagine
 cp -r $DISTDIR $TARDIR
 
