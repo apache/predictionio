@@ -56,7 +56,7 @@ object EventJson4sSupport {
     }
   }
 
-  def writeJson: PartialFunction[Any, JValue] = serilizeToJValue
+  def writeJson: PartialFunction[Any, JValue] = serializeToJValue
 
   def deserializeFromJValue: PartialFunction[JValue, Event] = {
     case jv: JValue => {
@@ -85,7 +85,7 @@ object EventJson4sSupport {
     }
   }
 
-  def serilizeToJValue: PartialFunction[Any, JValue] = {
+  def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
         JField("event", JString(d.event)) ::
@@ -107,7 +107,7 @@ object EventJson4sSupport {
 
   // for DB usage
   class DBSerializer extends CustomSerializer[Event](format => (
-    deserializeFromJValue, serilizeToJValue))
+    deserializeFromJValue, serializeToJValue))
 
   // for API usage
   class APISerializer extends CustomSerializer[Event](format => (

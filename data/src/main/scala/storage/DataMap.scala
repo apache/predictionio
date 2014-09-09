@@ -9,7 +9,8 @@ case class DataMapException(msg: String) extends Exception
 case class DataMap (
   val fields: Map[String, JValue]
 ) extends Serializable {
-  lazy implicit val formats = DefaultFormats
+  lazy implicit val formats = DefaultFormats +
+    new DateTimeJson4sSupport.serializer
 
   def require(name: String) = {
     if (!fields.contains(name))
@@ -35,7 +36,7 @@ case class DataMap (
     DataMap(this.fields -- that)
 
   def isEmpty = fields.isEmpty
-  
+
   def keySet = this.fields.keySet
 
   def toList(): List[(String, JValue)] = fields.toList

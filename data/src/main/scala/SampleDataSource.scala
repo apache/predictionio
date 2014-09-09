@@ -3,11 +3,8 @@ package io.prediction.data.sample
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.Storage
 import io.prediction.data.view.LBatchView
-import io.prediction.data.Utils
 
 import org.joda.time.DateTime
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 // engine's Data
 class ItemTD(
@@ -49,56 +46,52 @@ class TrainingData(
 // data source params
 case class DataSourceParams(
   val appId: Int,
-  val u2ievents: Set[String]
+  val startTime: Option[DateTime],
+  val untilTime: Option[DateTime],
+  val attributes: AttributeNames
+)
+
+// this algorithm require the following properties
+case class AttributeNames(
+  val user: String,
+  val item: String,
+  val u2iActions: Set[String], // event name of the u2i actions
+  val itypes: String,
+  val starttime: String,
+  val endtime: String,
+  val inactive: String, // boolean inactive
+  val rating: String // integer rating
 )
 
 class DataSource(val params: DataSourceParams) {
 
-  @transient lazy val eventsClient = Storage.getDataObject[Events]("predictionio_events")
-
-  private def stringToDateTime(dt: String): DateTime =
-    Utils.stringToDateTime(dt)
+  @transient lazy val batchView = new LBatchView(params.appId,
+    params.startTime, params.untilTime)
 
   def readTraining(): TrainingData = {
 
-    val result = eventsClient.getByAppId(params.appId)
-    val eventsIter = result match {
-      case Right(x) => x
-      case Left(y) => Iterator()
-    }
-
-    val batchView = new LBatchView()
-    val (userMap, itemMap) = batchView.entityPropertiesView(eventsIter)
-      .partition{ case (k,v) => k.startsWith("u")}
+    val userMap = batchView.aggregateProperties(params.attributes.user)
+    val itemMap = batchView.aggregateProperties(params.attributes.item)
 
     val users = userMap.map { case (k,v) => (k, new UserTD(uid=k)) }
     val items = itemMap.map { case (k,v) =>
       (k, new ItemTD(
         iid = k,
-        itypes = v.getOrElse[List[String]]("pio_itypes", List()),
-        //Seq(), // TODO: itypes from properties
-        starttime = v.getOpt[String]("starttime")
-          .map(j => stringToDateTime(j).getMillis),
-        endtime = v.getOpt[String]("endtime")
-          .map(j => stringToDateTime(j).getMillis),
-        // TODO: how to support customizable field name ?
-        inactive = v.getOrElse[Boolean]("inactive", false)
+        itypes = v.getOrElse[List[String]](params.attributes.itypes, List()),
+        starttime = v.getOpt[DateTime](params.attributes.starttime)
+          .map(_.getMillis),
+        endtime = v.getOpt[DateTime](params.attributes.endtime)
+          .map(_.getMillis),
+        inactive = v.getOrElse[Boolean](params.attributes.inactive, false)
       ))}
 
-    val result2 = eventsClient.getByAppId(params.appId)
-    val u2iIter = result2 match {
-      case Right(x) => x
-      case Left(y) => Iterator()
-    }
-
-    val u2i = u2iIter.filter( e => params.u2ievents.contains(e.event) )
-      .toList
+    val u2i = batchView.events.filter( e =>
+      params.attributes.u2iActions.contains(e.event) )
       .map(e => new U2IActionTD(
         uid = e.entityId,
         iid = e.targetEntityId.get,
         action = e.event,
-        // TODO: better way to handle type casting. Don't use JValue?
-        v = e.properties.getOpt[Int]("pio_rate"),
+        v = e.properties.getOpt[Int](params.attributes.rating),
         t = e.eventTime.getMillis
       ))
 
@@ -111,13 +104,25 @@ class DataSource(val params: DataSourceParams) {
 
 }
 
-object DataSourceRun {
+object ItemRankDataSource {
 
   def main(args: Array[String]) {
 
     val dsp = DataSourceParams(
       appId = args(0).toInt,
-      u2ievents = Set("rate", "view"))
+      startTime = None,
+      untilTime = None,
+      attributes = AttributeNames(
+        user = "user",
+        item = "item",
+        u2iActions = Set("rate", "view"),
+        itypes = "pio_itypes",
+        starttime = "starttime",
+        endtime = "endtime",
+        inactive = "inactive",
+        rating = "pio_rate"
+      )
+    )
 
     val dataSource = new DataSource(dsp)
     val td = dataSource.readTraining()
