@@ -178,7 +178,7 @@ class Client(object):
                     (response.request, response.status,
                      response.body))
 
-    return None
+    return response
 
   def _aget_resp(self, response):
     if response.error is not None:
