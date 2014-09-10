@@ -3,14 +3,14 @@ Import historical stock data from yahoo finance.
 """
 
 import argparse
-import datetime
+from datetime import datetime
 import predictionio
 import pytz
 import time
 from pandas.io import data as pdata
 import numpy
 
-EPOCH = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
+EPOCH = datetime(1970, 1, 1, tzinfo=pytz.utc)
 
 
 def since_epoch(dt):
@@ -18,6 +18,7 @@ def since_epoch(dt):
 
 
 def import_data(client, appid, ticker, start_time, end_time):
+  print "Importing:", ticker, start_time, end_time
   df = pdata.DataReader(ticker, 'yahoo', start_time, end_time)
   # TODO: handle error, e.g. response code not 200
 
@@ -53,9 +54,26 @@ def import_data(client, appid, ticker, start_time, end_time):
   print(response.body)
 
 
-if __name__ == '__main__':
-  start_time = datetime.datetime(2014, 1, 1)
-  end_time = datetime.datetime(2014, 2, 1)
+def import_predefined():
+  time_slices = [
+      (datetime(2013, 12, 1), datetime(2014, 2, 1)),
+      (datetime(2014, 1, 1), datetime(2014, 1, 20)),
+      (datetime(2014, 1, 10), datetime(2014, 2, 20)),
+      (datetime(2014, 2, 10), datetime(2014, 3, 31))]
+
+  ticker = 'AAPL'
+ 
+  appid = 1
+  apiurl = 'http://localhost:8081'
+  client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
+
+  for time_slice in time_slices:
+    import_data(client, appid, ticker, time_slice[0], time_slice[1])
+
+
+def import_one():
+  start_time = datetime(2014, 1, 1)
+  end_time = datetime(2014, 2, 1)
   ticker = 'AAPL'
  
   appid = 1
@@ -63,3 +81,7 @@ if __name__ == '__main__':
   client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
 
   import_data(client, appid, ticker, start_time, end_time)
+
+if __name__ == '__main__':
+  import_predefined()
+
