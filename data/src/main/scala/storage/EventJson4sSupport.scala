@@ -6,6 +6,7 @@ import org.json4s._
 import org.json4s.native.Serialization.{ read, write }
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 
 object EventJson4sSupport {
 
@@ -26,18 +27,29 @@ object EventJson4sSupport {
         val targetEntityId = fields.getOpt[String]("targetEntityId")
         val properties = fields.getOpt[Map[String, JValue]]("properties")
           .getOrElse(Map())
+        // default currentTime expressed as UTC timezone
+        lazy val currentTime = DateTime.now(DateTimeZone.UTC)
         val eventTime = fields.getOpt[String]("eventTime")
           .map{ s =>
             try {
               DataUtils.stringToDateTime(s)
             } catch {
               case _: Exception =>
-                throw new MappingException(s"Fail to extract time")
+                throw new MappingException(s"Fail to extract eventTime ${s}")
             }
-          }.getOrElse(DateTime.now)
+          }.getOrElse(currentTime)
         val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
         val appId = fields.get[Int]("appId")
         val predictionKey = fields.getOpt[String]("predictionKey")
+        val creationTime = fields.getOpt[String]("creationTime")
+          .map{ s =>
+            try {
+              DataUtils.stringToDateTime(s)
+            } catch {
+              case _: Exception =>
+                throw new MappingException(s"Fail to extract creationTime ${s}")
+            }
+          }.getOrElse(currentTime)
         Event(
           event = event,
           entityType = entityType,
@@ -47,7 +59,8 @@ object EventJson4sSupport {
           properties = DataMap(properties),
           eventTime = eventTime,
           appId = appId,
-          predictionKey = predictionKey
+          predictionKey = predictionKey,
+          creationTime = creationTime
         )
       } catch {
         case DataMapException(msg) => throw new MappingException(msg)
@@ -71,6 +84,8 @@ object EventJson4sSupport {
       val tags = (jv \ "tags").extract[Seq[String]]
       val appId = (jv \ "appId").extract[Int]
       val predictionKey = (jv \ "predictionKey").extract[Option[String]]
+      val creationTime = DataUtils.stringToDateTime(
+        (jv \ "creationTime").extract[String])
       Event(
         event = event,
         entityType = entityType,
@@ -81,7 +96,8 @@ object EventJson4sSupport {
         eventTime = eventTime,
         tags = tags,
         appId = appId,
-        predictionKey = predictionKey)
+        predictionKey = predictionKey,
+        creationTime = creationTime)
     }
   }
 
@@ -101,6 +117,8 @@ object EventJson4sSupport {
         JField("appId", JInt(d.appId)) ::
         JField("predictionKey",
           d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+        JField("creationTime",
+          JString(DataUtils.dateTimeToString(d.creationTime))) ::
         Nil)
     }
   }

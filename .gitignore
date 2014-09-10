@@ -14,7 +14,7 @@ fs/
 supervisord.conf
 assembly/
 dist/
-imagine.tar.gz
+*.tar.gz
 *.pyc
 # Ignore source files whose name prefixed with "Private"
 Private*.scala
