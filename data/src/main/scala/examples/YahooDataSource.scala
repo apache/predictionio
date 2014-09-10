@@ -26,27 +26,14 @@ case class HistoricalData(
   }
 }
 
-case class Daily(
-  val close: Double,
-  val adjClose: Double,
-  val adjReturn: Double,
-  val volume: Double,
-  // prevDate is used to verify continuity
-  val prevDate: DateTime)
-
-case class Intermediate(
-  val ticker: String = "", 
-  val dailyMap: MMap[DateTime, Daily] = MMap[DateTime, Daily]())
-
 class YahooDataSource(val params: YahooDataSource.Params) {
   @transient lazy val batchView = new LBatchView(
     params.appId, params.startTime, params.untilTime)
     
   val timezone = DateTimeZone.forID("US/Eastern")
 
-  //def merge(dailyMap: MMap[DateTime, Daily], e: Event)
-  def merge(intermediate: Intermediate, e: Event): Intermediate = {
-  //: MMap[DateTime, Daily] = {
+  def merge(intermediate: YahooDataSource.Intermediate, e: Event)
+  : YahooDataSource.Intermediate = {
     val dm: DataMap = e.properties     
 
     val dailyMap = intermediate.dailyMap
@@ -62,7 +49,7 @@ class YahooDataSource(val params: YahooDataSource.Params) {
     tList.zipWithIndex.drop(1).foreach { case (t, idx) => {
       val adjReturn = (adjCloseList(idx) / adjCloseList(idx - 1)) - 1
 
-      val daily = Daily(
+      val daily = YahooDataSource.Daily(
         close = closeList(idx),
         adjClose = adjCloseList(idx),
         adjReturn = adjReturn,
@@ -72,11 +59,10 @@ class YahooDataSource(val params: YahooDataSource.Params) {
       dailyMap += (t -> daily)
     }}
    
-    Intermediate(ticker = e.entityId, dailyMap = dailyMap)
+    YahooDataSource.Intermediate(ticker = e.entityId, dailyMap = dailyMap)
   }
 
-  //def finalize(dailyMap: MMap[DateTime, Daily]): HistoricalData = {
-  def finalize(intermediate: Intermediate): HistoricalData = {
+  def finalize(intermediate: YahooDataSource.Intermediate): HistoricalData = {
     val dailyMap = intermediate.dailyMap
     val ticker = intermediate.ticker
 
@@ -103,72 +89,17 @@ class YahooDataSource(val params: YahooDataSource.Params) {
     val predicate = (e: Event) => (e.entityType == "yahoo")
     val map: (Event => DataMap) = (e: Event) => (e.properties)
 
-    //val tickerMap: Map[String, MMap[DateTime, Daily]] = batchView
     val tickerMap: Map[String, HistoricalData] = batchView
       .aggregateByEntityOrdered(
         predicate,
-        Intermediate(),
-        //MMap[DateTime, Daily](),
+        YahooDataSource.Intermediate(),
         merge)
       .mapValues(finalize)
-
-    /*
-    tickerMap.foreach { case (ticker, dailyMap) => {
-      println(ticker)
-      dailyMap.keys.toSeq.sortBy(identity).map { t => 
-        println(t.toString() + " " + dailyMap(t).adjClose + " " +
-          dailyMap(t).prevDate.toString())
-      }
-    }}
-    */
 
     tickerMap.foreach { case (ticker, data) => {
       println(ticker)
       println(data)
     }}
-
-    /*
-
-    val m: Map[String, Seq[DataMap]] = batchView.groupByEntityOrdered(
-      predicate, map)
-
-    val timezone = DateTimeZone.forID("US/Eastern")
-
-    m.foreach { case (k, dms) => {
-      println(k)
-   
-      val dailyMap = MMap[DateTime, Daily]()
-      
-      dms.foreach { dm => {
-        val closeList: Array[Double] = dm.get[Array[Double]]("close")
-        val adjCloseList: Array[Double] = dm.get[Array[Double]]("adjclose")
-        
-        val tList: Array[DateTime] = dm.get[Array[Long]]("t")
-          .map(t => new DateTime(t * 1000, timezone))
-
-        tList.zipWithIndex.drop(1).foreach { case (t, idx) => {
-          val adjReturn = (adjCloseList(idx) / adjCloseList(idx - 1)) - 1
-
-          //val tuple = (closeList(idx), adjCloseList(idx), adjReturn, tList(idx-1))
-          //daily += (t -> tuple)
-          val daily = Daily(
-            close = closeList(idx),
-            adjClose = adjCloseList(idx),
-            adjReturn = adjReturn,
-            volume = 0.0f,
-            prevDate = tList(idx - 1))
-
-          dailyMap += (t -> daily)
-        }}
-      }}
-
-      dailyMap.keys.toSeq.sortBy(identity).map { t => 
-        println(t.toString() + " " + dailyMap(t))
-      }
-    }}
-    */
-
-    //m.foreach { println }
   }
 }
 
@@ -179,17 +110,25 @@ object YahooDataSource {
     val untilTime: Option[DateTime] = None
   )
 
-  def main(args: Array[String]) {
-    println("Test")
+  case class Daily(
+    val close: Double,
+    val adjClose: Double,
+    val adjReturn: Double,
+    val volume: Double,
+    // prevDate is used to verify continuity
+    val prevDate: DateTime)
 
+  case class Intermediate(
+    val ticker: String = "", 
+    val dailyMap: MMap[DateTime, Daily] = MMap[DateTime, Daily]())
+
+  def main(args: Array[String]) {
     val params = Params(
       appId = 1,
-      //untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
-      untilTime = None)
+      untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
+      //untilTime = None)
 
     val ds = new YahooDataSource(params)
-
-
     ds.read
   }
 }
