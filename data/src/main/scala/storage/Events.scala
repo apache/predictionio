@@ -5,6 +5,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.json4s.Formats
 
 import scala.concurrent.ExecutionContext
@@ -16,10 +17,11 @@ case class Event(
   val targetEntityType: Option[String] = None,
   val targetEntityId: Option[String] = None,
   val properties: DataMap = DataMap(), // default empty
-  val eventTime: DateTime = DateTime.now, // default to current time
+  val eventTime: DateTime = DateTime.now,
   val tags: Seq[String] = Seq(),
   val appId: Int,
-  val predictionKey: Option[String] = None
+  val predictionKey: Option[String] = None,
+  val creationTime: DateTime = DateTime.now
 ) {
   require(!event.isEmpty, "event must not be empty.")
   require(!entityType.isEmpty, "entityType must not be empty string.")

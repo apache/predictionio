@@ -54,10 +54,11 @@ $ curl -i -X POST http://localhost:8081/events \
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "eventTime" : "2004-12-13T21:39:45.618-07:00",
   "tags" : ["tag1", "tag2"],
   "appId" : 4,
-  "predictionKey" : "my_prediction_key"
+  "predictionKey" : "my_prediction_key",
+  "creationTime" : "2014-09-01T21:39:45.618-08:00"
 }'
 {% endhighlight %}
 </div>
@@ -78,7 +79,7 @@ $ curl -i -X POST http://localhost:8081/events \
 </div>
 </div>
 
-Event between two entities (with **targetEntityId**):
+Event between two entities (with **targetEntity**):
 
 <div class="codetabs">
 <div data-lang="HTTP">
@@ -92,13 +93,14 @@ $ curl -i -X POST http://localhost:8081/events \
   "targetEntityType" : "item",
   "targetEntityId" : "iid",
   "properties" : {
-    "prop1" : "value1",
-    "prop2" : "value2"
+    "someProperty" : "value1",
+    "anotherProperty" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "tags" : ["tag1", "tag2"],
   "appId" : 4,
-  "predictionKey" : "my_prediction_key"
+  "predictionKey" : "my_prediction_key",
+  "creationTime" : "2014-09-01T21:40:45.123+01:00"
 }'
 {% endhighlight %}
 </div>
@@ -127,19 +129,36 @@ HTTP/1.1 201 Created
 {"eventId":"pBXkP-GkRfShh-xIRTIG2A"}
 ```
 
+**Description of the fields:**
+
+- **event**: Name of the event. For example. "sign-up", "rate", "view", "buy" etc
+- **entityType**: The entity type. It is the namespace of the entityId and analogous to the table name of a relational database. The entityId must be unique within same entityType.
+- **entityId**: The entity ID. **entityType + entityId** becomes the unique identifier of the entity. For example, you may have entityType named "user". In this entityType, you have different entities with id, say 1 and 2. Then user-1 and user-2 uniquely identifies these two entities.
+- **targetEntityType**: The target entity type.
+- **targetEntityId**: the target entity ID.
+- **properties**: see **Note** below.
+* **eventTime**: The time of the event happened. Current time and UTC timezone will be used if it's not specified. Must be ISO 8601 format (eg. "2004-12-13T21:39:45.618Z", or "2014-09-09T16:17:42.937-08:00")
+- **tags**: JSON array of String. Empty list of tag will be used if it's not specified
+- **appId**: application ID for separating your data set for different applications.
+- **predictionKey**: Reserved. TBD
+- **creationTime**: Creation time of this event record (not the time of event happened). Current time and UTC timezone will be used if it's not specified. Must be ISO 8601 format (eg. "2004-12-13T21:39:45.618Z", or "2014-09-09T16:17:42.937-08:00")
+
 The following fields are optional:
-* **eventTime** : current time will be used if it's not specified
-* **tags**: empty list of tag will be used if it's not specified
+- **targetEntityType**
+- **targetEntityId**
+- **properties**
+* **eventTime**
+* **tags**
 * **predictionKey**
-* **properties**
+* **creationTime**
 
 
 Note:
-* **entityType + entityId** becomes the unique identifier of the entity. For example, you may have entityType named "user". In this entityType, you have different entities with different entityId, say 1 and 2. Then user-1 and user-2 uniquely identifies these two entities.
-
 * **properties** can be associated with either the **entity** or the **event**.
 
-* **properties** associated with **entity**: For example, entity user-1 may have properties of "birthday" and "address". To set and unset properties for the entity, use special event **$set** and **$unset** to create an event of the entity. For example,
+* **properties** associated with **entity**:
+
+  For example, entity user-1 may have properties of "birthday" and "address". To set and unset properties for the entity, use special event **$set** and **$unset** to create an event of the entity. For example,
 
   ```
   '{
@@ -153,7 +172,9 @@ Note:
   }'
   ```
 
-* **properties** associated with **events**: For example, user-1 may have "rate" event on item-1 with rating value of 4.5.
+* **properties** associated with **events**:
+
+  For example, user-1 may have "rate" event on item-1 with rating value of 4.5.
 
   ```
   '{

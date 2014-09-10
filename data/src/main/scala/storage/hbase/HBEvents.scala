@@ -56,10 +56,15 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   // create table if not exist
   if (!client.admin.tableExists(tableName)) {
     val tableDesc = new HTableDescriptor(tableName)
-    tableDesc.addFamily(new HColumnDescriptor("e")) // e:ttype, e:tid
-    tableDesc.addFamily(new HColumnDescriptor("p"))
-    tableDesc.addFamily(new HColumnDescriptor("tag")) // tag
-    tableDesc.addFamily(new HColumnDescriptor("o")) // others
+    // general event related
+    // e:ttype - target entity type
+    // e:tid - target entity id
+    // e:p - properties
+    // e:pk - predictionkey
+    // e:etz - event time zone
+    // e:ctz - creation time zone
+    tableDesc.addFamily(new HColumnDescriptor("e"))
+    tableDesc.addFamily(new HColumnDescriptor("tag")) // tag: tag-name
     client.admin.createTable(tableDesc)
   }
 
@@ -94,13 +99,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   private def rowKeyToPartialEvent(rowKey: String): Event = {
     val data = rowKey.split("-")
 
-    // incomplete info:
-    // targetEntityType, targetEntityId, properties, tags and predictionKey
     Event(
       event = data(2),
       entityType = data(3),
       entityId = data(4),
-      eventTime = new DateTime(data(1).toLong, DateTimeZone.UTC),
+      eventTime = new DateTime(data(1).toLong), // missing timezone info
       appId = data(0).toInt
     )
   }
@@ -115,33 +118,33 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future {
       val table = new HTable(client.conf, tableName)
       val rowKey = eventToRowKey(event)
-      val put = new Put(Bytes.toBytes(rowKey))
+      val eBytes = Bytes.toBytes("e")
+      val put = new Put(Bytes.toBytes(rowKey), event.creationTime.getMillis)
       if (event.targetEntityType != None) {
-        put.add(Bytes.toBytes("e"), Bytes.toBytes("ttype"),
+        put.add(eBytes, Bytes.toBytes("ttype"),
           Bytes.toBytes(event.targetEntityType.get))
       }
       if (event.targetEntityId != None) {
-        put.add(Bytes.toBytes("e"), Bytes.toBytes("tid"),
+        put.add(eBytes, Bytes.toBytes("tid"),
           Bytes.toBytes(event.targetEntityId.get))
       }
-
-      // HBase doesn't allow insert row withou any column,
-      // insert zero-length byte column if empty properties
-      val propBytes = if (event.properties.isEmpty) {
-        Array[Byte]()
-      } else {
-        Bytes.toBytes(write(event.properties.toJObject))
+      if (!event.properties.isEmpty) {
+        put.add(eBytes, Bytes.toBytes("p"),
+          Bytes.toBytes(write(event.properties.toJObject)))
       }
+      event.predictionKey.foreach { pk =>
+        put.add(eBytes, Bytes.toBytes("pk"), Bytes.toBytes(pk))
+      }
+      put.add(eBytes, Bytes.toBytes("etz"),
+        Bytes.toBytes(event.eventTime.getZone.getID))
+      put.add(eBytes, Bytes.toBytes("ctz"),
+        Bytes.toBytes(event.creationTime.getZone.getID))
 
-      put.add(Bytes.toBytes("p"), Bytes.toBytes("p"), propBytes)
-
+      // use zero-length byte array for tag cell value
       event.tags.foreach { tag =>
-        put.add(Bytes.toBytes("tag"), Bytes.toBytes(tag), Bytes.toBytes(true))
+        put.add(Bytes.toBytes("tag"), Bytes.toBytes(tag), Array[Byte]())
       }
-      if (event.predictionKey != None) {
-        put.add(Bytes.toBytes("o"), Bytes.toBytes("pk"),
-          Bytes.toBytes(event.predictionKey.get))
-      }
+
       table.put(put)
       table.flushCommits()
       table.close()
@@ -152,36 +155,37 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   private def resultToEvent(result: Result): Event = {
     val rowKey = Bytes.toString(result.getRow())
 
-    val e = result.getFamilyMap(Bytes.toBytes("e"))
-    val p = result.getFamilyMap(Bytes.toBytes("p"))
+    val eBytes = Bytes.toBytes("e")
+    val e = result.getFamilyMap(eBytes)
     val tag = result.getFamilyMap(Bytes.toBytes("tag"))
-    val o = result.getFamilyMap(Bytes.toBytes("o"))
 
-    val targetEntityType = if (e != null) {
-      val ttype = e.get(Bytes.toBytes("ttype"))
-      if (ttype != null) Some(Bytes.toString(ttype)) else None
-    } else None
+    val ttype = e.get(Bytes.toBytes("ttype"))
+    val targetEntityType = if (ttype != null) Some(Bytes.toString(ttype))
+      else None
 
-    val targetEntityId = if (e != null) {
-      val tid = e.get(Bytes.toBytes("tid"))
-      if (tid != null) Some(Bytes.toString(tid)) else None
-    } else None
+    val tid = e.get(Bytes.toBytes("tid"))
+    val targetEntityId = if (tid != null) Some(Bytes.toString(tid)) else None
 
-    val properties: DataMap = if (result.containsEmptyColumn(
-      Bytes.toBytes("p"), Bytes.toBytes("p"))) DataMap()
-    else {
-      val prop = p.get(Bytes.toBytes("p"))
-      DataMap(read[JObject](Bytes.toString(prop)))
-    }
+    val p = e.get(Bytes.toBytes("p"))
+    val properties: DataMap = if (p != null)
+      DataMap(read[JObject](Bytes.toString(p))) else DataMap()
+
+    val pk = e.get(Bytes.toBytes("pk"))
+    val predictionKey = if (pk != null) Some(Bytes.toString(pk)) else None
+
+    val etz = e.get(Bytes.toBytes("etz"))
+    val eventTimeZone = DateTimeZone.forID(Bytes.toString(etz))
+
+    val ctz = e.get(Bytes.toBytes("ctz"))
+    val creationTimeZone = DateTimeZone.forID(Bytes.toString(ctz))
+
+    val ctzCell = result.getColumnLatestCell(eBytes, Bytes.toBytes("ctz"))
+    val creationTime: DateTime = new DateTime(
+      ctzCell.getTimestamp(), creationTimeZone)
 
     val tags = if (tag != null)
       tag.keySet.toSeq.map(Bytes.toString(_))
     else Seq()
-
-    val predictionKey = if (o != null) {
-      val pk = o.get(Bytes.toBytes("pk"))
-      if (pk != null) Some(Bytes.toString(pk)) else None
-    } else None
 
     val partialEvent = rowKeyToPartialEvent(rowKey)
     val event = partialEvent.copy(
@@ -189,7 +193,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
       targetEntityId = targetEntityId,
       properties = properties,
       tags = tags,
-      predictionKey = predictionKey
+      predictionKey = predictionKey,
+      eventTime = partialEvent.eventTime.withZone(eventTimeZone),
+      creationTime = creationTime
     )
     event
   }

@@ -6,7 +6,7 @@ import org.joda.time.format.ISODateTimeFormat
 object Utils {
 
   // use dateTime() for strict ISO8601 format
-  val dateTimeFormatter = ISODateTimeFormat.dateTime()
+  val dateTimeFormatter = ISODateTimeFormat.dateTime().withOffsetParsed()
 
   def stringToDateTime(dt: String): DateTime =
     dateTimeFormatter.parseDateTime(dt)
