@@ -92,6 +92,9 @@ class Client(object):
     self._connection.make_request(request)
     return request
 
+  def create_event(self, data):
+    return self.acreate_event(data).get_response()
+
   def aget_event(self, event_id):
     enc_event_id = urllib.quote(event_id, "") # replace special char with %xx
     path = "/events/%s" % enc_event_id
