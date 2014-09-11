@@ -9,3 +9,6 @@
   
 - title: "Launching an Engine Instance"
   href: "/engines/"
+
+- title: "PredictionIO: Concepts and Design"
+  href: "/predictionio.html"
