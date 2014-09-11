@@ -3,11 +3,11 @@ layout: docs
 title: Data API
 ---
 
-# Loading Data through the Data API
+# Collecting Data through Data API
 
-Data API is designed to import and collect data into PredictionIO in event-based
+Data API server is designed to collect data into PredictionIO in an event-based
 style. All PredictionIO-compliant engines support the data store and data format
-used by the Data API.
+used by the Data API. 
 
 > You may also [modify DataSource](/cookbook/existingdatasource.html) of an
 engine to read data directly from your existing data store.
@@ -49,7 +49,7 @@ Content-Length: 18
 ## Using the Data API
 
 You may connect to the Data API with HTTP request or by using one of many
-**PredictionIO SDKs**.
+**PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for your old data.
 
 ### Creating Your First Event
 
