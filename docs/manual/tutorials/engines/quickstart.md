@@ -9,9 +9,9 @@ This is a quick start guide of using a PredictionIO's built-in engine and its SD
 
 Let's start with a classic example in Machine Learning - build a recommendation engine. We are going to launch a recommendation engine instance that can:
 
-* collect `real-time event data` from your app through REST API or SDKs
-* update the predictive model with `new data` regularly and automatically
-* answer `prediction query` through REST API or SDKs 
+* collect *real-time event data* from your app through REST API or SDKs
+* update the predictive model with *new data* regularly and automatically
+* answer *prediction query* through REST API or SDKs 
 
 # Create a Simple App Project
 
