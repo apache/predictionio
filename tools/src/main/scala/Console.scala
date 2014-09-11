@@ -327,35 +327,34 @@ object Console extends Logging {
   def createProject(ca: ConsoleArgs): Unit = {
     val builtinEngines = Seq(
       "io.prediction.engines.itemrank")
-    val engineJson = templates.txt.engine(
-      ca.projectName.get,
-      "0.0.1-SNAPSHOT",
-      ca.projectName.get,
-      ca.projectName.get)
-    val buildSbt = templates.txt.build(
-      ca.projectName.get,
-      BuildInfo.version,
-      BuildInfo.sparkVersion)
-    val assemblySbt = templates.txt.assembly()
-    new File(ca.projectName.get + File.separator + "project").mkdirs
 
-    FileUtils.writeStringToFile(
-      new File(ca.projectName.get + File.separator + "engine.json"),
-      engineJson.toString,
-      "ISO-8859-1")
-
-    FileUtils.writeStringToFile(
-      new File(ca.projectName.get + File.separator + "build.sbt"),
-      buildSbt.toString,
-      "ISO-8859-1")
-
-    FileUtils.writeStringToFile(
-      new File(Seq(
+    val scalaEngineTemplate = Map(
+      "build.sbt" -> templates.scala.txt.buildSbt(
         ca.projectName.get,
-        "project",
-        "assembly.sbt").mkString(File.separator)),
-      assemblySbt.toString,
-      "ISO-8859-1")
+        BuildInfo.version,
+        BuildInfo.sparkVersion),
+      "engine.json" -> templates.scala.txt.engineJson(
+        ca.projectName.get,
+        "0.0.1-SNAPSHOT",
+        ca.projectName.get,
+        ca.projectName.get),
+      "project" + File.separator + "assembly.sbt" ->
+        templates.scala.project.txt.assemblySbt())
+
+    try {
+      scalaEngineTemplate map { ft =>
+        FileUtils.writeStringToFile(
+          new File(ca.projectName.get, ft._1),
+          ft._2.toString,
+          "ISO-8859-1")
+      }
+    } catch {
+      case e: java.io.IOException =>
+        error("Error occurred while generating engine project template: " +
+          e.getMessage)
+        error("Aborting.")
+        sys.exit(1)
+    }
 
     info(s"Engine project created in subdirectory ${ca.projectName.get}.")
   }

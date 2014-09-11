@@ -107,7 +107,7 @@ object RegisterEngine extends Logging {
       em.files foreach { f =>
         val path = new Path(f)
         info(s"Removing ${f}")
-        fs.delete(path)
+        fs.delete(path, false)
       }
 
       engineManifests.delete(em.id, em.version)
