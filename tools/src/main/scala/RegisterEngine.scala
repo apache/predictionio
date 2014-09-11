@@ -20,6 +20,18 @@ object RegisterEngine extends Logging {
   val engineManifests = Storage.getMetaDataEngineManifests
   implicit val formats = DefaultFormats + new EngineManifestSerializer
 
+  def builtinEngine(jsonManifest: File): Boolean = {
+    val jsonString = try {
+      Source.fromFile(jsonManifest).mkString
+    } catch {
+      case e: java.io.FileNotFoundException =>
+        error(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
+        sys.exit(1)
+    }
+    val engineManifest = read[EngineManifest](jsonString)
+    engineManifest.id.startsWith("io.prediction.engines.")
+  }
+
   def registerEngine(
       jsonManifest: File,
       engineFiles: Seq[File],

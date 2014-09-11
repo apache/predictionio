@@ -309,29 +309,34 @@ object Console extends Logging {
   }
 
   def register(ca: ConsoleArgs): Unit = {
-    val sbt = detectSbt(ca)
-    info(s"Using command '${sbt}' at the current working directory to build.")
-    info("If the path above is incorrect, this process will fail.")
+    if (!RegisterEngine.builtinEngine(ca.engineJson)) {
+      val sbt = detectSbt(ca)
+      info(s"Using command '${sbt}' at the current working directory to build.")
+      info("If the path above is incorrect, this process will fail.")
 
-    val cmd =
-      s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
-    info(s"Going to run: ${cmd}")
-    val r = cmd.!(ProcessLogger(
-      line => info(line), line => error(line)))
-    if (r != 0) {
-      error(s"Return code of previous step is ${r}. Aborting.")
-      sys.exit(1)
+      val cmd =
+        s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
+      info(s"Going to run: ${cmd}")
+      val r = cmd.!(ProcessLogger(
+        line => info(line), line => error(line)))
+      if (r != 0) {
+        error(s"Return code of previous step is ${r}. Aborting.")
+        sys.exit(1)
+      }
+      info("Build finished successfully. Locating files to be registered.")
+
+      val jarFiles = jarFilesForScala
+      if (jarFiles.size == 0) {
+        error("No files can be found for registration. Aborting.")
+        sys.exit(1)
+      }
+      jarFiles foreach { f => info(s"Found ${f.getName}")}
+
+      RegisterEngine.registerEngine(ca.engineJson, jarFiles)
+    } else {
+      info("Registering a built-in engine.")
+      RegisterEngine.registerEngine(ca.engineJson, builtinEngines(ca.pioHome.get))
     }
-    info("Build finished successfully. Locating files to be registered.")
-
-    val jarFiles = jarFilesForScala
-    if (jarFiles.size == 0) {
-      error("No files can be found for registration. Aborting.")
-      sys.exit(1)
-    }
-    jarFiles foreach { f => info(s"Found ${f.getName}")}
-
-    RegisterEngine.registerEngine(ca.engineJson, jarFiles)
   }
 
   def unregister(ca: ConsoleArgs): Unit = {
