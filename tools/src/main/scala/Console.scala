@@ -328,6 +328,21 @@ object Console extends Logging {
     val builtinEngines = Seq(
       "io.prediction.engines.itemrank")
 
+    val itemrankEngineTemplate = Map(
+      "engine.json" -> templates.scala.txt.engineJson(
+        "io.prediction.engines.itemrank",
+        BuildInfo.version,
+        "PredictionIO ItemRank Engine",
+        "io.prediction.engines.itemrank.ItemRankEngine"),
+      joinFile(Seq("params", "datasource.json")) ->
+        templates.itemrank.params.txt.datasourceJson(),
+      joinFile(Seq("params", "preparator.json")) ->
+        templates.itemrank.params.txt.preparatorJson(),
+      joinFile(Seq("params", "algorithms.json")) ->
+        templates.itemrank.params.txt.algorithmsJson(),
+      joinFile(Seq("params", "serving.json")) ->
+        templates.itemrank.params.txt.servingJson())
+
     val scalaEngineTemplate = Map(
       "build.sbt" -> templates.scala.txt.buildSbt(
         ca.projectName.get,
@@ -336,7 +351,8 @@ object Console extends Logging {
       "engine.json" -> templates.scala.txt.engineJson(
         ca.projectName.get,
         "0.0.1-SNAPSHOT",
-        ca.projectName.get),
+        ca.projectName.get,
+        "myorg.MyEngineFactory"),
       joinFile(Seq("params", "datasource.json")) ->
         templates.scala.params.txt.datasourceJson(),
       joinFile(Seq("project", "assembly.sbt")) ->
@@ -344,8 +360,17 @@ object Console extends Logging {
       joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
         templates.scala.src.main.scala.txt.engine())
 
+    val template = ca.projectName.get match {
+      case "io.prediction.engines.itemrank" =>
+        info("Creating built-in engine project io.prediction.engines.itemrank")
+        itemrankEngineTemplate
+      case _ =>
+        info(s"Creating Scala engine project ${ca.projectName.get}")
+        scalaEngineTemplate
+    }
+
     try {
-      scalaEngineTemplate map { ft =>
+      template map { ft =>
         FileUtils.writeStringToFile(
           new File(ca.projectName.get, ft._1),
           ft._2.toString,
