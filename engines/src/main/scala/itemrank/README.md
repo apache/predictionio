@@ -3,7 +3,7 @@ ItemRank engine
 
 ## Use case
 
-In each day (or other time unit), there is a list of items to be shown to users and we want to personalize the order of the list of items for each user.
+Personalize the order of a list of items for each user.
 
 ## Prediction Input
 
@@ -14,25 +14,42 @@ In each day (or other time unit), there is a list of items to be shown to users 
 
 - ranked items with score
 
+## Events requirement
 
-## App Data
+- user entity
+- item entity, with following properties:
+	- itypes: array of String
+	- starttime: ISO 8601
+	- endtime: ISO 8601
+	- inactive: boolean
+- user-to-item action event, optionally with following properties:
+ 	- rating: integer rating
 
-* Users
-* Items
-* U2IActions
-* ItemSets - the list of items at each day (or other time unit)
+## Example Run
 
-Import Sample Data
-==================
-Run under examples.
+Import sample events
 ```
-examples$ set -a
-examples$ source ../conf/pio-env.sh
-examples$ set +a
-
-examples$ ../sbt/sbt "runMain io.prediction.engines.itemrank.CreateSampleData"
+$ python sdk/python-sdk/itemrec_example.py --appid <appid>
 ```
 
+```
+$ cd engines/src/main/scala/itemrank/examples
+```
+
+Update the appId in params/datasource.json with <appid>
+
+```
+$ ../../../../../../bin/pio register
+$ ../../../../../../bin/pio train -ap mahoutalgo.json
+$ ../../../../../../bin/pio deploy
+```
+
+Retrieve prediction:
+
+```
+$ curl -i -X POST http://localhost:8000/ \
+-d '{ "uid" : "u2", "items" : ["i0", "i1", "i2", "i3"] }'
+```
 
 Run Evaluation
 ==============
@@ -42,52 +59,13 @@ Run Evaluation
 ../bin/pio-run  io.prediction.engines.itemrank.Runner
 ```
 
-Import Sample data (Obsolete)
+Import Sample Data (obsolete)
 ==================
+Run under examples.
+```
+examples$ set -a
+examples$ source ../conf/pio-env.sh
+examples$ set +a
 
-Start Mongo:
-
-	$ mongod
-
-At project root directory (**Imagine/**):
-
-	$ sbt/sbt "engines/runMain io.prediction.engines.itemrank.CreateSampleData"
-
-
-By default, it imports data into mongo with appid=1 and create 30 days of sample data. You may specify different appid or different number of days by using --appid and --days parameters.
-
-For example, to import to appid=4 with 90 days of data:
-
-	$ sbt/sbt "engines/runMain io.prediction.engines.itemrank.CreateSampleData --appid 4 --days 90"
-
-
-Runner with spark-submit (Obsolete)
-=========================
-
-At project root directory (**Image/**):
-
-		$ sbt/sbt package
-		$ sbt/sbt engines/assemblyPackageDependency
-		$ $SPARK_HOME/bin/spark-submit --jars engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,/Users/ckh/dev/mac_dev/pio/Imagine/engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "io.prediction.engines.itemrank.Runner" core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
-
-
-Run Evaluation (Obsolete)
-==============
-
-At project root directory (**Image/**):
-
-	$ sbt/sbt package
-	$ sbt/sbt engines/assemblyPackageDependency
-	$ sbt/sbt "core/runMain io.prediction.tools.RegisterEngine ../engines/src/main/scala/itemrank/examples/manifest.json"
-
-KNNAlgorithm:
-
-	$ sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap kNNAlgoParams.json"
-
-MahoutItemBasedAlgorithm:
-
-	$ sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap mahoutAlgoParams.json"
-
-RandomAlgorithm:
-
-	$ sbt/sbt "core/runMain io.prediction.tools.RunEvaluationWorkflow --sparkHome $SPARK_HOME io.prediction.engines.itemrank 0.8.0-SNAPSHOT --jsonDir ../engines/src/main/scala/itemrank/examples --ap randomAlgoParams.json"
+examples$ ../sbt/sbt "runMain io.prediction.engines.itemrank.CreateSampleData"
+```

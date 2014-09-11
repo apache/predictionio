@@ -1,10 +1,14 @@
 {
-  "appid": 1,
+  "appId": 3,
   "actions": [ "view", "like", "conversion", "rate" ],
-  "hours": 24,
-  "trainStart" : "2014-04-01T00:00:00.000Z",
-  "testStart" : "2014-04-20T00:00:00.000Z",
-  "testUntil" : "2014-04-21T00:00:00.000Z",
-  "goal": ["conversion", "view"],
-  "verbose" : true
+  "attributeNames" : {
+    "user" : "user",
+    "item" : "item",
+    "u2iActions" : [ "view", "like", "conversion", "rate" ],
+    "itypes" : "pio_itypes",
+    "starttime" : "starttime",
+    "endtime" : "endtime",
+    "inactive" : "inactive",
+    "rating" : "pio_rate"
+  }
 }
