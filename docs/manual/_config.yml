@@ -7,7 +7,7 @@ description: >
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "" # the base hostname & protocol for your site
 permalink: /:title
-highlighter: true
+highlighter: pygments
 exclude: ['bin', 'README.md']
 markdown: redcarpet
 redcarpet:
