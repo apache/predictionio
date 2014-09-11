@@ -38,14 +38,22 @@ import java.util.UUID
 
 class HBEvents(client: HBClient, namespace: String) extends Events with Logging {
 
-  val nameDesc = NamespaceDescriptor.create(namespace).build()
-
+  // check namespace exist
+  val existingNamespace = client.admin.listNamespaceDescriptors().map(_.getName)
+  if (!existingNamespace.contains(namespace)) {
+    val nameDesc = NamespaceDescriptor.create(namespace).build()
+    info(s"The namespace ${namespace} doesn't exist yet. Creating now...")
+    client.admin.createNamespace(nameDesc)
+  }
+  /*
   try {
+    val nameDesc = NamespaceDescriptor.create(namespace).build()
     client.admin.createNamespace(nameDesc)
   } catch {
-    case e: NamespaceExistException => ()
+    case e: NamespaceExistException => info(s"namespace already existed: ${e}")
     case e: Exception => throw new RuntimeException(e)
   }
+  */
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
   //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
