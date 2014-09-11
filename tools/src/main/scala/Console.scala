@@ -11,6 +11,7 @@ import io.prediction.data.api.DataAPI
 import io.prediction.data.api.DataAPIConfig
 
 import grizzled.slf4j.Logging
+import org.apache.commons.io.FileUtils
 import org.json4s._
 import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
@@ -41,7 +42,8 @@ case class ConsoleArgs(
   engineInstanceId: Option[String] = None,
   ip: String = "localhost",
   port: Int = 8000,
-  mainClass: Option[String] = None)
+  mainClass: Option[String] = None,
+  projectName: Option[String] = None)
 
 object Console extends Logging {
   def main(args: Array[String]): Unit = {
@@ -82,6 +84,18 @@ object Console extends Logging {
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to sbt. Default: sbt")
+      note("")
+      cmd("new").
+        text("Creates a new engine project in a subdirectory with the same " +
+          "name as the project. The project name will also be used as the " +
+          "default engine ID.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "new")
+        } children(
+          arg[String]("<project name>") action { (x, c) =>
+            c.copy(projectName = Some(x))
+          } text("Engine project name.")
+        )
       note("")
       cmd("register").
         text("Build and register an engine at the current directory.").
@@ -278,6 +292,8 @@ object Console extends Logging {
     parser.parse(consoleArgs, ConsoleArgs()) map { pca =>
       val ca = pca.copy(passThrough = passThroughArgs)
       ca.commands match {
+        case Seq("new") =>
+          createProject(ca)
         case Seq("register") =>
           register(ca)
         case Seq("unregister") =>
@@ -306,6 +322,42 @@ object Console extends Logging {
       }
     }
     sys.exit(0)
+  }
+
+  def createProject(ca: ConsoleArgs): Unit = {
+    val builtinEngines = Seq(
+      "io.prediction.engines.itemrank")
+    val engineJson = templates.txt.engine(
+      ca.projectName.get,
+      "0.0.1-SNAPSHOT",
+      ca.projectName.get,
+      ca.projectName.get)
+    val buildSbt = templates.txt.build(
+      ca.projectName.get,
+      BuildInfo.version,
+      BuildInfo.sparkVersion)
+    val assemblySbt = templates.txt.assembly()
+    new File(ca.projectName.get + File.separator + "project").mkdirs
+
+    FileUtils.writeStringToFile(
+      new File(ca.projectName.get + File.separator + "engine.json"),
+      engineJson.toString,
+      "ISO-8859-1")
+
+    FileUtils.writeStringToFile(
+      new File(ca.projectName.get + File.separator + "build.sbt"),
+      buildSbt.toString,
+      "ISO-8859-1")
+
+    FileUtils.writeStringToFile(
+      new File(Seq(
+        ca.projectName.get,
+        "project",
+        "assembly.sbt").mkString(File.separator)),
+      assemblySbt.toString,
+      "ISO-8859-1")
+
+    info(s"Engine project created in subdirectory ${ca.projectName.get}.")
   }
 
   def register(ca: ConsoleArgs): Unit = {

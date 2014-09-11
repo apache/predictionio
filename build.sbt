@@ -17,9 +17,16 @@ fork in (ThisBuild, run) := true
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
+sparkVersion in ThisBuild := "1.0.2"
+
 lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
   sourceGenerators in Compile <+= buildInfo,
-  buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+  buildInfoKeys := Seq[BuildInfoKey](
+    name,
+    version,
+    scalaVersion,
+    sbtVersion,
+    sparkVersion),
   buildInfoPackage := "io.prediction.core")
 
 lazy val root = project in file(".") aggregate(
