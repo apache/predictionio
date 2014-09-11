@@ -24,6 +24,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.broadcast.Broadcast
 
+import org.json4s._
+
 case class HistoricalData(
   val ticker: String,
   val timeIndex: Array[DateTime],
@@ -38,6 +40,8 @@ case class HistoricalData(
   }
 }
 
+
+
 class YahooDataSource(val params: YahooDataSource.Params) 
   extends PDataSource[
       YahooDataSource.Params,
@@ -49,20 +53,28 @@ class YahooDataSource(val params: YahooDataSource.Params)
     params.appId, params.startTime, params.untilTime)
     
   val timezone = DateTimeZone.forID("US/Eastern")
+  val marketTicker = params.windowParams.marketTicker
 
-  def merge(intermediate: YahooDataSource.Intermediate, e: Event)
+  def mergeTimeIndex(intermediate: YahooDataSource.Intermediate, e: Event)
   : YahooDataSource.Intermediate = {
     println("Merge")
     val dm: DataMap = e.properties     
 
     val dailyMap = intermediate.dailyMap
     // TODO: Check ticker in intermediate
-    
-    val closeList: Array[Double] = dm.get[Array[Double]]("close")
-    val adjCloseList: Array[Double] = dm.get[Array[Double]]("adjclose")
-    val volumeList: Array[Double] = dm.get[Array[Double]]("volume")
+
+    println(dm)
+
+    val yahooData = dm.get[JObject]("yahoo")
+
+    implicit val formats = DefaultFormats
+
+    val closeList = (yahooData \ "close").extract[Array[Double]]
+    val adjCloseList = (yahooData \ "adjclose").extract[Array[Double]]
+    val volumeList = (yahooData \ "volume").extract[Array[Double]]
+
         
-    val tList: Array[DateTime] = dm.get[Array[Long]]("t")
+    val tList: Array[DateTime] = (yahooData \ "t").extract[Array[Long]]
       .map(t => new DateTime(t * 1000, timezone))
 
     tList.zipWithIndex.drop(1).foreach { case (t, idx) => {
@@ -81,7 +93,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
     YahooDataSource.Intermediate(ticker = e.entityId, dailyMap = dailyMap)
   }
 
-  def finalize(intermediate: YahooDataSource.Intermediate): HistoricalData = {
+  def finalizeTimeIndex(intermediate: YahooDataSource.Intermediate): HistoricalData = {
     val dailyMap = intermediate.dailyMap
     val ticker = intermediate.ticker
 
@@ -102,7 +114,6 @@ class YahooDataSource(val params: YahooDataSource.Params)
       adjReturn = timeIndex.map(t => dailyMap(t).adjReturn),
       volume = timeIndex.map(t => dailyMap(t).volume))
   }
-  
 
   /*
   def read() {
@@ -123,14 +134,33 @@ class YahooDataSource(val params: YahooDataSource.Params)
   }
   */
 
+  def getTimeIndex(): HistoricalData = {
+    // Only extracts market ticker as the main reference of market hours
+    val predicate = (e: Event) => 
+      (e.entityType == params.entityType && e.entityId == marketTicker)
+    
+    val tickerMap: Map[String, HistoricalData] = batchView
+      .aggregateByEntityOrdered(
+        predicate,
+        YahooDataSource.Intermediate(),
+        mergeTimeIndex)
+      .mapValues(finalizeTimeIndex)
+
+    val market = tickerMap(marketTicker)
+    println(market)
+    market
+  }
+
   def read(sc: SparkContext)
   : Seq[(AnyRef, RDD[AnyRef], RDD[(AnyRef, AnyRef)])] = {
-    println("HEREHERHEHREHERREH")
+
+    getTimeIndex
+
+    /*
 
     val predicate = (e: Event) => (e.entityType == "yahoo")
     val map: (Event => DataMap) = (e: Event) => (e.properties)
 
-    println("Right before reading")
 
     val tickerMap: Map[String, HistoricalData] = batchView
       .aggregateByEntityOrdered(
@@ -143,6 +173,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
       println(ticker)
       println(data)
     }}
+    */
 
     Seq[(AnyRef, RDD[AnyRef], RDD[(AnyRef, AnyRef)])]()
   }
@@ -150,7 +181,10 @@ class YahooDataSource(val params: YahooDataSource.Params)
 
 object YahooDataSource {
   case class Params(
-    val appId: Int,
+    val windowParams: DataSourceParams,
+    // Below filters with DataAPISpecific details
+    val appId: Int,  // Ignore appId in DataSourceParams
+    val entityType: String,
     val startTime: Option[DateTime] = None,
     val untilTime: Option[DateTime] = None
   ) extends BaseParams
@@ -167,6 +201,8 @@ object YahooDataSource {
     val ticker: String = "", 
     val dailyMap: MMap[DateTime, Daily] = MMap[DateTime, Daily]())
 
+
+  /*
   def main(args: Array[String]) {
     val params = Params(
       appId = 1,
@@ -176,12 +212,22 @@ object YahooDataSource {
     val ds = new YahooDataSource(params)
     //ds.read
   }
+  */
 }
 
 object YahooDataSourceRun {
   def main(args: Array[String]) {
     val dsp = YahooDataSource.Params(
+      windowParams = DataSourceParams(
+        baseDate = new DateTime(2004, 1, 1, 0, 0),
+        fromIdx = 20,
+        untilIdx = 50,
+        trainingWindowSize = 15,
+        maxTestingWindowSize = 10,
+        marketTicker = "SPY",
+        tickerList = Seq("AAPL", "MSFT", "IBM")),
       appId = 1,
+      entityType = "yahoo",
       untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
       //untilTime = None)
 

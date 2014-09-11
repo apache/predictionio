@@ -32,15 +32,18 @@ def import_data(client, appid, ticker, start_time, end_time, event_time):
       ('Close', 'close'),
       ('Volume', 'volume'),
       ('Adj Close', 'adjclose')]
-  properties = dict()
 
-  properties['t'] = [
+  yahoo_data = dict()
+  yahoo_data['ticker'] = ticker
+  yahoo_data['t'] = [
       # hour=16 to indicate market close time
       since_epoch(eastern.localize(date_.to_pydatetime().replace(hour=16)))
       for date_ in df.index]
 
   for column in columns:
-    properties[column[1]] = map(numpy.asscalar, df[column[0]].values)
+    yahoo_data[column[1]] = map(numpy.asscalar, df[column[0]].values)
+
+  properties = {'yahoo': yahoo_data}
 
   data = {
       'event': '$set',
@@ -67,15 +70,18 @@ def import_predefined():
       (datetime(2014, 6, 1), datetime(2014, 7, 1), datetime(2014, 7, 15)),
       ]
 
-  ticker = 'IBM'
+  #ticker = 'SPY'
+  tickers = ['SPY', 'AAPL', 'IBM', 'MSFT']
  
   appid = 1
-  apiurl = 'http://localhost:8081'
+  apiurl = 'http://localhost:7070'
   client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
 
-  for time_slice in time_slices:
-    import_data(client, appid, ticker, 
-        time_slice[0], time_slice[1], time_slice[2])
+  for ticker in tickers:
+    for time_slice in time_slices:
+      import_data(client, appid, ticker, 
+          time_slice[0], time_slice[1], time_slice[2])
+      #return
 
 
 def import_one():
