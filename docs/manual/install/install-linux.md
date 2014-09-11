@@ -1,31 +1,19 @@
 ---
 layout: docs
-title: Installing PredictionIO from Source Code
+title: Installing PredictionIO on Linux
 ---
 
-# Installing PredictionIO from Source Code
+# Installing PredictionIO on Linux
 
-## Building
+## Download PredictionIO
 
-Run the following to download and build PredictionIO from its source code.
-
-```
-$ git clone https://github.com/PredictionIO/PredictionIO.git
-$ cd PredictionIO
-$ ./make-distribution.sh
-```
-
-You should see something like the following when it finishes building
-successfully.
+Simply download PredictionIO's binary distribution and extract it.
 
 ```
-...
-a PredictionIO-{{ site.pio_version }}/bin/load-pio-env.sh
-a PredictionIO-{{ site.pio_version }}/bin/pio
-a PredictionIO-{{ site.pio_version }}/bin/pio-class
-PredictionIO binary distribution created at PredictionIO-{{ site.pio_version }}.tar.gz
+$ wget http://download.prediction.io/PredictionIO-{{ site.pio_version }}.tar.gz
+$ tar zxvf PredictionIO-{{ site.pio_version }}.tar.gz
+$ cd PredictionIO-{{ site.pio_version }}
 ```
-
 
 ## Installing Dependencies
 
@@ -41,9 +29,8 @@ $ wget http://d3kbcqa49mib13.cloudfront.net/{{ site.spark_download_filename }}.t
 $ tar zxvf {{ site.spark_download_filename }}.tgz
 ```
 
-Copy the configuration template `conf/pio-env.sh.template` to `conf/pio-env.sh`
-in your PredictionIO installation directory. After that, edit `conf/pio-env.sh`
-and point `SPARK_HOME` to the location where you extracted Apache Spark.
+After that, edit `conf/pio-env.sh` in your PredictionIO installation directory.
+For example,
 
 ```
 SPARK_HOME=/home/abc/Downloads/{{ site.spark_download_filename }}
