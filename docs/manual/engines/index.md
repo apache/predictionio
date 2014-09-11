@@ -25,7 +25,7 @@ $ ../../bin/pio <TODO>
 ```
 You may launch more than one engine instance in PredictionIO.
 
-If it is your first time using PredictionIO, these [tutorials and samples](/engines/tutorials.html) should be helpful.
+If it is your first time using PredictionIO, these [tutorials and samples](/tutorials/engines/) should be helpful.
 
 
 ## Schedule Model Re-training

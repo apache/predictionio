@@ -1,6 +1,9 @@
 - title: "Installing PredictionIO"
   href: "/install/"
 
+- title: "Quick Start"
+  href: "/tutorials/engines/quickstart.html"
+  
 - title: "Loading Data"
   href: "/dataapi.html"
   
