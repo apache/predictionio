@@ -26,6 +26,7 @@ cp $FWDIR/engines/target/scala-2.10/engines*jar $DISTDIR/lib
 rm -f $DISTDIR/lib/*javadoc.jar
 rm -f $DISTDIR/lib/*sources.jar
 rm -f $DISTDIR/conf/pio-env.sh
+mv $DISTDIR/conf/pio-env.sh.template $DISTDIR/conf/pio-env.sh
 
 touch $DISTDIR/RELEASE
 
