@@ -1,7 +1,7 @@
-@(id: String, version: String, name: String, engineFactory: String)
+@(id: String, version: String, name: String)
 {
   "id": "@{id}",
   "version": "@{version}",
   "name": "@{name}",
-  "engineFactory": "@{engineFactory}"
+  "engineFactory": "myorg.MyEngineFactory"
 }

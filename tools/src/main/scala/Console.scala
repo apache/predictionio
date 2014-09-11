@@ -336,10 +336,13 @@ object Console extends Logging {
       "engine.json" -> templates.scala.txt.engineJson(
         ca.projectName.get,
         "0.0.1-SNAPSHOT",
-        ca.projectName.get,
         ca.projectName.get),
-      "project" + File.separator + "assembly.sbt" ->
-        templates.scala.project.txt.assemblySbt())
+      joinFile(Seq("params", "datasource.json")) ->
+        templates.scala.params.txt.datasourceJson(),
+      joinFile(Seq("project", "assembly.sbt")) ->
+        templates.scala.project.txt.assemblySbt(),
+      joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
+        templates.scala.src.main.scala.txt.engine())
 
     try {
       scalaEngineTemplate map { ft =>
@@ -651,4 +654,7 @@ object Console extends Logging {
       if (f.exists) f.getCanonicalPath else "sbt"
     }
   }
+
+  def joinFile(path: Seq[String]): String =
+    path.mkString(File.separator)
 }
