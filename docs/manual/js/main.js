@@ -31,10 +31,11 @@ function codeTabs() {
     codeSamples.each(function() {
       $(this).addClass("tab-pane");
       var lang = $(this).data("lang");
-      var id = "tab_" + lang + "_" + counter;
+      var cls = "tab_" + lang.replace(" ", "_")
+      var id = cls + "_" + counter;
       $(this).attr("id", id);
       tabBar.append(
-        '<li><a class="tab_' + lang + '" href="#' + id + '"><b>' + lang + '</b></a></li>'
+        '<li><a class="tab_' + cls + '" href="#' + id + '"><b>' + lang + '</b></a></li>'
       );
     });
 

@@ -17,7 +17,6 @@
   <link href="http://prediction.io/assets/images/favicon.png" rel="shortcut icon" />
   <link rel="apple-touch-icon-precomposed" href="http://prediction.io/assets/images/iosicon.png" />
 
-  <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl }}">
   <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 
   <link href="http://prediction.io/assets/stylesheets/bootstrap.css" media="screen" rel="stylesheet" type="text/css" />
@@ -29,7 +28,8 @@
 
   <link href="http://prediction.io/assets/stylesheets/theme.css?v=201310012" media="screen" rel="stylesheet" type="text/css" />
   <link href="http://prediction.io/assets/stylesheets/fonts.css" media="screen" rel="stylesheet" type="text/css" />
-  
+  <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl }}">
+
 </head>
   <body class="theme-pattern-subtle-grey">
     <script type="text/javascript">
@@ -62,7 +62,7 @@
               </a>
             </h1>
             <div class="nav-collapse collapse">
-              <a href="http://prediction.io/download" class="pull-right marginLeft btn btn-primary btn-small">Download</a>              
+              <a href="http://prediction.io/download" class="pull-right marginLeft btn btn-primary btn-small">Download</a>
               <ul class="nav pull-right">
                 <li class="active"><a href="http://docs.prediction.io/">Docs</a></li>
                 <li class="dropdown">
@@ -87,9 +87,9 @@
                 <li></li>
               </ul>
             </div>
-            
+
           </div>
-          
+
         </div>
       </nav>
     </header>
@@ -104,7 +104,7 @@
           <div class="container">
             <div class="row-fluid">
               <div class="span3">
-                <div class=" docs-sidebar-menu">  
+                <div class=" docs-sidebar-menu">
                   {% include nav.html %}
                 </div>
               </div>
@@ -158,7 +158,7 @@
               <li>
                     <i class="icon-circle-blank"></i>
                     <a href="https://predictionio.uservoice.com/forums/219398-general/filters/top" target="_blank">Request a Feature</a>
-              </li>              
+              </li>
             </ul>
           </div>
           <div class="span4">

@@ -3,14 +3,26 @@ layout: docs
 title: Data API
 ---
 
-# Loading Data through Data API
+# Loading Data through the Data API
 
-Data API is designed to import and collect data into PredictionIO in event-based style.
-All PredictionIO-compliant engines support the data store and data format used by the Data API.
+Data API is designed to import and collect data into PredictionIO in event-based
+style. All PredictionIO-compliant engines support the data store and data format
+used by the Data API.
 
-> You may also [modify DataSource](/cookbook/existingdatasource.html) of an engine to read data directly from your existing data store.
+> You may also [modify DataSource](/cookbook/existingdatasource.html) of an
+engine to read data directly from your existing data store.
 
-## Launching Data API Server
+## Launching the Data API Server
+
+> Before launching the Data API Server, make sure that your event data store
+backend is properly configured and is running. By default, PredictionIO uses
+HBase, and a quick configuration can be found
+[here](/install/install-sourcecode.html#hbase).
+
+Everything about PredictionIO can be done through the `bin/pio` command.
+
+> For this section, `$PIO_HOME` refers to the location where you have installed
+PredictionIO.
 
 ```
 $ cd $PIO_HOME
@@ -26,19 +38,25 @@ Sample response:
 
 ```
 HTTP/1.1 200 OK
+Server: spray-can/1.2.1
+Date: Wed, 10 Sep 2014 22:37:30 GMT
+Content-Type: application/json; charset=UTF-8
+Content-Length: 18
+
 {"status":"alive"}
 ```
 
-## Using Data API
+## Using the Data API
 
-You may connect to the Data API with HTTP request or by using one of the `PredictionIO SDKs`.
+You may connect to the Data API with HTTP request or by using one of many
+**PredictionIO SDKs**.
 
-### Create event
+### Creating Your First Event
 
-Event of one entity:
+The following shows how one can create an event involving a single entity.
 
 <div class="codetabs">
-<div data-lang="HTTP">
+<div data-lang="Raw HTTP">
 {% highlight bash %}
 $ curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
@@ -62,27 +80,28 @@ $ curl -i -X POST http://localhost:8081/events \
 }'
 {% endhighlight %}
 </div>
-<div data-lang="Python-SDK">
+<div data-lang="Python SDK">
 {% highlight bash %}
 (TODO)
 {% endhighlight %}
 </div>
-<div data-lang="Ruby-SDK">
+<div data-lang="Ruby SDK">
 {% highlight bash %}
 (TODO)
 {% endhighlight %}
 </div>
-<div data-lang="Java-SDK">
+<div data-lang="Java SDK">
 {% highlight bash %}
 (TODO)
 {% endhighlight %}
 </div>
 </div>
 
-Event between two entities (with **targetEntity**):
+The following shows how one can create an event involving two entities (with
+`targetEntity`).
 
 <div class="codetabs">
-<div data-lang="HTTP">
+<div data-lang="Raw HTTP">
 {% highlight bash %}
 $ curl -i -X POST http://localhost:8081/events \
 -H "Content-Type: application/json" \
@@ -104,17 +123,17 @@ $ curl -i -X POST http://localhost:8081/events \
 }'
 {% endhighlight %}
 </div>
-<div data-lang="Python-SDK">
+<div data-lang="Python SDK">
 {% highlight bash %}
 (TODO)
 {% endhighlight %}
 </div>
-<div data-lang="Ruby-SDK">
+<div data-lang="Ruby SDK">
 {% highlight bash %}
 (TODO)
 {% endhighlight %}
 </div>
-<div data-lang="Java-SDK">
+<div data-lang="Java SDK">
 {% highlight bash %}
 (TODO)
 {% endhighlight %}
@@ -126,118 +145,136 @@ Sample response:
 
 ```
 HTTP/1.1 201 Created
-{"eventId":"pBXkP-GkRfShh-xIRTIG2A"}
+Server: spray-can/1.2.1
+Date: Wed, 10 Sep 2014 22:51:33 GMT
+Content-Type: application/json; charset=UTF-8
+Content-Length: 68
+
+{"eventId":"4-1102999185618-my_event-user-uid--7574530243528847393"}
 ```
 
-**Description of the fields:**
+### Event Creation API
 
-- **event**: Name of the event. For example. "sign-up", "rate", "view", "buy" etc
-- **entityType**: The entity type. It is the namespace of the entityId and analogous to the table name of a relational database. The entityId must be unique within same entityType.
-- **entityId**: The entity ID. **entityType + entityId** becomes the unique identifier of the entity. For example, you may have entityType named "user". In this entityType, you have different entities with id, say 1 and 2. Then user-1 and user-2 uniquely identifies these two entities.
-- **targetEntityType**: The target entity type.
-- **targetEntityId**: the target entity ID.
-- **properties**: see **Note** below.
-* **eventTime**: The time of the event happened. Current time and UTC timezone will be used if it's not specified. Must be ISO 8601 format (eg. "2004-12-13T21:39:45.618Z", or "2014-09-09T16:17:42.937-08:00")
-- **tags**: JSON array of String. Empty list of tag will be used if it's not specified
-- **appId**: application ID for separating your data set for different applications.
-- **predictionKey**: Reserved. TBD
-- **creationTime**: Creation time of this event record (not the time of event happened). Current time and UTC timezone will be used if it's not specified. Must be ISO 8601 format (eg. "2004-12-13T21:39:45.618Z", or "2014-09-09T16:17:42.937-08:00")
+The event creation support many commonly used data.
 
-The following fields are optional:
-- **targetEntityType**
-- **targetEntityId**
-- **properties**
-* **eventTime**
-* **tags**
-* **predictionKey**
-* **creationTime**
+Field | Description
+:---- | :----------
+`event` | Name of the event. (Examples: "sign-up", "rate", "view", "buy")
+`entityType` | The entity type. It is the namespace of the entityId and
+             | analogous to the table name of a relational database. The
+             | entityId must be unique within same entityType.
+`entityId` | The entity ID. `entityType-entityId` becomes the unique
+           | identifier of the entity. For example, you may have entityType
+           | named `user`, and different entity IDs, say `1` and `2`. In this
+           | case, `user-1` and `user-2` uniquely identifies | these two
+           | entities.
+`targetEntityType` | (Optional) The target entity type.
+`targetEntityId` | (Optional) The target entity ID.
+`properties` | (Optional) See **Note** below.
+`eventTime` | (Optional) The time of the event. Current time and UTC timezone
+            | will be used if unspecified. Must be in ISO 8601 format (e.g.
+            | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
+`tags` | (Optional) JSON array of strings. Empty list will be used if
+       | unspecified.
+`appId` | Application ID for separating your data set between different
+        | applications.
+`predictionKey` | (Optional) Reserved. TBD.
+`creationTime` | (Optional) Creation time of this event (not the time when this
+               | event happened). Current time and UTC timezone will be used if
+               | unspecified. Must be in ISO 8601 format (e.g.
+               | `2004-12-13T21:39:45.618Z`, or
+               | `2014-09-09T16:17:42.937-08:00`).
 
+#### Note
+`properties` can be associated with either an entity or an event.
 
-Note:
-* **properties** can be associated with either the **entity** or the **event**.
+-   `properties` associated with an entity:
 
-* **properties** associated with **entity**:
+    Entity `user-1` may have `properties` of `birthday` and `address`. To set
+    and unset properties for the entity, use special event `$set` and
+    `$unset` to create an event of the entity.
 
-  For example, entity user-1 may have properties of "birthday" and "address". To set and unset properties for the entity, use special event **$set** and **$unset** to create an event of the entity. For example,
-
-  ```
-  '{
-    "event" : "$set",
-    "entityType" : "user"
-    "entityId" : "1",
-    "properties" : {
-      "birthday" : "1984-10-11",
-      "address" : "1234 Street, San Francisco, CA 94107"
+    ```
+    {
+      "event" : "$set",
+      "entityType" : "user"
+      "entityId" : "1",
+      "properties" : {
+        "birthday" : "1984-10-11",
+        "address" : "1234 Street, San Francisco, CA 94107"
+      }
     }
-  }'
-  ```
+    ```
 
-* **properties** associated with **events**:
+-   `properties` associated with an event:
 
-  For example, user-1 may have "rate" event on item-1 with rating value of 4.5.
+    `user-1` may have a `rate` event on `item-1` with rating value of `4.5`.
 
-  ```
-  '{
-    "event" : "rate",
-    "entityType" : "user"
-    "entityId" : "1",
-    "targetEntityType" : "item",
-    "targetEntityId" : "1"
-    "properties" : {
-      "rating" : 4.5
+    ```
+    {
+      "event" : "rate",
+      "entityType" : "user"
+      "entityId" : "1",
+      "targetEntityType" : "item",
+      "targetEntityId" : "1"
+      "properties" : {
+        "rating" : 4.5
+      }
     }
-  }'
-  ```
+    ```
 
-## For Debug Purpose
+## Debugging Recipes
 
-### Get event
+Replace `<your_eventId>` by a real one in the following.
 
-replace *your_eventId* by the returned eventId:
+### Get an Event
 
 ```
 $ curl -i -X GET http://localhost:8081/events/<your_eventId> \
 -H "Content-Type: application/json"
 ```
 
-### Delete event
+### Delete an Event
 
 ```
 $ curl -i -X DELETE http://localhost:8081/events/<your_eventId>
 ```
 
-### Get all events of appId
-(*use cautiously*)
+### Get All Events of an appId
+
+> Use cautiously!
 
 ```
 $ curl -i -X GET http://localhost:8081/events?appId=<your_appId> \
 -H "Content-Type: application/json"
 ```
 
-### Delete all events of appId
+### Delete All Events of an appId
+
 ```
 $ curl -i -X DELETE http://localhost:8081/events?appId=<your_appId>
 ```
 
-### Get all events of appId within time range
-* eventTime >= startTime:
+### Get All Events of an appId within a Time Range
 
-```
-$ curl -i -X GET http://localhost:8081/events?appId=<your_appId>&startTime=<time in ISO8601 format>
-```
-* eventTime < untilTime:
+-   `eventTime >= startTime`
 
-```
-$ curl -i -X GET http://localhost:8081/events?appId=<your_appId>&untilTime=<time in ISO8601 format>
-```
+    ```
+    $ curl -i -X GET http://localhost:8081/events?appId=<your_appId>&startTime=<time in ISO8601 format>
+    ```
+-   `eventTime < untilTime`
 
-* eventTime >= startTime && eventTime < untilTime:
+    ```
+    $ curl -i -X GET http://localhost:8081/events?appId=<your_appId>&untilTime=<time in ISO8601 format>
+    ```
 
-```
-$ curl -i -X GET http://localhost:8081/events?appId=2&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
-```
+-   `eventTime >= startTime && eventTime < untilTime`
 
-Example,
+    ```
+    $ curl -i -X GET http://localhost:8081/events?appId=2&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
+    ```
+
+Example:
 
 ```
 $ curl -i -X GET http://localhost:8081/events?appId=2&startTime=2014-08-30T08:45:51.566Z&untilTime=2014-08-30T08:45:51.591Z

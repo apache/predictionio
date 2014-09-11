@@ -34,11 +34,10 @@
     font-weight: bold;
 }
 #docsContainer h3 {
-    font-size: 100%;
+    font-size: 110%;
 }
 #docsContainer h4 {
-    font-size: 90%;
-    font-weight: normal;
+    font-size: 100%;
 }
 #docsContainer h5 {
     font-size: 80%;
@@ -49,4 +48,8 @@
 
 pre {
     word-break: normal!important;
+}
+
+code {
+    color: #DC143C;
 }

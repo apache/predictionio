@@ -53,14 +53,14 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
   // for better message response
   val rejectionHandler = RejectionHandler {
     case MalformedRequestContentRejection(msg, _) :: _ =>
-      complete(StatusCodes.BadRequest, ("message" -> msg))
+      complete(StatusCodes.BadRequest, Map("message" -> msg))
   }
 
   val route: Route =
     pathSingleSlash {
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
-          complete("status" -> "alive")
+          complete(Map("status" -> "alive"))
         }
       }
     } ~
@@ -72,7 +72,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
             val data = eventClient.futureGet(eventId).map { r =>
               r match {
                 case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, ("message" -> message))
+                  (StatusCodes.InternalServerError, Map("message" -> message))
                 case Right(eventOpt) => {
                   eventOpt.map( event =>
                     (StatusCodes.OK, event)
@@ -93,10 +93,10 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
             val data = eventClient.futureDelete(eventId).map { r =>
               r match {
                 case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, ("message" -> message))
+                  (StatusCodes.InternalServerError, Map("message" -> message))
                 case Right(found) =>
                   if (found) {
-                    (StatusCodes.OK, ("found" -> found))
+                    (StatusCodes.OK, Map("found" -> found))
                   } else {
                     (StatusCodes.NotFound, None)
                   }
@@ -117,9 +117,9 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
               val data = eventClient.futureInsert(event).map { r =>
                 r match {
                   case Left(StorageError(message)) =>
-                    (StatusCodes.InternalServerError, ("message" -> message))
+                    (StatusCodes.InternalServerError, Map("message" -> message))
                   case Right(id) =>
-                    (StatusCodes.Created, ("eventId" -> s"${id}"))
+                    (StatusCodes.Created, Map("eventId" -> s"${id}"))
                 }
               }
               data
@@ -149,12 +149,12 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
                     r match {
                       case Left(StorageError(message)) =>
                         (StatusCodes.InternalServerError,
-                          ("message" -> message))
+                          Map("message" -> message))
                       case Right(eventIter) =>
                         if (eventIter.hasNext)
                           (StatusCodes.OK, eventIter.toArray)
                         else
-                          (StatusCodes.NotFound, ("message" -> "Not Found"))
+                          (StatusCodes.NotFound, Map("message" -> "Not Found"))
                     }
                   }
                 } else {
@@ -162,19 +162,19 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
                     r match {
                       case Left(StorageError(message)) =>
                         (StatusCodes.InternalServerError,
-                          ("message" -> message))
+                          Map("message" -> message))
                       case Right(eventIter) =>
                         if (eventIter.hasNext)
                           (StatusCodes.OK, eventIter.toArray)
                         else
-                          (StatusCodes.NotFound, ("message" -> "Not Found"))
+                          (StatusCodes.NotFound, Map("message" -> "Not Found"))
                     }
                   }
                 }
                 data
               }.recover {
                 case e: Exception =>
-                  (StatusCodes.BadRequest, ("message" -> s"${e}"))
+                  (StatusCodes.BadRequest, Map("message" -> s"${e}"))
               }
             }
           }
@@ -188,7 +188,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
               val data = eventClient.futureDeleteByAppId(appId).map { r =>
                 r match {
                   case Left(StorageError(message)) =>
-                    (StatusCodes.InternalServerError, ("message" -> message))
+                    (StatusCodes.InternalServerError, Map("message" -> message))
                   case Right(()) =>
                     (StatusCodes.OK, None)
                 }
