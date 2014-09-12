@@ -6,7 +6,7 @@ import argparse
 import time
 
 def import_testdata(app_id, api_url):
-  client = predictionio.Client(app_id, 1, api_url)
+  client = predictionio.DataClient(app_id, 1, api_url)
   predictionio.connection.enable_log("test.log")
   client.set_user("u0")
   client.set_user("u1")

@@ -22,13 +22,12 @@ class NotCreatedError(PredictionIOAPIError):
 class NotFoundError(PredictionIOAPIError):
   pass
 
-class Client(object):
-  def __init__(self, appid, threads=1, apiurl="http://localhost:8000",
+class BaseClient(object):
+  def __init__(self, threads=1, apiurl="http://localhost:8000",
          apiversion="", qsize=0, timeout=5):
     """Constructor of Client object.
 
     """
-    self.appid = appid
     self.threads = threads
     self.apiurl = apiurl
     self.apiversion = apiversion
@@ -51,7 +50,7 @@ class Client(object):
     self._connection = Connection(host=self.host, threads=self.threads,
                     qsize=self.qsize, https=self.https,
                     timeout=self.timeout)
-
+  
   def close(self):
     """Close this client and the connection.
 
@@ -60,7 +59,7 @@ class Client(object):
     It will wait for all pending requests to finish.
     """
     self._connection.close()
-
+  
   def pending_requests(self):
     """Return the number of pending requests.
 
@@ -84,6 +83,40 @@ class Client(object):
     self._connection.make_request(request)
     result = request.get_response()
     return result
+
+  def _acreate_resp(self, response):
+    if response.error is not None:
+      raise NotCreatedError("Exception happened: %s for request %s" %
+                    (response.error, response.request))
+    elif response.status != httplib.CREATED:
+      raise NotCreatedError("request: %s status: %s body: %s" %
+                    (response.request, response.status,
+                     response.body))
+
+    return response
+
+  def _aget_resp(self, response):
+    if response.error is not None:
+      raise NotFoundError("Exception happened: %s for request %s" %
+                  (response.error, response.request))
+    elif response.status != httplib.OK:
+      raise NotFoundError("request: %s status: %s body: %s" %
+                  (response.request, response.status,
+                   response.body))
+
+    data = json.loads(response.body)  # convert json string to dict
+    return data
+
+
+class DataClient(BaseClient):
+  def __init__(self, appid, threads=1, apiurl="http://localhost:8000",
+         apiversion="", qsize=0, timeout=5):
+    """Constructor of Client object.
+
+    """
+    super(DataClient, self).__init__(threads, apiurl, apiversion, qsize, timeout)
+    self.appid = appid
+
 
   def acreate_event(self, data):
     path = "/events"
@@ -172,25 +205,22 @@ class Client(object):
     return self.arecord_user_action_on_item(
       action, uid, iid, properties).get_response()
 
-  def _acreate_resp(self, response):
-    if response.error is not None:
-      raise NotCreatedError("Exception happened: %s for request %s" %
-                    (response.error, response.request))
-    elif response.status != httplib.CREATED:
-      raise NotCreatedError("request: %s status: %s body: %s" %
-                    (response.request, response.status,
-                     response.body))
 
-    return response
+class PredictionClient(BaseClient):
+  def __init__(self, threads=1, apiurl="http://localhost:8000",
+         apiversion="", qsize=0, timeout=5):
+    """Constructor of Client object.
 
-  def _aget_resp(self, response):
-    if response.error is not None:
-      raise NotFoundError("Exception happened: %s for request %s" %
-                  (response.error, response.request))
-    elif response.status != httplib.OK:
-      raise NotFoundError("request: %s status: %s body: %s" %
-                  (response.request, response.status,
-                   response.body))
+    """
+    super(PredictionClient, self).__init__(
+        threads, apiurl, apiversion, qsize, timeout)
 
-    data = json.loads(response.body)  # convert json string to dict
-    return data
+  def asend_query(self, data):
+    path = "/"
+    request = AsyncRequest("POST", path, **data)
+    request.set_rfunc(self._aget_resp)
+    self._connection.make_request(request)
+    return request
+  
+  def send_query(self, data):
+    return self.asend_query(data).get_response()
