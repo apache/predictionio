@@ -7,12 +7,12 @@ title: Tutorials and Samples
 
 ## Item Ranking
 
-* (TODO)
+* (coming soon)
 
 ## Item Recommendation
 
-* (TODO) 
+* (coming soon)
 
 ## Item Similarity
 
-* (TODO)  
+* (coming soon)

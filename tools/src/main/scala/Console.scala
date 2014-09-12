@@ -11,6 +11,7 @@ import io.prediction.data.api.DataAPI
 import io.prediction.data.api.DataAPIConfig
 
 import grizzled.slf4j.Logging
+import org.apache.commons.io.FileUtils
 import org.json4s._
 import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
@@ -41,7 +42,8 @@ case class ConsoleArgs(
   engineInstanceId: Option[String] = None,
   ip: String = "localhost",
   port: Int = 8000,
-  mainClass: Option[String] = None)
+  mainClass: Option[String] = None,
+  projectName: Option[String] = None)
 
 object Console extends Logging {
   def main(args: Array[String]): Unit = {
@@ -82,6 +84,18 @@ object Console extends Logging {
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to sbt. Default: sbt")
+      note("")
+      cmd("new").
+        text("Creates a new engine project in a subdirectory with the same " +
+          "name as the project. The project name will also be used as the " +
+          "default engine ID.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "new")
+        } children(
+          arg[String]("<project name>") action { (x, c) =>
+            c.copy(projectName = Some(x))
+          } text("Engine project name.")
+        )
       note("")
       cmd("register").
         text("Build and register an engine at the current directory.").
@@ -278,6 +292,8 @@ object Console extends Logging {
     parser.parse(consoleArgs, ConsoleArgs()) map { pca =>
       val ca = pca.copy(passThrough = passThroughArgs)
       ca.commands match {
+        case Seq("new") =>
+          createProject(ca)
         case Seq("register") =>
           register(ca)
         case Seq("unregister") =>
@@ -308,30 +324,98 @@ object Console extends Logging {
     sys.exit(0)
   }
 
+  def createProject(ca: ConsoleArgs): Unit = {
+    val builtinEngines = Seq(
+      "io.prediction.engines.itemrank")
+
+    val itemrankEngineTemplate = Map(
+      "engine.json" -> templates.scala.txt.engineJson(
+        "io.prediction.engines.itemrank",
+        BuildInfo.version,
+        "PredictionIO ItemRank Engine",
+        "io.prediction.engines.itemrank.ItemRankEngine"),
+      joinFile(Seq("params", "datasource.json")) ->
+        templates.itemrank.params.txt.datasourceJson(),
+      joinFile(Seq("params", "preparator.json")) ->
+        templates.itemrank.params.txt.preparatorJson(),
+      joinFile(Seq("params", "algorithms.json")) ->
+        templates.itemrank.params.txt.algorithmsJson(),
+      joinFile(Seq("params", "serving.json")) ->
+        templates.itemrank.params.txt.servingJson())
+
+    val scalaEngineTemplate = Map(
+      "build.sbt" -> templates.scala.txt.buildSbt(
+        ca.projectName.get,
+        BuildInfo.version,
+        BuildInfo.sparkVersion),
+      "engine.json" -> templates.scala.txt.engineJson(
+        ca.projectName.get,
+        "0.0.1-SNAPSHOT",
+        ca.projectName.get,
+        "myorg.MyEngineFactory"),
+      joinFile(Seq("params", "datasource.json")) ->
+        templates.scala.params.txt.datasourceJson(),
+      joinFile(Seq("project", "assembly.sbt")) ->
+        templates.scala.project.txt.assemblySbt(),
+      joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
+        templates.scala.src.main.scala.txt.engine())
+
+    val template = ca.projectName.get match {
+      case "io.prediction.engines.itemrank" =>
+        info("Creating built-in engine project io.prediction.engines.itemrank")
+        itemrankEngineTemplate
+      case _ =>
+        info(s"Creating Scala engine project ${ca.projectName.get}")
+        scalaEngineTemplate
+    }
+
+    try {
+      template map { ft =>
+        FileUtils.writeStringToFile(
+          new File(ca.projectName.get, ft._1),
+          ft._2.toString,
+          "ISO-8859-1")
+      }
+    } catch {
+      case e: java.io.IOException =>
+        error("Error occurred while generating engine project template: " +
+          e.getMessage)
+        error("Aborting.")
+        sys.exit(1)
+    }
+
+    info(s"Engine project created in subdirectory ${ca.projectName.get}.")
+  }
+
   def register(ca: ConsoleArgs): Unit = {
-    val sbt = detectSbt(ca)
-    info(s"Using command '${sbt}' at the current working directory to build.")
-    info("If the path above is incorrect, this process will fail.")
+    if (!RegisterEngine.builtinEngine(ca.engineJson)) {
+      val sbt = detectSbt(ca)
+      info(s"Using command '${sbt}' at the current working directory to build.")
+      info("If the path above is incorrect, this process will fail.")
 
-    val cmd =
-      s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
-    info(s"Going to run: ${cmd}")
-    val r = cmd.!(ProcessLogger(
-      line => info(line), line => error(line)))
-    if (r != 0) {
-      error(s"Return code of previous step is ${r}. Aborting.")
-      sys.exit(1)
+      val cmd =
+        s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
+      info(s"Going to run: ${cmd}")
+      val r = cmd.!(ProcessLogger(
+        line => info(line), line => error(line)))
+      if (r != 0) {
+        error(s"Return code of previous step is ${r}. Aborting.")
+        sys.exit(1)
+      }
+      info("Build finished successfully. Locating files to be registered.")
+
+      val jarFiles = jarFilesForScala
+      if (jarFiles.size == 0) {
+        error("No files can be found for registration. Aborting.")
+        sys.exit(1)
+      }
+      jarFiles foreach { f => info(s"Found ${f.getName}")}
+
+      RegisterEngine.registerEngine(ca.engineJson, jarFiles)
+    } else {
+      info("Registering a built-in engine.")
+      RegisterEngine.registerEngine(ca.engineJson, builtinEngines(ca.pioHome.get))
     }
-    info("Build finished successfully. Locating files to be registered.")
-
-    val jarFiles = jarFilesForScala
-    if (jarFiles.size == 0) {
-      error("No files can be found for registration. Aborting.")
-      sys.exit(1)
-    }
-    jarFiles foreach { f => info(s"Found ${f.getName}")}
-
-    RegisterEngine.registerEngine(ca.engineJson, jarFiles)
   }
 
   def unregister(ca: ConsoleArgs): Unit = {
@@ -595,4 +679,7 @@ object Console extends Logging {
       if (f.exists) f.getCanonicalPath else "sbt"
     }
   }
+
+  def joinFile(path: Seq[String]): String =
+    path.mkString(File.separator)
 }

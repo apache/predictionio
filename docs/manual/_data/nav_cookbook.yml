@@ -1,6 +1,9 @@
 - title: "Adding customized business logics"
   href: "/cookbook/customlogics.html"
 
+- title: "Adding algorithms to a built-in engine"
+  href: "/cookbook/addalgorithm.html"
+  
 - title: "Selecting an algorithm"
   href: "/cookbook/choosingalgorithms.html"
   

@@ -1,0 +1,14 @@
+{
+  "appId": 3,
+  "actions": [ "view", "like", "conversion", "rate" ],
+  "attributeNames" : {
+    "user" : "user",
+    "item" : "item",
+    "u2iActions" : [ "view", "like", "conversion", "rate" ],
+    "itypes" : "pio_itypes",
+    "starttime" : "starttime",
+    "endtime" : "endtime",
+    "inactive" : "inactive",
+    "rating" : "pio_rate"
+  }
+}

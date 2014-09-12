@@ -7,6 +7,9 @@
 # This section controls core behavior of PredictionIO. It is very likely that
 # you need to change these to fit your site.
 
+# SPARK_HOME: Apache Spark is a hard dependency and must be configured.
+SPARK_HOME=/path_to_apache_spark
+
 # HADOOP_CONF_DIR: You must configure this if you intend to run PredictionIO
 #                  with Hadoop 2.
 

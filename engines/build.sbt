@@ -9,7 +9,7 @@ libraryDependencies ++= Seq(
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",
   "org.apache.mahout"  % "mahout-core"    % "0.9",
-  "org.apache.spark"  %% "spark-core"     % "1.0.2" % "provided",
+  "org.apache.spark"  %% "spark-core"     % sparkVersion.value % "provided",
   "org.apache.spark"  %% "spark-mllib"    % "1.0.2"
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"),

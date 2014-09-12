@@ -2,6 +2,17 @@ package io.prediction.engines.itemrank
 
 import com.github.nscala_time.time.Imports._
 
+/* this engine require following attributes */
+case class AttributeNames(
+  val user: String, // name of user entityType
+  val item: String, // name of item entityType
+  val u2iActions: Set[String], // event name of the u2i actions
+  val itypes: String, // name of ityps attributes
+  val starttime: String, // name of starttime attribute, DateTime
+  val endtime: String, // name of endtime attribute, DateTime
+  val inactive: String, // name of item inactive property. boolean
+  val rating: String // name of rating property. integer rating
+)
 
 class ItemTD(
   val iid: String,

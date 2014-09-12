@@ -7,7 +7,7 @@ import scala.collection.immutable.HashMap
 import io.prediction.data.view.LBatchView
 
 // all data need to be serializable
-class MyTrainingData(
+case class MyTrainingData(
   // list of (day, temperature) tuples
   val data: List[String],
   val temperatures: List[(String, Double)]
