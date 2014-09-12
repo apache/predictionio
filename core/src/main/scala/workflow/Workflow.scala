@@ -314,7 +314,8 @@ object CoreWorkflow {
     logger.info("CoreWorkflow.run")
     logger.info("Start spark context")
 
-    WorkflowUtils.checkUpgrade("evaluation")
+    metricsClassOpt.map(_ => WorkflowUtils.checkUpgrade("evaluation")).
+      getOrElse(WorkflowUtils.checkUpgrade("training"))
 
     val verbose = params.verbose
 
