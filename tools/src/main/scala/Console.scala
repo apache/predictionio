@@ -22,10 +22,7 @@ import scala.sys.process._
 import java.io.File
 
 case class ConsoleArgs(
-  passThrough: Seq[String] = Seq(),
-  pioHome: Option[String] = None,
-  sparkHome: Option[String] = None,
-  engineJson: File = new File("engine.json"),
+  common: CommonArgs = CommonArgs(),
   sbt: Option[File] = None,
   sbtExtra: Option[String] = None,
   engineAssemblyPackageDependency: Boolean = false,
@@ -43,7 +40,14 @@ case class ConsoleArgs(
   ip: String = "localhost",
   port: Int = 8000,
   mainClass: Option[String] = None,
-  projectName: Option[String] = None)
+  projectName: Option[String] = None,
+  directoryName: Option[String] = None)
+
+case class CommonArgs(
+  passThrough: Seq[String] = Seq(),
+  pioHome: Option[String] = None,
+  sparkHome: Option[String] = None,
+  engineJson: File = new File("engine.json"))
 
 object Console extends Logging {
   def main(args: Array[String]): Unit = {
@@ -59,17 +63,17 @@ object Console extends Logging {
         "for each command for more information.\n\n" +
         "The following options are common to all commands:\n")
       opt[String]("pio-home") action { (x, c) =>
-        c.copy(pioHome = Some(x))
+        c.copy(common = c.common.copy(pioHome = Some(x)))
       } text("Root directory of a PredictionIO installation.\n" +
         "        Specify this if automatic discovery fail.")
       opt[String]("spark-home") action { (x, c) =>
-        c.copy(sparkHome = Some(x))
+        c.copy(common = c.common.copy(sparkHome = Some(x)))
       } text("Root directory of an Apache Spark installation.\n" +
         "        If not specified, will try to use the SPARK_HOME\n" +
         "        environmental variable. If this fails as well, default to\n" +
         "        current directory.")
       opt[File]("engine-json") action { (x, c) =>
-        c.copy(engineJson = x)
+        c.copy(common = c.common.copy(engineJson = x))
       } validate { x =>
         if (x.exists)
           success
@@ -95,6 +99,20 @@ object Console extends Logging {
           arg[String]("<project name>") action { (x, c) =>
             c.copy(projectName = Some(x))
           } text("Engine project name.")
+        )
+      note("")
+      cmd("instance").
+        text("Creates a new engine instance in a subdirectory with the same " +
+          "name as the engine's ID by default.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "instance")
+        } children(
+          arg[String]("<engine ID>") action { (x, c) =>
+            c.copy(projectName = Some(x))
+          } text("Engine ID."),
+          opt[String]("directory-name") action { (x, c) =>
+            c.copy(directoryName = Some(x))
+          } text("Engine instance directory name.")
         )
       note("")
       cmd("register").
@@ -290,10 +308,12 @@ object Console extends Logging {
     val passThroughArgs = theRest.drop(1)
 
     parser.parse(consoleArgs, ConsoleArgs()) map { pca =>
-      val ca = pca.copy(passThrough = passThroughArgs)
+      val ca = pca.copy(common = pca.common.copy(passThrough = passThroughArgs))
       ca.commands match {
         case Seq("new") =>
           createProject(ca)
+        case Seq("instance") =>
+          createInstance(ca)
         case Seq("register") =>
           register(ca)
         case Seq("unregister") =>
@@ -325,24 +345,6 @@ object Console extends Logging {
   }
 
   def createProject(ca: ConsoleArgs): Unit = {
-    val builtinEngines = Seq(
-      "io.prediction.engines.itemrank")
-
-    val itemrankEngineTemplate = Map(
-      "engine.json" -> templates.scala.txt.engineJson(
-        "io.prediction.engines.itemrank",
-        BuildInfo.version,
-        "PredictionIO ItemRank Engine",
-        "io.prediction.engines.itemrank.ItemRankEngine"),
-      joinFile(Seq("params", "datasource.json")) ->
-        templates.itemrank.params.txt.datasourceJson(),
-      joinFile(Seq("params", "preparator.json")) ->
-        templates.itemrank.params.txt.preparatorJson(),
-      joinFile(Seq("params", "algorithms.json")) ->
-        templates.itemrank.params.txt.algorithmsJson(),
-      joinFile(Seq("params", "serving.json")) ->
-        templates.itemrank.params.txt.servingJson())
-
     val scalaEngineTemplate = Map(
       "build.sbt" -> templates.scala.txt.buildSbt(
         ca.projectName.get,
@@ -361,34 +363,67 @@ object Console extends Logging {
         templates.scala.src.main.scala.txt.engine())
 
     val template = ca.projectName.get match {
-      case "io.prediction.engines.itemrank" =>
-        info("Creating built-in engine project io.prediction.engines.itemrank")
-        itemrankEngineTemplate
       case _ =>
         info(s"Creating Scala engine project ${ca.projectName.get}")
         scalaEngineTemplate
     }
 
+    writeTemplate(template, ca.projectName.get)
+
+    info(s"Engine project created in subdirectory ${ca.projectName.get}.")
+  }
+
+  def createInstance(ca: ConsoleArgs): Unit = {
+    val itemrankEngineTemplate = Map(
+      "engine.json" -> templates.scala.txt.engineJson(
+        "io.prediction.engines.itemrank",
+        BuildInfo.version,
+        "PredictionIO ItemRank Engine",
+        "io.prediction.engines.itemrank.ItemRankEngine"),
+      joinFile(Seq("params", "datasource.json")) ->
+        templates.itemrank.params.txt.datasourceJson(),
+      joinFile(Seq("params", "preparator.json")) ->
+        templates.itemrank.params.txt.preparatorJson(),
+      joinFile(Seq("params", "algorithms.json")) ->
+        templates.itemrank.params.txt.algorithmsJson(),
+      joinFile(Seq("params", "serving.json")) ->
+        templates.itemrank.params.txt.servingJson())
+
+    val targetDir = ca.directoryName.getOrElse(ca.projectName.get)
+
+    val template = ca.projectName.get match {
+      case "io.prediction.engines.itemrank" =>
+        info("Creating engine instance io.prediction.engines.itemrank at " +
+          targetDir)
+        itemrankEngineTemplate
+      case _ =>
+        error(s"${ca.projectName.get} is not a built-in engine. Aborting.")
+        sys.exit(1)
+    }
+
+    writeTemplate(template, targetDir)
+
+    info(s"Engine instance created in subdirectory ${targetDir}.")
+  }
+
+  private def writeTemplate(template: Map[String, Any], targetDir: String) = {
     try {
       template map { ft =>
         FileUtils.writeStringToFile(
-          new File(ca.projectName.get, ft._1),
+          new File(targetDir, ft._1),
           ft._2.toString,
           "ISO-8859-1")
       }
     } catch {
       case e: java.io.IOException =>
-        error("Error occurred while generating engine project template: " +
-          e.getMessage)
+        error(s"Error occurred while generating template: ${e.getMessage}")
         error("Aborting.")
         sys.exit(1)
     }
-
-    info(s"Engine project created in subdirectory ${ca.projectName.get}.")
   }
 
   def register(ca: ConsoleArgs): Unit = {
-    if (!RegisterEngine.builtinEngine(ca.engineJson)) {
+    if (!RegisterEngine.builtinEngine(ca.common.engineJson)) {
       val sbt = detectSbt(ca)
       info(s"Using command '${sbt}' at the current working directory to build.")
       info("If the path above is incorrect, this process will fail.")
@@ -411,28 +446,30 @@ object Console extends Logging {
       }
       jarFiles foreach { f => info(s"Found ${f.getName}")}
 
-      RegisterEngine.registerEngine(ca.engineJson, jarFiles)
+      RegisterEngine.registerEngine(ca.common.engineJson, jarFiles)
     } else {
       info("Registering a built-in engine.")
-      RegisterEngine.registerEngine(ca.engineJson, builtinEngines(ca.pioHome.get))
+      RegisterEngine.registerEngine(
+        ca.common.engineJson,
+        builtinEngines(ca.common.pioHome.get))
     }
   }
 
   def unregister(ca: ConsoleArgs): Unit = {
-    RegisterEngine.unregisterEngine(ca.engineJson)
+    RegisterEngine.unregisterEngine(ca.common.engineJson)
   }
 
   def train(ca: ConsoleArgs): Unit = {
-    withRegisteredManifest(ca.engineJson) { em =>
+    withRegisteredManifest(ca.common.engineJson) { em =>
       RunWorkflow.runWorkflow(
         ca,
-        coreAssembly(ca.pioHome.get),
+        coreAssembly(ca.common.pioHome.get),
         em)
     }
   }
 
   def deploy(ca: ConsoleArgs): Unit = {
-    withRegisteredManifest(ca.engineJson) { em =>
+    withRegisteredManifest(ca.common.engineJson) { em =>
       val engineInstances = Storage.getMetaDataEngineInstances
       val engineInstance = ca.engineInstanceId map { eid =>
         engineInstances.get(eid)
@@ -443,7 +480,7 @@ object Console extends Logging {
         undeploy(ca)
         RunServer.runServer(
           ca,
-          coreAssembly(ca.pioHome.get),
+          coreAssembly(ca.common.pioHome.get),
           em,
           r.id)
       } getOrElse {
@@ -487,11 +524,11 @@ object Console extends Logging {
   }
 
   def compile(ca: ConsoleArgs): Unit = {
-    if (!new File(ca.pioHome.get + File.separator + "RELEASE").exists) {
+    if (!new File(ca.common.pioHome.get + File.separator + "RELEASE").exists) {
       info("Development tree detected. Building built-in engines.")
 
       val sbt = detectSbt(ca)
-      info(s"Using command '${sbt}' at ${ca.pioHome.get} to build.")
+      info(s"Using command '${sbt}' at ${ca.common.pioHome.get} to build.")
       info("If the path above is incorrect, this process will fail.")
 
       val asm =
@@ -506,7 +543,7 @@ object Console extends Logging {
           ""
       val cmd = Process(
         s"${sbt}${clean} engines/publishLocal${asm}",
-        new File(ca.pioHome.get))
+        new File(ca.common.pioHome.get))
       info(s"Going to run: ${cmd}")
       try {
         val r = cmd.!(ProcessLogger(
@@ -549,11 +586,11 @@ object Console extends Logging {
 
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
-    val allJarFiles = jarFiles ++ builtinEngines(ca.pioHome.get)
-    val cmd = s"${getSparkHome(ca.sparkHome)}/bin/spark-submit --jars " +
+    val allJarFiles = jarFiles ++ builtinEngines(ca.common.pioHome.get)
+    val cmd = s"${getSparkHome(ca.common.sparkHome)}/bin/spark-submit --jars " +
       s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
-      s"${ca.mainClass.get} ${coreAssembly(ca.pioHome.get)} " +
-      ca.passThrough.mkString(" ")
+      s"${ca.mainClass.get} ${coreAssembly(ca.common.pioHome.get)} " +
+      ca.common.passThrough.mkString(" ")
     val proc = Process(
       cmd,
       None,
@@ -674,7 +711,7 @@ object Console extends Logging {
     ca.sbt map {
       _.getCanonicalPath
     } getOrElse {
-      val f = new File(Seq(ca.pioHome.get, "sbt", "sbt").mkString(
+      val f = new File(Seq(ca.common.pioHome.get, "sbt", "sbt").mkString(
         File.separator))
       if (f.exists) f.getCanonicalPath else "sbt"
     }
