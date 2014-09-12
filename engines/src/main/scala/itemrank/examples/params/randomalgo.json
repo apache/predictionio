@@ -1,3 +1,4 @@
 [
-  { "name": "rand" , "params": {} }
+  { "name": "rand",
+    "params": {} }
 ]

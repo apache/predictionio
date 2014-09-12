@@ -66,7 +66,10 @@ object Runner {
       weighted = false,
       nearestN = 10,
       threshold = 5e-324,
-      numSimilarItems = 50
+      numSimilarItems = 50,
+      freshness = 0,
+      freshnessTimeUnit = 86400,
+      recommendationTime = Some(DateTime.now.millis)
     )
     val legacyAlgoParams = new legacy.LegacyAlgorithmParams(
       booleanData = true,

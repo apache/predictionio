@@ -11,6 +11,8 @@ import scala.collection.JavaConversions._
 
 import scala.collection.mutable.PriorityQueue
 
+import org.joda.time.DateTime
+
 import org.apache.mahout.cf.taste.common.Weighting
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity
 import org.apache.mahout.cf.taste.model.DataModel
@@ -39,7 +41,10 @@ class MahoutItemBasedAlgoParams(
   val weighted: Boolean,
   val nearestN: Int,
   val threshold: Double,
-  val numSimilarItems: Int
+  val numSimilarItems: Int,
+  val freshness: Int,
+  val freshnessTimeUnit: Int, // seconds
+  val recommendationTime: Option[Long]
 ) extends Params {}
 
 class MahoutItemBasedModel(
@@ -63,9 +68,12 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
   override def train(
     preparedData: PreparedData): MahoutItemBasedModel = {
       val numSimilarItems: Int = params.numSimilarItems
-      val recommendationTime: Long = 0 // TODO: freshness for itemrank?
-      val freshness = 0
-      val freshnessTimeUnit: Long = 3600000 // 1 hour
+      val recommendationTime: Long = params.recommendationTime.getOrElse(
+        DateTime.now.getMillis
+      )
+      val freshness = params.freshness
+      // in seconds
+      val freshnessTimeUnit: Int = params.freshnessTimeUnit // 86400 (1 day)
 
       val dataModel: DataModel = if (params.booleanData) {
         MahoutUtil.buildBooleanPrefDataModel(preparedData.rating.map { r =>
