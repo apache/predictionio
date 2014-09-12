@@ -70,7 +70,7 @@ def import_predefined():
   ticker = 'IBM'
  
   appid = 1
-  apiurl = 'http://localhost:8081'
+  apiurl = 'http://localhost:7070'
   client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
 
   for time_slice in time_slices:
@@ -84,7 +84,7 @@ def import_one():
   ticker = 'AAPL'
  
   appid = 1
-  apiurl = 'http://localhost:8081'
+  apiurl = 'http://localhost:7070'
   client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
 
   import_data(client, appid, ticker, start_time, end_time)

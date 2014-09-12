@@ -3,7 +3,7 @@
 # simple test script for dataapi
 
 function checkGET () {
-  resp=$( curl -i -s -X GET "http://localhost:8081$1" )
+  resp=$( curl -i -s -X GET "http://localhost:7070$1" )
   status=$( echo "$resp" | grep HTTP/1.1 )
   exp=$2
   if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
@@ -17,7 +17,7 @@ function checkGET () {
 
 
 function checkPOST () {
-  resp=$( curl -i -s -X POST http://localhost:8081$1 \
+  resp=$( curl -i -s -X POST http://localhost:7070$1 \
   -H "Content-Type: application/json" \
   -d "$2" )
   status=$( echo "$resp" | grep HTTP/1.1 )
@@ -33,7 +33,7 @@ function checkPOST () {
 }
 
 function checkDELETE () {
-  resp=$( curl -i -s -X DELETE "http://localhost:8081$1" )
+  resp=$( curl -i -s -X DELETE "http://localhost:7070$1" )
   status=$( echo "$resp" | grep HTTP/1.1 )
   exp=$2
   if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then

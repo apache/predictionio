@@ -234,14 +234,14 @@ object Console extends Logging {
         text("Launch a data api server at the specific IP and port.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "dataapi",
-            port = 8081)
+            port = 7070)
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(ip = x)
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
             c.copy(port = x)
-          } text("Port to bind to. Default: 8081")
+          } text("Port to bind to. Default: 7070")
         )
       note("")
       cmd("compile").

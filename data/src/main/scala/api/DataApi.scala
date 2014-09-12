@@ -231,7 +231,7 @@ class DataServerActor(val eventClient: Events) extends Actor {
 
 case class DataAPIConfig(
   ip: String = "localhost",
-  port: Int = 8081
+  port: Int = 7070
 )
 
 object DataAPI {
@@ -255,7 +255,7 @@ object Run {
   def main (args: Array[String]) {
     DataAPI.createDataAPI(DataAPIConfig(
       ip = "localhost",
-      port = 8081))
+      port = 7070))
   }
 
 }
