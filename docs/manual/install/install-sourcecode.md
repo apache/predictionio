@@ -70,11 +70,11 @@ Store](config-datastore.html).
 
 #### <a name="hbase"></a>HBase Setup
 
-By default, PredictionIO's Data API uses HBase at localhost as the data store
+By default, PredictionIO's Data API uses [HBase](http://hbase.apache.org/) at localhost as the data store
 for event data.
 
 ```
-$ wget http://www.apache.org/dyn/closer.cgi/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
+$ wget https://archive.apache.org/dist/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ tar zxvf {{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
 ```
@@ -98,6 +98,12 @@ in. You may replace `/home/abc` with your own home directory.
 </configuration>
 ```
 
+Edit `conf/hbase-env.sh` to set `JAVA_HOME` for the cluster. For Mac users it would be
+
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
+```
+
 Now you may start HBase.
 
 ```
@@ -106,4 +112,4 @@ $ bin/start-hbase.sh
 
 Now you have installed everything you need to run PredictionIO!
 
-Next: [Loading Data](/dataapi.html)
+Next: [Quick Start](/tutorials/engines/quickstart.html)
