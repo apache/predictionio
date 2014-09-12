@@ -33,7 +33,7 @@ trait HasName {
 }
 
 case class Stats(
-  val average: Double, 
+  val average: Double,
   val count: Long,
   val stdev: Double,
   val min: Double,
@@ -83,7 +83,7 @@ abstract class ItemRankMeasure extends Serializable {
 class ItemRankMAP(val k: Int) extends ItemRankMeasure {
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
-    val kk = (if (k == -1) query.items.size else k) 
+    val kk = (if (k == -1) query.items.size else k)
 
     averagePrecisionAtK(
       kk,
@@ -92,7 +92,7 @@ class ItemRankMAP(val k: Int) extends ItemRankMeasure {
   }
 
   override def toString(): String = s"MAP@$k"
-  
+
   // metric
   private def averagePrecisionAtK[T](k: Int, p: Seq[T], r: Set[T]): Double = {
     // supposedly the predictedItems.size should match k
@@ -121,7 +121,7 @@ class ItemRankPrecision(val k: Int) extends ItemRankMeasure {
 
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
-    val kk = (if (k == -1) query.items.size else k) 
+    val kk = (if (k == -1) query.items.size else k)
 
     val actualItems: Set[String] = actual.items.toSet
 
@@ -174,10 +174,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val score = measure.calculate(query, prediction, actual)
     // For calculating baseline, we use the input order of query.
     val baseline = measure.calculate(
-      query, 
+      query,
       Prediction(query.items.map(e => (e, 0.0)), isOriginal = false),
       actual)
-    
+
     val mu = new MetricUnit(
       q = query,
       p = prediction,
@@ -203,11 +203,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   // calcualte MAP at k
   override def computeSet(dataParams: HasName,
     metricUnits: Seq[MetricUnit]): Seq[MetricUnit] = metricUnits
-  
+
   def calculate(values: Seq[Double]): Stats = {
-    val (mean, variance, count) = meanAndVariance(values)
-    val stdev = math.sqrt(variance)
-    Stats(mean, count, stdev, values.min, values.max)
+    val mvc = meanAndVariance(values)
+    Stats(mvc.mean, mvc.count, mvc.stdDev, values.min, values.max)
   }
 
   def calculateResample(
@@ -228,8 +227,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val segmentValues = segmentMeanMap.values
 
     // Assume the mean is normal distributed
-    val (m, v, c) = meanAndVariance(segmentValues)
-    val stdev = math.sqrt(v)
+    val mvc = meanAndVariance(segmentValues)
 
     // Double => String
     /*
@@ -241,11 +239,11 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
 
     // Stats describes the properties of the buckets
-    return Stats(m, params.buckets, stdev, segmentValues.min, segmentValues.max)
+    return Stats(mvc.mean, params.buckets, mvc.stdDev, segmentValues.min, segmentValues.max)
   }
- 
+
   def aggregateMU(units: Seq[MetricUnit], groupByFunc: MetricUnit => String)
-  : Seq[(String, Stats)] = 
+  : Seq[(String, Stats)] =
     aggregate[MetricUnit](units, _.score, groupByFunc)
 
   def aggregate[T](
@@ -258,7 +256,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       .map{ case(k, l) => (k, calculate(l)) }
       .toSeq
       .sortBy(-_._2.average)
-  } 
+  }
 
   // return a double to key map based on boundaries.
   def groupByRange(values: Array[Double], format: String = "%f")
@@ -269,7 +267,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       //s"[$s, $e)"
       "[" + format.format(s) + ", " + format.format(e) + ")"
     }.toArray
-  
+
     def f(v: Double): String = {
       // FIXME. Use binary search or indexWhere
       val i: Option[Int] = (0 until values.size).find(i => v < values(i))
@@ -284,11 +282,11 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     format: String = "%.2f") : HeatMapData = {
 
     val bCount: Int = boundaries.size
- 
+
     val columns: Array[String] = (0 to bCount).map { i =>
       val s = (if (i == 0) Double.NegativeInfinity else boundaries(i-1))
       val e = (
-        if (i < boundaries.size) boundaries(i) 
+        if (i < boundaries.size) boundaries(i)
         else Double.PositiveInfinity)
       "[" + format.format(s) + ", " + format.format(e) + ")"
     }.toArray
@@ -298,14 +296,14 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       val sum = values.size
       //val distributions: Array[Double] = values
       val distributions: Map[Int, Double] = values
-        .map { v => 
+        .map { v =>
           val i = boundaries.indexWhere(b => (v <= b))
           (if (i == -1) bCount else i)
         }
         .groupBy(identity)
         .mapValues(_.size.toDouble)
         .mapValues(v => v / sum)
-      
+
       (key, (0 to bCount).map { i => distributions.getOrElse(i, 0.0) }.toArray)
     }}
 
@@ -314,16 +312,16 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
   override def computeMultipleSets(
     input: Seq[(HasName, Seq[MetricUnit])]): DetailedMetricsData = {
-    val allUnits: Seq[MetricUnit] = input.flatMap(_._2) 
+    val allUnits: Seq[MetricUnit] = input.flatMap(_._2)
 
     val overallStats = (
-      "Overall", 
+      "Overall",
       calculateResample(allUnits.map(mu => (mu.uidHash, mu.score))),
       calculateResample(allUnits.map(mu => (mu.uidHash, mu.baseline))))
 
     val runsStats: Seq[(String, Stats, Stats)] = input
-    .map { case(dp, mus) => 
-      (dp.name, 
+    .map { case(dp, mus) =>
+      (dp.name,
         calculateResample(mus.map(mu => (mu.uidHash, mu.score))),
         calculateResample(mus.map(mu => (mu.uidHash, mu.baseline))))
     }
@@ -342,7 +340,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       mu => groupByRange((0.0 until 1.0 by 0.1).toArray, "%.2f")(mu.score))
 
     val actionCountAggregation = aggregateMU(
-      allUnits, 
+      allUnits,
       mu => groupByRange(Array(0, 1, 3, 10, 30, 100, 300), "%.0f")
         (mu.a.previousActionCount))
 
@@ -365,7 +363,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       allUnits,
       mu => groupByRange(Array(0, 1, 2, 3, 5, 8, 13), "%.0f")
         (mu.a.averageOrderSize))
-    
+
     val previousOrdersAggregation = aggregateMU(
       allUnits,
       mu => groupByRange(Array(0, 1, 3, 10, 30, 100), "%.0f")
@@ -383,7 +381,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       heatMapInput,
       (0.0 until 1.0 by 0.0333).toArray,
       "%.2f")
-      
+
     val outputData = DetailedMetricsData (
       name = params.name,
       measureType = measure.toString,
@@ -408,7 +406,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     )
 
     // FIXME: Use param opt path
-    params.optOutputPath.map { path => 
+    params.optOutputPath.map { path =>
       MV.save(outputData, path)
     }
 
@@ -425,5 +423,3 @@ object ItemRankDetailedMain {
     MV.render(MV.load[DetailedMetricsData](args(0)), args(0))
   }
 }
-
-

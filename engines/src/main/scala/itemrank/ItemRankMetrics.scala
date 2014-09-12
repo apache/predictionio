@@ -30,14 +30,8 @@ class ItemRankMetrics(mp: MetricsParams)
   override def computeSet(dataParams: DataParams,
     metricUnits: Seq[MetricUnit]): MetricResult = {
 
-    val (algoMean, algoVariance, algoCount) = meanAndVariance(
-      metricUnits.map(_.score)
-    )
-    val algoStdev = math.sqrt(algoVariance)
-    val (baselineMean, baselineVariance, baselineCount) = meanAndVariance(
-      metricUnits.map(_.baseline)
-    )
-    val baselineStdev = math.sqrt(baselineVariance)
+    val algoMVC = meanAndVariance(metricUnits.map(_.score))
+    val baselineMVC = meanAndVariance(metricUnits.map(_.baseline))
 
     //val mean = metricUnits.map( eu => eu.score ).sum / metricUnits.size
     //val baseMean = metricUnits.map (eu => eu.baseline).sum /
@@ -60,17 +54,17 @@ class ItemRankMetrics(mp: MetricsParams)
       reports.foreach { r =>
         println(s"${r.mkString(" ")}")
       }
-      println(s"baseline MAP@k = ${baselineMean} (${baselineStdev}), " +
-        s"algo MAP@k = ${algoMean} (${algoStdev})")
+      println(
+        s"baseline MAP@k = ${baselineMVC.mean} (${baselineMVC.stdDev}), " +
+        s"algo MAP@k = ${algoMVC.mean} (${algoMVC.stdDev})")
     }
 
     new MetricResult(
       testStartUntil = dataParams.vdp.startUntil,
-      baselineMean = baselineMean,
-      baselineStdev = baselineStdev,
-      algoMean = algoMean,
-      algoStdev = algoStdev
-    )
+      baselineMean = baselineMVC.mean,
+      baselineStdev = baselineMVC.stdDev,
+      algoMean = algoMVC.mean,
+      algoStdev = algoMVC.stdDev)
   }
 
   override def computeMultipleSets(
@@ -78,32 +72,27 @@ class ItemRankMetrics(mp: MetricsParams)
 
     val mrSeq = input.map(_._2)
     // calculate mean of MAP@k of each validion result
-    val (algoMean, algoVariance, algoCount) = meanAndVariance(
-      mrSeq.map(_.algoMean)
-    )
-    val algoStdev = math.sqrt(algoVariance)
+    val algoMVC = meanAndVariance(mrSeq.map(_.algoMean))
 
-    val (baselineMean, baselineVariance, baseCount) = meanAndVariance(
-      mrSeq.map(_.baselineMean)
-    )
-    val baselineStdev = math.sqrt(baselineVariance)
+    val baselineMVC = meanAndVariance(mrSeq.map(_.baselineMean))
 
     if (mp.verbose) {
       mrSeq.sortBy(_.testStartUntil).foreach { mr =>
         println(s"${mr.testStartUntil}")
-        println(s"baseline MAP@k = ${mr.baselineMean} (${mr.baselineStdev}), " +
+        println(
+          s"baseline MAP@k = ${mr.baselineMean} (${mr.baselineStdev}), " +
           s"algo MAP@k = ${mr.algoMean} (${mr.algoStdev})")
       }
-      println(s"baseline average = ${baselineMean} (${baselineStdev}), " +
-        s"algo average = ${algoMean} (${algoStdev})")
+      println(
+        s"baseline average = ${baselineMVC.mean} (${baselineMVC.stdDev}), " +
+        s"algo average = ${algoMVC.mean} (${algoMVC.stdDev})")
     }
 
     new MultipleMetricResult (
-      baselineMean = baselineMean,
-      baselineStdev = baselineStdev,
-      algoMean = algoMean,
-      algoStdev = algoStdev
-    )
+      baselineMean = baselineMVC.mean,
+      baselineStdev = baselineMVC.stdDev,
+      algoMean = algoMVC.mean,
+      algoStdev = algoMVC.stdDev)
   }
 
   private def printDouble(d: Double): String = {

@@ -2,7 +2,7 @@ package io.prediction.engines.itemrank
 
 import io.prediction.controller.LServing
 import io.prediction.controller.EmptyParams
-import breeze.stats.{ mean, meanAndVariance }
+import breeze.stats.{ mean, meanAndVariance, MeanAndVariance }
 
 // Only return first prediction
 class ItemRankServing extends LServing[EmptyParams, Query, Prediction] {
@@ -27,14 +27,8 @@ class ItemRankAverageServing extends LServing[EmptyParams, Query, Prediction] {
     }
 
     // mvc : mean, variance, count
-    val mvcList: Seq[(Double, Double, Long)] = itemsList
+    val mvcList: Seq[MeanAndVariance] = itemsList
       .map { l => meanAndVariance(l.map(_._2)) }
-
-    val means = mvcList.map(_._1)
-    val variances = mvcList.map(_._2)
-    val counts = mvcList.map(_._3)
-
-    val stdevs = variances.map(v => math.sqrt(v))
 
     val querySize = query.items.size
 
@@ -46,10 +40,7 @@ class ItemRankAverageServing extends LServing[EmptyParams, Query, Prediction] {
           s"Prediction $i has size ${items.size} != query $querySize")
       }
 
-      val mean = means(i)
-      val stdev = stdevs(i)
-
-      items.map(e => (e._1, (e._2 - mean) / stdev))
+      items.map(e => (e._1, (e._2 - mvcList(i).mean) / mvcList(i).stdDev))
     }
     .groupBy(_._1)  // group by item
     .mapValues(l => mean(l.map(_._2)))
