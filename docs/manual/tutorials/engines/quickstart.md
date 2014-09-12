@@ -164,10 +164,10 @@ can run multiple recommendation *engine instances* at the same time with
 different settings, or even for different projects.
 
 To launch an engine instance for this simple app, first create an engine
-project:
+instance project:
 
 ```
-$ $PIO_HOME/bin/pio new io.prediction.engines.itemrec
+$ $PIO_HOME/bin/pio instance io.prediction.engines.itemrec
 $ cd io.prediction.engines.itemrec
 ```
 
