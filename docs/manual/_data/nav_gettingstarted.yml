@@ -3,12 +3,12 @@
 
 - title: "Quick Start"
   href: "/tutorials/engines/quickstart.html"
-  
+
 - title: "Collecting Data"
   href: "/dataapi.html"
-  
+
 - title: "Launching an Engine Instance"
   href: "/engines/"
 
-- title: "PredictionIO: Concepts and Design"
+- title: "System Concepts and Design"
   href: "/predictionio.html"

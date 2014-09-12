@@ -1,6 +1,6 @@
 ---
 layout: docs
-title:  PredictionIO - Concepts and System Design
+title: System Concepts and System Design
 ---
 
 # PredictionIO - Concepts

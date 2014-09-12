@@ -5,13 +5,16 @@ title: Quick Start - Using a Built-in Engine
 
 # Quick Start - Using a Built-in Engine
 
-This is a quick start guide of using a PredictionIO's built-in engine and its SDKs to write a very simple app. It assumes that you have [installed PredictionIO server](/install/).
+This is a quick start guide of using a PredictionIO's built-in engine and its
+SDKs to write a very simple app. It assumes that you have [installed
+PredictionIO server](/install/).
 
-Let's start with a classic example in Machine Learning - build a recommendation engine. We are going to launch a recommendation engine instance that can:
+Let's start with a classic example in Machine Learning - build a recommendation
+engine. We are going to launch a recommendation engine instance that can:
 
-* collect *real-time event data* from your app through REST API or SDKs
-* update the predictive model with *new data* regularly and automatically
-* answer *prediction query* through REST API or SDKs 
+* collect *real-time event data* from your app through REST API or SDKs;
+* update the predictive model with *new data* regularly and automatically;
+* answer *prediction query* through REST API or SDKs.
 
 # Create a Simple App Project
 
@@ -73,14 +76,15 @@ $ php composer.phar install
 ## Launch the Data API Server
 
 ```
-$ cd $PIO_HOME
-$ bin/pio dataapi
+$ $PIO_HOME/bin/pio dataapi
 ```
-As long as the Data API server is running, PredictionIO keeps listening to new data.
+where `$PIO_HOME` is the installation directory of PredictionIO. As long as the
+Data API server is running, PredictionIO keeps listening to new data.
 
 ## Import Data
 
-We are going to write a script that generates some random data and simulates data collection. Data API can collect data from your application in real-time.
+We are going to write a script that generates some random data and simulates
+data collection. Data API can collect data from your application in real-time.
 In the `quickstartapp` directory:
 
 <div class="codetabs">
@@ -149,28 +153,48 @@ $ php import.php
 
 # Launch an Engine Instance
 
-Each engine deals with one specific prediction problem. For instance, Item Recommendation Engine (itemrec) is responsible for making personalized item (e.g. product or content) recommendation to each user.
+Each engine deals with one specific prediction problem. For instance, Item
+Recommendation Engine (itemrec) is responsible for making personalized item
+(e.g. product or content) recommendation to each user.
 
 > **What is an Engine Instance?**
 >
-> You can launch one or more `engine instance` from an engine. It means that you can run multiple recommendation engine instances at the same time with different settings, or even for different projects.
+> You can launch one or more *engine instance* from an engine. It means that you
+can run multiple recommendation *engine instances* at the same time with
+different settings, or even for different projects.
 
-To launch an engine instance for this simple app:
-
-```
-$ cd $PIO_HOME/engines/<TODO>
-$ bin/pio <TODO>
-```
-
-You can kick start the predictive model training with:
+To launch an engine instance for this simple app, first create an engine
+project:
 
 ```
-$ bin/pio <TODO>
+$ $PIO_HOME/bin/pio new io.prediction.engines.itemrec
+$ cd io.prediction.engines.itemrec
 ```
 
-Now we are ready to take a look at the results!
+Edit `params/datasource.json` and modify the value of `appId` to fit your app.
 
-# Retrieve Prediction Result 
+Now, you can kick start the predictive model training with:
+
+```
+$ $PIO_HOME/bin/pio train
+...
+2014-09-11 16:25:44,591 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:674, took 0.078664 s
+2014-09-11 16:25:44,737 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: KxOsC2FRSdGGe1lv0oaHiw
+```
+
+If your training was successful, you should see the lines shown above. Now you are ready to deploy the instance:
+
+```
+$ $PIO_HOME/bin/pio deploy
+...
+[INFO] [09/11/2014 16:26:16.525] [pio-server-akka.actor.default-dispatcher-2] [akka://pio-server/user/IO-HTTP/listener-0] Bound to localhost/127.0.0.1:8000
+[INFO] [09/11/2014 16:26:16.526] [pio-server-akka.actor.default-dispatcher-5] [akka://pio-server/user/master] Bind successful. Ready to serve.
+```
+
+Notice that the `deploy` command runs the engine instance in the foreground. Now
+we are ready to take a look at the results!
+
+# Retrieve Prediction Results
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -234,7 +258,7 @@ $ php show.php
 </div>
 </div>
 
-Well done! You have created a simple, but production-ready, app with PredictionIO recommendation engine.
+Well done! You have created a simple, but production-ready app with PredictionIO
+recommendation engine.
 
 Next: Learn more about [collecting data using Data API](/dataapi.html).
-
