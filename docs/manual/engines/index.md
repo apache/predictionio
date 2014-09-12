@@ -16,6 +16,7 @@ project. The new project will contain configuration for your engine instance.
 ```
 $ $PIO_HOME/bin/pio instance io.prediction.engines.itemrec
 $ cd io.prediction.engines.itemrec
+$ $PIO_HOME/bin/pio register
 ```
 where `$PIO_HOME` is your installation path of PredictionIO.
 

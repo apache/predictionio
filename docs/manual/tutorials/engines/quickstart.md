@@ -169,6 +169,7 @@ instance project:
 ```
 $ $PIO_HOME/bin/pio instance io.prediction.engines.itemrec
 $ cd io.prediction.engines.itemrec
+$ $PIO_HOME/bin/pio register
 ```
 
 Edit `params/datasource.json` and modify the value of `appId` to fit your app.
