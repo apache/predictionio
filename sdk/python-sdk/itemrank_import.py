@@ -1,12 +1,12 @@
 """
-Import simple test data for testing getting itemrec
+Import simple test data for testing getting itemrank.
 """
 import predictionio
 import argparse
 import time
 
-def import_testdata(app_id, api_url):
-  client = predictionio.DataClient(app_id, 1, api_url)
+def import_testdata(app_id, data_url):
+  client = predictionio.DataClient(app_id=app_id, data_url=data_url, threads=1)
   predictionio.connection.enable_log("test.log")
   client.set_user("u0")
   client.set_user("u1")
@@ -38,7 +38,6 @@ def import_testdata(app_id, api_url):
     "endtime" : "2014-07-03T21:39:45.618Z",
     "price" : 9.99
   })
-
 
   ## some actions
   client.record_user_action_on_item("rate", "u0", "i0", { "pio_rate": 2 })
@@ -82,17 +81,20 @@ def import_testdata(app_id, api_url):
 
   client.close()
 
+
 def main():
-  parser = argparse.ArgumentParser(description="some description here..")
-  parser.add_argument('--appid', type=int, default=0)
-  parser.add_argument('--apiurl', default="http://localhost:7070")
+  parser = argparse.ArgumentParser(
+      description="Sample sdk for DataClient")
+  parser.add_argument('--app_id', type=int, default=0)
+  parser.add_argument('--data_url', default="http://localhost:7070")
 
   args = parser.parse_args()
   print args
 
   import_testdata(
-    app_id=args.appid,
-    api_url=args.apiurl)
+    app_id=args.app_id,
+    data_url=args.data_url)
+
 
 if __name__ == '__main__':
   main()

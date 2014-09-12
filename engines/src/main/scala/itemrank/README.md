@@ -29,26 +29,38 @@ Personalize the order of a list of items for each user.
 
 Import sample events
 ```
-$ python sdk/python-sdk/itemrec_example.py --appid <appid>
+$ pushd sdk/python-sdk/
+$ python -m itemrank_example.py --app_id <appid>
+$ popd
 ```
-
-```
-$ cd engines/src/main/scala/itemrank/examples
-```
-
 Update the appId in params/datasource.json with <appid>
 
 ```
+$ pushd engines/src/main/scala/itemrank/examples
 $ ../../../../../../bin/pio register
 $ ../../../../../../bin/pio train -ap mahoutalgo.json
 $ ../../../../../../bin/pio deploy
+$ popd
 ```
 
-Retrieve prediction:
+By default, the server is deployed at http://localhost:8000/.
+
+Retrieve prediction with command line:
 
 ```
 $ curl -i -X POST http://localhost:8000/ \
 -d '{ "uid" : "u2", "items" : ["i0", "i1", "i2", "i3"] }'
+```
+
+Retrieve prediction with python sdk:
+```
+$ pushd sdk/python-sdk/
+$ python -m itemrank_query --url http://localhost:8000
+{u'items': [{u'_2': 5.698571227664496, u'_1': u'i0'}, {u'_2':
+3.2369502553192753, u'_1': u'i2'}, {u'_2': 2.4277126914894565, u'_1': u'i1'},
+{u'_2': 1.6184751276596376, u'_1': u'i3'}], u'isOriginal': False}
+...
+$ popd
 ```
 
 Run Evaluation

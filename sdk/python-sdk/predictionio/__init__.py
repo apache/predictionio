@@ -23,13 +23,13 @@ class NotFoundError(PredictionIOAPIError):
   pass
 
 class BaseClient(object):
-  def __init__(self, threads=1, apiurl="http://localhost:8000",
+  def __init__(self, url, threads=1,
          apiversion="", qsize=0, timeout=5):
     """Constructor of Client object.
 
     """
     self.threads = threads
-    self.apiurl = apiurl
+    self.url = url
     self.apiversion = apiversion
     self.qsize = qsize
     self.timeout = timeout
@@ -37,13 +37,13 @@ class BaseClient(object):
     # check connection type
     https_pattern = r'^https://(.*)'
     http_pattern = r'^http://(.*)'
-    m = re.match(https_pattern, apiurl)
+    m = re.match(https_pattern, url)
     self.https = True
     if m is None:  # not matching https
-      m = re.match(http_pattern, apiurl)
+      m = re.match(http_pattern, url)
       self.https = False
       if m is None:  # not matching http either
-        raise InvalidArgumentError("apiurl is not valid: %s" % apiurl)
+        raise InvalidArgumentError("url is not valid: %s" % url)
     self.host = m.group(1)
 
     self._uid = None  # identified uid
@@ -109,14 +109,12 @@ class BaseClient(object):
 
 
 class DataClient(BaseClient):
-  def __init__(self, appid, threads=1, apiurl="http://localhost:8000",
-         apiversion="", qsize=0, timeout=5):
-    """Constructor of Client object.
-
-    """
-    super(DataClient, self).__init__(threads, apiurl, apiversion, qsize, timeout)
-    self.appid = appid
-
+  """Client for importing data into PredictionIO DataAPI Server."""
+  def __init__(self, app_id, data_url="http://localhost:7070",
+      threads=1, apiversion="", qsize=0, timeout=5):
+    super(DataClient, self).__init__(
+        data_url, threads, apiversion, qsize, timeout)
+    self.app_id = app_id
 
   def acreate_event(self, data):
     path = "/events"
@@ -143,7 +141,7 @@ class DataClient(BaseClient):
       "entityType" : "user",
       "entityId" : uid,
       "properties" : properties,
-      "appId" : self.appid
+      "appId" : self.app_id
     })
 
   def aunset_user(self, uid, properties={}):
@@ -153,29 +151,25 @@ class DataClient(BaseClient):
       "entityType" : "user",
       "entityId" : uid,
       "properties" : properties,
-      "appId" : self.appid
+      "appId" : self.app_id
     })
 
   def aset_item(self, iid, properties={}):
-    #tags = itypes # TODO: itypes should be in tags ? or properties?
     return self.acreate_event({
       "event" : "$set",
       "entityType" : "item",
       "entityId" : iid,
       "properties" : properties,
-      #"tags" : tags,
-      "appId" : self.appid
+      "appId" : self.app_id
     })
 
   def aunset_item(self, iid, properties={}):
-    # tags = itypes # TODO: itypes should be in tags ? or properties?
     return self.acreate_event({
       "event" : "$unset",
       "entityType" : "item",
       "entityId" : iid,
       "properties" : properties,
-      #"tags" : tags,
-      "appId" : self.appid
+      "appId" : self.app_id
     })
 
   def arecord_user_action_on_item(self, action, uid, iid, properties={}):
@@ -186,7 +180,7 @@ class DataClient(BaseClient):
       "targetEntityType" : "item",
       "targetEntityId": iid,
       "properties" : properties,
-      "appId" : self.appid
+      "appId" : self.app_id
     })
 
   def set_user(self, uid, properties={}):
@@ -207,13 +201,11 @@ class DataClient(BaseClient):
 
 
 class PredictionClient(BaseClient):
-  def __init__(self, threads=1, apiurl="http://localhost:8000",
-         apiversion="", qsize=0, timeout=5):
-    """Constructor of Client object.
-
-    """
+  """Client for extracting prediction results from PredictionIO Engine."""
+  def __init__(self, url="http://localhost:8000", threads=1, 
+      apiversion="", qsize=0, timeout=5):
     super(PredictionClient, self).__init__(
-        threads, apiurl, apiversion, qsize, timeout)
+        url, threads, apiversion, qsize, timeout)
 
   def asend_query(self, data):
     path = "/"

@@ -1,13 +1,13 @@
 """
-Import simple query for getting itemrank
+Import simple query for itemrank
 """
 import predictionio
 import argparse
 import time
 
 
-def send_queries(apiurl):
-  client = predictionio.PredictionClient(threads=1, apiurl=apiurl)
+def send_queries(url):
+  client = predictionio.PredictionClient(threads=1, url=url)
 
   # Sync Query
   query = {
@@ -29,13 +29,15 @@ def send_queries(apiurl):
 
 
 def main():
-  parser = argparse.ArgumentParser(description="some description here..")
-  parser.add_argument('--apiurl', default="http://localhost:8000")
+  parser = argparse.ArgumentParser(
+      description="Sample sdk for PredictionClient")
+  parser.add_argument('--url', default="http://localhost:8000")
 
   args = parser.parse_args()
   print args
 
-  send_queries(apiurl=args.apiurl)
+  send_queries(url=args.url)
+
 
 if __name__ == '__main__':
   main()
