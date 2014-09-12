@@ -70,7 +70,6 @@ def import_predefined():
       (datetime(2014, 6, 1), datetime(2014, 7, 1), datetime(2014, 7, 15)),
       ]
 
-  #ticker = 'SPY'
   tickers = ['SPY', 'AAPL', 'IBM', 'MSFT']
  
   appid = 1
@@ -81,7 +80,32 @@ def import_predefined():
     for time_slice in time_slices:
       import_data(client, appid, ticker, 
           time_slice[0], time_slice[1], time_slice[2])
-      #return
+
+  # below are data with holes
+  time_slices = [
+      (datetime(2014, 1, 1), datetime(2014, 1, 20), datetime(2014, 2, 10)),
+      (datetime(2014, 2, 10), datetime(2014, 3, 31), datetime(2014, 4, 2)),
+      (datetime(2014, 6, 1), datetime(2014, 7, 1), datetime(2014, 7, 15)),
+      ]
+
+  tickers = ['AMZN']
+  for ticker in tickers:
+    for time_slice in time_slices:
+      import_data(client, appid, ticker, 
+          time_slice[0], time_slice[1], time_slice[2])
+
+  time_slices = [
+      (datetime(2014, 1, 10), datetime(2014, 2, 20), datetime(2014, 2, 28)),
+      (datetime(2014, 2, 10), datetime(2014, 3, 31), datetime(2014, 4, 2)),
+      ]
+  tickers = ['FB']
+  for ticker in tickers:
+    for time_slice in time_slices:
+      import_data(client, appid, ticker, 
+          time_slice[0], time_slice[1], time_slice[2])
+
+
+
 
 
 def import_one():
