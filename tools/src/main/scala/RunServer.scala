@@ -18,12 +18,12 @@ object RunServer extends Logging {
       s"${kv._1}=${kv._2}"
     ).mkString(",")
 
-    val sparkHome = ca.sparkHome.getOrElse(
+    val sparkHome = ca.common.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
-      ca.passThrough ++
+      ca.common.passThrough ++
       Seq(
         "--class",
         "io.prediction.workflow.CreateServer",

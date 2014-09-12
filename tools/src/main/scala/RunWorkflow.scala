@@ -28,7 +28,7 @@ object RunWorkflow extends Logging {
       "sp" -> (ca.servingParamsJsonPath, "serving.json"),
       "mp" -> (ca.metricsParamsJsonPath, "metrics.json"))
 
-    val sparkHome = ca.sparkHome.getOrElse(
+    val sparkHome = ca.common.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
     val hadoopConf = new Configuration
@@ -37,7 +37,7 @@ object RunWorkflow extends Logging {
     val workMode = ca.metricsClass.map(_ => "Evaluation").getOrElse("Training")
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
-      ca.passThrough ++
+      ca.common.passThrough ++
       Seq(
         "--class",
         "io.prediction.workflow.CreateWorkflow",

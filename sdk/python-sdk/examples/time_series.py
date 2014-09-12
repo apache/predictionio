@@ -35,7 +35,7 @@ def import_testdata(app_id, api_url):
 def main():
   parser = argparse.ArgumentParser(description="some description here..")
   parser.add_argument('--appid', type=int, default=0)
-  parser.add_argument('--apiurl', default="http://localhost:8081")
+  parser.add_argument('--apiurl', default="http://localhost:7070")
 
   args = parser.parse_args()
   print args
