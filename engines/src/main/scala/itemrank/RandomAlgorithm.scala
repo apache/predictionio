@@ -1,7 +1,15 @@
 package io.prediction.engines.itemrank
 
+import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
+
 import scala.util.Random
+
+class RandomAlgoParams() extends Params {
+  override def toString = s"empty"
+}
+
+class RandomModel() extends Serializable {}
 
 class RandomAlgorithm(params: RandomAlgoParams)
   extends LAlgorithm[RandomAlgoParams, PreparedData, RandomModel,

@@ -1,5 +1,6 @@
 package io.prediction.engines.itemrank
 
+import io.prediction.controller.Params
 import io.prediction.controller.LDataSource
 import io.prediction.data.storage.Storage
 //import io.prediction.data.storage.{ Item, U2IAction, User, ItemSet }
@@ -7,10 +8,62 @@ import io.prediction.data.storage.Storage
 import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._
 
+// param to evaluator, it applies to both DataPrep and Validator
+class DataSourceParams(
+    val appid: Int,
+    // default None to include all itypes
+    val itypes: Option[Set[String]] = None,
+    // action for training
+    val actions: Set[String],
+    val hours: Int,
+    val trainStart: DateTime,
+    val testStart: DateTime,
+    val testUntil: DateTime,
+    val goal: Set[String],
+    val verbose: Boolean // for debug purpose
+  ) extends Params {
+  override def toString = s"appid=${appid},itypes=${itypes}" +
+    s"actions=${actions}"
+}
+
+// param for preparing training
+class TrainingDataParams(
+    val appid: Int,
+    val itypes: Option[Set[String]],
+    // action for training
+    val actions: Set[String],
+    // actions within this startUntil time will be included in training
+    // use all data if None
+    val startUntil: Option[Tuple2[DateTime, DateTime]],
+    val verbose: Boolean // for debug purpose
+  ) extends Serializable {
+    override def toString = s"${appid} ${itypes} ${actions} ${startUntil}"
+  }
+
+// param for preparing evaluation data
+class ValidationDataParams(
+    val appid: Int,
+    val itypes: Option[Set[String]],
+    // actions within this startUntil time will be included in validation
+    val startUntil: Tuple2[DateTime, DateTime],
+    val goal: Set[String] // action name
+  ) extends Serializable {
+    override def toString = s"${appid} ${itypes} ${startUntil} ${goal}"
+  }
+
+class DataParams(
+  val tdp: TrainingDataParams,
+  val vdp: ValidationDataParams,
+  val name: String = ""
+) extends Params with HasName {
+  override def toString = s"TDP: ${tdp} VDP: ${vdp}"
+}
+
+
 class ItemRankDataSource(dsp: DataSourceParams)
   extends LDataSource[DataSourceParams,
     DataParams, TrainingData, Query, Actual] {
-  
+
   @transient lazy val usersDb = Storage.getAppdataUsers()
   @transient lazy val itemsDb = Storage.getAppdataItems()
   @transient lazy val u2iDb = Storage.getAppdataU2IActions()

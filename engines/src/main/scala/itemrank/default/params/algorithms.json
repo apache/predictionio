@@ -1,0 +1,14 @@
+[
+  {
+    "name": "mahout",
+    "params": {
+      "booleanData": true,
+      "k": 10,
+      "itemSimilarity": "LogLikelihoodSimilarity",
+      "weighted": false,
+      "nearestN": 10,
+      "threshold": 5e-324,
+      "numSimilarItems": 50
+    }
+  }
+]

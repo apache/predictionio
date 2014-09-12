@@ -2,13 +2,13 @@
   "appId": 3,
   "actions": [ "view", "like", "conversion", "rate" ],
   "attributeNames" : {
-    "user" : "user",
-    "item" : "item",
+    "user" : "pio_user",
+    "item" : "pio_item",
     "u2iActions" : [ "view", "like", "conversion", "rate" ],
     "itypes" : "pio_itypes",
-    "starttime" : "starttime",
-    "endtime" : "endtime",
-    "inactive" : "inactive",
+    "starttime" : "pio_starttime",
+    "endtime" : "pio_endtime",
+    "inactive" : "pio_inactive",
     "rating" : "pio_rate"
   }
 }

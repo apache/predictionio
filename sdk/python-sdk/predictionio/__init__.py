@@ -50,7 +50,7 @@ class BaseClient(object):
     self._connection = Connection(host=self.host, threads=self.threads,
                     qsize=self.qsize, https=self.https,
                     timeout=self.timeout)
-  
+
   def close(self):
     """Close this client and the connection.
 
@@ -59,7 +59,7 @@ class BaseClient(object):
     It will wait for all pending requests to finish.
     """
     self._connection.close()
-  
+
   def pending_requests(self):
     """Return the number of pending requests.
 
@@ -138,7 +138,7 @@ class DataClient(BaseClient):
     """set properties of an user"""
     return self.acreate_event({
       "event" : "$set",
-      "entityType" : "user",
+      "entityType" : "pio_user",
       "entityId" : uid,
       "properties" : properties,
       "appId" : self.app_id
@@ -148,7 +148,7 @@ class DataClient(BaseClient):
     """unset properties of an user"""
     return self.acreate_event({
       "event" : "$unset",
-      "entityType" : "user",
+      "entityType" : "pio_user",
       "entityId" : uid,
       "properties" : properties,
       "appId" : self.app_id
@@ -157,7 +157,7 @@ class DataClient(BaseClient):
   def aset_item(self, iid, properties={}):
     return self.acreate_event({
       "event" : "$set",
-      "entityType" : "item",
+      "entityType" : "pio_item",
       "entityId" : iid,
       "properties" : properties,
       "appId" : self.app_id
@@ -166,7 +166,7 @@ class DataClient(BaseClient):
   def aunset_item(self, iid, properties={}):
     return self.acreate_event({
       "event" : "$unset",
-      "entityType" : "item",
+      "entityType" : "pio_item",
       "entityId" : iid,
       "properties" : properties,
       "appId" : self.app_id
@@ -175,9 +175,9 @@ class DataClient(BaseClient):
   def arecord_user_action_on_item(self, action, uid, iid, properties={}):
     return self.acreate_event({
       "event" : action,
-      "entityType" : "user",
+      "entityType" : "pio_user",
       "entityId" : uid,
-      "targetEntityType" : "item",
+      "targetEntityType" : "pio_item",
       "targetEntityId": iid,
       "properties" : properties,
       "appId" : self.app_id
@@ -202,7 +202,7 @@ class DataClient(BaseClient):
 
 class PredictionClient(BaseClient):
   """Client for extracting prediction results from PredictionIO Engine."""
-  def __init__(self, url="http://localhost:8000", threads=1, 
+  def __init__(self, url="http://localhost:8000", threads=1,
       apiversion="", qsize=0, timeout=5):
     super(PredictionClient, self).__init__(
         url, threads, apiversion, qsize, timeout)
@@ -213,6 +213,6 @@ class PredictionClient(BaseClient):
     request.set_rfunc(self._aget_resp)
     self._connection.make_request(request)
     return request
-  
+
   def send_query(self, data):
     return self.asend_query(data).get_response()

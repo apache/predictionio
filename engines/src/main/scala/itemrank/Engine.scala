@@ -6,12 +6,12 @@ import io.prediction.controller.Engine
 object ItemRankEngine extends IEngineFactory {
   def apply() = {
     new Engine(
-      //classOf[ItemRankDataSource],
       classOf[EventsDataSource],
       classOf[ItemRankPreparator],
       Map("knn" -> classOf[KNNAlgorithm],
         "rand" -> classOf[RandomAlgorithm],
         "mahout" -> classOf[MahoutItemBasedAlgorithm],
+        "featurebased" -> classOf[FeatureBasedAlgorithm],
         "legacy" -> classOf[legacy.LegacyAlgorithm]),
       classOf[ItemRankServing]
     )

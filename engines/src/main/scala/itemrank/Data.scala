@@ -14,6 +14,7 @@ case class AttributeNames(
   val rating: String // name of rating property. integer rating
 )
 
+/* Training Data */
 class ItemTD(
   val iid: String,
   val itypes: Seq[String],

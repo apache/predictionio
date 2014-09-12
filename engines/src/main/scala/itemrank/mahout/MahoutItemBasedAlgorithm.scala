@@ -1,5 +1,6 @@
 package io.prediction.engines.itemrank
 
+import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
 import io.prediction.engines.util.MahoutUtil
 
@@ -31,6 +32,27 @@ import org.apache.mahout.cf.taste.impl.similarity.{
   TanimotoCoefficientSimilarity,
   UncenteredCosineSimilarity
 }
+
+class MahoutItemBasedAlgoParams(
+  val booleanData: Boolean,
+  val itemSimilarity: String,
+  val weighted: Boolean,
+  val nearestN: Int,
+  val threshold: Double,
+  val numSimilarItems: Int
+) extends Params {}
+
+class MahoutItemBasedModel(
+  val userHistory: Map[String, Set[(String, Int)]],
+  val itemSim: Map[String, Seq[(String, Double)]]
+) extends Serializable {
+  override
+  def toString = { s"${userHistory.take(2).mapValues(_.take(2))}" +
+    s"${itemSim.take(2).mapValues(_.take(2))}" +
+    s"..."
+  }
+}
+
 
 class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
   extends LAlgorithm[MahoutItemBasedAlgoParams, PreparedData,

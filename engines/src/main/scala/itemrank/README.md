@@ -30,7 +30,7 @@ Personalize the order of a list of items for each user.
 Import sample events
 ```
 $ pushd sdk/python-sdk/
-$ python -m itemrank_example.py --app_id <appid>
+$ python -m itemrank_import.py --app_id <appid>
 $ popd
 ```
 Update the appId in params/datasource.json with <appid>
@@ -63,12 +63,14 @@ $ python -m itemrank_query --url http://localhost:8000
 $ popd
 ```
 
-Run Evaluation
+Run Runner (obsolete)
 ==============
 ```
-../bin/pio-run  io.prediction.engines.itemrank.DetailedRunner
+$ pushd engines
+$ ../bin/pio-run  io.prediction.engines.itemrank.DetailedRunner
+$ popd engines
 
-../bin/pio-run  io.prediction.engines.itemrank.Runner
+$ ../bin/pio-run  io.prediction.engines.itemrank.Runner
 ```
 
 Import Sample Data (obsolete)

@@ -1,10 +1,15 @@
 package io.prediction.engines.itemrank
 
+import io.prediction.controller.Params
 import io.prediction.controller.Metrics
 
 import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
 import breeze.stats.{ mean, meanAndVariance }
+
+class MetricsParams(
+  val verbose: Boolean // print report
+) extends Params {}
 
 class ItemRankMetrics(mp: MetricsParams)
   extends Metrics[MetricsParams,
