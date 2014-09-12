@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   "org.apache.hbase"        % "hbase-common"    % "0.98.5-hadoop2",
   "org.apache.hbase"        % "hbase-client"    % "0.98.5-hadoop2",
   "org.clapper"            %% "grizzled-slf4j"  % "1.0.2",
-  "org.elasticsearch"       % "elasticsearch"   % "1.2.1",
+  "org.elasticsearch"       % "elasticsearch"   % elasticsearchVersion.value,
   "org.json4s"             %% "json4s-native"   % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"      % json4sVersion.value,
   "org.mongodb"            %% "casbah"          % "2.7.2",

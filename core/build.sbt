@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "net.jodah"               % "typetools"       % "0.3.1",
   "org.apache.spark"       %% "spark-core"      % sparkVersion.value % "provided",
   "org.clapper"            %% "grizzled-slf4j"  % "1.0.2",
-  "org.elasticsearch"       % "elasticsearch"   % "1.2.1",
+  "org.elasticsearch"       % "elasticsearch"   % elasticsearchVersion.value,
   "org.json4s"             %% "json4s-native"   % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"      % json4sVersion.value,
   "org.mongodb"            %% "casbah"          % "2.7.2",

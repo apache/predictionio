@@ -17,6 +17,8 @@ fork in (ThisBuild, run) := true
 javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
+elasticsearchVersion in ThisBuild := "1.3.2"
+
 json4sVersion in ThisBuild := "3.2.10"
 
 sparkVersion in ThisBuild := "1.1.0"
