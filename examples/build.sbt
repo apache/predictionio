@@ -6,8 +6,6 @@ name := "examples"
 
 organization := "io.prediction"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 libraryDependencies ++= Seq(
   "io.prediction"     %% "core"           % "0.8.0-SNAPSHOT" % "provided",
   "io.prediction"     %% "engines"        % "0.8.0-SNAPSHOT" % "provided",

@@ -6,8 +6,6 @@ name := "example-scala-elasticsearch"
 
 organization := "io.prediction"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 libraryDependencies ++= Seq(
   "io.prediction"    %% "core"          % "0.8.0-SNAPSHOT" % "provided",
   "commons-io"        % "commons-io"    % "2.4",

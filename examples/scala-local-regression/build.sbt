@@ -6,8 +6,6 @@ name := "example-scala-local-regression"
 
 organization := "io.prediction"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 libraryDependencies ++= Seq(
   "io.prediction"    %% "core"          % "0.8.0-SNAPSHOT" % "provided",
   "org.apache.spark" %% "spark-core"    % "1.1.0" % "provided",
