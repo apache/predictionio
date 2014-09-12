@@ -1,4 +1,3 @@
-//package io.prediction.data.examples
 package io.prediction.examples.stock2
 
 // YahooDataSource reads PredictionIO event store directly.
@@ -37,27 +36,52 @@ case class HistoricalData(
   val active: Array[Boolean]) extends Serializable {
 
   override def toString(): String = {
-    s"HistoricalData($ticker, ${timeIndex.head}, ${timeIndex.last})"
+    s"HistoricalData($ticker, ${timeIndex.head}, ${timeIndex.last}, " +
+      s"${close.last})"
+  }
+
+  def toDetailedString(): String = {
+    val adjCloseStr = adjClose.mkString("[", ", ", "]")
+    val adjReturnStr = adjReturn.mkString("[", ", ", "]")
+    val activeStr = active.mkString("[", ", ", "]")
+
+    (s"HistoricalData($ticker, ${timeIndex.head}, ${timeIndex.last}, \n" + 
+      s"  adjClose=$adjCloseStr\n" + 
+      s"  adjReturn=$adjReturnStr\n" + 
+      s"  active=$activeStr)")
   }
 }
 
+object HistoricalData {
+  def apply(ticker: String, timeIndex: Array[DateTime]): HistoricalData = {
+    val n = timeIndex.size
+    HistoricalData(
+      ticker,
+      timeIndex,
+      close = Array.fill(n)(0.0),
+      adjClose = Array.fill(n)(0.0),
+      adjReturn = Array.fill(n)(0.0),
+      volume = Array.fill(n)(0.0),
+      active = Array.fill(n)(false))
+  }
+}
 
 
 class YahooDataSource(val params: YahooDataSource.Params) 
   extends PDataSource[
       YahooDataSource.Params,
-      AnyRef,
-      RDD[AnyRef],
-      AnyRef, 
+      DataParams,
+      RDD[TrainingData],
+      QueryDate,
       AnyRef] {
   @transient lazy val batchView = new LBatchView(
     params.appId, params.startTime, params.untilTime)
     
   val timezone = DateTimeZone.forID("US/Eastern")
-  val marketTicker = params.windowParams.marketTicker
+  val windowParams = params.windowParams
+  val marketTicker = windowParams.marketTicker
 
   val market: HistoricalData = getTimeIndex()
-  //val timeIndex: Array[DateTime] = Array[DateTime](market.timeIndex:_*)
   val timeIndex: Array[DateTime] = market.timeIndex
   val timeIndexSet: Set[DateTime] = timeIndex.toSet
 
@@ -132,14 +156,27 @@ class YahooDataSource(val params: YahooDataSource.Params)
         s"Please import data to cover the gap or use a shorter range.")
     }}
 
+    val adjReturn = timeIndex.map(t => dailyMap(t).adjReturn)
+
     HistoricalData(
       ticker = ticker, 
       timeIndex = timeIndex,
       close = timeIndex.map(t => dailyMap(t).close),
-      adjClose = timeIndex.map(t => dailyMap(t).adjClose),
-      adjReturn = timeIndex.map(t => dailyMap(t).adjReturn),
+      //adjClose = timeIndex.map(t => dailyMap(t).adjClose),
+      //adjReturn = timeIndex.map(t => dailyMap(t).adjReturn),
+      adjClose = return2Close(adjReturn),
+      adjReturn = adjReturn,
       volume = timeIndex.map(t => dailyMap(t).volume),
       active = Array.fill(timeIndex.size)(true))
+  }
+
+  def return2Close(returns: Array[Double], base: Double = 100.0)
+  : Array[Double] = {
+    var v = base
+    returns.map { ret =>
+      v *= (1 + ret)
+      v
+    }
   }
 
   // Traverse the timeIndex to construct the actual time series using dailyMap
@@ -173,12 +210,14 @@ class YahooDataSource(val params: YahooDataSource.Params)
   : HistoricalData = {
     val dailyMap = intermediate.dailyMap 
 
+    val adjReturn = activeFilter[Double](dailyMap, _.adjReturn, _ => 0.0)
+
     HistoricalData(
       ticker = intermediate.ticker,
       timeIndex = timeIndex,
       close = activeFilter[Double](dailyMap, _.close, _.getOrElse(0.0)),
-      adjClose = activeFilter[Double](dailyMap, _.adjClose, _.getOrElse(0.0)),
-      adjReturn = activeFilter[Double](dailyMap, _.adjReturn, _.getOrElse(0.0)),
+      adjClose = return2Close(adjReturn),
+      adjReturn = adjReturn,
       volume = activeFilter[Double](dailyMap, _.adjReturn, _ => 0.0),
       active = activeFilter[Boolean](dailyMap, _.active, _ => false))
   }
@@ -200,27 +239,89 @@ class YahooDataSource(val params: YahooDataSource.Params)
 
   def getHistoricalDataSet()
   : Map[String, HistoricalData] = {
-    val tickerSet = params.windowParams.tickerList.toSet
+    // Also extract market ticker again, just as a normal stock.
+    val tickerSet = (windowParams.tickerList :+ windowParams.marketTicker).toSet
     val predicate = (e: Event) => 
       (e.entityType == params.entityType && tickerSet(e.entityId))
 
-    tickerMap: Map[String, HistoricalData] = batchView
+    val defaultTickerMap: Map[String, HistoricalData] =
+      params.windowParams.tickerList.map { 
+        ticker => (ticker -> HistoricalData(ticker, timeIndex))
+      }
+      .toMap
+
+    val tickerMap: Map[String, HistoricalData] = batchView
       .aggregateByEntityOrdered(
         predicate,
         YahooDataSource.Intermediate(),
         mergeStock)
       .mapValues(finalizeStock)
+
+    /*
+    tickerMap.map { case (ticker, data) => 
+      println(ticker)
+      println(data.toDetailedString)
+    }
+    */
+
+    defaultTickerMap ++ tickerMap
+  }
+
+  def getRawData(tickerMap: Map[String, HistoricalData]): RawData = {
+    val allTickers = windowParams.tickerList :+ windowParams.marketTicker
+    
+    val price: Array[(String, Array[Double])] = allTickers
+      .map { ticker => (ticker, tickerMap(ticker).adjClose) }
+      .toArray
+
+    val active: Array[(String, Array[Boolean])] = allTickers
+      .map { ticker => (ticker, tickerMap(ticker).active) }
+      .toArray
+
+    new RawData(
+      tickers = windowParams.tickerList.toArray,
+      mktTicker = windowParams.marketTicker,
+      timeIndex = timeIndex,
+      _price = price,
+      _active = active)
   }
 
   def read(sc: SparkContext)
-  : Seq[(AnyRef, RDD[AnyRef], RDD[(AnyRef, AnyRef)])] = {
+  : Seq[(DataParams, RDD[TrainingData], RDD[(QueryDate, AnyRef)])] = {
+    val historicalSet = getHistoricalDataSet()
+    //data.foreach { println }
+    val rawData = getRawData(historicalSet)
+    //println(rawData)
+    
+    // Broadcast it.
+    val rawDataB = sc.broadcast(rawData)
 
-    val data = getHistoricalDataSet()
+    val dataParams = DataParams(rawDataB)
 
-    data.keys.foreach { println }
+    val dsp: DataSourceParams = windowParams
 
+    val dataSet: Seq[(TrainingData, Seq[(QueryDate, AnyRef)])] =
+      Range(dsp.fromIdx, dsp.untilIdx, dsp.maxTestingWindowSize).map { idx => {
+        val trainingData = TrainingData(
+          untilIdx = idx,
+          maxWindowSize = dsp.trainingWindowSize,
+          rawDataB = rawDataB)
 
-    Seq[(AnyRef, RDD[AnyRef], RDD[(AnyRef, AnyRef)])]()
+        // cannot evaluate the last item as data view only last until untilIdx.
+        val testingUntilIdx = math.min(
+          idx + dsp.maxTestingWindowSize,
+          dsp.untilIdx - 1)
+
+        val queries = (idx until testingUntilIdx)
+          .map { idx => (QueryDate(idx), None) }
+        (trainingData, queries)
+      }}
+
+    dataSet.map { case (trainingData, queries) =>
+      (dataParams,
+        sc.parallelize(Array(trainingData)),
+        sc.parallelize(queries))
+    }
   }
 }
 
@@ -249,7 +350,6 @@ object YahooDataSource {
     */
   case class Intermediate(
     val ticker: String = "", 
-    //val dailyMap: MMap[DateTime, Daily] = MMap[DateTime, Daily]()
     val dailyMap: Map[DateTime, Daily] = Map[DateTime, Daily]()
     ) extends Serializable {
     override def toString(): String = 
@@ -280,12 +380,12 @@ object YahooDataSourceRun {
         trainingWindowSize = 15,
         maxTestingWindowSize = 10,
         marketTicker = "SPY",
-        tickerList = Seq("AAPL", "MSFT", "IBM", "FB", "AMZN")),
+        tickerList = Seq("AAPL", "MSFT", "IBM", "FB", "AMZN", "IRONMAN")),
       appId = 1,
       entityType = "yahoo",
       untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
-      //untilTime = None)
 
+    /*
     Workflow.run(
       dataSourceClassOpt = Some(classOf[YahooDataSource]),
       dataSourceParams = dsp,
@@ -293,6 +393,31 @@ object YahooDataSourceRun {
         verbose = 3,
         batch = "YahooDataSource")
     )
+    */
+    
+    val momentumParams = MomentumStrategyParams(20, 3)
+
+    val metricsParams = BacktestingParams(
+      enterThreshold = 0.01,
+      exitThreshold = 0.0,
+      maxPositions = 2//,
+      //optOutputPath = Some(new File("metrics_results").getCanonicalPath)
+    )
+
+    Workflow.run(
+      dataSourceClassOpt = Some(classOf[YahooDataSource]),
+      dataSourceParams = dsp,
+      preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
+      algorithmClassMapOpt = Some(Map(
+        "" -> classOf[MomentumStrategy]
+      )),
+      algorithmParamsList = Seq(("", momentumParams)),
+      servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
+      metricsClassOpt = Some(classOf[BacktestingMetrics]),
+      metricsParams = metricsParams,
+      params = WorkflowParams(
+        verbose = 0,
+        batch = "Imagine: Stock III"))
   }
 }
 
