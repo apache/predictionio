@@ -12,8 +12,8 @@ case class EventsDataSoureParams(
   val itypes: Option[Set[String]] = None, // train items with these itypes
   // actions for training
   val actions: Set[String],
-  val startTime: Option[DateTime], // event starttime
-  val untilTime: Option[DateTime], // event untiltime
+  val startTime: Option[DateTime] = None, // event starttime
+  val untilTime: Option[DateTime] = None, // event untiltime
   val attributeNames: AttributeNames
 ) extends Params
 

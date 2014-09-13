@@ -6,6 +6,7 @@ import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
+import io.prediction.core.BuildInfo
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -175,7 +176,7 @@ object WorkflowUtils extends Logging {
 }
 
 class UpgradeCheckRunner(val component: String) extends Runnable with Logging {
-  val version = "0.8.0-SNAPSHOT"
+  val version = BuildInfo.version
   val versionsHost = "http://direct.prediction.io/"
 
   def run(): Unit = {

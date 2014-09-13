@@ -31,10 +31,10 @@ PredictionIO binary distribution created at PredictionIO-{{ site.pio_version }}.
 
 ### Spark Setup
 
-Apache Spark is the default processing engine for PredictionIO. Download
-[Spark's pre-built **"For Hadoop 2 (HDP2, CDH5)"**
-package](http://spark.apache.org/downloads.html). Extract the file, and set the
-`SPARK_HOME` configuration in `conf/pio-env.sh` to the Spark directory.
+Apache Spark is the default processing engine for PredictionIO. Download [Apache
+Spark release 1.1.0 package hadoop2.4](http://spark.apache.org/downloads.html).
+Extract the file, and set the `SPARK_HOME` configuration in `conf/pio-env.sh` to
+the Spark directory.
 
 ```
 $ wget http://d3kbcqa49mib13.cloudfront.net/{{ site.spark_download_filename }}.tgz
@@ -70,11 +70,11 @@ Store](config-datastore.html).
 
 #### <a name="hbase"></a>HBase Setup
 
-By default, PredictionIO's Data API uses HBase at localhost as the data store
+By default, PredictionIO's Data API uses [HBase](http://hbase.apache.org/) at localhost as the data store
 for event data.
 
 ```
-$ wget http://www.apache.org/dyn/closer.cgi/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
+$ wget https://archive.apache.org/dist/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ tar zxvf {{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
 ```
@@ -98,6 +98,12 @@ in. You may replace `/home/abc` with your own home directory.
 </configuration>
 ```
 
+Edit `conf/hbase-env.sh` to set `JAVA_HOME` for the cluster. For Mac users it would be
+
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
+```
+
 Now you may start HBase.
 
 ```
@@ -106,4 +112,4 @@ $ bin/start-hbase.sh
 
 Now you have installed everything you need to run PredictionIO!
 
-Next: [Loading Data](/dataapi.html)
+Next: [Quick Start](/tutorials/engines/quickstart.html)

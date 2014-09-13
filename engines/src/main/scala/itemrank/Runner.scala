@@ -10,7 +10,7 @@ import com.github.nscala_time.time.Imports._
 object Runner {
 
   def main(args: Array[String]) {
-    val dsp = new DataSourceParams(
+    /*val dsp = new DataSourceParams(
       appid = 1,
       itypes = None,
       actions = Set("view", "like", "conversion", "rate"),
@@ -23,6 +23,23 @@ object Runner {
       testUntil = new DateTime("2014-04-21T00:00:00.000"),
       goal = Set("conversion", "view"),
       verbose = true
+    )*/
+    val dsp = EventsDataSoureParams(
+      appId = 1,
+      itypes = None,
+      actions = Set("view", "like", "dislike", "conversion", "rate"),
+      startTime = None,
+      untilTime = None,
+      attributeNames = AttributeNames(
+        user = "pio_user",
+        item = "pio_item",
+        u2iActions = Set("view", "like", "dislike", "conversion", "rate"),
+        itypes = "pio_itypes",
+        starttime = "pio_starttime",
+        endtime = "pio_endtime",
+        inactive = "pio_inactive",
+        rating = "pio_rate"
+      )
     )
 
     val mp = new MetricsParams(
@@ -49,7 +66,10 @@ object Runner {
       weighted = false,
       nearestN = 10,
       threshold = 5e-324,
-      numSimilarItems = 50
+      numSimilarItems = 50,
+      freshness = 0,
+      freshnessTimeUnit = 86400,
+      recommendationTime = Some(DateTime.now.millis)
     )
     val legacyAlgoParams = new legacy.LegacyAlgorithmParams(
       booleanData = true,

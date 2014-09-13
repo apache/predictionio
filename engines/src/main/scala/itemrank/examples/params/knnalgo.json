@@ -1,3 +1,5 @@
 [
-  { "name": "knn" , "params": { "similarity" : "cosine", "k" : 10 } }
+  { "name": "knn" ,
+    "params": { "similarity" : "cosine",
+                "k" : 10 } }
 ]

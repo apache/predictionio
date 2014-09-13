@@ -1,14 +1,5 @@
 name := "data"
 
-//version := "0.8-SNAPSHOT"
-
-//organization := "io.prediction"
-
-//scalaVersion := "2.10.4"
-
-// spray-can, Scala 2.10 + Akka 2.2 + spray 1.2 (the on_spray-can_1.2 branch)
-// spray-can, Scala 2.10 + Akka 2.3 + spray 1.3 (the on_spray-can_1.3 branch)
-
 libraryDependencies ++= Seq(
   "com.google.guava"        % "guava"           % "18.0",
   "io.spray"                % "spray-can"       % "1.2.1",
@@ -17,15 +8,11 @@ libraryDependencies ++= Seq(
   "org.apache.hbase"        % "hbase-common"    % "0.98.5-hadoop2",
   "org.apache.hbase"        % "hbase-client"    % "0.98.5-hadoop2",
   "org.clapper"            %% "grizzled-slf4j"  % "1.0.2",
-  "org.elasticsearch"       % "elasticsearch"   % "1.2.1",
-  "org.json4s"             %% "json4s-native"   % "3.2.6",
-  "org.json4s"             %% "json4s-ext"      % "3.2.6",
+  "org.elasticsearch"       % "elasticsearch"   % elasticsearchVersion.value,
+  "org.json4s"             %% "json4s-native"   % json4sVersion.value,
+  "org.json4s"             %% "json4s-ext"      % json4sVersion.value,
   "org.mongodb"            %% "casbah"          % "2.7.2",
   "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
   "org.slf4j"               % "slf4j-log4j12"   % "1.7.7",
   "org.spark-project.akka" %% "akka-actor"      % "2.2.3-shaded-protobuf",
   "org.specs2"             %% "specs2"          % "2.3.13" % "test")
-
-  //"org.scala-lang" %% "scala-pickling" % "0.8.0")
-
-//resolvers += "Akka Repository" at "http://repo.akka.io/releases/"

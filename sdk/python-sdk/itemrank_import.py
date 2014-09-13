@@ -7,7 +7,7 @@ import time
 
 def import_testdata(app_id, data_url):
   client = predictionio.DataClient(app_id=app_id, data_url=data_url, threads=1)
-  predictionio.connection.enable_log("test.log")
+  #predictionio.connection.enable_log("test.log")
   client.set_user("u0")
   client.set_user("u1")
   client.set_user("u2")
@@ -21,9 +21,9 @@ def import_testdata(app_id, data_url):
   client.set_item("i0", {
     "pio_itypes": ["t1"],
     "custom1": "i0c1",
-    "starttime": "2014-07-01T21:39:45.618Z",
-    "endtime" : "2014-07-02T21:39:45.618Z",
-    "price" : 4.5 })
+    "pio_starttime": "2014-07-01T21:39:45.618Z",
+    "pio_endtime" : "2014-07-02T21:39:45.618Z",
+    "pio_price" : 4.5 })
   client.set_item("i1", {
     "pio_itypes": ["t1","t2"],
     "custom1": "i1c1",
@@ -31,12 +31,12 @@ def import_testdata(app_id, data_url):
   client.set_item("i2", {
     "pio_itypes": ["t1","t2"],
     "custom2": "i2c2", "price" : 110,
-    "inactive": True})
+    "pio_inactive": True})
   client.set_item("i3", {
     "pio_itypes": ["t1"],
-    "starttime": "2014-07-01T21:39:45.618Z",
-    "endtime" : "2014-07-03T21:39:45.618Z",
-    "price" : 9.99
+    "pio_starttime": "2014-07-01T21:39:45.618Z",
+    "pio_endtime" : "2014-07-03T21:39:45.618Z",
+    "pio_price" : 9.99
   })
 
   ## some actions
@@ -66,13 +66,13 @@ def import_testdata(app_id, data_url):
 
   # change item info
   client.unset_item("i1", {"custom2": ""})
-  client.set_item("i2", {"price" : 99, "inactive" : False})
+  client.set_item("i2", {"pio_price" : 99, "pio_inactive" : False})
   client.set_item("i3", {
-    "starttime": "2014-07-04T21:39:45.618Z",
-    "endtime" : "2014-07-05T21:39:45.618Z",
-    "price": 7.0
+    "pio_starttime": "2014-07-04T21:39:45.618Z",
+    "pio_endtime" : "2014-07-05T21:39:45.618Z",
+    "pio_price": 7.0
   })
-  client.set_item("i0", {"inactive" : True})
+  client.set_item("i0", {"pio_inactive" : True})
 
   # more a
   client.record_user_action_on_item("rate", "u0", "i0", { "pio_rate": 2 })

@@ -6,8 +6,6 @@ name := "examples"
 
 organization := "io.prediction"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 libraryDependencies ++= Seq(
   "io.prediction"     %% "core"           % "0.8.0-SNAPSHOT" % "provided",
   "io.prediction"     %% "engines"        % "0.8.0-SNAPSHOT" % "provided",
@@ -15,8 +13,8 @@ libraryDependencies ++= Seq(
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",
   "org.apache.mahout"  % "mahout-core"    % "0.9",
-  "org.apache.spark"  %% "spark-core"     % "1.0.2" % "provided",
-  "org.apache.spark"  %% "spark-mllib"    % "1.0.2"
+  "org.apache.spark"  %% "spark-core"     % "1.1.0" % "provided",
+  "org.apache.spark"  %% "spark-mllib"    % "1.1.0"
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"),
   "org.clapper"       %% "grizzled-slf4j" % "1.0.2",

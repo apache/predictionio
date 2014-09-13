@@ -11,8 +11,8 @@ libraryDependencies ++= Seq(
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
   "org.apache.hadoop"       % "hadoop-hdfs"    % "2.5.0",
   "org.clapper"            %% "grizzled-slf4j" % "1.0.2",
-  "org.json4s"             %% "json4s-native"  % "3.2.6",
-  "org.json4s"             %% "json4s-ext"     % "3.2.6",
+  "org.json4s"             %% "json4s-native"  % json4sVersion.value,
+  "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
   "org.scalaj"             %% "scalaj-http"    % "0.3.16",
   "org.spark-project.akka" %% "akka-actor"     % "2.2.3-shaded-protobuf")
 
