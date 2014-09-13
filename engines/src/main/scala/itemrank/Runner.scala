@@ -80,7 +80,7 @@ object Runner {
       unseenOnly = false,
       freshness = 0,
       freshnessTimeUnit = 86400,
-      recommendationTime = DateTime.now.millis
+      recommendationTime = Some(DateTime.now.millis)
     )
 
     val sp = new EmptyParams()
