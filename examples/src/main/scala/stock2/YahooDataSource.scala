@@ -417,6 +417,7 @@ object YahooDataSourceRun {
       metricsParams = metricsParams,
       params = WorkflowParams(
         verbose = 3,
+        saveModel = false,
         batch = "Imagine: Stock III"))
   }
 }
