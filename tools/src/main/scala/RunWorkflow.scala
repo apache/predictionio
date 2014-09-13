@@ -37,7 +37,7 @@ object RunWorkflow extends Logging {
     val workMode = ca.metricsClass.map(_ => "Evaluation").getOrElse("Training")
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
-      ca.common.passThrough ++
+      ca.common.sparkPassThrough ++
       Seq(
         "--class",
         "io.prediction.workflow.CreateWorkflow",

@@ -44,7 +44,8 @@ case class ConsoleArgs(
   directoryName: Option[String] = None)
 
 case class CommonArgs(
-  passThrough: Seq[String] = Seq(),
+  sparkPassThrough: Seq[String] = Seq(),
+  driverPassThrough: Seq[String] = Seq(),
   pioHome: Option[String] = None,
   sparkHome: Option[String] = None,
   engineJson: File = new File("engine.json"))
@@ -280,7 +281,10 @@ object Console extends Logging {
       note("")
       cmd("run").
         text("Launch a driver program. This command will pass all\n" +
-          "pass-through arguments to its underlying spark-submit command.").
+          "pass-through arguments to its underlying spark-submit command.\n" +
+          "In addition, it also supports a second level of pass-through\n" +
+          "arguments to the driver program, e.g.\n" +
+          "pio run -- --master spark://localhost:7077 -- --driver-arg foo").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "run")
         } children(
@@ -305,10 +309,20 @@ object Console extends Logging {
         (args, Array[String]())
       else
         args.splitAt(separatorIndex)
-    val passThroughArgs = theRest.drop(1)
+    val allPassThroughArgs = theRest.drop(1)
+    val secondSepIdx = allPassThroughArgs.indexWhere(_ == "--")
+    val (sparkPassThroughArgs, driverPassThroughArgs) =
+      if (secondSepIdx == -1)
+        (allPassThroughArgs, Array[String]())
+      else {
+        val t = allPassThroughArgs.splitAt(secondSepIdx)
+        (t._1, t._2.drop(1))
+      }
 
     parser.parse(consoleArgs, ConsoleArgs()) map { pca =>
-      val ca = pca.copy(common = pca.common.copy(passThrough = passThroughArgs))
+      val ca = pca.copy(common = pca.common.copy(
+        sparkPassThrough = sparkPassThroughArgs,
+        driverPassThrough = driverPassThroughArgs))
       ca.commands match {
         case Seq("new") =>
           createProject(ca)
@@ -589,13 +603,15 @@ object Console extends Logging {
     val allJarFiles = jarFiles ++ builtinEngines(ca.common.pioHome.get)
     val cmd = s"${getSparkHome(ca.common.sparkHome)}/bin/spark-submit --jars " +
       s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
-      s"${ca.mainClass.get} ${coreAssembly(ca.common.pioHome.get)} " +
-      ca.common.passThrough.mkString(" ")
+      s"${ca.mainClass.get} ${ca.common.sparkPassThrough.mkString(" ")} " +
+      coreAssembly(ca.common.pioHome.get) + " " +
+      ca.common.driverPassThrough.mkString(" ")
     val proc = Process(
       cmd,
       None,
       "SPARK_YARN_USER_ENV" -> sys.env.filter(kv => kv._1.startsWith("PIO_")).
         map(kv => s"${kv._1}=${kv._2}").mkString(","))
+    info(s"Submission command: ${cmd}")
     val r = proc.!
     if (r != 0) {
       error(s"Return code of previous step is ${r}. Aborting.")
