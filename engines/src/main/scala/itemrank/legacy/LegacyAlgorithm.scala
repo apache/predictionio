@@ -31,7 +31,7 @@ import com.github.nscala_time.time.Imports._
 import scala.collection.JavaConversions._
 
 class LegacyAlgorithmParams(
-  val booleanData: Boolean = false,
+  val booleanData: Boolean = true,
   val itemSimilarity: String = "LogLikelihoodSimilarity",
   val weighted: Boolean = false,
   val threshold: Double = Double.MinPositiveValue,
@@ -39,7 +39,7 @@ class LegacyAlgorithmParams(
   val unseenOnly: Boolean = false,
   val freshness: Int = 0,
   val freshnessTimeUnit: Int = 86400,
-  val recommendationTime: Long = DateTime.now.millis
+  val recommendationTime: Option[Long] = Some(DateTime.now.millis)
 ) extends Params {}
 
 case class ItemModel(
@@ -106,7 +106,7 @@ class LegacyAlgorithmModel(
     recommender
   }
 
-  class FreshnessRescorer(freshness: Int, recommendationTime: Long,
+  class FreshnessRescorer(freshness: Int, recommendationTimeOpt: Option[Long],
     freshnessTimeUnit: Long,
     itemsMap: Map[Long, ItemModel]) extends IDRescorer {
 
@@ -115,6 +115,10 @@ class LegacyAlgorithmModel(
     def isFiltered(id: Long): Boolean = false
 
     def rescore(id: Long, originalScore: Double): Double = {
+
+      val recommendationTime = recommendationTimeOpt.getOrElse(
+        DateTime.now.millis)
+
       if (freshness > 0) {
         itemsMap.get(id) map { i =>
           val timeDiff = (recommendationTime - i.starttime) / 1000 /
@@ -135,6 +139,8 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
   LegacyAlgorithmModel, Query, Prediction] {
 
   @transient lazy val logger = Logger[this.type]
+  @transient lazy val recommendationTime = params.recommendationTime.getOrElse(
+    DateTime.now.millis)
 
   override def train(preparedData: PreparedData): LegacyAlgorithmModel = {
 
@@ -153,7 +159,8 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
       .map{ case (k, v) =>
         (k.toLong, ItemModel(
           v.iid,
-          v.starttime.getOrElse(params.recommendationTime)))
+          v.starttime.getOrElse(recommendationTime))
+        )
       }
     val usersMap: Map[String, UserModel] = preparedData.users
       .map {case (k,v) =>

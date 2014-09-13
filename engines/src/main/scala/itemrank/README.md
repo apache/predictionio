@@ -50,6 +50,7 @@ Train with other algorithms:
 $ ../../../../../../bin/pio train -ap knnalgo.json
 $ ../../../../../../bin/pio train -ap randomalgo.json
 $ ../../../../../../bin/pio train -ap featurebasedalgo.json
+$ ../../../../../../bin/pio train -ap legacyalgo.json
 ```
 
 
