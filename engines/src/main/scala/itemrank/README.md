@@ -57,7 +57,7 @@ Retrieve prediction with command line:
 
 ```
 $ curl -i -X POST http://localhost:8000/ \
--d '{ "uid" : "u2", "items" : ["i0", "i1", "i2", "i3"] }'
+-d '{ "uid" : "u2", "iids" : ["i0", "i1", "i2", "i3"] }'
 ```
 
 Retrieve prediction with python sdk:

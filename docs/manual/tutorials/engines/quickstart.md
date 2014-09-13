@@ -55,7 +55,11 @@ $ php composer.phar install
 </div>
 <div data-lang="Python SDK">
 {% highlight bash %}
-(TODO)
+$ pip install predictionio
+{% endhighlight %}
+or
+{% highlight bash %}
+$ easy_install predictionio
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -130,9 +134,46 @@ $ php import.php
 </div>
 
 <div data-lang="Python SDK">
-{% highlight bash %}
-(TODO)
+<p>Create <em>import.py</em> as below. Replace <code>your_app_id</code> with your app id (integer).
+
+{% highlight python %}
+
+import predictionio
+import random
+
+random.seed()
+
+client = predictionio.DataClient(app_id=your_app_id)
+
+# generate 10 users, with user ids 1,2,....,10
+user_ids = [str(i) for i in range(1, 11)]
+for user_id in user_ids:
+  print "Set user", user_id
+  client.set_user(user_id)
+
+# generate 50 items, with item ids 1,2,....,50
+# assign type id 1 to all of them
+item_ids = [str(i) for i in range(1, 51)]
+for item_id in item_ids:
+  print "Set item", item_id
+  client.set_item(item_id, {
+    "pio_itypes" : ['1']
+  })
+
+# each user randomly views 10 items
+for user_id in user_ids:
+  for viewed_item in random.sample(item_ids, 10):
+    print "User", user_id ,"views item", viewed_item
+    client.record_user_action_on_item("view", user_id, viewed_item)
+
+client.close()
+
 {% endhighlight %}
+and run it:
+{% highlight bash %}
+$ python import.py
+{% endhighlight %}
+
 </div>
 
 <div data-lang="Ruby SDK">
@@ -167,8 +208,8 @@ To launch an engine instance for this simple app, first create an engine
 instance project:
 
 ```
-$ $PIO_HOME/bin/pio instance io.prediction.engines.itemrec
-$ cd io.prediction.engines.itemrec
+$ $PIO_HOME/bin/pio instance io.prediction.engines.itemrank
+$ cd io.prediction.engines.itemrank
 $ $PIO_HOME/bin/pio register
 ```
 
@@ -241,9 +282,38 @@ $ php show.php
 </div>
 
 <div data-lang="Python SDK">
-{% highlight bash %}
-(TODO)
+<p>Create a file <em>show.py</em> with this code:</p>
+
+{% highlight python %}
+
+import predictionio
+
+client = predictionio.PredictionClient()
+
+# Rank item 1 to 5 for each user
+item_ids = [str(i) for i in range(1, 6)]
+user_ids = [str(x) for x in range(1, 6)]
+for user_id in user_ids:
+  print "Rank item 1 to 5 for user", user_id
+  try:
+    response = client.send_query({
+      "uid": user_id,
+      "iids": item_ids
+    })
+    print response
+  except predictionio.PredictionIOAPIError as e:
+    print 'Caught exception:', e.strerror()
+
+client.close()
+
 {% endhighlight %}
+
+and run it:
+
+{% highlight python %}
+$ python show.py
+{% endhighlight %}
+
 </div>
 
 <div data-lang="Ruby SDK">

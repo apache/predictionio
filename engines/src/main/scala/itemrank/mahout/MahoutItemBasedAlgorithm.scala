@@ -141,7 +141,7 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
     query: Query): Prediction = {
       val nearestK = params.nearestN
       val uid = query.uid
-      val possibleItems = query.items
+      val possibleItems = query.iids
       val history: Map[String, Int] = model.userHistory.getOrElse(uid, Set())
         .toMap
 

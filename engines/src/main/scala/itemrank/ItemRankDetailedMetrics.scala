@@ -83,12 +83,12 @@ abstract class ItemRankMeasure extends Serializable {
 class ItemRankMAP(val k: Int) extends ItemRankMeasure {
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
-    val kk = (if (k == -1) query.items.size else k)
+    val kk = (if (k == -1) query.iids.size else k)
 
     averagePrecisionAtK(
       kk,
       prediction.items.map(_._1),
-      actual.items.toSet)
+      actual.iids.toSet)
   }
 
   override def toString(): String = s"MAP@$k"
@@ -121,9 +121,9 @@ class ItemRankPrecision(val k: Int) extends ItemRankMeasure {
 
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
-    val kk = (if (k == -1) query.items.size else k)
+    val kk = (if (k == -1) query.iids.size else k)
 
-    val actualItems: Set[String] = actual.items.toSet
+    val actualItems: Set[String] = actual.iids.toSet
 
     val relevantCount = prediction.items.take(kk)
       .map(_._1)
@@ -169,13 +169,13 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   override def computeUnit(query: Query, prediction: Prediction,
     actual: Actual): MetricUnit  = {
 
-    val k = query.items.size
+    val k = query.iids.size
 
     val score = measure.calculate(query, prediction, actual)
     // For calculating baseline, we use the input order of query.
     val baseline = measure.calculate(
       query,
-      Prediction(query.items.map(e => (e, 0.0)), isOriginal = false),
+      Prediction(query.iids.map(e => (e, 0.0)), isOriginal = false),
       actual)
 
     val mu = new MetricUnit(
@@ -329,7 +329,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     // Aggregation Stats
     val aggregateByActualSize: Seq[(String, Stats)] = allUnits
-      .groupBy(_.a.items.size)
+      .groupBy(_.a.iids.size)
       .mapValues(_.map(_.score))
       .map{ case(k, l) => (k.toString, calculate(l)) }
       .toSeq
@@ -345,7 +345,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         (mu.a.previousActionCount))
 
     val itemCountAggregation = aggregate[(String, MetricUnit)](
-      allUnits.flatMap(mu => mu.a.items.map(item => (item, mu))),
+      allUnits.flatMap(mu => mu.a.iids.map(item => (item, mu))),
       _._2.score,
       _._1)
 
@@ -392,7 +392,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
-        ("ByActualSize", aggregateMU(allUnits, _.a.items.size.toString)),
+        ("ByActualSize", aggregateMU(allUnits, _.a.iids.size.toString)),
         ("ByScore", scoreAggregation),
         ("ByActionCount", actionCountAggregation),
         ("ByFlattenItem", itemCountAggregation),

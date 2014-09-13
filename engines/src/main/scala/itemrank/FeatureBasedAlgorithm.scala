@@ -14,11 +14,11 @@ import org.apache.spark.rdd.RDD
 // FIXME. For now, we don't save the model.
 case class FeatureBasedModel(
   val features: Array[String] = Array[String](),
-  val userFeaturesMap: Map[String, SparseVector[Double]] = 
+  val userFeaturesMap: Map[String, SparseVector[Double]] =
     Map[String, SparseVector[Double]](),
-  val itemFeaturesMap: Map[String, SparseVector[Double]] = 
-    Map[String, SparseVector[Double]]()) 
-extends Serializable 
+  val itemFeaturesMap: Map[String, SparseVector[Double]] =
+    Map[String, SparseVector[Double]]())
+extends Serializable
 with IPersistentModel[EmptyParams] {
   def save(id: String, p: EmptyParams): Boolean = true
 }
@@ -32,7 +32,7 @@ extends IPersistentModelLoader[EmptyParams, FeatureBasedModel] {
 
 // FeatureBaseAlgorithm use all itypes as features.
 class FeatureBasedAlgorithm
-  extends LAlgorithm[EmptyParams, PreparedData, FeatureBasedModel, 
+  extends LAlgorithm[EmptyParams, PreparedData, FeatureBasedModel,
       Query, Prediction] {
 
   def train(data: PreparedData): FeatureBasedModel = {
@@ -43,30 +43,30 @@ class FeatureBasedAlgorithm
 
     val features: Seq[String] = featureCounts.toSeq.sortBy(-_._2).map(_._1)
     val iFeatures: Seq[(Int, String)] = features.zipWithIndex.map(_.swap)
-    
-    val itemFeaturesMap: Map[String, SparseVector[Double]] = 
+
+    val itemFeaturesMap: Map[String, SparseVector[Double]] =
     data.items.map { case(iindex, item) => {
       val itypes: Set[String] = item.itypes.toSet
       val raw: Seq[(Int, Double)] = iFeatures
         .filter{ case(i, f) => itypes(f) }
         .map{ case(i, f) => (i, 1.0) }
 
-      val itemFeatures: SparseVector[Double] = 
+      val itemFeatures: SparseVector[Double] =
         SparseVector[Double](features.size)(raw:_*)
       (item.iid, itemFeatures :/ itemFeatures.sum)
     }}
     .toMap
 
-    val userRatingsMap: Map[Int, Seq[RatingTD]] = 
+    val userRatingsMap: Map[Int, Seq[RatingTD]] =
       data.rating.groupBy(_.uindex)
 
-    val userFeaturesMap: Map[String, SparseVector[Double]] = 
+    val userFeaturesMap: Map[String, SparseVector[Double]] =
     userRatingsMap.mapValues { ratings => {
       val userFeatures: SparseVector[Double] = ratings
         .map(rating => data.items(rating.iindex).iid)
         .map(iid => itemFeaturesMap(iid))
         .reduce{ (a, b) => a + b }
-      userFeatures    
+      userFeatures
     }}
     .map { case(uindex, v) => (data.users(uindex).uid, v) }
 
@@ -82,7 +82,7 @@ class FeatureBasedAlgorithm
       if (model.userFeaturesMap.contains(query.uid)) {
         val userFeatures: SparseVector[Double] = model.userFeaturesMap(query.uid)
 
-        val items: Seq[(String, Double)] = query.items
+        val items: Seq[(String, Double)] = query.iids
         .map { iid => {
           val itemFeatures = model.itemFeaturesMap(iid)
           (iid, userFeatures.dot(itemFeatures))
@@ -91,10 +91,9 @@ class FeatureBasedAlgorithm
         (items, false)
       } else {
         // if user not found, use input order.
-        (query.items.map { iid => (iid, 0.0) }, true)
+        (query.iids.map { iid => (iid, 0.0) }, true)
       }
     )
     new Prediction(items, isOriginal)
   }
 }
-  

@@ -22,7 +22,7 @@ class RandomAlgorithm(params: RandomAlgoParams)
   }
 
   override def predict(model: RandomModel, query: Query): Prediction = {
-    val items = query.items
+    val items = query.iids
 
     new Prediction (
       items = rand.shuffle(items).zip((items.size to 1 by -1).map(_.toDouble))

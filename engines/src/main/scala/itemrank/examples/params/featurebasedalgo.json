@@ -1,4 +1,6 @@
 [
-  { "name": "featurebased",
-    "params": {} }
+  {
+    "name": "featurebased",
+    "params": {}
+  }
 ]

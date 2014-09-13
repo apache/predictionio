@@ -23,7 +23,7 @@ object RunServer extends Logging {
 
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
-      ca.common.passThrough ++
+      ca.common.sparkPassThrough ++
       Seq(
         "--class",
         "io.prediction.workflow.CreateServer",

@@ -1,6 +1,0 @@
-{
-  "id": "io.prediction.engines.itemrank",
-  "version": "0.8.0-SNAPSHOT",
-  "name": "PredictionIO ItemRank Engine",
-  "engineFactory": "io.prediction.engines.itemrank.ItemRankEngine"
-}

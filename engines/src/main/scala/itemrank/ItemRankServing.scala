@@ -22,7 +22,7 @@ class ItemRankAverageServing extends LServing[EmptyParams, Query, Prediction] {
     val validCount = itemsList.size
     if (validCount == 0) {
       return new Prediction(
-        items = query.items.map(e => (e, 0.0)),
+        items = query.iids.map(e => (e, 0.0)),
         isOriginal = true)
     }
 
@@ -30,7 +30,7 @@ class ItemRankAverageServing extends LServing[EmptyParams, Query, Prediction] {
     val mvcList: Seq[MeanAndVariance] = itemsList
       .map { l => meanAndVariance(l.map(_._2)) }
 
-    val querySize = query.items.size
+    val querySize = query.iids.size
 
     val items: Seq[(String, Double)] = (0 until validCount)
     .flatMap { i =>
