@@ -544,7 +544,8 @@ object CoreWorkflow {
 
     if (verbose > 2) {
       evalMetricsUnitMap.foreach{ case(i, e) => {
-        logger.info(s"MetricsUnit: i=$i e=$e")
+        val estr = WorkflowUtils.debugString(e)
+        logger.info(s"MetricsUnit: i=$i e=$estr")
       }}
     }
 
@@ -566,12 +567,13 @@ object CoreWorkflow {
 
     if (verbose > 2) {
       evalMetricsResultsMap.foreach{ case(ei, e) => {
-        logger.info(s"MetricsResults $ei $e")
+        val estr = WorkflowUtils.debugString(e)
+        logger.info(s"MetricsResults $ei $estr")
       }}
     }
 
     val multipleMetricsResults: RDD[MMR] = sc
-      .union(evalMetricsResultsMap.values.toSeq)
+      .union(evalMetricsResultsMap.values.toVector)
       .coalesce(numPartitions=1, shuffle = true)
       .glom()
       .map(metricsWrapper.computeMultipleSets)
