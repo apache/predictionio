@@ -1,4 +1,4 @@
-package io.prediction.examples.stock
+package io.prediction.examples.stock_old
 
 import com.github.nscala_time.time.Imports.DateTime
 import io.prediction.controller.Workflow

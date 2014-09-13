@@ -1,4 +1,4 @@
-package io.prediction.examples.stock
+package io.prediction.examples.stock_old
 
 import io.prediction.controller.LAlgorithm
 import io.prediction.controller.EmptyParams

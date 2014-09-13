@@ -9,8 +9,6 @@ import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
 import scala.collection.immutable.HashMap
 
-import _root_.io.prediction.examples.stock.SaddleWrapper
-
 class RawData(
   val tickers: Array[String],
   val mktTicker: String,
@@ -94,10 +92,8 @@ case class Query(
   val mktTicker: String)
 
 // Prediction
-//case class Prediction(val data: Map[String, Double]) extends Serializable {}
 case class Prediction(val data: HashMap[String, Double]) extends Serializable {}
 
-/*
 object SaddleWrapper {
   def ToFrame[A](
     timeIndex: Array[DateTime],
@@ -124,4 +120,3 @@ object SaddleWrapper {
     (timeIndex, tickerDataSeq)
   }
 }
-*/

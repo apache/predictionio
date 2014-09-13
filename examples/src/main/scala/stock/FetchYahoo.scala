@@ -1,4 +1,4 @@
-package io.prediction.examples.stock
+package io.prediction.examples.stock_old
 
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.{ ItemTrend, ItemTrends }

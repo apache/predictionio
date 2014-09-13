@@ -1,4 +1,4 @@
-package io.prediction.examples.stock
+package io.prediction.examples.stock_old
 
 import io.prediction.controller.Params
 import io.prediction.controller.LSlicedDataSource
