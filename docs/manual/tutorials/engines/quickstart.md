@@ -298,7 +298,7 @@ for user_id in user_ids:
   try:
     response = client.send_query({
       "uid": user_id,
-      "items": item_ids
+      "iids": item_ids
     })
     print response
   except predictionio.PredictionIOAPIError as e:

@@ -100,7 +100,7 @@ class KNNAlgorithm(params: KNNAlgoParams)
   override def predict(model: KNNModel, query: Query): Prediction = {
     val nearestK = params.k
     val uid = query.uid
-    val possibleItems = query.items
+    val possibleItems = query.iids
     val history: Map[String, Int] = model.userHistory.getOrElse(uid, Set())
       .toMap
 

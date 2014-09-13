@@ -19,16 +19,16 @@ class ItemRankMetrics(mp: MetricsParams)
   override def computeUnit(query: Query, prediction: Prediction,
     actual: Actual): MetricUnit  = {
 
-    val k = query.items.size
+    val k = query.iids.size
 
     new MetricUnit(
       q = query,
       p = prediction,
       a = actual,
       score = averagePrecisionAtK(k, prediction.items.map(_._1),
-        actual.items.toSet),
-      baseline = averagePrecisionAtK(k, query.items,
-        actual.items.toSet))
+        actual.iids.toSet),
+      baseline = averagePrecisionAtK(k, query.iids,
+        actual.iids.toSet))
   }
 
   // calcualte MAP at k
@@ -45,9 +45,9 @@ class ItemRankMetrics(mp: MetricsParams)
     if (mp.verbose) {
       val reports = metricUnits.map{ eu =>
         val flag = if (eu.baseline > eu.score) "x" else ""
-        Seq(eu.q.uid, eu.q.items.mkString(","),
+        Seq(eu.q.uid, eu.q.iids.mkString(","),
           eu.p.items.map(p => s"${p._1}(${printDouble(p._2)})").mkString(","),
-          eu.a.items.mkString(","),
+          eu.a.iids.mkString(","),
           printDouble(eu.baseline), printDouble(eu.score),
           flag)
       }.map { x => x.map(t => s"[${t}]")}

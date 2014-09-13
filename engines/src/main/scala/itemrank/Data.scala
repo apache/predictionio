@@ -67,14 +67,14 @@ class PreparedData(
 
 case class Query(
     val uid: String,
-    val items: Seq[String] // items to be ranked
+    val iids: Seq[String] // items to be ranked
     ) extends Serializable {
-  override def toString = s"[${uid}, ${items}]"
+  override def toString = s"[${uid}, ${iids}]"
 }
 
 // prediction output
 case class Prediction(
-  // the ranked items and score
+  // the ranked iid with score
     val items: Seq[(String, Double)],
     val isOriginal: Boolean = false
   ) extends Serializable {
@@ -83,7 +83,7 @@ case class Prediction(
 
 case class Actual(
     // actual items the user has performed actions on
-    val items: Seq[String],
+    val iids: Seq[String],
     // other data that maybe used by metrics.
     val previousActionCount: Int = -1,
     val localDate: LocalDate = new LocalDate(0),
@@ -92,7 +92,7 @@ case class Actual(
     val previousOrders: Int = -1,
     val variety: Int = -1
   ) extends Serializable {
-  override def toString = s"${items}"
+  override def toString = s"${iids}"
 }
 
 class MetricUnit(

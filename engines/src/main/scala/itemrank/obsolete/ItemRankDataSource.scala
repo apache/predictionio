@@ -213,10 +213,10 @@ class ItemRankDataSource(dsp: DataSourceParams)
       .map{ case (uid, iids) =>
         val f = new Query(
           uid = uid,
-          items = itemList
+          iids = itemList
         )
         val t = new Actual(
-          items = iids.toSeq
+          iids = iids.toSeq
         )
         (f, t)
       }

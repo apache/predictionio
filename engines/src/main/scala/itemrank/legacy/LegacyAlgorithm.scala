@@ -208,7 +208,7 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
      * If no recommendations found for this user, simply return the original
      * list.
      */
-    val iids = query.items
+    val iids = query.iids
     val iidsSet = iids.toSet
     val ranked: Seq[(String, Double)] = all.filter( r =>
       iidsSet(r._1)

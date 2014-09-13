@@ -12,7 +12,7 @@ def send_queries(url):
   # Sync Query
   query = {
       "uid": "u2",
-      "items": ["i0", "i1", "i2", "i3"],
+      "iids": ["i0", "i1", "i2", "i3"],
       }
   response = client.send_query(query)
   print(response)
@@ -20,7 +20,7 @@ def send_queries(url):
   # Async Query
   query = {
       "uid": "u9527",
-      "items": ["i0", "i1", "i2", "i3"],
+      "iids": ["i0", "i1", "i2", "i3"],
       }
   response = client.asend_query(query)
   print(response.get_response())
@@ -41,4 +41,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-
