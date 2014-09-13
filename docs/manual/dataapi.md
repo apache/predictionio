@@ -7,7 +7,7 @@ title: Data API
 
 Data API server is designed to collect data into PredictionIO in an event-based
 style. All PredictionIO-compliant engines support the data store and data format
-used by the Data API. 
+used by the Data API.
 
 > You may also [modify DataSource](/cookbook/existingdatasource.html) of an
 engine to read data directly from your existing data store.
@@ -47,6 +47,78 @@ Content-Length: 18
 ```
 
 ## Using the Data API
+
+### Event Creation API
+
+The event creation support many commonly used data.
+
+Field | Description
+:---- | :----------
+`appId` | Application ID for separating your data set between different
+        | applications.
+`event` | Name of the event. (Examples: "sign-up", "rate", "view", "buy")
+`entityType` | The entity type. It is the namespace of the entityId and
+             | analogous to the table name of a relational database. The
+             | entityId must be unique within same entityType.
+`entityId` | The entity ID. `entityType-entityId` becomes the unique
+           | identifier of the entity. For example, you may have entityType
+           | named `user`, and different entity IDs, say `1` and `2`. In this
+           | case, `user-1` and `user-2` uniquely identifies | these two
+           | entities.
+`targetEntityType` | (Optional) The target entity type.
+`targetEntityId` | (Optional) The target entity ID.
+`properties` | (Optional) JSON object. See **Note** below.
+`eventTime` | (Optional) The time of the event. Current time and UTC timezone
+            | will be used if unspecified. Must be in ISO 8601 format (e.g.
+            | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
+`tags` | (Optional) JSON array of strings. Empty list will be used if
+       | unspecified.
+`predictionKey` | (Optional) Reserved. TBD.
+`creationTime` | (Optional) Creation time of this event (not the time when this
+               | event happened). Current time and UTC timezone will be used if
+               | unspecified. Must be in ISO 8601 format (e.g.
+               | `2004-12-13T21:39:45.618Z`, or
+               | `2014-09-09T16:17:42.937-08:00`).
+
+#### Note
+`properties` can be associated with either an entity or an event.
+
+-   `properties` associated with an entity:
+
+    Entity `user-1` may have `properties` of `birthday` and `address`. To set
+    and unset properties for the entity, use special event `$set` and
+    `$unset` to create an event of the entity.
+
+    ```
+    {
+      "event" : "$set",
+      "entityType" : "user"
+      "entityId" : "1",
+      "properties" : {
+        "birthday" : "1984-10-11",
+        "address" : "1234 Street, San Francisco, CA 94107"
+      },
+      "appId" : 4
+    }
+    ```
+
+-   `properties` associated with an event:
+
+    `user-1` may have a `rate` event on `item-1` with rating value of `4.5`.
+
+    ```
+    {
+      "event" : "rate",
+      "entityType" : "user"
+      "entityId" : "1",
+      "targetEntityType" : "item",
+      "targetEntityId" : "1"
+      "properties" : {
+        "rating" : 4.5
+      },
+      "appId" : 4
+    }
+    ```
 
 You may connect to the Data API with HTTP request or by using one of many
 **PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for your old data.
@@ -153,75 +225,6 @@ Content-Length: 68
 {"eventId":"4-1102999185618-my_event-user-uid--7574530243528847393"}
 ```
 
-### Event Creation API
-
-The event creation support many commonly used data.
-
-Field | Description
-:---- | :----------
-`event` | Name of the event. (Examples: "sign-up", "rate", "view", "buy")
-`entityType` | The entity type. It is the namespace of the entityId and
-             | analogous to the table name of a relational database. The
-             | entityId must be unique within same entityType.
-`entityId` | The entity ID. `entityType-entityId` becomes the unique
-           | identifier of the entity. For example, you may have entityType
-           | named `user`, and different entity IDs, say `1` and `2`. In this
-           | case, `user-1` and `user-2` uniquely identifies | these two
-           | entities.
-`targetEntityType` | (Optional) The target entity type.
-`targetEntityId` | (Optional) The target entity ID.
-`properties` | (Optional) See **Note** below.
-`eventTime` | (Optional) The time of the event. Current time and UTC timezone
-            | will be used if unspecified. Must be in ISO 8601 format (e.g.
-            | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
-`tags` | (Optional) JSON array of strings. Empty list will be used if
-       | unspecified.
-`appId` | Application ID for separating your data set between different
-        | applications.
-`predictionKey` | (Optional) Reserved. TBD.
-`creationTime` | (Optional) Creation time of this event (not the time when this
-               | event happened). Current time and UTC timezone will be used if
-               | unspecified. Must be in ISO 8601 format (e.g.
-               | `2004-12-13T21:39:45.618Z`, or
-               | `2014-09-09T16:17:42.937-08:00`).
-
-#### Note
-`properties` can be associated with either an entity or an event.
-
--   `properties` associated with an entity:
-
-    Entity `user-1` may have `properties` of `birthday` and `address`. To set
-    and unset properties for the entity, use special event `$set` and
-    `$unset` to create an event of the entity.
-
-    ```
-    {
-      "event" : "$set",
-      "entityType" : "user"
-      "entityId" : "1",
-      "properties" : {
-        "birthday" : "1984-10-11",
-        "address" : "1234 Street, San Francisco, CA 94107"
-      }
-    }
-    ```
-
--   `properties` associated with an event:
-
-    `user-1` may have a `rate` event on `item-1` with rating value of `4.5`.
-
-    ```
-    {
-      "event" : "rate",
-      "entityType" : "user"
-      "entityId" : "1",
-      "targetEntityType" : "item",
-      "targetEntityId" : "1"
-      "properties" : {
-        "rating" : 4.5
-      }
-    }
-    ```
 
 ## Debugging Recipes
 
