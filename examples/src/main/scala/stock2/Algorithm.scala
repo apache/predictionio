@@ -12,6 +12,8 @@ import org.saddle._
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
+import scala.collection.immutable.HashMap
+
 abstract class StockStrategy[M: ClassTag]
   extends LAlgorithm[
       EmptyParams, 
@@ -58,5 +60,5 @@ class EmptyStrategy extends StockStrategy[AnyRef] {
   def createModel(dataView: DataView): AnyRef = None
 
   def onClose(model: AnyRef, query: Query): Prediction = 
-    Prediction(Map[String, Double]())
+    Prediction(HashMap[String, Double]())
 }

@@ -14,7 +14,7 @@ import org.json4s.native.Serialization
 
 import io.prediction.engines.util.{ MetricsVisualization => MV }
 
-import breeze.stats.{ mean, meanAndVariance }
+import breeze.stats.{ mean, meanAndVariance, MeanAndVariance }
 
 case class BacktestingParams(
   val enterThreshold: Double,
@@ -173,9 +173,12 @@ class BacktestingMetrics(val params: BacktestingParams)
 
     val lastStat = dailyStats.last
 
-    val dailyVariance = meanAndVariance(dailyStats.map(_.ret))._2
-    val dailyVol = math.sqrt(dailyVariance)
-    val annualVol = dailyVariance * math.sqrt(252.0)
+    //val dailyVariance = meanAndVariance(dailyStats.map(_.ret))._2
+    //val dailyVariance = meanAndVariance(dailyStats.map(_.ret))._2
+    val retStats: MeanAndVariance = meanAndVariance(dailyStats.map(_.ret))
+    //val dailyVol = math.sqrt(dailyVariance)
+    //val annualVol = dailyVariance * math.sqrt(252.0)
+    val annualVol = retStats.stdDev * math.sqrt(252.0)
     val n = dailyStats.size
     val totalReturn = lastStat.nav / initCash
 

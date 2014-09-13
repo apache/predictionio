@@ -416,7 +416,7 @@ object YahooDataSourceRun {
       metricsClassOpt = Some(classOf[BacktestingMetrics]),
       metricsParams = metricsParams,
       params = WorkflowParams(
-        verbose = 0,
+        verbose = 3,
         batch = "Imagine: Stock III"))
   }
 }

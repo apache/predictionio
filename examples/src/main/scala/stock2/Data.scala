@@ -7,6 +7,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.saddle._
 import org.saddle.index.IndexTime
 import com.github.nscala_time.time.Imports._
+import scala.collection.immutable.HashMap
 
 import _root_.io.prediction.examples.stock.SaddleWrapper
 
@@ -18,14 +19,14 @@ class RawData(
   private[stock2] val _active: Array[(String, Array[Boolean])])
     extends Serializable {
 
-  lazy val _priceFrame: Frame[DateTime, String, Double] =
+  @transient lazy val _priceFrame: Frame[DateTime, String, Double] =
     SaddleWrapper.ToFrame(timeIndex, _price)
 
   // FIXME. Fill NA of result.
-  lazy val _retFrame: Frame[DateTime, String, Double] = 
+  @transient lazy val _retFrame: Frame[DateTime, String, Double] = 
     _priceFrame.shift(1) / _priceFrame
   
-  lazy val _activeFrame: Frame[DateTime, String, Boolean] =
+  @transient lazy val _activeFrame: Frame[DateTime, String, Boolean] =
     SaddleWrapper.ToFrame(timeIndex, _active)
 
   def view(idx: Int, maxWindowSize: Int): DataView = 
@@ -93,4 +94,34 @@ case class Query(
   val mktTicker: String)
 
 // Prediction
-case class Prediction(val data: Map[String, Double]) extends Serializable {}
+//case class Prediction(val data: Map[String, Double]) extends Serializable {}
+case class Prediction(val data: HashMap[String, Double]) extends Serializable {}
+
+/*
+object SaddleWrapper {
+  def ToFrame[A](
+    timeIndex: Array[DateTime],
+    tickerPriceSeq: Array[(String, Array[A])]
+    )(implicit st: ST[A])
+  : Frame[DateTime, String, A] = {
+    val index = IndexTime(timeIndex:_ *)
+    val seriesList = tickerPriceSeq.map{ case(ticker, price) => {
+      val series = Series(Vec(price), index)
+      (ticker, series)
+    }}
+    Frame(seriesList:_*)
+  }
+
+  def FromFrame[A](data: Frame[DateTime, String, A]
+    ): (Array[DateTime], Array[(String, Array[A])]) = {
+    val timeIndex = data.rowIx.toVec.contents
+    val tickers = data.colIx.toVec.contents
+
+    val tickerDataSeq = tickers.map{ ticker => {
+      (ticker, data.firstCol(ticker).toVec.contents)
+    }}
+
+    (timeIndex, tickerDataSeq)
+  }
+}
+*/

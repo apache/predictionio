@@ -17,10 +17,12 @@ def since_epoch(dt):
   return (dt - EPOCH).total_seconds()
 
 
-def import_data(client, appid, ticker, start_time, end_time, event_time):
+def import_data(client, app_id, ticker, start_time, end_time, event_time):
   print "Importing:", ticker, start_time, end_time
   df = pdata.DataReader(ticker, 'yahoo', start_time, end_time)
   # TODO: handle error, e.g. response code not 200
+
+  print "Extracted:", df.index[0], df.index[-1]
 
   # assume we only extract US data
   eastern = pytz.timezone('US/Eastern')
@@ -50,7 +52,7 @@ def import_data(client, appid, ticker, start_time, end_time, event_time):
       'entityType': 'yahoo',
       'entityId': ticker,
       'properties': properties,
-      'appId': appid,
+      'appId': app_id,
       'eventTime': datetime.isoformat(event_time.replace(microsecond=1)) + 'Z',
       }
 
@@ -72,9 +74,9 @@ def import_predefined():
 
   tickers = ['SPY', 'AAPL', 'IBM', 'MSFT']
  
-  appid = 1
-  apiurl = 'http://localhost:7070'
-  client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
+  app_id = 1
+  url = 'http://localhost:7070'
+  client = predictionio.DataClient(app_id=app_id, threads=1, data_url=url)
 
   for ticker in tickers:
     for time_slice in time_slices:
@@ -110,15 +112,17 @@ def import_predefined():
 
 def import_one():
   start_time = datetime(2014, 1, 1)
-  end_time = datetime(2014, 2, 1)
-  ticker = 'AAPL'
+  end_time = datetime(2014, 9, 1)
+  event_time = datetime(2014, 8, 31)
+  ticker = 'GOOG'
  
-  appid = 1
-  apiurl = 'http://localhost:7070'
-  client = predictionio.Client(appid=appid, threads=1, apiurl=apiurl)
+  app_id = 1
+  url = 'http://localhost:7070'
+  client = predictionio.DataClient(app_id=app_id, threads=1, data_url=url)
 
-  import_data(client, appid, ticker, start_time, end_time)
+  import_data(client, app_id, ticker, start_time, end_time, event_time)
 
 if __name__ == '__main__':
-  import_predefined()
+  import_one()
+  #import_predefined()
 

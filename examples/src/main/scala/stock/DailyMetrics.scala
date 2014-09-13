@@ -2,7 +2,7 @@ package io.prediction.examples.stock
 
 import io.prediction.controller.Metrics
 import io.prediction.controller.EmptyParams
-import breeze.stats.{ mean, meanAndVariance }
+import breeze.stats.{ mean, meanAndVariance, MeanAndVariance }
 
 // [[[DailyMetrics]]] aggregate the overall return by the strategy.
 class DailyMetrics
@@ -39,14 +39,15 @@ class DailyMetrics
       val under = screened.filter(e => (e._1 < e._2)).length
       // Sum actual return.
       val actuals = screened.map(_._2)
-      val (mean_, variance, count) = meanAndVariance(actuals)
-      val stdev = math.sqrt(variance)
+      //val (mean_, variance, count) = meanAndVariance(actuals)
+      //val stdev = math.sqrt(variance)
+      val stats = meanAndVariance(actuals)
       // 95% CI
-      val ci = 1.96 * stdev / math.sqrt(count)
+      val ci = 1.96 * stats.stdDev / math.sqrt(stats.count)
 
       val s = (f"Threshold: ${pThreshold}%+.4f " +
-        f"Mean: ${mean_}%+.6f Stdev: ${stdev}%.6f CI: ${ci}%.6f " +
-        f"Total: ${count}%5d Over: $over%5d Under: $under%5d")
+        f"Mean: ${stats.mean}%+.6f Stdev: ${stats.stdDev}%.6f CI: ${ci}%.6f " +
+        f"Total: ${stats.count}%5d Over: $over%5d Under: $under%5d")
 
       //println(s)
       s
