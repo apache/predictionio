@@ -42,6 +42,7 @@ class MahoutItemBasedAlgoParams(
   val nearestN: Int,
   val threshold: Double,
   val numSimilarItems: Int,
+  val numUserActions: Int,
   val freshness: Int,
   val freshnessTimeUnit: Int, // seconds
   val recommendationTime: Option[Long]
@@ -125,8 +126,10 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
       val userHistoryMap = preparedData.rating.groupBy(_.uindex)
         .map {
           case (k, listOfRating) =>
-            val history = listOfRating.map(r =>
-              (itemsMap(r.iindex).iid, r.rating))
+            val history = listOfRating.sortBy(_.t)
+              // take latest actions at the end
+              .takeRight(params.numUserActions)
+              .map(r => (itemsMap(r.iindex).iid, r.rating))
 
             (usersMap(k).uid, history.toSet)
         }

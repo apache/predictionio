@@ -67,6 +67,7 @@ object Runner {
       nearestN = 10,
       threshold = 5e-324,
       numSimilarItems = 50,
+      numUserActions = 50,
       freshness = 0,
       freshnessTimeUnit = 86400,
       recommendationTime = Some(DateTime.now.millis)
