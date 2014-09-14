@@ -2,6 +2,7 @@ package io.prediction.engines.itemrank
 
 import io.prediction.controller.LDataSource
 import io.prediction.controller.Params
+import io.prediction.controller.EmptyDataParams
 import io.prediction.data.view.LBatchView
 
 import org.joda.time.DateTime
@@ -19,7 +20,7 @@ case class EventsDataSoureParams(
 
 
 class EventsDataSource(dsp: EventsDataSoureParams)
-  extends LDataSource[DataSourceParams,
+  extends LDataSource[EventsDataSoureParams,
     DataParams, TrainingData, Query, Actual] {
 
   @transient lazy val batchView = new LBatchView(dsp.appId,

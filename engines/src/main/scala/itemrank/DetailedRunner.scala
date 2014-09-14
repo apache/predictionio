@@ -10,20 +10,6 @@ import com.github.nscala_time.time.Imports._
 object DetailedRunner {
 
   def main(args: Array[String]) {
-    /*val dsp = new DataSourceParams(
-      appid = 1,
-      itypes = None,
-      actions = Set("view", "like", "conversion", "rate"),
-      //(int years, int months, int weeks, int days, int hours,
-      // int minutes, int seconds, int millis)
-      // number of hours of each period
-      hours = 24,//new Period(0, 0, 0, 1, 0, 0, 0, 0),
-      trainStart = new DateTime("2014-04-01T00:00:00.000"),
-      testStart = new DateTime("2014-04-20T00:00:00.000"),
-      testUntil = new DateTime("2014-04-21T00:00:00.000"),
-      goal = Set("conversion", "view"),
-      verbose = true
-    )*/
 
     val dsp = EventsDataSoureParams(
       appId = 1,
@@ -53,9 +39,6 @@ object DetailedRunner {
       conflict = "latest"
     )
 
-    val knnAlgoParams = new KNNAlgoParams(
-      similarity = "cosine",
-      k = 10)
     val randomAlgoParams = new RandomAlgoParams()
     val mahoutAlgoParams = new MahoutItemBasedAlgoParams(
       booleanData = true,
@@ -76,7 +59,7 @@ object DetailedRunner {
     val engineParams = new EngineParams(
       dataSourceParams = dsp,
       preparatorParams = pp,
-      algorithmParamsList = Seq(("knn", knnAlgoParams)),
+      algorithmParamsList = Seq(("mahout", mahoutAlgoParams)),
       // Seq(("rand", randomAlgoParams))
       // Seq(("mahout", mahoutAlgoParams))
       servingParams = sp

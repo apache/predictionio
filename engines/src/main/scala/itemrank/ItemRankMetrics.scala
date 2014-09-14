@@ -11,6 +11,39 @@ class MetricsParams(
   val verbose: Boolean // print report
 ) extends Params {}
 
+// param for preparing training
+class TrainingDataParams(
+    val appid: Int,
+    val itypes: Option[Set[String]],
+    // action for training
+    val actions: Set[String],
+    // actions within this startUntil time will be included in training
+    // use all data if None
+    val startUntil: Option[Tuple2[DateTime, DateTime]],
+    val verbose: Boolean // for debug purpose
+  ) extends Serializable {
+    override def toString = s"${appid} ${itypes} ${actions} ${startUntil}"
+  }
+
+// param for preparing evaluation data
+class ValidationDataParams(
+    val appid: Int,
+    val itypes: Option[Set[String]],
+    // actions within this startUntil time will be included in validation
+    val startUntil: Tuple2[DateTime, DateTime],
+    val goal: Set[String] // action name
+  ) extends Serializable {
+    override def toString = s"${appid} ${itypes} ${startUntil} ${goal}"
+  }
+
+class DataParams(
+  val tdp: TrainingDataParams,
+  val vdp: ValidationDataParams,
+  val name: String = ""
+) extends Params with HasName {
+  override def toString = s"TDP: ${tdp} VDP: ${vdp}"
+}
+
 class ItemRankMetrics(mp: MetricsParams)
   extends Metrics[MetricsParams,
     DataParams, Query, Prediction, Actual,
