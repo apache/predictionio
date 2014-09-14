@@ -7,3 +7,12 @@ title: Glossary
 
 **Live Evaluation**
 
+**Training Data**
+
+**Training**
+
+**Test Data** 
+
+**Data Preparator**
+
+**Data Source**

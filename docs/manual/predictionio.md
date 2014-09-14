@@ -3,7 +3,7 @@ layout: docs
 title: Overview
 ---
 
-# PredictionIO - Overview
+# Overview
 
 PredictionIO acts as a server that collects data and serve prediction results through REST APIs/SDKs. 
 At its core is a prediction engine which contains the following components: Data, Algorithm, Serving, and Evaluation. 
@@ -19,7 +19,7 @@ An engine must belong to a prediction type, such as Item Recommendation or Item 
 
 ## Data
 
-The data component includes collection and preparation. 
+The data layer consists of Data Source and Data Preparator. It preprocesses the data and forward it to the algrithm for trianing. 
 
 ## Algorithm
 

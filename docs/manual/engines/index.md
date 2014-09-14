@@ -5,7 +5,7 @@ title: Engines
 
 # Engines
 
-An engine represents a type of prediction.
+An engine represents a type of prediction. Some examples of engines are Item Recommendation, Item Ranking, Churn Analysis. 
 
 ## Getting Started with Engine Instance
 
