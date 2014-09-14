@@ -8,6 +8,10 @@ title: Overview
 PredictionIO acts as a server that collects data and serve prediction results through REST APIs/SDKs. 
 At its core is a prediction engine which contains the following components: Data, Algorithm, Serving, and Evaluation. 
 
+
+![System Overview](/images/system-overview.png)
+
+
 ## App
 
 It usually corresponds to the application you are building. You can run one or more predictive engines for an app. App data is shared among these engines.
@@ -34,4 +38,4 @@ The serviing layer returns result of the predictive model. If the engine has mul
 The prediction output is also sent to the Evaluation where you can compare the results of different algorithms. It currently supports offline evaluation only.  
 
 
-![System Overview](/images/system-overview.png)
+
