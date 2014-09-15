@@ -9,7 +9,7 @@ An engine represents a type of prediction. Some examples of engines are Item Rec
 
 ## Getting Started with Engine Instance
 
-Let say you want to launch an instance of Item Recommendation Engine for product
+Let say you want to deploy an instance of Item Recommendation Engine for product
 recommendation. First of all, you will need to create an engine instance
 project based on the default Item Recommendation Engine. The new project will contain configuration for your engine instance.
 
