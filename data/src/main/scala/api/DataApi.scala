@@ -64,7 +64,8 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
         }
       }
     } ~
-    path("events" / Segment) { eventId =>
+    path("events".? / ( """(.+)\.json$""".r | Segment) ) { eventId =>
+    //path("events" / Segment ) { eventId =>
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete {
