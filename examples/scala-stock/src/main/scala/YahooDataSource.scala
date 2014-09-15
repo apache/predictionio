@@ -76,7 +76,16 @@ class YahooDataSource(val params: YahooDataSource.Params)
       AnyRef] {
   @transient lazy val batchView = new LBatchView(
     params.appId, params.startTime, params.untilTime)
-    
+  
+  val timezone = DateTimeZone.forID("US/Eastern")
+  val windowParams = params.windowParams
+  val marketTicker = windowParams.marketTicker
+
+  @transient lazy val market: HistoricalData = getTimeIndex()
+  @transient lazy val timeIndex: Array[DateTime] = market.timeIndex
+  @transient lazy val timeIndexSet: Set[DateTime] = timeIndex.toSet
+  
+  /*
   val timezone = DateTimeZone.forID("US/Eastern")
   val windowParams = params.windowParams
   val marketTicker = windowParams.marketTicker
@@ -84,6 +93,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
   val market: HistoricalData = getTimeIndex()
   val timeIndex: Array[DateTime] = market.timeIndex
   val timeIndexSet: Set[DateTime] = timeIndex.toSet
+  */
 
   def merge(intermediate: YahooDataSource.Intermediate, e: Event,
     timeIndexSetOpt: Option[Set[DateTime]]) 
@@ -372,18 +382,34 @@ object YahooDataSource {
 
 object YahooDataSourceRun {
   def main(args: Array[String]) {
+    val windowParams = (
+      if (true)
+        DataSourceParams(
+          //baseDate = new DateTime(2000, 1, 1, 0, 0),
+          baseDate = new DateTime(2008, 1, 1, 0, 0),
+          fromIdx = 250,
+          //untilIdx = 2500,
+          untilIdx = 500,
+          trainingWindowSize = 200,
+          maxTestingWindowSize = 30,
+          marketTicker = "SPY",
+          tickerList = Run.sp500List.take(5))
+      else
+        DataSourceParams(
+          baseDate = new DateTime(2014, 1, 1, 0, 0),
+          fromIdx = 20,
+          untilIdx = 50,
+          trainingWindowSize = 15,
+          maxTestingWindowSize = 10,
+          marketTicker = "SPY",
+          tickerList = Seq("AAPL", "MSFT", "IBM", "FB", "AMZN", "IRONMAN")))
+
     val dsp = YahooDataSource.Params(
-      windowParams = DataSourceParams(
-        baseDate = new DateTime(2014, 1, 1, 0, 0),
-        fromIdx = 20,
-        untilIdx = 50,
-        trainingWindowSize = 15,
-        maxTestingWindowSize = 10,
-        marketTicker = "SPY",
-        tickerList = Seq("AAPL", "MSFT", "IBM", "FB", "AMZN", "IRONMAN")),
+      windowParams = windowParams,
       appId = 1,
       entityType = "yahoo",
-      untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
+      //untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
+      untilTime = None)
 
     /*
     Workflow.run(
@@ -400,7 +426,7 @@ object YahooDataSourceRun {
     val metricsParams = BacktestingParams(
       enterThreshold = 0.01,
       exitThreshold = 0.0,
-      maxPositions = 2//,
+      maxPositions = 10//,
       //optOutputPath = Some(new File("metrics_results").getCanonicalPath)
     )
 

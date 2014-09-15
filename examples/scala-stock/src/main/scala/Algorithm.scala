@@ -36,8 +36,15 @@ abstract class StockStrategy[M: ClassTag]
     val dataView: DataView = 
       rawData.view(queryDate.idx, trainingData.maxWindowSize)
 
+    println(s"idx: ${queryDate.idx} size: ${trainingData.maxWindowSize}")
+
+    val active = rawData._activeFrame
+
+    println(active)
+
     val activeTickers = dataView
-      .activeFrame().rowAt(0)
+      .activeFrame()
+      .rowAt(0)
       .filter(identity)
       .index.toVec.contents
 
