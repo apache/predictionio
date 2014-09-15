@@ -382,44 +382,37 @@ object YahooDataSource {
 
 object YahooDataSourceRun {
   def main(args: Array[String]) {
-    val windowParams = (
-      if (true)
-        DataSourceParams(
-          //baseDate = new DateTime(2000, 1, 1, 0, 0),
-          baseDate = new DateTime(2008, 1, 1, 0, 0),
-          fromIdx = 250,
-          //untilIdx = 2500,
-          untilIdx = 500,
-          trainingWindowSize = 200,
-          maxTestingWindowSize = 30,
-          marketTicker = "SPY",
-          tickerList = Run.sp500List.take(5))
-      else
-        DataSourceParams(
-          baseDate = new DateTime(2014, 1, 1, 0, 0),
-          fromIdx = 20,
-          untilIdx = 50,
-          trainingWindowSize = 15,
-          maxTestingWindowSize = 10,
-          marketTicker = "SPY",
-          tickerList = Seq("AAPL", "MSFT", "IBM", "FB", "AMZN", "IRONMAN")))
-
-    val dsp = YahooDataSource.Params(
-      windowParams = windowParams,
-      appId = 1,
-      entityType = "yahoo",
-      //untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
-      untilTime = None)
-
-    /*
-    Workflow.run(
-      dataSourceClassOpt = Some(classOf[YahooDataSource]),
-      dataSourceParams = dsp,
-      params = WorkflowParams(
-        verbose = 3,
-        batch = "YahooDataSource")
+    val dsp = (
+      if (true) {
+        YahooDataSource.Params(
+          appId = 2,
+          entityType = "yahoo",
+          //untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
+          untilTime = None,
+          windowParams = DataSourceParams(
+            baseDate = new DateTime(2008, 1, 1, 0, 0),
+            fromIdx = 250,
+            //untilIdx = 2500,
+            untilIdx = 500,
+            trainingWindowSize = 200,
+            maxTestingWindowSize = 30,
+            marketTicker = "SPY",
+            tickerList = Run.sp500List.take(5)))
+      } else {
+        YahooDataSource.Params(
+          appId = 1,
+          entityType = "yahoo",
+          untilTime = Some(new DateTime(2014, 5, 1, 0, 0)),
+          windowParams = DataSourceParams(
+            baseDate = new DateTime(2014, 1, 1, 0, 0),
+            fromIdx = 20,
+            untilIdx = 50,
+            trainingWindowSize = 15,
+            maxTestingWindowSize = 10,
+            marketTicker = "SPY",
+            tickerList = Seq("AAPL", "MSFT", "IBM", "FB", "AMZN", "IRONMAN")))
+      }
     )
-    */
     
     val momentumParams = MomentumStrategyParams(20, 3)
 
