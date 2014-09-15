@@ -130,7 +130,7 @@ The following shows how one can create an event involving a single entity.
 <div class="codetabs">
 <div data-lang="Raw HTTP">
 {% highlight bash %}
-$ curl -i -X POST http://localhost:7070/events \
+$ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
@@ -175,7 +175,7 @@ The following shows how one can create an event involving two entities (with
 <div class="codetabs">
 <div data-lang="Raw HTTP">
 {% highlight bash %}
-$ curl -i -X POST http://localhost:7070/events \
+$ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
@@ -233,14 +233,13 @@ Replace `<your_eventId>` by a real one in the following.
 ### Get an Event
 
 ```
-$ curl -i -X GET http://localhost:7070/events/<your_eventId> \
--H "Content-Type: application/json"
+$ curl -i -X GET http://localhost:7070/events/<your_eventId>.json
 ```
 
 ### Delete an Event
 
 ```
-$ curl -i -X DELETE http://localhost:7070/events/<your_eventId>
+$ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json
 ```
 
 ### Get All Events of an appId
@@ -248,14 +247,13 @@ $ curl -i -X DELETE http://localhost:7070/events/<your_eventId>
 > Use cautiously!
 
 ```
-$ curl -i -X GET http://localhost:7070/events?appId=<your_appId> \
--H "Content-Type: application/json"
+$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>
 ```
 
 ### Delete All Events of an appId
 
 ```
-$ curl -i -X DELETE http://localhost:7070/events?appId=<your_appId>
+$ curl -i -X DELETE http://localhost:7070/events.json?appId=<your_appId>
 ```
 
 ### Get All Events of an appId within a Time Range
@@ -263,22 +261,22 @@ $ curl -i -X DELETE http://localhost:7070/events?appId=<your_appId>
 -   `eventTime >= startTime`
 
     ```
-    $ curl -i -X GET http://localhost:7070/events?appId=<your_appId>&startTime=<time in ISO8601 format>
+    $ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>
     ```
 -   `eventTime < untilTime`
 
     ```
-    $ curl -i -X GET http://localhost:7070/events?appId=<your_appId>&untilTime=<time in ISO8601 format>
+    $ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>
     ```
 
 -   `eventTime >= startTime && eventTime < untilTime`
 
     ```
-    $ curl -i -X GET http://localhost:7070/events?appId=2&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
+    $ curl -i -X GET http://localhost:7070/events.json?appId=2&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
     ```
 
 Example:
 
 ```
-$ curl -i -X GET http://localhost:7070/events?appId=2&startTime=2014-08-30T08:45:51.566Z&untilTime=2014-08-30T08:45:51.591Z
+$ curl -i -X GET http://localhost:7070/events.json?appId=2&startTime=2014-08-30T08:45:51.566Z&untilTime=2014-08-30T08:45:51.591Z
 ```
