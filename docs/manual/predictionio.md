@@ -1,31 +1,41 @@
 ---
 layout: docs
-title: System Concepts and System Design
+title: Overview
 ---
 
-# PredictionIO - Concepts
+# Overview
 
-(TODO: Diagram)
+PredictionIO acts as a server that collects data and serve prediction results through REST APIs/SDKs. 
+At its core is a prediction engine which contains the following components: Data, Algorithm, Serving, and Evaluation. 
 
-PredictionIO acts as a server that collects data and serve prediction results through REST APIs/SDKs. Conceptually, the 3 main building blocks are: App, Engine and Algorithm.
+
+![System Overview](/images/system-overview.png)
+
 
 ## App
 
-App in PredictionIO Server is like a database or collection in a database server. It usually corresponds to the application you are building. You can run one or more predictive engines towards an app. App data is shared among these engines.
+It usually corresponds to the application you are building. You can run one or more predictive engines for an app. App data is shared among these engines.
 
 ## Engine
 
-An engine must belong to a prediction type (or engine type), such as Item Recommendation or Item Similarity. Each Engines process data and construct predictive model independently. Therefore, every engine serves its own set of prediction results. In an app, for example, you may create two engines: one for recommending news to users and another one for suggesting new friends to users. An algorithm must be deployed in each engine.
+An engine must belong to a prediction type, such as Item Recommendation or Item Similarity. Each Engine processes data and constructs predictive models independently. Therefore, every engine serves its own set of prediction results. In an app, for example, you may create two engines: one for recommending news to users and another one for suggesting new friends to users. At least one algorithm must be deployed in each engine.
+
+
+## Data
+
+The data layer consists of Data Source and Data Preparator. It preprocesses the data and forward it to the algrithm for trianing. 
 
 ## Algorithm
 
 A number of built-in algorithms are available for use in each type of engine. An algorithm, and the setting of its parameters, determines how predictive model is constructed. In another word, prediction accuracy or performance can be improved by tuning a suitable algorithm. PredictionIO comes with tools and metrics for algorithm evaluation.
 
+## Serving
 
-# PredictionIO - System Design
+The serviing layer returns result of the predictive model. If the engine has multiple algorithms, the serving layer will combine the results into one. Additionally, you can add your own business logic to the serving layer and further customzied the final returned results. 
 
-(TODO: Diagram)
+## Evaluation
 
-PredictionIO is mainly built with Scala. Scala runs on the JVM, so Java and Scala stacks can be freely mixed for totally seamless integration. PredictionIO Server consists of a few components:
+The prediction output is also sent to the Evaluation where you can compare the results of different algorithms. It currently supports offline evaluation only.  
 
-* (TODO)
+
+

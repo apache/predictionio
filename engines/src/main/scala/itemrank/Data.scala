@@ -45,7 +45,8 @@ class TrainingData(
     val items: Map[Int, ItemTD], // iindex->itemTD
     val u2iActions: Seq[U2IActionTD]
   ) extends Serializable {
-    override def toString = s"TrainingData: ${u2iActions} ${users}"
+    override def toString = s"TrainingData:" +
+      s"${users.take(2)}... ${items.take(2)}... ${u2iActions.take(2)}..."
   }
 
 class RatingTD(
@@ -60,9 +61,10 @@ class PreparedData(
   val users: Map[Int, UserTD],
   val items: Map[Int, ItemTD],
   val rating: Seq[RatingTD],
-  val ratingOriginal: Seq[RatingTD]  // Non-deduped ratings
+  val ratingOriginal: Seq[RatingTD] // Non-deduped ratings
 ) extends Serializable {
-  override def toString = s"U: ${users} I: ${items} R: ${rating}"
+  override def toString = s"U: ${users.take(2)}..." +
+   s" I: ${items.take(2)}... R: ${rating.take(2)}..."
 }
 
 case class Query(

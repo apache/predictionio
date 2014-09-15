@@ -8,8 +8,7 @@ object ItemRankEngine extends IEngineFactory {
     new Engine(
       classOf[EventsDataSource],
       classOf[ItemRankPreparator],
-      Map("knn" -> classOf[KNNAlgorithm],
-        "rand" -> classOf[RandomAlgorithm],
+      Map("rand" -> classOf[RandomAlgorithm],
         "mahout" -> classOf[MahoutItemBasedAlgorithm],
         "featurebased" -> classOf[FeatureBasedAlgorithm],
         "legacy" -> classOf[legacy.LegacyAlgorithm]),

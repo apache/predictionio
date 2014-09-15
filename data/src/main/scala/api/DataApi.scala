@@ -56,6 +56,8 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
       complete(StatusCodes.BadRequest, Map("message" -> msg))
   }
 
+  val jsonPath = """(.+)\.json$""".r
+
   val route: Route =
     pathSingleSlash {
       get {
@@ -64,7 +66,8 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
         }
       }
     } ~
-    path("events" / Segment) { eventId =>
+    path("events" / jsonPath ) { eventId =>
+    //path("events" / Segment ) { eventId =>
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete {
@@ -107,7 +110,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
         }
       }
     } ~
-    path("events") {
+    path("events.json") {
       post {
         handleRejections(rejectionHandler) {
           entity(as[Event]) { event =>

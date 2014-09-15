@@ -79,7 +79,7 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 # no properties
 testdata='{
@@ -94,7 +94,7 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 testdata='{
   "event" : "my_event",
@@ -109,7 +109,7 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 # no tags
 testdata='{
@@ -127,7 +127,7 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 ## no eventTIme
 testdata='{
@@ -145,7 +145,7 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 ## no prediction key
 testdata='{
@@ -163,7 +163,7 @@ testdata='{
   "appId" : 4
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 # minimum
 testdata='{
@@ -173,7 +173,7 @@ testdata='{
   "appId" : 4
 }'
 
-checkPOST "/events" "$testdata" 201
+checkPOST "/events.json" "$testdata" 201
 
 
 # ----------------------------
@@ -234,7 +234,7 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 400
+checkPOST "/events.json" "$testdata" 400
 
 # missing appId
 testdata='{
@@ -253,7 +253,7 @@ testdata='{
 }'
 
 
-checkPOST "/events" "$testdata" 400
+checkPOST "/events.json" "$testdata" 400
 
 # empty event string
 testdata='{
@@ -272,39 +272,39 @@ testdata='{
   "predictionKey" : "my_prediction_key"
 }'
 
-checkPOST "/events" "$testdata" 400
+checkPOST "/events.json" "$testdata" 400
 
 # empty
 testdata='{}'
-checkPOST "/events" "$testdata" 400
+checkPOST "/events.json" "$testdata" 400
 
 # empty
 testdata=''
-checkPOST "/events" "$testdata" 400
+checkPOST "/events.json" "$testdata" 400
 
 # invalid data
 testdata='asfd'
-checkPOST "/events" "$testdata" 400
+checkPOST "/events.json" "$testdata" 400
 
 # -----
 # get events
 # ----
 
-checkGET "/events?appId=4" 200
+checkGET "/events.json?appId=4" 200
 
-checkGET "/events?appId=999" 404
+checkGET "/events.json?appId=999" 404
 
-checkGET "/events?appId=4&startTime=abc" 400
+checkGET "/events.json?appId=4&startTime=abc" 400
 
-checkGET "/events?appId=4&untilTime=abc" 400
+checkGET "/events.json?appId=4&untilTime=abc" 400
 
-checkGET "/events?appId=4&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
+checkGET "/events.json?appId=4&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
 
 
 # -----
 # delete
 # -----
 
-checkDELETE "/events?appId=4" 200
+checkDELETE "/events.json?appId=4" 200
 
-checkGET "/events?appId=4" 404
+checkGET "/events.json?appId=4" 404

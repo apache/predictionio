@@ -1,14 +1,19 @@
+- title: "Overview"
+  href: "/predictionio.html"
+  
 - title: "Installing PredictionIO"
   href: "/install/"
-
+  
 - title: "Quick Start"
   href: "/tutorials/engines/quickstart.html"
 
 - title: "Collecting Data"
   href: "/dataapi.html"
 
-- title: "Launching an Engine Instance"
+- title: "Deploying an Engine Instance"
   href: "/engines/"
+  
+- title: "Glossary"
+  href: "/glossary.html"
 
-- title: "System Concepts and Design"
-  href: "/predictionio.html"
+

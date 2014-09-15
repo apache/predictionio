@@ -1,9 +1,0 @@
-[
-  {
-    "name": "knn" ,
-    "params": {
-      "similarity" : "cosine",
-      "k" : 10
-    }
-  }
-]
