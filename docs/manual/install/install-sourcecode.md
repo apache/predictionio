@@ -112,4 +112,5 @@ $ bin/start-hbase.sh
 
 Now you have installed everything you need to run PredictionIO!
 
-Next: [Quick Start](/tutorials/engines/quickstart.html)
+Next: Reading [Quick Start](/tutorials/engines/quickstart.html)
+

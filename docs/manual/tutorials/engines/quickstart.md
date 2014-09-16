@@ -77,19 +77,19 @@ $ easy_install predictionio
 
 # Collect Data into PredictionIO
 
-## Launch the Data API Server
+## Launch the Event Server
 
 ```
-$ $PIO_HOME/bin/pio dataapi
+$ $PIO_HOME/bin/pio eventserver
 ```
 where `$PIO_HOME` is the installation directory of PredictionIO. As long as the
-Data API server is running, PredictionIO keeps listening to new data.
+Event Server is running, PredictionIO keeps listening to new data.
 
-## Import Data
+## Collecting Data
 
 We are going to write a script that generates some random data and simulates
-data collection. Data API can collect data from your application in real-time.
-In the `quickstartapp` directory:
+data collection. With the *EventClient* of one of the PredictionIO SDKs, your application can send data to the Event Server in real-time easily through the [EventAPI](/eventapi.html).
+In the *quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -192,19 +192,19 @@ $ python import.py
 
 
 
-# Launch an Engine Instance
+# Deploying an Engine Instance
 
-Each engine deals with one specific prediction problem. For instance, Item
-Recommendation Engine (itemrec) is responsible for making personalized item
-(e.g. product or content) recommendation to each user.
+Each engine deals with one type of Machine Learning task. For instance, Item
+Recommendation Engine (itemrec) makes personalized item
+(e.g. product or content) recommendation to your users.
 
 > **What is an Engine Instance?**
 >
-> You can launch one or more *engine instance* from an engine. It means that you
+> You can deploy one or more *engine instance* from an engine. It means that you
 can run multiple recommendation *engine instances* at the same time with
-different settings, or even for different projects.
+different settings, or even for different applications.
 
-To launch an engine instance for this simple app, first create an engine
+To deploy an engine instance for *quickstartapp*, first create an engine
 instance project:
 
 ```
@@ -237,6 +237,9 @@ Notice that the `deploy` command runs the engine instance in the foreground. Now
 we are ready to take a look at the results!
 
 # Retrieve Prediction Results
+
+With the *EngineClient* of one of the PredictionIO SDKs, your application can send queries to a deployed engine instance through the Engine API.
+In the *quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -332,4 +335,4 @@ $ python show.py
 Well done! You have created a simple, but production-ready app with PredictionIO
 recommendation engine.
 
-Next: Learn more about [collecting data using Data API](/dataapi.html).
+Next: Learn more about [collecting data through Event API](/eventapi.html).
