@@ -29,11 +29,17 @@ title: Glossary
 - Please see Event Server. 
 
 **Live Evaluation**
+- Evaluation of prediction results in a production environment. Prediction results are shown to real users. Users do not rate the results explicitly but the system observes user behaviors such as click through rate. 
 
 **Offline Evaluation**
+- The prediction results are compared with pre-compiled offline datasets. Typically, offline evaluations are meant to identify the most 
+promising approaches. 
 
 **Test Data** 
+- Also commonly referred as Test Set. A set of data used to assess the strength and utility of a predictive relationship. 
 
 **Training Data**
+- Also commonly referred as Training Set. A set of data used to discover potentially predictive relationships. In PredictionIO Engine, training data is processed through the Data layer and passed onto algorithm.  
+
 
 **Training**
