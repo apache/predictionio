@@ -1,9 +1,9 @@
-package io.prediction.examples.java.itemrec.algos;
+package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.examples.java.itemrec.data.PreparedData;
-import io.prediction.examples.java.itemrec.data.Query;
-import io.prediction.examples.java.itemrec.data.Prediction;
-import io.prediction.examples.java.itemrec.data.Model;
+import io.prediction.engines.java.itemrec.data.PreparedData;
+import io.prediction.engines.java.itemrec.data.Query;
+import io.prediction.engines.java.itemrec.data.Prediction;
+import io.prediction.engines.java.itemrec.data.Model;
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.java.JavaParams;
 

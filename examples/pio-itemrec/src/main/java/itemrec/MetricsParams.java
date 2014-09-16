@@ -1,4 +1,4 @@
-package io.prediction.examples.java.itemrec;
+package io.prediction.engines.java.itemrec;
 
 import io.prediction.controller.java.JavaParams;
 

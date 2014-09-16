@@ -1,6 +1,6 @@
-package io.prediction.examples.java.itemrec.algos;
+package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.examples.java.itemrec.data.PreparedData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
 
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.Recommender;

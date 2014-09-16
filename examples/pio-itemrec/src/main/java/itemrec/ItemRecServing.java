@@ -1,8 +1,8 @@
-package io.prediction.examples.java.itemrec;
+package io.prediction.engines.java.itemrec;
 
 import io.prediction.controller.java.LJavaServing;
-import io.prediction.examples.java.itemrec.data.Query;
-import io.prediction.examples.java.itemrec.data.Prediction;
+import io.prediction.engines.java.itemrec.data.Query;
+import io.prediction.engines.java.itemrec.data.Prediction;
 
 public class ItemRecServing extends LJavaServing<ServingParams, Query, Prediction> {
 

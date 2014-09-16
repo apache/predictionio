@@ -1,8 +1,8 @@
-package io.prediction.examples.java.itemrec;
+package io.prediction.engines.java.itemrec;
 
-import io.prediction.examples.java.itemrec.data.PreparedData;
-import io.prediction.examples.java.itemrec.data.TrainingData;
-import io.prediction.examples.java.itemrec.data.Rating;
+import io.prediction.engines.java.itemrec.data.PreparedData;
+import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.java.itemrec.data.Rating;
 import io.prediction.controller.java.LJavaPreparator;
 import io.prediction.controller.java.EmptyParams;
 import io.prediction.engines.util.MahoutUtil;

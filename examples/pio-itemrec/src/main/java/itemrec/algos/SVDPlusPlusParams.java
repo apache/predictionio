@@ -1,4 +1,4 @@
-package io.prediction.examples.java.itemrec.algos;
+package io.prediction.engines.java.itemrec.algos;
 
 public class SVDPlusPlusParams extends MahoutParams {
   int numFeatures;
