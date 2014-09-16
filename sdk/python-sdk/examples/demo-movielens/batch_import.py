@@ -37,7 +37,7 @@ def batch_import_task(app_data, client, all_info=False):
     itypes = ("movie",) + v.genres
     client.aset_item(v.iid,
       { "pio_itypes" : list(itypes),
-        "pio_starttime" : v.release_date.isoformat(),
+        "pio_starttime" : v.release_date.isoformat() + 'Z',
         "name" : v.name,
         "year" : v.year } )
 
@@ -60,7 +60,7 @@ def batch_import_task(app_data, client, all_info=False):
     #  v.uid,
     #  v.iid,
     #   { "pio_rate": v.rating },)
-    properties = { "pio_rate" : v.rating }
+    properties = { "pio_rate" : int(v.rating) }
     req = client.acreate_event({
       "event" : "rate",
       "entityType" : "pio_user",

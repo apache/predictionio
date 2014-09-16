@@ -100,7 +100,7 @@ class AppData:
 
       try:
         # eg. 01-Jan-1994
-        release_date = datetime.datetime.strptime(data[2], "%d-%b-%Y")
+        release_date = datetime.datetime.strptime(data[2], "%d-%b-%Y").replace(microsecond=1)
         (day, month, year) = data[2].split('-')
       except:
         print "[Note] item %s %s doesn't have release date. Skip it." % (data[0], data[1])

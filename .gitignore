@@ -18,3 +18,4 @@ dist/
 *.pyc
 # Ignore source files whose name prefixed with "Private"
 Private*.scala
+quickstartapp/
