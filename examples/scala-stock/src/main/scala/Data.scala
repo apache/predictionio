@@ -1,4 +1,4 @@
-package io.prediction.examples.stock2
+package io.prediction.examples.stock
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -13,8 +13,8 @@ class RawData(
   val tickers: Array[String],
   val mktTicker: String,
   val timeIndex: Array[DateTime],
-  private[stock2] val _price: Array[(String, Array[Double])],
-  private[stock2] val _active: Array[(String, Array[Boolean])])
+  private[stock] val _price: Array[(String, Array[Double])],
+  private[stock] val _active: Array[(String, Array[Boolean])])
     extends Serializable {
 
   @transient lazy val _priceFrame: Frame[DateTime, String, Double] =

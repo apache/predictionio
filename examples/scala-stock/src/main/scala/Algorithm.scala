@@ -1,4 +1,4 @@
-package io.prediction.examples.stock2
+package io.prediction.examples.stock
 
 import io.prediction.controller.LAlgorithm
 

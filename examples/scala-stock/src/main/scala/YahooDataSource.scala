@@ -1,4 +1,4 @@
-package io.prediction.examples.stock2
+package io.prediction.examples.stock
 
 // YahooDataSource reads PredictionIO event store directly.
 
@@ -85,16 +85,6 @@ class YahooDataSource(val params: YahooDataSource.Params)
   @transient lazy val timeIndex: Array[DateTime] = market.timeIndex
   @transient lazy val timeIndexSet: Set[DateTime] = timeIndex.toSet
   
-  /*
-  val timezone = DateTimeZone.forID("US/Eastern")
-  val windowParams = params.windowParams
-  val marketTicker = windowParams.marketTicker
-
-  val market: HistoricalData = getTimeIndex()
-  val timeIndex: Array[DateTime] = market.timeIndex
-  val timeIndexSet: Set[DateTime] = timeIndex.toSet
-  */
-
   def merge(intermediate: YahooDataSource.Intermediate, e: Event,
     timeIndexSetOpt: Option[Set[DateTime]]) 
   : YahooDataSource.Intermediate = {
@@ -172,8 +162,6 @@ class YahooDataSource(val params: YahooDataSource.Params)
       ticker = ticker, 
       timeIndex = timeIndex,
       close = timeIndex.map(t => dailyMap(t).close),
-      //adjClose = timeIndex.map(t => dailyMap(t).adjClose),
-      //adjReturn = timeIndex.map(t => dailyMap(t).adjReturn),
       adjClose = return2Close(adjReturn),
       adjReturn = adjReturn,
       volume = timeIndex.map(t => dailyMap(t).volume),
