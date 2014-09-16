@@ -253,7 +253,6 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
         val (start, stop) = startStopRowKey(appId, startTime, untilTime)
-        println(start, stop)
         val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
         val scanner = table.getScanner(scan)
         Right(scanner.iterator().map { resultToEvent(_) })
