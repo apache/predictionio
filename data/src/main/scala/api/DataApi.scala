@@ -71,7 +71,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete {
-            log.info(s"GET event ${eventId}.")
+            log.debug(s"GET event ${eventId}.")
             val data = eventClient.futureGet(eventId).map { r =>
               r match {
                 case Left(StorageError(message)) =>
@@ -92,7 +92,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
       delete {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete {
-            log.info(s"DELETE event ${eventId}.")
+            log.debug(s"DELETE event ${eventId}.")
             val data = eventClient.futureDelete(eventId).map { r =>
               r match {
                 case Left(StorageError(message)) =>
@@ -116,7 +116,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
           entity(as[Event]) { event =>
             //val event = jsonObj.extract[Event]
             complete {
-              log.info(s"POST events")
+              log.debug(s"POST events")
               val data = eventClient.futureInsert(event).map { r =>
                 r match {
                   case Left(StorageError(message)) =>
@@ -136,7 +136,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
           (appId, startTimeStr, untilTimeStr) =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
-              log.info(
+              log.debug(
                 s"GET events of appId=${appId} ${startTimeStr} ${untilTimeStr}")
 
               val parseTime = Future {
@@ -187,7 +187,7 @@ class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
         parameter('appId.as[Int]) { appId =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
-              log.info(s"DELETE events of appId=${appId}")
+              log.debug(s"DELETE events of appId=${appId}")
               val data = eventClient.futureDeleteByAppId(appId).map { r =>
                 r match {
                   case Left(StorageError(message)) =>
@@ -225,7 +225,7 @@ class DataServerActor(val eventClient: Events) extends Actor {
     case StartServer(host, portNum) => {
       IO(Http) ! Http.Bind(child, interface = host, port = portNum)
     }
-    case m: Http.Bound => log.info("Bound received.")
+    case m: Http.Bound => log.info("Bound received. Server is ready.")
     case m: Http.CommandFailed => log.error("Command failed.")
     case _ => log.error("Unknown message.")
   }
