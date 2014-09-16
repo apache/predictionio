@@ -200,7 +200,7 @@ Recommendation Engine (itemrec) makes personalized item
 
 > **What is an Engine Instance?**
 >
-> You can deploy one or more *engine instance* from an engine. It means that you
+> You can deploy one or more *engine instances* from an engine. It means that you
 can run multiple recommendation *engine instances* at the same time with
 different settings, or even for different applications.
 
@@ -238,7 +238,7 @@ we are ready to take a look at the results!
 
 # Retrieve Prediction Results
 
-With the *EngineClient* of one of the PredictionIO SDKs, your application can send queries to a deployed engine instance through the Engine API.
+With the *EngineClients* of a PredictionIO SDK, your application can send queries to a deployed engine instance through the Engine API.
 In the *quickstartapp* directory:
 
 <div class="codetabs">
