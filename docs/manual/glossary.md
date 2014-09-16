@@ -3,16 +3,16 @@ layout: docs
 title: Glossary
 ---
 
-**Offline Evaluation**
-
+**DataPreparator**
+**DataSource**
+**Engine**
+**Engine Instance**
+**EngineClient**
+**Event API**
+**Event Server**
+**EventClient**
 **Live Evaluation**
-
-**Training Data**
-
-**Training**
-
+**Offline Evaluation**
 **Test Data** 
-
-**Data Preparator**
-
-**Data Source**
+**Training Data**
+**Training**
