@@ -122,8 +122,8 @@ def import_data(client, app_id, ticker, start_time, end_time, event_time):
 def import_all():
   time_slices = [
       (datetime(1999, 1, 1), datetime(2004, 1, 1), datetime(2004, 1, 2)),
-      (datetime(2004, 1, 1), datetime(2009, 1, 1), datetime(2009, 1, 2)),
-      (datetime(2009, 1, 1), datetime(2014, 9, 1), datetime(2014, 9, 2)),
+      (datetime(2003, 12, 1), datetime(2009, 1, 1), datetime(2009, 1, 2)),
+      (datetime(2008, 12, 1), datetime(2014, 9, 1), datetime(2014, 9, 2)),
       ]
 
   app_id = 2
