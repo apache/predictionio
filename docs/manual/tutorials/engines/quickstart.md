@@ -291,7 +291,7 @@ $ php show.php
 
 import predictionio
 
-client = predictionio.PredictionClient()
+client = predictionio.EngineClient()
 
 # Rank item 1 to 5 for each user
 item_ids = [str(i) for i in range(1, 6)]
