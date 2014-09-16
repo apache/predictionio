@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "example-scala-recommendations"
+name := "pio-itemrec"
 
 organization := "io.prediction"
 

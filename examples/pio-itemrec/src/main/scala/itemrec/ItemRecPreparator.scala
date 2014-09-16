@@ -8,7 +8,7 @@ import io.prediction.controller._
 import io.prediction.engines.itemrank.PreparatorParams
 import io.prediction.engines.itemrank.ItemRankPreparator
 import io.prediction.engines.itemrank.{ PreparedData => IRPreparedData }
-import io.prediction.engines.itemrank.TrainingData
+import io.prediction.engines.itemrank.{ TrainingData => IRTrainingData }
 
 import org.apache.mahout.cf.taste.model.DataModel
 import io.prediction.engines.util.MahoutUtil;
@@ -19,13 +19,13 @@ import io.prediction.engines.java.itemrec.data.PreparedData
 class NewItemRecPreparator(pp: PreparatorParams)
   extends LPreparator[
       PreparatorParams,
-      TrainingData,
+      IRTrainingData,
       PreparedData] {
 
   val irPreparator = new ItemRankPreparator(pp)
 
-  override def prepare(trainingData: TrainingData): PreparedData = {
-    val irPreparedData: IRPreparedData = irPreparator.prepare(trainingData)
+  override def prepare(irTrainingData: IRTrainingData): PreparedData = {
+    val irPreparedData: IRPreparedData = irPreparator.prepare(irTrainingData)
  
     val ratings: Seq[(Int, Int, Float, Long)] = irPreparedData.rating
     .map { r => (r.uindex, r.iindex, r.rating.toFloat, r.t) }
