@@ -1,6 +1,3 @@
-
-
-#APP_KEY = 'bfs7QCga121RitVkToTaoSOFTB4i0clnQbu7zTI8hqWMjVKXL9mj225YC7VfpaIR'
 APP_ID = 2
 API_URL = 'http://localhost:7070'
 THREADS = 25
