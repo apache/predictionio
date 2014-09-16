@@ -7,8 +7,8 @@ import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
-import io.prediction.data.api.DataAPI
-import io.prediction.data.api.DataAPIConfig
+import io.prediction.data.api.EventServer
+import io.prediction.data.api.EventServerConfig
 
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
@@ -249,10 +249,10 @@ object Console extends Logging {
           } text("Port to bind to. Default: 8000")
         )
       note("")
-      cmd("dataapi").
-        text("Launch a data api server at the specific IP and port.").
+      cmd("eventserver").
+        text("Launch an Event Server at the specific IP and port.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "dataapi",
+          c.copy(commands = c.commands :+ "eventserver",
             port = 7070)
         } children(
           opt[String]("ip") action { (x, c) =>
@@ -342,8 +342,8 @@ object Console extends Logging {
           undeploy(ca)
         case Seq("dashboard") =>
           dashboard(ca)
-        case Seq("dataapi") =>
-          dataapi(ca)
+        case Seq("eventserver") =>
+          eventserver(ca)
         case Seq("compile") =>
           compile(ca)
         case Seq("run") =>
@@ -518,9 +518,9 @@ object Console extends Logging {
       port = ca.port))
   }
 
-  def dataapi(ca: ConsoleArgs): Unit = {
-    info(s"Creating DataAPI server at ${ca.ip}:${ca.port}")
-    DataAPI.createDataAPI(DataAPIConfig(
+  def eventserver(ca: ConsoleArgs): Unit = {
+    info(s"Creating Event Server at ${ca.ip}:${ca.port}")
+    EventServer.createEventServer(EventServerConfig(
       ip = ca.ip,
       port = ca.port))
   }
