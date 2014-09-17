@@ -40,21 +40,21 @@ def import_testdata(app_id, data_url):
   })
 
   ## some actions
-  client.record_user_action_on_item("rate", "u0", "i0", { "pio_rate": 2 })
-  client.record_user_action_on_item("rate", "u0", "i1", { "pio_rate": 3 })
-  client.record_user_action_on_item("rate", "u0", "i2", { "pio_rate": 4 })
+  client.record_user_action_on_item("rate", "u0", "i0", { "pio_rating": 2 })
+  client.record_user_action_on_item("rate", "u0", "i1", { "pio_rating": 3 })
+  client.record_user_action_on_item("rate", "u0", "i2", { "pio_rating": 4 })
 
-  client.record_user_action_on_item("rate", "u1", "i2", { "pio_rate": 4 })
-  client.record_user_action_on_item("rate", "u1", "i3", { "pio_rate": 1 })
+  client.record_user_action_on_item("rate", "u1", "i2", { "pio_rating": 4 })
+  client.record_user_action_on_item("rate", "u1", "i3", { "pio_rating": 1 })
 
   client.record_user_action_on_item("view", "u2", "i1")
-  client.record_user_action_on_item("rate", "u2", "i2", { "pio_rate": 1 })
-  client.record_user_action_on_item("rate", "u2", "i3", { "pio_rate": 3 })
+  client.record_user_action_on_item("rate", "u2", "i2", { "pio_rating": 1 })
+  client.record_user_action_on_item("rate", "u2", "i3", { "pio_rating": 3 })
   client.record_user_action_on_item("conversion", "u2", "i3")
 
-  client.record_user_action_on_item("rate", "u3", "i0", { "pio_rate": 5 })
+  client.record_user_action_on_item("rate", "u3", "i0", { "pio_rating": 5 })
   client.record_user_action_on_item("view", "u3", "i1")
-  client.record_user_action_on_item("rate", "u3", "i3", { "pio_rate": 2 })
+  client.record_user_action_on_item("rate", "u3", "i3", { "pio_rating": 2 })
 
   time.sleep(3)
 
@@ -75,7 +75,7 @@ def import_testdata(app_id, data_url):
   client.set_item("i0", {"pio_inactive" : True})
 
   # more a
-  client.record_user_action_on_item("rate", "u0", "i0", { "pio_rate": 2 })
+  client.record_user_action_on_item("rate", "u0", "i0", { "pio_rating": 2 })
   client.record_user_action_on_item("conversion", "u0", "i1")
   client.record_user_action_on_item("view", "u0", "i2")
 
