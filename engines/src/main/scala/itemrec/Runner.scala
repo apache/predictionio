@@ -9,7 +9,7 @@ import io.prediction.controller._
 
 import io.prediction.engines.java.itemrec.algos.GenericItemBasedParams
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlusParams
-import io.prediction.engines.java.itemrec.ServingParams
+//import io.prediction.engines.java.itemrec.ServingParams
 
 //import io.prediction.engines.itemrec.Model
 
@@ -49,7 +49,8 @@ object Runner {
     val svdPlusPlusParams = new SVDPlusPlusParams(10);
     val genericItemBasedParams = new GenericItemBasedParams(10);
 
-    val sp = new ServingParams();
+    //val sp = new ServingParams();
+    val sp = new EmptyParams();
 
     /*
     Workflow.run(
