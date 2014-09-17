@@ -40,8 +40,7 @@ Events between these two Entity Types should be recorded:
 
 > **Note: Name of EntityType and Properties**
 >
-> Although you are allowed to use different names for the Entity Type and Properties as long as they represent same meaning (For example, use the name `user` instead of `pio_user`. Use `t` instead of `pio_starttime`). We highly recommend to follow our name convention when use built-in engines.
-
+> Although you are allowed to use different names for the Entity Type and Properties as long as they represent same meaning (For example, use the name `user` instead of `pio_user`. Use `t` instead of `pio_starttime`). We highly recommend to follow our name convention when use built-in engines. If you use diffrent names for these attributes, you need to modify the `attributeNames` field defined in the file `datasource.json`.
 
 > **Note: Extra User and Item Entity Properties**
 >
@@ -109,7 +108,7 @@ Item Ranking Engine comes with the following algorithms:
 
 Use Mahout Item Based algorithm to build similarity matrix. Then rank items based on user recent history and the item similarity matrix.
 
-**Algorithm code name:** `mahout`
+**Algorithm code name:** `"mahout"`
 
 **Parameters:**
 
@@ -163,7 +162,7 @@ Uncentered Cosine | `UncenteredCosineSimilarity`
 
 Rank items based on item's feature vector (`pio_itypes`).
 
-**Algorithm code name:** `featurebased`
+**Algorithm code name:** `"featurebased"`
 
 **Parameters:**
 
@@ -185,7 +184,7 @@ This algorithm doesn't have parameters.
 
 Rank items randomly (mainly for baseline evaluation purpose).
 
-**Algorithm code name:** `rand`
+**Algorithm code name:** `"rand"`
 
 **Parameters:**
 
@@ -207,7 +206,7 @@ This algorithm doesn't have parameters.
 
 Use Mahout Item Based algorithm to re-calculate predicted score every time when serve the query request. The item similarity matrix is not cached. (Serving performance is slower)
 
-**Algorithm code name:** `legacy`
+**Algorithm code name:** `"legacy"`
 
 **Parameters:**
 
@@ -239,7 +238,7 @@ Same as **Mahout Item Based Algorithm** *without* the following parameters:
 
 # Changing Algorithm and Its Parameters
 
-By default, **Mahout Item Based Algorithm (mahout)** is used. You can switch to another algorithm or modify parameters by modifying the file  `algorithms.json` with any of above algorithm's JSON parameters setting.
+By default, **Mahout Item Based Algorithm** (`"mahout"`) is used. You can switch to another algorithm or modify parameters by modifying the file  `algorithms.json` with any of above algorithm's JSON parameters setting.
 
 Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips on selecting the right algorithm and setting the parameters properly.
 
