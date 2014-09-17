@@ -3,12 +3,12 @@ package io.prediction.engines.itemrank.ncmahout
 import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
 
-import io.prediction.engines.itemrank.PreparedData
 import io.prediction.engines.itemrank.Query
 import io.prediction.engines.itemrank.Prediction
 import io.prediction.engines.util.MahoutUtil
-import io.prediction.engines.util.mahout.KNNItemBasedRecommender
-import io.prediction.engines.util.mahout.AllValidItemsCandidateItemsStrategy
+import io.prediction.engines.base.mahout.KNNItemBasedRecommender
+import io.prediction.engines.base.mahout.AllValidItemsCandidateItemsStrategy
+import io.prediction.engines.base.PreparedData
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.common.Weighting

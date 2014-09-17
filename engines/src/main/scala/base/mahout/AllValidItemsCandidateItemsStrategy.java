@@ -1,4 +1,4 @@
-package io.prediction.engines.util.mahout;
+package io.prediction.engines.base.mahout;
 
 import org.apache.mahout.cf.taste.impl.recommender.AbstractCandidateItemsStrategy;
 import org.apache.mahout.cf.taste.common.TasteException;

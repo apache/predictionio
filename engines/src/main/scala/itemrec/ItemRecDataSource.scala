@@ -1,8 +1,8 @@
 package io.prediction.engines.itemrec
 
 import io.prediction.controller._
-import io.prediction.engines.itemrank.{ TrainingData => IRTrainingData }
-import io.prediction.engines.itemrank.{ U2IActionTD => IRU2IActionTD }
+import io.prediction.engines.base.{ TrainingData => IRTrainingData }
+import io.prediction.engines.base.{ U2IActionTD => IRU2IActionTD }
 import io.prediction.engines.itemrank.EventsDataSourceParams
 import io.prediction.engines.itemrank.EventsDataSource
 import io.prediction.engines.java.itemrec.data.Query
@@ -14,11 +14,11 @@ class DataSourceParams(
   // TODO(yipjustin): Will add evaluation metrics afterwards.
 
   // rate >= goal in the testing set
-  val goal: Int,  
+  val goal: Int,
   // perform a X-fold cross-validation, if fold <= 1, training only.
-  val fold: Int,  
+  val fold: Int,
   // use MAP@k
-  val k: Int 
+  val k: Int
   */
 ) extends Params
 

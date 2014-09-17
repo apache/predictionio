@@ -25,6 +25,11 @@ import scala.io.Source
 import scala.collection.immutable.HashMap
 import scala.util.hashing.MurmurHash3
 
+import io.prediction.engines.base.ItemTD
+import io.prediction.engines.base.UserTD
+import io.prediction.engines.base.U2IActionTD
+import io.prediction.engines.base.TrainingData
+
 case class ReplaySliceParams(
   val name: String,
   val idx: Int

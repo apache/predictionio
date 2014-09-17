@@ -9,6 +9,8 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.github.nscala_time.time.Imports._
 
+import io.prediction.engines.base.TrainingData
+
 class PReplayDataSource(val dsp: ReplayDataSource.Params)
   extends P2LDataSource[
       ReplayDataSource.Params,
@@ -20,14 +22,14 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
   def read(sc: SparkContext)
   : Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])] = {
     implicit val formats = DefaultFormats
-    
+
     val ds = new ReplayDataSource(dsp)
 
     val u2iList: RDD[Array[U2I]] = sc
       .textFile(path = dsp.u2iPath)
-      .map { s => 
-        implicit val formats = DefaultFormats 
-        parse(s).extract[U2I] 
+      .map { s =>
+        implicit val formats = DefaultFormats
+        parse(s).extract[U2I]
       }
       .coalesce(numPartitions = 1)
       .glom
@@ -35,9 +37,9 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
 
     val userList: RDD[Array[User]] = sc
       .textFile(path = dsp.userPath)
-      .map { s => 
-        implicit val formats = DefaultFormats 
-        parse(s).extract[User] 
+      .map { s =>
+        implicit val formats = DefaultFormats
+        parse(s).extract[User]
       }
       .coalesce(numPartitions = 1)
       .glom
@@ -45,9 +47,9 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
 
     val itemList: RDD[Array[Item]] = sc
       .textFile(path = dsp.itemPath)
-      .map { s => 
-        implicit val formats = DefaultFormats 
-        parse(s).extract[Item] 
+      .map { s =>
+        implicit val formats = DefaultFormats
+        parse(s).extract[Item]
       }
       .coalesce(numPartitions = 1)
       .glom
@@ -66,7 +68,7 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
 
     dataParams.map { dp =>
       val sliceData = preprocessed.map(p => ds.generateOne((p, dp)))
-      
+
       val trainingData: RDD[TrainingData] = sliceData.map(_._2)
       val qaRdd: RDD[(Query, Actual)] = sliceData.flatMap(_._3)
       trainingData.cache
@@ -76,5 +78,3 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
     .toSeq
   }
 }
-
-

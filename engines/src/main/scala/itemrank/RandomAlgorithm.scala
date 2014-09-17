@@ -5,6 +5,8 @@ import io.prediction.controller.LAlgorithm
 
 import scala.util.Random
 
+import io.prediction.engines.base.PreparedData
+
 class RandomAlgoParams() extends Params {
   override def toString = s"empty"
 }

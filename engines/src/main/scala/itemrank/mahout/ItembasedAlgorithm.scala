@@ -4,7 +4,7 @@ import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
 import io.prediction.engines.util.MahoutUtil
 
-import io.prediction.engines.itemrank.PreparedData
+import io.prediction.engines.base.PreparedData
 import io.prediction.engines.itemrank.Query
 import io.prediction.engines.itemrank.Prediction
 

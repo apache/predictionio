@@ -1,55 +1,34 @@
-package io.prediction.engines.itemrank
+package io.prediction.engines.base
 
 import io.prediction.controller.LDataSource
 import io.prediction.controller.Params
 import io.prediction.controller.EmptyDataParams
 import io.prediction.data.view.LBatchView
 
-import io.prediction.engines.base
-/*import io.prediction.engines.base.ItemTD
-import io.prediction.engines.base.UserTD
-import io.prediction.engines.base.U2IActionTD
-import io.prediction.engines.base.TrainingData
-*/
+//import io.prediction.engines.base.AttributeNames
+//import io.prediction.engines.base.ItemTD
+//import io.prediction.engines.base.UserTD
+//import io.prediction.engines.base.U2IActionTD
+//import io.prediction.engines.base.TrainingData
+
 import org.joda.time.DateTime
 
-case class EventsDataSourceParams(
-  override val appId: Int,
-  // default None to include all itypes
-  override val itypes: Option[Set[String]] = None, // train items with these itypes
-  // actions for training
-  override val actions: Set[String],
-  override val startTime: Option[DateTime] = None, // event starttime
-  override val untilTime: Option[DateTime] = None, // event untiltime
-  override val attributeNames: base.AttributeNames
-) extends base.EventsDataSourceParams (
-  appId = appId,
-  itypes = itypes,
-  actions = actions,
-  startTime = startTime,
-  untilTime = untilTime,
-  attributeNames = attributeNames
-)
-/*
-case class EventsDataSourceParams(
+import scala.reflect.ClassTag
+
+class EventsDataSourceParams(
   val appId: Int,
   // default None to include all itypes
   val itypes: Option[Set[String]] = None, // train items with these itypes
-  // actions for training
-  val actions: Set[String],
+  val actions: Set[String], // actions for trainingdata
   val startTime: Option[DateTime] = None, // event starttime
   val untilTime: Option[DateTime] = None, // event untiltime
   val attributeNames: AttributeNames
 ) extends Params
-*/
 
-class EventsDataSource(dsp: EventsDataSourceParams)
-  extends base.EventsDataSource[DataParams, Query, Actual](dsp)
 
-/*
-class EventsDataSource(dsp: EventsDataSourceParams)
+abstract class EventsDataSource[DP: ClassTag, Q, A](dsp: EventsDataSourceParams)
   extends LDataSource[EventsDataSourceParams,
-    DataParams, TrainingData, Query, Actual] {
+    DP, TrainingData, Q, A] {
 
   @transient lazy val batchView = new LBatchView(dsp.appId,
     dsp.startTime, dsp.untilTime)
@@ -118,4 +97,3 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     )
   }
 }
-*/

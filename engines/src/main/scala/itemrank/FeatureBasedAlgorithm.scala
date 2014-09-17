@@ -2,6 +2,9 @@ package io.prediction.engines.itemrank
 
 import io.prediction.controller._
 
+import io.prediction.engines.base.PreparedData
+import io.prediction.engines.base.RatingTD
+
 import io.prediction.engines.itemrank._
 
 import breeze.linalg.SparseVector

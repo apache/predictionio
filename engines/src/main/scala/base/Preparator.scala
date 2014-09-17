@@ -1,38 +1,23 @@
-package io.prediction.engines.itemrank
+package io.prediction.engines.base
 
 import io.prediction.controller.LPreparator
 import io.prediction.controller.Params
 
-import io.prediction.engines.base
+//import io.prediction.engines.base.RatingTD
 //import io.prediction.engines.base.TrainingData
 //import io.prediction.engines.base.PreparedData
 
-case class PreparatorParams (
-  // how to map selected actions into rating value
-  // use None if use U2IActionTD.v field
-  override val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
-  override val conflict: String // conflict resolution, "latest" "highest" "lowest"
-) extends base.PreparatorParams(
-  actions = actions,
-  seenActions = Set(), // seenActions not applicable in itemrank
-  conflict = conflict
-)
-
-/*
 class PreparatorParams (
   // how to map selected actions into rating value
   // use None if use U2IActionTD.v field
   val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
+  val seenActions: Set[String], // (view, conversion)
   val conflict: String // conflict resolution, "latest" "highest" "lowest"
 ) extends Params {
-  override def toString = s"${actions} ${conflict}"
-}*/
+  override def toString = s"${actions} ${seenActions} ${conflict}"
+}
 
-class ItemRankPreparator(pp: PreparatorParams)
-  extends base.Preparator(pp)
-
-/*
-class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
+class Preparator(pp: PreparatorParams) extends LPreparator[
     PreparatorParams, TrainingData, PreparedData] {
 
   final val CONFLICT_LATEST: String = "latest"
@@ -73,7 +58,8 @@ class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
       users = trainingData.users,
       items = trainingData.items,
       rating = ratingReduced,
-      ratingOriginal = u2iRatings
+      ratingOriginal = u2iRatings,
+      seenU2IActions = Seq() // TODO: filter seen U2I
     )
   }
 
@@ -86,4 +72,3 @@ class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
     }
   }
 }
-*/

@@ -2,7 +2,7 @@ package io.prediction.engines.itemrec
 
 import io.prediction.engines.itemrank.EventsDataSource
 import io.prediction.engines.itemrank.EventsDataSourceParams
-import io.prediction.engines.itemrank.AttributeNames
+import io.prediction.engines.base.AttributeNames
 import io.prediction.engines.itemrank.PreparatorParams
 
 import io.prediction.controller._
@@ -17,7 +17,7 @@ object Runner {
 
   def main(args: Array[String]) {
     //val dsp = new DataSourceParams(
-    val dsp = 
+    val dsp =
       EventsDataSourceParams(
         appId = 4,
         itypes = None,
@@ -34,7 +34,7 @@ object Runner {
           inactive = "pio_inactive",
           rating = "pio_rate"
         ))
-    //)     
+    //)
 
     val pp = new PreparatorParams(
       actions = Map(
