@@ -10,7 +10,7 @@ import io.prediction.engines.java.itemrec.algos.GenericItemBasedParams;
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlusParams;
 import io.prediction.controller.java.JavaParams;
-import io.prediction.controller.java.EmptyParams;
+//import io.prediction.controller.java.EmptyParams;
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.java.JavaEngine;
 import io.prediction.controller.java.JavaEngineBuilder;
@@ -18,6 +18,8 @@ import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.JavaWorkflow;
 import io.prediction.controller.java.WorkflowParamsBuilder;
+
+import io.prediction.controller.EmptyParams;
 
 import io.prediction.controller.Params;
 
@@ -45,7 +47,8 @@ public class Runner {
     EmptyParams pp = new EmptyParams();
     GenericItemBasedParams genericItemBasedParams = new GenericItemBasedParams(10);
     SVDPlusPlusParams svdPlusPlusParams = new SVDPlusPlusParams(10);
-    ServingParams sp = new ServingParams();
+    //ServingParams sp = new ServingParams();
+    EmptyParams sp = new EmptyParams();
 
     String algo;
     //JavaParams algoParams;
