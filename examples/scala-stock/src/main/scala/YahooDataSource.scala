@@ -1,4 +1,4 @@
-package io.prediction.examples.stock2
+package io.prediction.examples.stock
 
 // YahooDataSource reads PredictionIO event store directly.
 
@@ -85,16 +85,6 @@ class YahooDataSource(val params: YahooDataSource.Params)
   @transient lazy val timeIndex: Array[DateTime] = market.timeIndex
   @transient lazy val timeIndexSet: Set[DateTime] = timeIndex.toSet
   
-  /*
-  val timezone = DateTimeZone.forID("US/Eastern")
-  val windowParams = params.windowParams
-  val marketTicker = windowParams.marketTicker
-
-  val market: HistoricalData = getTimeIndex()
-  val timeIndex: Array[DateTime] = market.timeIndex
-  val timeIndexSet: Set[DateTime] = timeIndex.toSet
-  */
-
   def merge(intermediate: YahooDataSource.Intermediate, e: Event,
     timeIndexSetOpt: Option[Set[DateTime]]) 
   : YahooDataSource.Intermediate = {
@@ -172,8 +162,6 @@ class YahooDataSource(val params: YahooDataSource.Params)
       ticker = ticker, 
       timeIndex = timeIndex,
       close = timeIndex.map(t => dailyMap(t).close),
-      //adjClose = timeIndex.map(t => dailyMap(t).adjClose),
-      //adjReturn = timeIndex.map(t => dailyMap(t).adjReturn),
       adjClose = return2Close(adjReturn),
       adjReturn = adjReturn,
       volume = timeIndex.map(t => dailyMap(t).volume),
@@ -382,6 +370,8 @@ object YahooDataSource {
 
 object YahooDataSourceRun {
   def main(args: Array[String]) {
+    // Make sure you have a lot of memory.
+    // --driver-memory 12G
     val dsp = (
       if (true) {
         YahooDataSource.Params(
@@ -390,14 +380,16 @@ object YahooDataSourceRun {
           //untilTime = Some(new DateTime(2014, 5, 1, 0, 0)))
           untilTime = None,
           windowParams = DataSourceParams(
-            baseDate = new DateTime(2008, 1, 1, 0, 0),
+            //baseDate = new DateTime(2008, 1, 1, 0, 0),
+            baseDate = new DateTime(2000, 1, 1, 0, 0),
             fromIdx = 250,
-            //untilIdx = 2500,
-            untilIdx = 500,
+            untilIdx = 3500,
+            //untilIdx = 500,
             trainingWindowSize = 200,
             maxTestingWindowSize = 30,
             marketTicker = "SPY",
-            tickerList = Run.sp500List.take(5)))
+            //tickerList = Run.sp500List.take(5)))
+            tickerList = Run.sp500List))
       } else {
         YahooDataSource.Params(
           appId = 1,
@@ -435,7 +427,7 @@ object YahooDataSourceRun {
       metricsClassOpt = Some(classOf[BacktestingMetrics]),
       metricsParams = metricsParams,
       params = WorkflowParams(
-        verbose = 3,
+        verbose = 0,
         saveModel = false,
         batch = "Imagine: Stock III"))
   }

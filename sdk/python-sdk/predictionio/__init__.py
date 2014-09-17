@@ -117,7 +117,7 @@ class DataClient(BaseClient):
     self.app_id = app_id
 
   def acreate_event(self, data):
-    path = "/events"
+    path = "/events.json"
     request = AsyncRequest("POST", path, **data)
     request.set_rfunc(self._acreate_resp)
     self._connection.make_request(request)
@@ -128,7 +128,7 @@ class DataClient(BaseClient):
 
   def aget_event(self, event_id):
     enc_event_id = urllib.quote(event_id, "") # replace special char with %xx
-    path = "/events/%s" % enc_event_id
+    path = "/events/%s.json" % enc_event_id
     request = AsyncRequest("GET", path)
     requset.set_rfunc(self._aget_resp)
     self._connection.make_request(request)

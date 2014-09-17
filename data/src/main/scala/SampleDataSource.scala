@@ -120,7 +120,7 @@ object ItemRankDataSource {
         starttime = "starttime",
         endtime = "endtime",
         inactive = "inactive",
-        rating = "pio_rate"
+        rating = "pio_rating"
       )
     )
 

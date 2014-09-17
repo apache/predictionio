@@ -1,4 +1,4 @@
-package io.prediction.examples.stock2
+package io.prediction.examples.stock
 
 import io.prediction.controller.LAlgorithm
 
@@ -36,11 +36,7 @@ abstract class StockStrategy[M: ClassTag]
     val dataView: DataView = 
       rawData.view(queryDate.idx, trainingData.maxWindowSize)
 
-    println(s"idx: ${queryDate.idx} size: ${trainingData.maxWindowSize}")
-
     val active = rawData._activeFrame
-
-    println(active)
 
     val activeTickers = dataView
       .activeFrame()

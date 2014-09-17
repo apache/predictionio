@@ -19,7 +19,7 @@ import io.prediction.core.BaseServing
   *       Map(
   *         "knn" -> classOf[KNNAlgorithm],
   *         "rand" -> classOf[RandomAlgorithm],
-  *         "mahout" -> classOf[MahoutItemBasedAlgorithm]),
+  *         "mahoutItemBased" -> classOf[MahoutItemBasedAlgorithm]),
   *       classOf[ItemRankServing])
   *   }
   * }

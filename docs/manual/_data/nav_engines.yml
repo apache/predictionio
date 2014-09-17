@@ -1,6 +1,3 @@
-- title: "Tutorials & Samples"
-  href: "/tutorials/engines/"
-
 - title: "Item Ranking"
   href: "/engines/itemrank"
 
@@ -9,3 +6,6 @@
 
 - title: "Item Similarity"
   href: "/engines/itemsim"
+  
+- title: "Tutorials & Samples"
+  href: "/tutorials/engines/"

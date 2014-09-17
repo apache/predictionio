@@ -11,7 +11,7 @@ object DetailedRunner {
 
   def main(args: Array[String]) {
 
-    val dsp = EventsDataSoureParams(
+    val dsp = EventsDataSourceParams(
       appId = 1,
       itypes = None,
       actions = Set("view", "like", "dislike", "conversion", "rate"),
@@ -25,7 +25,7 @@ object DetailedRunner {
         starttime = "pio_starttime",
         endtime = "pio_endtime",
         inactive = "pio_inactive",
-        rating = "pio_rate"
+        rating = "pio_rating"
       )
     )
 
@@ -40,7 +40,7 @@ object DetailedRunner {
     )
 
     val randomAlgoParams = new RandomAlgoParams()
-    val mahoutAlgoParams = new MahoutItemBasedAlgoParams(
+    val mahoutAlgoParams = new mahout.ItemBasedAlgoParams(
       booleanData = true,
       itemSimilarity = "LogLikelihoodSimilarity",
       weighted = false,
@@ -59,9 +59,9 @@ object DetailedRunner {
     val engineParams = new EngineParams(
       dataSourceParams = dsp,
       preparatorParams = pp,
-      algorithmParamsList = Seq(("mahout", mahoutAlgoParams)),
+      algorithmParamsList = Seq(("mahoutItemBased", mahoutAlgoParams)),
       // Seq(("rand", randomAlgoParams))
-      // Seq(("mahout", mahoutAlgoParams))
+      // Seq(("mahoutItemBased", mahoutAlgoParams))
       servingParams = sp
     )
 

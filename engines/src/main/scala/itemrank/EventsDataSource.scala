@@ -7,7 +7,7 @@ import io.prediction.data.view.LBatchView
 
 import org.joda.time.DateTime
 
-case class EventsDataSoureParams(
+case class EventsDataSourceParams(
   val appId: Int,
   // default None to include all itypes
   val itypes: Option[Set[String]] = None, // train items with these itypes
@@ -19,8 +19,8 @@ case class EventsDataSoureParams(
 ) extends Params
 
 
-class EventsDataSource(dsp: EventsDataSoureParams)
-  extends LDataSource[EventsDataSoureParams,
+class EventsDataSource(dsp: EventsDataSourceParams)
+  extends LDataSource[EventsDataSourceParams,
     DataParams, TrainingData, Query, Actual] {
 
   @transient lazy val batchView = new LBatchView(dsp.appId,
