@@ -1,3 +1,4 @@
+/*
 package io.prediction.engines.java.itemrec.data;
 
 import java.io.Serializable;
@@ -17,3 +18,4 @@ public class Prediction implements Serializable {
     return "Prediction: " + iids.toString() + ";" + scores.toString();
   }
 }
+*/

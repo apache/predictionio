@@ -30,7 +30,7 @@ public class ItemRecMetrics extends JavaMetrics<
     logger.info("computeUnit");
     logger.info(query.toString());
     logger.info(predicted.toString());
-    Double ap = MathUtil.jAveragePrecisionAtK(this.params.k, predicted.iids, actual.iids);
+    Double ap = MathUtil.jAveragePrecisionAtK(this.params.k, predicted.iids(), actual.iids);
     logger.info(ap.toString());
     return ap;
   }

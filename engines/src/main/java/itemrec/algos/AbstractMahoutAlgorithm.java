@@ -73,27 +73,21 @@ public abstract class AbstractMahoutAlgorithm<AP extends Params>
   public Prediction predict(Model model, Query query) {
     List<RecommendedItem> items = model.itemRecScores.get((long) query.uid);
 
-    //logger.info(model.itemRecScores.keySet().toString());
-    if (items != null) {
-      logger.info(items.toString());
-    } else {
-      logger.info("null");
-    }
-
     List<Integer> iids = new ArrayList<Integer>();
     List<Float> scores = new ArrayList<Float>();
 
     if (items != null) {
-
       int i = 0;
-      for (Iterator<RecommendedItem> it = items.iterator();
-        it.hasNext() && (i < query.n);
-        i++) {
-          RecommendedItem item = it.next();
-          // TODO: check long to int casting
-          iids.add((int) item.getItemID());
-          scores.add(item.getValue());
-        }
+      for (RecommendedItem item: items) {
+        logger.info(item.toString());
+        iids.add((int) item.getItemID());
+        scores.add(item.getValue());
+
+        i++;
+        if (i >= query.n) break;
+      }
+    } else {
+      logger.info("null");
     }
 
     return new Prediction(iids, scores);
