@@ -45,7 +45,7 @@ object DetailedRunner {
       itemSimilarity = "LogLikelihoodSimilarity",
       weighted = false,
       nearestN = 10,
-      threshold = 5e-324,
+      threshold = 4.9E-324,
       numSimilarItems = 50,
       numUserActions = 50,
       freshness = 0,

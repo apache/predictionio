@@ -36,7 +36,7 @@ To communicate with PredictionIO server, we can use a PredictionIO SDK of a spec
 {% highlight json %}
 {
     "require": {
-        "predictionio/predictionio": "~0.6.0"
+        "predictionio/predictionio": "~0.8.0"
     }
 }
 {% endhighlight %}
@@ -98,22 +98,21 @@ In the *quickstartapp* directory:
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
-    use PredictionIO\PredictionIOClient;
-    $client = PredictionIOClient::factory(array("appkey" => "<your app key>"));
+    use predictionio\EventClient;
+
+    $client = new EventClient(<your app id>);
 
     // generate 10 users, with user ids 1,2,....,10
     for ($i=1; $i<=10; $i++) {
         echo "Add user ". $i . "\n";
-        $command = $client->getCommand('create_user', array('pio_uid' => $i));
-        $response = $client->execute($command);
+        $response=$client->setUser($i);
     }
 
     // generate 50 items, with item ids 1,2,....,50
     // assign type id 1 to all of them
     for ($i=1; $i<=50; $i++) {
         echo "Add item ". $i . "\n";
-        $command = $client->getCommand('create_item', array('pio_iid' => $i, 'pio_itypes' => 1));
-        $response = $client->execute($command);
+        $response=$client->setItem($i, array('pio_itypes'=>array('1')));
     }
 
     // each user randomly views 10 items
@@ -121,8 +120,7 @@ In the *quickstartapp* directory:
         for ($count=0; $count<10; $count++) {
             $i = rand(1, 50); // randomly pick an item
             echo "User ". $u . " views item ". $i ."\n";
-            $client->identify($u);
-            $client->execute($client->getCommand('record_action_on_item', array('pio_action' => 'view', 'pio_iid' => $i)));
+            $response=$client->recordUserActionOnItem('view', $u, $i);
         }
     }
 ?>
@@ -249,32 +247,15 @@ In the *quickstartapp* directory:
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
-    use PredictionIO\PredictionIOClient;
-    $client = PredictionIOClient::factory(array("appkey" => "<your app key>"));
+    use predictionio\EngineClient;
 
-    // generate 10 users, with user ids 1,2,....,10
+    $client = new EngineClient(<your app id>);
+
+    // Rank item 1 to 5 for each user
     for ($i=1; $i<=10; $i++) {
-        echo "Add user ". $i . "\n";
-        $command = $client->getCommand('create_user', array('pio_uid' => $i));
-        $response = $client->execute($command);
-    }
-
-    // generate 50 items, with item ids 1,2,....,50
-    // assign type id 1 to all of them
-    for ($i=1; $i<=50; $i++) {
-        echo "Add item ". $i . "\n";
-        $command = $client->getCommand('create_item', array('pio_iid' => $i, 'pio_itypes' => 1));
-        $response = $client->execute($command);
-    }
-
-    // each user randomly views 10 items
-    for ($u=1; $u<=10; $u++) {
-        for ($count=0; $count<10; $count++) {
-            $i = rand(1, 50); // randomly pick an item
-            echo "User ". $u . " views item ". $i ."\n";
-            $client->identify($u);
-            $client->execute($client->getCommand('record_action_on_item', array('pio_action' => 'view', 'pio_iid' => $i)));
-        }
+      $response=$client->sendQuery(array('uid'=>$i, 
+                           'iids'=>array(1,2,3,4,5)));
+      print_r($response);
     }
 ?>
 {% endhighlight %}

@@ -5,7 +5,7 @@
       "booleanData": true,
       "itemSimilarity": "LogLikelihoodSimilarity",
       "weighted": false,
-      "threshold": 5e-324,
+      "threshold": 4.9E-324,
       "nearestN": 10,
       "unseenOnly" : false,
       "freshness" : 0,

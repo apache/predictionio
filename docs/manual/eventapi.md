@@ -154,6 +154,26 @@ $ curl -i -X POST http://localhost:7070/events.json \
 }'
 {% endhighlight %}
 </div>
+<div data-lang="PHP SDK">
+{% highlight php %}
+<?php
+  require_once("vendor/autoload.php");
+
+  use predictionio\EventClient;
+
+  $appId = 4;
+  $client = new EventClient($appId);
+  $response = $client->createEvent(array(
+                        'appId' => 4,
+                        'event' => 'my_event',
+                        'entityType' => 'pio_user',
+                        'entityId' => '8',
+                        'properties' => array('prop1'=>1, 'prop2'=>2),
+                        'tags' => array('tag1', 'tag2'),
+                       ));
+?>
+{% endhighlight %}
+</div>
 <div data-lang="Python SDK">
 {% highlight bash %}
 (TODO)
@@ -195,6 +215,29 @@ $ curl -i -X POST http://localhost:7070/events.json \
   "tags" : ["tag1", "tag2"],
   "creationTime" : "2014-09-01T21:40:45.123+01:00"
 }'
+{% endhighlight %}
+</div>
+<div data-lang="PHP SDK">
+{% highlight php %}
+<?php
+  require_once("vendor/autoload.php");
+
+  use predictionio\EventClient;
+
+  $appId = 4;
+  $client = new EventClient($appId);
+  $response = $client->createEvent(array(
+                        'appId' => 4,
+                        'event' => 'my_event',
+                        'entityType' => 'pio_user',
+                        'entityId' => '8',
+                        'targetEntityType' => 'pio_user',
+                        'targetEntityId' => '2',
+                        'properties' => array('someProperty'=>'value1', 
+                                              'anotherProperty'=>'value2'),
+                        'tags' => array('tag1', 'tag2'),
+                       ));
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
