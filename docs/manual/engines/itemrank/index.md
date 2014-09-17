@@ -13,7 +13,7 @@ With this engine, you can personalize a ranked list of items in your application
 
 ![Item Ranking Score Prediction](/images/engine-itemrec-prediction.png)
 
-In this batch-mode process, the engine predicts a preference score for the queried items. The scores are computed by the deployed algorithm in the engine.
+In this batch-mode process, the engine predicts preference scores for the queried items. The scores are computed by the deployed algorithm in the engine.
 
 ## Step 2: Rank the Query Items
 
@@ -118,7 +118,7 @@ Field | Type | Description
 `itemSimilarity`| String | Item Similarity Measure. See **Note**
 `weighted` | boolean | The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine item similarity).
 `nearestN` | integer | K-nearest rated item neighbors,
-`threshold` | double | Similarity threshold
+`threshold` | double | Similarity threshold. Discard item pairs with a similarity value below this.
 `numSimilarItems` | integer | Number of similar items in the Item Similarity Matrix model.
 `numUserActions`| integer | Number of user-to-item actions in the user history model.
 `freshness` | integer | Freshness scale 0 - 10. Must be >= 0. 0 means no freshness.
@@ -148,7 +148,7 @@ Uncentered Cosine | `UncenteredCosineSimilarity`
       "itemSimilarity": "LogLikelihoodSimilarity",
       "weighted": false,
       "nearestN": 10,
-      "threshold": 5e-324,
+      "threshold": 4.9E-324,
       "numSimilarItems": 50,
       "numUserActions": 50,
       "freshness" : 0,
@@ -226,7 +226,7 @@ Same as **Mahout Item Based Algorithm** *without* the following parameters:
       "booleanData": true,
       "itemSimilarity": "LogLikelihoodSimilarity",
       "weighted": false,
-      "threshold": 5e-324,
+      "threshold": 4.9E-324,
       "nearestN": 10,
       "unseenOnly" : false,
       "freshness" : 0,
