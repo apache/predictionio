@@ -75,7 +75,7 @@ Field | Description
 $ curl -i -X POST http://localhost:8000 \
 -d '{
   "uid" : 123,
-  "iids" : [1, 3, 5, 10, 11] }
+  "iids" : [1, 3, 5, 10, 11]
 }'
 
 ```
@@ -95,7 +95,7 @@ Field | Description
 
 #### Sample Response
 
-```
+```json
 {"items":[{"10":35.15679457387672},{"11":14.929159003452385},{"1":6.950646135607128},{"3":6.894567600916194},{"5":3.9688094914951138}],"isOriginal":false}
 ```
 
@@ -108,7 +108,7 @@ Item Ranking Engine comes with the following algorithms:
 
 Use Mahout Item Based algorithm to build similarity matrix. Then rank items based on user recent history and the item similarity matrix.
 
-**Algorithm code name:** `"mahout"`
+**Algorithm code name:** `"mahoutItemBased"`
 
 **Parameters:**
 
@@ -142,7 +142,7 @@ Uncentered Cosine | `UncenteredCosineSimilarity`
 ```json
 [
   {
-    "name": "mahout",
+    "name": "mahoutItemBased",
     "params": {
       "booleanData": true,
       "itemSimilarity": "LogLikelihoodSimilarity",
@@ -206,7 +206,7 @@ This algorithm doesn't have parameters.
 
 Use Mahout Item Based algorithm to re-calculate predicted score every time when serve the query request. The item similarity matrix is not cached. (Serving performance is slower)
 
-**Algorithm code name:** `"legacy"`
+**Algorithm code name:** `"ncMahoutItemBased"`
 
 **Parameters:**
 
@@ -221,7 +221,7 @@ Same as **Mahout Item Based Algorithm** *without* the following parameters:
 ```json
 [
   {
-    "name": "legacy",
+    "name": "ncMahoutItemBased",
     "params": {
       "booleanData": true,
       "itemSimilarity": "LogLikelihoodSimilarity",
@@ -238,7 +238,7 @@ Same as **Mahout Item Based Algorithm** *without* the following parameters:
 
 # Changing Algorithm and Its Parameters
 
-By default, **Mahout Item Based Algorithm** (`"mahout"`) is used. You can switch to another algorithm or modify parameters by modifying the file  `algorithms.json` with any of above algorithm's JSON parameters setting.
+By default, **Mahout Item Based Algorithm** (`"mahoutItemBased"`) is used. You can switch to another algorithm or modify parameters by modifying the file  `algorithms.json` with any of above algorithm's JSON parameters setting.
 
 Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips on selecting the right algorithm and setting the parameters properly.
 

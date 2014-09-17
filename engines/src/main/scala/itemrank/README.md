@@ -38,7 +38,7 @@ Update the appId in params/datasource.json with <appid>
 ```
 $ pushd engines/src/main/scala/itemrank/examples
 $ ../../../../../../bin/pio register
-$ ../../../../../../bin/pio train -ap mahoutalgo.json
+$ ../../../../../../bin/pio train -ap mahoutItemBasedAlgo.json
 $ ../../../../../../bin/pio deploy
 $ popd
 ```
@@ -47,9 +47,9 @@ By default, the server is deployed at http://localhost:8000/.
 
 Train with other algorithms:
 ```
-$ ../../../../../../bin/pio train -ap randomalgo.json
-$ ../../../../../../bin/pio train -ap featurebasedalgo.json
-$ ../../../../../../bin/pio train -ap legacyalgo.json
+$ ../../../../../../bin/pio train -ap randAlgo.json
+$ ../../../../../../bin/pio train -ap featurebasedAlgo.json
+$ ../../../../../../bin/pio train -ap ncMahoutItemBasedAlgo.json
 ```
 
 
