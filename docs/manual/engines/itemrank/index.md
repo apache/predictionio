@@ -40,7 +40,7 @@ Events between these two Entity Types should be recorded:
 
 > **Note: Name of EntityType and Properties**
 >
-> Although you are allowed to use different names for the Entity Type and Properties as long as they represent same meaning (For example, use the name `user` instead of `pio_user`. Use `t` instead of `pio_starttime`). We highly recommend to follow our name convention when use built-in engines. If you use diffrent names for these attributes, you need to modify the `attributeNames` field defined in the file `datasource.json`.
+> Although you are allowed to use different names for the Entity Type and Properties as long as they represent same meaning (For example, use the name `user` instead of `pio_user` or use `t` instead of `pio_starttime`). We highly recommend to follow our name convention when using built-in engines. If you use diffrent names for these attributes, you need to modify the `attributeNames` field defined in the file `datasource.json`.
 
 > **Note: Extra User and Item Entity Properties**
 >
@@ -57,9 +57,9 @@ Item Ranking Engine supports the following query API endpoints:
 
 ## Sending Queries to Item Ranking Engine
 
-To rank a list items for a user, make an HTTP POST request to Item Ranking Engine instance:
+To rank a list of items for a user, make an HTTP POST request to the Item Ranking Engine instance:
 
-**POST** *Engine Instance IP:Engine Instance port*
+**POST** *Engine_Instance_IP*:*Engine_Instance_port*
 
 
 with following JSON payload:
@@ -67,7 +67,7 @@ with following JSON payload:
 Field | Description
 ------ | :---------
 `uid` | user Entity ID
-`iids`| Array of item Entity ID
+`iids`| array of item Entity ID
 
 #### Sample Query
 
@@ -122,7 +122,7 @@ Field | Type | Description
 `numSimilarItems` | integer | Number of similar items in the Item Similarity Matrix model.
 `numUserActions`| integer | Number of user-to-item actions in the user history model.
 `freshness` | integer | Freshness scale 0 - 10. Must be >= 0. 0 means no freshness.
-`freshnessTimeUnit` | integer | The time unit in seconds for freshness prioritization. As an example, if you set this to one day (86400), and freshness is set to 10, items that are one day old would have their score degraded by a bit more than 60%.
+`freshnessTimeUnit` | integer | The time unit in seconds for freshness prioritization. As an example, if you set this to one day (86400), and freshness is set to 10, items that are one day old would have their score degraded by a bit more than 60%, or e^-1 remains to be exact.
 
 **Note:**
 
