@@ -41,8 +41,8 @@ public class GenericItemBased
   @Override
   public Recommender buildRecommender(PreparedData data) throws TasteException {
 
-    String itemSimilarity = params.itemSimilarity;
-    boolean weighted = params.weighted;
+    String itemSimilarity = params.itemSimilarity();
+    boolean weighted = params.weighted();
 
     Weighting weightedParam;
 

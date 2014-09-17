@@ -26,12 +26,12 @@ public class SVDPlusPlus
 
   @Override
   public Recommender buildRecommender(PreparedData data) throws TasteException {
-    int numFeatures = params.numFeatures;
-    double learningRate = params.learningRate;
-    double preventOverfitting = params.preventOverfitting;
-    double randomNoise = params.randomNoise;
-    int numIterations = params.numIterations;
-    double learningRateDecay = params.learningRateDecay;
+    int numFeatures = params.numFeatures();
+    double learningRate = params.learningRate();
+    double preventOverfitting = params.preventOverfitting();
+    double randomNoise = params.randomNoise();
+    int numIterations = params.numIterations();
+    double learningRateDecay = params.learningRateDecay();
 
     Recommender recommender = null;
     // TODO: handle Exception

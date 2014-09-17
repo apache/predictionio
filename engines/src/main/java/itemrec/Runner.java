@@ -19,6 +19,8 @@ import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.JavaWorkflow;
 import io.prediction.controller.java.WorkflowParamsBuilder;
 
+import io.prediction.controller.Params;
+
 import scala.Tuple2;
 import java.util.List;
 import java.util.ArrayList;
@@ -46,7 +48,8 @@ public class Runner {
     ServingParams sp = new ServingParams();
 
     String algo;
-    JavaParams algoParams;
+    //JavaParams algoParams;
+    Params algoParams;
     if (algoName.equals("genericitembased")) {
       algo = "genericitembased";
       algoParams = genericItemBasedParams;

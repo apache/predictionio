@@ -1,3 +1,4 @@
+/*
 package io.prediction.engines.java.itemrec.algos;
 
 public class SVDPlusPlusParams extends MahoutParams {
@@ -19,8 +20,9 @@ public class SVDPlusPlusParams extends MahoutParams {
     this.learningRateDecay = learningRateDecay;
   }
 
-  /* with default values */
+  // with default values
   public SVDPlusPlusParams(int numRecommendations) {
     this(numRecommendations, 3, 0.01, 0.1, 0.01, 3, 1);
   }
 }
+*/
