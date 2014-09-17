@@ -1,11 +1,12 @@
-package io.prediction.examples.java.itemrec.algos;
+package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.examples.java.itemrec.data.PreparedData;
-import io.prediction.examples.java.itemrec.data.Query;
-import io.prediction.examples.java.itemrec.data.Prediction;
-import io.prediction.examples.java.itemrec.data.Model;
+import io.prediction.engines.java.itemrec.data.PreparedData;
+import io.prediction.engines.java.itemrec.data.Query;
+import io.prediction.engines.java.itemrec.data.Prediction;
+import io.prediction.engines.java.itemrec.data.Model;
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.java.JavaParams;
+import io.prediction.controller.Params;
 
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 
 /** Mahout Legacy single machine algorithm */
-public abstract class AbstractMahoutAlgorithm<AP extends JavaParams>
+public abstract class AbstractMahoutAlgorithm<AP extends Params>
   extends LJavaAlgorithm<AP, PreparedData, Model, Query, Prediction> {
 
   MahoutParams params;

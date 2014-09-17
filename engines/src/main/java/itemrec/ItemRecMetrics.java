@@ -1,10 +1,10 @@
-package io.prediction.examples.java.itemrec;
+package io.prediction.engines.java.itemrec;
 
 import io.prediction.controller.java.EmptyParams;
 import io.prediction.controller.java.JavaMetrics;
-import io.prediction.examples.java.itemrec.data.Query;
-import io.prediction.examples.java.itemrec.data.Prediction;
-import io.prediction.examples.java.itemrec.data.Actual;
+import io.prediction.engines.java.itemrec.data.Query;
+import io.prediction.engines.java.itemrec.data.Prediction;
+import io.prediction.engines.java.itemrec.data.Actual;
 import io.prediction.engines.util.MathUtil;
 
 import java.util.Iterator;

@@ -11,7 +11,7 @@ object Runner {
 
   def main(args: Array[String]) {
 
-    val dsp = EventsDataSoureParams(
+    val dsp = EventsDataSourceParams(
       appId = 1,
       itypes = None,
       actions = Set("view", "like", "dislike", "conversion", "rate"),

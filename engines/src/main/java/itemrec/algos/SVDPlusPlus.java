@@ -1,6 +1,6 @@
-package io.prediction.examples.java.itemrec.algos;
+package io.prediction.engines.java.itemrec.algos;
 
-import io.prediction.examples.java.itemrec.data.PreparedData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
 
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -26,12 +26,12 @@ public class SVDPlusPlus
 
   @Override
   public Recommender buildRecommender(PreparedData data) throws TasteException {
-    int numFeatures = params.numFeatures;
-    double learningRate = params.learningRate;
-    double preventOverfitting = params.preventOverfitting;
-    double randomNoise = params.randomNoise;
-    int numIterations = params.numIterations;
-    double learningRateDecay = params.learningRateDecay;
+    int numFeatures = params.numFeatures();
+    double learningRate = params.learningRate();
+    double preventOverfitting = params.preventOverfitting();
+    double randomNoise = params.randomNoise();
+    int numIterations = params.numIterations();
+    double learningRateDecay = params.learningRateDecay();
 
     Recommender recommender = null;
     // TODO: handle Exception

@@ -1,4 +1,5 @@
-package io.prediction.examples.java.itemrec.algos;
+/*
+package io.prediction.engines.java.itemrec.algos;
 
 public class GenericItemBasedParams extends MahoutParams {
   String itemSimilarity;
@@ -10,8 +11,9 @@ public class GenericItemBasedParams extends MahoutParams {
     this.weighted = weighted;
   }
 
-  /* with default values */
+  // with default values
   public GenericItemBasedParams(int numRecommendations) {
     this(numRecommendations, GenericItemBased.LOG_LIKELIHOOD, false);
   }
 }
+*/

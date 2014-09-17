@@ -1,14 +1,14 @@
-package io.prediction.examples.java.itemrec;
+package io.prediction.engines.java.itemrec;
 
-import io.prediction.examples.java.itemrec.data.Query;
-import io.prediction.examples.java.itemrec.data.Actual;
-import io.prediction.examples.java.itemrec.data.Prediction;
-import io.prediction.examples.java.itemrec.data.TrainingData;
-import io.prediction.examples.java.itemrec.data.PreparedData;
-import io.prediction.examples.java.itemrec.algos.GenericItemBased;
-import io.prediction.examples.java.itemrec.algos.GenericItemBasedParams;
-import io.prediction.examples.java.itemrec.algos.SVDPlusPlus;
-import io.prediction.examples.java.itemrec.algos.SVDPlusPlusParams;
+import io.prediction.engines.java.itemrec.data.Query;
+import io.prediction.engines.java.itemrec.data.Actual;
+import io.prediction.engines.java.itemrec.data.Prediction;
+import io.prediction.engines.java.itemrec.data.TrainingData;
+import io.prediction.engines.java.itemrec.data.PreparedData;
+import io.prediction.engines.java.itemrec.algos.GenericItemBased;
+import io.prediction.engines.java.itemrec.algos.GenericItemBasedParams;
+import io.prediction.engines.java.itemrec.algos.SVDPlusPlus;
+import io.prediction.engines.java.itemrec.algos.SVDPlusPlusParams;
 import io.prediction.controller.java.JavaParams;
 import io.prediction.controller.java.EmptyParams;
 import io.prediction.controller.java.LJavaAlgorithm;
@@ -18,6 +18,8 @@ import io.prediction.controller.java.JavaEngineParams;
 import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.JavaWorkflow;
 import io.prediction.controller.java.WorkflowParamsBuilder;
+
+import io.prediction.controller.Params;
 
 import scala.Tuple2;
 import java.util.List;
@@ -46,7 +48,8 @@ public class Runner {
     ServingParams sp = new ServingParams();
 
     String algo;
-    JavaParams algoParams;
+    //JavaParams algoParams;
+    Params algoParams;
     if (algoName.equals("genericitembased")) {
       algo = "genericitembased";
       algoParams = genericItemBasedParams;
