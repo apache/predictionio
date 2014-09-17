@@ -59,7 +59,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
   val tableName = TableName.valueOf(namespace, "events")
-  val table = new HTable(client.conf, tableName)
+  //val table = new HTable(client.conf, tableName)
 
   // create table if not exist
   if (!client.admin.tableExists(tableName)) {
@@ -124,7 +124,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     Future {
-      val table = new HTable(client.conf, tableName)
+      //val table = new HTable(client.conf, tableName)
+      val table = client.connection.getTable(tableName)
       val rowKey = eventToRowKey(event)
       val eBytes = Bytes.toBytes("e")
       val put = new Put(Bytes.toBytes(rowKey), event.creationTime.getMillis)
@@ -212,9 +213,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   def futureGet(eventId: String)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] = {
       Future {
+        val table = client.connection.getTable(tableName)
         val get = new Get(Bytes.toBytes(eventId))
 
         val result = table.get(get)
+        table.close()
 
         if (!result.isEmpty()) {
           val event = resultToEvent(result)
@@ -229,9 +232,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   def futureDelete(eventId: String)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Boolean]] = {
     Future {
+      val table = client.connection.getTable(tableName)
       val rowKeyBytes = Bytes.toBytes(eventIdToRowKey(eventId))
       val exists = table.exists(new Get(rowKeyBytes))
       table.delete(new Delete(rowKeyBytes))
+      table.close()
       Right(exists)
     }
   }
@@ -240,9 +245,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
+        val table = client.connection.getTable(tableName)
         val (start, stop) = startStopRowKey(appId, None, None)
         val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
         val scanner = table.getScanner(scan)
+        table.close()
         Right(scanner.iterator().map { resultToEvent(_) })
       }
     }
@@ -252,10 +259,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
+        val table = client.connection.getTable(tableName)
         val (start, stop) = startStopRowKey(appId, startTime, untilTime)
-        println(start, stop)
         val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
         val scanner = table.getScanner(scan)
+        table.close()
         Right(scanner.iterator().map { resultToEvent(_) })
       }
   }
@@ -265,6 +273,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future[Either[StorageError, Unit]] = {
     Future {
       // TODO: better way to handle range delete
+      val table = client.connection.getTable(tableName)
       val (start, stop) = startStopRowKey(appId, None, None)
       val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
       val scanner = table.getScanner(scan)
@@ -274,6 +283,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
         table.delete(new Delete(result.getRow()))
       }
       scanner.close()
+      table.close()
       Right(())
     }
   }

@@ -5,7 +5,7 @@ set -e
 FWDIR="$(cd `dirname $0`; pwd)"
 DISTDIR="$FWDIR/dist"
 
-VERSION=$(grep version build.sbt | grep ThisBuild | grep -o '".*"' | sed 's/"//g')
+VERSION=$(grep version $FWDIR/build.sbt | grep ThisBuild | grep -o '".*"' | sed 's/"//g')
 
 echo "Building binary distribution for PredictionIO $VERSION..."
 

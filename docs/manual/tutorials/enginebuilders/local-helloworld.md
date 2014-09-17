@@ -108,9 +108,15 @@ Java code here...
 </div>
 </div>
 
-# Deploying the "HelloWorld" Engine
+# Deploying the "HelloWorld" Engine Instance
 
-After the new engine is created, it is time to deploy it and test it.
+After the new engine is built, it is time to deploy an engine instance of it.
+
+Create an Engine Instance project:
+
+```
+$ (TODO)
+```
 
 Prepare training data:
 

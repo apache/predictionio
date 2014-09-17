@@ -8,7 +8,7 @@
   href: "/tutorials/engines/quickstart.html"
 
 - title: "Collecting Data"
-  href: "/dataapi.html"
+  href: "/eventapi.html"
 
 - title: "Deploying an Engine Instance"
   href: "/engines/"

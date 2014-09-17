@@ -1,20 +1,22 @@
 ---
 layout: docs
-title: Data API
+title: Event API
 ---
 
-# Collecting Data through Data API
+# Collecting Data through Event API
 
-Data API server is designed to collect data into PredictionIO in an event-based
-style. All PredictionIO-compliant engines support the data store and data format
-used by the Data API.
+*Event Server* is designed to collect data into PredictionIO in an event-based
+style. Once the Event Server is launched, your application can send data to it through its *Event API* with HTTP requests or with the *EventClient* of PredictionIO's SDKs. 
 
+>All PredictionIO-compliant engines support the data store (i.e. HBase) and data format
+used by the Event Server.
 > You may also [modify DataSource](/cookbook/existingdatasource.html) of an
 engine to read data directly from your existing data store.
 
-## Launching the Data API Server
 
-> Before launching the Data API Server, make sure that your event data store
+## Launching the Event Server
+
+> Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, PredictionIO uses
 HBase, and a quick configuration can be found
 [here](/install/install-sourcecode.html#hbase).
@@ -26,7 +28,7 @@ PredictionIO.
 
 ```
 $ cd $PIO_HOME
-$ bin/pio dataapi
+$ bin/pio eventserver
 ```
 ### Check server status
 
@@ -46,7 +48,7 @@ Content-Length: 18
 {"status":"alive"}
 ```
 
-## Using the Data API
+## Using Event API
 
 ### Event Creation API
 
@@ -54,7 +56,7 @@ The event creation support many commonly used data.
 
 Field | Description
 :---- | :----------
-`appId` | Application ID for separating your data set between different
+`appId` | App ID for separating your data set between different
         | applications.
 `event` | Name of the event. (Examples: "sign-up", "rate", "view", "buy")
 `entityType` | The entity type. It is the namespace of the entityId and
@@ -91,14 +93,14 @@ Field | Description
 
     ```
     {
+      "appId" : 4,
       "event" : "$set",
       "entityType" : "user"
       "entityId" : "1",
       "properties" : {
         "birthday" : "1984-10-11",
         "address" : "1234 Street, San Francisco, CA 94107"
-      },
-      "appId" : 4
+      }
     }
     ```
 
@@ -108,6 +110,7 @@ Field | Description
 
     ```
     {
+      "appId" : 4,
       "event" : "rate",
       "entityType" : "user"
       "entityId" : "1",
@@ -115,12 +118,11 @@ Field | Description
       "targetEntityId" : "1"
       "properties" : {
         "rating" : 4.5
-      },
-      "appId" : 4
+      }
     }
     ```
 
-You may connect to the Data API with HTTP request or by using one of many
+You may connect to the Event Server with HTTP request or by using one of many
 **PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for your old data.
 
 ### Creating Your First Event
@@ -133,6 +135,8 @@ The following shows how one can create an event involving a single entity.
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
+  "predictionKey" : "my_prediction_key",
+  "appId" : 4,
   "event" : "my_event",
   "entityType" : "user"
   "entityId" : "uid",
@@ -146,8 +150,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   }
   "eventTime" : "2004-12-13T21:39:45.618-07:00",
   "tags" : ["tag1", "tag2"],
-  "appId" : 4,
-  "predictionKey" : "my_prediction_key",
   "creationTime" : "2014-09-01T21:39:45.618-08:00"
 }'
 {% endhighlight %}
@@ -178,6 +180,8 @@ The following shows how one can create an event involving two entities (with
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key",
   "event" : "my_event",
   "entityType" : "user",
   "entityId" : "uid",
@@ -189,8 +193,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "tags" : ["tag1", "tag2"],
-  "appId" : 4,
-  "predictionKey" : "my_prediction_key",
   "creationTime" : "2014-09-01T21:40:45.123+01:00"
 }'
 {% endhighlight %}

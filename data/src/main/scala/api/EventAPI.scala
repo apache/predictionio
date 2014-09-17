@@ -32,7 +32,7 @@ import spray.routing.Directives._
 
 import scala.concurrent.Future
 
-class DataServiceActor(val eventClient: Events) extends HttpServiceActor {
+class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
@@ -214,11 +214,11 @@ case class StartServer(
   val port: Int
 )
 
-class DataServerActor(val eventClient: Events) extends Actor {
+class EventServerActor(val eventClient: Events) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[DataServiceActor], eventClient),
-    "DataServiceActor")
+    Props(classOf[EventServiceActor], eventClient),
+    "EventServiceActor")
   implicit val system = context.system
 
   def receive = {
@@ -232,20 +232,20 @@ class DataServerActor(val eventClient: Events) extends Actor {
 }
 
 
-case class DataAPIConfig(
+case class EventServerConfig(
   ip: String = "localhost",
   port: Int = 7070
 )
 
-object DataAPI {
-  def createDataAPI(config: DataAPIConfig) = {
-    implicit val system = ActorSystem("DataAPISystem")
+object EventServer {
+  def createEventServer(config: EventServerConfig) = {
+    implicit val system = ActorSystem("EventServerSystem")
 
     val eventClient = Storage.getEventDataEvents
 
     val serverActor = system.actorOf(
-      Props(classOf[DataServerActor], eventClient),
-      "DataServerActor")
+      Props(classOf[EventServerActor], eventClient),
+      "EventServerActor")
     serverActor ! StartServer(config.ip, config.port)
     system.awaitTermination
 
@@ -256,7 +256,7 @@ object DataAPI {
 object Run {
 
   def main (args: Array[String]) {
-    DataAPI.createDataAPI(DataAPIConfig(
+    EventServer.createEventServer(EventServerConfig(
       ip = "localhost",
       port = 7070))
   }

@@ -63,7 +63,6 @@ object EventJson4sSupport {
           creationTime = creationTime
         )
       } catch {
-        case DataMapException(msg) => throw new MappingException(msg)
         case e: Exception => throw new MappingException(e.toString, e)
       }
     }
