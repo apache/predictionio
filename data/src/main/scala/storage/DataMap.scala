@@ -4,7 +4,11 @@ import org.json4s._
 
 import scala.collection.GenTraversableOnce
 
-case class DataMapException(msg: String) extends Exception
+case class DataMapException(msg: String, cause: Exception)
+  extends Exception(msg, cause) {
+
+  def this(msg: String) = this(msg, null)
+}
 
 case class DataMap (
   val fields: Map[String, JValue]

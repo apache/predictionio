@@ -25,7 +25,7 @@ object DetailedRunner {
         starttime = "pio_starttime",
         endtime = "pio_endtime",
         inactive = "pio_inactive",
-        rating = "pio_rate"
+        rating = "pio_rating"
       )
     )
 

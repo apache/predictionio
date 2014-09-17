@@ -25,3 +25,8 @@ PredictionIO runs on JVM, so it runs on most platforms. Choose your platform bel
 Upgrade Note:
 Upgrade instruction from 0.7 to 0.8 is coming soon.
 ```
+
+
+## Production Deployment
+
+For production environment setup, please refer to [Production Deployment](/production/deploy.html) guide. 

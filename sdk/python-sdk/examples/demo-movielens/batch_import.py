@@ -59,8 +59,8 @@ def batch_import_task(app_data, client, all_info=False):
     #client.arecord_user_action_on_item("rate",
     #  v.uid,
     #  v.iid,
-    #   { "pio_rate": v.rating },)
-    properties = { "pio_rate" : int(v.rating) }
+    #   { "pio_rating": v.rating },)
+    properties = { "pio_rating" : int(v.rating) }
     req = client.acreate_event({
       "event" : "rate",
       "entityType" : "pio_user",

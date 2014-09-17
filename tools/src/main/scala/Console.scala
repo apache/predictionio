@@ -7,8 +7,8 @@ import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
-import io.prediction.data.api.DataAPI
-import io.prediction.data.api.DataAPIConfig
+import io.prediction.data.api.EventServer
+import io.prediction.data.api.EventServerConfig
 
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
@@ -117,7 +117,10 @@ object Console extends Logging {
         )
       note("")
       cmd("register").
-        text("Build and register an engine at the current directory.").
+        text("Build and register an engine at the current directory.\n" +
+          "If the engine at the current directory is a PredictionIO\n" +
+          "built-in engine that is not part of PredictionIO's source tree,\n" +
+          "the build step will be skipped.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "register")
         } children(
@@ -249,10 +252,10 @@ object Console extends Logging {
           } text("Port to bind to. Default: 8000")
         )
       note("")
-      cmd("dataapi").
-        text("Launch a data api server at the specific IP and port.").
+      cmd("eventserver").
+        text("Launch an Event Server at the specific IP and port.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "dataapi",
+          c.copy(commands = c.commands :+ "eventserver",
             port = 7070)
         } children(
           opt[String]("ip") action { (x, c) =>
@@ -342,8 +345,8 @@ object Console extends Logging {
           undeploy(ca)
         case Seq("dashboard") =>
           dashboard(ca)
-        case Seq("dataapi") =>
-          dataapi(ca)
+        case Seq("eventserver") =>
+          eventserver(ca)
         case Seq("compile") =>
           compile(ca)
         case Seq("run") =>
@@ -437,13 +440,21 @@ object Console extends Logging {
   }
 
   def register(ca: ConsoleArgs): Unit = {
-    if (!RegisterEngine.builtinEngine(ca.common.engineJson)) {
+    if (builtinEngineDir ||
+      !RegisterEngine.builtinEngine(ca.common.engineJson)) {
       val sbt = detectSbt(ca)
       info(s"Using command '${sbt}' at the current working directory to build.")
       info("If the path above is incorrect, this process will fail.")
 
       val cmd =
-        s"${sbt} ${ca.sbtExtra.getOrElse("")} package assemblyPackageDependency"
+        if (builtinEngineDir)
+          Process(s"${sbt} ${ca.sbtExtra.getOrElse("")} engines/package " +
+            "engines/assemblyPackageDependency",
+          new File(ca.common.pioHome.get))
+        else
+          Process(s"${sbt} ${ca.sbtExtra.getOrElse("")} engines/package " +
+            "engines/assemblyPackageDependency")
+
       info(s"Going to run: ${cmd}")
       val r = cmd.!(ProcessLogger(
         line => info(line), line => error(line)))
@@ -518,9 +529,9 @@ object Console extends Logging {
       port = ca.port))
   }
 
-  def dataapi(ca: ConsoleArgs): Unit = {
-    info(s"Creating DataAPI server at ${ca.ip}:${ca.port}")
-    DataAPI.createDataAPI(DataAPIConfig(
+  def eventserver(ca: ConsoleArgs): Unit = {
+    info(s"Creating Event Server at ${ca.ip}:${ca.port}")
+    EventServer.createEventServer(EventServerConfig(
       ip = ca.ip,
       port = ca.port))
   }
@@ -695,7 +706,8 @@ object Console extends Logging {
     _.getName.toLowerCase.endsWith(".jar")
   }
 
-  def jarFilesForScala: Array[File] = jarFilesAt(new File("target")).
+  def jarFilesForScala: Array[File] = jarFilesAt(new File("target" +
+    File.separator + s"scala-${scalaVersionNoPatch}")).
     filterNot { f =>
       f.getName.toLowerCase.endsWith("-javadoc.jar") ||
       f.getName.toLowerCase.endsWith("-sources.jar")
@@ -735,4 +747,11 @@ object Console extends Logging {
 
   def joinFile(path: Seq[String]): String =
     path.mkString(File.separator)
+
+  def builtinEngineDir(): Boolean = {
+    val engineDir = new File(".." + File.separator + "engines").getCanonicalPath
+    val cwd = new File(".").getCanonicalPath
+    new File(".." + File.separator + "make-distribution.sh").exists &&
+      engineDir == cwd
+  }
 }

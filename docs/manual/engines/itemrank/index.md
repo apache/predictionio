@@ -13,32 +13,43 @@ With this engine, you can personalize a ranked list of items in your application
 
 ![Item Ranking Score Prediction](/images/engine-itemrec-prediction.png)
 
-In this batch-mode process, the engine predicts a preference score for every user-item pair. The scores are computed by the deployed algorithm in the engine.
+In this batch-mode process, the engine predicts a preference score for the queried items. The scores are computed by the deployed algorithm in the engine.
 
 ## Step 2: Rank the Query Items
 
-With the predicted scores, this engine can rank a list of items for the user according to your REST API/SDK queries. Ranked items will then be returned.
+With the predicted scores, this engine can rank a list of items for the user according to queries. Ranked items with scores will then be returned. Original order of the items is preserved if the algorithm couldn't predict the score.
+
+# Events Requirement
+
+This built-in engine requires the following Events data:
+
+Your Events data should involve two EntityTypes:
+- pio_user entity: the user of your application
+- pio_item entity: the item of your application
+  with following properties:
+  - pio_itypes: array of String
+  - pio_starttime: ISO 8601 timestamp
+  - pio_endtime: ISO 8601 timestamp
+  - pio_inactive: boolean
+
+and events between these two Entity Types:
+- user-to-item action events: such as like, rate and view.
+  optionally with following properties:
+  - pio_rating: integer rating
 
 
-# Data Input through Data API
 
-All built-in algorithms of this engine require the following data:
-
-* User data
-* Item data
-* User-to-item behavioral data, such as like, rate and view.
-
-> **Note: Extra User and Item Data Attributes**
-> 
-> Your user data may contain additional attributes, such as age and gender. Your item data may also contain other attributes, such as price and title. What kind of data attribute you need to provide to PredictionIO depends on the algorithm you choose to build the model.
+> **Note: Extra User and Item Entity Properties**
 >
-> Currently, all built-in algorithms in PreditionIO are Collaborative Filtering (CF) algorithms. CF algorithms derive the feature vectors of users and items from previous behaviors, i.e. score, only. Therefore, you simply need to identify each user and item with a unique ID. No extra data attribute is needed.
-> 
+> Your user data may contain additional properties, such as age and gender. Your item data may also contain other properties, such as price and title. What kind of data attribute you need to provide to PredictionIO depends on the algorithm you choose to build the model.
+>
+> Currently, all built-in algorithms in PredictionIO are Collaborative Filtering (CF) algorithms. CF algorithms derive the feature vectors of users and items from previous behaviors, i.e. score, only. Therefore, you simply need to identify each user and item with a unique ID. No extra data attribute is needed.
+>
 > It does not mean that CF algorithms are less accurate though. In fact, researches (such as this) show the exact opposite. An algorithm that requires no data attribute can be the winning algorithm.
 
 (TODO)
 
-# Prediction Query API
+# Item Ranking Engine API
 
 Item Ranking Engine supports the following query API endpoints:
 

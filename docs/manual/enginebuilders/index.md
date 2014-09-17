@@ -31,20 +31,42 @@ Algo1.predict Algo2.predict Algo3.predict <- (Query)
 ```
 
 
-### [D] Data
+A prediction **Engine** consists of the following controller components:
+**DataSource**, **Data Preparator**(Preparator), **Algorithm**, and **Serving**. Another component
+**Evaluation Metrics** is used to evaluate the *Engine*.
 
-Preparing the Data
+- *DataSource* is responsible for reading data from the source (Eg. database or
+  text file, etc) and prepare the **Training Data (TD)**.
+- *Data Preparator* takes the *Training Data* and generates **Prepared Data (PD)**
+  for the *Algorithm*
+- *Algorithm* takes the *Prepared Data* to train a **Model (M)** which is used
+  make **Prediction (P)** outputs based on input **Query (Q)**.
+- *Serving* serves the input *Query* with *Algorithm*'s *Prediction* outputs.
 
-### [A] Algorithm
+An **Engine Factory** is a factory which returns an *Engine* with the above
+components defined.
 
-Adding an Algorithm
+To evaluate a prediction *Engine*:
+- *DataSource* can also generate *Test Data* which is a list of input *Query*
+  and **Actual (A)** result.
+- *Metrics* computes the **Metric Result (MR)** by comparing the *Prediction*
+  output with the *Actual* result. PredictionIO feeds the input *Query* to the
+  *Engine* to get the *Prediction* outputs which are compared with *Actual*
+  results.
 
-### [S] Serving
+As you can see, the controller components (*DataSource, Preparator, Algorithm,
+Serving and Metrics*) are the building blocks of the data pipeline and the data
+types (*Training Data*, *Prepared Data*, *Model*, *Query*, *Prediction* and
+*Actual*) defines the types of data being passed between each component.
 
-Serving the prediction
+> Note that if the *Algorithm* can directly use *Training Data* without any
+pre-processing, the *Prepared Data* can be the same as *Training Data* and a
+default **Identity Preparator** can be used, which simply passes the *Training
+Data* as *Prepared Data*.
+>
+>Also, if there is only one *Algorithm* in the *Engine*, and there is no special
+post-processing on the *Prediction* outputs, a default **First Serving** can be
+use, which simply uses the *Algorithm*'s *Prediction* output to serve the query.
 
-### [E] Evaluation
 
-Adding an Evaluation Metrics
-
-
+It's time to build your first [HelloWorld Engine](/tutorials/enginebuilders/local-helloworld.html)!
