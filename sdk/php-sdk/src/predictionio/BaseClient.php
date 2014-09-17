@@ -3,6 +3,7 @@
 namespace predictionio;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 
 abstract class BaseClient {
   private $baseUrl;
@@ -26,8 +27,13 @@ abstract class BaseClient {
     $options = ['headers' => ['Content-Type' => 'application/json'],
                 'body' => $body]; 
     $request = $this->client->createRequest($method, $url, $options);
-    $response = $this->client->send($request);
-    return $response->json();
+
+    try {
+      $response = $this->client->send($request);
+      return $response->json();
+    } catch (ClientException $e) {
+      throw new PredictionIOAPIError($e->getMessage()); 
+    }
   }
 }
 ?>

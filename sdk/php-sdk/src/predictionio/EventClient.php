@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 class EventClient extends BaseClient {
   private $appId;
 
-  public function __construct($appId, $baseUrl="http://localhost:7070",
+  public function __construct($appId, $baseUrl='http://localhost:7070',
                               $timeout=0, $connectTimeout=5 ) {
     parent::__construct($baseUrl, $timeout, $connectTimeout);
     $this->appId = $appId;
@@ -23,7 +23,7 @@ class EventClient extends BaseClient {
         'properties' => $properties
     ]);
    
-    return $this->sendRequest("POST", "/events.json", $json);
+    return $this->sendRequest('POST', '/events.json', $json);
   }
 
   public function unsetUser($uid, array $properties=array()) {
@@ -36,7 +36,7 @@ class EventClient extends BaseClient {
         'properties' => $properties
     ]);
 
-    return $this->sendRequest("POST", "/events.json", $json);
+    return $this->sendRequest('POST', '/events.json', $json);
    }
 
   public function setItem($iid, array $properties=array()) {
@@ -49,7 +49,7 @@ class EventClient extends BaseClient {
         'properties' => $properties
     ]);
 
-    return $this->sendRequest("POST", "/events.json", $json);
+    return $this->sendRequest('POST', '/events.json', $json);
   }
 
   public function unsetItem($iid, array $properties=array()) {
@@ -62,7 +62,7 @@ class EventClient extends BaseClient {
         'properties' => $properties
     ]);
 
-    return $this->sendRequest("POST", "/events.json", $json);
+    return $this->sendRequest('POST', '/events.json', $json);
   }
 
   public function recordUserActionOnItem($event, $uid, $iid, 
@@ -78,7 +78,17 @@ class EventClient extends BaseClient {
         'properties' => $properties
     ]);
 
-    return $this->sendRequest("POST", "/events.json", $json);
+    return $this->sendRequest('POST', '/events.json', $json);
+  }
+
+  public function createEvent(array $data) {
+    $json = json_encode($data);
+
+    return $this->sendRequest('POST', '/events.json', $json);
+  }
+
+  public function getEvent($eventId) {
+    return $this->sendRequest('GET', "/events/$eventId.json", '');
   }
 }
 
