@@ -452,8 +452,8 @@ object Console extends Logging {
             "engines/assemblyPackageDependency",
           new File(ca.common.pioHome.get))
         else
-          Process(s"${sbt} ${ca.sbtExtra.getOrElse("")} engines/package " +
-            "engines/assemblyPackageDependency")
+          Process(s"${sbt} ${ca.sbtExtra.getOrElse("")} package " +
+            "assemblyPackageDependency")
 
       info(s"Going to run: ${cmd}")
       val r = cmd.!(ProcessLogger(
