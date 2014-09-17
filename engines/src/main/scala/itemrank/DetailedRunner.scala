@@ -40,7 +40,7 @@ object DetailedRunner {
     )
 
     val randomAlgoParams = new RandomAlgoParams()
-    val mahoutAlgoParams = new MahoutItemBasedAlgoParams(
+    val mahoutAlgoParams = new mahout.ItemBasedAlgoParams(
       booleanData = true,
       itemSimilarity = "LogLikelihoodSimilarity",
       weighted = false,
@@ -59,9 +59,9 @@ object DetailedRunner {
     val engineParams = new EngineParams(
       dataSourceParams = dsp,
       preparatorParams = pp,
-      algorithmParamsList = Seq(("mahout", mahoutAlgoParams)),
+      algorithmParamsList = Seq(("mahoutItemBased", mahoutAlgoParams)),
       // Seq(("rand", randomAlgoParams))
-      // Seq(("mahout", mahoutAlgoParams))
+      // Seq(("mahoutItemBased", mahoutAlgoParams))
       servingParams = sp
     )
 

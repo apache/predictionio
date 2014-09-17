@@ -1,6 +1,6 @@
 [
   {
-    "name": "mahout",
+    "name": "mahoutItemBased",
     "params": {
       "booleanData": true,
       "itemSimilarity": "LogLikelihoodSimilarity",

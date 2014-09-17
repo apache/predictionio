@@ -1,4 +1,4 @@
-package io.prediction.engines.itemrank.legacy;
+package io.prediction.engines.util.mahout;
 
 import org.apache.mahout.cf.taste.impl.recommender.AbstractCandidateItemsStrategy;
 import org.apache.mahout.cf.taste.common.TasteException;

@@ -44,7 +44,7 @@ object Runner {
     )
 
     val randomAlgoParams = new RandomAlgoParams()
-    val mahoutAlgoParams = new MahoutItemBasedAlgoParams(
+    val mahoutAlgoParams = new mahout.ItemBasedAlgoParams(
       booleanData = true,
       itemSimilarity = "LogLikelihoodSimilarity",
       weighted = false,
@@ -56,7 +56,7 @@ object Runner {
       freshnessTimeUnit = 86400,
       recommendationTime = Some(DateTime.now.millis)
     )
-    val legacyAlgoParams = new legacy.LegacyAlgorithmParams(
+    val ncMahoutAlgoParams = new ncmahout.ItemBasedAlgorithmParams(
       booleanData = true,
       itemSimilarity = "LogLikelihoodSimilarity",
       weighted = false,
@@ -74,10 +74,10 @@ object Runner {
     val engineParams = new EngineParams(
       dataSourceParams = dsp,
       preparatorParams = pp,
-      algorithmParamsList = Seq(("mahout", mahoutAlgoParams)),
+      algorithmParamsList = Seq(("mahoutItemBased", mahoutAlgoParams)),
       // Seq(("rand", randomAlgoParams))
-      // Seq(("mahout", mahoutAlgoParams))
-      // Seq(("legacy", legacyAlgoParams))
+      // Seq(("mahoutItemBased", mahoutAlgoParams))
+      // Seq(("ncMahoutItemBased", ncMahoutAlgoParams))
       servingParams = sp
     )
 

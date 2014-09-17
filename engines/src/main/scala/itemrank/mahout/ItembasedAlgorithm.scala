@@ -1,8 +1,12 @@
-package io.prediction.engines.itemrank
+package io.prediction.engines.itemrank.mahout
 
 import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
 import io.prediction.engines.util.MahoutUtil
+
+import io.prediction.engines.itemrank.PreparedData
+import io.prediction.engines.itemrank.Query
+import io.prediction.engines.itemrank.Prediction
 
 import java.io.File
 import java.io.FileWriter
@@ -35,7 +39,7 @@ import org.apache.mahout.cf.taste.impl.similarity.{
   UncenteredCosineSimilarity
 }
 
-class MahoutItemBasedAlgoParams(
+class ItemBasedAlgoParams(
   val booleanData: Boolean,
   val itemSimilarity: String,
   val weighted: Boolean,
@@ -48,7 +52,7 @@ class MahoutItemBasedAlgoParams(
   val recommendationTime: Option[Long]
 ) extends Params {}
 
-class MahoutItemBasedModel(
+class ItemBasedModel(
   val userHistory: Map[String, Set[(String, Int)]],
   val itemSim: Map[String, Seq[(String, Double)]]
 ) extends Serializable {
@@ -60,14 +64,14 @@ class MahoutItemBasedModel(
 }
 
 
-class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
-  extends LAlgorithm[MahoutItemBasedAlgoParams, PreparedData,
-  MahoutItemBasedModel, Query, Prediction] {
+class ItemBasedAlgorithm(params: ItemBasedAlgoParams)
+  extends LAlgorithm[ItemBasedAlgoParams, PreparedData,
+  ItemBasedModel, Query, Prediction] {
 
   var _minScore = 0.0
 
   override def train(
-    preparedData: PreparedData): MahoutItemBasedModel = {
+    preparedData: PreparedData): ItemBasedModel = {
       val numSimilarItems: Int = params.numSimilarItems
       val recommendationTime: Long = params.recommendationTime.getOrElse(
         DateTime.now.getMillis
@@ -134,13 +138,13 @@ class MahoutItemBasedAlgorithm(params: MahoutItemBasedAlgoParams)
             (usersMap(k).uid, history.toSet)
         }
 
-      new MahoutItemBasedModel (
+      new ItemBasedModel (
         userHistory = userHistoryMap,
         itemSim = itemSimMap
       )
   }
 
-  override def predict(model: MahoutItemBasedModel,
+  override def predict(model: ItemBasedModel,
     query: Query): Prediction = {
       val nearestK = params.nearestN
       val uid = query.uid

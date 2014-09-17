@@ -1,4 +1,4 @@
-package io.prediction.engines.itemrank.legacy
+package io.prediction.engines.itemrank.ncmahout
 
 import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
@@ -7,6 +7,8 @@ import io.prediction.engines.itemrank.PreparedData
 import io.prediction.engines.itemrank.Query
 import io.prediction.engines.itemrank.Prediction
 import io.prediction.engines.util.MahoutUtil
+import io.prediction.engines.util.mahout.KNNItemBasedRecommender
+import io.prediction.engines.util.mahout.AllValidItemsCandidateItemsStrategy
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.common.Weighting
@@ -30,7 +32,7 @@ import com.github.nscala_time.time.Imports._
 
 import scala.collection.JavaConversions._
 
-class LegacyAlgorithmParams(
+class ItemBasedAlgorithmParams(
   val booleanData: Boolean = true,
   val itemSimilarity: String = "LogLikelihoodSimilarity",
   val weighted: Boolean = false,
@@ -51,13 +53,13 @@ case class UserModel(
   val index: Long
 ) extends Serializable
 
-class LegacyAlgorithmModel(
+class ItemBasedAlgorithmModel(
   val dataModel: DataModel,
   val seenDataModel: DataModel,
   val validItemsMap: Map[Long, ItemModel],
   val usersMap: Map[String, UserModel],
   val itemCount: Int,
-  val params: LegacyAlgorithmParams
+  val params: ItemBasedAlgorithmParams
 ) extends Serializable {
 
   @transient lazy val logger = Logger[this.type]
@@ -133,16 +135,16 @@ class LegacyAlgorithmModel(
   }
 }
 
-/* Legacy Algo from 0.7 */
-class LegacyAlgorithm(params: LegacyAlgorithmParams)
-  extends LAlgorithm[LegacyAlgorithmParams, PreparedData,
-  LegacyAlgorithmModel, Query, Prediction] {
+/* ItemBased Algo from 0.7 */
+class ItemBasedAlgorithm(params: ItemBasedAlgorithmParams)
+  extends LAlgorithm[ItemBasedAlgorithmParams, PreparedData,
+  ItemBasedAlgorithmModel, Query, Prediction] {
 
   @transient lazy val logger = Logger[this.type]
   @transient lazy val recommendationTime = params.recommendationTime.getOrElse(
     DateTime.now.millis)
 
-  override def train(preparedData: PreparedData): LegacyAlgorithmModel = {
+  override def train(preparedData: PreparedData): ItemBasedAlgorithmModel = {
 
     val dataModel: DataModel = if (params.booleanData) {
       MahoutUtil.buildBooleanPrefDataModel(preparedData.rating.map { r =>
@@ -168,7 +170,7 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
       }
     val itemCount = preparedData.items.size
 
-    new LegacyAlgorithmModel(
+    new ItemBasedAlgorithmModel(
       dataModel,
       seenDataModel,
       validItemsMap,
@@ -178,7 +180,7 @@ class LegacyAlgorithm(params: LegacyAlgorithmParams)
     )
   }
 
-  override def predict(model: LegacyAlgorithmModel,
+  override def predict(model: ItemBasedAlgorithmModel,
     query: Query): Prediction = {
 
     val recomender = model.recommender
