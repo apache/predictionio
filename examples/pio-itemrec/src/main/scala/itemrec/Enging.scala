@@ -5,8 +5,8 @@ import io.prediction.controller.Engine
 
 import io.prediction.engines.itemrank.EventsDataSource
 
-import io.prediction.engines.itemrec.NewItemRecDataSource
-import io.prediction.engines.itemrec.NewItemRecPreparator
+//import io.prediction.engines.itemrec.NewItemRecDataSource
+//import io.prediction.engines.itemrec.NewItemRecPreparator
 import io.prediction.engines.java.itemrec.algos.GenericItemBased
 import io.prediction.engines.java.itemrec.algos.SVDPlusPlus
 import io.prediction.engines.java.itemrec.ItemRecServing

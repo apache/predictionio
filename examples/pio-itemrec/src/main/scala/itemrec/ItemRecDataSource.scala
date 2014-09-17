@@ -8,8 +8,8 @@ import io.prediction.engines.itemrank.EventsDataSource
 import io.prediction.engines.java.itemrec.data.Query
 import io.prediction.engines.java.itemrec.data.Actual
 
-case class DataSourceParams(
-  val eventsDataParams: EventsDataSourceParams
+//class DataSourceParams(
+//  val eventsDataParams: EventsDataSourceParams
   /*
   // TODO(yipjustin): Will add evaluation metrics afterwards.
 
@@ -20,11 +20,14 @@ case class DataSourceParams(
   // use MAP@k
   val k: Int 
   */
-) extends Params
+//) extends Params
 
-class NewItemRecDataSource(dsp: DataSourceParams)
+      //DataSourceParams,
+
+//class NewItemRecDataSource(dsp: DataSourceParams)
+class NewItemRecDataSource(dsp: EventsDataSourceParams)
   extends LDataSource[
-      DataSourceParams,
+      EventsDataSourceParams,
       EmptyParams,
       IRTrainingData,
       Query,
@@ -32,7 +35,8 @@ class NewItemRecDataSource(dsp: DataSourceParams)
 
   override def read()
   : Seq[(EmptyParams, IRTrainingData, Seq[(Query, Actual)])] = {
-    val irDataSource = new EventsDataSource(dsp.eventsDataParams)
+    //val irDataSource = new EventsDataSource(dsp.eventsDataParams)
+    val irDataSource = new EventsDataSource(dsp)
     val irTrainingData = irDataSource.readTraining()
 
     // Will generate testing set. For now, training only.

@@ -16,8 +16,9 @@ import io.prediction.engines.java.itemrec.ServingParams
 object Runner {
 
   def main(args: Array[String]) {
-    val dsp = DataSourceParams(
-      eventsDataParams = EventsDataSourceParams(
+    //val dsp = new DataSourceParams(
+    val dsp = 
+      EventsDataSourceParams(
         appId = 4,
         itypes = None,
         actions = Set("view", "like", "dislike", "conversion", "rate"),
@@ -33,7 +34,7 @@ object Runner {
           inactive = "pio_inactive",
           rating = "pio_rate"
         ))
-    )     
+    //)     
 
     val pp = new PreparatorParams(
       actions = Map(
