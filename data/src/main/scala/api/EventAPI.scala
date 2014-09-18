@@ -225,7 +225,7 @@ class EventServerActor(val eventClient: Events) extends Actor {
     case StartServer(host, portNum) => {
       IO(Http) ! Http.Bind(child, interface = host, port = portNum)
     }
-    case m: Http.Bound => log.info("Bound received. Server is ready.")
+    case m: Http.Bound => log.info("Bound received. EventServer is ready.")
     case m: Http.CommandFailed => log.error("Command failed.")
     case _ => log.error("Unknown message.")
   }

@@ -34,6 +34,8 @@ case class Event(
     "targetEntityType and targetEntityId must be specified together.")
   require(!((targetEntityType == None) && (targetEntityId != None)),
     "targetEntityType and targetEntityId must be specified together.")
+  require(!((event == "$unset") && properties.isEmpty),
+    "properties cannot be empty for $unset event")
 }
 
 
