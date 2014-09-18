@@ -5,11 +5,24 @@ title: Installation
 
 # Installing PredictionIO
 
-To get started, install PredictionIO Server and choose a SDK for your application.
+To get started, install PredictionIO Server and choose a SDK for your
+application.
+
+## Prerequisites
+
+It is **very important** to meet the minimum version of the following
+technologies that power PredictionIO.
+
+* Apache Hadoop 2.4.0 (required only if YARN and HDFS are needed)
+* Apache HBase 0.98.5
+* Apache Spark 1.1.0 for Hadoop 2.4
+* Elasticsearch 1.3.0
+* Java 7
 
 ## Installing PredictionIO Server
 
-PredictionIO runs on JVM, so it runs on most platforms. Choose your platform below:
+PredictionIO runs on JVM, so it runs on most platforms. Choose your platform
+below:
 
 [//]: # (* Deploying PredictionIO on Amazon Web Services)
 * [Installing PredictionIO on Linux](install-linux.html)
@@ -29,4 +42,4 @@ Upgrade instruction from 0.7 to 0.8 is coming soon.
 
 ## Production Deployment
 
-For production environment setup, please refer to [Production Deployment](/production/deploy.html) guide. 
+For production environment setup, please refer to [Production Deployment](/production/deploy.html) guide.

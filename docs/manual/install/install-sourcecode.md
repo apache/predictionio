@@ -82,8 +82,12 @@ $ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
 You will need to at least add a minimal configuration to HBase to start it in
 standalone mode. Details can be found
 [here](http://hbase.apache.org/book/quickstart.html). Here, we are showing a
-sample minimal configuration. Edit `conf/hbase-site.xml` and put the following
-in. You may replace `/home/abc` with your own home directory.
+sample minimal configuration.
+
+> For production deployment, run a fully distributed HBase configuration.
+
+Edit `conf/hbase-site.xml` and put the following in. You may replace `/home/abc`
+with your own home directory.
 
 ```
 <configuration>
@@ -113,4 +117,3 @@ $ bin/start-hbase.sh
 Now you have installed everything you need to run PredictionIO!
 
 Next: Reading [Quick Start](/tutorials/engines/quickstart.html)
-
