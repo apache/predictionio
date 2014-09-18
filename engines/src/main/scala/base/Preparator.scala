@@ -3,10 +3,6 @@ package io.prediction.engines.base
 import io.prediction.controller.LPreparator
 import io.prediction.controller.Params
 
-//import io.prediction.engines.base.RatingTD
-//import io.prediction.engines.base.TrainingData
-//import io.prediction.engines.base.PreparedData
-
 abstract class AbstractPreparatorParams extends Params {
   // how to map selected actions into rating value
   // use None if use U2IActionTD.v field

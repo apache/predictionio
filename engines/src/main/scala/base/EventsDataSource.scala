@@ -5,12 +5,6 @@ import io.prediction.controller.Params
 import io.prediction.controller.EmptyDataParams
 import io.prediction.data.view.LBatchView
 
-//import io.prediction.engines.base.AttributeNames
-//import io.prediction.engines.base.ItemTD
-//import io.prediction.engines.base.UserTD
-//import io.prediction.engines.base.U2IActionTD
-//import io.prediction.engines.base.TrainingData
-
 import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
