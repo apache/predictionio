@@ -6,10 +6,12 @@ title: Event API
 # Collecting Data through Event API
 
 *Event Server* is designed to collect data into PredictionIO in an event-based
-style. Once the Event Server is launched, your application can send data to it through its *Event API* with HTTP requests or with the *EventClient* of PredictionIO's SDKs. 
+style. Once the Event Server is launched, your application can send data to it
+through its *Event API* with HTTP requests or with the *EventClient* of
+PredictionIO's SDKs.
 
->All PredictionIO-compliant engines support the data store (i.e. HBase) and data format
-used by the Event Server.
+> All PredictionIO-compliant engines support the data store (i.e. HBase) and
+data format used by the Event Server.
 > You may also [modify DataSource](/cookbook/existingdatasource.html) of an
 engine to read data directly from your existing data store.
 
@@ -123,7 +125,8 @@ Field | Description
     ```
 
 You may connect to the Event Server with HTTP request or by using one of many
-**PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for your old data.
+**PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for
+your old data.
 
 ### Creating Your First Event
 
@@ -180,8 +183,21 @@ $ curl -i -X POST http://localhost:7070/events.json \
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
-{% highlight bash %}
-(TODO)
+{% highlight ruby %}
+require 'predictionio'
+
+event_client = PredictionIO::EventClient.new(4)
+event_client.create_event('my_event', 'user', 'uid',
+                          'predictionKey' => 'my_prediction_key',
+                          'eventTime' => '2004-12-13T21:39:45.618-07:00',
+                          'tags' => %w(tag1 tag2),
+                          'creationTime' => '2014-09-01T21:39:45.618-08:00',
+                          'properties' => { 'prop1' => 1,
+                                            'prop2' => 'value2',
+                                            'prop3' => [1, 2, 3],
+                                            'prop4' => true,
+                                            'prop5' => %w(a b c),
+                                            'prop6' => 4.56 })
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -233,7 +249,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
                         'entityId' => '8',
                         'targetEntityType' => 'pio_user',
                         'targetEntityId' => '2',
-                        'properties' => array('someProperty'=>'value1', 
+                        'properties' => array('someProperty'=>'value1',
                                               'anotherProperty'=>'value2'),
                         'tags' => array('tag1', 'tag2'),
                        ));
@@ -246,8 +262,19 @@ $ curl -i -X POST http://localhost:7070/events.json \
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
-{% highlight bash %}
-(TODO)
+{% highlight ruby %}
+require 'predictionio'
+
+event_client = PredictionIO::EventClient.new(4)
+event_client.create_event('my_event', 'user', 'uid',
+                          'targetEntityType' => 'item',
+                          'targetEntityId' => 'iid'
+                          'predictionKey' => 'my_prediction_key',
+                          'eventTime' => '2004-12-13T21:39:45.618Z',
+                          'tags' => %w(tag1 tag2),
+                          'creationTime' => '2014-09-01T21:40:45.123+01:00',
+                          'properties' => { 'someProperty' => 'value1',
+                                            'anotherProperty' => 'value2' })
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
