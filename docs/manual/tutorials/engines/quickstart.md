@@ -70,7 +70,7 @@ $ gem install predictionio
 </div>
 <div data-lang="Java SDK">
 {% highlight bash %}
-(TODO)
+(coming soon)
 {% endhighlight %}
 </div>
 </div>
@@ -216,7 +216,7 @@ $ ruby import.rb
 
 <div data-lang="Java SDK">
 {% highlight bash %}
-(TODO)
+(coming soon)
 {% endhighlight %}
 </div>
 </div>
@@ -356,7 +356,7 @@ $ ruby show.rb
 
 <div data-lang="Java SDK">
 {% highlight bash %}
-(TODO)
+(coming soon)
 {% endhighlight %}
 </div>
 </div>

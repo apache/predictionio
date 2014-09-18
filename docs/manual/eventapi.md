@@ -184,7 +184,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
-                        'properties' => array('prop1'=>1, 
+                        'properties' => array('prop1'=>1,
                                               'prop2'=>'value2',
                                               'prop3'=>array(1,2,3),
                                               'prop4'=>true,
@@ -238,7 +238,7 @@ event_client.create_event('my_event', 'user', 'uid',
 </div>
 <div data-lang="Java SDK">
 {% highlight bash %}
-(TODO)
+(coming soon)
 {% endhighlight %}
 </div>
 </div>
@@ -335,7 +335,7 @@ event_client.create_event('my_event', 'user', 'uid',
 </div>
 <div data-lang="Java SDK">
 {% highlight bash %}
-(TODO)
+(coming soon)
 {% endhighlight %}
 </div>
 </div>
