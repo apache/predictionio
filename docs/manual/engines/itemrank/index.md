@@ -228,7 +228,6 @@ Same as **Mahout Item Based Algorithm** *without* the following parameters:
       "weighted": false,
       "threshold": 4.9E-324,
       "nearestN": 10,
-      "unseenOnly" : false,
       "freshness" : 0,
       "freshnessTimeUnit" : 86400
     }

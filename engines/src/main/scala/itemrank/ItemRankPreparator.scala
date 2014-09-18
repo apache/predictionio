@@ -1,8 +1,22 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.controller.LPreparator
-import io.prediction.controller.Params
+//import io.prediction.controller.LPreparator
+//import io.prediction.controller.Params
 
+import io.prediction.engines.base
+//import io.prediction.engines.base.TrainingData
+//import io.prediction.engines.base.PreparedData
+
+case class PreparatorParams (
+  // how to map selected actions into rating value
+  // use None if use U2IActionTD.v field
+  val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
+  val conflict: String // conflict resolution, "latest" "highest" "lowest"
+) extends base.AbstractPreparatorParams {
+  val seenActions = Set[String]() // seenActions not applicable in itemrank
+}
+
+/*
 class PreparatorParams (
   // how to map selected actions into rating value
   // use None if use U2IActionTD.v field
@@ -10,8 +24,12 @@ class PreparatorParams (
   val conflict: String // conflict resolution, "latest" "highest" "lowest"
 ) extends Params {
   override def toString = s"${actions} ${conflict}"
-}
+}*/
 
+class ItemRankPreparator(pp: PreparatorParams)
+  extends base.Preparator(pp)
+
+/*
 class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
     PreparatorParams, TrainingData, PreparedData] {
 
@@ -66,3 +84,4 @@ class ItemRankPreparator(pp: PreparatorParams) extends LPreparator[
     }
   }
 }
+*/

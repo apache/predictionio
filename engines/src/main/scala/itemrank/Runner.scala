@@ -5,6 +5,8 @@ import io.prediction.controller.EngineParams
 import io.prediction.controller.Workflow
 import io.prediction.controller.WorkflowParams
 
+import io.prediction.engines.base.AttributeNames
+
 import com.github.nscala_time.time.Imports._
 
 object Runner {
@@ -56,13 +58,13 @@ object Runner {
       freshnessTimeUnit = 86400,
       recommendationTime = Some(DateTime.now.millis)
     )
-    val ncMahoutAlgoParams = new ncmahout.ItemBasedAlgorithmParams(
+    val ncMahoutAlgoParams = new NCItemBasedAlgorithmParams(
       booleanData = true,
       itemSimilarity = "LogLikelihoodSimilarity",
       weighted = false,
       threshold = Double.MinPositiveValue,
       nearestN = 10,
-      unseenOnly = false,
+      //unseenOnly = false,
       freshness = 0,
       freshnessTimeUnit = 86400,
       recommendationTime = Some(DateTime.now.millis)

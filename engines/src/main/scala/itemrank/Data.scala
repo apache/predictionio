@@ -1,9 +1,11 @@
 package io.prediction.engines.itemrank
 
+import io.prediction.engines.util
+
 import com.github.nscala_time.time.Imports._
 
 /* this engine require following attributes */
-case class AttributeNames(
+/*case class AttributeNames(
   val user: String, // name of user entityType
   val item: String, // name of item entityType
   val u2iActions: Set[String], // event name of the u2i actions
@@ -12,9 +14,10 @@ case class AttributeNames(
   val endtime: String, // name of endtime attribute, DateTime
   val inactive: String, // name of item inactive property. boolean
   val rating: String // name of rating property. integer rating
-)
+)*/
 
 /* Training Data */
+/*
 class ItemTD(
   val iid: String,
   val itypes: Seq[String],
@@ -22,14 +25,16 @@ class ItemTD(
   val endtime: Option[Long],
   val inactive: Boolean) extends Serializable {
     override def toString = s"${iid}"
-  }
+  }*/
 
+/*
 class UserTD(
   val uid: String
 ) extends Serializable {
   override def toString = s"${uid}"
 }
-
+*/
+/*
 class U2IActionTD(
   val uindex: Int,
   val iindex: Int,
@@ -38,8 +43,8 @@ class U2IActionTD(
   val t: Long // action time
 ) extends Serializable {
   override def toString = s"${uindex} ${iindex} ${action}"
-}
-
+}*/
+/*
 class TrainingData(
     val users: Map[Int, UserTD], // uindex->uid
     val items: Map[Int, ItemTD], // iindex->itemTD
@@ -48,7 +53,8 @@ class TrainingData(
     override def toString = s"TrainingData:" +
       s"${users.take(2)}... ${items.take(2)}... ${u2iActions.take(2)}..."
   }
-
+*/
+/*
 class RatingTD(
   val uindex: Int,
   val iindex: Int,
@@ -56,7 +62,8 @@ class RatingTD(
   val t: Long) extends Serializable {
     override def toString = s"RatingTD: ${uindex} ${iindex} ${rating}"
   }
-
+*/
+/*
 class PreparedData(
   val users: Map[Int, UserTD],
   val items: Map[Int, ItemTD],
@@ -66,6 +73,7 @@ class PreparedData(
   override def toString = s"U: ${users.take(2)}..." +
    s" I: ${items.take(2)}... R: ${rating.take(2)}..."
 }
+*/
 
 case class Query(
     val uid: String,

@@ -1,10 +1,16 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.controller.LDataSource
+/*import io.prediction.controller.LDataSource
 import io.prediction.controller.Params
 import io.prediction.controller.EmptyDataParams
-import io.prediction.data.view.LBatchView
+import io.prediction.data.view.LBatchView*/
 
+import io.prediction.engines.base
+/*import io.prediction.engines.base.ItemTD
+import io.prediction.engines.base.UserTD
+import io.prediction.engines.base.U2IActionTD
+import io.prediction.engines.base.TrainingData
+*/
 import org.joda.time.DateTime
 
 case class EventsDataSourceParams(
@@ -15,10 +21,26 @@ case class EventsDataSourceParams(
   val actions: Set[String],
   val startTime: Option[DateTime] = None, // event starttime
   val untilTime: Option[DateTime] = None, // event untiltime
+  val attributeNames: base.AttributeNames
+) extends base.AbstractEventsDataSourceParams
+
+/*
+case class EventsDataSourceParams(
+  val appId: Int,
+  // default None to include all itypes
+  val itypes: Option[Set[String]] = None, // train items with these itypes
+  // actions for training
+  val actions: Set[String],
+  val startTime: Option[DateTime] = None, // event starttime
+  val untilTime: Option[DateTime] = None, // event untiltime
   val attributeNames: AttributeNames
 ) extends Params
+*/
 
+class EventsDataSource(dsp: EventsDataSourceParams)
+  extends base.EventsDataSource[DataParams, Query, Actual](dsp)
 
+/*
 class EventsDataSource(dsp: EventsDataSourceParams)
   extends LDataSource[EventsDataSourceParams,
     DataParams, TrainingData, Query, Actual] {
@@ -90,3 +112,4 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     )
   }
 }
+*/
