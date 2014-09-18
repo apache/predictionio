@@ -8,7 +8,7 @@ abstract class AbstractPreparatorParams extends Params {
   // use None if use U2IActionTD.v field
   val actions: Map[String, Option[Int]] // ((view, 1), (rate, None))
   val seenActions: Set[String] // (view, conversion)
-  // conflict resolution, "latest" "highest" "lowest"
+  // conflict resolution, "latest" "highest" "lowest" "sum"
   val conflict: String
 }
 
@@ -18,6 +18,7 @@ class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"
   final val CONFLICT_LOWEST: String = "lowest"
+  final val CONFLICT_SUM: String = "sum"
 
   override def prepare(trainingData: TrainingData): PreparedData = {
 
@@ -71,6 +72,11 @@ class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
       case CONFLICT_LATEST  => if (a.t > b.t) a else b
       case CONFLICT_HIGHEST => if (a.rating > b.rating) a else b
       case CONFLICT_LOWEST  => if (a.rating < b.rating) a else b
+      case CONFLICT_SUM => new RatingTD(
+        uindex = a.uindex,
+        iindex = a.iindex,
+        rating = a.rating + b.rating,
+        t = math.max(a.t, b.t)) // keep latest timestamp
     }
   }
 }
