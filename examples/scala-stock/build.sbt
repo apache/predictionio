@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"),
   "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
-  "org.json4s"        %% "json4s-native"  % "3.2.6",
+  "org.json4s"        %% "json4s-native"  % "3.2.10",
   "org.scala-saddle"  %% "saddle-core"    % "1.3.2"
     exclude("ch.qos.logback", "logback-classic"),
   "org.scalanlp"      %% "breeze"         % "0.7",
