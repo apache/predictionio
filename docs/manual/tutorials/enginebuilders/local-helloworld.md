@@ -22,10 +22,7 @@ Now you need to edit 'src/main/scala/Engine.scala'
 </div>
 <div data-lang="Java">
 {% highlight bash %}
-$ pio new --java HelloWorld
-$ cd HelloWorld
-
-Now you need to edit 'HelloWorld.java'
+TODO
 {% endhighlight %}
 </div>
 </div>
@@ -46,7 +43,23 @@ class MyTrainingData(
 </div>
 <div data-lang="Java">
 {% highlight java %}
-Java code here...
+public class MyTrainingData implements Serializable {
+  List<DayTemperature> temperatures;
+
+  public MyTrainingData(List<DayTemperature> temperatures) {
+    this.temperatures = temperatures;
+  }
+
+  public static class DayTemperature implements Serializable {
+    String day;
+    Double temperature;
+
+    public DayTemperature(String day, Double temperature) {
+      this.day = day;
+      this.temperature = temperature;
+    }
+  }
+}
 {% endhighlight %}
 </div>
 </div>
@@ -63,7 +76,13 @@ class MyQuery(
 </div>
 <div data-lang="Java">
 {% highlight java %}
-Java code here...
+public class MyQuery implements Serializable {
+  String day;
+
+  public MyQuery(String day) {
+    this.day = day;
+  }
+}
 {% endhighlight %}
 </div>
 </div>
@@ -84,7 +103,18 @@ class MyModel(
 </div>
 <div data-lang="Java">
 {% highlight java %}
-Java code here...
+public class MyModel implements Serializable {
+  Map<String, Double> temperatures;
+
+  public MyModel(Map<String, Double> temperatures) {
+    this.temperatures = temperatures;
+  }
+
+  @Override
+  public String toString() {
+    return temperatures.toString();
+  }
+}
 {% endhighlight %}
 </div>
 </div>
@@ -100,7 +130,13 @@ class MyPrediction(
 </div>
 <div data-lang="Java">
 {% highlight java %}
-Java code here...
+public class MyPrediction implements Serializable {
+  Double temperature;
+
+  public MyPrediction(Double temperature) {
+    this.temperature = temperature;
+  }
+}
 {% endhighlight %}
 </div>
 </div>
@@ -128,7 +164,32 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
 </div>
 <div data-lang="Java">
 {% highlight java %}
-Java code here...
+public class MyDataSource extends LJavaDataSource<
+  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActual> {
+
+  @Override
+  public MyTrainingData readTraining() {
+    List<MyTrainingData.DayTemperature> temperatures =
+                  new ArrayList<MyTrainingData.DayTemperature>();
+
+    try {
+      BufferedReader reader = 
+                    new BufferedReader(new FileReader("path/to/data.csv"));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] tokens = line.split(",");
+        temperatures.add(
+          new MyTrainingData.DayTemperature(tokens[0], 
+                            Double.parseDouble(tokens[1])));
+      }
+      reader.close();
+    } catch (Exception e) {
+      System.exit(1);
+    }
+
+    return new MyTrainingData(temperatures);
+  }
+}
 {% endhighlight %}
 </div>
 </div>
@@ -164,7 +225,44 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
 </div>
 <div data-lang="Java">
 {% highlight java %}
-Java code here...
+public class MyAlgorithm extends LJavaAlgorithm<
+  EmptyAlgorithmParams, MyTrainingData, MyModel, MyQuery, MyPrediction> {
+
+  @Override
+  public MyModel train(MyTrainingData data) {
+    Map<String, Double> sumMap = new HashMap<String, Double>();
+    Map<String, Integer> countMap = new HashMap<String, Integer>();
+
+    // calculate sum and count for each day
+    for (MyTrainingData.DayTemperature temp : data.temperatures) {
+      Double sum = sumMap.get(temp.day);
+      Integer count = countMap.get(temp.day);
+      if (sum == null) {
+        sumMap.put(temp.day, temp.temperature);
+        countMap.put(temp.day, 1);
+      } else {
+        sumMap.put(temp.day, sum + temp.temperature);
+        countMap.put(temp.day, count + 1);
+      }
+    }
+
+    // calculate the average
+    Map<String, Double> averageMap = new HashMap<String, Double>();
+    for (Map.Entry<String, Double> entry : sumMap.entrySet()) {
+      String day = entry.getKey();
+      Double average = entry.getValue() / countMap.get(day);
+      averageMap.put(day, average);
+    }
+
+    return new MyModel(averageMap);
+  }
+
+  @Override
+  public MyPrediction predict(MyModel model, MyQuery query) {
+    Double temp = model.temperatures.get(query.day);
+    return new MyPrediction(temp);
+  }
+}
 {% endhighlight %}
 </div>
 </div>
