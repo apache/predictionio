@@ -3,8 +3,6 @@ package io.prediction.engines.base.mahout
 import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
 
-//import io.prediction.engines.itemrank.Query
-//import io.prediction.engines.itemrank.Prediction
 import io.prediction.engines.util.MahoutUtil
 //import io.prediction.engines.base.mahout.KNNItemBasedRecommender
 //import io.prediction.engines.base.mahout.AllValidItemsCandidateItemsStrategy
@@ -155,7 +153,14 @@ abstract class AbstractNCItemBasedAlgorithm[Q : Manifest, P](
     }
 
     // don't have seperated seen actions data for now
-    val seenDataModel: DataModel = dataModel
+    val seenDataModel: DataModel = preparedData.seenU2IActions.map {
+      seenU2IActions =>
+        if (seenU2IActions.isEmpty)
+          null
+        else
+          MahoutUtil.buildBooleanPrefDataModel(seenU2IActions.map { a =>
+            (a.uindex, a.iindex, a.t) })
+    }.getOrElse(dataModel)
 
     val validItemsMap: Map[Long, ItemModel] = preparedData.items
       .map{ case (k, v) =>

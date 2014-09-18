@@ -63,7 +63,7 @@ class PreparedData(
   val items: Map[Int, ItemTD],
   val rating: Seq[RatingTD],
   val ratingOriginal: Seq[RatingTD], // Non-deduped ratings
-  val seenU2IActions: Seq[U2IActionTD] = Seq()
+  val seenU2IActions: Option[Seq[U2IActionTD]] // actions for unseen filtering
 ) extends Serializable {
   override def toString = s"U: ${users.take(2)}..." +
    s" I: ${items.take(2)}... R: ${rating.take(2)}..."

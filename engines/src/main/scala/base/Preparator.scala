@@ -8,7 +8,8 @@ abstract class AbstractPreparatorParams extends Params {
   // use None if use U2IActionTD.v field
   val actions: Map[String, Option[Int]] // ((view, 1), (rate, None))
   val seenActions: Set[String] // (view, conversion)
-  val conflict: String // conflict resolution, "latest" "highest" "lowest"
+  // conflict resolution, "latest" "highest" "lowest"
+  val conflict: String
 }
 
 class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
@@ -48,12 +49,19 @@ class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
       }.values
       .toList
 
+    val seenU2IActions = if (pp.seenActions.isEmpty)
+      None
+    else {
+      Some(trainingData.u2iActions
+        .filter(u2i => pp.seenActions.contains(u2i.action)))
+    }
+
     new PreparedData(
       users = trainingData.users,
       items = trainingData.items,
       rating = ratingReduced,
       ratingOriginal = u2iRatings,
-      seenU2IActions = Seq() // TODO: filter seen U2I
+      seenU2IActions = seenU2IActions
     )
   }
 
