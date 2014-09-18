@@ -1,7 +1,7 @@
 package io.prediction.engines.itemrank
 
-import io.prediction.controller.LPreparator
-import io.prediction.controller.Params
+//import io.prediction.controller.LPreparator
+//import io.prediction.controller.Params
 
 import io.prediction.engines.base
 //import io.prediction.engines.base.TrainingData

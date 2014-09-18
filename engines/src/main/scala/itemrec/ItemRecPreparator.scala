@@ -1,37 +1,15 @@
 package io.prediction.engines.itemrec
 
-import io.prediction.controller._
+import io.prediction.engines.base
 
-// We reuse the sample business logic as in ItemRankPreparator. Will refactor
-// this code into a common util package.
-
-import io.prediction.engines.itemrank.PreparatorParams
-import io.prediction.engines.itemrank.ItemRankPreparator
-import io.prediction.engines.base.{ PreparedData => IRPreparedData }
-import io.prediction.engines.base.{ TrainingData => IRTrainingData }
-
-import org.apache.mahout.cf.taste.model.DataModel
-import io.prediction.engines.util.MahoutUtil;
-
-import io.prediction.engines.java.itemrec.data.PreparedData
+case class PreparatorParams (
+  // how to map selected actions into rating value
+  // use None if use U2IActionTD.v field
+  val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
+  val seenActions: Set[String],
+  val conflict: String // conflict resolution, "latest" "highest" "lowest"
+) extends base.AbstractPreparatorParams
 
 
-class NewItemRecPreparator(pp: PreparatorParams)
-  extends LPreparator[
-      PreparatorParams,
-      IRTrainingData,
-      PreparedData] {
-
-  val irPreparator = new ItemRankPreparator(pp)
-
-  override def prepare(irTrainingData: IRTrainingData): PreparedData = {
-    val irPreparedData: IRPreparedData = irPreparator.prepare(irTrainingData)
-
-    val ratings: Seq[(Int, Int, Float, Long)] = irPreparedData.rating
-    .map { r => (r.uindex, r.iindex, r.rating.toFloat, r.t) }
-
-    val dataModel = MahoutUtil.buildDataModel(ratings)
-    new PreparedData(dataModel)
-  }
-
-}
+class ItemRecPreparator(pp: PreparatorParams)
+  extends base.Preparator(pp)
