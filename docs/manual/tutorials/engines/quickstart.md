@@ -27,7 +27,8 @@ $ cd quickstartapp
 
 # Install SDK
 
-To communicate with PredictionIO server, we can use a PredictionIO SDK of a specific programming language:
+To communicate with PredictionIO server, we can use a PredictionIO SDK of a
+specific programming language:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -64,7 +65,7 @@ $ easy_install predictionio
 </div>
 <div data-lang="Ruby SDK">
 {% highlight bash %}
-(TODO)
+$ gem install predictionio
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -79,17 +80,18 @@ $ easy_install predictionio
 
 ## Launch the Event Server
 
-```
+{% highlight bash %}
 $ $PIO_HOME/bin/pio eventserver
-```
+{% endhighlight %}
 where `$PIO_HOME` is the installation directory of PredictionIO. As long as the
 Event Server is running, PredictionIO keeps listening to new data.
 
 ## Collecting Data
 
 We are going to write a script that generates some random data and simulates
-data collection. With the *EventClient* of one of the PredictionIO SDKs, your application can send data to the Event Server in real-time easily through the [EventAPI](/eventapi.html).
-In the *quickstartapp* directory:
+data collection. With the *EventClient* of one of the PredictionIO SDKs, your
+application can send data to the Event Server in real-time easily through the
+[EventAPI](/eventapi.html). In the *quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -132,7 +134,8 @@ $ php import.php
 </div>
 
 <div data-lang="Python SDK">
-<p>Create <em>import.py</em> as below. Replace <code>your_app_id</code> with your app id (integer).
+<p>Create <em>import.py</em> as below. Replace <code>your_app_id</code> with
+your app id (integer).</p>
 
 {% highlight python %}
 
@@ -175,8 +178,39 @@ $ python import.py
 </div>
 
 <div data-lang="Ruby SDK">
+<p>Create <em>import.rb</em> as below. Replace <code>your_app_id</code> with
+your app id (integer).</p>
+
+{% highlight ruby %}
+require 'predictionio'
+
+# Instantiate an EventClient
+client = PredictionIO::EventClient.new(your_app_id)
+
+# Generate 10 users, with user IDs 1 to 10.
+(1..10).each do |uid|
+  puts "Add user #{uid}"
+  client.set_user(uid)
+end
+
+# Generate 50 items, with item IDs 1 to 10.
+(1..50).each do |iid|
+  puts "Add item #{iid}"
+  client.set_item(iid, 'pio_itypes' => %w(1))
+end
+
+# Each user randomly views 10 items.
+(1..10).each do |uid|
+  (1..10).each do |count|
+    iid = Random.rand(51)
+    puts "User #{uid} views item #{iid}"
+    client.record_user_action_on_item('view', uid.to_s, iid.to_s)
+  end
+end
+{% endhighlight %}
+and run it:
 {% highlight bash %}
-(TODO)
+$ ruby import.rb
 {% endhighlight %}
 </div>
 
@@ -236,8 +270,9 @@ we are ready to take a look at the results!
 
 # Retrieve Prediction Results
 
-With the *EngineClients* of a PredictionIO SDK, your application can send queries to a deployed engine instance through the Engine API.
-In the *quickstartapp* directory:
+With the *EngineClients* of a PredictionIO SDK, your application can send
+queries to a deployed engine instance through the Engine API. In the
+*quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -252,7 +287,7 @@ In the *quickstartapp* directory:
 
     // Rank item 1 to 5 for each user
     for ($i=1; $i<=10; $i++) {
-      $response=$client->sendQuery(array('uid'=>$i, 
+      $response=$client->sendQuery(array('uid'=>$i,
                            'iids'=>array(1,2,3,4,5)));
       print_r($response);
     }
@@ -293,15 +328,29 @@ client.close()
 
 and run it:
 
-{% highlight python %}
+{% highlight bash %}
 $ python show.py
 {% endhighlight %}
 
 </div>
 
 <div data-lang="Ruby SDK">
+<p>Create a file <em>show.rb</em> with this code:</p>
+{% highlight ruby %}
+require 'predictionio'
+
+client = PredictionIO::EngineClient.new
+
+(1..10).each do |uid|
+  predictions = client.send_query('uid' => uid.to_s, 'iids' => %w(1 2 3 4 5))
+  puts predictions
+end
+{% endhighlight %}
+
+and run it:
+
 {% highlight bash %}
-(TODO)
+$ ruby show.rb
 {% endhighlight %}
 </div>
 
