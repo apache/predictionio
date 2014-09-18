@@ -15,19 +15,19 @@ import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
 
-class EventsDataSourceParams(
-  val appId: Int,
+abstract class AbstractEventsDataSourceParams extends Params {
+  val appId: Int
   // default None to include all itypes
-  val itypes: Option[Set[String]] = None, // train items with these itypes
-  val actions: Set[String], // actions for trainingdata
-  val startTime: Option[DateTime] = None, // event starttime
-  val untilTime: Option[DateTime] = None, // event untiltime
+  val itypes: Option[Set[String]] // train items with these itypes
+  val actions: Set[String] // actions for trainingdata
+  val startTime: Option[DateTime] // event starttime
+  val untilTime: Option[DateTime] // event untiltime
   val attributeNames: AttributeNames
-) extends Params
+}
 
-
-abstract class EventsDataSource[DP: ClassTag, Q, A](dsp: EventsDataSourceParams)
-  extends LDataSource[EventsDataSourceParams,
+class EventsDataSource[DP: ClassTag, Q, A](
+  dsp: AbstractEventsDataSourceParams)
+  extends LDataSource[AbstractEventsDataSourceParams,
     DP, TrainingData, Q, A] {
 
   @transient lazy val batchView = new LBatchView(dsp.appId,

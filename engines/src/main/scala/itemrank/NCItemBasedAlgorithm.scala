@@ -1,14 +1,16 @@
-package io.prediction.engines.itemrank.ncmahout
+package io.prediction.engines.itemrank
 
 import io.prediction.controller.Params
 import io.prediction.controller.LAlgorithm
 
-import io.prediction.engines.itemrank.Query
-import io.prediction.engines.itemrank.Prediction
+//import io.prediction.engines.itemrank.Query
+//import io.prediction.engines.itemrank.Prediction
 import io.prediction.engines.util.MahoutUtil
 import io.prediction.engines.base.mahout.KNNItemBasedRecommender
 import io.prediction.engines.base.mahout.AllValidItemsCandidateItemsStrategy
 import io.prediction.engines.base.PreparedData
+import io.prediction.engines.base.mahout.NCItemBasedAlgorithmModel
+import io.prediction.engines.base
 
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.common.Weighting
@@ -32,18 +34,21 @@ import com.github.nscala_time.time.Imports._
 
 import scala.collection.JavaConversions._
 
-class ItemBasedAlgorithmParams(
+case class NCItemBasedAlgorithmParams(
   val booleanData: Boolean = true,
   val itemSimilarity: String = "LogLikelihoodSimilarity",
   val weighted: Boolean = false,
   val threshold: Double = Double.MinPositiveValue,
   val nearestN: Int = 10,
-  val unseenOnly: Boolean = false,
+  //val unseenOnly: Boolean = false,
   val freshness: Int = 0,
   val freshnessTimeUnit: Int = 86400,
   val recommendationTime: Option[Long] = Some(DateTime.now.millis)
-) extends Params {}
+) extends base.mahout.AbstractItemBasedAlgorithmParams {
+  val unseenOnly = false
+}
 
+/*
 case class ItemModel(
   val id: String,
   val starttime: Long
@@ -52,7 +57,8 @@ case class ItemModel(
 case class UserModel(
   val index: Long
 ) extends Serializable
-
+*/
+/*
 class ItemBasedAlgorithmModel(
   val dataModel: DataModel,
   val seenDataModel: DataModel,
@@ -133,9 +139,68 @@ class ItemBasedAlgorithmModel(
       } else originalScore
     }
   }
+}*/
+
+
+class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
+  extends base.mahout.AbstractNCItemBasedAlgorithm[Query, Prediction](params) {
+
+  override
+  def predict(model: NCItemBasedAlgorithmModel,
+    query: Query): Prediction = {
+
+    val recomender = model.recommender
+    val rec: List[RecommendedItem] = model.usersMap.get(query.uid)
+      .map { user =>
+        val uindex = user.index
+        // List[RecommendedItem] // getItemID(), getValue()
+        try {
+          if (params.freshness != 0)
+            recomender.recommend(uindex, model.itemCount,
+              model.freshnessRescorer).toList
+          else
+            recomender.recommend(uindex, model.itemCount).toList
+        } catch {
+          case e: NoSuchUserException => {
+            logger.info(
+              s"NoSuchUserException ${query.uid} (index ${uindex}) in model.")
+            List()
+          }
+          case e: Throwable => throw new RuntimeException(e)
+        }
+      }.getOrElse{
+        logger.info(s"Unknow user id ${query.uid}")
+        List()
+      }
+
+    val all: Seq[(String, Double)] = rec.map { r =>
+      val iid = model.validItemsMap(r.getItemID()).id
+      (iid, r.getValue().toDouble)
+    }
+    // following adopted from 0.7 serving output logic
+    /**
+     * If no recommendations found for this user, simply return the original
+     * list.
+     */
+    val iids = query.iids
+    val iidsSet = iids.toSet
+    val ranked: Seq[(String, Double)] = all.filter( r =>
+      iidsSet(r._1)
+    )
+
+    //val (rankedIids, rankedScores) = ranked.unzip
+    val rankedIidsSet = ranked.map(_._1).toSet
+    val unranked = iids.filterNot(x => rankedIidsSet(x))
+
+    new Prediction(
+      items = (ranked ++ (unranked.map(i => (i, Double.NaN)))),
+      isOriginal = (ranked.size == 0)
+    )
+  }
 }
 
 /* ItemBased Algo from 0.7 */
+/*
 class ItemBasedAlgorithm(params: ItemBasedAlgorithmParams)
   extends LAlgorithm[ItemBasedAlgorithmParams, PreparedData,
   ItemBasedAlgorithmModel, Query, Prediction] {
@@ -213,10 +278,10 @@ class ItemBasedAlgorithm(params: ItemBasedAlgorithmParams)
       (iid, r.getValue().toDouble)
     }
     // following adopted from 0.7 serving output logic
-    /**
-     * If no recommendations found for this user, simply return the original
-     * list.
-     */
+    //
+    //If no recommendations found for this user, simply return the original
+     // list.
+     //
     val iids = query.iids
     val iidsSet = iids.toSet
     val ranked: Seq[(String, Double)] = all.filter( r =>
@@ -233,3 +298,4 @@ class ItemBasedAlgorithm(params: ItemBasedAlgorithmParams)
     )
   }
 }
+*/

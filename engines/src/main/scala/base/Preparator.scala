@@ -7,18 +7,16 @@ import io.prediction.controller.Params
 //import io.prediction.engines.base.TrainingData
 //import io.prediction.engines.base.PreparedData
 
-class PreparatorParams (
+abstract class AbstractPreparatorParams extends Params {
   // how to map selected actions into rating value
   // use None if use U2IActionTD.v field
-  val actions: Map[String, Option[Int]], // ((view, 1), (rate, None))
-  val seenActions: Set[String], // (view, conversion)
+  val actions: Map[String, Option[Int]] // ((view, 1), (rate, None))
+  val seenActions: Set[String] // (view, conversion)
   val conflict: String // conflict resolution, "latest" "highest" "lowest"
-) extends Params {
-  override def toString = s"${actions} ${seenActions} ${conflict}"
 }
 
-class Preparator(pp: PreparatorParams) extends LPreparator[
-    PreparatorParams, TrainingData, PreparedData] {
+class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
+    AbstractPreparatorParams, TrainingData, PreparedData] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"

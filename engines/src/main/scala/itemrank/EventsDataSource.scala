@@ -14,22 +14,16 @@ import io.prediction.engines.base.TrainingData
 import org.joda.time.DateTime
 
 case class EventsDataSourceParams(
-  override val appId: Int,
+  val appId: Int,
   // default None to include all itypes
-  override val itypes: Option[Set[String]] = None, // train items with these itypes
+  val itypes: Option[Set[String]] = None, // train items with these itypes
   // actions for training
-  override val actions: Set[String],
-  override val startTime: Option[DateTime] = None, // event starttime
-  override val untilTime: Option[DateTime] = None, // event untiltime
-  override val attributeNames: base.AttributeNames
-) extends base.EventsDataSourceParams (
-  appId = appId,
-  itypes = itypes,
-  actions = actions,
-  startTime = startTime,
-  untilTime = untilTime,
-  attributeNames = attributeNames
-)
+  val actions: Set[String],
+  val startTime: Option[DateTime] = None, // event starttime
+  val untilTime: Option[DateTime] = None, // event untiltime
+  val attributeNames: base.AttributeNames
+) extends base.AbstractEventsDataSourceParams
+
 /*
 case class EventsDataSourceParams(
   val appId: Int,
