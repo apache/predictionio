@@ -34,9 +34,21 @@ $ bin/pio eventserver
 ```
 ### Check server status
 
-```
+<div class="codetabs">
+<div data-lang="Raw HTTP">
+{% highlight bash %}
 $ curl -i -X GET http://localhost:7070
-```
+{% endhighlight %}
+</div>
+<div data-lang="Python SDK">
+{% highlight python %}
+from predictionio import EventClient
+client = EventClient(app_id=4, url="http://localhost:7070")
+
+print(client.get_status())
+{% endhighlight %}
+</div>
+</div>
 
 Sample response:
 
@@ -187,8 +199,23 @@ $ curl -i -X POST http://localhost:7070/events.json \
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
-{% highlight bash %}
-(TODO)
+{% highlight python %}
+first_event_data = {
+  "predictionKey": "my_prediction_key",
+  "appId": 4,
+  "event": "my_event",
+  "entityType": "user",
+  "entityId": "uid",
+  "properties": {
+    "prop1" : 1,
+    "prop2" : "value2",
+    "prop3" : [1, 2, 3],
+    "prop4" : True,
+    "prop5" : ["a", "b", "c"],
+    "prop6" : 4.56 ,
+  },
+}
+print(client.create_event(first_event_data))
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -235,7 +262,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
   "properties" : {
     "someProperty" : "value1",
     "anotherProperty" : "value2"
-  }
+  },
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "tags" : ["tag1", "tag2"],
   "creationTime" : "2014-09-01T21:40:45.123+01:00"
@@ -270,7 +297,24 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight bash %}
-(TODO)
+# Second Event
+second_event_data = {
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key",
+  "event" : "my_event",
+  "entityType" : "user",
+  "entityId" : "uid",
+  "targetEntityType" : "item",
+  "targetEntityId" : "iid",
+  "properties" : {
+    "someProperty" : "value1",
+    "anotherProperty" : "value2"
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "creationTime" : "2014-09-01T21:40:45.123+01:00"
+}
+print(client.create_event(second_event_data))
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -316,15 +360,33 @@ Replace `<your_eventId>` by a real one in the following.
 
 ### Get an Event
 
-```
+<div class="codetabs">
+<div data-lang="Raw HTTP">
+{% highlight bash %}
 $ curl -i -X GET http://localhost:7070/events/<your_eventId>.json
-```
+{% endhighlight %}
+</div>
+<div data-lang="Python SDK">
+{% highlight python %}
+print(client.get_event(<your_eventId>))
+{% endhighlight %}
+</div>
+</div>
 
 ### Delete an Event
 
-```
+<div class="codetabs">
+<div data-lang="Raw HTTP">
+{% highlight bash %}
 $ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json
-```
+{% endhighlight %}
+</div>
+<div data-lang="Python SDK">
+{% highlight python %}
+print(client.delete_event(<your_eventId>))
+{% endhighlight %}
+</div>
+</div>
 
 ### Get All Events of an appId
 
