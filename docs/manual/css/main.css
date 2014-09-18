@@ -26,18 +26,21 @@
 }
 #docsContainer h1 {
     font-size: 160%;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     text-transform: uppercase;
 }
 #docsContainer h2 {
     font-size: 135%;
     font-weight: bold;
+    margin-bottom: 15px;
 }
 #docsContainer h3 {
     font-size: 110%;
+    margin-bottom: 10px;
 }
 #docsContainer h4 {
     font-size: 100%;
+    margin-bottom: 5px;
 }
 #docsContainer h5 {
     font-size: 80%;
