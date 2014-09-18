@@ -167,12 +167,21 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $appId = 4;
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
+                        'predictionKey' => 'my_prediction_key',
                         'appId' => 4,
                         'event' => 'my_event',
-                        'entityType' => 'pio_user',
-                        'entityId' => '8',
-                        'properties' => array('prop1'=>1, 'prop2'=>2),
+                        'entityType' => 'user',
+                        'entityId' => 'uid',
+                        'properties' => array('prop1'=>1, 
+                                              'prop2'=>'value2',
+                                              'prop3'=>array(1,2,3),
+                                              'prop4'=>true,
+                                              'prop5'=>array('a','b','c'),
+                                              'prop6'=>4.56
+                                        ),
+                        'eventTime' => '2004-12-13T21:39:45.618-07:00',
                         'tags' => array('tag1', 'tag2'),
+                        'creationTime' => '2014-09-01T21:39:45.618-08:00'
                        ));
 ?>
 {% endhighlight %}
@@ -244,14 +253,17 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
                         'appId' => 4,
+                        'predictionKey' => 'my_prediction_key',
                         'event' => 'my_event',
-                        'entityType' => 'pio_user',
-                        'entityId' => '8',
-                        'targetEntityType' => 'pio_user',
-                        'targetEntityId' => '2',
+                        'entityType' => 'user',
+                        'entityId' => 'uid',
+                        'targetEntityType' => 'item',
+                        'targetEntityId' => 'iid',
                         'properties' => array('someProperty'=>'value1',
                                               'anotherProperty'=>'value2'),
+                        'eventTime' => '2004-12-13T21:39:45.618Z',
                         'tags' => array('tag1', 'tag2'),
+                        'creationTime' => '2004-12-13T21:39:45.618Z',
                        ));
 ?>
 {% endhighlight %}

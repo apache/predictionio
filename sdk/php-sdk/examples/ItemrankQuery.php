@@ -3,7 +3,7 @@ require_once("vendor/autoload.php");
 
 use predictionio\EngineClient;
 
-$client = new EngineClient(88);
+$client = new EngineClient();
 $response=$client->getStatus();
 //echo $response;
 

@@ -241,15 +241,14 @@ In the *quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
-<p>Create a file <em>show.php</em> in quickstartapp directory with this code:</p>
-<p>Replace <APP ID> with your engine name. It should be named 'TODO' in this example.</p>
+<p>Create a file <em>show.php</em> with this code:</p>
 {% highlight php %}
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
     use predictionio\EngineClient;
 
-    $client = new EngineClient(<your app id>);
+    $client = new EngineClient();
 
     // Rank item 1 to 5 for each user
     for ($i=1; $i<=10; $i++) {
