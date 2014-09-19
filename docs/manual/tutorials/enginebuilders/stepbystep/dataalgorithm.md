@@ -129,8 +129,8 @@ The only function you need to implement is `LJavaDataSource`'s `read()` method.
 public abstract Iterable<scala.Tuple3<DP,TD,Iterable<scala.Tuple2<Q,A>>>> read()
 ```
 
-The `read()` method should read data from the source (Eg. database or text file,
-etc) and return the *Training Data* (`TD`) and *Test Data*
+The `read()` method should read data from the source (e.g. database or text
+file, etc.) and return the *Training Data* (`TD`) and *Test Data*
 (`Iterable<scala.Tuple2<Q,A>>`) with a *Data Parameters* (`DP`) associated with
 this *Training and Test Data Set*.
 
@@ -157,8 +157,8 @@ users' rating history will be used to compute the predicted rating value of an
 item by the user.
 
 This algorithm takes a threshold as parameter and discard any item pairs with
-similarity score lower than this threshold. The algorithm parameters class is defined
-in `AlgoParams.java`:
+similarity score lower than this threshold. The algorithm parameters class is
+defined in `AlgoParams.java`:
 
 ```java
 public class AlgoParams implements JavaParams {
@@ -239,8 +239,8 @@ PredictionIO framework requires an *Engine Factory* which returns an *Engine*
 with the controller components defined.
 
 The *Engine Factory* must implement the
-`io.prediction.controller.java.IJavaEngineFactory` interface and implements the `apply()`
-method (as shown in `EngineFactory.java`):
+`io.prediction.controller.java.IJavaEngineFactory` interface and implements the
+`apply()` method (as shown in `EngineFactory.java`):
 
 ```java
 public class EngineFactory implements IJavaEngineFactory {
@@ -261,7 +261,7 @@ To build an *Engine*, we need to define the class of each component. A
 *Prepared Data* is the same as *Training Data*, we can use
 `JavaSimpleEngineBuilder`.
 
-As you can see, we specify the class the `DataSource` and `Algorithm` we just
+As you can see, we specify classes `DataSource` and `Algorithm` we just
 implemented in above steps.
 
 To deploy engine, we also need a serving layer. For `JavaSimpleEngine` with
@@ -299,13 +299,14 @@ above. The `id` and `version` will be referenced later when we run the engine.
 
 Execute the following command to compile and register the engine:
 
-```
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/pio register --engine-json src/main/java/recommendations/tutorial1/engine.json
 ```
 
-The `register` command takes the engine JSON file (with the `--engine-json` parameter). Note that you need to register the engine again if you
-have modified and re-compiled the codes.
+The `register` command takes the engine JSON file (with the `--engine-json`
+parameter). Note that you need to register the engine again if you have modified
+and re-compiled the codes.
 
 ## Step 6. Specify Parameters for the Engine
 
@@ -369,7 +370,8 @@ $ ../bin/pio train \
   --params-path src/main/java/recommendations/tutorial1/params
 ```
 
-The `--engine-json` points to the JSON file `engine.json`. The `--params-path` is the base directory of parameters JSON files.
+The `--engine-json` points to the JSON file `engine.json`. The `--params-path`
+is the base directory of parameters JSON files.
 
 When it finishes, you should see the following at the end of terminal output:
 
@@ -392,8 +394,8 @@ with the `Query` as JSON payload. Remember that our `Query` class is defined
 with `uid` and `iid` fields. The JSON key name must be the same as the field
 names of the `Query` class (`uid` and `iid` in this example).
 
-For example, to retrieve the predicted preference for item ID 3 by user ID 1, run
-the following in terminal:
+For example, to retrieve the predicted preference for item ID 3 by user ID 1,
+run the following in terminal:
 
 ```
 $ curl -H "Content-Type: application/json" -d '{"uid": 1, "iid": 3}' http://localhost:8000

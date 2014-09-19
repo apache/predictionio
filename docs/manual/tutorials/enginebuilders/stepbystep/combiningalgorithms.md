@@ -74,11 +74,12 @@ This part is simliar to earlier tutorials.
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4a -- data/ml-100k/ 
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4a -- -- data/ml-100k/
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 You should see
+
 ```
 2014-08-26 23:05:01,393 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:391, took 0.031189835 s
 2014-08-26 23:05:01,394 INFO  APIDebugWorkflow$ - Data Set 0
@@ -111,6 +112,7 @@ and extract a feature vector from item info.
 After implementing these two classes, you can add them to the workflow and try
 out if things are really working. Add the preparator class to the engine
 builder, as shown in [Runner4b.java](tutorial4/Runner4b.java):
+
 ```java
 return new JavaEngineBuilder<
     TrainingData, EmptyParams, PreparedData, Query, Float, Object> ()
@@ -121,12 +123,13 @@ return new JavaEngineBuilder<
 
 And you can test it out with
 
-```
+```bash
 $ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4b -- data/ml-100k/
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4b -- -- data/ml-100k/
 ```
 
 You should see
+
 ```
 2014-08-26 23:03:12,345 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:71, took 0.317394663 s
 2014-08-26 23:03:12,346 INFO  APIDebugWorkflow$ - Prepared Data Set 0
@@ -146,6 +149,7 @@ this user likes comedy and animation but dislikes drama.
 
 The movie lens rating is an integer ranged from 1 to 5, we incorporate it into
 the algorithm with the following parameters:
+
 ```java
 public class FeatureBasedAlgorithmParams implements JavaParams {
   public final double min;
@@ -155,6 +159,7 @@ public class FeatureBasedAlgorithmParams implements JavaParams {
   ...
 }
 ```
+
 We only consider rating from `min` to `max`, and we normalize the rating with
 this function: `f(rating) = (rating - drift) * scale`. As each movie is
 associated with a binary feature vector, the user feature vector is essentially
@@ -162,8 +167,8 @@ a rating-weighted sum of all movies (s)he rated.  After that, we normalize all
 user feature vector by L-inf norm, this will ensure that user feature is
 bounded by [-1, 1]. In laymen terms, -1 indicates that the user hates that
 feature, whilst 1 suggests the opposite.  The following is a snippet of
-the [actual code](tutorial4/FeatureBasedAlgorithm.java). `data` is an instance of `PreparedData` that is passed as
-an argument to the `train` function.
+the [actual code](tutorial4/FeatureBasedAlgorithm.java). `data` is an instance
+of `PreparedData` that is passed as an argument to the `train` function.
 
 ```java
 for (Integer uid : data.userInfo.keySet()) {
@@ -197,18 +202,21 @@ this point. We use a default serving class as we only have one algorithm. (We
 will demonstrate how to combine prediction results from multiple algorithms later
 in this tutorial). We are able to define [an end-to-end
 engine](tutorial4/SingleEngineFactory.java).
-```
+
+```bash
 $ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c -- data/ml-100k/ 
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c -- -- data/ml-100k/
 ```
 
 ## Deployment
 We can deploy this feature based engine just like tutorial 1. We have an
 [engine JSON](tutorial4/single-algo-engine.json), and we register it:
-```
+
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/pio register --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json
 ```
+
 The script automatically recompiles updated code. You will need to re-run this
 script if you have update any code in your engine.
 
@@ -216,6 +224,7 @@ script if you have update any code in your engine.
 We use the following JSON files for deployment.
 
 1.  [datasource.json](tutorial4/single-jsons/datasource.json):
+
     ```json
     {
       "dir" :  "data/ml-100k/",
@@ -224,6 +233,7 @@ We use the following JSON files for deployment.
     ```
 
 2.  [algorithms.json](tutorial4/single-jsons/algorithms.json):
+
     ```json
     [
       {
@@ -237,6 +247,7 @@ We use the following JSON files for deployment.
       }
     ]
     ```
+
     Recall that we support multiple algorithms. This JSON file is actually a
     list of *name-params* pair where the *name* is the identifier of algorithm
     defined in EngineFactory, and the *params* value corresponds to the algorithm
@@ -246,7 +257,8 @@ We use the following JSON files for deployment.
 ### Start training
 The following command kick-starts the training, which will return an id when
 the training is completed.
-```
+
+```bash
 $ ../bin/pio train \
   --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json \
   --params-path src/main/java/recommendations/tutorial4/single-jsons
@@ -254,7 +266,8 @@ $ ../bin/pio train \
 
 ### Deploy server
 As the training is completed, you can deploy a server
-```
+
+```bash
 $ ../bin/pio deploy --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json
 ```
 
@@ -263,31 +276,36 @@ Fake user -1 (see [DataSource.FakeData](tutorial4/DataSource.java)) loves
 action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e.
 1). You can use our script bin/cjson to send the JSON request. The first
 parameter is the JSON request, and the second parameter is the server address.
-```
+
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000
 ```
+
 Fake item -2 is a cold item (i.e. has no rating). But from the data, we know
 that it is a movie catagorized under "Action" genre, hence, it should also have
 a high rating with Fake user -1.
-```
+
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000
 ```
+
 However, there is nothing we can do with a cold user. Fake user -3 has no
 rating history, we know nothing about him. If we request any rating with fake
-user -3, we will get a NaN. TODO: @Donald "NaN is not a valid double value as per JSON specification. To override this behavior, use GsonBuilder.serializeSpecialFloatingPointValues() method."
-```
+user -3, we will get a NaN.
+
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000
 ```
 
 ## Multiple Algorithms
-We have two algorithms available, one is a collaborative filtering algorithm
-and the other is a feature-based algorithm. Prediction.IO allows you to create
-an engine that ensembles multiple algorithms prediction, you may use
-feature-based algorithm for cold-start items (as CF-based algos cannot handle items
-with no ratings), and use both algorithms for others.
+We have two algorithms available, one is a collaborative filtering algorithm and
+the other is a feature-based algorithm. Prediction.IO allows you to create an
+engine that ensembles multiple algorithms prediction, you may use feature-based
+algorithm for cold-start items (as CF-based algos cannot handle items with no
+ratings), and use both algorithms for others.
 
 ### Combining Algorithms Output
 [Serving](tutorial4/Serving.java) is the last step of the pipeline. It
@@ -295,6 +313,7 @@ takes prediction results from all algorithms, combine them and return. In the
 current case, we take an average of all valid (i.e. not NaN) predictions. In the
 extreme case where all algorithms return NaN, we also return NaN. Engine
 builders need to implement the `serve` method. We demonstrate with our case:
+
 ```java
 public Float serve(Query query, Iterable<Float> predictions) {
   float sum = 0.0f;
@@ -311,6 +330,7 @@ public Float serve(Query query, Iterable<Float> predictions) {
 ```
 
 ### Complete Engine Factory
+
 [EngineFactory.java](tutorial4/EngineFactory.java) demonstrates how to specify
 multiple algorithms in the same engine. When we add algorithms to the builder
 instance, we also need to specify a String which is served as the identifier.
@@ -332,8 +352,10 @@ public class EngineFactory implements IJavaEngineFactory {
 }
 ```
 
-Similar to the earlier example, we need to write [a JSON](tutorial4/multiple-algo-engine.json) for the engine, and
-register it with PredictionIO. Here's the content:
+Similar to the earlier example, we need to write [a
+JSON](tutorial4/multiple-algo-engine.json) for the engine, and register it with
+PredictionIO. Here's the content:
+
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory",
@@ -342,11 +364,13 @@ register it with PredictionIO. Here's the content:
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory"
 }
 ```
+
 The following script register the engines. Important to note that, the script
 also copies all related files (jars, resources) of this engine to a permanent
 storage, if you have updated the engine code or add new dependencies, you need
 to rerun this command.
-```
+
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/pio register --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json
 ```
@@ -355,6 +379,7 @@ Now, we can specify the engine instance by passing the set of parameters to the
 engine. Our engine can support multiple algorithms, and in addition, it also
 support multiple instance of the same algorithms. We illustrate with
 [algorithms.json](tutorial4/jsons/algorithms.json):
+
 ```json
 [
   {
@@ -383,6 +408,7 @@ support multiple instance of the same algorithms. We illustrate with
   }
 ]
 ```
+
 This JSON contains three algorithm parameters. The first two correspond to the
 feature-based algorithm, and the third corresponds to the collaborative
 filtering algorithm. The first allows all 5 ratings, and the second allows only
@@ -391,7 +417,7 @@ high-rating features. Once [all parameter files are
 specified](tutorial4/jsons/), we can start the training phase and start the API
 server:
 
-```
+```bash
 $ cd $PIO_HOME/examples
 $ ../bin/pio train \
   --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json \

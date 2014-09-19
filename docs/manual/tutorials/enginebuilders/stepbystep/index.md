@@ -11,12 +11,18 @@ These series of tutorials will walk through each components of **PredictionIO**.
 We will demonstrate how to develop your machine learning algorithms and
 prediction engines, deploy them and serve real time prediction queries, develop
 your metrics to run offline evaluations, and improve prediction engine by using
-multiple algoritms. We will build a simple **Java single machine recommendation
-engine** which predicts item's rating value rated by the user. [MovieLens
+multiple algoritms.
+
+> You need to build PredictionIO from source in order to build your own engine.
+Please follow instructions to build from source
+[here](/install/install-sourcecode.html).
+
+Let's build a simple **Java single machine recommendation engine** which
+predicts item's rating value rated by the user. [MovieLens
 100k](http://grouplens.org/datasets/movielens/) data set will be used as an
 example.
 
-Execute the following command to download MovieLens 100k to data/ml-100k/.
+Execute the following command to download MovieLens 100k to `data/ml-100k/`.
 
 ```
 $ cd $PIO_HOME/examples
@@ -31,4 +37,5 @@ find all sources code of this tutorial in the directory
 
 ## Getting Started
 
-Let's begin with [implementing a new Engine with Data and Algorithm](dataalgorithm.html).
+Let's begin with [implementing a new Engine with Data and
+Algorithm](dataalgorithm.html).

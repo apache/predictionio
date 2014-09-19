@@ -6,7 +6,8 @@ title: API for Engine Builders
 # API for Engine Builders
 
 1.  Run this command.
-    ```
+
+    ```bash
     $ sbt/sbt unidoc
     ```
 

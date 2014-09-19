@@ -5,9 +5,18 @@ title: Building the "HelloWorld" Engine
 
 # Building the "HelloWorld" Engine
 
-This is a step-by-step guide on building your first predictive engine on PredictionIO. The engine will use historical temperature data to predict the temperature of a certain day in a week.
+This is a step-by-step guide on building your first predictive engine on
+PredictionIO. The engine will use historical temperature data to predict the
+temperature of a certain day in a week.
 
-Completed source code can also be found at $PIO_HOME/examples/scala-local-helloworld and $PIO_HOME/examples/java-local-helloworld
+> You need to build PredictionIO from source in order to build your own engine.
+Please follow instructions to build from source
+[here](/install/install-sourcecode.html).
+
+Completed source code can also be found at
+`$PIO_HOME/examples/scala-local-helloworld` and
+``$PIO_HOME/examples/java-local-helloworld`, where `$PIO_HOME` is the root
+directory of the PredictionIO source code tree.
 
 ## 1. Create a new Engine
 
@@ -16,9 +25,8 @@ Completed source code can also be found at $PIO_HOME/examples/scala-local-hellow
 {% highlight bash %}
 $ $PIO_HOME/bin/pio new HelloWorld
 $ cd HelloWorld
-
-Now you need to edit 'src/main/scala/Engine.scala'
 {% endhighlight %}
+Now you need to edit <code>src/main/scala/Engine.scala</code>.
 </div>
 <div data-lang="Java">
 {% highlight bash %}
@@ -27,9 +35,9 @@ $ cd HelloWorld
 
 $ rm -rf src/main/scala
 $ mkdir src/main/java
-
-Add the new classes under the directory 'src/main/java'
 {% endhighlight %}
+
+Add the new classes under the directory <code>src/main/java</code>.
 </div>
 </div>
 
@@ -179,13 +187,13 @@ public class MyDataSource extends LJavaDataSource<
                   new ArrayList<MyTrainingData.DayTemperature>();
 
     try {
-      BufferedReader reader = 
+      BufferedReader reader =
                     new BufferedReader(new FileReader("path/to/data.csv"));
       String line;
       while ((line = reader.readLine()) != null) {
         String[] tokens = line.split(",");
         temperatures.add(
-          new MyTrainingData.DayTemperature(tokens[0], 
+          new MyTrainingData.DayTemperature(tokens[0],
                             Double.parseDouble(tokens[1])));
       }
       reader.close();
@@ -356,4 +364,3 @@ Output:
 ```
 {"temperature":76.66666666666667}
 ```
-

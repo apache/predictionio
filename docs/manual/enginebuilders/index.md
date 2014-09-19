@@ -32,13 +32,13 @@ Algo1.predict Algo2.predict Algo3.predict <- (Query)
 
 
 A prediction **Engine** consists of the following controller components:
-**DataSource**, **Data Preparator**(Preparator), **Algorithm**, and **Serving**. Another component
-**Evaluation Metrics** is used to evaluate the *Engine*.
+**DataSource**, **Data Preparator**(Preparator), **Algorithm**, and **Serving**.
+Another component **Evaluation Metrics** is used to evaluate the *Engine*.
 
 - *DataSource* is responsible for reading data from the source (Eg. database or
   text file, etc) and prepare the **Training Data (TD)**.
-- *Data Preparator* takes the *Training Data* and generates **Prepared Data (PD)**
-  for the *Algorithm*
+- *Data Preparator* takes the *Training Data* and generates **Prepared Data
+  (PD)** for the *Algorithm*
 - *Algorithm* takes the *Prepared Data* to train a **Model (M)** which is used
   make **Prediction (P)** outputs based on input **Query (Q)**.
 - *Serving* serves the input *Query* with *Algorithm*'s *Prediction* outputs.
@@ -69,4 +69,5 @@ post-processing on the *Prediction* outputs, a default **First Serving** can be
 use, which simply uses the *Algorithm*'s *Prediction* output to serve the query.
 
 
-It's time to build your first [HelloWorld Engine](/tutorials/enginebuilders/local-helloworld.html)!
+It's time to build your first [HelloWorld
+Engine](/tutorials/enginebuilders/local-helloworld.html)!

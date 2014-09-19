@@ -103,7 +103,7 @@ predicted rating and actual rating.
 ```java
 @Override
 public Double computeUnit(Query query, Float predicted, Float actual) {
-  logger.info("Q: " + query.toString() + " P: " + predicted + " A: " + actual);   
+  logger.info("Q: " + query.toString() + " P: " + predicted + " A: " + actual);
   // return squared error
   double error;
   if (predicted.isNaN())
@@ -169,7 +169,7 @@ Execute the following command:
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- data/test/ratings.csv
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- -- data/test/ratings.csv
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
@@ -197,7 +197,8 @@ in the page.
 
 ## Step 4 - Running with MovieLens 100K data set:
 
-Run the following to fetch the data set. The `ml-100k` will be downloaded into the `data/` directory.
+Run the following to fetch the data set. The `ml-100k` will be downloaded into
+the `data/` directory.
 
 ```
 $ cd $PIO_HOME/examples
@@ -207,7 +208,7 @@ $ src/main/java/recommendations/fetch.sh
 Re-run `Runner3` with the `ml-100k` data set:
 
 ```
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- data/ml-100k/u.data
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- -- data/ml-100k/u.data
 ```
 
 You should see the following output when it finishes running.
@@ -218,14 +219,16 @@ You should see the following output when it finishes running.
 2014-08-26 22:35:41,520 INFO  APIDebugWorkflow$ - Saved engine instance with ID: XG2sfCeXQ4WY2W1pXNSPCg
 ```
 
-To view the Metric Result (RMSE score), start the dashboard with the `pio dashboard` command:
+To view the Metric Result (RMSE score), start the dashboard with the `pio
+dashboard` command:
 
 ```
 $ cd $PIO_HOME/examples
 $ ../bin/pio dashboard
 ```
 
-Then point your browser to `localhost:8000` to view the result. You should see the result
+Then point your browser to http://localhost:9000 to view the result. You
+should see the result
 
 ```
 [(null,1.052046904037191), (null,1.042766938101085), (null,1.0490312745374106)]
@@ -233,8 +236,9 @@ Then point your browser to `localhost:8000` to view the result. You should see t
 in the page.
 
 Up to this point, you should be familiar with basic components of PredictionIO
-(*DataSource*, *Algorithm* and *Metrics*) and know how to develop your algorithms
-and prediction engines, deploy them and serve real time prediction queries.
+(*DataSource*, *Algorithm* and *Metrics*) and know how to develop your
+algorithms and prediction engines, deploy them and serve real time prediction
+queries.
 
 In the next tutorial, we will demonstrate how to use *Preparator* to do
 pre-processing of *Training Data* for the *Algorithm*, incorporate multiple
