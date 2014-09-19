@@ -106,6 +106,15 @@ class NCItemBasedAlgorithmModel(
     recommender
   }
 
+  override def toString(): String = {
+    val usersStr = usersMap.keysIterator.take(3)
+      .mkString(s"Users: (${usersMap.size}) [", ",", "]")
+    val itemsStr = validItemsMap.keysIterator.take(3)
+      .mkString(s"Items: (${usersMap.size}) [", ",", "]")
+
+    s"${this.getClass().getCanonicalName()}\n$usersStr\n$itemsStr"
+  }
+
   class FreshnessRescorer(freshness: Int, recommendationTimeOpt: Option[Long],
     freshnessTimeUnit: Long,
     itemsMap: Map[Long, ItemModel]) extends IDRescorer {
