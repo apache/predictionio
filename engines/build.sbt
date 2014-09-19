@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"),
   "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
-  "org.json4s"        %% "json4s-native"  % "3.2.6",
+  "org.json4s"        %% "json4s-native"  % json4sVersion.value,
   "org.scalatest"     %% "scalatest"      % "2.2.0" % "test")
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
