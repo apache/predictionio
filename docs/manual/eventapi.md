@@ -77,7 +77,6 @@ The following shows how one can create an event involving a single entity.
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
-  "predictionKey" : "my_prediction_key",
   "appId" : 4,
   "event" : "my_event",
   "entityType" : "user"
@@ -90,9 +89,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56
   }
-  "eventTime" : "2004-12-13T21:39:45.618-07:00",
-  "tags" : ["tag1", "tag2"],
-  "creationTime" : "2014-09-01T21:39:45.618-08:00"
+  "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'
 {% endhighlight %}
 </div>
@@ -106,7 +103,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $appId = 4;
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
-                        'predictionKey' => 'my_prediction_key',
                         'appId' => 4,
                         'event' => 'my_event',
                         'entityType' => 'user',
@@ -118,9 +114,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
                                               'prop5'=>array('a','b','c'),
                                               'prop6'=>4.56
                                         ),
-                        'eventTime' => '2004-12-13T21:39:45.618-07:00',
-                        'tags' => array('tag1', 'tag2'),
-                        'creationTime' => '2014-09-01T21:39:45.618-08:00'
+                        'eventTime' => '2004-12-13T21:39:45.618-07:00'
                        ));
 ?>
 {% endhighlight %}
@@ -128,7 +122,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
 <div data-lang="Python SDK">
 {% highlight python %}
 first_event_data = {
-  "predictionKey": "my_prediction_key",
   "appId": 4,
   "event": "my_event",
   "entityType": "user",
@@ -151,10 +144,7 @@ require 'predictionio'
 
 event_client = PredictionIO::EventClient.new(4)
 event_client.create_event('my_event', 'user', 'uid',
-                          'predictionKey' => 'my_prediction_key',
                           'eventTime' => '2004-12-13T21:39:45.618-07:00',
-                          'tags' => %w(tag1 tag2),
-                          'creationTime' => '2014-09-01T21:39:45.618-08:00',
                           'properties' => { 'prop1' => 1,
                                             'prop2' => 'value2',
                                             'prop3' => [1, 2, 3],
@@ -180,7 +170,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
   "appId" : 4,
-  "predictionKey" : "my_prediction_key",
   "event" : "my_event",
   "entityType" : "user",
   "entityId" : "uid",
@@ -190,9 +179,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
     "someProperty" : "value1",
     "anotherProperty" : "value2"
   },
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
-  "creationTime" : "2014-09-01T21:40:45.123+01:00"
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 {% endhighlight %}
 </div>
@@ -207,7 +194,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
                         'appId' => 4,
-                        'predictionKey' => 'my_prediction_key',
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
@@ -215,9 +201,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
                         'targetEntityId' => 'iid',
                         'properties' => array('someProperty'=>'value1',
                                               'anotherProperty'=>'value2'),
-                        'eventTime' => '2004-12-13T21:39:45.618Z',
-                        'tags' => array('tag1', 'tag2'),
-                        'creationTime' => '2004-12-13T21:39:45.618Z',
+                        'eventTime' => '2004-12-13T21:39:45.618Z'
                        ));
 ?>
 {% endhighlight %}
@@ -227,7 +211,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
 # Second Event
 second_event_data = {
   "appId" : 4,
-  "predictionKey" : "my_prediction_key",
   "event" : "my_event",
   "entityType" : "user",
   "entityId" : "uid",
@@ -250,10 +233,7 @@ event_client = PredictionIO::EventClient.new(4)
 event_client.create_event('my_event', 'user', 'uid',
                           'targetEntityType' => 'item',
                           'targetEntityId' => 'iid'
-                          'predictionKey' => 'my_prediction_key',
                           'eventTime' => '2004-12-13T21:39:45.618Z',
-                          'tags' => %w(tag1 tag2),
-                          'creationTime' => '2014-09-01T21:40:45.123+01:00',
                           'properties' => { 'someProperty' => 'value1',
                                             'anotherProperty' => 'value2' })
 {% endhighlight %}
@@ -301,17 +281,13 @@ Field | Type | Description
 `targetEntityType` | String | (Optional) The target entity type.
 `targetEntityId` | String | (Optional) The target entity ID.
 `properties` | JSON | (Optional) See **Note** below.
-`eventTime` | String | (Optional) The time of the event. Current time and UTC timezone
-            | | will be used if unspecified. Must be in ISO 8601 format (e.g.
+`eventTime` | String | (Optional) The time of the event. Although Event Server's
+            | | current system time and UTC timezone will be used if this is
+            | | unspecified, it is highly recommended that this time should be
+            | | generated by the client application in order to accurately
+            | | record the time of the event.
+            | |  Must be in ISO 8601 format (e.g.
             | | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
-`tags` | Array of String | (Optional) Empty list will be used if
-       | | unspecified. E.g. ["tag1", "tag2"]
-`predictionKey` | String | (Optional) Reserved. TBD.
-`creationTime` | String | (Optional) Creation time of this event (not the time when this
-               | | event happened). Current time and UTC timezone will be used if
-               | | unspecified. Must be in ISO 8601 format (e.g.
-               | | `2004-12-13T21:39:45.618Z`, or
-               | | `2014-09-09T16:17:42.937-08:00`).
 
 #### Note
 `properties` can be associated with either an entity or an event.
