@@ -22,7 +22,13 @@ Now you need to edit 'src/main/scala/Engine.scala'
 </div>
 <div data-lang="Java">
 {% highlight bash %}
-TODO
+$ $PIO_HOME/bin/pio new HelloWorld
+$ cd HelloWorld
+
+$ rm -rf src/main/scala
+$ mkdir src/main/java
+
+Add the new classes under the directory 'src/main/java'
 {% endhighlight %}
 </div>
 </div>
