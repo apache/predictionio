@@ -50,7 +50,7 @@ object EventJson4sSupport {
                 throw new MappingException(s"Fail to extract creationTime ${s}")
             }
           }.getOrElse(currentTime)
-        Event(
+        val newEvent = Event(
           event = event,
           entityType = entityType,
           entityId = entityId,
@@ -62,6 +62,8 @@ object EventJson4sSupport {
           predictionKey = predictionKey,
           creationTime = creationTime
         )
+        EventValidation.validate(newEvent)
+        newEvent
       } catch {
         case e: Exception => throw new MappingException(e.toString, e)
       }

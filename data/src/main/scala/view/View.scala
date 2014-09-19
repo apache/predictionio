@@ -2,6 +2,7 @@ package io.prediction.data.view
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.Events
+import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Storage
 
@@ -22,17 +23,32 @@ class LBatchView(
   def aggregateProperties(entityType: String): Map[String, DataMap] = {
 
     def predicate(e: Event) = (e.entityType == entityType) &&
-      ((e.event == "$set") || (e.event == "$unset"))
+      (EventValidation.isSingleReserved(e.event))
+      //((e.event == "$set") || (e.event == "$unset"))
 
-    def aggregate(p: DataMap, e: Event): DataMap = {
+    def aggregate(p: Option[DataMap], e: Event): Option[DataMap] = {
       e.event match {
-        case "$set" => p ++ e.properties
-        case "$unset" => p -- e.properties.keySet
+        case "$set" => {
+          if (p == None)
+            Some(e.properties)
+          else
+            p.map(_ ++ e.properties)
+        }
+        case "$unset" => {
+          if (p == None)
+            None
+          else
+            p.map(_ -- e.properties.keySet)
+        }
+        case "$delete" => None
+        case _ => p // do nothing for others
       }
     }
 
-    //aggregateByEntityOrdered[DataMap](events, predicate, DataMap(), aggregate)
-    aggregateByEntityOrdered[DataMap](predicate, DataMap(), aggregate)
+    aggregateByEntityOrdered[Option[DataMap]](
+      predicate, None, aggregate)
+      .filter{ case (k, v) => (v != None) }
+      .mapValues(_.get)
   }
 
   def aggregateByEntityOrdered[T](

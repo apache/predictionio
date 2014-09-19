@@ -53,6 +53,70 @@ function checkDELETE () {
 
 checkGET "/" 200
 
+
+# -----------
+# reserved events
+# ------------
+
+testdata='{
+  "event" : "$set",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "properties" : {
+    "prop1" : 1,
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+
+checkPOST "/events.json" "$testdata" 201
+
+testdata='{
+  "event" : "$unset",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "properties" : {
+    "prop1" : "",
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+
+checkPOST "/events.json" "$testdata" 201
+
+testdata='{
+  "event" : "$delete",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+
+checkPOST "/events.json" "$testdata" 201
+
+testdata='{
+  "event" : "$xxxx",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "tags" : ["tag1", "tag2"],
+  "appId" : 4,
+  "predictionKey" : "my_prediction_key"
+}'
+
+checkPOST "/events.json" "$testdata" 400
+
 # -------------
 # create events
 # -------------
