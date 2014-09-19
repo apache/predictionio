@@ -85,6 +85,7 @@ object EventJson4sSupport {
   def writeJson: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
+        JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
@@ -96,7 +97,6 @@ object EventJson4sSupport {
         JField("eventTime", JString(DataUtils.dateTimeToString(d.eventTime))) ::
         // disable tags from API for now
         //JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
-        JField("appId", JInt(d.appId)) ::
         // disable tags from API for now
         //JField("predictionKey",
         //  d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
@@ -140,6 +140,7 @@ object EventJson4sSupport {
   def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
+        JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
@@ -150,7 +151,6 @@ object EventJson4sSupport {
         JField("properties", d.properties.toJObject) ::
         JField("eventTime", JString(DataUtils.dateTimeToString(d.eventTime))) ::
         JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
-        JField("appId", JInt(d.appId)) ::
         JField("predictionKey",
           d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
         JField("creationTime",
