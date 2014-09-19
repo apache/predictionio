@@ -23,7 +23,7 @@ class LBatchView(
   def aggregateProperties(entityType: String): Map[String, DataMap] = {
 
     def predicate(e: Event) = (e.entityType == entityType) &&
-      (EventValidation.isSingleReserved(e.event))
+      (EventValidation.isSpecialEvents(e.event))
       //((e.event == "$set") || (e.event == "$unset"))
 
     def aggregate(p: Option[DataMap], e: Event): Option[DataMap] = {
