@@ -6,6 +6,9 @@
 
 - title: "Item Similarity"
   href: "/engines/itemsim"
-  
+ 
+- title: "Engine and Engine Instances"
+  href: "/engines/concept"
+    
 - title: "Tutorials & Samples"
   href: "/tutorials/engines/"

@@ -27,7 +27,7 @@ Alterantively, you can import data from your own datastore instead of using Even
 
 The core of PredictionIO. An Engine represents a type of Machine Learning task. PredictionIO comes with a few built-in *Engines* for different types of Machine Learning tasks, e.g. Personalized Item Recommendation and Item Ranking. 
 
-An Engine has the following components: DataSource, Data Preparator(Preparator), Algorithm, and Serving. To learn more about Engine and Engine Instance, please refer to [Engine and Engine Instance: A Closer Look]().
+An Engine has the following components: DataSource, Data Preparator(Preparator), Algorithm, and Serving. To learn more about Engine and Engine Instance, please refer to [Engine and Engine Instance: A Closer Look](/engines/concept/index.html).
 
 You may also [build your own Engines](/enginebuilders/index.html) for specific type of prediction problems.
 
