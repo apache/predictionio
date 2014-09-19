@@ -15,7 +15,7 @@ PredictionIO's *Event Server* through its *Event API*.
 
 ###App###
 
-An app is an event generating application and is identified with an unique app_id. You can use PredictionIO with multiple apps at the same time. 
+You can send data to PredictionIO from any application, be it a website or mobile app. Each application can be identified by a unique app_id. You can use PredictionIO with multiple apps at the same time.
 
 ###Event Server###
 
