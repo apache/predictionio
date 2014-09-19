@@ -242,20 +242,23 @@ object Console extends Logging {
       cmd("dashboard").
         text("Launch a dashboard at the specific IP and port.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "dashboard")
+          c.copy(
+            commands = c.commands :+ "dashboard",
+            port = 9000)
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(ip = x)
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
             c.copy(port = x)
-          } text("Port to bind to. Default: 8000")
+          } text("Port to bind to. Default: 9000")
         )
       note("")
       cmd("eventserver").
         text("Launch an Event Server at the specific IP and port.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "eventserver",
+          c.copy(
+            commands = c.commands :+ "eventserver",
             port = 7070)
         } children(
           opt[String]("ip") action { (x, c) =>
