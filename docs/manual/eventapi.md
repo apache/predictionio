@@ -62,89 +62,12 @@ Content-Length: 18
 {"status":"alive"}
 ```
 
-## Using Event API
 
-### Event Creation API
-
-The event creation support many commonly used data.
-
-Field | Type | Description
-:---- | :----| :-----
-`appId` | Integer | App ID for separating your data set between different
-        |         |applications.
-`event` | String | Name of the event. (Examples: "sign-up", "rate", "view", "buy"). **Note**: All event names start with "$" are reserved and shouldn't be used as your custom event name (eg. "$set").
-`entityType` | String | The entity type. It is the namespace of the entityId and
-             | | analogous to the table name of a relational database. The
-             | | entityId must be unique within same entityType.
-`entityId` | String | The entity ID. `entityType-entityId` becomes the unique
-           | | identifier of the entity. For example, you may have entityType
-           | | named `user`, and different entity IDs, say `1` and `2`. In this
-           | | case, `user-1` and `user-2` uniquely identifies | these two
-           | | entities.
-`targetEntityType` | String | (Optional) The target entity type.
-`targetEntityId` | String | (Optional) The target entity ID.
-`properties` | JSON | (Optional) See **Note** below.
-`eventTime` | String | (Optional) The time of the event. Current time and UTC timezone
-            | | will be used if unspecified. Must be in ISO 8601 format (e.g.
-            | | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
-`tags` | Array of String | (Optional) Empty list will be used if
-       | | unspecified. E.g. ["tag1", "tag2"]
-`predictionKey` | String | (Optional) Reserved. TBD.
-`creationTime` | String | (Optional) Creation time of this event (not the time when this
-               | | event happened). Current time and UTC timezone will be used if
-               | | unspecified. Must be in ISO 8601 format (e.g.
-               | | `2004-12-13T21:39:45.618Z`, or
-               | | `2014-09-09T16:17:42.937-08:00`).
-
-#### Note
-`properties` can be associated with either an entity or an event.
-
--   `properties` associated with an entity:
-
-    The following special events are reserved for updating entities and their properties:
-
-    - `"$set"`: set properties of an entity (also implicitly create the entity). To change properties of entity, you simply set the corresponding properties with value again.
-    - `"$unset"`: unset properties of an entity. It means treating the specified properties as not existing anymore. Note that the field `properties` cannot be empty.
-    - `"$delete"`: delete the entity.
-
-    For example, setting `properties` of `birthday` and `address` for entity `user-1`:
-
-    ```
-    {
-      "appId" : 4,
-      "event" : "$set",
-      "entityType" : "user"
-      "entityId" : "1",
-      "properties" : {
-        "birthday" : "1984-10-11",
-        "address" : "1234 Street, San Francisco, CA 94107"
-      }
-    }
-    ```
-
--   `properties` associated with an event:
-
-    For example `user-1` may have a `rate` event on `item-1` with rating value of `4`.
-
-    ```
-    {
-      "appId" : 4,
-      "event" : "rate",
-      "entityType" : "user"
-      "entityId" : "1",
-      "targetEntityType" : "item",
-      "targetEntityId" : "1"
-      "properties" : {
-        "rating" : 4
-      }
-    }
-    ```
+### Creating Your First Event
 
 You may connect to the Event Server with HTTP request or by using one of many
 **PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for
 your old data.
-
-### Creating Your First Event
 
 The following shows how one can create an event involving a single entity.
 
@@ -358,7 +281,87 @@ Content-Length: 68
 ```
 
 
+## Using Event API
+
+### Event Creation API
+
+The event creation support many commonly used data.
+
+Field | Type | Description
+:---- | :----| :-----
+`appId` | Integer | App ID for separating your data set between different
+        |         |applications.
+`event` | String | Name of the event. (Examples: "sign-up", "rate", "view", "buy"). **Note**: All event names start with "$" are reserved and shouldn't be used as your custom event name (eg. "$set").
+`entityType` | String | The entity type. It is the namespace of the entityId and
+             | | analogous to the table name of a relational database. The
+             | | entityId must be unique within same entityType.
+`entityId` | String | The entity ID. `entityType-entityId` becomes the unique
+           | | identifier of the entity. For example, you may have entityType
+           | | named `user`, and different entity IDs, say `1` and `2`. In this
+           | | case, `user-1` and `user-2` uniquely identifies | these two
+           | | entities.
+`targetEntityType` | String | (Optional) The target entity type.
+`targetEntityId` | String | (Optional) The target entity ID.
+`properties` | JSON | (Optional) See **Note** below.
+`eventTime` | String | (Optional) The time of the event. Current time and UTC timezone
+            | | will be used if unspecified. Must be in ISO 8601 format (e.g.
+            | | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
+`tags` | Array of String | (Optional) Empty list will be used if
+       | | unspecified. E.g. ["tag1", "tag2"]
+`predictionKey` | String | (Optional) Reserved. TBD.
+`creationTime` | String | (Optional) Creation time of this event (not the time when this
+               | | event happened). Current time and UTC timezone will be used if
+               | | unspecified. Must be in ISO 8601 format (e.g.
+               | | `2004-12-13T21:39:45.618Z`, or
+               | | `2014-09-09T16:17:42.937-08:00`).
+
+#### Note
+`properties` can be associated with either an entity or an event.
+
+-   `properties` associated with an entity:
+
+    The following special events are reserved for updating entities and their properties:
+
+    - `"$set"`: set properties of an entity (also implicitly create the entity). To change properties of entity, you simply set the corresponding properties with value again.
+    - `"$unset"`: unset properties of an entity. It means treating the specified properties as not existing anymore. Note that the field `properties` cannot be empty.
+    - `"$delete"`: delete the entity.
+
+    For example, setting `properties` of `birthday` and `address` for entity `user-1`:
+
+    ```
+    {
+      "appId" : 4,
+      "event" : "$set",
+      "entityType" : "user"
+      "entityId" : "1",
+      "properties" : {
+        "birthday" : "1984-10-11",
+        "address" : "1234 Street, San Francisco, CA 94107"
+      }
+    }
+    ```
+
+-   `properties` associated with an event:
+
+    For example `user-1` may have a `rate` event on `item-1` with rating value of `4`.
+
+    ```
+    {
+      "appId" : 4,
+      "event" : "rate",
+      "entityType" : "user"
+      "entityId" : "1",
+      "targetEntityType" : "item",
+      "targetEntityId" : "1"
+      "properties" : {
+        "rating" : 4
+      }
+    }
+    ```
+
 ## Debugging Recipes
+
+The following APIs are mainly for development or debugging purpose only. They should not be used by real application under normal circumstances.
 
 Replace `<your_eventId>` by a real one in the following.
 
@@ -400,12 +403,6 @@ print(client.delete_event(<your_eventId>))
 $ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>
 ```
 
-### Delete All Events of an appId
-
-```
-$ curl -i -X DELETE http://localhost:7070/events.json?appId=<your_appId>
-```
-
 ### Get All Events of an appId within a Time Range
 
 -   `eventTime >= startTime`
@@ -429,4 +426,10 @@ Example:
 
 ```
 $ curl -i -X GET http://localhost:7070/events.json?appId=2&startTime=2014-08-30T08:45:51.566Z&untilTime=2014-08-30T08:45:51.591Z
+```
+
+### Delete All Events of an appId
+
+```
+$ curl -i -X DELETE http://localhost:7070/events.json?appId=<your_appId>
 ```
