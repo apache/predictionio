@@ -72,7 +72,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
 
 ## 2. Setting item entity
 
-The `eventTime` is the time of the item being first created in your application. The property `pio_itypes` is required.
+The `eventTime` is the time of the item being first created in your application. The property `pio_itypes` is required when you set the item for the first time.
 
 If you need to update the properties of the existing item entity, simply create another `$set` event for this item entity with new properties values and the `eventTime` is the time of this change happened.
 
@@ -215,8 +215,8 @@ Your Events data should involve two EntityTypes:
 
 1. `pio_user` Entity: the user of your application
 2. `pio_item` Entity: the item of your application with the following properties:
-  - `pio_itypes`: array of String.
-  - `pio_starttime`: (Optional) ISO 8601 timestamp
+  - `pio_itypes`: array of String. Array of itypes. Each item should have at least one itype. The item may have multiple itypes.
+  - `pio_starttime`: (Optional) ISO 8601 timestamp. Start time that the item becomes available.
 
 Events between these two Entity Types should be recorded:
 
