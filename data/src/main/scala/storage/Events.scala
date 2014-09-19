@@ -48,15 +48,15 @@ case class Event(
 
 
 object EventValidation {
+
+  // general reserved prefix for built-in engine
+  def isReservedPrefix(name: String): Boolean = name.startsWith("$") ||
+    name.startsWith("pio_")
+
   // single entity reserved events
-  val singleReserved = Set("$set", "$unset", "$delete")
+  val specialEvents = Set("$set", "$unset", "$delete")
 
-  // general reserved event name
-  def isReserved(name: String): Boolean = name.startsWith("$")
-
-  def isSingleReserved(name: String): Boolean = singleReserved.contains(name)
-
-  def isSupportedReserved(name: String): Boolean = isSingleReserved(name)
+  def isSpecialEvents(name: String): Boolean = specialEvents.contains(name)
 
   def validate(e: Event) = {
 
@@ -73,12 +73,36 @@ object EventValidation {
       "targetEntityType and targetEntityId must be specified together.")
     require(!((e.event == "$unset") && e.properties.isEmpty),
       "properties cannot be empty for $unset event")
-    require(!isReserved(e.event) || isSupportedReserved(e.event),
+    require(!isReservedPrefix(e.event) || isSpecialEvents(e.event),
       s"${e.event} is not a supported reserved event name.")
-    require(!isSingleReserved(e.event) ||
+    require(!isSpecialEvents(e.event) ||
       ((e.targetEntityType == None) && (e.targetEntityId == None)),
       s"Reserved event ${e.event} cannot have targetEntity")
+    require(!isReservedPrefix(e.entityType) ||
+      isBuiltinEntityTypes(e.entityType),
+      s"Reserved entityType ${e.entityType} is not supported.")
+    require(e.targetEntityType.map{ t =>
+      (!isReservedPrefix(t) || isBuiltinEntityTypes(t))}.getOrElse(true),
+      s"Reserved targetEntityType ${e.targetEntityType} is not supported.")
+    validateProperties(e)
   }
+
+  // properties
+
+  val builtinEntityTypes = Set("pio_user", "pio_item")
+  val builtinProperties = Set(
+    "pio_itypes", "pio_starttime", "pio_endtime",
+    "pio_inactive", "pio_price", "pio_rating")
+
+  def isBuiltinEntityTypes(name: String) = builtinEntityTypes.contains(name)
+
+  def validateProperties(e: Event) = {
+    e.properties.keySet.foreach { k =>
+      require(!isReservedPrefix(k) || builtinProperties.contains(k),
+        s"Reserved proeprties ${k} is not supported.")
+    }
+  }
+
 }
 
 trait Events {
