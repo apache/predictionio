@@ -38,18 +38,30 @@ object EventJson4sSupport {
                 throw new MappingException(s"Fail to extract eventTime ${s}")
             }
           }.getOrElse(currentTime)
-        val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
+
+        // disable tags from API for now.
+        val tags = List()
+      //val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
+
         val appId = fields.get[Int]("appId")
-        val predictionKey = fields.getOpt[String]("predictionKey")
-        val creationTime = fields.getOpt[String]("creationTime")
-          .map{ s =>
-            try {
-              DataUtils.stringToDateTime(s)
-            } catch {
-              case _: Exception =>
-                throw new MappingException(s"Fail to extract creationTime ${s}")
-            }
-          }.getOrElse(currentTime)
+
+        // disable predictionKey from API for now
+        val predictionKey = None
+      //val predictionKey = fields.getOpt[String]("predictionKey")
+
+        // don't allow user set creationTime from API for now.
+        val creationTime = currentTime
+      //val creationTime = fields.getOpt[String]("creationTime")
+      //  .map{ s =>
+      //    try {
+      //      DataUtils.stringToDateTime(s)
+      //    } catch {
+      //      case _: Exception =>
+      //        throw new MappingException(s"Fail to extract creationTime ${s}")
+      //    }
+      //  }.getOrElse(currentTime)
+
+
         val newEvent = Event(
           event = event,
           entityType = entityType,
@@ -70,7 +82,30 @@ object EventJson4sSupport {
     }
   }
 
-  def writeJson: PartialFunction[Any, JValue] = serializeToJValue
+  def writeJson: PartialFunction[Any, JValue] = {
+    case d: Event => {
+      JObject(
+        JField("event", JString(d.event)) ::
+        JField("entityType", JString(d.entityType)) ::
+        JField("entityId", JString(d.entityId)) ::
+        JField("targetEntityType",
+          d.targetEntityType.map(JString(_)).getOrElse(JNothing)) ::
+        JField("targetEntityId",
+          d.targetEntityId.map(JString(_)).getOrElse(JNothing)) ::
+        JField("properties", d.properties.toJObject) ::
+        JField("eventTime", JString(DataUtils.dateTimeToString(d.eventTime))) ::
+        // disable tags from API for now
+        //JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
+        JField("appId", JInt(d.appId)) ::
+        // disable tags from API for now
+        //JField("predictionKey",
+        //  d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+        // don't show creationTime for now
+        //JField("creationTime",
+        //  JString(DataUtils.dateTimeToString(d.creationTime))) ::
+        Nil)
+    }
+  }
 
   def deserializeFromJValue: PartialFunction[JValue, Event] = {
     case jv: JValue => {

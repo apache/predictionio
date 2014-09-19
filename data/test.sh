@@ -66,7 +66,6 @@ testdata='{
     "prop1" : 1,
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -81,7 +80,6 @@ testdata='{
     "prop1" : "",
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -93,7 +91,6 @@ testdata='{
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -110,7 +107,6 @@ testdata='{
     "prop1" : 1,
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -138,7 +134,6 @@ testdata='{
     "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -153,7 +148,6 @@ testdata='{
   "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -166,7 +160,6 @@ testdata='{
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -181,7 +174,6 @@ testdata='{
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -197,7 +189,6 @@ testdata='{
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -233,7 +224,6 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -252,7 +242,6 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4
 }'
 
@@ -288,7 +277,6 @@ testdata='{
     "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -308,7 +296,6 @@ testdata='{
     "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -322,7 +309,6 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
@@ -341,7 +327,6 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "predictionKey" : "my_prediction_key"
 }'
 
@@ -360,7 +345,6 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "tags" : ["tag1", "tag2"],
   "appId" : 4,
   "predictionKey" : "my_prediction_key"
 }'
