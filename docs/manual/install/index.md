@@ -14,7 +14,7 @@ It is **very important** to meet the minimum version of the following
 technologies that power PredictionIO.
 
 * Apache Hadoop 2.4.0 (required only if YARN and HDFS are needed)
-* Apache HBase 0.98.5
+* Apache HBase 0.98.6
 * Apache Spark 1.1.0 for Hadoop 2.4
 * Elasticsearch 1.3.0
 * Java 7

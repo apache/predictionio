@@ -1,5 +1,5 @@
 <div>
-    <h2>Getting started</h2>
+    <h2>Getting Started</h2>
 	<ul>
 	    {% for sec in site.data.nav_gettingstarted %}
 	    <li><a href="{{ site.url }}{{ sec.href }}">{{ sec.title }}</a></li>
@@ -9,7 +9,7 @@
 	            <li><a href="{{ site.url }}{{ subsec.href }}">{{ subsec.title }}</a></li>
 	        {% endfor %}
 	        </ul>
-	        {% endif %}   
+	        {% endif %}
 	    </li>
 	    {% endfor %}
 	</ul>
@@ -24,7 +24,7 @@
                 <li><a href="{{ site.url }}{{ subsec.href }}">{{ subsec.title }}</a></li>
             {% endfor %}
             </ul>
-            {% endif %}   
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
@@ -39,11 +39,11 @@
                 <li><a href="{{ site.url }}{{ subsec.href }}">{{ subsec.title }}</a></li>
             {% endfor %}
             </ul>
-            {% endif %}   
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
-    
+
     <h2>Engine Builders' Guide</h2>
     <ul>
         {% for sec in site.data.nav_enginebuilders %}
@@ -54,11 +54,11 @@
                 <li><a href="{{ site.url }}{{ subsec.href }}">{{ subsec.title }}</a></li>
             {% endfor %}
             </ul>
-            {% endif %}   
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
-    
+
     <h2>Running on Production</h2>
     <ul>
         {% for sec in site.data.nav_production %}
@@ -69,17 +69,17 @@
                 <li><a href="{{ site.url }}{{ subsec.href }}">{{ subsec.title }}</a></li>
             {% endfor %}
             </ul>
-            {% endif %}   
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
-    
+
 	<h2>Contributors</h2>
 	<ul class="kb-menu">
 	  <li><a href="/contributorsguide.html">Contributors' Guide</a></li>
 	  <li><a href="/projects.html">Community-powered Projects</a></li>
 	</ul>
-	
+
 	<h2>SDKs and Plugins</h2>
 	<ul class="kb-menu">
 	  <li><a target="_blank" href="/java/api">Android &amp; Java SDK API Doc</a></li>

@@ -5,13 +5,15 @@ title: Engines
 
 # Engines
 
-An engine represents a type of prediction. Some examples of engines are Item Recommendation, Item Ranking, Churn Analysis. 
+An engine represents a type of prediction. Some examples of engines are Item
+Recommendation, Item Ranking, Churn Analysis.
 
 ## Getting Started with Engine Instance
 
 Let say you want to deploy an instance of Item Recommendation Engine for product
-recommendation. First of all, you will need to create an engine instance
-project based on the default Item Recommendation Engine. The new project will contain configuration for your engine instance.
+recommendation. First of all, you will need to create an engine instance project
+based on the default Item Recommendation Engine. The new project will contain
+configuration for your engine instance.
 
 ```
 $ $PIO_HOME/bin/pio instance io.prediction.engines.itemrec
@@ -60,12 +62,14 @@ than one engine instance, either launch a new console, or put the process into
 the background, then repeat the same command on a different port (by adding a
 `--port` argument).
 
-If it is your first time using PredictionIO, these [tutorials and samples](/tutorials/engines/) should be helpful.
+If it is your first time using PredictionIO, these [tutorials and
+samples](/tutorials/engines/) should be helpful.
 
 
 ## Schedule Model Re-training
 
-You may set up a crontab in Linux to update the predictive model with new data regularly. For example, to run the re-training every 6 hours:
+You may set up a crontab in Linux to update the predictive model with new data
+regularly. For example, to run the re-training every 6 hours:
 
 ```
 $ crontab -e
