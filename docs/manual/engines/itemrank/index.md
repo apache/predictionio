@@ -49,7 +49,13 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-(TODO)
+<?php 
+use predictionio\EventClient;
+
+$appId = 1;
+$client = new EventClient($appId);
+$client->setUser('id_1', array(), '2004-12-13T21:39:45.618-07:00');
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
@@ -105,7 +111,12 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-(TODO)
+<?php 
+$client->setItem('id_3', 
+           array('pio_itypes'=>array('type1')), 
+           '2004-12-13T21:39:45.618-07:00'
+         );
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
@@ -152,7 +163,13 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-(TODO)
+<?php 
+$client->recordUserActionOnItem('view', 
+                       'id_1', 'id_3',
+                       array(),
+                       '2012-01-20T20:33:41.452-07:00'
+         );
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
@@ -201,7 +218,13 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-(TODO)
+<?php 
+$client->recordUserActionOnItem('view', 
+                       'id_1', 'id_3',
+                       array('pio_rating'=>4),
+                       '2012-01-20T20:33:41.452-07:00'
+         );
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
@@ -313,7 +336,17 @@ $ curl -i -X POST http://localhost:8000 \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-(TODO)
+<?php 
+use predictionio\EngineClient;
+
+$engineClient = new EngineClient('http://localhost:8000');
+$engineClient->sendQuery(
+                      array(
+                        'uid'=>'123', 
+                        'iids'=>array('1', '3', '5', '10', '11')
+                      )
+               );
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
