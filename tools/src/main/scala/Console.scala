@@ -394,34 +394,23 @@ object Console extends Logging {
   }
 
   def createInstance(ca: ConsoleArgs): Unit = {
-    val itemrankEngineTemplate = Map(
-      "engine.json" -> templates.scala.txt.engineJson(
-        "io.prediction.engines.itemrank",
-        BuildInfo.version,
-        "PredictionIO ItemRank Engine",
-        "io.prediction.engines.itemrank.ItemRankEngine"),
-      joinFile(Seq("params", "datasource.json")) ->
-        templates.itemrank.params.txt.datasourceJson(),
-      joinFile(Seq("params", "preparator.json")) ->
-        templates.itemrank.params.txt.preparatorJson(),
-      joinFile(Seq("params", "algorithms.json")) ->
-        templates.itemrank.params.txt.algorithmsJson(),
-      joinFile(Seq("params", "serving.json")) ->
-        templates.itemrank.params.txt.servingJson())
-
     val targetDir = ca.directoryName.getOrElse(ca.projectName.get)
+    val engineId = ca.projectName.getOrElse("")
 
-    val template = ca.projectName.get match {
-      case "io.prediction.engines.itemrank" =>
-        info("Creating engine instance io.prediction.engines.itemrank at " +
-          targetDir)
-        itemrankEngineTemplate
-      case _ =>
-        error(s"${ca.projectName.get} is not a built-in engine. Aborting.")
-        sys.exit(1)
+    val templateOpt = BuiltInEngine.idInstanceMap.get(engineId)
+
+    if (templateOpt.isEmpty) {
+      val engineIdList = BuiltInEngine.instances
+        .zipWithIndex
+        .map { case(eit, idx) => s"  ${eit.engineId}" }
+        .mkString("\n")
+      error(s"${engineId} is not a built-in engine. \n" +
+        s"Below are built-in engines: \n$engineIdList\n" +
+        s"Aborting.")
+      sys.exit(1)
     }
 
-    writeTemplate(template, targetDir)
+    writeTemplate(templateOpt.get.template, targetDir)
 
     info(s"Engine instance created in subdirectory ${targetDir}.")
   }
