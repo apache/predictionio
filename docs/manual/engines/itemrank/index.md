@@ -54,7 +54,15 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-(TODO)
+from predictionio import EventClient                                                
+from datetime import datetime                                                       
+import pytz                                                                         
+                                                                                    
+event_client = EventClient(app_id=1, url="http://localhost:7070")                   
+                                                                                    
+tzinfo = pytz.timezone('US/Mountain')                                               
+event_time = datetime(2014, 12, 13, 21, 39, 45, 618, tzinfo=tzinfo)                 
+event_client.set_user(uid="id_1", event_time=event_time)     
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -102,7 +110,10 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-(TODO)
+event_client.set_item(                                                           
+    iid="id_3",                                                                  
+    properties={"pio_itypes": ["type1"]},                                        
+    event_time=event_time)                                                       
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -146,7 +157,11 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-(TODO)
+event_client.record_user_action_on_item(                                         
+    action="view",                                                               
+    uid="id_1",                                                                  
+    iid="id_3",                                                                  
+    event_time=datetime(2012, 1, 20, 20, 33, 41, 452, tzinfo=tzinfo))
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -191,7 +206,12 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-(TODO)
+event_client.record_user_action_on_item(                                         
+    action="view",                                                               
+    uid="id_1",                                                                  
+    iid="id_3",                                                                  
+    properties={"pio_rating": 4},                                                
+    event_time=datetime(2012, 1, 20, 20, 33, 41, 452, tzinfo=tzinfo))  
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -298,7 +318,12 @@ $ curl -i -X POST http://localhost:8000 \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-(TODO)
+from predictionio import EngineClient                                            
+engine_client = EngineClient(url="http://localhost:8000")                        
+                                                                                 
+prediction = engine_client.send_query(
+    data={"uid": "123", "iids": ["1", "3", "5", "10", "11"]})
+print(prediction)
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
