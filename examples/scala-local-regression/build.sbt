@@ -10,4 +10,4 @@ libraryDependencies ++= Seq(
   "io.prediction"    %% "core"          % "0.8.0-SNAPSHOT" % "provided",
   "org.apache.spark" %% "spark-core"    % "1.1.0" % "provided",
   "org.json4s"       %% "json4s-native" % "3.2.10",
-  "org.scalanlp"      % "nak"           % "1.2.1")
+  "org.scalanlp"     %% "nak"           % "1.3")
