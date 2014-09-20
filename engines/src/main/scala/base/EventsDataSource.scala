@@ -9,6 +9,8 @@ import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
 
+import grizzled.slf4j.Logger
+
 abstract class AbstractEventsDataSourceParams extends Params {
   val appId: Int
   // default None to include all itypes
@@ -24,6 +26,7 @@ class EventsDataSource[DP: ClassTag, Q, A](
   extends LDataSource[AbstractEventsDataSourceParams,
     DP, TrainingData, Q, A] {
 
+  @transient lazy val logger = Logger[this.type]
   @transient lazy val batchView = new LBatchView(dsp.appId,
     dsp.startTime, dsp.untilTime)
 
@@ -43,16 +46,24 @@ class EventsDataSource[DP: ClassTag, Q, A](
     val itemsMap = batchView
       .aggregateProperties(attributeNames.item)
       .map { case (entityId, dataMap) =>
-        val itemTD = new ItemTD(
-          iid = entityId,
-          itypes = dataMap.get[List[String]](attributeNames.itypes),
-          starttime = dataMap.getOpt[DateTime](attributeNames.starttime)
-            .map(_.getMillis),
-          endtime = dataMap.getOpt[DateTime](attributeNames.endtime)
-            .map(_.getMillis),
-          inactive = dataMap.getOpt[Boolean](attributeNames.inactive)
-            .getOrElse(false)
-        )
+        val itemTD = try {
+          new ItemTD(
+            iid = entityId,
+            itypes = dataMap.get[List[String]](attributeNames.itypes),
+            starttime = dataMap.getOpt[DateTime](attributeNames.starttime)
+              .map(_.getMillis),
+            endtime = dataMap.getOpt[DateTime](attributeNames.endtime)
+              .map(_.getMillis),
+            inactive = dataMap.getOpt[Boolean](attributeNames.inactive)
+              .getOrElse(false)
+          )
+        } catch {
+          case exception: Exception => {
+            logger.error(s"${exception}: entityType ${attributeNames.item} " +
+              s"entityID ${entityId}: ${dataMap}." )
+            throw exception
+          }
+        }
         (entityId -> itemTD)
       }.filter { case (id, (itemTD)) =>
         dsp.itypes.map{ t =>
@@ -75,13 +86,20 @@ class EventsDataSource[DP: ClassTag, Q, A](
         // make sure targetEntityId exist in this event
         require((e.targetEntityId != None),
           s"u2i Event: ${e} cannot have targetEntityId empty.")
-        new U2IActionTD(
-          uindex = usersMap(e.entityId)._2,
-          iindex = itemsMap(e.targetEntityId.get)._2,
-          action = e.event,
-          v = e.properties.getOpt[Int](attributeNames.rating),
-          t = e.eventTime.getMillis
-        )
+        try {
+          new U2IActionTD(
+            uindex = usersMap(e.entityId)._2,
+            iindex = itemsMap(e.targetEntityId.get)._2,
+            action = e.event,
+            v = e.properties.getOpt[Int](attributeNames.rating),
+            t = e.eventTime.getMillis
+          )
+        } catch {
+          case exception: Exception => {
+            logger.error(s"${exception}: event ${e}.")
+            throw exception
+          }
+        }
       }
 
     new TrainingData(

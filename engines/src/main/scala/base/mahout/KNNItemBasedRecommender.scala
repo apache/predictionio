@@ -80,6 +80,14 @@ class KNNItemBasedRecommender(dataModel: DataModel,
     estimatedPreference
   }
 
+  /* override default behavior which doesn't estimate if known preference */
+  @throws(classOf[TasteException])
+  override def estimatePreference(userID: Long, itemID: Long) = {
+    val preferencesFromUser: PreferenceArray = getDataModel()
+      .getPreferencesFromUser(userID)
+    doEstimatePreference(userID, preferencesFromUser, itemID)
+  }
+
   object RatedIdOdering extends Ordering[(Long, Double, Int)] {
     override def compare(a: (Long, Double, Int), b: (Long, Double, Int)) = a._2 compare b._2
   }

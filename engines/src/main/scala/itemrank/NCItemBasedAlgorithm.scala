@@ -49,7 +49,48 @@ case class NCItemBasedAlgorithmParams(
 class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
   extends base.mahout.AbstractNCItemBasedAlgorithm[Query, Prediction](params) {
 
+
   override
+  def predict(model: NCItemBasedAlgorithmModel,
+    query: Query): Prediction = {
+
+    val recomender = model.recommender
+    val rec: Seq[(String, Double)] = model.usersMap.get(query.uid)
+      .map { user =>
+        val uindex = user.index
+        // List[RecommendedItem] // getItemID(), getValue()
+        try {
+          query.iids.map { iid =>
+            val score = model.itemsIndexMap.get(iid).map { iindex =>
+              val p = recomender.estimatePreference(uindex, iindex).toDouble
+              model.freshnessRescorer.rescore(iindex, p)
+            }.getOrElse{ Double.NaN }
+            (iid, score)
+          }
+        } catch {
+          case e: NoSuchUserException => {
+            logger.info(
+              s"NoSuchUserException ${query.uid} (index ${uindex}) in model.")
+            query.iids.map((_, Double.NaN))
+          }
+          case e: Throwable => throw new RuntimeException(e)
+        }
+      }.getOrElse{
+        logger.info(s"Unknow user id ${query.uid}")
+        query.iids.map((_, Double.NaN))
+      }
+
+    // order of withoutScore is preserved
+    val (withScore, withoutScore) = rec.partition(!_._2.isNaN)
+    val ranked = withScore.sortBy(_._2).reverse
+
+    new Prediction(
+      items = (ranked ++ withoutScore),
+      isOriginal = (ranked.size == 0)
+    )
+  }
+
+  /*override
   def predict(model: NCItemBasedAlgorithmModel,
     query: Query): Prediction = {
 
@@ -82,10 +123,9 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
       (iid, r.getValue().toDouble)
     }
     // following adopted from 0.7 serving output logic
-    /**
-     * If no recommendations found for this user, simply return the original
-     * list.
-     */
+
+    // If no recommendations found for this user, simply return the original
+    // list.
     val iids = query.iids
     val iidsSet = iids.toSet
     val ranked: Seq[(String, Double)] = all.filter( r =>
@@ -100,5 +140,6 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
       items = (ranked ++ (unranked.map(i => (i, Double.NaN)))),
       isOriginal = (ranked.size == 0)
     )
-  }
+  }*/
+
 }

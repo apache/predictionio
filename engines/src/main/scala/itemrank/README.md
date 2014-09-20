@@ -7,8 +7,18 @@ Personalize the order of a list of items for each user.
 ## Register engine directly. Useful for testing after engine code change.
 ```
 $ cd engines/
-$ $PIO_HOME/bin/pio register --engine-json src/main/scala/itemrank/examples/engine.json
-$ $PIO_HOME/bin/pio train --engine-json src/main/scala/itemrank/examples/engine.json --params-path src/main/scala/itemrank/examples/params -ap ncMahoutItemBasedAlgo.json
+$ $PIO_HOME/bin/pio register \
+--engine-json src/main/scala/itemrank/examples/engine.json
+
+$ $PIO_HOME/bin/pio train \
+--engine-json src/main/scala/itemrank/examples/engine.json \
+--params-path src/main/scala/itemrank/examples/params \
+-ap ncMahoutItemBasedAlgo.json
+
+$ $PIO_HOME/bin/pio deploy \
+--engine-json src/main/scala/itemrank/examples/engine.json \
+--port 8000
+
 ```
 
 ## Register engine through distribution. Useful for params testing.

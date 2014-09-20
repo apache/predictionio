@@ -67,6 +67,9 @@ class NCItemBasedAlgorithmModel(
       params.recommendationTime,
       params.freshnessTimeUnit,
       validItemsMap)
+  // string id -> long index
+  @transient lazy val itemsIndexMap: Map[String, Long] = validItemsMap.map {
+      case (index, item) => (item.id, index) }
 
   private def buildRecommender(): Recommender = {
     logger.info("Building recommender...")
