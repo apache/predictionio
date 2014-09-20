@@ -111,9 +111,9 @@ class NCItemBasedAlgorithmModel(
 
   override def toString(): String = {
     val usersStr = usersMap.keysIterator.take(3)
-      .mkString(s"Users: (${usersMap.size}) [", ",", "]")
+      .mkString(s"Users: (${usersMap.size}) [", ",", ",...]")
     val itemsStr = validItemsMap.keysIterator.take(3)
-      .mkString(s"Items: (${usersMap.size}) [", ",", "]")
+      .mkString(s"Items: (${validItemsMap.size}) [", ",", ",...]")
 
     s"${this.getClass().getCanonicalName()}\n$usersStr\n$itemsStr"
   }
