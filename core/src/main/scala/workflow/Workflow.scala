@@ -519,6 +519,7 @@ object CoreWorkflow {
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
       val models: Seq[Seq[Any]] = extractPersistentModels(
+        sc,
         realEngineInstance,
         evalAlgoModelMap,
         algorithmParamsList,
@@ -593,6 +594,7 @@ object CoreWorkflow {
     logger.info("CoreWorkflow.run completed.")
 
     val models: Seq[Seq[Any]] = extractPersistentModels(
+      sc,
       realEngineInstance,
       evalAlgoModelMap,
       algorithmParamsList,
@@ -623,6 +625,7 @@ object CoreWorkflow {
     * model from scratch next time it is used.
     */
   def extractPersistentModels[PD, Q, P](
+    sc: SparkContext,
     realEngineInstance: EngineInstance,
     evalAlgoModelMap: Map[EI, Seq[(AI, Any)]],
     algorithmParamsList: Seq[(String, Params)],
@@ -633,7 +636,7 @@ object CoreWorkflow {
     def getPersistentModel(model: Any, instanceId: String, algoParams: Params)
     : Any = {
       if (model.asInstanceOf[IPersistentModel[Params]].save(
-          realEngineInstance.id, algoParams))
+          realEngineInstance.id, algoParams, sc))
         PersistentModelManifest(className = model.getClass.getName)
       else
         Unit

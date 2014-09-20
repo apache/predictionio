@@ -54,8 +54,9 @@ trait IPersistentModel[AP <: Params] {
     *
     * @param id ID of the run that trained this model.
     * @param params Algorithm parameters that were used to train this model.
+    * @param sc An Apache Spark context.
     */
-  def save(id: String, params: AP): Boolean
+  def save(id: String, params: AP, sc: SparkContext): Boolean
 }
 
 /** Implement an object that extends this trait for PredictionIO to support
@@ -99,7 +100,7 @@ trait IPersistentModelLoader[AP <: Params, M] {
   * @group Algorithm
   */
 trait IFSPersistentModel[AP <: Params] extends IPersistentModel[AP] {
-  def save(id: String, params: AP) = {
+  def save(id: String, params: AP, sc: SparkContext) = {
     Utils.save(id, this)
     true
   }

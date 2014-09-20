@@ -23,7 +23,7 @@ case class FeatureBasedModel(
     Map[String, SparseVector[Double]]())
 extends Serializable
 with IPersistentModel[EmptyParams] {
-  def save(id: String, p: EmptyParams): Boolean = true
+  def save(id: String, p: EmptyParams, sc: SparkContext): Boolean = true
 }
 
 object FeatureBasedModel

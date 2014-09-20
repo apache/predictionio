@@ -58,12 +58,9 @@ class PMatrixFactorizationModel(rank: Int,
     productFeatures: RDD[(Int, Array[Double])])
   extends MatrixFactorizationModel(rank, userFeatures, productFeatures)
   with IPersistentModel[AlgorithmParams] {
-  def save(id: String, params: AlgorithmParams): Boolean = {
+  def save(id: String, params: AlgorithmParams, sc: SparkContext): Boolean = {
     if (params.persistModel) {
-      FileUtils.writeStringToFile(
-        new File(s"/tmp/${id}/rank"),
-        rank.toString,
-        "UTF-8")
+      sc.parallelize(Seq(rank)).saveAsObjectFile(s"/tmp/${id}/rank")
       userFeatures.saveAsObjectFile(s"/tmp/${id}/userFeatures")
       productFeatures.saveAsObjectFile(s"/tmp/${id}/productFeatures")
     }
@@ -75,7 +72,7 @@ object PMatrixFactorizationModel
   extends IPersistentModelLoader[AlgorithmParams, PMatrixFactorizationModel] {
   def apply(id: String, params: AlgorithmParams, sc: Option[SparkContext]) = {
     new PMatrixFactorizationModel(
-      rank = Source.fromFile(s"/tmp/${id}/rank").mkString.toInt,
+      rank = sc.get.objectFile[Int](s"/tmp/${id}/rank").first,
       userFeatures = sc.get.objectFile(s"/tmp/${id}/userFeatures"),
       productFeatures = sc.get.objectFile(s"/tmp/${id}/productFeatures"))
   }
