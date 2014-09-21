@@ -363,7 +363,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
       Future {
         val table = client.connection.getTable(tableName)
         val start = PartialRowKey(appId, startTime.map(_.getMillis))
-        val stop = PartialRowKey(appId, untilTime.map(_.getMillis))
+        // if no untilTime, stop when reach next appId
+        val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
+          .getOrElse(PartialRowKey(appId+1))
         val scan = new Scan(start.toBytes, stop.toBytes)
         val scanner = table.getScanner(scan)
         table.close()

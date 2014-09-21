@@ -23,7 +23,9 @@ case class Event(
   val appId: Int,
   val predictionKey: Option[String] = None,
   val creationTime: DateTime = DateTime.now
-) /*{
+) {
+  require(appId >= 0, s"appId ${appId} cannot be negative.")
+/*
   import EventValidation._
 
   require(!event.isEmpty, "event must not be empty.")
@@ -43,8 +45,8 @@ case class Event(
     s"${event} is not a supported reserved event name.")
   require(!isSingleReserved(event) ||
     ((targetEntityType == None) && (targetEntityId == None)),
-    s"Reserved event ${event} cannot have targetEntity")
-}*/
+    s"Reserved event ${event} cannot have targetEntity")*/
+}
 
 object EventValidation {
 
