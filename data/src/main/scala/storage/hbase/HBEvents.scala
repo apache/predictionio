@@ -52,6 +52,8 @@ import scala.concurrent.ExecutionContext
 
 import java.util.UUID
 
+import org.apache.commons.codec.binary.Base64
+
 class HBEvents(client: HBClient, namespace: String) extends Events with Logging {
 
   // check namespace exist
@@ -145,16 +147,14 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     val millis: Long,
     val uuidLow: Long
   ) {
-    val toBytes: Array[Byte] = {
+    lazy val toBytes: Array[Byte] = {
       // add UUID least significant bits for multiple actions at the same time
       // (UUID's most significantbits are actually timestamp,
       // use eventTime instead).
       Bytes.toBytes(appId) ++ Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
     }
-    override val toString: String = {
-      Seq(appId.toHexString,
-        millis.toHexString,
-        uuidLow.toHexString).mkString("-")
+    override def toString: String = {
+      Base64.encodeBase64URLSafeString(toBytes)
     }
   }
 
@@ -169,26 +169,20 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     // get RowKey from string representation
     def apply(s: String): RowKey = {
       try {
-        val data = s.split("-")
-        val key = new RowKey(
-          // use BigInt beause toHexString doesn't have minius sign.
-          // get format error if do Long.parse(-1L.toHexString, 16)
-          appId = BigInt(data(0), 16).toInt,
-          millis = BigInt(data(1), 16).toLong,
-          uuidLow = BigInt(data(2), 16).toLong
-        )
-        require(s == key.toString,
-          s"RowKey string ${s} does not match" +
-          s"converted version: ${key.toString}")
-        key
+        apply(Base64.decodeBase64(s))
       } catch {
-        case e: Exception => throw new Exception(
-          s"Failed to convert String ${s} to RowKey", e)
+        case e: Exception => throw new RowKeyException(
+          s"Failed to convert String ${s} to RowKey because ${e}", e)
       }
     }
 
-
     def apply(b: Array[Byte]): RowKey = {
+      if (b.size != 20) {
+        val bString = b.mkString(",")
+        throw new RowKeyException(
+          s"Incorrect byte array size. Bytes: ${bString}.")
+      }
+
       new RowKey(
         appId = Bytes.toInt(b.slice(0, 4)),
         millis = Bytes.toLong(b.slice(4, 12)),
@@ -196,6 +190,11 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
       )
     }
   }
+
+  class RowKeyException(msg: String, cause: Exception)
+    extends Exception(msg, cause) {
+      def this(msg: String) = this(msg, null)
+    }
 
   override
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
@@ -339,9 +338,10 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
         } else {
           Right(None)
         }
-      }/*.recover {
-        case e: Exception => Left(StorageError(e.toString))
-      }*/
+      }.recover {
+        case e: RowKeyException => Left(StorageError(e.toString))
+        case e: Exception => throw e
+      }
     }
 
   override

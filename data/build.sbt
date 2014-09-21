@@ -28,5 +28,6 @@ libraryDependencies ++= Seq(
   "org.mongodb"            %% "casbah"          % "2.7.2",
   "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
   "org.slf4j"               % "slf4j-log4j12"   % "1.7.7",
+  "commons-codec"           % "commons-codec"   % "1.9",
   "org.spark-project.akka" %% "akka-actor"      % "2.2.3-shaded-protobuf",
   "org.specs2"             %% "specs2"          % "2.3.13" % "test")

@@ -95,7 +95,7 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
                   eventOpt.map( event =>
                     (StatusCodes.OK, event)
                   ).getOrElse(
-                    (StatusCodes.NotFound, None)
+                    (StatusCodes.NotFound, Map("message" -> "Not Found"))
                   )
                 }
               }
@@ -114,9 +114,9 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
                   (StatusCodes.InternalServerError, Map("message" -> message))
                 case Right(found) =>
                   if (found) {
-                    (StatusCodes.OK, Map("found" -> found))
+                    (StatusCodes.OK, Map("message" -> "Found"))
                   } else {
-                    (StatusCodes.NotFound, None)
+                    (StatusCodes.NotFound, Map("message" -> "Not Found"))
                   }
               }
             }
