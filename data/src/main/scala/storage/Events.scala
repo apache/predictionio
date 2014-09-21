@@ -46,8 +46,9 @@ case class Event(
     s"Reserved event ${event} cannot have targetEntity")
 }*/
 
-
 object EventValidation {
+
+  val defaultTimeZone = DateTimeZone.UTC
 
   // general reserved prefix for built-in engine
   def isReservedPrefix(name: String): Boolean = name.startsWith("$") ||

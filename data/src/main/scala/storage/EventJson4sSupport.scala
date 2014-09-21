@@ -6,7 +6,6 @@ import org.json4s._
 import org.json4s.native.Serialization.{ read, write }
 
 import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 
 object EventJson4sSupport {
 
@@ -28,7 +27,7 @@ object EventJson4sSupport {
         val properties = fields.getOpt[Map[String, JValue]]("properties")
           .getOrElse(Map())
         // default currentTime expressed as UTC timezone
-        lazy val currentTime = DateTime.now(DateTimeZone.UTC)
+        lazy val currentTime = DateTime.now(EventValidation.defaultTimeZone)
         val eventTime = fields.getOpt[String]("eventTime")
           .map{ s =>
             try {

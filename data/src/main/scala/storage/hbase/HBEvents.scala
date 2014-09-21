@@ -1,6 +1,7 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.DataMap
@@ -61,21 +62,28 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
   val tableName = TableName.valueOf(namespace, "events")
   //val table = new HTable(client.conf, tableName)
 
+  // column nams for "e" column family
+  val colNames: Map[String, Array[Byte]] = Map(
+    "event" -> "e",
+    "entityType" -> "ety",
+    "entityId" -> "eid",
+    "targetEntityType" -> "tety",
+    "targetEntityId" -> "teid",
+    "properties" -> "p",
+    "predictionKey" -> "pk",
+    "eventTimeZone" -> "etz",
+    "creationTimeZone" -> "ctz"
+  ).mapValues(Bytes.toBytes(_))
+
   // create table if not exist
   if (!client.admin.tableExists(tableName)) {
     val tableDesc = new HTableDescriptor(tableName)
-    // general event related
-    // e:ttype - target entity type
-    // e:tid - target entity id
-    // e:p - properties
-    // e:pk - predictionkey
-    // e:etz - event time zone
-    // e:ctz - creation time zone
     tableDesc.addFamily(new HColumnDescriptor("e"))
-    tableDesc.addFamily(new HColumnDescriptor("tag")) // tag: tag-name
+    tableDesc.addFamily(new HColumnDescriptor("r")) // reserved
     client.admin.createTable(tableDesc)
   }
 
+  /*
   private def eventToRowKey(event: Event): String = {
     // TODO: could be bad since writing to same region for same appId?
     // TODO: hash entityId and event to avoid arbitaray string length
@@ -89,8 +97,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
       event.entityId,
       uuid
     ).mkString("-")
-  }
-
+  }*/
+/*
   private def startStopRowKey(appId: Int, startTime: Option[DateTime],
     untilTime: Option[DateTime]) = {
 
@@ -103,7 +111,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
         (x + "-" + start.getMillis + "-", x + "-" + end.getMillis + "-")
     }
   }
-
+*/
+/*
   private def rowKeyToPartialEvent(rowKey: String): Event = {
     val data = rowKey.split("-")
 
@@ -115,10 +124,63 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
       appId = data(0).toInt
     )
   }
+*/
+  class RowKey(
+    val appId: Int,
+    val millis: Long,
+    val uuidLow: Long
+  ) {
+    val toBytes: Array[Byte] = {
+      // add UUID least significant bits for multiple actions at the same time
+      // (UUID's most significantbits are actually timestamp,
+      // use eventTime instead).
+      Bytes.toBytes(appId) ++ Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
+    }
+    override val toString: String = {
+      Seq(appId.toHexString,
+        millis.toHexString,
+        uuidLow.toHexString).mkString("-")
+    }
+  }
 
-  private def rowKeyToEventId(rowKey: String): String = rowKey
+  case class PartialRowKey(val appId: Int, val millis: Option[Long] = None) {
+    val toBytes: Array[Byte] = {
+      Bytes.toBytes(appId) ++
+        (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
+    }
+  }
 
-  private def eventIdToRowKey(eventId: String): String = eventId
+  object RowKey {
+    // get RowKey from string representation
+    def apply(s: String): RowKey = {
+      try {
+        val data = s.split("-")
+        val key = new RowKey(
+          // use BigInt beause toHexString doesn't have minius sign.
+          // get format error if do Long.parse(-1L.toHexString, 16)
+          appId = BigInt(data(0), 16).toInt,
+          millis = BigInt(data(1), 16).toLong,
+          uuidLow = BigInt(data(2), 16).toLong
+        )
+        require(s == key.toString,
+          s"RowKey string ${s} does not match" +
+          s"converted version: ${key.toString}")
+        key
+      } catch {
+        case e: Exception => throw new Exception(
+          s"Failed to convert String ${s} to RowKey", e)
+      }
+    }
+
+
+    def apply(b: Array[Byte]): RowKey = {
+      new RowKey(
+        appId = Bytes.toInt(b.slice(0, 4)),
+        millis = Bytes.toLong(b.slice(4, 12)),
+        uuidLow = Bytes.toLong(b.slice(12, 20))
+      )
+    }
+  }
 
   override
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
@@ -126,87 +188,123 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future {
       //val table = new HTable(client.conf, tableName)
       val table = client.connection.getTable(tableName)
-      val rowKey = eventToRowKey(event)
-      val eBytes = Bytes.toBytes("e")
-      val put = new Put(Bytes.toBytes(rowKey), event.creationTime.getMillis)
-      if (event.targetEntityType != None) {
-        put.add(eBytes, Bytes.toBytes("ttype"),
-          Bytes.toBytes(event.targetEntityType.get))
-      }
-      if (event.targetEntityId != None) {
-        put.add(eBytes, Bytes.toBytes("tid"),
-          Bytes.toBytes(event.targetEntityId.get))
-      }
-      if (!event.properties.isEmpty) {
-        put.add(eBytes, Bytes.toBytes("p"),
-          Bytes.toBytes(write(event.properties.toJObject)))
-      }
-      event.predictionKey.foreach { pk =>
-        put.add(eBytes, Bytes.toBytes("pk"), Bytes.toBytes(pk))
-      }
-      put.add(eBytes, Bytes.toBytes("etz"),
-        Bytes.toBytes(event.eventTime.getZone.getID))
-      put.add(eBytes, Bytes.toBytes("ctz"),
-        Bytes.toBytes(event.creationTime.getZone.getID))
+      val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
+      val rowKey = new RowKey(
+        appId = event.appId,
+        millis = event.eventTime.getMillis,
+        uuidLow = uuidLow
+      )
 
-      // use zero-length byte array for tag cell value
-      event.tags.foreach { tag =>
-        put.add(Bytes.toBytes("tag"), Bytes.toBytes(tag), Array[Byte]())
+      val eBytes = Bytes.toBytes("e")
+      // use creationTime as HBase's cell timestamp
+      val put = new Put(rowKey.toBytes, event.creationTime.getMillis)
+
+      def addStringToE(col: Array[Byte], v: String) = {
+        put.add(eBytes, col, Bytes.toBytes(v))
       }
+
+      addStringToE(colNames("event"), event.event)
+      addStringToE(colNames("entityType"), event.entityType)
+      addStringToE(colNames("entityId"), event.entityId)
+
+      event.targetEntityType.foreach { targetEntityType =>
+        addStringToE(colNames("targetEntityType"), targetEntityType)
+      }
+
+      event.targetEntityId.foreach { targetEntityId =>
+        addStringToE(colNames("targetEntityId"), targetEntityId)
+      }
+
+      // TODO: make properties Option[]
+      if (!event.properties.isEmpty) {
+        addStringToE(colNames("properties"), write(event.properties.toJObject))
+      }
+
+      event.predictionKey.foreach { predictionKey =>
+        addStringToE(colNames("predictionKey"), predictionKey)
+      }
+
+      val eventTimeZone = event.eventTime.getZone
+      if (!eventTimeZone.equals(EventValidation.defaultTimeZone)) {
+        addStringToE(colNames("eventTimeZone"), eventTimeZone.getID)
+      }
+
+      val creationTimeZone = event.creationTime.getZone
+      if (!creationTimeZone.equals(EventValidation.defaultTimeZone)) {
+        addStringToE(colNames("creationTimeZone"), creationTimeZone.getID)
+      }
+
+      // can use zero-length byte array for tag cell value
 
       table.put(put)
       table.flushCommits()
       table.close()
-      Right(rowKeyToEventId(rowKey))
-    }
+      Right(rowKey.toString)
+    }/*.recover {
+      case e: Exception => Left(StorageError(e.toString))
+    }*/
   }
 
   private def resultToEvent(result: Result): Event = {
-    val rowKey = Bytes.toString(result.getRow())
+    val rowKey = RowKey(result.getRow())
 
     val eBytes = Bytes.toBytes("e")
-    val e = result.getFamilyMap(eBytes)
-    val tag = result.getFamilyMap(Bytes.toBytes("tag"))
+    //val e = result.getFamilyMap(eBytes)
 
-    val ttype = e.get(Bytes.toBytes("ttype"))
-    val targetEntityType = if (ttype != null) Some(Bytes.toString(ttype))
-      else None
+    def getStringCol(col: String): String = {
+      val r = result.getValue(eBytes, colNames(col))
+      require(r != null,
+        s"Failed to get value for column ${col}. " +
+        s"Rowkey: ${rowKey.toString} " +
+        s"StringBinary: ${Bytes.toStringBinary(result.getRow())}.")
 
-    val tid = e.get(Bytes.toBytes("tid"))
-    val targetEntityId = if (tid != null) Some(Bytes.toString(tid)) else None
+      Bytes.toString(r)
+    }
 
-    val p = e.get(Bytes.toBytes("p"))
-    val properties: DataMap = if (p != null)
-      DataMap(read[JObject](Bytes.toString(p))) else DataMap()
+    def getOptStringCol(col: String): Option[String] = {
+      val r = result.getValue(eBytes, colNames(col))
+      if (r == null)
+        None
+      else
+        Some(Bytes.toString(r))
+    }
 
-    val pk = e.get(Bytes.toBytes("pk"))
-    val predictionKey = if (pk != null) Some(Bytes.toString(pk)) else None
+    def getTimestamp(col: String): Long = {
+      result.getColumnLatestCell(eBytes, colNames(col)).getTimestamp()
+    }
 
-    val etz = e.get(Bytes.toBytes("etz"))
-    val eventTimeZone = DateTimeZone.forID(Bytes.toString(etz))
+    val event = getStringCol("event")
+    val entityType = getStringCol("entityType")
+    val entityId = getStringCol("entityId")
+    val targetEntityType = getOptStringCol("targetEntityType")
+    val targetEntityId = getOptStringCol("targetEntityId")
+    val properties: DataMap = getOptStringCol("properties")
+      .map(s => DataMap(read[JObject](s))).getOrElse(DataMap())
+    val predictionKey = getOptStringCol("predictionKey")
+    val eventTimeZone = getOptStringCol("eventTimeZone")
+      .map(DateTimeZone.forID(_))
+      .getOrElse(EventValidation.defaultTimeZone)
+    val creationTimeZone = getOptStringCol("creationTimeZone")
+      .map(DateTimeZone.forID(_))
+      .getOrElse(EventValidation.defaultTimeZone)
 
-    val ctz = e.get(Bytes.toBytes("ctz"))
-    val creationTimeZone = DateTimeZone.forID(Bytes.toString(ctz))
-
-    val ctzCell = result.getColumnLatestCell(eBytes, Bytes.toBytes("ctz"))
     val creationTime: DateTime = new DateTime(
-      ctzCell.getTimestamp(), creationTimeZone)
+      getTimestamp("event"), creationTimeZone
+    )
 
-    val tags = if (tag != null)
-      tag.keySet.toSeq.map(Bytes.toString(_))
-    else Seq()
-
-    val partialEvent = rowKeyToPartialEvent(rowKey)
-    val event = partialEvent.copy(
+    Event(
+      event = event,
+      entityType = entityType,
+      entityId = entityId,
       targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
       properties = properties,
-      tags = tags,
+      eventTime = new DateTime(rowKey.millis, eventTimeZone),
+      tags = Seq(),
+      appId = rowKey.appId,
       predictionKey = predictionKey,
-      eventTime = partialEvent.eventTime.withZone(eventTimeZone),
       creationTime = creationTime
     )
-    event
   }
 
   override
@@ -214,7 +312,8 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future[Either[StorageError, Option[Event]]] = {
       Future {
         val table = client.connection.getTable(tableName)
-        val get = new Get(Bytes.toBytes(eventId))
+        val rowKey = RowKey(eventId)
+        val get = new Get(rowKey.toBytes)
 
         val result = table.get(get)
         table.close()
@@ -225,7 +324,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
         } else {
           Right(None)
         }
-      }
+      }/*.recover {
+        case e: Exception => Left(StorageError(e.toString))
+      }*/
     }
 
   override
@@ -233,9 +334,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future[Either[StorageError, Boolean]] = {
     Future {
       val table = client.connection.getTable(tableName)
-      val rowKeyBytes = Bytes.toBytes(eventIdToRowKey(eventId))
-      val exists = table.exists(new Get(rowKeyBytes))
-      table.delete(new Delete(rowKeyBytes))
+      val rowKey = RowKey(eventId)
+      val exists = table.exists(new Get(rowKey.toBytes))
+      table.delete(new Delete(rowKey.toBytes))
       table.close()
       Right(exists)
     }
@@ -246,8 +347,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
         val table = client.connection.getTable(tableName)
-        val (start, stop) = startStopRowKey(appId, None, None)
-        val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
+        val start = PartialRowKey(appId)
+        val stop = PartialRowKey(appId+1)
+        val scan = new Scan(start.toBytes, stop.toBytes)
         val scanner = table.getScanner(scan)
         table.close()
         Right(scanner.iterator().map { resultToEvent(_) })
@@ -260,8 +362,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
         val table = client.connection.getTable(tableName)
-        val (start, stop) = startStopRowKey(appId, startTime, untilTime)
-        val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
+        val start = PartialRowKey(appId, startTime.map(_.getMillis))
+        val stop = PartialRowKey(appId, untilTime.map(_.getMillis))
+        val scan = new Scan(start.toBytes, stop.toBytes)
         val scanner = table.getScanner(scan)
         table.close()
         Right(scanner.iterator().map { resultToEvent(_) })
@@ -274,8 +377,9 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     Future {
       // TODO: better way to handle range delete
       val table = client.connection.getTable(tableName)
-      val (start, stop) = startStopRowKey(appId, None, None)
-      val scan = new Scan(Bytes.toBytes(start), Bytes.toBytes(stop))
+      val start = PartialRowKey(appId)
+      val stop = PartialRowKey(appId+1)
+      val scan = new Scan(start.toBytes, stop.toBytes)
       val scanner = table.getScanner(scan)
       val it = scanner.iterator()
       while (it.hasNext()) {
