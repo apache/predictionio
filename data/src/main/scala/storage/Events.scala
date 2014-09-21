@@ -41,29 +41,7 @@ case class Event(
   val appId: Int,
   val predictionKey: Option[String] = None,
   val creationTime: DateTime = DateTime.now
-) {
-/*
-  import EventValidation._
-
-  require(!event.isEmpty, "event must not be empty.")
-  require(!entityType.isEmpty, "entityType must not be empty string.")
-  require(!entityId.isEmpty, "entityId must not be empty string.")
-  require(targetEntityType.map(!_.isEmpty).getOrElse(true),
-    "targetEntityType must not be empty string")
-  require(targetEntityId.map(!_.isEmpty).getOrElse(true),
-    "targetEntityId must not be empty string.")
-  require(!((targetEntityType != None) && (targetEntityId == None)),
-    "targetEntityType and targetEntityId must be specified together.")
-  require(!((targetEntityType == None) && (targetEntityId != None)),
-    "targetEntityType and targetEntityId must be specified together.")
-  require(!((event == "$unset") && properties.isEmpty),
-    "properties cannot be empty for $unset event")
-  require(!isReserved(event) || isSupportedReserved(event),
-    s"${event} is not a supported reserved event name.")
-  require(!isSingleReserved(event) ||
-    ((targetEntityType == None) && (targetEntityId == None)),
-    s"Reserved event ${event} cannot have targetEntity")*/
-}
+)
 
 case class EventID(
   val bytes: Seq[Byte]

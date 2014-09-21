@@ -101,48 +101,6 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     client.admin.createTable(tableDesc)
   }
 
-  /*
-  private def eventToRowKey(event: Event): String = {
-    // TODO: could be bad since writing to same region for same appId?
-    // TODO: hash entityId and event to avoid arbitaray string length
-    // and conflict with delimiter
-    val uuid: Long = UUID.randomUUID().getLeastSignificantBits
-    Seq(
-      event.appId,
-      event.eventTime.getMillis,
-      event.event,
-      event.entityType,
-      event.entityId,
-      uuid
-    ).mkString("-")
-  }*/
-/*
-  private def startStopRowKey(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime]) = {
-
-    (appId, startTime, untilTime) match {
-      case (x, None, None) => (x + "-", (x+1) + "-")
-      case (x, Some(start), None) => (x + "-" + start.getMillis + "-",
-        (x+1) + "-")
-      case (x, None, Some(end)) => (x + "-", x + "-" + end.getMillis + "-")
-      case (x, Some(start), Some(end)) =>
-        (x + "-" + start.getMillis + "-", x + "-" + end.getMillis + "-")
-    }
-  }
-*/
-/*
-  private def rowKeyToPartialEvent(rowKey: String): Event = {
-    val data = rowKey.split("-")
-
-    Event(
-      event = data(2),
-      entityType = data(3),
-      entityId = data(4),
-      eventTime = new DateTime(data(1).toLong), // missing timezone info
-      appId = data(0).toInt
-    )
-  }
-*/
   class RowKey(
     val appId: Int,
     val millis: Long,
