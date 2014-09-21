@@ -90,7 +90,7 @@ PredictionIO comes with the following engines.
 * [Item Recommendation](/engines/itemrec)
 * [Item Similarity](/engines/itemsim)
 
-You may start with these [tutorials and samples](tutorials.html).
+You may start with these [tutorials and samples](/tutorials/engines).
 
 ## Building your own Engine
 
