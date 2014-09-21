@@ -257,37 +257,57 @@ This built-in engine requires the following Events data:
 Your Events data should involve two EntityTypes:
 
 1. `pio_user` Entity: the user of your application
-2. `pio_item` Entity: the item of your application with the following properties:
-  - `pio_itypes`: array of String. Array of itypes. Each item should have at least one itype. The item may have multiple itypes.
-  - `pio_starttime`: (Optional) ISO 8601 timestamp. Start time that the item becomes available.
+2. `pio_item` Entity: the item of your application with the following
+   properties:
+  - `pio_itypes`: array of String. Array of itypes. Each item should have at
+    least one itype. The item may have multiple itypes.
+  - `pio_starttime`: (Optional) ISO 8601 timestamp. Start time that the item
+    becomes available.
 
 Events between these two Entity Types should be recorded:
 
-- user-to-item action Events: such as like, rate and view, with following properties:
+- user-to-item action Events: such as like, rate and view, with following
+  properties:
   - `pio_rating`: (Optional) integer rating
 
 
 > **Note: Name of EntityType and Properties**
 >
-> Although you are allowed to use different names for the Entity Type and Properties as long as they represent same meaning (For example, use the name `user` instead of `pio_user` or use `t` instead of `pio_starttime`). We highly recommend to follow our name convention when using built-in engines. If you use diffrent names for these attributes, you need to modify the `attributeNames` field defined in the file `datasource.json`.
+> Although you are allowed to use different names for the Entity Type and
+> Properties as long as they represent same meaning (For example, use the name
+> `user` instead of `pio_user` or use `t` instead of `pio_starttime`). We highly
+> recommend to follow our name convention when using built-in engines. If you
+> use diffrent names for these attributes, you need to modify the
+> `attributeNames` field defined in the file `datasource.json`.
 
 > **Note: Extra User and Item Entity Properties**
 >
-> Your user data may contain additional properties, such as age and gender. Your item data may also contain other properties, such as price and title. What kind of properties you need to provide depends on the algorithm you choose to build the model.
+> Your user data may contain additional properties, such as age and gender. Your
+> item data may also contain other properties, such as price and title. What
+> kind of properties you need to provide depends on the algorithm you choose to
+> build the model.
 >
-> Currently, all built-in algorithms in PredictionIO are Collaborative Filtering (CF) algorithms. CF algorithms derive the feature vectors of users and items from previous behaviors, i.e. score, only. Therefore, you simply need to identify each user and item with a unique ID. No extra data properties are needed.
+> Currently, all built-in algorithms in PredictionIO are Collaborative Filtering
+> (CF) algorithms. CF algorithms derive the feature vectors of users and items
+> from previous behaviors, i.e. score, only. Therefore, you simply need to
+> identify each user and item with a unique ID. No extra data properties are
+> needed.
 >
-> It does not mean that CF algorithms are less accurate though. In fact, researches (such as this) show the exact opposite. An algorithm that requires no data attribute can be the winning algorithm.
+> It does not mean that CF algorithms are less accurate though. In fact,
+> researches (such as this) show the exact opposite. An algorithm that requires
+> no data attribute can be the winning algorithm.
 
 # Data Source
 
-The engine comes with a Data Source which read the events data from the datastore for processing.
+The engine comes with a Data Source which read the events data from the
+datastore for processing.
 
 You need to modify `appId` in the params file `datasource.json` to your appId.
 
 # Data Preparator
 
-The engine comes with a Data Preparator to parpare data for the built-in algorithims. It has the following parameters:
+The engine comes with a Data Preparator to parpare data for the built-in
+algorithims. It has the following parameters:
 
 Field | Type | Description
 :---- | :----| :------
@@ -391,11 +411,15 @@ Field | Description
 
 ## Changing Algorithm and Its Parameters
 
-By default, **Mahout Item Based Algorithm** (`"mahoutItemBased"`) is used. You can switch to another algorithm or modify parameters by modifying the file  `algorithms.json` with any of above algorithm's JSON parameters setting.
+By default, **Mahout Item Based Algorithm** (`"mahoutItemBased"`) is used. You
+can switch to another algorithm or modify parameters by modifying the file
+`algorithms.json` with any of above algorithm's JSON parameters setting.
 
-Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips on selecting the right algorithm and setting the parameters properly.
+Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips
+on selecting the right algorithm and setting the parameters properly.
 
-> You may also [implement and add your own algorithm](/cookbook/addalgorithm.html) to the engine easily.
+> You may also [implement and add your own
+> algorithm](/cookbook/addalgorithm.html) to the engine easily.
 
 Item Ranking Engine comes with the following algorithms:
 
