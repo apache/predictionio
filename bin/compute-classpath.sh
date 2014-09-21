@@ -136,5 +136,8 @@ fi
 if [ -n "$YARN_CONF_DIR" ]; then
   CLASSPATH="$CLASSPATH:$YARN_CONF_DIR"
 fi
+if [ -n "$HBASE_CONF_DIR" ]; then
+  CLASSPATH="$CLASSPATH:$HBASE_CONF_DIR"
+fi
 
 echo "$CLASSPATH"
