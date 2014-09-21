@@ -1,4 +1,20 @@
+/** Copyright 2014 TappingStone, Inc.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+
 package io.prediction.tools
+
 import io.prediction.core.BuildInfo
 
 case class EngineInstanceTemplate(
@@ -12,7 +28,7 @@ case class EngineInstanceTemplate(
   val servingJson: Any) {
 
   lazy val template = Map(
-    "engine.json" -> 
+    "engine.json" ->
         templates.scala.txt.engineJson(engineId, version, name, engineFactory),
     Console.joinFile(Seq("params", "datasource.json")) -> dataSourceJson,
     Console.joinFile(Seq("params", "preparator.json")) -> preparatorJson,
@@ -48,4 +64,3 @@ object BuiltInEngine {
     .map { eit => (eit.engineId -> eit) }
     .toMap
 }
-
