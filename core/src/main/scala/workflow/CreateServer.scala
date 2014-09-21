@@ -320,9 +320,11 @@ class ServerActor[Q, P](
     val models: Seq[Any],
     val serving: BaseServing[_ <: Params, Q, P],
     val servingParams: Params) extends Actor with HttpService {
-
-  lazy val gson = new Gson
   val serverStartTime = DateTime.now
+  lazy val gson = new Gson
+  val log = Logging(context.system, this)
+  val (javaAlgorithms, scalaAlgorithms) =
+    algorithms.partition(_.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
 
   def actorRefFactory = context
 
@@ -332,50 +334,61 @@ class ServerActor[Q, P](
     path("") {
       get {
         respondWithMediaType(`text/html`) {
-          complete {
-            html.index(
-              args,
-              manifest,
-              engineInstance,
-              algorithms.map(_.toString),
-              algorithmsParams.map(_.toString),
-              models.map(_.toString),
-              servingParams.toString,
-              serverStartTime).toString
+          detach() {
+            complete {
+              html.index(
+                args,
+                manifest,
+                engineInstance,
+                algorithms.map(_.toString),
+                algorithmsParams.map(_.toString),
+                models.map(_.toString),
+                servingParams.toString,
+                serverStartTime).toString
+            }
           }
         }
-      } ~
+      }
+    } ~
+    path("queries.json") {
       post {
-        entity(as[String]) { queryString =>
-          val (javaAlgorithms, scalaAlgorithms) =
-            algorithms.partition(_.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
-          val javaQuery = if (!javaAlgorithms.isEmpty) {
-            Some(gson.fromJson(
-              queryString,
-              javaAlgorithms.head.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].
-                queryClass))
-          } else None
-          val scalaQuery = if (!scalaAlgorithms.isEmpty) {
-            Some(Extraction.extract(parse(queryString))(
-              scalaAlgorithms.head.querySerializer,
-              scalaAlgorithms.head.queryManifest))
-          } else None
-          val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-            if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
-              a.predictBase(models(ai), javaQuery.get)
-            else
-              a.predictBase(models(ai), scalaQuery.get)
-          }
-          val json = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
-            val prediction = serving.serveBase(javaQuery.get, predictions)
-            gson.toJson(prediction)
-          } else {
-            val prediction = serving.serveBase(scalaQuery.get, predictions)
-            compact(render(Extraction.decompose(prediction)(
-              scalaAlgorithms.head.querySerializer)))
-          }
-          respondWithMediaType(`application/json`) {
-            complete(json)
+        detach() {
+          entity(as[String]) { queryString =>
+            try {
+              val javaQuery = if (!javaAlgorithms.isEmpty) {
+                Some(gson.fromJson(
+                  queryString,
+                  javaAlgorithms.head.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].
+                    queryClass))
+              } else None
+              val scalaQuery = if (!scalaAlgorithms.isEmpty) {
+                Some(Extraction.extract(parse(queryString))(
+                  scalaAlgorithms.head.querySerializer,
+                  scalaAlgorithms.head.queryManifest))
+              } else None
+              val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
+                if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
+                  a.predictBase(models(ai), javaQuery.get)
+                else
+                  a.predictBase(models(ai), scalaQuery.get)
+              }
+              val json = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
+                val prediction = serving.serveBase(javaQuery.get, predictions)
+                gson.toJson(prediction)
+              } else {
+                val prediction = serving.serveBase(scalaQuery.get, predictions)
+                compact(render(Extraction.decompose(prediction)(
+                  scalaAlgorithms.head.querySerializer)))
+              }
+              respondWithMediaType(`application/json`) {
+                complete(json)
+              }
+            } catch {
+              case e: MappingException =>
+                log.error(
+                  s"Query '${queryString}' is invalid. Reason: ${e.getMessage}")
+                complete(StatusCodes.BadRequest, e.getMessage)
+            }
           }
         }
       }

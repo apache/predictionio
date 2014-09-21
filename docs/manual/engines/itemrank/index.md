@@ -49,7 +49,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-<?php 
+<?php
 use predictionio\EventClient;
 
 $appId = 1;
@@ -60,15 +60,15 @@ $client->setUser('id_1', array(), '2004-12-13T21:39:45.618-07:00');
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-from predictionio import EventClient                                                
-from datetime import datetime                                                       
-import pytz                                                                         
-                                                                                    
-event_client = EventClient(app_id=1, url="http://localhost:7070")                   
-                                                                                    
-tzinfo = pytz.timezone('US/Mountain')                                               
-event_time = datetime(2014, 12, 13, 21, 39, 45, 618, tzinfo=tzinfo)                 
-event_client.set_user(uid="id_1", event_time=event_time)     
+from predictionio import EventClient
+from datetime import datetime
+import pytz
+
+event_client = EventClient(app_id=1, url="http://localhost:7070")
+
+tzinfo = pytz.timezone('US/Mountain')
+event_time = datetime(2014, 12, 13, 21, 39, 45, 618, tzinfo=tzinfo)
+event_client.set_user(uid="id_1", event_time=event_time)
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -111,9 +111,9 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-<?php 
-$client->setItem('id_3', 
-           array('pio_itypes'=>array('type1')), 
+<?php
+$client->setItem('id_3',
+           array('pio_itypes'=>array('type1')),
            '2004-12-13T21:39:45.618-07:00'
          );
 ?>
@@ -121,10 +121,10 @@ $client->setItem('id_3',
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-event_client.set_item(                                                           
-    iid="id_3",                                                                  
-    properties={"pio_itypes": ["type1"]},                                        
-    event_time=event_time)                                                       
+event_client.set_item(
+    iid="id_3",
+    properties={"pio_itypes": ["type1"]},
+    event_time=event_time)
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -163,8 +163,8 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-<?php 
-$client->recordUserActionOnItem('view', 
+<?php
+$client->recordUserActionOnItem('view',
                        'id_1', 'id_3',
                        array(),
                        '2012-01-20T20:33:41.452-07:00'
@@ -174,10 +174,10 @@ $client->recordUserActionOnItem('view',
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-event_client.record_user_action_on_item(                                         
-    action="view",                                                               
-    uid="id_1",                                                                  
-    iid="id_3",                                                                  
+event_client.record_user_action_on_item(
+    action="view",
+    uid="id_1",
+    iid="id_3",
     event_time=datetime(2012, 1, 20, 20, 33, 41, 452, tzinfo=tzinfo))
 {% endhighlight %}
 </div>
@@ -218,8 +218,8 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-<?php 
-$client->recordUserActionOnItem('view', 
+<?php
+$client->recordUserActionOnItem('view',
                        'id_1', 'id_3',
                        array('pio_rating'=>4),
                        '2012-01-20T20:33:41.452-07:00'
@@ -229,11 +229,11 @@ $client->recordUserActionOnItem('view',
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-event_client.record_user_action_on_item(                                         
-    action="view",                                                               
-    uid="id_1",                                                                  
-    iid="id_3",                                                                  
-    properties={"pio_rating": 4},                                                
+event_client.record_user_action_on_item(
+    action="view",
+    uid="id_1",
+    iid="id_3",
+    properties={"pio_rating": 4},
     event_time=datetime(2012, 1, 20, 20, 33, 41, 452, tzinfo=tzinfo))  
 {% endhighlight %}
 </div>
@@ -326,7 +326,7 @@ To personalize the order of items of "1", "3", "5", "10" and "11" for user "123"
 <div data-lang="Raw HTTP">
 {% highlight bash %}
 
-$ curl -i -X POST http://localhost:8000 \
+$ curl -i -X POST http://localhost:8000/queries.json \
 -d '{
   "uid" : "123",
   "iids" : ["1", "3", "5", "10", "11"]
@@ -336,13 +336,13 @@ $ curl -i -X POST http://localhost:8000 \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-<?php 
+<?php
 use predictionio\EngineClient;
 
 $engineClient = new EngineClient('http://localhost:8000');
 $engineClient->sendQuery(
                       array(
-                        'uid'=>'123', 
+                        'uid'=>'123',
                         'iids'=>array('1', '3', '5', '10', '11')
                       )
                );
@@ -351,9 +351,9 @@ $engineClient->sendQuery(
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-from predictionio import EngineClient                                            
-engine_client = EngineClient(url="http://localhost:8000")                        
-                                                                                 
+from predictionio import EngineClient
+engine_client = EngineClient(url="http://localhost:8000")
+
 prediction = engine_client.send_query(
     data={"uid": "123", "iids": ["1", "3", "5", "10", "11"]})
 print(prediction)

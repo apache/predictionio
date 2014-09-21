@@ -454,7 +454,7 @@ For example, to retrieve the predicted preference for item ID 3 by user ID 1, ru
 the following in terminal:
 
 ```
-$ curl -H "Content-Type: application/json" -d '{"uid": 1, "iid": 3}' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{"uid": 1, "iid": 3}' http://localhost:8000/queries.json
 ```
 
 You should see the predicted preference value returned:

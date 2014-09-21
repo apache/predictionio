@@ -319,7 +319,7 @@ $ $PIO_HOME/bin/pio deploy
 Retrieve prediction:
 
 {% highlight bash %}
-$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
 {% endhighlight %}
 
 Output:
@@ -331,7 +331,7 @@ Output:
 Retrieve prediction:
 
 {% highlight bash %}
-$ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000/queries.json
 {% endhighlight %}
 
 Output:
@@ -356,7 +356,7 @@ $ $PIO_HOME/bin/pio deploy
 Retrieve prediction:
 
 {% highlight bash %}
-$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
 {% endhighlight %}
 
 Output:

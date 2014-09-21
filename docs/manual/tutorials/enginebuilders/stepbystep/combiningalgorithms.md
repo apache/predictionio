@@ -279,7 +279,7 @@ parameter is the JSON request, and the second parameter is the server address.
 
 ```bash
 $ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000
+$ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000/queries.json
 ```
 
 Fake item -2 is a cold item (i.e. has no rating). But from the data, we know
@@ -288,7 +288,7 @@ a high rating with Fake user -1.
 
 ```bash
 $ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000
+$ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000/queries.json
 ```
 
 However, there is nothing we can do with a cold user. Fake user -3 has no
@@ -297,7 +297,7 @@ user -3, we will get a NaN.
 
 ```bash
 $ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000
+$ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000/queries.json
 ```
 
 ## Multiple Algorithms

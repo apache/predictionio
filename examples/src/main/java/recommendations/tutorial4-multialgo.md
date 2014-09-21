@@ -67,7 +67,7 @@ This part is simliar to earlier tutorials.
 
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4a -- data/ml-100k/ 
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4a -- data/ml-100k/
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
@@ -192,7 +192,7 @@ in this tutorial). We are able to define [an end-to-end
 engine](tutorial4/SingleEngineFactory.java).
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c -- data/ml-100k/ 
+$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c -- data/ml-100k/
 ```
 
 ## Deployment
@@ -258,21 +258,21 @@ action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e.
 parameter is the JSON request, and the second parameter is the server address.
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000
+$ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000/queries.json
 ```
 Fake item -2 is a cold item (i.e. has no rating). But from the data, we know
 that it is a movie catagorized under "Action" genre, hence, it should also have
 a high rating with Fake user -1.
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000
+$ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000/queries.json
 ```
 However, there is nothing we can do with a cold user. Fake user -3 has no
 rating history, we know nothing about him. If we request any rating with fake
 user -3, we will get a NaN. TODO: @Donald "NaN is not a valid double value as per JSON specification. To override this behavior, use GsonBuilder.serializeSpecialFloatingPointValues() method."
 ```
 $ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000
+$ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000/queries.json
 ```
 
 ## Multiple Algorithms

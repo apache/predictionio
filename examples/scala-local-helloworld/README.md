@@ -40,7 +40,7 @@ $ ../../bin/pio deploy
 Retrieve prediction:
 
 ```
-$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
 ```
 
 Output:
@@ -52,7 +52,7 @@ Output:
 Retrieve prediction:
 
 ```
-$ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000/queries.json
 ```
 
 Output:
@@ -75,7 +75,7 @@ $ ../../bin/pio deploy
 ```
 
 ```
-$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
 
 {"temperature":76.66666666666667}
 ```

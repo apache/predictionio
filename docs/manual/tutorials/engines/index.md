@@ -25,7 +25,7 @@ $ git checkout develop
 Download Movie-Lens data
 
 ```
-$ curl -o ml-100k.zip http://www.grouplens.org/system/files/ml-100k.zip 
+$ curl -o ml-100k.zip http://www.grouplens.org/system/files/ml-100k.zip
 $ unzip ml-100k.zip
 ```
 
@@ -58,7 +58,7 @@ $ curl -i -X DELETE http://localhost:7070/events.json?appId=<app_id>
 
 ### Deploying the Item Recommendation engine
 Create an engine instance project base on the default Item Recommendation
-Engine. 
+Engine.
 
 ```
 $ $PIO_HOME/bin/pio instance io.prediction.engines.itemrec
@@ -72,7 +72,7 @@ Engine.
 
 #### Specify the Target App
 
-PredictionIO uses `<app_id>` to distinguish data between different applications. 
+PredictionIO uses `<app_id>` to distinguish data between different applications.
 Engines usually use data from one application. Inside the engine instance project,
 the file `params/datasource.json` defines how data are read from the Event Server.
 Change the value of `appId` to `<app_id>` which you used for importing.
@@ -118,7 +118,7 @@ classes and parameters.
 
 ### Retrieving Prediction Results
 With the EngineClients of a PredictionIO SDK, your application can send queries
-to a deployed engine instance through the Engine API. 
+to a deployed engine instance through the Engine API.
 
 To get 3 personalized item recommendations for user "100".
 
@@ -127,7 +127,7 @@ To get 3 personalized item recommendations for user "100".
 <div data-lang="Raw HTTP">
 <p>Line breaks are added for illustration in the response.</p>
 {% highlight bash %}
-$ curl -i -X POST -d '{"uid": "100", "n": 3}' http://localhost:8000
+$ curl -i -X POST -d '{"uid": "100", "n": 3}' http://localhost:8000/queries.json
 {"items":[
   {"272":9.929327011108398},
   {"313":9.92607593536377},

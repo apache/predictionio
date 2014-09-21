@@ -96,7 +96,7 @@ can visit that page in your web browser to check its status.
 
 To perform real-time predictions, try the following. This predicts on how user 1 will rate item (movie) 4. As in all collaborative filtering algorithms, it will not handle the case of a cold user (when the user has not rated any movies).
 ```
-$ curl -H "Content-Type: application/json" -d '[1,4]' http://localhost:8000
+$ curl -H "Content-Type: application/json" -d '[1,4]' http://localhost:8000/queries.json
 ```
 Congratulations! You have just trained an ALS model and is able to perform real
 time prediction distributed across an Apache Spark cluster!
