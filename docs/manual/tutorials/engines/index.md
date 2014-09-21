@@ -5,9 +5,6 @@ title: Tutorials and Samples
 
 # Engine Tutorials and Samples
 
-## Item Ranking
-
-* (coming soon)
 
 ## Item Recommendation
 
@@ -149,6 +146,10 @@ print prediction
 {% endhighlight %}
 </div>
 </div>
+
+## Item Ranking
+
+* (coming soon)
 
 ## Item Similarity
 

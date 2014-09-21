@@ -40,6 +40,10 @@ An Engine has the following components: DataSource, Data Preparator(Preparator),
 Algorithm, and Serving. To learn more about Engine and Engine Instance, please
 refer to [Engine and Engine Instance: A Closer Look](/engines/concept).
 
+PredictionIO is extremely flexible. If you want to run multiple types of prediction for one app or want to combine the results from different algorithms, you can run multiple instances of engines. 
+
+![System Overview](/images/system-overview.png)
+
 You may also [build your own Engines](/enginebuilders) for specific type of
 prediction problems.
 
@@ -47,3 +51,5 @@ You can create one or more *Engine Instance(s)* from an Engine. An Engine
 Instance trains a predictive model according to its own parameter settings. After
 an Engine Instance is deployed by PredictionIO, your application can send query
 to it through its *Engine API* to retrieve prediction results.
+
+Next, you can follow the [Quick Start Guide](/engines/quickstart.html) and set up your first PredictionIO instance. 
