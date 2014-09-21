@@ -1,112 +1,202 @@
-Important: PredictionIO is 100% committed to open source and the official
-release of version 0.8 will be under a proper open source license. This license
-is just a temporary measure for our early-access preview of “Imagine”.
 
---
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
 
-TappingStone, Inc. Software Evaluation License Agreement for PredictionIO 0.8
-Preview 1
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-BY ACCESSING, DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING THE
-PREDICTIONIO SOFTWARE AND DOCUMENTATION THAT ACCOMPANY THIS AGREEMENT (THE
-"SOFTWARE"), YOU ARE AGREEING TO ALL OF THE TERMS OF THIS AGREEMENT. IF YOU DO
-NOT AGREE TO ALL OF THE TERMS OF THIS AGREEMENT, YOU MAY NOT ACCESS, DOWNLOAD,
-INSTALL, COPY OR USE THE SOFTWARE.
+   1. Definitions.
 
-INTERNAL EVALUATION USE ONLY: Your use of the Software is limited to internal
-evaluation purposes only. Deployment or external exposure of works which use the
-Software is not permitted under the terms of this Agreement. You must acquire a
-deployment license for the Software from PredictionIO in order to deploy such
-works. Contact support@prediction.io for more information.
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
 
-1. LICENSE GRANTS Subject to all the terms of this Agreement, PredictionIO
-hereby grants to you a one-time, royalty-free, non-exclusive, non-transferable,
-non-sublicenseable license to copy and use the Software solely for internal
-evaluation purposes for a period of 60 DAYS from your first access, download,
-installation, or use of the Software ("Evaluation Period"). You may (i) access,
-download, install, and copy the Software on a reasonable number of development
-systems within your company; and (ii) use the Software only for internal
-evaluation purposes.
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
 
-2. LICENSE OBLIGATIONS You agree that you shall not: (i) reverse compile,
-reverse engineer, disassemble, unobfuscate, reformat, or otherwise attempt to
-read or make readable the Object Code or Source Code (or the underlying ideas,
-algorithms, structure or organization) of the Software, in whole or in part;
-(ii) modify the Software or create any derivative work based on the Software;
-(iii) rent, lease, sell, sublicense, grant a security interest in, or otherwise
-transfer any rights in the Software; (iv) remove or alter any marks or
-proprietary notices or labels contained in the Software; (v) use the Software in
-any manner that violates any intellectual property or privacy rights of any
-third party; or (vi) use the Software in any manner that violates any applicable
-international, federal, state or local law or regulation.
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
 
-3. TITLE PredictionIO and its suppliers retain all right, title and interest in
-and to the Software, including, without limitation, all copyrights, trademarks,
-patents, trade secrets, proprietary and other intellectual property rights
-contained in or associated with the Software, all copies thereof, and all
-enhancements or modifications thereto.
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
 
-4. WARRANTY; LIMITATION OF LIABILITY The Software is provided "AS IS" and
-without any warranty of any kind. PREDICTIONIO DISCLAIMS ALL WARRANTIES AND
-CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, WITH RESPECT TO THE SOFTWARE. The
-Software is provided gratuitously and, therefore, PredictionIO shall not be
-liable or obligated to you or any other party with respect to any subject matter
-of this Agreement for any direct, indirect, incidental, special, punitive or
-consequential damages under any theory of liability whether in tort, contract,
-negligence, strict liability or otherwise even if advised of the possibility of
-such damages.
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
 
-5. TERMINATION; SURVIVAL The license granted hereunder shall terminate at the
-earliest of (i) the end of the specified Evaluation Period, if any; (ii)
-immediately upon your failure to comply with all of the terms and limitations
-described herein; or (iii) immediately upon written notice of termination by
-PredictionIO, with or without cause. Upon termination for any reason, you shall
-destroy all copies of the Software. Sections 2, 3, 4, 5, and 6 shall survive any
-termination or expiration of this Agreement or the license granted hereunder.
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
 
-6. EXPORT REQUIREMENTS The export and re-export of PredictionIO products are
-controlled by the United States Export Administration Regulations and such
-software may not be exported or re-exported to Cuba, Iran, North Korea, Sudan,
-Syria, or any country to which the United States embargoes goods. In addition,
-PredictionIO software may not be distributed to persons on the Table of Denial
-Orders, the Entity List, or the List of Specially Designated Nationals.
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
 
-By downloading or using an PredictionIO software product you are certifying that
-you are not a national of Cuba, Iran, North Korea, Sudan, Syria, or any country
-to which the United States embargoes goods and that you are not a person on the
-Table of Denial Orders, the Entity List, or the List of Specially Designated
-Nationals.
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
 
-7. GENERAL (a) This Agreement is the entire agreement between you and
-PredictionIO concerning this subject matter. This Agreement may not be amended
-except in writing signed by an authorized representative of PredictionIO. (b)
-Neither this Agreement nor any of your rights or obligations hereunder may be
-assigned by you in whole or in part without PredictionIO's prior written
-consent. (c) This Agreement shall be governed by and interpreted in accordance
-with the laws of the State of California without giving effect to its choice of
-law principles. Any legal action regarding this Agreement will be heard in the
-state or federal courts having jurisdiction in San Francisco County, California,
-and you hereby submit to the personal jurisdiction and venue of such courts. The
-United Nations Convention on Contracts for the International Sale of Goods shall
-not apply to this Agreement and is expressly disclaimed. (d) The prevailing
-party in any action or proceeding to enforce the provisions of this Agreement
-shall be entitled to recover all reasonable attorneys' fees and expenses
-incurred in connection therewith. (e) In the event of a breach of this
-Agreement, monetary damages may not be a sufficient remedy, and PredictionIO
-shall be entitled, without waiving any other rights or remedies, to such
-injunctive or equitable relief (without posting of a bond) as may be deemed
-proper by a court of competent jurisdiction. (f) If any provision of this
-Agreement is held to be invalid or unenforceable by a court of competent
-jurisdiction, that provision shall be limited or eliminated to the minimum
-extent necessary so that the remaining provisions remain in full force and
-effect. (g) The failure of PredictionIO to require your performance of any
-provision herein shall not affect the full right to require such performance at
-any time thereafter; nor shall the waiver by PredictionIO of a breach of any
-provision herein be taken or held to be a waiver of the provision itself.
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
 
-THIRD-PARTY COMPONENTS: The Software may include third-party components provided
-under terms and conditions which are different from those of this Agreement.
-These third-party components and their licensing terms and conditions can be
-found in the ~/PredictionIO/Imagine/README.md file.
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
 
-Copyright 2014 TappingStone, Inc. Last revised July 28, 2008.
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
