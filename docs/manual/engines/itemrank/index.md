@@ -73,7 +73,11 @@ event_client.set_user(uid="id_1", event_time=event_time)
 </div>
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
-(TODO)
+require 'predictionio'
+
+event_client = PredictionIO::EventClient.new(1)
+event_client.set_user('id_1',
+                      'eventTime' => '2004-12-13T21:39:45.618-07:00')
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -129,7 +133,8 @@ event_client.set_item(
 </div>
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
-(TODO)
+event_client.set_item('id_3',
+                      'eventTime' => '2004-12-13T21:39:45.618-07:00')
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -183,7 +188,9 @@ event_client.record_user_action_on_item(
 </div>
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
-(TODO)
+event_client.record_user_action_on_item('view', 'id_1', 'id_3',
+                                        'eventTime' =>
+                                          '2012-01-20T20:33:41.452-07:00')
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -239,7 +246,10 @@ event_client.record_user_action_on_item(
 </div>
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
-(TODO)
+event_client.record_user_action_on_item('view', 'id_1', 'id_3',
+                                        'eventTime' =>
+                                          '2012-01-20T20:33:41.452-07:00',
+                                        'properties' => { 'pio_rating' => 4 })
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -381,7 +391,12 @@ print(prediction)
 </div>
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
-(TODO)
+require 'predictionio'
+
+client = PredictionIO::EngineClient.new
+
+predictions = client.send_query('uid' => '123', 'iids' => %w(1 3 5 10 11))
+puts predictions
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
