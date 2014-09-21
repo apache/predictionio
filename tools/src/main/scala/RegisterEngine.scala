@@ -70,14 +70,14 @@ object RegisterEngine extends Logging {
         val destFilePath =
           new Path(destDir.:+(f.getName).mkString(Path.SEPARATOR_CHAR + ""))
         val destPathString = fs.makeQualified(destFilePath).toString
-        if (fs.exists(destFilePath) &&
-          f.length == fs.getFileStatus(destFilePath).getLen)
-          info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
-            "and their file sizes are equal")
-        else {
-          info(s"Copying ${f.toURI} to ${destPathString}")
-          fs.copyFromLocalFile(new Path(f.toURI), destPath)
-        }
+        //if (fs.exists(destFilePath) &&
+        //  f.length == fs.getFileStatus(destFilePath).getLen)
+        //  info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
+        //    "and their file sizes are equal")
+        //else {
+        info(s"Copying ${f.toURI} to ${destPathString}")
+        fs.copyFromLocalFile(new Path(f.toURI), destPath)
+        //}
         destPathString
       }
     }
