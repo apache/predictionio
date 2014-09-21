@@ -99,6 +99,8 @@ object EventJson4sSupport {
   def writeJson: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
+        JField("eventId",
+          d.eventId.map( eid => JString(eid.toString)).getOrElse(JNothing)) ::
         JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::

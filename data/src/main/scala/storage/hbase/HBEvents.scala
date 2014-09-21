@@ -16,6 +16,7 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventID
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.EventJson4sSupport
@@ -307,6 +308,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     )
 
     Event(
+      eventId = Some(EventID(result.getRow())),
       event = event,
       entityType = entityType,
       entityId = entityId,

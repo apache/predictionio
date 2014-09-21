@@ -25,8 +25,11 @@ import org.json4s.Formats
 
 import scala.concurrent.ExecutionContext
 
+import org.apache.commons.codec.binary.Base64
+
 // separate Event for API before require mo
 case class Event(
+  val eventId: Option[EventID] = None,
   val event: String,
   val entityType: String,
   val entityId: String,
@@ -60,6 +63,17 @@ case class Event(
   require(!isSingleReserved(event) ||
     ((targetEntityType == None) && (targetEntityId == None)),
     s"Reserved event ${event} cannot have targetEntity")*/
+}
+
+case class EventID(
+  val bytes: Seq[Byte]
+) {
+  override
+  def toString = Base64.encodeBase64URLSafeString(bytes.toArray)
+}
+
+object EventID {
+  def apply(s: String) = new EventID(Base64.decodeBase64(s))
 }
 
 object EventValidation {
