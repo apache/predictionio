@@ -58,5 +58,3 @@ and utility of a predictive relationship.
 potentially predictive relationships. In PredictionIO Engine, training data is
 processed through the Data layer and passed onto algorithm.
 
-
-**Training**

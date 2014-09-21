@@ -76,7 +76,7 @@ To get a 3 personalized item recommendations for user "1".
 <div data-lang="Raw HTTP">
 {% highlight bash %}
 $ curl -X POST http://localhost:9993/queries.json \
--d '{"uid": "1", "n": 3}' 
+-d '{"uid": "1", "n": 3}'
 {% endhighlight %}
 </div>
 <div data-lang="PHP SDK">
@@ -95,7 +95,12 @@ print(prediction)
 </div>
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
-(TODO)
+require 'predictionio'
+
+client = PredictionIO::EngineClient.new('http://localhost:9993')
+
+predictions = client.send_query('uid' => '1', 'n' => 3)
+puts predictions
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
@@ -113,7 +118,7 @@ The API returns the following JSON response:
 Field | Description
 :---- | :----------
 `items` | array of { item Entity ID : predicted preference score }
-        | in descending order. 
+        | in descending order.
 
 ```json
 {"items":[{"1":5.9279937744140625},{"19":5.583907127380371},{"2":5.424792289733887}]}

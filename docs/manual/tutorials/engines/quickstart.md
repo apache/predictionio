@@ -196,7 +196,7 @@ end
 # Generate 50 items, with item IDs 1 to 10.
 (1..50).each do |iid|
   puts "Add item #{iid}"
-  client.set_item(iid, 'pio_itypes' => %w(1))
+  client.set_item(iid, 'properties' => { 'pio_itypes' => %w(1) })
 end
 
 # Each user randomly views 10 items.
