@@ -15,7 +15,7 @@ Please follow instructions to build from source
 
 Completed source code can also be found at
 `$PIO_HOME/examples/scala-local-helloworld` and
-``$PIO_HOME/examples/java-local-helloworld`, where `$PIO_HOME` is the root
+`$PIO_HOME/examples/java-local-helloworld`, where `$PIO_HOME` is the root
 directory of the PredictionIO source code tree.
 
 ## 1. Create a new Engine
@@ -324,7 +324,7 @@ $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhos
 
 Output:
 
-```
+```json
 {"temperature":75.5}
 ```
 
@@ -336,7 +336,7 @@ $ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhos
 
 Output:
 
-```
+```json
 {"temperature":80.5}
 ```
 
@@ -361,6 +361,6 @@ $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhos
 
 Output:
 
-```
+```json
 {"temperature":76.66666666666667}
 ```
