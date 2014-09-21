@@ -20,13 +20,11 @@ import scala.io.Source
 import scala.sys.process._
 
 import java.io.File
+import java.nio.file.Files
 
 case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
-  sbt: Option[File] = None,
-  sbtExtra: Option[String] = None,
-  engineAssemblyPackageDependency: Boolean = false,
-  engineClean: Boolean = false,
+  build: BuildArgs = BuildArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -50,7 +48,14 @@ case class CommonArgs(
   sparkHome: Option[String] = None,
   engineJson: File = new File("engine.json"))
 
+case class BuildArgs(
+  sbt: Option[File] = None,
+  sbtExtra: Option[String] = None,
+  sbtAssemblyPackageDependency: Boolean = false,
+  sbtClean: Boolean = false)
+
 object Console extends Logging {
+  val distFilename = "DIST"
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError = false
@@ -82,7 +87,7 @@ object Console extends Logging {
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to an engine JSON file. Default: engine.json")
       opt[File]("sbt") action { (x, c) =>
-        c.copy(sbt = Some(x))
+        c.copy(build = c.build.copy(sbt = Some(x)))
       } validate { x =>
         if (x.exists)
           success
@@ -125,8 +130,14 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "register")
         } children(
           opt[String]("sbt-extra") action { (x, c) =>
-            c.copy(sbtExtra = Some(x))
-          } text("Extra command to pass to SBT when it builds your engine.")
+            c.copy(build = c.build.copy(sbtExtra = Some(x)))
+          } text("Extra command to pass to SBT when it builds your engine."),
+          opt[Unit]("clean") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtClean = true))
+          } text("Clean build."),
+          opt[Unit]("asm") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+          } text("Build dependencies assembly.")
         )
       note("")
       cmd("unregister").
@@ -275,14 +286,14 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "compile")
         } children(
           opt[String]("sbt-extra") action { (x, c) =>
-            c.copy(sbtExtra = Some(x))
-          } text("Extra command to pass to SBT when it builds your driver."),
+            c.copy(build = c.build.copy(sbtExtra = Some(x)))
+          } text("Extra command to pass to SBT when it builds your engine."),
           opt[Unit]("clean") action { (x, c) =>
-            c.copy(engineClean = true)
-          } text("Clean all built-in engine builds."),
+            c.copy(build = c.build.copy(sbtClean = true))
+          } text("Clean build."),
           opt[Unit]("asm") action { (x, c) =>
-            c.copy(engineAssemblyPackageDependency = true)
-          } text("Rebuild built-in engines dependencies assembly.")
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+          } text("Build dependencies assembly.")
         )
       note("")
       cmd("run").
@@ -298,14 +309,34 @@ object Console extends Logging {
             c.copy(mainClass = Some(x))
           } text("Main class name of the driver program."),
           opt[String]("sbt-extra") action { (x, c) =>
-            c.copy(sbtExtra = Some(x))
-          } text("Extra command to pass to SBT when it builds your driver."),
+            c.copy(build = c.build.copy(sbtExtra = Some(x)))
+          } text("Extra command to pass to SBT when it builds your engine."),
           opt[Unit]("clean") action { (x, c) =>
-            c.copy(engineClean = true)
-          } text("Clean all built-in engine builds."),
+            c.copy(build = c.build.copy(sbtClean = true))
+          } text("Clean build."),
           opt[Unit]("asm") action { (x, c) =>
-            c.copy(engineAssemblyPackageDependency = true)
-          } text("Rebuild built-in engines dependencies assembly.")
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+          } text("Build dependencies assembly.")
+        )
+      note("")
+      cmd("dist").
+        text("Build an engine at the current directory and create a \n" +
+          "distributable package.\n" +
+          "If the engine at the current directory is a PredictionIO\n" +
+          "built-in engine that is not part of PredictionIO's source tree,\n" +
+          "the build step will be skipped.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "dist")
+        } children(
+          opt[String]("sbt-extra") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtExtra = Some(x)))
+          } text("Extra command to pass to SBT when it builds your engine."),
+          opt[Unit]("clean") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtClean = true))
+          } text("Clean build."),
+          opt[Unit]("asm") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+          } text("Build dependencies assembly.")
         )
     }
 
@@ -354,6 +385,8 @@ object Console extends Logging {
           compile(ca)
         case Seq("run") =>
           run(ca)
+        case Seq("dist") =>
+          dist(ca)
         case _ =>
           error(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -434,35 +467,14 @@ object Console extends Logging {
   def register(ca: ConsoleArgs): Unit = {
     if (builtinEngineDir ||
       !RegisterEngine.builtinEngine(ca.common.engineJson)) {
-      val sbt = detectSbt(ca)
-      info(s"Using command '${sbt}' at the current working directory to build.")
-      info("If the path above is incorrect, this process will fail.")
-
-      val cmd =
-        if (builtinEngineDir)
-          Process(s"${sbt} ${ca.sbtExtra.getOrElse("")} engines/package " +
-            "engines/assemblyPackageDependency",
-          new File(ca.common.pioHome.get))
-        else
-          Process(s"${sbt} ${ca.sbtExtra.getOrElse("")} package " +
-            "assemblyPackageDependency")
-
-      info(s"Going to run: ${cmd}")
-      val r = cmd.!(ProcessLogger(
-        line => info(line), line => error(line)))
-      if (r != 0) {
-        error(s"Return code of previous step is ${r}. Aborting.")
-        sys.exit(1)
-      }
-      info("Build finished successfully. Locating files to be registered.")
-
+      if (!distEngineDir) compile(ca)
+      info("Locating files to be registered.")
       val jarFiles = jarFilesForScala
       if (jarFiles.size == 0) {
         error("No files can be found for registration. Aborting.")
         sys.exit(1)
       }
       jarFiles foreach { f => info(s"Found ${f.getName}")}
-
       RegisterEngine.registerEngine(ca.common.engineJson, jarFiles)
     } else {
       info("Registering a built-in engine.")
@@ -549,12 +561,12 @@ object Console extends Logging {
       info("If the path above is incorrect, this process will fail.")
 
       val asm =
-        if (ca.engineAssemblyPackageDependency)
+        if (ca.build.sbtAssemblyPackageDependency)
           " engines/assemblyPackageDependency"
         else
           ""
       val clean =
-        if (ca.engineClean)
+        if (ca.build.sbtClean)
           " engines/clean"
         else
           ""
@@ -577,24 +589,35 @@ object Console extends Logging {
       }
     }
 
-    val sbt = detectSbt(ca)
-    info(s"Using command '${sbt}' at the current working directory to build.")
-    info("If the path above is incorrect, this process will fail.")
-
-    val buildCmd = s"${sbt} ${ca.sbtExtra.getOrElse("")} package"
-    info(s"Going to run: ${buildCmd}")
-    try {
-      val r = buildCmd.!(ProcessLogger(
-        line => info(line), line => error(line)))
-      if (r != 0) {
-        error(s"Return code of previous step is ${r}. Aborting.")
-        sys.exit(1)
+    if (builtinEngineDir) {
+      info("Current working directory is a PredictionIO built-in engines " +
+        "project. Skipping redundant packaging step.")
+    } else {
+      val sbt = detectSbt(ca)
+      info(s"Using command '${sbt}' at the current working directory to build.")
+      info("If the path above is incorrect, this process will fail.")
+      val asm =
+        if (ca.build.sbtAssemblyPackageDependency)
+          " assemblyPackageDependency"
+        else
+          ""
+      val clean = if (ca.build.sbtClean) " clean" else ""
+      val buildCmd = s"${sbt} ${ca.build.sbtExtra.getOrElse("")}${clean} " +
+        s"package${asm}"
+      info(s"Going to run: ${buildCmd}")
+      try {
+        val r = buildCmd.!(ProcessLogger(
+          line => info(line), line => error(line)))
+        if (r != 0) {
+          error(s"Return code of previous step is ${r}. Aborting.")
+          sys.exit(1)
+        }
+        info("Build finished successfully.")
+      } catch {
+        case e: java.io.IOException =>
+          error(s"${e.getMessage}")
+          sys.exit(1)
       }
-      info("Build finished successfully.")
-    } catch {
-      case e: java.io.IOException =>
-        error(s"${e.getMessage}")
-        sys.exit(1)
     }
   }
 
@@ -620,6 +643,33 @@ object Console extends Logging {
       error(s"Return code of previous step is ${r}. Aborting.")
       sys.exit(1)
     }
+  }
+
+  def dist(ca: ConsoleArgs): Unit = {
+    if (builtinEngineDir ||
+      !RegisterEngine.builtinEngine(ca.common.engineJson)) {
+      compile(ca)
+    }
+    info("Locating files to be distributed.")
+    val jarFiles = jarFilesForScala
+    if (jarFiles.size == 0) {
+      error("No files can be found for distribution. Aborting.")
+      sys.exit(1)
+    }
+    val distDir = new File("dist")
+    val libDir = new File(distDir, "lib")
+    libDir.mkdirs
+    jarFiles foreach { f =>
+      info(s"Found ${f.getName}")
+      FileUtils.copyFile(f, new File(libDir, f.getName))
+    }
+    val engineJson = "engine.json"
+    FileUtils.copyFile(new File(engineJson), new File(distDir, engineJson))
+    val paramsDir = new File("params")
+    if (paramsDir.exists)
+      FileUtils.copyDirectory(paramsDir, new File(distDir, paramsDir.getName))
+    Files.createFile(distDir.toPath.resolve(distFilename))
+    info(s"Successfully created distributable at: ${distDir.getCanonicalPath}")
   }
 
   def coreAssembly(pioHome: String): File = {
@@ -698,9 +748,16 @@ object Console extends Logging {
     _.getName.toLowerCase.endsWith(".jar")
   }
 
-  def jarFilesForScala: Array[File] = jarFilesAt(new File("target" +
-    File.separator + s"scala-${scalaVersionNoPatch}")).
-    filterNot { f =>
+  def jarFilesForScala: Array[File] = {
+    val libFiles = jarFilesForScalaFilter(jarFilesAt(new File("lib")))
+    val targetFiles = jarFilesForScalaFilter(jarFilesAt(new File("target" +
+      File.separator + s"scala-${scalaVersionNoPatch}")))
+    // Use libFiles is target is empty.
+    if (targetFiles.size > 0) targetFiles else libFiles
+  }
+
+  def jarFilesForScalaFilter(jars: Array[File]) =
+    jars.filterNot { f =>
       f.getName.toLowerCase.endsWith("-javadoc.jar") ||
       f.getName.toLowerCase.endsWith("-sources.jar")
     }
@@ -728,7 +785,7 @@ object Console extends Logging {
   def scalaVersionNoPatch: String = versionNoPatch(BuildInfo.scalaVersion)
 
   def detectSbt(ca: ConsoleArgs): String = {
-    ca.sbt map {
+    ca.build.sbt map {
       _.getCanonicalPath
     } getOrElse {
       val f = new File(Seq(ca.common.pioHome.get, "sbt", "sbt").mkString(
@@ -746,4 +803,6 @@ object Console extends Logging {
     new File(".." + File.separator + "make-distribution.sh").exists &&
       engineDir == cwd
   }
+
+  def distEngineDir(): Boolean = new File(distFilename).exists
 }
