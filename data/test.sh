@@ -347,6 +347,26 @@ checkPOST "/events.json" "$testdata" 400
 testdata='asfd'
 checkPOST "/events.json" "$testdata" 400
 
+# negative appId
+testdata='{
+  "event" : "my_event",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : "value2",
+    "prop3" : [1, 2, 3],
+    "prop4" : true,
+    "prop5" : ["a", "b", "c"],
+    "prop6" : 4.56
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "appId" : -4
+}'
+checkPOST "/events.json" "$testdata" 400
+
 # -----
 # get events
 # ----

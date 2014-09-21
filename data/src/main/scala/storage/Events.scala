@@ -24,7 +24,6 @@ case class Event(
   val predictionKey: Option[String] = None,
   val creationTime: DateTime = DateTime.now
 ) {
-  require(appId >= 0, s"appId ${appId} cannot be negative.")
 /*
   import EventValidation._
 
@@ -63,6 +62,7 @@ object EventValidation {
 
   def validate(e: Event) = {
 
+    require(e.appId >= 0, s"appId ${e.appId} cannot be negative.")
     require(!e.event.isEmpty, "event must not be empty.")
     require(!e.entityType.isEmpty, "entityType must not be empty string.")
     require(!e.entityId.isEmpty, "entityId must not be empty string.")
