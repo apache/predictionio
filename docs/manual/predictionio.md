@@ -27,7 +27,7 @@ style. Once the Event Server is launched, your application can send data to it
 through its Event API with HTTP requests or with the EventClient of
 PredictionIO's SDKs.
 
-Alterantively, you can import data from your own datastore instead of using
+Alternatively, you can import data from your own datastore instead of using
 Event Server.
 
 ## Engine and Engine Instance
