@@ -239,7 +239,7 @@ HTTP/1.1 201 Created
 Server: spray-can/1.2.1
 Date: Wed, 10 Sep 2014 22:51:33 GMT
 Content-Type: application/json; charset=UTF-8
-Content-Length: 68
+Content-Length: 41
 
 {"eventId":"AAAABAAAAQDP3-jSlTMGVu0waj8"}
 ```
