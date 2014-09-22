@@ -95,14 +95,15 @@ application can send data to the Event Server in real-time easily through the
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
-<p>Create <em>import.php</em> as below.</p>
+<p>Create <em>import.php</em> as below. Replace <code>your_app_id</code> with
+your app id (integer).</p>
 {% highlight php %}
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
     use predictionio\EventClient;
 
-    $client = new EventClient(<your app id>);
+    $client = new EventClient(your_app_id);
 
     // generate 10 users, with user ids 1,2,....,10
     for ($i=1; $i<=10; $i++) {

@@ -219,7 +219,7 @@ second_event_data = {
   "properties" : {
     "someProperty" : "value1",
     "anotherProperty" : "value2"
-  }
+  },
   "eventTime" : "2004-12-13T21:39:45.618Z",
 }
 print(client.create_event(second_event_data))
@@ -232,7 +232,7 @@ require 'predictionio'
 event_client = PredictionIO::EventClient.new(4)
 event_client.create_event('my_event', 'user', 'uid',
                           'targetEntityType' => 'item',
-                          'targetEntityId' => 'iid'
+                          'targetEntityId' => 'iid',
                           'eventTime' => '2004-12-13T21:39:45.618Z',
                           'properties' => { 'someProperty' => 'value1',
                                             'anotherProperty' => 'value2' })
@@ -306,7 +306,7 @@ Field | Type | Description
     {
       "appId" : 4,
       "event" : "$set",
-      "entityType" : "user"
+      "entityType" : "user",
       "entityId" : "1",
       "properties" : {
         "birthday" : "1984-10-11",
@@ -323,10 +323,10 @@ Field | Type | Description
     {
       "appId" : 4,
       "event" : "rate",
-      "entityType" : "user"
+      "entityType" : "user",
       "entityId" : "1",
       "targetEntityType" : "item",
-      "targetEntityId" : "1"
+      "targetEntityId" : "1",
       "properties" : {
         "rating" : 4
       }
@@ -386,28 +386,30 @@ In addition, the following *optional* parameters are supported:
 - `entityType`: String. The entityType. Return events for this `entityType` only.
 - `entityId`: String. The entityId. Return events for this `entityId` only.
 
+> If you are using <code>curl</code> with the <code>&</code> symbol, you should quote the entire URL by using single or double quotes.
+
 For example, get all events of appId with `eventTime >= startTime`
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of an appId with `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of an appId with `eventTime >= startTime` and `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of a specific entity with `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>"
 ```
 
 ### Delete All Events of an appId
