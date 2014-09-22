@@ -52,4 +52,4 @@ Instance trains a predictive model according to its own parameter settings. Afte
 an Engine Instance is deployed by PredictionIO, your application can send query
 to it through its *Engine API* to retrieve prediction results.
 
-Next, you can follow the [Quick Start Guide](/engines/quickstart.html) and set up your first PredictionIO instance. 
+Next, you can follow the [Quick Start Guide](/tutorials/engines/quickstart.html) and set up your first PredictionIO instance. 

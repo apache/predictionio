@@ -20,9 +20,9 @@ successfully.
 
 ```
 ...
-a PredictionIO-{{ site.pio_version }}/bin/load-pio-env.sh
-a PredictionIO-{{ site.pio_version }}/bin/pio
-a PredictionIO-{{ site.pio_version }}/bin/pio-class
+PredictionIO-{{ site.pio_version }}/sbt/sbt
+PredictionIO-{{ site.pio_version }}/conf/
+PredictionIO-{{ site.pio_version }}/conf/pio-env.sh
 PredictionIO binary distribution created at PredictionIO-{{ site.pio_version }}.tar.gz
 ```
 
@@ -33,8 +33,7 @@ PredictionIO binary distribution created at PredictionIO-{{ site.pio_version }}.
 
 Apache Spark is the default processing engine for PredictionIO. Download [Apache
 Spark release 1.1.0 package hadoop2.4](http://spark.apache.org/downloads.html).
-Extract the file, and set the `SPARK_HOME` configuration in `conf/pio-env.sh` to
-the Spark directory.
+
 
 ```
 $ wget http://d3kbcqa49mib13.cloudfront.net/{{ site.spark_download_filename }}.tgz

@@ -61,7 +61,7 @@ By default, PredictionIO's Data API uses HBase at localhost as the data store
 for event data.
 
 ```
-$ wget http://www.apache.org/dyn/closer.cgi/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
+$ wget http://archive.apache.org/dist/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ tar zxvf {{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
 ```
