@@ -370,12 +370,13 @@ $ curl -i -X POST http://localhost:8000/queries.json \
 use predictionio\EngineClient;
 
 $engineClient = new EngineClient('http://localhost:8000');
-$engineClient->sendQuery(
+$predictions = $engineClient->sendQuery(
                       array(
                         'uid'=>'123',
                         'iids'=>array('1', '3', '5', '10', '11')
                       )
                );
+print_r($predictions);
 ?>
 {% endhighlight %}
 </div>

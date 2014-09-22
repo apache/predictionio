@@ -81,7 +81,18 @@ $ curl -X POST http://localhost:9993/queries.json \
 </div>
 <div data-lang="PHP SDK">
 {% highlight php %}
-(TODO)
+<?php
+use predictionio\EngineClient;
+
+$engineClient = new EngineClient('http://localhost:9993');
+$predictions = $engineClient->sendQuery(
+                      array(
+                        'uid'=>'1',
+                        'n'=>3
+                      )
+               );
+print_r($predictions);
+?>
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
