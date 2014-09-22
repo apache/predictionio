@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import SonatypeKeys._
+
 import UnidocKeys._
 
 name := "pio"
@@ -57,12 +59,15 @@ lazy val core = (project in file("core")).
   dependsOn(data).
   settings(genjavadocSettings: _*).
   settings(pioBuildInfoSettings: _*).
+  settings(sonatypeSettings: _*).
   enablePlugins(SbtTwirl)
 
-lazy val data = (project in file("data"))
+lazy val data = (project in file("data")).
+  settings(sonatypeSettings: _*)
 
 lazy val engines = (project in file("engines")).
   dependsOn(core).
+  settings(sonatypeSettings: _*).
   enablePlugins(SbtTwirl)
 
 lazy val tools = (project in file("tools")).
@@ -103,3 +108,25 @@ javacOptions in (JavaUnidoc, unidoc) := Seq(
   "docs/javadoc/javadoc-overview.html",
   "-noqualifier",
   "java.lang")
+
+pomExtra in ThisBuild := {
+  <url>http://prediction.io</url>
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:github.com/PredictionIO/PredictionIO</connection>
+    <developerConnection>scm:git:git@github.com:PredictionIO/PredictionIO.git</developerConnection>
+    <url>github.com/PredictionIO/PredictionIO</url>
+  </scm>
+  <developers>
+    <developer>
+      <id>pio</id>
+      <name>The PredictionIO Team</name>
+      <url>http://prediction.io</url>
+    </developer>
+  </developers>
+}
