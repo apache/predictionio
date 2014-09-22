@@ -255,7 +255,7 @@ Date: Wed, 10 Sep 2014 22:51:33 GMT
 Content-Type: application/json; charset=UTF-8
 Content-Length: 68
 
-{"eventId":"4-1102999185618-my_event-user-uid--7574530243528847393"}
+{"eventId":"AAAABAAAAQDP3-jSlTMGVu0waj8"}
 ```
 
 
@@ -335,7 +335,7 @@ Field | Type | Description
 
 ## Debugging Recipes
 
-The following APIs are mainly for development or debugging purpose only. They should not be used by real application under normal circumstances.
+The following APIs are mainly for development or debugging purpose only. They should not be used by real application under normal circumstances and their availabilities are subject to changes.
 
 Replace `<your_eventId>` by a real one in the following.
 
@@ -377,32 +377,42 @@ print(client.delete_event(<your_eventId>))
 $ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>
 ```
 
-### Get All Events of an appId within a Time Range
+The `appId` query parameter is mandatory.
 
--   `eventTime >= startTime`
+In addition, the following *optional* parameters are supported:
 
-    ```
-    $ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>
-    ```
--   `eventTime < untilTime`
+- `startTime`: time in ISO8601 format. Return events with `eventTime >= startTime`.
+- `untilTime`: time in ISO8601 format. Return events with `eventTime < untilTime`.
+- `entityType`: String. The entityType. Return events for this `entityType` only.
+- `entityId`: String. The entityId. Return events for this `entityId` only.
 
-    ```
-    $ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>
-    ```
-
--   `eventTime >= startTime && eventTime < untilTime`
-
-    ```
-    $ curl -i -X GET http://localhost:7070/events.json?appId=2&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
-    ```
-
-Example:
+For example, get all events of appId with `eventTime >= startTime`
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=2&startTime=2014-08-30T08:45:51.566Z&untilTime=2014-08-30T08:45:51.591Z
+$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>
+```
+
+For example, get all events of an appId with `eventTime < untilTime`:
+
+```
+$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>
+```
+
+For example, get all events of an appId with `eventTime >= startTime` and `eventTime < untilTime`:
+
+```
+$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
+```
+
+For example, get all events of a specific entity with `eventTime < untilTime`:
+
+```
+$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>
 ```
 
 ### Delete All Events of an appId
+
+> Use cautiously!
 
 ```
 $ curl -i -X DELETE http://localhost:7070/events.json?appId=<your_appId>
