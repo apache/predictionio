@@ -32,7 +32,8 @@ EventServer url (default: http://localhost:7070). We will use the same
 `<app_id>` through out this tutorial.
 
 ```
-$ py -m examples.demo-movielens.batch_import <app_id> http://localhost:7070
+$ cd PredictionIO-Python-SDK
+$ python -m examples.demo-movielens.batch_import <app_id> http://localhost:7070
 ```
 
 The import takes a minute or two. At the end you should see the following
