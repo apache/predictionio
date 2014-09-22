@@ -91,7 +91,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $appId = 4;
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
-                        'appId' => 4,
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
@@ -181,7 +180,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $appId = 4;
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
-                        'appId' => 4,
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
