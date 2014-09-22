@@ -21,7 +21,7 @@ engine to read data directly from your existing data store.
 > Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, PredictionIO uses
 HBase, and a quick configuration can be found
-[here](/install/install-sourcecode.html#hbase).
+[here](/install/install-linux.html#hbase).
 
 Everything about PredictionIO can be done through the `bin/pio` command.
 
