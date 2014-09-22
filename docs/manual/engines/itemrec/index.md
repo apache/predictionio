@@ -23,6 +23,11 @@ With the predicted scores, this engine can rank all available items for any user
 according to your REST API/SDK queries. Advanced queries, such as Geo-based
 search, is supported. Top N items will then be returned as prediction results.
 
+# Tutorials
+
+Create your first Item Recommendation app quickly by following [tutorials and samples](/tutorials/engines/). 
+
+
 # Collect Events Data / Events Data Requirement
 The process of collecting events data for the Item Recommendation Engine is
 equivalent to that of Item Ranking Engine. Please refer to [Item Ranking Engine
