@@ -142,6 +142,13 @@ trait Events {
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = notImplemented
 
+  def futureGetByAppIdAndTimeAndEntity(appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String])(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Iterator[Event]]]  = notImplemented
+
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = notImplemented
 
@@ -170,6 +177,16 @@ trait Events {
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureGetByAppIdAndTime(appId, startTime, untilTime), timeout)
+  }
+
+  def getByAppIdAndTimeAndEntity(appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String])(implicit ec: ExecutionContext):
+    Either[StorageError, Iterator[Event]] = {
+    Await.result(futureGetByAppIdAndTimeAndEntity(appId, startTime, untilTime,
+      entityType, entityId), timeout)
   }
 
   def deleteByAppId(appId: Int)(implicit ec: ExecutionContext):

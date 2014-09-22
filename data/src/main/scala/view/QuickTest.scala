@@ -25,6 +25,18 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
 import grizzled.slf4j.Logger
 
+class TestHBEvents() {
+  @transient lazy val eventsDb = Storage.getEventDataEvents()
+
+  def run() = {
+    val r = eventsDb
+      .getByAppIdAndTimeAndEntity(
+        1, None, None,
+        Some("pio_user"), Some("3")).right.get.toList
+    println(r)
+  }
+}
+
 class TestSource(val appId: Int) {
   @transient lazy val logger = Logger[this.type]
   @transient lazy val batchView = new LBatchView(appId,
@@ -38,7 +50,10 @@ class TestSource(val appId: Int) {
 object QuickTest {
 
   def main(args: Array[String]) {
-    val ts = new TestSource(args(0).toInt)
-    ts.run()
+    val t = new TestHBEvents()
+    t.run()
+
+    //val ts = new TestSource(args(0).toInt)
+    //ts.run()
   }
 }

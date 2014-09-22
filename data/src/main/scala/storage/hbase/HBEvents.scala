@@ -45,6 +45,10 @@ import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.filter.FilterList
+import org.apache.hadoop.hbase.filter.RegexStringComparator
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
 
 import scala.collection.JavaConversions._
 
@@ -342,6 +346,44 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
         val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
           .getOrElse(PartialRowKey(appId+1))
         val scan = new Scan(start.toBytes, stop.toBytes)
+        val scanner = table.getScanner(scan)
+        table.close()
+        Right(scanner.iterator().map { resultToEvent(_) })
+      }
+  }
+
+  override
+  def futureGetByAppIdAndTimeAndEntity(appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String])(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Iterator[Event]]] = {
+      Future {
+        val table = client.connection.getTable(tableName)
+        val start = PartialRowKey(appId, startTime.map(_.getMillis))
+        // if no untilTime, stop when reach next appId
+        val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
+          .getOrElse(PartialRowKey(appId+1))
+        val scan = new Scan(start.toBytes, stop.toBytes)
+
+        if ((entityType != None) || (entityId != None)) {
+          val filters = new FilterList()
+          val eBytes = Bytes.toBytes("e")
+          entityType.foreach { etype =>
+            val compType = new RegexStringComparator("^"+etype+"$")
+            val filterType = new SingleColumnValueFilter(
+              eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
+            filters.addFilter(filterType)
+          }
+          entityId.foreach { eid =>
+            val compId = new RegexStringComparator("^"+eid+"$")
+            val filterId = new SingleColumnValueFilter(
+              eBytes, colNames("entityId"), CompareOp.EQUAL, compId)
+            filters.addFilter(filterId)
+          }
+          scan.setFilter(filters)
+        }
         val scanner = table.getScanner(scan)
         table.close()
         Right(scanner.iterator().map { resultToEvent(_) })

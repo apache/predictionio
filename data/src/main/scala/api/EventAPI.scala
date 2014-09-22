@@ -146,9 +146,12 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
         }
       } ~
       get {
-        parameters('appId.as[Int], 'startTime.as[Option[String]],
-          'untilTime.as[Option[String]]) {
-          (appId, startTimeStr, untilTimeStr) =>
+        parameters('appId.as[Int],
+          'startTime.as[Option[String]],
+          'untilTime.as[Option[String]],
+          'entityType.as[Option[String]],
+          'entityId.as[Option[String]]) {
+          (appId, startTimeStr, untilTimeStr, entityType, entityId) =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
               log.debug(
@@ -161,9 +164,10 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
               }
 
               parseTime.flatMap { case (startTime, untilTime) =>
-                val data = if ((startTime != None) || (untilTime != None)) {
-                  eventClient.futureGetByAppIdAndTime(appId,
-                    startTime, untilTime).map { r =>
+                val data = eventClient.futureGetByAppIdAndTimeAndEntity(
+                  appId,
+                  startTime, untilTime,
+                  entityType, entityId).map { r =>
                     r match {
                       case Left(StorageError(message)) =>
                         (StatusCodes.InternalServerError,
@@ -175,20 +179,6 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
                           (StatusCodes.NotFound, Map("message" -> "Not Found"))
                     }
                   }
-                } else {
-                  eventClient.futureGetByAppId(appId).map { r =>
-                    r match {
-                      case Left(StorageError(message)) =>
-                        (StatusCodes.InternalServerError,
-                          Map("message" -> message))
-                      case Right(eventIter) =>
-                        if (eventIter.hasNext)
-                          (StatusCodes.OK, eventIter.toArray)
-                        else
-                          (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                    }
-                  }
-                }
                 data
               }.recover {
                 case e: Exception =>
