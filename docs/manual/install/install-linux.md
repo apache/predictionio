@@ -55,7 +55,7 @@ You may change the settings or even use another data store such as
 [MongoDB](http://www.mongodb.org/). For details, please read [Changing the Data
 Store](config-datastore.html).
 
-#### <a name="hbase"></a>HBase Setup
+#### HBase Setup<a class="anchor" name="hbase">&nbsp;</a>
 
 By default, PredictionIO's Data API uses HBase at localhost as the data store
 for event data.
