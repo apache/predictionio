@@ -99,7 +99,7 @@ object Run {
       "INTU", "WDC", "SNDK")
 
   def main(args: Array[String]) {
-    val dataSourceParams = (if (true) {
+    val dataSourceParams = (if (false) {
         new DataSourceParams(
           baseDate = new DateTime(2002, 1, 1, 0, 0),
           fromIdx = 300,
@@ -135,7 +135,8 @@ object Run {
       dataSourceParams = dataSourceParams,
       preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
       algorithmClassMapOpt = Some(Map(
-        "" -> classOf[MomentumStrategy]
+        //"" -> classOf[MomentumStrategy]
+        "" -> classOf[RegressionStrategy]
       )),
       algorithmParamsList = Seq(("", momentumParams)),
       servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),

@@ -373,7 +373,7 @@ object YahooDataSourceRun {
     // Make sure you have a lot of memory.
     // --driver-memory 12G
     val dsp = (
-      if (true) {
+      if (false) {
         YahooDataSource.Params(
           appId = 2,
           entityType = "yahoo",
