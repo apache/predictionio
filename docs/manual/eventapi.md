@@ -34,21 +34,9 @@ $ bin/pio eventserver
 ```
 ### Check server status
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+```
 $ curl -i -X GET http://localhost:7070
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
-from predictionio import EventClient
-client = EventClient(app_id=4, url="http://localhost:7070")
-
-print(client.get_status())
-{% endhighlight %}
-</div>
-</div>
+```
 
 Sample response:
 
@@ -341,33 +329,15 @@ Replace `<your_eventId>` by a real one in the following.
 
 ### Get an Event
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+```
 $ curl -i -X GET http://localhost:7070/events/<your_eventId>.json
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
-print(client.get_event(<your_eventId>))
-{% endhighlight %}
-</div>
-</div>
+```
 
 ### Delete an Event
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+```
 $ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
-print(client.delete_event(<your_eventId>))
-{% endhighlight %}
-</div>
-</div>
+```
 
 ### Get All Events of an appId
 
