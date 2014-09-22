@@ -17,11 +17,19 @@ application. The engine makes recommendation in two steps:
 In this batch-mode process, the engine predicts a preference score for every
 user-item pair. The scores are computed by the deployed algorithm in the engine.
 
+<!---
 ## Step 2: Rank the Query Items
 
 With the predicted scores, this engine can rank all available items for any user
 according to your REST API/SDK queries. Advanced queries, such as Geo-based
 search, is supported. Top N items will then be returned as prediction results.
+-->
+
+## Step 2: Return Personalized High Score Items
+
+With the predicted scores, this engine can rank all available items for any user
+according to your REST API/SDK queries. 
+Top N items will then be returned as prediction results.
 
 # Tutorials
 
@@ -59,10 +67,10 @@ The query is a targeted user while the output is a list of N items.
 
 Item Recommendation Engine supports the following query API endpoints:
 
-## Sending Queries to Item Ranking Engine
+## Sending Queries to Item Recommendation Engine
 
-To rank a list of items for a user, make an HTTP POST request to the Item
-Ranking Engine instance:
+To get a list of recommended items for a user, make an HTTP POST request to the
+Item Recommendation Engine instance:
 
 **POST** `<engine_instance_url>`
 
@@ -155,7 +163,7 @@ on selecting the right algorithm and setting the parameters properly.
 > You may also [implement and add your own
 > algorithm](/cookbook/addalgorithm.html) to the engine easily.
 
-Item Ranking Engine comes with the following algorithms:
+Item Recommendation Engine comes with the following algorithms:
 
 ## 1. Non-cached Mahout Item Based Algorithm
 
