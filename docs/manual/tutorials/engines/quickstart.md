@@ -145,7 +145,7 @@ import random
 
 random.seed()
 
-client = predictionio.DataClient(app_id=your_app_id)
+client = predictionio.EventClient(app_id=your_app_id)
 
 # generate 10 users, with user ids 1,2,....,10
 user_ids = [str(i) for i in range(1, 11)]
