@@ -9,8 +9,8 @@ This is a quick start guide of using a PredictionIO's built-in engine and its
 SDKs to write a very simple app. It assumes that you have [installed
 PredictionIO server](/install/).
 
-Let's start with a classic example in Machine Learning - build a recommendation
-engine. We are going to launch a recommendation engine instance that can:
+Let's start with a classic example in Machine Learning - build a ranking
+engine. We are going to launch a ranking engine instance that can:
 
 * collect *real-time event data* from your app through REST API or SDKs;
 * update the predictive model with *new data* regularly and automatically;
@@ -228,14 +228,14 @@ $ ruby import.rb
 # Deploying an Engine Instance
 
 Each engine deals with one type of Machine Learning task. For instance, Item
-Recommendation Engine (itemrec) makes personalized item
-(e.g. product or content) recommendation to your users.
+Ranking Engine (itemrank) makes personalized item (e.g. product or content)
+ranking to your users.
 
 > **What is an Engine Instance?**
 >
-> You can deploy one or more *engine instances* from an engine. It means that you
-can run multiple recommendation *engine instances* at the same time with
-different settings, or even for different applications.
+> You can deploy one or more *engine instances* from an engine. It means that
+you can run multiple ranking *engine instances* at the same time with different
+settings, or even for different applications.
 
 To deploy an engine instance for *quickstartapp*, first create an engine
 instance project:
@@ -363,6 +363,6 @@ $ ruby show.rb
 </div>
 
 Well done! You have created a simple, but production-ready app with PredictionIO
-recommendation engine.
+ranking engine.
 
 Next: Learn more about [collecting data through Event API](/eventapi.html).
