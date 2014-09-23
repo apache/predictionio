@@ -169,7 +169,7 @@ Item Recommendation Engine comes with the following algorithms:
 
 Use Mahout Item Based algorithm to build similarity matrix. Then rank items based on user recent history and the item similarity matrix.
 
-**Algorithm code name:** `"mahoutItemBased"`
+**Algorithm code name:** `"ncMahoutItemBased"`
 
 **Parameters:**
 
