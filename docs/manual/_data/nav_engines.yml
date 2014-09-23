@@ -4,10 +4,10 @@
 - title: "Item Recommendation"
   href: "/engines/itemrec"
 
-- title: "Item Similarity"
-  href: "/engines/itemsim"
+#- title: "Item Similarity"
+#  href: "/engines/itemsim"
  
-- title: "Engine and Engine Instances"
+- title: "Concept: Engine and Engine Instances"
   href: "/engines/concept"
     
 - title: "Tutorials & Samples"

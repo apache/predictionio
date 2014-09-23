@@ -7,10 +7,10 @@ title: Quick Start - Using a Built-in Engine
 
 This is a quick start guide of using a PredictionIO's built-in engine and its
 SDKs to write a very simple app. It assumes that you have [installed
-PredictionIO server](/install/).
+PredictionIO server]({{site.baseurl}}/install/).
 
-Let's start with a classic example in Machine Learning - build a recommendation
-engine. We are going to launch a recommendation engine instance that can:
+Let's start with a classic example in Machine Learning - build a ranking
+engine. We are going to launch a ranking engine instance that can:
 
 * collect *real-time event data* from your app through REST API or SDKs;
 * update the predictive model with *new data* regularly and automatically;
@@ -91,18 +91,19 @@ Event Server is running, PredictionIO keeps listening to new data.
 We are going to write a script that generates some random data and simulates
 data collection. With the *EventClient* of one of the PredictionIO SDKs, your
 application can send data to the Event Server in real-time easily through the
-[EventAPI](/eventapi.html). In the *quickstartapp* directory:
+[EventAPI]({{site.baseurl}}/eventapi.html). In the *quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
-<p>Create <em>import.php</em> as below.</p>
+<p>Create <em>import.php</em> as below. Replace <code>your_app_id</code> with
+your app id (integer).</p>
 {% highlight php %}
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
     use predictionio\EventClient;
 
-    $client = new EventClient(<your app id>);
+    $client = new EventClient(your_app_id);
 
     // generate 10 users, with user ids 1,2,....,10
     for ($i=1; $i<=10; $i++) {
@@ -144,7 +145,7 @@ import random
 
 random.seed()
 
-client = predictionio.DataClient(app_id=your_app_id)
+client = predictionio.EventClient(app_id=your_app_id)
 
 # generate 10 users, with user ids 1,2,....,10
 user_ids = [str(i) for i in range(1, 11)]
@@ -227,14 +228,14 @@ $ ruby import.rb
 # Deploying an Engine Instance
 
 Each engine deals with one type of Machine Learning task. For instance, Item
-Recommendation Engine (itemrec) makes personalized item
-(e.g. product or content) recommendation to your users.
+Ranking Engine (itemrank) makes personalized item (e.g. product or content)
+ranking to your users.
 
 > **What is an Engine Instance?**
 >
-> You can deploy one or more *engine instances* from an engine. It means that you
-can run multiple recommendation *engine instances* at the same time with
-different settings, or even for different applications.
+> You can deploy one or more *engine instances* from an engine. It means that
+you can run multiple ranking *engine instances* at the same time with different
+settings, or even for different applications.
 
 To deploy an engine instance for *quickstartapp*, first create an engine
 instance project:
@@ -310,7 +311,7 @@ client = predictionio.EngineClient()
 
 # Rank item 1 to 5 for each user
 item_ids = [str(i) for i in range(1, 6)]
-user_ids = [str(x) for x in range(1, 6)]
+user_ids = [str(x) for x in range(1, 11)]
 for user_id in user_ids:
   print "Rank item 1 to 5 for user", user_id
   try:
@@ -362,6 +363,6 @@ $ ruby show.rb
 </div>
 
 Well done! You have created a simple, but production-ready app with PredictionIO
-recommendation engine.
+ranking engine.
 
-Next: Learn more about [collecting data through Event API](/eventapi.html).
+Next: Learn more about [collecting data through Event API]({{site.baseurl}}/eventapi.html).

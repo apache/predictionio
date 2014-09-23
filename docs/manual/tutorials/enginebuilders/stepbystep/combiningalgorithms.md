@@ -21,7 +21,7 @@ This tutorial guides you toward incorporating a feature-based algorithm into
 the existing CF-based recommendation engine introduced in tutorials 1, 2 and 3.
 
 All code can be found in the
-[tutorial4/](tutorial4/)
+[tutorial4/](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4)
 directory.
 
 ## Overview
@@ -111,7 +111,8 @@ and extract a feature vector from item info.
 
 After implementing these two classes, you can add them to the workflow and try
 out if things are really working. Add the preparator class to the engine
-builder, as shown in [Runner4b.java](tutorial4/Runner4b.java):
+builder, as shown in
+[Runner4b.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/Runner4b.java):
 
 ```java
 return new JavaEngineBuilder<
@@ -164,11 +165,12 @@ We only consider rating from `min` to `max`, and we normalize the rating with
 this function: `f(rating) = (rating - drift) * scale`. As each movie is
 associated with a binary feature vector, the user feature vector is essentially
 a rating-weighted sum of all movies (s)he rated.  After that, we normalize all
-user feature vector by L-inf norm, this will ensure that user feature is
-bounded by [-1, 1]. In laymen terms, -1 indicates that the user hates that
-feature, whilst 1 suggests the opposite.  The following is a snippet of
-the [actual code](tutorial4/FeatureBasedAlgorithm.java). `data` is an instance
-of `PreparedData` that is passed as an argument to the `train` function.
+user feature vector by L-inf norm, this will ensure that user feature is bounded
+by [-1, 1]. In laymen terms, -1 indicates that the user hates that feature,
+whilst 1 suggests the opposite.  The following is a snippet of the [actual
+code](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/FeatureBasedAlgorithm.java).
+`data` is an instance of `PreparedData` that is passed as an argument to the
+`train` function.
 
 ```java
 for (Integer uid : data.userInfo.keySet()) {
@@ -197,11 +199,12 @@ for (Integer uid : userFeatures.keySet()) {
 }
 ```
 
-[Runner4c.java](tutorial4/Runner4c.java) illustrates the engine factory up to
-this point. We use a default serving class as we only have one algorithm. (We
-will demonstrate how to combine prediction results from multiple algorithms later
-in this tutorial). We are able to define [an end-to-end
-engine](tutorial4/SingleEngineFactory.java).
+[Runner4c.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/Runner4c.java)
+illustrates the engine factory up to this point. We use a default serving class
+as we only have one algorithm. (We will demonstrate how to combine prediction
+results from multiple algorithms later in this tutorial). We are able to define
+[an end-to-end
+engine](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/SingleEngineFactory.java).
 
 ```bash
 $ cd $PIO_HOME/examples
@@ -209,8 +212,10 @@ $ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c 
 ```
 
 ## Deployment
-We can deploy this feature based engine just like tutorial 1. We have an
-[engine JSON](tutorial4/single-algo-engine.json), and we register it:
+
+We can deploy this feature based engine just like tutorial 1. We have an [engine
+JSON](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/single-algo-engine.json),
+and we register it:
 
 ```bash
 $ cd $PIO_HOME/examples
@@ -223,7 +228,7 @@ script if you have update any code in your engine.
 ### Specify Engine Parameters
 We use the following JSON files for deployment.
 
-1.  [datasource.json](tutorial4/single-jsons/datasource.json):
+1.  [datasource.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/single-jsons/datasource.json):
 
     ```json
     {
@@ -232,7 +237,7 @@ We use the following JSON files for deployment.
     }
     ```
 
-2.  [algorithms.json](tutorial4/single-jsons/algorithms.json):
+2.  [algorithms.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/single-jsons/algorithms.json):
 
     ```json
     [
@@ -272,9 +277,11 @@ $ ../bin/pio deploy --engine-json src/main/java/recommendations/tutorial4/single
 ```
 
 ### Try a few things
-Fake user -1 (see [DataSource.FakeData](tutorial4/DataSource.java)) loves
-action movies. If we pass item 27 (Bad Boys), we should get a high rating (i.e.
-1). You can use our script bin/cjson to send the JSON request. The first
+
+Fake user -1 (see
+[DataSource.FakeData](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/DataSource.java))
+loves action movies. If we pass item 27 (Bad Boys), we should get a high rating
+(i.e. 1). You can use our script bin/cjson to send the JSON request. The first
 parameter is the JSON request, and the second parameter is the server address.
 
 ```bash
@@ -308,11 +315,13 @@ algorithm for cold-start items (as CF-based algos cannot handle items with no
 ratings), and use both algorithms for others.
 
 ### Combining Algorithms Output
-[Serving](tutorial4/Serving.java) is the last step of the pipeline. It
-takes prediction results from all algorithms, combine them and return. In the
-current case, we take an average of all valid (i.e. not NaN) predictions. In the
-extreme case where all algorithms return NaN, we also return NaN. Engine
-builders need to implement the `serve` method. We demonstrate with our case:
+
+[Serving](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/Serving.java)
+is the last step of the pipeline. It takes prediction results from all
+algorithms, combine them and return. In the current case, we take an average of
+all valid (i.e. not NaN) predictions. In the extreme case where all algorithms
+return NaN, we also return NaN. Engine builders need to implement the `serve`
+method. We demonstrate with our case:
 
 ```java
 public Float serve(Query query, Iterable<Float> predictions) {
@@ -331,11 +340,12 @@ public Float serve(Query query, Iterable<Float> predictions) {
 
 ### Complete Engine Factory
 
-[EngineFactory.java](tutorial4/EngineFactory.java) demonstrates how to specify
-multiple algorithms in the same engine. When we add algorithms to the builder
-instance, we also need to specify a String which is served as the identifier.
-For example, we use "featurebased" for the feature-based algorithm, and
-"collaborative" for the collaborative-filtering algorithm.
+[EngineFactory.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/EngineFactory.java)
+demonstrates how to specify multiple algorithms in the same engine. When we add
+algorithms to the builder instance, we also need to specify a String which is
+served as the identifier. For example, we use "featurebased" for the
+feature-based algorithm, and "collaborative" for the collaborative-filtering
+algorithm.
 
 ```java
 public class EngineFactory implements IJavaEngineFactory {
@@ -353,13 +363,13 @@ public class EngineFactory implements IJavaEngineFactory {
 ```
 
 Similar to the earlier example, we need to write [a
-JSON](tutorial4/multiple-algo-engine.json) for the engine, and register it with
-PredictionIO. Here's the content:
+JSON](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/multiple-algo-engine.json)
+for the engine, and register it with PredictionIO. Here's the content:
 
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory",
-  "version": "0.8.0-SNAPSHOT",
+  "version": "0.8.0",
   "name": "FeatureBased Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory"
 }
@@ -378,7 +388,7 @@ $ ../bin/pio register --engine-json src/main/java/recommendations/tutorial4/mult
 Now, we can specify the engine instance by passing the set of parameters to the
 engine. Our engine can support multiple algorithms, and in addition, it also
 support multiple instance of the same algorithms. We illustrate with
-[algorithms.json](tutorial4/jsons/algorithms.json):
+[algorithms.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/jsons/algorithms.json):
 
 ```json
 [
@@ -414,8 +424,8 @@ feature-based algorithm, and the third corresponds to the collaborative
 filtering algorithm. The first allows all 5 ratings, and the second allows only
 ratings higher than or equals to 4. This gives a bit more weight on the
 high-rating features. Once [all parameter files are
-specified](tutorial4/jsons/), we can start the training phase and start the API
-server:
+specified](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/jsons/),
+we can start the training phase and start the API server:
 
 ```bash
 $ cd $PIO_HOME/examples

@@ -12,7 +12,7 @@ PredictionIO's SDKs.
 
 > All PredictionIO-compliant engines support the data store (i.e. HBase) and
 data format used by the Event Server.
-> You may also [modify DataSource](/cookbook/existingdatasource.html) of an
+> You may also [modify DataSource]({{site.baseurl}}/cookbook/existingdatasource.html) of an
 engine to read data directly from your existing data store.
 
 
@@ -21,7 +21,7 @@ engine to read data directly from your existing data store.
 > Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, PredictionIO uses
 HBase, and a quick configuration can be found
-[here](/install/install-sourcecode.html#hbase).
+[here]({{site.baseurl}}/install/install-linux.html#hbase).
 
 Everything about PredictionIO can be done through the `bin/pio` command.
 
@@ -34,21 +34,9 @@ $ bin/pio eventserver
 ```
 ### Check server status
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+```
 $ curl -i -X GET http://localhost:7070
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
-from predictionio import EventClient
-client = EventClient(app_id=4, url="http://localhost:7070")
-
-print(client.get_status())
-{% endhighlight %}
-</div>
-</div>
+```
 
 Sample response:
 
@@ -66,7 +54,7 @@ Content-Length: 18
 ### Creating Your First Event
 
 You may connect to the Event Server with HTTP request or by using one of many
-**PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for
+**PredictionIO SDKs**. You may also use [Bulk Loading]({{site.baseurl}}/bulkloading.html) for
 your old data.
 
 The following shows how one can create an event involving a single entity.
@@ -103,7 +91,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $appId = 4;
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
-                        'appId' => 4,
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
@@ -121,21 +108,28 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-first_event_data = {
-  "appId": 4,
-  "event": "my_event",
-  "entityType": "user",
-  "entityId": "uid",
-  "properties": {
+from predictionio import EventClient
+from datetime import datetime
+import pytz
+client = EventClient(app_id=4, url="http://localhost:7070")
+
+first_event_properties = {
     "prop1" : 1,
     "prop2" : "value2",
     "prop3" : [1, 2, 3],
     "prop4" : True,
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56 ,
-  },
-}
-print(client.create_event(first_event_data))
+    }
+first_event_time = datetime(
+  2004, 12, 13, 21, 39, 45, 618000, pytz.timezone('US/Mountain'))
+first_event_response = client.create_event(
+    event="my_event",
+    entity_type="user",
+    entity_id="uid",
+    properties=first_event_properties,
+    event_time=first_event_time,
+)
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -193,7 +187,6 @@ $ curl -i -X POST http://localhost:7070/events.json \
   $appId = 4;
   $client = new EventClient($appId);
   $response = $client->createEvent(array(
-                        'appId' => 4,
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
@@ -207,22 +200,20 @@ $ curl -i -X POST http://localhost:7070/events.json \
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
-{% highlight bash %}
+{% highlight python %}
 # Second Event
-second_event_data = {
-  "appId" : 4,
-  "event" : "my_event",
-  "entityType" : "user",
-  "entityId" : "uid",
-  "targetEntityType" : "item",
-  "targetEntityId" : "iid",
-  "properties" : {
+second_event_properties = {
     "someProperty" : "value1",
-    "anotherProperty" : "value2"
-  }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-}
-print(client.create_event(second_event_data))
+    "anotherProperty" : "value2",
+    }
+second_event_response = client.create_event(
+    event="my_event",
+    entity_type="user",
+    entity_id="uid",
+    target_entity_type="item",
+    target_entity_id="iid",
+    properties=second_event_properties,
+    event_time=datetime(2014, 12, 13, 21, 38, 45, 618000, pytz.utc))
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -232,7 +223,7 @@ require 'predictionio'
 event_client = PredictionIO::EventClient.new(4)
 event_client.create_event('my_event', 'user', 'uid',
                           'targetEntityType' => 'item',
-                          'targetEntityId' => 'iid'
+                          'targetEntityId' => 'iid',
                           'eventTime' => '2004-12-13T21:39:45.618Z',
                           'properties' => { 'someProperty' => 'value1',
                                             'anotherProperty' => 'value2' })
@@ -253,7 +244,7 @@ HTTP/1.1 201 Created
 Server: spray-can/1.2.1
 Date: Wed, 10 Sep 2014 22:51:33 GMT
 Content-Type: application/json; charset=UTF-8
-Content-Length: 68
+Content-Length: 41
 
 {"eventId":"AAAABAAAAQDP3-jSlTMGVu0waj8"}
 ```
@@ -306,7 +297,7 @@ Field | Type | Description
     {
       "appId" : 4,
       "event" : "$set",
-      "entityType" : "user"
+      "entityType" : "user",
       "entityId" : "1",
       "properties" : {
         "birthday" : "1984-10-11",
@@ -323,10 +314,10 @@ Field | Type | Description
     {
       "appId" : 4,
       "event" : "rate",
-      "entityType" : "user"
+      "entityType" : "user",
       "entityId" : "1",
       "targetEntityType" : "item",
-      "targetEntityId" : "1"
+      "targetEntityId" : "1",
       "properties" : {
         "rating" : 4
       }
@@ -341,33 +332,15 @@ Replace `<your_eventId>` by a real one in the following.
 
 ### Get an Event
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+```
 $ curl -i -X GET http://localhost:7070/events/<your_eventId>.json
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
-print(client.get_event(<your_eventId>))
-{% endhighlight %}
-</div>
-</div>
+```
 
 ### Delete an Event
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+```
 $ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
-print(client.delete_event(<your_eventId>))
-{% endhighlight %}
-</div>
-</div>
+```
 
 ### Get All Events of an appId
 
@@ -386,28 +359,30 @@ In addition, the following *optional* parameters are supported:
 - `entityType`: String. The entityType. Return events for this `entityType` only.
 - `entityId`: String. The entityId. Return events for this `entityId` only.
 
+> If you are using <code>curl</code> with the <code>&</code> symbol, you should quote the entire URL by using single or double quotes.
+
 For example, get all events of appId with `eventTime >= startTime`
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of an appId with `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of an appId with `eventTime >= startTime` and `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of a specific entity with `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>
+$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>"
 ```
 
 ### Delete All Events of an appId

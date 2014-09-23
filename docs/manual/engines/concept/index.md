@@ -36,7 +36,7 @@ example, several Serving components for an Engine. You will be able to choose
 which one to be deployed when you create an Engine Instance.
 
 
-![Engine Overview](/images/engineinstance-overview.png)
+![Engine Overview]({{ site.baseurl }}/images/engineinstance-overview.png)
 
 # Engine Instance Deployment
 

@@ -15,7 +15,7 @@ multiple algoritms.
 
 > You need to build PredictionIO from source in order to build your own engine.
 Please follow instructions to build from source
-[here](/install/install-sourcecode.html).
+[here]({{site.baseurl}}/install/install-sourcecode.html).
 
 Let's build a simple **Java single machine recommendation engine** which
 predicts item's rating value rated by the user. [MovieLens

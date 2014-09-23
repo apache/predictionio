@@ -7,29 +7,36 @@ title:  Item Ranking Engine | Built-in Engines
 
 **Rank a list of items to a user personally**
 
-With this engine, you can personalize a ranked list of items in your application. The engine rank items in two steps:
+With this engine, you can personalize a ranked list of items in your
+application. The engine rank items in two steps:
 
 ## Step 1: Predict User Preferences
 
-![Item Ranking Score Prediction](/images/engine-itemrec-prediction.png)
+![Item Ranking Score Prediction]({{ site.baseurl }}/images/engine-itemrec-prediction.png)
 
-In this batch-mode process, the engine predicts preference scores for the queried items. The scores are computed by the deployed algorithm in the engine.
+In this batch-mode process, the engine predicts preference scores for the
+queried items. The scores are computed by the deployed algorithm in the engine.
 
 ## Step 2: Rank the Query Items
 
-With the predicted scores, this engine can rank a list of items for the user according to queries. Ranked items with scores will then be returned. Original order of the items is preserved if the algorithm couldn't predict the score.
+With the predicted scores, this engine can rank a list of items for the user
+according to queries. Ranked items with scores will then be returned. Original
+order of the items is preserved if the algorithm couldn't predict the score.
 
 # Collect Events Data
 
 You may collect events data with HTTP request or by using one of many
-**PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for
-your old data.
+**PredictionIO SDKs**. You may also use [Bulk
+Loading]({{site.baseurl}}/bulkloading.html) for your old data.
 
 ## 1. Setting user entity
 
-The `eventTime` is the time of the user being created in your application (eg. when she registered or signed up the account).
+The `eventTime` is the time of the user being created in your application (eg.
+when she registered or signed up the account).
 
-If you need to update the properties of the existing user entity later, simply create another `$set` event for this user entity with new property values and the `eventTime` is the time of this change happened.
+If you need to update the properties of the existing user entity later, simply
+create another `$set` event for this user entity with new property values and
+the `eventTime` is the time of this change happened.
 
 To create an user with `id_1`:
 
@@ -90,9 +97,12 @@ event_client.set_user('id_1',
 
 ## 2. Setting item entity
 
-The `eventTime` is the time of the item being first created in your application. The property `pio_itypes` is required when you set the item for the first time.
+The `eventTime` is the time of the item being first created in your application.
+The property `pio_itypes` is required when you set the item for the first time.
 
-If you need to update the properties of the existing item entity, simply create another `$set` event for this item entity with new properties values and the `eventTime` is the time of this change happened.
+If you need to update the properties of the existing item entity, simply create
+another `$set` event for this item entity with new properties values and the
+`eventTime` is the time of this change happened.
 
 To create an item with `id_3` and set its `pio_ityes` to `"type1"`:
 
@@ -146,7 +156,12 @@ event_client.set_item('id_3',
 
 ## 3. Record events of user-to-item actions.
 
-The `eventTime` is the time of the action being performed by the user. the `event` is the action name. By default, the built-in engines support the following actions: `"view"`, `"like"`, `"rate"`, `"conversion"` and `"dislike"`. You may also use other custom actions by modifying the params file `datasource.json` and `preparator.json` (Please refer to the later section below.)
+The `eventTime` is the time of the action being performed by the user. the
+`event` is the action name. By default, the built-in engines support the
+following actions: `"view"`, `"like"`, `"rate"`, `"conversion"` and `"dislike"`.
+You may also use other custom actions by modifying the params file
+`datasource.json` and `preparator.json` (Please refer to the later section
+below.)
 
 To record that user `id_1` views the item `id_3`:
 
@@ -200,7 +215,8 @@ event_client.record_user_action_on_item('view', 'id_1', 'id_3',
 </div>
 </div>
 
-Optionally, you can specify the `pio_rating` property associate with this event of user-to-item action.
+Optionally, you can specify the `pio_rating` property associate with this event
+of user-to-item action.
 
 To record that user `id_1` rates the item `id_3` with rating of 4:
 
@@ -370,12 +386,13 @@ $ curl -i -X POST http://localhost:8000/queries.json \
 use predictionio\EngineClient;
 
 $engineClient = new EngineClient('http://localhost:8000');
-$engineClient->sendQuery(
+$predictions = $engineClient->sendQuery(
                       array(
                         'uid'=>'123',
                         'iids'=>array('1', '3', '5', '10', '11')
                       )
                );
+print_r($predictions);
 ?>
 {% endhighlight %}
 </div>
@@ -430,17 +447,19 @@ By default, **Mahout Item Based Algorithm** (`"mahoutItemBased"`) is used. You
 can switch to another algorithm or modify parameters by modifying the file
 `algorithms.json` with any of above algorithm's JSON parameters setting.
 
-Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips
-on selecting the right algorithm and setting the parameters properly.
+Please read [Selecting an
+Algorithm]({{site.baseurl}}/cookbook/choosingalgorithms.html) for tips on
+selecting the right algorithm and setting the parameters properly.
 
 > You may also [implement and add your own
-> algorithm](/cookbook/addalgorithm.html) to the engine easily.
+algorithm]({{site.baseurl}}/cookbook/addalgorithm.html) to the engine easily.
 
 Item Ranking Engine comes with the following algorithms:
 
 ## 1. Mahout Item Based Algorithm
 
-Use Mahout Item Based algorithm to build similarity matrix. Then rank items based on user recent history and the item similarity matrix.
+Use Mahout Item Based algorithm to build similarity matrix. Then rank items
+based on user recent history and the item similarity matrix.
 
 **Algorithm code name:** `"mahoutItemBased"`
 
@@ -538,7 +557,9 @@ This algorithm doesn't have parameters.
 
 ## 4. Non-cached Mahout Item Based Algorithm
 
-Use Mahout Item Based algorithm to re-calculate predicted score every time when serve the query request. The item similarity matrix is not cached. (Serving performance is slower)
+Use Mahout Item Based algorithm to re-calculate predicted score every time when
+serve the query request. The item similarity matrix is not cached. (Serving
+performance is slower)
 
 **Algorithm code name:** `"ncMahoutItemBased"`
 
@@ -571,8 +592,13 @@ Same as **Mahout Item Based Algorithm** *without* the following parameters:
 
 # Using Custom Actions
 
-By default, the built-in engines support the following actions: `"view"`, `"like"`, `"dislike"`, `"rate"` and `"conversion"`. To add your own custom actions, you need to modify the following params file:
+By default, the built-in engines support the following actions: `"view"`,
+`"like"`, `"dislike"`, `"rate"` and `"conversion"`. To add your own custom
+actions, you need to modify the following params file:
 
-* `datasource.json`: Add your custom action names into the parameters `actions` and `u2iActions`.
+*   `datasource.json`: Add your custom action names into the parameters
+    `actions` and `u2iActions`.
 
-* `preparator.json`: Define how to map your custom action names to a score in the parameters `actions`. Use value of `null` if your action has a `pio_rating` property.
+*   `preparator.json`: Define how to map your custom action names to a score in
+    the parameters `actions`. Use value of `null` if your action has a
+    `pio_rating` property.

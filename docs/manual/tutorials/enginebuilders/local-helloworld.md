@@ -11,7 +11,7 @@ temperature of a certain day in a week.
 
 > You need to build PredictionIO from source in order to build your own engine.
 Please follow instructions to build from source
-[here](/install/install-sourcecode.html).
+[here]({{site.baseurl}}/install/install-sourcecode.html).
 
 Completed source code can also be found at
 `$PIO_HOME/examples/scala-local-helloworld` and

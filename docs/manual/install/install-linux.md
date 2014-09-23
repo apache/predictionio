@@ -55,13 +55,13 @@ You may change the settings or even use another data store such as
 [MongoDB](http://www.mongodb.org/). For details, please read [Changing the Data
 Store](config-datastore.html).
 
-#### <a name="hbase"></a>HBase Setup
+#### HBase Setup<a class="anchor" name="hbase">&nbsp;</a>
 
 By default, PredictionIO's Data API uses HBase at localhost as the data store
 for event data.
 
 ```
-$ wget http://www.apache.org/dyn/closer.cgi/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
+$ wget http://archive.apache.org/dist/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ tar zxvf {{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
 ```
@@ -97,4 +97,4 @@ $ bin/start-hbase.sh
 
 Now you have installed everything you need to run PredictionIO!
 
-Next: Reading [Quick Start](/tutorials/engines/quickstart.html)
+Next: Reading [Quick Start]({{site.baseurl}}/tutorials/engines/quickstart.html)
