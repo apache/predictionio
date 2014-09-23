@@ -14,7 +14,7 @@ The engine suggests similar items through a two-step process:
 
 ## Step 1: Estimate Item Similarity
 
-![Item Sim Score Prediction](/images/engine-itemsim-score.png)
+![Item Sim Score Prediction]({{ site.baseurl }}/images/engine-itemsim-score.png)
 
 In this batch-mode process, the engine estimates a similarity score for every item-item pair. The scores are computed by the deployed algorithm in the engine.
 
@@ -31,7 +31,7 @@ All built-in algorithms of this engine require the following data:
 * Item data
 * User-to-item behavioral data, such as like, rate and view.
 
-(TODO)
+(coming soon)
 
 # Prediction Query API
 
@@ -42,14 +42,14 @@ Item Similarity Engine supports the following API endpoints:
 To suggest top N items that are most similar to a targeted item, make an HTTP GET request to itemsim engine URI:
 
 ```
-GET /<TODO>
+GET /<coming soon>
 ```
 
 The query is a targeted item while the output is a list of N items.
 
 #### Required Parameters
 
-(TODO)
+(coming soon)
 
 > *Note*
 >
@@ -58,31 +58,30 @@ The query is a targeted item while the output is a list of N items.
 
 #### Optional Parameters
 
-(TODO)
+(coming soon)
 
 #### Sample Response
 
-(TODO)
+(coming soon)
 
 # Changing Algorithm and Its Parameters
 
 Item Similarity Engine comes with the following algorithms:
 
-* (TODO)
+* (coming soon)
 
-By default, (TODO) is used. You can switch to another algorithm by:
+By default, (coming soon) is used. You can switch to another algorithm by:
 
 ```
-(TODO)
+(coming soon)
 ```
 
 and change the algorithm parameters by:
 
 ```
-(TODO)
+(coming soon)
 ```
 
-Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips on selecting the right algorithm and setting the parameters properly.
+Please read [Selecting an Algorithm]({{ site.baseurl }}/cookbook/choosingalgorithms.html) for tips on selecting the right algorithm and setting the parameters properly.
 
-> You may also [implement and add your own algorithm](/cookbook/addalgorithm.html) to the engine easily.
-
+> You may also [implement and add your own algorithm]({{ site.baseurl }}/cookbook/addalgorithm.html) to the engine easily.

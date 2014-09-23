@@ -8,10 +8,10 @@ title: Overview
 PredictionIO is comprised with two main components: **Event Server** and
 **Engine**. It ingests data from an application and outputs prediction results.
 
-![System Overview Simple](/images/system-overview-simple.png)
+![System Overview Simple]({{site.baseurl}}/images/system-overview-simple.png)
 
 
-After [installing PredictionIO](/install), your application can send data to
+After [installing PredictionIO]({{site.baseurl}}/install), your application can send data to
 PredictionIO's *Event Server* through its *Event API*.
 
 ## App
@@ -38,13 +38,13 @@ Learning tasks, e.g. Personalized Item Recommendation and Item Ranking.
 
 An Engine has the following components: DataSource, Data Preparator(Preparator),
 Algorithm, and Serving. To learn more about Engine and Engine Instance, please
-refer to [Engine and Engine Instance: A Closer Look](/engines/concept).
+refer to [Engine and Engine Instance: A Closer Look]({{site.baseurl}}/engines/concept).
 
 PredictionIO is extremely flexible. If you want to run multiple types of prediction for one app or want to combine the results from different algorithms, you can run multiple instances of engines. 
 
-![System Overview](/images/system-overview.png)
+![System Overview]({{site.baseurl}}/images/system-overview.png)
 
-You may also [build your own Engines](/enginebuilders) for specific type of
+You may also [build your own Engines]({{site.baseurl}}/enginebuilders) for specific type of
 prediction problems.
 
 You can create one or more *Engine Instance(s)* from an Engine. An Engine
@@ -52,4 +52,4 @@ Instance trains a predictive model according to its own parameter settings. Afte
 an Engine Instance is deployed by PredictionIO, your application can send query
 to it through its *Engine API* to retrieve prediction results.
 
-Next, you can follow the [Quick Start Guide](/tutorials/engines/quickstart.html) and set up your first PredictionIO instance. 
+Next, you can follow the [Quick Start Guide]({{site.baseurl}}/tutorials/engines/quickstart.html) and set up your first PredictionIO instance. 

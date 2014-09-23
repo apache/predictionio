@@ -12,7 +12,8 @@ application. The engine makes recommendation in two steps:
 
 ## Step 1: Predict User Preferences
 
-![Item Recommendation Score Prediction](/images/engine-itemrec-prediction.png)
+![Item Recommendation Score
+Prediction]({{site.baseurl}}/images/engine-itemrec-prediction.png)
 
 In this batch-mode process, the engine predicts a preference score for every
 user-item pair. The scores are computed by the deployed algorithm in the engine.
@@ -28,12 +29,13 @@ search, is supported. Top N items will then be returned as prediction results.
 ## Step 2: Return Personalized High Score Items
 
 With the predicted scores, this engine can rank all available items for any user
-according to your REST API/SDK queries. 
+according to your REST API/SDK queries.
 Top N items will then be returned as prediction results.
 
 # Tutorials
 
-Create your first Item Recommendation app quickly by following [tutorials and samples](/tutorials/engines/). 
+Create your first Item Recommendation app quickly by following [tutorials and
+samples]({{ site.baseurl }}/tutorials/engines/).
 
 
 # Collect Events Data / Events Data Requirement
@@ -54,7 +56,8 @@ Item Recommendation Engine supports the following API endpoints:
 
 ## Get Top N Recommendation
 
-To recommend top N items to a user, make an HTTP GET request to itemrec engine URI:
+To recommend top N items to a user, make an HTTP GET request to itemrec engine
+URI:
 
 ```
 GET /<TODO>
@@ -157,17 +160,19 @@ is used. You can switch to another algorithm or modify parameters by modifying
 the file `algorithms.json` with any of above algorithm's JSON parameters
 setting.
 
-Please read [Selecting an Algorithm](/cookbook/choosingalgorithms.html) for tips
-on selecting the right algorithm and setting the parameters properly.
+Please read [Selecting an
+Algorithm]({{site.baseurl}}/cookbook/choosingalgorithms.html) for tips on
+selecting the right algorithm and setting the parameters properly.
 
 > You may also [implement and add your own
-> algorithm](/cookbook/addalgorithm.html) to the engine easily.
+algorithm]({{site.baseurl}}/cookbook/addalgorithm.html) to the engine easily.
 
 Item Recommendation Engine comes with the following algorithms:
 
 ## 1. Non-cached Mahout Item Based Algorithm
 
-Use Mahout Item Based algorithm to build similarity matrix. Then rank items based on user recent history and the item similarity matrix.
+Use Mahout Item Based algorithm to build similarity matrix. Then rank items
+based on user recent history and the item similarity matrix.
 
 **Algorithm code name:** `"ncMahoutItemBased"`
 

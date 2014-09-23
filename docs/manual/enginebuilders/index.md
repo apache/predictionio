@@ -70,4 +70,4 @@ use, which simply uses the *Algorithm*'s *Prediction* output to serve the query.
 
 
 It's time to build your first [HelloWorld
-Engine](/tutorials/enginebuilders/local-helloworld.html)!
+Engine]({{ site.baseurl }}/tutorials/enginebuilders/local-helloworld.html)!

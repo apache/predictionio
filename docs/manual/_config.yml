@@ -4,7 +4,7 @@ email: support@prediction.io
 description: >
   PredictionIO tech documentation
   PredictionIO is a Machine Learning Server for developers
-baseurl: "" # the subpath of your site, e.g. /blog/
+baseurl: "/0.8.0" # the subpath of your site, e.g. /blog/
 url: "" # the base hostname & protocol for your site
 permalink: /:title
 highlighter: pygments

@@ -42,4 +42,4 @@ Upgrade instruction from 0.7 to 0.8 is coming soon.
 
 ## Production Deployment
 
-For production environment setup, please refer to [Production Deployment](/production/deploy.html) guide.
+For production environment setup, please refer to [Production Deployment]({{site.baseurl}}/production/deploy.html) guide.

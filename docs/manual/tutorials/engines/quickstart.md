@@ -7,7 +7,7 @@ title: Quick Start - Using a Built-in Engine
 
 This is a quick start guide of using a PredictionIO's built-in engine and its
 SDKs to write a very simple app. It assumes that you have [installed
-PredictionIO server](/install/).
+PredictionIO server]({{site.baseurl}}/install/).
 
 Let's start with a classic example in Machine Learning - build a ranking
 engine. We are going to launch a ranking engine instance that can:
@@ -91,7 +91,7 @@ Event Server is running, PredictionIO keeps listening to new data.
 We are going to write a script that generates some random data and simulates
 data collection. With the *EventClient* of one of the PredictionIO SDKs, your
 application can send data to the Event Server in real-time easily through the
-[EventAPI](/eventapi.html). In the *quickstartapp* directory:
+[EventAPI]({{site.baseurl}}/eventapi.html). In the *quickstartapp* directory:
 
 <div class="codetabs">
 <div data-lang="PHP SDK">
@@ -365,4 +365,4 @@ $ ruby show.rb
 Well done! You have created a simple, but production-ready app with PredictionIO
 ranking engine.
 
-Next: Learn more about [collecting data through Event API](/eventapi.html).
+Next: Learn more about [collecting data through Event API]({{site.baseurl}}/eventapi.html).

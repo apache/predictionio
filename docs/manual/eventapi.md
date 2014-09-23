@@ -12,7 +12,7 @@ PredictionIO's SDKs.
 
 > All PredictionIO-compliant engines support the data store (i.e. HBase) and
 data format used by the Event Server.
-> You may also [modify DataSource](/cookbook/existingdatasource.html) of an
+> You may also [modify DataSource]({{site.baseurl}}/cookbook/existingdatasource.html) of an
 engine to read data directly from your existing data store.
 
 
@@ -21,7 +21,7 @@ engine to read data directly from your existing data store.
 > Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, PredictionIO uses
 HBase, and a quick configuration can be found
-[here](/install/install-linux.html#hbase).
+[here]({{site.baseurl}}/install/install-linux.html#hbase).
 
 Everything about PredictionIO can be done through the `bin/pio` command.
 
@@ -54,7 +54,7 @@ Content-Length: 18
 ### Creating Your First Event
 
 You may connect to the Event Server with HTTP request or by using one of many
-**PredictionIO SDKs**. You may also use [Bulk Loading](/bulkloading.html) for
+**PredictionIO SDKs**. You may also use [Bulk Loading]({{site.baseurl}}/bulkloading.html) for
 your old data.
 
 The following shows how one can create an event involving a single entity.
