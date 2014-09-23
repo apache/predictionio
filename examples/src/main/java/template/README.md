@@ -2,4 +2,4 @@
 
 Run with Runner:
 
-    $ $SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-SNAPSHOT-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0-SNAPSHOT.jar --deploy-mode "client" --class "myengine.Runner"  core/target/scala-2.10/core_2.10-0.8.0-SNAPSHOT.jar
+    $ $SPARK_HOME/bin/spark-submit --jars  engines/target/scala-2.10/engines-assembly-0.8.0-deps.jar,engines/target/scala-2.10/engines_2.10-0.8.0.jar --deploy-mode "client" --class "myengine.Runner"  core/target/scala-2.10/core_2.10-0.8.0.jar

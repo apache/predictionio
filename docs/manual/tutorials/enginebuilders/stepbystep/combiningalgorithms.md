@@ -359,7 +359,7 @@ PredictionIO. Here's the content:
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory",
-  "version": "0.8.0-SNAPSHOT",
+  "version": "0.8.0",
   "name": "FeatureBased Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory"
 }
