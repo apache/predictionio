@@ -1,6 +1,6 @@
 {
   "id": "io.prediction.examples.java.itemrec",
-  "version": "0.8.0",
+  "version": "0.8.1-SNAPSHOT",
   "name": "ItemRec Engine",
   "engineFactory": "io.prediction.examples.java.itemrec.EngineFactory"
 }

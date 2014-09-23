@@ -346,7 +346,7 @@ An engine manifest `engine.json` is needed to describe the Engine:
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory",
-  "version": "0.8.0",
+  "version": "0.8.1-SNAPSHOT",
   "name": "Simple Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory"
 }
