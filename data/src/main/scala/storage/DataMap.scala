@@ -38,15 +38,20 @@ case class DataMap (
 
   def get[T: Manifest](name: String): T = {
     require(name)
-    fields(name).extract[T]
+    fields(name) match {
+      case JNull => throw new DataMapException(
+        s"The required field ${name} cannot be null.")
+      case x: JValue => x.extract[T]
+    }
   }
   // TODO: combine getOpt and get
   def getOpt[T: Manifest](name: String): Option[T] = {
-    fields.get(name).map(_.extract[T])
+    // either the field doesn't exist or its value is null
+    fields.get(name).flatMap(_.extract[Option[T]])
   }
 
   def getOrElse[T: Manifest](name: String, default: T) = {
-    fields.get(name).map(_.extract[T]).getOrElse(default)
+    getOpt[T](name).getOrElse(default)
   }
 
   def ++ (that: DataMap) = DataMap(this.fields ++ that.fields)
@@ -67,6 +72,7 @@ case class DataMap (
 object DataMap {
   def apply(): DataMap = DataMap(Map[String, JValue]())
 
-  def apply(jObj: JObject): DataMap = DataMap(jObj.obj.toMap)
-
+  def apply(jObj: JObject): DataMap = {
+    if (jObj == null) DataMap() else DataMap(jObj.obj.toMap)
+  }
 }

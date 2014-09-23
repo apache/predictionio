@@ -31,3 +31,34 @@ curl -i -X POST "http://localhost:7070/events.json" \
     "piox_a" : 1
   }
 }'
+
+
+curl -i -X POST "http://localhost:7070/events.json" \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "my_event",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : null,
+  "targetEntityId" : null,
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : null,
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z",
+  "appId" : 4
+}'
+
+
+curl -i -X POST "http://localhost:7070/events.json" \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "my_event",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : null,
+  "targetEntityId" : null,
+  "properties" : null,
+  "eventTime" : null,
+  "appId" : 4
+}'

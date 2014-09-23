@@ -247,6 +247,36 @@ testdata='{
 checkPOST "/events.json" "$testdata" 201
 
 
+# check accepting null for optional fields
+testdata='{
+  "event" : "my_event",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : null,
+  "targetEntityId" : null,
+  "properties" : null,
+  "eventTime" : null,
+  "appId" : 4
+}'
+
+checkPOST "/events.json" "$testdata" 201
+
+testdata='{
+  "event" : "my_event",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : null,
+  "targetEntityId" : null,
+  "properties" : {
+    "prop1": 1,
+    "prop2": null
+  },
+  "eventTime" : null,
+  "appId" : 4
+}'
+
+checkPOST "/events.json" "$testdata" 201
+
 # ----------------------------
 # create events error cases
 # ----------------------------

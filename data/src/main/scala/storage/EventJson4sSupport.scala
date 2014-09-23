@@ -39,8 +39,8 @@ object EventJson4sSupport {
         val entityId = fields.get[String]("entityId")
         val targetEntityType = fields.getOpt[String]("targetEntityType")
         val targetEntityId = fields.getOpt[String]("targetEntityId")
-        val properties = fields.getOpt[Map[String, JValue]]("properties")
-          .getOrElse(Map())
+        val properties = fields.getOrElse[Map[String, JValue]](
+          "properties", Map())
         // default currentTime expressed as UTC timezone
         lazy val currentTime = DateTime.now(EventValidation.defaultTimeZone)
         val eventTime = fields.getOpt[String]("eventTime")
