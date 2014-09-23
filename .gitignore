@@ -1,0 +1,21 @@
+.DS_Store
+.pio_store
+*.swp
+*.swo
+conf/pio-env.sh
+target/
+sbt/sbt-launch-*.jar
+..sxr/
+*.class
+core/data
+*.orig
+examples/data/ml-*
+fs/
+supervisord.conf
+assembly/
+dist/
+*.tar.gz
+*.pyc
+# Ignore source files whose name prefixed with "Private"
+Private*.scala
+quickstartapp/

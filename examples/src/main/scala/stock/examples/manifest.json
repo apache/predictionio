@@ -1,0 +1,7 @@
+{
+  "id": "io.prediction.examples.stock",
+  "version": "0.8.0",
+  "name": "Justin Yip Always Win Stock Engine",
+  "engineFactory": "io.prediction.examples.stock.StockEngine",
+  "evaluatorFactory": "io.prediction.examples.stock.StockEvaluator"
+}

@@ -1,0 +1,9 @@
+{
+  "filePath" : "src/main/java/itemrec/examples/ratings.csv",
+  "iterations" : 1,
+  "trainingPercentage" : 0.8,
+  "testPercentage" : 0.2,
+  "seed" : 0,
+  "goal": 0,
+  "k": 20
+}
