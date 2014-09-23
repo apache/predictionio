@@ -108,21 +108,28 @@ $ curl -i -X POST http://localhost:7070/events.json \
 </div>
 <div data-lang="Python SDK">
 {% highlight python %}
-first_event_data = {
-  "appId": 4,
-  "event": "my_event",
-  "entityType": "user",
-  "entityId": "uid",
-  "properties": {
+from predictionio import EventClient
+from datetime import datetime
+import pytz
+client = EventClient(app_id=4, url="http://localhost:7070")
+
+first_event_properties = {
     "prop1" : 1,
     "prop2" : "value2",
     "prop3" : [1, 2, 3],
     "prop4" : True,
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56 ,
-  },
-}
-print(client.create_event(first_event_data))
+    }
+first_event_time = datetime(
+  2004, 12, 13, 21, 39, 45, 618000, pytz.timezone('US/Mountain'))
+first_event_response = client.create_event(
+    event="my_event",
+    entity_type="user",
+    entity_id="uid",
+    properties=first_event_properties,
+    event_time=first_event_time,
+)
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
@@ -193,22 +200,20 @@ $ curl -i -X POST http://localhost:7070/events.json \
 {% endhighlight %}
 </div>
 <div data-lang="Python SDK">
-{% highlight bash %}
+{% highlight python %}
 # Second Event
-second_event_data = {
-  "appId" : 4,
-  "event" : "my_event",
-  "entityType" : "user",
-  "entityId" : "uid",
-  "targetEntityType" : "item",
-  "targetEntityId" : "iid",
-  "properties" : {
+second_event_properties = {
     "someProperty" : "value1",
-    "anotherProperty" : "value2"
-  },
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-}
-print(client.create_event(second_event_data))
+    "anotherProperty" : "value2",
+    }
+second_event_response = client.create_event(
+    event="my_event",
+    entity_type="user",
+    entity_id="uid",
+    target_entity_type="item",
+    target_entity_id="iid",
+    properties=second_event_properties,
+    event_time=datetime(2014, 12, 13, 21, 38, 45, 618000, pytz.utc))
 {% endhighlight %}
 </div>
 <div data-lang="Ruby SDK">
