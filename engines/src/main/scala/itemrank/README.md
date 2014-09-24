@@ -1,8 +1,7 @@
-ItemRank engine
-===============
+ItemRank engine development
+===========================
 
 Personalize the order of a list of items for each user.
-
 
 ## Register engine directly. Useful for testing after engine code change.
 ```
@@ -21,31 +20,18 @@ $ $PIO_HOME/bin/pio deploy \
 
 ```
 
-## Register engine through distribution. Useful for params testing.
+## After deploy, you can get predictions
+
+Show engine status:
 ```
-$ ./make_distribtuion.sh
-$ cd engines/src/main/scala/itemrank/examples/
-$ $PIO_HOME/bin/pio register
-$ $PIO_HOME/bin/pio train -ap ncMahoutItemBasedAlgo.json
+$ curl -i -X GET http://localhost:8000
 ```
 
-Run Runner (obsolete)
-==============
+Get predictions
 ```
-$ pushd engines
-$ ../bin/pio-run  io.prediction.engines.itemrank.DetailedRunner
-$ popd engines
-
-$ ../bin/pio-run  io.prediction.engines.itemrank.Runner
-```
-
-Import Sample Data (obsolete)
-==================
-Run under examples.
-```
-examples$ set -a
-examples$ source ../conf/pio-env.sh
-examples$ set +a
-
-examples$ ../sbt/sbt "runMain io.prediction.engines.itemrank.CreateSampleData"
+$ curl -i -X POST http://localhost:8000/queries.json \
+-d '{
+  "uid" : "2",
+  "iids" : ["1", "3", "5", "10", "11"]
+}'
 ```
