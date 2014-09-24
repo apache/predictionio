@@ -374,7 +374,7 @@ object YahooDataSourceRun {
     // Make sure you have a lot of memory.
     // --driver-memory 12G
     val dsp = (
-      if (false) {
+      if (true) {
         YahooDataSource.Params(
           appId = 2,
           entityType = "yahoo",
@@ -389,7 +389,7 @@ object YahooDataSourceRun {
             trainingWindowSize = 200,
             maxTestingWindowSize = 30,
             marketTicker = "SPY",
-            //tickerList = Run.sp500List.take(5)))
+            //tickerList = Run.sp500List.take(20)))
             tickerList = Run.sp500List))
       } else {
         YahooDataSource.Params(

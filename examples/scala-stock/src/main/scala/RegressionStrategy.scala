@@ -15,6 +15,7 @@ import nak.regress.LinearRegression
 
 class RegressionStrategy
     extends StockStrategy[Map[String, DenseVector[Double]]] {
+  val trainingWindowSize = 200
 
   private def getRet(logPrice: Frame[DateTime, String, Double], d: Int) =
     (logPrice - logPrice.shift(d)).mapVec[Double](_.fillNA(_ => 0.0))
@@ -34,8 +35,9 @@ class RegressionStrategy
   }
   
   def createModel(dataView: DataView): Map[String, DenseVector[Double]] = {
-    val price = dataView.priceFrame(windowSize = 30)
+    val price = dataView.priceFrame(trainingWindowSize)
     val logPrice = price.mapValues(math.log)
+    val active = dataView.activeFrame(trainingWindowSize)
 
     val ret1d = getRet(logPrice, 1)
     val ret1w = getRet(logPrice, 5)
@@ -46,9 +48,13 @@ class RegressionStrategy
     val firstIdx = 25
     val lastIdx = timeIndex.length
 
+    println(timeIndex)
+
     val tickers = price.colIx.toVec.contents
 
-    val tickerModelMap = tickers.map(ticker => {
+    val tickerModelMap = tickers
+    .filter(ticker => (active.firstCol(ticker).findOne(_ == false) == -1))
+    .map(ticker => {
       val model = regress(
         ret1d.firstCol(ticker).slice(firstIdx, lastIdx),
         ret1w.firstCol(ticker).slice(firstIdx, lastIdx),

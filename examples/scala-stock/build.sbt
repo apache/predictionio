@@ -21,11 +21,11 @@ libraryDependencies ++= Seq(
   "org.json4s"        %% "json4s-native"  % "3.2.10",
   "org.scala-saddle"  %% "saddle-core"    % "1.3.2"
     exclude("ch.qos.logback", "logback-classic"),
-  "org.scalanlp"       % "nak"            % "1.2.1",
+  "org.scalanlp"      %% "breeze"         % "0.9",
+  "org.scalanlp"      %% "breeze-natives" % "0.9",
+  "org.scalanlp"      %% "nak"            % "1.3",
   "org.scalatest"     %% "scalatest"      % "2.2.0" % "test")
 
-  //"org.scalanlp"      %% "breeze"         % "0.9",
-  //"org.scalanlp"      %% "breeze-natives" % "0.9",
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
