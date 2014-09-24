@@ -1,4 +1,6 @@
-## How to implement a stock prediction algorithm
+# (This doc is out-of-sync with the actual implementation)
+
+## How to implement a stock prediction algorithm 
 
 ### Fetch data from external source
 You only need to do it once. (Unless you want to update your data.)

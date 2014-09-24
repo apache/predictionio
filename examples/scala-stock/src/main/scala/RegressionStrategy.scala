@@ -48,8 +48,6 @@ class RegressionStrategy
     val firstIdx = 25
     val lastIdx = timeIndex.length
 
-    println(timeIndex)
-
     val tickers = price.colIx.toVec.contents
 
     val tickerModelMap = tickers
