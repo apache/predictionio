@@ -1,6 +1,0 @@
-[
-  { "name":"random", "params": { "seed" : 1, "scale": 0.01, "drift": 0.0 } },
-  { "name":"random", "params": { "seed" : 2, "scale": 0.01, "drift": 0.0 } },
-  { "name":"random", "params": { "seed" : 3, "scale": 0.01, "drift": 0.5 } },
-  { "name":"regression", "params": {} }
-]
