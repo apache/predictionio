@@ -26,7 +26,9 @@ import io.prediction.engines.base.PreparedData
 import org.apache.mahout.cf.taste.model.DataModel
 import org.apache.mahout.cf.taste.common.Weighting
 import org.apache.mahout.cf.taste.recommender.Recommender
+import org.apache.mahout.cf.taste.recommender.ItemBasedRecommender
 import org.apache.mahout.cf.taste.recommender.IDRescorer
+import org.apache.mahout.cf.taste.recommender.Rescorer
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity
 import org.apache.mahout.cf.taste.impl.similarity.{
   CityBlockSimilarity,
@@ -38,10 +40,11 @@ import org.apache.mahout.cf.taste.impl.similarity.{
 }
 import org.apache.mahout.cf.taste.common.NoSuchUserException
 import org.apache.mahout.cf.taste.recommender.RecommendedItem
+import org.apache.mahout.common.LongPair
 
 import grizzled.slf4j.Logger
 
-import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 
 import scala.collection.JavaConversions._
 
@@ -76,17 +79,25 @@ class NCItemBasedAlgorithmModel(
 ) extends Serializable {
 
   @transient lazy val logger = Logger[this.type]
-  @transient lazy val recommender: Recommender = buildRecommender()
-  @transient lazy val freshnessRescorer = new FreshnessRescorer(
+  @transient lazy val recommender: ItemBasedRecommender = buildRecommender()
+  @transient lazy val freshnessRescorer: IDRescorer = new FreshnessIDRescorer(
       params.freshness,
       params.recommendationTime,
       params.freshnessTimeUnit,
       validItemsMap)
+  @transient lazy val freshnessPairRescorer: Rescorer[LongPair] =
+    new FreshnessPairRescorer(
+      params.freshness,
+      params.recommendationTime,
+      params.freshnessTimeUnit,
+      validItemsMap)
+
   // string id -> long index
   @transient lazy val itemsIndexMap: Map[String, Long] = validItemsMap.map {
       case (index, item) => (item.id, index) }
 
-  private def buildRecommender(): Recommender = {
+  // TODO: refactor to suppport other types of Recommender (eg. SVD)
+  private def buildRecommender(): ItemBasedRecommender = {
     logger.info("Building recommender...")
     val weightedParam: Weighting = if (params.weighted) Weighting.WEIGHTED
       else Weighting.UNWEIGHTED
@@ -113,7 +124,7 @@ class NCItemBasedAlgorithmModel(
     else
       new AllValidItemsCandidateItemsStrategy(validItemsMap.keySet.toArray)
 
-    val recommender: Recommender = new KNNItemBasedRecommender(
+    val recommender: ItemBasedRecommender = new KNNItemBasedRecommender(
       dataModel,
       similarity,
       candidateItemsStrategy,
@@ -133,31 +144,6 @@ class NCItemBasedAlgorithmModel(
     s"${this.getClass().getCanonicalName()}\n$usersStr\n$itemsStr"
   }
 
-  class FreshnessRescorer(freshness: Int, recommendationTimeOpt: Option[Long],
-    freshnessTimeUnit: Long,
-    itemsMap: Map[Long, ItemModel]) extends IDRescorer {
-
-    logger.info("Building FreshnessRescorer...")
-
-    def isFiltered(id: Long): Boolean = false
-
-    def rescore(id: Long, originalScore: Double): Double = {
-
-      val recommendationTime = recommendationTimeOpt.getOrElse(
-        DateTime.now.millis)
-
-      if (freshness > 0) {
-        itemsMap.get(id) map { i =>
-          val timeDiff = (recommendationTime - i.starttime) / 1000 /
-            freshnessTimeUnit
-          if (timeDiff > 0)
-            originalScore * scala.math.exp(-timeDiff / (11 - freshness))
-          else
-            originalScore
-        } getOrElse originalScore
-      } else originalScore
-    }
-  }
 }
 
 abstract class AbstractNCItemBasedAlgorithm[Q : Manifest, P](
@@ -167,7 +153,7 @@ abstract class AbstractNCItemBasedAlgorithm[Q : Manifest, P](
 
   @transient lazy val logger = Logger[this.type]
   @transient lazy val recommendationTime = params.recommendationTime.getOrElse(
-    DateTime.now.millis)
+    DateTime.now.getMillis)
 
   override def train(preparedData: PreparedData): NCItemBasedAlgorithmModel = {
 

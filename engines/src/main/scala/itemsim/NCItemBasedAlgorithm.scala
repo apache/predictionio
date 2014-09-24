@@ -13,17 +13,17 @@
   * limitations under the License.
   */
 
-package io.prediction.engines.itemrec
+package io.prediction.engines.itemsim
 
 import io.prediction.engines.base.mahout.NCItemBasedAlgorithmModel
 import io.prediction.engines.base
 
-import org.apache.mahout.cf.taste.common.NoSuchUserException
+import org.apache.mahout.cf.taste.common.TasteException
 import org.apache.mahout.cf.taste.recommender.RecommendedItem
 
 import grizzled.slf4j.Logger
 
-import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTime
 
 import scala.collection.JavaConversions._
 
@@ -32,13 +32,13 @@ case class NCItemBasedAlgorithmParams(
   val itemSimilarity: String = "LogLikelihoodSimilarity",
   val weighted: Boolean = false,
   val threshold: Double = Double.MinPositiveValue,
-  val nearestN: Int = 10,
-  val unseenOnly: Boolean = false,
   val freshness: Int = 0,
   val freshnessTimeUnit: Int = 86400,
-  val recommendationTime: Option[Long] = Some(DateTime.now.millis)
-) extends base.mahout.AbstractItemBasedAlgorithmParams
-
+  val recommendationTime: Option[Long] = Some(DateTime.now.getMillis)
+) extends base.mahout.AbstractItemBasedAlgorithmParams {
+  val unseenOnly: Boolean = false
+  val nearestN: Int = 1
+}
 
 class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
   extends base.mahout.AbstractNCItemBasedAlgorithm[Query, Prediction](params) {
@@ -48,28 +48,28 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
     query: Query): Prediction = {
 
     val recommender = model.recommender
-    val rec: List[RecommendedItem] = model.usersMap.get(query.uid)
-      .map { user =>
-        val uindex = user.index
-        // List[RecommendedItem] // getItemID(), getValue()
-        try {
-          if (params.freshness != 0)
-            recommender.recommend(uindex, query.n,
-              model.freshnessRescorer).toList
-          else
-            recommender.recommend(uindex, query.n).toList
-        } catch {
-          case e: NoSuchUserException => {
-            logger.info(
-              s"NoSuchUserException ${query.uid} (index ${uindex}) in model.")
-            List()
-          }
-          case e: Throwable => throw new RuntimeException(e)
+    val itemIndexes: Seq[Long] = query.iids
+      .map(model.itemsIndexMap.get(_)).flatten
+
+    val rec: List[RecommendedItem] = if (itemIndexes.isEmpty) {
+      logger.info(s"No index for ${query.iids}.")
+      List()
+    } else {
+      try {
+        if (params.freshness != 0)
+          recommender.mostSimilarItems(itemIndexes.toArray, query.n,
+            model.freshnessPairRescorer, false).toList
+        else
+          recommender.mostSimilarItems(itemIndexes.toArray, query.n, false)
+            .toList
+      } catch {
+        case e: TasteException => {
+          logger.info(s"Caught ${e} for query ${query}")
+          List()
         }
-      }.getOrElse{
-        logger.info(s"Unknow user id ${query.uid}")
-        List()
+        case e: Throwable => throw new RuntimeException(e)
       }
+    }
 
     val items: Seq[(String, Double)] = rec.map { r =>
       val iid = model.validItemsMap(r.getItemID()).id

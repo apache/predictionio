@@ -69,7 +69,7 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
   def predict(model: NCItemBasedAlgorithmModel,
     query: Query): Prediction = {
 
-    val recomender = model.recommender
+    val recommender = model.recommender
     val rec: Seq[(String, Double)] = model.usersMap.get(query.uid)
       .map { user =>
         val uindex = user.index
@@ -77,7 +77,7 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
         try {
           query.iids.map { iid =>
             val score = model.itemsIndexMap.get(iid).map { iindex =>
-              val p = recomender.estimatePreference(uindex, iindex).toDouble
+              val p = recommender.estimatePreference(uindex, iindex).toDouble
               model.freshnessRescorer.rescore(iindex, p)
             }.getOrElse{ Double.NaN }
             (iid, score)
@@ -109,17 +109,17 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
   def predict(model: NCItemBasedAlgorithmModel,
     query: Query): Prediction = {
 
-    val recomender = model.recommender
+    val recommender = model.recommender
     val rec: List[RecommendedItem] = model.usersMap.get(query.uid)
       .map { user =>
         val uindex = user.index
         // List[RecommendedItem] // getItemID(), getValue()
         try {
           if (params.freshness != 0)
-            recomender.recommend(uindex, model.itemCount,
+            recommender.recommend(uindex, model.itemCount,
               model.freshnessRescorer).toList
           else
-            recomender.recommend(uindex, model.itemCount).toList
+            recommender.recommend(uindex, model.itemCount).toList
         } catch {
           case e: NoSuchUserException => {
             logger.info(

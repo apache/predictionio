@@ -1,3 +1,5 @@
+ItemRecommendation engine development
+=====================================
 
 ## Register engine directly. Useful for testing after engine code change.
 ```
@@ -30,6 +32,5 @@ curl -i -X GET http://localhost:9997
 
 Get predictions
 ```
-curl -i -X POST http://localhost:9997 -d '{"uid": "12", "n": 4}'
+curl -i -X POST http://localhost:9997/queries.json -d '{"uid": "12", "n": 4}'
 ```
-

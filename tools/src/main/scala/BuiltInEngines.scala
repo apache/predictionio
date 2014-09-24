@@ -56,7 +56,16 @@ object BuiltInEngine {
       dataSourceJson = templates.itemrec.params.txt.datasourceJson(),
       preparatorJson = templates.itemrec.params.txt.preparatorJson(),
       algorithmsJson = templates.itemrec.params.txt.algorithmsJson(),
-      servingJson = templates.itemrec.params.txt.servingJson())
+      servingJson = templates.itemrec.params.txt.servingJson()),
+    EngineInstanceTemplate(
+      engineId = "io.prediction.engines.itemsim",
+      version = BuildInfo.version,
+      name = "PredictionIO ItemSimilarity Engine",
+      engineFactory = "io.prediction.engines.itemsim.ItemSimEngine",
+      dataSourceJson = templates.itemsim.params.txt.datasourceJson(),
+      preparatorJson = templates.itemsim.params.txt.preparatorJson(),
+      algorithmsJson = templates.itemsim.params.txt.algorithmsJson(),
+      servingJson = templates.itemsim.params.txt.servingJson())
   )
 
   // TODO: Check if engineFactory actuall exists.
