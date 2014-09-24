@@ -47,7 +47,7 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
   def predict(model: NCItemBasedAlgorithmModel,
     query: Query): Prediction = {
 
-    val recomender = model.recommender
+    val recommender = model.recommender
     val itemIndexes: Seq[Long] = query.iids
       .map(model.itemsIndexMap.get(_)).flatten
 
@@ -57,10 +57,10 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
     } else {
       try {
         if (params.freshness != 0)
-          recomender.mostSimilarItems(itemIndexes.toArray, query.n,
+          recommender.mostSimilarItems(itemIndexes.toArray, query.n,
             model.freshnessPairRescorer, false).toList
         else
-          recomender.mostSimilarItems(itemIndexes.toArray, query.n, false)
+          recommender.mostSimilarItems(itemIndexes.toArray, query.n, false)
             .toList
       } catch {
         case e: TasteException => {

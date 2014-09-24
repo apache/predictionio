@@ -47,17 +47,17 @@ class NCItemBasedAlgorithm(params: NCItemBasedAlgorithmParams)
   def predict(model: NCItemBasedAlgorithmModel,
     query: Query): Prediction = {
 
-    val recomender = model.recommender
+    val recommender = model.recommender
     val rec: List[RecommendedItem] = model.usersMap.get(query.uid)
       .map { user =>
         val uindex = user.index
         // List[RecommendedItem] // getItemID(), getValue()
         try {
           if (params.freshness != 0)
-            recomender.recommend(uindex, query.n,
+            recommender.recommend(uindex, query.n,
               model.freshnessRescorer).toList
           else
-            recomender.recommend(uindex, query.n).toList
+            recommender.recommend(uindex, query.n).toList
         } catch {
           case e: NoSuchUserException => {
             logger.info(
