@@ -60,8 +60,40 @@ class RegressionStrategy
     tickerModelMap
   }
 
+  private def predictOne(
+    coef: DenseVector[Double],
+    price: Series[DateTime, Double]): Double = {
+    val shifts = Seq(0, 1, 5, 22)
+    val sp = shifts
+      .map(s => (s, math.log(price.raw(price.length - s - 1))))
+      .toMap
+
+    val vec = DenseVector[Double](
+      sp(0) - sp(1),
+      sp(0) - sp(5),
+      sp(0) - sp(22),
+      1)
+
+    val p = coef.dot(vec)
+    return p
+  }
+
   def onClose(model: Map[String, DenseVector[Double]], query: Query)
   : Prediction = {
-    Prediction(data = HashMap[String, Double]())
+    val dataView = query.dataView
+    
+    val price = dataView.priceFrame(windowSize = 30)
+    //val logPrice = price.mapValues(math.log)
+
+    val prediction = query.tickers
+      .filter(ticker => model.contains(ticker))
+      .map { ticker => {
+        val p = predictOne(
+          model(ticker),
+          price.firstCol(ticker))
+        (ticker, p)
+      }}
+
+    Prediction(HashMap[String, Double](prediction:_*))
   }
 }

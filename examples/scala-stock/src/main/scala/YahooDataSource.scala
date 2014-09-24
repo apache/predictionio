@@ -25,6 +25,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.broadcast.Broadcast
 
 import org.json4s._
+//import org.saddle._
 
 case class HistoricalData(
   val ticker: String,
@@ -408,6 +409,9 @@ object YahooDataSourceRun {
     
     val momentumParams = MomentumStrategyParams(20, 3)
 
+    //val x =  Series(Vec(1,2,3))
+    //println(x)
+
     val metricsParams = BacktestingParams(
       enterThreshold = 0.01,
       exitThreshold = 0.0,
@@ -420,9 +424,11 @@ object YahooDataSourceRun {
       dataSourceParams = dsp,
       preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
       algorithmClassMapOpt = Some(Map(
-        "" -> classOf[MomentumStrategy]
+        //"" -> classOf[MomentumStrategy]
+        "" -> classOf[RegressionStrategy]
       )),
-      algorithmParamsList = Seq(("", momentumParams)),
+      //algorithmParamsList = Seq(("", momentumParams)),
+      algorithmParamsList = Seq(("", EmptyParams())),
       servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
       metricsClassOpt = Some(classOf[BacktestingMetrics]),
       metricsParams = metricsParams,
