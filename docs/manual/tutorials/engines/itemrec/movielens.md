@@ -19,7 +19,7 @@ $ git checkout develop
 Download Movie-Lens data
 
 ```
-$ curl -o ml-100k.zip http://www.grouplens.org/system/files/ml-100k.zip
+$ curl -o ml-100k.zip http://files.grouplens.org/datasets/movielens/ml-100k.zip
 $ unzip ml-100k.zip
 ```
 
@@ -61,7 +61,7 @@ $ cd io.prediction.engines.itemrec
 $ $PIO_HOME/bin/pio register
 ```
 where `$PIO_HOME` is your installation path of PredictionIO.
-Under the director `io.prediction.engines.itemrec`, you will see a
+Under the directory `io.prediction.engines.itemrec`, you will see a
 self-contained set of configuation files for an instance of Item Recommendation
 Engine.
 
