@@ -23,6 +23,7 @@ import org.apache.spark.mllib.regression.RegressionModel
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
 import org.json4s._
+import java.io.File
 
 case class DataSourceParams(
   val filepath: String, val k: Int = 3, val seed: Int = 9527)
@@ -79,7 +80,7 @@ object RegressionEngineFactory extends IEngineFactory {
 
 object Run {
   def main(args: Array[String]) {
-    val filepath = "data/lr_data.txt"
+    val filepath = new File("../data/lr_data.txt").getCanonicalPath
     val dataSourceParams = DataSourceParams(filepath, 3)
     val SGD = "SGD"
     val algorithmParamsList = Seq(
