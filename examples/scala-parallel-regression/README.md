@@ -17,7 +17,7 @@ $ cat params/datasource.json
 
 ```
 
-Register engine, train, and deploy.
+## Register engine, train, and deploy.
 
 ```
 $ pio register

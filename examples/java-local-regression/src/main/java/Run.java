@@ -10,6 +10,8 @@ import io.prediction.controller.java.JavaEngineParamsBuilder;
 import io.prediction.controller.java.LJavaAlgorithm;
 import io.prediction.controller.java.JavaWorkflow;
 import io.prediction.controller.java.WorkflowParamsBuilder;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,10 +32,9 @@ public class Run {
     }
   }
 
-  // Deprecated. Use Engine Builder
-  public static void runComponents () {
+  public static void runComponents() throws IOException {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(new DataSourceParams("data/lr_data.txt"))
+      .dataSourceParams(new DataSourceParams(new File("../data/lr_data.txt").getCanonicalPath()))
       .preparatorParams(new PreparatorParams(0.3))
       .addAlgorithmParams("OLS", new EmptyParams())
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.2))
@@ -47,9 +48,9 @@ public class Run {
         );
   }
 
-  public static void runEngine() {
+  public static void runEngine() throws IOException {
     JavaEngineParams engineParams = new JavaEngineParamsBuilder()
-      .dataSourceParams(new DataSourceParams("data/lr_data.txt"))
+      .dataSourceParams(new DataSourceParams(new File("../data/lr_data.txt").getCanonicalPath()))
       .preparatorParams(new PreparatorParams(0.3))
       .addAlgorithmParams("OLS", new EmptyParams())
       .addAlgorithmParams("Default", new DefaultAlgorithmParams(0.2))
@@ -66,7 +67,11 @@ public class Run {
   }
 
   public static void main(String[] args) {
-    //runEngine();
-    runComponents();
+    try {
+      runEngine();
+      //runComponents();
+    } catch (IOException ex) {
+      System.out.println(ex);
+    }
   }
 }

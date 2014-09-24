@@ -6,8 +6,6 @@ import io.prediction.controller.java.EmptyParams;
 import java.lang.Iterable;
 
 public class Serving extends LJavaServing<EmptyParams, Double[], Double> {
-  public Serving(EmptyParams ep) {}
-
   public Double serve(Double[] query, Iterable<Double> predictions) {
     int n = 0;
     double s = 0.0;

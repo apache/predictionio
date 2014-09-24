@@ -2,6 +2,7 @@ package io.prediction.examples.java.regression;
 
 import io.prediction.controller.java.LJavaAlgorithm;
 
+// This algorithm is for illustration only. It returns a constant.
 public class DefaultAlgorithm
   extends LJavaAlgorithm<DefaultAlgorithmParams, TrainingData, Object, Double[], Double> {
   public final DefaultAlgorithmParams p; 
