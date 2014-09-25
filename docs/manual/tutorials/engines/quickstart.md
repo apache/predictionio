@@ -69,9 +69,15 @@ $ gem install predictionio
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
+To install PredictionIO Java SDK, clone the PredictionIO-Java-SDK repository
+and build it using Maven:
 {% highlight bash %}
-(coming soon)
+$ cd ~
+$ git clone git://github.com/PredictionIO/PredictionIO-Java-SDK.git
+$ cd PredictionIO-Java-SDK
+$ mvn clean install
 {% endhighlight %}
+Javadoc appears in client/target/apidocs/index.html.
 </div>
 </div>
 
@@ -216,8 +222,64 @@ $ ruby import.rb
 </div>
 
 <div data-lang="Java SDK">
+<p><em>QuickstartImport.java</em> is located under
+PredictionIO-Java-SDK/examples/quickstart_import/src/main/java/io/prediction/samples/.
+Replace <code>your_app_id</code> with your app id (integer).</p>
+
+{% highlight java %}
+package io.prediction.samples;
+
+import io.prediction.EventClient;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+
+public class QuickstartImport {
+    public static void main(String[] args)
+            throws ExecutionException, InterruptedException, IOException {
+        EventClient client = new EventClient(your_app_id);
+        Random rand = new Random();
+
+        // generate 10 users, with user ids 1 to 10
+        for (int user = 1; user <= 10; user++) {
+            System.out.println("Add user " + user);
+            client.setUser(""+user, new HashMap<String, Object>());
+        }
+
+        // generate 50 items, with item ids 1 to 50
+        // assign type id 1 to all of them
+        Map<String, Object> itemProperty = new HashMap();
+        List<String> types = new ArrayList();
+        types.add("1");
+        itemProperty.put("pio_itypes", types);
+        for (int item = 1; item <= 50; item++) {
+            System.out.println("Add item " + item);
+            client.setItem(""+item, itemProperty);
+        }
+
+        // each user randomly views 10 items
+        for (int user = 1; user <= 10; user++) {
+            for (int i = 1; i <= 10; i++) {
+                int item = rand.nextInt(50) + 1;
+                System.out.println("User " + user + " views item " + item);
+                client.userActionItem(""+user, "view", ""+item, new HashMap<String, Object>());
+            }
+        }
+
+        client.close();
+    }
+}
+{% endhighlight %}
+To compile and run it:
 {% highlight bash %}
-(coming soon)
+$ cd PredictionIO-Java-SDK/examples/quickstart_import
+$ mvn clean compile assembly:single
+$ java -jar target/quickstart-import-<latest version>-jar-with-dependencies.jar
 {% endhighlight %}
 </div>
 </div>
@@ -356,8 +418,50 @@ $ ruby show.rb
 </div>
 
 <div data-lang="Java SDK">
+<p><em>QuickstartShow.java</em> is located under
+PredictionIO-Java-SDK/examples/quickstart_show/src/main/java/io/prediction/samples/.</p>
+
+{% highlight java %}
+package io.prediction.samples;
+
+import io.prediction.EngineClient;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+public class QuickstartShow {
+    public static void main(String[] args)
+            throws ExecutionException, InterruptedException, IOException {
+        EngineClient client = new EngineClient();
+
+        // rank item 1 to 5 for each user
+        List<String> itemIds = new ArrayList();
+        for (int item = 1; item <= 5; item++) {
+            itemIds.add(""+item);
+        }
+
+        Map<String, Object> query = new HashMap();
+        query.put("iids", itemIds);
+        for (int user = 1; user <= 10; user++) {
+            query.put("uid", user);
+            System.out.println("Rank item 1 to 5 for user " + user);
+            System.out.println(client.sendQuery(query));
+        }
+
+        client.close();
+    }
+}
+{% endhighlight %}
+
+To compile and run it:
 {% highlight bash %}
-(coming soon)
+$ cd PredictionIO-Java-SDK/examples/quickstart_show
+$ mvn clean compile assembly:single
+$ java -jar target/quickstart-show-<latest version>-jar-with-dependencies.jar
 {% endhighlight %}
 </div>
 </div>
