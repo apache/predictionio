@@ -302,7 +302,7 @@ settings, or even for different applications.
 To deploy an engine instance for *quickstartapp*, first create an engine
 instance project:
 
-```
+```bash
 $ $PIO_HOME/bin/pio instance io.prediction.engines.itemrank
 $ cd io.prediction.engines.itemrank
 $ $PIO_HOME/bin/pio register
@@ -312,16 +312,32 @@ Edit `params/datasource.json` and modify the value of `appId` to fit your app.
 
 Now, you can kick start the predictive model training with:
 
-```
+> **Notes for CentOS 7+ Users**
+
+> If you are using CentOS 7+, Apache Spark local mode, which is the default
+operation mode without further configuration, may not work. In that case,
+configure your Apache Spark to run in [standalone cluster
+mode](http://spark.apache.org/docs/latest/spark-standalone.html).
+
+```bash
 $ $PIO_HOME/bin/pio train
 ...
 2014-09-11 16:25:44,591 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:674, took 0.078664 s
 2014-09-11 16:25:44,737 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: KxOsC2FRSdGGe1lv0oaHiw
 ```
 
+> **Notes for Apache Spark in Cluster Mode**
+
+> If you are using an Apache Spark cluster, you will need to pass the cluster's
+master URL to the `pio train` command, e.g.
+
+> ```bash
+$ $PIO_HOME/bin/pio train -- --master spark://localhost:7077
+```
+
 If your training was successful, you should see the lines shown above. Now you are ready to deploy the instance:
 
-```
+```bash
 $ $PIO_HOME/bin/pio deploy
 ...
 [INFO] [09/11/2014 16:26:16.525] [pio-server-akka.actor.default-dispatcher-2] [akka://pio-server/user/IO-HTTP/listener-0] Bound to localhost/127.0.0.1:8000
