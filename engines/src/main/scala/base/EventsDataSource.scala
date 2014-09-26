@@ -21,6 +21,7 @@ import io.prediction.controller.EmptyDataParams
 import io.prediction.data.view.LBatchView
 
 import org.joda.time.DateTime
+import org.joda.time.Duration
 
 import scala.reflect.ClassTag
 
@@ -30,11 +31,37 @@ abstract class AbstractEventsDataSourceParams extends Params {
   val appId: Int
   // default None to include all itypes
   val itypes: Option[Set[String]] // train items with these itypes
-  val actions: Set[String] // actions for trainingdata
-  val startTime: Option[DateTime] // event starttime
-  val untilTime: Option[DateTime] // event untiltime
+  // actions for trainingdata
+  val actions: Set[String]
+  // only consider events happening after starttime.
+  val startTime: Option[DateTime] 
+  // only consider events happening until untiltime.
+  val untilTime: Option[DateTime] 
+  // used for mapping attributes from event store.
   val attributeNames: AttributeNames
+  // for generating evaluation data sets. See [[[EventsSlidingEvaluationParams]]].
+  val slidingEvaluation: Option[EventsSlidingEvaluationParams] = None
 }
+
+/* Parameters for generating evaluation (testing) data.
+ *
+ * Generates data in a sliding window fashion. First, it sets a cutoff time for
+ * training data, all events whose timestamp is less than the cutoff time go to
+ * training, then it takes all events that happened between the
+ * [firstCutoffTime, firstCutoffTime + evaluationDuration] as test set.
+ * Afterwards, it uses events up to firstCutoffTime + evaluationDuration as
+ * training set, and [firstCutoffTime + evaluationDuration, firstCutoffTime +
+ * 2 x evaluationDuration] as test set. This process is repeated for
+ * evaluationCount times.
+ *
+ * It is important to note that this sliding window is usually subjected to the
+ * startTime and endTime of the parent DataSourceParams.
+ */
+class EventsSlidingEvaluationParams(
+  val firstTrainingCutoffTime: DateTime,
+  val evaluationDuration: Duration,
+  val evaluationCount: Int
+)
 
 class EventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
@@ -46,8 +73,33 @@ class EventsDataSource[DP: ClassTag, Q, A](
     dsp.startTime, dsp.untilTime)
 
   override
-  def readTraining(): TrainingData = {
+  def read(): Seq[(DP, TrainingData, Seq[(Q, A)])] = {
+    val (users, items, u2iActions)
+    : (Map[Int, UserTD], Map[Int, ItemTD], Seq[U2IActionTD]) = extract()
 
+    if (dsp.slidingEvaluation.isEmpty) {
+      val trainingData = new TrainingData(
+        users = users,
+        items = items,
+        u2iActions = u2iActions)
+      return Seq((null.asInstanceOf[DP], trainingData, Seq[(Q, A)]()))
+    } else {
+      return generateSliding(users, items, u2iActions)
+    }
+  }
+
+  // sub-classes should override this method.
+  def generateSliding(
+    users: Map[Int, UserTD],
+    items: Map[Int, ItemTD],
+    u2iActions: Seq[U2IActionTD]): Seq[(DP, TrainingData, Seq[(Q, A)])] = {
+    Seq[(DP, TrainingData, Seq[(Q, A)])]()
+  }
+
+  //override
+  //def readTraining(): TrainingData = {
+
+  def extract(): (Map[Int, UserTD], Map[Int, ItemTD], Seq[U2IActionTD]) = {
     val attributeNames = dsp.attributeNames
     // uid => (UserTD, uindex)
     val usersMap: Map[String, (UserTD, Int)] = batchView
@@ -117,10 +169,16 @@ class EventsDataSource[DP: ClassTag, Q, A](
         }
       }
 
+    /*
     new TrainingData(
       users = usersMap.map { case (k, (v1, v2)) => (v2, v1) },
       items = itemsMap.map { case (k, (v1, v2)) => (v2, v1) },
       u2iActions = u2iActions
     )
+    */
+    return (
+      usersMap.values.map(_.swap).toMap,
+      itemsMap.values.map(_.swap).toMap,
+      u2iActions)
   }
 }

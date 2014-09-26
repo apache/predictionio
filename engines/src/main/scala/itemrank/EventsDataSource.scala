@@ -27,7 +27,8 @@ case class EventsDataSourceParams(
   val actions: Set[String],
   val startTime: Option[DateTime] = None, // event starttime
   val untilTime: Option[DateTime] = None, // event untiltime
-  val attributeNames: base.AttributeNames
+  val attributeNames: base.AttributeNames,
+  override val slidingEvaluation: Option[base.EventsSlidingEvaluationParams] = None
 ) extends base.AbstractEventsDataSourceParams
 
 class EventsDataSource(dsp: EventsDataSourceParams)
