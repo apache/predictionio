@@ -28,8 +28,8 @@ mode](http://spark.apache.org/docs/latest/spark-standalone.html).
 
 ## Installing PredictionIO Server
 
-PredictionIO runs on JVM, so it runs on most platforms. Choose your platform
-below:
+PredictionIO runs on a Java virtual machine, so it runs on most platforms.
+Choose your platform below:
 
 [//]: # (* Deploying PredictionIO on Amazon Web Services)
 * [Installing PredictionIO on Linux](install-linux.html)
@@ -41,12 +41,12 @@ below:
 [//]: # (* *(coming soon)* Installing PredictionIO with Vagrant (VirtualBox))
 [//]: # (* *(coming soon)* Installing PredictionIO with Homebrew)
 
-```
-Upgrade Note:
-Upgrade instruction from 0.7 to 0.8 is coming soon.
-```
+> **Upgrade Note**
+
+> Upgrade instructions from 0.7 to 0.8 is coming soon.
 
 
 ## Production Deployment
 
-For production environment setup, please refer to [Production Deployment]({{site.baseurl}}/production/deploy.html) guide.
+For production environment setup, please refer to [Production
+Deployment]({{site.baseurl}}/production/deploy.html) guide.
