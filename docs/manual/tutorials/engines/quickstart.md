@@ -16,6 +16,13 @@ engine. We are going to launch a ranking engine instance that can:
 * update the predictive model with *new data* regularly and automatically;
 * answer *prediction query* through REST API or SDKs.
 
+> **Notes about HADOOP_CONF_DIR**
+
+> Before you begin this tutorial, make sure your environment does not have the
+variable `HADOOP_CONF_DIR` set. When this is set, PredictionIO will
+automatically pick it up and some functionality will expect an operational
+Hadoop 2 environment.
+
 # Create a Simple App Project
 
 Create a new project directory for a simple app that will use the engine.
