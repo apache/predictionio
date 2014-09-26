@@ -29,9 +29,25 @@ export PIO_HOME="$FWDIR"
 
 . $FWDIR/bin/load-pio-env.sh
 
+. $FWDIR/bin/semver.sh
+
 if [ -z "$1" ]; then
   echo "Usage: pio-class <class> [<args>]" 1>&2
   exit 1
+fi
+
+# Make sure the Apache Spark version meets the prerequisite if it is a binary
+# distribution
+MIN_SPARK_VERSION="1.1.0"
+if [ -r "$SPARK_HOME/RELEASE" ]; then
+  SPARK_VERSION=`awk '{print $2}' $SPARK_HOME/RELEASE`
+  if semverLT $SPARK_VERSION $MIN_SPARK_VERSION; then
+    echo "You have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION."
+    echo "Aborting."
+    exit 1
+  fi
+else
+  echo "$SPARK_HOME is an Apache Spark development tree. Please make sure you are using at least $MIN_SPARK_VERSION."
 fi
 
 # Find the java binary
