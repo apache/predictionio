@@ -144,7 +144,8 @@ event_client.set_item(
 <div data-lang="Ruby SDK">
 {% highlight ruby %}
 event_client.set_item('id_3',
-                      'eventTime' => '2004-12-13T21:39:45.618-07:00')
+                      'eventTime' => '2004-12-13T21:39:45.618-07:00',
+                      'properties' => { 'pio_itypes' => %w(type1) })
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
