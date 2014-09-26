@@ -131,8 +131,15 @@ puts predictions
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EngineClient;
+
+EngineClient engineClient = new EngineClient("http://localhost:9993");
+engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "uid", "1",
+        "n", 3
+    ));
 {% endhighlight %}
 </div>
 

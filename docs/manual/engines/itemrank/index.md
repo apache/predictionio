@@ -88,8 +88,13 @@ event_client.set_user('id_1',
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EventClient;
+import org.joda.time.DateTime;
+
+EventClient eventClient = new EventClient(1);
+eventClient.setUser("id_1", ImmutableMap.<String, Object>of(), new DateTime("2004-12-13T21:39:45.618-07:00"));
 {% endhighlight %}
 </div>
 </div>
@@ -104,7 +109,7 @@ If you need to update the properties of the existing item entity, simply create
 another `$set` event for this item entity with new properties values and the
 `eventTime` is the time of this change happened.
 
-To create an item with `id_3` and set its `pio_ityes` to `"type1"`:
+To create an item with `id_3` and set its `pio_itypes` to `"type1"`:
 
 <div class="codetabs">
 <div data-lang="Raw HTTP">
@@ -149,8 +154,16 @@ event_client.set_item('id_3',
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EventClient;
+import java.util.Map;
+import org.joda.time.DateTime;
+
+Map properties = ImmutableMap.<String, Object>of(
+        "pio_types", ImmutableList.of("type1"));
+eventClient.setItem("id_3", properties, new DateTime("2004-12-13T21:39:45.618-07:00"));
 {% endhighlight %}
 </div>
 </div>
@@ -210,8 +223,13 @@ event_client.record_user_action_on_item('view', 'id_1', 'id_3',
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EventClient;
+import org.joda.time.DateTime;
+
+eventClient.userActionItem("view", "id_1", "id_3", ImmutableMap.<String, Object>of(),
+    new DateTime("2004-12-13T21:39:45.618-07:00"));
 {% endhighlight %}
 </div>
 </div>
@@ -270,8 +288,15 @@ event_client.record_user_action_on_item('view', 'id_1', 'id_3',
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EventClient;
+import java.util.Map;
+import org.joda.time.DateTime;
+
+Map properties = ImmutableMap.<String, Object>("pio_rating", 4);
+eventClient.userActionItem("view", "id_1", "id_3", properties,
+        new DateTime("2012-01-20T20:33:41.452-07:00"));
 {% endhighlight %}
 </div>
 </div>
@@ -418,8 +443,17 @@ puts predictions
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EngineClient;
+import org.joda.time.DateTime;
+
+EngineClient engineClient = new EngineClient(apiURL);
+engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "uids", "123",
+        "iids", ImmutableList.of("1", "3", "5", "10", "11")
+    ));
 {% endhighlight %}
 </div>
 </div>

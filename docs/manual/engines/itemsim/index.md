@@ -71,7 +71,7 @@ $ curl -X POST http://localhost:9997/queries.json \
 <?php
 use predictionio\EngineClient;
 
-$engineClient = new EngineClient('http://localhost:9993');
+$engineClient = new EngineClient('http://localhost:9997');
 $predictions = $engineClient->sendQuery(
                       array(
                         'iids'=>array('12', '1', '19'),
@@ -85,7 +85,7 @@ print_r($predictions);
 <div data-lang="Python SDK">
 {% highlight python %}
 from predictionio import EngineClient
-engine_client = EngineClient(url="http://localhost:9993")
+engine_client = EngineClient(url="http://localhost:9997")
 
 prediction = engine_client.send_query(data={"iids": ["12", "1", "19"], "n" : 5})
 print(prediction)
@@ -95,15 +95,22 @@ print(prediction)
 {% highlight ruby %}
 require 'predictionio'
 
-client = PredictionIO::EngineClient.new('http://localhost:9993')
+client = PredictionIO::EngineClient.new('http://localhost:9997')
 
 predictions = client.send_query('iids' => %w(12 1 19), 'n' => 5)
 puts predictions
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-{% highlight bash %}
-(coming soon)
+{% highlight java %}
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.prediction.EngineClient;
+
+EngineClient engineClient = new EngineClient("http://localhost:9997");
+engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "iids", ImmutableList.of("12", "1", "19"),
+        "n", 5));
 {% endhighlight %}
 </div>
 
