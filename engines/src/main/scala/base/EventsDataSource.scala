@@ -96,6 +96,10 @@ class EventsDataSource[DP: ClassTag, Q, A](
     Seq[(DP, TrainingData, Seq[(Q, A)])]()
   }
 
+  def extractUsers(untilTimeOpt: Option[DateTime]): Map[Int, UserTD] = {
+    
+  }
+
   //override
   //def readTraining(): TrainingData = {
 

@@ -24,6 +24,7 @@ import io.prediction.data.storage.Storage
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
 import grizzled.slf4j.Logger
+import org.joda.time.DateTime
 
 class TestHBEvents() {
   @transient lazy val eventsDb = Storage.getEventDataEvents()
@@ -56,4 +57,27 @@ object QuickTest {
     //val ts = new TestSource(args(0).toInt)
     //ts.run()
   }
+}
+
+object TestEventTime {
+  @transient lazy val batchView = new LBatchView(9, None, None)
+
+  def main(args: Array[String]) { 
+    val e = batchView.events.filter(
+      eventOpt = Some("rate"),
+      startTimeOpt = Some(new DateTime(1998, 1, 1, 0, 0))
+      //untilTimeOpt = Some(new DateTime(1997, 1, 1, 0, 0))
+    )
+      //untilTimeOpt = Some(new DateTime(2000, 1, 1, 0, 0)))
+
+    e.foreach { println }
+    println()
+    println()
+    println()
+    val u = batchView.aggregateProperties("pio_item")
+    u.foreach { println }
+
+    val l: Seq[Event] = e
+  }
+
 }

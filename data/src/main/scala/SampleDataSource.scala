@@ -16,6 +16,7 @@
 package io.prediction.data.sample
 
 import io.prediction.data.storage.Events
+import io.prediction.data.storage.Event
 import io.prediction.data.storage.Storage
 import io.prediction.data.view.LBatchView
 
@@ -100,8 +101,8 @@ class DataSource(val params: DataSourceParams) {
         inactive = v.getOrElse[Boolean](params.attributes.inactive, false)
       ))}
 
-    val u2i = batchView.events.filter( e =>
-      params.attributes.u2iActions.contains(e.event) )
+    val u2i = batchView.events
+      .filter( (e: Event) => params.attributes.u2iActions.contains(e.event) )
       .map(e => new U2IActionTD(
         uid = e.entityId,
         iid = e.targetEntityId.get,
