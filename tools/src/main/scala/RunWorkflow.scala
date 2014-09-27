@@ -59,7 +59,8 @@ object RunWorkflow extends Logging {
         "--name",
         s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.batch})",
         "--jars",
-        em.files.mkString(","),
+        (em.files ++ Console.builtinEngines(
+          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","),
         core.getCanonicalPath,
         "--env",
         pioEnvVars,
