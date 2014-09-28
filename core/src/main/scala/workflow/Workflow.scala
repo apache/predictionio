@@ -482,8 +482,9 @@ object CoreWorkflow {
     if (verbose > 2) {
       evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
         aiModelSeq.map { case(ai, model) => {
+          val ms = WorkflowUtils.debugString(model)
           logger.info(s"Model ei: $ei ai: $ai")
-          logger.info(WorkflowUtils.debugString(model))
+          logger.info(ms)
         }}
       }}
     }
