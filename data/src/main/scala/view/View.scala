@@ -89,6 +89,10 @@ object ViewAggregators {
 
 
 object EventSeq {
+  // Need to
+  // >>> import scala.language.implicitConversions 
+  // to enable implicit conversion. Only import in the code where this is
+  // necessary to avoid confusion.
   implicit def eventSeqToList(es: EventSeq): List[Event] = es.events
   implicit def listToEventSeq(l: List[Event]): EventSeq = new EventSeq(l)
 }

@@ -26,6 +26,8 @@ import scala.concurrent.ExecutionContext.Implicits.global // TODO
 import grizzled.slf4j.Logger
 import org.joda.time.DateTime
 
+import scala.language.implicitConversions
+
 class TestHBEvents() {
   @transient lazy val eventsDb = Storage.getEventDataEvents()
 
@@ -62,6 +64,8 @@ object QuickTest {
 object TestEventTime {
   @transient lazy val batchView = new LBatchView(9, None, None)
 
+  //implicit def back2list(es: EventSeq) = es.events
+
   def main(args: Array[String]) { 
     val e = batchView.events.filter(
       eventOpt = Some("rate"),
@@ -76,8 +80,13 @@ object TestEventTime {
     println()
     val u = batchView.aggregateProperties("pio_item")
     u.foreach { println }
+    println()
+    println()
+    println()
 
-    val l: Seq[Event] = e
+    //val l: Seq[Event] = e
+    val l = e.map { _.entityId }
+    l.foreach { println }
   }
 
 }
