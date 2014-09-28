@@ -21,15 +21,18 @@ import io.prediction.controller.Workflow
 import io.prediction.controller.WorkflowParams
 
 import io.prediction.engines.base.AttributeNames
+import io.prediction.engines.base.EventsSlidingEvalParams
 
 import com.github.nscala_time.time.Imports._
+
+//import org.joda.time.Duration
 
 object Runner {
 
   def main(args: Array[String]) {
 
     val dsp = EventsDataSourceParams(
-      appId = 7,
+      appId = 9,
       itypes = None,
       actions = Set("view", "like", "dislike", "conversion", "rate"),
       startTime = None,
@@ -43,7 +46,12 @@ object Runner {
         endtime = "pio_endtime",
         inactive = "pio_inactive",
         rating = "pio_rating"
-      )
+      ),
+      //slidingEval = None
+      slidingEval = Some(new EventsSlidingEvalParams(
+        firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
+        evalDuration = Duration.standardDays(7),
+        evalCount = 6))
     )
 
     val mp = new MetricsParams(

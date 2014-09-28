@@ -194,7 +194,8 @@ class ReplayDataSource(val dsp: ReplayDataSource.Params)
     val trainingData = new TrainingData(
       HashMap[Int, UserTD]() ++ ui2UserTd,
       HashMap[Int, ItemTD]() ++ ii2ItemTd,
-      Array[U2IActionTD]() ++ trainingActions)
+      trainingActions.toList)
+      //Array[U2IActionTD]() ++ trainingActions)
 
     val uiActionsMap: Map[Int, Int] = trainingActions
       .groupBy(_.uindex)

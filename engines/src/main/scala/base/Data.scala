@@ -15,6 +15,9 @@
 
 package io.prediction.engines.base
 
+import scala.collection.immutable.HashMap
+import scala.collection.immutable.List
+
 /* this engine require following attributes */
 case class AttributeNames(
   // entity types
@@ -57,12 +60,14 @@ class U2IActionTD(
 }
 
 class TrainingData(
-    val users: Map[Int, UserTD], // uindex->uid
-    val items: Map[Int, ItemTD], // iindex->itemTD
-    val u2iActions: Seq[U2IActionTD]
+    val users: HashMap[Int, UserTD], // uindex->uid
+    val items: HashMap[Int, ItemTD], // iindex->itemTD
+    val u2iActions: List[U2IActionTD]
   ) extends Serializable {
     override def toString = s"TrainingData:" +
-      s"${users.take(2)}... ${items.take(2)}... ${u2iActions.take(2)}..."
+      s"U: [${users.size}] (${users.take(2)}...) " +
+      s"I: [${items.size}] (${items.take(2)}...) " +
+      s"A: [${u2iActions.size}] (${u2iActions.take(2)}...)"
   }
 
 class RatingTD(
