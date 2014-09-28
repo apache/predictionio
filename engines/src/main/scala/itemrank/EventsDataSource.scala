@@ -32,4 +32,18 @@ case class EventsDataSourceParams(
 ) extends base.AbstractEventsDataSourceParams
 
 class EventsDataSource(dsp: EventsDataSourceParams)
-  extends base.EventsDataSource[DataParams, Query, Actual](dsp)
+  extends base.EventsDataSource[DataParams, Query, Actual](dsp) {
+
+  override def generateQueryActualSeq(
+    users: Map[Int, base.UserTD],
+    items: Map[Int, base.ItemTD],
+    actions: Seq[base.U2IActionTD],
+    trainUntil: DateTime,
+    evalStart: DateTime,
+    evalUntil: DateTime): (DataParams, Seq[(Query, Actual)]) = {
+
+    (new DataParams(trainUntil, evalStart, evalUntil), Seq[(Query, Actual)]())
+
+  }
+
+}

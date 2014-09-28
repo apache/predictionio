@@ -103,18 +103,14 @@ class EventsDataSource[DP: ClassTag, Q, A](
         println(s"Eval $idx " +
             s"train: [, $trainUntil) eval: [$evalStart, $evalUntil)")
      
-        println("a")
         val (uid2ui, users) = extractUsers(Some(trainUntil))
-        println("b")
         val (iid2ii, items) = extractItems(Some(trainUntil))
-        println("c")
         val trainActions = extractActions(
           uid2ui, 
           iid2ii, 
           startTimeOpt = dsp.startTime, 
           untilTimeOpt = Some(trainUntil))
 
-        println("d")
         val trainingData = new TrainingData(
           users = HashMap[Int, UserTD]() ++ users,
           items = HashMap[Int, ItemTD]() ++ items,
@@ -122,18 +118,15 @@ class EventsDataSource[DP: ClassTag, Q, A](
 
         // Use [firstTrain + idx * duration, firstTraing + (idx+1) * duration)
         // as testing
-        println("e")
         val evalActions = extractActions(
           uid2ui, 
           iid2ii, 
           startTimeOpt = Some(evalStart),
           untilTimeOpt = Some(evalUntil))
           
-        println("f")
         val (dp, qaSeq) = generateQueryActualSeq(
-          users, items, evalActions)
+          users, items, evalActions, trainUntil, evalStart, evalUntil)
 
-        println("g")
         (dp, trainingData, qaSeq)
       }}
     }
@@ -143,7 +136,10 @@ class EventsDataSource[DP: ClassTag, Q, A](
   def generateQueryActualSeq(
     users: Map[Int, UserTD],
     items: Map[Int, ItemTD],
-    actions: Seq[U2IActionTD]): (DP, Seq[(Q, A)]) = {
+    actions: Seq[U2IActionTD],
+    trainUntil: DateTime,
+    evalStart: DateTime,
+    evalUntil: DateTime): (DP, Seq[(Q, A)]) = {
     // first return value is a fake data param to make compiler happy
     (null.asInstanceOf[DP], Seq[(Q, A)]())
   }
