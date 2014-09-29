@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
     exclude("ch.qos.logback", "logback-classic"),
   "org.scalanlp"      %% "breeze"         % "0.9",
   "org.scalanlp"      %% "breeze-natives" % "0.9",
-  "org.scalanlp"       % "nak"            % "1.3",
+  "org.scalanlp"      %% "nak"            % "1.3",
   "org.scalatest"     %% "scalatest"      % "2.2.0" % "test")
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
