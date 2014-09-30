@@ -212,7 +212,11 @@ class EventsDataSource[DP: ClassTag, Q, A](
   ): Seq[U2IActionTD] = {
     val attributeNames = dsp.attributeNames
 
-    batchView.events
+    batchView
+    .events
+    .filter(
+      startTimeOpt = startTimeOpt,
+      untilTimeOpt = untilTimeOpt)
     .filter { e => (true
       && attributeNames.u2iActions.contains(e.event)
       && dsp.actions.contains(e.event)

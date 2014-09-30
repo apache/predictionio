@@ -255,8 +255,10 @@ class ReplayDataSource(val dsp: ReplayDataSource.Params)
         val query = new Query(uid, sortedIids)
         val ui = uid2ui(uid)
 
+        // FIXME(yipjustin): update Action to use U2I
         val actual = new Actual(
           iids = iids.toSeq,
+          actions = Seq[U2IActionTD](),
           previousActionCount = uiActionsMap.getOrElse(ui, 0),
           localDate = queryDate,
           localDateTime = user2LocalDT(uid),

@@ -51,7 +51,7 @@ object Runner {
       slidingEval = Some(new EventsSlidingEvalParams(
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
-        evalCount = 6))
+        evalCount = 1))
     )
 
     val mp = new MetricsParams(

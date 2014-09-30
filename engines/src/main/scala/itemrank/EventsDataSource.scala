@@ -42,8 +42,24 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     evalStart: DateTime,
     evalUntil: DateTime): (DataParams, Seq[(Query, Actual)]) = {
 
-    (new DataParams(trainUntil, evalStart, evalUntil), Seq[(Query, Actual)]())
+    val ui2uid: Map[Int, String] = users.mapValues(_.uid)
+    val ii2iid: Map[Int, String] = items.mapValues(_.iid)
 
+
+    val userActions: Map[Int, Seq[base.U2IActionTD]] = 
+      actions.groupBy(_.uindex)
+
+    val qaSeq: Seq[(Query, Actual)] = userActions.map { case (ui, actions) => {
+      val uid = ui2uid(ui)
+      val iids = actions.map(u2i => ii2iid(u2i.iindex))
+
+      val iidstr = iids.mkString(",")
+      println(s"uid: $uid iids: (${iids.size}) $iidstr")
+      
+      (Query(uid = uid, iids = iids), Actual(actions = actions))
+    }}
+    .toSeq
+
+    (new DataParams(trainUntil, evalStart, evalUntil), qaSeq)
   }
-
 }
