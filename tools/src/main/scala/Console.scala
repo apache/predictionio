@@ -562,6 +562,11 @@ object Console extends Logging {
     try {
       Http(s"${serverUrl}/stop").asString
     } catch {
+      case e: scalaj.http.HttpException => e.code match {
+        case 404 =>
+          error(s"Another process is using ${serverUrl}. Aborting.")
+          sys.exit(1)
+      }
       case e: java.net.ConnectException =>
         warn(s"Nothing at ${serverUrl}")
     }
