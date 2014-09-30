@@ -30,4 +30,10 @@ libraryDependencies ++= Seq(
   "org.slf4j"               % "slf4j-log4j12"   % "1.7.7",
   "commons-codec"           % "commons-codec"   % "1.9",
   "org.spark-project.akka" %% "akka-actor"      % "2.2.3-shaded-protobuf",
-  "org.specs2"             %% "specs2"          % "2.3.13" % "test")
+  "org.specs2"             %% "specs2"          % "2.3.13" % "test",
+  // added for Parallel storage interface
+  "org.apache.hbase" % "hbase-server" % "0.98.5-hadoop2"
+    exclude("org.mortbay.jetty", "servlet-api-2.5")
+    exclude("org.mortbay.jetty", "jsp-api-2.1")
+    exclude("org.mortbay.jetty", "jsp-2.1"),
+  "org.apache.spark" %% "spark-core" % sparkVersion.value % "provided")
