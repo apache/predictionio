@@ -16,6 +16,7 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.engines.util
+import io.prediction.engines.base
 
 import com.github.nscala_time.time.Imports._
 
@@ -37,7 +38,12 @@ case class Prediction(
 
 case class Actual(
     // actual items the user has performed actions on
-    val iids: Seq[String],
+    // deprecated
+    val iids: Seq[String] = null,
+
+    // (uid, iid, action) - tuple
+    val actionTuples: Seq[(String, String, base.U2IActionTD)],
+
     // other data that maybe used by metrics.
     val previousActionCount: Int = -1,
     val localDate: LocalDate = new LocalDate(0),
@@ -46,7 +52,7 @@ case class Actual(
     val previousOrders: Int = -1,
     val variety: Int = -1
   ) extends Serializable {
-  override def toString = s"${iids}"
+  override def toString = s"A: [${actionTuples.size}] (${actionTuples.take(3)}, ...)"
 }
 
 class MetricUnit(

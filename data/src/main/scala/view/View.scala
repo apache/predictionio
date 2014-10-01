@@ -22,26 +22,51 @@ import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Storage
 
 import org.joda.time.DateTime
+import scala.language.implicitConversions
 
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
-class LBatchView(
-  val appId: Int,
-  val startTime: Option[DateTime],
-  val untilTime: Option[DateTime]) {
+object ViewPredicates {
+  def getStartTimePredicate(startTimeOpt: Option[DateTime])
+  : (Event => Boolean) = {
+    startTimeOpt.map(getStartTimePredicate).getOrElse(_ => true)
+  }
 
-  @transient lazy val eventsDb = Storage.getEventDataEvents()
+  def getStartTimePredicate(startTime: DateTime): (Event => Boolean) = {
+    e => (!(e.eventTime.isBefore(startTime) || e.eventTime.isEqual(startTime)))
+  }
+  
+  def getUntilTimePredicate(untilTimeOpt: Option[DateTime])
+  : (Event => Boolean) = {
+    untilTimeOpt.map(getUntilTimePredicate).getOrElse(_ => true)
+  }
 
-  @transient lazy val events = eventsDb.getByAppIdAndTime(appId,
-    startTime, untilTime).right.get.toList
+  def getUntilTimePredicate(untilTime: DateTime): (Event => Boolean) = {
+    _.eventTime.isBefore(untilTime)
+  }
 
-  def aggregateProperties(entityType: String): Map[String, DataMap] = {
+  def getEntityTypePredicate(entityTypeOpt: Option[String]): (Event => Boolean)
+  = {
+    entityTypeOpt.map(getEntityTypePredicate).getOrElse(_ => true)
+  }
 
-    def predicate(e: Event) = (e.entityType == entityType) &&
-      (EventValidation.isSpecialEvents(e.event))
-      //((e.event == "$set") || (e.event == "$unset"))
+  def getEntityTypePredicate(entityType: String): (Event => Boolean) = {
+    (_.entityType == entityType)
+  }
+  
+  def getEventPredicate(eventOpt: Option[String]): (Event => Boolean)
+  = {
+    eventOpt.map(getEventPredicate).getOrElse(_ => true)
+  }
 
-    def aggregate(p: Option[DataMap], e: Event): Option[DataMap] = {
+  def getEventPredicate(event: String): (Event => Boolean) = {
+    (_.event == event)
+  }
+}
+
+object ViewAggregators {
+  def getDataMapAggregator(): ((Option[DataMap], Event) => Option[DataMap]) = {
+    (p, e) => {
       e.event match {
         case "$set" => {
           if (p == None)
@@ -59,35 +84,110 @@ class LBatchView(
         case _ => p // do nothing for others
       }
     }
+  }
+}
 
-    aggregateByEntityOrdered[Option[DataMap]](
-      predicate, None, aggregate)
-      .filter{ case (k, v) => (v != None) }
-      .mapValues(_.get)
+
+object EventSeq {
+  // Need to
+  // >>> import scala.language.implicitConversions 
+  // to enable implicit conversion. Only import in the code where this is
+  // necessary to avoid confusion.
+  implicit def eventSeqToList(es: EventSeq): List[Event] = es.events
+  implicit def listToEventSeq(l: List[Event]): EventSeq = new EventSeq(l)
+}
+
+
+class EventSeq(val events: List[Event]) {
+  def filter(
+    eventOpt: Option[String] = None,
+    entityTypeOpt: Option[String] = None,
+    startTimeOpt: Option[DateTime] = None,
+    untilTimeOpt: Option[DateTime] = None): EventSeq = {
+    
+    events
+    .filter(ViewPredicates.getEventPredicate(eventOpt))
+    .filter(ViewPredicates.getStartTimePredicate(startTimeOpt))
+    .filter(ViewPredicates.getUntilTimePredicate(untilTimeOpt))
+    .filter(ViewPredicates.getEntityTypePredicate(entityTypeOpt))
   }
 
+  def filter(p: (Event => Boolean)): EventSeq = events.filter(p)
+
+  def aggregateByEntityOrdered[T](init: T, op: (T, Event) => T)
+  : Map[String, T] = {
+    events
+    .groupBy( _.entityId )
+    .mapValues( _.sortBy(_.eventTime.getMillis).foldLeft[T](init)(op))
+    .toMap
+  }
+
+
+}
+
+
+class LBatchView(
+  val appId: Int,
+  val startTime: Option[DateTime],
+  val untilTime: Option[DateTime]) {
+
+  @transient lazy val eventsDb = Storage.getEventDataEvents()
+
+  @transient lazy val _events = eventsDb.getByAppIdAndTime(appId,
+    startTime, untilTime).right.get.toList
+
+  @transient lazy val events: EventSeq = new EventSeq(_events)
+
+  /* Aggreate event data
+   *
+   * @param entityType only aggregate event with entityType
+   * @param startTimeOpt if specified, only aggregate event after (inclusive)
+   * startTimeOpt
+   * @param untilTimeOpt if specified, only aggregate event until (exclusive)
+   * endTimeOpt
+   */
+  def aggregateProperties(
+      entityType: String,
+      startTimeOpt: Option[DateTime] = None,
+      untilTimeOpt: Option[DateTime] = None
+      ): Map[String, DataMap] = {
+
+    events
+    .filter(entityTypeOpt = Some(entityType))
+    .filter(e => EventValidation.isSpecialEvents(e.event))
+    .aggregateByEntityOrdered(
+      init = None,
+      op = ViewAggregators.getDataMapAggregator())
+    .filter{ case (k, v) => (v != None) }
+    .mapValues(_.get)
+
+  }
+
+  /*
   def aggregateByEntityOrdered[T](
-    //events: Seq[Event],
     predicate: Event => Boolean,
     init: T,
     op: (T, Event) => T): Map[String, T] = {
 
-    events.filter( predicate(_) )
+    _events
+      .filter( predicate(_) )
       .groupBy( _.entityId )
       .mapValues( _.sortBy(_.eventTime.getMillis).foldLeft[T](init)(op))
       .toMap
 
   }
+  */
 
+  /*
   def groupByEntityOrdered[T](
-    //events: Seq[Event],
     predicate: Event => Boolean,
     map: Event => T): Map[String, Seq[T]] = {
 
-    events.filter( predicate(_) )
+    _events
+      .filter( predicate(_) )
       .groupBy( _.entityId )
       .mapValues( _.sortBy(_.eventTime.getMillis).map(map(_)) )
       .toMap
   }
-
+  */
 }

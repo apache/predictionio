@@ -15,6 +15,7 @@
 
 package io.prediction.engines.itemrank
 
+import io.prediction.engines.base
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
 import io.prediction.controller.NiceRendering
@@ -94,16 +95,37 @@ abstract class ItemRankMeasure extends Serializable {
   def calculate(query: Query, prediction: Prediction, actual: Actual): Double
 }
 
+object ItemRankMeasure {
+  def actual2GoodIids(actual: Actual, metricsParams: DetailedMetricsParams)
+  : Set[String] = {
+    actual.actionTuples
+    .filter{ t => {
+      val u2i = t._3
+      val rating = base.Preparator.action2rating(
+        u2i = u2i,
+        actionsMap = metricsParams.actionsMap,
+        default = 0)
+      rating >= metricsParams.goodThreshold
+    }}
+    .map(_._2)
+    .toSet
+  }
+}
+
 // If k == -1, use query size. Otherwise, use k.
-class ItemRankMAP(val k: Int) extends ItemRankMeasure {
+class ItemRankMAP(val k: Int, val metricsParams: DetailedMetricsParams) 
+  extends ItemRankMeasure {
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
     val kk = (if (k == -1) query.iids.size else k)
 
+    val goodIids = ItemRankMeasure.actual2GoodIids(actual, metricsParams)
+
     averagePrecisionAtK(
       kk,
       prediction.items.map(_._1),
-      actual.iids.toSet)
+      goodIids)
+      //actual.iids.toSet)
   }
 
   override def toString(): String = s"MAP@$k"
@@ -131,14 +153,18 @@ class ItemRankMAP(val k: Int) extends ItemRankMeasure {
   }
 }
 
-class ItemRankPrecision(val k: Int) extends ItemRankMeasure {
+class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams) 
+  extends ItemRankMeasure {
   override def toString(): String = s"Precision@$k"
 
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
     val kk = (if (k == -1) query.iids.size else k)
 
-    val actualItems: Set[String] = actual.iids.toSet
+    //val actualItems: Set[String] = actual.iids.toSet
+    val actualItems = ItemRankMeasure.actual2GoodIids(actual, metricsParams)
+
+
 
     val relevantCount = prediction.items.take(kk)
       .map(_._1)
@@ -146,6 +172,11 @@ class ItemRankPrecision(val k: Int) extends ItemRankMeasure {
       .size
 
     val denominator = Seq(kk, prediction.items.size, actualItems.size).min
+    
+    println(s"Query: $query")
+    println("Actual: " + actualItems.mkString(","))
+    println(s"relevant: $relevantCount")
+    println(s"demoninator: $denominator")
 
     relevantCount.toDouble / denominator
   }
@@ -157,6 +188,8 @@ class ItemRankPrecision(val k: Int) extends ItemRankMeasure {
 // independently.
 class DetailedMetricsParams(
   val name: String = "",
+  val actionsMap: Map[String, Option[Int]], // ((view, 1), (rate, None))
+  val goodThreshold: Int,  // action rating >= goodThreshold is good.
   val optOutputPath: Option[String] = None,
   val buckets: Int = 10,
   val measureType: MeasureType.Type = MeasureType.MeanAveragePrecisionAtK,
@@ -170,10 +203,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
   val measure: ItemRankMeasure = params.measureType match {
     case MeasureType.MeanAveragePrecisionAtK => {
-      new ItemRankMAP(params.measureK)
+      new ItemRankMAP(params.measureK, params)
     }
     case MeasureType.PrecisionAtK => {
-      new ItemRankPrecision(params.measureK)
+      new ItemRankPrecision(params.measureK, params)
     }
     case _ => {
       throw new NotImplementedError(
@@ -326,7 +359,13 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   }
 
   override def computeMultipleSets(
-    input: Seq[(HasName, Seq[MetricUnit])]): DetailedMetricsData = {
+    rawInput: Seq[(HasName, Seq[MetricUnit])]): DetailedMetricsData = {
+    // Precision is undefined when the relevant items is a empty set. need to
+    // filter away cases where there is no good items.
+    val input = rawInput.map { case(name, mus) => {
+      (name, mus.filter(mu => (!mu.score.isNaN && !mu.baseline.isNaN)))
+    }}
+
     val allUnits: Seq[MetricUnit] = input.flatMap(_._2)
 
     val overallStats = (
@@ -336,6 +375,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) =>
+      //val goodMus = mus.filter(mu => (!mu.score.isNaN && !mu.baseline.isNaN))
+
       (dp.name,
         calculateResample(mus.map(mu => (mu.uidHash, mu.score))),
         calculateResample(mus.map(mu => (mu.uidHash, mu.baseline))))
@@ -344,7 +385,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     // Aggregation Stats
     val aggregateByActualSize: Seq[(String, Stats)] = allUnits
-      .groupBy(_.a.iids.size)
+      //.groupBy(_.a.iids.size)
+      .groupBy(_.a.actionTuples.size)
       .mapValues(_.map(_.score))
       .map{ case(k, l) => (k.toString, calculate(l)) }
       .toSeq
@@ -360,7 +402,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         (mu.a.previousActionCount))
 
     val itemCountAggregation = aggregate[(String, MetricUnit)](
-      allUnits.flatMap(mu => mu.a.iids.map(item => (item, mu))),
+      //allUnits.flatMap(mu => mu.a.iids.map(item => (item, mu))),
+      allUnits.flatMap(mu => mu.a.actionTuples.map(t => (t._2, mu))),
       _._2.score,
       _._1)
 
@@ -407,7 +450,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
-        ("ByActualSize", aggregateMU(allUnits, _.a.iids.size.toString)),
+        ("ByActualSize", aggregateMU(allUnits, _.a.actionTuples.size.toString)),
         ("ByScore", scoreAggregation),
         ("ByActionCount", actionCountAggregation),
         ("ByFlattenItem", itemCountAggregation),

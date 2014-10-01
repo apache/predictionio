@@ -26,6 +26,7 @@ class MetricsParams(
   val verbose: Boolean // print report
 ) extends Params {}
 
+/*
 // param for preparing training
 class TrainingDataParams(
     val appid: Int,
@@ -58,6 +59,19 @@ class DataParams(
 ) extends Params with HasName {
   override def toString = s"TDP: ${tdp} VDP: ${vdp}"
 }
+*/
+
+class DataParams(
+  val trainUntil: DateTime,
+  val evalStart: DateTime,
+  val evalUntil: DateTime
+) extends Params with HasName {
+  override def toString = s"T: [, $trainUntil) E: [$evalStart, $evalUntil)"
+  val name = this.toString
+}
+  
+
+
 
 class ItemRankMetrics(mp: MetricsParams)
   extends Metrics[MetricsParams,
@@ -101,8 +115,9 @@ class ItemRankMetrics(mp: MetricsParams)
       }.map { x => x.map(t => s"[${t}]")}
 
       println("result:")
-      println(s"${dataParams.tdp.startUntil}")
-      println(s"${dataParams.vdp.startUntil}")
+      println(dataParams)
+      //println(s"${dataParams.tdp.startUntil}")
+      //println(s"${dataParams.vdp.startUntil}")
       println("uid - basline - ranked - actual - baseline score - algo score")
       reports.foreach { r =>
         println(s"${r.mkString(" ")}")
@@ -113,7 +128,8 @@ class ItemRankMetrics(mp: MetricsParams)
     }
 
     new MetricResult(
-      testStartUntil = dataParams.vdp.startUntil,
+      //testStartUntil = dataParams.vdp.startUntil,
+      testStartUntil = (dataParams.evalStart, dataParams.evalUntil),
       baselineMean = baselineMVC.mean,
       baselineStdev = baselineMVC.stdDev,
       algoMean = algoMVC.mean,

@@ -82,7 +82,15 @@ object DetailedRunner {
       servingParams = sp
     )
 
-    val mp = new DetailedMetricsParams()
+    val mp = new DetailedMetricsParams(
+      actionsMap = Map(
+        "view" -> Some(3),
+        "like" -> Some(5),
+        "conversion" -> Some(4),
+        "rate" -> None
+      ),
+      goodThreshold = 3)
+
     Workflow.runEngine(
       params = WorkflowParams(
         batch = "Imagine: Local ItemRank Engine",

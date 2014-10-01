@@ -41,7 +41,13 @@ case class Event(
   val appId: Int,
   val predictionKey: Option[String] = None,
   val creationTime: DateTime = DateTime.now
-)
+) {
+  override def toString() = {
+    s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," + 
+    s"tType=$targetEntityType,tId=$targetEntityId,p=$properties,t=$eventTime," +
+    s"tags=$tags,appId=$appId,pKey=$predictionKey,ct=$creationTime)"
+  }
+}
 
 case class EventID(
   val bytes: Seq[Byte]

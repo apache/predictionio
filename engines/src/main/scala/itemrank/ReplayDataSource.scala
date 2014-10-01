@@ -194,7 +194,8 @@ class ReplayDataSource(val dsp: ReplayDataSource.Params)
     val trainingData = new TrainingData(
       HashMap[Int, UserTD]() ++ ui2UserTd,
       HashMap[Int, ItemTD]() ++ ii2ItemTd,
-      Array[U2IActionTD]() ++ trainingActions)
+      trainingActions.toList)
+      //Array[U2IActionTD]() ++ trainingActions)
 
     val uiActionsMap: Map[Int, Int] = trainingActions
       .groupBy(_.uindex)
@@ -254,8 +255,10 @@ class ReplayDataSource(val dsp: ReplayDataSource.Params)
         val query = new Query(uid, sortedIids)
         val ui = uid2ui(uid)
 
+        // FIXME(yipjustin): update Action to use U2I
         val actual = new Actual(
           iids = iids.toSeq,
+          actionTuples = Seq[(String, String, U2IActionTD)](),
           previousActionCount = uiActionsMap.getOrElse(ui, 0),
           localDate = queryDate,
           localDateTime = user2LocalDT(uid),
