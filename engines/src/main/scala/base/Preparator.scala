@@ -27,6 +27,34 @@ abstract class AbstractPreparatorParams extends Params {
   val conflict: String
 }
 
+object Preparator {
+  // Maps actions to a numerical rating with the following logic:
+  // If action belongs to actionMap, then it looks at the map value. If it is
+  // defined, use it; otherwise, use the numerical value v.
+  // Last, if above method fails to define a numercical rating, default is used.
+  def action2rating(action: String, v: Option[Int],
+    actionsMap: Map[String, Option[Int]], default: Int): Int = {
+    actionsMap(action).getOrElse(v.getOrElse(default))
+  }
+
+  def action2rating(u2i: U2IActionTD,
+    actionsMap: Map[String, Option[Int]], default: Int): Int = {
+    action2rating(u2i.action, u2i.v, actionsMap, default)
+  }
+
+  /*
+  // Return a boolean value. Usually used by metrics to define "good" rating.
+  // Logic is simliar to action2rating, except that a threshold will be used for
+  // comparing numerical value.
+  def action2boolean(action: String, v: Option[Int],
+    actionsMap: Map[String, Option[Boolean]], 
+    threshold: Int, default: Boolean) = {
+    
+    actionsMap(action).getOrElse(v.map(_ >= threshold).getOrElse(default))
+  }
+  */
+}
+
 class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
     AbstractPreparatorParams, TrainingData, PreparedData] {
 
@@ -46,7 +74,9 @@ class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
         val validAction = actionsMap.contains(u2i.action)
         validAction
       }.map { u2i =>
-        val rating = actionsMap(u2i.action).getOrElse(u2i.v.getOrElse(0))
+        //val rating = actionsMap(u2i.action).getOrElse(u2i.v.getOrElse(0))
+        val rating = Preparator.action2rating(u2i.action, u2i.v,
+          actionsMap, default = 0)
 
         new RatingTD(
           uindex = u2i.uindex,

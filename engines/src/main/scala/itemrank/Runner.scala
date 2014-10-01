@@ -51,12 +51,28 @@ object Runner {
       slidingEval = Some(new EventsSlidingEvalParams(
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
-        evalCount = 1))
+        evalCount = 8))
     )
 
+    /*
     val mp = new MetricsParams(
       verbose = true
     )
+    */
+
+    val mp = new DetailedMetricsParams(
+      optOutputPath = None,
+      buckets = 3,
+      actionsMap = Map(
+        "view" -> Some(3),
+        "like" -> Some(5),
+        "conversion" -> Some(4),
+        "rate" -> None
+      ),
+      goodThreshold = 3,
+      measureType = MeasureType.PrecisionAtK,
+      measureK = 4
+    ) 
 
     val pp = new PreparatorParams(
       actions = Map(
@@ -112,9 +128,10 @@ object Runner {
         verbose = 3),
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[ItemRankMetrics]),
+      //metricsClassOpt = Some(classOf[ItemRankMetrics]),
+      //metricsParams = mp
+      metricsClassOpt = Some(classOf[ItemRankDetailedMetrics]),
       metricsParams = mp
-
     )
 
   }

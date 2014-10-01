@@ -41,8 +41,8 @@ case class Actual(
     // deprecated
     val iids: Seq[String] = null,
 
-    //
-    val actions: Seq[base.U2IActionTD],
+    // (uid, iid, action) - tuple
+    val actionTuples: Seq[(String, String, base.U2IActionTD)],
 
     // other data that maybe used by metrics.
     val previousActionCount: Int = -1,
@@ -52,7 +52,7 @@ case class Actual(
     val previousOrders: Int = -1,
     val variety: Int = -1
   ) extends Serializable {
-  override def toString = s"A: [${actions.size}] (${actions.take(3)}, ...)"
+  override def toString = s"A: [${actionTuples.size}] (${actionTuples.take(3)}, ...)"
 }
 
 class MetricUnit(
