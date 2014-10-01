@@ -25,15 +25,15 @@ example.
 Execute the following command to download MovieLens 100k to `data/ml-100k/`.
 
 ```
-$ cd $PIO_HOME/examples
-$ src/main/java/recommendations/fetch.sh
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ./fetch.sh
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 In this first tutorial, we will demonstrate how to build an simple Item
 Recommendation Engine with the *DataSource* and *Algorithm* components. You can
 find all sources code of this tutorial in the directory
-`src/main/java/recommendations/tutorial1/`.
+`java-local-tutorial/src/main/java/recommendations/tutorial1/`.
 
 ## Getting Started
 

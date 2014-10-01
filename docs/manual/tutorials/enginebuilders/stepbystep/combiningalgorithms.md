@@ -21,7 +21,7 @@ This tutorial guides you toward incorporating a feature-based algorithm into
 the existing CF-based recommendation engine introduced in tutorials 1, 2 and 3.
 
 All code can be found in the
-[tutorial4/](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4)
+[tutorial4/](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4)
 directory.
 
 ## Overview
@@ -67,28 +67,29 @@ feature based algorithm, and a serving layer which ensembles multiple
 predictions.
 
 ## DataSource
-We have to amend the [`DataSource`](tutorial4/DataSource.java) to
-take into account more information from MovieLens, as well as adding some
+We have to amend the
+[`DataSource`](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/DataSource.java)
+to take into account more information from MovieLens, as well as adding some
 fake data for demonstration. We use the genre of movies as its feature vector.
 This part is simliar to earlier tutorials.
 
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4a -- -- data/ml-100k/
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4a -- -- data/ml-100k/
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 You should see
 
 ```
-2014-08-26 23:05:01,393 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:391, took 0.031189835 s
-2014-08-26 23:05:01,394 INFO  APIDebugWorkflow$ - Data Set 0
-2014-08-26 23:05:01,395 INFO  APIDebugWorkflow$ - Params: Empty
-2014-08-26 23:05:01,395 INFO  APIDebugWorkflow$ - TrainingData:
-2014-08-26 23:05:01,395 INFO  APIDebugWorkflow$ - [TrainingData: rating.size=100003 genres.size=19 itemInfo.size=1685 userInfo.size=946]
-2014-08-26 23:05:01,396 INFO  APIDebugWorkflow$ - TestingData: (count=0)
-2014-08-26 23:05:01,396 INFO  APIDebugWorkflow$ - Data source complete
-2014-08-26 23:05:01,397 INFO  APIDebugWorkflow$ - Preparator is null. Stop here
+2014-09-30 17:16:45,515 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:388, took 0.020437 s
+2014-09-30 17:16:45,516 INFO  workflow.CoreWorkflow$ - Data Set 0
+2014-09-30 17:16:45,516 INFO  workflow.CoreWorkflow$ - Params: Empty
+2014-09-30 17:16:45,517 INFO  workflow.CoreWorkflow$ - TrainingData:
+2014-09-30 17:16:45,517 INFO  workflow.CoreWorkflow$ - [TrainingData: rating.size=100003 genres.size=19 itemInfo.size=1685 userInfo.size=946]
+2014-09-30 17:16:45,517 INFO  workflow.CoreWorkflow$ - TestingData: (count=0)
+2014-09-30 17:16:45,518 INFO  workflow.CoreWorkflow$ - Data source complete
+2014-09-30 17:16:45,518 INFO  workflow.CoreWorkflow$ - Preparator is null. Stop here
 ```
 
 
@@ -102,17 +103,19 @@ We need to implement two classes: `Preparator` and `PreparedData`.
 `TrainingData` into `PreparedData`; `PreparedData` is the output and the object
 being passed to `Algorithms` for training. `PreparedData` can be anything, very
 often it is equivalent to `TrainingData`, or subclass of it. Here,
-[`PreparedData`](tutorial4/PreparedData.java) is a subclass of `TrainingData`,
+[`PreparedData`](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/PreparedData.java)
+is a subclass of `TrainingData`,
 it adds a map from items (movies) to feature vectors. The merit of using
 subclass is that, it makes the original `TrainingData` easily accessible.
 
-The [`Preparator`](tutorial4/Preparator.java) class simply examines item info
-and extract a feature vector from item info.
+The
+[`Preparator`](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/Preparator.java)
+class simply examines item info and extract a feature vector from item info.
 
 After implementing these two classes, you can add them to the workflow and try
 out if things are really working. Add the preparator class to the engine
 builder, as shown in
-[Runner4b.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/Runner4b.java):
+[`Runner4b.java`](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/Runner4b.java):
 
 ```java
 return new JavaEngineBuilder<
@@ -125,20 +128,20 @@ return new JavaEngineBuilder<
 And you can test it out with
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4b -- -- data/ml-100k/
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4b -- -- data/ml-100k/
 ```
 
 You should see
 
 ```
-2014-08-26 23:03:12,345 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:71, took 0.317394663 s
-2014-08-26 23:03:12,346 INFO  APIDebugWorkflow$ - Prepared Data Set 0
-2014-08-26 23:03:12,346 INFO  APIDebugWorkflow$ - Params: Empty
-2014-08-26 23:03:12,347 INFO  APIDebugWorkflow$ - PreparedData: [TrainingData: rating.size=100003 genres.size=19 itemInfo.size=1685 userInfo.size=946 itemFeatures.size=1685 featureCount=19]
-2014-08-26 23:03:12,347 INFO  APIDebugWorkflow$ - Preparator complete
-2014-08-26 23:03:12,348 INFO  APIDebugWorkflow$ - Algo model construction
-2014-08-26 23:03:12,349 INFO  APIDebugWorkflow$ - AlgoList has zero length. Stop here
+2014-09-30 17:28:37,335 INFO  spark.SparkContext - Job finished: collect at WorkflowUtils.scala:179, took 0.209634 s
+2014-09-30 17:28:37,335 INFO  workflow.CoreWorkflow$ - Prepared Data Set 0
+2014-09-30 17:28:37,336 INFO  workflow.CoreWorkflow$ - Params: Empty
+2014-09-30 17:28:37,336 INFO  workflow.CoreWorkflow$ - PreparedData: [TrainingData: rating.size=100003 genres.size=19 itemInfo.size=1685 userInfo.size=946 itemFeatures.size=1685 featureCount=19]
+2014-09-30 17:28:37,336 INFO  workflow.CoreWorkflow$ - Preparator complete
+2014-09-30 17:28:37,337 INFO  workflow.CoreWorkflow$ - Algo model construction
+2014-09-30 17:28:37,337 INFO  workflow.CoreWorkflow$ - AlgoList has zero length. Stop here
 ```
 
 
@@ -168,7 +171,7 @@ a rating-weighted sum of all movies (s)he rated.  After that, we normalize all
 user feature vector by L-inf norm, this will ensure that user feature is bounded
 by [-1, 1]. In laymen terms, -1 indicates that the user hates that feature,
 whilst 1 suggests the opposite.  The following is a snippet of the [actual
-code](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/FeatureBasedAlgorithm.java).
+code](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/FeatureBasedAlgorithm.java).
 `data` is an instance of `PreparedData` that is passed as an argument to the
 `train` function.
 
@@ -199,27 +202,27 @@ for (Integer uid : userFeatures.keySet()) {
 }
 ```
 
-[Runner4c.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/Runner4c.java)
+[Runner4c.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/Runner4c.java)
 illustrates the engine factory up to this point. We use a default serving class
 as we only have one algorithm. (We will demonstrate how to combine prediction
 results from multiple algorithms later in this tutorial). We are able to define
 [an end-to-end
-engine](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/SingleEngineFactory.java).
+engine](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorialsrc/main/java/recommendations/tutorial4/SingleEngineFactory.java).
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c -- -- data/ml-100k/
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio run io.prediction.examples.java.recommendations.tutorial4.Runner4c -- -- data/ml-100k/
 ```
 
 ## Deployment
 
 We can deploy this feature based engine just like tutorial 1. We have an [engine
-JSON](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/single-algo-engine.json),
+JSON](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/single-algo-engine.json),
 and we register it:
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/pio register --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio register --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json
 ```
 
 The script automatically recompiles updated code. You will need to re-run this
@@ -228,7 +231,7 @@ script if you have update any code in your engine.
 ### Specify Engine Parameters
 We use the following JSON files for deployment.
 
-1.  [datasource.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/single-jsons/datasource.json):
+1.  [datasource.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/single-jsons/datasource.json):
 
     ```json
     {
@@ -237,7 +240,7 @@ We use the following JSON files for deployment.
     }
     ```
 
-2.  [algorithms.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/single-jsons/algorithms.json):
+2.  [algorithms.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/single-jsons/algorithms.json):
 
     ```json
     [
@@ -264,7 +267,8 @@ The following command kick-starts the training, which will return an id when
 the training is completed.
 
 ```bash
-$ ../bin/pio train \
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio train \
   --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json \
   --params-path src/main/java/recommendations/tutorial4/single-jsons
 ```
@@ -273,20 +277,22 @@ $ ../bin/pio train \
 As the training is completed, you can deploy a server
 
 ```bash
-$ ../bin/pio deploy --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio deploy --engine-json src/main/java/recommendations/tutorial4/single-algo-engine.json
 ```
 
 ### Try a few things
 
 Fake user -1 (see
-[DataSource.FakeData](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/DataSource.java))
-loves action movies. If we pass item 27 (Bad Boys), we should get a high rating
-(i.e. 1). You can use our script bin/cjson to send the JSON request. The first
-parameter is the JSON request, and the second parameter is the server address.
+[DataSource.FakeData](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/DataSource.java))
+loves action movies. If we pass in item 27 (Bad Boys), we should get a high
+rating (i.e. 1). You can use our script `bin/cjson` to send the JSON request.
+The first parameter is the JSON request, and the second parameter is the server
+address.
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000/queries.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/cjson '{"uid": -1, "iid": 27}' http://localhost:8000/queries.json
 ```
 
 Fake item -2 is a cold item (i.e. has no rating). But from the data, we know
@@ -294,17 +300,18 @@ that it is a movie catagorized under "Action" genre, hence, it should also have
 a high rating with Fake user -1.
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000/queries.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/cjson '{"uid": -1, "iid": -2}' http://localhost:8000/queries.json
 ```
 
 However, there is nothing we can do with a cold user. Fake user -3 has no
 rating history, we know nothing about him. If we request any rating with fake
 user -3, we will get a NaN.
+TODO: @Donald "NaN is not a valid double value as per JSON specification. To override this behavior, use GsonBuilder.serializeSpecialFloatingPointValues() method."
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000/queries.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/cjson '{"uid": -3, "iid": 1}' http://localhost:8000/queries.json
 ```
 
 ## Multiple Algorithms
@@ -316,7 +323,7 @@ ratings), and use both algorithms for others.
 
 ### Combining Algorithms Output
 
-[Serving](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/Serving.java)
+[Serving](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/Serving.java)
 is the last step of the pipeline. It takes prediction results from all
 algorithms, combine them and return. In the current case, we take an average of
 all valid (i.e. not NaN) predictions. In the extreme case where all algorithms
@@ -340,7 +347,7 @@ public Float serve(Query query, Iterable<Float> predictions) {
 
 ### Complete Engine Factory
 
-[EngineFactory.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/EngineFactory.java)
+[EngineFactory.java](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/EngineFactory.java)
 demonstrates how to specify multiple algorithms in the same engine. When we add
 algorithms to the builder instance, we also need to specify a String which is
 served as the identifier. For example, we use "featurebased" for the
@@ -363,13 +370,13 @@ public class EngineFactory implements IJavaEngineFactory {
 ```
 
 Similar to the earlier example, we need to write [a
-JSON](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/multiple-algo-engine.json)
+JSON](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/multiple-algo-engine.json)
 for the engine, and register it with PredictionIO. Here's the content:
 
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory",
-  "version": "0.8.0",
+  "version": "0.8.1-SNAPSHOT",
   "name": "FeatureBased Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory"
 }
@@ -381,14 +388,14 @@ storage, if you have updated the engine code or add new dependencies, you need
 to rerun this command.
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/pio register --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio register --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json
 ```
 
 Now, we can specify the engine instance by passing the set of parameters to the
 engine. Our engine can support multiple algorithms, and in addition, it also
 support multiple instance of the same algorithms. We illustrate with
-[algorithms.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/jsons/algorithms.json):
+[algorithms.json](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial/src/main/java/recommendations/tutorial4/jsons/algorithms.json):
 
 ```json
 [
@@ -424,20 +431,19 @@ feature-based algorithm, and the third corresponds to the collaborative
 filtering algorithm. The first allows all 5 ratings, and the second allows only
 ratings higher than or equals to 4. This gives a bit more weight on the
 high-rating features. Once [all parameter files are
-specified](https://github.com/PredictionIO/PredictionIO/tree/master/examples/src/main/java/recommendations/tutorial4/jsons/),
+specified](https://github.com/PredictionIO/PredictionIO/tree/master/examples/java-local-tutorial//src/main/java/recommendations/tutorial4/jsons/),
 we can start the training phase and start the API server:
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/pio train \
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio train \
   --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json \
   --params-path src/main/java/recommendations/tutorial4/jsons
 ...
-2014-08-05 15:41:58,479 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:569, took 4.168001 s
-2014-08-05 15:41:58,479 INFO  APIDebugWorkflow$ - Metrics is null. Stop here
-2014-08-05 15:41:59,447 INFO  APIDebugWorkflow$ - Run information saved with ID: 41205x9wSo20Fsxm4Ic8BQ
+2014-09-30 21:59:36,256 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:695, took 3.961802 s
+2014-09-30 21:59:36,529 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: Bp60PPk4SHqyeDzDPHbv-Q
 
-$ ../bin/pio deploy --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json
+$ ../../bin/pio deploy --engine-json src/main/java/recommendations/tutorial4/multiple-algo-engine.json
 ```
 
 By default, the server starts on port 8000. Open it with your browser and you

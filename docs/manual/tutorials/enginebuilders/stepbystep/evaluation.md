@@ -14,7 +14,7 @@ the Item Recommendation Engine developed in Tutorial1 as example and implement a
 
 To run *Offline Evaluation*, we need *Training* and *Test Set* data. We will
 modify `DataSource.java` to do a random split of the rating data to generate
-the *Test Set*. For demonstration purpose, the modified `DataSource.java is put
+the *Test Set*. For demonstration purpose, the modified `DataSource.java` is put
 under directory `tutorial3/`.
 
 Recall that `io.prediction.controller.java.LJavaDataSource` takes the
@@ -51,7 +51,7 @@ public class DataSource extends LJavaDataSource<
 
 As explained in earlier tutorials, the `read()` method should read data from the
 source (e.g. database or text file, etc) and return the *Training Data* (`TD`)
-and *Test Data* (`Iterable[(Q, A)]`) with a *Data Parameters* (`DP`) associated
+and *Test Data* (`Iterable<Tuple2<Q, A>>`) with a *Data Parameters* (`DP`) associated
 with this *Training and Test Data Set*.
 
 Note that the `read()` method's return type is `Iterable` because it could
@@ -135,7 +135,7 @@ public Double computeSet(Object dataParams, Iterable<Double> metricUnits) {
 
 The method `computeMultipleSets()` takes the *Metric Results* of all sets to do
 a final computation and returns *Multiple Metric Result*. PredictionIO will
-display this final *Miltiple Metric Result* in the terminal.
+display this final *Multiple Metric Result* in the terminal.
 
 In this tutorial, it simply combines all *Metric Results* as String and return
 it.
@@ -168,27 +168,27 @@ JavaWorkflow.runEngine(
 Execute the following command:
 
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- -- data/test/ratings.csv
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- -- data/test/ratings.csv
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
 You should see the following output when it finishes running.
 
 ```
-2014-08-26 22:27:35,471 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:680, took 0.105194049 s
-2014-08-26 22:27:35,720 WARN  APIDebugWorkflow$ - java.lang.String is not a NiceRendering instance.
-2014-08-26 22:27:35,731 INFO  APIDebugWorkflow$ - Saved engine instance with ID: ka_oDJuLRnq3qDynEYcRCw
+2014-09-30 16:53:55,924 INFO  workflow.CoreWorkflow$ - CoreWorkflow.run completed.
+2014-09-30 16:53:56,044 WARN  workflow.CoreWorkflow$ - java.lang.String is not a NiceRendering instance.
+2014-09-30 16:53:56,053 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: nU81XwpjSl-F43-CHgwJZQ
 ```
 
 To view the Metric Result (RMSE score), start the dashboard with the `pio dashboard` command:
 
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/pio dashboard
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio dashboard
 ```
 
-Then point your browser to `localhost:8000` to view the result. You should see the result
+Then point your browser to `localhost:9000` to view the result. You should see the result
 
 ```
 [(null,1.0), (null,3.8078865529319543), (null,1.5811388300841898)]
@@ -197,34 +197,41 @@ in the page.
 
 ## Step 4 - Running with MovieLens 100K data set:
 
-Run the following to fetch the data set. The `ml-100k` will be downloaded into
-the `data/` directory.
+Run the following to fetch the data set, if you haven't already done so.
+The `ml-100k` will be downloaded into the `data/` directory.
 
 ```
-$ cd $PIO_HOME/examples
-$ src/main/java/recommendations/fetch.sh
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ./fetch.sh
 ```
 
 Re-run `Runner3` with the `ml-100k` data set:
 
 ```
-$ ../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- -- data/ml-100k/u.data
+$ ../../bin/pio run io.prediction.examples.java.recommendations.tutorial3.Runner3 -- -- data/ml-100k/u.data
 ```
 
 You should see the following output when it finishes running.
 
 ```
-2014-08-26 22:35:41,131 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:680, took 4.175164176 s
-2014-08-26 22:35:41,511 WARN  APIDebugWorkflow$ - java.lang.String is not a NiceRendering instance.
-2014-08-26 22:35:41,520 INFO  APIDebugWorkflow$ - Saved engine instance with ID: XG2sfCeXQ4WY2W1pXNSPCg
+2014-09-30 17:06:34,033 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:597, took 0.103821 s
+2014-09-30 17:06:34,033 INFO  workflow.CoreWorkflow$ - DataSourceParams: io.prediction.examples.java.recommendations.tutorial1.DataSourceParams@3b9f69ce
+2014-09-30 17:06:34,033 INFO  workflow.CoreWorkflow$ - PreparatorParams: Empty
+2014-09-30 17:06:34,034 INFO  workflow.CoreWorkflow$ - Algo: 0 Name: MyRecommendationAlgo Params: io.prediction.examples.java.recommendations.tutorial1.AlgoParams@76171b1
+2014-09-30 17:06:34,034 INFO  workflow.CoreWorkflow$ - ServingParams: Empty
+2014-09-30 17:06:34,035 INFO  workflow.CoreWorkflow$ - MetricsParams: Empty
+2014-09-30 17:06:34,035 INFO  workflow.CoreWorkflow$ - [(null,1.052046904037191), (null,1.042766938101085), (null,1.0490312745374106)]
+2014-09-30 17:06:34,035 INFO  workflow.CoreWorkflow$ - CoreWorkflow.run completed.
+2014-09-30 17:06:34,152 WARN  workflow.CoreWorkflow$ - java.lang.String is not a NiceRendering instance.
+2014-09-30 17:06:34,160 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: IjWc8yyDS3-9JyXGVuWVgQ
 ```
 
 To view the Metric Result (RMSE score), start the dashboard with the `pio
 dashboard` command:
 
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/pio dashboard
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio dashboard
 ```
 
 Then point your browser to http://localhost:9000 to view the result. You
