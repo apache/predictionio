@@ -16,6 +16,12 @@ $ git clone https://github.com/PredictionIO/PredictionIO-Python-SDK.git
 $ git checkout develop
 ```
 
+Then install external dependencies 
+
+```
+python setup.py install
+````
+
 Download Movie-Lens data
 
 ```
