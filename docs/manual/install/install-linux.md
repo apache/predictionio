@@ -80,11 +80,11 @@ with your own home directory.
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>file:///**home/abc**/hbase</value>
+    <value>file:///home/abc/hbase</value>
   </property>
   <property>
     <name>hbase.zookeeper.property.dataDir</name>
-    <value>/**home/abc**/zookeeper</value>
+    <value>/home/abc/zookeeper</value>
   </property>
 </configuration>
 ```
