@@ -16,11 +16,23 @@ $ git clone https://github.com/PredictionIO/PredictionIO-Python-SDK.git
 $ git checkout develop
 ```
 
+Install external dependencies. 
+
+```
+python setup.py install
+````
+
 Download Movie-Lens data
 
 ```
 $ curl -o ml-100k.zip http://files.grouplens.org/datasets/movielens/ml-100k.zip
 $ unzip ml-100k.zip
+```
+
+Launch EventServer. $PIO_HOME is the installation directory of PredictionIO. 
+ 
+```
+$ $PIO_HOME/bin/pio eventserver
 ```
 
 Import data. The import script takes two parameters: `<app_id> <url>`.

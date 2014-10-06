@@ -19,9 +19,9 @@ technologies that power PredictionIO.
 * Elasticsearch 1.3.0
 * Java 7
 
-> **Notes for CentOS 7+ Users**
+> **Notes for Linux Users**
 
-> If you are using CentOS 7+, Apache Spark local mode, which is the default
+> If you are using Linux, Apache Spark local mode, which is the default
 operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
@@ -32,7 +32,7 @@ PredictionIO runs on a Java virtual machine, so it runs on most platforms.
 Choose your platform below:
 
 [//]: # (* Deploying PredictionIO on Amazon Web Services)
-* [Installing PredictionIO on Linux](install-linux.html)
+* [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
 
 [//]: # (You may also use one of the community-contributed packages to install PredictionIO:)

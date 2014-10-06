@@ -318,9 +318,9 @@ Edit `params/datasource.json` and modify the value of `appId` to fit your app.
 
 Now, you can kick start the predictive model training with:
 
-> **Notes for CentOS 7+ Users**
+> **Notes for Linux Users**
 
-> If you are using CentOS 7+, Apache Spark local mode, which is the default
+> If you are using Linux, Apache Spark local mode, which is the default
 operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
