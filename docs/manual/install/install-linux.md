@@ -1,9 +1,9 @@
 ---
 layout: docs
-title: Installing PredictionIO on Linux
+title: Installing PredictionIO on Linux / Mac OS X
 ---
 
-# Installing PredictionIO on Linux
+# Installing PredictionIO on Linux / Mac OS X
 
 ## Download PredictionIO
 
@@ -52,9 +52,10 @@ $ bin/elasticsearch
 ```
 
 If you are using a shared network, change the `network.host` line in
-`config/elasticsearch.yml` to `network.host: 127.0.0.1` bacause by default,
-elasticsearch looks for other machines on the network upon setup and you may run
-into weird errors if there are other machines that is also running elasticsearch.
+`config/elasticsearch.yml` to `network.host: 127.0.0.1` because by default,
+Elasticsearch looks for other machines on the network upon setup and you may run
+into weird errors if there are other machines that is also running
+Elasticsearch.
 
 You may change the settings or even use another data store such as
 [MongoDB](http://www.mongodb.org/). For details, please read [Changing the Data
