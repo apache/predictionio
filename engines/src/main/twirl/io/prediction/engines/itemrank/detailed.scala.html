@@ -100,8 +100,12 @@
             var algoParams = paramsObj[params];
 
             for (j = 0; j < algoParams.length; j++) {
-              var algoName = 'algorithm ' + j + ' : ' + algoParams[j]._1;
-              data.addRow([algoName, JSON.stringify(algoParams[j]._2)]);
+              for (algoName in algoParams[j]) {
+                var algoParam = algoParams[j][algoName];
+                data.addRow([
+                    'algorithm ' + j + ' : ' + algoName,
+                    JSON.stringify(algoParam)]);
+              }
             }
           } else {
             data.addRow([params, JSON.stringify(paramsObj[params])]);
