@@ -34,6 +34,14 @@ case class EventsDataSourceParams(
 class EventsDataSource(dsp: EventsDataSourceParams)
   extends base.EventsDataSource[DataParams, Query, Actual](dsp) {
 
+  /** Return a list of Query-Actual pair for evaluation.
+    *
+    * It constructs a list of Query-Actual pair using the list of actions.
+    * For each user in the list, it creates a Query instance using all items in
+    * actions, and creates an Actual instance with all actions associated with
+    * the user. Note that it is the metrics job to decide how to interprete the
+    * semantics of the actions.
+    */
   override def generateQueryActualSeq(
     users: Map[Int, base.UserTD],
     items: Map[Int, base.ItemTD],
@@ -53,13 +61,7 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     val qaSeq: Seq[(Query, Actual)] = userActions.map { case (ui, actions) => {
       val uid = ui2uid(ui)
       val iids = actions.map(u2i => ii2iid(u2i.iindex))
-
-      val iidstr = iids.mkString(",")
-      //println(s"uid: $uid iids: (${iids.size}) $iidstr")
-
       val actionTuples = iids.zip(actions).map(e => (uid, e._1, e._2))
-      
-      //(Query(uid = uid, iids = iids), Actual(actionTuples = actionTuples))
       (Query(uid = uid, iids = allIids), Actual(actionTuples = actionTuples))
     }}
     .toSeq

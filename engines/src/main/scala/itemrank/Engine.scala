@@ -27,7 +27,7 @@ object ItemRankEngine extends IEngineFactory {
         "mahoutItemBased" -> classOf[mahout.ItemBasedAlgorithm],
         "featurebased" -> classOf[FeatureBasedAlgorithm],
         "ncMahoutItemBased" -> classOf[NCItemBasedAlgorithm]),
-      classOf[ItemRankServing]
+      classOf[ItemRankAverageServing]
     )
   }
 }

@@ -41,7 +41,6 @@ class ItemRankAverageServing extends LServing[EmptyParams, Query, Prediction] {
         isOriginal = true)
     }
 
-    // mvc : mean, variance, count
     val mvcList: Seq[MeanAndVariance] = itemsList
       .map { l => meanAndVariance(l.map(_._2)) }
 

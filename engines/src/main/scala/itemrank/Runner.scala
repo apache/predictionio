@@ -25,8 +25,6 @@ import io.prediction.engines.base.EventsSlidingEvalParams
 
 import com.github.nscala_time.time.Imports._
 
-//import org.joda.time.Duration
-
 object Runner {
 
   def main(args: Array[String]) {
@@ -47,11 +45,10 @@ object Runner {
         inactive = "pio_inactive",
         rating = "pio_rating"
       ),
-      //slidingEval = None
       slidingEval = Some(new EventsSlidingEvalParams(
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
-        evalCount = 2))
+        evalCount = 8))
     )
 
     /*
@@ -103,7 +100,6 @@ object Runner {
       weighted = false,
       threshold = Double.MinPositiveValue,
       nearestN = 10,
-      //unseenOnly = false,
       freshness = 0,
       freshnessTimeUnit = 86400,
       recommendationTime = Some(DateTime.now.millis)
@@ -115,7 +111,10 @@ object Runner {
     val engineParams = new EngineParams(
       dataSourceParams = dsp,
       preparatorParams = pp,
-      algorithmParamsList = Seq(("mahoutItemBased", mahoutAlgoParams)),
+      //algorithmParamsList = Seq(("mahoutItemBased", mahoutAlgoParams)),
+      algorithmParamsList = Seq(
+        ("mahoutItemBased", mahoutAlgoParams),
+        ("ncMahoutItemBased", ncMahoutAlgoParams)),
       // Seq(("rand", randomAlgoParams))
       // Seq(("mahoutItemBased", mahoutAlgoParams))
       // Seq(("ncMahoutItemBased", ncMahoutAlgoParams))
@@ -125,7 +124,7 @@ object Runner {
     Workflow.runEngine(
       params = WorkflowParams(
         batch = "Imagine: Local ItemRank Engine",
-        verbose = 3),
+        verbose = 0),
       engine = engine,
       engineParams = engineParams,
       //metricsClassOpt = Some(classOf[ItemRankMetrics]),
