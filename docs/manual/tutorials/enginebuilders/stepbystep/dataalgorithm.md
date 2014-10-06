@@ -239,7 +239,7 @@ PredictionIO framework requires an *Engine Factory* which returns an *Engine*
 with the controller components defined.
 
 The *Engine Factory* must implement the
-`io.prediction.controller.java.IJavaEngineFactory` interface and implements the
+`io.prediction.controller.java.IJavaEngineFactory` interface and implement the
 `apply()` method (as shown in `EngineFactory.java`):
 
 ```java
@@ -288,7 +288,7 @@ An engine manifest `engine.json` is needed to describe the Engine:
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory",
-  "version": "0.8.0",
+  "version": "0.8.1-SNAPSHOT",
   "name": "Simple Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory"
 }
@@ -300,13 +300,13 @@ above. The `id` and `version` will be referenced later when we run the engine.
 Execute the following command to compile and register the engine:
 
 ```bash
-$ cd $PIO_HOME/examples
-$ ../bin/pio register --engine-json src/main/java/recommendations/tutorial1/engine.json
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio register --engine-json src/main/java/recommendations/tutorial1/engine.json
 ```
 
 The `register` command takes the engine JSON file (with the `--engine-json`
 parameter). Note that you need to register the engine again if you have modified
-and re-compiled the codes.
+the codes to re-compile them.
 
 ## Step 6. Specify Parameters for the Engine
 
@@ -315,7 +315,7 @@ specified with JSON files.
 
 In this tutorial, the `DataSourceParams` has a parameter which is the file path
 of the ratings file. The JSON is defined as following
-(`params/datasource.json`):
+(`params/datasource.json` under `tutorial1/`):
 
 ```json
 { "filePath": "data/ml-100k/u.data" }
@@ -342,8 +342,8 @@ in the `EngineFactory` class in above step, which specifies the name of the
 algorithm of the *Engine* we want to deploy. The `params` defines the parameters
 for this algorithm.
 
-Note that if your algorithm takes no parameter, you still need to put empty JSON
-`{}`. For example:
+Note that even if your algorithm takes no parameter, you still need to put empty
+JSON `{}`. For example:
 
 ```json
 [
@@ -358,14 +358,14 @@ Note that if your algorithm takes no parameter, you still need to put empty JSON
 
 Now, we have everything in place. Let's run it!
 
-We use `../bin/pio train` to train the *Engine*, which builds and saves the
+We use `../../bin/pio train` to train the *Engine*, which builds and saves the
 algorithm *Model* for serving real time requests.
 
 Execute the following commands:
 
 ```
-$ cd $PIO_HOME/examples
-$ ../bin/pio train \
+$ cd $PIO_HOME/examples/java-local-tutorial
+$ ../../bin/pio train \
   --engine-json src/main/java/recommendations/tutorial1/engine.json \
   --params-path src/main/java/recommendations/tutorial1/params
 ```
@@ -376,14 +376,19 @@ is the base directory of parameters JSON files.
 When it finishes, you should see the following at the end of terminal output:
 
 ```
-2014-08-26 01:51:30,330 INFO  SparkContext - Job finished: collect at DebugWorkflow.scala:680, took 4.390852803 s
-2014-08-26 01:51:30,579 INFO  APIDebugWorkflow$ - Saved engine instance with ID: 1SYjXuWKQTyxKdFOOXmQiw
+2014-09-30 22:04:57,784 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:695, took 4.061274 s
+2014-09-30 22:04:57,984 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: ROSwUHDAQSyYGXs5YG0eQw
 ```
 
-Next, execute the `../bin/pio deploy` command with the returned `ID`:
+(If you don't see the `Saved engine instance with ID` line, scroll back up to
+look for error messages. Chances are you skipped the step for downloading the
+MovieLens data. Please refer to the [Overview](index.html) section if that is
+the case.)
+
+Next, execute the `../../bin/pio deploy` command with the returned `ID`:
 
 ```
-$ ../bin/pio deploy --engine-json src/main/java/recommendations/tutorial1/engine.json
+$ ../../bin/pio deploy --engine-json src/main/java/recommendations/tutorial1/engine.json
 ```
 
 This will create a server that by default binds to http://localhost:8000. You
