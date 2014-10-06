@@ -55,16 +55,7 @@ case class Actual(
   override def toString = s"A: [${actionTuples.size}] (${actionTuples.take(3)}, ...)"
 }
 
-class MetricUnit(
-  val q: Query,
-  val p: Prediction,
-  val a: Actual,
-  val score: Double,
-  val baseline: Double,
-  // a hashing function to bucketing uids
-  val uidHash: Int = 0
-) extends Serializable
-
+/*
 class MetricResult(
   val testStartUntil: Tuple2[DateTime, DateTime],
   val baselineMean: Double,
@@ -84,3 +75,4 @@ class MultipleMetricResult(
     s"algoMean=${algoMean} " +
     s"algoStdev=${algoStdev}"
 }
+*/

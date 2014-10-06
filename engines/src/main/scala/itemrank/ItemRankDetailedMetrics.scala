@@ -61,6 +61,16 @@ case class HeatMapData (
   val data: Seq[(String, Array[Double])]
 ) extends Serializable
 
+class MetricUnit(
+  val q: Query,
+  val p: Prediction,
+  val a: Actual,
+  val score: Double,
+  val baseline: Double,
+  // a hashing function to bucketing uids
+  val uidHash: Int = 0
+) extends Serializable
+
 case class DetailedMetricsData(
   val name: String,
   val measureType: String,
@@ -182,6 +192,14 @@ class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams)
   }
 }
 
+class DataParams(
+  val trainUntil: DateTime,
+  val evalStart: DateTime,
+  val evalUntil: DateTime
+) extends Params with HasName {
+  override def toString = s"E: [$evalStart, $evalUntil)"
+  val name = this.toString
+}
 
 // optOutputPath is used for debug purpose. If specified, metrics will output
 // the data class to the specified path, and the renderer can generate the html
@@ -226,7 +244,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       Prediction(query.iids.map(e => (e, 0.0)), isOriginal = false),
       actual)
 
-    val mu = new MetricUnit(
+    new MetricUnit(
       q = query,
       p = prediction,
       a = actual,
@@ -234,18 +252,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       baseline = baseline,
       uidHash = MurmurHash3.stringHash(query.uid)
     )
-
-    /*
-    if (mu.score > 0.80 && mu.score < 1.00) {
-      println()
-      println(mu.score)
-      println(mu.q)
-      println(mu.p)
-      println(mu.a)
-    }
-    */
-
-    mu
   }
 
   // calcualte MAP at k
@@ -274,17 +280,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     val segmentValues = segmentMeanMap.values
 
-    // Assume the mean is normal distributed
+    // Assume the mean is normally distributed
     val mvc = meanAndVariance(segmentValues)
-
-    // Double => String
-    /*
-    val groupByFunc = groupByRange((0.0 until 1.0 by 0.1).toArray, "%.2f")
-    val bucketByScoreMap: Map[String, Int] = values
-      .map(_._2).map(groupByFunc)
-      .groupBy(identity).mapValues(_.size)
-    */
-
 
     // Stats describes the properties of the buckets
     return Stats(mvc.mean, params.buckets, mvc.stdDev, segmentValues.min, segmentValues.max)
@@ -312,7 +309,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val keys: Array[String] = (0 to values.size).map { i =>
       val s = (if (i == 0) Double.NegativeInfinity else values(i-1))
       val e = (if (i < values.size) values(i) else Double.PositiveInfinity)
-      //s"[$s, $e)"
       "[" + format.format(s) + ", " + format.format(e) + ")"
     }.toArray
 
@@ -384,16 +380,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     .sortBy(_._1)
 
     // Aggregation Stats
-    /*
-    val aggregateByActualSize: Seq[(String, Stats)] = allUnits
-      //.groupBy(_.a.iids.size)
-      .groupBy(_.a.actionTuples.size)
-      .mapValues(_.map(_.score))
-      .map{ case(k, l) => (k.toString, calculate(l)) }
-      .toSeq
-      .sortBy(-_._2.average)
-    */
-
     val aggregateByActualSize = aggregateMU(
       allUnits,
       mu => groupByRange(
@@ -416,7 +402,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         (mu.a.previousActionCount))
 
     val itemCountAggregation = aggregate[(String, MetricUnit)](
-      //allUnits.flatMap(mu => mu.a.iids.map(item => (item, mu))),
       allUnits.flatMap(mu => mu.a.actionTuples.map(t => (t._2, mu))),
       _._2.score,
       _._1)
@@ -459,12 +444,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       measureType = measure.toString,
       algoMean = overallStats._2.average,
       algoStats = overallStats._2,
-      //runs = Seq(overallStats, baselineStats) ++ runsStats,
-      //runs = Seq(overallStats, overallResampledStats) ++ runsStats,
       heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
-        //("ByActualSize", aggregateMU(allUnits, _.a.actionTuples.size.toString)),
         ("ByActualSize", aggregateByActualSize),
         ("ByQuerySize", aggregateByQuerySize),
         ("ByScore", scoreAggregation),
