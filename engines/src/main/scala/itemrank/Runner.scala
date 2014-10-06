@@ -51,7 +51,7 @@ object Runner {
       slidingEval = Some(new EventsSlidingEvalParams(
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
-        evalCount = 8))
+        evalCount = 2))
     )
 
     /*
@@ -71,7 +71,7 @@ object Runner {
       ),
       goodThreshold = 3,
       measureType = MeasureType.PrecisionAtK,
-      measureK = 4
+      measureK = 10
     ) 
 
     val pp = new PreparatorParams(

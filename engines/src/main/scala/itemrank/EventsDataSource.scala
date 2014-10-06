@@ -45,6 +45,7 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     val ui2uid: Map[Int, String] = users.mapValues(_.uid)
     val ii2iid: Map[Int, String] = items.mapValues(_.iid)
 
+    val allIids = actions.map(_.iindex).map(ii => ii2iid(ii)).distinct
 
     val userActions: Map[Int, Seq[base.U2IActionTD]] = 
       actions.groupBy(_.uindex)
@@ -58,7 +59,8 @@ class EventsDataSource(dsp: EventsDataSourceParams)
 
       val actionTuples = iids.zip(actions).map(e => (uid, e._1, e._2))
       
-      (Query(uid = uid, iids = iids), Actual(actionTuples = actionTuples))
+      //(Query(uid = uid, iids = iids), Actual(actionTuples = actionTuples))
+      (Query(uid = uid, iids = allIids), Actual(actionTuples = actionTuples))
     }}
     .toSeq
 

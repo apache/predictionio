@@ -66,7 +66,7 @@ class DataParams(
   val evalStart: DateTime,
   val evalUntil: DateTime
 ) extends Params with HasName {
-  override def toString = s"T: [, $trainUntil) E: [$evalStart, $evalUntil)"
+  override def toString = s"E: [$evalStart, $evalUntil)"
   val name = this.toString
 }
   

@@ -384,6 +384,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     .sortBy(_._1)
 
     // Aggregation Stats
+    /*
     val aggregateByActualSize: Seq[(String, Stats)] = allUnits
       //.groupBy(_.a.iids.size)
       .groupBy(_.a.actionTuples.size)
@@ -391,6 +392,19 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       .map{ case(k, l) => (k.toString, calculate(l)) }
       .toSeq
       .sortBy(-_._2.average)
+    */
+
+    val aggregateByActualSize = aggregateMU(
+      allUnits,
+      mu => groupByRange(
+        Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
+          mu.a.actionTuples.size))
+    
+    val aggregateByQuerySize = aggregateMU(
+      allUnits,
+      mu => groupByRange(
+        Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
+          mu.q.iids.size))
 
     val scoreAggregation = aggregateMU(
       allUnits,
@@ -450,7 +464,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
-        ("ByActualSize", aggregateMU(allUnits, _.a.actionTuples.size.toString)),
+        //("ByActualSize", aggregateMU(allUnits, _.a.actionTuples.size.toString)),
+        ("ByActualSize", aggregateByActualSize),
+        ("ByQuerySize", aggregateByQuerySize),
         ("ByScore", scoreAggregation),
         ("ByActionCount", actionCountAggregation),
         ("ByFlattenItem", itemCountAggregation),
