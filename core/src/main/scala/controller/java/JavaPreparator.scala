@@ -26,6 +26,7 @@ import org.apache.spark.rdd.RDD
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.api.java.JavaSparkContext
 
 import scala.reflect._
 
@@ -80,5 +81,61 @@ object LJavaIdentityPreparator {
    */
   def apply[TD, B <: JavaEngineBuilder[TD, _, TD, _, _, _]](b: B) =
     classOf[LJavaIdentityPreparator[TD]]
+
+}
+
+/** Base class of a parallel preparator.
+  *
+  * A parallel preparator can be run in parallel on a cluster and produces a
+  * prepared data that is distributed across a cluster.
+  *
+  * @param <PP> Preparator parameters class.
+  * @param <TD> Training data class.
+  * @param <PD> Prepared data class.
+  */
+abstract class PJavaPreparator[PP <: Params, TD, PD]
+  extends BasePreparator[PP, TD, PD]() (
+    JavaUtils.fakeClassTag[PP]) {
+
+  def prepareBase(sc: SparkContext, td: TD): PD = {
+    implicit val fakeTdTag: ClassTag[PD] = JavaUtils.fakeClassTag[PD]
+    prepare(new JavaSparkContext(sc), td)
+  }
+
+  /** Implement this method to produce prepared data that is ready for model
+    * training.
+    *
+    * @param jsc A Java Spark context.
+    * @param trainingData Training data to be prepared.
+    */
+  def prepare(jsc: JavaSparkContext, trainingData: TD): PD
+}
+
+/**
+ * A helper concrete implementation of {@link PJavaPreparator} that pass
+ * training data through without any special preparation.
+ *
+ * @param <TD> Training Data
+ */
+class PJavaIdentityPreparator[TD] extends PJavaPreparator[EmptyParams, TD, TD] {
+  override def prepare(jsc: JavaSparkContext, td: TD): TD = td
+}
+
+/**
+ * A helper concrete implementation of {@link PJavaPreparator} that pass
+ * training data through without any special preparation.
+ */
+object PJavaIdentityPreparator {
+  /** Produces an instance of {@link PJavaIdentityPreparator}. */
+  def apply[TD](ds: Class[_ <: PJavaDataSource[_, _, TD, _, _]]) =
+    classOf[PJavaIdentityPreparator[TD]]
+
+  /**
+   * Returns an instance of {@link PJavaIdentityPreparator} by taking a {@link
+   * PJavaEngineBuilder} as argument.
+   */
+  // TODO tom-chan add this back when the PJavaEngineBuilder is ready
+  /*def apply[TD, B <: PJavaEngineBuilder[TD, _, TD, _, _, _]](b: B) =
+    classOf[PJavaIdentityPreparator[TD]]*/
 
 }

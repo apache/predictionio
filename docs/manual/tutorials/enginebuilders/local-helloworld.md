@@ -364,3 +364,6 @@ Output:
 ```json
 {"temperature":76.66666666666667}
 ```
+
+Check out [Java Parallel Helloworld tutorial](parallel-helloworld.html)
+if you are interested how things are done on the parallel side.

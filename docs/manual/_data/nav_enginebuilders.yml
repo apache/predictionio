@@ -3,6 +3,9 @@
 
 - title: "Building the HelloWorld Engine"
   href: "/tutorials/enginebuilders/local-helloworld.html"
+  subsec:
+    - title: "Building the Java Parallel HelloWorld Engine"
+      href: "/tutorials/enginebuilders/parallel-helloworld.html"
 
 - title: "Step-by-step Engine Building"
   href: "/tutorials/enginebuilders/stepbystep/"

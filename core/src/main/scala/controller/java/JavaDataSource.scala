@@ -20,6 +20,8 @@ import io.prediction.controller.Params
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.api.java.JavaPairRDD
+import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.rdd.RDD
 
 import java.util.{ List => JList }
@@ -83,4 +85,35 @@ abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
     List((dp, readTraining(), qa))
   }
 
+}
+
+/** Base class of a parallel data source.
+  *
+  * A parallel data source runs locally within a single machine, or in parallel
+  * on a cluster, to return data that is distributed across a cluster.
+  *
+  * @param <DSP> Data source parameters class.
+  * @param <DP> Data parameters data class.
+  * @param <TD> Training data class.
+  * @param <Q> Input query class.
+  * @param <A> Actual value class.
+  */
+abstract class PJavaDataSource[DSP <: Params, DP, TD, Q, A]
+  extends BaseDataSource[DSP, DP, TD, Q, A]()(
+    JavaUtils.fakeClassTag[DSP]) {
+
+  def readBase(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])] = {
+    implicit val fakeTdTag: ClassTag[TD] = JavaUtils.fakeClassTag[TD]
+    read(new JavaSparkContext(sc)).toSeq.map { case (dp, td, qaRdd) => {
+      // TODO(yipjustin). Maybe do a size check on td, to make sure the user
+      // doesn't supply a huge TD to the driver program.
+      (dp, td, qaRdd.rdd)
+    }}
+  }
+
+  /** Implement this method to return data from a data source. Returned data
+    * can optionally include a sequence of query and actual value pairs for
+    * evaluation purpose.
+    */
+  def read(jsc: JavaSparkContext): JIterable[Tuple3[DP, TD, JavaPairRDD[Q, A]]]
 }
