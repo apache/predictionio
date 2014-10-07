@@ -30,6 +30,7 @@ import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.apache.spark.SparkContext._
+import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 
 import scala.language.existentials
@@ -177,6 +178,9 @@ object WorkflowUtils extends Logging {
     val s: String = data match {
       case rdd: RDD[_] => {
         debugString(rdd.collect)
+      }
+      case javaRdd: JavaRDDLike[_, _] => {
+        debugString(javaRdd.collect)
       }
       case array: Array[_] => {
         "[" + array.map(debugString).mkString(",") + "]"

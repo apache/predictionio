@@ -22,6 +22,7 @@ import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
+import io.prediction.controller.java.PJavaAlgorithm
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
@@ -167,7 +168,8 @@ object CreateServer extends Logging {
     val serving = Doer(engine.servingClass, servingParams)
 
     val pAlgorithmExists =
-      algorithms.exists(_.isInstanceOf[PAlgorithm[_, PD, _, Q, P]])
+      algorithms.exists(alg => alg.isInstanceOf[PAlgorithm[_, PD, _, Q, P]]
+          || alg.isInstanceOf[PJavaAlgorithm[_, PD, _, Q, P]])
     val sparkContext =
       if (pAlgorithmExists)
         Some(WorkflowContext(engineInstance.batch, engineInstance.env))
@@ -220,7 +222,8 @@ object CreateServer extends Logging {
               p,
               sparkContext,
               getClass.getClassLoader)
-          } else if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]) {
+          } else if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]
+              || a.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]]) {
             info(s"Parallel model detected for algorithm ${a.getClass.getName}")
             a.trainBase(sparkContext.get, evalPreparedMap.get(0))
           } else {
@@ -339,7 +342,8 @@ class ServerActor[Q, P](
   lazy val gson = new Gson
   val log = Logging(context.system, this)
   val (javaAlgorithms, scalaAlgorithms) =
-    algorithms.partition(_.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
+    algorithms.partition(alg => alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]
+                             || alg.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]])
 
   def actorRefFactory = context
 
@@ -371,10 +375,16 @@ class ServerActor[Q, P](
           entity(as[String]) { queryString =>
             try {
               val javaQuery = if (!javaAlgorithms.isEmpty) {
+                val alg = javaAlgorithms.head
+                val queryClass = if (
+                    alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
+                  alg.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].queryClass
+                } else {
+                  alg.asInstanceOf[PJavaAlgorithm[_, _, _, Q, P]].queryClass
+                }
                 Some(gson.fromJson(
                   queryString,
-                  javaAlgorithms.head.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].
-                    queryClass))
+                  queryClass))
               } else None
               val scalaQuery = if (!scalaAlgorithms.isEmpty) {
                 Some(Extraction.extract(parse(queryString))(
@@ -382,7 +392,8 @@ class ServerActor[Q, P](
                   scalaAlgorithms.head.queryManifest))
               } else None
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-                if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]])
+                if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]
+                    || a.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]])
                   a.predictBase(models(ai), javaQuery.get)
                 else
                   a.predictBase(models(ai), scalaQuery.get)

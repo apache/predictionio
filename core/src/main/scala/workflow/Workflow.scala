@@ -31,6 +31,7 @@ import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.JavaMetrics
 import io.prediction.controller.java.JavaUtils
 import io.prediction.controller.java.JavaEngine
+import io.prediction.controller.java.PJavaAlgorithm
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
@@ -683,7 +684,8 @@ object CoreWorkflow {
         val algoParams = algorithmParamsList(ai)._2
 
         // Parallel Model
-        if (algo.isInstanceOf[PAlgorithm[_, _, _, _, _]]) {
+        if (algo.isInstanceOf[PAlgorithm[_, _, _, _, _]]
+            || algo.isInstanceOf[PJavaAlgorithm[_, _, _, _, _]]) {
           if (model.isInstanceOf[IPersistentModel[_]]) {
             getPersistentModel(model, realEngineInstance.id, algoParams)
           } else {
