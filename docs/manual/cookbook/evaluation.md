@@ -9,6 +9,16 @@ title: Offline Evaluating the Prediction Results
 
 To chose the best algorithm and parameters, it is important to systematically
 evaluate the quality of the engine instance. 
+In this section, we will explain how to carry out an offline evaluation of an
+engine. We will use the MovieLens data set with the ItemRank Engine as 
+example. We will discuss 
+
+- In general, how to use Prediction.IO's evaluation framework;
+- How to construct the testing set from raw training data;
+- How to avoid look-ahead-bias by applying sliding window evaluation technique;
+- How to construct the Query that best approximate the business need;
+- How to choose the evaluation parameter set that refects the business
+  objective.
 
 # ItemRank Evaluation
 
@@ -258,10 +268,91 @@ DetailedMetricsParams(
 > consider using 
 > [Mean-Average-Precision@k](http://en.wikipedia.org/wiki/Information_retrieval#Mean_average_precision)
 
+### First Evaluation
 
+We are ready to run the actual evaluation. You will find the code at
+`examples/scala-local-movielens-evaluation/src/main/scala/Evaluation.scala`.
 
+This tutorial uses app_id = 9, make sure you have imported MovieLens data with
+app_id = 9. See
+[instructions](../../tutorials/engines/itemrec/movielens.html). Let's neglect
+the engine parameters and focus on the metrics parameters, we will discuss
+parameter tuning in the next tutorial.
 
+We use `ItemRankDetailedMetrics` for evaluation, it takes
+`DetailedMetricsParams` as parameter. The following code (can be found in
+`Evaluation1`) illustrate a complete
+parameter set: we use only "rate" action for rating, and consider only rating of
+at least 3 be good rating; we use Precision@k as our main metrics, and set k =
+10.
 
+```scala
+val metricsParams = new DetailedMetricsParams(
+  actionsMap = Map("rate" -> None),
+  goodThreshold = 3,
+  measureType = MeasureType.PrecisionAtK,
+  measureK = 10
+) 
+```
 
+You can run the evaluation with the following command.
 
-(coming soon)
+```
+$ cd $PIO_HOME/examples/scala-local-movielens-evaluation
+$ $PIO_HOME/bin/pio run io.prediction.examples.mlc.Evaluation1 -- \
+  --master spark://`hostname`:7077
+...
+2014-10-07 19:09:47,136 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: nfUVwwgMQOqgpb5QEUdAGg
+```
+
+If it runs successfully, you should see the workflow ends with something like "Saved engine
+instance with ID: nfUVwwgMQOqgpb5QEUdAGg"
+
+To see the result, you can Prediction.IO dashboard:
+
+```
+$ $PIO_HOME/bin/pio dashboard
+```
+
+By default, you will see it on [http://localhost:9000]. The dashboard displays
+all the completed evaluation, for each evaluation, you can also click on the
+blue button on the right to see a detailed view of the evaluation. 
+
+The value of Precision@10 is 0.0805, (loosely) meaning that for items among the
+top 10 results, each has a ~8% chance that the user likes it (i.e. rated >=
+3). From the dashboard, we can further drill down the evaluation metrics.
+
+### Second Evaluation
+
+We have done a small scale evaluation over 3 periods.
+The MovieLens dataset provides rating data until mid April 1998, we can extend
+the evaluation to 12 periods, each period last 1 week. `Evaluation2` perform
+this task. We can run it with the following command:
+
+```
+$ $PIO_HOME/bin/pio run io.prediction.examples.mlc.Evaluation2 -- \
+  --master spark://`hostname`:7077
+```
+
+The Precision@k is around 0.0673.
+
+### Exercise
+
+Try to play around with different metrics parameter setting. Consider the
+following situation, try to change the parameters set and see what we will get.
+
+- MLC displays 100 items on its first page, what parameter should we change?
+
+- MLC attracts a lot of spontaneous users, they are very active but also get
+  bored easily, they usually leave the service in around 10 days, how should we
+  change the parameter set to reflect this change?
+
+- MLC is a perfectionist, it wants to focus on the best user experience, it only
+  want to suggest the best movies for users, is it possible to change the
+  parameter set to address this?
+
+- MLC launches a new mobile set, due to the screen size limitation, it can only
+  list the movie recommendation from top to bottom (in contrast to the desktop
+  mode where multiple movies are listed horiztonally). How can the evaluation
+  parameter address this issue?
+

@@ -40,7 +40,7 @@
       src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
   </head>
   <body>
-    <h3>Item Rank Metrics !</h3>
+    <h3>Item Rank Metrics</h3>
     <h4 id='params'></h4>
 
     <div id='top'></div>
@@ -66,7 +66,8 @@
         drawHead();
         drawTop();
         drawTable();
-        drawBot();
+        // Skip heatmap.
+        //drawBot();
       };
 
       function loadData() {
@@ -234,6 +235,7 @@
       }
   
       function drawBot() {
+  
         var data = new google.visualization.DataTable();
         var heatMap = rawData.heatMap;
 

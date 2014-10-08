@@ -266,6 +266,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   def calculateResample(
     values: Seq[(Int, Double)]
   ): Stats = {
+    if (values.isEmpty) {
+      return Stats(0, 0, 0, 0, 0)
+    }
+
     // JackKnife resampling.
     val segmentSumCountMap: Map[Int, (Double, Int)] = values
       .map{ case(k, v) => (k % params.buckets, v) }
@@ -386,6 +390,12 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
         Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
           mu.a.actionTuples.size))
     
+    val aggregateByActualGoodSize = aggregateMU(
+      allUnits,
+      mu => groupByRange(
+        Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
+          ItemRankMeasure.actual2GoodIids(mu.a, params).size))
+    
     val aggregateByQuerySize = aggregateMU(
       allUnits,
       mu => groupByRange(
@@ -447,17 +457,21 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
       aggregations = Seq(
-        ("ByActualSize", aggregateByActualSize),
-        ("ByQuerySize", aggregateByQuerySize),
-        ("ByScore", scoreAggregation),
+        ("By # of Rated Items", aggregateByActualSize),
+        ("By # of Positively Rated Items", aggregateByActualGoodSize),
+        ("By # of Items in Query", aggregateByQuerySize),
+        ("By Measure Score", scoreAggregation),
+        ("By IsOriginal, true when engine cannot return prediction", 
+          isOriginalAggregation)
+        /*
         ("ByActionCount", actionCountAggregation),
         ("ByFlattenItem", itemCountAggregation),
         ("ByDate", dateAggregation),
         ("ByLocalHour", localHourAggregation),
-        ("ByIsOriginal", isOriginalAggregation),
         ("ByAvgOrderSize", avgOrderSizeAggregation),
         ("ByPreviousOrders", previousOrdersAggregation),
         ("ByVariety", varietyAggregation)
+        */
       )
     )
 
