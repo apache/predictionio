@@ -338,8 +338,11 @@ $ $PIO_HOME/bin/pio train
 master URL to the `pio train` command, e.g.
 
 > ```bash
-$ $PIO_HOME/bin/pio train -- --master spark://localhost:7077
+$ $PIO_HOME/bin/pio train -- --master spark://`hostname`:7077
 ```
+
+> You may replace the command `hostname` with your hostname, which can be found
+> on [Spark's UI](http://localhost:8080).
 
 If your training was successful, you should see the lines shown above. Now you are ready to deploy the instance:
 
