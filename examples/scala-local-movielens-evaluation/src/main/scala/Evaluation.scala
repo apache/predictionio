@@ -1,9 +1,17 @@
 package io.prediction.examples.mlc
 
-import io.prediction.engines.itemrank._
+import io.prediction.engines.itemrank.PreparatorParams
+import io.prediction.engines.itemrank.EventsDataSourceParams
+import io.prediction.engines.itemrank.ItemRankEngine
+import io.prediction.engines.itemrank.ItemRankDetailedMetrics
+import io.prediction.engines.itemrank.DetailedMetricsParams
+import io.prediction.engines.itemrank.MeasureType
+import io.prediction.engines.itemrank.mahout.ItemBasedAlgoParams
 import io.prediction.engines.base.AttributeNames
 import io.prediction.engines.base.EventsSlidingEvalParams
-import io.prediction.controller._
+import io.prediction.controller.WorkflowParams
+import io.prediction.controller.Workflow
+import io.prediction.controller.EngineParams
 
 import com.github.nscala_time.time.Imports._
 
@@ -22,7 +30,7 @@ object CommonParams {
     actions = Map("rate" -> None),
     conflict = "latest")
     
-  val MahoutAlgoParams0 = new mahout.ItemBasedAlgoParams(
+  val MahoutAlgoParams0 = new ItemBasedAlgoParams(
     booleanData = true,
     itemSimilarity = "LogLikelihoodSimilarity",
     weighted = false,
