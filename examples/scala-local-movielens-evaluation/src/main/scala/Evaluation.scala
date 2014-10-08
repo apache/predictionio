@@ -19,7 +19,7 @@ object CommonParams {
     rating = "pio_rating")
 }
 
-object First {
+object Evaluation1 {
   def main(args: Array[String]) {
     // Engine Settings
     val engine = ItemRankEngine() 
@@ -29,7 +29,9 @@ object First {
       actions = Set("rate"),
       attributeNames = CommonParams.DataSourceAttributeNames,
       slidingEval = Some(new EventsSlidingEvalParams(
-        firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0)))
+        firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
+        evalDuration = Duration.standardDays(7),
+        evalCount = 3))
     )
 
     val pp = new PreparatorParams(
@@ -58,7 +60,6 @@ object First {
 
     // Metrics Setting
     val metricsParams = new DetailedMetricsParams(
-      optOutputPath = None,
       actionsMap = Map("rate" -> None),
       goodThreshold = 3,
       measureType = MeasureType.PrecisionAtK,
