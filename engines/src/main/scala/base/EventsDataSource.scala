@@ -63,8 +63,8 @@ abstract class AbstractEventsDataSourceParams extends Params {
  */
 class EventsSlidingEvalParams(
   val firstTrainingUntilTime: DateTime,
-  val evalDuration: Duration,
-  val evalCount: Int
+  val evalDuration: Duration = Duration.standardDays(1),
+  val evalCount: Int = 1
 ) extends Serializable
 
 class EventsDataSource[DP: ClassTag, Q, A](
