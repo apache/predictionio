@@ -18,6 +18,7 @@ package io.prediction.engines.itemrec
 import io.prediction.engines.util
 
 import com.github.nscala_time.time.Imports._
+import io.prediction.engines.base
 
 case class Query(
     val uid: String,
@@ -35,8 +36,11 @@ case class Prediction(
 }
 
 case class Actual(
-    // actual items the user has performed actions on
-    val iids: Seq[String]
+    // (deprecated) actual items the user has performed actions on
+    val iids: Seq[String] = null,
+
+    // (uid, iid, action) - tuple
+    val actionTuples: Seq[(String, String, base.U2IActionTD)]
   ) extends Serializable {
   override def toString = s"${iids}"
 }
