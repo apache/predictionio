@@ -22,7 +22,7 @@ Install external dependencies.
 python setup.py install
 ````
 
-Download Movie-Lens data
+Download Movie-Lens data into the /PredictionIO-Python-SDK folder. 
 
 ```
 $ curl -o ml-100k.zip http://files.grouplens.org/datasets/movielens/ml-100k.zip
