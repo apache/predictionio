@@ -22,6 +22,8 @@ engine to read data directly from your existing data store.
 backend is properly configured and is running. By default, PredictionIO uses
 HBase, and a quick configuration can be found
 [here]({{site.baseurl}}/install/install-linux.html#hbase).
+Please allow a minute (usually less than 30 seconds) after you start HBase for
+initialization to complete before starting eventserver.
 
 Everything about PredictionIO can be done through the `bin/pio` command.
 

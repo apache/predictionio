@@ -102,6 +102,9 @@ Now you may start HBase.
 $ bin/start-hbase.sh
 ```
 
+Note that even the command returns immediately, you may have to wait for up to
+a minute before all the initialization is done (and then you can run eventserver).
+
 Now you have installed everything you need to run PredictionIO!
 
 Next: Reading [Quick Start]({{site.baseurl}}/tutorials/engines/quickstart.html)
