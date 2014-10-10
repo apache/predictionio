@@ -227,8 +227,10 @@ class YahooDataSource(val params: YahooDataSource.Params)
       (e.entityType == params.entityType && e.entityId == marketTicker)
     
     val tickerMap: Map[String, HistoricalData] = batchView
+      .events
+      .filter(predicate)
       .aggregateByEntityOrdered(
-        predicate,
+        //predicate,
         YahooDataSource.Intermediate(),
         mergeTimeIndex)
       .mapValues(finalizeTimeIndex)
@@ -250,8 +252,10 @@ class YahooDataSource(val params: YahooDataSource.Params)
       .toMap
 
     val tickerMap: Map[String, HistoricalData] = batchView
+      .events
+      .filter(predicate)
       .aggregateByEntityOrdered(
-        predicate,
+        //predicate,
         YahooDataSource.Intermediate(),
         mergeStock)
       .mapValues(finalizeStock)
