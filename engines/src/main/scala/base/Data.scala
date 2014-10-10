@@ -18,6 +18,8 @@ package io.prediction.engines.base
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.List
 
+import org.apache.spark.rdd.RDD
+
 /* this engine require following attributes */
 case class AttributeNames(
   // entity types
@@ -70,6 +72,18 @@ class TrainingData(
       s"A: [${u2iActions.size}] (${u2iActions.take(2)}...)"
   }
 
+// Parallel TrainingData
+class PTrainingData(
+  val users: RDD[(Int, UserTD)],
+  val items: RDD[(Int, ItemTD)],
+  val u2iActions: RDD[U2IActionTD]
+) extends Serializable {
+  override def toString = s"PTrainingData:" +
+    s"U: [${users.count}] (${users.take(2).toList}...) " +
+    s"I: [${items.count}] (${items.take(2).toList}...) " +
+    s"A: [${u2iActions.count}] (${u2iActions.take(2).toList}...)"
+}
+
 class RatingTD(
   val uindex: Int,
   val iindex: Int,
@@ -88,3 +102,12 @@ class PreparedData(
   override def toString = s"U: ${users.take(2)}..." +
    s" I: ${items.take(2)}... R: ${rating.take(2)}..."
 }
+
+// Parallel PreparedData
+class PPreparedData(
+  val users: RDD[(Int, UserTD)],
+  val items: RDD[(Int, ItemTD)],
+  val rating: RDD[RatingTD],
+  val ratingOriginal: RDD[RatingTD], // Non-deduped ratings
+  val seenU2IActions: Option[RDD[U2IActionTD]] // actions for unseen filtering
+) extends Serializable { }
