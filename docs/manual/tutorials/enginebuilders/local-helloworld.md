@@ -29,15 +29,7 @@ $ cd HelloWorld
 Now you need to edit <code>src/main/scala/Engine.scala</code>.
 </div>
 <div data-lang="Java">
-{% highlight bash %}
-$ $PIO_HOME/bin/pio new HelloWorld
-$ cd HelloWorld
-
-$ rm -rf src/main/scala
-$ mkdir src/main/java
-{% endhighlight %}
-
-Add the new classes under the directory <code>src/main/java</code>.
+Please refer to the code under <code>$PIO_HOME/examples/java-local-helloworld</code>.
 </div>
 </div>
 
