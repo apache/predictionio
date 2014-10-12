@@ -76,8 +76,20 @@ $ gem install predictionio
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-To install PredictionIO Java SDK, clone the PredictionIO-Java-SDK repository
-and build it using Maven:
+To use PredictionIO in your project, add this to the <code>dependencies</code>
+section of your project's <code>pom.xml</code> file:
+{% highlight bash %}
+<dependencies>
+  <dependency>
+    <groupId>io.prediction</groupId>
+    <artifactId>client</artifactId>
+    <version>0.8.0</version>
+  </dependency>
+</dependencies>
+{% endhighlight %}
+
+To run examples in PredictionIO Java SDK, clone the PredictionIO-Java-SDK
+repository and build it using Maven:
 {% highlight bash %}
 $ cd ~
 $ git clone git://github.com/PredictionIO/PredictionIO-Java-SDK.git
