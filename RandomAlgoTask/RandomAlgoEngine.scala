@@ -79,10 +79,7 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
   override
   def predict(model: MyModel, query: MyQuery): MyPrediction = {
     Random.setSeed(query.randomSeed)
-    println(s"RandomSeed ${query.randomSeed}\n")
-    println(s"Unshuffled : ${model.recommendations(query.userId)}")
     val randomRec = Random.shuffle(model.recommendations(query.userId))
-    println(s"Shuffled : ${randomRec})")
     new MyPrediction(randomRec)
   }
 }
