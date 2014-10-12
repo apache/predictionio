@@ -210,6 +210,9 @@ object Storage extends Logging {
   def getMetaDataEngineInstances(): EngineInstances =
     getDataObject[EngineInstances](MetaDataRepository)
 
+  def getMetaDataAppkeys(): Appkeys =
+    getDataObject[Appkeys](MetaDataRepository)
+
   def getModelDataModels(): Models =
     getDataObject[Models](ModelDataRepository)
 
