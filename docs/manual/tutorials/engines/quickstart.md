@@ -111,6 +111,12 @@ $ $PIO_HOME/bin/pio eventserver
 where `$PIO_HOME` is the installation directory of PredictionIO. As long as the
 Event Server is running, PredictionIO keeps listening to new data.
 
+To bind to a different address, 
+{% highlight bash %}
+$ $PIO_HOME/bin/pio eventserver --ip <IP>
+{% endhighlight %}
+
+
 ## Collecting Data
 
 We are going to write a script that generates some random data and simulates
@@ -365,8 +371,8 @@ $ $PIO_HOME/bin/pio deploy
 [INFO] [09/11/2014 16:26:16.526] [pio-server-akka.actor.default-dispatcher-5] [akka://pio-server/user/master] Bind successful. Ready to serve.
 ```
 
-Notice that the `deploy` command runs the engine instance in the foreground. Now
-we are ready to take a look at the results!
+Notice that the `deploy` command runs the engine instance in the foreground. You can also use the --ip option to bind to a different ip address. Now we are ready to take a look at the results! 
+
 
 # Retrieve Prediction Results
 
