@@ -52,7 +52,12 @@ object RunServer extends Logging {
         "--ip",
         ca.ip,
         "--port",
-        ca.port.toString)
+        ca.port.toString,
+        "--event-server-ip",
+        ca.eventServer.ip,
+        "--event-server-port",
+        ca.eventServer.port.toString) ++
+        (if (ca.eventServer.enabled) Seq("--feedback") else Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 

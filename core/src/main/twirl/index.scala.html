@@ -10,11 +10,14 @@
   algorithmsParams: Seq[String],
   models: Seq[String],
   servingParams: String,
-  serverStartTime: DateTime)
+  serverStartTime: DateTime,
+  feedback: Boolean,
+  eventServerIp: String,
+  eventServerPort: Int)
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>@{manifest.id} @{manifest.version} - PredictionIO Server at @{args.ip}:@{args.port}</title>
+    <title>@{manifest.id} @{manifest.version} - PredictionIO Engine Server at @{args.ip}:@{args.port}</title>
     <link href="/assets/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
       td { font-family: Menlo, Monaco, Consolas, "Courier New", monospace; }
@@ -23,7 +26,7 @@
   <body>
     <div class="container">
       <div class="page-header">
-        <h1>PredictionIO Server at @{args.ip}:@{args.port}</h1>
+        <h1>PredictionIO Engine Server at @{args.ip}:@{args.port}</h1>
         <p class="lead">@{manifest.id} @{manifest.version}</p>
       </div>
       <h2>Engine Instance Information</h2>
@@ -31,6 +34,12 @@
         <tr><th>ID</th><td>@{engineInstance.id}</td></tr>
         <tr><th>Training Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.startTime)}</td></tr>
         <tr><th>Training End Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.endTime)}</td></tr>
+      </table>
+      <h2>Feedback Loop Information</h2>
+      <table class="table table-bordered table-striped">
+        <tr><th>Feedback Loop Enabled?</th><td>@{feedback}</td></tr>
+        <tr><th>Event Server IP</th><td>@{eventServerIp}</td></tr>
+        <tr><th>Event Server Port</th><td>@{eventServerPort}</td></tr>
       </table>
       <h2>Server Information</h2>
       <table class="table table-bordered table-striped">

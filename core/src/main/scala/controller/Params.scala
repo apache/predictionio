@@ -22,6 +22,16 @@ package io.prediction.controller
   */
 trait Params extends Serializable {}
 
+/** Mix in this trait for parameters that contain app ID. Only engines that
+  * take data source parameters with this trait would be able to use the
+  * feedback loop.
+  *
+  * @group General
+  */
+trait ParamsWithAppId extends Serializable {
+  val appId: Int
+}
+
 /** A concrete implementation of [[Params]] representing empty parameters.
   *
   * @group General

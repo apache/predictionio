@@ -42,6 +42,7 @@ case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
   build: BuildArgs = BuildArgs(),
   appkey: AppkeyArgs = AppkeyArgs(),
+  eventServer: EventServerArgs = EventServerArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -75,6 +76,11 @@ case class AppkeyArgs(
   appkey: String = "",
   appid: Int = 0,
   events: Seq[String] = Seq())
+
+case class EventServerArgs(
+  enabled: Boolean = false,
+  ip: String = "localhost",
+  port: Int = 7070)
 
 object Console extends Logging {
   val distFilename = "DIST"
@@ -256,7 +262,16 @@ object Console extends Logging {
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
             c.copy(port = x)
-          } text("Port to bind to. Default: 8000")
+          } text("Port to bind to. Default: 8000"),
+          opt[Unit]("feedback") action { (_, c) =>
+            c.copy(eventServer = c.eventServer.copy(enabled = true))
+          } text("Enable feedback loop to event server."),
+          opt[String]("event-server-ip") action { (x, c) =>
+            c.copy(eventServer = c.eventServer.copy(ip = x))
+          } text("Event server IP. Default: localhost"),
+          opt[Int]("event-server-port") action { (x, c) =>
+            c.copy(eventServer = c.eventServer.copy(port = x))
+          } text("Event server port. Default: 7070")
         )
       note("")
       cmd("undeploy").

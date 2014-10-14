@@ -20,6 +20,7 @@ import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
+import io.prediction.controller.ParamsWithAppId
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.PJavaAlgorithm
@@ -52,10 +53,15 @@ import spray.routing._
 import spray.http._
 import spray.http.MediaTypes._
 
+import scala.concurrent.Future
+import scala.concurrent.future
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.existentials
 import scala.reflect.runtime.universe
+import scala.util.Failure
+import scala.util.Random
+import scala.util.Success
 
 import java.io.File
 import java.io.ByteArrayInputStream
@@ -75,7 +81,10 @@ case class ServerConfig(
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
   ip: String = "localhost",
-  port: Int = 8000)
+  port: Int = 8000,
+  feedback: Boolean = false,
+  eventServerIp: String = "localhost",
+  eventServerPort: Int = 7070)
 
 case class StartServer()
 case class StopServer()
@@ -104,6 +113,15 @@ object CreateServer extends Logging {
       opt[String]("engineInstanceId") required() action { (x, c) =>
         c.copy(engineInstanceId = x)
       } text("Engine instance ID.")
+      opt[Unit]("feedback") action { (_, c) =>
+        c.copy(feedback = true)
+      } text("Enable feedback loop to event server.")
+      opt[String]("event-server-ip") action { (x, c) =>
+        c.copy(eventServerIp = x)
+      } text("Event server IP. Default: localhost")
+      opt[Int]("event-server-port") action { (x, c) =>
+        c.copy(eventServerPort = x)
+      } text("Event server port. Default: 7070")
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
@@ -175,12 +193,12 @@ object CreateServer extends Logging {
         Some(WorkflowContext(engineInstance.batch, engineInstance.env))
       else
         None
+    val dataSourceParams = WorkflowUtils.extractParams(
+      engineLanguage,
+      engineInstance.dataSourceParams,
+      engine.dataSourceClass)
     val evalPreparedMap = sparkContext map { sc =>
       logger.info("Data Source")
-      val dataSourceParams = WorkflowUtils.extractParams(
-        engineLanguage,
-        engineInstance.dataSourceParams,
-        engine.dataSourceClass)
       val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
       val evalParamsDataMap
       : Map[EI, (DP, TD, RDD[(Q, A)])] = dataSource
@@ -247,6 +265,7 @@ object CreateServer extends Logging {
         engine,
         engineLanguage,
         manifest,
+        dataSourceParams,
         algorithms,
         algorithmsParams,
         models,
@@ -333,6 +352,7 @@ class ServerActor[Q, P](
     val engine: Engine[_, _, _, Q, P, _],
     val engineLanguage: EngineLanguage.Value,
     val manifest: EngineManifest,
+    val dataSourceParams: Params,
     val algorithms: Seq[BaseAlgorithm[_ <: Params, _, _, Q, P]],
     val algorithmsParams: Seq[Params],
     val models: Seq[Any],
@@ -349,6 +369,15 @@ class ServerActor[Q, P](
 
   def receive = runRoute(myRoute)
 
+  val feedbackEnabled = if (args.feedback) {
+    if (dataSourceParams.isInstanceOf[ParamsWithAppId]) true else {
+      log.warning("Feedback loop cannot be enabled because " +
+        dataSourceParams.getClass.getName +
+        " does not contain an app ID (not an instance of ParamsWithAppId).")
+      false
+    }
+  } else false
+
   val myRoute =
     path("") {
       get {
@@ -363,7 +392,10 @@ class ServerActor[Q, P](
                 algorithmsParams.map(_.toString),
                 models.map(_.toString),
                 servingParams.toString,
-                serverStartTime).toString
+                serverStartTime,
+                feedbackEnabled,
+                args.eventServerIp,
+                args.eventServerPort).toString
             }
           }
         }
@@ -405,6 +437,40 @@ class ServerActor[Q, P](
                 val prediction = serving.serveBase(scalaQuery.get, predictions)
                 compact(render(Extraction.decompose(prediction)(
                   scalaAlgorithms.head.querySerializer)))
+              }
+              /** Handle feedback to Event Server
+                * Send the following back to the Event Server
+                * - appId
+                * - engineInstanceId
+                * - query
+                * - prediction
+                * - predictionKey
+                */
+              if (feedbackEnabled) {
+                implicit val formats = DefaultFormats
+                val key = Random.alphanumeric.take(64).mkString
+                val data = Map(
+                  "appId" ->
+                    dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
+                  "event" -> "prediction",
+                  "entityType" -> "prediction",
+                  "entityId" -> key,
+                  "properties" -> Map(
+                    "engineInstanceId" -> engineInstance.id,
+                    "query" -> queryString,
+                    "prediction" -> json),
+                  "predictionKey" -> Random.alphanumeric.take(64).mkString)
+                val f: Future[Int] = future {
+                  scalaj.http.Http.postData(
+                    s"http://${args.eventServerIp}:${args.eventServerPort}/" +
+                    "events.json", write(data)).
+                    header("content-type", "application/json").responseCode
+                }
+                f onComplete {
+                  case Success(code) => Unit
+                  case Failure(t) =>
+                    log.error(s"Feedback event failed: ${t.getMessage}")
+                }
               }
               respondWithMediaType(`application/json`) {
                 complete(json)
