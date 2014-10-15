@@ -459,7 +459,7 @@ class ServerActor[Q, P](
                     "engineInstanceId" -> engineInstance.id,
                     "query" -> queryString,
                     "prediction" -> json),
-                  "predictionKey" -> Random.alphanumeric.take(64).mkString)
+                  "predictionKey" -> key)
                 val f: Future[Int] = future {
                   scalaj.http.Http.postData(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
