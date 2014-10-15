@@ -17,6 +17,7 @@ package io.prediction.engines.itemrec
 
 import io.prediction.controller.EmptyDataParams
 import io.prediction.engines.base
+import io.prediction.engines.base.HasName
 import org.joda.time.DateTime
 import io.prediction.controller.Params
 
@@ -44,10 +45,9 @@ class DataParams(
   val trainUntil: DateTime,
   val evalStart: DateTime,
   val evalUntil: DateTime
-//) extends Params with HasName {
-) extends Params {
+) extends Params with HasName {
   override def toString = s"E: [$evalStart, $evalUntil)"
-  //val name = this.toString
+  val name = this.toString
 }
 
 class EventsDataSource(dsp: EventsDataSourceParams)

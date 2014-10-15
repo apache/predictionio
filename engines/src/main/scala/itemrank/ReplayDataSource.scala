@@ -44,6 +44,7 @@ import io.prediction.engines.base.ItemTD
 import io.prediction.engines.base.UserTD
 import io.prediction.engines.base.U2IActionTD
 import io.prediction.engines.base.TrainingData
+import io.prediction.engines.base.HasName
 
 case class ReplaySliceParams(
   val name: String,

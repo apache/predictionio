@@ -16,6 +16,9 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.engines.base
+import io.prediction.engines.base.Stats
+import io.prediction.engines.base.HasName
+import io.prediction.engines.base.MetricsHelper
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
 import io.prediction.controller.NiceRendering
@@ -44,17 +47,6 @@ import scala.util.hashing.MurmurHash3
 import scala.collection.immutable.NumericRange
 import scala.collection.immutable.Range
 
-trait HasName {
-  def name: String
-}
-
-case class Stats(
-  val average: Double,
-  val count: Long,
-  val stdev: Double,
-  val min: Double,
-  val max: Double
-) extends Serializable
 
 case class HeatMapData (
   val columns: Array[String],
@@ -155,12 +147,8 @@ class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams)
   : Double = {
     val kk = (if (k == -1) query.iids.size else k)
 
-    //val actualItems: Set[String] = actual.iids.toSet
-    //val actualItems = ItemRankMeasure.actual2GoodIids(actual, metricsParams)
     val actualItems = base.MetricsHelper.actions2GoodIids(
       actual.actionTuples, metricsParams.ratingParams)
-
-
 
     val relevantCount = prediction.items.take(kk)
       .map(_._1)
@@ -168,11 +156,13 @@ class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams)
       .size
 
     val denominator = Seq(kk, prediction.items.size, actualItems.size).min
-    
+
+    /*
     println(s"Query: $query")
     println("Actual: " + actualItems.mkString(","))
     println(s"relevant: $relevantCount")
     println(s"demoninator: $denominator")
+    */
 
     relevantCount.toDouble / denominator
   }
@@ -248,6 +238,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     Stats(mvc.mean, mvc.count, mvc.stdDev, values.min, values.max)
   }
 
+  /*
   def calculateResample(
     values: Seq[(Int, Double)]
   ): Stats = {
@@ -275,6 +266,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     // Stats describes the properties of the buckets
     return Stats(mvc.mean, params.buckets, mvc.stdDev, segmentValues.min, segmentValues.max)
   }
+  */
 
   def aggregateMU(units: Seq[MetricUnit], groupByFunc: MetricUnit => String)
   : Seq[(String, Stats)] =
@@ -354,15 +346,23 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     val overallStats = (
       "Overall",
-      calculateResample(allUnits.map(mu => (mu.uidHash, mu.score))),
-      calculateResample(allUnits.map(mu => (mu.uidHash, mu.baseline))))
+      MetricsHelper.calculateResample(
+        values = allUnits.map(mu => (mu.uidHash, mu.score)),
+        buckets = params.buckets),
+      MetricsHelper.calculateResample(
+        values = allUnits.map(mu => (mu.uidHash, mu.baseline)),
+        buckets = params.buckets)
+      )
 
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) =>
-
       (dp.name,
-        calculateResample(mus.map(mu => (mu.uidHash, mu.score))),
-        calculateResample(mus.map(mu => (mu.uidHash, mu.baseline))))
+        MetricsHelper.calculateResample(
+          values = mus.map(mu => (mu.uidHash, mu.score)),
+          buckets = params.buckets),
+        MetricsHelper.calculateResample(
+          values = mus.map(mu => (mu.uidHash, mu.baseline)),
+          buckets = params.buckets))
     }
     .sortBy(_._1)
 

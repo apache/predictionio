@@ -17,6 +17,19 @@ package io.prediction.engines.base
 
 import io.prediction.controller.Params
 import io.prediction.controller.Metrics
+import breeze.stats.{ mean, meanAndVariance }
+
+trait HasName {
+  def name: String
+}
+
+case class Stats(
+  val average: Double,
+  val count: Long,
+  val stdev: Double,
+  val min: Double,
+  val max: Double
+) extends Serializable
 
 // Describe how to map from actions to a binary rating parameter
 class BinaryRatingParams(
@@ -41,6 +54,34 @@ object MetricsHelper {
     }}
     .map(_._2)
     .toSet
+  }
+  
+  def calculateResample(values: Seq[(Int, Double)], buckets: Int): Stats = {
+    if (values.isEmpty) {
+      return Stats(0, 0, 0, 0, 0)
+    }
+
+    // JackKnife resampling.
+    val segmentSumCountMap: Map[Int, (Double, Int)] = values
+      //.map{ case(k, v) => (k % params.buckets, v) }
+      .map{ case(k, v) => (k % buckets, v) }
+      .groupBy(_._1)
+      .mapValues(l => (l.map(_._2).sum, l.size))
+
+    val sum = values.map(_._2).sum
+    val count = values.size
+
+    val segmentMeanMap: Map[Int, Double] = segmentSumCountMap
+      .mapValues { case(sSum, sCount) => (sum - sSum) / (count - sCount) }
+
+    val segmentValues = segmentMeanMap.values
+
+    // Assume the mean is normally distributed
+    val mvc = meanAndVariance(segmentValues)
+
+    // Stats describes the properties of the buckets
+    return Stats(mvc.mean, buckets, mvc.stdDev, 
+      segmentValues.min, segmentValues.max)
   }
 }
 
