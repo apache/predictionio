@@ -35,3 +35,13 @@ curl -i -X POST http://localhost:9997/queries.json -d '{"iids": ["12"], "n": 4}'
 
 curl -i -X POST http://localhost:9997/queries.json -d '{"iids": ["12", "1", "19", "21"], "n": 5}'
 ```
+
+
+## PEventsDataSourceRunner
+
+```
+$ cd $PIO_HOME/engines/
+$ $PIO_HOME/bin/pio run \
+io.prediction.engines.itemsim.PEventsDataSourceRunner -- -- <appId>
+
+```

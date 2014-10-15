@@ -238,6 +238,46 @@ object Storage extends Logging {
   def getEventDataEvents(): Events =
     getDataObject[Events](EventDataRepository)
 
+  // TODO: dszeto refactor
+  /* parallel Events Store interface */
+  def getEventDataPEvents(): PEvents = {
+    //getPDataObject[PEvents](EventDataRepository)
+    val repoDOMeta = repositoriesToDataObjectMeta(EventDataRepository)
+    val sourceName = repoDOMeta.sourceName
+    val databaseName = repoDOMeta.databaseName
+    val clientMeta = sourcesToClientMeta(sourceName)
+    val sourceType = "hbase"
+    val ctorArgs = Seq(databaseName)
+    val classPrefix = "HB"
+    val originalClassName = Seq("PEvents")
+    val rawClassName = sourceType + "." + classPrefix + originalClassName.last
+    val className = "io.prediction.data.storage." + rawClassName
+    val clazz = try {
+      Class.forName(className)
+    } catch {
+      case e: ClassNotFoundException => Class.forName(rawClassName)
+    }
+    val constructor = clazz.getConstructors()(0)
+    try {
+      constructor.newInstance(ctorArgs: _*).
+        asInstanceOf[PEvents]
+    } catch {
+      case e: IllegalArgumentException =>
+        error(
+          "Unable to instantiate data object with class '" +
+          constructor.getDeclaringClass.getName + " because its constructor" +
+          " does not have the right number of arguments." +
+          " Number of required constructor arguments: " +
+          ctorArgs.size + "." +
+          " Number of existing constructor arguments: " +
+          constructor.getParameterTypes.size + "." +
+          s" Storage source name: ${sourceName}." +
+          s" Exception message: ${e.getMessage}).")
+        errors += 1
+        throw e
+    }
+  }
+
   if (errors > 0) {
     error(s"There were $errors configuration errors. Exiting.")
     System.exit(1)

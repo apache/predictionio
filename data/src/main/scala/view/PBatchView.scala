@@ -19,6 +19,7 @@ import io.prediction.data.storage.hbase.HBPEvents
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.DataMap
+import io.prediction.data.storage.Storage
 
 import org.joda.time.DateTime
 
@@ -169,11 +170,11 @@ class PBatchView(
   val untilTime: Option[DateTime],
   val sc: SparkContext) {
 
-  // TODO: make Storage class insteard of hardcode to HBPEvents
-  @transient lazy val eventClient = new HBPEvents("predictionio_eventdata")
+  // NOTE: parallel Events DB interface
+  @transient lazy val eventsDb = Storage.getEventDataPEvents()
 
   @transient lazy val _events: RDD[Event] =
-    eventClient.getByAppIdAndTimeAndEntity(
+    eventsDb.getByAppIdAndTimeAndEntity(
       appId = appId,
       startTime = startTime,
       untilTime = untilTime,
