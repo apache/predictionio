@@ -9,6 +9,7 @@ import io.prediction.engines.itemrank.MeasureType
 import io.prediction.engines.itemrank.mahout.ItemBasedAlgoParams
 import io.prediction.engines.base.AttributeNames
 import io.prediction.engines.base.EventsSlidingEvalParams
+import io.prediction.engines.base.BinaryRatingParams
 import io.prediction.controller.WorkflowParams
 import io.prediction.controller.Workflow
 import io.prediction.controller.EngineParams
@@ -76,8 +77,9 @@ object Evaluation1 {
 
     // Metrics Setting
     val metricsParams = new DetailedMetricsParams(
-      actionsMap = Map("rate" -> None),
-      goodThreshold = 3,
+      ratingParams = new BinaryRatingParams(
+        actionsMap = Map("rate" -> None),
+        goodThreshold = 3),
       measureType = MeasureType.PrecisionAtK,
       measureK = 10
     ) 
@@ -107,8 +109,9 @@ object Evaluation2 {
 
     // Metrics Setting
     val metricsParams = new DetailedMetricsParams(
-      actionsMap = Map("rate" -> None),
-      goodThreshold = 3,
+      ratingParams = new BinaryRatingParams(
+        actionsMap = Map("rate" -> None),
+        goodThreshold = 3),
       measureType = MeasureType.PrecisionAtK,
       measureK = 10
     ) 

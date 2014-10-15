@@ -105,23 +105,6 @@ abstract class ItemRankMeasure extends Serializable {
   def calculate(query: Query, prediction: Prediction, actual: Actual): Double
 }
 
-object ItemRankMeasure {
-  def actual2GoodIids(actual: Actual, metricsParams: DetailedMetricsParams)
-  : Set[String] = {
-    actual.actionTuples
-    .filter{ t => {
-      val u2i = t._3
-      val rating = base.Preparator.action2rating(
-        u2i = u2i,
-        actionsMap = metricsParams.actionsMap,
-        default = 0)
-      rating >= metricsParams.goodThreshold
-    }}
-    .map(_._2)
-    .toSet
-  }
-}
-
 // If k == -1, use query size. Otherwise, use k.
 class ItemRankMAP(val k: Int, val metricsParams: DetailedMetricsParams) 
   extends ItemRankMeasure {
@@ -129,7 +112,8 @@ class ItemRankMAP(val k: Int, val metricsParams: DetailedMetricsParams)
   : Double = {
     val kk = (if (k == -1) query.iids.size else k)
 
-    val goodIids = ItemRankMeasure.actual2GoodIids(actual, metricsParams)
+    val goodIids = base.MetricsHelper.actions2GoodIids(
+      actual.actionTuples, metricsParams.ratingParams)
 
     averagePrecisionAtK(
       kk,
@@ -172,7 +156,9 @@ class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams)
     val kk = (if (k == -1) query.iids.size else k)
 
     //val actualItems: Set[String] = actual.iids.toSet
-    val actualItems = ItemRankMeasure.actual2GoodIids(actual, metricsParams)
+    //val actualItems = ItemRankMeasure.actual2GoodIids(actual, metricsParams)
+    val actualItems = base.MetricsHelper.actions2GoodIids(
+      actual.actionTuples, metricsParams.ratingParams)
 
 
 
@@ -206,8 +192,7 @@ class DataParams(
 // independently.
 class DetailedMetricsParams(
   val name: String = "",
-  val actionsMap: Map[String, Option[Int]], // ((view, 1), (rate, None))
-  val goodThreshold: Int,  // action rating >= goodThreshold is good.
+  val ratingParams: base.BinaryRatingParams,
   val optOutputPath: Option[String] = None,
   val buckets: Int = 10,
   val measureType: MeasureType.Type = MeasureType.MeanAveragePrecisionAtK,
@@ -235,7 +220,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   override def computeUnit(query: Query, prediction: Prediction,
     actual: Actual): MetricUnit  = {
 
-    val k = query.iids.size
+    //val k = query.iids.size
 
     val score = measure.calculate(query, prediction, actual)
     // For calculating baseline, we use the input order of query.
@@ -342,7 +327,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val data: Seq[(String, Array[Double])] = input
     .map { case(key, values) => {
       val sum = values.size
-      //val distributions: Array[Double] = values
       val distributions: Map[Int, Double] = values
         .map { v =>
           val i = boundaries.indexWhere(b => (v <= b))
@@ -375,7 +359,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) =>
-      //val goodMus = mus.filter(mu => (!mu.score.isNaN && !mu.baseline.isNaN))
 
       (dp.name,
         calculateResample(mus.map(mu => (mu.uidHash, mu.score))),
@@ -394,7 +377,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       allUnits,
       mu => groupByRange(
         Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
-          ItemRankMeasure.actual2GoodIids(mu.a, params).size))
+          base.MetricsHelper.actions2GoodIids(mu.a.actionTuples, params.ratingParams).size))
     
     val aggregateByQuerySize = aggregateMU(
       allUnits,
