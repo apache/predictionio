@@ -34,6 +34,7 @@ Choose your platform below:
 [//]: # (* Deploying PredictionIO on Amazon Web Services)
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
+* [Launching PredictionIO on AWS](launch-aws.html)
 
 [//]: # (You may also use one of the community-contributed packages to install PredictionIO:)
 
