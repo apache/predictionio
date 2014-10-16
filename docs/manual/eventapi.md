@@ -34,6 +34,11 @@ PredictionIO.
 $ cd $PIO_HOME
 $ bin/pio eventserver
 ```
+
+By default, the event server is bound to localhost, which serves only local traffic.
+To serve global traffic, you can use 0.0.0.0, i.e.
+`$ bin/pio eventserver --ip 0.0.0.0`
+
 ### Check server status
 
 ```
