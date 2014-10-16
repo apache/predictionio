@@ -37,12 +37,12 @@ case class Prediction(
 
 case class Actual(
     // (deprecated) actual items the user has performed actions on
-    val iids: Seq[String] = null,
+    //val iids: Seq[String] = null,
 
     // (uid, iid, action) - tuple
     val actionTuples: Seq[(String, String, base.U2IActionTD)]
   ) extends Serializable {
-  override def toString = s"${iids}"
+  override def toString = s"Actual: [$actionTuples.size]"
 }
 
 class MetricUnit(

@@ -69,6 +69,15 @@ class EventsSlidingEvalParams(
   val evalCount: Int = 1
 ) extends Serializable
 
+class DataParams(
+  val trainUntil: DateTime,
+  val evalStart: DateTime,
+  val evalUntil: DateTime
+) extends Params with HasName {
+  override def toString = s"E: [$evalStart, $evalUntil)"
+  val name = this.toString
+}
+
 class EventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
   extends LDataSource[AbstractEventsDataSourceParams,
@@ -233,8 +242,6 @@ class EventsDataSource[DP: ClassTag, Q, A](
         s"u2i Event: ${e} cannot have targetEntityId empty.")
       try {
         new U2IActionTD(
-          //uindex = usersMap(e.entityId)._2,
-          //iindex = itemsMap(e.targetEntityId.get)._2,
           uindex = uid2ui(e.entityId),
           iindex = iid2ii(e.targetEntityId.get),
           action = e.event,

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>ItemRankMetrics</title>
+    <title>Metrics</title>
     <style>
       table {
         border-collapse: collapse;
@@ -40,7 +40,8 @@
       src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
   </head>
   <body>
-    <h3>Item Rank Metrics</h3>
+    <h3 id='name'>Metrics</h3>
+    <span id='description'></span>
     <h4 id='params'></h4>
 
     <div id='top'></div>
@@ -89,8 +90,15 @@
             }).responseText);
         }
       };
-      
+
       function drawHead() {
+      
+        var nameDiv = document.getElementById('name');
+        nameDiv.innerHTML = rawData['metricsName'] + " : " + rawData['name'];
+
+        var descriptionDiv = document.getElementById('description');
+        descriptionDiv.innerHTML = rawData['description'];
+
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Component');
         data.addColumn('string', 'Params');

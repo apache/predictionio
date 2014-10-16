@@ -16,14 +16,15 @@
 package io.prediction.engines.itemrec
 
 import io.prediction.engines.base
+//import io.prediction.engines.base.html
 import io.prediction.engines.base.BinaryRatingParams
 import io.prediction.engines.base.MetricsHelper
+import io.prediction.engines.base.MetricsOutput
 import io.prediction.controller.Metrics
 import io.prediction.controller.Params
-import io.prediction.controller.NiceRendering
 import io.prediction.engines.base.HasName
 
-import io.prediction.engines.itemrank.html
+//import io.prediction.engines.itemrank.html
 
 import com.github.nscala_time.time.Imports._
 import scala.math.BigDecimal
@@ -96,31 +97,6 @@ class ItemRecPrecision(val k: Int, val ratingParams: BinaryRatingParams)
     val denominator = Seq(kk, prediction.items.size, actualItems.size).min
 
     relevantCount.toDouble / denominator
-  }
-}
-
-case class MetricsOutput(
-  val name: String,
-  val measureType: String,
-  val algoMean: Double,
-  val algoStats: Stats,
-  //val heatMap: HeatMapData,
-  val runs: Seq[(String, Stats, Stats)],  // name, algo, baseline
-  val aggregations: Seq[(String, Seq[(String, Stats)])])
-  extends Serializable with NiceRendering {
-
-  override def toString(): String = {
-    val b = 1.96 * algoStats.stdev / Math.sqrt(algoStats.count)
-    val lb = algoStats.average - b
-    val ub = algoStats.average + b
-    f"$measureType $name ${algoStats.average}%.4f [$lb%.4f, $ub%.4f]"
-  }
-
-  def toHTML(): String = html.detailed().toString
-
-  def toJSON(): String = {
-    implicit val formats = DefaultFormats
-    Serialization.write(this)
   }
 }
 
@@ -197,35 +173,24 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
           buckets = params.buckets))
     }
     .sortBy(_._1)
+    
+    val aggregateByActualGoodSize = aggregateMU(
+      allUnits,
+      mu => MetricsHelper.groupByRange(
+        Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
+          base.MetricsHelper.actions2GoodIids(mu.a.actionTuples, params.ratingParams).size))
 
     val outputData = MetricsOutput (
       name = params.name,
+      metricsName = "ItemRecMetrics",
+      description = "Baseline is not implemented, we set baseline score to 0.",
       measureType = measure.toString,
-      //algoMean = 0,
-      //algoStats = null,
       algoMean = overallStats._2.average,
       algoStats = overallStats._2,
       //heatMap = heatMap,
       runs = Seq(overallStats) ++ runsStats,
-      //runs = Seq[(String, Stats, Stats)](),
       aggregations = Seq[(String, Seq[(String, Stats)])](
-        /*
-        ("By # of Rated Items", aggregateByActualSize),
-        ("By # of Positively Rated Items", aggregateByActualGoodSize),
-        ("By # of Items in Query", aggregateByQuerySize),
-        ("By Measure Score", scoreAggregation),
-        ("By IsOriginal, true when engine cannot return prediction", 
-          isOriginalAggregation)
-        */
-        /*
-        ("ByActionCount", actionCountAggregation),
-        ("ByFlattenItem", itemCountAggregation),
-        ("ByDate", dateAggregation),
-        ("ByLocalHour", localHourAggregation),
-        ("ByAvgOrderSize", avgOrderSizeAggregation),
-        ("ByPreviousOrders", previousOrdersAggregation),
-        ("ByVariety", varietyAggregation)
-        */
+        ("By # of Positively Rated Items", aggregateByActualGoodSize)
       )
     )
 
@@ -239,5 +204,10 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
     outputData
   }
 
+  def aggregateMU(units: Seq[MetricsUnit], groupByFunc: MetricsUnit => String)
+  : Seq[(String, Stats)] = {
+    //aggregate[MetricsUnit](units, _.score, groupByFunc)
+    MetricsHelper.aggregate[MetricsUnit](units, _.score, groupByFunc)
+  }
 }
 

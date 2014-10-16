@@ -28,7 +28,7 @@ object ItemRecEvaluation1 {
       slidingEval = Some(new EventsSlidingEvalParams(
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
-        evalCount = 12)),
+        evalCount = 3)),
       evalParams = Some(new EvalParams(queryN = 10))
     )
   

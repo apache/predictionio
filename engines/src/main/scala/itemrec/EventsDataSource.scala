@@ -20,6 +20,7 @@ import io.prediction.engines.base
 import io.prediction.engines.base.HasName
 import org.joda.time.DateTime
 import io.prediction.controller.Params
+import io.prediction.engines.base.DataParams
 
 case class EventsDataSourceParams(
   val appId: Int,
@@ -40,15 +41,6 @@ case class EvalParams(
   // as actions of that user.
   val queryN: Int = -1
 )
-
-class DataParams(
-  val trainUntil: DateTime,
-  val evalStart: DateTime,
-  val evalUntil: DateTime
-) extends Params with HasName {
-  override def toString = s"E: [$evalStart, $evalUntil)"
-  val name = this.toString
-}
 
 class EventsDataSource(dsp: EventsDataSourceParams)
   extends base.EventsDataSource[DataParams, Query, Actual](dsp) {

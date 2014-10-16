@@ -18,6 +18,13 @@ package io.prediction.engines.base
 import io.prediction.controller.Params
 import io.prediction.controller.Metrics
 import breeze.stats.{ mean, meanAndVariance }
+import io.prediction.controller.NiceRendering
+
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization.{read, write}
+import org.json4s.native.Serialization
 
 trait HasName {
   def name: String
@@ -36,6 +43,34 @@ class BinaryRatingParams(
   val actionsMap: Map[String, Option[Int]], // ((view, 1), (rate, None))
   val goodThreshold: Int  // action rating >= goodThreshold is good.
 ) extends Serializable
+
+// This class is used with the html rendering class. See toHTML()
+case class MetricsOutput(
+  val name: String,
+  val metricsName: String,
+  val description: String,
+  val measureType: String,
+  val algoMean: Double,
+  val algoStats: Stats,
+  //val heatMap: HeatMapData,
+  val runs: Seq[(String, Stats, Stats)],  // name, algo, baseline
+  val aggregations: Seq[(String, Seq[(String, Stats)])])
+  extends Serializable with NiceRendering {
+
+  override def toString(): String = {
+    val b = 1.96 * algoStats.stdev / Math.sqrt(algoStats.count)
+    val lb = algoStats.average - b
+    val ub = algoStats.average + b
+    f"$measureType $name ${algoStats.average}%.4f [$lb%.4f, $ub%.4f]"
+  }
+
+  def toHTML(): String = html.detailed().toString
+
+  def toJSON(): String = {
+    implicit val formats = DefaultFormats
+    Serialization.write(this)
+  }
+}
 
 
 object MetricsHelper {
@@ -63,7 +98,6 @@ object MetricsHelper {
 
     // JackKnife resampling.
     val segmentSumCountMap: Map[Int, (Double, Int)] = values
-      //.map{ case(k, v) => (k % params.buckets, v) }
       .map{ case(k, v) => (k % buckets, v) }
       .groupBy(_._1)
       .mapValues(l => (l.map(_._2).sum, l.size))
@@ -82,6 +116,40 @@ object MetricsHelper {
     // Stats describes the properties of the buckets
     return Stats(mvc.mean, buckets, mvc.stdDev, 
       segmentValues.min, segmentValues.max)
+  }
+  
+  def aggregate[T](
+    units: Seq[T],
+    scoreFunc: T => Double,
+    groupByFunc: T => String): Seq[(String, Stats)] = {
+    units
+      .groupBy(groupByFunc)
+      .mapValues(_.map(e => scoreFunc(e)))
+      .map{ case(k, l) => (k, calculate(l)) }
+      .toSeq
+      .sortBy(-_._2.average)
+  }
+  
+  def calculate(values: Seq[Double]): Stats = {
+    val mvc = meanAndVariance(values)
+    Stats(mvc.mean, mvc.count, mvc.stdDev, values.min, values.max)
+  }
+  
+  // return a double to key map based on boundaries.
+  def groupByRange(values: Array[Double], format: String = "%f")
+  : Double => String = {
+    val keys: Array[String] = (0 to values.size).map { i =>
+      val s = (if (i == 0) Double.NegativeInfinity else values(i-1))
+      val e = (if (i < values.size) values(i) else Double.PositiveInfinity)
+      "[" + format.format(s) + ", " + format.format(e) + ")"
+    }.toArray
+
+    def f(v: Double): String = {
+      // FIXME. Use binary search or indexWhere
+      val i: Option[Int] = (0 until values.size).find(i => v < values(i))
+      keys(i.getOrElse(values.size))
+    }
+    return f
   }
 }
 
