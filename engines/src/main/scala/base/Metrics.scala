@@ -48,7 +48,7 @@ class BinaryRatingParams(
 case class MetricsOutput(
   val name: String,
   val metricsName: String,
-  val description: String,
+  val description: String = "",
   val measureType: String,
   val algoMean: Double,
   val algoStats: Stats,

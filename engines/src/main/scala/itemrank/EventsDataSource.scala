@@ -71,7 +71,10 @@ class EventsDataSource(dsp: EventsDataSourceParams)
       val uid = ui2uid(ui)
       val iids = actions.map(u2i => ii2iid(u2i.iindex))
       val actionTuples = iids.zip(actions).map(e => (uid, e._1, e._2))
-      (Query(uid = uid, iids = allIids), Actual(actionTuples = actionTuples))
+
+      val query = Query(uid = uid, iids = allIids)
+      val actual = Actual(actionTuples = actionTuples)
+      (query, actual)
     }}
     .toSeq
 

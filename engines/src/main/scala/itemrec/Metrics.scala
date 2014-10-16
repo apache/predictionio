@@ -51,6 +51,10 @@ import scala.collection.immutable.NumericRange
 import scala.collection.immutable.Range
 import io.prediction.engines.base.Stats
 
+import scala.util.Random
+import scala.collection.mutable.{ HashSet => MHashSet }
+import scala.collection.immutable.HashSet
+
 class ItemRecMetricsParams(
   val name: String = "",
   val buckets: Int = 10,
@@ -121,21 +125,48 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
   : MetricsUnit = {
     val score = measure.calculate(query, prediction, actual)
 
+    val uidHash: Int = MurmurHash3.stringHash(query.uid)
+
+    // Create a baseline by randomly picking query.n items from served items.
+    
+    val rand = new Random(seed = uidHash)
+    //val iidSet = HashSet[String]()
+
+    val servedIids = actual.servedIids
+
+    //val n = math.min(query.n, servedIids.size)
+
+    val randIids = rand.shuffle(
+      (if (query.n > servedIids.size) {
+          // If too few items where served, use only the served items
+          servedIids.toSet
+        } else {
+          val tempSet = MHashSet[String]()
+          while (tempSet.size < query.n) {
+            tempSet.add(servedIids(rand.nextInt(query.n)))
+          }
+          tempSet.toSet
+        }
+      )
+      .toSeq
+      .sorted
+    )
+
+    println(randIids.mkString("Randiid: [", ", ", "]"))
+
     // TODO(yipjustin): Implement baseline
-    /*
     val baseline = measure.calculate(
       query,
-      Prediction(query.iids.map(e => (e, 0.0)), isOriginal = false),
+      Prediction(randIids.map(iid => (iid, 0.0))),
       actual)
-    */
 
     new MetricsUnit(
       q = query,
       p = prediction,
       a = actual,
       score = score,
-      baseline = 0,
-      uidHash = MurmurHash3.stringHash(query.uid)
+      baseline = baseline,
+      uidHash = uidHash
     )
   }
   
@@ -183,7 +214,6 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
     val outputData = MetricsOutput (
       name = params.name,
       metricsName = "ItemRecMetrics",
-      description = "Baseline is not implemented, we set baseline score to 0.",
       measureType = measure.toString,
       algoMean = overallStats._2.average,
       algoStats = overallStats._2,
@@ -206,7 +236,6 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
 
   def aggregateMU(units: Seq[MetricsUnit], groupByFunc: MetricsUnit => String)
   : Seq[(String, Stats)] = {
-    //aggregate[MetricsUnit](units, _.score, groupByFunc)
     MetricsHelper.aggregate[MetricsUnit](units, _.score, groupByFunc)
   }
 }
