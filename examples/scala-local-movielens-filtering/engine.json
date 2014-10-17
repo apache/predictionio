@@ -1,0 +1,7 @@
+
+{
+  "id": "scala-local-movielens-filtering",
+  "version": "0.0.1-SNAPSHOT",
+  "name": "scala-local-movielens-filtering",
+  "engineFactory": "myorg.TempFilterEngine"
+}
