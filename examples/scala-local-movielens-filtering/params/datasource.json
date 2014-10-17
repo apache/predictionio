@@ -1,5 +1,5 @@
 {
-  "appId": 9,
+  "appId": YOUR_APP_ID,
   "actions": [
     "view",
     "like",
