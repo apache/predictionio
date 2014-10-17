@@ -8,7 +8,11 @@ title: Tutorials and Samples
 
 ## Item Recommendation
 
-* [Building Movie Recommendation App with Sample Code](itemrec/movielens.html)
+### Rails
+[Building a Business Recommendation App with Rails Using Yelp Data](itemrec/rails.html)
+
+### Python
+[Building Movie Recommendation App with Sample Code](itemrec/movielens.html)
 
 ## Item Ranking
 
