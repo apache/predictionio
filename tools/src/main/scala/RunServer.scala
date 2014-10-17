@@ -45,7 +45,8 @@ object RunServer extends Logging {
         "--name",
         s"PredictionIO Engine Instance: ${engineInstanceId}",
         "--jars",
-        em.files.mkString(","),
+        (em.files ++ Console.builtinEngines(
+          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","),
         core.getCanonicalPath,
         "--engineInstanceId",
         engineInstanceId,
