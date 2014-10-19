@@ -19,3 +19,5 @@ dist/
 # Ignore source files whose name prefixed with "Private"
 Private*.scala
 quickstartapp/
+examples/scala-local-friend-recommendation/classes
+examples/scala-local-friend-recommendation/data
