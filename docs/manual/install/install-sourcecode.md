@@ -82,7 +82,7 @@ for event data.
 ```
 $ wget https://archive.apache.org/dist/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ tar zxvf {{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
-$ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
+$ cd {{ site.hbase_basename }}-{{ site.hbase_dir_suffix }}
 ```
 
 You will need to at least add a minimal configuration to HBase to start it in
