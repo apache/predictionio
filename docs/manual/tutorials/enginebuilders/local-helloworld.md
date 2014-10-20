@@ -18,30 +18,52 @@ Completed source code can also be found at
 `$PIO_HOME/examples/java-local-helloworld`, where `$PIO_HOME` is the root
 directory of the PredictionIO source code tree.
 
+
+## Data Set
+
+This engine will read a historial daily temperatures as training data set. A very simple data set is prepared for you.
+
+First, create a directory somewhere and copy the data set over. Replace `path/to/data.csv` with your path which stores the training data.
+
+```console
+$ cp $PIO_HOME/examples/data/helloworld/data1.csv path/to/data.csv
+```
+
 ## 1. Create a new Engine
+
+```console
+$ $PIO_HOME/bin/pio new HelloWorld
+$ cd HelloWorld
+```
+
+A new engine project directory `HelloWorld` is created. You should see the following files being created inside this new project directory:
+
+```
+build.sbt
+engine.json
+params/
+project/
+src/
+```
 
 <div class="codetabs">
 <div data-lang="Scala">
-{% highlight bash %}
-$ $PIO_HOME/bin/pio new HelloWorld
-$ cd HelloWorld
-{% endhighlight %}
-Now you need to edit <code>src/main/scala/Engine.scala</code>.
+You can find the Scala engine template in <code>src/main/scala/Engine.scala</code>. Please follow the instructions below to edit this file.
 </div>
 <div data-lang="Java">
-{% highlight bash %}
-$ $PIO_HOME/bin/pio new HelloWorld
-$ cd HelloWorld
 
+<strong>NOTE:</strong>
+The template is created for Scala codes. For Java, need to do the following:
+
+Under <code>HelloWorld</code> directory:
+
+{% highlight bash %}
 $ rm -rf src/main/scala
-$ mkdir src/main/java
+$ mkdir -p src/main/java
 {% endhighlight %}
 
-Add the new classes under the directory <code>src/main/java</code>.
 </div>
 </div>
-
-
 
 ## 2. Define Data Types
 
@@ -49,6 +71,9 @@ Add the new classes under the directory <code>src/main/java</code>.
 
 <div class="codetabs">
 <div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
 {% highlight scala %}
 class MyTrainingData(
   val temperatures: List[(String, Double)]
@@ -56,7 +81,15 @@ class MyTrainingData(
 {% endhighlight %}
 </div>
 <div data-lang="Java">
+
+Create a new file <code>src/main/java/MyTrainingData.java</code>:
+
 {% highlight java %}
+package myorg;
+
+import java.io.Serializable;
+import java.util.List;
+
 public class MyTrainingData implements Serializable {
   List<DayTemperature> temperatures;
 
@@ -82,6 +115,9 @@ public class MyTrainingData implements Serializable {
 
 <div class="codetabs">
 <div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
 {% highlight scala %}
 class MyQuery(
   val day: String
@@ -89,7 +125,14 @@ class MyQuery(
 {% endhighlight %}
 </div>
 <div data-lang="Java">
+
+Create a new file <code>src/main/java/MyQuery.java</code>:
+
 {% highlight java %}
+package myorg;
+
+import java.io.Serializable;
+
 public class MyQuery implements Serializable {
   String day;
 
@@ -104,6 +147,9 @@ public class MyQuery implements Serializable {
 ### Define Model
 <div class="codetabs">
 <div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
 {% highlight scala %}
 import scala.collection.immutable.HashMap
 
@@ -116,7 +162,15 @@ class MyModel(
 {% endhighlight %}
 </div>
 <div data-lang="Java">
+
+Create a new file <code>src/main/java/MyModel.java</code>:
+
 {% highlight java %}
+package myorg;
+
+import java.io.Serializable;
+import java.util.Map;
+
 public class MyModel implements Serializable {
   Map<String, Double> temperatures;
 
@@ -136,6 +190,9 @@ public class MyModel implements Serializable {
 ### Define Prediction Result
 <div class="codetabs">
 <div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
 {% highlight scala %}
 class MyPrediction(
   val temperature: Double
@@ -143,7 +200,14 @@ class MyPrediction(
 {% endhighlight %}
 </div>
 <div data-lang="Java">
+
+Create a new file <code>src/main/java/MyPrediction.java</code>:
+
 {% highlight java %}
+package myorg;
+
+import java.io.Serializable;
+
 public class MyPrediction implements Serializable {
   Double temperature;
 
@@ -158,6 +222,9 @@ public class MyPrediction implements Serializable {
 ## 3. Implement the Data Source
 <div class="codetabs">
 <div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
 {% highlight scala %}
 import scala.io.Source
 
@@ -177,7 +244,19 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
 {% endhighlight %}
 </div>
 <div data-lang="Java">
+
+Create a new file <code>src/main/java/MyDataSource.java</code>:
+
 {% highlight java %}
+package myorg;
+
+import io.prediction.controller.java.*;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.io.FileReader;
+import java.io.BufferedReader;
+
 public class MyDataSource extends LJavaDataSource<
   EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActual> {
 
@@ -208,9 +287,16 @@ public class MyDataSource extends LJavaDataSource<
 </div>
 </div>
 
+**NOTE**: You need to update the `path/to/data.csv` in this code with the correct path that store the training data.
+
+
 ## 4. Implement an Algorithm
+
 <div class="codetabs">
 <div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
 {% highlight scala %}
 class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
   MyModel, MyQuery, MyPrediction] {
@@ -238,7 +324,16 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
 {% endhighlight %}
 </div>
 <div data-lang="Java">
+Create a new file <code>src/main/java/MyAlgorithm.java</code>:
+
 {% highlight java %}
+package myorg;
+
+import io.prediction.controller.java.*;
+
+import java.util.Map;
+import java.util.HashMap;
+
 public class MyAlgorithm extends LJavaAlgorithm<
   EmptyAlgorithmParams, MyTrainingData, MyModel, MyQuery, MyPrediction> {
 
@@ -281,23 +376,90 @@ public class MyAlgorithm extends LJavaAlgorithm<
 </div>
 </div>
 
+## 5. Implement EngineFactory
+
+<div class="codetabs">
+<div data-lang="Scala">
+
+Edit <code>src/main/scala/Engine.scala</code>:
+
+{% highlight scala %}
+object MyEngineFactory extends IEngineFactory {
+  override
+  def apply() = {
+    /* SimpleEngine only requires one DataSouce and one Algorithm */
+    new SimpleEngine(
+      classOf[MyDataSource],
+      classOf[MyAlgorithm]
+    )
+  }
+}
+{% endhighlight %}
+</div>
+
+<div data-lang="Java">
+Create a new file <code>src/main/java/MyEngineFactory.java</code>:
+
+{% highlight java %}
+
+package myorg;
+
+import io.prediction.controller.java.*;
+
+public class MyEngineFactory implements IJavaEngineFactory {
+  public JavaSimpleEngine<MyTrainingData, EmptyDataParams, MyQuery, MyPrediction,
+    EmptyActual> apply() {
+
+    return new JavaSimpleEngineBuilder<MyTrainingData, EmptyDataParams,
+      MyQuery, MyPrediction, EmptyActual> ()
+      .dataSourceClass(MyDataSource.class)
+      .preparatorClass() // Use default Preparator
+      .addAlgorithmClass("", MyAlgorithm.class)
+      .servingClass() // Use default Serving
+      .build();
+  }
+}
+
+{% endhighlight %}
+</div>
+</div>
+
+## 6. Define engine.json
+
+You should see an engine.json created as follows:
+
+```json
+{
+  "id": "helloworld",
+  "version": "0.0.1-SNAPSHOT",
+  "name": "helloworld",
+  "engineFactory": "myorg.MyEngineFactory"
+}
+```
+
+If you follow this Hello World Engine tutorial and didn't modify any of the class and package name (`myorg`). You don't need to update this file.
+
+## 7. Define Parameters
+
+You can safely delete the file `params/datasoruce.json` because this Hello World Engine doesn't take any parameters.
+
+```
+$ rm params/datasource.json
+```
+
 # Deploying the "HelloWorld" Engine Instance
 
 After the new engine is built, it is time to deploy an engine instance of it.
 
-Prepare training data:
-
-{% highlight bash %}
-$ cp $PIO_HOME/examples/data/helloworld/data1.csv path/to/data.csv
-{% endhighlight %}
-
-Register engine:
+## 1. Register engine:
 
 {% highlight bash %}
 $ $PIO_HOME/bin/pio register
 {% endhighlight %}
 
-Train:
+This command will compile the engine source code and build the necessary binary.
+
+## 2. Train:
 
 {% highlight bash %}
 $ $PIO_HOME/bin/pio train
@@ -310,56 +472,73 @@ Example output:
 2014-09-18 15:44:57,757 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: zdoo7SGAT2GVX8dMJFzT5w
 ```
 
-Deploy:
+This command produce an Engine Instance, which can be deployed.
+
+## 3. Deploy:
 
 {% highlight bash %}
 $ $PIO_HOME/bin/pio deploy
 {% endhighlight %}
 
-Retrieve prediction:
+You should see the following if the engine instance is deploy sucessfully:
+
+```
+INFO] [10/13/2014 18:11:09.721] [pio-server-akka.actor.default-dispatcher-4] [akka://pio-server/user/IO-HTTP/listener-0] Bound to localhost/127.0.0.1:8000
+[INFO] [10/13/2014 18:11:09.724] [pio-server-akka.actor.default-dispatcher-7] [akka://pio-server/user/master] Bind successful. Ready to serve.
+```
+
+Do not kill the deployed Engine Instance. You can retrieve the prediction by sending HTTP request to the engine instance.
+
+Open another terminal to execute the following:
+
+Retrieve temperature prediction for Monday:
 
 {% highlight bash %}
 $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
 {% endhighlight %}
 
-Output:
+You should see the following output:
 
 ```json
 {"temperature":75.5}
 ```
 
-Retrieve prediction:
+You can send another query to retrieve prediction. For example, retrieve temperature prediction for Tuesday:
 
 {% highlight bash %}
 $ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000/queries.json
 {% endhighlight %}
 
-Output:
+You should see the following output:
 
 ```json
 {"temperature":80.5}
 ```
 
-## Re-training
+# Re-training The Engine
 
-Re-train with new data:
+Let's say you have collected more historial temperature data and want to re-train the Engine with updated data. You can simply execute `pio train` and `pio deploy` again.
+
+Another temperature data set is prepared for you. Run the following to update your data with this new data set. Replace the `path/to/data.csv` with your path used in the steps above.
 
 {% highlight bash %}
 $ cp $PIO_HOME/examples/data/helloworld/data2.csv path/to/data.csv
 {% endhighlight %}
+
+In another terminal, go to the `HelloWorld` engine directory. Execute `pio train` and `deploy` again to deploy the latest instance trained with the new data. It would automatically kill the old running engine instance.
 
 {% highlight bash %}
 $ $PIO_HOME/bin/pio train
 $ $PIO_HOME/bin/pio deploy
 {% endhighlight %}
 
-Retrieve prediction:
+Retrieve temperature prediction for Monday again:
 
 {% highlight bash %}
 $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
 {% endhighlight %}
 
-Output:
+You should see the following output:
 
 ```json
 {"temperature":76.66666666666667}

@@ -62,6 +62,10 @@ than one engine instance, either launch a new console, or put the process into
 the background, then repeat the same command on a different port (by adding a
 `--port` argument).
 
+By default, the engine instance is bound to localhost, which serves only local traffic.
+To serve global traffic, you can use 0.0.0.0, i.e.
+`$ bin/pio deploy --ip 0.0.0.0`
+
 If it is your first time using PredictionIO, these [tutorials and
 samples]({{ site.baseurl }}/tutorials/engines/) should be helpful.
 

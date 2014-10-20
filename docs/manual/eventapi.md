@@ -22,6 +22,8 @@ engine to read data directly from your existing data store.
 backend is properly configured and is running. By default, PredictionIO uses
 HBase, and a quick configuration can be found
 [here]({{site.baseurl}}/install/install-linux.html#hbase).
+Please allow a minute (usually less than 30 seconds) after you start HBase for
+initialization to complete before starting eventserver.
 
 Everything about PredictionIO can be done through the `bin/pio` command.
 
@@ -32,6 +34,11 @@ PredictionIO.
 $ cd $PIO_HOME
 $ bin/pio eventserver
 ```
+
+By default, the event server is bound to localhost, which serves only local traffic.
+To serve global traffic, you can use 0.0.0.0, i.e.
+`$ bin/pio eventserver --ip 0.0.0.0`
+
 ### Check server status
 
 ```
@@ -260,7 +267,10 @@ Field | Type | Description
 :---- | :----| :-----
 `appId` | Integer | App ID for separating your data set between different
         |         |applications.
-`event` | String | Name of the event. (Examples: "sign-up", "rate", "view", "buy"). **Note**: All event names start with "$" are reserved and shouldn't be used as your custom event name (eg. "$set").
+`event` | String | Name of the event.
+        | | (Examples: "sign-up", "rate", "view", "buy").
+        | | **Note**: All event names start with "$" are reserved
+        | | and shouldn't be used as your custom event name (eg. "$set").
 `entityType` | String | The entity type. It is the namespace of the entityId and
              | | analogous to the table name of a relational database. The
              | | entityId must be unique within same entityType.
@@ -281,19 +291,20 @@ Field | Type | Description
             | | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
 
 #### Note
-`properties` can be associated with either an entity or an event.
+`properties` can be associated with an *entity* or *event*:
 
--   `properties` associated with an entity:
+1.  `properties` **associated with an *entity*:**
 
     The following special events are reserved for updating entities and their properties:
+    -  `"$set"` event: Set properties of an entity (also implicitly create the entity). To change properties of entity, you simply set the corresponding properties with value again.
+    -  `"$unset"` event: Unset properties of an entity. It means treating the specified properties as not existing anymore. Note that the field `properties` cannot be empty for `$unset` event.
+    -  `"$delete"` event: delete the entity.
 
-    - `"$set"`: set properties of an entity (also implicitly create the entity). To change properties of entity, you simply set the corresponding properties with value again.
-    - `"$unset"`: unset properties of an entity. It means treating the specified properties as not existing anymore. Note that the field `properties` cannot be empty.
-    - `"$delete"`: delete the entity.
+    There is no `targetEntityId` for these special events.
 
     For example, setting `properties` of `birthday` and `address` for entity `user-1`:
 
-    ```
+    ```json
     {
       "appId" : 4,
       "event" : "$set",
@@ -306,11 +317,95 @@ Field | Type | Description
     }
     ```
 
--   `properties` associated with an event:
+    **Note** that the properties values of the entity will be aggregated based on these special events and the eventTime. The state of the entity is different depending on the time you are looking at the data.
 
-    For example `user-1` may have a `rate` event on `item-1` with rating value of `4`.
+    For example, let's say the following special events are recorded for user-2 with the given eventTime:
 
+    On `2014-09-09T...`, create `$set` event for user-2 with properties a = 3 and b = 4:
+
+    ```json
+    {
+      "appId" : 4,
+      "event" : "$set",
+      "entityType" : "user",
+      "entityId" : "2",
+      "properties" : {
+        "a" : 3,
+        "b" : 4
+      },
+      "eventTime" : "2014-09-09T16:17:42.937-08:00"
+    }
     ```
+    After this eventTime, user-2 is created and has properties of a = 3 and b = 4.
+
+    Then, on `2014-09-10T...`, create `$set` event for user-2 with properties b = 5 and c = 6:
+
+    ```json
+    {
+      "appId" : 4,
+      "event" : "$set",
+      "entityType" : "user",
+      "entityId" : "2",
+      "properties" : {
+        "b" : 5,
+        "c" : 6
+      },
+      "eventTime" : "2014-09-10T13:12:04.937-08:00"
+    }
+    ```
+    After this eventTime, user-2 has properties of a = 3, b = 5 and c = 6. Note that property `b` is updated with latest value.
+
+    Then, on `2014-09-11T...`, create `$unset` event for user-2 with properties b:
+
+    ```json
+    {
+      "appId" : 4,
+      "event" : "$unset",
+      "entityType" : "user",
+      "entityId" : "2",
+      "properties" : {
+        "b" : null,
+      },
+      "eventTime" : "2014-09-11T14:17:42.456-08:00"
+    }
+    ```
+    After this eventTime, user-2 has properties of a = 3, and c = 6. Note that property `b` is removed.
+
+    Then, on `2014-09-12T...`, create `$delete` event for user-2:
+
+    ```json
+    {
+      "appId" : 4,
+      "event" : "$delete",
+      "entityType" : "user",
+      "entityId" : "2",
+      "eventTime" : "2014-09-12T16:13:41.452-08:00"
+    }
+    ```
+    After this eventTime, user-2 is removed.
+
+    Then, on `2014-09-13T...`, create `$set` event for user-2 with empty properties:
+
+    ```json
+    {
+      "appId" : 4,
+      "event" : "$set",
+      "entityType" : "user",
+      "entityId" : "2",
+      "eventTime" : "2014-09-13T16:17:42.143-08:00"
+    }
+    ```
+    After this eventTime, user-2 is created again with empty properties.
+
+    As you have seen in the example above, the state of user-2 is different depending on the time you are looking at the data.
+
+2.   `properties` **associated with an *event*:**
+
+    The properties can contain extra information about the event.
+
+    For example `user-1` may have a `rate` event on `item-1` with rating value of `4`. The `rating` is stored inside the properties.
+
+    ```json
     {
       "appId" : 4,
       "event" : "rate",
