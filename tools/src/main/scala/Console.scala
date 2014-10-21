@@ -64,6 +64,8 @@ case class CommonArgs(
   driverPassThrough: Seq[String] = Seq(),
   pioHome: Option[String] = None,
   sparkHome: Option[String] = None,
+  variantId: Option[String] = None,
+  variantVersion: Option[String] = None,
   engineJson: File = new File("engine.json"))
 
 case class BuildArgs(
@@ -106,14 +108,22 @@ object Console extends Logging {
         "        If not specified, will try to use the SPARK_HOME\n" +
         "        environmental variable. If this fails as well, default to\n" +
         "        current directory.")
-      opt[File]("engine-json") action { (x, c) =>
+      opt[String]("variant-id") abbr("vi") action { (x, c) =>
+        c.copy(common = c.common.copy(variantId = Some(x)))
+      } text("Specify an engine variant ID. Usually used by distributed " +
+        "deployment.")
+      opt[String]("variant-version") abbr("vv") action { (x, c) =>
+        c.copy(common = c.common.copy(variantVersion = Some(x)))
+      } text("Specify an engine variant version. Usually used by distributed " +
+        "deployment.")
+      opt[File]("variant-json") abbr("vj") action { (x, c) =>
         c.copy(common = c.common.copy(engineJson = x))
       } validate { x =>
         if (x.exists)
           success
         else
           failure(s"${x.getCanonicalPath} does not exist.")
-      } text("Path to an engine JSON file. Default: engine.json")
+      } text("Path to an engine variant JSON file. Default: engine.json")
       opt[File]("sbt") action { (x, c) =>
         c.copy(build = c.build.copy(sbt = Some(x)))
       } validate { x =>
@@ -123,39 +133,42 @@ object Console extends Logging {
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to sbt. Default: sbt")
       note("")
-      cmd("new").
-        text("Creates a new engine project in a subdirectory with the same " +
-          "name as the project. The project name will also be used as the " +
-          "default engine ID.").
+      cmd("version").
+        text("Displays the version of this command line console.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "new")
-        } children(
-          arg[String]("<project name>") action { (x, c) =>
-            c.copy(projectName = Some(x))
-          } text("Engine project name.")
-        )
+          c.copy(commands = c.commands :+ "version")
+        }
+      //note("")
+      //cmd("new").
+      //  text("Creates a new engine project in a subdirectory with the same " +
+      //    "name as the project. The project name will also be used as the " +
+      //    "default engine ID.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "new")
+      //  } children(
+      //    arg[String]("<project name>") action { (x, c) =>
+      //      c.copy(projectName = Some(x))
+      //    } text("Engine project name.")
+      //  )
+      //note("")
+      //cmd("instance").
+      //  text("Creates a new engine instance in a subdirectory with the same " +
+      //    "name as the engine's ID by default.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "instance")
+      //  } children(
+      //    arg[String]("<engine ID>") action { (x, c) =>
+      //      c.copy(projectName = Some(x))
+      //    } text("Engine ID."),
+      //    opt[String]("directory-name") action { (x, c) =>
+      //      c.copy(directoryName = Some(x))
+      //    } text("Engine instance directory name.")
+      //  )
       note("")
-      cmd("instance").
-        text("Creates a new engine instance in a subdirectory with the same " +
-          "name as the engine's ID by default.").
+      cmd("build").
+        text("Build an engine at the current directory.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "instance")
-        } children(
-          arg[String]("<engine ID>") action { (x, c) =>
-            c.copy(projectName = Some(x))
-          } text("Engine ID."),
-          opt[String]("directory-name") action { (x, c) =>
-            c.copy(directoryName = Some(x))
-          } text("Engine instance directory name.")
-        )
-      note("")
-      cmd("register").
-        text("Build and register an engine at the current directory.\n" +
-          "If the engine at the current directory is a PredictionIO\n" +
-          "built-in engine that is not part of PredictionIO's source tree,\n" +
-          "the build step will be skipped.").
-        action { (_, c) =>
-          c.copy(commands = c.commands :+ "register")
+          c.copy(commands = c.commands :+ "build")
         } children(
           opt[String]("sbt-extra") action { (x, c) =>
             c.copy(build = c.build.copy(sbtExtra = Some(x)))
@@ -167,6 +180,25 @@ object Console extends Logging {
             c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
           } text("Build dependencies assembly.")
         )
+      //note("")
+      //cmd("register").
+      //  text("Build and register an engine at the current directory.\n" +
+      //    "If the engine at the current directory is a PredictionIO\n" +
+      //    "built-in engine that is not part of PredictionIO's source tree,\n" +
+      //    "the build step will be skipped.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "register")
+      //  } children(
+      //    opt[String]("sbt-extra") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtExtra = Some(x)))
+      //    } text("Extra command to pass to SBT when it builds your engine."),
+      //    opt[Unit]("clean") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtClean = true))
+      //    } text("Clean build."),
+      //    opt[Unit]("asm") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+      //    } text("Build dependencies assembly.")
+      //  )
       note("")
       cmd("unregister").
         text("Unregister an engine at the current directory.").
@@ -316,22 +348,22 @@ object Console extends Logging {
             c.copy(port = x)
           } text("Port to bind to. Default: 7070")
         )
-      note("")
-      cmd("compile").
-        text("Compile a driver program.").
-        action { (_, c) =>
-          c.copy(commands = c.commands :+ "compile")
-        } children(
-          opt[String]("sbt-extra") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtExtra = Some(x)))
-          } text("Extra command to pass to SBT when it builds your engine."),
-          opt[Unit]("clean") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtClean = true))
-          } text("Clean build."),
-          opt[Unit]("asm") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-          } text("Build dependencies assembly.")
-        )
+      //note("")
+      //cmd("compile").
+      //  text("Compile a driver program.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "compile")
+      //  } children(
+      //    opt[String]("sbt-extra") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtExtra = Some(x)))
+      //    } text("Extra command to pass to SBT when it builds your engine."),
+      //    opt[Unit]("clean") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtClean = true))
+      //    } text("Clean build."),
+      //    opt[Unit]("asm") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+      //    } text("Build dependencies assembly.")
+      //  )
       note("")
       cmd("run").
         text("Launch a driver program. This command will pass all\n" +
@@ -356,25 +388,31 @@ object Console extends Logging {
           } text("Build dependencies assembly.")
         )
       note("")
-      cmd("dist").
-        text("Build an engine at the current directory and create a \n" +
-          "distributable package.\n" +
-          "If the engine at the current directory is a PredictionIO\n" +
-          "built-in engine that is not part of PredictionIO's source tree,\n" +
-          "the build step will be skipped.").
+      cmd("status").
+        text("Displays status information about the PredictionIO system.").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "dist")
-        } children(
-          opt[String]("sbt-extra") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtExtra = Some(x)))
-          } text("Extra command to pass to SBT when it builds your engine."),
-          opt[Unit]("clean") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtClean = true))
-          } text("Clean build."),
-          opt[Unit]("asm") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-          } text("Build dependencies assembly.")
-        )
+          c.copy(commands = c.commands :+ "status")
+        }
+      //note("")
+      //cmd("dist").
+      //  text("Build an engine at the current directory and create a \n" +
+      //    "distributable package.\n" +
+      //    "If the engine at the current directory is a PredictionIO\n" +
+      //    "built-in engine that is not part of PredictionIO's source tree,\n" +
+      //    "the build step will be skipped.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "dist")
+      //  } children(
+      //    opt[String]("sbt-extra") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtExtra = Some(x)))
+      //    } text("Extra command to pass to SBT when it builds your engine."),
+      //    opt[Unit]("clean") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtClean = true))
+      //    } text("Clean build."),
+      //    opt[Unit]("asm") action { (x, c) =>
+      //      c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
+      //    } text("Build dependencies assembly.")
+      //  )
       note("")
       cmd("appkey").
         text("Manage app keys.\n").
@@ -437,10 +475,14 @@ object Console extends Logging {
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
       ca.commands match {
+        case Seq("version") =>
+          version(ca)
         case Seq("new") =>
           createProject(ca)
         case Seq("instance") =>
           createInstance(ca)
+        case Seq("build") =>
+          build(ca)
         case Seq("register") =>
           register(ca)
         case Seq("unregister") =>
@@ -463,6 +505,8 @@ object Console extends Logging {
           run(ca)
         case Seq("dist") =>
           dist(ca)
+        case Seq("status") =>
+          status(ca)
         case Seq("appkey", "new") =>
           appkeyNew(ca)
         case Seq("appkey", "list") =>
@@ -546,6 +590,13 @@ object Console extends Logging {
     }
   }
 
+  def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
+
+  def build(ca: ConsoleArgs): Unit = {
+    compile(ca)
+    info("Your engine is ready for training.")
+  }
+
   def register(ca: ConsoleArgs): Unit = {
     if (builtinEngineDir ||
       !RegisterEngine.builtinEngine(ca.common.engineJson)) {
@@ -571,7 +622,18 @@ object Console extends Logging {
   }
 
   def train(ca: ConsoleArgs): Unit = {
-    withRegisteredManifest(ca.common.engineJson) { em =>
+    info("Looking for an engine...")
+    val jarFiles = jarFilesForScala
+    if (jarFiles.size == 0) {
+      error("No engine found. Your build might have failed. Aborting.")
+      sys.exit(1)
+    }
+    jarFiles foreach { f => info(s"Found ${f.getName}")}
+    RegisterEngine.registerEngine(ca.common.engineJson, jarFiles)
+    withRegisteredManifest(
+      ca.common.engineJson,
+      ca.common.variantId,
+      ca.common.variantVersion) { em =>
       RunWorkflow.runWorkflow(
         ca,
         coreAssembly(ca.common.pioHome.get),
@@ -580,7 +642,10 @@ object Console extends Logging {
   }
 
   def deploy(ca: ConsoleArgs): Unit = {
-    withRegisteredManifest(ca.common.engineJson) { em =>
+    withRegisteredManifest(
+      ca.common.engineJson,
+      ca.common.variantId,
+      ca.common.variantVersion) { em =>
       val engineInstances = Storage.getMetaDataEngineInstances
       val engineInstance = ca.engineInstanceId map { eid =>
         engineInstances.get(eid)
@@ -793,6 +858,10 @@ object Console extends Logging {
       error(s"Error deleting app key ${ca.appkey.appkey}.")
   }
 
+  def status(ca: ConsoleArgs): Unit = {
+    println(s"PredictionIO ${BuildInfo.version}")
+  }
+
   def coreAssembly(pioHome: String): File = {
     val core = s"pio-assembly-${BuildInfo.version}.jar"
     val coreDir =
@@ -854,13 +923,19 @@ object Console extends Logging {
     }
   }
 
-  def withRegisteredManifest(json: File)(op: EngineManifest => Unit): Unit = {
+  def withRegisteredManifest(
+      json: File,
+      variantId: Option[String],
+      variantVersion: Option[String])(
+      op: EngineManifest => Unit): Unit = {
     val ej = readEngineJson(json)
-    Storage.getMetaDataEngineManifests.get(ej.id, ej.version) map {
+    val id = variantId getOrElse ej.id
+    val version = variantVersion getOrElse ej.version
+    Storage.getMetaDataEngineManifests.get(id, version) map {
       op
     } getOrElse {
-      error(s"Engine ${ej.id} ${ej.version} is not registered.")
-      error("Have you run the 'register' command yet?")
+      error(s"Engine variant ${id} ${version} cannot be found in the system.")
+      error("Have you run the 'build' command to build your engine yet?")
       sys.exit(1)
     }
   }
