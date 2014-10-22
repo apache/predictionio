@@ -31,6 +31,7 @@ import org.apache.commons.io.FileUtils
 import org.json4s._
 import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
+import semverfi._
 
 import scala.io.Source
 import scala.sys.process._
@@ -859,7 +860,60 @@ object Console extends Logging {
   }
 
   def status(ca: ConsoleArgs): Unit = {
-    println(s"PredictionIO ${BuildInfo.version}")
+    println("PredictionIO")
+    ca.common.pioHome map { pioHome =>
+      println(s"  Installed at: ${pioHome}")
+      println(s"  Version: ${BuildInfo.version}")
+    } getOrElse {
+      println("Unable to locate PredictionIO installation. Aborting.")
+      sys.exit(1)
+    }
+    println("")
+    val sparkHome = getSparkHome(ca.common.sparkHome)
+    if (new File(s"${sparkHome}/bin/spark-submit").exists) {
+      println(s"Apache Spark")
+      println(s"  Installed at: ${sparkHome}")
+      val sparkMinVersion = "1.1.0"
+      val sparkReleaseFile = new File(s"${sparkHome}/RELEASE")
+      if (sparkReleaseFile.exists) {
+        val sparkReleaseStrings =
+          Source.fromFile(sparkReleaseFile).mkString.split(' ')
+        val sparkReleaseVersion = sparkReleaseStrings(1)
+        val parsedMinVersion = Version.apply(sparkMinVersion)
+        val parsedCurrentVersion = Version.apply(sparkReleaseVersion)
+        if (parsedCurrentVersion >= parsedMinVersion) {
+          println(s"  Version: ${sparkReleaseVersion} (meets minimum " +
+            s"requirement of ${sparkMinVersion})")
+        } else {
+          println("  Version: ${sparkReleaseVersion}")
+          println("Apache Spark version does not meet minimum requirement. " +
+            "Aborting.")
+        }
+      } else {
+        println("  Version information cannot be found.")
+        println("  If you are using a developmental tree, please make sure")
+        println("  you are using a version of at least ${sparkMinVersion}.")
+      }
+    } else {
+      println("Unable to locate a proper Apache Spark installation. Aborting.")
+      sys.exit(1)
+    }
+    println("")
+    println("Storage Backend Connections")
+    try {
+      Storage.verifyAllDataObjects()
+    } catch {
+      case e: Throwable =>
+        e.printStackTrace
+        println("")
+        println("Unable to connect to all storage backend(s) successfully. " +
+          "Please refer to error message(s) above. Aborting.")
+        sys.exit(1)
+    }
+    println("")
+    println("(sleeping 5 seconds for all messages to show up...)")
+    Thread.sleep(5000)
+    println("Your system is all ready to go.")
   }
 
   def coreAssembly(pioHome: String): File = {

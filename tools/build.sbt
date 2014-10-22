@@ -22,6 +22,7 @@ libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"          % "3.2.0",
   "io.spray"                % "spray-can"      % "1.2.1",
   "io.spray"                % "spray-routing"  % "1.2.1",
+  "me.lessis"              %% "semverfi"       % "0.1.3",
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
   "org.apache.hadoop"       % "hadoop-hdfs"    % "2.5.0",
   "org.clapper"            %% "grizzled-slf4j" % "1.0.2",

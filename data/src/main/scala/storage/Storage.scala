@@ -204,6 +204,17 @@ object Storage extends Logging {
     Seq(client.client, dbName)
   }
 
+  def verifyAllDataObjects(): Unit = {
+    println("  Verifying Meta Data Backend")
+    getMetaDataEngineManifests()
+    getMetaDataEngineInstances()
+    getMetaDataAppkeys()
+    println("  Verifying Model Data Backend")
+    getModelDataModels()
+    println("  Verifying Event Data Backend")
+    getEventDataEvents()
+  }
+
   def getMetaDataEngineManifests(): EngineManifests =
     getDataObject[EngineManifests](MetaDataRepository)
 
