@@ -40,7 +40,7 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
   /* override this to return Training Data only */
   override
   def readTraining(): MyTrainingData = {
-    val lines = Source.fromFile("/Users/ruiqingqiu/Downloads/track1/file_a").getLines().toList.map{ line =>
+    val lines = Source.fromFile("file_a").getLines().toList.map{ line =>
         val data = line.split("\\s+")
         (data(0).toInt, data(1).toInt)
       }
