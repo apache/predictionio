@@ -3,12 +3,12 @@ package io.prediction.examples.friendrecommendation
 import io.prediction.controller._
 import scala.collection.immutable.HashMap
 
-class KeywordSimilarityAlgorithm extends LAlgorithm[EmptyAlgorithmParams, KeywordSimilarityTrainingData,
+class KeywordSimilarityAlgorithm extends LAlgorithm[EmptyAlgorithmParams, FriendRecommendationTrainingData,
   KeywordSimilarityModel, FriendRecommendationQuery, FriendRecommendationPrediction] {
   override
-  def train(td: KeywordSimilarityTrainingData): KeywordSimilarityModel = {
+  def train(td: FriendRecommendationTrainingData): KeywordSimilarityModel = {
     new KeywordSimilarityModel(td.userKeyword, td.itemKeyword)
-  }
+}
 
   def findKeywordSimilarity(keywordMap1: HashMap[Int, Double], keywordMap2: HashMap[Int, Double]): Double = {
     var similarity = 0.0
