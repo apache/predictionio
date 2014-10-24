@@ -2,9 +2,9 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "example-scala-local-helloworld"
+name := "examples-friendrecommendation"
 
-organization := "org.sample"
+organization := "io.prediction"
 
 libraryDependencies ++= Seq(
   "io.prediction" %% "core" % "0.8.1-SNAPSHOT" % "provided",
