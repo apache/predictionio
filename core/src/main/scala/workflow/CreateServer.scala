@@ -469,6 +469,7 @@ class ServerActor[Q, P](
                   "appId" ->
                     dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
                   "event" -> "predict",
+                  "eventTime" -> queryTime.toString(),
                   "entityType" -> "prediction",
                   "entityId" -> key,
                   "properties" -> Map(
