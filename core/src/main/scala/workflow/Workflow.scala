@@ -490,6 +490,26 @@ object CoreWorkflow {
       }}
     }
 
+    if (metricsClassOpt.isEmpty) {
+      logger.info("Metrics is null. Stop here")
+      val models: Seq[Seq[Any]] = extractPersistentModels(
+        sc,
+        realEngineInstance,
+        evalAlgoModelMap,
+        algorithmParamsList,
+        algoInstanceList,
+        params
+      )
+
+      saveEngineInstance(
+        realEngineInstance,
+        algorithmParamsList,
+        algoInstanceList,
+        models,
+        None)
+      return
+    }
+
     if (servingClassOpt.isEmpty) {
       logger.info("Serving is null. Stop here")
       return
@@ -532,7 +552,7 @@ object CoreWorkflow {
 
     //val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance,
     //  evalAlgoModelMap, algorithmParamsList, algoInstanceList)
-
+/* move this check earlier
     if (metricsClassOpt.isEmpty) {
       logger.info("Metrics is null. Stop here")
       val models: Seq[Seq[Any]] = extractPersistentModels(
@@ -552,7 +572,7 @@ object CoreWorkflow {
         None)
       return
     }
-
+*/
     val metrics = Doer(metricsClassOpt.get, metricsParams)
     val metricsWrapper = new MetricsWrapper(metrics)
 
