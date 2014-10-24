@@ -1,5 +1,9 @@
 import sys
 import random
+""" Usage:
+    Command: $ python file_random.py item.txt file_a 10
+    randomly pick 10 lines from the file item.txt and write them to file a
+"""
 
 read_file = open(sys.argv[1], 'r')
 write_file = open(sys.argv[2], 'w')
