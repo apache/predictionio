@@ -122,3 +122,13 @@ trait IEngineFactory {
   /** Creates an instance of an [[Engine]]. */
   def apply(): Engine[_, _, _, _, _, _]
 }
+
+/** Mix in this trait for queries that contain prediction keys. This is useful
+  * when your engine expects queries to also be associated with prediction keys
+  * when feedback loop is enabled.
+  *
+  * @group General
+  */
+trait QueryWithPredictionKey {
+  val predictionKey: String
+}

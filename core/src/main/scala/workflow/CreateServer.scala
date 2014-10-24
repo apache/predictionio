@@ -21,6 +21,8 @@ import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.ParamsWithAppId
+import io.prediction.controller.QueryWithPredictionKey
+import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.PJavaAlgorithm
@@ -406,6 +408,7 @@ class ServerActor[Q, P](
         detach() {
           entity(as[String]) { queryString =>
             try {
+              val queryTime = DateTime.now
               val javaQuery = if (!javaAlgorithms.isEmpty) {
                 val alg = javaAlgorithms.head
                 val queryClass = if (
@@ -430,13 +433,15 @@ class ServerActor[Q, P](
                 else
                   a.predictBase(models(ai), scalaQuery.get)
               }
-              val json = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
+              val r = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
                 val prediction = serving.serveBase(javaQuery.get, predictions)
-                gson.toJson(prediction)
+                (gson.toJson(prediction), prediction, javaQuery.get)
               } else {
                 val prediction = serving.serveBase(scalaQuery.get, predictions)
-                compact(render(Extraction.decompose(prediction)(
-                  scalaAlgorithms.head.querySerializer)))
+                (compact(render(Extraction.decompose(prediction)(
+                  scalaAlgorithms.head.querySerializer))),
+                  prediction,
+                  scalaQuery.get)
               }
               /** Handle feedback to Event Server
                 * Send the following back to the Event Server
@@ -447,19 +452,29 @@ class ServerActor[Q, P](
                 * - predictionKey
                 */
               if (feedbackEnabled) {
-                implicit val formats = DefaultFormats
+                implicit val formats =
+                  if (!scalaAlgorithms.isEmpty)
+                    scalaAlgorithms.head.querySerializer
+                  else
+                    Utils.json4sDefaultFormats
                 val key = Random.alphanumeric.take(64).mkString
+                val predictionKey =
+                  if (r._3.isInstanceOf[QueryWithPredictionKey]) {
+                    Map("predictionKey" ->
+                      r._3.asInstanceOf[QueryWithPredictionKey].predictionKey)
+                  } else {
+                    Map()
+                  }
                 val data = Map(
                   "appId" ->
                     dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
-                  "event" -> "prediction",
+                  "event" -> "predict",
                   "entityType" -> "prediction",
                   "entityId" -> key,
                   "properties" -> Map(
                     "engineInstanceId" -> engineInstance.id,
-                    "query" -> queryString,
-                    "prediction" -> json),
-                  "predictionKey" -> key)
+                    "query" -> r._3,
+                    "prediction" -> r._2)) ++ predictionKey
                 val f: Future[Int] = future {
                   scalaj.http.Http.postData(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
@@ -473,7 +488,7 @@ class ServerActor[Q, P](
                 }
               }
               respondWithMediaType(`application/json`) {
-                complete(json)
+                complete(r._1)
               }
             } catch {
               case e: MappingException =>
