@@ -1,48 +1,50 @@
 package io.prediction.examples.friendrecommendation
+
 import io.prediction.controller._
 import scala.io.Source
-import collection.mutable.HashMap
+import scala.collection.immutable.HashMap
 
 class FriendRecommendationDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams, FriendRecommendationTrainingData, FriendRecommendationQuery, EmptyActual] {
   override
   def readTraining() : FriendRecommendationTrainingData = {
-    val item = Source.fromFile("data/item.txt").getLines().map{ line =>
-      val data = line.split("\\s+")
-      val id = data(1).toInt
-      //key is value (Int) and value is its weight(Double)
-      var item_map = new HashMap[Int, Double]
-      for (keyword <- data(3).split(";")){
-        //Item keyword contain no weight
-        item_map += (keyword.toInt -> 1.0)
-      }
-      (id, item_map)
-    }
-    var item_keyword = new HashMap[Int, HashMap[Int, Double]]
-    for(element <- item){  
-      item_keyword += (element._1 -> element._2)
-    }
+    val itemKeywordMap = readItem("data/mini_item.txt")
+    val userKeywordMap = readUser("data/mini_user_key_word.txt")
+    new FriendRecommendationTrainingData(userKeywordMap, itemKeywordMap)
+  }
 
-    //Reading user profile
-    val user = Source.fromFile("data/user_profile.txt").getLines().map{ line =>
-      val data = line.split("\\s+")
-      val id = data(1).toInt
-      //key is value (Int) and value is its weight(Double)
-      var user_map = new HashMap[Int, Double]
-      for (keyword <- data(5).split(";")){
-        //Item keyword contain no weight
-        user_map += (keyword.toInt -> 1.0)
-      }
-      (id, user_map)
+  def readItem(file: String) : HashMap[Int, HashMap[Int, Double]] = {
+    // An iterator on [itemId -> Map[keywordId -> weight]] values
+    val itemKeywordIter = Source.fromFile(file).getLines().map{
+      line =>
+      val data = line.split("\\s")
+      val keywordMap = HashMap[Int, Double](
+        (for (term <- data(2).split(";")) yield (term.toInt -> 1.0))
+        .toSeq
+      : _*)
+      (data(0).toInt -> keywordMap)
     }
+    val itemKeywordMap = HashMap[Int, HashMap[Int, Double]](itemKeywordIter.toSeq : _*)
+    itemKeywordMap
+  }
 
-    var user_keyword = new HashMap[Int, HashMap[Int, Double]]
-    for(element <- user){
-      user_keyword += (element._1 -> element._2)
-       
+  def readUser(file: String) : HashMap[Int, HashMap[Int, Double]] = {
+    // Helper function to generate pair items form a:b strings
+    val genTermWeightItem = (termWeight: String) => {
+      val termWeightPair = termWeight.split(":")
+      (termWeightPair(0).toInt -> termWeightPair(1).toDouble)
     }
-    //val user_kw_map = collection.immutable.HashMap() ++ user_keyword
-    //val item_kw_map = collection.immutable.HashMap() ++ item_keyword
-    new FriendRecommendationTrainingData(user_keyword, item_keyword)
-
+    // An iterator on [userId -> Map[keywordId -> weight]] values
+    val userKeywordIter = Source.fromFile(file).getLines().map{
+      line =>
+      val data = line.split("\\s")
+      val keywordMap = HashMap[Int, Double](
+        (for (termWeight <- data(1).split(";")) yield 
+          genTermWeightItem(termWeight)
+        ).toSeq
+      : _*)
+      (data(0).toInt -> keywordMap)
+    }
+    val userKeywordMap = HashMap(userKeywordIter.toSeq : _*)
+    userKeywordMap
   }
 }

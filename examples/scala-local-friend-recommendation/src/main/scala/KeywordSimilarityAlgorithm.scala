@@ -8,7 +8,7 @@ class KeywordSimilarityAlgorithm extends LAlgorithm[EmptyAlgorithmParams, Friend
   override
   def train(td: FriendRecommendationTrainingData): KeywordSimilarityModel = {
     new KeywordSimilarityModel(td.userKeyword, td.itemKeyword)
-}
+  }
 
   def findKeywordSimilarity(keywordMap1: HashMap[Int, Double], keywordMap2: HashMap[Int, Double]): Double = {
     var similarity = 0.0
