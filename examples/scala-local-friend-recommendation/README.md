@@ -15,7 +15,10 @@ $PIO_HOME/bin/pio train --engine-json $EngineJson
 $PIO_HOME/bin/pio deploy --engine-json $EngineJson
 ```
 
-$EngineJson is "keyword_similarity_engine.json" for "Keyword Similarity KNN".
+$EngineJson is
+
+1. "random_engine.json" for "Random"
+2. "keyword_similarity_engine.json" for "Keyword Similarity KNN"
 
 To query :
 
