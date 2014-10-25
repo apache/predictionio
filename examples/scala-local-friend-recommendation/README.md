@@ -1,6 +1,7 @@
 We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.
 
 Two algorithms are implemented.
+
 1. Random
 2. Keyword Similarity KNN
 
