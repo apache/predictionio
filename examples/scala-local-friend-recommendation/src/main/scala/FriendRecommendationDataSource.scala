@@ -17,13 +17,13 @@ class FriendRecommendationDataSource extends LDataSource[EmptyDataSourceParams, 
     val itemKeywordIter = Source.fromFile(file).getLines().map{
       line =>
       val data = line.split("\\s")
-      val keywordMap = HashMap[Int, Double](
+      val keywordMap = HashMap(
         (for (term <- data(2).split(";")) yield (term.toInt -> 1.0))
         .toSeq
       : _*)
       (data(0).toInt -> keywordMap)
     }
-    val itemKeywordMap = HashMap[Int, HashMap[Int, Double]](itemKeywordIter.toSeq : _*)
+    val itemKeywordMap = HashMap(itemKeywordIter.toSeq : _*)
     itemKeywordMap
   }
 
@@ -37,7 +37,7 @@ class FriendRecommendationDataSource extends LDataSource[EmptyDataSourceParams, 
     val userKeywordIter = Source.fromFile(file).getLines().map{
       line =>
       val data = line.split("\\s")
-      val keywordMap = HashMap[Int, Double](
+      val keywordMap = HashMap(
         (for (termWeight <- data(1).split(";")) yield 
           genTermWeightItem(termWeight)
         ).toSeq
