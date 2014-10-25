@@ -1,34 +1,25 @@
-Engine is based off of Hello World engine template.
+We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.
 
+Two algorithms are implemented.
+1. Random
+2. Keyword Similarity KNN
 
-Register (Build) + Train + Deploy : 
+To run the engine, you need to Register (Build) + Train + Deploy : 
 
 ```
-$PIO_HOME/bin/pio register 
+$PIO_HOME/bin/pio register --engine-json $EngineJson
 
-$PIO_HOME/bin/pio train 
+$PIO_HOME/bin/pio train --engine-json $EngineJson
 
-$PIO_HOME/bin/pio deploy
+$PIO_HOME/bin/pio deploy --engine-json $EngineJson
 ```
 
+$EngineJson is "keyword_similarity_engine.json" for "Keyword Similarity KNN".
 
 To query :
 
 ```
-curl -H "Content-Type: application/json" -d '{ "userId": 888 , "seed" : 999}'
-http://localhost:8000/queries.json
+curl -H "Content-Type: application/json" -d '{ "user": $UserId , "item" : $ItemId}' http://localhost:8000/queries.json
 ```
 
-
-UserId is harded coded (because we are currently using synthetic dataset). For
-actual data, we will use userId from dataset.
-Seed is used to seed randomization process. It is optional paramete : the
-default is hardcoded value.
-
-
-Update from 10/22/2014
-Now, we can modify the file path to training data and the algorithm construct 5 random items associated to the userid provided. 
-The algorithm will take a userid and link that to 5 random itemid that it picks from the training data.
-When query, the provided userid such as 888 must be provided in the training data or gives an internal server error.
-
-
+$UserId and $ItemId are the user and item you want to query.
