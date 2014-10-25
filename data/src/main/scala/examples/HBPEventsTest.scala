@@ -15,8 +15,10 @@
 
 package io.prediction.data.storage.examples
 
-import io.prediction.data.storage.hbase.HBPEvents
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.hbase.HBPEvents
+import io.prediction.data.storage.hbase.StorageClient
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
@@ -29,7 +31,9 @@ object HBPEventsTest {
     val appId = args(0).toInt
     val sparkConf = new SparkConf().setAppName("HBaseTest")
     val sc = new SparkContext(sparkConf)
-    val eventClient = new HBPEvents("predictionio_eventdata")
+    val eventClient = new HBPEvents(
+      new StorageClient(new StorageClientConfig(Seq(), Seq(), true)).client,
+      "predictionio_eventdata")
     val e: RDD[Event] = eventClient.getByAppIdAndTimeAndEntity(appId,
       None, None, None, None)(sc)
 

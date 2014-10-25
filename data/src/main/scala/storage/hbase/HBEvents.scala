@@ -62,7 +62,8 @@ import java.util.UUID
 
 //import org.apache.commons.codec.binary.Base64
 
-class HBEvents(client: HBClient, namespace: String) extends Events with Logging {
+class HBEvents(client: HBClient, namespace: String)
+  extends Events with Logging {
 
   // check namespace exist
   val existingNamespace = client.admin.listNamespaceDescriptors().map(_.getName)

@@ -32,7 +32,8 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-class HBPEvents(namespace: String) extends PEvents with Logging {
+class HBPEvents(client: HBClient, namespace: String)
+  extends PEvents with Logging {
 
   lazy val table = HBEventsUtil.table
 
