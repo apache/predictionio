@@ -33,5 +33,5 @@ To use random script:
 ```
 $ python file_random.py [number of user] [number of item] 
 ```
-expected files: data/user_profile.txt & data/item.txt
-output files: data/mini_user_key_word.txt & data/mini_item.txt
+1. expected files: data/user_profile.txt & data/item.txt
+2. output files: data/mini_user_key_word.txt & data/mini_item.txt
