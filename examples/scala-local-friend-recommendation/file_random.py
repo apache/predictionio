@@ -64,7 +64,6 @@ random_num_list = list(set(random_num_list))
 random_num_list.sort()
 
 read_file.seek(0)
-write_file = open("data/item_small.txt", 'w')
 count = 0
 index = 0
 item_id_list = []

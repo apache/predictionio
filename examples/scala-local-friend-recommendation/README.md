@@ -27,3 +27,11 @@ curl -H "Content-Type: application/json" -d '{ "user": $UserId , "item" : $ItemI
 ```
 
 $UserId and $ItemId are the user and item you want to query.
+
+
+To use random script:
+```
+$ python file_random.py [number of user] [number of item] 
+```
+expected files: data/user_profile.txt & data/item.txt
+output files: data/mini_user_key_word.txt & data/mini_item.txt
