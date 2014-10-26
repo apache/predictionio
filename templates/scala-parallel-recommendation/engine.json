@@ -1,0 +1,6 @@
+{
+  "id": "org.template.recommendation.RecommendationEngine",
+  "version": "0.8.1-SNAPSHOT",
+  "name": "MLLib Recommendation ALS Template",
+  "engineFactory": "org.template.recommendation.RecommendationEngine"
+}
