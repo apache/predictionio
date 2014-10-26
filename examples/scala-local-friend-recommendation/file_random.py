@@ -2,7 +2,7 @@ import sys
 import random
 
 read_file = open("data/user_profile.txt", 'r')
-write_file = open("data/mini_user_key_word.txt", 'w')
+write_file = open("data/mini_user_profile.txt", 'w')
 number_of_lines = int(sys.argv[1])
 number_of_items = int(sys.argv[2])
 
@@ -75,7 +75,24 @@ for line in read_file:
         if index == len(random_num_list):
             break
     count += 1
+print "item finished"
 
+print "getting mini user_key_word"
+read_file = open("data/user_key_word.txt", 'r')
+write_file = open("data/mini_user_key_word.txt", 'w')
+
+#record number of lines
+count = 0
+index = 0
+# loop through the file to get number of lines in the file
+for line in read_file:
+    if line.split()[0] == user_id_list[index]:
+        write_file.write(line)
+        index += 1
+        if index == len(user_id_list):
+            break
+print "user keyword finished"
+#go to file begining
 #getting the user_sns_small
 """
 read_file = open("user_sns.txt", 'r')
