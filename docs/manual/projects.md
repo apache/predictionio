@@ -37,3 +37,15 @@ If you have built a PredictionIO-related project, we would love to showcase it t
   - Status: It works with PredictionIO v0.8 - Under active development
 
 |
+
+**Node.js SDK for PredictionIO**
+
+- https://github.com/asafyish/predictionio-driver and https://www.npmjs.org/package/predictionio-driver
+
+  Node.js PredictionIO 0.8+ client supporting both callback syntax and promise syntax.
+
+  - Core Author: Asaf Yishai
+
+  - Status: It works with PredictionIO v0.8 - Under active development
+
+|
