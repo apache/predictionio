@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Metrics</title>
+    <title>Evaluator</title>
     <style>
       table {
         border-collapse: collapse;
@@ -40,7 +40,7 @@
       src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> 
   </head>
   <body>
-    <h3 id='name'>Metrics</h3>
+    <h3 id='name'>Evaluator</h3>
     <span id='description'></span>
     <h4 id='params'></h4>
 
@@ -60,7 +60,7 @@
         'preparator',
         'algorithms',
         'serving',
-        'metrics'];
+        'evaluator'];
 
       function draw() {
         loadData();
@@ -74,7 +74,7 @@
       function loadData() {
         rawData = JSON.parse(
             jQuery.ajax({
-              url: 'metrics_results.json',
+              url: 'evaluator_results.json',
               dataType: 'json',
               async: false,
               }).responseText);
@@ -94,7 +94,7 @@
       function drawHead() {
       
         var nameDiv = document.getElementById('name');
-        nameDiv.innerHTML = rawData['metricsName'] + " : " + rawData['name'];
+        nameDiv.innerHTML = rawData['evaluatorName'] + " : " + rawData['name'];
 
         var descriptionDiv = document.getElementById('description');
         descriptionDiv.innerHTML = rawData['description'];

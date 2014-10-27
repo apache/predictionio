@@ -332,7 +332,7 @@ class ItemRankDetailedEvaluator(params: DetailedEvaluatorParams)
 
     val outputData = EvaluatorOutput (
       name = params.name,
-      metricsName = "ItemRankEvaluator",
+      evaluatorName = "ItemRankEvaluator",
       description = "",
       measureType = measure.toString,
       algoMean = overallStats._2.average,

@@ -213,7 +213,7 @@ class ItemRecEvaluator(params: ItemRecEvaluatorParams)
 
     val outputData = EvaluatorOutput (
       name = params.name,
-      metricsName = "ItemRecEvaluator",
+      evaluatorName = "ItemRecEvaluator",
       measureType = measure.toString,
       algoMean = overallStats._2.average,
       algoStats = overallStats._2,

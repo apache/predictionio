@@ -47,7 +47,7 @@ class BinaryRatingParams(
 // This class is used with the html rendering class. See toHTML()
 case class EvaluatorOutput(
   val name: String,
-  val metricsName: String,
+  val evaluatorName: String,
   val description: String = "",
   val measureType: String,
   val algoMean: Double,

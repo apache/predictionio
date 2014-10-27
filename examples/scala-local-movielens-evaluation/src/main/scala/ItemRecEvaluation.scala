@@ -5,8 +5,8 @@ import io.prediction.engines.itemrec.EventsDataSourceParams
 import io.prediction.engines.itemrec.PreparatorParams
 import io.prediction.engines.itemrec.NCItemBasedAlgorithmParams
 import io.prediction.engines.itemrec.EvalParams
-import io.prediction.engines.itemrec.ItemRecMetrics
-import io.prediction.engines.itemrec.ItemRecMetricsParams
+import io.prediction.engines.itemrec.ItemRecEvaluator
+import io.prediction.engines.itemrec.ItemRecEvaluatorParams
 import io.prediction.engines.itemrec.MeasureType
 import io.prediction.engines.base.EventsSlidingEvalParams
 import io.prediction.engines.base.BinaryRatingParams
@@ -17,6 +17,7 @@ import io.prediction.controller.WorkflowParams
 
 import com.github.nscala_time.time.Imports._
 
+// Recommend to run with "--driver-memory 2G"
 object ItemRecEvaluation1 {
   def main(args: Array[String]) {
     val engine = ItemRecEngine()
@@ -29,6 +30,7 @@ object ItemRecEvaluation1 {
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
         evalCount = 12)),
+        //evalCount = 3)),
       evalParams = Some(new EvalParams(queryN = 10))
     )
   
@@ -53,7 +55,7 @@ object ItemRecEvaluation1 {
       algorithmParamsList = Seq(
         ("ncMahoutItemBased", ncMahoutAlgoParams)))
 
-    val metricsParams = new ItemRecMetricsParams(
+    val evaluatorParams = new ItemRecEvaluatorParams(
       ratingParams = new BinaryRatingParams(
         actionsMap = Map("rate" -> None),
         goodThreshold = 3),
@@ -65,8 +67,8 @@ object ItemRecEvaluation1 {
       params = WorkflowParams(batch = "MLC: ItemRec Evaluation1", verbose = 0),
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[ItemRecMetrics]),
-      metricsParams = metricsParams
+      evaluatorClassOpt = Some(classOf[ItemRecEvaluator]),
+      evaluatorParams = evaluatorParams
     )
   }
 }
