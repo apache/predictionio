@@ -45,7 +45,7 @@ hence have add a time component to the weight function;
 only focus on long-term value of a customer, it only recommends what the user
 likes the most (but maybe not profitable), etc.
 
-Whilst the machine learning community has defined numerous quality metrics (e.g.
+Whilst the machine learning community has defined numerous quality measure (e.g.
 precision, recall, MAP, MSE, etc.) for measuring prediction, there are many
 other considerations when we conduct the evaluation. Generating the test set
 can be tricky and bias-prone if we don't do it careful enough.
@@ -82,7 +82,7 @@ data.
 
 2. Testing set, the data used to evaluate the quality of prediction engines.
    The testing set also contains labelled data, but it is *not* send to
-   prediction engines. Instead, they are used by the evalution metrics component
+   prediction engines. Instead, they are used by the evaluator
    to evaluate the quality of the prediction engine. 
 
 ### Sliding Window Evaluation
@@ -157,7 +157,7 @@ To evaluate an engine instance, we need three pieces of data.
 
 3. Actual Result. It is the ground truth. For MLC, it is the actual rating users
    gave to items. Actual Result is hidden from the prediction and serving
-   components, it is exclusively used by the evaluation metrics to compute the
+   components, it is exclusively used by the evaluation component to compute the
    quality of actual instance.
 
 The question is how to construct Queries using MovieLens data set. The data set
@@ -201,9 +201,9 @@ tutorial, we go with the first one, i.e. we create a Query per active user with
 all active items.
 
 For the Actual Result, we store all raw ratings for that user. It is up to the
-evaluation metrics to decide which is good and which is bad.
+evaluator to decide which is good and which is bad.
 
-### Evaluation Metrics
+### Evaluator
 
 We have defined the three main pieces: Query, Prediction, and Actual Result. It
 remains to compute the quality of an engine instance based on these data.
@@ -221,11 +221,11 @@ Prediction `[d,c,e,a,b]`?
 
 A simple way to define good items it by binary classification. We can simply
 assign a *good threshold* to the rating, i.e. items rated at least the threshold
-are good. In our evaluation metrics, you can specify this threshold in the
+are good. In our evaluator, you can specify this threshold in the
 parameter:
 
 ```scala
-DetailedMetricsParams(
+DetailedEvaluatorParams(
   goodThreshold = 3,
   ...)
 ```
@@ -248,17 +248,17 @@ item before an uncertain one; one may argue otherwise that, suppose MLC's
 landing page display 3 items at once, each occupying same amount of space, the
 ordering *among* the top 3 items doesn't matter.
 
-It goes back to the very beginning of our discussion, the evaluation metrics
+It goes back to the very beginning of our discussion, the evaluator
 should be closely related to the actual business objective. In the MLC case, it
 shows 10 movies at the top of the page, and we don't care about the ordering
 among these 10 items. 
 We can use the
 [*Precision@k*](http://en.wikipedia.org/wiki/Precision_and_recall#Precision)
-metrics (with k = 10), in layman term, the engine is good if it is able to rank
+measure (with k = 10), in layman term, the engine is good if it is able to rank
 more `good` items to the top 10 result:
 
 ```scala
-DetailedMetricsParams(
+DetailedEvaluatorParams(
   ...,
   measureType = MeasureType.PrecisionAtK,
   measureK = 10)
@@ -276,18 +276,18 @@ We are ready to run the actual evaluation. You will find the code at
 This tutorial uses app_id = 9, make sure you have imported MovieLens data with
 app_id = 9. See
 [instructions](../../tutorials/engines/itemrec/movielens.html). Let's neglect
-the engine parameters and focus on the metrics parameters, we will discuss
+the engine parameters and focus on the evaluator parameters, we will discuss
 parameter tuning in the next tutorial.
 
-We use `ItemRankDetailedMetrics` for evaluation, it takes
-`DetailedMetricsParams` as parameter. The following code (can be found in
+We use `ItemRankDetailedEvaluator` for evaluation, it takes
+`DetailedEvaluatorParams` as parameter. The following code (can be found in
 `Evaluation1`) illustrate a complete
 parameter set: we use only "rate" action for rating, and consider only rating of
-at least 3 be good rating; we use Precision@k as our main metrics, and set k =
+at least 3 be good rating; we use Precision@k as our main measure, and set k =
 10.
 
 ```scala
-val metricsParams = new DetailedMetricsParams(
+val evaluatorParams = new DetailedEvaluatorParams(
   actionsMap = Map("rate" -> None),
   goodThreshold = 3,
   measureType = MeasureType.PrecisionAtK,
@@ -320,7 +320,7 @@ blue button on the right to see a detailed view of the evaluation.
 
 The value of Precision@10 is 0.0805, (loosely) meaning that for items among the
 top 10 results, each has a ~8% chance that the user likes it (i.e. rated >=
-3). From the dashboard, we can further drill down the evaluation metrics.
+3). From the dashboard, we can further drill down the evaluation results.
 
 ### Second Evaluation
 
@@ -338,7 +338,7 @@ The Precision@k is around 0.0673.
 
 ### Exercise
 
-Try to play around with different metrics parameter setting. Consider the
+Try to play around with different evaluator parameter setting. Consider the
 following situation, try to change the parameters set and see what we will get.
 
 - MLC displays 100 items on its first page, what parameter should we change?
