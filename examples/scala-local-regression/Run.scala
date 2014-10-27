@@ -118,7 +118,7 @@ object Run {
     saveModel = true)
 
   def runComponents() {
-    val filepath = new File("data/lr_data.txt").getCanonicalPath
+    val filepath = new File("../data/lr_data.txt").getCanonicalPath
     val dataSourceParams = new DataSourceParams(filepath)
     val preparatorParams = new PreparatorParams(n = 2, k = 0)
 
@@ -132,7 +132,7 @@ object Run {
       algorithmParamsList = Seq(
         ("", EmptyParams())),
       servingClassOpt = Some(classOf[FirstServing[Vector[Double], Double]]),
-      metricsClassOpt = Some(classOf[MeanSquareError]))
+      evaluatorClassOpt = Some(classOf[MeanSquareError]))
   }
 
   def runEngine() {
@@ -147,7 +147,7 @@ object Run {
       params = workflowParams,
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[MeanSquareError]))
+      evaluatorClassOpt = Some(classOf[MeanSquareError]))
   }
 
   def main(args: Array[String]) {
