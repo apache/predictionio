@@ -18,10 +18,10 @@ package io.prediction.engines.itemrank
 import io.prediction.engines.base
 import io.prediction.engines.base.Stats
 import io.prediction.engines.base.HasName
-import io.prediction.engines.base.MetricsHelper
-import io.prediction.engines.base.MetricsOutput
+import io.prediction.engines.base.EvaluatorHelper
+import io.prediction.engines.base.EvaluatorOutput
 import io.prediction.engines.base.DataParams
-import io.prediction.controller.Metrics
+import io.prediction.controller.Evaluator
 import io.prediction.controller.Params
 import io.prediction.controller.NiceRendering
 
@@ -44,7 +44,7 @@ import scala.io.Source
 import java.io.PrintWriter
 import java.io.File
 
-import io.prediction.engines.util.{ MetricsVisualization => MV }
+import io.prediction.engines.util.{ EvaluatorVisualization => EVis }
 import scala.util.hashing.MurmurHash3
 import scala.collection.immutable.NumericRange
 import scala.collection.immutable.Range
@@ -55,7 +55,7 @@ case class HeatMapData (
   val data: Seq[(String, Array[Double])]
 ) extends Serializable
 
-class MetricUnit(
+class EvaluationUnit(
   val q: Query,
   val p: Prediction,
   val a: Actual,
@@ -76,13 +76,13 @@ abstract class ItemRankMeasure extends Serializable {
 }
 
 // If k == -1, use query size. Otherwise, use k.
-class ItemRankMAP(val k: Int, val metricsParams: DetailedMetricsParams) 
+class ItemRankMAP(val k: Int, val metricsParams: DetailedEvaluatorParams) 
   extends ItemRankMeasure {
   def calculate(query: Query, prediction: Prediction, actual: Actual)
   : Double = {
     val kk = (if (k == -1) query.iids.size else k)
 
-    val goodIids = base.MetricsHelper.actions2GoodIids(
+    val goodIids = base.EvaluatorHelper.actions2GoodIids(
       actual.actionTuples, metricsParams.ratingParams)
 
     averagePrecisionAtK(
@@ -117,7 +117,7 @@ class ItemRankMAP(val k: Int, val metricsParams: DetailedMetricsParams)
   }
 }
 
-class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams) 
+class ItemRankPrecision(val k: Int, val metricsParams: DetailedEvaluatorParams) 
   extends ItemRankMeasure {
   override def toString(): String = s"Precision@$k"
 
@@ -125,7 +125,7 @@ class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams)
   : Double = {
     val kk = (if (k == -1) query.iids.size else k)
 
-    val actualItems = base.MetricsHelper.actions2GoodIids(
+    val actualItems = base.EvaluatorHelper.actions2GoodIids(
       actual.actionTuples, metricsParams.ratingParams)
 
     val relevantCount = prediction.items.take(kk)
@@ -142,7 +142,7 @@ class ItemRankPrecision(val k: Int, val metricsParams: DetailedMetricsParams)
 // optOutputPath is used for debug purpose. If specified, metrics will output
 // the data class to the specified path, and the renderer can generate the html
 // independently.
-class DetailedMetricsParams(
+class DetailedEvaluatorParams(
   val name: String = "",
   val ratingParams: base.BinaryRatingParams,
   val optOutputPath: Option[String] = None,
@@ -151,10 +151,10 @@ class DetailedMetricsParams(
   val measureK: Int = -1
 ) extends Params {}
 
-class ItemRankDetailedMetrics(params: DetailedMetricsParams)
-  extends Metrics[DetailedMetricsParams,
+class ItemRankDetailedEvaluator(params: DetailedEvaluatorParams)
+  extends Evaluator[DetailedEvaluatorParams,
     HasName, Query, Prediction, Actual,
-      MetricUnit, Seq[MetricUnit], MetricsOutput] {
+      EvaluationUnit, Seq[EvaluationUnit], EvaluatorOutput] {
 
   val measure: ItemRankMeasure = params.measureType match {
     case MeasureType.MeanAveragePrecisionAtK => {
@@ -169,8 +169,8 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     }
   }
 
-  override def computeUnit(query: Query, prediction: Prediction,
-    actual: Actual): MetricUnit  = {
+  override def evaluateUnit(query: Query, prediction: Prediction,
+    actual: Actual): EvaluationUnit  = {
 
     val score = measure.calculate(query, prediction, actual)
     // For calculating baseline, we use the input order of query.
@@ -179,7 +179,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       Prediction(query.iids.map(e => (e, 0.0)), isOriginal = false),
       actual)
 
-    new MetricUnit(
+    new EvaluationUnit(
       q = query,
       p = prediction,
       a = actual,
@@ -190,13 +190,13 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
   }
 
   // calcualte MAP at k
-  override def computeSet(dataParams: HasName,
-    metricUnits: Seq[MetricUnit]): Seq[MetricUnit] = metricUnits
+  override def evaluateSet(dataParams: HasName,
+    metricUnits: Seq[EvaluationUnit]): Seq[EvaluationUnit] = metricUnits
 
-  def aggregateMU(units: Seq[MetricUnit], groupByFunc: MetricUnit => String)
+  def aggregateMU(units: Seq[EvaluationUnit], groupByFunc: EvaluationUnit => String)
   : Seq[(String, Stats)] = {
-    //aggregate[MetricUnit](units, _.score, groupByFunc)
-    MetricsHelper.aggregate[MetricUnit](units, _.score, groupByFunc)
+    //aggregate[EvaluationUnit](units, _.score, groupByFunc)
+    EvaluatorHelper.aggregate[EvaluationUnit](units, _.score, groupByFunc)
   }
 
   def computeHeatMap(
@@ -232,22 +232,22 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     HeatMapData(columns = columns, data = data)
   }
 
-  override def computeMultipleSets(
-    rawInput: Seq[(HasName, Seq[MetricUnit])]): MetricsOutput = {
+  override def evaluateAll(
+    rawInput: Seq[(HasName, Seq[EvaluationUnit])]): EvaluatorOutput = {
     // Precision is undefined when the relevant items is a empty set. need to
     // filter away cases where there is no good items.
     val input = rawInput.map { case(name, mus) => {
       (name, mus.filter(mu => (!mu.score.isNaN && !mu.baseline.isNaN)))
     }}
 
-    val allUnits: Seq[MetricUnit] = input.flatMap(_._2)
+    val allUnits: Seq[EvaluationUnit] = input.flatMap(_._2)
 
     val overallStats = (
       "Overall",
-      MetricsHelper.calculateResample(
+      EvaluatorHelper.calculateResample(
         values = allUnits.map(mu => (mu.uidHash, mu.score)),
         buckets = params.buckets),
-      MetricsHelper.calculateResample(
+      EvaluatorHelper.calculateResample(
         values = allUnits.map(mu => (mu.uidHash, mu.baseline)),
         buckets = params.buckets)
       )
@@ -255,10 +255,10 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) =>
       (dp.name,
-        MetricsHelper.calculateResample(
+        EvaluatorHelper.calculateResample(
           values = mus.map(mu => (mu.uidHash, mu.score)),
           buckets = params.buckets),
-        MetricsHelper.calculateResample(
+        EvaluatorHelper.calculateResample(
           values = mus.map(mu => (mu.uidHash, mu.baseline)),
           buckets = params.buckets))
     }
@@ -267,32 +267,32 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
     // Aggregation Stats
     val aggregateByActualSize = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(
+      mu => EvaluatorHelper.groupByRange(
         Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
           mu.a.actionTuples.size))
     
     val aggregateByActualGoodSize = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(
+      mu => EvaluatorHelper.groupByRange(
         Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
-          base.MetricsHelper.actions2GoodIids(mu.a.actionTuples, params.ratingParams).size))
+          base.EvaluatorHelper.actions2GoodIids(mu.a.actionTuples, params.ratingParams).size))
     
     val aggregateByQuerySize = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(
+      mu => EvaluatorHelper.groupByRange(
         Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
           mu.q.iids.size))
 
     val scoreAggregation = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange((0.0 until 1.0 by 0.1).toArray, "%.2f")(mu.score))
+      mu => EvaluatorHelper.groupByRange((0.0 until 1.0 by 0.1).toArray, "%.2f")(mu.score))
 
     val actionCountAggregation = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(Array(0, 1, 3, 10, 30, 100, 300), "%.0f")
+      mu => EvaluatorHelper.groupByRange(Array(0, 1, 3, 10, 30, 100, 300), "%.0f")
         (mu.a.previousActionCount))
 
-    val itemCountAggregation = MetricsHelper.aggregate[(String, MetricUnit)](
+    val itemCountAggregation = EvaluatorHelper.aggregate[(String, EvaluationUnit)](
       allUnits.flatMap(mu => mu.a.actionTuples.map(t => (t._2, mu))),
       _._2.score,
       _._1)
@@ -309,17 +309,17 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     val avgOrderSizeAggregation = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(Array(0, 1, 2, 3, 5, 8, 13), "%.0f")
+      mu => EvaluatorHelper.groupByRange(Array(0, 1, 2, 3, 5, 8, 13), "%.0f")
         (mu.a.averageOrderSize))
 
     val previousOrdersAggregation = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(Array(0, 1, 3, 10, 30, 100), "%.0f")
+      mu => EvaluatorHelper.groupByRange(Array(0, 1, 3, 10, 30, 100), "%.0f")
         (mu.a.previousOrders))
 
     val varietyAggregation = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(Array(0, 1, 2, 3, 5, 8, 13, 21), "%.0f")
+      mu => EvaluatorHelper.groupByRange(Array(0, 1, 2, 3, 5, 8, 13, 21), "%.0f")
         (mu.a.variety))
 
     val heatMapInput: Seq[(String, Seq[Double])] = input
@@ -330,9 +330,9 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
       (0.0 until 1.0 by 0.0333).toArray,
       "%.2f")
 
-    val outputData = MetricsOutput (
+    val outputData = EvaluatorOutput (
       name = params.name,
-      metricsName = "ItemRankMetrics",
+      metricsName = "ItemRankEvaluator",
       description = "",
       measureType = measure.toString,
       algoMean = overallStats._2.average,
@@ -360,7 +360,7 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
     // FIXME: Use param opt path
     params.optOutputPath.map { path =>
-      MV.save(outputData, path)
+      EVis.save(outputData, path)
     }
 
     outputData
@@ -373,6 +373,6 @@ class ItemRankDetailedMetrics(params: DetailedMetricsParams)
 
 object ItemRankDetailedMain {
   def main(args: Array[String]) {
-    MV.render(MV.load[MetricsOutput](args(0)), args(0))
+    EVis.render(EVis.load[EvaluatorOutput](args(0)), args(0))
   }
 }

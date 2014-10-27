@@ -45,17 +45,17 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       "engineId"               -> i.engineId,
       "engineVersion"          -> i.engineVersion,
       "engineFactory"          -> i.engineFactory,
-      "metricsClass"           -> i.metricsClass,
+      "metricsClass"           -> i.evaluatorClass,
       "batch"                  -> i.batch,
       "env"                    -> i.env,
       "dataSourceParams"       -> i.dataSourceParams,
       "preparatorParams"       -> i.preparatorParams,
       "algorithmsParams"       -> i.algorithmsParams,
       "servingParams"          -> i.servingParams,
-      "metricsParams"          -> i.metricsParams,
-      "multipleMetricsResults" -> i.multipleMetricsResults,
-      "multipleMetricsResultsHTML" -> i.multipleMetricsResultsHTML,
-      "multipleMetricsResultsJSON" -> i.multipleMetricsResultsJSON)
+      "metricsParams"          -> i.evaluatorParams,
+      "multipleMetricsResults" -> i.evaluatorResults,
+      "multipleMetricsResultsHTML" -> i.evaluatorResultsHTML,
+      "multipleMetricsResultsJSON" -> i.evaluatorResultsJSON)
     engineInstanceColl.save(obj)
     id
   }
@@ -92,17 +92,17 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       "engineId"               -> i.engineId,
       "engineVersion"          -> i.engineVersion,
       "engineFactory"          -> i.engineFactory,
-      "metricsClass"           -> i.metricsClass,
+      "metricsClass"           -> i.evaluatorClass,
       "batch"                  -> i.batch,
       "env"                    -> i.env,
       "dataSourceParams"       -> i.dataSourceParams,
       "preparatorParams"       -> i.preparatorParams,
       "algorithmsParams"       -> i.algorithmsParams,
       "servingParams"          -> i.servingParams,
-      "metricsParams"          -> i.metricsParams,
-      "multipleMetricsResults" -> i.multipleMetricsResults,
-      "multipleMetricsResultsHTML" -> i.multipleMetricsResultsHTML,
-      "multipleMetricsResultsJSON" -> i.multipleMetricsResultsJSON)
+      "metricsParams"          -> i.evaluatorParams,
+      "multipleMetricsResults" -> i.evaluatorResults,
+      "multipleMetricsResultsHTML" -> i.evaluatorResultsHTML,
+      "multipleMetricsResultsJSON" -> i.evaluatorResultsJSON)
     engineInstanceColl.save(obj)
   }
 
@@ -118,17 +118,17 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       engineId = dbObj.as[String]("engineId"),
       engineVersion = dbObj.as[String]("engineVersion"),
       engineFactory = dbObj.as[String]("engineFactory"),
-      metricsClass = dbObj.as[String]("metricsClass"),
+      evaluatorClass = dbObj.as[String]("metricsClass"),
       batch = dbObj.as[String]("batch"),
       env = dbObj.as[Map[String, String]]("env"),
       dataSourceParams = dbObj.as[String]("dataSourceParams"),
       preparatorParams = dbObj.as[String]("preparatorParams"),
       algorithmsParams = dbObj.as[String]("algorithmsParams"),
       servingParams = dbObj.as[String]("servingParams"),
-      metricsParams = dbObj.as[String]("metricsParams"),
-      multipleMetricsResults = dbObj.as[String]("multipleMetricsResults"),
-      multipleMetricsResultsHTML =
+      evaluatorParams = dbObj.as[String]("metricsParams"),
+      evaluatorResults = dbObj.as[String]("multipleMetricsResults"),
+      evaluatorResultsHTML =
         dbObj.as[String]("multipleMetricsResultsHTML"),
-      multipleMetricsResultsJSON =
+      evaluatorResultsJSON =
         dbObj.as[String]("multipleMetricsResultsJSON"))
 }

@@ -52,13 +52,8 @@ object Runner {
         evalCount = 8))
     )
 
-    /*
-    val mp = new MetricsParams(
-      verbose = true
-    )
-    */
 
-    val mp = new DetailedMetricsParams(
+    val mp = new DetailedEvaluatorParams(
       optOutputPath = None,
       buckets = 3,
       ratingParams = new BinaryRatingParams(
@@ -129,10 +124,10 @@ object Runner {
         verbose = 0),
       engine = engine,
       engineParams = engineParams,
-      //metricsClassOpt = Some(classOf[ItemRankMetrics]),
+      //metricsClassOpt = Some(classOf[ItemRankEvaluator]),
       //metricsParams = mp
-      metricsClassOpt = Some(classOf[ItemRankDetailedMetrics]),
-      metricsParams = mp
+      evaluatorClassOpt = Some(classOf[ItemRankDetailedEvaluator]),
+      evaluatorParams = mp
     )
 
   }

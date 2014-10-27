@@ -136,7 +136,7 @@ object Run {
   }
 
   def runEngine() {
-    val filepath = new File("data/lr_data.txt").getCanonicalPath
+    val filepath = new File("../data/lr_data.txt").getCanonicalPath
     val engine = RegressionEngineFactory()
     val engineParams = new EngineParams(
       dataSourceParams = DataSourceParams(filepath),

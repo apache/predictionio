@@ -19,7 +19,7 @@ import io.prediction.workflow.JavaCoreWorkflow;
 import io.prediction.controller.Engine
 import io.prediction.controller.EngineParams
 import io.prediction.controller.WorkflowParams
-import io.prediction.core.BaseMetrics
+import io.prediction.core.BaseEvaluator
 import io.prediction.controller.Params
 import scala.collection.JavaConversions._
 
@@ -46,8 +46,8 @@ object JavaWorkflow {
     runEngine(
       engine = engine,
       engineParams = engineParams,
-      metricsClass = null,
-      metricsParams = null,
+      evaluatorClass = null,
+      evaluatorParams = null,
       params = params
     )
   }
@@ -63,16 +63,16 @@ object JavaWorkflow {
     *
     * @param engine An instance of [[Engine]].
     * @param engineParams Engine parameters.
-    * @param metricsClass Metrics class.
-    * @param metricsParams Metrics parameters.
+    * @param evaluatorClass Evaluator class.
+    * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.
     */
   def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
-      metricsClass
-        : Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
-      metricsParams: Params,
+      evaluatorClass
+        : Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
+      evaluatorParams: Params,
       params: WorkflowParams
     ) {
     JavaCoreWorkflow.run(
@@ -84,8 +84,8 @@ object JavaWorkflow {
       algorithmParamsList = engineParams.algorithmParamsList,
       servingClass = engine.servingClass,
       servingParams = engineParams.servingParams,
-      metricsClass = metricsClass,
-      metricsParams = metricsParams,
+      evaluatorClass = evaluatorClass,
+      evaluatorParams = evaluatorParams,
       params = params
     )
   }

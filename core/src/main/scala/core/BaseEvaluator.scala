@@ -18,13 +18,13 @@ package io.prediction.core
 import io.prediction.controller.Params
 import scala.reflect._
 
-abstract class BaseMetrics[MP <: Params : ClassTag,
-    -DP, -Q, P, A, MU, MR, MMR <: AnyRef]
-  extends AbstractDoer[MP] {
+abstract class BaseEvaluator[EP <: Params : ClassTag,
+    -DP, -Q, P, A, EU, ES, ER <: AnyRef]
+  extends AbstractDoer[EP] {
 
-  def computeUnitBase(input: (Q, P, A)): MU
+  def evaluateUnitBase(input: (Q, P, A)): EU
 
-  def computeSetBase(dataParams: DP, metricUnits: Seq[MU]): MR
+  def evaluateSetBase(dataParams: DP, metricUnits: Seq[EU]): ES
 
-  def computeMultipleSetsBase(input: Seq[(DP, MR)]): MMR
+  def evaluateAllBase(input: Seq[(DP, ES)]): ER
 }

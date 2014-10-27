@@ -16,7 +16,7 @@
 package io.prediction.engines.base
 
 import io.prediction.controller.Params
-import io.prediction.controller.Metrics
+import io.prediction.controller.Evaluator
 import breeze.stats.{ mean, meanAndVariance }
 import io.prediction.controller.NiceRendering
 
@@ -45,7 +45,7 @@ class BinaryRatingParams(
 ) extends Serializable
 
 // This class is used with the html rendering class. See toHTML()
-case class MetricsOutput(
+case class EvaluatorOutput(
   val name: String,
   val metricsName: String,
   val description: String = "",
@@ -73,7 +73,7 @@ case class MetricsOutput(
 }
 
 
-object MetricsHelper {
+object EvaluatorHelper {
   def actions2GoodIids(
     actionTuples: Seq[(String, String, U2IActionTD)], 
     binaryRatingParams: BinaryRatingParams)

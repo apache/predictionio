@@ -18,9 +18,9 @@ package io.prediction.engines.itemrec
 import io.prediction.engines.base
 //import io.prediction.engines.base.html
 import io.prediction.engines.base.BinaryRatingParams
-import io.prediction.engines.base.MetricsHelper
-import io.prediction.engines.base.MetricsOutput
-import io.prediction.controller.Metrics
+import io.prediction.engines.base.EvaluatorHelper
+import io.prediction.engines.base.EvaluatorOutput
+import io.prediction.controller.Evaluator
 import io.prediction.controller.Params
 import io.prediction.engines.base.HasName
 
@@ -45,7 +45,7 @@ import scala.io.Source
 import java.io.PrintWriter
 import java.io.File
 
-import io.prediction.engines.util.{ MetricsVisualization => MV }
+import io.prediction.engines.util.{ EvaluatorVisualization => MV }
 import scala.util.hashing.MurmurHash3
 import scala.collection.immutable.NumericRange
 import scala.collection.immutable.Range
@@ -55,7 +55,7 @@ import scala.util.Random
 import scala.collection.mutable.{ HashSet => MHashSet }
 import scala.collection.immutable.HashSet
 
-class ItemRecMetricsParams(
+class ItemRecEvaluatorParams(
   val name: String = "",
   val buckets: Int = 10,
   val ratingParams: BinaryRatingParams,
@@ -69,7 +69,7 @@ object MeasureType extends Enumeration {
   val PrecisionAtK = Value
 }
 
-class MetricsUnit(
+class EvaluatorUnit(
   val q: Query,
   val p: Prediction,
   val a: Actual,
@@ -90,7 +90,7 @@ class ItemRecPrecision(val k: Int, val ratingParams: BinaryRatingParams)
   : Double = {
     val kk = (if (k == -1) query.n else k)
 
-    val actualItems = MetricsHelper.actions2GoodIids(
+    val actualItems = EvaluatorHelper.actions2GoodIids(
       actual.actionTuples, ratingParams)
 
     val relevantCount = prediction.items.take(kk)
@@ -105,10 +105,10 @@ class ItemRecPrecision(val k: Int, val ratingParams: BinaryRatingParams)
 }
 
 
-class ItemRecMetrics(params: ItemRecMetricsParams) 
-  extends Metrics[ItemRecMetricsParams, HasName,
+class ItemRecEvaluator(params: ItemRecEvaluatorParams) 
+  extends Evaluator[ItemRecEvaluatorParams, HasName,
       Query, Prediction, Actual,
-      MetricsUnit, Seq[MetricsUnit], MetricsOutput] {
+      EvaluatorUnit, Seq[EvaluatorUnit], EvaluatorOutput] {
   
   val measure: ItemRecMeasure = params.measureType match {
     case MeasureType.PrecisionAtK => {
@@ -121,8 +121,8 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
   }
 
   
-  override def computeUnit(query: Query, prediction: Prediction, actual: Actual)
-  : MetricsUnit = {
+  override def evaluateUnit(query: Query, prediction: Prediction, actual: Actual)
+  : EvaluatorUnit = {
     val score = measure.calculate(query, prediction, actual)
 
     val uidHash: Int = MurmurHash3.stringHash(query.uid)
@@ -160,7 +160,7 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
       Prediction(randIids.map(iid => (iid, 0.0))),
       actual)
 
-    new MetricsUnit(
+    new EvaluatorUnit(
       q = query,
       p = prediction,
       a = actual,
@@ -170,25 +170,25 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
     )
   }
   
-  override def computeSet(dataParams: HasName,
-    metricUnits: Seq[MetricsUnit]): Seq[MetricsUnit] = metricUnits
+  override def evaluateSet(dataParams: HasName,
+    metricUnits: Seq[EvaluatorUnit]): Seq[EvaluatorUnit] = metricUnits
   
-  override def computeMultipleSets(
-    rawInput: Seq[(HasName, Seq[MetricsUnit])]): MetricsOutput = {
+  override def evaluateAll(
+    rawInput: Seq[(HasName, Seq[EvaluatorUnit])]): EvaluatorOutput = {
     // Precision is undefined when the relevant items is a empty set. need to
     // filter away cases where there is no good items.
     val input = rawInput.map { case(name, mus) => {
       (name, mus.filter(mu => (!mu.score.isNaN && !mu.baseline.isNaN)))
     }}
 
-    val allUnits: Seq[MetricsUnit] = input.flatMap(_._2)
+    val allUnits: Seq[EvaluatorUnit] = input.flatMap(_._2)
     
     val overallStats = (
       "Overall",
-      MetricsHelper.calculateResample(
+      EvaluatorHelper.calculateResample(
         values = allUnits.map(mu => (mu.uidHash, mu.score)),
         buckets = params.buckets),
-      MetricsHelper.calculateResample(
+      EvaluatorHelper.calculateResample(
         values = allUnits.map(mu => (mu.uidHash, mu.baseline)),
         buckets = params.buckets)
       )
@@ -196,10 +196,10 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
     val runsStats: Seq[(String, Stats, Stats)] = input
     .map { case(dp, mus) =>
       (dp.name,
-        MetricsHelper.calculateResample(
+        EvaluatorHelper.calculateResample(
           values = mus.map(mu => (mu.uidHash, mu.score)),
           buckets = params.buckets),
-        MetricsHelper.calculateResample(
+        EvaluatorHelper.calculateResample(
           values = mus.map(mu => (mu.uidHash, mu.baseline)),
           buckets = params.buckets))
     }
@@ -207,13 +207,13 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
     
     val aggregateByActualGoodSize = aggregateMU(
       allUnits,
-      mu => MetricsHelper.groupByRange(
+      mu => EvaluatorHelper.groupByRange(
         Array(0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144), "%.0f")(
-          base.MetricsHelper.actions2GoodIids(mu.a.actionTuples, params.ratingParams).size))
+          base.EvaluatorHelper.actions2GoodIids(mu.a.actionTuples, params.ratingParams).size))
 
-    val outputData = MetricsOutput (
+    val outputData = EvaluatorOutput (
       name = params.name,
-      metricsName = "ItemRecMetrics",
+      metricsName = "ItemRecEvaluator",
       measureType = measure.toString,
       algoMean = overallStats._2.average,
       algoStats = overallStats._2,
@@ -234,9 +234,9 @@ class ItemRecMetrics(params: ItemRecMetricsParams)
     outputData
   }
 
-  def aggregateMU(units: Seq[MetricsUnit], groupByFunc: MetricsUnit => String)
+  def aggregateMU(units: Seq[EvaluatorUnit], groupByFunc: EvaluatorUnit => String)
   : Seq[(String, Stats)] = {
-    MetricsHelper.aggregate[MetricsUnit](units, _.score, groupByFunc)
+    EvaluatorHelper.aggregate[EvaluatorUnit](units, _.score, groupByFunc)
   }
 }
 

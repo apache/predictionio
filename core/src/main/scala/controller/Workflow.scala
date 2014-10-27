@@ -17,7 +17,7 @@ package io.prediction.controller
 
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
-import io.prediction.core.BaseMetrics
+import io.prediction.core.BaseEvaluator
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
@@ -50,14 +50,14 @@ object Workflow {
     * @tparam Q Input query class.
     * @tparam P Output prediction class.
     * @tparam A Actual value class.
-    * @tparam MU Metrics unit class.
-    * @tparam MR Metrics result class.
-    * @tparam MMR Multiple metrics results class.
+    * @tparam MU Evaluator unit class.
+    * @tparam MR Evaluator result class.
+    * @tparam MMR Multiple evaluator results class.
     * @param params Workflow parameters.
     * @param engine An instance of [[Engine]].
     * @param engineParams Engine parameters.
-    * @param metricsClassOpt Optional metrics class.
-    * @param metricsParams Metrics parameters.
+    * @param evaluatorClassOpt Optional evaluator class.
+    * @param evaluatorParams Evaluator parameters.
     */
   def runEngine[
       DP, TD, PD, Q, P, A,
@@ -66,10 +66,10 @@ object Workflow {
       params: WorkflowParams = WorkflowParams(),
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
-      metricsClassOpt
-        : Option[Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
+      evaluatorClassOpt
+        : Option[Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
         = None,
-      metricsParams: Params = EmptyParams()) {
+      evaluatorParams: Params = EmptyParams()) {
 
     run(
       dataSourceClassOpt = Some(engine.dataSourceClass),
@@ -80,8 +80,8 @@ object Workflow {
       algorithmParamsList = engineParams.algorithmParamsList,
       servingClassOpt = Some(engine.servingClass),
       servingParams = engineParams.servingParams,
-      metricsClassOpt = metricsClassOpt,
-      metricsParams = metricsParams,
+      evaluatorClassOpt = evaluatorClassOpt,
+      evaluatorParams = evaluatorParams,
       params = params
     )
   }
@@ -94,9 +94,9 @@ object Workflow {
     * @tparam Q Input query class.
     * @tparam P Output prediction class.
     * @tparam A Actual value class.
-    * @tparam MU Metrics unit class.
-    * @tparam MR Metrics result class.
-    * @tparam MMR Multiple metrics results class.
+    * @tparam MU Evaluator unit class.
+    * @tparam MR Evaluator result class.
+    * @tparam MMR Multiple evaluator results class.
     * @param dataSourceClassOpt Optional data source class.
     * @param dataSourceParams Data source parameters.
     * @param preparatorClassOpt Optional preparator class.
@@ -106,8 +106,8 @@ object Workflow {
     *                            parameters.
     * @param servingClassOpt Optional serving class.
     * @param servingParams Serving parameters.
-    * @param metricsClassOpt Optional metrics class.
-    * @param metricsParams Metrics parameters.
+    * @param evaluatorClassOpt Optional evaluator class.
+    * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.
     */
   def run[
@@ -127,10 +127,10 @@ object Workflow {
       servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
         = None,
       servingParams: Params = EmptyParams(),
-      metricsClassOpt
-        : Option[Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
+      evaluatorClassOpt
+        : Option[Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
         = None,
-      metricsParams: Params = EmptyParams(),
+      evaluatorParams: Params = EmptyParams(),
       params: WorkflowParams = WorkflowParams()
     ) {
 
@@ -139,7 +139,7 @@ object Workflow {
         preparatorClassOpt, preparatorParams,
         algorithmClassMapOpt, algorithmParamsList,
         servingClassOpt, servingParams,
-        metricsClassOpt, metricsParams,
+        evaluatorClassOpt, evaluatorParams,
         params = params
       )
   }

@@ -18,12 +18,12 @@ package io.prediction.workflow
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineParams
 import io.prediction.controller.IEngineFactory
-import io.prediction.controller.Metrics
+import io.prediction.controller.Evaluator
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.Doer
-import io.prediction.core.BaseMetrics
+import io.prediction.core.BaseEvaluator
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.Storage
 
@@ -50,12 +50,12 @@ object CreateWorkflow extends Logging {
     engineId: String = "",
     engineVersion: String = "",
     engineFactory: String = "",
-    metricsClass: Option[String] = None,
+    evaluatorClass: Option[String] = None,
     dataSourceParamsJsonPath: Option[String] = None,
     preparatorParamsJsonPath: Option[String] = None,
     algorithmsParamsJsonPath: Option[String] = None,
     servingParamsJsonPath: Option[String] = None,
-    metricsParamsJsonPath: Option[String] = None,
+    evaluatorParamsJsonPath: Option[String] = None,
     jsonBasePath: String = "",
     env: Option[String] = None)
 
@@ -95,9 +95,9 @@ object CreateWorkflow extends Logging {
       opt[String]("engineFactory") required() action { (x, c) =>
         c.copy(engineFactory = x)
       } text("Class name of the engine's factory.")
-      opt[String]("metricsClass") action { (x, c) =>
-        c.copy(metricsClass = Some(x))
-      } text("Class name of the run's metrics.")
+      opt[String]("evaluatorClass") action { (x, c) =>
+        c.copy(evaluatorClass = Some(x))
+      } text("Class name of the run's evaluator.")
       opt[String]("dsp") action { (x, c) =>
         c.copy(dataSourceParamsJsonPath = Some(x))
       } text("Path to data source parameters JSON file.")
@@ -111,8 +111,8 @@ object CreateWorkflow extends Logging {
         c.copy(servingParamsJsonPath = Some(x))
       } text("Path to serving parameters JSON file.")
       opt[String]("mp") action { (x, c) =>
-        c.copy(metricsParamsJsonPath = Some(x))
-      } text("Path to metrics parameters")
+        c.copy(evaluatorParamsJsonPath = Some(x))
+      } text("Path to evaluator parameters")
       opt[String]("jsonBasePath") action { (x, c) =>
         c.copy(jsonBasePath = x)
       } text("Base path to prepend to all parameters JSON files.")
@@ -130,13 +130,13 @@ object CreateWorkflow extends Logging {
           error(s"Unable to obtain engine: ${e.getMessage}. Aborting workflow.")
           sys.exit(1)
       }
-      val metrics = wfc.metricsClass.map { mc => //mc => null
+      val evaluator = wfc.evaluatorClass.map { mc => //mc => null
         try {
           Class.forName(mc)
-            .asInstanceOf[Class[BaseMetrics[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
+            .asInstanceOf[Class[BaseEvaluator[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
         } catch {
           case e: ClassNotFoundException =>
-            error("Unable to obtain metrics class object ${mc}: " +
+            error("Unable to obtain evaluator class object ${mc}: " +
               s"${e.getMessage}. Aborting workflow.")
             sys.exit(1)
         }
@@ -173,14 +173,14 @@ object CreateWorkflow extends Logging {
           engineLanguage,
           stringFromFile(wfc.jsonBasePath, p),
           engine.servingClass)).getOrElse(EmptyParams())
-      val metricsParams = wfc.metricsParamsJsonPath.map(p =>
-        if (metrics.isEmpty)
+      val evaluatorParams = wfc.evaluatorParamsJsonPath.map(p =>
+        if (evaluator.isEmpty)
           EmptyParams()
         else
           WorkflowUtils.extractParams(
             engineLanguage,
             stringFromFile(wfc.jsonBasePath, p),
-            metrics.get)
+            evaluator.get)
       ) getOrElse EmptyParams()
 
       val engineParams = new EngineParams(
@@ -189,8 +189,8 @@ object CreateWorkflow extends Logging {
         algorithmParamsList = algorithmsParams,
         servingParams = servingParams)
 
-      val metricsInstance = metrics
-        .map(m => Doer(m, metricsParams))
+      val evaluatorInstance = evaluator
+        .map(m => Doer(m, evaluatorParams))
         .getOrElse(null)
 
       val pioEnvVars = wfc.env.map(e =>
@@ -210,17 +210,17 @@ object CreateWorkflow extends Logging {
         engineId = wfc.engineId,
         engineVersion = wfc.engineVersion,
         engineFactory = wfc.engineFactory,
-        metricsClass = wfc.metricsClass.getOrElse(""),
+        evaluatorClass = wfc.evaluatorClass.getOrElse(""),
         batch = wfc.batch,
         env = pioEnvVars,
         dataSourceParams = write(dataSourceParams),
         preparatorParams = write(preparatorParams),
         algorithmsParams = write(algorithmsParams),
         servingParams = write(servingParams),
-        metricsParams = write(metricsParams),
-        multipleMetricsResults = "",
-        multipleMetricsResultsHTML = "",
-        multipleMetricsResultsJSON = "")
+        evaluatorParams = write(evaluatorParams),
+        evaluatorResults = "",
+        evaluatorResultsHTML = "",
+        evaluatorResultsJSON = "")
       val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
         engineInstance)
 
@@ -231,8 +231,8 @@ object CreateWorkflow extends Logging {
           batch = wfc.batch),
         engine = engine,
         engineParams = engineParams,
-        metrics = metricsInstance,
-        metricsParams = metricsParams,
+        evaluator = evaluatorInstance,
+        evaluatorParams = evaluatorParams,
         engineInstance = Some(engineInstance.copy(id = engineInstanceId)))
     }
   }

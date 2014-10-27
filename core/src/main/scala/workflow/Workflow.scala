@@ -28,14 +28,14 @@ import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.JavaMetrics
+import io.prediction.controller.java.JavaEvaluator
 import io.prediction.controller.java.JavaUtils
 import io.prediction.controller.java.JavaEngine
 import io.prediction.controller.java.PJavaAlgorithm
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
-import io.prediction.core.BaseMetrics
+import io.prediction.core.BaseEvaluator
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
@@ -208,9 +208,9 @@ extends Serializable {
   }
 }
 
-class MetricsWrapper[
+class EvaluatorWrapper[
     MDP, MQ, MP, MA, MU: ClassTag, MR, MMR <: AnyRef](
-    val metrics: BaseMetrics[_,MDP,MQ,MP,MA,MU,MR,MMR])
+    val evaluator: BaseEvaluator[_,MDP,MQ,MP,MA,MU,MR,MMR])
 extends Serializable {
   def computeUnit[Q, P, A](input: RDD[(Q, P, A)]): RDD[MU] = {
     input
@@ -218,18 +218,18 @@ extends Serializable {
       e._1.asInstanceOf[MQ],
       e._2.asInstanceOf[MP],
       e._3.asInstanceOf[MA]) }
-    .map(metrics.computeUnitBase)
+    .map(evaluator.evaluateUnitBase)
   }
 
-  def computeSet[DP](input: (DP, Iterable[MU])): (MDP, MR) = {
+  def evaluateSet[DP](input: (DP, Iterable[MU])): (MDP, MR) = {
     val mdp = input._1.asInstanceOf[MDP]
-    val results = metrics.computeSetBase(mdp, input._2.toSeq)
+    val results = evaluator.evaluateSetBase(mdp, input._2.toSeq)
     (mdp, results)
   }
 
-  def computeMultipleSets(input: Array[(MDP, MR)]): MMR = {
+  def evaluateAll(input: Array[(MDP, MR)]): MMR = {
     // maybe sort them.
-    metrics.computeMultipleSetsBase(input)
+    evaluator.evaluateAllBase(input)
   }
 }
 
@@ -243,26 +243,26 @@ object CoreWorkflow {
     engineId = "",
     engineVersion = "",
     engineFactory = "",
-    metricsClass = "",
+    evaluatorClass = "",
     batch = "",
     env = Map(),
     dataSourceParams = "",
     preparatorParams = "",
     algorithmsParams = "",
     servingParams = "",
-    metricsParams = "",
-    multipleMetricsResults = "",
-    multipleMetricsResultsHTML = "",
-    multipleMetricsResultsJSON = "")
+    evaluatorParams = "",
+    evaluatorResults = "",
+    evaluatorResultsHTML = "",
+    evaluatorResultsJSON = "")
 
   // ***Do not directly call*** any "Typeless" method unless you know exactly
   // what you are doing.
 
-  // When engine and metrics are instantiated direcly from CLI, the compiler has
+  // When engine and evaluator are instantiated direcly from CLI, the compiler has
   // no way to know their actual type parameter during compile time. To rememdy
-  // this restriction, we have to let engine and metrics to be casted to their
+  // this restriction, we have to let engine and evaluator to be casted to their
   // own type parameters, and force cast their type during runtime.
-  // In particular, metrics needs to be instantiated to keep scala compiler
+  // In particular, evaluator needs to be instantiated to keep scala compiler
   // happy.
   def runEngineTypeless[
       DP, TD, PD, Q, P, A,
@@ -271,9 +271,9 @@ object CoreWorkflow {
       ](
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
-      metrics
-        : BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
-      metricsParams: Params = EmptyParams(),
+      evaluator
+        : BaseEvaluator[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
+      evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()
@@ -290,8 +290,8 @@ object CoreWorkflow {
       algorithmParamsList = engineParams.algorithmParamsList,
       servingClassOpt = Some(engine.servingClass),
       servingParams = engineParams.servingParams,
-      metricsClassOpt = (if (metrics == null) None else Some(metrics.getClass)),
-      metricsParams = metricsParams,
+      evaluatorClassOpt = (if (evaluator == null) None else Some(evaluator.getClass)),
+      evaluatorParams = evaluatorParams,
       engineInstance = engineInstance
     )(
       JavaUtils.fakeClassTag[MU],
@@ -319,10 +319,10 @@ object CoreWorkflow {
       servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
         = None,
       servingParams: Params = EmptyParams(),
-      metricsClassOpt
-        : Option[Class[_ <: BaseMetrics[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
+      evaluatorClassOpt
+        : Option[Class[_ <: BaseEvaluator[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
         = None,
-      metricsParams: Params = EmptyParams(),
+      evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()
@@ -330,7 +330,7 @@ object CoreWorkflow {
     logger.info("CoreWorkflow.run")
     logger.info("Start spark context")
 
-    metricsClassOpt.map(_ => WorkflowUtils.checkUpgrade("evaluation")).
+    evaluatorClassOpt.map(_ => WorkflowUtils.checkUpgrade("evaluation")).
       getOrElse(WorkflowUtils.checkUpgrade("training"))
 
     val verbose = params.verbose
@@ -343,14 +343,14 @@ object CoreWorkflow {
       val i = engineInstanceStub.copy(
         startTime = DateTime.now,
         engineFactory = getClass.getName,
-        metricsClass = metricsClassOpt.map(_.getName).getOrElse(""),
+        evaluatorClass = evaluatorClassOpt.map(_.getName).getOrElse(""),
         batch = params.batch,
         env = env,
         dataSourceParams = write(dataSourceParams),
         preparatorParams = write(preparatorParams),
         algorithmsParams = write(algorithmParamsList),
         servingParams = write(servingParams),
-        metricsParams = write(metricsParams))
+        evaluatorParams = write(evaluatorParams))
       val iid = Storage.getMetaDataEngineInstances.insert(i)
       i.copy(id = iid)
     }
@@ -490,8 +490,8 @@ object CoreWorkflow {
       }}
     }
 
-    if (metricsClassOpt.isEmpty) {
-      logger.info("Metrics is null. Stop here")
+    if (evaluatorClassOpt.isEmpty) {
+      logger.info("Evaluator is null. Stop here")
       val models: Seq[Seq[Any]] = extractPersistentModels(
         sc,
         realEngineInstance,
@@ -553,8 +553,8 @@ object CoreWorkflow {
     //val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance,
     //  evalAlgoModelMap, algorithmParamsList, algoInstanceList)
 /* move this check earlier
-    if (metricsClassOpt.isEmpty) {
-      logger.info("Metrics is null. Stop here")
+    if (evaluatorClassOpt.isEmpty) {
+      logger.info("Evaluator is null. Stop here")
       val models: Seq[Seq[Any]] = extractPersistentModels(
         sc,
         realEngineInstance,
@@ -573,50 +573,50 @@ object CoreWorkflow {
       return
     }
 */
-    val metrics = Doer(metricsClassOpt.get, metricsParams)
-    val metricsWrapper = new MetricsWrapper(metrics)
+    val evaluator = Doer(evaluatorClassOpt.get, evaluatorParams)
+    val evaluatorWrapper = new EvaluatorWrapper(evaluator)
 
-    // Metrics Unit
-    val evalMetricsUnitMap: Map[Int, RDD[MU]] =
-      evalPredictionMap.mapValues(metricsWrapper.computeUnit)
+    // Evaluator Unit
+    val evalEvaluatorUnitMap: Map[Int, RDD[MU]] =
+      evalPredictionMap.mapValues(evaluatorWrapper.computeUnit)
 
     if (verbose > 2) {
-      evalMetricsUnitMap.foreach{ case(i, e) => {
+      evalEvaluatorUnitMap.foreach{ case(i, e) => {
         val estr = WorkflowUtils.debugString(e)
-        logger.info(s"MetricsUnit: i=$i e=$estr")
+        logger.info(s"EvaluatorUnit: i=$i e=$estr")
       }}
     }
 
-    // Metrics Set
-    val evalMetricsResultsMap
-    : Map[EI, RDD[(MDP, MR)]] = evalMetricsUnitMap
-    .map{ case (ei, metricsUnits) => {
-      val metricsResults
-      : RDD[(MDP, MR)] = metricsUnits
+    // Evaluator Set
+    val evalEvaluatorResultsMap
+    : Map[EI, RDD[(MDP, MR)]] = evalEvaluatorUnitMap
+    .map{ case (ei, evaluatorUnits) => {
+      val evaluatorResults
+      : RDD[(MDP, MR)] = evaluatorUnits
         // shuffle must be true, otherwise all upstream stage will be forced to
         // use a single partition.
         .coalesce(numPartitions=1, shuffle = true)
         .glom()
         .map(e => (localParamsSet(ei), e.toIterable))
-        .map(metricsWrapper.computeSet)
+        .map(evaluatorWrapper.evaluateSet)
 
-      (ei, metricsResults)
+      (ei, evaluatorResults)
     }}
 
     if (verbose > 2) {
-      evalMetricsResultsMap.foreach{ case(ei, e) => {
+      evalEvaluatorResultsMap.foreach{ case(ei, e) => {
         val estr = WorkflowUtils.debugString(e)
-        logger.info(s"MetricsResults $ei $estr")
+        logger.info(s"EvaluatorResults $ei $estr")
       }}
     }
 
-    val multipleMetricsResults: RDD[MMR] = sc
-      .union(evalMetricsResultsMap.values.toVector)
+    val multipleEvaluatorResults: RDD[MMR] = sc
+      .union(evalEvaluatorResultsMap.values.toVector)
       .coalesce(numPartitions=1, shuffle = true)
       .glom()
-      .map(metricsWrapper.computeMultipleSets)
+      .map(evaluatorWrapper.evaluateAll)
 
-    val metricsOutput: Array[MMR] = multipleMetricsResults.collect
+    val evaluatorOutput: Array[MMR] = multipleEvaluatorResults.collect
 
     logger.info(s"DataSourceParams: $dataSourceParams")
     logger.info(s"PreparatorParams: $preparatorParams")
@@ -624,9 +624,9 @@ object CoreWorkflow {
       logger.info(s"Algo: $ai Name: ${ap._1} Params: ${ap._2}")
     }}
     logger.info(s"ServingParams: $servingParams")
-    logger.info(s"MetricsParams: $metricsParams")
+    logger.info(s"EvaluatorParams: $evaluatorParams")
 
-    metricsOutput foreach { logger.info(_) }
+    evaluatorOutput foreach { logger.info(_) }
 
     logger.info("CoreWorkflow.run completed.")
 
@@ -643,7 +643,7 @@ object CoreWorkflow {
       algorithmParamsList,
       algoInstanceList,
       models,
-      Some(metricsOutput.head))
+      Some(evaluatorOutput.head))
   }
 
   /** Extract model for persistent layer.
@@ -754,7 +754,7 @@ object CoreWorkflow {
       models = KryoInjection(models)))
     val engineInstances = Storage.getMetaDataEngineInstances
 
-    val (multipleMetricsResultsHTML, multipleMetricsResultsJSON) =
+    val (evaluatorResultsHTML, evaluatorResultsJSON) =
       mmr.map ( mmr =>
         if (mmr.isInstanceOf[NiceRendering]) {
           val niceRenderingResult = mmr.asInstanceOf[NiceRendering]
@@ -770,9 +770,9 @@ object CoreWorkflow {
       status = mmr.map(_ => "EVALCOMPLETED").getOrElse("COMPLETED"),
       endTime = DateTime.now,
       algorithmsParams = translatedAlgorithmsParams,
-      multipleMetricsResults = mmr.map(_.toString).getOrElse(""),
-      multipleMetricsResultsHTML = multipleMetricsResultsHTML,
-      multipleMetricsResultsJSON = multipleMetricsResultsJSON
+      evaluatorResults = mmr.map(_.toString).getOrElse(""),
+      evaluatorResultsHTML = evaluatorResultsHTML,
+      evaluatorResultsJSON = evaluatorResultsJSON
       ))
 
     logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
@@ -815,8 +815,8 @@ object JavaCoreWorkflow {
     algorithmParamsList: JIterable[(String, Params)],
     servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]],
     servingParams: Params,
-    metricsClass: Class[_ <: BaseMetrics[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
-    metricsParams: Params,
+    evaluatorClass: Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
+    evaluatorParams: Params,
     params: WorkflowParams
   ) = {
 
@@ -839,8 +839,8 @@ object JavaCoreWorkflow {
       algorithmParamsList = scalaAlgorithmParamsList,
       servingClassOpt = noneIfNull(servingClass),
       servingParams = servingParams,
-      metricsClassOpt = noneIfNull(metricsClass),
-      metricsParams = metricsParams
+      evaluatorClassOpt = noneIfNull(evaluatorClass),
+      evaluatorParams = evaluatorParams
     )(
       JavaUtils.fakeClassTag[MU],
       JavaUtils.fakeClassTag[MR],

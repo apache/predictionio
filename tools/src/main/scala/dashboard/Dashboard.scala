@@ -134,44 +134,44 @@ trait DashboardService extends HttpService {
           }
         }
       } ~
-      path("metrics_params.json") {
+      path("evaluator_params.json") {
         get {
           respondWithMediaType(`application/json`) {
             engineInstances.get(instanceId).map { i =>
-              complete(i.metricsParams)
+              complete(i.evaluatorParams)
             } getOrElse {
               complete(StatusCodes.NotFound)
             }
           }
         }
       } ~
-      path("metrics_results.txt") {
+      path("evaluator_results.txt") {
         get {
           respondWithMediaType(`text/plain`) {
             engineInstances.get(instanceId).map { i =>
-              complete(i.multipleMetricsResults)
+              complete(i.evaluatorResults)
             } getOrElse {
               complete(StatusCodes.NotFound)
             }
           }
         }
       } ~
-      path("metrics_results.html") {
+      path("evaluator_results.html") {
         get {
           respondWithMediaType(`text/html`) {
             engineInstances.get(instanceId).map { i =>
-              complete(i.multipleMetricsResultsHTML)
+              complete(i.evaluatorResultsHTML)
             } getOrElse {
               complete(StatusCodes.NotFound)
             }
           }
         }
       } ~
-      path("metrics_results.json") {
+      path("evaluator_results.json") {
         get {
           respondWithMediaType(`application/json`) {
             engineInstances.get(instanceId).map { i =>
-              complete(i.multipleMetricsResultsJSON)
+              complete(i.evaluatorResultsJSON)
             } getOrElse {
               complete(StatusCodes.NotFound)
             }
