@@ -35,7 +35,7 @@ Launch EventServer. $PIO_HOME is the installation directory of PredictionIO.
 $ $PIO_HOME/bin/pio eventserver
 ```
 
-Import data. The import script takes two parameters: `<app_id> <url>`.
+Import data. You should have at least 2GB of driver memory to accommodate the dataset. The import script takes two parameters: `<app_id> <url>`.
 `<app_id>` is an integer identifies your address space; `<url>` is the
 EventServer url (default: http://localhost:7070). We will use the same
 `<app_id>` through out this tutorial.
