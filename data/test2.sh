@@ -6,7 +6,7 @@ curl -i -X POST "http://localhost:7070/events.json" \
   "event" : "$delete",
   "entityType" : "pio_user",
   "entityId" : "123",
-  "appId" : 2,
+  "appId" : 2
 }'
 
 
@@ -61,4 +61,16 @@ curl -i -X POST "http://localhost:7070/events.json" \
   "properties" : null,
   "eventTime" : null,
   "appId" : 4
+}'
+
+
+## predictionKey
+curl -i -X POST "http://localhost:7070/events.json" \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "some_event",
+  "entityType" : "pio_user",
+  "entityId" : "123",
+  "appId" : 2,
+  "predictionKey" : "AbcdefXXFFdsf1"
 }'
