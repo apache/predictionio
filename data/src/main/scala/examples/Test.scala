@@ -13,7 +13,7 @@
   * limitations under the License.
   */
 
-package io.prediction.data
+package io.prediction.data.examples
 
 import org.json4s._
 import org.json4s.JsonDSL._
@@ -22,6 +22,8 @@ import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{ read, write }
 import org.json4s.ext.JodaTimeSerializers
 import com.github.nscala_time.time.Imports._
+
+// some quick test code for testing json serializer
 
 object SerializerTest {
   case class Event(
