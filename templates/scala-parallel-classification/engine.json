@@ -1,0 +1,6 @@
+{
+  "id": "org.template.classification.ClassificationEngine",
+  "version": "0.8.1-SNAPSHOT",
+  "name": "MLlib Classification NaiveBayes Template",
+  "engineFactory": "org.template.classification.ClassificationEngine"
+}
