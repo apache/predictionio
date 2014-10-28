@@ -49,3 +49,15 @@ If you have built a PredictionIO-related project, we would love to showcase it t
   - Status: It works with PredictionIO v0.8 - Under active development
 
 |
+
+**C#/.NET SDK for PredictionIO**
+
+- https://github.com/orbyone/Sensible.PredictionIO.NET
+
+  C#/.NET library for PredictionIO 0.8, supporting both synchronous and asynchronous calls, for item recommendation and item ranking algorithms. Loosely based on the PredictionIO Java SDK API.
+
+  - Core Author: Themos Piperakis
+
+  - Status: It works with PredictionIO v0.8 - Under active development
+
+|
