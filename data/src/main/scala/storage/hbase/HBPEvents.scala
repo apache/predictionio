@@ -16,7 +16,6 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventID
 import io.prediction.data.storage.PEvents
 
 import org.apache.hadoop.hbase.HBaseConfiguration

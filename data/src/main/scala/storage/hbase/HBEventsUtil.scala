@@ -16,7 +16,6 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventID
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.DataMap
@@ -160,7 +159,7 @@ object HBEventsUtil {
     )
 
     Event(
-      eventId = Some(EventID(result.getRow())),
+      eventId = Some(RowKey(result.getRow()).toString),
       event = event,
       entityType = entityType,
       entityId = entityId,

@@ -100,7 +100,7 @@ object EventJson4sSupport {
     case d: Event => {
       JObject(
         JField("eventId",
-          d.eventId.map( eid => JString(eid.toString)).getOrElse(JNothing)) ::
+          d.eventId.map( eid => JString(eid)).getOrElse(JNothing)) ::
         JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::

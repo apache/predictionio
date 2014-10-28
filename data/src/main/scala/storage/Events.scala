@@ -29,7 +29,7 @@ import org.apache.commons.codec.binary.Base64
 
 // separate Event for API before require mo
 case class Event(
-  val eventId: Option[EventID] = None,
+  val eventId: Option[String] = None,
   val event: String,
   val entityType: String,
   val entityId: String,
@@ -43,21 +43,10 @@ case class Event(
   val creationTime: DateTime = DateTime.now
 ) {
   override def toString() = {
-    s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," + 
+    s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," +
     s"tType=$targetEntityType,tId=$targetEntityId,p=$properties,t=$eventTime," +
     s"tags=$tags,appId=$appId,pKey=$predictionKey,ct=$creationTime)"
   }
-}
-
-case class EventID(
-  val bytes: Seq[Byte]
-) {
-  override
-  def toString = Base64.encodeBase64URLSafeString(bytes.toArray)
-}
-
-object EventID {
-  def apply(s: String) = new EventID(Base64.decodeBase64(s))
 }
 
 object EventValidation {

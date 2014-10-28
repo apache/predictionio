@@ -19,18 +19,3 @@ Very simple test
 ```
 $ data/test.sh
 ```
-
-### Run sample.ItemRankDataSource
-
-Imoprt test data
-```
-$ python sdk/python-sdk/itemrec_example.py --appid <appid>
-```
-
-Run Sample ItemRankDataSource:
-```
-$ set -a
-$ source conf/pio-env.sh
-$ set +a
-$ sbt/sbt "data/run-main io.prediction.data.sample.ItemRankDataSource <appid>"
-```
