@@ -129,6 +129,6 @@ trait IEngineFactory {
   *
   * @group General
   */
-trait QueryWithPredictionKey {
-  val predictionKey: String
+trait WithPredictionKey {
+  val predictionKey: String = ""
 }

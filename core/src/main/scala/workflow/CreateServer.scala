@@ -21,7 +21,7 @@ import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.ParamsWithAppId
-import io.prediction.controller.QueryWithPredictionKey
+import io.prediction.controller.WithPredictionKey
 import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
@@ -435,11 +435,12 @@ class ServerActor[Q, P](
               }
               val r = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
                 val prediction = serving.serveBase(javaQuery.get, predictions)
-                (gson.toJson(prediction), prediction, javaQuery.get)
+                // parse to Json4s JObject for later merging with predictionKey
+                (parse(gson.toJson(prediction)), prediction, javaQuery.get)
               } else {
                 val prediction = serving.serveBase(scalaQuery.get, predictions)
-                (compact(render(Extraction.decompose(prediction)(
-                  scalaAlgorithms.head.querySerializer))),
+                (Extraction.decompose(prediction)(
+                  scalaAlgorithms.head.querySerializer),
                   prediction,
                   scalaQuery.get)
               }
@@ -451,17 +452,23 @@ class ServerActor[Q, P](
                 * - prediction
                 * - predictionKey
                 */
-              if (feedbackEnabled) {
+              val result = if (feedbackEnabled) {
                 implicit val formats =
                   if (!scalaAlgorithms.isEmpty)
                     scalaAlgorithms.head.querySerializer
                   else
                     Utils.json4sDefaultFormats
-                val key = Random.alphanumeric.take(64).mkString
+                //val key = Random.alphanumeric.take(64).mkString
+                def genKey: String = Random.alphanumeric.take(64).mkString
+                val key = if (r._2.isInstanceOf[WithPredictionKey]) {
+                  val org = r._2.asInstanceOf[WithPredictionKey].predictionKey
+                  if (org.isEmpty) genKey else org
+                } else genKey
+
                 val predictionKey =
-                  if (r._3.isInstanceOf[QueryWithPredictionKey]) {
+                  if (r._3.isInstanceOf[WithPredictionKey]) {
                     Map("predictionKey" ->
-                      r._3.asInstanceOf[QueryWithPredictionKey].predictionKey)
+                      r._3.asInstanceOf[WithPredictionKey].predictionKey)
                   } else {
                     Map()
                   }
@@ -470,7 +477,7 @@ class ServerActor[Q, P](
                     dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
                   "event" -> "predict",
                   "eventTime" -> queryTime.toString(),
-                  "entityType" -> "prediction",
+                  "entityType" -> "pio_pr", // prediction result
                   "entityId" -> key,
                   "properties" -> Map(
                     "engineInstanceId" -> engineInstance.id,
@@ -483,13 +490,26 @@ class ServerActor[Q, P](
                     header("content-type", "application/json").responseCode
                 }
                 f onComplete {
-                  case Success(code) => Unit
-                  case Failure(t) =>
-                    log.error(s"Feedback event failed: ${t.getMessage}")
+                  case Success(code) => {
+                    if (code != 201) {
+                      log.error(s"Feedback event failed. Status code: ${code}."
+                        + s"Data: ${write(data)}.")
+                    }
+                  }
+                  case Failure(t) => {
+                    log.error(s"Feedback event failed: ${t.getMessage}") }
                 }
-              }
+                // overwrite predictionKey
+                // - if it is WithPredictionKey,
+                //   then overwrite with new key or org key
+                // - if it is not WithPredictionKey, no predictionKey injection
+                if (r._2.isInstanceOf[WithPredictionKey])
+                  r._1 merge parse(s"""{"predictionKey" : ${key}}""")
+                else r._1
+              } else r._1
+
               respondWithMediaType(`application/json`) {
-                complete(r._1)
+                complete(compact(render(result)))
               }
             } catch {
               case e: MappingException =>

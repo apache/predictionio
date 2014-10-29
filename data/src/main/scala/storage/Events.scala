@@ -93,8 +93,7 @@ object EventValidation {
   }
 
   // properties
-
-  val builtinEntityTypes = Set("pio_user", "pio_item")
+  val builtinEntityTypes = Set("pio_user", "pio_item", "pio_pr")
   val builtinProperties = Set(
     "pio_itypes", "pio_starttime", "pio_endtime",
     "pio_inactive", "pio_price", "pio_rating")
