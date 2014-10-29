@@ -26,7 +26,19 @@ If you have built a PredictionIO-related project, we would love to showcase it t
 
 |
 
-**Docker Installation for PredictionIO**
+## Vagrant Installation for PredictionIO
+
+- https://github.com/magento-hackathon/PredictionIO-Vagrant
+
+  Bring Up PredictionIO 0.8.0 VM with Vagrant.
+
+  - Core Author: Raphael Mäder
+
+  - Status: It works with PredictionIO v0.8 - Under active development
+
+|
+
+## Docker Installation for PredictionIO
 
 - https://github.com/mingfang/docker-predictionio
 
@@ -38,7 +50,7 @@ If you have built a PredictionIO-related project, we would love to showcase it t
 
 |
 
-**Node.js SDK for PredictionIO**
+## Node.js SDK for PredictionIO
 
 - https://github.com/asafyish/predictionio-driver and https://www.npmjs.org/package/predictionio-driver
 
@@ -50,7 +62,7 @@ If you have built a PredictionIO-related project, we would love to showcase it t
 
 |
 
-**C#/.NET SDK for PredictionIO**
+## C#/.NET SDK for PredictionIO
 
 - https://github.com/orbyone/Sensible.PredictionIO.NET
 
