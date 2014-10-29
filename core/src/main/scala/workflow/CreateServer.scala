@@ -504,7 +504,7 @@ class ServerActor[Q, P](
                 //   then overwrite with new key or org key
                 // - if it is not WithPredictionKey, no predictionKey injection
                 if (r._2.isInstanceOf[WithPredictionKey])
-                  r._1 merge parse(s"""{"predictionKey" : ${key}}""")
+                  r._1 merge parse(s"""{"predictionKey" : "${key}"}""")
                 else r._1
               } else r._1
 
