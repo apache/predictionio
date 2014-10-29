@@ -67,7 +67,7 @@ subdirectory.
 Before training, you must let PredictionIO know about the engine. Run the
 following command to build and register the engine.
 ```
-$ $PIO_HOME/bin/pio register
+$ $PIO_HOME/bin/pio build
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
