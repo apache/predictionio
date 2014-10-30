@@ -11,7 +11,7 @@ case class DataSourceParams(val filepath: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[DataSourceParams, EmptyDataParams,
-  TrainingData, Query, EmptyActual] {
+  TrainingData, Query, EmptyActualResult] {
 
   override
   def readTraining(sc: SparkContext): TrainingData = {

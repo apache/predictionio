@@ -187,31 +187,31 @@ public class MyModel implements Serializable {
 </div>
 </div>
 
-### Define Prediction Result
+### Define Predicted Result
 <div class="codetabs">
 <div data-lang="Scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
 {% highlight scala %}
-class MyPrediction(
+class MyPredictedResult(
   val temperature: Double
 ) extends Serializable
 {% endhighlight %}
 </div>
 <div data-lang="Java">
 
-Create a new file <code>src/main/java/MyPrediction.java</code>:
+Create a new file <code>src/main/java/MyPredictedResult.java</code>:
 
 {% highlight java %}
 package myorg;
 
 import java.io.Serializable;
 
-public class MyPrediction implements Serializable {
+public class MyPredictedResult implements Serializable {
   Double temperature;
 
-  public MyPrediction(Double temperature) {
+  public MyPredictedResult(Double temperature) {
     this.temperature = temperature;
   }
 }
@@ -229,7 +229,7 @@ Edit <code>src/main/scala/Engine.scala</code>:
 import scala.io.Source
 
 class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
-                                MyTrainingData, MyQuery, EmptyActual] {
+                                MyTrainingData, MyQuery, EmptyActualResult] {
 
   override def readTraining(): MyTrainingData = {
     val lines = Source.fromFile("path/to/data.csv").getLines()
@@ -258,7 +258,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 
 public class MyDataSource extends LJavaDataSource<
-  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActual> {
+  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActualResult> {
 
   @Override
   public MyTrainingData readTraining() {
@@ -299,7 +299,7 @@ Edit <code>src/main/scala/Engine.scala</code>:
 
 {% highlight scala %}
 class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
-  MyModel, MyQuery, MyPrediction] {
+  MyModel, MyQuery, MyPredictedResult] {
 
   override
   def train(pd: MyTrainingData): MyModel = {
@@ -316,9 +316,9 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
   }
 
   override
-  def predict(model: MyModel, query: MyQuery): MyPrediction = {
+  def predict(model: MyModel, query: MyQuery): MyPredictedResult = {
     val temp = model.temperatures(query.day)
-    new MyPrediction(temp)
+    new MyPredictedResult(temp)
   }
 }
 {% endhighlight %}
@@ -335,7 +335,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class MyAlgorithm extends LJavaAlgorithm<
-  EmptyAlgorithmParams, MyTrainingData, MyModel, MyQuery, MyPrediction> {
+  EmptyAlgorithmParams, MyTrainingData, MyModel, MyQuery, MyPredictedResult> {
 
   @Override
   public MyModel train(MyTrainingData data) {
@@ -367,9 +367,9 @@ public class MyAlgorithm extends LJavaAlgorithm<
   }
 
   @Override
-  public MyPrediction predict(MyModel model, MyQuery query) {
+  public MyPredictedResult predict(MyModel model, MyQuery query) {
     Double temp = model.temperatures.get(query.day);
-    return new MyPrediction(temp);
+    return new MyPredictedResult(temp);
   }
 }
 {% endhighlight %}
@@ -407,11 +407,11 @@ package myorg;
 import io.prediction.controller.java.*;
 
 public class MyEngineFactory implements IJavaEngineFactory {
-  public JavaSimpleEngine<MyTrainingData, EmptyDataParams, MyQuery, MyPrediction,
-    EmptyActual> apply() {
+  public JavaSimpleEngine<MyTrainingData, EmptyDataParams, MyQuery, MyPredictedResult,
+    EmptyActualResult> apply() {
 
     return new JavaSimpleEngineBuilder<MyTrainingData, EmptyDataParams,
-      MyQuery, MyPrediction, EmptyActual> ()
+      MyQuery, MyPredictedResult, EmptyActualResult> ()
       .dataSourceClass(MyDataSource.class)
       .preparatorClass() // Use default Preparator
       .addAlgorithmClass("", MyAlgorithm.class)

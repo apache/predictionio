@@ -2,10 +2,10 @@ package org.sample.java.helloworld;
 
 import java.io.Serializable;
 
-public class MyPrediction implements Serializable {
+public class MyPredictedResult implements Serializable {
   Double temperature;
 
-  public MyPrediction(Double temperature) {
+  public MyPredictedResult(Double temperature) {
     this.temperature = temperature;
   }
 }

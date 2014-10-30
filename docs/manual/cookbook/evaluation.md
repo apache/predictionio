@@ -39,7 +39,7 @@ and the goal is to increase the click-thru-rate (hopefully the conversion rate)
 of the top 5 items; 
 
 - another e-commerce company wants to sell its expiring items,
-hence have add a time component to the weight function; 
+hence has add a time component to the weight function; 
 
 - yet another company may
 only focus on long-term value of a customer, it only recommends what the user
@@ -50,7 +50,7 @@ precision, recall, MAP, MSE, etc.) for measuring prediction, there are many
 other considerations when we conduct the evaluation. Generating the test set
 can be tricky and bias-prone if we don't do it careful enough.
 It is important to
-make sure that the evaluation methods we choose approximates the actual business
+make sure that the evaluation method we choose approximates the actual business
 use case. 
 
 ## Example Evaluation: Movie Lens
@@ -75,13 +75,13 @@ The MovieLens data set contains the following information:
 To evaluate the quality of a prediction engine, we need to create two sets of
 data.
 
-1. Training set, the data used to train machine learning models, it generally
-   includes [labelled data](http://en.wikipedia.org/wiki/Supervised_learning). In
-   this case the rating assigned to movies by users. The ItemRank engine takes
-   these labelled data for training.
+1. Training set, the data used to train machine learning models. It generally
+   includes [labelled data](http://en.wikipedia.org/wiki/Supervised_learning),
+   in this case the rating assigned to movies by users. The ItemRank engine
+   takes these labelled data for training.
 
 2. Testing set, the data used to evaluate the quality of prediction engines.
-   The testing set also contains labelled data, but it is *not* send to
+   The testing set also contains labelled data, but it is *not* sent to
    prediction engines. Instead, they are used by the evaluator
    to evaluate the quality of the prediction engine. 
 
@@ -92,16 +92,16 @@ A common way to evaluate prediction is by using the sliding window method
 annotated by a timestamp, which is always the case if you are using Prediction.IO
 Event Server, we can always divide the whole data set into training and testing
 set using a cutoff timestamp. It is particularly appealing since 1. it can avoid
-look-ahead bias; and 2. it mimmics actual use case.
+look-ahead bias; and 2. it mimics actual use case.
 
 Suppose MLC retrains the prediction model every night, it uses all data in the
 database and creates a new model, the new model is then used to serve queries in
 the next day. The next night, MLC retrains again with the additional data, and
 the new model is used to serve the traffic the day after next. Hopefully you
-will get why people call it *sliding windows*.
+will get why people call it *sliding window*.
 
 In the evaluation, we attempt to recreate the same scenario. We use three
-parameters to define the sliding windows:
+parameters to define the sliding window:
 
 Field | Description
 ---- | :------
@@ -152,8 +152,8 @@ To evaluate an engine instance, we need three pieces of data.
    between Query used in deployment or evaluation, they should be treated
    equally.
 
-2. Prediction. It is also same as the one we used for deployment, as it is the
-   return value of the engine instance.
+2. Predicted Result. It is also the same as the one we used for deployment, as
+   it is the return value of the engine instance.
 
 3. Actual Result. It is the ground truth. For MLC, it is the actual rating users
    gave to items. Actual Result is hidden from the prediction and serving
@@ -167,7 +167,7 @@ is a user id and a list of items, the output (i.e. Prediction) is a ranked list
 of items. There is a mismatch between the data set and the I/O of the
 prediction engine, it is meaningless to construct a Query for each rating as
 ranking an single-item-query is an identical function.
-Our task is to define a reasonable method bridge this gap.
+Our task is to define a reasonable method to bridge this gap.
 
 > Readers may find it weird that there is a huge logical gap between the data
 > set and the actual usage. Indeed, from our experience, it happens very often.
@@ -178,7 +178,7 @@ Our task is to define a reasonable method bridge this gap.
 > If the company wants to start using
 > smart prediction service, it may need to bootstrap the prediction model with
 > the purchase data, in which case we have to define a reasonable mechanism to
-> mimmic behavorial data from the purchase history.
+> mimic behavioral data from the purchase history.
 
 There are multiple ways of creating Query set from the rating, for example:
 
@@ -187,8 +187,8 @@ There are multiple ways of creating Query set from the rating, for example:
 
 - Create a Query per user with all items;
 
-- Create a Query per active user with all items rated by that user within the testing
-  period;
+- Create a Query per active user with all items rated by that user within the
+  testing period;
 
 - Create a Query per rating, amend the item list by another randomly assigned
   un-rated item;
@@ -205,21 +205,22 @@ evaluator to decide which is good and which is bad.
 
 ### Evaluator
 
-We have defined the three main pieces: Query, Prediction, and Actual Result. It
-remains to compute the quality of an engine instance based on these data.
+We have defined the three main pieces: Query, Predicted Result, and Actual
+Result. It remains to compute the quality of an engine instance based on these
+data.
 
 We want to tell if a Prediction is good, we achieve this by comparing it with
 the Actual Result. But still, Actual Result is just a rating, in this case it is
 an integer inclusively between 1 and 5. Suppose the item list in the input Query
-is `[a,b,c,d,e]`, the output Prediction is `[d,e,c,a,b]` (items at the front
-should have better ratings than those at the end), and the user has given
-item `a` a rating of 3, item `d` a rating of 5, item `e` a rating of 2, and no rating
-for items c and b. Is this Prediction a good one? And what about another
-Prediction `[d,c,e,a,b]`?
+is `[a,b,c,d,e]`, the output Predicted Result is `[d,e,c,a,b]` (items at the
+front should have better ratings than those at the end), and the user has given
+item `a` a rating of 3, item `d` a rating of 5, item `e` a rating of 2, and no
+rating for items c and b. Is this Prediction a good one? And what about another
+Predicted Result `[d,c,e,a,b]`?
 
 #### Define Good Items
 
-A simple way to define good items it by binary classification. We can simply
+A simple way to define good items is by binary classification. We can simply
 assign a *good threshold* to the rating, i.e. items rated at least the threshold
 are good. In our evaluator, you can specify this threshold in the
 parameter:
@@ -234,13 +235,13 @@ Therefore, in our example, items `a` and `d` are good items, and items `e` is
 bad. A perfect ItemRank engine should rank `a` and `d` to the top, and `e` to
 the bottom.
 
-> There is problems with binary classification, items with rating of 3 is
-> treated equally with items with rating of 5. It is possible to use a more
+> There is a problem with binary classification. Items with rating of 3 is
+> treated equally as items with rating of 5. It is possible to use a more
 > granular rating, but let's keep it simple in this tutorial.
 
 #### Define Good Ordering
 
-It worths considerable amount of effort to define a *good* ordering. 
+It is worth a considerable amount of effort to define a *good* ordering. 
 Simply put, is there a difference between `[d,c,a,b,e]` and `[c,d,a,b,e]`?
 We know that `d` is a good item, but we have no idea about `c` (i.e. user didn't
 rate `c`). One may argue that `[d,c,a,b,e]` is better since it puts a *good*
@@ -266,25 +267,24 @@ DetailedEvaluatorParams(
 
 > In the other case where the ordering among the top items matters, one may
 > consider using 
-> [Mean-Average-Precision@k](http://en.wikipedia.org/wiki/Information_retrieval#Mean_average_precision)
+> [Mean-Average-Precision@k](http://en.wikipedia.org/wiki/Information_retrieval#Mean_average_precision).
 
 ### First Evaluation
 
-We are ready to run the actual evaluation. You will find the code at
+We are ready to run the actual evaluation. You can find the code at
 `examples/scala-local-movielens-evaluation/src/main/scala/Evaluation.scala`.
 
 This tutorial uses app_id = 9, make sure you have imported MovieLens data with
 app_id = 9. See
-[instructions](../../tutorials/engines/itemrec/movielens.html). Let's neglect
+[instructions](../../tutorials/engines/itemrec/movielens.html). Let's ignore
 the engine parameters and focus on the evaluator parameters, we will discuss
 parameter tuning in the next tutorial.
 
 We use `ItemRankDetailedEvaluator` for evaluation, it takes
 `DetailedEvaluatorParams` as parameter. The following code (can be found in
 `Evaluation1`) illustrate a complete
-parameter set: we use only "rate" action for rating, and consider only rating of
-at least 3 be good rating; we use Precision@k as our main measure, and set k =
-10.
+parameter set: we use only "rate" action for rating, and consider only good
+rating (3 or above); we use Precision@k as our main measure, and set k = 10.
 
 ```scala
 val evaluatorParams = new DetailedEvaluatorParams(
@@ -295,7 +295,8 @@ val evaluatorParams = new DetailedEvaluatorParams(
 ) 
 ```
 
-You can run the evaluation with the following command.
+You can run the evaluation with the following command. This requires a
+standalone spark cluster up and running.
 
 ```
 $ cd $PIO_HOME/examples/scala-local-movielens-evaluation

@@ -67,19 +67,9 @@ package object controller {
     */
   type EmptyModel = AnyRef
 
-  /** Empty input query.
+  /** Empty actual result.
     * @group General
     */
-  type EmptyQuery = AnyRef
-
-  /** Empty output prediction.
-    * @group General
-    */
-  type EmptyPrediction = AnyRef
-
-  /** Empty actual value.
-    * @group General
-    */
-  type EmptyActual = AnyRef
+  type EmptyActualResult = AnyRef
 
 }
