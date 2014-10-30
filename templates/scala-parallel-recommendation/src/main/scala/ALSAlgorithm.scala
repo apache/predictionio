@@ -17,7 +17,7 @@ case class ALSAlgorithmParams(
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
   extends PAlgorithm[ALSAlgorithmParams, PreparedData,
-      PersistentMatrixFactorizationModel, Query, Prediction] {
+      PersistentMatrixFactorizationModel, Query, PredictedResult] {
 
   def train(data: PreparedData): PersistentMatrixFactorizationModel = {
     val m = ALS.train(data.ratings, ap.rank, ap.numIterations, ap.lambda)
@@ -28,11 +28,12 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   }
 
   def predict(
-    model: PersistentMatrixFactorizationModel, query: Query): Prediction = {
+    model: PersistentMatrixFactorizationModel,
+    query: Query): PredictedResult = {
     // MLlib MatrixFactorizationModel return Array[Rating]
     val productScores = model.recommendProducts(query.user, query.num)
       .map (r => ProductScore(r.product, r.rating))
-    new Prediction(productScores)
+    new PredictedResult(productScores)
   }
 
 }

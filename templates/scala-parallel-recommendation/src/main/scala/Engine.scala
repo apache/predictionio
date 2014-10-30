@@ -12,7 +12,7 @@ case class ProductScore(
   score: Double
 ) extends Serializable
 
-case class Prediction(
+case class PredictedResult(
   val productScores: Array[ProductScore]
 ) extends Serializable
 
