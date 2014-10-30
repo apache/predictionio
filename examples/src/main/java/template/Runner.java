@@ -17,7 +17,7 @@ import myengine.MyParams.MetricsParams;
 import myengine.MyData.TrainingData;
 import myengine.MyData.PreparedData;
 import myengine.MyData.Query;
-import myengine.MyData.Prediction;
+import myengine.MyData.PredictedResult;
 import myengine.MyData.Actual;
 
 import java.util.HashMap;
@@ -27,9 +27,9 @@ public class Runner {
   // During development, one can build a semi-engine, only add the first few layers. In this
   // particular example, we only add until dataSource layer
   private static class HalfBakedEngineFactory implements IEngineFactory {
-    public JavaEngine<TrainingData, DataParams, PreparedData, Query, Prediction, Actual> apply() {
+    public JavaEngine<TrainingData, DataParams, PreparedData, Query, PredictedResult, Actual> apply() {
       return new JavaEngineBuilder<
-        TrainingData, DataParams, PreparedData, Query, Prediction, Actual> ()
+        TrainingData, DataParams, PreparedData, Query, PredictedResult, Actual> ()
         .dataSourceClass(DataSource.class)
         .build();
     }

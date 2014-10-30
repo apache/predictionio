@@ -5,7 +5,7 @@ import io.prediction.controller.java.JavaMetrics;
 import myengine.MyParams.MetricsParams;
 import myengine.MyParams.DataParams;
 import myengine.MyData.Query;
-import myengine.MyData.Prediction;
+import myengine.MyData.PredictedResult;
 import myengine.MyData.Actual;
 import myengine.MyData.MetricUnit;
 import myengine.MyData.MetricResult;
@@ -14,7 +14,7 @@ import myengine.MyData.MultipleMetricResult;
 import scala.Tuple2;
 
 public class Metrics
-  extends JavaMetrics<MetricsParams, DataParams, Query, Prediction, Actual,
+  extends JavaMetrics<MetricsParams, DataParams, Query, PredictedResult, Actual,
   MetricUnit, MetricResult, MultipleMetricResult> {
 
   public Metrics(MetricsParams params) {
@@ -22,7 +22,7 @@ public class Metrics
   }
 
   @Override
-  public MetricUnit computeUnit(Query query, Prediction predicted, Actual actual) {
+  public MetricUnit computeUnit(Query query, PredictedResult predicted, Actual actual) {
     return new MetricUnit();
   }
 

@@ -6,10 +6,10 @@ import myengine.MyParams.AlgoParams;
 import myengine.MyData.PreparedData;
 import myengine.MyData.Model;
 import myengine.MyData.Query;
-import myengine.MyData.Prediction;
+import myengine.MyData.PredictedResult;
 
 public class Algorithm extends
-  LJavaAlgorithm<AlgoParams, PreparedData, Model, Query, Prediction> {
+  LJavaAlgorithm<AlgoParams, PreparedData, Model, Query, PredictedResult> {
 
   public Algorithm(AlgoParams params) {
 
@@ -21,7 +21,7 @@ public class Algorithm extends
   }
 
   @Override
-  public Prediction predict(Model model, Query query) {
-    return new Prediction();
+  public PredictedResult predict(Model model, Query query) {
+    return new PredictedResult();
   }
 }

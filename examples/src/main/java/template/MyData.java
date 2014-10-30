@@ -11,7 +11,7 @@ public class MyData {
 
   public static class Actual implements Serializable {}
 
-  public static class Prediction implements Serializable {}
+  public static class PredictedResult implements Serializable {}
 
   public static class PreparedData implements Serializable {}
 

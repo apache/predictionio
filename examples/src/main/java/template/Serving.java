@@ -4,18 +4,18 @@ import io.prediction.controller.java.LJavaServing;
 
 import myengine.MyParams.ServingParams;
 import myengine.MyData.Query;
-import myengine.MyData.Prediction;
+import myengine.MyData.PredictedResult;
 
 public class Serving
-  extends LJavaServing<ServingParams, Query, Prediction> {
+  extends LJavaServing<ServingParams, Query, PredictedResult> {
 
   public Serving(ServingParams params) {
 
   }
 
   @Override
-  public Prediction serve(Query query, Iterable<Prediction> predictions) {
-    return new Prediction();
+  public PredictedResult serve(Query query, Iterable<PredictedResult> predictions) {
+    return new PredictedResult();
   }
 
 }
