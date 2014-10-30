@@ -1,7 +1,7 @@
 package io.prediction.examples.java.recommendations.tutorial5;
 
 import io.prediction.examples.java.recommendations.tutorial1.DataSourceParams;
-import io.prediction.examples.java.recommendations.tutorial3.Metrics;
+import io.prediction.examples.java.recommendations.tutorial3.Evaluator;
 
 import io.prediction.controller.java.EmptyParams;
 import io.prediction.controller.java.IJavaEngineFactory;
@@ -26,7 +26,7 @@ public class Runner5 {
     JavaWorkflow.runEngine(
       (new EngineFactory()).apply(),
       engineParams,
-      Metrics.class,
+      Evaluator.class,
       new EmptyParams(),
       new WorkflowParamsBuilder().batch("MyEngine").verbose(3).build()
     );

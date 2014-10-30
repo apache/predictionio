@@ -1,7 +1,7 @@
 package io.prediction.examples.java.recommendations.tutorial3;
 
 import io.prediction.examples.java.recommendations.tutorial1.Query;
-import io.prediction.controller.java.JavaMetrics;
+import io.prediction.controller.java.JavaEvaluator;
 import io.prediction.controller.java.EmptyParams;
 
 import scala.Tuple2;
@@ -11,14 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Root mean square error */
-public class Metrics
-  extends JavaMetrics<EmptyParams, Object, Query, Float, Float,
+public class Evaluator
+  extends JavaEvaluator<EmptyParams, Object, Query, Float, Float,
   Double, Double, String> {
 
-  final static Logger logger = LoggerFactory.getLogger(Metrics.class);
+  final static Logger logger = LoggerFactory.getLogger(Evaluator.class);
 
   @Override
-  public Double computeUnit(Query query, Float predicted, Float actual) {
+  public Double evaluateUnit(Query query, Float predicted, Float actual) {
     logger.info("Q: " + query.toString() + " P: " + predicted + " A: " + actual);
     // return squared error
     double error;
@@ -30,7 +30,7 @@ public class Metrics
   }
 
   @Override
-  public Double computeSet(Object dataParams, Iterable<Double> metricUnits) {
+  public Double evaluateSet(Object dataParams, Iterable<Double> metricUnits) {
     double sum = 0.0;
     int count = 0;
     for (double squareError : metricUnits) {
@@ -41,7 +41,7 @@ public class Metrics
   }
 
   @Override
-  public String computeMultipleSets(
+  public String evaluateAll(
     Iterable<Tuple2<Object, Double>> input) {
     return Arrays.toString(IteratorUtils.toArray(input.iterator()));
   }
