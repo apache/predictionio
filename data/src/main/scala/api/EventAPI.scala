@@ -146,16 +146,23 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
         }
       } ~
       get {
-        parameters('appId.as[Int],
+        parameters(
+          'appId.as[Int],
           'startTime.as[Option[String]],
           'untilTime.as[Option[String]],
           'entityType.as[Option[String]],
-          'entityId.as[Option[String]]) {
-          (appId, startTimeStr, untilTimeStr, entityType, entityId) =>
+          'entityId.as[Option[String]],
+          'limit.as[Option[Int]],
+          'reversed.as[Option[Boolean]]) {
+          (appId, startTimeStr, untilTimeStr, entityType, entityId, 
+            limit, reversed) =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
               log.debug(
-                s"GET events of appId=${appId} ${startTimeStr} ${untilTimeStr}")
+                s"GET events of appId=${appId} " +
+                s"st=${startTimeStr} ut=${untilTimeStr} " +
+                s"et=${entityType} eid=${entityId} " +
+                s"li=${limit} rev=${reversed} ")
 
               val parseTime = Future {
                 val startTime = startTimeStr.map(Utils.stringToDateTime(_))
@@ -164,10 +171,12 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
               }
 
               parseTime.flatMap { case (startTime, untilTime) =>
-                val data = eventClient.futureGetByAppIdAndTimeAndEntity(
+                val data = eventClient.futureGetGeneral(
                   appId,
                   startTime, untilTime,
-                  entityType, entityId).map { r =>
+                  entityType, entityId,
+                  limit, reversed)
+                  .map { r =>
                     r match {
                       case Left(StorageError(message)) =>
                         (StatusCodes.InternalServerError,

@@ -143,6 +143,18 @@ trait Events {
     entityId: Option[String])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]]  = notImplemented
 
+  // limit: None or -1: Get all events
+  // order: Either 1 or -1. 1: From earliest; -1: From latest;
+  def futureGetGeneral(
+    appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String],
+    limit: Option[Int] = None,
+    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
+    Future[Either[StorageError, Iterator[Event]]]  = notImplemented
+
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = notImplemented
 

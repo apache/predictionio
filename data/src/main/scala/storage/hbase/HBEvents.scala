@@ -237,6 +237,7 @@ class HBEvents(client: HBClient, namespace: String)
     entityType: Option[String],
     entityId: Option[String])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
+      /*
       Future {
         val table = client.connection.getTable(tableName)
 
@@ -245,6 +246,41 @@ class HBEvents(client: HBClient, namespace: String)
         val scanner = table.getScanner(scan)
         table.close()
         Right(scanner.iterator().map { resultToEvent(_) })
+      }
+      */
+    futureGetGeneral(appId, startTime, untilTime, entityType, entityId,
+      None, None)
+  }
+ 
+  override
+  def futureGetGeneral(
+    appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String],
+    limit: Option[Int] = Some(20),
+    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
+    Future[Either[StorageError, Iterator[Event]]] = {
+      Future {
+        val table = client.connection.getTable(tableName)
+
+        val scan = HBEventsUtil.createScan(
+          appId, startTime, untilTime,
+          entityType, entityId, reversed)
+        val scanner = table.getScanner(scan)
+        table.close()
+
+        val eventsIter = scanner.iterator()
+
+        val results: Iterator[Result]  = (
+          if (limit.isEmpty) eventsIter
+          else eventsIter.take(limit.get)
+        )
+
+        val events = results.map { resultToEvent(_) }
+
+        Right(events)
       }
   }
 
