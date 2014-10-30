@@ -19,6 +19,7 @@ $EngineJson is
 
 1. "random_engine.json" for "Random"
 2. "keyword_similarity_engine.json" for "Keyword Similarity KNN"
+3. "simrank_similarity_engine.json" for "SimRank Similarity"
 
 To query :
 
