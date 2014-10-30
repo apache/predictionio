@@ -27,7 +27,7 @@ class MyPredictedResult(
 
 // controller components
 class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
-  MyTrainingData, MyQuery, EmptyActual] {
+  MyTrainingData, MyQuery, EmptyActualResult] {
 
   /* override this to return Training Data only */
   override

@@ -229,7 +229,7 @@ Edit <code>src/main/scala/Engine.scala</code>:
 import scala.io.Source
 
 class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
-                                MyTrainingData, MyQuery, EmptyActual] {
+                                MyTrainingData, MyQuery, EmptyActualResult] {
 
   override def readTraining(): MyTrainingData = {
     val lines = Source.fromFile("path/to/data.csv").getLines()
@@ -258,7 +258,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 
 public class MyDataSource extends LJavaDataSource<
-  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActual> {
+  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActualResult> {
 
   @Override
   public MyTrainingData readTraining() {
@@ -408,10 +408,10 @@ import io.prediction.controller.java.*;
 
 public class MyEngineFactory implements IJavaEngineFactory {
   public JavaSimpleEngine<MyTrainingData, EmptyDataParams, MyQuery, MyPredictedResult,
-    EmptyActual> apply() {
+    EmptyActualResult> apply() {
 
     return new JavaSimpleEngineBuilder<MyTrainingData, EmptyDataParams,
-      MyQuery, MyPredictedResult, EmptyActual> ()
+      MyQuery, MyPredictedResult, EmptyActualResult> ()
       .dataSourceClass(MyDataSource.class)
       .preparatorClass() // Use default Preparator
       .addAlgorithmClass("", MyAlgorithm.class)

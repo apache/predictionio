@@ -4,10 +4,10 @@ import io.prediction.controller.java.*;
 
 public class MyEngineFactory implements IJavaEngineFactory {
   public JavaSimpleEngine<MyTrainingData, EmptyDataParams, MyQuery,
-    MyPredictedResult, EmptyActual> apply() {
+    MyPredictedResult, EmptyActualResult> apply() {
 
     return new JavaSimpleEngineBuilder<MyTrainingData, EmptyDataParams,
-      MyQuery, MyPredictedResult, EmptyActual> ()
+      MyQuery, MyPredictedResult, EmptyActualResult> ()
       .dataSourceClass(MyDataSource.class)
       .preparatorClass() // Use default Preparator
       .addAlgorithmClass("", MyAlgorithm.class)

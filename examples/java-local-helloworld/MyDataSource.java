@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MyDataSource extends LJavaDataSource<
-  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActual> {
+  EmptyDataSourceParams, EmptyDataParams, MyTrainingData, MyQuery, EmptyActualResult> {
 
   final static Logger logger = LoggerFactory.getLogger(MyDataSource.class);
 
