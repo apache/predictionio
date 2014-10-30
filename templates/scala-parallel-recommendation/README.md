@@ -67,7 +67,7 @@ subdirectory.
 Before training, you must let PredictionIO know about the engine. Run the
 following command to build and register the engine.
 ```
-$ $PIO_HOME/bin/pio register
+$ $PIO_HOME/bin/pio build
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 
@@ -100,9 +100,9 @@ can visit that page in your web browser to check its status.
 
 To perform real-time predictions, try the following. This predicts on how user 1 will rate product (movie) 4. As in all collaborative filtering algorithms, it will not handle the case of a cold user (when the user has not rated any movies).
 ```
-$ curl -H "Content-Type: application/json" -d '{ "user": 1, "product":4 }' http://localhost:8000/queries.json
+$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num":4 }' http://localhost:8000/queries.json
 
-{"rating":1.6620945160235656}
+{"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
 
 Congratulations! You have just trained an ALS model and is able to perform real

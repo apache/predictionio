@@ -17,7 +17,7 @@ class Query(
   val features: Array[Double]
 ) extends Serializable
 
-class Prediction(
+class PredictedResult(
   val label: Double
 ) extends Serializable
 
@@ -25,15 +25,15 @@ class Prediction(
 // extends P2LAlgorithm because the MLlib's NaiveBayesModel doesn't contain RDD.
 class NaiveBayesAlgorithm(val ap: AlgorithmParams)
   extends P2LAlgorithm[AlgorithmParams, PreparedData,
-      NaiveBayesModel, Query, Prediction] {
+      NaiveBayesModel, Query, PredictedResult] {
 
   def train(data: PreparedData): NaiveBayesModel = {
     NaiveBayes.train(data.labeledPoints, ap.lambda)
   }
 
-  def predict(model: NaiveBayesModel, query: Query): Prediction = {
+  def predict(model: NaiveBayesModel, query: Query): PredictedResult = {
     val label = model.predict(Vectors.dense(query.features))
-    new Prediction(label)
+    new PredictedResult(label)
   }
 
 }
