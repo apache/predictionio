@@ -2,13 +2,18 @@ package org.template.recommendation
 
 import io.prediction.controller._
 
-class Query(
+case class Query(
   val user: Int,
-  val product: Int
+  val num: Int
 ) extends Serializable
 
-class Prediction(
-  val rating: Double
+case class ProductScore(
+  product: Int,
+  score: Double
+) extends Serializable
+
+case class Prediction(
+  val productScores: Array[ProductScore]
 ) extends Serializable
 
 object RecommendationEngine extends IEngineFactory {
