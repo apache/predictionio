@@ -86,8 +86,8 @@ Let's look at the code and see how you can customize the engine.
 
 ## The Engine Design
 
-As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num":4 } and return
-the predicted result in JSON format. 
+As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num":4 }, and return
+a JSON predicted result. 
 
 In MyEngine/src/main/scala/***Engine.scala***
 
@@ -246,17 +246,7 @@ The two functions of the algorithm class are `def train` and `def predict`.
 
 In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*, *iterations* and *lambda*. 
 
-PredictionIO automatically loads the parameters of *algorithms* specified in MyEngine/***engine.json*** to the constructor `ap` of class `ALSAlgorithmParams`:
-
-```
-case class ALSAlgorithmParams(
-  val rank: Int,
-  val numIterations: Int,
-  val lambda: Double,
-  val persistModel: Boolean) extends Params
-```
-
-And in ***engine.json***:
+The values of these parameters are specified in *algorithms* of MyEngine/***engine.json***:
 
 ``` 
 {
@@ -273,8 +263,17 @@ And in ***engine.json***:
     ]
 }
 ```
+PredictionIO will automatically loads these values into the constructor `ap`, which has a corresponding case case `ALSAlgorithmParams`:
 
-`ALS.train` then returns a `MatrixFactorizationModel` model, which contains RDD data. 
+```
+case class ALSAlgorithmParams(
+  val rank: Int,
+  val numIterations: Int,
+  val lambda: Double,
+  val persistModel: Boolean) extends Params
+```
+
+`ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD data. 
 RDD is a distributed collection of items which *does not* persist. To store the model, `PersistentMatrixFactorizationModel` extends `MatrixFactorizationModel` and makes it persistable.
 
 > The detailed implementation can be found at MyEngine/src/main/scala/***PersistentMatrixFactorizationModel.scala***
