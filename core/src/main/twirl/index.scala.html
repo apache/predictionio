@@ -32,6 +32,7 @@
       <h2>Engine Instance Information</h2>
       <table class="table table-bordered table-striped">
         <tr><th>ID</th><td>@{engineInstance.id}</td></tr>
+        <tr><th>Variant ID</th><td>@{engineInstance.engineVariant}</td></tr>
         <tr><th>Training Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.startTime)}</td></tr>
         <tr><th>Training End Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.endTime)}</td></tr>
       </table>
@@ -44,7 +45,7 @@
       <h2>Server Information</h2>
       <table class="table table-bordered table-striped">
         <tr><th>Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(serverStartTime)}</td></tr>
-        <tr><th>Engine Factory Class (Scala/Java)</th><td>@{manifest.engineFactory}</td></tr>
+        <tr><th>Engine Factory Class (Scala/Java)</th><td>@{engineInstance.engineFactory}</td></tr>
         <tr>
           <th rowspan="@(manifest.files.size)">Library Files</th>
           <td>@{manifest.files.head}</td>

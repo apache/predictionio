@@ -242,6 +242,7 @@ object CoreWorkflow {
     endTime = DateTime.now,
     engineId = "",
     engineVersion = "",
+    engineVariant = "",
     engineFactory = "",
     evaluatorClass = "",
     batch = "",

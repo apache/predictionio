@@ -1,6 +1,13 @@
 {
-  "id": "io.prediction.examples.regression.local",
-  "version": "0.8.1-SNAPSHOT",
-  "name": "Nak-based Regression Engine",
-  "engineFactory": "io.prediction.examples.regression.local.RegressionEngineFactory"
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "io.prediction.examples.regression.local.RegressionEngineFactory",
+  "datasource": {
+    "filepath": "../data/lr_data.txt",
+    "seed": 1337
+  },
+  "preparator": {
+    "n": 2,
+    "k": 0
+  }
 }

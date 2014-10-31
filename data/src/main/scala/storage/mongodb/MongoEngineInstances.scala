@@ -44,6 +44,7 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       "endTime"                -> i.endTime,
       "engineId"               -> i.engineId,
       "engineVersion"          -> i.engineVersion,
+      "engineVariant"          -> i.engineVariant,
       "engineFactory"          -> i.engineFactory,
       "metricsClass"           -> i.evaluatorClass,
       "batch"                  -> i.batch,
@@ -65,12 +66,16 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       dbObjToEngineInstance(_)
     }
 
-  def getLatestCompleted(engineId: String, engineVersion: String) = {
+  def getLatestCompleted(
+      engineId: String,
+      engineVersion: String,
+      engineVariant: String) = {
     engineInstanceColl.findOne(
       o = MongoDBObject(
         "status" -> "COMPLETED",
         "engineId" -> engineId,
-        "engineVersion" -> engineVersion),
+        "engineVersion" -> engineVersion,
+        "engineVariant" -> engineVariant),
       orderBy = MongoDBObject("startTime" -> -1)) map {
         dbObjToEngineInstance(_)
       }
@@ -91,6 +96,7 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       "endTime"                -> i.endTime,
       "engineId"               -> i.engineId,
       "engineVersion"          -> i.engineVersion,
+      "engineVariant"          -> i.engineVariant,
       "engineFactory"          -> i.engineFactory,
       "metricsClass"           -> i.evaluatorClass,
       "batch"                  -> i.batch,
@@ -117,6 +123,7 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       endTime = dbObj.as[DateTime]("endTime"),
       engineId = dbObj.as[String]("engineId"),
       engineVersion = dbObj.as[String]("engineVersion"),
+      engineVariant = dbObj.as[String]("engineVariant"),
       engineFactory = dbObj.as[String]("engineFactory"),
       evaluatorClass = dbObj.as[String]("metricsClass"),
       batch = dbObj.as[String]("batch"),

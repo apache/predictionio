@@ -57,6 +57,8 @@ class ESEngineInstances(client: Client, index: String)
           ("engineId" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("engineVersion" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("engineVariant" ->
+            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("engineFactory" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("metricsClass" ->
@@ -110,13 +112,17 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
-  def getLatestCompleted(engineId: String, engineVersion: String) = {
+  def getLatestCompleted(
+      engineId: String,
+      engineVersion: String,
+      engineVariant: String) = {
     try {
       val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
         andFilter(
           termFilter("status", "COMPLETED"),
           termFilter("engineId", engineId),
-          termFilter("engineVersion", engineVersion))).
+          termFilter("engineVersion", engineVersion),
+          termFilter("engineVariant", engineVariant))).
         addSort("startTime", SortOrder.DESC).get
       val hits = response.getHits().hits()
       if (hits.size > 0) {

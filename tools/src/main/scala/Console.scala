@@ -29,12 +29,14 @@ import io.prediction.data.api.EventServerConfig
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
 import org.json4s._
+import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
 import semverfi._
 
 import scala.io.Source
 import scala.sys.process._
+import scala.util.Random
 
 import java.io.File
 import java.nio.file.Files
@@ -65,9 +67,10 @@ case class CommonArgs(
   driverPassThrough: Seq[String] = Seq(),
   pioHome: Option[String] = None,
   sparkHome: Option[String] = None,
-  variantId: Option[String] = None,
-  variantVersion: Option[String] = None,
-  engineJson: File = new File("engine.json"))
+  engineId: Option[String] = None,
+  engineVersion: Option[String] = None,
+  variantJson: File = new File("engine.json"),
+  manifestJson: File = new File("manifest.json"))
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -109,22 +112,29 @@ object Console extends Logging {
         "        If not specified, will try to use the SPARK_HOME\n" +
         "        environmental variable. If this fails as well, default to\n" +
         "        current directory.")
-      opt[String]("variant-id") abbr("vi") action { (x, c) =>
-        c.copy(common = c.common.copy(variantId = Some(x)))
-      } text("Specify an engine variant ID. Usually used by distributed " +
+      opt[String]("engine-id") abbr("ei") action { (x, c) =>
+        c.copy(common = c.common.copy(engineId = Some(x)))
+      } text("Specify an engine ID. Usually used by distributed deployment.")
+      opt[String]("engine-version") abbr("ev") action { (x, c) =>
+        c.copy(common = c.common.copy(engineVersion = Some(x)))
+      } text("Specify an engine version. Usually used by distributed " +
         "deployment.")
-      opt[String]("variant-version") abbr("vv") action { (x, c) =>
-        c.copy(common = c.common.copy(variantVersion = Some(x)))
-      } text("Specify an engine variant version. Usually used by distributed " +
-        "deployment.")
-      opt[File]("variant-json") abbr("vj") action { (x, c) =>
-        c.copy(common = c.common.copy(engineJson = x))
+      opt[File]("variant") abbr("v") action { (x, c) =>
+        c.copy(common = c.common.copy(variantJson = x))
       } validate { x =>
         if (x.exists)
           success
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to an engine variant JSON file. Default: engine.json")
+      opt[File]("manifest") abbr("m") action { (x, c) =>
+        c.copy(common = c.common.copy(manifestJson = x))
+      } validate { x =>
+        if (x.exists)
+          success
+        else
+          failure(s"${x.getCanonicalPath} does not exist.")
+      } text("Path to an engine manifest JSON file. Default: manifest.json")
       opt[File]("sbt") action { (x, c) =>
         c.copy(build = c.build.copy(sbt = Some(x)))
       } validate { x =>
@@ -139,32 +149,32 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "version")
         }
-      //note("")
-      //cmd("new").
-      //  text("Creates a new engine project in a subdirectory with the same " +
-      //    "name as the project. The project name will also be used as the " +
-      //    "default engine ID.").
-      //  action { (_, c) =>
-      //    c.copy(commands = c.commands :+ "new")
-      //  } children(
-      //    arg[String]("<project name>") action { (x, c) =>
-      //      c.copy(projectName = Some(x))
-      //    } text("Engine project name.")
-      //  )
-      //note("")
-      //cmd("instance").
-      //  text("Creates a new engine instance in a subdirectory with the same " +
-      //    "name as the engine's ID by default.").
-      //  action { (_, c) =>
-      //    c.copy(commands = c.commands :+ "instance")
-      //  } children(
-      //    arg[String]("<engine ID>") action { (x, c) =>
-      //      c.copy(projectName = Some(x))
-      //    } text("Engine ID."),
-      //    opt[String]("directory-name") action { (x, c) =>
-      //      c.copy(directoryName = Some(x))
-      //    } text("Engine instance directory name.")
-      //  )
+      note("")
+      cmd("new").
+        text("Creates a new engine project in a subdirectory with the same " +
+          "name as the project. The project name will also be used as the " +
+          "default engine ID.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "new")
+        } children(
+          arg[String]("<project name>") action { (x, c) =>
+            c.copy(projectName = Some(x))
+          } text("Engine project name.")
+        )
+      note("")
+      cmd("instance").
+        text("Creates a new engine instance in a subdirectory with the same " +
+          "name as the engine's ID by default.").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "instance")
+        } children(
+          arg[String]("<engine ID>") action { (x, c) =>
+            c.copy(projectName = Some(x))
+          } text("Engine ID."),
+          opt[String]("directory-name") action { (x, c) =>
+            c.copy(directoryName = Some(x))
+          } text("Engine instance directory name.")
+        )
       note("")
       cmd("build").
         text("Build an engine at the current directory.").
@@ -483,14 +493,17 @@ object Console extends Logging {
         case Seq("instance") =>
           createInstance(ca)
         case Seq("build") =>
+          generateManifestJson(ca.common.manifestJson)
           build(ca)
         case Seq("register") =>
           register(ca)
         case Seq("unregister") =>
           unregister(ca)
         case Seq("train") =>
+          generateManifestJson(ca.common.manifestJson)
           train(ca)
         case Seq("eval") =>
+          generateManifestJson(ca.common.manifestJson)
           train(ca)
         case Seq("deploy") =>
           deploy(ca)
@@ -501,8 +514,10 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
         case Seq("compile") =>
+          generateManifestJson(ca.common.manifestJson)
           compile(ca)
         case Seq("run") =>
+          generateManifestJson(ca.common.manifestJson)
           run(ca)
         case Seq("dist") =>
           dist(ca)
@@ -600,7 +615,7 @@ object Console extends Logging {
 
   def register(ca: ConsoleArgs): Unit = {
     if (builtinEngineDir ||
-      !RegisterEngine.builtinEngine(ca.common.engineJson)) {
+      !RegisterEngine.builtinEngine(ca.common.manifestJson)) {
       if (!distEngineDir) compile(ca)
       info("Locating files to be registered.")
       val jarFiles = jarFilesForScala
@@ -609,17 +624,17 @@ object Console extends Logging {
         sys.exit(1)
       }
       jarFiles foreach { f => info(s"Found ${f.getName}")}
-      RegisterEngine.registerEngine(ca.common.engineJson, jarFiles)
+      RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
     } else {
       info("Registering a built-in engine.")
       RegisterEngine.registerEngine(
-        ca.common.engineJson,
+        ca.common.manifestJson,
         builtinEngines(ca.common.pioHome.get))
     }
   }
 
   def unregister(ca: ConsoleArgs): Unit = {
-    RegisterEngine.unregisterEngine(ca.common.engineJson)
+    RegisterEngine.unregisterEngine(ca.common.manifestJson)
   }
 
   def train(ca: ConsoleArgs): Unit = {
@@ -630,28 +645,37 @@ object Console extends Logging {
       sys.exit(1)
     }
     jarFiles foreach { f => info(s"Found ${f.getName}")}
-    RegisterEngine.registerEngine(ca.common.engineJson, jarFiles)
+    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
     withRegisteredManifest(
-      ca.common.engineJson,
-      ca.common.variantId,
-      ca.common.variantVersion) { em =>
+      ca.common.manifestJson,
+      ca.common.engineId,
+      ca.common.engineVersion) { em =>
       RunWorkflow.runWorkflow(
         ca,
         coreAssembly(ca.common.pioHome.get),
-        em)
+        em,
+        ca.common.variantJson)
     }
   }
 
   def deploy(ca: ConsoleArgs): Unit = {
     withRegisteredManifest(
-      ca.common.engineJson,
-      ca.common.variantId,
-      ca.common.variantVersion) { em =>
+      ca.common.manifestJson,
+      ca.common.engineId,
+      ca.common.engineVersion) { em =>
+      val variantJson = parse(Source.fromFile(ca.common.variantJson).mkString)
+      val variantId = variantJson \ "id" match {
+        case JString(s) => s
+        case _ =>
+          error("Unable to read engine variant ID from " +
+            s"${ca.common.variantJson.getCanonicalPath}. Aborting.")
+          sys.exit(1)
+      }
       val engineInstances = Storage.getMetaDataEngineInstances
       val engineInstance = ca.engineInstanceId map { eid =>
         engineInstances.get(eid)
       } getOrElse {
-        engineInstances.getLatestCompleted(em.id, em.version)
+        engineInstances.getLatestCompleted(em.id, em.version, variantId)
       }
       engineInstance map { r =>
         undeploy(ca)
@@ -800,7 +824,7 @@ object Console extends Logging {
 
   def dist(ca: ConsoleArgs): Unit = {
     if (builtinEngineDir ||
-      !RegisterEngine.builtinEngine(ca.common.engineJson)) {
+      !RegisterEngine.builtinEngine(ca.common.manifestJson)) {
       compile(ca)
     }
     info("Locating files to be distributed.")
@@ -816,8 +840,8 @@ object Console extends Logging {
       info(s"Found ${f.getName}")
       FileUtils.copyFile(f, new File(libDir, f.getName))
     }
-    val engineJson = "engine.json"
-    FileUtils.copyFile(new File(engineJson), new File(distDir, engineJson))
+    val variantJson = "engine.json"
+    FileUtils.copyFile(new File(variantJson), new File(distDir, variantJson))
     val paramsDir = new File("params")
     if (paramsDir.exists)
       FileUtils.copyDirectory(paramsDir, new File(distDir, paramsDir.getName))
@@ -961,7 +985,51 @@ object Console extends Logging {
     }
   }
 
-  def readEngineJson(json: File): EngineManifest = {
+  val manifestAutogenTag = "pio-autogen-manifest"
+
+  def regenerateManifestJson(json: File): Unit = {
+    val cwd = sys.props("user.dir")
+    if (json.exists) {
+      val em = readManifestJson(json)
+      if (em.description == Some(manifestAutogenTag) && cwd != em.version) {
+        warn("This engine project directory contains an auto-generated " +
+          "manifest that has been copied/moved from another location. ")
+        warn("Regenerating the manifest to reflect the updated location. " +
+          "This will dissociate with all previous engine instances.")
+        generateManifestJson(json)
+      } else {
+        info(s"Using existing engine manifest JSON at ${json.getCanonicalPath}")
+      }
+    } else {
+      generateManifestJson(json)
+    }
+  }
+
+  def generateManifestJson(json: File): Unit = {
+    val cwd = sys.props("user.dir")
+    implicit val formats = Utils.json4sDefaultFormats +
+      new EngineManifestSerializer
+    val rand = Random.alphanumeric.take(32).mkString
+    val ha = java.security.MessageDigest.getInstance("SHA-1").
+      digest(cwd.getBytes).map("%02x".format(_)).mkString
+    val em = EngineManifest(
+      id = rand,
+      version = ha,
+      name = new File(cwd).getName,
+      description = Some(manifestAutogenTag),
+      files = Seq(),
+      engineFactory = "")
+    try {
+      FileUtils.writeStringToFile(json, write(em), "ISO-8859-1")
+    } catch {
+      case e: java.io.IOException =>
+        error(s"Cannot generate ${json} automatically (${e.getMessage}). " +
+          "Aborting.")
+        sys.exit(1)
+    }
+  }
+
+  def readManifestJson(json: File): EngineManifest = {
     implicit val formats = Utils.json4sDefaultFormats +
       new EngineManifestSerializer
     try {
@@ -979,16 +1047,16 @@ object Console extends Logging {
 
   def withRegisteredManifest(
       json: File,
-      variantId: Option[String],
-      variantVersion: Option[String])(
+      engineId: Option[String],
+      engineVersion: Option[String])(
       op: EngineManifest => Unit): Unit = {
-    val ej = readEngineJson(json)
-    val id = variantId getOrElse ej.id
-    val version = variantVersion getOrElse ej.version
+    val ej = readManifestJson(json)
+    val id = engineId getOrElse ej.id
+    val version = engineVersion getOrElse ej.version
     Storage.getMetaDataEngineManifests.get(id, version) map {
       op
     } getOrElse {
-      error(s"Engine variant ${id} ${version} cannot be found in the system.")
+      error(s"Engine ${id} ${version} cannot be found in the system.")
       error("Have you run the 'build' command to build your engine yet?")
       sys.exit(1)
     }

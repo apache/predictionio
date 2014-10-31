@@ -133,7 +133,7 @@ object CreateServer extends Logging {
           engineInstance.engineVersion)
         engineManifests.get(engineId, engineVersion) map { manifest =>
           WorkflowUtils.checkUpgrade("deployment")
-          val engineFactoryName = manifest.engineFactory
+          val engineFactoryName = engineInstance.engineFactory
           val master = actorSystem.actorOf(Props(
             classOf[MasterActor],
             sc,
@@ -308,7 +308,8 @@ class MasterActor(
       val latestEngineInstance =
         CreateServer.engineInstances.getLatestCompleted(
           manifest.id,
-          manifest.version)
+          manifest.version,
+          engineInstance.engineVariant)
       latestEngineInstance map { lr =>
         val actor = createServerActor(sc, lr, engineFactoryName, manifest)
         sprayHttpListener.map { l =>
