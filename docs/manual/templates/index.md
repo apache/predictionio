@@ -19,10 +19,10 @@ The usage of other engine templates are very similar.
 
 PredictionIO offers the following features on top of Apache Spark  MLlib project:
 
-* Deploy Spark MLlib model on a production environment
-* Support JSON query to retrieve prediction in your application
-* code with separation-of-concern by following the DASE Architecture
-* Support Model Re-training
+* Deploy Spark MLlib model as a service on a production environment
+* Support JSON query to retrieve prediction online
+* Offer separation-of-concern software pattern based on the DASE architecture
+* Support model update with new data
 
 # Quick Start
 
@@ -59,7 +59,7 @@ $ $PIO_HOME/bin/pio deploy
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
 
 Now, You can try to retrieve predicted results.
-To recommend 4 movies to user 1, you send this JSON { "user": 1, "num":4 } to the server and it will return a JSON of the recommended movies.
+To recommend 4 movies to user 1, you send this JSON { "user": 1, "num":4 } to the deployed engine and it will return a JSON of the recommended movies.
 
 ```
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num":4 }' http://localhost:8000/queries.json
@@ -355,8 +355,7 @@ You can update the predictive model with new data by making the *train* and *dep
     $ $PIO_HOME/bin/pio deploy
     ```
 
-3.  Refresh the page at http://localhost:8000, you should see the prediction
-    server status page with a new **Instance ID** at the top.
+3.  Refresh the page at http://localhost:8000, you should see the status page with a new **Instance ID** at the top.
     
     
 For example, if you want to re-train the model every day, you may add this to your *crontab*:
