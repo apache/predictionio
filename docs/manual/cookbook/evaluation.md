@@ -8,10 +8,10 @@ title: Offline Evaluating the Prediction Results
 -->
 
 To chose the best algorithm and parameters, it is important to systematically
-evaluate the quality of the engine instance. 
+evaluate the quality of the engine instance.
 In this section, we will explain how to carry out an offline evaluation of an
-engine. We will use the MovieLens data set with the ItemRank Engine as 
-example. We will discuss 
+engine. We will use the MovieLens data set with the ItemRank Engine as
+example. We will discuss
 
 - In general, how to use Prediction.IO's evaluation framework;
 - How to construct the testing set from raw training data;
@@ -30,16 +30,16 @@ personalized ranking among the items in the input query.
 
 The goal of evaluation is to find a set of parameters with which a engine
 instance is created that maximize certain objective function(s). An objective
-function is usually tie with a business objective. For example, 
+function is usually tie with a business objective. For example,
 
 - an e-commerce
 company has an inventory of 1000+ items, but can only show 5 on their landing
 page,
 and the goal is to increase the click-thru-rate (hopefully the conversion rate)
-of the top 5 items; 
+of the top 5 items;
 
 - another e-commerce company wants to sell its expiring items,
-hence has add a time component to the weight function; 
+hence has add a time component to the weight function;
 
 - yet another company may
 only focus on long-term value of a customer, it only recommends what the user
@@ -51,7 +51,7 @@ other considerations when we conduct the evaluation. Generating the test set
 can be tricky and bias-prone if we don't do it careful enough.
 It is important to
 make sure that the evaluation method we choose approximates the actual business
-use case. 
+use case.
 
 ## Example Evaluation: Movie Lens
 
@@ -83,7 +83,7 @@ data.
 2. Testing set, the data used to evaluate the quality of prediction engines.
    The testing set also contains labelled data, but it is *not* sent to
    prediction engines. Instead, they are used by the evaluator
-   to evaluate the quality of the prediction engine. 
+   to evaluate the quality of the prediction engine.
 
 ### Sliding Window Evaluation
 
@@ -106,7 +106,7 @@ parameters to define the sliding window:
 Field | Description
 ---- | :------
 `firstTrainingUntilTime` | The cutoff time for the first training data. Only events happened before this time will be used.
-`evalDuration` | The duration of the test data. Events happened from `firstTrainingUntilTime` until `firstTrainingUntilTime + evalDuration` will be used to construct the *unseen* testing set. 
+`evalDuration` | The duration of the test data. Events happened from `firstTrainingUntilTime` until `firstTrainingUntilTime + evalDuration` will be used to construct the *unseen* testing set.
 `evalCount` | The number of training / testing sets used in the evaluation.
 
 For example, the following parameters
@@ -142,7 +142,7 @@ date](https://github.com/PredictionIO/PredictionIO-Python-SDK/blob/5e14a6f3ea0e9
 
 #### Testing Data
 
-Now it comes to the core component about evaluation. 
+Now it comes to the core component about evaluation.
 Conceptually, we compare the engine prediction with actual results.
 To evaluate an engine instance, we need three pieces of data.
 
@@ -174,7 +174,7 @@ Our task is to define a reasonable method to bridge this gap.
 > A common cause of the discrepencies is that, the user-item behaviorial data
 > may not exist. For example, an e-commerence company may only have recorded the
 > customer purchase for accounting reason, but other information like what items
-> have been shown to the user, or the website outlook are not recorded. 
+> have been shown to the user, or the website outlook are not recorded.
 > If the company wants to start using
 > smart prediction service, it may need to bootstrap the prediction model with
 > the purchase data, in which case we have to define a reasonable mechanism to
@@ -241,7 +241,7 @@ the bottom.
 
 #### Define Good Ordering
 
-It is worth a considerable amount of effort to define a *good* ordering. 
+It is worth a considerable amount of effort to define a *good* ordering.
 Simply put, is there a difference between `[d,c,a,b,e]` and `[c,d,a,b,e]`?
 We know that `d` is a good item, but we have no idea about `c` (i.e. user didn't
 rate `c`). One may argue that `[d,c,a,b,e]` is better since it puts a *good*
@@ -252,7 +252,7 @@ ordering *among* the top 3 items doesn't matter.
 It goes back to the very beginning of our discussion, the evaluator
 should be closely related to the actual business objective. In the MLC case, it
 shows 10 movies at the top of the page, and we don't care about the ordering
-among these 10 items. 
+among these 10 items.
 We can use the
 [*Precision@k*](http://en.wikipedia.org/wiki/Precision_and_recall#Precision)
 measure (with k = 10), in layman term, the engine is good if it is able to rank
@@ -266,7 +266,7 @@ DetailedEvaluatorParams(
 ```
 
 > In the other case where the ordering among the top items matters, one may
-> consider using 
+> consider using
 > [Mean-Average-Precision@k](http://en.wikipedia.org/wiki/Information_retrieval#Mean_average_precision).
 
 ### First Evaluation
@@ -292,11 +292,12 @@ val evaluatorParams = new DetailedEvaluatorParams(
   goodThreshold = 3,
   measureType = MeasureType.PrecisionAtK,
   measureK = 10
-) 
+)
 ```
 
 You can run the evaluation with the following command. This requires a
-standalone spark cluster up and running.
+[standalone spark cluster](http://spark.apache.org/docs/latest/spark-standalone.html)
+up and running.
 
 ```
 $ cd $PIO_HOME/examples/scala-local-movielens-evaluation
@@ -317,7 +318,7 @@ $ $PIO_HOME/bin/pio dashboard
 
 By default, you will see it on [http://localhost:9000]. The dashboard displays
 all the completed evaluation, for each evaluation, you can also click on the
-blue button on the right to see a detailed view of the evaluation. 
+blue button on the right to see a detailed view of the evaluation.
 
 The value of Precision@10 is 0.0805, (loosely) meaning that for items among the
 top 10 results, each has a ~8% chance that the user likes it (i.e. rated >=
@@ -356,4 +357,3 @@ following situation, try to change the parameters set and see what we will get.
   list the movie recommendation from top to bottom (in contrast to the desktop
   mode where multiple movies are listed horiztonally). How can the evaluation
   parameter address this issue?
-
