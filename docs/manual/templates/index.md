@@ -59,7 +59,7 @@ $ $PIO_HOME/bin/pio deploy
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
 
 Now, You can try to retrieve predicted results.
-To recommend 4 movies to user 1, you send this JSON { "user": 1, "num":4 } to the deployed engine and it will return a JSON of the recommended movies.
+To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num":4 } to the deployed engine and it will return a JSON of the recommended movies.
 
 ```
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num":4 }' http://localhost:8000/queries.json
