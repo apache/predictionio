@@ -59,7 +59,27 @@ class Engine[TD, DP, PD, Q, P, A](
     val algorithmClassMap:
       Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]],
     val servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]])
-  extends Serializable
+  extends Serializable {
+
+  /** Returns a new Engine instnace. Mimmic case class's copy method behavior.
+    */
+  def copy(
+    dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]
+      = dataSourceClass,
+    preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]]
+      = preparatorClass,
+    algorithmClassMap:
+      Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]
+      = algorithmClassMap,
+    servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]]
+      = servingClass): Engine[TD, DP, PD, Q, P, A] = {
+    new Engine(
+      dataSourceClass, 
+      preparatorClass,
+      algorithmClassMap,
+      servingClass)
+  }
+}
 
 /** This class serves as a logical grouping of all required engine's parameters.
   *
