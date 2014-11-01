@@ -1,5 +1,5 @@
 ---
-layout: mllib
+layout: docs
 title: Engine Templates
 ---
 
@@ -28,17 +28,24 @@ PredictionIO offers the following features on top of Apache Spark  MLlib project
 
 ## Install PredictionIO
 
-First you need to [install PredictionIO 0.8.1 or above]({{site.baseurl}}/templates/install-for-mllib.html)
+First you need to [install PredictionIO 0.8.1 or above]({{site.baseurl}}/install/)
 
 ## Create a new Engine from an Engine Template
 
-First, you start a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template: 
+Let's say you have installed PredictionIO at */home/yourname/predictionio/*.
+For convenience, add PredictionIO's binary command path to your PATH, i.e. /home/yourname/predictionio/bin:
 
 ```
-$ cp $PIO_HOME/templates/scala-parallel-recommendation MyEngine
+$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+```
+
+Now you create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template: 
+
+```
+$ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
 $ cd MyEngine
 ```
-where $PIO_HOME is the installation directory of PredictionIO.
+* Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
 
 By default, the engine reads training data from a text file located at data/sample_movielens_data.txt. Use the sample movie data from MLlib repo for now:
 
@@ -46,14 +53,16 @@ By default, the engine reads training data from a text file located at data/samp
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 ```
 
+> We will update the engine template so that it will read from the Event Server by default soon.
+
 ## Deploy the Engine as a Service
 
 To build *MyEngine* and deploy it as a service:
 
 ```
-$ $PIO_HOME/bin/pio build
-$ $PIO_HOME/bin/pio train
-$ $PIO_HOME/bin/pio deploy
+$ pio build
+$ pio train
+$ pio deploy
 ```
 
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
@@ -350,8 +359,8 @@ You can update the predictive model with new data by making the *train* and *dep
 2.  Run training and deploy again. There is no need to manually terminate the previous deploy instance.
 
     ```
-    $ $PIO_HOME/bin/pio train
-    $ $PIO_HOME/bin/pio deploy
+    $ pio train
+    $ pio deploy
     ```
 
 3.  Refresh the page at http://localhost:8000, you should see the status page with a new **Instance ID** at the top.
@@ -362,5 +371,6 @@ For example, if you want to re-train the model every day, you may add this to yo
 ```
 0 0 * * *   $PIO_HOME/bin/pio train; $PIO_HOME/bin/pio deploy
 ```
+where *$PIO_HOME* is the installation path of PredictionIO.
 
 Congratulations! You have just learned how to customize and build a production-ready engine. Have fun!

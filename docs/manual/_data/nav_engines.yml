@@ -1,3 +1,12 @@
+- title: "Quick Start"
+  href: "/tutorials/engines/quickstart.html"
+
+- title: "Collecting Data"
+  href: "/eventapi.html"
+
+- title: "Deploying an Engine Instance"
+  href: "/engines/"
+
 - title: "Item Ranking"
   href: "/engines/itemrank"
 
@@ -7,8 +16,11 @@
 #- title: "Item Similarity"
 #  href: "/engines/itemsim"
  
-- title: "Concept: Engine and Engine Instances"
-  href: "/engines/concept"
-    
 - title: "Tutorials & Samples"
   href: "/tutorials/engines/"
+    
+- title: "Glossary"
+  href: "/glossary.html"
+
+
+  
