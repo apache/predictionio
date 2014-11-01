@@ -4,6 +4,7 @@ title: Quick Start - Using a Built-in Engine
 ---
 
 # Quick Start - Using a Built-in Engine
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.1 will be availble soon.</code>
 
 This is a quick start guide of using a PredictionIO's built-in engine and its
 SDKs to write a very simple app. It assumes that you have [installed
