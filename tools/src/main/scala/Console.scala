@@ -493,17 +493,17 @@ object Console extends Logging {
         case Seq("instance") =>
           createInstance(ca)
         case Seq("build") =>
-          generateManifestJson(ca.common.manifestJson)
+          regenerateManifestJson(ca.common.manifestJson)
           build(ca)
         case Seq("register") =>
           register(ca)
         case Seq("unregister") =>
           unregister(ca)
         case Seq("train") =>
-          generateManifestJson(ca.common.manifestJson)
+          regenerateManifestJson(ca.common.manifestJson)
           train(ca)
         case Seq("eval") =>
-          generateManifestJson(ca.common.manifestJson)
+          regenerateManifestJson(ca.common.manifestJson)
           train(ca)
         case Seq("deploy") =>
           deploy(ca)
@@ -989,9 +989,11 @@ object Console extends Logging {
 
   def regenerateManifestJson(json: File): Unit = {
     val cwd = sys.props("user.dir")
+    val ha = java.security.MessageDigest.getInstance("SHA-1").
+      digest(cwd.getBytes).map("%02x".format(_)).mkString
     if (json.exists) {
       val em = readManifestJson(json)
-      if (em.description == Some(manifestAutogenTag) && cwd != em.version) {
+      if (em.description == Some(manifestAutogenTag) && ha != em.version) {
         warn("This engine project directory contains an auto-generated " +
           "manifest that has been copied/moved from another location. ")
         warn("Regenerating the manifest to reflect the updated location. " +
