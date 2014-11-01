@@ -7,8 +7,8 @@ title: Engine Templates
 
 PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
 
-* Collaborative Filtering Engine Template - with MLlib ALS
-* Classification Engine Template - with MLlib Naive Bayes 
+* Collaborative Filtering Engine Template - with MLlib ALS (/templates/scala-parallel-recommendation)
+* Classification Engine Template - with MLlib Naive Bayes  (/templates/scala-parallel-classification)
 
 This tutorial shows you how to use the Collaborative Filtering Engine Template to build your own recommendation engine for production use.
 The usage of other engine templates are very similar.
@@ -28,7 +28,7 @@ PredictionIO offers the following features on top of Apache Spark  MLlib project
 
 ## Install PredictionIO
 
-First you need to [install PredictionIO 0.8.1 or above]({{site.baseurl}}/install/)
+First you need to [install PredictionIO {{site.pio_version}}]({{site.baseurl}}/install/)
 
 ## Create a new Engine from an Engine Template
 
