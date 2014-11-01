@@ -3,6 +3,9 @@ layout: docs
 title: Build a Sample Rails Application with Yelp Data
 ---
 
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.1 will be availble soon.</code>
+
+
 # Introduction
 
 In this tutorial we are going to create a business recommendation app using

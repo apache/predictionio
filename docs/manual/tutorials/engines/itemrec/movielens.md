@@ -3,6 +3,8 @@ layout: docs
 title: Tutorial on Item Recommendation Engine - Movie Recommendation
 ---
 
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.1 will be availble soon.</code>
+
 # Building Movie Recommendation App with Item Recommendation Engine
 
 ## Importing Movie-Lens Data
