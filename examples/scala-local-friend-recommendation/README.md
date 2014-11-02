@@ -44,11 +44,15 @@ The dataset are <a href="https://www.kddcup2012.org/c/kddcup2012-track1/data">he
       <li>data/user_profile.txt</li>
       <li>data/item.txt</li>
       <li>data/user_key_word.txt</li>
+      <li>data/user_sns.txt</li>
+      <li>data/user_action.txt</li>
     </ul>
   <li>output files:</li>
     <ul>
       <li>data/mini_user_key_word.txt</li>
       <li>data/mini_item.txt</li>
       <li>data/mini_user_key_word.txt</li>
+      <li>data/mini_user_sns.txt</li>
+      <li>data/mini_user_action.txt</li>
     </ul>
 </ul>

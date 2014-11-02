@@ -94,9 +94,44 @@ for line in read_file:
 print "user keyword finished"
 #go to file begining
 #getting the user_sns_small
-"""
-read_file = open("user_sns.txt", 'r')
-write_file = open("user_sns_small.txt", 'w')
+
+print user_id_list
+read_file = open("data/user_sns.txt", 'r')
+
+#write_file = open("data/mini_user_sns_small.txt", 'w')
+user_sns_list = []
+index = 0
+met = False
+count = 0
+for line in read_file:
+    count += 1
+    print count
+    #Same user multiple following
+    if met:
+        if line.split()[0] != user_id_list[index]:
+            index += 1
+            met = False
+            if index == len(user_id_list):
+                break
+    if line.split()[0] == user_id_list[index]:
+        print "here"
+        user_sns_list.append(line)
+        met = True
+    # if the current line's user is greater than the user list, that means
+    # the user doesn't follow or are following, then we move to next user
+    if int(line.split()[0]) > int(user_id_list[index]):
+        index += 1
+
+print user_sns_list
+write_file = open("data/mini_user_sns_small.txt",'w')
+for line in user_sns_list:
+    for user_id in user_id_list:
+        if line.split()[1] == user_id:
+            write_file.write(line)
+            break
+#for line in write_file:
+read_file = open("data/user_action.txt", 'r')
+user_action_list = []
 index = 0
 met = False
 count = 0
@@ -111,10 +146,18 @@ for line in read_file:
                 break
     if line.split()[0] == user_id_list[index]:
         print "here"
-        write_file.write(line)
+        user_action_list.append(line)
         met = True
-"""
-
+    if int(line.split()[0]) > int(user_id_list[index]):
+        index += 1
+print user_action_list
+write_file = open("data/mini_user_action.txt",'w')
+for line in user_action_list:
+    for user_id in user_id_list:
+        if line.split()[1] == user_id:
+            write_file.write(line)
+            break
+print "Done"
 
 
 
