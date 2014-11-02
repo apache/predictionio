@@ -28,11 +28,15 @@ curl -H "Content-Type: application/json" -d '{ "user": $UserId , "item" : $ItemI
 
 $UserId and $ItemId are the user and item you want to query.
 
-
+Data Preprocess
+We have a random script for testing a subset of original data
 To use random script:
 ```
 $ python file_random.py [number of user] [number of item] 
 ```
+To Download the datasets:
+The KDD cup page can be found <a href="https://www.kddcup2012.org/c/kddcup2012-track1">here</a>
+The dataset are <a href="https://www.kddcup2012.org/c/kddcup2012-track1/data"
 1. expected files: 
   * data/user_profile.txt
   * data/item.txt
