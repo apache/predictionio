@@ -37,7 +37,7 @@ $ python file_random.py [number of user] [number of item]
 ```
 To Download the datasets:<br/>
 The KDD cup page can be found <a href="https://www.kddcup2012.org/c/kddcup2012-track1">here</a><br/>
-The dataset are <a href="https://www.kddcup2012.org/c/kddcup2012-track1/data">here</a>
+The dataset are <a href="https://www.kddcup2012.org/c/kddcup2012-track1/data">here</a><br/>
 1. expected files: 
   * data/user_profile.txt
   * data/item.txt
