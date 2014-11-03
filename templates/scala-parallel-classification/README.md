@@ -7,7 +7,7 @@ $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_n
 ```
 
 ```
-$ $PIO_HOME/bin/pio register
+$ $PIO_HOME/bin/pio build
 $ $PIO_HOME/bin/pio train
 $ $PIO_HOME/bin/pio deploy
 ```
