@@ -28,7 +28,8 @@ class PersistentMatrixFactorizationModel(rank: Int,
 }
 
 object PersistentMatrixFactorizationModel
-  extends IPersistentModelLoader[ALSAlgorithmParams, PersistentMatrixFactorizationModel] {
+  extends IPersistentModelLoader[ALSAlgorithmParams,
+    PersistentMatrixFactorizationModel] {
   def apply(id: String, params: ALSAlgorithmParams,
     sc: Option[SparkContext]) = {
     new PersistentMatrixFactorizationModel(

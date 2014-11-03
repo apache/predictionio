@@ -29,7 +29,6 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   def predict(
     model: PersistentMatrixFactorizationModel,
     query: Query): PredictedResult = {
-    // MLlib MatrixFactorizationModel return Array[Rating]
     val productScores = model.recommendProducts(query.user, query.num)
       .map (r => ProductScore(r.product, r.rating))
     new PredictedResult(productScores)
