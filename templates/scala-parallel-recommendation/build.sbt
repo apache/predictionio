@@ -8,7 +8,10 @@ organization := "io.prediction"
 
 libraryDependencies ++= Seq(
   "io.prediction"    %% "core"          % "0.8.1-SNAPSHOT" % "provided",
-  "commons-io"        % "commons-io"    % "2.4",
   "org.apache.spark" %% "spark-core"    % "1.1.0" % "provided",
-  "org.apache.spark" %% "spark-mllib"   % "1.1.0" % "provided",
-  "org.json4s"       %% "json4s-native" % "3.2.10")
+  "org.apache.spark" %% "spark-mllib"   % "1.1.0" % "provided")
+
+libraryDependencies ++= Seq(
+  "org.mongodb" % "mongo-hadoop-core" % "1.3.0"
+    exclude("org.apache.hadoop", "hadoop-yarn-api")
+    exclude("org.apache.hadoop", "hadoop-common"))
