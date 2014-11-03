@@ -1,6 +1,19 @@
 {
-  "id": "org.template.recommendation.RecommendationEngine",
-  "version": "0.8.1-SNAPSHOT",
-  "name": "MLLib Recommendation ALS Template",
-  "engineFactory": "org.template.recommendation.RecommendationEngine"
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
+  "datasource": {
+    "filepath": "./data/sample_movielens_data.txt"
+  },
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01,
+        "persistModel": true
+      }
+    }
+  ]
 }

@@ -1,3 +1,4 @@
+// MongoDB script to insert sample random ratings data into MongoDB
 db = connect("localhost:27017/test");
 
 print("Remove old data in test.sample_ratings collection...")
