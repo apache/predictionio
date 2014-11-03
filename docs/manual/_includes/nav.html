@@ -14,21 +14,6 @@
 	    {% endfor %}
 	</ul>
 
-    <h2>Using Built-in Engines</h2>
-    <ul>
-        {% for sec in site.data.nav_engines %}
-        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
-            {% if sec.subsec != null %}
-            <ul>
-            {% for subsec in sec.subsec %}
-                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
-
     <h2>Cookbook</h2>
     <ul>
         {% for sec in site.data.nav_cookbook %}
@@ -44,6 +29,7 @@
         {% endfor %}
     </ul>
 
+<!-- 
     <h2>Engine Builders' Guide</h2>
     <ul>
         {% for sec in site.data.nav_enginebuilders %}
@@ -58,7 +44,7 @@
         </li>
         {% endfor %}
     </ul>
-
+-->
     <h2>Running on Production</h2>
     <ul>
         {% for sec in site.data.nav_production %}
@@ -79,6 +65,22 @@
 	  <li><a href="{{ site.baseurl }}/contributorsguide.html">Contributors' Guide</a></li>
 	  <li><a href="{{ site.baseurl }}/projects.html">Community-powered Projects</a></li>
 	</ul>
+
+    <h2 style="color:#cccccc">Using Built-in Engines<br/>(updates pending)</h2>
+    <ul>
+        {% for sec in site.data.nav_engines %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
 
 	<h2>SDKs and Plugins</h2>
 	<ul class="kb-menu">

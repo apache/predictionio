@@ -32,24 +32,21 @@ Event Server.
 
 ## Engine and Engine Instance
 
-The core of PredictionIO. An Engine represents a type of Machine Learning task.
-PredictionIO comes with a few built-in *Engines* for different types of Machine
-Learning tasks, e.g. Personalized Item Recommendation and Item Ranking.
+Engine is the core of PredictionIO. It represents a type of Machine Learning task. Each Engine has the following components: DataSource, Data Preparator(Preparator),
+Algorithm, and Serving.
 
-An Engine has the following components: DataSource, Data Preparator(Preparator),
-Algorithm, and Serving. To learn more about Engine and Engine Instance, please
-refer to [Engine and Engine Instance: A Closer Look]({{site.baseurl}}/engines/concept).
-
-PredictionIO is extremely flexible. If you want to run multiple types of prediction for one app or want to combine the results from different algorithms, you can run multiple instances of engines. 
+PredictionIO comes with a few *Engines* examples for different types of Machine
+Learning tasks, e.g. Personalized Item Recommendation and Item Ranking. You may run multiple types of Machine Learning tasks for one app at the same time:
 
 ![System Overview]({{site.baseurl}}/images/system-overview.png)
 
+To learn more about Engine and Engine Instance, please
+refer to [Engine and Engine Instance: A Closer Look]({{site.baseurl}}/engines/concept).
+
+
+<!--
 You may also [build your own Engines]({{site.baseurl}}/enginebuilders) for specific type of
 prediction problems.
-
-You can create one or more *Engine Instance(s)* from an Engine. An Engine
-Instance trains a predictive model according to its own parameter settings. After
-an Engine Instance is deployed by PredictionIO, your application can send query
-to it through its *Engine API* to retrieve prediction results.
-
-Next, you can follow the [Quick Start Guide]({{site.baseurl}}/tutorials/engines/quickstart.html) and set up your first PredictionIO instance. 
+ -->
+ 
+Next, you can follow the [Engine Templates Quick Start]({{site.baseurl}}/templates/) and build your first predictive engine. 

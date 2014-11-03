@@ -3,17 +3,10 @@
   
 - title: "Installing PredictionIO"
   href: "/install/"
-  
-- title: "Quick Start"
-  href: "/tutorials/engines/quickstart.html"
 
-- title: "Collecting Data"
-  href: "/eventapi.html"
+- title: "Engine Templates Quick Start"
+  href: "/templates/"
 
-- title: "Deploying an Engine Instance"
-  href: "/engines/"
-  
-- title: "Glossary"
-  href: "/glossary.html"
-
-
+- title: "Concept of Engine"
+  href: "/engines/concept"
+    

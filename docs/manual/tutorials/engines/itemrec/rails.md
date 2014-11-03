@@ -4,6 +4,8 @@ title: Build a Sample Rails Application with Yelp Data
 ---
 
 # Introduction
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.1 will be availble soon.</code>
+
 
 In this tutorial we are going to create a business recommendation app using
 item [recommendation engine]({{site.baseurl}}/engines/itemrec/)
