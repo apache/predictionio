@@ -12,8 +12,7 @@ import org.apache.spark.mllib.recommendation.PersistentMatrixFactorizationModel
 case class ALSAlgorithmParams(
   val rank: Int,
   val numIterations: Int,
-  val lambda: Double,
-  val persistModel: Boolean) extends Params
+  val lambda: Double) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
   extends PAlgorithm[ALSAlgorithmParams, PreparedData,

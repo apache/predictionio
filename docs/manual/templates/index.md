@@ -14,8 +14,8 @@ This tutorial shows you how to use the Collaborative Filtering Engine Template t
 The usage of other engine templates are very similar.
 
 > What is an Engine Template?
-> 
-> It is a basic skeleton of an engine. You can customize it easily to fit your specific needs. 
+>
+> It is a basic skeleton of an engine. You can customize it easily to fit your specific needs.
 
 PredictionIO offers the following features on top of Apache Spark  MLlib project:
 
@@ -39,7 +39,7 @@ For convenience, add PredictionIO's binary command path to your PATH, i.e. /home
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
 ```
 
-Now you create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template: 
+Now you create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template:
 
 ```
 $ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
@@ -84,7 +84,7 @@ Your MyEngine is now running. Next, we are going to take a look at the engine ar
 PredictionIO's DASE architecture brings the separation-of-concerns design principle to predictive engine development.
 DASE stands for the following components of an engine:
 
-* **D**ata - includes Data Source and Data Preparator 
+* **D**ata - includes Data Source and Data Preparator
 * **A**lgorithm(s)
 * **S**erving
 * **E**valuator
@@ -96,7 +96,7 @@ Let's look at the code and see how you can customize the engine.
 ## The Engine Design
 
 As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num":4 }, and return
-a JSON predicted result. 
+a JSON predicted result.
 
 In MyEngine/src/main/scala/***Engine.scala***
 
@@ -109,7 +109,7 @@ case class Query(
 ) extends Serializable
 ```
 
-`PredictedResult` case class defines the format of **predicted result**, such as {"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}: 
+`PredictedResult` case class defines the format of **predicted result**, such as {"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}:
 
 ```
 case class PredictedResult(
@@ -122,7 +122,7 @@ case class ProductScore(
 ) extends Serializable
 ```
 
-Finally, `RecommendationEngine` is the Engine Factory that defines the components this engine will use: 
+Finally, `RecommendationEngine` is the Engine Factory that defines the components this engine will use:
 Data Source, Data Preparator, ALgorithm(s) and Serving components.
 
 ```
@@ -134,14 +134,14 @@ object RecommendationEngine extends IEngineFactory {
       Map("als" -> classOf[ALSAlgorithm]),
       classOf[Serving])
   }
-  
+
 ```
 
 ### Spark MLlib
 
 Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]` and train a model, which is a `MatrixFactorizationModel` object.
 
-PredictionIO's MLlib Collaborative Filtering engine template, which *MyEngine* bases on, integrates this algorithm under the DASE architecture. 
+PredictionIO's MLlib Collaborative Filtering engine template, which *MyEngine* bases on, integrates this algorithm under the DASE architecture.
 We will take a closer look at the DASE code below.
 > [Check this out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to learn more about MLlib's ALS collaborative filtering algorithm.
 
@@ -178,13 +178,13 @@ PredictionIO automatically loads the parameters of *datasource* specified in MyE
 
 In ***engine.json***:
 
-``` 
+```
 datasource: {
   "filepath": "./data/sample_movielens_data.txt"
 }
 ```
 
-In this sample text data file, values are delimited by double colons (::). The first column are user IDs. The second column are item IDs. The third column are ratings. 
+In this sample text data file, values are delimited by double colons (::). The first column are user IDs. The second column are item IDs. The third column are ratings.
 
 
 The class definition of `TrainingData` is:
@@ -201,7 +201,7 @@ and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 > You may modify readTraining function to read from other datastores, such as MongoDB -  [link]
 
 
- 
+
 ### Data Preparator
 
 In MyEngine/src/main/scala/***Preparator.scala***
@@ -228,7 +228,7 @@ class PreparedData(
 PredictionIO passes the returned `PreparedData` object to Algorithm's `train` function.
 
 > HOW-TO:
-> 
+>
 > MLlib ALS limitation: user id, item id must be integer - convert [link]
 
 
@@ -237,7 +237,7 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 In MyEngine/src/main/scala/***ALSAlgorithm.scala***
 
 The two functions of the algorithm class are `def train` and `def predict`.
-`def train` is responsible for training a predictive model. PredictionIO will store this model and `def predict` is responsible for using this model to make prediction. 
+`def train` is responsible for training a predictive model. PredictionIO will store this model and `def predict` is responsible for using this model to make prediction.
 
 ### def train
 
@@ -253,11 +253,11 @@ The two functions of the algorithm class are `def train` and `def predict`.
   }
 ```
 
-In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*, *iterations* and *lambda*. 
+In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*, *iterations* and *lambda*.
 
 The values of these parameters are specified in *algorithms* of MyEngine/***engine.json***:
 
-``` 
+```
 {
  algorithms: [
       {
@@ -265,8 +265,7 @@ The values of these parameters are specified in *algorithms* of MyEngine/***engi
         "params": {
           "rank": 10,
           "numIterations": 20,
-          "lambda": 0.01,
-          "persistModel": true
+          "lambda": 0.01
         }
       }
     ]
@@ -278,16 +277,15 @@ PredictionIO will automatically loads these values into the constructor `ap`, wh
 case class ALSAlgorithmParams(
   val rank: Int,
   val numIterations: Int,
-  val lambda: Double,
-  val persistModel: Boolean) extends Params
+  val lambda: Double) extends Params
 ```
 
-`ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD data. 
+`ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD data.
 RDD is a distributed collection of items which *does not* persist. To store the model, `PersistentMatrixFactorizationModel` extends `MatrixFactorizationModel` and makes it persistable.
 
 > The detailed implementation can be found at MyEngine/src/main/scala/***PersistentMatrixFactorizationModel.scala***
 
-PredictionIO will automatically store the returned model, i.e. `PersistentMatrixFactorizationModel` in this case. 
+PredictionIO will automatically store the returned model, i.e. `PersistentMatrixFactorizationModel` in this case.
 
 
 ### def predict
@@ -308,15 +306,15 @@ def predict(
     new PredictedResult(productScores)
 }
 ```
- 
-> You have defined the class `PredictedResult` earlier. 
+
+> You have defined the class `PredictedResult` earlier.
 
 PredictionIO passes the returned `PredictedResult` object to *Serving*.
 
 ## Serving
 
 The `def serve` of class `Serving` processes predicted result. It is also responsible for combining multiple predicted results into one if you have more than one predictive model.
-*Serving* then returns the final predicted result. PredictionIO will convert it to a JSON response automatically. 
+*Serving* then returns the final predicted result. PredictionIO will convert it to a JSON response automatically.
 
 In MyEngine/src/main/scala/***Serving.scala***
 
@@ -341,7 +339,7 @@ will be passed to `def serve` as a sequence, i.e. `Seq[PredictedResult]`.
 In this case, `def serve` simply returns the predicted result of the first, and the only, algorithm, i.e. `predictions.head`.
 
 > HOW-TO:
-> 
+>
 > Recommend products that the targeted user has not seen before [link]
 >
 > Give higher priority to newer products
@@ -364,8 +362,8 @@ You can update the predictive model with new data by making the *train* and *dep
     ```
 
 3.  Refresh the page at http://localhost:8000, you should see the status page with a new **Instance ID** at the top.
-    
-    
+
+
 For example, if you want to re-train the model every day, you may add this to your *crontab*:
 
 ```
