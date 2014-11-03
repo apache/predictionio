@@ -1,0 +1,8 @@
+[
+  {
+    "name": "RandomAlgorithm",
+    "params": {
+      "threshold": 0.5
+    }
+  }
+]

@@ -5,9 +5,11 @@ import io.prediction.controller._
 object RandomEngineFactory extends IEngineFactory {
   override
   def apply() = {
-    new SimpleEngine(
+    new Engine(
       classOf[FriendRecommendationDataSource],
-      classOf[RandomAlgorithm]
+      IdentityPreparator(classOf[FriendRecommendationDataSource]),
+      Map("RandomAlgorithm" -> classOf[RandomAlgorithm]),
+      FirstServing(classOf[RandomAlgorithm])
     )
   }
 }

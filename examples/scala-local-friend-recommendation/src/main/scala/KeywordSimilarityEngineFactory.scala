@@ -5,9 +5,10 @@ import io.prediction.controller._
 object KeywordSimilarityEngineFactory extends IEngineFactory {
   override
   def apply() = {
-    new SimpleEngine(
+    new Engine(
       classOf[FriendRecommendationDataSource],
-      classOf[KeywordSimilarityAlgorithm]
-    )
+      IdentityPreparator(classOf[FriendRecommendationDataSource]),
+      Map("KeywordSimilarityAlgorithm" -> classOf[KeywordSimilarityAlgorithm]),
+      FirstServing(classOf[KeywordSimilarityAlgorithm]))
   }
 }
