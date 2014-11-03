@@ -10,7 +10,7 @@ object Test {
     //val td = new KeywordSimilarityTrainingData(um, um)
     val ds = new FriendRecommendationDataSource()
     val td = ds.readTraining()
-    val algo = new KeywordSimilarityAlgorithm()
+    val algo = new KeywordSimilarityAlgorithm(new FriendRecommendationAlgoParams(0.5))
     val model = algo.train(td)
     val query1 = new FriendRecommendationQuery(1, 1)
     val query2 = new FriendRecommendationQuery(2, 2)
