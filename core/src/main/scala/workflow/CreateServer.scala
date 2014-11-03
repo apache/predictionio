@@ -91,6 +91,7 @@ case class ServerConfig(
 case class StartServer()
 case class StopServer()
 case class ReloadServer()
+case class UpgradeCheck()
 
 object CreateServer extends Logging {
   val actorSystem = ActorSystem("pio-server")
@@ -132,7 +133,12 @@ object CreateServer extends Logging {
         val engineVersion = sc.engineVersion.getOrElse(
           engineInstance.engineVersion)
         engineManifests.get(engineId, engineVersion) map { manifest =>
-          WorkflowUtils.checkUpgrade("deployment")
+          val upgrade = actorSystem.actorOf(Props[UpgradeActor], "upgrade")
+          actorSystem.scheduler.schedule(
+            0.seconds,
+            1.days,
+            upgrade,
+            UpgradeCheck())
           val engineFactoryName = engineInstance.engineFactory
           val master = actorSystem.actorOf(Props(
             classOf[MasterActor],
@@ -273,6 +279,15 @@ object CreateServer extends Logging {
         models,
         serving,
         servingParams))
+  }
+}
+
+class UpgradeActor() extends Actor {
+  val log = Logging(context.system, this)
+  implicit val system = context.system
+  def receive = {
+    case x: UpgradeCheck =>
+      WorkflowUtils.checkUpgrade("deployment")
   }
 }
 
