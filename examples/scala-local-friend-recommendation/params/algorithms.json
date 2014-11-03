@@ -1,12 +1,12 @@
 [
   {
-    "name": "KeywordSimilarityAlgorithm",
+    "name": "io.prediction.examples.friendrecommendation.KeywordSimilarityAlgorithm",
     "params": {
       "threshold": 0.5
     }
   },
   {
-    "name": "RandomAlgorithm",
+    "name": "io.prediction.examples.friendrecommendation.RandomAlgorithm",
     "params": {
       "threshold": 0.5
     }
