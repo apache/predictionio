@@ -71,11 +71,18 @@ import java.util.{ HashMap => JHashMap, Map => JMap }
 object WorkflowContext extends Logging {
   def apply(
       batch: String = "",
-      env: Map[String, String] = Map()): SparkContext = {
-    val conf = new SparkConf().setAppName(s"PredictionIO: $batch")
-    info(s"Environment received: ${env}")
-    env.map(kv => conf.setExecutorEnv(kv._1, kv._2))
+      executorEnv: Map[String, String] = Map(),
+      sparkEnv: Map[String, String] = Map()
+    ): SparkContext = {
+    val conf = new SparkConf()
+    conf.setAppName(s"PredictionIO: ${batch}")
+    info(s"Executor environment received: ${executorEnv}")
+    executorEnv.map(kv => conf.setExecutorEnv(kv._1, kv._2))
     info(s"SparkConf executor environment: ${conf.getExecutorEnv}")
+    info(s"Application environment received: ${sparkEnv}")
+    conf.setAll(sparkEnv)
+    val sparkConfString = conf.getAll.toSeq
+    info(s"SparkConf environment: $sparkConfString")
     new SparkContext(conf)
   }
 }
@@ -335,7 +342,8 @@ object CoreWorkflow {
       getOrElse(WorkflowUtils.checkUpgrade("training"))
 
 
-    val sc = WorkflowContext(params.batch, env)
+    //val sc = WorkflowContext(params.batch, env)
+    val sc = WorkflowContext(params.batch, env, params.sparkEnv)
 
     runTypelessContext(
       dataSourceClassOpt,

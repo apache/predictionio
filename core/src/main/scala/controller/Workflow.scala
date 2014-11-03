@@ -31,12 +31,20 @@ import scala.reflect.ClassTag
   * @param batch Batch label of the run.
   * @param verbose Verbosity level.
   * @param saveModel Controls whether trained models are persisted.
+  * @param sparkEnv Spark properties that will be set in SparkConf.setAll().
   * @group Workflow
   */
 case class WorkflowParams(
   batch: String = "",
   verbose: Int = 2,
-  saveModel: Boolean = true)
+  saveModel: Boolean = true,
+  sparkEnv: Map[String, String] = Map[String, String]()) {
+
+  // Temporary workaround for WorkflowParamsBuilder for Java. It doesn't support
+  // custom spark environment yet.
+  def this(batch: String, verbose: Int, saveModel: Boolean)
+  = this(batch, verbose, saveModel, Map[String, String]())
+}
 
 /** Collection of workflow creation methods.
   * @group Workflow
