@@ -334,9 +334,61 @@ object CoreWorkflow {
     evaluatorClassOpt.map(_ => WorkflowUtils.checkUpgrade("evaluation")).
       getOrElse(WorkflowUtils.checkUpgrade("training"))
 
-    val verbose = params.verbose
 
     val sc = WorkflowContext(params.batch, env)
+
+    runTypelessContext(
+      dataSourceClassOpt,
+      dataSourceParams,
+      preparatorClassOpt,
+      preparatorParams,
+      algorithmClassMapOpt,
+      algorithmParamsList,
+      servingClassOpt,
+      servingParams,
+      evaluatorClassOpt,
+      evaluatorParams,
+      engineInstance,
+      env,
+      params,
+      sc)
+
+    logger.info("Stop spark context")
+    sc.stop()
+
+    logger.info("CoreWorkflow.run completed.")
+  }
+
+  def runTypelessContext[
+      DP, TD, PD, Q, P, A,
+      MDP, MQ, MP, MA,
+      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
+      ](
+      dataSourceClassOpt
+        : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
+      dataSourceParams: Params = EmptyParams(),
+      preparatorClassOpt
+        : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
+      preparatorParams: Params = EmptyParams(),
+      algorithmClassMapOpt
+        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
+        = None,
+      algorithmParamsList: Seq[(String, Params)] = null,
+      servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
+        = None,
+      servingParams: Params = EmptyParams(),
+      evaluatorClassOpt
+        : Option[Class[_ <: BaseEvaluator[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
+        = None,
+      evaluatorParams: Params = EmptyParams(),
+      engineInstance: Option[EngineInstance] = None,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams(),
+      sc: SparkContext
+    ) {
+
+    
+    val verbose = params.verbose
 
     // Create an engine instance even for runner as well
     implicit val f = Utils.json4sDefaultFormats
@@ -551,29 +603,6 @@ object CoreWorkflow {
       }}
     }
 
-    //val models: Seq[Seq[Any]] = extractPersistentModels(realEngineInstance,
-    //  evalAlgoModelMap, algorithmParamsList, algoInstanceList)
-/* move this check earlier
-    if (evaluatorClassOpt.isEmpty) {
-      logger.info("Evaluator is null. Stop here")
-      val models: Seq[Seq[Any]] = extractPersistentModels(
-        sc,
-        realEngineInstance,
-        evalAlgoModelMap,
-        algorithmParamsList,
-        algoInstanceList,
-        params
-      )
-
-      saveEngineInstance(
-        realEngineInstance,
-        algorithmParamsList,
-        algoInstanceList,
-        models,
-        None)
-      return
-    }
-*/
     val evaluator = Doer(evaluatorClassOpt.get, evaluatorParams)
     val evaluatorWrapper = new EvaluatorWrapper(evaluator)
 
@@ -629,7 +658,6 @@ object CoreWorkflow {
 
     evaluatorOutput foreach { logger.info(_) }
 
-    logger.info("CoreWorkflow.run completed.")
 
     val models: Seq[Seq[Any]] = extractPersistentModels(
       sc,
