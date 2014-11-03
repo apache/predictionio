@@ -5,7 +5,8 @@ import io.prediction.controller._
 // For random algorithm
 import scala.util.Random
 
-class RandomAlgorithm extends LAlgorithm[EmptyAlgorithmParams, FriendRecommendationTrainingData,
+class RandomAlgorithm (val ap: FriendRecommendationAlgoParams)
+extends LAlgorithm[FriendRecommendationAlgoParams, FriendRecommendationTrainingData,
   RandomModel, FriendRecommendationQuery, FriendRecommendationPrediction] {
   override
   def train(pd: FriendRecommendationTrainingData): RandomModel = {
@@ -15,6 +16,7 @@ class RandomAlgorithm extends LAlgorithm[EmptyAlgorithmParams, FriendRecommendat
   override
   def predict(model: RandomModel, query: FriendRecommendationQuery): FriendRecommendationPrediction = {
     val randomConfidence = Random.nextDouble
-    new FriendRecommendationPrediction(randomConfidence)
+    val acceptance = randomConfidence > ap.threshold
+    new FriendRecommendationPrediction(randomConfidence, acceptance)
   }
 }

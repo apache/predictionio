@@ -1,0 +1,14 @@
+[
+  {
+    "name": "KeywordSimilarityAlgorithm",
+    "params": {
+      "threshold": 0.5
+    }
+  },
+  {
+    "name": "RandomAlgorithm",
+    "params": {
+      "threshold": 0.5
+    }
+  }
+]

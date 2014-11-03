@@ -16,10 +16,10 @@ object Test {
     val query2 = new FriendRecommendationQuery(2, 2)
     val query3 = new FriendRecommendationQuery(1, 2)
     val p1 = algo.predict(model, query1)
-    println("(1, 1) => " + p1.confidence)
+    println("(1, 1) => (" + p1.confidence + "," + p1.acceptance + ")")
     val p2 = algo.predict(model, query2)
-    println("(2, 2) => " + p2.confidence)
+    println("(2, 2) => (" + p2.confidence + "," + p2.acceptance + ")")
     val p3 = algo.predict(model, query3)
-    println("(1, 2) => " + p3.confidence)
+    println("(1, 2) => (" + p3.confidence + "," + p3.acceptance + ")")
   }
 }

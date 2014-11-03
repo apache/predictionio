@@ -1,16 +1,16 @@
 package io.prediction.examples.friendrecommendation
 
 import scala.collection.immutable.HashMap
-//import scala.collection.mutable.HashMap
 
 class FriendRecommendationTrainingData (
-  // Designed to fit random and keyword similarity methods now
+  // Designed to fit random, keyword similarity methods and simrank now
   // Will be updated to to fit more advanced algorithms when they are developed
-  
-  //List of userid and itemid
-  //val userId: List[Int],
-  //val itemId: List[Int]
-  
-  val userKeyword: HashMap[Int, HashMap[Int, Double]],
-  val itemKeyword: HashMap[Int, HashMap[Int, Double]]
+  // External-internal id map
+  val userIdMap: HashMap[Int, Int],
+  val itemIdMap: HashMap[Int, Int],
+  // Keyword array, internal id index, term-weight map item
+  val userKeyword: Array[HashMap[Int, Double]],
+  val itemKeyword: Array[HashMap[Int, Double]],
+  // User relationship array, src internal id index, dest-internal-id-weight list item
+  val socialAction: Array[List[(Int, Int)]]
 ) extends Serializable
