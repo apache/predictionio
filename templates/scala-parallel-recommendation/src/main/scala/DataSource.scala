@@ -26,4 +26,23 @@ class DataSource(val dsp: DataSourceParams)
 
 class TrainingData(
   val ratings: RDD[Rating]
-) extends Serializable
+) extends Serializable {
+  override def toString = {
+    s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
+  }
+}
+
+object DataSourceTest {
+  def main(args: Array[String]) {
+    val dsp = DataSourceParams("data/sample_movielens_data.txt")
+
+    Workflow.run(
+      dataSourceClassOpt = Some(classOf[DataSource]),
+      dataSourceParams = dsp,
+      params = WorkflowParams(
+        batch = "Template: Recommendations",
+        verbose = 3
+      )
+    )
+  }
+}
