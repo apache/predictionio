@@ -24,22 +24,35 @@ case class GraphData (
 /*
     Query and params
   */
-case class SimRankQuery (
+case class SingleSimRankQuery (
   val userId: Int
+) extends Serializable
+
+case class PairwiseSimRankQuery (
+  val user: Int,
+  val item: Int
 ) extends Serializable
 
 /*
     Prediction Class
-  */
+    This is the past prediction class, where query consists of one user id.
+    The result given is a list of recommended item ids, sorted descending by
+    simrank score.
+
 case class Prediction (
-  /*
-    The recommendation is (SimRank score, UserId)
-  */
   val recommendations: List[(Int,Double)]
+) extends Serializable
+*/
+
+/*
+  Pairwise Prediction Class
+*/
+case class Prediction (
+  val simRankScore: Double
 ) extends Serializable
 
 class GraphDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
-  GraphData, SimRankQuery, EmptyActual] {
+  GraphData, PairwiseSimRankQuery, EmptyActual] {
 
   /*
       Load Training Data
@@ -50,7 +63,7 @@ class GraphDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams
   override
   def readTraining(): GraphData = {
     var uniqueIds = Set[Int]()
-    val path = "PATH TO : data/user_action.txt"
+    val path = "To Data"
     val weightedEdges = Source.fromFile(path)
                       .getLines()
                       .map((x:String) => {
@@ -72,7 +85,7 @@ class GraphDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams
 }
 
 class SimRankAlgorithm extends LAlgorithm[EmptyAlgorithmParams, GraphData,
-  SimRankModel, SimRankQuery, Prediction] {
+  SimRankModel, PairwiseSimRankQuery, Prediction] {
 
   override
   def train(gd: GraphData): SimRankModel = {
@@ -112,11 +125,9 @@ class SimRankAlgorithm extends LAlgorithm[EmptyAlgorithmParams, GraphData,
     SimRankModel(prevIter, gd.matrixIdMap)
   }
 
+  /*
   override
-  def predict(m: SimRankModel, query: SimRankQuery): Prediction = {
-    /*
-        Look up in model.
-     */
+  def predict(m: SimRankModel, query: SingleSimRankQuery): Prediction = {
     if(!m.matrixIdMap.contains(query.userId))
       Prediction(List())
     val reverseMap = m.matrixIdMap map {_.swap}
@@ -127,6 +138,19 @@ class SimRankAlgorithm extends LAlgorithm[EmptyAlgorithmParams, GraphData,
     val ordered = candidates.map((x:(Double,Int)) => (reverseMap(x._2), x._1))
     Prediction(ordered)
   }
+}
+  */
+
+  override
+  def predict(m: SimRankModel, query: PairwiseSimRankQuery): Prediction = {
+    if(m.matrixIdMap.contains(query.user) &&
+       m.matrixIdMap.contains(query.item)) {
+        Prediction(m.memoMatrix(m.matrixIdMap(query.user))
+                               (m.matrixIdMap(query.item)))
+     } else {
+        Prediction(-1)
+     }
+   }
 }
 
 object SimRankEngineFactory extends IEngineFactory {
