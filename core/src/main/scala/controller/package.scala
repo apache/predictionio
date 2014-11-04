@@ -30,7 +30,7 @@ package object controller {
   /** Empty data parameters.
     * @group General
     */
-  type EmptyDataParams = AnyRef
+  type EmptyDataParams = EmptyParams
 
   /** Empty preparator parameters.
     * @group General
