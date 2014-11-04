@@ -1,6 +1,16 @@
 {
-  "id": "org.template.classification.ClassificationEngine",
-  "version": "0.8.1-SNAPSHOT",
-  "name": "MLlib Classification NaiveBayes Template",
-  "engineFactory": "org.template.classification.ClassificationEngine"
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.classification.ClassificationEngine",
+  "datasource": {
+    "filepath": "./data/sample_naive_bayes_data.txt"
+  },
+  "algorithms": [
+    {
+      "name": "naive",
+      "params": {
+        "lambda": 1.0
+      }
+    }
+  ]
 }

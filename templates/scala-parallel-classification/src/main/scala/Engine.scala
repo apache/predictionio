@@ -7,7 +7,7 @@ object ClassificationEngine extends IEngineFactory {
     new Engine(
       classOf[DataSource],
       classOf[Preparator],
-      Map("" -> classOf[NaiveBayesAlgorithm]),
+      Map("naive" -> classOf[NaiveBayesAlgorithm]),
       classOf[Serving])
   }
 }
