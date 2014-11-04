@@ -1,4 +1,9 @@
 
+Insert sample random ratings data into Mongo 'test' db
+```
+$ mongo data/insert_sample_ratings_mongo.js 
+```
+
 engine-with-mongo.json is example engine which reads Mongo as DataSource.
 ```
 $ $PIO_HOME/home/bin/pio train --variant engine-with-mongo.json
