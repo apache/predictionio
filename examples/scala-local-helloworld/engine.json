@@ -1,6 +1,5 @@
 {
-  "id": "org.sample.helloworld",
-  "version": "0.1",
-  "name": "My Hello World Engine",
+  "id": "default",
+  "description": "My Hello World Engine",
   "engineFactory": "org.sample.helloworld.MyEngineFactory"
 }

@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "template-scala-parallel-recommendation"
+name := "examples-scala-parallel-recommendation-advanced"
 
 organization := "io.prediction"
 

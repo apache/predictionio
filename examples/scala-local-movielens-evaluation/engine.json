@@ -1,7 +1,5 @@
-
 {
   "id": "scala-local-movielens-evaluation",
-  "version": "0.0.1-SNAPSHOT",
-  "name": "scala-local-movielens-evaluation",
+  "description": "scala-local-movielens-evaluation",
   "engineFactory": "myorg.MyEngineFactory"
 }

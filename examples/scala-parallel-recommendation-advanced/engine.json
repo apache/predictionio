@@ -1,7 +1,7 @@
 {
   "id": "default",
   "description": "Use text file as DataSource",
-  "engineFactory": "org.template.recommendation.RecommendationEngine",
+  "engineFactory": "org.examples.recommendation.RecommendationEngine",
   "datasource": {
     "filepath": "./data/sample_movielens_data.txt"
   },

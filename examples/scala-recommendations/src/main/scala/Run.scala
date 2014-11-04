@@ -31,6 +31,7 @@ case class DataSourceParams(val filepath: String) extends Params
 case class DataSource(val dsp: DataSourceParams)
   extends PDataSource[DataSourceParams, Null, RDD[Rating], (Int, Int), Double] {
 
+  override
   def read(sc: SparkContext)
   : Seq[(Null, RDD[Rating], RDD[((Int, Int), Double)])] = {
     val data = sc.textFile(dsp.filepath)
@@ -90,6 +91,7 @@ class ALSAlgorithm(val ap: AlgorithmParams)
       productFeatures = m.productFeatures)
   }
 
+  override
   def batchPredict(
     model: PMatrixFactorizationModel,
     feature: RDD[(Long, (Int, Int))]): RDD[(Long, Double)] = {

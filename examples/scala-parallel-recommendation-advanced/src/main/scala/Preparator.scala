@@ -1,4 +1,4 @@
-package org.template.recommendation
+package org.examples.recommendation
 
 import io.prediction.controller._
 

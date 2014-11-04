@@ -6,14 +6,16 @@
 
 This sample regression engine reads data from file system.
 
-Edit the file path in `datasource.json`, change `filepath` to an absolute path that points to
+Edit the file path in `engine.json`, change `filepath` of `datasource` to an absolute path that points to
 [lr_data.py](../data/lr_data.txt)
 
 ```
-$ cat params/datasource.json
-{
+$ cat engine.json
+...
+"datasource": {
   "filepath": <absolute_path_to_lr_data.txt>
 }
+...
 
 ```
 
@@ -24,14 +26,14 @@ This engine comes with two algorithms.
 1. OLS. It is the standard ordinary least square algorithm. It takes no parameter.
 2. Default. This algorithm always return the same value `v` defined in the parameter.
 
-Below is an example of `algorithms.json`, it invokes three algorithms,
+Below is an example of `algorithms` defines in `engine.json`, it invokes three algorithms,
 
 1. The standard OLS algorithm,
 2. A default algorithm which always return 2.0,
 3. A default algorithm which always return 4.0.
 
 ```json
-[
+"algorithms": [
   { "name": "OLS", "params": {} },
   { "name": "Default", "params": { "v": 2.0 } },
   { "name": "Default", "params": { "v": 4.0 } }
@@ -43,7 +45,7 @@ The `Serving` class returns the average of all these prediction to the user.
 ## Register engine, train, and deploy.
 
 ```
-$ pio register
+$ pio build
 $ pio train
 $ pio deploy --port 9997
 ```

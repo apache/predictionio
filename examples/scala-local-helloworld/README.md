@@ -1,21 +1,15 @@
 # My First "Hello World" Engine
 
-## 1. DataSource
-
-## 2. Algorithm
-
-## 3. Deploy
-
 Prepare training data:
 ```
 $ cd $PIO_HOME/examples/scala-local-helloworld
 $ cp ../data/helloworld/data1.csv ../data/helloworld/data.csv
 ```
 
-Register engine:
+Build engine:
 
 ```
-$ ../../bin/pio register
+$ ../../bin/pio build
 ```
 
 Train:
