@@ -17,6 +17,7 @@ package io.prediction.tools
 
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
+import io.prediction.data.storage.App
 import io.prediction.data.storage.Appkey
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
@@ -44,7 +45,8 @@ import java.nio.file.Files
 case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
   build: BuildArgs = BuildArgs(),
-  appkey: AppkeyArgs = AppkeyArgs(),
+  app: AppArgs = AppArgs(),
+  token: TokenArgs = TokenArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
@@ -77,6 +79,15 @@ case class BuildArgs(
   sbtExtra: Option[String] = None,
   sbtAssemblyPackageDependency: Boolean = false,
   sbtClean: Boolean = false)
+
+case class AppArgs(
+  id: Option[Int] = None,
+  name: String = "",
+  description: Option[String] = None)
+
+case class TokenArgs(
+  token: String = "",
+  events: Seq[String] = Seq())
 
 case class AppkeyArgs(
   appkey: String = "",
@@ -425,42 +436,79 @@ object Console extends Logging {
       //    } text("Build dependencies assembly.")
       //  )
       note("")
-      cmd("appkey").
-        text("Manage app keys.\n").
+      cmd("app").
+        text("Manage apps.\n").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "appkey")
+          c.copy(commands = c.commands :+ "app")
         } children(
           cmd("new").
             text("Create a new app key to app ID mapping.").
             action { (_, c) =>
               c.copy(commands = c.commands :+ "new")
             } children(
-              arg[Int]("<appid>") action { (x, c) =>
-                c.copy(appkey = c.appkey.copy(appid = x))
-              } text("The app ID to be mapped."),
-              arg[String]("<event>...") unbounded() action { (x, c) =>
-                c.copy(appkey = c.appkey.copy(events = c.appkey.events :+ x))
-              } text("Event name(s) that are allowed with this key.")
+              opt[Int]("id") action { (x, c) =>
+                c.copy(app = c.app.copy(id = Some(x)))
+              } text("Specify this if you already have data under an app ID."),
+              opt[String]("description") action { (x, c) =>
+                c.copy(app = c.app.copy(description = Some(x)))
+              } text("Specify this if you already have data under an app ID."),
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App name.")
             ),
           note(""),
           cmd("list").
-            text("List all app keys in the system.").
+            text("List all apps.").
             action { (_, c) =>
               c.copy(commands = c.commands :+ "list")
-            } children(
-              opt[Int]("appid") action { (x, c) =>
-                c.copy(appkey = c.appkey.copy(appid = x))
-              } text("Restrict listing to a specific app ID.")
-            ),
+            },
           note(""),
           cmd("delete").
-            text("Delete an app key.").
+            text("Delete an app.").
             action { (_, c) =>
               c.copy(commands = c.commands :+ "delete")
             } children(
-              arg[String]("<appkey>") action { (x, c) =>
-                c.copy(appkey = c.appkey.copy(appkey = x))
-              } text("The app key to be deleted.")
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("Name of the app to be deleted.")
+            )
+        )
+      note("")
+      cmd("token").
+        text("Manage app access tokens.\n").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "token")
+        } children(
+          cmd("new").
+            text("Add allowed event(s) to an access token.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "new")
+            } children(
+              arg[String]("<app name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App to be associated with the new token."),
+              arg[String]("<event>...") unbounded() action { (x, c) =>
+                c.copy(token = c.token.copy(events = c.token.events :+ x))
+              } text("Allowed event name(s) to be added to the token.")
+            ),
+          cmd("list").
+            text("List all access tokens of an app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "list")
+            } children(
+              arg[String]("<app name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App name.")
+            ),
+          note(""),
+          cmd("delete").
+            text("Delete an access token.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "delete")
+            } children(
+              arg[String]("<access token>") action { (x, c) =>
+                c.copy(token = c.token.copy(token = x))
+              } text("The access token to be deleted.")
             )
         )
     }
@@ -523,12 +571,18 @@ object Console extends Logging {
           dist(ca)
         case Seq("status") =>
           status(ca)
-        case Seq("appkey", "new") =>
-          appkeyNew(ca)
-        case Seq("appkey", "list") =>
-          appkeyList(ca)
-        case Seq("appkey", "delete") =>
-          appkeyDelete(ca)
+        case Seq("app", "new") =>
+          appNew(ca)
+        case Seq("app", "list") =>
+          appList(ca)
+        case Seq("app", "delete") =>
+          appDelete(ca)
+        case Seq("token", "new") =>
+          tokenNew(ca)
+        case Seq("token", "list") =>
+          tokenList(ca)
+        case Seq("token", "delete") =>
+          tokenDelete(ca)
         case _ =>
           error(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -849,38 +903,102 @@ object Console extends Logging {
     info(s"Successfully created distributable at: ${distDir.getCanonicalPath}")
   }
 
-  def appkeyNew(ca: ConsoleArgs): Unit = {
-    val appkeys = Storage.getMetaDataAppkeys
-    val appkey = appkeys.insert(Appkey(
-      appkey = "",
-      appid = ca.appkey.appid,
-      events = ca.appkey.events))
-    appkey map { k =>
-      info(s"Created new app key: ${k}")
+  def appNew(ca: ConsoleArgs): Unit = {
+    val apps = Storage.getMetaDataApps
+    apps.getByName(ca.app.name) map { app =>
+      error(s"App ${ca.app.name} already exists. Aborting.")
     } getOrElse {
-      error(s"Unable to create new app key.")
+      val appid = apps.insert(App(
+        id = ca.app.id.getOrElse(0),
+        name = ca.app.name,
+        description = ca.app.description))
+      appid map { id =>
+        val appkeys = Storage.getMetaDataAppkeys
+        val appkey = appkeys.insert(Appkey(
+          appkey = "",
+          appid = id,
+          events = Seq()))
+        appkey map { k =>
+          info("Created new app:")
+          info(s"        Name: ${ca.app.name}")
+          info(s"          ID: ${id}")
+          info(s"Access Token: ${k}")
+        } getOrElse {
+          error(s"Unable to create new app key.")
+        }
+      } getOrElse {
+        error(s"Unable to create new app.")
+      }
     }
   }
 
-  def appkeyList(ca: ConsoleArgs): Unit = {
-    val keys =
-      if (ca.appkey.appid == 0)
-        Storage.getMetaDataAppkeys.getAll
+  def appList(ca: ConsoleArgs): Unit = {
+    val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
+    val title = "Name"
+    info(f"$title%20s |   ID")
+    apps foreach { app =>
+      info(f"${app.name}%20s | ${app.id}%4d")
+    }
+    info(s"Finished listing ${apps.size} app(s).")
+  }
+
+  def appDelete(ca: ConsoleArgs): Unit = {
+    val apps = Storage.getMetaDataApps
+    apps.getByName(ca.app.name) map { app =>
+      if (Storage.getMetaDataApps.delete(app.id))
+        info(s"Deleted app ${app.name}.")
       else
-        Storage.getMetaDataAppkeys.getByAppid(ca.appkey.appid)
-    val title = "Appkey"
+        error(s"Error deleting app ${app.name}.")
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+    }
+  }
+
+  def tokenNew(ca: ConsoleArgs): Unit = {
+    val apps = Storage.getMetaDataApps
+    apps.getByName(ca.app.name) map { app =>
+      val appkeys = Storage.getMetaDataAppkeys
+      val appkey = appkeys.insert(Appkey(
+        appkey = "",
+        appid = app.id,
+        events = ca.token.events))
+      appkey map { k =>
+        info(s"Created new access token: ${k}")
+      } getOrElse {
+        error(s"Unable to create new access token.")
+      }
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+    }
+  }
+
+  def tokenList(ca: ConsoleArgs): Unit = {
+    val keys =
+      if (ca.app.name == "")
+        Storage.getMetaDataAppkeys.getAll
+      else {
+        val apps = Storage.getMetaDataApps
+        apps.getByName(ca.app.name) map { app =>
+          Storage.getMetaDataAppkeys.getByAppid(app.id)
+        } getOrElse {
+          error(s"App ${ca.app.name} does not exist. Aborting.")
+          sys.exit(1)
+        }
+      }
+    val title = "Access Token(s)"
     info(f"$title%64s | App ID | Allowed Event(s)")
     keys foreach { k =>
-      info(f"${k.appkey}%s | ${k.appid}%6d | ${k.events.mkString(",")}%s")
+      val events = if (k.events.size > 0) k.events.mkString(",") else "(all)"
+      info(f"${k.appkey}%s | ${k.appid}%6d | ${events}%s")
     }
-    info(s"Finished listing ${keys.size} app key(s).")
+    info(s"Finished listing ${keys.size} access token(s).")
   }
 
-  def appkeyDelete(ca: ConsoleArgs): Unit = {
-    if (Storage.getMetaDataAppkeys.delete(ca.appkey.appkey))
-      info(s"Deleted app key ${ca.appkey.appkey}.")
+  def tokenDelete(ca: ConsoleArgs): Unit = {
+    if (Storage.getMetaDataAppkeys.delete(ca.token.token))
+      info(s"Deleted access token ${ca.token.token}.")
     else
-      error(s"Error deleting app key ${ca.appkey.appkey}.")
+      error(s"Error deleting access token ${ca.token.token}.")
   }
 
   def status(ca: ConsoleArgs): Unit = {
