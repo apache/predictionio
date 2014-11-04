@@ -18,7 +18,7 @@ import UnidocKeys._
 
 name := "pio"
 
-version in ThisBuild := "0.8.1-SNAPSHOT"
+version in ThisBuild := "0.8.1"
 
 organization in ThisBuild := "io.prediction"
 
