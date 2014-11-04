@@ -4,7 +4,7 @@ title: Tutorial on Item Recommendation Engine - Movie Recommendation
 ---
 
 # Building Movie Recommendation App with Item Recommendation Engine
-<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.1 will be availble soon.</code>
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.2-SNAPSHOT will be availble soon.</code>
 
 ## Importing Movie-Lens Data
 

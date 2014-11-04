@@ -146,7 +146,7 @@ This project depends on the builtin engines, hence in `build.sbt` under project 
 ```scala
 libraryDependencies ++= Seq(
   ...
-  "io.prediction"    %% "engines"       % "0.8.1" % "provided",
+  "io.prediction"    %% "engines"       % "0.8.2-SNAPSHOT" % "provided",
   ...
 ```
 
