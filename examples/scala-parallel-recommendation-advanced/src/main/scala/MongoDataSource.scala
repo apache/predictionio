@@ -12,6 +12,8 @@ import org.bson.BSONObject
 import com.mongodb.hadoop.MongoInputFormat
 
 case class MongoDataSourceParams(
+  val host: String,
+  val port: Int,
   val db: String, // DB name
   val collection: String // collection name
 ) extends Params
@@ -24,7 +26,7 @@ class MongoDataSource(val dsp: MongoDataSourceParams)
   def readTraining(sc: SparkContext): TrainingData = {
     val config = new Configuration()
     config.set("mongo.input.uri",
-      s"mongodb://127.0.0.1:27017/${dsp.db}.${dsp.collection}")
+      s"mongodb://${dsp.host}:${dsp.port}/${dsp.db}.${dsp.collection}")
 
     val mongoRDD = sc.newAPIHadoopRDD(config,
       classOf[MongoInputFormat],
@@ -43,7 +45,11 @@ class MongoDataSource(val dsp: MongoDataSourceParams)
 
 object MongoDataSourceTest {
   def main(args: Array[String]) {
-    val dsp = MongoDataSourceParams("test", "sample_ratings")
+    val dsp = MongoDataSourceParams(
+      host = "127.0.0.1",
+      port = 27017,
+      db = "test",
+      collection = "sample_ratings")
 
     Workflow.run(
       dataSourceClassOpt = Some(classOf[MongoDataSource]),
