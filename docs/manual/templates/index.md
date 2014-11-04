@@ -68,10 +68,10 @@ $ pio deploy
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
 
 Now, You can try to retrieve predicted results.
-To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num":4 } to the deployed engine and it will return a JSON of the recommended movies.
+To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
 
 ```
-$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num":4 }' http://localhost:8000/queries.json
+$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
@@ -95,14 +95,14 @@ Let's look at the code and see how you can customize the engine.
 
 ## The Engine Design
 
-As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num":4 }, and return
+As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
 a JSON predicted result.
 
 In MyEngine/src/main/scala/***Engine.scala***
 
-`Query` case class defines the format of **query**, such as { "user": 1, "num":4 }:
+`Query` case class defines the format of **query**, such as { "user": 1, "num": 4 }:
 
-```
+```scala
 case class Query(
   val user: Int,
   val num: Int
@@ -111,7 +111,7 @@ case class Query(
 
 `PredictedResult` case class defines the format of **predicted result**, such as {"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}:
 
-```
+```scala
 case class PredictedResult(
   val productScores: Array[ProductScore]
 ) extends Serializable
@@ -123,9 +123,9 @@ case class ProductScore(
 ```
 
 Finally, `RecommendationEngine` is the Engine Factory that defines the components this engine will use:
-Data Source, Data Preparator, ALgorithm(s) and Serving components.
+Data Source, Data Preparator, Algorithm(s) and Serving components.
 
-```
+```scala
 object RecommendationEngine extends IEngineFactory {
   def apply() = {
     new Engine(
@@ -157,7 +157,9 @@ In MyEngine/src/main/scala/***DataSource.scala***
 
 The `def readTraining` of class `DataSource` reads, and selects, data from a data store and it returns `TrainingData`.
 
-```
+```scala
+case class DataSourceParams(val filepath: String) extends Params
+
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[DataSourceParams, EmptyDataParams, TrainingData, Query, EmptyActualResult] {
 
@@ -179,8 +181,12 @@ PredictionIO automatically loads the parameters of *datasource* specified in MyE
 In ***engine.json***:
 
 ```
-datasource: {
-  "filepath": "./data/sample_movielens_data.txt"
+{
+  ...
+  "datasource": {
+    "filepath": "./data/sample_movielens_data.txt"
+  }
+  ...
 }
 ```
 
@@ -189,17 +195,18 @@ In this sample text data file, values are delimited by double colons (::). The f
 
 The class definition of `TrainingData` is:
 
-```
+```scala
 class TrainingData(
   val ratings: RDD[Rating]
 ) extends Serializable
 ```
 and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 
+<!-- TODO
 > HOW-TO:
 >
 > You may modify readTraining function to read from other datastores, such as MongoDB -  [link]
-
+-->
 
 
 ### Data Preparator
@@ -211,7 +218,7 @@ At the end, it returns `PreparedData` which should contain the data *Algorithm* 
 
 By default, `prepare` simply copies the unprocessed `TrainingData` data to `PreparedData`:
 
-```
+```scala
 class Preparator
   extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
 
@@ -227,10 +234,11 @@ class PreparedData(
 
 PredictionIO passes the returned `PreparedData` object to Algorithm's `train` function.
 
+<!-- TODO
 > HOW-TO:
 >
 > MLlib ALS limitation: user id, item id must be integer - convert [link]
-
+-->
 
 ## Algorithm
 
@@ -243,7 +251,7 @@ The two functions of the algorithm class are `def train` and `def predict`.
 
 `def train` is called when you run **pio train**.  This is where MLlib ALS algorithm, i.e. `ALS.train`, is used to train a predictive model.
 
-```
+```scala
   def train(data: PreparedData): PersistentMatrixFactorizationModel = {
     val m = ALS.train(data.ratings, ap.rank, ap.numIterations, ap.lambda)
     new PersistentMatrixFactorizationModel(
@@ -259,21 +267,23 @@ The values of these parameters are specified in *algorithms* of MyEngine/***engi
 
 ```
 {
- algorithms: [
-      {
-        "name": "als",
-        "params": {
-          "rank": 10,
-          "numIterations": 20,
-          "lambda": 0.01
-        }
+  ...
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01
       }
-    ]
+    }
+  ]
+  ...
 }
 ```
 PredictionIO will automatically loads these values into the constructor `ap`, which has a corresponding case case `ALSAlgorithmParams`:
 
-```
+```scala
 case class ALSAlgorithmParams(
   val rank: Int,
   val numIterations: Int,
@@ -290,17 +300,16 @@ PredictionIO will automatically store the returned model, i.e. `PersistentMatrix
 
 ### def predict
 
-`def predict` is called when you send a JSON query to http://localhost:8000/queries.json. PredictionIO converts the query, such as  { "user": 1, "num":4 } to the `Query` class you defined previously.  
+`def predict` is called when you send a JSON query to http://localhost:8000/queries.json. PredictionIO converts the query, such as  { "user": 1, "num": 4 } to the `Query` class you defined previously.  
 
 The predictive model `MatrixFactorizationModel` of MLlib ALS, which is now extended as `PersistentMatrixFactorizationModel`,
 offers a function called `recommendProducts`. `recommendProducts` takes two parameters: user id (i.e. query.user) and the number of products to be returned (i.e. query.num).
 It predicts the top *num* of products a user will like.
 
-```
+```scala
 def predict(
     model: PersistentMatrixFactorizationModel,
     query: Query): PredictedResult = {
-    // MLlib MatrixFactorizationModel return Array[Rating]
     val productScores = model.recommendProducts(query.user, query.num)
       .map (r => ProductScore(r.product, r.rating))
     new PredictedResult(productScores)
@@ -318,12 +327,13 @@ The `def serve` of class `Serving` processes predicted result. It is also respon
 
 In MyEngine/src/main/scala/***Serving.scala***
 
-```
+```scala
 class Serving
   extends LServing[EmptyServingParams, Query, PredictedResult] {
 
   override
-  def serve(query: Query, predictions: Seq[PredictedResult]): PredictedResult = {
+  def serve(query: Query,
+    predictions: Seq[PredictedResult]): PredictedResult = {
     predictions.head
   }
 }
@@ -338,6 +348,7 @@ will be passed to `def serve` as a sequence, i.e. `Seq[PredictedResult]`.
 
 In this case, `def serve` simply returns the predicted result of the first, and the only, algorithm, i.e. `predictions.head`.
 
+<!-- TODO
 > HOW-TO:
 >
 > Recommend products that the targeted user has not seen before [link]
@@ -345,6 +356,7 @@ In this case, `def serve` simply returns the predicted result of the first, and 
 > Give higher priority to newer products
 >
 > Combining several predictive model to improve prediction accuracy
+-->
 
 # Model Re-training
 

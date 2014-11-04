@@ -7,13 +7,13 @@ case class Query(
   val num: Int
 ) extends Serializable
 
+case class PredictedResult(
+  val productScores: Array[ProductScore]
+) extends Serializable
+
 case class ProductScore(
   product: Int,
   score: Double
-) extends Serializable
-
-case class PredictedResult(
-  val productScores: Array[ProductScore]
 ) extends Serializable
 
 object RecommendationEngine extends IEngineFactory {
