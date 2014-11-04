@@ -376,7 +376,7 @@ for the engine, and register it with PredictionIO. Here's the content:
 ```json
 {
   "id": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory",
-  "version": "0.8.1-SNAPSHOT",
+  "version": "0.8.1",
   "name": "FeatureBased Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial4.EngineFactory"
 }
