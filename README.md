@@ -18,15 +18,15 @@ To get started, check out <http://prediction.io>!
 Five installation options available. 
 
 [//]: # (* Deploying PredictionIO on Amazon Web Services)
-* [Installing PredictionIO on Linux / Mac OS X](http://docs.prediction.io/0.8.1/install/install-linux.html)
-* [Installing PredictionIO from Source Code](http://docs.prediction.io/0.8.1/install/install-sourcecode.html)
-* [Launching PredictionIO on AWS](http://docs.prediction.io/0.8.1/install/launch-aws.html)
+* [Installing PredictionIO on Linux / Mac OS X](http://docs.prediction.io/current/install/install-linux.html)
+* [Installing PredictionIO from Source Code](http://docs.prediction.io/current/install/install-sourcecode.html)
+* [Launching PredictionIO on AWS](http://docs.prediction.io/current/install/launch-aws.html)
 * [Installing PredictionIO with Docker](https://github.com/mingfang/docker-predictionio) (Community contributed)
 * [Installing PredictionIO with Vagrant](https://github.com/magento-hackathon/PredictionIO-Vagrant) (Community contributed)
 
 
 ## Quick start
-See [Engine Template Quick Start](http://docs.prediction.io/0.8.1/templates/) Guide.
+See [Engine Template Quick Start](http://docs.prediction.io/current/templates/) Guide.
 
 ## Bugs and feature requests
 
