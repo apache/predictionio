@@ -50,7 +50,9 @@ Learn more about using Jekyll by reading its [documentation](http://jekyllrb.com
 
 ## Contributing
 
-TBD
+Please read and sign the [Contributor Agreement](http://prediction.io/cla). If you have any questions, you can post on the [Contributor Forum](https://groups.google.com/forum/#!forum/predictionio-dev). 
+
+You can also list your projects on the [Community Project page](http://docs.prediction.io/current/projects.html)
 
 ## Community
 
