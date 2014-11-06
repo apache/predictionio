@@ -1,0 +1,6 @@
+{
+  "id": "SimrankEngineParallel",
+  "version": "0.8.1-SNAPSHOT",
+  "name": "Item Recommendations",
+  "engineFactory": "io.prediction.examples.pfriendrecommendation.PSimRankEngineFactory"
+}
