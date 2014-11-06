@@ -30,7 +30,7 @@ See [Engine Template Quick Start](templates/index.html) Guide.
 
 ## Bugs and feature requests
 
-Have a bug or a feature request?  Please search for existing and closed issues on the [Community Forum](https://groups.google.com/forum/#!forum/predictionio-user). If your problem or idea is not addressed yet, [please open a new issue](https://predictionio.atlassian.net/).
+Have a bug or a feature request?  Please search for existing and closed issues on the [Community Forum](https://groups.google.com/forum/#!forum/predictionio-user). If your problem or idea is not addressed yet, [please open a new issue](https://github.com/PredictionIO/PredictionIO/issues/new).
 
 
 ## Documentation
