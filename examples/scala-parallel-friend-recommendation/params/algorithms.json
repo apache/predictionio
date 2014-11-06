@@ -1,0 +1,12 @@
+[
+  {
+    "name": "",
+    "params": {
+      "rank": 10,
+      "numIterations": 6,
+      "scalar": 0.7,
+      "lambda": 0.01,
+      "persistModel": true
+    }
+  }
+]

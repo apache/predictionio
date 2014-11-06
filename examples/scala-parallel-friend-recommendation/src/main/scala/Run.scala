@@ -80,9 +80,6 @@ class SimRankAlgorithm(val ap: AlgorithmParams)
   }
 
   def train(gd: Graph[Int,Int]): SimRankModel = {
-    println(s"vertices")
-    gd.vertices.toArray.foreach(println)
-    gd.edges.toArray.foreach(println)
     // base case
     var prevIter = Array.ofDim[Double](gd.vertices.count().toInt, gd.vertices.count().toInt)
     // prevIter.cache
@@ -93,24 +90,17 @@ class SimRankAlgorithm(val ap: AlgorithmParams)
       for(index <- 0 until gd.vertices.count().toInt)
         prevIter(index)(index) = 1
 
-      println(s"ITER ${iter}")
-      println(prevIter.deep.mkString("\n"))
-
       var currIter = Array.ofDim[Double](gd.vertices.count().toInt, gd.vertices.count().toInt)
       for(x <- gd.vertices.toArray; y <- gd.vertices.toArray) {
-        // Matrix diagonalization optimization : use strict ordering of vertexId
-        // to elimiate lower diagonal of memo matrix
-        if(x._1 < y._1) {
-          // Using filtering instead of mapReduceTriplets. MRT is not suitable for
-          // pairwise neighborhood comparison.
-          // ._1 index is the vertexId
-          val xNeighbors = getAdjacentVertexId(x._1, gd)
-          val yNeighbors = getAdjacentVertexId(y._1, gd)
-          // Normalization factor
-          var scalar = ap.scalar / (xNeighbors.count() * yNeighbors.count())
-          for(srcId <- xNeighbors.toArray; dstId <- yNeighbors.toArray) {
-            currIter(x._1.toInt)(y._1.toInt) += scalar * prevIter(srcId.toInt)(dstId.toInt)
-          }
+        // Using filtering instead of mapReduceTriplets. MRT is not suitable for
+        // pairwise neighborhood comparison.
+        // ._1 index is the vertexId
+        val xNeighbors = getAdjacentVertexId(x._1, gd)
+        val yNeighbors = getAdjacentVertexId(y._1, gd)
+        // Normalization factor
+        var scalar = ap.scalar / (xNeighbors.count() * yNeighbors.count())
+        for(srcId <- xNeighbors.toArray; dstId <- yNeighbors.toArray) {
+          currIter(x._1.toInt)(y._1.toInt) += scalar * prevIter(srcId.toInt)(dstId.toInt)
         }
       }
 
@@ -145,10 +135,7 @@ class SimRankAlgorithm(val ap: AlgorithmParams)
         // Look up simrank score in model using vertexID
         // Leveraged reflexivity of simrank to skip the check for src/dst vertex
         // mapping to v's vertices
-        if(v(0)._1 < v(1)._1)
-          score = model.memo(v(0)._1.toInt)(v(1)._1.toInt)
-        else
-          score = model.memo(v(1)._1.toInt)(v(0)._1.toInt)
+        score = model.memo(v(0)._1.toInt)(v(1)._1.toInt)
       } else {
         // This is the case when the query does not match any nodes from our
         // data
