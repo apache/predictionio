@@ -42,7 +42,7 @@ PredictionIO’s documentation, included in this repo in the root directory, is 
 1. If necessary, [install Jekyll](http://jekyllrb.com/docs/installation) (requires v2.4.x).
   - **Windows users:** Read [this unofficial guide](http://jekyll-windows.juthilo.com/) to get Jekyll up and running without problems.
 2. Install the Ruby-based syntax highlighter, [Rouge](https://github.com/jneen/rouge), with `gem install rouge`.
-3. From the root `/bootstrap` directory, run `jekyll serve` in the command line.
+3. From the `/docs/manual` directory, run `jekyll serve` in the command line.
 4. Open Server address ( http://0.0.0.0:4000/0.8.1/ ) in your browser, and you should see the documentation.
 
 Learn more about using Jekyll by reading its [documentation](http://jekyllrb.com/docs/home/).
