@@ -2,7 +2,7 @@
 
 PredictionIO is an open source machine learning framework for developers and data scientists. It supports event collection, deployment of algorithms, evaluation, querying predictive results via REST APIs. 
 
-To get started, check out <http://prediciton.io>!
+To get started, check out <http://prediction.io>!
 
 ## Table of contents
 - [Installation](#installation)
