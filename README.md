@@ -56,7 +56,7 @@ TBD
 
 Keep track of development and community news.
 
-- Follow [@predictionio on Twitter](https://twitter.com/predictionio).
+- Follow [@predictionio](https://twitter.com/predictionio) on Twitter.
 - Read and subscribe to [the Newsletter ](http://prediction.us6.list-manage1.com/subscribe?u=d8c0435d851c1310fc64c6e26&id=8c6c1b46d0).
 - Join the [Community Forum](https://groups.google.com/forum/#!forum/predictionio-user).
 
