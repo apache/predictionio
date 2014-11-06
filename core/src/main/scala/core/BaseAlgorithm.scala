@@ -39,6 +39,9 @@ abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   def queryManifest(): Manifest[Q] = manifest[Q]
 
   @transient lazy val querySerializer = Utils.json4sDefaultFormats
+
+  def isJava: Boolean
+  def isParallel: Boolean
 }
 
 trait LModelAlgorithm[M, Q, P] {

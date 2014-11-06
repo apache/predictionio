@@ -187,14 +187,9 @@ object CreateServer extends Logging {
           engine.servingClass)
     val serving = Doer(engine.servingClass, servingParams)
 
-    val pAlgorithmExists =
-      algorithms.exists(alg => alg.isInstanceOf[PAlgorithm[_, PD, _, Q, P]]
-          || alg.isInstanceOf[PJavaAlgorithm[_, PD, _, Q, P]])
     val sparkContext =
-      if (pAlgorithmExists)
-        Some(WorkflowContext(engineInstance.batch, engineInstance.env))
-      else
-        None
+      Option(WorkflowContext(engineInstance.batch, engineInstance.env)).
+        filter(_ => algorithms.exists(_.isParallel))
     val dataSourceParams = WorkflowUtils.extractParams(
       engineLanguage,
       engineInstance.dataSourceParams,
@@ -242,8 +237,7 @@ object CreateServer extends Logging {
               p,
               sparkContext,
               getClass.getClassLoader)
-          } else if (a.isInstanceOf[PAlgorithm[_, _, _, Q, P]]
-              || a.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]]) {
+          } else if (a.isParallel) {
             info(s"Parallel model detected for algorithm ${a.getClass.getName}")
             a.trainBase(sparkContext.get, evalPreparedMap.get(0))
           } else {
@@ -363,9 +357,7 @@ class ServerActor[Q, P](
   val serverStartTime = DateTime.now
   lazy val gson = new Gson
   val log = Logging(context.system, this)
-  val (javaAlgorithms, scalaAlgorithms) =
-    algorithms.partition(alg => alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]
-                             || alg.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]])
+  val (javaAlgorithms, scalaAlgorithms) = algorithms.partition(_.isJava)
 
   def actorRefFactory = context
 
@@ -423,8 +415,7 @@ class ServerActor[Q, P](
                   alg.querySerializer, alg.queryManifest)
               }
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-                if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]
-                    || a.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]])
+                if (a.isJava)
                   a.predictBase(models(ai), javaQuery.get)
                 else
                   a.predictBase(models(ai), scalaQuery.get)

@@ -66,6 +66,9 @@ abstract class LAlgorithm[
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+
+  def isJava = false
+  def isParallel = false
 }
 
 /** Base class of a parallel-to-local algorithm.
@@ -111,6 +114,9 @@ abstract class P2LAlgorithm[
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+
+  def isJava = false
+  def isParallel = false
 }
 
 /** Base class of a parallel algorithm.
@@ -180,4 +186,7 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+
+  def isJava = false
+  def isParallel = true
 }
