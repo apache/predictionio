@@ -409,23 +409,19 @@ class ServerActor[Q, P](
           entity(as[String]) { queryString =>
             try {
               val queryTime = DateTime.now
-              val javaQuery = if (!javaAlgorithms.isEmpty) {
-                val alg = javaAlgorithms.head
+              val javaQuery = javaAlgorithms.headOption map { alg =>
                 val queryClass = if (
-                    alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
+                  alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
                   alg.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].queryClass
                 } else {
                   alg.asInstanceOf[PJavaAlgorithm[_, _, _, Q, P]].queryClass
                 }
-                Some(gson.fromJson(
-                  queryString,
-                  queryClass))
-              } else None
-              val scalaQuery = if (!scalaAlgorithms.isEmpty) {
-                Some(Extraction.extract(parse(queryString))(
-                  scalaAlgorithms.head.querySerializer,
-                  scalaAlgorithms.head.queryManifest))
-              } else None
+                gson.fromJson(queryString, queryClass)
+              }
+              val scalaQuery = scalaAlgorithms.headOption map { alg =>
+                Extraction.extract(parse(queryString))(
+                  alg.querySerializer, alg.queryManifest)
+              }
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
                 if (a.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]
                     || a.isInstanceOf[PJavaAlgorithm[_, _, _, Q, P]])
