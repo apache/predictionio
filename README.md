@@ -47,13 +47,6 @@ PredictionIO’s documentation, included in this repo in the root directory, is 
 
 Learn more about using Jekyll by reading its [documentation](http://jekyllrb.com/docs/home/).
 
-
-## Contributing
-
-Please read and sign the [Contributor Agreement](http://prediction.io/cla). If you have any questions, you can post on the [Contributor Forum](https://groups.google.com/forum/#!forum/predictionio-dev). 
-
-You can also list your projects on the [Community Project page](http://docs.prediction.io/current/projects.html)
-
 ## Community
 
 Keep track of development and community news.
@@ -61,5 +54,14 @@ Keep track of development and community news.
 - Follow [@predictionio](https://twitter.com/predictionio) on Twitter.
 - Read and subscribe to [the Newsletter ](http://prediction.us6.list-manage1.com/subscribe?u=d8c0435d851c1310fc64c6e26&id=8c6c1b46d0).
 - Join the [Community Forum](https://groups.google.com/forum/#!forum/predictionio-user).
+
+## Contributing
+
+Please read and sign the [Contributor Agreement](http://prediction.io/cla). If you have any questions, you can post on the [Contributor Forum](https://groups.google.com/forum/#!forum/predictionio-dev). 
+
+You can also list your projects on the [Community Project page](http://docs.prediction.io/current/projects.html)
+
+## License
+PredictionIO is under [Apache 2 license](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 
