@@ -1,19 +1,81 @@
 <div>
     <h2>Getting Started</h2>
-	<ul>
-	    {% for sec in site.data.nav_gettingstarted %}
-	    <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
-	        {% if sec.subsec != null %}
-	        <ul>
-	        {% for subsec in sec.subsec %}
-	            <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
-	        {% endfor %}
-	        </ul>
-	        {% endif %}
-	    </li>
-	    {% endfor %}
-	</ul>
+    <ul>
+        {% for sec in site.data.nav_gettingstarted %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Recommendation Template</h2>
+    <ul>
+        {% for sec in site.data.nav_recommendation %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <h2>Classification Template</h2>
+    <ul>
+        {% for sec in site.data.nav_classification %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
 
+    
+    <h2>Event Server</h2>
+    <ul>
+        {% for sec in site.data.nav_eventserver %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Accuracy Evaluation and Tuning</h2>
+    
+    <h2>Running on Production</h2>
+    <ul>
+        {% for sec in site.data.nav_production %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    
     <h2>Cookbook</h2>
     <ul>
         {% for sec in site.data.nav_cookbook %}
@@ -29,46 +91,10 @@
         {% endfor %}
     </ul>
 
-<!-- 
-    <h2>Engine Builders' Guide</h2>
+    
+	<h2>Getting Involved</h2>
     <ul>
-        {% for sec in site.data.nav_enginebuilders %}
-        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
-            {% if sec.subsec != null %}
-            <ul>
-            {% for subsec in sec.subsec %}
-                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
--->
-    <h2>Running on Production</h2>
-    <ul>
-        {% for sec in site.data.nav_production %}
-        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
-            {% if sec.subsec != null %}
-            <ul>
-            {% for subsec in sec.subsec %}
-                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ul>
-
-	<h2>Contributors</h2>
-	<ul class="kb-menu">
-	  <li><a href="{{ site.baseurl }}/contributorsguide.html">Contributors' Guide</a></li>
-	  <li><a href="{{ site.baseurl }}/projects.html">Community-powered Projects</a></li>
-	</ul>
-
-    <h2 style="color:#cccccc">Using Built-in Engines<br/>(updates pending)</h2>
-    <ul>
-        {% for sec in site.data.nav_engines %}
+        {% for sec in site.data.nav_community %}
         <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
             {% if sec.subsec != null %}
             <ul>

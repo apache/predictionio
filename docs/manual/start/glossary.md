@@ -2,6 +2,7 @@
 layout: docs
 title: Glossary
 ---
+# Glossary
 
 **DataPreparator**
 - Part of Engine. It reads data from source and transforms it to the desired

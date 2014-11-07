@@ -1,7 +1,8 @@
 ---
 layout: docs
-title:  Engine and Engine Instance | Built-in Engines
+title:  Engine and Engine Instance 
 ---
+<code>Rewrite/Update</code>
 
 # Engine and Engine Instance: A Closer Look
 
@@ -71,3 +72,25 @@ Instance, i.e.:
   Algorithm(s), One Serving)
 
 * One Evaluation Metrics
+
+
+# Engine Templates
+
+PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
+
+* Collaborative Filtering Engine Template - with MLlib ALS (/templates/scala-parallel-recommendation)
+* Classification Engine Template - with MLlib Naive Bayes  (/templates/scala-parallel-classification)
+
+This tutorial shows you how to use the Collaborative Filtering Engine Template to build your own recommendation engine for production use.
+The usage of other engine templates are very similar.
+
+> What is an Engine Template?
+>
+> It is a basic skeleton of an engine. You can customize it easily to fit your specific needs.
+
+PredictionIO offers the following features on top of Apache Spark  MLlib project:
+
+* Deploy Spark MLlib model as a service on a production environment
+* Support JSON query to retrieve prediction online
+* Offer separation-of-concern software pattern based on the DASE architecture
+* Support model update with new data

@@ -1,12 +1,11 @@
 - title: "Overview"
-  href: "/predictionio.html"
-  
+  href: "/start/"
+    
 - title: "Installing PredictionIO"
   href: "/install/"
 
-- title: "Engine Templates Quick Start"
-  href: "/templates/"
+- title: "Engines "
+  href: "/start/engines.html"
 
-- title: "Concept of Engine"
-  href: "/engines/concept"
-    
+- title: "Glossary"
+  href: "/start/glossary.html"
