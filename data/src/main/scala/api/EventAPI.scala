@@ -175,7 +175,8 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
                   appId,
                   startTime, untilTime,
                   entityType, entityId,
-                  limit, reversed)
+                  limit.orElse(Some(20)),
+                  reversed)
                   .map { r =>
                     r match {
                       case Left(StorageError(message)) =>

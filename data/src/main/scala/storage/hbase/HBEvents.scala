@@ -259,7 +259,7 @@ class HBEvents(client: HBClient, namespace: String)
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String],
-    limit: Option[Int] = Some(20),
+    limit: Option[Int],
     reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
