@@ -36,13 +36,15 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import org.apache.commons.codec.binary.Base64
+import java.security.MessageDigest
 
 /* common utility function for acessing EventsStore in HBase */
 object HBEventsUtil {
 
   implicit val formats = DefaultFormats
 
-  val table = "events"
+  def tableName(namespace: String, appId: Int) = s"${namespace}:events_${appId}"
+  //val table = "events"
 
   // column nams for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(
@@ -57,6 +59,7 @@ object HBEventsUtil {
     "creationTimeZone" -> "ctz"
   ).mapValues(Bytes.toBytes(_))
 
+  /*
   class RowKey(
     val appId: Int,
     val millis: Long,
@@ -71,9 +74,45 @@ object HBEventsUtil {
     override def toString: String = {
       Base64.encodeBase64URLSafeString(toBytes)
     }
+  }*/
+
+
+  val md5 = MessageDigest.getInstance("MD5")
+
+  def hash(entityType: String, entityId: String): Array[Byte] = {
+    val s = entityType + "-" + entityId
+    md5.digest(Bytes.toBytes(s))
+  }
+
+  class RowKey(
+    val b: Array[Byte]
+  ) {
+    require((b.size == 32), s"Incorrect b size: ${b.size}")
+    lazy val entityHash: Array[Byte] = b.slice(0, 16)
+    lazy val millis: Long = Bytes.toLong(b.slice(16, 24))
+    lazy val uuidLow: Long = Bytes.toLong(b.slice(24, 32))
+
+    lazy val toBytes: Array[Byte] = b
+
+    override def toString: String = {
+      Base64.encodeBase64URLSafeString(toBytes)
+    }
   }
 
   object RowKey {
+    def apply(
+      entityType: String,
+      entityId: String,
+      millis: Long,
+      uuidLow: Long): RowKey = {
+        // add UUID least significant bits for multiple actions at the same time
+        // (UUID's most significantbits are actually timestamp,
+        // use eventTime instead).
+        val b = hash(entityType, entityId) ++
+          Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
+        new RowKey(b)
+      }
+
     // get RowKey from string representation
     def apply(s: String): RowKey = {
       try {
@@ -85,33 +124,38 @@ object HBEventsUtil {
     }
 
     def apply(b: Array[Byte]): RowKey = {
-      if (b.size != 20) {
+      if (b.size != 32) {
         val bString = b.mkString(",")
         throw new RowKeyException(
           s"Incorrect byte array size. Bytes: ${bString}.")
       }
-
-      new RowKey(
-        appId = Bytes.toInt(b.slice(0, 4)),
-        millis = Bytes.toLong(b.slice(4, 12)),
-        uuidLow = Bytes.toLong(b.slice(12, 20))
-      )
+      new RowKey(b)
     }
+
   }
 
-  class RowKeyException(msg: String, cause: Exception)
+  class RowKeyException(val msg: String, val cause: Exception)
     extends Exception(msg, cause) {
       def this(msg: String) = this(msg, null)
     }
 
+  /*
   case class PartialRowKey(val appId: Int, val millis: Option[Long] = None) {
     val toBytes: Array[Byte] = {
       Bytes.toBytes(appId) ++
         (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
     }
+  }*/
+
+  case class PartialRowKey(entityType: String, entityId: String,
+    millis: Option[Long] = None) {
+    val toBytes: Array[Byte] = {
+      hash(entityType, entityId) ++
+        (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
+    }
   }
 
-  def resultToEvent(result: Result): Event = {
+  def resultToEvent(result: Result, appId: Int): Event = {
     val rowKey = RowKey(result.getRow())
 
     val eBytes = Bytes.toBytes("e")
@@ -168,7 +212,7 @@ object HBEventsUtil {
       properties = properties,
       eventTime = new DateTime(rowKey.millis, eventTimeZone),
       tags = Seq(),
-      appId = rowKey.appId,
+      appId = appId,
       predictionKey = predictionKey,
       creationTime = creationTime
     )
@@ -176,28 +220,36 @@ object HBEventsUtil {
 
 
   def createScan(
-    appId: Int,
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String],
     reversed: Option[Boolean] = Some(false)): Scan = {
 
-    val start = PartialRowKey(appId, startTime.map(_.getMillis))
-    // if no untilTime, stop when reach next appId
-    val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
-      .getOrElse(PartialRowKey(appId+1))
+    val scan: Scan = (entityType, entityId) match {
+      case (Some(et), Some(eid)) => {
+        val start = PartialRowKey(et, eid,
+          startTime.map(_.getMillis)).toBytes
+        // if no untilTime, stop when reach next bytes of entityTypeAndId
+        val stop = untilTime.map(t =>
+            PartialRowKey(et, eid, Some(t.getMillis)).toBytes)
+          .getOrElse(Bytes.incrementBytes(
+            PartialRowKey(et, eid).toBytes, 1))
 
-
-    val scan: Scan = (if (reversed.getOrElse(false)) {
-        // Reversed order.
-        val s = new Scan(stop.toBytes, start.toBytes)
-        s.setReversed(true)
-      } else {
-        new Scan(start.toBytes, stop.toBytes)
+        if (reversed.getOrElse(false)) {
+          // Reversed order.
+          val s = new Scan(stop, start)
+          s.setReversed(true)
+        } else {
+          new Scan(start, stop)
+        }
       }
-    )
-
+      case (_, _) => {
+        val s = new Scan()
+        // TODO: row filter for time
+        s
+      }
+    }
 
     if ((entityType != None) || (entityId != None)) {
       val filters = new FilterList()
@@ -216,8 +268,6 @@ object HBEventsUtil {
       }
       scan.setFilter(filters)
     }
-
-    //scan.setReversed(reversed.getOrElse(false))
 
     scan
   }

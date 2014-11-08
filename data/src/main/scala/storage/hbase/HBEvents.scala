@@ -65,12 +65,14 @@ class HBEvents(client: HBClient, namespace: String)
   extends Events with Logging {
 
   // check namespace exist
+  /*
   val existingNamespace = client.admin.listNamespaceDescriptors().map(_.getName)
   if (!existingNamespace.contains(namespace)) {
     val nameDesc = NamespaceDescriptor.create(namespace).build()
     info(s"The namespace ${namespace} doesn't exist yet. Creating now...")
     client.admin.createNamespace(nameDesc)
-  }
+  }*/
+
   /*
   try {
     val nameDesc = NamespaceDescriptor.create(namespace).build()
@@ -83,30 +85,57 @@ class HBEvents(client: HBClient, namespace: String)
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
 
-  val tableName = TableName.valueOf(namespace, HBEventsUtil.table)
+  //val tableName = TableName.valueOf(namespace, HBEventsUtil.table)
 
   val colNames = HBEventsUtil.colNames
 
-  def resultToEvent(result: Result): Event = HBEventsUtil.resultToEvent(result)
+  def resultToEvent(result: Result, appId: Int): Event =
+    HBEventsUtil.resultToEvent(result, appId)
+
+  def getTable(appId: Int) = client.connection.getTable(
+    HBEventsUtil.tableName(namespace, appId))
 
   // create table if not exist
-  if (!client.admin.tableExists(tableName)) {
+  /*if (!client.admin.tableExists(tableName)) {
     val tableDesc = new HTableDescriptor(tableName)
     tableDesc.addFamily(new HColumnDescriptor("e"))
     tableDesc.addFamily(new HColumnDescriptor("r")) // reserved
     client.admin.createTable(tableDesc)
-  }
+  }*/
 
+  override
+  def init(appId: Int): Boolean = {
+    // check namespace exist
+    val existingNamespace = client.admin.listNamespaceDescriptors()
+      .map(_.getName)
+    if (!existingNamespace.contains(namespace)) {
+      val nameDesc = NamespaceDescriptor.create(namespace).build()
+      info(s"The namespace ${namespace} doesn't exist yet. Creating now...")
+      client.admin.createNamespace(nameDesc)
+    }
+
+    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
+    if (!client.admin.tableExists(tableName)) {
+      info(s"The table ${tableName.getNameAsString()} doesn't exist yet." +
+        " Creating now...")
+      val tableDesc = new HTableDescriptor(tableName)
+      tableDesc.addFamily(new HColumnDescriptor("e"))
+      tableDesc.addFamily(new HColumnDescriptor("r")) // reserved
+      client.admin.createTable(tableDesc)
+    }
+    true
+  }
 
   override
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     Future {
-      //val table = new HTable(client.conf, tableName)
-      val table = client.connection.getTable(tableName)
+      val table = getTable(event.appId)
+      // TOOD: use real UUID. not psuedo random
       val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
-      val rowKey = new RowKey(
-        appId = event.appId,
+      val rowKey = RowKey(
+        entityType = event.entityType,
+        entityId = event.entityId,
         millis = event.eventTime.getMillis,
         uuidLow = uuidLow
       )
@@ -164,10 +193,10 @@ class HBEvents(client: HBClient, namespace: String)
 
 
   override
-  def futureGet(eventId: String)(implicit ec: ExecutionContext):
+  def futureGet(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] = {
       Future {
-        val table = client.connection.getTable(tableName)
+        val table = getTable(appId)
         val rowKey = RowKey(eventId)
         val get = new Get(rowKey.toBytes)
 
@@ -175,7 +204,7 @@ class HBEvents(client: HBClient, namespace: String)
         table.close()
 
         if (!result.isEmpty()) {
-          val event = resultToEvent(result)
+          val event = resultToEvent(result, appId)
           Right(Some(event))
         } else {
           Right(None)
@@ -187,10 +216,10 @@ class HBEvents(client: HBClient, namespace: String)
     }
 
   override
-  def futureDelete(eventId: String)(implicit ec: ExecutionContext):
+  def futureDelete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Boolean]] = {
     Future {
-      val table = client.connection.getTable(tableName)
+      val table = getTable(appId)
       val rowKey = RowKey(eventId)
       val exists = table.exists(new Get(rowKey.toBytes))
       table.delete(new Delete(rowKey.toBytes))
@@ -202,23 +231,40 @@ class HBEvents(client: HBClient, namespace: String)
   override
   def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
-      Future {
-        val table = client.connection.getTable(tableName)
+      futureGetGeneral(
+        appId = appId,
+        startTime = None,
+        untilTime = None,
+        entityType = None,
+        entityId = None,
+        limit = None,
+        reversed = None)
+      /*Future {
+        val table = getTable(appId)
         val start = PartialRowKey(appId)
         val stop = PartialRowKey(appId+1)
         val scan = new Scan(start.toBytes, stop.toBytes)
+        val scan = new Scan()
         val scanner = table.getScanner(scan)
         table.close()
-        Right(scanner.iterator().map { resultToEvent(_) })
-      }
+        Right(scanner.iterator().map { resultToEvent(_, appId) })
+      }*/
     }
 
   override
   def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
-      Future {
-        val table = client.connection.getTable(tableName)
+      futureGetGeneral(
+        appId = appId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = None,
+        entityId = None,
+        limit = None,
+        reversed = None)
+      /*Future {
+        val table = getTable(appId)
         val start = PartialRowKey(appId, startTime.map(_.getMillis))
         // if no untilTime, stop when reach next appId
         val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
@@ -226,8 +272,8 @@ class HBEvents(client: HBClient, namespace: String)
         val scan = new Scan(start.toBytes, stop.toBytes)
         val scanner = table.getScanner(scan)
         table.close()
-        Right(scanner.iterator().map { resultToEvent(_) })
-      }
+        Right(scanner.iterator().map { resultToEvent(_, appId) })
+      }*/
   }
 
   override
@@ -237,6 +283,14 @@ class HBEvents(client: HBClient, namespace: String)
     entityType: Option[String],
     entityId: Option[String])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
+      futureGetGeneral(
+        appId = appId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = entityType,
+        entityId = entityId,
+        limit = None,
+        reversed = None)
       /*
       Future {
         val table = client.connection.getTable(tableName)
@@ -245,13 +299,11 @@ class HBEvents(client: HBClient, namespace: String)
           entityType, entityId)
         val scanner = table.getScanner(scan)
         table.close()
-        Right(scanner.iterator().map { resultToEvent(_) })
+        Right(scanner.iterator().map { resultToEvent(_, appId) })
       }
       */
-    futureGetGeneral(appId, startTime, untilTime, entityType, entityId,
-      None, None)
   }
- 
+
   override
   def futureGetGeneral(
     appId: Int,
@@ -260,14 +312,17 @@ class HBEvents(client: HBClient, namespace: String)
     entityType: Option[String],
     entityId: Option[String],
     limit: Option[Int] = Some(20),
-    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
+    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
-        val table = client.connection.getTable(tableName)
+        val table = getTable(appId)
 
         val scan = HBEventsUtil.createScan(
-          appId, startTime, untilTime,
-          entityType, entityId, reversed)
+          startTime = startTime,
+          untilTime = untilTime,
+          entityType = entityType,
+          entityId = entityId,
+          reversed = reversed)
         val scanner = table.getScanner(scan)
         table.close()
 
@@ -278,7 +333,7 @@ class HBEvents(client: HBClient, namespace: String)
           else eventsIter.take(limit.get)
         )
 
-        val events = results.map { resultToEvent(_) }
+        val events = results.map { resultToEvent(_, appId) }
 
         Right(events)
       }
@@ -289,10 +344,10 @@ class HBEvents(client: HBClient, namespace: String)
     Future[Either[StorageError, Unit]] = {
     Future {
       // TODO: better way to handle range delete
-      val table = client.connection.getTable(tableName)
-      val start = PartialRowKey(appId)
-      val stop = PartialRowKey(appId+1)
-      val scan = new Scan(start.toBytes, stop.toBytes)
+      val table = getTable(appId)
+      //val start = PartialRowKey(appId)
+      //val stop = PartialRowKey(appId+1)
+      val scan = new Scan()
       val scanner = table.getScanner(scan)
       val it = scanner.iterator()
       while (it.hasNext()) {

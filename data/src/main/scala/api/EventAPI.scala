@@ -82,45 +82,48 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
       }
     } ~
     path("events" / jsonPath ) { eventId =>
-    //path("events" / Segment ) { eventId =>
       get {
-        respondWithMediaType(MediaTypes.`application/json`) {
-          complete {
-            log.debug(s"GET event ${eventId}.")
-            val data = eventClient.futureGet(eventId).map { r =>
-              r match {
-                case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, Map("message" -> message))
-                case Right(eventOpt) => {
-                  eventOpt.map( event =>
-                    (StatusCodes.OK, event)
-                  ).getOrElse(
-                    (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                  )
+        parameters('appId.as[Int]) { appId =>
+          respondWithMediaType(MediaTypes.`application/json`) {
+            complete {
+              log.debug(s"GET event ${eventId}.")
+              val data = eventClient.futureGet(eventId, appId).map { r =>
+                r match {
+                  case Left(StorageError(message)) =>
+                    (StatusCodes.InternalServerError, Map("message" -> message))
+                  case Right(eventOpt) => {
+                    eventOpt.map( event =>
+                      (StatusCodes.OK, event)
+                    ).getOrElse(
+                      (StatusCodes.NotFound, Map("message" -> "Not Found"))
+                    )
+                  }
                 }
               }
+              data
             }
-            data
           }
         }
       } ~
       delete {
-        respondWithMediaType(MediaTypes.`application/json`) {
-          complete {
-            log.debug(s"DELETE event ${eventId}.")
-            val data = eventClient.futureDelete(eventId).map { r =>
-              r match {
-                case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, Map("message" -> message))
-                case Right(found) =>
-                  if (found) {
-                    (StatusCodes.OK, Map("message" -> "Found"))
-                  } else {
-                    (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                  }
+        parameters('appId.as[Int]) { appId =>
+          respondWithMediaType(MediaTypes.`application/json`) {
+            complete {
+              log.debug(s"DELETE event ${eventId}.")
+              val data = eventClient.futureDelete(eventId, appId).map { r =>
+                r match {
+                  case Left(StorageError(message)) =>
+                    (StatusCodes.InternalServerError, Map("message" -> message))
+                  case Right(found) =>
+                    if (found) {
+                      (StatusCodes.OK, Map("message" -> "Found"))
+                    } else {
+                      (StatusCodes.NotFound, Map("message" -> "Not Found"))
+                    }
+                }
               }
+              data
             }
-            data
           }
         }
       }
@@ -154,7 +157,7 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
           'entityId.as[Option[String]],
           'limit.as[Option[Int]],
           'reversed.as[Option[Boolean]]) {
-          (appId, startTimeStr, untilTimeStr, entityType, entityId, 
+          (appId, startTimeStr, untilTimeStr, entityType, entityId,
             limit, reversed) =>
           respondWithMediaType(MediaTypes.`application/json`) {
             complete {
@@ -215,10 +218,40 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
           }
         }
       }
+    } ~
+    path("tests.json") {
+      parameter('appId.as[Int]) { appId =>
+        respondWithMediaType(MediaTypes.`application/json`) {
+          complete {
+            log.debug(s"DELETE tests of appId=${appId}")
+            val data = TestingAPI.futureSlow().map { r =>
+              r match {
+                case Left(StorageError(message)) =>
+                  (StatusCodes.InternalServerError, Map("message" -> message))
+                case Right(()) =>
+                  (StatusCodes.OK, None)
+              }
+            }
+            data
+          }
+        }
+      }
     }
 
   def receive = runRoute(route)
 
+}
+
+
+object TestingAPI {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def futureSlow(): Future[Either[StorageError, Unit]] = {
+    Future {
+      Thread.sleep(1000 * 60 * 3)
+      Right(())
+    }
+  }
 }
 
 

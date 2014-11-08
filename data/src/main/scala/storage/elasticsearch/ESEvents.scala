@@ -51,7 +51,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
   //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
-  val typeName = "events"
+  def typeName = s"events"
 
   override
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
@@ -70,7 +70,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   }
 
   override
-  def futureGet(eventId: String)(implicit ec: ExecutionContext):
+  def futureGet(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] = {
 
     val response = Promise[GetResponse]
@@ -90,7 +90,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   }
 
   override
-  def futureDelete(eventId: String)(implicit ec: ExecutionContext):
+  def futureDelete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Boolean]] = {
     val response = Promise[DeleteResponse]
 

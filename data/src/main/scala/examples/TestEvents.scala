@@ -13,7 +13,14 @@
   * limitations under the License.
   */
 
-package io.prediction.data.storage
+package io.prediction.data.examples
+
+import  io.prediction.data.storage.Events
+import  io.prediction.data.storage.Event
+import  io.prediction.data.storage.DataMap
+import  io.prediction.data.storage.hbase
+import  io.prediction.data.storage.StorageClientConfig
+import  io.prediction.data.storage.Storage
 
 //import io.prediction.data.storage.elasticsearch.ESStorageClient
 //import io.prediction.data.storage.hbase.HBStorageClient
@@ -32,8 +39,10 @@ import org.joda.time.DateTime
 object TestEvents {
 
   def main(args: Array[String]) {
-    //testESEvents()
-    testHBEvents()
+    args(0) match {
+      case "HB" => testHBEvents()
+      case "ES" => testESEvents()
+    }
   }
 
   val e = Event(
@@ -74,11 +83,11 @@ object TestEvents {
     println(de)
     de match {
       case Right(d) => {
-        val e2 = eventConnector.get(d)
+        val e2 = eventConnector.get(d, 4)
         println(e2)
-        val k = eventConnector.delete(d)
+        val k = eventConnector.delete(d, 4)
         println(k)
-        val k2 = eventConnector.delete(d)
+        val k2 = eventConnector.delete(d, 4)
         println(k2)
       }
       case _ => {println("match error")}
@@ -121,17 +130,19 @@ object TestEvents {
 
     val eventConnector = new hbase.HBEvents(storageClient.client,
       "predictionio_events_hb")
-      //Storage.getDataObject[Events]("predictionio_events_hb").asInstanceOf[HBEvents]
 
+    val appId = 4
+
+    eventConnector.init(appId)
     val de = eventConnector.insert(e)
     println(de)
     de match {
       case Right(d) => {
-        val e2 = eventConnector.get(d)
+        val e2 = eventConnector.get(d, appId)
         println(e2)
-        val k = eventConnector.delete(d)
+        val k = eventConnector.delete(d, appId)
         println(k)
-        val k2 = eventConnector.delete(d)
+        val k2 = eventConnector.delete(d, appId)
         println(k2)
       }
       case _ => {println("match error")}
@@ -144,19 +155,19 @@ object TestEvents {
     val i3 = eventConnector.insert(e)
     println(i3)
 
-    val all = eventConnector.getByAppId(4)
+    val all = eventConnector.getByAppId(appId)
     println(all.right.map{ x =>
       val l = x.toList
       s"size ${l.size}, ${l}"
     })
 
-    val delAll = eventConnector.deleteByAppId(4)
+    val delAll = eventConnector.deleteByAppId(appId)
     println(delAll)
-    val all2 = eventConnector.getByAppId(4)
+    val all2 = eventConnector.getByAppId(appId)
     println(all2)
 
     (eventConnector.insert(e2) match {
-      case Right(id) => eventConnector.get(id)
+      case Right(id) => eventConnector.get(id, appId)
       case Left(x) => Left(x)
     }) match {
       case Right(e) => println(e)
