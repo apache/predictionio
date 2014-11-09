@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # simple test script for dataapi
+appId=$1
 
 function checkGET () {
   resp=$( curl -i -s -X GET "http://localhost:7070$1" )
@@ -66,7 +67,7 @@ testdata='{
     "prop1" : 1,
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -79,7 +80,7 @@ testdata='{
     "prop1" : "",
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -89,7 +90,7 @@ testdata='{
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -104,7 +105,7 @@ testdata='{
     "prop1" : 1,
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 400
@@ -130,7 +131,7 @@ testdata='{
     "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -143,7 +144,7 @@ testdata='{
   "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -154,7 +155,7 @@ testdata='{
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 400
@@ -167,7 +168,7 @@ testdata='{
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -181,7 +182,7 @@ testdata='{
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 400
@@ -198,7 +199,7 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-15T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -214,7 +215,7 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -231,7 +232,7 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -241,7 +242,7 @@ testdata='{
   "event" : "my_event",
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -256,7 +257,7 @@ testdata='{
   "targetEntityId" : null,
   "properties" : null,
   "eventTime" : null,
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -272,7 +273,7 @@ testdata='{
     "prop2": null
   },
   "eventTime" : null,
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 201
@@ -296,7 +297,7 @@ testdata='{
     "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 # missing entityType
@@ -314,7 +315,7 @@ testdata='{
     "prop6" : 4.56
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 # missing entityId
@@ -326,7 +327,7 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 400
@@ -360,7 +361,7 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "appId" : '$appId'
 }'
 
 checkPOST "/events.json" "$testdata" 400
@@ -401,21 +402,22 @@ checkPOST "/events.json" "$testdata" 400
 # get events
 # ----
 
-checkGET "/events.json?appId=4" 200
+checkGET "/events.json?appId=$appId" 200
 
-checkGET "/events.json?appId=999" 404
+# invalid appId
+checkGET "/events.json?appId=999" 400
 
-checkGET "/events.json?appId=4&startTime=abc" 400
+checkGET "/events.json?appId=$appId&startTime=abc" 400
 
-checkGET "/events.json?appId=4&untilTime=abc" 400
+checkGET "/events.json?appId=$appId&untilTime=abc" 400
 
-checkGET "/events.json?appId=4&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
+checkGET "/events.json?appId=$appId&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
 
 
 # -----
 # delete
 # -----
 
-checkDELETE "/events.json?appId=4" 200
+checkDELETE "/events.json?appId=$appId" 200
 
-checkGET "/events.json?appId=4" 404
+checkGET "/events.json?appId=$appId" 404

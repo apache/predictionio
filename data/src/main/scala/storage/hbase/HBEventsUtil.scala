@@ -27,6 +27,7 @@ import org.apache.hadoop.hbase.filter.FilterList
 import org.apache.hadoop.hbase.filter.RegexStringComparator
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter
 import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
+import org.apache.hadoop.hbase.filter.BinaryComparator
 
 import org.json4s.DefaultFormats
 import org.json4s.JObject
@@ -55,27 +56,11 @@ object HBEventsUtil {
     "targetEntityId" -> "teid",
     "properties" -> "p",
     "predictionKey" -> "pk",
+    "eventTime" -> "et",
     "eventTimeZone" -> "etz",
+    "creationTime" -> "ct",
     "creationTimeZone" -> "ctz"
   ).mapValues(Bytes.toBytes(_))
-
-  /*
-  class RowKey(
-    val appId: Int,
-    val millis: Long,
-    val uuidLow: Long
-  ) {
-    lazy val toBytes: Array[Byte] = {
-      // add UUID least significant bits for multiple actions at the same time
-      // (UUID's most significantbits are actually timestamp,
-      // use eventTime instead).
-      Bytes.toBytes(appId) ++ Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
-    }
-    override def toString: String = {
-      Base64.encodeBase64URLSafeString(toBytes)
-    }
-  }*/
-
 
   val md5 = MessageDigest.getInstance("MD5")
 
@@ -171,6 +156,16 @@ object HBEventsUtil {
       Bytes.toString(r)
     }
 
+    def getLongCol(col: String): Long = {
+      val r = result.getValue(eBytes, colNames(col))
+      require(r != null,
+        s"Failed to get value for column ${col}. " +
+        s"Rowkey: ${rowKey.toString} " +
+        s"StringBinary: ${Bytes.toStringBinary(result.getRow())}.")
+
+      Bytes.toLong(r)
+    }
+
     def getOptStringCol(col: String): Option[String] = {
       val r = result.getValue(eBytes, colNames(col))
       if (r == null)
@@ -194,13 +189,13 @@ object HBEventsUtil {
     val eventTimeZone = getOptStringCol("eventTimeZone")
       .map(DateTimeZone.forID(_))
       .getOrElse(EventValidation.defaultTimeZone)
+    val eventTime = new DateTime(
+      getLongCol("eventTime"), eventTimeZone)
     val creationTimeZone = getOptStringCol("creationTimeZone")
       .map(DateTimeZone.forID(_))
       .getOrElse(EventValidation.defaultTimeZone)
-
     val creationTime: DateTime = new DateTime(
-      getTimestamp("event"), creationTimeZone
-    )
+      getLongCol("creationTime"), creationTimeZone)
 
     Event(
       eventId = Some(RowKey(result.getRow()).toString),
@@ -210,7 +205,7 @@ object HBEventsUtil {
       targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
       properties = properties,
-      eventTime = new DateTime(rowKey.millis, eventTimeZone),
+      eventTime = eventTime,
       tags = Seq(),
       appId = appId,
       predictionKey = predictionKey,
@@ -226,42 +221,52 @@ object HBEventsUtil {
     entityId: Option[String],
     reversed: Option[Boolean] = Some(false)): Scan = {
 
-    val scan: Scan = (entityType, entityId) match {
+    val scan: Scan = new Scan()
+
+    (entityType, entityId) match {
       case (Some(et), Some(eid)) => {
         val start = PartialRowKey(et, eid,
           startTime.map(_.getMillis)).toBytes
         // if no untilTime, stop when reach next bytes of entityTypeAndId
-        val stop = untilTime.map(t =>
-            PartialRowKey(et, eid, Some(t.getMillis)).toBytes)
-          .getOrElse(Bytes.incrementBytes(
-            PartialRowKey(et, eid).toBytes, 1))
+        val stop = PartialRowKey(et, eid,
+          untilTime.map(_.getMillis).orElse(Some(-1))).toBytes
 
         if (reversed.getOrElse(false)) {
           // Reversed order.
-          val s = new Scan(stop, start)
-          s.setReversed(true)
+          // If you specify a startRow and stopRow,
+          // to scan in reverse, the startRow needs to be lexicographically
+          // after the stopRow.
+          scan.setStartRow(stop)
+          scan.setStopRow(start)
+          scan.setReversed(true)
         } else {
-          new Scan(start, stop)
+          scan.setStartRow(start)
+          scan.setStopRow(stop)
         }
       }
       case (_, _) => {
-        val s = new Scan()
-        // TODO: row filter for time
-        s
+        val minTime: Long = startTime.map(_.getMillis).getOrElse(0)
+        val maxTime: Long = untilTime.map(_.getMillis).getOrElse(Long.MaxValue)
+        scan.setTimeRange(minTime, maxTime)
+        if (reversed.getOrElse(false)) {
+          scan.setReversed(true)
+        }
       }
     }
 
     if ((entityType != None) || (entityId != None)) {
       val filters = new FilterList()
       val eBytes = Bytes.toBytes("e")
-      entityType.foreach { etype =>
-        val compType = new RegexStringComparator("^"+etype+"$")
+      entityType.foreach { et =>
+        //val compType = new RegexStringComparator("^"+etype+"$")
+        val compType = new BinaryComparator(Bytes.toBytes(et))
         val filterType = new SingleColumnValueFilter(
           eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
         filters.addFilter(filterType)
       }
       entityId.foreach { eid =>
-        val compId = new RegexStringComparator("^"+eid+"$")
+        //val compId = new RegexStringComparator("^"+eid+"$")
+        val compId = new BinaryComparator(Bytes.toBytes(eid))
         val filterId = new SingleColumnValueFilter(
           eBytes, colNames("entityId"), CompareOp.EQUAL, compId)
         filters.addFilter(filterId)

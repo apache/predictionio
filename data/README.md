@@ -17,5 +17,5 @@ $ sbt/sbt "data/run-main io.prediction.data.api.Run"
 Very simple test
 
 ```
-$ data/test.sh
+$ data/test.sh <appId>
 ```

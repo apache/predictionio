@@ -116,12 +116,27 @@ trait Events {
   }
   val timeout = Duration(5, "seconds")
 
-  /** initialize routine to be called when app is first created
-   * return true if succeed or false if fail
+  /** Initialize Event Store for the appId.
+   * initailization routine to be called when app is first created.
+   * return true if succeed or false if fail.
    */
   def init(appId: Int): Boolean = {
     throw new Exception("init() is not implemented.")
     false
+  }
+
+  /** Remove Event Store for this appId */
+  def remove(appId: Int): Boolean = {
+    throw new Exception("remove() is not implemented.")
+    false
+  }
+
+  /** Close this Event Store interface object.
+   * (Eg. close connection, release resources)
+   */
+  def close(): Unit = {
+    throw new Exception("close() is not implemented.")
+    ()
   }
 
   def futureInsert(event: Event)(implicit ec: ExecutionContext):

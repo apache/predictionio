@@ -127,6 +127,20 @@ class HBEvents(client: HBClient, namespace: String)
   }
 
   override
+  def remove(appId: Int): Boolean = {
+    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
+    client.admin.disableTable(tableName)
+    client.admin.deleteTable(tableName)
+    true
+  }
+
+  override
+  def close() = {
+    client.admin.close()
+    client.connection.close()
+  }
+
+  override
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     Future {
@@ -141,10 +155,14 @@ class HBEvents(client: HBClient, namespace: String)
       )
 
       val eBytes = Bytes.toBytes("e")
-      // use creationTime as HBase's cell timestamp
-      val put = new Put(rowKey.toBytes, event.creationTime.getMillis)
+      // use eventTime as HBase's cell timestamp
+      val put = new Put(rowKey.toBytes, event.eventTime.getMillis)
 
       def addStringToE(col: Array[Byte], v: String) = {
+        put.add(eBytes, col, Bytes.toBytes(v))
+      }
+
+      def addLongToE(col: Array[Byte], v: Long) = {
         put.add(eBytes, col, Bytes.toBytes(v))
       }
 
@@ -169,11 +187,13 @@ class HBEvents(client: HBClient, namespace: String)
         addStringToE(colNames("predictionKey"), predictionKey)
       }
 
+      addLongToE(colNames("eventTime"), event.eventTime.getMillis)
       val eventTimeZone = event.eventTime.getZone
       if (!eventTimeZone.equals(EventValidation.defaultTimeZone)) {
         addStringToE(colNames("eventTimeZone"), eventTimeZone.getID)
       }
 
+      addLongToE(colNames("creationTime"), event.creationTime.getMillis)
       val creationTimeZone = event.creationTime.getZone
       if (!creationTimeZone.equals(EventValidation.defaultTimeZone)) {
         addStringToE(colNames("creationTimeZone"), creationTimeZone.getID)
