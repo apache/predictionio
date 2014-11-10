@@ -18,9 +18,7 @@ http://www.sigkdd.org/kdd-cup-2009-customer-relationship-prediction
 https://www.lendingclub.com/info/download-data.action 
 
 - 	Amazon Reviews
-http://archive.ics.uci.edu/ml/datasets/Amazon+Commerce+reviews+set
-
-https://snap.stanford.edu/data/web-Amazon.html 
+http://archive.ics.uci.edu/ml/datasets/Amazon+Commerce+reviews+set and https://snap.stanford.edu/data/web-Amazon.html 
 
 - Twitter (French) 
 http://archive.ics.uci.edu/ml/datasets/Buzz+in+social+media+#

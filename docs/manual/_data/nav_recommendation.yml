@@ -5,14 +5,9 @@
   href: "/recommendation/dase.html"
 
 - title: "Customizing Data Component"
-  href: "/howto/recommendation/customize_data.html"
+  href: "/recommendation/customize_data.html"
   
 - title: "Customizing Serving component"
-  href: "/howto/recommendation/customize_serving.html"
+  href: "/recommendation/customize_serving.html"
   
-- title: "Movie Recommendation"
-  href: "/tutorials/recommendation/movielens.html"
-
-- title: "Restaurant Discovery"
-  href: "/tutorials/recommendation/yelp.html"
   

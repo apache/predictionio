@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Customize Serving Layer 
+title: Customizing Serving Layer
 ---
 
 This tutorial teaches how to implement custom filtering logic.
