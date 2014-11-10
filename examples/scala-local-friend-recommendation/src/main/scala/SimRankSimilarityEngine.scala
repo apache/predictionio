@@ -48,7 +48,8 @@ case class Prediction (
   Pairwise Prediction Class
 */
 case class Prediction (
-  val simRankScore: Double
+  val confidence: Double,
+  val acceptance: Boolean
 ) extends Serializable
 
 class GraphDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
@@ -84,8 +85,9 @@ class GraphDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams
 
 }
 
-class SimRankAlgorithm extends LAlgorithm[EmptyAlgorithmParams, GraphData,
-  SimRankModel, PairwiseSimRankQuery, Prediction] {
+class SimRankAlgorithm (val ap: FriendRecommendationAlgoParams)
+  extends LAlgorithm[EmptyAlgorithmParams, GraphData,
+    SimRankModel, PairwiseSimRankQuery, Prediction] {
 
   override
   def train(gd: GraphData): SimRankModel = {
@@ -145,10 +147,12 @@ class SimRankAlgorithm extends LAlgorithm[EmptyAlgorithmParams, GraphData,
   def predict(m: SimRankModel, query: PairwiseSimRankQuery): Prediction = {
     if(m.matrixIdMap.contains(query.user) &&
        m.matrixIdMap.contains(query.item)) {
-        Prediction(m.memoMatrix(m.matrixIdMap(query.user))
-                               (m.matrixIdMap(query.item)))
+        val confidence = m.memoMatrix(m.matrixIdMap(query.user))
+                                     (m.matrixIdMap(query.item))
+        val acceptance = randomConfidence > ap.threshold
+        Prediction(confidence, acceptance)
      } else {
-        Prediction(-1)
+        Prediction(-1, false)
      }
    }
 }

@@ -8,9 +8,9 @@ Two algorithms are implemented.
 To run the engine, you need to Register (Build) + Train + Deploy : 
 
 ```
-$PIO_HOME/bin/pio register --engine-json $EngineJson
+$PIO_HOME/bin/pio build --engine-json $EngineJson
 
-$PIO_HOME/bin/pio train --engine-json $EngineJson --params-path $ParamsFolder
+$PIO_HOME/bin/pio train --engine-json $EngineJson
 
 $PIO_HOME/bin/pio deploy --engine-json $EngineJson
 ```
@@ -20,10 +20,6 @@ $EngineJson is
 1. "random_engine.json" for "Random"
 2. "keyword_similarity_engine.json" for "Keyword Similarity KNN"
 3. "simrank_similarity_engine.json" for "SimRank Similarity"
-
-$ParamsFoler is
-1. "random_params/" for "Random"
-2. "keyword_similarity_params/" for "Keyword Similarity KNN"
 
 To query :
 

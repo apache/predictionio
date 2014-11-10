@@ -2,5 +2,13 @@
   "id": "io.prediction.examples.friendrecommendation.random",
   "version": "0.1",
   "name": "Friend Recommendation Engine with Random Method",
-  "engineFactory": "io.prediction.examples.friendrecommendation.RandomEngineFactory"
+  "engineFactory": "io.prediction.examples.friendrecommendation.RandomEngineFactory",
+  "algorithms": [
+    {
+      "name": "",
+      "params": {
+        "threshold": 0.5
+      }
+    }
+  ]
 }
