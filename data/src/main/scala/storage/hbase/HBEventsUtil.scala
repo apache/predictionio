@@ -16,7 +16,6 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventID
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.DataMap
@@ -160,7 +159,7 @@ object HBEventsUtil {
     )
 
     Event(
-      eventId = Some(EventID(result.getRow())),
+      eventId = Some(RowKey(result.getRow()).toString),
       event = event,
       entityType = entityType,
       entityId = entityId,
@@ -181,13 +180,24 @@ object HBEventsUtil {
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
-    entityId: Option[String]): Scan = {
+    entityId: Option[String],
+    reversed: Option[Boolean] = Some(false)): Scan = {
 
     val start = PartialRowKey(appId, startTime.map(_.getMillis))
     // if no untilTime, stop when reach next appId
     val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
       .getOrElse(PartialRowKey(appId+1))
-    val scan = new Scan(start.toBytes, stop.toBytes)
+
+
+    val scan: Scan = (if (reversed.getOrElse(false)) {
+        // Reversed order.
+        val s = new Scan(stop.toBytes, start.toBytes)
+        s.setReversed(true)
+      } else {
+        new Scan(start.toBytes, stop.toBytes)
+      }
+    )
+
 
     if ((entityType != None) || (entityId != None)) {
       val filters = new FilterList()
@@ -206,6 +216,8 @@ object HBEventsUtil {
       }
       scan.setFilter(filters)
     }
+
+    //scan.setReversed(reversed.getOrElse(false))
 
     scan
   }

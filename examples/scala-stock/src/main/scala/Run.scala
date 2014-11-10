@@ -123,7 +123,7 @@ object Run {
 
     val momentumParams = MomentumStrategyParams(20, 3)
 
-    val metricsParams = BacktestingParams(
+    val evaluatorParams = BacktestingParams(
       enterThreshold = 0.01,
       exitThreshold = 0.0,
       maxPositions = 10,
@@ -140,8 +140,8 @@ object Run {
       )),
       algorithmParamsList = Seq(("", momentumParams)),
       servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
-      metricsClassOpt = Some(classOf[BacktestingMetrics]),
-      metricsParams = metricsParams,
+      evaluatorClassOpt = Some(classOf[BacktestingEvaluator]),
+      evaluatorParams = evaluatorParams,
       params = WorkflowParams(
         verbose = 0,
         batch = "Imagine: Stock II"))

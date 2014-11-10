@@ -22,6 +22,7 @@ import io.prediction.controller.WorkflowParams
 
 import io.prediction.engines.base.AttributeNames
 import io.prediction.engines.base.EventsSlidingEvalParams
+import io.prediction.engines.base.BinaryRatingParams
 
 import com.github.nscala_time.time.Imports._
 
@@ -51,22 +52,18 @@ object Runner {
         evalCount = 8))
     )
 
-    /*
-    val mp = new MetricsParams(
-      verbose = true
-    )
-    */
 
-    val mp = new DetailedMetricsParams(
+    val mp = new DetailedEvaluatorParams(
       optOutputPath = None,
       buckets = 3,
-      actionsMap = Map(
-        "view" -> Some(3),
-        "like" -> Some(5),
-        "conversion" -> Some(4),
-        "rate" -> None
-      ),
-      goodThreshold = 3,
+      ratingParams = new BinaryRatingParams(
+        actionsMap = Map(
+          "view" -> Some(3),
+          "like" -> Some(5),
+          "conversion" -> Some(4),
+          "rate" -> None
+        ),
+        goodThreshold = 3),
       measureType = MeasureType.PrecisionAtK,
       measureK = 10
     ) 
@@ -127,10 +124,10 @@ object Runner {
         verbose = 0),
       engine = engine,
       engineParams = engineParams,
-      //metricsClassOpt = Some(classOf[ItemRankMetrics]),
+      //metricsClassOpt = Some(classOf[ItemRankEvaluator]),
       //metricsParams = mp
-      metricsClassOpt = Some(classOf[ItemRankDetailedMetrics]),
-      metricsParams = mp
+      evaluatorClassOpt = Some(classOf[ItemRankDetailedEvaluator]),
+      evaluatorParams = mp
     )
 
   }

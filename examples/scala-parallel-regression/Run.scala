@@ -33,6 +33,7 @@ case class ParallelDataSource(val dsp: DataSourceParams)
   extends PDataSource[
       DataSourceParams, Integer,
       RDD[LabeledPoint], Vector, Double] {
+  override
   def read(sc: SparkContext)
   : Seq[(Integer, RDD[LabeledPoint], RDD[(Vector, Double)])] = {
     val input = sc.textFile(dsp.filepath)
@@ -96,7 +97,7 @@ object Run {
         algorithmClassMapOpt = Some(Map(SGD -> classOf[ParallelSGDAlgorithm])),
         algorithmParamsList = algorithmParamsList,
         servingClassOpt = Some(AverageServing(classOf[ParallelSGDAlgorithm])),
-        metricsClassOpt = Some(classOf[MeanSquareError]),
+        evaluatorClassOpt = Some(classOf[MeanSquareError]),
         params = WorkflowParams(
           batch = "Imagine: Parallel Regression"))
   }

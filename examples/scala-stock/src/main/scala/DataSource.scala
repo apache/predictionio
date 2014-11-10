@@ -61,6 +61,7 @@ class DataSource(val dsp: DataSourceParams)
     Storage.getAppdataItemTrends().get(1008, _: String).get
   @transient lazy val itemTrendsDb = Storage.getAppdataItemTrends()
 
+  override
   def read(sc: SparkContext)
   : Seq[(DataParams, RDD[TrainingData], RDD[(QueryDate, AnyRef)])] = {
     val rawData = readRawData()

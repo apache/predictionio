@@ -66,6 +66,9 @@ abstract class LAlgorithm[
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+
+  def isJava = false
+  def isParallel = false
 }
 
 /** Base class of a parallel-to-local algorithm.
@@ -111,6 +114,9 @@ abstract class P2LAlgorithm[
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+
+  def isJava = false
+  def isParallel = false
 }
 
 /** Base class of a parallel algorithm.
@@ -159,7 +165,11 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
     * @param indexedQueries Batch of queries with indices.
     * @return An RDD of indexed predictions.
     */
-  def batchPredict(model: M, indexedQueries: RDD[(Long, Q)]): RDD[(Long, P)]
+  def batchPredict(model: M, indexedQueries: RDD[(Long, Q)]): RDD[(Long, P)] = {
+    throw new Exception("batchPredict() is not implemented.")
+    val sc = indexedQueries.context
+    sc.parallelize(Seq.empty[(Long, P)])
+  }
 
   /** Do not use directly or override this method, as this is called by
     * PredictionIO workflow to perform prediction.
@@ -176,4 +186,7 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+
+  def isJava = false
+  def isParallel = true
 }

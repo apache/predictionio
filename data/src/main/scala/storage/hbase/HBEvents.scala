@@ -16,7 +16,6 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventID
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.Events
 import io.prediction.data.storage.EventJson4sSupport
@@ -62,7 +61,8 @@ import java.util.UUID
 
 //import org.apache.commons.codec.binary.Base64
 
-class HBEvents(client: HBClient, namespace: String) extends Events with Logging {
+class HBEvents(client: HBClient, namespace: String)
+  extends Events with Logging {
 
   // check namespace exist
   val existingNamespace = client.admin.listNamespaceDescriptors().map(_.getName)
@@ -237,6 +237,7 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
     entityType: Option[String],
     entityId: Option[String])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
+      /*
       Future {
         val table = client.connection.getTable(tableName)
 
@@ -245,6 +246,41 @@ class HBEvents(client: HBClient, namespace: String) extends Events with Logging 
         val scanner = table.getScanner(scan)
         table.close()
         Right(scanner.iterator().map { resultToEvent(_) })
+      }
+      */
+    futureGetGeneral(appId, startTime, untilTime, entityType, entityId,
+      None, None)
+  }
+ 
+  override
+  def futureGetGeneral(
+    appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String],
+    limit: Option[Int],
+    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
+    Future[Either[StorageError, Iterator[Event]]] = {
+      Future {
+        val table = client.connection.getTable(tableName)
+
+        val scan = HBEventsUtil.createScan(
+          appId, startTime, untilTime,
+          entityType, entityId, reversed)
+        val scanner = table.getScanner(scan)
+        table.close()
+
+        val eventsIter = scanner.iterator()
+
+        val results: Iterator[Result]  = (
+          if (limit.isEmpty) eventsIter
+          else eventsIter.take(limit.get)
+        )
+
+        val events = results.map { resultToEvent(_) }
+
+        Right(events)
       }
   }
 

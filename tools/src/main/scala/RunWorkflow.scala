@@ -30,7 +30,8 @@ object RunWorkflow extends Logging {
   def runWorkflow(
       ca: ConsoleArgs,
       core: File,
-      em: EngineManifest): Unit = {
+      em: EngineManifest,
+      variantJson: File): Unit = {
     // Collect and serialize PIO_* environmental variables
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"
@@ -68,8 +69,8 @@ object RunWorkflow extends Logging {
         em.id,
         "--engineVersion",
         em.version,
-        "--engineFactory",
-        em.engineFactory) ++
+        "--engineVariant",
+        variantJson.getName) ++
       ca.metricsClass.map(x => Seq("--metricsClass", x)).
         getOrElse(Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++ Seq(

@@ -28,6 +28,7 @@ object EventJson4sSupport {
   // because it has some issue with timezone (as of version 3.2.10)
   implicit val formats = DefaultFormats
 
+  // convert API's JSON to Event object
   def readJson: PartialFunction[JValue, Event] = {
     case JObject(x) => {
       val fields = new DataMap(x.toMap)
@@ -59,9 +60,7 @@ object EventJson4sSupport {
 
         val appId = fields.get[Int]("appId")
 
-        // disable predictionKey from API for now
-        val predictionKey = None
-      //val predictionKey = fields.getOpt[String]("predictionKey")
+        val predictionKey = fields.getOpt[String]("predictionKey")
 
         // don't allow user set creationTime from API for now.
         val creationTime = currentTime
@@ -96,11 +95,12 @@ object EventJson4sSupport {
     }
   }
 
+  // convert Event object to API's JSON
   def writeJson: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
         JField("eventId",
-          d.eventId.map( eid => JString(eid.toString)).getOrElse(JNothing)) ::
+          d.eventId.map( eid => JString(eid)).getOrElse(JNothing)) ::
         JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
@@ -114,8 +114,8 @@ object EventJson4sSupport {
         // disable tags from API for now
         //JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
         // disable tags from API for now
-        //JField("predictionKey",
-        //  d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+        JField("predictionKey",
+          d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
         // don't show creationTime for now
         //JField("creationTime",
         //  JString(DataUtils.dateTimeToString(d.creationTime))) ::

@@ -12,7 +12,7 @@ $ cp ../data/helloworld/data1.csv ../data/helloworld/data.csv
 Register engine:
 
 ```
-$ ../../bin/pio register
+$ ../../bin/pio build
 
 ```
 

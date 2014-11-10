@@ -5,7 +5,11 @@ import io.prediction.engines.itemrec.EventsDataSourceParams
 import io.prediction.engines.itemrec.PreparatorParams
 import io.prediction.engines.itemrec.NCItemBasedAlgorithmParams
 import io.prediction.engines.itemrec.EvalParams
+import io.prediction.engines.itemrec.ItemRecEvaluator
+import io.prediction.engines.itemrec.ItemRecEvaluatorParams
+import io.prediction.engines.itemrec.MeasureType
 import io.prediction.engines.base.EventsSlidingEvalParams
+import io.prediction.engines.base.BinaryRatingParams
 
 import io.prediction.controller.EngineParams
 import io.prediction.controller.Workflow
@@ -13,6 +17,7 @@ import io.prediction.controller.WorkflowParams
 
 import com.github.nscala_time.time.Imports._
 
+// Recommend to run with "--driver-memory 2G"
 object ItemRecEvaluation1 {
   def main(args: Array[String]) {
     val engine = ItemRecEngine()
@@ -24,7 +29,8 @@ object ItemRecEvaluation1 {
       slidingEval = Some(new EventsSlidingEvalParams(
         firstTrainingUntilTime = new DateTime(1998, 2, 1, 0, 0),
         evalDuration = Duration.standardDays(7),
-        evalCount = 3)),
+        evalCount = 12)),
+        //evalCount = 3)),
       evalParams = Some(new EvalParams(queryN = 10))
     )
   
@@ -45,13 +51,24 @@ object ItemRecEvaluation1 {
     
     val engineParams = new EngineParams(
       dataSourceParams = dsp,
-      preparatorParams = CommonParams.PreparatorParams,
+      preparatorParams = pp,
       algorithmParamsList = Seq(
         ("ncMahoutItemBased", ncMahoutAlgoParams)))
+
+    val evaluatorParams = new ItemRecEvaluatorParams(
+      ratingParams = new BinaryRatingParams(
+        actionsMap = Map("rate" -> None),
+        goodThreshold = 3),
+      measureType = MeasureType.PrecisionAtK,
+      measureK = 10
+    ) 
   
     Workflow.runEngine(
-      params = WorkflowParams(batch = "MLC: ItemRec Evaluation1", verbose = 3),
+      params = WorkflowParams(batch = "MLC: ItemRec Evaluation1", verbose = 0),
       engine = engine,
-      engineParams = engineParams)
+      engineParams = engineParams,
+      evaluatorClassOpt = Some(classOf[ItemRecEvaluator]),
+      evaluatorParams = evaluatorParams
+    )
   }
 }

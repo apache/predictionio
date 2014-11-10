@@ -1,6 +1,5 @@
 {
   "id": "org.sample.java.helloworld",
-  "version": "0.1",
-  "name": "My Hello World Engine",
+  "description": "My Hello World Engine",
   "engineFactory": "org.sample.java.helloworld.MyEngineFactory"
 }

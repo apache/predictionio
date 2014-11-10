@@ -17,8 +17,10 @@ package io.prediction.engines.itemrec
 
 import io.prediction.controller.EmptyDataParams
 import io.prediction.engines.base
+import io.prediction.engines.base.HasName
 import org.joda.time.DateTime
 import io.prediction.controller.Params
+import io.prediction.engines.base.DataParams
 
 case class EventsDataSourceParams(
   val appId: Int,
@@ -39,16 +41,6 @@ case class EvalParams(
   // as actions of that user.
   val queryN: Int = -1
 )
-
-class DataParams(
-  val trainUntil: DateTime,
-  val evalStart: DateTime,
-  val evalUntil: DateTime
-//) extends Params with HasName {
-) extends Params {
-  override def toString = s"E: [$evalStart, $evalUntil)"
-  //val name = this.toString
-}
 
 class EventsDataSource(dsp: EventsDataSourceParams)
   extends base.EventsDataSource[DataParams, Query, Actual](dsp) {
@@ -72,13 +64,21 @@ class EventsDataSource(dsp: EventsDataSourceParams)
 
     val userActions: Map[Int, Seq[base.U2IActionTD]] = 
       actions.groupBy(_.uindex)
+    
+    val allIids: Vector[String]  = actions.map(_.iindex)
+      .map(ii => ii2iid(ii))
+      .distinct
+      .sortBy(identity)
+      .toVector
 
     val qaSeq: Seq[(Query, Actual)] = userActions.map { case (ui, actions) => {
       val uid = ui2uid(ui)
       val iids = actions.map(u2i => ii2iid(u2i.iindex))
       val actionTuples = iids.zip(actions).map(e => (uid, e._1, e._2))
       val n = (if (evalParams.queryN == -1) iids.size else evalParams.queryN)
-      (Query(uid = uid, n = n), Actual(actionTuples = actionTuples))
+      val query = Query(uid = uid, n = n)
+      val actual = Actual(actionTuples = actionTuples, servedIids = allIids)
+      (query, actual)
     }}
     .toSeq
 

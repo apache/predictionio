@@ -4,6 +4,8 @@ title: Quick Start - Using a Built-in Engine
 ---
 
 # Quick Start - Using a Built-in Engine
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.2-SNAPSHOT will be availble soon.</code>
+
 
 This is a quick start guide of using a PredictionIO's built-in engine and its
 SDKs to write a very simple app. It assumes that you have [installed
@@ -76,8 +78,20 @@ $ gem install predictionio
 {% endhighlight %}
 </div>
 <div data-lang="Java SDK">
-To install PredictionIO Java SDK, clone the PredictionIO-Java-SDK repository
-and build it using Maven:
+To use PredictionIO in your project, add this to the <code>dependencies</code>
+section of your project's <code>pom.xml</code> file:
+{% highlight bash %}
+<dependencies>
+  <dependency>
+    <groupId>io.prediction</groupId>
+    <artifactId>client</artifactId>
+    <version>0.8.0</version>
+  </dependency>
+</dependencies>
+{% endhighlight %}
+
+To run examples in PredictionIO Java SDK, clone the PredictionIO-Java-SDK
+repository and build it using Maven:
 {% highlight bash %}
 $ cd ~
 $ git clone git://github.com/PredictionIO/PredictionIO-Java-SDK.git
@@ -98,6 +112,12 @@ $ $PIO_HOME/bin/pio eventserver
 {% endhighlight %}
 where `$PIO_HOME` is the installation directory of PredictionIO. As long as the
 Event Server is running, PredictionIO keeps listening to new data.
+
+To bind to a different address, 
+{% highlight bash %}
+$ $PIO_HOME/bin/pio eventserver --ip <IP>
+{% endhighlight %}
+
 
 ## Collecting Data
 
@@ -338,8 +358,11 @@ $ $PIO_HOME/bin/pio train
 master URL to the `pio train` command, e.g.
 
 > ```bash
-$ $PIO_HOME/bin/pio train -- --master spark://localhost:7077
+$ $PIO_HOME/bin/pio train -- --master spark://`hostname`:7077
 ```
+
+> You may replace the command `hostname` with your hostname, which can be found
+> on [Spark's UI](http://localhost:8080).
 
 If your training was successful, you should see the lines shown above. Now you are ready to deploy the instance:
 
@@ -350,8 +373,8 @@ $ $PIO_HOME/bin/pio deploy
 [INFO] [09/11/2014 16:26:16.526] [pio-server-akka.actor.default-dispatcher-5] [akka://pio-server/user/master] Bind successful. Ready to serve.
 ```
 
-Notice that the `deploy` command runs the engine instance in the foreground. Now
-we are ready to take a look at the results!
+Notice that the `deploy` command runs the engine instance in the foreground. You can also use the --ip option to bind to a different ip address. Now we are ready to take a look at the results! 
+
 
 # Retrieve Prediction Results
 

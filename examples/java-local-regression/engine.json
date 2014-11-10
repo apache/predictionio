@@ -1,7 +1,29 @@
-
 {
   "id": "java-local-regression",
-  "version": "0.0.1-SNAPSHOT",
-  "name": "java-local-regression",
-  "engineFactory": "io.prediction.examples.java.regression.EngineFactory"
+  "description": "java-local-regression",
+  "engineFactory": "io.prediction.examples.java.regression.EngineFactory",
+  "datasource": {
+    "filepath": "PATH-TO-lr_data.txt"
+  },
+  "preparator": {
+    "r": 0.8
+  },
+  "algorithms": [
+    {
+      "name": "OLS",
+      "params": {}
+    },
+    {
+      "name": "Default",
+      "params": {
+        "v": 2.0
+      }
+    },
+    {
+      "name": "Default",
+      "params": {
+        "v": 4.0
+      }
+    }
+  ]
 }

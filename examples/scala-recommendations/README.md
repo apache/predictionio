@@ -62,7 +62,7 @@ Before training, you must let PredictionIO know about the engine. Run the
 following command to build and register the engine.
 ```
 $ cd $PIO_HOME/examples/scala-recommendations
-$ ../../bin/pio register
+$ ../../bin/pio build
 ```
 where `$PIO_HOME` is the root directory of the PredictionIO code tree.
 

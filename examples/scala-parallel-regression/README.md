@@ -4,23 +4,25 @@
 
 This sample regression engine reads data from file system.
 
-Edit the file path in `datasource.json`, change `filepath` to an absolute path that points to
+Edit the file path in `engine.json`, change `filepath` of `datasource` to an absolute path that points to
 [lr_data.py](../data/lr_data.txt)
 
 ```
-$ cat params/datasource.json
-{
+$ cat engine.json
+...
+"datasource": {
   "filepath": <absolute_path_to_lr_data.txt>,
   "k": 3,
   "seed": 9527
 }
+...
 
 ```
 
 ## Register engine, train, and deploy.
 
 ```
-$ pio register
+$ pio build
 $ pio train
 $ pio deploy --port 9998
 ```

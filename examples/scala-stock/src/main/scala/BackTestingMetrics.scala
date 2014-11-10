@@ -1,7 +1,7 @@
 package io.prediction.examples.stock
 
 import io.prediction.controller.Params
-import io.prediction.controller.Metrics
+import io.prediction.controller.Evaluator
 import io.prediction.controller.NiceRendering
 import com.github.nscala_time.time.Imports._
 import scala.collection.mutable.{ Map => MMap, ArrayBuffer }
@@ -12,7 +12,7 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 //import org.json4s.native.Serialization.{read, write}
 
-import io.prediction.engines.util.{ MetricsVisualization => MV }
+import io.prediction.engines.util.{ EvaluatorVisualization => MV }
 
 import breeze.stats.{ mean, meanAndVariance, MeanAndVariance }
 
@@ -63,12 +63,12 @@ case class BacktestingResult(
   }
 }
 
-class BacktestingMetrics(val params: BacktestingParams)
-  extends Metrics[
+class BacktestingEvaluator(val params: BacktestingParams)
+  extends Evaluator[
       BacktestingParams, DataParams, QueryDate, Prediction, AnyRef,
       DailyResult, Seq[DailyResult], BacktestingResult] {
 
-  def computeUnit(queryDate: QueryDate, prediction: Prediction,
+  def evaluateUnit(queryDate: QueryDate, prediction: Prediction,
     unusedActual: AnyRef)
     : DailyResult = {
 
@@ -96,10 +96,10 @@ class BacktestingMetrics(val params: BacktestingParams)
       toExit = toExit)
   }
 
-  def computeSet(dp: DataParams, input: Seq[DailyResult])
+  def evaluateSet(dp: DataParams, input: Seq[DailyResult])
     : Seq[DailyResult] = input
 
-  def computeMultipleSets(input: Seq[(DataParams, Seq[DailyResult])])
+  def evaluateAll(input: Seq[(DataParams, Seq[DailyResult])])
   : BacktestingResult = {
     var dailyResultsSeq = input
       .map(_._2)

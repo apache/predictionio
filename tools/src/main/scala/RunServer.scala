@@ -45,14 +45,20 @@ object RunServer extends Logging {
         "--name",
         s"PredictionIO Engine Instance: ${engineInstanceId}",
         "--jars",
-        em.files.mkString(","),
+        (em.files ++ Console.builtinEngines(
+          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","),
         core.getCanonicalPath,
         "--engineInstanceId",
         engineInstanceId,
         "--ip",
         ca.ip,
         "--port",
-        ca.port.toString)
+        ca.port.toString,
+        "--event-server-ip",
+        ca.eventServer.ip,
+        "--event-server-port",
+        ca.eventServer.port.toString) ++
+        (if (ca.eventServer.enabled) Seq("--feedback") else Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 
