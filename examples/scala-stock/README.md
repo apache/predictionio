@@ -31,54 +31,17 @@ if __name__ == '__main__':
 And, uncomment the first import, replacing app_id with your own id. Next, comment the second import statement (import_data_with_gaps).
 
 ### Step 3: Import Yahoo Finance data.
-Where: PredictionIO-Python-SDK/examples
+Where: PredictionIO-Python-SDK
 
-Run: sudo python -m examples.import_yahoo
+Run: python -m examples.import_yahoo
 
-### Step 4: Start spark master and slave (worker)
-Where: within the spark directory (in our version:
-spark-1.1.0-bin-hadoop2.4)
-
-Run:
-```
-sbin/start-master.sh
-sbin/start-slave.sh
-```
-OR
-```
-sbin/start-all.sh
-```
-
-### Step 5: Start Hbase
-Where: hbase source folder (our version: hbase-0.98.6-hadoop2)
-```
-bin/start-hbase.sh
-```
-
-### Step 6: Start ElasticSearch
-Where: elasticsearch source folder (our version: elasticsearch-1.3.4)
-```
-bin/elasticsearch
-```
-
-### Step 7: Configure PredictionIO template
-Where: PredictionIO/conf
-Run
-```
-mv pio.env.sh.template pio.env.sh
-```
-Now Edit the file: pio.env.sh
-
-Find the following line and fill it in with your spark directory path:
-SPARK_HOME= <current address of spark directory>
-
-### Step 8: Now make the distribution of PredictionIO
+### Step 4: Now make the distribution of PredictionIO
 Where: cloned PredictionIO directory (with source code, make sure code is updated, git pull)
 ```
 ./make-distribution.sh
 ```
 
-### Step 9: Ensure all dependencies are working
+### Step 5: Ensure all dependencies are working
 Type
 ```
 jps
@@ -91,12 +54,12 @@ Worker
 Hbase
 ElasticSearch
 ```
-### Step 10: Check Localhost8080
+### Step 6: Check Localhost8080
 -Navigate to http://localhost:8080
 
 -Should see a master address and worker node
 
-### Step 11: Edit scala-stock
+### Step 7: Edit scala-stock
 go to examples/scala-stock/src/main/scala
 
 Edit YahooDataSource.scala
@@ -105,14 +68,14 @@ Go to end of file to PredefinedDSP function
 
 Edit app_id to match the one from step 2
 
-### Step 12: Run scala-stock
+### Step 8: Run scala-stock
 Go to PredictionIO/examples/scala-stock
 
 Now type:
 ```
 ../../bin/pio run --asm io.prediction.examples.stock.YahooDataSourceRun -- --master <Your spark master address found at http:local8080> --driver-memory <4-12G>
 ```
-### Step 13: Open dashboard and view results
+### Step 9: Open dashboard and view results
 In PredictionIO folder
 
 Type /bin/pio dashboard
