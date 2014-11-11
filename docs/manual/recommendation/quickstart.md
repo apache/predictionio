@@ -3,7 +3,7 @@ layout: docs
 title: Recommendation Quick Start
 ---
 
-# Quick Start
+# Quick Start - Recommendation Engine Template
 
 An engine template is a basic skeleton of an engine. You can customize it easily to fit your specific needs. PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
 
@@ -71,8 +71,7 @@ Your MyEngine is now running. Next, we are going to take a look at the engine ar
 
 You can update the predictive model with new data by making the *train* and *deploy* commands again:
 
-1.  Assuming you already have a running engine from the previous
-    section, go to http://localhost:8000 to check its status. Take note of the
+1.  Assuming you already have a deployed engine running, go to http://localhost:8000 to check its status. Take note of the
     **Instance ID** at the top.
 
 2.  Run training and deploy again. There is no need to manually terminate the previous deploy instance.
@@ -92,4 +91,4 @@ For example, if you want to re-train the model every day, you may add this to yo
 ```
 where *$PIO_HOME* is the installation path of PredictionIO.
 
-Congratulations! You have just learned how to customize and build a production-ready engine. Have fun!
+Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.

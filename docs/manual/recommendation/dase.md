@@ -3,7 +3,7 @@ layout: docs
 title: DASE
 ---
 
-# DASE Components Explained
+# DASE Components Explained (Recommendation)
 
 PredictionIO's DASE architecture brings the separation-of-concerns design principle to predictive engine development.
 DASE stands for the following components of an engine:
@@ -13,13 +13,13 @@ DASE stands for the following components of an engine:
 * **S**erving
 * **E**valuator
 
-Let's look at the code and see how you can customize the engine.
+Let's look at the code and see how you can customize the Recommendation engine you built from the Recommendation Engine Template.
 
 > Note: Evaluator will not be covered in this tutorial.
 
 ## The Engine Design
 
-As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
+As you can see from the Quick Start, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
 a JSON predicted result.
 
 In MyEngine/src/main/scala/***Engine.scala***
@@ -271,6 +271,9 @@ will be passed to `def serve` as a sequence, i.e. `Seq[PredictedResult]`.
 > Since only one ALSAlgorithm is implemented by default, this Sequence contains one element.
 
 In this case, `def serve` simply returns the predicted result of the first, and the only, algorithm, i.e. `predictions.head`.
+
+
+Congratulations! You have just learned how to customize and build a production-ready engine. Have fun!
 
 <!-- TODO
 > HOW-TO:
