@@ -139,11 +139,11 @@ class HBEvents(val client: HBClient, val namespace: String)
   }
 
   override
-  def futureInsert(event: Event)(implicit ec: ExecutionContext):
+  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     Future {
-      val table = getTable(event.appId)
-      val (put, rowKey) = HBEventsUtil.eventToPut(event)
+      val table = getTable(appId)
+      val (put, rowKey) = HBEventsUtil.eventToPut(event, appId)
       table.put(put)
       table.flushCommits()
       table.close()

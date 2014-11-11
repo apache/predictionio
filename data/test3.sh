@@ -2,7 +2,7 @@
 
 appId=$1
 
-curl -i -X POST http://localhost:7070/events.json \
+curl -i -X POST http://localhost:7070/events.json?accessKey=testingkeyasdfasdf \
 -H "Content-Type: application/json" \
 -d '{
   "appId" : '$appId',
@@ -11,6 +11,17 @@ curl -i -X POST http://localhost:7070/events.json \
   "entityId" : "uid",
   "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'
+
+curl -i -X POST http://localhost:7070/events.json?accessKey=yT8WHQMkQLBPxGdcGWstu6Z12XaNjANu7py98Ysve2NHwGNp825bkCt2G3LPU6aK \
+-H "Content-Type: application/json" \
+-d '{
+  "appId" : '$appId',
+  "event" : "my_event1",
+  "entityType" : "user"
+  "entityId" : "uid",
+  "eventTime" : "2004-12-13T21:39:45.618-07:00"
+}'
+
 
 curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \

@@ -139,7 +139,7 @@ trait Events {
     ()
   }
 
-  def futureInsert(event: Event)(implicit ec: ExecutionContext):
+  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] =
     notImplemented
 
@@ -182,9 +182,9 @@ trait Events {
     Future[Either[StorageError, Unit]] = notImplemented
 
   // following is blocking
-  def insert(event: Event)(implicit ec: ExecutionContext):
+  def insert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Either[StorageError, String] = {
-    Await.result(futureInsert(event), timeout)
+    Await.result(futureInsert(event, appId), timeout)
   }
 
   def get(eventId: String, appId: Int)(implicit ec: ExecutionContext):

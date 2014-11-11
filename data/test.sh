@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # simple test script for dataapi
-appId=$1
+accessKey=$1
+appId=0 # TODO: remove
 
 function checkGET () {
   resp=$( curl -i -s -X GET "http://localhost:7070$1" )
@@ -70,7 +71,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 testdata='{
   "event" : "$unset",
@@ -83,7 +84,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 testdata='{
   "event" : "$delete",
@@ -93,7 +94,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 testdata='{
   "event" : "$xxxx",
@@ -108,7 +109,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # -------------
 # create events
@@ -134,7 +135,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 # no properties
 testdata='{
@@ -147,7 +148,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 # no properties with $unset event
 testdata='{
@@ -158,7 +159,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 testdata='{
   "event" : "my_event",
@@ -171,7 +172,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 # no properties with $unset event
 testdata='{
@@ -185,7 +186,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # no tags
 testdata='{
@@ -202,7 +203,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 ## no eventTIme
 testdata='{
@@ -218,7 +219,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 ## no prediction key
 testdata='{
@@ -235,7 +236,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 # minimum
 testdata='{
@@ -245,7 +246,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 
 # check accepting null for optional fields
@@ -260,7 +261,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 testdata='{
   "event" : "my_event",
@@ -276,7 +277,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 201
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
 # ----------------------------
 # create events error cases
@@ -330,7 +331,7 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # missing appId
 testdata='{
@@ -347,7 +348,7 @@ testdata='{
 }'
 
 
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # empty event string
 testdata='{
@@ -364,19 +365,19 @@ testdata='{
   "appId" : '$appId'
 }'
 
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # empty
 testdata='{}'
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # empty
 testdata=''
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # invalid data
 testdata='asfd'
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # negative appId
 testdata='{
@@ -396,28 +397,28 @@ testdata='{
   "eventTime" : "2004-12-13T21:39:45.618Z",
   "appId" : -4
 }'
-checkPOST "/events.json" "$testdata" 400
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
 # -----
 # get events
 # ----
 
-checkGET "/events.json?appId=$appId" 200
+checkGET "/events.json?accessKey=$accessKey" 200
 
 # invalid appId
-checkGET "/events.json?appId=999" 400
+checkGET "/events.json?accessKey=999" 401
 
-checkGET "/events.json?appId=$appId&startTime=abc" 400
+checkGET "/events.json?accessKey=$accessKey&startTime=abc" 400
 
-checkGET "/events.json?appId=$appId&untilTime=abc" 400
+checkGET "/events.json?accessKey=$accessKey&untilTime=abc" 400
 
-checkGET "/events.json?appId=$appId&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
+checkGET "/events.json?accessKey=$accessKey&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
 
 
 # -----
 # delete
 # -----
 
-checkDELETE "/events.json?appId=$appId" 200
+checkDELETE "/events.json?accessKey=$accessKey" 200
 
-checkGET "/events.json?appId=$appId" 404
+checkGET "/events.json?accessKey=$accessKey" 404

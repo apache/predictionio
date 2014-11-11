@@ -143,7 +143,7 @@ object HBEventsUtil {
     }
   }
 
-  def eventToPut(event: Event): (Put, RowKey) = {
+  def eventToPut(event: Event, appId: Int): (Put, RowKey) = {
     // TOOD: use real UUID. not psuedo random
     val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
     val rowKey = RowKey(

@@ -38,7 +38,7 @@ object Upgrade {
       fromNamespace,
       appId).grouped(batchSize).foreach { eventGroup =>
         val puts = eventGroup.map{ e =>
-          val (put, rowkey) = HBEventsUtil.eventToPut(e)
+          val (put, rowkey) = HBEventsUtil.eventToPut(e, appId)
           put
         }
         newTable.put(puts.toList)
