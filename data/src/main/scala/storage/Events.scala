@@ -116,15 +116,38 @@ trait Events {
   }
   val timeout = Duration(5, "seconds")
 
+  /** Initialize Event Store for the appId.
+   * initailization routine to be called when app is first created.
+   * return true if succeed or false if fail.
+   */
+  def init(appId: Int): Boolean = {
+    throw new Exception("init() is not implemented.")
+    false
+  }
+
+  /** Remove Event Store for this appId */
+  def remove(appId: Int): Boolean = {
+    throw new Exception("remove() is not implemented.")
+    false
+  }
+
+  /** Close this Event Store interface object.
+   * (Eg. close connection, release resources)
+   */
+  def close(): Unit = {
+    throw new Exception("close() is not implemented.")
+    ()
+  }
+
   def futureInsert(event: Event)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] =
     notImplemented
 
-  def futureGet(eventId: String)(implicit ec: ExecutionContext):
+  def futureGet(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] =
     notImplemented
 
-  def futureDelete(eventId: String)(implicit ec: ExecutionContext):
+  def futureDelete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Boolean]] =
     notImplemented
 
@@ -152,7 +175,7 @@ trait Events {
     entityType: Option[String],
     entityId: Option[String],
     limit: Option[Int] = None,
-    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
+    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]]  = notImplemented
 
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
@@ -164,14 +187,14 @@ trait Events {
     Await.result(futureInsert(event), timeout)
   }
 
-  def get(eventId: String)(implicit ec: ExecutionContext):
+  def get(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Either[StorageError, Option[Event]] = {
-    Await.result(futureGet(eventId), timeout)
+    Await.result(futureGet(eventId, appId), timeout)
   }
 
-  def delete(eventId: String)(implicit ec: ExecutionContext):
+  def delete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Either[StorageError, Boolean] = {
-    Await.result(futureDelete(eventId), timeout)
+    Await.result(futureDelete(eventId, appId), timeout)
   }
 
   def getByAppId(appId: Int)(implicit ec: ExecutionContext):

@@ -923,19 +923,27 @@ object Console extends Logging {
         name = ca.app.name,
         description = ca.app.description))
       appid map { id =>
-        val appkeys = Storage.getMetaDataAppkeys
-        val appkey = appkeys.insert(Appkey(
-          appkey = "",
-          appid = id,
-          events = Seq()))
-        appkey map { k =>
-          info("Created new app:")
-          info(s"        Name: ${ca.app.name}")
-          info(s"          ID: ${id}")
-          info(s"Access Token: ${k}")
-        } getOrElse {
-          error(s"Unable to create new app key.")
+        val events = Storage.getEventDataEvents
+        val dbInit = events.init(id)
+        if (dbInit) {
+          info(s"Initialized Event Store for this app ID: ${id}.")
+          val appkeys = Storage.getMetaDataAppkeys
+          val appkey = appkeys.insert(Appkey(
+            appkey = "",
+            appid = id,
+            events = Seq()))
+          appkey map { k =>
+            info("Created new app:")
+            info(s"        Name: ${ca.app.name}")
+            info(s"          ID: ${id}")
+            info(s"Access Token: ${k}")
+          } getOrElse {
+            error(s"Unable to create new app key.")
+          }
+        } else {
+          error(s"Unable to initialize Event Store for this appId: ${id}.")
         }
+        events.close()
       } getOrElse {
         error(s"Unable to create new app.")
       }
@@ -955,10 +963,17 @@ object Console extends Logging {
   def appDelete(ca: ConsoleArgs): Unit = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
-      if (Storage.getMetaDataApps.delete(app.id))
-        info(s"Deleted app ${app.name}.")
-      else
-        error(s"Error deleting app ${app.name}.")
+      val events = Storage.getEventDataEvents
+      if (events.remove(app.id)) {
+        info(s"Removed Event Store for this app ID: ${app.id}")
+        if (Storage.getMetaDataApps.delete(app.id))
+          info(s"Deleted app ${app.name}.")
+        else
+          error(s"Error deleting app ${app.name}.")
+      } else {
+        error(s"Error removing Event Store for this app.")
+      }
+      events.close()
     } getOrElse {
       error(s"App ${ca.app.name} does not exist. Aborting.")
     }

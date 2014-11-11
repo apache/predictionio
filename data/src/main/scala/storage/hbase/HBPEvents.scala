@@ -34,10 +34,6 @@ import org.apache.spark.rdd.RDD
 class HBPEvents(client: HBClient, namespace: String)
   extends PEvents with Logging {
 
-  lazy val table = HBEventsUtil.table
-
-  def resultToEvent(result: Result): Event = HBEventsUtil.resultToEvent(result)
-
   override
   def getByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
@@ -46,10 +42,15 @@ class HBPEvents(client: HBClient, namespace: String)
     entityId: Option[String])(sc: SparkContext): RDD[Event] = {
 
     val conf = HBaseConfiguration.create()
-    conf.set(TableInputFormat.INPUT_TABLE, s"${namespace}:${table}")
+    conf.set(TableInputFormat.INPUT_TABLE,
+      HBEventsUtil.tableName(namespace, appId))
 
-    val scan = HBEventsUtil.createScan(appId, startTime, untilTime,
-      entityType, entityId)
+    val scan = HBEventsUtil.createScan(
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = entityType,
+        entityId = entityId,
+        reversed = None)
     scan.setCaching(500) // TODO
     scan.setCacheBlocks(false) // TODO
 
@@ -58,7 +59,7 @@ class HBPEvents(client: HBClient, namespace: String)
     val rdd = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
       classOf[Result]).map {
-        case (key, row) => resultToEvent(row)
+        case (key, row) => HBEventsUtil.resultToEvent(row, appId)
       }
 
     rdd

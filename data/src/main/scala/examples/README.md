@@ -20,3 +20,12 @@ $ $SPARK_HOME/bin/spark-submit \
   --master local[4] \
   assembly/pio-assembly-0.8.2-SNAPSHOT.jar <appId>
 ```
+
+TestEvents
+```
+$ sbt/sbt "data/compile"
+$ set -a
+$ source conf/pio-env.sh
+$ set +a
+$ sbt/sbt "data/run-main io.prediction.data.examples.TestEvents HB"
+```
