@@ -147,9 +147,8 @@ class SimRankAlgorithm (val ap: FriendRecommendationAlgoParams)
   def predict(m: SimRankModel, query: PairwiseSimRankQuery): Prediction = {
     if(m.matrixIdMap.contains(query.user) &&
        m.matrixIdMap.contains(query.item)) {
-        val confidence = m.memoMatrix(m.matrixIdMap(query.user))
-                                     (m.matrixIdMap(query.item))
-        val acceptance = randomConfidence > ap.threshold
+        val confidence = m.memoMatrix(m.matrixIdMap(query.user))(m.matrixIdMap(query.item))
+        val acceptance = confidence > ap.threshold
         Prediction(confidence, acceptance)
      } else {
         Prediction(-1, false)
@@ -160,9 +159,10 @@ class SimRankAlgorithm (val ap: FriendRecommendationAlgoParams)
 object SimRankEngineFactory extends IEngineFactory {
   override
   def apply() = {
-    new SimpleEngine(
+    new Engine(
       classOf[GraphDataSource],
-      classOf[SimRankAlgorithm]
-    )
+      IdentityPreparator(classOf[GraphDataSource]),
+      Map("SimRankAlgorithm" -> classOf[SimRankAlgorithm]),
+      FirstServing(classOf[SimRankAlgorithm]))
   }
 }

@@ -5,7 +5,7 @@
   "engineFactory": "io.prediction.examples.friendrecommendation.KeywordSimilarityEngineFactory",
   "algorithms": [
     {
-      "name": "",
+      "name": "KeywordSimilarityAlgorithm",
       "params": {
         "threshold": 0.5
       }

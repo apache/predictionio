@@ -1,3 +1,4 @@
+<h2>Our Engine</h2><br/>
 We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.
 
 Two algorithms are implemented.
@@ -8,11 +9,11 @@ Two algorithms are implemented.
 To run the engine, you need to Register (Build) + Train + Deploy : 
 
 ```
-$PIO_HOME/bin/pio build --engine-json $EngineJson
+$PIO_HOME/bin/pio build -v $EngineJson
 
-$PIO_HOME/bin/pio train --engine-json $EngineJson
+$PIO_HOME/bin/pio train -v $EngineJson
 
-$PIO_HOME/bin/pio deploy --engine-json $EngineJson
+$PIO_HOME/bin/pio deploy -v $EngineJson
 ```
 
 $EngineJson is
