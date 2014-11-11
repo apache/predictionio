@@ -21,6 +21,7 @@ import io.prediction.data.storage.Events
 import io.prediction.data.storage.DataMap
 
 import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.client.Put
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.filter.FilterList
@@ -38,6 +39,8 @@ import org.joda.time.DateTimeZone
 
 import org.apache.commons.codec.binary.Base64
 import java.security.MessageDigest
+
+import java.util.UUID
 
 /* common utility function for acessing EventsStore in HBase */
 object HBEventsUtil {
@@ -138,6 +141,65 @@ object HBEventsUtil {
       hash(entityType, entityId) ++
         (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
     }
+  }
+
+  def eventToPut(event: Event): (Put, RowKey) = {
+    // TOOD: use real UUID. not psuedo random
+    val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
+    val rowKey = RowKey(
+      entityType = event.entityType,
+      entityId = event.entityId,
+      millis = event.eventTime.getMillis,
+      uuidLow = uuidLow
+    )
+
+    val eBytes = Bytes.toBytes("e")
+    // use eventTime as HBase's cell timestamp
+    val put = new Put(rowKey.toBytes, event.eventTime.getMillis)
+
+    def addStringToE(col: Array[Byte], v: String) = {
+      put.add(eBytes, col, Bytes.toBytes(v))
+    }
+
+    def addLongToE(col: Array[Byte], v: Long) = {
+      put.add(eBytes, col, Bytes.toBytes(v))
+    }
+
+    addStringToE(colNames("event"), event.event)
+    addStringToE(colNames("entityType"), event.entityType)
+    addStringToE(colNames("entityId"), event.entityId)
+
+    event.targetEntityType.foreach { targetEntityType =>
+      addStringToE(colNames("targetEntityType"), targetEntityType)
+    }
+
+    event.targetEntityId.foreach { targetEntityId =>
+      addStringToE(colNames("targetEntityId"), targetEntityId)
+    }
+
+    // TODO: make properties Option[]
+    if (!event.properties.isEmpty) {
+      addStringToE(colNames("properties"), write(event.properties.toJObject))
+    }
+
+    event.predictionKey.foreach { predictionKey =>
+      addStringToE(colNames("predictionKey"), predictionKey)
+    }
+
+    addLongToE(colNames("eventTime"), event.eventTime.getMillis)
+    val eventTimeZone = event.eventTime.getZone
+    if (!eventTimeZone.equals(EventValidation.defaultTimeZone)) {
+      addStringToE(colNames("eventTimeZone"), eventTimeZone.getID)
+    }
+
+    addLongToE(colNames("creationTime"), event.creationTime.getMillis)
+    val creationTimeZone = event.creationTime.getZone
+    if (!creationTimeZone.equals(EventValidation.defaultTimeZone)) {
+      addStringToE(colNames("creationTimeZone"), creationTimeZone.getID)
+    }
+
+    // can use zero-length byte array for tag cell value
+    (put, rowKey)
   }
 
   def resultToEvent(result: Result, appId: Int): Event = {

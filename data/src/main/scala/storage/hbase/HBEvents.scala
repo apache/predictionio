@@ -57,11 +57,9 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-import java.util.UUID
-
 //import org.apache.commons.codec.binary.Base64
 
-class HBEvents(client: HBClient, namespace: String)
+class HBEvents(val client: HBClient, val namespace: String)
   extends Events with Logging {
 
   // check namespace exist
@@ -87,7 +85,7 @@ class HBEvents(client: HBClient, namespace: String)
 
   //val tableName = TableName.valueOf(namespace, HBEventsUtil.table)
 
-  val colNames = HBEventsUtil.colNames
+  //val colNames = HBEventsUtil.colNames
 
   def resultToEvent(result: Result, appId: Int): Event =
     HBEventsUtil.resultToEvent(result, appId)
@@ -145,62 +143,7 @@ class HBEvents(client: HBClient, namespace: String)
     Future[Either[StorageError, String]] = {
     Future {
       val table = getTable(event.appId)
-      // TOOD: use real UUID. not psuedo random
-      val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
-      val rowKey = RowKey(
-        entityType = event.entityType,
-        entityId = event.entityId,
-        millis = event.eventTime.getMillis,
-        uuidLow = uuidLow
-      )
-
-      val eBytes = Bytes.toBytes("e")
-      // use eventTime as HBase's cell timestamp
-      val put = new Put(rowKey.toBytes, event.eventTime.getMillis)
-
-      def addStringToE(col: Array[Byte], v: String) = {
-        put.add(eBytes, col, Bytes.toBytes(v))
-      }
-
-      def addLongToE(col: Array[Byte], v: Long) = {
-        put.add(eBytes, col, Bytes.toBytes(v))
-      }
-
-      addStringToE(colNames("event"), event.event)
-      addStringToE(colNames("entityType"), event.entityType)
-      addStringToE(colNames("entityId"), event.entityId)
-
-      event.targetEntityType.foreach { targetEntityType =>
-        addStringToE(colNames("targetEntityType"), targetEntityType)
-      }
-
-      event.targetEntityId.foreach { targetEntityId =>
-        addStringToE(colNames("targetEntityId"), targetEntityId)
-      }
-
-      // TODO: make properties Option[]
-      if (!event.properties.isEmpty) {
-        addStringToE(colNames("properties"), write(event.properties.toJObject))
-      }
-
-      event.predictionKey.foreach { predictionKey =>
-        addStringToE(colNames("predictionKey"), predictionKey)
-      }
-
-      addLongToE(colNames("eventTime"), event.eventTime.getMillis)
-      val eventTimeZone = event.eventTime.getZone
-      if (!eventTimeZone.equals(EventValidation.defaultTimeZone)) {
-        addStringToE(colNames("eventTimeZone"), eventTimeZone.getID)
-      }
-
-      addLongToE(colNames("creationTime"), event.creationTime.getMillis)
-      val creationTimeZone = event.creationTime.getZone
-      if (!creationTimeZone.equals(EventValidation.defaultTimeZone)) {
-        addStringToE(colNames("creationTimeZone"), creationTimeZone.getID)
-      }
-
-      // can use zero-length byte array for tag cell value
-
+      val (put, rowKey) = HBEventsUtil.eventToPut(event)
       table.put(put)
       table.flushCommits()
       table.close()
