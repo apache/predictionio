@@ -855,11 +855,21 @@ object Console extends Logging {
   def run(ca: ConsoleArgs): Unit = {
     compile(ca)
 
+    val hbaseConf = sys.env.get("HBASE_CONF_DIR") map { x =>
+      val p = Seq(x, "hbase-site.xml").mkString(File.separator)
+      if (new File(p).exists) Seq(p) else Seq()
+    } getOrElse Seq()
+
+    val extraFiles = Seq(hbaseConf).flatten
+
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
-    val allJarFiles = jarFiles ++ builtinEngines(ca.common.pioHome.get)
+    val allJarFiles = (jarFiles ++
+      builtinEngines(ca.common.pioHome.get)).map(_.getCanonicalPath)
     val cmd = s"${getSparkHome(ca.common.sparkHome)}/bin/spark-submit --jars " +
-      s"${allJarFiles.map(_.getCanonicalPath).mkString(",")} --class " +
+      s"${allJarFiles.mkString(",")} " + (if (extraFiles.size > 0)
+        s"--files ${extraFiles.mkString(",")} " else "") +
+      "--class " +
       s"${ca.mainClass.get} ${ca.common.sparkPassThrough.mkString(" ")} " +
       coreAssembly(ca.common.pioHome.get) + " " +
       ca.common.driverPassThrough.mkString(" ")
