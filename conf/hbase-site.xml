@@ -1,0 +1,6 @@
+<configuration>
+  <property>
+    <name>hbase.zookeeper.quorum</name>
+    <value>132oipukojw;kljds;lkdjafskl;fdaslocalhost</value>
+  </property>
+</configuration>
