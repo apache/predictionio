@@ -103,4 +103,19 @@
 	  <!-- <li><a href="../../contribution/projects.html">Play Framework Plugin</a></li> -->
 	  <!-- <li><a href="../../contribution/projects.html">Symfony2 Bundle</a></li> -->
 	</ul>
+  
+	<h2>FAQ</h2>
+    <ul>
+        {% for sec in site.data.nav_faq %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
 </div>
