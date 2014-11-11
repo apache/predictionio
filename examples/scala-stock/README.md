@@ -43,6 +43,7 @@ Where: cloned PredictionIO directory (with source code, make sure code is update
 
 ### Step 5: Ensure all dependencies are working
 See here for more information: http://docs.prediction.io/0.8.1/install/
+
 Type
 ```
 jps
