@@ -5,13 +5,10 @@ title: Recommendation Quick Start
 
 # Quick Start - Recommendation Engine Template
 
-An engine template is a basic skeleton of an engine. You can customize it easily to fit your specific needs. PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
+An engine template is a basic skeleton of an engine. PredictionIO's Recommendation Engine Template (/templates/scala-parallel-recommendation) has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by default.
+ You can customize it easily to fit your specific needs.
 
-* Collaborative Filtering Engine Template - with MLlib ALS (/templates/scala-parallel-recommendation)
-* Classification Engine Template - with MLlib Naive Bayes  (/templates/scala-parallel-classification)
-
-This Quick Start hows you how to use the Collaborative Filtering Engine Template to build your own recommendation engine for production use.
-
+We are going to show you how to create your own classification engine for production use based on this template.
 
 ## Install PredictionIO
 
@@ -54,6 +51,10 @@ $ pio deploy
 
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
 
+
+![Engine Status]({{ site.baseurl }}/images/engine-server.png)
+
+
 Now, You can try to retrieve predicted results.
 To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
 
@@ -65,30 +66,5 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 
 Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
 
-
-
-# Model Re-training
-
-You can update the predictive model with new data by making the *train* and *deploy* commands again:
-
-1.  Assuming you already have a deployed engine running, go to http://localhost:8000 to check its status. Take note of the
-    **Instance ID** at the top.
-
-2.  Run training and deploy again. There is no need to manually terminate the previous deploy instance.
-
-    ```
-    $ pio train
-    $ pio deploy
-    ```
-
-3.  Refresh the page at http://localhost:8000, you should see the status page with a new **Instance ID** at the top.
-
-
-For example, if you want to re-train the model every day, you may add this to your *crontab*:
-
-```
-0 0 * * *   $PIO_HOME/bin/pio train; $PIO_HOME/bin/pio deploy
-```
-where *$PIO_HOME* is the installation path of PredictionIO.
 
 Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.

@@ -43,6 +43,20 @@
         {% endfor %}
     </ul>
 
+    <h2>Running an Engine</h2>
+    <ul>
+        {% for sec in site.data.nav_operation %}
+        <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
+            {% if sec.subsec != null %}
+            <ul>
+            {% for subsec in sec.subsec %}
+                <li><a href="{{ site.url }}{{ site.baseurl }}{{ subsec.href }}">{{ subsec.title }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
     
     <h2>Event Server</h2>
     <ul>
@@ -59,7 +73,7 @@
         {% endfor %}
     </ul>
     
-    <h2>Accuracy Evaluation and Tuning</h2>
+ 
     
     <h2>Running on Production</h2>
     <ul>
