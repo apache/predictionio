@@ -4,33 +4,27 @@ title:  Engine and Engine Instance
 ---
 <code>Rewrite/Update</code>
 
-# Engine and Engine Instance: A Closer Look
+# A Closer Look at the Engine
 
-An Engine represents a type of Machine Learning task. It follows the DASE
-architecture which contains the following components:
+An Engine is a template for a type of Machine Learning task. It follows the DASE architecture, containing the following components:
 
 ## [D] Data Source and Data Preparator
 
-Data Source reads data from source and transforms it to the desired format. Data
-Preparator preprocesses the data and forward it to the algorithm for model
-training.
+A Data Source reads data from an input source and transforms it into a desired format. A Data Preparator preprocesses the data and forwards it to the algorithm for model training.
 
 ## [A] Algorithm
 
-A Machine Learning Algorithm, and the settings of its parameters, determines how
-a predictive model is constructed.
+A Machine Learning Algorithm, and the settings of its parameters, determines how a predictive model is constructed.
 
 ## [S] Serving
 
-The Serving component takes prediction *queries* and returns prediction results.
-If the engine has multiple algorithms, Serving will combine the results into
-one. Additionally, you can add your own business logic in Serving and further
+The Serving component takes prediction *queries* and returns prediction results. If the engine has multiple algorithms, Serving will combine the results into
+one. Additionally, business-specific logic can be added in Serving to further
 customize the final returned results.
 
 ## [E] Evaluation Metrics
 
-An Evaluation Metrics quantifies prediction accuracy with a score. It can be
-used for comparing algorithms or algorithm parameter settings.
+An Evaluation Metric quantifies prediction accuracy with a numerical score. It can be used for comparing algorithms or algorithm parameter settings.
 
 > PredictionIO helps you modularize these components so you can build, for
 example, several Serving components for an Engine. You will be able to choose
@@ -65,13 +59,13 @@ new friends to users.
 # Engine Instance Evaluation
 
 To evaluate the prediction accuracy of an Engine Instance, all you need to do is
-to specify an Evaluation Metrics when you run an evaluation on an Engine
+to specify an Evaluation Metric when you run an evaluation on an Engine
 Instance, i.e.:
 
 * An Engine Instance (One Data Source, One Data Preparator, One or more
   Algorithm(s), One Serving)
 
-* One Evaluation Metrics
+* One Evaluation Metric
 
 
 # Engine Templates
