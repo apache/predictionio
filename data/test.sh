@@ -2,7 +2,6 @@
 
 # simple test script for dataapi
 accessKey=$1
-appId=0 # TODO: remove
 
 function checkGET () {
   resp=$( curl -i -s -X GET "http://localhost:7070$1" )
@@ -67,8 +66,7 @@ testdata='{
   "properties" : {
     "prop1" : 1,
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -80,8 +78,7 @@ testdata='{
   "properties" : {
     "prop1" : "",
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -90,8 +87,7 @@ testdata='{
   "event" : "$delete",
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -105,8 +101,7 @@ testdata='{
   "properties" : {
     "prop1" : 1,
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
@@ -131,8 +126,7 @@ testdata='{
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -144,8 +138,7 @@ testdata='{
   "entityId" : "my_entity_id",
   "targetEntityType" : "my_target_entity_type",
   "targetEntityId" : "my_target_entity_id",
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -155,8 +148,7 @@ testdata='{
   "event" : "$unset",
   "entityType" : "my_entity_type",
   "entityId" : "my_entity_id",
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
@@ -169,7 +161,6 @@ testdata='{
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
-  "appId" : '$appId'
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -183,7 +174,6 @@ testdata='{
   "targetEntityId" : "my_target_entity_id",
   "eventTime" : "2004-12-14T21:39:45.618Z",
   "properties": {}
-  "appId" : '$appId'
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
@@ -199,8 +189,7 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "eventTime" : "2004-12-15T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-15T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -216,7 +205,6 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "appId" : '$appId'
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -232,8 +220,7 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -242,8 +229,7 @@ checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 testdata='{
   "event" : "my_event",
   "entityType" : "my_entity_type",
-  "entityId" : "my_entity_id",
-  "appId" : '$appId'
+  "entityId" : "my_entity_id"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -257,8 +243,7 @@ testdata='{
   "targetEntityType" : null,
   "targetEntityId" : null,
   "properties" : null,
-  "eventTime" : null,
-  "appId" : '$appId'
+  "eventTime" : null
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -273,8 +258,7 @@ testdata='{
     "prop1": 1,
     "prop2": null
   },
-  "eventTime" : null,
-  "appId" : '$appId'
+  "eventTime" : null
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
@@ -297,8 +281,7 @@ testdata='{
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 # missing entityType
@@ -315,8 +298,7 @@ testdata='{
     "prop5" : ["a", "b", "c"],
     "prop6" : 4.56
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 # missing entityId
@@ -327,26 +309,8 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
-}'
-
-checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
-
-# missing appId
-testdata='{
-  "event" : "my_event",
-  "entityType" : "my_entity_type",
-  "entityId" : "my_entity_id",
-  "targetEntityType" : "my_target_entity_type",
-  "targetEntityId" : "my_target_entity_id",
-  "properties" : {
-    "prop1" : "value1",
-    "prop2" : "value2"
-  }
   "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
-
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
@@ -361,8 +325,7 @@ testdata='{
     "prop1" : "value1",
     "prop2" : "value2"
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : '$appId'
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
@@ -379,33 +342,13 @@ checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 testdata='asfd'
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
-# negative appId
-testdata='{
-  "event" : "my_event",
-  "entityType" : "my_entity_type",
-  "entityId" : "my_entity_id",
-  "targetEntityType" : "my_target_entity_type",
-  "targetEntityId" : "my_target_entity_id",
-  "properties" : {
-    "prop1" : 1,
-    "prop2" : "value2",
-    "prop3" : [1, 2, 3],
-    "prop4" : true,
-    "prop5" : ["a", "b", "c"],
-    "prop6" : 4.56
-  }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : -4
-}'
-checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
-
 # -----
 # get events
 # ----
 
 checkGET "/events.json?accessKey=$accessKey" 200
 
-# invalid appId
+# invalid accessKey
 checkGET "/events.json?accessKey=999" 401
 
 checkGET "/events.json?accessKey=$accessKey&startTime=abc" 400

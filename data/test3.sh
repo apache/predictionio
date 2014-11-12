@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 
-appId=$1
-
 curl -i -X POST http://localhost:7070/events.json?accessKey=testingkeyasdfasdf \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event1",
   "entityType" : "user"
   "entityId" : "uid",
@@ -15,7 +12,6 @@ curl -i -X POST http://localhost:7070/events.json?accessKey=testingkeyasdfasdf \
 curl -i -X POST http://localhost:7070/events.json?accessKey=yT8WHQMkQLBPxGdcGWstu6Z12XaNjANu7py98Ysve2NHwGNp825bkCt2G3LPU6aK \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event1",
   "entityType" : "user"
   "entityId" : "uid",
@@ -26,7 +22,6 @@ curl -i -X POST http://localhost:7070/events.json?accessKey=yT8WHQMkQLBPxGdcGWst
 curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event2",
   "entityType" : "user"
   "entityId" : "uid",
@@ -37,7 +32,6 @@ curl -i -X POST http://localhost:7070/events.json \
 curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event3",
   "entityType" : "user"
   "entityId" : "uid",
@@ -47,7 +41,6 @@ curl -i -X POST http://localhost:7070/events.json \
 curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event4",
   "entityType" : "user"
   "entityId" : "uid2",
@@ -57,7 +50,6 @@ curl -i -X POST http://localhost:7070/events.json \
 curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event5",
   "entityType" : "user"
   "entityId" : "uid2",
@@ -67,7 +59,6 @@ curl -i -X POST http://localhost:7070/events.json \
 curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : '$appId',
   "event" : "my_event1",
   "entityType" : "item"
   "entityId" : "uid",

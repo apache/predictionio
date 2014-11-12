@@ -58,7 +58,6 @@ object TestEvents {
       } """).asInstanceOf[JObject]),
     eventTime = DateTime.now,
     tags = List("tag1", "tag2"),
-    appId = 4,
     predictionKey = None
   )
 

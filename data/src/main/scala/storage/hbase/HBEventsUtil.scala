@@ -269,7 +269,6 @@ object HBEventsUtil {
       properties = properties,
       eventTime = eventTime,
       tags = Seq(),
-      appId = appId,
       predictionKey = predictionKey,
       creationTime = creationTime
     )

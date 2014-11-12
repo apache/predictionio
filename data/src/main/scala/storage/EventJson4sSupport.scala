@@ -58,8 +58,6 @@ object EventJson4sSupport {
         val tags = List()
       //val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
 
-        val appId = fields.get[Int]("appId")
-
         val predictionKey = fields.getOpt[String]("predictionKey")
 
         // don't allow user set creationTime from API for now.
@@ -83,7 +81,6 @@ object EventJson4sSupport {
           targetEntityId = targetEntityId,
           properties = DataMap(properties),
           eventTime = eventTime,
-          appId = appId,
           predictionKey = predictionKey,
           creationTime = creationTime
         )
@@ -101,7 +98,6 @@ object EventJson4sSupport {
       JObject(
         JField("eventId",
           d.eventId.map( eid => JString(eid)).getOrElse(JNothing)) ::
-        JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
@@ -134,7 +130,6 @@ object EventJson4sSupport {
       val eventTime = DataUtils.stringToDateTime(
         (jv \ "eventTime").extract[String])
       val tags = (jv \ "tags").extract[Seq[String]]
-      val appId = (jv \ "appId").extract[Int]
       val predictionKey = (jv \ "predictionKey").extract[Option[String]]
       val creationTime = DataUtils.stringToDateTime(
         (jv \ "creationTime").extract[String])
@@ -147,7 +142,6 @@ object EventJson4sSupport {
         properties = DataMap(properties),
         eventTime = eventTime,
         tags = tags,
-        appId = appId,
         predictionKey = predictionKey,
         creationTime = creationTime)
     }
@@ -156,7 +150,6 @@ object EventJson4sSupport {
   def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
-        JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
