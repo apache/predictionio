@@ -7,10 +7,10 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.Rating
 
-case class DataSourceParams(val filepath: String) extends Params
+case class FileDataSourceParams(val filepath: String) extends Params
 
-class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[DataSourceParams, EmptyDataParams,
+class FileDataSource(val dsp: FileDataSourceParams)
+  extends PDataSource[FileDataSourceParams, EmptyDataParams,
   TrainingData, Query, EmptyActualResult] {
 
   override
@@ -24,20 +24,12 @@ class DataSource(val dsp: DataSourceParams)
   }
 }
 
-class TrainingData(
-  val ratings: RDD[Rating]
-) extends Serializable {
-  override def toString = {
-    s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
-  }
-}
-
-object DataSourceTest {
+object FileDataSourceTest {
   def main(args: Array[String]) {
-    val dsp = DataSourceParams("data/sample_movielens_data.txt")
+    val dsp = FileDataSourceParams("data/sample_movielens_data.txt")
 
     Workflow.run(
-      dataSourceClassOpt = Some(classOf[DataSource]),
+      dataSourceClassOpt = Some(classOf[FileDataSource]),
       dataSourceParams = dsp,
       params = WorkflowParams(
         batch = "Template: Recommendations",

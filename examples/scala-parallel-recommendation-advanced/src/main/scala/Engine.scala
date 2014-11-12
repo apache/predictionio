@@ -16,11 +16,11 @@ case class PredictedResult(
   val productScores: Array[ProductScore]
 ) extends Serializable
 
-
-object RecommendationEngine extends IEngineFactory {
+// RecommendationEngine using file as DataSource
+object RecommendationEngineWithFile extends IEngineFactory {
   def apply() = {
     new Engine(
-      classOf[DataSource],
+      classOf[FileDataSource],
       classOf[Preparator],
       Map("als" -> classOf[ALSAlgorithm]),
       classOf[Serving])
