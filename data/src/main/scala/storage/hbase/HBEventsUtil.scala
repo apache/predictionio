@@ -48,7 +48,6 @@ object HBEventsUtil {
   implicit val formats = DefaultFormats
 
   def tableName(namespace: String, appId: Int) = s"${namespace}:events_${appId}"
-  //val table = "events"
 
   // column nams for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(
@@ -126,14 +125,6 @@ object HBEventsUtil {
     extends Exception(msg, cause) {
       def this(msg: String) = this(msg, null)
     }
-
-  /*
-  case class PartialRowKey(val appId: Int, val millis: Option[Long] = None) {
-    val toBytes: Array[Byte] = {
-      Bytes.toBytes(appId) ++
-        (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
-    }
-  }*/
 
   case class PartialRowKey(entityType: String, entityId: String,
     millis: Option[Long] = None) {
@@ -319,14 +310,12 @@ object HBEventsUtil {
       val filters = new FilterList()
       val eBytes = Bytes.toBytes("e")
       entityType.foreach { et =>
-        //val compType = new RegexStringComparator("^"+etype+"$")
         val compType = new BinaryComparator(Bytes.toBytes(et))
         val filterType = new SingleColumnValueFilter(
           eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
         filters.addFilter(filterType)
       }
       entityId.foreach { eid =>
-        //val compId = new RegexStringComparator("^"+eid+"$")
         val compId = new BinaryComparator(Bytes.toBytes(eid))
         val filterId = new SingleColumnValueFilter(
           eBytes, colNames("entityId"), CompareOp.EQUAL, compId)

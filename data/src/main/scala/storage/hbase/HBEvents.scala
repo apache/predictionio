@@ -30,7 +30,6 @@ import grizzled.slf4j.Logging
 import org.json4s.DefaultFormats
 import org.json4s.JObject
 import org.json4s.native.Serialization.{ read, write }
-//import org.json4s.ext.JodaTimeSerializers
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -57,49 +56,16 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-//import org.apache.commons.codec.binary.Base64
-
 class HBEvents(val client: HBClient, val namespace: String)
   extends Events with Logging {
 
-  // check namespace exist
-  /*
-  val existingNamespace = client.admin.listNamespaceDescriptors().map(_.getName)
-  if (!existingNamespace.contains(namespace)) {
-    val nameDesc = NamespaceDescriptor.create(namespace).build()
-    info(s"The namespace ${namespace} doesn't exist yet. Creating now...")
-    client.admin.createNamespace(nameDesc)
-  }*/
-
-  /*
-  try {
-    val nameDesc = NamespaceDescriptor.create(namespace).build()
-    client.admin.createNamespace(nameDesc)
-  } catch {
-    case e: NamespaceExistException => info(s"namespace already existed: ${e}")
-    case e: Exception => throw new RuntimeException(e)
-  }
-  */
-
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
-
-  //val tableName = TableName.valueOf(namespace, HBEventsUtil.table)
-
-  //val colNames = HBEventsUtil.colNames
 
   def resultToEvent(result: Result, appId: Int): Event =
     HBEventsUtil.resultToEvent(result, appId)
 
   def getTable(appId: Int) = client.connection.getTable(
     HBEventsUtil.tableName(namespace, appId))
-
-  // create table if not exist
-  /*if (!client.admin.tableExists(tableName)) {
-    val tableDesc = new HTableDescriptor(tableName)
-    tableDesc.addFamily(new HColumnDescriptor("e"))
-    tableDesc.addFamily(new HColumnDescriptor("r")) // reserved
-    client.admin.createTable(tableDesc)
-  }*/
 
   override
   def init(appId: Int): Boolean = {
@@ -202,16 +168,6 @@ class HBEvents(val client: HBClient, val namespace: String)
         entityId = None,
         limit = None,
         reversed = None)
-      /*Future {
-        val table = getTable(appId)
-        val start = PartialRowKey(appId)
-        val stop = PartialRowKey(appId+1)
-        val scan = new Scan(start.toBytes, stop.toBytes)
-        val scan = new Scan()
-        val scanner = table.getScanner(scan)
-        table.close()
-        Right(scanner.iterator().map { resultToEvent(_, appId) })
-      }*/
     }
 
   override
@@ -226,17 +182,6 @@ class HBEvents(val client: HBClient, val namespace: String)
         entityId = None,
         limit = None,
         reversed = None)
-      /*Future {
-        val table = getTable(appId)
-        val start = PartialRowKey(appId, startTime.map(_.getMillis))
-        // if no untilTime, stop when reach next appId
-        val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
-          .getOrElse(PartialRowKey(appId+1))
-        val scan = new Scan(start.toBytes, stop.toBytes)
-        val scanner = table.getScanner(scan)
-        table.close()
-        Right(scanner.iterator().map { resultToEvent(_, appId) })
-      }*/
   }
 
   override
@@ -254,17 +199,6 @@ class HBEvents(val client: HBClient, val namespace: String)
         entityId = entityId,
         limit = None,
         reversed = None)
-      /*
-      Future {
-        val table = client.connection.getTable(tableName)
-
-        val scan = HBEventsUtil.createScan(appId, startTime, untilTime,
-          entityType, entityId)
-        val scanner = table.getScanner(scan)
-        table.close()
-        Right(scanner.iterator().map { resultToEvent(_, appId) })
-      }
-      */
   }
 
   override
@@ -308,8 +242,6 @@ class HBEvents(val client: HBClient, val namespace: String)
     Future {
       // TODO: better way to handle range delete
       val table = getTable(appId)
-      //val start = PartialRowKey(appId)
-      //val stop = PartialRowKey(appId+1)
       val scan = new Scan()
       val scanner = table.getScanner(scan)
       val it = scanner.iterator()
