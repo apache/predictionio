@@ -11,4 +11,7 @@
   href: "/production/deploy-aws.html"  
     
 - title: "Backing up the data"
-  href: "/production/databackup.html"  
+  href: "/production/databackup.html" 
+  
+- title: "Version upgrade"
+  href: "/production/upgrade.html" 
