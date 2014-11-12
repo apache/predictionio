@@ -58,6 +58,25 @@ Content-Length: 18
 ```
 
 
+### Create App
+
+First, you need to create a new App before import data with Event Server:
+
+```
+$ cd $PIO_HOME
+$ bin/pio app new MyTestApp
+```
+(you can replace `MyTestApp` with name of your App)
+
+Take note of the `Access Key` and `App ID` generated. You need the `Access Key` to use the Event API. You should see something like the following output:
+
+```
+2014-11-12 08:56:02,519 INFO  tools.Console$ - Created new app:
+2014-11-12 08:56:02,519 INFO  tools.Console$ -         Name: MyTestApp
+2014-11-12 08:56:02,520 INFO  tools.Console$ -           ID: 6
+2014-11-12 08:56:02,520 INFO  tools.Console$ - Access Key: WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB
+```
+
 ### Creating Your First Event
 
 You may connect to the Event Server with HTTP request or by using one of many
@@ -65,14 +84,14 @@ You may connect to the Event Server with HTTP request or by using one of many
 your old data.
 
 The following shows how one can create an event involving a single entity.
+Replace the value of `accessKey` by the `Acceess Key` generated for your App.
 
 <div class="codetabs">
 <div data-lang="Raw HTTP">
 {% highlight bash %}
-$ curl -i -X POST http://localhost:7070/events.json \
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : 4,
   "event" : "my_event",
   "entityType" : "user"
   "entityId" : "uid",
@@ -167,10 +186,9 @@ The following shows how one can create an event involving two entities (with
 <div class="codetabs">
 <div data-lang="Raw HTTP">
 {% highlight bash %}
-$ curl -i -X POST http://localhost:7070/events.json \
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB \
 -H "Content-Type: application/json" \
 -d '{
-  "appId" : 4,
   "event" : "my_event",
   "entityType" : "user",
   "entityId" : "uid",
@@ -261,12 +279,16 @@ Content-Length: 41
 
 ### Event Creation API
 
-The event creation support many commonly used data.
+URL: `http://localhost:7070/events.json?accessKey=yourAccessKeyString`
 
 Field | Type | Description
 :---- | :----| :-----
-`appId` | Integer | App ID for separating your data set between different
-        |         |applications.
+`accessKey` | String | The Access Key for your App
+
+The event creation support many commonly used data. POST request body:
+
+Field | Type | Description
+:---- | :----| :-----
 `event` | String | Name of the event.
         | | (Examples: "sign-up", "rate", "view", "buy").
         | | **Note**: All event names start with "$" are reserved
@@ -306,7 +328,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "$set",
       "entityType" : "user",
       "entityId" : "1",
@@ -325,7 +346,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "$set",
       "entityType" : "user",
       "entityId" : "2",
@@ -342,7 +362,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "$set",
       "entityType" : "user",
       "entityId" : "2",
@@ -359,7 +378,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "$unset",
       "entityType" : "user",
       "entityId" : "2",
@@ -375,7 +393,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "$delete",
       "entityType" : "user",
       "entityId" : "2",
@@ -388,7 +405,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "$set",
       "entityType" : "user",
       "entityId" : "2",
@@ -407,7 +423,6 @@ Field | Type | Description
 
     ```json
     {
-      "appId" : 4,
       "event" : "rate",
       "entityType" : "user",
       "entityId" : "1",
@@ -421,31 +436,31 @@ Field | Type | Description
 
 ## Debugging Recipes
 
-The following APIs are mainly for development or debugging purpose only. They should not be used by real application under normal circumstances and their availabilities are subject to changes.
+> **Note** The following APIs are mainly for development or debugging purpose only. They should not be supported by SDK nor used by real application under normal circumstances and their availabilities are subject to changes.
 
-Replace `<your_eventId>` by a real one in the following.
+The `accessKey` query parameter is mandatory.
+
+Replace `<your_accessKey>` and `<your_eventId>` by a real one in the following:
 
 ### Get an Event
 
 ```
-$ curl -i -X GET http://localhost:7070/events/<your_eventId>.json
+$ curl -i -X GET http://localhost:7070/events/<your_eventId>.json?accessKey=<your_accessKey>
 ```
 
 ### Delete an Event
 
 ```
-$ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json
+$ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json?accessKey=<your_accessKey>
 ```
 
-### Get All Events of an appId
+### Get All Events of an app
 
 > Use cautiously!
 
 ```
-$ curl -i -X GET http://localhost:7070/events.json?appId=<your_appId>
+$ curl -i -X GET http://localhost:7070/events.json?accessKey=<your_accessKey>
 ```
-
-The `appId` query parameter is mandatory.
 
 In addition, the following *optional* parameters are supported:
 
@@ -459,34 +474,34 @@ In addition, the following *optional* parameters are supported:
 
 > If you are using <code>curl</code> with the <code>&</code> symbol, you should quote the entire URL by using single or double quotes.
 
-For example, get all events of appId with `eventTime >= startTime`
+For example, get all events of an app with `eventTime >= startTime`
 
 ```
-$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>"
+$ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&startTime=<time in ISO8601 format>"
 ```
 
-For example, get all events of an appId with `eventTime < untilTime`:
+For example, get all events of an app with `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&untilTime=<time in ISO8601 format>"
+$ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&untilTime=<time in ISO8601 format>"
 ```
 
-For example, get all events of an appId with `eventTime >= startTime` and `eventTime < untilTime`:
+For example, get all events of an app with `eventTime >= startTime` and `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>"
+$ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&startTime=<time in ISO8601 format>&untilTime=<time in ISO8601 format>"
 ```
 
 For example, get all events of a specific entity with `eventTime < untilTime`:
 
 ```
-$ curl -i -X GET "http://localhost:7070/events.json?appId=<your_appId>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>"
+$ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>"
 ```
 
-### Delete All Events of an appId
+### Delete All Events of an app
 
 > Use cautiously!
 
 ```
-$ curl -i -X DELETE http://localhost:7070/events.json?appId=<your_appId>
+$ curl -i -X DELETE http://localhost:7070/events.json?accessKey=<your_accessKey>
 ```
