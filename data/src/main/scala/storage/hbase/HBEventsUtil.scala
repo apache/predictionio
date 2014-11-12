@@ -65,10 +65,10 @@ object HBEventsUtil {
     "creationTimeZone" -> "ctz"
   ).mapValues(Bytes.toBytes(_))
 
-  val md5 = MessageDigest.getInstance("MD5")
-
   def hash(entityType: String, entityId: String): Array[Byte] = {
     val s = entityType + "-" + entityId
+    // get a new MessgaeDigest object each time for thread-safe
+    val md5 = MessageDigest.getInstance("MD5")
     md5.digest(Bytes.toBytes(s))
   }
 
