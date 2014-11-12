@@ -48,7 +48,6 @@ object HBEventsUtil {
   implicit val formats = DefaultFormats
 
   def tableName(namespace: String, appId: Int) = s"${namespace}:events_${appId}"
-  //val table = "events"
 
   // column nams for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(
@@ -65,10 +64,10 @@ object HBEventsUtil {
     "creationTimeZone" -> "ctz"
   ).mapValues(Bytes.toBytes(_))
 
-  val md5 = MessageDigest.getInstance("MD5")
-
   def hash(entityType: String, entityId: String): Array[Byte] = {
     val s = entityType + "-" + entityId
+    // get a new MessgaeDigest object each time for thread-safe
+    val md5 = MessageDigest.getInstance("MD5")
     md5.digest(Bytes.toBytes(s))
   }
 
@@ -127,14 +126,6 @@ object HBEventsUtil {
       def this(msg: String) = this(msg, null)
     }
 
-  /*
-  case class PartialRowKey(val appId: Int, val millis: Option[Long] = None) {
-    val toBytes: Array[Byte] = {
-      Bytes.toBytes(appId) ++
-        (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
-    }
-  }*/
-
   case class PartialRowKey(entityType: String, entityId: String,
     millis: Option[Long] = None) {
     val toBytes: Array[Byte] = {
@@ -143,7 +134,7 @@ object HBEventsUtil {
     }
   }
 
-  def eventToPut(event: Event): (Put, RowKey) = {
+  def eventToPut(event: Event, appId: Int): (Put, RowKey) = {
     // TOOD: use real UUID. not psuedo random
     val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
     val rowKey = RowKey(
@@ -269,7 +260,6 @@ object HBEventsUtil {
       properties = properties,
       eventTime = eventTime,
       tags = Seq(),
-      appId = appId,
       predictionKey = predictionKey,
       creationTime = creationTime
     )
@@ -320,14 +310,12 @@ object HBEventsUtil {
       val filters = new FilterList()
       val eBytes = Bytes.toBytes("e")
       entityType.foreach { et =>
-        //val compType = new RegexStringComparator("^"+etype+"$")
         val compType = new BinaryComparator(Bytes.toBytes(et))
         val filterType = new SingleColumnValueFilter(
           eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
         filters.addFilter(filterType)
       }
       entityId.foreach { eid =>
-        //val compId = new RegexStringComparator("^"+eid+"$")
         val compId = new BinaryComparator(Bytes.toBytes(eid))
         val filterId = new SingleColumnValueFilter(
           eBytes, colNames("entityId"), CompareOp.EQUAL, compId)

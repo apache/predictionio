@@ -13,15 +13,6 @@ case class AlgorithmParams(
   val lambda: Double
 ) extends Params
 
-class Query(
-  val features: Array[Double]
-) extends Serializable
-
-class PredictedResult(
-  val label: Double
-) extends Serializable
-
-
 // extends P2LAlgorithm because the MLlib's NaiveBayesModel doesn't contain RDD.
 class NaiveBayesAlgorithm(val ap: AlgorithmParams)
   extends P2LAlgorithm[AlgorithmParams, PreparedData,

@@ -14,8 +14,6 @@ We are going to show you how to create your own classification engine for produc
 
 First you need to [install PredictionIO {{site.pio_version}}]({{site.baseurl}}/install/)
 
-## Create a new Engine from an Engine Template
-
 Let's say you have installed PredictionIO at */home/yourname/predictionio/*.
 For convenience, add PredictionIO's binary command path to your PATH, i.e. /home/yourname/predictionio/bin:
 
@@ -23,23 +21,115 @@ For convenience, add PredictionIO's binary command path to your PATH, i.e. /home
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
 ```
 
+## Create an App
+
+To create an App with the name "MyApp":
+
+```
+$ pio app new MyApp
+```
+
+You should find the following in the consle output:
+
+```
+...
+2014-11-12 18:24:22,904 INFO  tools.Console$ - Initialized Event Store for this app ID: 2.
+2014-11-12 18:24:22,920 INFO  tools.Console$ - Created new app:
+2014-11-12 18:24:22,921 INFO  tools.Console$ -         Name: MyApp
+2014-11-12 18:24:22,921 INFO  tools.Console$ -           ID: 1
+2014-11-12 18:24:22,921 INFO  tools.Console$ - Access Key: dZN8zAX2SwEmxHN27RGR7va3XFJ3bB7qHTECf3GVL4T5ECnOErRQp5mt8rcdhmzU
+2014-11-12 18:24:22,922 INFO  client.HConnectionManager$HConnectionImplementation - Closing master protocol: MasterService
+2014-11-12 18:24:22,922 INFO  client.HConnectionManager$HConnectionImplementation - Closing zookeeper sessionid=0x149a2c3cf910011
+2014-11-12 18:24:22,923 INFO  zookeeper.ZooKeeper - Session: 0x149a2c3cf910011 closed
+2014-11-12 18:24:22,923 INFO  zookeeper.ClientCnxn - EventThread shut down
+```
+
+Take note of the `Access Key` and `App ID`, which you need later when import data into Event Server and access the Event Store from the Engine.
+
+## Create a new Engine from an Engine Template
+
 Now you create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template:
 
 ```
 $ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
 $ cd MyEngine
 ```
-* Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
 
-By default, the engine reads training data from a text file located at data/sample_movielens_data.txt. Use the sample movie data from MLlib repo for now:
+*Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
+
+By default, the engine reads training data from Event Store.
+
+The sample movie data from MLlib repo is used for demonstration purpose. Execute the following to get the data set:
 
 ```
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 ```
 
-> We will update the engine template so that it will read from the Event Server by default soon.
+A python import script `import_eventserver.py` is provided to import the data to Event Server. Replace the value of access_key parameter by your `Access Key`.
+
+```
+$ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
+```
+
+You should see the following output:
+
+```
+Importing data...
+1501 rate events are imported.
+```
+
+Now the movie ratings data is stored as events inside the Event Store.
+
+With the EventClient of one of the PredictionIO SDKs, your application can send data to the Event Server in real-time easily through the EventAPI. You may use other SDK.
+
+<div class="codetabs">
+<div data-lang="PHP SDK">
+
+{% highlight php %}
+(coming soon)
+{% endhighlight %}
+</div>
+
+<div data-lang="Python SDK">
+
+{% highlight python %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="Ruby SDK">
+
+{% highlight ruby %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="Java SDK">
+
+{% highlight java %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+</div>
+
+
+
+
 
 ## Deploy the Engine as a Service
+
+Make sure the appId defined in the file `engine.json` match your `App ID`:
+
+```
+...
+"datasource": {
+  "appId": 1
+},
+...
+```
 
 To build *MyEngine* and deploy it as a service:
 
@@ -64,8 +154,5 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
-
-Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
-
 
 Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.

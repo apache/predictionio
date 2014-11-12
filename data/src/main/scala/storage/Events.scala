@@ -38,14 +38,13 @@ case class Event(
   val properties: DataMap = DataMap(), // default empty
   val eventTime: DateTime = DateTime.now,
   val tags: Seq[String] = Seq(),
-  val appId: Int,
   val predictionKey: Option[String] = None,
   val creationTime: DateTime = DateTime.now
 ) {
   override def toString() = {
     s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," +
     s"tType=$targetEntityType,tId=$targetEntityId,p=$properties,t=$eventTime," +
-    s"tags=$tags,appId=$appId,pKey=$predictionKey,ct=$creationTime)"
+    s"tags=$tags,pKey=$predictionKey,ct=$creationTime)"
   }
 }
 
@@ -64,7 +63,6 @@ object EventValidation {
 
   def validate(e: Event) = {
 
-    require(e.appId >= 0, s"appId ${e.appId} cannot be negative.")
     require(!e.event.isEmpty, "event must not be empty.")
     require(!e.entityType.isEmpty, "entityType must not be empty string.")
     require(!e.entityId.isEmpty, "entityId must not be empty string.")
@@ -139,7 +137,7 @@ trait Events {
     ()
   }
 
-  def futureInsert(event: Event)(implicit ec: ExecutionContext):
+  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] =
     notImplemented
 
@@ -182,9 +180,9 @@ trait Events {
     Future[Either[StorageError, Unit]] = notImplemented
 
   // following is blocking
-  def insert(event: Event)(implicit ec: ExecutionContext):
+  def insert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Either[StorageError, String] = {
-    Await.result(futureInsert(event), timeout)
+    Await.result(futureInsert(event, appId), timeout)
   }
 
   def get(eventId: String, appId: Int)(implicit ec: ExecutionContext):

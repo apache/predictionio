@@ -54,7 +54,7 @@ class ESEvents(client: Client, index: String) extends Events with Logging {
   def typeName = s"events"
 
   override
-  def futureInsert(event: Event)(implicit ec: ExecutionContext):
+  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     val response = Promise[IndexResponse]
 

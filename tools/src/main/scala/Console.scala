@@ -936,7 +936,7 @@ object Console extends Logging {
             info("Created new app:")
             info(s"        Name: ${ca.app.name}")
             info(s"          ID: ${id}")
-            info(s"Access Token: ${k}")
+            info(s"Access Key: ${k}")
           } getOrElse {
             error(s"Unable to create new app key.")
           }

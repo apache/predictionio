@@ -164,7 +164,6 @@ object HB_0_8_0 {
       properties = properties,
       eventTime = new DateTime(rowKey.millis, eventTimeZone),
       tags = Seq(),
-      appId = rowKey.appId,
       predictionKey = predictionKey,
       creationTime = creationTime
     )

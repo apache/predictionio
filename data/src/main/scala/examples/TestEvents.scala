@@ -58,7 +58,6 @@ object TestEvents {
       } """).asInstanceOf[JObject]),
     eventTime = DateTime.now,
     tags = List("tag1", "tag2"),
-    appId = 4,
     predictionKey = None
   )
 
@@ -79,7 +78,7 @@ object TestEvents {
     println(x)
     println(x.getClass)
 
-    val de = eventConnector.insert(e)
+    val de = eventConnector.insert(e, 4)
     println(de)
     de match {
       case Right(d) => {
@@ -93,11 +92,11 @@ object TestEvents {
       case _ => {println("match error")}
     }
 
-    val i1 = eventConnector.insert(e)
+    val i1 = eventConnector.insert(e, 4)
     println(i1)
-    val i2 = eventConnector.insert(e)
+    val i2 = eventConnector.insert(e, 4)
     println(i2)
-    val i3 = eventConnector.insert(e)
+    val i3 = eventConnector.insert(e, 4)
     println(i3)
 
     // force refresh index for testing, else get may not have result
@@ -134,7 +133,7 @@ object TestEvents {
     val appId = 4
 
     eventConnector.init(appId)
-    val de = eventConnector.insert(e)
+    val de = eventConnector.insert(e, appId)
     println(de)
     de match {
       case Right(d) => {
@@ -148,11 +147,11 @@ object TestEvents {
       case _ => {println("match error")}
     }
 
-    val i1 = eventConnector.insert(e)
+    val i1 = eventConnector.insert(e, appId)
     println(i1)
-    val i2 = eventConnector.insert(e)
+    val i2 = eventConnector.insert(e, appId)
     println(i2)
-    val i3 = eventConnector.insert(e)
+    val i3 = eventConnector.insert(e, appId)
     println(i3)
 
     val all = eventConnector.getByAppId(appId)
@@ -166,7 +165,7 @@ object TestEvents {
     val all2 = eventConnector.getByAppId(appId)
     println(all2)
 
-    (eventConnector.insert(e2) match {
+    (eventConnector.insert(e2, appId) match {
       case Right(id) => eventConnector.get(id, appId)
       case Left(x) => Left(x)
     }) match {
