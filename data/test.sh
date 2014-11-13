@@ -33,21 +33,6 @@ function checkPOST () {
   fi
 }
 
-function checkDELETE () {
-  resp=$( curl -i -s -X DELETE "http://localhost:7070$1" )
-  status=$( echo "$resp" | grep HTTP/1.1 )
-  exp=$2
-  if [[ $status =~ (.*HTTP/1.1 $exp [a-zA-Z]+) ]]; then
-  #echo "POST $1 $2 good $status"
-  echo "[pass] DELETE $1 $status"
-  else
-  echo "[fail] DELETE $1 $2 $resp"
-  echo "expect $exp"
-  exit -1
-  fi
-}
-
-
 # ---------------
 # status
 # ----------------
@@ -356,12 +341,3 @@ checkGET "/events.json?accessKey=$accessKey&startTime=abc" 400
 checkGET "/events.json?accessKey=$accessKey&untilTime=abc" 400
 
 checkGET "/events.json?accessKey=$accessKey&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
-
-
-# -----
-# delete
-# -----
-
-checkDELETE "/events.json?accessKey=$accessKey" 200
-
-checkGET "/events.json?accessKey=$accessKey" 404

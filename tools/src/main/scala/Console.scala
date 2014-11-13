@@ -471,6 +471,16 @@ object Console extends Logging {
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
               } text("Name of the app to be deleted.")
+            ),
+          note(""),
+          cmd("data-delete").
+            text("Delete data of an app").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "data-delete")
+            } children(
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("Name of the app whose data to be deleted.")
             )
         )
       note("")
@@ -577,6 +587,8 @@ object Console extends Logging {
           appList(ca)
         case Seq("app", "delete") =>
           appDelete(ca)
+        case Seq("app", "data-delete") =>
+          appDataDelete(ca)
         case Seq("token", "new") =>
           tokenNew(ca)
         case Seq("token", "list") =>
@@ -963,17 +975,63 @@ object Console extends Logging {
   def appDelete(ca: ConsoleArgs): Unit = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
-      val events = Storage.getEventDataEvents
-      if (events.remove(app.id)) {
-        info(s"Removed Event Store for this app ID: ${app.id}")
-        if (Storage.getMetaDataApps.delete(app.id))
-          info(s"Deleted app ${app.name}.")
-        else
-          error(s"Error deleting app ${app.name}.")
-      } else {
-        error(s"Error removing Event Store for this app.")
+      info(s"The following app will be deleted. Are you sure?")
+      info(s"    App Name: ${app.name}")
+      info(s"      App ID: ${app.id}")
+      info(s" Description: ${app.description}")
+      val choice = readLine("Enter 'YES' to proceed: ")
+      choice match {
+        case "YES" => {
+          val events = Storage.getEventDataEvents
+          if (events.remove(app.id)) {
+            info(s"Removed Event Store for this app ID: ${app.id}")
+            if (Storage.getMetaDataApps.delete(app.id))
+              info(s"Deleted app ${app.name}.")
+            else
+              error(s"Error deleting app ${app.name}.")
+          } else {
+            error(s"Error removing Event Store for this app.")
+          }
+          events.close()
+          info("Done.")
+        }
+        case _ => info("Aborted.")
       }
-      events.close()
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+    }
+  }
+
+  def appDataDelete(ca: ConsoleArgs): Unit = {
+    val apps = Storage.getMetaDataApps
+    apps.getByName(ca.app.name) map { app =>
+      info(s"The data of the following app will be deleted. Are you sure?")
+      info(s"    App Name: ${app.name}")
+      info(s"      App ID: ${app.id}")
+      info(s" Description: ${app.description}")
+      val choice = readLine("Enter 'YES' to proceed: ")
+      choice match {
+        case "YES" => {
+          val events = Storage.getEventDataEvents
+          // remove table
+          if (events.remove(app.id)) {
+            info(s"Removed Event Store for this app ID: ${app.id}")
+          } else {
+            error(s"Error removing Event Store for this app.")
+          }
+          // re-create table
+          val dbInit = events.init(app.id)
+          if (dbInit) {
+            info(s"Initialized Event Store for this app ID: ${app.id}.")
+          } else {
+            error(s"Unable to initialize Event Store for this appId:" +
+              s" ${app.id}.")
+          }
+          events.close()
+          info("Done.")
+        }
+        case _ => info("Aborted.")
+      }
     } getOrElse {
       error(s"App ${ca.app.name} does not exist. Aborting.")
     }

@@ -241,66 +241,12 @@ class EventServiceActor(
             }
           }
         }
-      } ~
-      delete {
-        handleRejections(rejectionHandler) {
-          authenticate(withAccessKey) { appId =>
-            respondWithMediaType(MediaTypes.`application/json`) {
-              complete {
-                log.debug(s"DELETE events of appId=${appId}")
-                val data = eventClient.futureDeleteByAppId(appId).map { r =>
-                  r match {
-                    case Left(StorageError(message)) =>
-                      (StatusCodes.InternalServerError,
-                        Map("message" -> message))
-                    case Right(()) =>
-                      (StatusCodes.OK, None)
-                  }
-                }
-                data
-              }
-            }
-          }
-        }
-      }
-    } ~
-    path("tests.json") {
-      handleRejections(rejectionHandler) {
-        authenticate(withAccessKey) { appId =>
-          respondWithMediaType(MediaTypes.`application/json`) {
-            complete {
-              log.debug(s"DELETE tests of appId=${appId}")
-              val data = TestingAPI.futureSlow().map { r =>
-                r match {
-                  case Left(StorageError(message)) =>
-                    (StatusCodes.InternalServerError, Map("message" -> message))
-                  case Right(()) =>
-                    (StatusCodes.OK, None)
-                }
-              }
-              data
-            }
-          }
-        }
       }
     }
 
   def receive = runRoute(route)
 
 }
-
-
-object TestingAPI {
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def futureSlow(): Future[Either[StorageError, Unit]] = {
-    Future {
-      Thread.sleep(1000 * 60 * 3)
-      Right(())
-    }
-  }
-}
-
 
 /* message */
 case class StartServer(

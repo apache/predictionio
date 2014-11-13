@@ -500,8 +500,8 @@ $ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&e
 
 ### Delete All Events of an app
 
-> Use cautiously!
+> Please use the following CLI command.
 
 ```
-$ curl -i -X DELETE http://localhost:7070/events.json?accessKey=<your_accessKey>
+$ $PIO_HOME/bin/pio app data-delete <your_app_name>
 ```
