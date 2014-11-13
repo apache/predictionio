@@ -1,46 +1,36 @@
 ---
 layout: docs
-title: Customizing Serving Layer
+title: Customizing Serving Component
 ---
 
-This tutorial teaches how to implement custom filtering logic.
-It is based [Movie Recommendation App with ItemRec Engine](../tutorials/engines/itemrec/movielens.html), we demonstrate how to add a custom filtering logic to the ItemRecommendation Engine.
+# Customizing Serving Component ( Recommendation )
+
+Serving component is where post-processing actions occurs. For exmaple, if you are recommending products to users, you may want to remove items that are not currently in stock from the recommended list. 
+
+This section demonstrates how to add a custom filtering logic to exclude a list of blacklisted movies from the [Movie Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the Quckstart guide first. 
 
 Complete code example can be found in
 `examples/scala-local-movielens-filtering`.
-If you are too lazy to go through this tutorial but want to use this customized code, you can skip to the last section.
 
-### Task
+If you simply want to use this customized code, you can skip to the last section.
 
-The ItemRec Engine recommends items to user.
-Some items may run out of stock temporarily, we would like to remove them from the recommendation.
+### The Serving Component 
+Recall [the DASE Architecture](/dase.html), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving components. When a Query comes in, it is passed to the Algorithm component for making Predictions.
 
-# Customizing the ItemRec Engine
-
-Recall [the DASE Architecture](../enginebuilders/), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving Layer.
-When a Query comes in, it is passed to the Algorithm components for making Predictions (notice that we use plural as the infrastructure allows multiple algorithms to run concurrently), then the Serving component consolidates these
-Predictions into one, and returns it.
-
-The ItemRec Engine's component can be found it its static factory class
-`io.prediction.engines.itemrec.ItemRecEngine`. It looks like the following:
+The Engine's serving component can be found in `/src/main/scala/Serving.scala` in the MyEngine directory. By default, it looks like the following:
 
 ```scala
-object ItemRecEngine extends IEngineFactory {
-  def apply() = {
-    new Engine(
-      classOf[EventsDataSource],
-      classOf[ItemRecPreparator],
-      Map("ncMahoutItemBased" -> classOf[NCItemBasedAlgorithm]),
-      classOf[ItemRecServing]
-    )
+class Serving
+  extends LServing[EmptyServingParams, Query, PredictedResult] {
+
+  override
+  def serve(query: Query,
+    predictions: Seq[PredictedResult]): PredictedResult = {
+    predictions.head
   }
 }
 ```
-
-To add filtering logic to this engine,
-we will implement a new Serving component, which removes temporarily disabled
-items from the Prediction made by Algorithms.
-For simplicity, we assume the engine only has one algorithm, the serving logic doesn't need to handle consolidation.
+we will customize the Serving component to remove temporarily disabled items from the Prediction made by Algorithms.
 
 ## The Serving Interface
 PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Serving component has to use
@@ -65,26 +55,6 @@ Then, we will implement a new engine factory using this new Serving component.
 # Step-by-Step
 
 Below are the step-by-step instruction of implementing a customize logic.
-
-
-## Create a new engine project and copy builtin engine settings.
-
-You can create new engine project in any directory.
-
-```bash
-# Create a new engine project
-$ $PIO_HOME/bin/pio new scala-local-movielens-filtering
-# Copy ItemRec Engine default settings to the same directory
-$ $PIO_HOME/bin/pio instance --directory-name scala-local-movielens-filtering \
-    io.prediction.engines.itemrec
-$ cd scala-local-movielens-filtering
-```
-
-Delete unnecessary template files.
-
-```bash
-$ rm src/main/scala/Engine.scala
-```
 
 ## Implement the new filtering component
 
@@ -178,31 +148,8 @@ The file should looks like the following:
 }
 ```
 
-### Register-train-deploy
 
-#### Register the new engine
-
-You need to run the following command every time you update the code.
-
-```bash
-$ $PIO_HOME/bin/pio register
-...
-2014-10-16 22:41:32,608 INFO  tools.RegisterEngine$ - Registering engine scala-local-movielens-filtering 0.0.1-SNAPSHOT
-```
-
-If the command ran successfully, you will see the log message saying "Registering engine...".
-
-#### Train the engine instance
-
-```bash
-$ $PIO_HOME/bin/pio train -- --master spark://`hostname`:7077
-...
-2014-10-16 22:44:11,006 INFO  spark.SparkContext - Job finished: collect at Workflow.scala:698, took 1.381009 s
-2014-10-16 22:44:11,343 INFO  workflow.CoreWorkflow$ - Saved engine instance with ID: FqsPp84mS6itmn0YoNFBUg
-
-```
-
-#### Deploy the engine instance
+#### Deploy the engine 
 
 ```bash
 $PIO_HOME/bin/pio deploy -- --master spark://`hostname`:7077
