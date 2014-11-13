@@ -29,7 +29,7 @@ drwxr-xr-x 17 yipjustin yipjustin      4096 Nov 12 00:09 ..
 PredictionIO/assembly$ rm pio-assembly-0.8.1-SNAPSHOT.jar
 ```
 
-### Q: How to increase event server JVM?
+### Q: How to increase event server JVM memory?
 ```
 $ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
 ```
