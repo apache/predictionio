@@ -241,27 +241,6 @@ class EventServiceActor(
             }
           }
         }
-      } ~
-      delete {
-        handleRejections(rejectionHandler) {
-          authenticate(withAccessKey) { appId =>
-            respondWithMediaType(MediaTypes.`application/json`) {
-              complete {
-                log.debug(s"DELETE events of appId=${appId}")
-                val data = eventClient.futureDeleteByAppId(appId).map { r =>
-                  r match {
-                    case Left(StorageError(message)) =>
-                      (StatusCodes.InternalServerError,
-                        Map("message" -> message))
-                    case Right(()) =>
-                      (StatusCodes.OK, None)
-                  }
-                }
-                data
-              }
-            }
-          }
-        }
       }
     } ~
     path("tests.json") {
