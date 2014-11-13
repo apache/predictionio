@@ -270,10 +270,12 @@ will be passed to `def serve` as a sequence, i.e. `Seq[PredictedResult]`.
 >
 > Since only one ALSAlgorithm is implemented by default, this Sequence contains one element.
 
-In this case, `def serve` simply returns the predicted result of the first, and the only, algorithm, i.e. `predictions.head`.
+
+Now you have a good understanding of the DASE model, we will show you an example of customizing the Data Preparator to exclude certain items from your training set. 
+
+#### [Next: Customizing Data Preparator](customize-data-prep.html)
 
 
-Congratulations! You have just learned how to customize and build a production-ready engine. Have fun!
 
 <!-- TODO
 > HOW-TO:

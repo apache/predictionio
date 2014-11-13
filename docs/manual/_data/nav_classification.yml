@@ -3,10 +3,10 @@
     
 - title: "DASE Components Explained"
   href: "/classification/dase.html"
-
-- title: "Customizing Data Component"
-  href: "/classification/customize_data.html"
-  
-- title: "Customizing Serving component"
-  href: "/classification/customize_serving.html"
-  
+#
+# - title: "Customizing Data Component"
+#   href: "/classification/customize_data.html"
+#
+# - title: "Customizing Serving component"
+#   href: "/classification/customize_serving.html"
+#

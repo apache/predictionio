@@ -4,8 +4,5 @@
 - title: "Installing PredictionIO"
   href: "/install/"
 
-- title: "Engines "
+- title: "Engine - A Closer Look "
   href: "/start/engines.html"
-
-- title: "Glossary"
-  href: "/start/glossary.html"
