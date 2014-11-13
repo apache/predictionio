@@ -4,10 +4,10 @@
 - title: "DASE Components Explained"
   href: "/recommendation/dase.html"
 
-- title: "Customizing Data Component"
-  href: "/recommendation/customize_data.html"
+- title: "Customizing Data Preparator"
+  href: "/recommendation/customize-data-prep.html"
   
-- title: "Customizing Serving component"
-  href: "/recommendation/customize_serving.html"
+- title: "Customizing Serving"
+  href: "/recommendation/customize-serving.html"
   
   

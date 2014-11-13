@@ -1,40 +1,42 @@
 ---
 layout: docs
-title: Customizing Serving Component
+title: Customizing Data Preparator
 ---
 
-# Customizing Serving Component ( Recommendation )
+# Customizing Data Preparator ( Recommendation )
 
-Serving component is where post-processing actions occurs. For exmaple, if you are recommending products to users, you may want to remove items that are not currently in stock from the recommended list. 
+Data Source is here pre-processing actions occurs. For exmaple, super popuar items such as Harry Potter will show up in every predicted result. To make the personalized recommendation more effective, you may want to remove such items from the training data set. 
 
-This section demonstrates how to add a custom filtering logic to exclude a list of blacklisted movies from the [Movie Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the Quckstart guide first. 
+This section demonstrates how to add a filtering logic to exclude a list of super popular movies from the [Movie Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the [Quckstart Guide](/quickstart.html) first. 
 
 Complete code example can be found in
 `examples/scala-local-movielens-filtering`.
 
 If you simply want to use this customized code, you can skip to the last section.
 
-### The Serving Component 
+## The Data Preparator Component 
 Recall [the DASE Architecture](/dase.html), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving components. When a Query comes in, it is passed to the Algorithm component for making Predictions.
 
-The Engine's serving component can be found in `/src/main/scala/Serving.scala` in the MyEngine directory. By default, it looks like the following:
+The Data Preparator component can be found in `/src/main/scala/Preparator.scala` in the MyEngine directory. By default, it looks like the following:
 
 ```scala
-class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+class Preparator
+  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
 
-  override
-  def serve(query: Query,
-    predictions: Seq[PredictedResult]): PredictedResult = {
-    predictions.head
+  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
+    new PreparedData(ratings = trainingData.ratings)
   }
 }
-```
-we will customize the Serving component to remove temporarily disabled items from the Prediction made by Algorithms.
 
-## The Serving Interface
-PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Serving component has to use
-the Query and Prediction class defined by the original engine. The `serve` method performs the filting logic.
+class PreparedData(
+  val ratings: RDD[Rating]
+) extends Serializable
+```
+
+## The Preparator Interface
+//everything below needs to be updated
+
+PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Serving component has to use the Query and Prediction class defined by the original engine. The `serve` method performs the filting logic.
 
 ```scala
 class TempFilter(val params: TempFilterParams)
