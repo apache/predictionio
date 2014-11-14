@@ -23,15 +23,19 @@ user — action — item
 
 where users and items have properties associated with them. 
 
-For example, for personalized product recommendation, the events would be
+For example, for personalized book recommendation, some events to collect would be
+
 - User 1 purchased product X
 - User 2 viewed product Y 
 - User 1 added product Z in the cart 
 
+User properties can be gender, age, location...etc. Item properties can be genre, author, and other attribuates that may be related to the the user's preference.  
 
 Data collection varies quite a bit based on your application and your prediction goal. We are happy to [assist you with your questions](mailto:support@preidiction.io). 
 
 
 ### Classification Engine
+
+
 
 <!-- ## Bulk import data -->
