@@ -47,7 +47,7 @@ case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
   build: BuildArgs = BuildArgs(),
   app: AppArgs = AppArgs(),
-  token: TokenArgs = TokenArgs(),
+  accessKey: AccessKeyArgs = AccessKeyArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
@@ -86,8 +86,8 @@ case class AppArgs(
   name: String = "",
   description: Option[String] = None)
 
-case class TokenArgs(
-  token: String = "",
+case class AccessKeyArgs(
+  accessKey: String = "",
   events: Seq[String] = Seq())
 
 case class AppkeyArgs(
@@ -485,25 +485,25 @@ object Console extends Logging {
             )
         )
       note("")
-      cmd("token").
-        text("Manage app access tokens.\n").
+      cmd("accesskey").
+        text("Manage app access keys.\n").
         action { (_, c) =>
-          c.copy(commands = c.commands :+ "token")
+          c.copy(commands = c.commands :+ "accesskey")
         } children(
           cmd("new").
-            text("Add allowed event(s) to an access token.").
+            text("Add allowed event(s) to an access key.").
             action { (_, c) =>
               c.copy(commands = c.commands :+ "new")
             } children(
               arg[String]("<app name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
-              } text("App to be associated with the new token."),
+              } text("App to be associated with the new access key."),
               arg[String]("<event>...") unbounded() action { (x, c) =>
-                c.copy(token = c.token.copy(events = c.token.events :+ x))
-              } text("Allowed event name(s) to be added to the token.")
+                c.copy(accessKey = c.accessKey.copy(events = c.accessKey.events :+ x))
+              } text("Allowed event name(s) to be added to the access key.")
             ),
           cmd("list").
-            text("List all access tokens of an app.").
+            text("List all access keys of an app.").
             action { (_, c) =>
               c.copy(commands = c.commands :+ "list")
             } children(
@@ -513,13 +513,13 @@ object Console extends Logging {
             ),
           note(""),
           cmd("delete").
-            text("Delete an access token.").
+            text("Delete an access key.").
             action { (_, c) =>
               c.copy(commands = c.commands :+ "delete")
             } children(
-              arg[String]("<access token>") action { (x, c) =>
-                c.copy(token = c.token.copy(token = x))
-              } text("The access token to be deleted.")
+              arg[String]("<access key>") action { (x, c) =>
+                c.copy(accessKey = c.accessKey.copy(accessKey = x))
+              } text("The access key to be deleted.")
             )
         )
     }
@@ -590,12 +590,12 @@ object Console extends Logging {
           appDelete(ca)
         case Seq("app", "data-delete") =>
           appDataDelete(ca)
-        case Seq("token", "new") =>
-          tokenNew(ca)
-        case Seq("token", "list") =>
-          tokenList(ca)
-        case Seq("token", "delete") =>
-          tokenDelete(ca)
+        case Seq("accesskey", "new") =>
+          accessKeyNew(ca)
+        case Seq("accesskey", "list") =>
+          accessKeyList(ca)
+        case Seq("accesskey", "delete") =>
+          accessKeyDelete(ca)
         case _ =>
           error(
             s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
@@ -1033,25 +1033,25 @@ object Console extends Logging {
     }
   }
 
-  def tokenNew(ca: ConsoleArgs): Unit = {
+  def accessKeyNew(ca: ConsoleArgs): Unit = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
       val appkeys = Storage.getMetaDataAppkeys
       val appkey = appkeys.insert(Appkey(
         appkey = "",
         appid = app.id,
-        events = ca.token.events))
+        events = ca.accessKey.events))
       appkey map { k =>
-        info(s"Created new access token: ${k}")
+        info(s"Created new access key: ${k}")
       } getOrElse {
-        error(s"Unable to create new access token.")
+        error(s"Unable to create new access key.")
       }
     } getOrElse {
       error(s"App ${ca.app.name} does not exist. Aborting.")
     }
   }
 
-  def tokenList(ca: ConsoleArgs): Unit = {
+  def accessKeyList(ca: ConsoleArgs): Unit = {
     val keys =
       if (ca.app.name == "")
         Storage.getMetaDataAppkeys.getAll
@@ -1064,20 +1064,20 @@ object Console extends Logging {
           sys.exit(1)
         }
       }
-    val title = "Access Token(s)"
+    val title = "Access Key(s)"
     info(f"$title%64s | App ID | Allowed Event(s)")
     keys foreach { k =>
       val events = if (k.events.size > 0) k.events.mkString(",") else "(all)"
       info(f"${k.appkey}%s | ${k.appid}%6d | ${events}%s")
     }
-    info(s"Finished listing ${keys.size} access token(s).")
+    info(s"Finished listing ${keys.size} access key(s).")
   }
 
-  def tokenDelete(ca: ConsoleArgs): Unit = {
-    if (Storage.getMetaDataAppkeys.delete(ca.token.token))
-      info(s"Deleted access token ${ca.token.token}.")
+  def accessKeyDelete(ca: ConsoleArgs): Unit = {
+    if (Storage.getMetaDataAppkeys.delete(ca.accessKey.accessKey))
+      info(s"Deleted access key ${ca.accessKey.accessKey}.")
     else
-      error(s"Error deleting access token ${ca.token.token}.")
+      error(s"Error deleting access key ${ca.accessKey.accessKey}.")
   }
 
   def status(ca: ConsoleArgs): Unit = {
