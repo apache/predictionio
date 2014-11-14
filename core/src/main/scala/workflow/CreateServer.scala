@@ -237,7 +237,7 @@ object CreateServer extends Logging {
           if (m.isInstanceOf[PersistentModelManifest]) {
             info("Custom-persisted model detected for algorithm " +
               a.getClass.getName)
-            WorkflowUtils.getPersistentModel(
+            SparkWorkflowUtils.getPersistentModel(
               m.asInstanceOf[PersistentModelManifest],
               engineInstance.id,
               p,

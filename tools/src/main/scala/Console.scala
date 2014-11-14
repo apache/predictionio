@@ -26,6 +26,7 @@ import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
 import io.prediction.data.api.EventServerConfig
+import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
@@ -867,12 +868,7 @@ object Console extends Logging {
   def run(ca: ConsoleArgs): Unit = {
     compile(ca)
 
-    val hbaseConf = sys.env.get("HBASE_CONF_DIR") map { x =>
-      val p = Seq(x, "hbase-site.xml").mkString(File.separator)
-      if (new File(p).exists) Seq(p) else Seq()
-    } getOrElse Seq()
-
-    val extraFiles = Seq(hbaseConf).flatten
+    val extraFiles = WorkflowUtils.hadoopEcoConfFiles
 
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }

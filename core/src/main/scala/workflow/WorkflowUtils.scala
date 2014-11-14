@@ -33,14 +33,14 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 
+import scala.io.Source
 import scala.language.existentials
 import scala.reflect._
 import scala.reflect.runtime.universe
 
-import scala.io.Source
+import java.io.File
 import java.io.FileNotFoundException
 import java.util.concurrent.Callable
-import java.lang.Thread
 
 /** Collection of reusable workflow related utilities. */
 object WorkflowUtils extends Logging {
@@ -71,40 +71,6 @@ object WorkflowUtils extends Logging {
           EngineLanguage.Java,
           Class.forName(engine).newInstance.asInstanceOf[IEngineFactory]()
         )
-      }
-    }
-  }
-
-  def getPersistentModel[AP <: Params, M](
-      pmm: PersistentModelManifest,
-      runId: String,
-      params: AP,
-      sc: Option[SparkContext],
-      cl: ClassLoader): M = {
-    val runtimeMirror = universe.runtimeMirror(cl)
-    val pmmModule = runtimeMirror.staticModule(pmm.className)
-    val pmmObject = runtimeMirror.reflectModule(pmmModule)
-    try {
-      pmmObject.instance.asInstanceOf[IPersistentModelLoader[AP, M]](
-        runId,
-        params,
-        sc)
-    } catch {
-      case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
-        val loadMethod = Class.forName(pmm.className).getMethod(
-          "load",
-          classOf[String],
-          classOf[Params],
-          classOf[SparkContext])
-        loadMethod.invoke(null, runId, params, sc.getOrElse(null)).asInstanceOf[M]
-      } catch {
-        case e: ClassNotFoundException =>
-          error(s"Model class ${pmm.className} cannot be found.")
-          throw e
-        case e: NoSuchMethodException =>
-          error(
-            "The load(String, Params, SparkContext) method cannot be found.")
-          throw e
       }
     }
   }
@@ -191,6 +157,62 @@ object WorkflowUtils extends Logging {
       case null => "null"
     }
     s
+  }
+
+  /** Detect available Hadoop ecosystem configuration files to be submitted as
+    * extras to Apache Spark. This makes sure all executors receive the same
+    * configuration.
+    */
+  def hadoopEcoConfFiles: Seq[String] = {
+    val ecoFiles = Map(
+      "HADOOP_CONF_DIR" -> "core-site.xml",
+      "HBASE_CONF_DIR" -> "hbase-site.xml")
+
+    ecoFiles.keys.toSeq.map { k: String =>
+      sys.env.get(k) map { x =>
+        val p = Seq(x, ecoFiles(k)).mkString(File.separator)
+        if (new File(p).exists) Seq(p) else Seq[String]()
+      } getOrElse Seq[String]()
+    }.flatten
+  }
+}
+
+/** Collection of reusable workflow related utilities that touch on Apache
+  * Spark. They are separated to avoid compilation problems with certain code.
+  */
+object SparkWorkflowUtils extends Logging {
+  def getPersistentModel[AP <: Params, M](
+      pmm: PersistentModelManifest,
+      runId: String,
+      params: AP,
+      sc: Option[SparkContext],
+      cl: ClassLoader): M = {
+    val runtimeMirror = universe.runtimeMirror(cl)
+    val pmmModule = runtimeMirror.staticModule(pmm.className)
+    val pmmObject = runtimeMirror.reflectModule(pmmModule)
+    try {
+      pmmObject.instance.asInstanceOf[IPersistentModelLoader[AP, M]](
+        runId,
+        params,
+        sc)
+    } catch {
+      case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
+        val loadMethod = Class.forName(pmm.className).getMethod(
+          "load",
+          classOf[String],
+          classOf[Params],
+          classOf[SparkContext])
+        loadMethod.invoke(null, runId, params, sc.getOrElse(null)).asInstanceOf[M]
+      } catch {
+        case e: ClassNotFoundException =>
+          error(s"Model class ${pmm.className} cannot be found.")
+          throw e
+        case e: NoSuchMethodException =>
+          error(
+            "The load(String, Params, SparkContext) method cannot be found.")
+          throw e
+      }
+    }
   }
 }
 

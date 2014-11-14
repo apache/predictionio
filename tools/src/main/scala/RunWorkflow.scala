@@ -16,6 +16,7 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
+import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
 import org.apache.hadoop.conf.Configuration
@@ -50,6 +51,8 @@ object RunWorkflow extends Logging {
     val hadoopConf = new Configuration
     val hdfs = FileSystem.get(hadoopConf)
 
+    val extraFiles = WorkflowUtils.hadoopEcoConfFiles
+
     val workMode = ca.metricsClass.map(_ => "Evaluation").getOrElse("Training")
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
@@ -61,7 +64,9 @@ object RunWorkflow extends Logging {
         s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.batch})",
         "--jars",
         (em.files ++ Console.builtinEngines(
-          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","),
+          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(",")) ++
+      (if (extraFiles.size > 0) Seq("--files") ++ extraFiles else Seq()) ++
+      Seq(
         core.getCanonicalPath,
         "--env",
         pioEnvVars,
