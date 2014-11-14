@@ -677,6 +677,14 @@ object Console extends Logging {
 
   def build(ca: ConsoleArgs): Unit = {
     compile(ca)
+    info("Looking for an engine...")
+    val jarFiles = jarFilesForScala
+    if (jarFiles.size == 0) {
+      error("No engine found. Your build might have failed. Aborting.")
+      sys.exit(1)
+    }
+    jarFiles foreach { f => info(s"Found ${f.getName}")}
+    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
     info("Your engine is ready for training.")
   }
 
@@ -705,14 +713,6 @@ object Console extends Logging {
   }
 
   def train(ca: ConsoleArgs): Unit = {
-    info("Looking for an engine...")
-    val jarFiles = jarFilesForScala
-    if (jarFiles.size == 0) {
-      error("No engine found. Your build might have failed. Aborting.")
-      sys.exit(1)
-    }
-    jarFiles foreach { f => info(s"Found ${f.getName}")}
-    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,
