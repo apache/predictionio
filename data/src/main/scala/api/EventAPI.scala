@@ -15,14 +15,14 @@
 
 package io.prediction.data.api
 
-import io.prediction.data.storage.Events
+import io.prediction.data.Utils
+import io.prediction.data.storage.AccessKey
+import io.prediction.data.storage.AccessKeys
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.Events
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
-import io.prediction.data.storage.EventJson4sSupport
-import io.prediction.data.Utils
-import io.prediction.data.storage.Appkeys
-import io.prediction.data.storage.Appkey
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -31,28 +31,29 @@ import akka.io.IO
 import akka.event.Logging
 import akka.pattern.ask
 import akka.util.Timeout
-import java.util.concurrent.TimeUnit
 
 import org.json4s.DefaultFormats
 //import org.json4s.ext.JodaTimeSerializers
 
-import spray.http.StatusCodes
-import spray.http.MediaTypes
+import spray.can.Http
 import spray.http.HttpCharsets
 import spray.http.HttpEntity
 import spray.http.HttpResponse
+import spray.http.MediaTypes
+import spray.http.StatusCodes
 import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling.Unmarshaller
-import spray.can.Http
 import spray.routing._
 import spray.routing.authentication.Authentication
 import spray.routing.Directives._
 
 import scala.concurrent.Future
 
+import java.util.concurrent.TimeUnit
+
 class EventServiceActor(
   val eventClient: Events,
-  val appkeyClient: Appkeys) extends HttpServiceActor {
+  val accessKeysClient: AccessKeys) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
@@ -90,8 +91,8 @@ class EventServiceActor(
       val accessKeyOpt = ctx.request.uri.query.get("accessKey")
       Future {
         accessKeyOpt.map { accessKey =>
-          val appkeyOpt = appkeyClient.get(accessKey)
-          appkeyOpt match {
+          val accessKeyOpt = accessKeysClient.get(accessKey)
+          accessKeyOpt match {
             case Some(k) => Right(k.appid)
             case None => Left(AuthenticationFailedRejection(
               AuthenticationFailedRejection.CredentialsRejected, List()))
@@ -256,10 +257,10 @@ case class StartServer(
 
 class EventServerActor(
   val eventClient: Events,
-  val appkeyClient: Appkeys) extends Actor {
+  val accessKeysClient: AccessKeys) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[EventServiceActor], eventClient, appkeyClient),
+    Props(classOf[EventServiceActor], eventClient, accessKeysClient),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -284,10 +285,10 @@ object EventServer {
     implicit val system = ActorSystem("EventServerSystem")
 
     val eventClient = Storage.getEventDataEvents
-    val appkeyClient = Storage.getMetaDataAppkeys
+    val accessKeysClient = Storage.getMetaDataAccessKeys
 
     val serverActor = system.actorOf(
-      Props(classOf[EventServerActor], eventClient, appkeyClient),
+      Props(classOf[EventServerActor], eventClient, accessKeysClient),
       "EventServerActor")
     serverActor ! StartServer(config.ip, config.port)
     system.awaitTermination

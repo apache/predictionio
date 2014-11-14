@@ -18,7 +18,7 @@ package io.prediction.tools
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
 import io.prediction.data.storage.App
-import io.prediction.data.storage.Appkey
+import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
@@ -88,11 +88,6 @@ case class AppArgs(
 
 case class AccessKeyArgs(
   accessKey: String = "",
-  events: Seq[String] = Seq())
-
-case class AppkeyArgs(
-  appkey: String = "",
-  appid: Int = 0,
   events: Seq[String] = Seq())
 
 case class EventServerArgs(
@@ -935,21 +930,21 @@ object Console extends Logging {
         val dbInit = events.init(id)
         if (dbInit) {
           info(s"Initialized Event Store for this app ID: ${id}.")
-          val appkeys = Storage.getMetaDataAppkeys
-          val appkey = appkeys.insert(Appkey(
-            appkey = "",
+          val accessKeys = Storage.getMetaDataAccessKeys
+          val accessKey = accessKeys.insert(AccessKey(
+            key = "",
             appid = id,
             events = Seq()))
-          appkey map { k =>
+          accessKey map { k =>
             info("Created new app:")
-            info(s"        Name: ${ca.app.name}")
-            info(s"          ID: ${id}")
+            info(s"      Name: ${ca.app.name}")
+            info(s"        ID: ${id}")
             info(s"Access Key: ${k}")
           } getOrElse {
-            error(s"Unable to create new app key.")
+            error(s"Unable to create new access key.")
           }
         } else {
-          error(s"Unable to initialize Event Store for this appId: ${id}.")
+          error(s"Unable to initialize Event Store for this app ID: ${id}.")
         }
         events.close()
       } getOrElse {
@@ -1036,12 +1031,12 @@ object Console extends Logging {
   def accessKeyNew(ca: ConsoleArgs): Unit = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
-      val appkeys = Storage.getMetaDataAppkeys
-      val appkey = appkeys.insert(Appkey(
-        appkey = "",
+      val accessKeys = Storage.getMetaDataAccessKeys
+      val accessKey = accessKeys.insert(AccessKey(
+        key = "",
         appid = app.id,
         events = ca.accessKey.events))
-      appkey map { k =>
+      accessKey map { k =>
         info(s"Created new access key: ${k}")
       } getOrElse {
         error(s"Unable to create new access key.")
@@ -1054,11 +1049,11 @@ object Console extends Logging {
   def accessKeyList(ca: ConsoleArgs): Unit = {
     val keys =
       if (ca.app.name == "")
-        Storage.getMetaDataAppkeys.getAll
+        Storage.getMetaDataAccessKeys.getAll
       else {
         val apps = Storage.getMetaDataApps
         apps.getByName(ca.app.name) map { app =>
-          Storage.getMetaDataAppkeys.getByAppid(app.id)
+          Storage.getMetaDataAccessKeys.getByAppid(app.id)
         } getOrElse {
           error(s"App ${ca.app.name} does not exist. Aborting.")
           sys.exit(1)
@@ -1068,13 +1063,13 @@ object Console extends Logging {
     info(f"$title%64s | App ID | Allowed Event(s)")
     keys foreach { k =>
       val events = if (k.events.size > 0) k.events.mkString(",") else "(all)"
-      info(f"${k.appkey}%s | ${k.appid}%6d | ${events}%s")
+      info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
     }
     info(s"Finished listing ${keys.size} access key(s).")
   }
 
   def accessKeyDelete(ca: ConsoleArgs): Unit = {
-    if (Storage.getMetaDataAppkeys.delete(ca.accessKey.accessKey))
+    if (Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey))
       info(s"Deleted access key ${ca.accessKey.accessKey}.")
     else
       error(s"Error deleting access key ${ca.accessKey.accessKey}.")

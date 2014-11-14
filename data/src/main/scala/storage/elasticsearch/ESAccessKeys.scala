@@ -36,26 +36,27 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
 
-import io.prediction.data.storage.{ Appkey, Appkeys, Utils }
+import io.prediction.data.storage.{ AccessKey, AccessKeys, Utils }
 
-/** Elasticsearch implementation of Items. */
-class ESAppkeys(client: Client, index: String) extends Appkeys with Logging {
+/** Elasticsearch implementation of AccessKeys. */
+class ESAccessKeys(client: Client, index: String)
+    extends AccessKeys with Logging {
   implicit val formats = DefaultFormats.lossless
-  private val estype = "appkeys"
+  private val estype = "accesskeys"
 
-  def insert(appkey: Appkey) = {
+  def insert(accessKey: AccessKey) = {
     val generatedkey = Random.alphanumeric.take(64).mkString
-    val realappkey = appkey.copy(appkey = generatedkey)
-    if (update(realappkey)) Some(generatedkey) else None
+    val realaccesskey = accessKey.copy(key = generatedkey)
+    if (update(realaccesskey)) Some(generatedkey) else None
   }
 
-  def get(appkey: String) = {
+  def get(key: String) = {
     try {
       val response = client.prepareGet(
         index,
         estype,
-        appkey).get()
-      Some(read[Appkey](response.getSourceAsString))
+        key).get()
+      Some(read[AccessKey](response.getSourceAsString))
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -67,11 +68,11 @@ class ESAppkeys(client: Client, index: String) extends Appkeys with Logging {
   def getAll() = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype)
-      ESUtils.getAll[Appkey](client, builder)
+      ESUtils.getAll[AccessKey](client, builder)
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
-        Seq[Appkey]()
+        Seq[AccessKey]()
     }
   }
 
@@ -79,18 +80,18 @@ class ESAppkeys(client: Client, index: String) extends Appkeys with Logging {
     try {
       val builder = client.prepareSearch(index).setTypes(estype).
         setPostFilter(termFilter("appid", appid))
-      ESUtils.getAll[Appkey](client, builder)
+      ESUtils.getAll[AccessKey](client, builder)
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
-        Seq[Appkey]()
+        Seq[AccessKey]()
     }
   }
 
-  def update(appkey: Appkey) = {
+  def update(accessKey: AccessKey) = {
     try {
-      val response = client.prepareIndex(index, estype, appkey.appkey).
-        setSource(write(appkey)).get()
+      val response = client.prepareIndex(index, estype, accessKey.key).
+        setSource(write(accessKey)).get()
       true
     } catch {
       case e: ElasticsearchException =>
@@ -99,9 +100,9 @@ class ESAppkeys(client: Client, index: String) extends Appkeys with Logging {
     }
   }
 
-  def delete(appkey: String) = {
+  def delete(key: String) = {
     try {
-      client.prepareDelete(index, estype, appkey).get
+      client.prepareDelete(index, estype, key).get
       true
     } catch {
       case e: ElasticsearchException =>
