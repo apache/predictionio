@@ -12,8 +12,8 @@ PredictionIO's SDKs.
 
 > All PredictionIO-compliant engines support the data store (i.e. HBase) and
 data format used by the Event Server.
-> You may also [modify DataSource]({{site.baseurl}}/cookbook/existingdatasource.html) of an
-engine to read data directly from your existing data store.
+<!-- > You may also [modify DataSource]({{site.baseurl}}/cookbook/existingdatasource.html) of an
+engine to read data directly from your existing data store. -->
 
 
 ## Launching the Event Server
