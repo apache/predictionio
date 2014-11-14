@@ -125,4 +125,4 @@ a minute before all the initialization is done (and then you can run eventserver
 
 Now you have installed everything you need to run PredictionIO!
 
-Next: Reading [Quick Start]({{site.baseurl}}/tutorials/engines/quickstart.html)
+#### [Next: Recommendation Engine Quick Start](../recommendation/quickstart.html)

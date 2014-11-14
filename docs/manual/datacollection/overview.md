@@ -5,7 +5,10 @@ title: Event Server Overview
 
 # Overview
 
-PredictionIO offers an EventServer that collects data in an event-based style via RESTful APIs. The EventServer uses HBASE as data store. 
+PredictionIO offers an EventServer that collects data in an event-based style via RESTful APIs. By default, EventServer uses HBase as data store. 
+
+![EventServer Highlight]({{site.baseurl}}/images/eventserver-overview.png)
+
 
 ## What data should I collect? 
 The EventServer can collect and store arbitrary events. At the beginning of your project, it is recommended to collect as much data as you can. Later on, you can exclude data that are not relevant to your predictive model in Data Preparator.
@@ -29,6 +32,6 @@ For example, for personalized product recommendation, the events would be
 Data collection varies quite a bit based on your application and your prediction goal. We are happy to [assist you with your questions](mailto:support@preidiction.io). 
 
 
-
+### Classification Engine
 
 <!-- ## Bulk import data -->

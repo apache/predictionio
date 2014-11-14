@@ -52,3 +52,5 @@ You may also use one of the community-contributed packages to install Prediction
 
 For production environment setup, please refer to [Production
 Deployment]({{site.baseurl}}/production/deploy.html) guide.
+
+#### [Next: Recommendation Engine Quick Start](../recommendation/quickstart.html)
