@@ -38,13 +38,13 @@ case class Event(
   val properties: DataMap = DataMap(), // default empty
   val eventTime: DateTime = DateTime.now,
   val tags: Seq[String] = Seq(),
-  val predictionKey: Option[String] = None,
+  val prId: Option[String] = None,
   val creationTime: DateTime = DateTime.now
 ) {
   override def toString() = {
     s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," +
     s"tType=$targetEntityType,tId=$targetEntityId,p=$properties,t=$eventTime," +
-    s"tags=$tags,pKey=$predictionKey,ct=$creationTime)"
+    s"tags=$tags,pKey=$prId,ct=$creationTime)"
   }
 }
 

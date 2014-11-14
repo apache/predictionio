@@ -34,7 +34,7 @@ object SerializerTest {
     val time: DateTime,
     val tags: Seq[String],
     val appId: Int,
-    val predictionKey: Option[String]
+    val prId: Option[String]
   )
 
   case class A(a: Int, b: String, c: Option[Boolean])
@@ -50,7 +50,7 @@ object SerializerTest {
         val time = DateTime.now // TODO (jv \ "time").extract[]
         val tags = (jv \ "tags").extract[Seq[String]]
         val appId = (jv \ "appId").extract[Int]
-        val predictionKey = (jv \ "predictionKey").extract[Option[String]]
+        val prId = (jv \ "prId").extract[Option[String]]
         Event(
           entityId = entityId,
           targetEntityId = targetEntityId,
@@ -59,7 +59,7 @@ object SerializerTest {
           time = time,
           tags = tags,
           appId = appId,
-          predictionKey = predictionKey)
+          prId = prId)
       }
       /*case JObject(
         JField("a", JInt(a)) ::
@@ -77,8 +77,8 @@ object SerializerTest {
           JField("time", JString("TODO")) ::
           JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
           JField("appId", JInt(d.appId)) ::
-          JField("predictionKey",
-            d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+          JField("prId",
+            d.prId.map(JString(_)).getOrElse(JNothing)) ::
           Nil)
     }
   ))
@@ -106,7 +106,7 @@ object SerializerTest {
       "time" : "2004-12-13T21:39:45.618-08:00",
       "tags" : ["tag1", "tag2"],
       "appId" : 4,
-      "predictionKey" : "my_prediction_key"
+      "prId" : "my_predicted_result_id"
     }""")
     println(w)
     println(write(w))

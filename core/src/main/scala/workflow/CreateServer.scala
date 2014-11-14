@@ -21,7 +21,7 @@ import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.ParamsWithAppId
-import io.prediction.controller.WithPredictionKey
+import io.prediction.controller.WithPrId
 import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
@@ -438,7 +438,7 @@ class ServerActor[Q, P](
               }
               val r = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
                 val prediction = serving.serveBase(javaQuery.get, predictions)
-                // parse to Json4s JObject for later merging with predictionKey
+                // parse to Json4s JObject for later merging with prId
                 (parse(gson.toJson(prediction)), prediction, javaQuery.get)
               } else {
                 val prediction = serving.serveBase(scalaQuery.get, predictions)
@@ -453,7 +453,7 @@ class ServerActor[Q, P](
                 * - engineInstanceId
                 * - query
                 * - prediction
-                * - predictionKey
+                * - prId
                 */
               val result = if (feedbackEnabled) {
                 implicit val formats =
@@ -461,17 +461,18 @@ class ServerActor[Q, P](
                     scalaAlgorithms.head.querySerializer
                   else
                     Utils.json4sDefaultFormats
-                //val key = Random.alphanumeric.take(64).mkString
-                def genKey: String = Random.alphanumeric.take(64).mkString
-                val key = if (r._2.isInstanceOf[WithPredictionKey]) {
-                  val org = r._2.asInstanceOf[WithPredictionKey].predictionKey
-                  if (org.isEmpty) genKey else org
-                } else genKey
+                //val genPrId = Random.alphanumeric.take(64).mkString
+                def genPrId: String = Random.alphanumeric.take(64).mkString
+                val newPrId = if (r._2.isInstanceOf[WithPrId]) {
+                  val org = r._2.asInstanceOf[WithPrId].prId
+                  if (org.isEmpty) genPrId else org
+                } else genPrId
 
-                val predictionKey =
-                  if (r._3.isInstanceOf[WithPredictionKey]) {
-                    Map("predictionKey" ->
-                      r._3.asInstanceOf[WithPredictionKey].predictionKey)
+                // also save Query's prId as prId of this pio_pr predict events
+                val queryPrId =
+                  if (r._3.isInstanceOf[WithPrId]) {
+                    Map("prId" ->
+                      r._3.asInstanceOf[WithPrId].prId)
                   } else {
                     Map()
                   }
@@ -481,11 +482,11 @@ class ServerActor[Q, P](
                   "event" -> "predict",
                   "eventTime" -> queryTime.toString(),
                   "entityType" -> "pio_pr", // prediction result
-                  "entityId" -> key,
+                  "entityId" -> newPrId,
                   "properties" -> Map(
                     "engineInstanceId" -> engineInstance.id,
                     "query" -> r._3,
-                    "prediction" -> r._2)) ++ predictionKey
+                    "prediction" -> r._2)) ++ queryPrId
                 val f: Future[Int] = future {
                   scalaj.http.Http.postData(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
@@ -502,12 +503,12 @@ class ServerActor[Q, P](
                   case Failure(t) => {
                     log.error(s"Feedback event failed: ${t.getMessage}") }
                 }
-                // overwrite predictionKey
-                // - if it is WithPredictionKey,
-                //   then overwrite with new key or org key
-                // - if it is not WithPredictionKey, no predictionKey injection
-                if (r._2.isInstanceOf[WithPredictionKey])
-                  r._1 merge parse(s"""{"predictionKey" : "${key}"}""")
+                // overwrite prId in predictedResult
+                // - if it is WithPrId,
+                //   then overwrite with new prId
+                // - if it is not WithPrId, no prId injection
+                if (r._2.isInstanceOf[WithPrId])
+                  r._1 merge parse(s"""{"prId" : "${newPrId}"}""")
                 else r._1
               } else r._1
 

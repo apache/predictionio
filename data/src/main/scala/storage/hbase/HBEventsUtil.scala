@@ -57,7 +57,7 @@ object HBEventsUtil {
     "targetEntityType" -> "tety",
     "targetEntityId" -> "teid",
     "properties" -> "p",
-    "predictionKey" -> "pk",
+    "prId" -> "prid",
     "eventTime" -> "et",
     "eventTimeZone" -> "etz",
     "creationTime" -> "ct",
@@ -173,8 +173,8 @@ object HBEventsUtil {
       addStringToE(colNames("properties"), write(event.properties.toJObject))
     }
 
-    event.predictionKey.foreach { predictionKey =>
-      addStringToE(colNames("predictionKey"), predictionKey)
+    event.prId.foreach { prId =>
+      addStringToE(colNames("prId"), prId)
     }
 
     addLongToE(colNames("eventTime"), event.eventTime.getMillis)
@@ -238,7 +238,7 @@ object HBEventsUtil {
     val targetEntityId = getOptStringCol("targetEntityId")
     val properties: DataMap = getOptStringCol("properties")
       .map(s => DataMap(read[JObject](s))).getOrElse(DataMap())
-    val predictionKey = getOptStringCol("predictionKey")
+    val prId = getOptStringCol("prId")
     val eventTimeZone = getOptStringCol("eventTimeZone")
       .map(DateTimeZone.forID(_))
       .getOrElse(EventValidation.defaultTimeZone)
@@ -260,7 +260,7 @@ object HBEventsUtil {
       properties = properties,
       eventTime = eventTime,
       tags = Seq(),
-      predictionKey = predictionKey,
+      prId = prId,
       creationTime = creationTime
     )
   }

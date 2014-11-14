@@ -194,7 +194,7 @@ testdata='{
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
-## no prediction key
+## with prid
 testdata='{
   "event" : "my_event",
   "entityType" : "my_entity_type",
@@ -206,6 +206,7 @@ testdata='{
     "prop2" : "value2"
   }
   "eventTime" : "2004-12-13T21:39:45.618Z"
+  "prId" : "asfasfdsafdcsdFDWd"
 }'
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201

@@ -74,7 +74,7 @@ class Engine[TD, DP, PD, Q, P, A](
     servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]]
       = servingClass): Engine[TD, DP, PD, Q, P, A] = {
     new Engine(
-      dataSourceClass, 
+      dataSourceClass,
       preparatorClass,
       algorithmClassMap,
       servingClass)
@@ -143,12 +143,12 @@ trait IEngineFactory {
   def apply(): Engine[_, _, _, _, _, _]
 }
 
-/** Mix in this trait for queries that contain prediction keys. This is useful
-  * when your engine expects queries to also be associated with prediction keys
-  * when feedback loop is enabled.
+/** Mix in this trait for queries that contain prId (PredictedResultId).
+  * This is useful when your engine expects queries to also be associated with
+  * prId keys when feedback loop is enabled.
   *
   * @group General
   */
-trait WithPredictionKey {
-  val predictionKey: String = ""
+trait WithPrId {
+  val prId: String = ""
 }

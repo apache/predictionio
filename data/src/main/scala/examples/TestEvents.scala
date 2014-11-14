@@ -58,7 +58,7 @@ object TestEvents {
       } """).asInstanceOf[JObject]),
     eventTime = DateTime.now,
     tags = List("tag1", "tag2"),
-    predictionKey = None
+    prId = None
   )
 
   val e2 = e.copy(properties=DataMap())

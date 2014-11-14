@@ -47,7 +47,7 @@ object HB_0_8_0 {
     "targetEntityType" -> "tety",
     "targetEntityId" -> "teid",
     "properties" -> "p",
-    "predictionKey" -> "pk",
+    "prId" -> "pk", // columna name is 'pk' in 0.8.0/0.8.1
     "eventTimeZone" -> "etz",
     "creationTimeZone" -> "ctz"
   ).mapValues(Bytes.toBytes(_))
@@ -142,7 +142,7 @@ object HB_0_8_0 {
     val targetEntityId = getOptStringCol("targetEntityId")
     val properties: DataMap = getOptStringCol("properties")
       .map(s => DataMap(read[JObject](s))).getOrElse(DataMap())
-    val predictionKey = getOptStringCol("predictionKey")
+    val prId = getOptStringCol("prId")
     val eventTimeZone = getOptStringCol("eventTimeZone")
       .map(DateTimeZone.forID(_))
       .getOrElse(EventValidation.defaultTimeZone)
@@ -164,7 +164,7 @@ object HB_0_8_0 {
       properties = properties,
       eventTime = new DateTime(rowKey.millis, eventTimeZone),
       tags = Seq(),
-      predictionKey = predictionKey,
+      prId = prId,
       creationTime = creationTime
     )
   }
