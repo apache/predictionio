@@ -5,8 +5,7 @@ title: Sample Data Set
 
 # Sample Data Set
 
-
-Open sample data sets from various services.
+Here are open sample data sets from various services. You can share your import scripts with the community, you can post it on the [user  group](https://groups.google.com/forum/#!forum/predictionio-user) or [here](../community/projects.html).
 
 - MovieLens 
 http://grouplens.org/datasets/movielens/ 

@@ -41,11 +41,5 @@ To learn more about Engine and Engine Templates, please
 refer to [Engine: A Closer Look]({{site.baseurl}}/engines/concept).
 
 
-<!--
-You may also [build your own Engines]({{site.baseurl}}/enginebuilders) for specific type of
-prediction problems.
- -->
- 
-Next, you can build your first predictive engine by following the [Recommendation Engine Templates Quick Start](../recommendation/quickstart.html) or [Classification Template Quick Start](../classification/quickstart.html).
-
+#### [Next: Install PredictionIO](../install/)
  

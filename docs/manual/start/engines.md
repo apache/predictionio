@@ -69,5 +69,8 @@ to specify an Evaluation Metric when you run an evaluation on an Engine, i.e.:
 
 * One Evaluation Metric
 
+Now you have a good understanding of Engine and Engine Template, you can follow the Quick Start guide and develop a custom engine. 
+
+#### [Next: Recommendation Engine Quick Start](../recommendation/quickstart.html)
 
 
