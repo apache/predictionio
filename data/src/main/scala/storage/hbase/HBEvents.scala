@@ -93,9 +93,21 @@ class HBEvents(val client: HBClient, val namespace: String)
   override
   def remove(appId: Int): Boolean = {
     val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
-    client.admin.disableTable(tableName)
-    client.admin.deleteTable(tableName)
-    true
+    try {
+      if (client.admin.tableExists(tableName)) {
+        client.admin.disableTable(tableName)
+        client.admin.deleteTable(tableName)
+      } else {
+        info(s"Table ${tableName.getNameAsString()} doesn't exist." +
+          s" Nothing is deleted.")
+      }
+      true
+    } catch {
+      case e: Exception => {
+        error(s"Fail to remove table for appId ${appId}. Exception: ${e}")
+        false
+      }
+    }
   }
 
   override
