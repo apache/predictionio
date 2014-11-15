@@ -4,23 +4,36 @@ Import sample data for recommendation engine
 
 import predictionio
 import argparse
+import random
 
 RATE_ACTIONS_DELIMITER = "::"
+SEED = 3
 
-def import_rating(client, file):
+def import_events(client, file):
   f = open(file, 'r')
+  random.seed(SEED)
   count = 0
   print "Importing data..."
   for line in f:
     data = line.rstrip('\r\n').split(RATE_ACTIONS_DELIMITER)
-    client.create_event(
-      event="rate",
-      entity_type="user",
-      entity_id=data[0],
-      target_entity_type="item",
-      target_entity_id=data[1],
-      properties= { "rating" : float(data[2]) }
-    )
+    # For demonstration purpose, randomly mix in some buy events
+    if (random.randint(0, 1) == 1):
+      client.create_event(
+        event="rate",
+        entity_type="user",
+        entity_id=data[0],
+        target_entity_type="item",
+        target_entity_id=data[1],
+        properties= { "rating" : float(data[2]) }
+      )
+    else:
+      client.create_event(
+        event="buy",
+        entity_type="user",
+        entity_id=data[0],
+        target_entity_type="item",
+        target_entity_id=data[1]
+      )
     count += 1
   f.close()
   print "%s rate events are imported." % count
@@ -40,4 +53,4 @@ if __name__ == '__main__':
     url=args.url,
     threads=5,
     qsize=500)
-  import_rating(client, args.file)
+  import_events(client, args.file)

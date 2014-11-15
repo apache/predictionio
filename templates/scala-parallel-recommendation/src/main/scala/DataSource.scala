@@ -28,22 +28,27 @@ class DataSource(val dsp: DataSourceParams)
       untilTime = None,
       entityType = None,
       entityId = None,
-      eventNames = Some(List("rate")))(sc) // read "rate" event
+      eventNames = Some(List("rate", "buy")))(sc) // read "rate" and "buy" event
 
-    val ratings: RDD[Rating] = eventsRDD.map { event =>
-      val r = try {
+    val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
+      val rating = try {
+        val ratingValue: Double = event.event match {
+          case "rate" => event.properties.get[Double]("rating")
+          case "buy" => 4.0 // map buy event to rating value of 4
+          case _ => throw new Exception(s"Unexpected event ${event} is read.")
+        }
         // assume entityId and targetEntityId is originally Int type
         Rating(event.entityId.toInt,
           event.targetEntityId.get.toInt,
-          event.properties.get[Double]("rating"))
+          ratingValue)
       } catch {
         case e: Exception =>
           logger.error(s"Cannot convert ${e} to Rating. Exception: ${e}.")
         throw e
       }
-      r
+      rating
     }
-    new TrainingData(ratings)
+    new TrainingData(ratingsRDD)
   }
 }
 
