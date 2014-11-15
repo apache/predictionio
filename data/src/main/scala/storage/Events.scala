@@ -172,6 +172,7 @@ trait Events {
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String],
+    eventNames: Option[Seq[String]],
     limit: Option[Int] = None,
     reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]]  = notImplemented

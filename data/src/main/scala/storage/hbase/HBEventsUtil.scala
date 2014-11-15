@@ -271,6 +271,7 @@ object HBEventsUtil {
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String],
+    eventNames: Option[Seq[String]],
     reversed: Option[Boolean] = Some(false)): Scan = {
 
     val scan: Scan = new Scan()
@@ -306,23 +307,39 @@ object HBEventsUtil {
       }
     }
 
-    if ((entityType != None) || (entityId != None)) {
-      val filters = new FilterList()
-      val eBytes = Bytes.toBytes("e")
-      entityType.foreach { et =>
-        val compType = new BinaryComparator(Bytes.toBytes(et))
-        val filterType = new SingleColumnValueFilter(
-          eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
-        filters.addFilter(filterType)
-      }
-      entityId.foreach { eid =>
-        val compId = new BinaryComparator(Bytes.toBytes(eid))
-        val filterId = new SingleColumnValueFilter(
-          eBytes, colNames("entityId"), CompareOp.EQUAL, compId)
-        filters.addFilter(filterId)
-      }
-      scan.setFilter(filters)
+    val filters = new FilterList(FilterList.Operator.MUST_PASS_ALL)
+
+    val eBytes = Bytes.toBytes("e")
+
+    entityType.foreach { et =>
+      val compType = new BinaryComparator(Bytes.toBytes(et))
+      val filterType = new SingleColumnValueFilter(
+        eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
+      filters.addFilter(filterType)
     }
+
+    entityId.foreach { eid =>
+      val compId = new BinaryComparator(Bytes.toBytes(eid))
+      val filterId = new SingleColumnValueFilter(
+        eBytes, colNames("entityId"), CompareOp.EQUAL, compId)
+      filters.addFilter(filterId)
+    }
+
+    eventNames.foreach { eventsList =>
+      // match any of event in the eventsList
+      val eventFilters = new FilterList(FilterList.Operator.MUST_PASS_ONE)
+      eventsList.foreach { e =>
+        val compEvent = new BinaryComparator(Bytes.toBytes(e))
+        val filterEvent = new SingleColumnValueFilter(
+          eBytes, colNames("event"), CompareOp.EQUAL, compEvent)
+        eventFilters.addFilter(filterEvent)
+      }
+      if (!eventFilters.getFilters().isEmpty)
+        filters.addFilter(eventFilters)
+    }
+
+    if (!filters.getFilters().isEmpty)
+      scan.setFilter(filters)
 
     scan
   }

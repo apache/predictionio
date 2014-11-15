@@ -194,9 +194,11 @@ class EventServiceActor(
               'untilTime.as[Option[String]],
               'entityType.as[Option[String]],
               'entityId.as[Option[String]],
+              'event.as[Option[String]],
               'limit.as[Option[Int]],
               'reversed.as[Option[Boolean]]) {
               (startTimeStr, untilTimeStr, entityType, entityId,
+                eventName,
                 limit, reversed) =>
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
@@ -214,11 +216,14 @@ class EventServiceActor(
 
                   parseTime.flatMap { case (startTime, untilTime) =>
                     val data = eventClient.futureGetGeneral(
-                      appId,
-                      startTime, untilTime,
-                      entityType, entityId,
-                      limit.orElse(Some(20)),
-                      reversed)
+                      appId = appId,
+                      startTime = startTime,
+                      untilTime = untilTime,
+                      entityType = entityType,
+                      entityId = entityId,
+                      eventNames = eventName.map(List(_)),
+                      limit = limit.orElse(Some(20)),
+                      reversed = reversed)
                       .map { r =>
                         r match {
                           case Left(StorageError(message)) =>

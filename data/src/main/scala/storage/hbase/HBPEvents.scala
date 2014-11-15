@@ -35,11 +35,13 @@ class HBPEvents(client: HBClient, namespace: String)
   extends PEvents with Logging {
 
   override
-  def getByAppIdAndTimeAndEntity(appId: Int,
+  def getGeneral(
+    appId: Int,
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
-    entityId: Option[String])(sc: SparkContext): RDD[Event] = {
+    entityId: Option[String],
+    eventNames: Option[Seq[String]])(sc: SparkContext): RDD[Event] = {
 
     val conf = HBaseConfiguration.create()
     conf.set(TableInputFormat.INPUT_TABLE,
@@ -50,6 +52,7 @@ class HBPEvents(client: HBClient, namespace: String)
         untilTime = untilTime,
         entityType = entityType,
         entityId = entityId,
+        eventNames = eventNames,
         reversed = None)
     scan.setCaching(500) // TODO
     scan.setCacheBlocks(false) // TODO

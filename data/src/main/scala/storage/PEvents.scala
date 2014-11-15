@@ -26,6 +26,23 @@ trait PEvents extends Serializable {
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
-    entityId: Option[String])(sc: SparkContext): RDD[Event]
+    entityId: Option[String])(sc: SparkContext): RDD[Event] = {
+      getGeneral(
+        appId = appId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = entityType,
+        entityId = entityId,
+        eventNames = None
+      )(sc)
+    }
+
+  def getGeneral(
+    appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String],
+    eventNames: Option[Seq[String]])(sc: SparkContext): RDD[Event]
 
 }

@@ -166,6 +166,7 @@ class HBEvents(val client: HBClient, val namespace: String)
         untilTime = None,
         entityType = None,
         entityId = None,
+        eventNames = None,
         limit = None,
         reversed = None)
     }
@@ -180,6 +181,7 @@ class HBEvents(val client: HBClient, val namespace: String)
         untilTime = untilTime,
         entityType = None,
         entityId = None,
+        eventNames = None,
         limit = None,
         reversed = None)
   }
@@ -197,6 +199,7 @@ class HBEvents(val client: HBClient, val namespace: String)
         untilTime = untilTime,
         entityType = entityType,
         entityId = entityId,
+        eventNames = None,
         limit = None,
         reversed = None)
   }
@@ -208,6 +211,7 @@ class HBEvents(val client: HBClient, val namespace: String)
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String],
+    eventNames: Option[Seq[String]],
     limit: Option[Int],
     reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
@@ -219,6 +223,7 @@ class HBEvents(val client: HBClient, val namespace: String)
           untilTime = untilTime,
           entityType = entityType,
           entityId = entityId,
+          eventNames = eventNames,
           reversed = reversed)
         val scanner = table.getScanner(scan)
         table.close()
@@ -230,9 +235,9 @@ class HBEvents(val client: HBClient, val namespace: String)
           else eventsIter.take(limit.get)
         )
 
-        val events = results.map { resultToEvent(_, appId) }
+        val eventsIt = results.map { resultToEvent(_, appId) }
 
-        Right(events)
+        Right(eventsIt)
       }
   }
 
