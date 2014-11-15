@@ -17,6 +17,7 @@ package io.prediction.controller
 
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.LModelAlgorithm
+import io.prediction.core.WithBaseQuerySerializer
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -190,3 +191,5 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   def isJava = false
   def isParallel = true
 }
+
+trait WithQuerySerializer extends WithBaseQuerySerializer

@@ -23,11 +23,14 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import scala.reflect._
 
-// FIXME. The name collides with current BaseAlgorithm. Will remove once the
-// code is completely revamped.
+trait WithBaseQuerySerializer {
+  @transient lazy val querySerializer = Utils.json4sDefaultFormats
+}
 
 abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
-  extends AbstractDoer[AP] {
+  extends AbstractDoer[AP] 
+  with WithBaseQuerySerializer {
+
   def trainBase(sc: SparkContext, pd: PD): M
 
   def batchPredictBase(baseModel: Any, baseQueries: RDD[(Long, Q)])
@@ -35,10 +38,8 @@ abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
 
   // One Prediction
   def predictBase(baseModel: Any, query: Q): P
-
+  
   def queryManifest(): Manifest[Q] = manifest[Q]
-
-  @transient lazy val querySerializer = Utils.json4sDefaultFormats
 
   def isJava: Boolean
   def isParallel: Boolean
