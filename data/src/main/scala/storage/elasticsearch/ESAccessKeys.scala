@@ -44,6 +44,22 @@ class ESAccessKeys(client: Client, index: String)
   implicit val formats = DefaultFormats.lossless
   private val estype = "accesskeys"
 
+  val indices = client.admin.indices
+  val indexExistResponse = indices.prepareExists(index).get
+  if (!indexExistResponse.isExists) {
+    indices.prepareCreate(index).get
+  }
+  val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get
+  if (!typeExistResponse.isExists) {
+    val json =
+      (estype ->
+        ("properties" ->
+          ("key" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
+          ("events" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
+    indices.preparePutMapping(index).setType(estype).
+      setSource(compact(render(json))).get
+  }
+
   def insert(accessKey: AccessKey) = {
     val generatedkey = Random.alphanumeric.take(64).mkString
     val realaccesskey = accessKey.copy(key = generatedkey)
