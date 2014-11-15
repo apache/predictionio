@@ -12,6 +12,7 @@ Run the following to download and build PredictionIO from its source code.
 ```
 $ git clone https://github.com/PredictionIO/PredictionIO.git
 $ cd PredictionIO
+$ git checkout master
 $ ./make-distribution.sh
 ```
 
