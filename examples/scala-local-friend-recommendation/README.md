@@ -1,10 +1,10 @@
 <h2>Our Engine</h2><br/>
 We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.
 
-Two algorithms are implemented.
-
+Three algorithms are implemented.
 1. Random
 2. Keyword Similarity KNN
+3. SimRank // Note that this algorithm is recommending a uesr to a user and thus the "itemId" in the query should be userId instead
 
 To run the engine, you need to Register (Build) + Train + Deploy : 
 

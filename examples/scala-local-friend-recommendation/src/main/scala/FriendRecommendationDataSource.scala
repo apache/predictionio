@@ -5,12 +5,13 @@ import scala.io.Source
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 
-class FriendRecommendationDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams, FriendRecommendationTrainingData, FriendRecommendationQuery, EmptyActual] {
+class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourceParams)
+  extends LDataSource[FriendRecommendationDataSourceParams, EmptyDataParams, FriendRecommendationTrainingData, FriendRecommendationQuery, EmptyActual] {
   override
   def readTraining() : FriendRecommendationTrainingData = {
-    val (itemIdMap, itemKeyword) = readItem("data/mini_item.txt")
-    val (userIdMap, userKeyword) = readUser("data/mini_user_key_word.txt")
-    val adjArray = readRelationship("data/mini_user_action.txt", userKeyword.size, userIdMap)
+    val (itemIdMap, itemKeyword) = readItem(dsp.itemFilePath)
+    val (userIdMap, userKeyword) = readUser(dsp.userKeywordFilePath)
+    val adjArray = readRelationship(dsp.userActionFilePath, userKeyword.size, userIdMap)
     new FriendRecommendationTrainingData(userIdMap, itemIdMap, userKeyword, itemKeyword, adjArray)
   }
 
