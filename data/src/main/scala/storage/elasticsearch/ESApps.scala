@@ -60,7 +60,13 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
   }
 
   def insert(app: App) = {
-    val id = if (app.id == 0) seq.genNext("apps") else app.id
+    val id =
+      if (app.id == 0) {
+        var roll = seq.genNext("apps")
+        while (!get(roll).isEmpty) roll = seq.genNext("apps")
+        roll
+      }
+      else app.id
     val realapp = app.copy(id = id)
     if (update(realapp)) Some(id) else None
   }

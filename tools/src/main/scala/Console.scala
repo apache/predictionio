@@ -921,6 +921,14 @@ object Console extends Logging {
     apps.getByName(ca.app.name) map { app =>
       error(s"App ${ca.app.name} already exists. Aborting.")
     } getOrElse {
+      ca.app.id.map { id =>
+        apps.get(id) map { app =>
+          error(
+            s"App ID ${id} already exists and maps to the app '${app.name}'. " +
+            "Aborting.")
+          sys.exit(1)
+        }
+      }
       val appid = apps.insert(App(
         id = ca.app.id.getOrElse(0),
         name = ca.app.name,
