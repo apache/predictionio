@@ -36,7 +36,7 @@ def import_events(client, file):
       )
     count += 1
   f.close()
-  print "%s rate events are imported." % count
+  print "%s events are imported." % count
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(

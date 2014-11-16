@@ -4,11 +4,9 @@ Import sample data for classification engine
 
 import predictionio
 import argparse
-import random
 
 def import_events(client, file):
   f = open(file, 'r')
-  #random.seed(SEED)
   count = 0
   print "Importing data..."
   for line in f:
@@ -18,7 +16,7 @@ def import_events(client, file):
     client.create_event(
       event="$set",
       entity_type="user",
-      entity_id=str(count),
+      entity_id=str(count), # use the count num as user ID
       properties= {
         "attr0" : int(attr[0]),
         "attr1" : int(attr[1]),
