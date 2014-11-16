@@ -3,7 +3,7 @@
   "description": "Default settings",
   "engineFactory": "org.template.classification.ClassificationEngine",
   "datasource": {
-    "filepath": "./data/sample_naive_bayes_data.txt"
+    "appId": 2
   },
   "algorithms": [
     {

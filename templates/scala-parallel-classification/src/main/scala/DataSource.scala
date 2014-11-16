@@ -1,6 +1,8 @@
 package org.template.classification
 
 import io.prediction.controller._
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.Storage
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -8,7 +10,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.linalg.Vectors
 
-case class DataSourceParams(val filepath: String) extends Params
+case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[DataSourceParams, EmptyDataParams,
@@ -16,11 +18,23 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val data = sc.textFile(dsp.filepath)
-    val labeledPoints: RDD[LabeledPoint] = data.map { line =>
-      val parts = line.split(',')
-      LabeledPoint(parts(0).toDouble,
-        Vectors.dense(parts(1).split(' ').map(_.toDouble)))
+    val eventsDb = Storage.getEventDataPEvents()
+    val eventsRDD: RDD[Event] = eventsDb.getGeneral(
+      appId = dsp.appId,
+      startTime = None,
+      untilTime = None,
+      entityType = None,
+      entityId = None,
+      eventNames = Some(List("$set")))(sc) // read "$set" event
+
+    val labeledPoints: RDD[LabeledPoint] = eventsRDD.map { event =>
+      LabeledPoint(event.properties.get[Double]("plan"),
+        Vectors.dense(Array(
+          event.properties.get[Double]("attr0"),
+          event.properties.get[Double]("attr1"),
+          event.properties.get[Double]("attr2")
+        ))
+      )
     }
 
     new TrainingData(labeledPoints)
