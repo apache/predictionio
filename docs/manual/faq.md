@@ -33,3 +33,13 @@ PredictionIO/assembly$ rm pio-assembly-0.8.1-SNAPSHOT.jar
 ```
 $ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
 ```
+
+### Q: How to resolve ".......[error] (data/compile:compile) java.lang.AssertionError: assertion failed: java.lang.AutoCloseable" when ./make_distribution.sh?
+
+Prediction.IO only support Java 7 or later. Please make sure you have the
+correct Java version with the command:
+
+```
+$ javac -version
+```
+
