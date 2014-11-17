@@ -166,15 +166,17 @@ trait Events {
 
   // limit: None or -1: Get all events
   // order: Either 1 or -1. 1: From earliest; -1: From latest;
-  def futureGetGeneral(
+  def futureFind(
     appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String],
-    eventNames: Option[Seq[String]],
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None,
     limit: Option[Int] = None,
-    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext):
+    reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]]  = notImplemented
 
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):

@@ -29,6 +29,8 @@ import org.apache.hadoop.hbase.filter.RegexStringComparator
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter
 import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
 import org.apache.hadoop.hbase.filter.BinaryComparator
+import org.apache.hadoop.hbase.filter.QualifierFilter
+import org.apache.hadoop.hbase.filter.SkipFilter
 
 import org.json4s.DefaultFormats
 import org.json4s.JObject
@@ -266,13 +268,19 @@ object HBEventsUtil {
   }
 
 
+  // for mandatory field. None means don't care.
+  // for optional field. None means don't care.
+  //    Some(None) means not exist.
+  //    Some(Some(x)) means it should match x
   def createScan(
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String],
-    eventNames: Option[Seq[String]],
-    reversed: Option[Boolean] = Some(false)): Scan = {
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None,
+    reversed: Option[Boolean] = None): Scan = {
 
     val scan: Scan = new Scan()
 
@@ -311,6 +319,12 @@ object HBEventsUtil {
 
     val eBytes = Bytes.toBytes("e")
 
+    def createBinaryFilter(col: String, value: Array[Byte]) = {
+      val comp = new BinaryComparator(value)
+      new SingleColumnValueFilter(
+        eBytes, colNames(col), CompareOp.EQUAL, comp)
+    }
+
     entityType.foreach { et =>
       val compType = new BinaryComparator(Bytes.toBytes(et))
       val filterType = new SingleColumnValueFilter(
@@ -336,6 +350,40 @@ object HBEventsUtil {
       }
       if (!eventFilters.getFilters().isEmpty)
         filters.addFilter(eventFilters)
+    }
+
+    targetEntityType.foreach { tetOpt =>
+      if (tetOpt.isEmpty) {
+        val comp = new BinaryComparator(Bytes.toBytes("targetEntityType"))
+        val q = new QualifierFilter(CompareOp.EQUAL, comp)
+        val filter = new SkipFilter(q)
+        filters.addFilter(filter)
+      } else {
+        tetOpt.foreach { tet =>
+          val filter = createBinaryFilter(
+            "targetEntityType", Bytes.toBytes(tet))
+          // the entire row will be skipped if the column is not found.
+          filter.setFilterIfMissing(true)
+          filters.addFilter(filter)
+        }
+      }
+    }
+
+    targetEntityId.foreach { teidOpt =>
+      if (teidOpt.isEmpty) {
+        val comp = new BinaryComparator(Bytes.toBytes("targetEntityId"))
+        val q = new QualifierFilter(CompareOp.EQUAL, comp)
+        val filter = new SkipFilter(q)
+        filters.addFilter(filter)
+      } else {
+        teidOpt.foreach { teid =>
+          val filter = createBinaryFilter(
+            "targetEntityId", Bytes.toBytes(teid))
+          // the entire row will be skipped if the column is not found.
+          filter.setFilterIfMissing(true)
+          filters.addFilter(filter)
+        }
+      }
     }
 
     if (!filters.getFilters().isEmpty)

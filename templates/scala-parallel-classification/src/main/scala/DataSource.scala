@@ -19,7 +19,7 @@ class DataSource(val dsp: DataSourceParams)
   override
   def readTraining(sc: SparkContext): TrainingData = {
     val eventsDb = Storage.getEventDataPEvents()
-    val eventsRDD: RDD[Event] = eventsDb.getGeneral(
+    val eventsRDD: RDD[Event] = eventsDb.find(
       appId = dsp.appId,
       startTime = None,
       untilTime = None,

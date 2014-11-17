@@ -172,7 +172,7 @@ class HBEvents(val client: HBClient, val namespace: String)
   override
   def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
-      futureGetGeneral(
+      futureFind(
         appId = appId,
         startTime = None,
         untilTime = None,
@@ -187,7 +187,7 @@ class HBEvents(val client: HBClient, val namespace: String)
   def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
-      futureGetGeneral(
+      futureFind(
         appId = appId,
         startTime = startTime,
         untilTime = untilTime,
@@ -205,7 +205,7 @@ class HBEvents(val client: HBClient, val namespace: String)
     entityType: Option[String],
     entityId: Option[String])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
-      futureGetGeneral(
+      futureFind(
         appId = appId,
         startTime = startTime,
         untilTime = untilTime,
@@ -217,15 +217,17 @@ class HBEvents(val client: HBClient, val namespace: String)
   }
 
   override
-  def futureGetGeneral(
+  def futureFind(
     appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String],
-    eventNames: Option[Seq[String]],
-    limit: Option[Int],
-    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext):
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None,
+    limit: Option[Int] = None,
+    reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
         val table = getTable(appId)
@@ -236,6 +238,8 @@ class HBEvents(val client: HBClient, val namespace: String)
           entityType = entityType,
           entityId = entityId,
           eventNames = eventNames,
+          targetEntityType = targetEntityType,
+          targetEntityId = targetEntityId,
           reversed = reversed)
         val scanner = table.getScanner(scan)
         table.close()

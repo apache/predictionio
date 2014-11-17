@@ -27,7 +27,7 @@ trait PEvents extends Serializable {
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String])(sc: SparkContext): RDD[Event] = {
-      getGeneral(
+      find(
         appId = appId,
         startTime = startTime,
         untilTime = untilTime,
@@ -37,12 +37,14 @@ trait PEvents extends Serializable {
       )(sc)
     }
 
-  def getGeneral(
+  def find(
     appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String],
-    eventNames: Option[Seq[String]])(sc: SparkContext): RDD[Event]
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event]
 
 }

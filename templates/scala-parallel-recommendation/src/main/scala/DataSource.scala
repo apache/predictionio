@@ -22,13 +22,11 @@ class DataSource(val dsp: DataSourceParams)
   override
   def readTraining(sc: SparkContext): TrainingData = {
     val eventsDb = Storage.getEventDataPEvents()
-    val eventsRDD: RDD[Event] = eventsDb.getGeneral(
+    val eventsRDD: RDD[Event] = eventsDb.find(
       appId = dsp.appId,
-      startTime = None,
-      untilTime = None,
-      entityType = None,
-      entityId = None,
-      eventNames = Some(List("rate", "buy")))(sc) // read "rate" and "buy" event
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      targetEntityType = Some(Some("item")))(sc)
 
     val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
       val rating = try {
