@@ -10,32 +10,40 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.linalg.Vectors
 
+import grizzled.slf4j.Logger
+
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[DataSourceParams, EmptyDataParams,
   TrainingData, Query, EmptyActualResult] {
 
+  @transient lazy val logger = Logger[this.type]
+
   override
   def readTraining(sc: SparkContext): TrainingData = {
     val eventsDb = Storage.getEventDataPEvents()
-    val eventsRDD: RDD[Event] = eventsDb.find(
+    val labeledPoints: RDD[LabeledPoint] = eventsDb.aggregateProperties(
       appId = dsp.appId,
-      startTime = None,
-      untilTime = None,
-      entityType = None,
-      entityId = None,
-      eventNames = Some(List("$set")))(sc) // read "$set" event
-
-    val labeledPoints: RDD[LabeledPoint] = eventsRDD.map { event =>
-      LabeledPoint(event.properties.get[Double]("plan"),
-        Vectors.dense(Array(
-          event.properties.get[Double]("attr0"),
-          event.properties.get[Double]("attr1"),
-          event.properties.get[Double]("attr2")
-        ))
-      )
-    }
+      entityType = "user",
+      required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
+      .map { case (entityId, properties) =>
+        try {
+          LabeledPoint(properties.get[Double]("plan"),
+            Vectors.dense(Array(
+              properties.get[Double]("attr0"),
+              properties.get[Double]("attr1"),
+              properties.get[Double]("attr2")
+            ))
+          )
+        } catch {
+          case e: Exception => {
+            logger.error(s"Failed to get properties ${properties} of" +
+              s" ${entityId}. Exception: ${e}.")
+            throw e
+          }
+        }
+      }
 
     new TrainingData(labeledPoints)
   }

@@ -36,6 +36,10 @@ case class DataMap (
       throw new DataMapException(s"The field ${name} is required.")
   }
 
+  def contains(name: String): Boolean = {
+    fields.contains(name)
+  }
+
   def get[T: Manifest](name: String): T = {
     require(name)
     fields(name) match {

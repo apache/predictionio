@@ -13,14 +13,7 @@
   * limitations under the License.
   */
 
-/* Deprecated */
-package io.prediction.data.view
-
-import io.prediction.data.storage.hbase.HBPEvents
-import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventValidation
-import io.prediction.data.storage.DataMap
-import io.prediction.data.storage.Storage
+package io.prediction.data.storage
 
 import org.joda.time.DateTime
 
@@ -165,35 +158,12 @@ object EventOp {
 }
 
 
-class PBatchView(
-  val appId: Int,
-  val startTime: Option[DateTime],
-  val untilTime: Option[DateTime],
-  val sc: SparkContext) {
+object PEventAggregator {
 
-  // NOTE: parallel Events DB interface
-  @transient lazy val eventsDb = Storage.getEventDataPEvents()
+  val eventNames = List("$set", "$unset", "$delete")
 
-  @transient lazy val _events: RDD[Event] =
-    eventsDb.getByAppIdAndTimeAndEntity(
-      appId = appId,
-      startTime = startTime,
-      untilTime = untilTime,
-      entityType = None,
-      entityId = None)(sc)
-
-  // TODO: change to use EventSeq?
-  @transient lazy val events: RDD[Event] = _events
-
-  def aggregateProperties(
-    entityType: String,
-    startTimeOpt: Option[DateTime] = None,
-    untilTimeOpt: Option[DateTime] = None
-  ): RDD[(String, DataMap)] = {
-
-    _events
-      .filter( e => ((e.entityType == entityType) &&
-        (EventValidation.isSpecialEvents(e.event))) )
+  def aggregateProperties(eventsRDD: RDD[Event]): RDD[(String, DataMap)] = {
+    eventsRDD
       .map( e => (e.entityId, EventOp(e) ))
       .aggregateByKey[EventOp](EventOp())(
         // within same parition

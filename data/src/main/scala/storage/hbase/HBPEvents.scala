@@ -16,7 +16,9 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.PEvents
+import io.prediction.data.storage.PEventAggregator
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
@@ -71,6 +73,32 @@ class HBPEvents(client: HBClient, namespace: String)
       }
 
     rdd
+  }
+
+  override
+  def aggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)
+    (sc: SparkContext): RDD[(String, DataMap)] = {
+
+    val eventRDD = find(
+      appId = appId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      eventNames = Some(PEventAggregator.eventNames))(sc)
+
+    val dmRDD = PEventAggregator.aggregateProperties(eventRDD)
+
+    if (required.isDefined) {
+      dmRDD.filter { case (k, v) =>
+        required.get.map(v.contains(_)).reduce(_ && _)
+      }
+    } else dmRDD
+
   }
 
 }

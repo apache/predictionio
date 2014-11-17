@@ -47,4 +47,12 @@ trait PEvents extends Serializable {
     targetEntityType: Option[Option[String]] = None,
     targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event]
 
+  // @param required only return entity with these required properties defined.
+  def aggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)
+    (sc: SparkContext): RDD[(String, DataMap)]
 }
