@@ -26,6 +26,7 @@ class DataSource(val dsp: DataSourceParams)
     val labeledPoints: RDD[LabeledPoint] = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "user",
+      // only keep entities with these required properties defined
       required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
       .map { case (entityId, properties) =>
         try {
