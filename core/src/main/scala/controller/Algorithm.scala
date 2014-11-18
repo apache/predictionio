@@ -192,4 +192,11 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   def isParallel = true
 }
 
+/** Implement in this trait to enable custom json4s serializer.
+  * This is useful when your query requires a custom serializer. The algorithm
+  * classes using this query only need to mix in the trait to enable the custom
+  * serializer.
+  *
+  * @group General
+  */
 trait WithQuerySerializer extends WithBaseQuerySerializer
