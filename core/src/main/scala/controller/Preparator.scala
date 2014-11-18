@@ -82,6 +82,7 @@ abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
   *
   * @group Preparator
   */
+private[prediction] 
 class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
   def prepareBase(sc: SparkContext, td: TD): TD = td
 }
@@ -91,6 +92,7 @@ class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
   *
   * @group Preparator
   */
+private[prediction] 
 object IdentityPreparator {
   /** Produces an instance of [[IdentityPreparator]].
     *
@@ -99,3 +101,52 @@ object IdentityPreparator {
   def apply[TD](ds: Class[_ <: BaseDataSource[_, _, TD, _, _]]) =
     classOf[IdentityPreparator[TD]]
 }
+
+/** A helper concrete implementation of [[io.prediction.controller.PPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+class PIdentityPreparator[TD] extends PPreparator[EmptyParams, TD, TD] {
+  def prepare(sc: SparkContext, td: TD): TD = td
+}
+
+/** A helper concrete implementation of [[io.prediction.controller.PPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+object PIdentityPreparator {
+  /** Produces an instance of [[PIdentityPreparator]].
+    *
+    * @param ds Data source.
+    */
+  def apply[TD](ds: Class[_ <: PDataSource[_, _, TD, _, _]]) =
+    classOf[PIdentityPreparator[TD]]
+}
+
+
+/** A helper concrete implementation of [[io.prediction.controller.LPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+class LIdentityPreparator[TD: ClassTag] extends LPreparator[EmptyParams, TD, TD] {
+  def prepare(td: TD): TD = td
+}
+
+/** A helper concrete implementation of [[io.prediction.controller.LPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+object LIdentityPreparator {
+  /** Produces an instance of [[LIdentityPreparator]].
+    *
+    * @param ds Data source.
+    */
+  def apply[TD](ds: Class[_ <: LDataSource[_, _, TD, _, _]]) =
+    classOf[LIdentityPreparator[TD]]
+}
+
+
