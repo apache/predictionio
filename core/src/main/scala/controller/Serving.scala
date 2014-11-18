@@ -32,7 +32,7 @@ import scala.reflect.runtime.universe._
   * @tparam P Output prediction class.
   * @group Serving
   */
-abstract class Serving[AP <: Params : ClassTag, Q, P]
+abstract class LServing[AP <: Params : ClassTag, Q, P]
   extends BaseServing[AP, Q, P] {
   def serveBase(q: Q, ps: Seq[P]): P = {
     serve(q, ps)
@@ -47,46 +47,46 @@ abstract class Serving[AP <: Params : ClassTag, Q, P]
   def serve(query: Q, predictions: Seq[P]): P
 }
 
-/** A concrete implementation of [[Serving]] returning the first algorithm's
+/** A concrete implementation of [[LServing]] returning the first algorithm's
   * prediction result directly without any modification.
   *
   * @group Serving
   */
-class FirstServing[Q, P] extends Serving[EmptyParams, Q, P] {
+class LFirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
   /** Returns the first algorithm's prediction. */
   def serve(query: Q, predictions: Seq[P]): P = predictions.head
 }
 
-/** A concrete implementation of [[Serving]] returning the first algorithm's
+/** A concrete implementation of [[LServing]] returning the first algorithm's
   * prediction result directly without any modification.
   *
   * @group Serving
   */
-object FirstServing {
-  /** Returns an instance of [[FirstServing]]. */
+object LFirstServing {
+  /** Returns an instance of [[LFirstServing]]. */
   def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, _, Q, P]]) =
-    classOf[FirstServing[Q, P]]
+    classOf[LFirstServing[Q, P]]
 }
 
-/** A concrete implementation of [[Serving]] returning the average of all
+/** A concrete implementation of [[LServing]] returning the average of all
   * algorithms' predictions. The output prediction class is Double.
   *
   * @group Serving
   */
-class AverageServing[Q] extends Serving[EmptyParams, Q, Double] {
+class LAverageServing[Q] extends LServing[EmptyParams, Q, Double] {
   /** Returns the average of all algorithms' predictions. */
   def serve(query: Q, predictions: Seq[Double]): Double = {
     predictions.sum / predictions.length
   }
 }
 
-/** A concrete implementation of [[Serving]] returning the average of all
+/** A concrete implementation of [[LServing]] returning the average of all
   * algorithms' predictions. The output prediction class is Double.
   *
   * @group Serving
   */
-object AverageServing {
-  /** Returns an instance of [[AverageServing]]. */
+object LAverageServing {
+  /** Returns an instance of [[LAverageServing]]. */
   def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, _, Q, _]]) =
-    classOf[AverageServing[Q]]
+    classOf[LAverageServing[Q]]
 }

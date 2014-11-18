@@ -117,7 +117,7 @@ class SimpleEngine[TD, DP, Q, P, A](
     dataSourceClass,
     IdentityPreparator(dataSourceClass),
     Map("" -> algorithmClass),
-    FirstServing(algorithmClass))
+    LFirstServing(algorithmClass))
 
 /** This shorthand class serves the `SimpleEngine` class.
   *

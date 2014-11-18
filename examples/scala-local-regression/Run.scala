@@ -4,7 +4,7 @@ import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.EngineParams
-import io.prediction.controller.FirstServing
+import io.prediction.controller.LFirstServing
 import io.prediction.controller.LAlgorithm
 import io.prediction.controller.LDataSource
 import io.prediction.controller.LPreparator
@@ -107,7 +107,7 @@ object RegressionEngineFactory extends IEngineFactory {
       classOf[LocalDataSource],
       classOf[LocalPreparator],
       Map("" -> classOf[LocalAlgorithm]),
-      classOf[FirstServing[Vector[Double], Double]])
+      classOf[LFirstServing[Vector[Double], Double]])
   }
 }
 
@@ -131,7 +131,7 @@ object Run {
       algorithmClassMapOpt = Some(Map("" -> classOf[LocalAlgorithm])),
       algorithmParamsList = Seq(
         ("", EmptyParams())),
-      servingClassOpt = Some(classOf[FirstServing[Vector[Double], Double]]),
+      servingClassOpt = Some(classOf[LFirstServing[Vector[Double], Double]]),
       evaluatorClassOpt = Some(classOf[MeanSquareError]))
   }
 

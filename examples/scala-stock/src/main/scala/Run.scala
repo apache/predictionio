@@ -4,7 +4,7 @@ import io.prediction.controller.Workflow
 import io.prediction.controller.WorkflowParams
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.EmptyParams
-import io.prediction.controller.FirstServing
+import io.prediction.controller.LFirstServing
 import io.prediction.controller.Params
 import com.github.nscala_time.time.Imports._
 import scala.collection.immutable.HashMap
@@ -139,7 +139,7 @@ object Run {
         "" -> classOf[RegressionStrategy]
       )),
       algorithmParamsList = Seq(("", momentumParams)),
-      servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
+      servingClassOpt = Some(LFirstServing(classOf[EmptyStrategy])),
       evaluatorClassOpt = Some(classOf[BacktestingEvaluator]),
       evaluatorParams = evaluatorParams,
       params = WorkflowParams(

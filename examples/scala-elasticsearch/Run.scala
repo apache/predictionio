@@ -34,7 +34,7 @@ class PItemTrends(
 
 case class DataSource
   extends PDataSource[EmptyParams, AnyRef, AnyRef, AnyRef, AnyRef] {
-
+  override
   def read(sc: SparkContext): Seq[(AnyRef, AnyRef, RDD[(AnyRef, AnyRef)])] = {
     val itemTrends = new PItemTrends(
       sc, "predictionio_appdata/itemtrends", 1008)

@@ -6,7 +6,7 @@ import io.prediction.controller.PDataSource
 import io.prediction.controller.P2LAlgorithm
 import io.prediction.controller.IdentityPreparator
 import io.prediction.controller.IEngineFactory
-import io.prediction.controller.AverageServing
+import io.prediction.controller.LAverageServing
 import io.prediction.controller.MeanSquareError
 import io.prediction.controller.Utils
 import io.prediction.controller.Workflow
@@ -75,7 +75,7 @@ object RegressionEngineFactory extends IEngineFactory {
       classOf[ParallelDataSource],
       classOf[IdentityPreparator[RDD[LabeledPoint]]],
       Map("SGD" -> classOf[ParallelSGDAlgorithm]),
-      AverageServing(classOf[ParallelSGDAlgorithm]))
+      LAverageServing(classOf[ParallelSGDAlgorithm]))
   }
 }
 
@@ -96,7 +96,7 @@ object Run {
           Some(classOf[IdentityPreparator[RDD[LabeledPoint]]]),
         algorithmClassMapOpt = Some(Map(SGD -> classOf[ParallelSGDAlgorithm])),
         algorithmParamsList = algorithmParamsList,
-        servingClassOpt = Some(AverageServing(classOf[ParallelSGDAlgorithm])),
+        servingClassOpt = Some(LAverageServing(classOf[ParallelSGDAlgorithm])),
         evaluatorClassOpt = Some(classOf[MeanSquareError]),
         params = WorkflowParams(
           batch = "Imagine: Parallel Regression"))

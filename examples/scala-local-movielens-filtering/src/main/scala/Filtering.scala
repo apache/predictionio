@@ -1,6 +1,6 @@
 package myorg
 
-import io.prediction.controller.Serving
+import io.prediction.controller.LServing
 import io.prediction.controller.Params
 import io.prediction.engines.itemrec.Prediction
 import io.prediction.engines.itemrec.Query
@@ -9,7 +9,7 @@ import scala.io.Source
 case class TempFilterParams(val filepath: String) extends Params
 
 class TempFilter(val params: TempFilterParams) 
-    extends Serving[TempFilterParams, Query, Prediction] {
+    extends LServing[TempFilterParams, Query, Prediction] {
   override def serve(query: Query, predictions: Seq[Prediction]): Prediction = {
     val disabledIids: Set[String] = Source.fromFile(params.filepath)
       .getLines()

@@ -7,8 +7,8 @@ import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.PDataSource
 import io.prediction.controller.Params
 import io.prediction.controller.PAlgorithm
-import io.prediction.controller.IdentityPreparator
-import io.prediction.controller.FirstServing
+import io.prediction.controller.PIdentityPreparator
+import io.prediction.controller.LFirstServing
 import io.prediction.controller.Utils
 import io.prediction.controller.Workflow
 import io.prediction.controller.WorkflowParams
@@ -125,10 +125,10 @@ object Run {
     Workflow.run(
       dataSourceClassOpt = Some(classOf[DataSource]),
       dataSourceParams = dsp,
-      preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
+      preparatorClassOpt = Some(PIdentityPreparator(classOf[DataSource])),
       algorithmClassMapOpt = Some(Map("" -> classOf[ALSAlgorithm])),
       algorithmParamsList = Seq(("", ap)),
-      servingClassOpt = Some(FirstServing(classOf[ALSAlgorithm])),
+      servingClassOpt = Some(LFirstServing(classOf[ALSAlgorithm])),
       params = WorkflowParams(
 	batch = "Imagine: P Recommendations",
         verbose = 1
@@ -141,9 +141,9 @@ object RecommendationEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],
-      IdentityPreparator(classOf[DataSource]),
+      PIdentityPreparator(classOf[DataSource]),
       Map("" -> classOf[ALSAlgorithm]),
-      FirstServing(classOf[ALSAlgorithm]))
+      LFirstServing(classOf[ALSAlgorithm]))
   }
 }
 
