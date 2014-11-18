@@ -70,7 +70,7 @@ $ cd MyRecommendation
 Next, let's collect some training data for the app of this Engine.
 By default, the Recommendation Engine Template supports 2 types of events: "rate" and "buy".  A user can give a rating score to an item or he can buy an item.
 
-You can send these data to PredictionIO EventServer in real-time easily through the EventAPI with a SDK or HTTP call:
+You can send these data to PredictionIO EventServer in real-time easily by making a HTTP request or through the `EventClient` of a SDK
 
 <div class="codetabs">
 <div data-lang="Python SDK">
@@ -191,12 +191,52 @@ This will deploy an engine that binds to http://localhost:8000. You can visit th
 
 Now, You can try to retrieve predicted results.
 To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
+Simply send a query by making a HTTP request or through the `EngineClient` of a SDK:
 
-```
+<div class="codetabs">
+<div data-lang="Python SDK">
+
+{% highlight python %}
+(coming soon -- see REST API)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="PHP SDK">
+
+{% highlight php %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+
+<div data-lang="Ruby SDK">
+
+{% highlight ruby %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="Java SDK">
+
+{% highlight java %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="REST API">
+
+{% highlight rest %}
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
-```
+{% endhighlight %}
+
+</div>
+</div>
 
 Your MyRecommendation is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
 
