@@ -137,7 +137,6 @@ client.create_event(
     }
 )
 '''
-
 {% endhighlight %}
 
 </div>
@@ -227,20 +226,52 @@ This will deploy an engine that binds to http://localhost:8000. You can visit th
 Now, You can try to retrieve predicted results.
 For example, to predict the label (i.e. *plan* in this case) of a user with attr0=2, attr1=0 and attr2=0, you send this JSON { "features": [2, 0, 0] } to the deployed engine and it will return a JSON of the predicted plan.
 
-```
+<div class="codetabs">
+<div data-lang="Python SDK">
+
+{% highlight python %}
+(coming soon - see REST API)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="PHP SDK">
+
+{% highlight php %}
+(coming soon)
+{% endhighlight %}
+</div>
+
+
+<div data-lang="Ruby SDK">
+
+{% highlight ruby %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="Java SDK">
+
+{% highlight java %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="REST API">
+
+{% highlight rest %}
 $ curl -H "Content-Type: application/json" -d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
 
 {"label":0.0}
+{% endhighlight %}
 
-```
+</div>
+</div>
 
-To predict the label (i.e. *plan* in this case) of a user with attr0=4, attr1=3 and attr2=8, you send this JSON { "features": [4, 3, 8] } to the deployed engine and it will return a JSON of the predicted plan.
 
-```
-$ curl -H "Content-Type: application/json" -d '{ "features": [4, 3, 8] }' http://localhost:8000/queries.json
-
-{"label":2.0}
-```
+Similarly, to predict the label (i.e. *plan* in this case) of a user with attr0=4, attr1=3 and attr2=8, you send this JSON { "features": [4, 3, 8] } to the deployed engine and it will return a JSON of the predicted plan.
 
 Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
 

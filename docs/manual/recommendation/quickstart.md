@@ -193,11 +193,50 @@ This will deploy an engine that binds to http://localhost:8000. You can visit th
 Now, You can try to retrieve predicted results.
 To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
 
-```
+<div class="codetabs">
+<div data-lang="Python SDK">
+
+{% highlight python %}
+(coming soon -- see REST API)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="PHP SDK">
+
+{% highlight php %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+
+<div data-lang="Ruby SDK">
+
+{% highlight ruby %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="Java SDK">
+
+{% highlight java %}
+(coming soon)
+{% endhighlight %}
+
+</div>
+
+<div data-lang="REST API">
+
+{% highlight rest %}
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
-```
+{% endhighlight %}
+
+</div>
+</div>
 
 Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
 
