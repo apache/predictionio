@@ -17,7 +17,7 @@ If you simply want to use this customized code, you can skip to the last section
 ## The Serving Component 
 Recall [the DASE Architecture](/dase.html), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving components. When a Query comes in, it is passed to the Algorithm component for making Predictions.
 
-The Engine's serving component can be found in `/src/main/scala/Serving.scala` in the MyEngine directory. By default, it looks like the following:
+The Engine's serving component can be found in `/src/main/scala/Serving.scala` in the *MyRecommendation* directory. By default, it looks like the following:
 
 ```scala
 class Serving

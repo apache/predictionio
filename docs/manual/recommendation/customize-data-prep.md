@@ -9,8 +9,6 @@ Data Preparator is where pre-processing actions occurs. For example, one may wan
 
 This section demonstrates how to add a filtering logic to exclude a list of items from the [Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the [Quckstart Guide](/quickstart.html) first.
 
-Complete code example can be found in
-`examples/scala-parallel-recommendation-howto`.
 
 ## The Data Preparator Component
 
@@ -157,7 +155,7 @@ Make sure the appId defined in the file `engine.json` match your `App ID`:
 ...
 ```
 
-To build *MyEngine* and deploy it as a service:
+To build *MyRecommendation* and deploy it as a service:
 
 ```
 $ pio build

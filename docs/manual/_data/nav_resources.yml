@@ -1,5 +1,8 @@
 - title: "FAQ"
   href: "/resources/faq.html"
+  
+- title: "Upgrading to 0.8.2"
+  href: "/resources/schema-change.html"
 
 - title: "System Overview"
   href: "/resources/systems.html"

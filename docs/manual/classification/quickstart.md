@@ -17,6 +17,9 @@ We are going to show you how to create your own classification engine for produc
 
 First you need to [install PredictionIO {{site.pio_version}}]({{site.baseurl}}/install/)
 
+**0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and ElasticSearch. See more [here](../resources/schema-change.html).**
+
+
 Let's say you have installed PredictionIO at */home/yourname/predictionio/*.
 For convenience, add PredictionIO's binary command path to your PATH, i.e. /home/yourname/predictionio/bin:
 
@@ -29,6 +32,8 @@ and please make sure that PredictionIO EventServer, which collects data, is runn
 ```
 $ pio eventserver
 ```
+
+
 
 ## Create a Sample App
 
