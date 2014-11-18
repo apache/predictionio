@@ -936,7 +936,7 @@ object Console extends Logging {
         name = ca.app.name,
         description = ca.app.description))
       appid map { id =>
-        val events = Storage.getEventDataEvents
+        val events = Storage.getLEvents()
         val dbInit = events.init(id)
         if (dbInit) {
           info(s"Initialized Event Store for this app ID: ${id}.")
@@ -983,7 +983,7 @@ object Console extends Logging {
       val choice = readLine("Enter 'YES' to proceed: ")
       choice match {
         case "YES" => {
-          val events = Storage.getEventDataEvents
+          val events = Storage.getLEvents()
           if (events.remove(app.id)) {
             info(s"Removed Event Store for this app ID: ${app.id}")
             if (Storage.getMetaDataApps.delete(app.id))
@@ -1013,7 +1013,7 @@ object Console extends Logging {
       val choice = readLine("Enter 'YES' to proceed: ")
       choice match {
         case "YES" => {
-          val events = Storage.getEventDataEvents
+          val events = Storage.getLEvents()
           // remove table
           if (events.remove(app.id)) {
             info(s"Removed Event Store for this app ID: ${app.id}")

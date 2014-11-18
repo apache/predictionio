@@ -21,15 +21,22 @@ For convenience, add PredictionIO's binary command path to your PATH, i.e. /home
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
 ```
 
-## Create an App
+and please make sure that PredictionIO EventServer, which collects data, is running:
 
-To create an App with the name "MyApp":
+```
+$ pio eventserver
+```
+
+
+## Create a Sample App
+
+Your engine will process data of an 'app'. Let's create a sample app called "MyApp" now:
 
 ```
 $ pio app new MyApp
 ```
 
-You should find the following in the consle output:
+You should find the following in the console output:
 
 ```
 ...
@@ -44,11 +51,11 @@ You should find the following in the consle output:
 2014-11-12 18:24:22,923 INFO  zookeeper.ClientCnxn - EventThread shut down
 ```
 
-Take note of the `Access Key` and `App ID`, which you need later when import data into Event Server and access the Event Store from the Engine.
+Take note of the `Access Key` and `App ID`, which will be used soon.
 
 ## Create a new Engine from an Engine Template
 
-Now you create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template:
+Now let's create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template:
 
 ```
 $ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
@@ -57,32 +64,48 @@ $ cd MyEngine
 
 *Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
 
-By default, the engine reads training data from Event Store.
+## Collecting Data
 
-The sample movie data from MLlib repo is used for demonstration purpose. Execute the following to get the data set:
+Next, let's collect some training data for the app of this Engine.
+By default, the Recommendation Engine Template supports 2 types of events: "rate" and "buy".  A user can give a rating score to an item or he can buy an item.
 
-```
-$ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
-```
-
-A python import script `import_eventserver.py` is provided to import the data to Event Server. Replace the value of access_key parameter by your `Access Key`.
-
-```
-$ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
-```
-
-You should see the following output:
-
-```
-Importing data...
-1501 rate events are imported.
-```
-
-Now the movie ratings data is stored as events inside the Event Store.
-
-With the EventClient of one of the PredictionIO SDKs, your application can send data to the Event Server in real-time easily through the EventAPI. You may use other SDK.
+You can send these data to PredictionIO EventServer in real-time easily through the EventAPI with a SDK or HTTP call:
 
 <div class="codetabs">
+<div data-lang="Python SDK">
+
+{% highlight python %}
+import predictionio
+
+client = predictionio.EventClient(
+    access_key=<ACCESS KEY>,
+    url=<URL OF EVENTSERVER>,
+    threads=5,
+    qsize=500
+)
+
+# A user rates an item
+client.create_event(
+    event="rate",
+    entity_type="user",
+    entity_id=<USER ID>,
+    target_entity_type="item",
+    target_entity_id=<ITEM ID>,
+    properties= { "rating" : float(<RATING>) }
+)
+
+# A user buys an item
+client.create_event(
+        event="buy",
+        entity_type="user",
+        entity_id=<USER ID>,
+        target_entity_type="item",
+        target_entity_id=<ITEM ID>
+)
+{% endhighlight %}
+
+</div>
+
 <div data-lang="PHP SDK">
 
 {% highlight php %}
@@ -90,13 +113,6 @@ With the EventClient of one of the PredictionIO SDKs, your application can send 
 {% endhighlight %}
 </div>
 
-<div data-lang="Python SDK">
-
-{% highlight python %}
-(coming soon)
-{% endhighlight %}
-
-</div>
 
 <div data-lang="Ruby SDK">
 
@@ -113,7 +129,40 @@ With the EventClient of one of the PredictionIO SDKs, your application can send 
 {% endhighlight %}
 
 </div>
+
+<div data-lang="REST API">
+
+{% highlight rest %}
+(coming soon)
+{% endhighlight %}
+
 </div>
+</div>
+
+
+You may use the sample movie data from MLlib repo for demonstration purpose. Execute the following to get the data set:
+
+```
+$ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
+```
+
+A python import script `import_eventserver.py` is provided to import the data to Event Server using Python SDK. Replace the value of access_key parameter by your `Access Key`.
+
+```
+$ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
+```
+
+You should see the following output:
+
+```
+Importing data...
+1501 events are imported.
+```
+
+Now the movie ratings data is stored as events inside the Event Store.
+
+
+
 
 
 
@@ -121,7 +170,7 @@ With the EventClient of one of the PredictionIO SDKs, your application can send 
 
 ## Deploy the Engine as a Service
 
-Make sure the appId defined in the file `engine.json` match your `App ID`:
+Now you can deploy the engine.  Make sure the appId defined in the file `engine.json` match your `App ID`:
 
 ```
 ...

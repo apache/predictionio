@@ -1,6 +1,7 @@
 package org.template.recommendation
 
-import io.prediction.controller._
+import io.prediction.controller.IEngineFactory
+import io.prediction.controller.Engine
 
 case class Query(
   val user: Int,

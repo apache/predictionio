@@ -1,6 +1,9 @@
 package org.template.classification
 
-import io.prediction.controller._
+import io.prediction.controller.PDataSource
+import io.prediction.controller.EmptyDataParams
+import io.prediction.controller.EmptyActualResult
+import io.prediction.controller.Params
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.Storage
 
@@ -22,7 +25,7 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getEventDataPEvents()
+    val eventsDb = Storage.getPEvents()
     val labeledPoints: RDD[LabeledPoint] = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "user",
