@@ -12,12 +12,16 @@ This section demonstrates how to add a filtering logic to exclude a list of item
 Complete code example can be found in
 `examples/scala-parallel-recommendation-advanced`.
 
-If you simply want to use this customized code, you can skip to the last section.
-
 ## The Data Preparator Component
-Recall [the DASE Architecture](/dase.html), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving components. When a Query comes in, it is passed to the Algorithm component for making Predictions.
 
-The Data Preparator component can be found in `/src/main/scala/Preparator.scala` in the MyEngine directory. By default, it looks like the following:
+Recall [the DASE Architecture](/dase.html), data is prepared by 2 components sequentially: *Data Source* and *Data Preparator*.
+*Data Source* and *Data Preparator* takes data from the data store and prepares `RDD[Rating]` for the ALS algorithm.
+
+## The Preparator Interface
+
+PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Preparator component takes the `TrainingData` and return `PreparedData`.
+
+The original Data Preparator component can be found in `/src/main/scala/Preparator.scala` in the MyEngine directory. By default, it looks like the following:
 
 ```scala
 class Preparator
@@ -33,9 +37,9 @@ class PreparedData(
 ) extends Serializable
 ```
 
-## The Preparator Interface
+The `prepare` simply passes the ratings from `TrainingData` to `PreparedData`.
 
-PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Preparator component takes the `TrainingData` and return `PreparedData`. The `prepare` method performs the filting logic.
+In the new customized Preparator, the prepare() method will read a back list of items from a file and remove ratings from TrainigData if the rated item match any of this list, as shown in the following:
 
 ```scala
 import scala.io.Source
@@ -58,11 +62,8 @@ class CustomPreparator(pp: CustomPreparatorParams)
 }
 ```
 
-We will store the black list items in a file, one item_id per line. Then the prepare() method will read this list and take out ratings from TrainigData if the rated item match any of this list.
-
 > Notice that this is only for demonstration, you may generate this list based on TrainingData.
 
-Then, we will implement a new engine factory using this new Data Prepartor component.
 
 # Step-by-Step
 
@@ -84,7 +85,7 @@ import org.apache.spark.mllib.recommendation.Rating
 import scala.io.Source
 ```
 
-We need to define one parameter: The filepath of the blacklist file.
+Next, we need to define one parameter: The filepath of the blacklist file.
 
 ```scala
 case class CustomPreparatorParams(
@@ -126,7 +127,7 @@ object RecommendationEngineWithCustomPreparator extends IEngineFactory {
 }
 ```
 
-Lastly, modify `engine.json` to use this new `RecommendationEngineWithCustomPreparator` and define the parameters for the Data Preparator.
+Lastly, modify `engine.json` to use this new `RecommendationEngineWithCustomPreparator` and define the parameters for the Data Preparator, which requires a parameter `filepath`.
 
 ```json
 {
@@ -174,7 +175,5 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
-
-
 
 #### [Next: Customizing Data Serving](customize-serving.html)
