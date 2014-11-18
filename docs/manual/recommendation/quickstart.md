@@ -39,30 +39,24 @@ You should find the following in the console output:
 
 ```
 ...
-(TO BE FIXED)
-
-2014-11-12 18:24:22,904 INFO  tools.Console$ - Initialized Event Store for this app ID: 2.
-2014-11-12 18:24:22,920 INFO  tools.Console$ - Created new app:
-2014-11-12 18:24:22,921 INFO  tools.Console$ -         Name: MyApp
-2014-11-12 18:24:22,921 INFO  tools.Console$ -           ID: 1
-2014-11-12 18:24:22,921 INFO  tools.Console$ - Access Key: dZN8zAX2SwEmxHN27RGR7va3XFJ3bB7qHTECf3GVL4T5ECnOErRQp5mt8rcdhmzU
-2014-11-12 18:24:22,922 INFO  client.HConnectionManager$HConnectionImplementation - Closing master protocol: MasterService
-2014-11-12 18:24:22,922 INFO  client.HConnectionManager$HConnectionImplementation - Closing zookeeper sessionid=0x149a2c3cf910011
-2014-11-12 18:24:22,923 INFO  zookeeper.ZooKeeper - Session: 0x149a2c3cf910011 closed
-2014-11-12 18:24:22,923 INFO  zookeeper.ClientCnxn - EventThread shut down
+2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
+2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
+2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
+2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
+2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
 Take note of the `Access Key` and `App ID`.
-You will need the `Access Key` to refer to "MyApp" when you collect data. 
-At the same time, you will use `App ID` to refer to "MyApp" in engine code.
+You will need the `Access Key` to refer to "MyApp1" when you collect data. 
+At the same time, you will use `App ID` to refer to "MyApp1" in engine code.
 
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template:
+Now let's create a new engine called *MyRecommendation* by cloning the MLlib Collaborative Filtering engine template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
-$ cd MyEngine
+$ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyRecommendation
+$ cd MyRecommendation
 ```
 * Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
 
@@ -176,7 +170,7 @@ Now you can deploy the engine.  Make sure the appId defined in the file `engine.
 ...
 ```
 
-To build *MyEngine* and deploy it as a service:
+To build *MyRecommendation* and deploy it as a service:
 
 ```
 $ pio build
@@ -199,6 +193,6 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
 
-Your MyEngine is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
+Your MyRecommendation is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
 
 #### [Next: DASE Components Explained](dase.html)
