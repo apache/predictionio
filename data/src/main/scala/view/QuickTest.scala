@@ -29,7 +29,7 @@ import org.joda.time.DateTime
 import scala.language.implicitConversions
 
 class TestHBEvents() {
-  @transient lazy val eventsDb = Storage.getEventDataEvents()
+  @transient lazy val eventsDb = Storage.getLEvents()
 
   def run() = {
     val r = eventsDb

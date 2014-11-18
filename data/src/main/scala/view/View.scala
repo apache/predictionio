@@ -131,7 +131,7 @@ class LBatchView(
   val startTime: Option[DateTime],
   val untilTime: Option[DateTime]) {
 
-  @transient lazy val eventsDb = Storage.getEventDataEvents()
+  @transient lazy val eventsDb = Storage.getLEvents()
 
   @transient lazy val _events = eventsDb.getByAppIdAndTime(appId,
     startTime, untilTime).right.get.toList

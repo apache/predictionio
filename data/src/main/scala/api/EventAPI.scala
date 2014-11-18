@@ -294,7 +294,7 @@ object EventServer {
   def createEventServer(config: EventServerConfig) = {
     implicit val system = ActorSystem("EventServerSystem")
 
-    val eventClient = Storage.getEventDataEvents
+    val eventClient = Storage.getLEvents()
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
     val serverActor = system.actorOf(

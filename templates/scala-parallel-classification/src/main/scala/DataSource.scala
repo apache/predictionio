@@ -22,7 +22,7 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getEventDataPEvents()
+    val eventsDb = Storage.getPEvents()
     val labeledPoints: RDD[LabeledPoint] = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "user",

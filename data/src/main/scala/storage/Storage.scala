@@ -234,7 +234,7 @@ object Storage extends Logging {
     println("  Verifying Model Data Backend")
     getModelDataModels()
     println("  Verifying Event Data Backend")
-    getEventDataEvents()
+    getLEvents()
   }
 
   def getMetaDataEngineManifests(): EngineManifests =
@@ -271,10 +271,10 @@ object Storage extends Logging {
   def getAppdataItemSets(): ItemSets =
     getDataObject[ItemSets](AppDataRepository)
 
-  def getEventDataEvents(): Events =
+  def getLEvents(): Events =
     getDataObject[Events](EventDataRepository)
 
-  def getEventDataPEvents(): PEvents =
+  def getPEvents(): PEvents =
     getPDataObject[PEvents](EventDataRepository)
 
   if (errors > 0) {

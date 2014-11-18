@@ -25,7 +25,7 @@ object Upgrade {
     batchSize: Int,
     fromNamespace: String) {
 
-    val events = Storage.getEventDataEvents().asInstanceOf[HBEvents]
+    val events = Storage.getLEvents().asInstanceOf[HBEvents]
 
     // Assume already run "pio app new <newapp>" (new app already created)
     // TODO: check if new table empty and warn user if not
