@@ -84,7 +84,7 @@ abstract class Evaluator[
   *
   * evaluator result can be rendered nicely by implementing toHTML and toJSON
   * methods. These results are rendered through dashboard.
-  * @group evaluator
+  * @group Evaluator
   */
 trait NiceRendering {
   /** HTML portion of the rendered evaluator results. */
