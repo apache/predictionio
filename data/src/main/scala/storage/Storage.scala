@@ -91,7 +91,6 @@ object Storage extends Logging {
   */
 
   /** Reference to the app data repository. */
-  val AppDataRepository = "APPDATA"
   val EventDataRepository = "EVENTDATA"
   val ModelDataRepository = "MODELDATA"
   val MetaDataRepository = "METADATA"
@@ -251,25 +250,6 @@ object Storage extends Logging {
 
   def getModelDataModels(): Models =
     getDataObject[Models](ModelDataRepository)
-
-  /** Obtains an ItemTrends object with configured backend type. */
-  def getAppdataItemTrends(): ItemTrends =
-    getDataObject[ItemTrends](AppDataRepository)
-
-  /** Obtains a Users object with configured backend type. */
-  def getAppdataUsers(): Users =
-    getDataObject[Users](AppDataRepository)
-
-  /** Obtains an Items object with configured backend type. */
-  def getAppdataItems(): Items =
-    getDataObject[Items](AppDataRepository)
-
-  /** Obtains a U2IActions object with configured backend type. */
-  def getAppdataU2IActions(): U2IActions =
-    getDataObject[U2IActions](AppDataRepository)
-
-  def getAppdataItemSets(): ItemSets =
-    getDataObject[ItemSets](AppDataRepository)
 
   def getLEvents(): Events =
     getDataObject[Events](EventDataRepository)
