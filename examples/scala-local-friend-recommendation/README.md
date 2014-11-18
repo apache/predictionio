@@ -1,5 +1,5 @@
 <h2>Our Engine</h2><br/>
-We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.
+We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.<br/>
 
 Three algorithms are implemented.
 
@@ -13,7 +13,8 @@ As the data set is large, we recommend setting spark memories to be large. <br/>
 Please set the below two lines with the two values $E_M and $D_M in the $SPARK_HOME/conf/spark-defaults.conf <br/>
 spark.executor.memory $E_M <br/>
 spark.driver.memory $D_M <br/>
-We have tested "Random" and "Keyword Similarity KNN" algorithms with $E_M = 16g and $D_M = 16g.
+We have tested "Random" and "Keyword Similarity KNN" algorithms with $E_M = 16g and $D_M = 16g. <br/>
+"SimRank" algorithm takes up a lot of memory and thus please reduce the mini file size if memory is not enough.<br/>
 
 To run the engine, you need to Register (Build) + Train + Deploy : 
 
