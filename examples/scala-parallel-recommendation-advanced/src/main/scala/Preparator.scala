@@ -1,6 +1,7 @@
 package org.examples.recommendation
 
-import io.prediction.controller._
+import io.prediction.controller.PPreparator
+import io.prediction.controller.EmptyPreparatorParams
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -14,7 +15,3 @@ class Preparator
     new PreparedData(ratings = trainingData.ratings)
   }
 }
-
-class PreparedData(
-  val ratings: RDD[Rating]
-) extends Serializable

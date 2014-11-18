@@ -1,6 +1,7 @@
 package org.examples.recommendation
 
-import io.prediction.controller._
+import io.prediction.controller.IEngineFactory
+import io.prediction.controller.Engine
 
 case class Query(
   val user: Int,
@@ -33,6 +34,17 @@ object RecommendationEngineWithMongo extends IEngineFactory {
     new Engine(
       classOf[MongoDataSource],
       classOf[Preparator],
+      Map("als" -> classOf[ALSAlgorithm]),
+      classOf[Serving])
+  }
+}
+
+// use CustomPreparator
+object RecommendationEngineWithCustomPreparator extends IEngineFactory {
+  def apply() = {
+    new Engine(
+      classOf[FileDataSource],
+      classOf[CustomPreparator],
       Map("als" -> classOf[ALSAlgorithm]),
       classOf[Serving])
   }

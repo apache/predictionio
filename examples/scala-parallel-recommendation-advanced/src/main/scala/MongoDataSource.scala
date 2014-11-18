@@ -1,6 +1,13 @@
 package org.examples.recommendation
 
-import io.prediction.controller._
+import io.prediction.controller.PDataSource
+import io.prediction.controller.EmptyDataParams
+import io.prediction.controller.EmptyActualResult
+import io.prediction.controller.Params
+import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.Storage
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

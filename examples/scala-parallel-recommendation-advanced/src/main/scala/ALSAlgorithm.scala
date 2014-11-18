@@ -1,6 +1,7 @@
 package org.examples.recommendation
 
-import io.prediction.controller._
+import io.prediction.controller.PAlgorithm
+import io.prediction.controller.Params
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
