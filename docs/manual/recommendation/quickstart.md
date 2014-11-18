@@ -5,17 +5,22 @@ title: Recommendation Quick Start
 
 # Quick Start - Recommendation Engine Template
 
-An engine template is a basic skeleton of an engine. PredictionIO's Recommendation Engine Template (/templates/scala-parallel-recommendation) has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by default.
- You can customize it easily to fit your specific needs.
+An engine template is a basic skeleton of an engine. PredictionIO's
+Recommendation Engine Template (/templates/scala-parallel-recommendation) has
+integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
+default.  You can customize it easily to fit your specific needs.
 
-We are going to show you how to create your own classification engine for production use based on this template.
+We are going to show you how to create your own classification engine for
+production use based on this template.
 
 ## Install PredictionIO
 
 First you need to [install PredictionIO {{site.pio_version}}]({{site.baseurl}}/install/)
 
 
-**0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and ElasticSearch. See more [here](../resources/schema-change.html).**
+**0.8.2 contains schema changes from the previous versions, if you have
+installed the previous versions, you may need to clear both HBase and
+ElasticSearch. See more [here](../resources/schema-change.html).**
 
 
 Let's say you have installed PredictionIO at */home/yourname/predictionio/*.

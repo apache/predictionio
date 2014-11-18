@@ -30,8 +30,8 @@ http://wiki.apache.org/hadoop/Hbase/Shell
 ```
 $ $HBASE_HOME/bin/hbase shell
 ...
-> disable_all '.*'
+> disable_all 'predictionio.*'
 ...
-> drop_all '.*'
+> drop_all 'predictionio.*'
 ...
 ```
