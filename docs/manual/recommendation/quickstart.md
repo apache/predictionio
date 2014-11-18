@@ -66,8 +66,8 @@ $ cd MyEngine
 
 ## Collecting Data
 
-Next, let's collect some training data for the app of this Engine. 
-By default, the Classification Engine Template supports 2 types of events: "rate" and "buy".  A user can give a rating score to an item or he can buy an item. 
+Next, let's collect some training data for the app of this Engine.
+By default, the Recommendation Engine Template supports 2 types of events: "rate" and "buy".  A user can give a rating score to an item or he can buy an item.
 
 You can send these data to PredictionIO EventServer in real-time easily through the EventAPI with a SDK or HTTP call:
 
@@ -156,7 +156,7 @@ You should see the following output:
 
 ```
 Importing data...
-1501 rate events are imported.
+1501 events are imported.
 ```
 
 Now the movie ratings data is stored as events inside the Event Store.

@@ -92,7 +92,7 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.PEvents()
+    val eventsDb = Storage.getPEvents()
     val eventsRDD: RDD[Event] = eventsDb.find(
       appId = dsp.appId,
       entityType = Some("user"),
@@ -124,7 +124,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-`Storage.PEvents()` gives you access to data you collected through Event Server and `eventsDb.find` specifies the events you want to read.
+`Storage.getPEvents()` gives you access to data you collected through Event Server and `eventsDb.find` specifies the events you want to read.
 PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
@@ -294,7 +294,7 @@ will be passed to `def serve` as a sequence, i.e. `Seq[PredictedResult]`.
 > Since only one ALSAlgorithm is implemented by default, this Sequence contains one element.
 
 
-Now you have a good understanding of the DASE model, we will show you an example of customizing the Data Preparator to exclude certain items from your training set. 
+Now you have a good understanding of the DASE model, we will show you an example of customizing the Data Preparator to exclude certain items from your training set.
 
 #### [Next: Customizing Data Preparator](customize-data-prep.html)
 
