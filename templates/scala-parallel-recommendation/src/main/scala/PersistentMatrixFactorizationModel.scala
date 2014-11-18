@@ -5,7 +5,8 @@ package org.apache.spark.mllib.recommendation
 
 import org.template.recommendation.ALSAlgorithmParams
 
-import io.prediction.controller._
+import io.prediction.controller.IPersistentModel
+import io.prediction.controller.IPersistentModelLoader
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

@@ -1,6 +1,7 @@
 package org.template.classification
 
-import io.prediction.controller._
+import io.prediction.controller.P2LAlgorithm
+import io.prediction.controller.Params
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

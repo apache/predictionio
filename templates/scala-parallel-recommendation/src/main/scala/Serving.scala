@@ -1,6 +1,7 @@
 package org.template.recommendation
 
-import io.prediction.controller._
+import io.prediction.controller.LServing
+import io.prediction.controller.EmptyServingParams
 
 class Serving
   extends LServing[EmptyServingParams, Query, PredictedResult] {
