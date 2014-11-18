@@ -13,7 +13,9 @@ This section demonstrates how to add a filtering logic to exclude a list of item
 ## The Data Preparator Component
 
 Recall [the DASE Architecture](/dase.html), data is prepared by 2 components sequentially: *Data Source* and *Data Preparator*.
-*Data Source* and *Data Preparator* takes data from the data store and prepares `RDD[Rating]` for the ALS algorithm.
+*Data Source* reads data from the data store of Event Server and then *Data Preparator* prepares `RDD[Rating]` for the ALS algorithm.
+
+This example shows you how to add the filtering logics in Data Preparator.
 
 ## The Preparator Interface
 
