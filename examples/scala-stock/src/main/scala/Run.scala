@@ -2,7 +2,7 @@ package io.prediction.examples.stock
 
 import io.prediction.controller.Workflow
 import io.prediction.controller.WorkflowParams
-import io.prediction.controller.IdentityPreparator
+import io.prediction.controller.PIdentityPreparator
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.LFirstServing
 import io.prediction.controller.Params
@@ -131,9 +131,9 @@ object Run {
     )
 
     Workflow.run(
-      dataSourceClassOpt = Some(classOf[DataSource]),
+      dataSourceClassOpt = Some(classOf[YahooDataSource]),
       dataSourceParams = dataSourceParams,
-      preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
+      preparatorClassOpt = Some(PIdentityPreparator(classOf[YahooDataSource])),
       algorithmClassMapOpt = Some(Map(
         //"" -> classOf[MomentumStrategy]
         "" -> classOf[RegressionStrategy]

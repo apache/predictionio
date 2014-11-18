@@ -46,9 +46,9 @@ case class HistoricalData(
     val adjReturnStr = adjReturn.mkString("[", ", ", "]")
     val activeStr = active.mkString("[", ", ", "]")
 
-    (s"HistoricalData($ticker, ${timeIndex.head}, ${timeIndex.last}, \n" + 
-      s"  adjClose=$adjCloseStr\n" + 
-      s"  adjReturn=$adjReturnStr\n" + 
+    (s"HistoricalData($ticker, ${timeIndex.head}, ${timeIndex.last}, \n" +
+      s"  adjClose=$adjCloseStr\n" +
+      s"  adjReturn=$adjReturnStr\n" +
       s"  active=$activeStr)")
   }
 }
@@ -68,7 +68,7 @@ object HistoricalData {
 }
 
 
-class YahooDataSource(val params: YahooDataSource.Params) 
+class YahooDataSource(val params: YahooDataSource.Params)
   extends PDataSource[
       YahooDataSource.Params,
       DataParams,
@@ -77,7 +77,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
       AnyRef] {
   @transient lazy val batchView = new LBatchView(
     params.appId, params.startTime, params.untilTime)
-  
+
   val timezone = DateTimeZone.forID("US/Eastern")
   val windowParams = params.windowParams
   val marketTicker = windowParams.marketTicker
@@ -85,14 +85,14 @@ class YahooDataSource(val params: YahooDataSource.Params)
   @transient lazy val market: HistoricalData = getTimeIndex()
   @transient lazy val timeIndex: Array[DateTime] = market.timeIndex
   @transient lazy val timeIndexSet: Set[DateTime] = timeIndex.toSet
-  
+
   def merge(intermediate: YahooDataSource.Intermediate, e: Event,
-    timeIndexSetOpt: Option[Set[DateTime]]) 
+    timeIndexSetOpt: Option[Set[DateTime]])
   : YahooDataSource.Intermediate = {
-    val dm: DataMap = e.properties     
+    val dm: DataMap = e.properties
 
     // TODO: Check ticker in intermediate
-    
+
     val yahooData = dm.get[JObject]("yahoo")
 
     // used by json4s "extract" method.
@@ -105,10 +105,10 @@ class YahooDataSource(val params: YahooDataSource.Params)
     val tList: Array[DateTime] = (yahooData \ "t").extract[Array[Long]]
       .map(t => new DateTime(t * 1000, timezone))
 
-    // Add data either 
-    // 1. timeIndex exists and t is in timeIndex, or 
+    // Add data either
+    // 1. timeIndex exists and t is in timeIndex, or
     // 2. timeIndex is None.
-    val newDailyMap: Map[DateTime, YahooDataSource.Daily] = 
+    val newDailyMap: Map[DateTime, YahooDataSource.Daily] =
       tList.zipWithIndex.drop(1)
       .filter { case (t, idx) => timeIndexSetOpt.map(_(t)).getOrElse(true) }
       .map { case (t, idx) =>
@@ -127,7 +127,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
       .toMap
 
     YahooDataSource.Intermediate(
-      ticker = e.entityId, 
+      ticker = e.entityId,
       dailyMap = intermediate.dailyMap ++ newDailyMap)
   }
 
@@ -153,14 +153,14 @@ class YahooDataSource(val params: YahooDataSource.Params)
       require(dailyMap(timeIndex(idx)).prevDate == timeIndex(idx - 1),
         s"Time must be continuous. " +
         s"For ticker $ticker, there is a gap between " +
-        s"${timeIndex(idx - 1)} and ${timeIndex(idx)}. " + 
+        s"${timeIndex(idx - 1)} and ${timeIndex(idx)}. " +
         s"Please import data to cover the gap or use a shorter range.")
     }}
 
     val adjReturn = timeIndex.map(t => dailyMap(t).adjReturn)
 
     HistoricalData(
-      ticker = ticker, 
+      ticker = ticker,
       timeIndex = timeIndex,
       close = timeIndex.map(t => dailyMap(t).close),
       adjClose = return2Close(adjReturn),
@@ -186,16 +186,16 @@ class YahooDataSource(val params: YahooDataSource.Params)
   // to extract the value; otherwise, it calls fillNaFunc with the optional last
   // extracted value and get the default value.
   def activeFilter[A : Manifest](
-    dailyMap: GenMap[DateTime, YahooDataSource.Daily], 
-    valueFunc: YahooDataSource.Daily => A, 
+    dailyMap: GenMap[DateTime, YahooDataSource.Daily],
+    valueFunc: YahooDataSource.Daily => A,
     fillNAFunc: Option[A] => A) : Array[A] = {
 
     var lastOpt: Option[A] = None
-    
+
     timeIndex
-    .map { t => 
+    .map { t =>
       if (dailyMap.contains(t)) {
-        val v = valueFunc(dailyMap(t)) 
+        val v = valueFunc(dailyMap(t))
         lastOpt = Some(v)
         v
       } else {
@@ -207,7 +207,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
 
   def finalizeStock(intermediate: YahooDataSource.Intermediate)
   : HistoricalData = {
-    val dailyMap = intermediate.dailyMap 
+    val dailyMap = intermediate.dailyMap
 
     val adjReturn = activeFilter[Double](dailyMap, _.adjReturn, _ => 0.0)
 
@@ -223,9 +223,9 @@ class YahooDataSource(val params: YahooDataSource.Params)
 
   def getTimeIndex(): HistoricalData = {
     // Only extracts market ticker as the main reference of market hours
-    val predicate = (e: Event) => 
+    val predicate = (e: Event) =>
       (e.entityType == params.entityType && e.entityId == marketTicker)
-    
+
     val tickerMap: Map[String, HistoricalData] = batchView
       .events
       .filter(predicate)
@@ -234,7 +234,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
         YahooDataSource.Intermediate(),
         mergeTimeIndex)
       .mapValues(finalizeTimeIndex)
-      
+
     tickerMap(marketTicker)
   }
 
@@ -242,11 +242,11 @@ class YahooDataSource(val params: YahooDataSource.Params)
   : Map[String, HistoricalData] = {
     // Also extract market ticker again, just as a normal stock.
     val tickerSet = (windowParams.tickerList :+ windowParams.marketTicker).toSet
-    val predicate = (e: Event) => 
+    val predicate = (e: Event) =>
       (e.entityType == params.entityType && tickerSet(e.entityId))
 
     val defaultTickerMap: Map[String, HistoricalData] =
-      params.windowParams.tickerList.map { 
+      params.windowParams.tickerList.map {
         ticker => (ticker -> HistoricalData(ticker, timeIndex))
       }
       .toMap
@@ -261,7 +261,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
       .mapValues(finalizeStock)
 
     /*
-    tickerMap.map { case (ticker, data) => 
+    tickerMap.map { case (ticker, data) =>
       println(ticker)
       println(data.toDetailedString)
     }
@@ -272,7 +272,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
 
   def getRawData(tickerMap: Map[String, HistoricalData]): RawData = {
     val allTickers = windowParams.tickerList :+ windowParams.marketTicker
-    
+
     val price: Array[(String, Array[Double])] = allTickers
       .map { ticker => (ticker, tickerMap(ticker).adjClose) }
       .toArray
@@ -296,7 +296,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
     //data.foreach { println }
     val rawData = getRawData(historicalSet)
     //println(rawData)
-    
+
     // Broadcast it.
     val rawDataB = sc.broadcast(rawData)
 
@@ -353,10 +353,10 @@ object YahooDataSource {
     * data.
     */
   case class Intermediate(
-    val ticker: String = "", 
+    val ticker: String = "",
     val dailyMap: Map[DateTime, Daily] = Map[DateTime, Daily]()
     ) extends Serializable {
-    override def toString(): String = 
+    override def toString(): String =
       s"YDS.Intermediate($ticker, size=${dailyMap.size})"
   }
 
@@ -424,7 +424,7 @@ object YahooDataSourceRun {
     val dsp = PredefinedDSP.BigSP500
     //val dsp = PredefinedDSP.SmallSP500
     //val dsp = PredefinedDSP.Test
-    
+
     val momentumParams = MomentumStrategyParams(20, 3)
 
     //val x =  Series(Vec(1,2,3))
@@ -440,7 +440,7 @@ object YahooDataSourceRun {
     Workflow.run(
       dataSourceClassOpt = Some(classOf[YahooDataSource]),
       dataSourceParams = dsp,
-      preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
+      preparatorClassOpt = Some(IdentityPreparator(classOf[YahooDataSource])),
       algorithmClassMapOpt = Some(Map(
         //"" -> classOf[MomentumStrategy]
         "" -> classOf[RegressionStrategy]
@@ -456,7 +456,3 @@ object YahooDataSourceRun {
         batch = "Imagine: Stock III"))
   }
 }
-
-
-
-
