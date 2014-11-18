@@ -82,25 +82,50 @@ In MyEngine/src/main/scala/***DataSource.scala***
 The `def readTraining` of class `DataSource` reads, and selects, data from a data store and it returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(val filepath: String) extends Params
+case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[DataSourceParams, EmptyDataParams, TrainingData, Query, EmptyActualResult] {
+  extends PDataSource[DataSourceParams, EmptyDataParams,
+  TrainingData, Query, EmptyActualResult] {
+
+  @transient lazy val logger = Logger[this.type]
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val data = sc.textFile(dsp.filepath)
-    val ratings: RDD[Rating] = data.map(_.split("::") match {
-      case Array(user, item, rate) =>
-        Rating(user.toInt, item.toInt, rate.toDouble)
-    })
-    new TrainingData(ratings)
+    val eventsDb = Storage.PEvents()
+    val eventsRDD: RDD[Event] = eventsDb.find(
+      appId = dsp.appId,
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+
+    val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
+      val rating = try {
+        val ratingValue: Double = event.event match {
+          case "rate" => event.properties.get[Double]("rating")
+          case "buy" => 4.0 // map buy event to rating value of 4
+          case _ => throw new Exception(s"Unexpected event ${event} is read.")
+        }
+        // assume entityId and targetEntityId is originally Int type
+        Rating(event.entityId.toInt,
+          event.targetEntityId.get.toInt,
+          ratingValue)
+      } catch {
+        case e: Exception => {
+          logger.error(s"Cannot convert ${event} to Rating. Exception: ${e}.")
+          throw e
+        }
+      }
+      rating
+    }
+    new TrainingData(ratingsRDD)
   }
 }
 ```
 
-As seen, it reads from a text file with `sc.textFile` by default.
-PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *filepath*, to `dsp`.
+`Storage.PEvents()` gives you access to data you collected through Event Server and `eventsDb.find` specifies the events you want to read.
+PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
 
@@ -108,13 +133,11 @@ In ***engine.json***:
 {
   ...
   "datasource": {
-    "filepath": "./data/sample_movielens_data.txt"
-  }
+    "appId": 1
+  },
   ...
 }
 ```
-
-In this sample text data file, values are delimited by double colons (::). The first column are user IDs. The second column are item IDs. The third column are ratings.
 
 
 The class definition of `TrainingData` is:
