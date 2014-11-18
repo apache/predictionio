@@ -10,7 +10,7 @@ Serving component is where post-processing actions occurs. For exmaple, if you a
 This section demonstrates how to add a custom filtering logic to exclude a list of blacklisted movies from the [Movie Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the Quckstart guide first. 
 
 Complete code example can be found in
-`examples/scala-local-movielens-filtering`.
+`examples/scala-parallel-recommendation-howto`.
 
 If you simply want to use this customized code, you can skip to the last section.
 
