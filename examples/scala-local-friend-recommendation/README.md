@@ -6,6 +6,13 @@ Three algorithms are implemented.
 2. Keyword Similarity KNN
 3. SimRank // Note that this algorithm is recommending a uesr to a user and thus the "itemId" in the query should be userId instead
 
+Notice about Spark settings:
+As the data set is large, we recommend setting spark memories to be large.
+Please set the below two lines with the two values $E_M and $D_M in the $SPARK_HOME/conf/spark-defaults.conf
+spark.executor.memory $E_M
+spark.driver.memory $D_M
+We have tested "Random" and "Keyword Similarity KNN" algorithms with $E_M = 16g and $D_M = 16g.
+
 To run the engine, you need to Register (Build) + Train + Deploy : 
 
 ```
@@ -18,9 +25,9 @@ $PIO_HOME/bin/pio deploy -v $EngineJson
 
 $EngineJson is
 
-1. "random_engine.json" for "Random"
-2. "keyword_similarity_engine.json" for "Keyword Similarity KNN"
-3. "simrank_similarity_engine.json" for "SimRank Similarity"
+1. "random_engine.json" for "Random" (default as running with full data files)
+2. "keyword_similarity_engine.json" for "Keyword Similarity KNN" (default as running with full data files)
+3. "simrank_similarity_engine.json" for "SimRank Similarity" (default as running with mini data files)
 
 To query :
 

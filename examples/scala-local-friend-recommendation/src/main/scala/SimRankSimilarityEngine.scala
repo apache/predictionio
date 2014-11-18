@@ -51,12 +51,14 @@ class SimRankAlgorithm (val ap: FriendRecommendationAlgoParams)
       var currIter = Array.ofDim[Double](graphSize, graphSize)
       // Ignore nodes with no outgoing edges
       for(key <- 0 until graphSize) {
-        for((neighbor, weight) <- td.socialAction(key)) {
-          val crossProduct =
-            for(x<-td.socialAction(key); y<-td.socialAction(neighbor)) yield (x,y)
-          val scalar = 0.8/(td.socialAction(key).map(tuple => tuple._2).sum * td.socialAction(neighbor).map(tuple => tuple._2).sum)
-          for(pair <- crossProduct) {
-            currIter(key)(neighbor) += scalar * prevIter(pair._1._1)(pair._2._1) * pair._1._2 * pair._2._2
+        if (td.socialAction(key) != null) {
+          for((neighbor, weight) <- td.socialAction(key)) {
+            val crossProduct =
+              for(x<-td.socialAction(key); y<-td.socialAction(neighbor)) yield (x,y)
+            val scalar = 0.8/(td.socialAction(key).map(tuple => tuple._2).sum * td.socialAction(neighbor).map(tuple => tuple._2).sum)
+            for(pair <- crossProduct) {
+              currIter(key)(neighbor) += scalar * prevIter(pair._1._1)(pair._2._1) * pair._1._2 * pair._2._2
+            }
           }
         }
       }

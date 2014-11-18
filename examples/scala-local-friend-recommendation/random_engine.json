@@ -4,9 +4,9 @@
   "name": "Friend Recommendation Engine with Random Method",
   "engineFactory": "io.prediction.examples.friendrecommendation.RandomEngineFactory",
   "datasource": {
-    "itemFilePath": "data/mini_item.txt",
-    "userKeywordFilePath": "data/mini_user_key_word.txt",
-    "userActionFilePath": "data/mini_user_action.txt"
+    "itemFilePath": "data/item.txt",
+    "userKeywordFilePath": "data/user_key_word.txt",
+    "userActionFilePath": "data/user_action.txt"
   },
   "algorithms": [
     {

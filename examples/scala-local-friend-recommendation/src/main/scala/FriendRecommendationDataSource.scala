@@ -3,10 +3,9 @@ package io.prediction.examples.friendrecommendation
 import io.prediction.controller._
 import scala.io.Source
 import scala.collection.immutable.HashMap
-import scala.collection.mutable.ArrayBuffer
 
 class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourceParams)
-  extends LDataSource[FriendRecommendationDataSourceParams, EmptyDataParams, FriendRecommendationTrainingData, FriendRecommendationQuery, EmptyActual] {
+  extends LDataSource[FriendRecommendationDataSourceParams, EmptyDataParams, FriendRecommendationTrainingData, FriendRecommendationQuery, EmptyActualResult] {
   override
   def readTraining() : FriendRecommendationTrainingData = {
     val (itemIdMap, itemKeyword) = readItem(dsp.itemFilePath)
@@ -16,9 +15,10 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
   }
 
   def readItem(file: String) : (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
+    val itemSize = Source.fromFile(file).getLines().size
     val lines = Source.fromFile(file).getLines()
     // An array on Map[keywordId -> weight] values with internal item id index
-    val itemKeyword = new ArrayBuffer[HashMap[Int, Double]]()
+    val itemKeyword = new Array[HashMap[Int, Double]](itemSize)
     // A map from external id to internal id
     var itemIdMap = new HashMap[Int, Int]()
     var internalId = 0
@@ -26,25 +26,22 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
       line =>
       val data = line.split("\\s")
       itemIdMap += (data(0).toInt -> internalId)
-      val keywordMap = HashMap(
-        (for (term <- data(2).split(";")) yield (term.toInt -> 1.0))
-        .toSeq
-      : _*)
-      itemKeyword.append(keywordMap)
+      var keywordMap = new HashMap[Int, Double]()
+      data(2).split(";").foreach{
+        term =>
+        keywordMap += (term.toInt -> 1.0)
+      }
+      itemKeyword(internalId) = keywordMap
       internalId += 1
     }
-    (itemIdMap, itemKeyword.toArray)
+    (itemIdMap, itemKeyword)
   }
 
   def readUser(file: String) : (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
-    // Helper function to generate pair items form a:b strings
-    val genTermWeightItem = (termWeight: String) => {
-      val termWeightPair = termWeight.split(":")
-      (termWeightPair(0).toInt -> termWeightPair(1).toDouble)
-    }
+    val userSize = Source.fromFile(file).getLines().size
     val lines = Source.fromFile(file).getLines()
     // An array on Map[keywordId -> weight] values with internal item id index
-    val userKeyword = new ArrayBuffer[HashMap[Int, Double]]()
+    val userKeyword = new Array[HashMap[Int, Double]](userSize)
     // A map from external id to internal id
     var userIdMap = new HashMap[Int, Int]()
     var internalId = 0
@@ -52,22 +49,23 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
       line =>
       val data = line.split("\\s")
       userIdMap += (data(0).toInt -> internalId)
-      val keywordMap = HashMap(
-        (for (termWeight <- data(1).split(";")) yield
-          genTermWeightItem(termWeight)
-        ).toSeq
-      : _*)
-      userKeyword.append(keywordMap)
+      var keywordMap = new HashMap[Int, Double]()
+      data(1).split(";").foreach{
+        termWeight =>
+        val termWeightPair = termWeight.split(":")
+        keywordMap += (termWeightPair(0).toInt -> termWeightPair(1).toDouble)
+      }
+      userKeyword(internalId) = keywordMap
       internalId += 1
     }
-    (userIdMap, userKeyword.toArray)
+    (userIdMap, userKeyword)
   }
 
   def readRelationship(file: String, userSize: Int, userIdMap: HashMap[Int, Int]) : Array[List[(Int, Int)]] = {
     val adjArray = new Array[List[(Int, Int)]](userSize)
     val lines = Source.fromFile(file).getLines()
     lines.foreach{
-      line => 
+      line =>
       val data = line.split("\\s").map(s => s.toInt)
       if (userIdMap.contains(data(0)) && userIdMap.contains(data(1))) {
         val srcInternalId = userIdMap(data(0))
