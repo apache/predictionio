@@ -15,19 +15,19 @@
 
 package io.prediction.engines.itemrank
 
-import io.prediction.controller.LServing
+import io.prediction.controller.Serving
 import io.prediction.controller.EmptyParams
 import breeze.stats.{ mean, meanAndVariance, MeanAndVariance }
 
 // Only return first prediction
-class ItemRankServing extends LServing[EmptyParams, Query, Prediction] {
+class ItemRankServing extends Serving[EmptyParams, Query, Prediction] {
   override def serve(query: Query, predictions: Seq[Prediction]): Prediction = {
     predictions.head
   }
 }
 
 // Return average item score for each non-original prediction.
-class ItemRankAverageServing extends LServing[EmptyParams, Query, Prediction] {
+class ItemRankAverageServing extends Serving[EmptyParams, Query, Prediction] {
   override def serve(query: Query, prediction: Seq[Prediction]): Prediction = {
     // Only consider non-original items
     val itemsList: Seq[Seq[(String, Double)]] = prediction

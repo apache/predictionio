@@ -15,11 +15,11 @@
 
 package io.prediction.engines.itemsim
 
-import io.prediction.controller.LServing
+import io.prediction.controller.Serving
 import io.prediction.controller.EmptyParams
 
 // Only return first prediction
-class ItemSimServing extends LServing[EmptyParams, Query, Prediction] {
+class ItemSimServing extends Serving[EmptyParams, Query, Prediction] {
   override def serve(query: Query, predictions: Seq[Prediction]): Prediction = {
     predictions.head
   }

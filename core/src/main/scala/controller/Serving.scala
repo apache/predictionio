@@ -25,15 +25,14 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
-/** Base class of local serving. For deployment, there should only be local
-  * serving class.
+/** Base class of serving. 
   *
   * @tparam AP Algorithm parameters class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @group Serving
   */
-abstract class LServing[AP <: Params : ClassTag, Q, P]
+abstract class Serving[AP <: Params : ClassTag, Q, P]
   extends BaseServing[AP, Q, P] {
   def serveBase(q: Q, ps: Seq[P]): P = {
     serve(q, ps)
@@ -48,17 +47,17 @@ abstract class LServing[AP <: Params : ClassTag, Q, P]
   def serve(query: Q, predictions: Seq[P]): P
 }
 
-/** A concrete implementation of [[LServing]] returning the first algorithm's
+/** A concrete implementation of [[Serving]] returning the first algorithm's
   * prediction result directly without any modification.
   *
   * @group Serving
   */
-class FirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
+class FirstServing[Q, P] extends Serving[EmptyParams, Q, P] {
   /** Returns the first algorithm's prediction. */
   def serve(query: Q, predictions: Seq[P]): P = predictions.head
 }
 
-/** A concrete implementation of [[LServing]] returning the first algorithm's
+/** A concrete implementation of [[Serving]] returning the first algorithm's
   * prediction result directly without any modification.
   *
   * @group Serving
@@ -69,19 +68,19 @@ object FirstServing {
     classOf[FirstServing[Q, P]]
 }
 
-/** A concrete implementation of [[LServing]] returning the average of all
+/** A concrete implementation of [[Serving]] returning the average of all
   * algorithms' predictions. The output prediction class is Double.
   *
   * @group Serving
   */
-class AverageServing[Q] extends LServing[EmptyParams, Q, Double] {
+class AverageServing[Q] extends Serving[EmptyParams, Q, Double] {
   /** Returns the average of all algorithms' predictions. */
   def serve(query: Q, predictions: Seq[Double]): Double = {
     predictions.sum / predictions.length
   }
 }
 
-/** A concrete implementation of [[LServing]] returning the average of all
+/** A concrete implementation of [[Serving]] returning the average of all
   * algorithms' predictions. The output prediction class is Double.
   *
   * @group Serving

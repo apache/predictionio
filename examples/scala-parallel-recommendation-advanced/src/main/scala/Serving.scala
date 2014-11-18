@@ -3,7 +3,7 @@ package org.examples.recommendation
 import io.prediction.controller._
 
 class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+  extends Serving[EmptyServingParams, Query, PredictedResult] {
 
   override
   def serve(query: Query,
