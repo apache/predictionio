@@ -74,31 +74,52 @@ In the DASE architecture, data is prepared by 2 components sequentially: *Data S
 
 In MyEngine/src/main/scala/***DataSource.scala***
 
-The `def readTraining` of class `DataSource` reads, and selects, data from a data store and it returns `TrainingData`.
+The `def readTraining` of class `DataSource` reads, and selects, data from datastore of EventServer and it returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(val filepath: String) extends Params
+case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[DataSourceParams, EmptyDataParams,
   TrainingData, Query, EmptyActualResult] {
 
+  @transient lazy val logger = Logger[this.type]
+
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val data = sc.textFile(dsp.filepath)
-    val labeledPoints: RDD[LabeledPoint] = data.map { line =>
-      val parts = line.split(',')
-      LabeledPoint(parts(0).toDouble,
-        Vectors.dense(parts(1).split(' ').map(_.toDouble)))
-    }
+    val eventsDb = Storage.getPEvents()
+    val labeledPoints: RDD[LabeledPoint] = eventsDb.aggregateProperties(
+      appId = dsp.appId,
+      entityType = "user",
+      // only keep entities with these required properties defined
+      required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
+      .map { case (entityId, properties) =>
+        try {
+          LabeledPoint(properties.get[Double]("plan"),
+            Vectors.dense(Array(
+              properties.get[Double]("attr0"),
+              properties.get[Double]("attr1"),
+              properties.get[Double]("attr2")
+            ))
+          )
+        } catch {
+          case e: Exception => {
+            logger.error(s"Failed to get properties ${properties} of" +
+              s" ${entityId}. Exception: ${e}.")
+            throw e
+          }
+        }
+      }
 
     new TrainingData(labeledPoints)
   }
 }
 ```
 
-As seen, it reads from a text file with `sc.textFile` by default.
-PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *filepath*, to `dsp`.
+`Storage.getPEvents()` gives you access to data you collected through Event Server
+and `eventsDb.aggregateProperties` aggregates the event records of the 4 properties (attr0, attr1, attr2 and plan) for each user. 
+
+PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
 
@@ -106,8 +127,8 @@ In ***engine.json***:
 {
   ...
   "datasource": {
-    "filepath": "./data/sample_naive_bayes_data.txt"
-  }
+    "appId": 2
+  },
   ...
 }
 ```

@@ -79,7 +79,7 @@ In the DASE architecture, data is prepared by 2 components sequentially: *Data S
 
 In MyEngine/src/main/scala/***DataSource.scala***
 
-The `def readTraining` of class `DataSource` reads, and selects, data from a data store and it returns `TrainingData`.
+The `def readTraining` of class `DataSource` reads, and selects, data from datastore of EventServer and it returns `TrainingData`.
 
 ```scala
 case class DataSourceParams(val appId: Int) extends Params

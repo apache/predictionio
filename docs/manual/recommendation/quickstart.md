@@ -27,10 +27,9 @@ and please make sure that PredictionIO EventServer, which collects data, is runn
 $ pio eventserver
 ```
 
-
 ## Create a Sample App
 
-Your engine will process data of an 'app'. Let's create a sample app called "MyApp" now:
+The engine is going to process the data of an app. Let's create a sample app called "MyApp" now:
 
 ```
 $ pio app new MyApp
@@ -40,6 +39,8 @@ You should find the following in the console output:
 
 ```
 ...
+(TO BE FIXED)
+
 2014-11-12 18:24:22,904 INFO  tools.Console$ - Initialized Event Store for this app ID: 2.
 2014-11-12 18:24:22,920 INFO  tools.Console$ - Created new app:
 2014-11-12 18:24:22,921 INFO  tools.Console$ -         Name: MyApp
@@ -51,7 +52,9 @@ You should find the following in the console output:
 2014-11-12 18:24:22,923 INFO  zookeeper.ClientCnxn - EventThread shut down
 ```
 
-Take note of the `Access Key` and `App ID`, which will be used soon.
+Take note of the `Access Key` and `App ID`.
+You will need the `Access Key` to refer to "MyApp" when you collect data. 
+At the same time, you will use `App ID` to refer to "MyApp" in engine code.
 
 ## Create a new Engine from an Engine Template
 
@@ -61,8 +64,7 @@ Now let's create a new engine called *MyEngine* by cloning the MLlib Collaborati
 $ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
 $ cd MyEngine
 ```
-
-*Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
+* Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
 
 ## Collecting Data
 
@@ -162,12 +164,6 @@ Importing data...
 Now the movie ratings data is stored as events inside the Event Store.
 
 
-
-
-
-
-
-
 ## Deploy the Engine as a Service
 
 Now you can deploy the engine.  Make sure the appId defined in the file `engine.json` match your `App ID`:
@@ -189,7 +185,6 @@ $ pio deploy
 ```
 
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
-
 
 ![Engine Status]({{ site.baseurl }}/images/engine-server.png)
 
