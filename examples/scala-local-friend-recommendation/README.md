@@ -2,15 +2,17 @@
 We are creating an engine in PredictionIO for friend/item recommendation in social network settings. It learns from user profiles, item information, social interactions as well as past recommendation history and builds a model to provide suggestions on friend/item for users.
 
 Three algorithms are implemented.
+
 1. Random
 2. Keyword Similarity KNN
 3. SimRank // Note that this algorithm is recommending a uesr to a user and thus the "itemId" in the query should be userId instead
 
 Notice about Spark settings:
-As the data set is large, we recommend setting spark memories to be large.
-Please set the below two lines with the two values $E_M and $D_M in the $SPARK_HOME/conf/spark-defaults.conf
-spark.executor.memory $E_M
-spark.driver.memory $D_M
+
+As the data set is large, we recommend setting spark memories to be large. <br/>
+Please set the below two lines with the two values $E_M and $D_M in the $SPARK_HOME/conf/spark-defaults.conf <br/>
+spark.executor.memory $E_M <br/>
+spark.driver.memory $D_M <br/>
 We have tested "Random" and "Keyword Similarity KNN" algorithms with $E_M = 16g and $D_M = 16g.
 
 To run the engine, you need to Register (Build) + Train + Deploy : 
