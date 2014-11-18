@@ -71,7 +71,7 @@ $ cd MyEngine
 Next, let's collect some training data for the app of this Engine.
 By default, the Recommendation Engine Template supports 2 types of events: "rate" and "buy".  A user can give a rating score to an item or he can buy an item.
 
-You can send these data to PredictionIO EventServer in real-time easily through the EventAPI with a SDK or HTTP call:
+You can send these data to PredictionIO EventServer in real-time easily by making a HTTP request or through the `EventClient` of a SDK
 
 <div class="codetabs">
 <div data-lang="Python SDK">
@@ -192,6 +192,7 @@ This will deploy an engine that binds to http://localhost:8000. You can visit th
 
 Now, You can try to retrieve predicted results.
 To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
+Simply send a query by making a HTTP request or through the `EngineClient` of a SDK:
 
 <div class="codetabs">
 <div data-lang="Python SDK">

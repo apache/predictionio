@@ -74,7 +74,8 @@ $ cd MyEngine
 Next, let's collect some training data for the app of this Engine.
 For model training, Classification Engine Template reads 4 properties of a user record: attr0, attr1, attr2 and plan.
 
-You can send these data to PredictionIO EventServer in real-time easily through the EventAPI with a SDK or HTTP call:
+You can send these data to PredictionIO EventServer in real-time easily by making a HTTP request or through the `EventClient` of a SDK
+
 
 <div class="codetabs">
 <div data-lang="Python SDK">
@@ -225,6 +226,7 @@ This will deploy an engine that binds to http://localhost:8000. You can visit th
 
 Now, You can try to retrieve predicted results.
 For example, to predict the label (i.e. *plan* in this case) of a user with attr0=2, attr1=0 and attr2=0, you send this JSON { "features": [2, 0, 0] } to the deployed engine and it will return a JSON of the predicted plan.
+Simply send a query by making a HTTP request or through the `EngineClient` of a SDK:
 
 <div class="codetabs">
 <div data-lang="Python SDK">
