@@ -447,7 +447,7 @@ object YahooDataSourceRun {
       )),
       //algorithmParamsList = Seq(("", momentumParams)),
       algorithmParamsList = Seq(("", EmptyParams())),
-      servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
+      servingClassOpt = Some(LFirstServing(classOf[EmptyStrategy])),
       evaluatorClassOpt = Some(classOf[BacktestingEvaluator]),
       evaluatorParams = evaluatorParams,
       params = WorkflowParams(
