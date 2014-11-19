@@ -78,6 +78,7 @@ trait PEvents extends Serializable {
     * @param startTime use events with eventTime >= startTime
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
+    * @param sc Spark context
     * @return RDD[(String, DataMap)] RDD of entityId and properties DataMap pair
     */
   def aggregateProperties(
