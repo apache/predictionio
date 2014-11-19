@@ -17,7 +17,7 @@ We are going to show you how to create your own classification engine for produc
 
 First you need to [install PredictionIO {{site.pio_version}}]({{site.baseurl}}/install/)
 
-**0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and ElasticSearch. See more [here](../resources/schema-change.html).**
+**0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and Elasticsearch. See more [here](../resources/schema-change.html).**
 
 
 Let's say you have installed PredictionIO at */home/yourname/predictionio/*.

@@ -52,7 +52,7 @@ jps
 Master
 Worker
 Hbase
-ElasticSearch
+Elasticsearch
 ```
 ### Step 6: Check Localhost8080
 -Navigate to http://localhost:8080
