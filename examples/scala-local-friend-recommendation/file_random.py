@@ -87,7 +87,6 @@ index = 0
 # loop through the file to get number of lines in the file
 for line in read_file:
     if line.split()[0] == user_id_list[index]:
-        print user_id_list[index]
         write_file.write(line)
         index += 1
         if index == len(user_id_list):
