@@ -6,7 +6,7 @@ title: Recommendation Quick Start
 #Upgrade to 0.8.2 
 
 0.8.2 contains HBase and ElasticSearch schema changes from the previous versions. In order to use 0.8.2, you need to first clear them. 
-These will clear out all the data in ElasticSearch and HBase, please extra cautious. 
+These will clear out all the data in ElasticSearch and HBase, please be extra cautious. 
 
 ----
 
