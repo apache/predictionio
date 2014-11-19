@@ -7,7 +7,7 @@ title: Customizing Data Preparator
 
 Data Preparator is where pre-processing actions occurs. For example, one may want to remove some very popular items from training data because she thinks that these items may not help finding individual person's tastes or one may have a black list of item that she want to remove from training data before feed the data to the algorithm.
 
-This section demonstrates how to add a filtering logic to exclude a list of items from the [Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the [Quckstart Guide](/quickstart.html) first.
+This section demonstrates how to add a filtering logic to exclude a list of items from the [Recommendation Engine](quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the [Quckstart Guide](quickstart.html) first.
 
 
 ## The Data Preparator Component
