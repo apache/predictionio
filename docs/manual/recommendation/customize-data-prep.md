@@ -28,7 +28,7 @@ The unmodified version looks like the following:
 
 ```scala
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(ratings = trainingData.ratings)
@@ -41,10 +41,13 @@ The `prepare` simply passes the ratings from `TrainingData` to `PreparedData`.
 You can modify the `prepare()` method to read a black list of items from a file and remove them from TrainigData. So it becomes:
 
 ```scala
+import scala.io.Source // ADDED
+
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
+    // MODIFIED HERE
     val noTrainItems = Source.fromFile("./data/sample_not_train_data.txt").getLines.map(_.toInt).toSet
     // exclude noTrainItems from original trainingData
     val ratings = trainingData.ratings.filter( r =>
@@ -102,15 +105,7 @@ PredictionIO offers `PreparatorParams` so you can read varaible values from *eng
 Modify `/src/main/scala/Preparator.scala` again in the "MyRecommendation" directory to:
 
 ```scala
-import io.prediction.controller.PPreparator
-import io.prediction.controller.Params // CHANGED
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.Rating
-
-import scala.io.Source
+import io.prediction.controller.Params // ADDED
 
  // ADDED CustomPreparatorParams case class
 case class CustomPreparatorParams(
@@ -118,7 +113,7 @@ case class CustomPreparatorParams(
 ) extends Params
 
 class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
-  extends PPreparator[CustomPreparatorParams, TrainingData, PreparedData] { // ADDED CustomPreparatorParams
+  extends PPreparator[TrainingData, PreparedData] { // ADDED CustomPreparatorParams
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     val noTrainItems = Source.fromFile(pp.filepath).getLines.map(_.toInt).toSet //CHANGED

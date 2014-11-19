@@ -80,8 +80,7 @@ The `def readTraining` of class `DataSource` reads, and selects, data from datas
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[DataSourceParams, EmptyDataParams,
-  TrainingData, Query, EmptyActualResult] {
+  extends PDataSource[TrainingData, Query, EmptyEvalInfo, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
 
@@ -161,7 +160,7 @@ class PreparedData(
 ) extends Serializable
 
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(trainingData.labeledPoints)
@@ -244,7 +243,7 @@ In MyEngine/src/main/scala/***Serving.scala***
 
 ```scala
 class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+  extends LServing[Query, PredictedResult] {
 
   override
   def serve(query: Query,
