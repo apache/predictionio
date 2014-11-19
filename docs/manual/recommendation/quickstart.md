@@ -39,7 +39,7 @@ $ pio eventserver
 
 ## Create a Sample App
 
-The engine is going to process the data of an app. Let's create a sample app called "MyApp" now:
+Let's create a sample app called "MyApp1" now. An app prepresents the application that generates the data, e.g. a movie rating app.
 
 ```
 $ pio app new MyApp1
