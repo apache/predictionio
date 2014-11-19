@@ -120,8 +120,10 @@ for line in read_file:
         met = True
     # if the current line's user is greater than the user list, that means
     # the user doesn't follow or are following, then we move to next user
-    if int(line.split()[0]) > int(user_id_list[index]):
+    if line.split()[0] > user_id_list[index]:
         index += 1
+        if index == len(user_id_list):
+            break
 
 #print user_sns_list
 write_file = open("data/mini_user_sns.txt",'w')
@@ -149,7 +151,7 @@ for line in read_file:
         #print "here"
         user_action_list.append(line)
         met = True
-    if int(line.split()[0]) > int(user_id_list[index]):
+    if line.split()[0] > user_id_list[index]:
         index += 1
         if index == len(user_id_list):
             break
