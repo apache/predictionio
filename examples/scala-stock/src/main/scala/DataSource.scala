@@ -11,7 +11,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.broadcast.Broadcast
 
 import io.prediction.data.storage.Storage
-import io.prediction.data.storage.{ ItemTrend, ItemTrends }
 
 import com.mongodb.casbah.Imports._
 import org.saddle._
