@@ -27,13 +27,11 @@ import scala.reflect.runtime.universe._
 
 /** Base class of serving. 
   *
-  * @tparam AP Algorithm parameters class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @group Serving
   */
-abstract class LServing[AP <: Params : ClassTag, Q, P]
-  extends BaseServing[AP, Q, P] {
+abstract class LServing[Q, P] extends BaseServing[Q, P] {
   def serveBase(q: Q, ps: Seq[P]): P = {
     serve(q, ps)
   }
@@ -52,7 +50,7 @@ abstract class LServing[AP <: Params : ClassTag, Q, P]
   *
   * @group Serving
   */
-class LFirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
+class LFirstServing[Q, P] extends LServing[Q, P] {
   /** Returns the first algorithm's prediction. */
   def serve(query: Q, predictions: Seq[P]): P = predictions.head
 }
@@ -64,7 +62,7 @@ class LFirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
   */
 object LFirstServing {
   /** Returns an instance of [[LFirstServing]]. */
-  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, _, Q, P]]) =
+  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]) =
     classOf[LFirstServing[Q, P]]
 }
 
@@ -73,7 +71,7 @@ object LFirstServing {
   *
   * @group Serving
   */
-class LAverageServing[Q] extends LServing[EmptyParams, Q, Double] {
+class LAverageServing[Q] extends LServing[Q, Double] {
   /** Returns the average of all algorithms' predictions. */
   def serve(query: Q, predictions: Seq[Double]): Double = {
     predictions.sum / predictions.length
@@ -87,6 +85,6 @@ class LAverageServing[Q] extends LServing[EmptyParams, Q, Double] {
   */
 object LAverageServing {
   /** Returns an instance of [[LAverageServing]]. */
-  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, _, Q, _]]) =
+  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, Q, _]]) =
     classOf[LAverageServing[Q]]
 }

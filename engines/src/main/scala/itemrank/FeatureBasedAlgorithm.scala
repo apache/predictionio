@@ -50,8 +50,7 @@ extends IPersistentModelLoader[EmptyParams, FeatureBasedModel] {
 
 // FeatureBaseAlgorithm use all itypes as features.
 class FeatureBasedAlgorithm
-  extends LAlgorithm[EmptyParams, PreparedData, FeatureBasedModel,
-      Query, Prediction] {
+  extends LAlgorithm[PreparedData, FeatureBasedModel, Query, Prediction] {
 
   def train(data: PreparedData): FeatureBasedModel = {
     val featureCounts = data.items

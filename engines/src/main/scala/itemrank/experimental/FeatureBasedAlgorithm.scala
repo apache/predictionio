@@ -49,7 +49,7 @@ extends Serializable {
 
 // FeatureBaseAlgorithm use all itypes as features.
 class FeatureBasedAlgorithm
-  extends LAlgorithm[EmptyParams, PreparedData, FeatureBasedModel,
+  extends LAlgorithm[PreparedData, FeatureBasedModel,
       Query, Prediction] {
 
   def train(data: PreparedData): FeatureBasedModel = {

@@ -80,8 +80,7 @@ class ItemBasedModel(
 
 
 class ItemBasedAlgorithm(params: ItemBasedAlgoParams)
-  extends LAlgorithm[ItemBasedAlgoParams, PreparedData,
-  ItemBasedModel, Query, Prediction] {
+  extends LAlgorithm[PreparedData, ItemBasedModel, Query, Prediction] {
 
   var _minScore = 0.0
 

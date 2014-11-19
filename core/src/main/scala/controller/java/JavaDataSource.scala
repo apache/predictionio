@@ -38,31 +38,25 @@ import scala.reflect._
  * A local data source runs locally within a single machine and return data that
  * can fit within a single machine.
  *
- * @param <DSP> Data Source Parameters
- * @param <DP> Data Parameters
  * @param <TD> Training Data
+ * @param <EI> Evaluation Info
  * @param <Q> Input Query
  * @param <A> Actual Value
  */
-abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
-  extends BaseDataSource[DSP, DP, RDD[TD], Q, A]()(
-    JavaUtils.fakeClassTag[DSP]) {
-  def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
+abstract class LJavaDataSource[TD, EI, Q, A]
+  extends BaseDataSource[RDD[TD], EI, Q, A] {
+  def readBase(sc: SparkContext): Seq[(RDD[TD], EI, RDD[(Q, A)])] = {
     implicit val fakeTdTag: ClassTag[TD] = JavaUtils.fakeClassTag[TD]
     val datasets = sc.parallelize(Array(None)).flatMap(_ => read().toSeq).zipWithIndex
     datasets.cache
-    val dps = datasets.map(t => t._2 -> t._1._1).collect.toMap
-    dps.map { t =>
+    val eis: Map[Long, EI] = datasets.map(t => t._2 -> t._1._2).collect.toMap
+    eis.map { t =>
       val dataset = datasets.filter(_._2 == t._1).map(_._1)
-      val dp = t._2
-      val td = dataset.map(_._2)
+      val ei = t._2
+      val td = dataset.map(_._1)
       val qa = dataset.map(_._3.toSeq).flatMap(identity)
-      (dp, td, qa)
+      (td, ei, qa)
     }.toSeq
-    /*
-    read().toSeq.map(e =>
-      (e._1, sc.parallelize(Seq(e._2)), sc.parallelize(e._3.toSeq)))
-    */
   }
 
   /** Implement this method to only return training data from a data source.
@@ -73,16 +67,16 @@ abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
     * an Iterable of query and actual value pairs) from a data source.
     * Should also implement readTraining to return correponding training data.
     */
-  def readTest(): Tuple2[DP, JIterable[Tuple2[Q, A]]] =
-    (null.asInstanceOf[DP], JCollections.emptyList())
+  def readTest(): Tuple2[EI, JIterable[Tuple2[Q, A]]] =
+    (null.asInstanceOf[EI], JCollections.emptyList())
 
   /** Implement this method to return one or more sets of training data
     * and test data (an Iterable of query and actual value pairs) from a
     * data source.
     */
-  def read(): JIterable[Tuple3[DP, TD, JIterable[Tuple2[Q, A]]]] = {
-    val (dp, qa) = readTest()
-    List((dp, readTraining(), qa))
+  def read(): JIterable[Tuple3[TD, EI, JIterable[Tuple2[Q, A]]]] = {
+    val (ei, qa) = readTest()
+    List((readTraining(), ei, qa))
   }
 
 }
@@ -92,22 +86,19 @@ abstract class LJavaDataSource[DSP <: Params, DP, TD, Q, A]
   * A parallel data source runs locally within a single machine, or in parallel
   * on a cluster, to return data that is distributed across a cluster.
   *
-  * @param <DSP> Data source parameters class.
-  * @param <DP> Data parameters data class.
   * @param <TD> Training data class.
+  * @param <EI> Evaluation info class.
   * @param <Q> Input query class.
   * @param <A> Actual value class.
   */
-abstract class PJavaDataSource[DSP <: Params, DP, TD, Q, A]
-  extends BaseDataSource[DSP, DP, TD, Q, A]()(
-    JavaUtils.fakeClassTag[DSP]) {
-
-  def readBase(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])] = {
+abstract class PJavaDataSource[TD, EI, Q, A]
+  extends BaseDataSource[TD, EI, Q, A] {
+  def readBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])] = {
     implicit val fakeTdTag: ClassTag[TD] = JavaUtils.fakeClassTag[TD]
-    read(new JavaSparkContext(sc)).toSeq.map { case (dp, td, qaRdd) => {
+    read(new JavaSparkContext(sc)).toSeq.map { case (td, ei, qaRdd) => {
       // TODO(yipjustin). Maybe do a size check on td, to make sure the user
       // doesn't supply a huge TD to the driver program.
-      (dp, td, qaRdd.rdd)
+      (td, ei, qaRdd.rdd)
     }}
   }
 
@@ -115,5 +106,5 @@ abstract class PJavaDataSource[DSP <: Params, DP, TD, Q, A]
     * can optionally include a sequence of query and actual value pairs for
     * evaluation purpose.
     */
-  def read(jsc: JavaSparkContext): JIterable[Tuple3[DP, TD, JavaPairRDD[Q, A]]]
+  def read(jsc: JavaSparkContext): JIterable[Tuple3[TD, EI, JavaPairRDD[Q, A]]]
 }

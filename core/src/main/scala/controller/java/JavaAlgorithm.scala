@@ -34,15 +34,13 @@ import scala.reflect._
  * A local algorithm runs locally within a single machine and produces a model
  * that can fit within a single machine.
  *
- * @param <AP> Algorithm Parameters
  * @param <PD> Prepared Data
  * @param <M> Model
  * @param <Q> Input Query
  * @param <P> Output Prediction
  */
-abstract class LJavaAlgorithm[AP <: Params, PD, M, Q, P]
-  extends LAlgorithm[AP, PD, M, Q, P]()(
-    JavaUtils.fakeClassTag[AP],
+abstract class LJavaAlgorithm[PD, M, Q, P]
+  extends LAlgorithm[PD, M, Q, P]()(
     JavaUtils.fakeClassTag[M],
     JavaUtils.fakeManifest[Q]) {
   def train(pd: PD): M
@@ -52,9 +50,9 @@ abstract class LJavaAlgorithm[AP <: Params, PD, M, Q, P]
   /** Returns a Class object of Q for internal use. */
   def queryClass(): Class[Q] = {
     val typeArgs = TypeResolver.resolveRawArguments(
-      classOf[LJavaAlgorithm[AP, PD, M, Q, P]],
+      classOf[LJavaAlgorithm[PD, M, Q, P]],
       getClass)
-    typeArgs(3).asInstanceOf[Class[Q]]
+    typeArgs(2).asInstanceOf[Class[Q]]
   }
 
   override def isJava = true
@@ -65,15 +63,13 @@ abstract class LJavaAlgorithm[AP <: Params, PD, M, Q, P]
   * A parallel algorithm can be run in parallel on a cluster and produces a
   * model that can also be distributed across a cluster.
   *
-  * @param <AP> Algorithm parameters class.
   * @param <PD> Prepared data class.
   * @param <M> Trained model class.
   * @param <Q> Input query class.
   * @param <P> Output prediction class.
   */
-abstract class PJavaAlgorithm[AP <: Params, PD, M, Q, P]
-  extends BaseAlgorithm[AP, PD, M, Q, P]()(
-    JavaUtils.fakeClassTag[AP],
+abstract class PJavaAlgorithm[PD, M, Q, P]
+  extends BaseAlgorithm[PD, M, Q, P]()(
     JavaUtils.fakeManifest[Q]) {
 
   /** Do not use directly or override this method, as this is called by
@@ -131,9 +127,9 @@ abstract class PJavaAlgorithm[AP <: Params, PD, M, Q, P]
   /** Returns a Class object of Q for internal use. */
   def queryClass(): Class[Q] = {
     val typeArgs = TypeResolver.resolveRawArguments(
-      classOf[PJavaAlgorithm[AP, PD, M, Q, P]],
+      classOf[PJavaAlgorithm[PD, M, Q, P]],
       getClass)
-    typeArgs(3).asInstanceOf[Class[Q]]
+    typeArgs(2).asInstanceOf[Class[Q]]
   }
 
   def isJava = true

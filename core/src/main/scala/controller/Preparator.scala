@@ -30,13 +30,12 @@ import scala.reflect.runtime.universe._
   * A local preparator runs locally within a single machine and produces
   * prepared data that can fit within a single machine.
   *
-  * @tparam PP Preparator parameters class.
   * @tparam TD Training data class.
   * @tparam PD Prepared data class.
   * @group Preparator
   */
-abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
-  extends BasePreparator[PP, RDD[TD], RDD[PD]] {
+abstract class LPreparator[TD, PD : ClassTag]
+  extends BasePreparator[RDD[TD], RDD[PD]] {
 
   def prepareBase(sc: SparkContext, rddTd: RDD[TD]): RDD[PD] = {
     rddTd.map(prepare)
@@ -55,13 +54,12 @@ abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
   * A parallel preparator can be run in parallel on a cluster and produces a
   * prepared data that is distributed across a cluster.
   *
-  * @tparam PP Preparator parameters class.
   * @tparam TD Training data class.
   * @tparam PD Prepared data class.
   * @group Preparator
   */
-abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
-  extends BasePreparator[PP, TD, PD] {
+abstract class PPreparator[TD, PD]
+  extends BasePreparator[TD, PD] {
 
   def prepareBase(sc: SparkContext, td: TD): PD = {
     prepare(sc, td)
@@ -83,7 +81,7 @@ abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
   * @group Preparator
   */
 private[prediction] 
-class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
+class IdentityPreparator[TD] extends BasePreparator[TD, TD] {
   def prepareBase(sc: SparkContext, td: TD): TD = td
 }
 
@@ -98,7 +96,7 @@ object IdentityPreparator {
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: BaseDataSource[_, _, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: BaseDataSource[TD, _, _, _]]) =
     classOf[IdentityPreparator[TD]]
 }
 
@@ -107,7 +105,7 @@ object IdentityPreparator {
   *
   * @group Preparator
   */
-class PIdentityPreparator[TD] extends PPreparator[EmptyParams, TD, TD] {
+class PIdentityPreparator[TD] extends PPreparator[TD, TD] {
   def prepare(sc: SparkContext, td: TD): TD = td
 }
 
@@ -121,7 +119,7 @@ object PIdentityPreparator {
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: PDataSource[_, _, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: PDataSource[TD, _, _, _]]) =
     classOf[PIdentityPreparator[TD]]
 }
 
@@ -131,7 +129,7 @@ object PIdentityPreparator {
   *
   * @group Preparator
   */
-class LIdentityPreparator[TD: ClassTag] extends LPreparator[EmptyParams, TD, TD] {
+class LIdentityPreparator[TD: ClassTag] extends LPreparator[TD, TD] {
   def prepare(td: TD): TD = td
 }
 
@@ -145,7 +143,7 @@ object LIdentityPreparator {
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: LDataSource[_, _, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: LDataSource[TD, _, _, _]]) =
     classOf[LIdentityPreparator[TD]]
 }
 

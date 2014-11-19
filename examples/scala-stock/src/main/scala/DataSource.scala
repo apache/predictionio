@@ -10,8 +10,6 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.broadcast.Broadcast
 
-import io.prediction.data.storage.Storage
-
 import com.mongodb.casbah.Imports._
 import org.saddle._
 import org.saddle.index.IndexTime
