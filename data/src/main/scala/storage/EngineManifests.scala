@@ -30,7 +30,7 @@ import org.json4s._
  * @param files Paths to engine files.
  * @param engineFactory Engine's factory class name.
  */
-case class EngineManifest(
+private[prediction] case class EngineManifest(
   id: String,
   version: String,
   name: String,
