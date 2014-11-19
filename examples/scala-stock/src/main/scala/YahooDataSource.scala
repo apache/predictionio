@@ -70,7 +70,6 @@ object HistoricalData {
 
 class YahooDataSource(val params: YahooDataSource.Params)
   extends PDataSource[
-      YahooDataSource.Params,
       DataParams,
       RDD[TrainingData],
       QueryDate,
@@ -389,7 +388,7 @@ object PredefinedDSP {
       tickerList = Run.sp500List))
 
   val SmallSP500 = YahooDataSource.Params(
-    appId = 2,
+    appId = 4,
     entityType = "yahoo",
     untilTime = None,
     windowParams = DataSourceParams(
@@ -402,7 +401,7 @@ object PredefinedDSP {
       tickerList = Run.sp500List.take(25)))
 
   val Test = YahooDataSource.Params(
-    appId = 1,
+    appId = 4,
     entityType = "yahoo",
     untilTime = Some(new DateTime(2014, 5, 1, 0, 0)),
     windowParams = DataSourceParams(
@@ -421,8 +420,8 @@ object YahooDataSourceRun {
     // Make sure you have a lot of memory.
     // --driver-memory 12G
 
-    val dsp = PredefinedDSP.BigSP500
-    //val dsp = PredefinedDSP.SmallSP500
+    //val dsp = PredefinedDSP.BigSP500
+    val dsp = PredefinedDSP.SmallSP500
     //val dsp = PredefinedDSP.Test
 
     val momentumParams = MomentumStrategyParams(20, 3)
