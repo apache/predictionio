@@ -239,7 +239,8 @@ curl -i -X POST http://localhost:7070/events.json?accessKey=<your_access_key> \
   "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'
 
-# 
+# You may also set the properties one by one
+
 curl -i -X POST http://localhost:7070/events.json?accessKey=<your_access_key> \
 -H "Content-Type: application/json" \
 -d '{
