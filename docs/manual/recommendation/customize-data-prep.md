@@ -54,7 +54,7 @@ class Preparator
   }
 }
 ```
-| We will show you how not to hardcode the path "./data/sample_not_train_data.txt soon.
+> We will show you how not to hardcode the path "./data/sample_not_train_data.txt soon.
 
 
 ## Deploy the Modified Engine
