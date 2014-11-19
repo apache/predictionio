@@ -113,9 +113,33 @@ client.create_event(
 </div>
 
 <div data-lang="PHP SDK">
-
 {% highlight php %}
-(coming soon)
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user rates an item
+$client->createEvent(array(
+   'event' => 'rate',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>,
+   'properties' => array('ratings'=> <RATING>)
+));
+
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+
+?>
 {% endhighlight %}
 </div>
 
@@ -222,7 +246,18 @@ print engine_client.send_query({"user": 1, "num": 4})
 <div data-lang="PHP SDK">
 
 {% highlight php %}
-(coming soon)
+
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('user'=> 1, 'num'=> 4));
+print_r($response);
+
+?>
+
 {% endhighlight %}
 
 </div>
