@@ -41,10 +41,13 @@ The `prepare` simply passes the ratings from `TrainingData` to `PreparedData`.
 You can modify the `prepare()` method to read a black list of items from a file and remove them from TrainigData. So it becomes:
 
 ```scala
+import scala.io.Source // ADDED
+
 class Preparator
   extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
+    // MODIFIED HERE
     val noTrainItems = Source.fromFile("./data/sample_not_train_data.txt").getLines.map(_.toInt).toSet
     // exclude noTrainItems from original trainingData
     val ratings = trainingData.ratings.filter( r =>
@@ -102,10 +105,7 @@ PredictionIO offers `PreparatorParams` so you can read varaible values from *eng
 Modify `/src/main/scala/Preparator.scala` again in the "MyRecommendation" directory to:
 
 ```scala
-// ... original imports
 import io.prediction.controller.Params // ADDED
-
-import scala.io.Source
 
  // ADDED CustomPreparatorParams case class
 case class CustomPreparatorParams(
