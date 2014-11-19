@@ -31,14 +31,14 @@ import scala.collection.JavaConversions._
  * JavaEngineBuilder to conveniently instantiate an instance of this class.
  *
  * @param <TD> Training Data
- * @param <DP> Data Parameters
+ * @param <EI> Evaluation Info
  * @param <PD> Prepared Data
  * @param <Q> Input Query
  * @param <P> Output Prediction
  * @param <A> Actual Value
  */
-class JavaEngine[TD, DP, PD, Q, P, A](
-    dataSourceClass: Class[_ <: LJavaDataSource[DP, TD, Q, A]],
+class JavaEngine[TD, EI, PD, Q, P, A](
+    dataSourceClass: Class[_ <: LJavaDataSource[TD, EI, Q, A]],
     preparatorClass: Class[_ <: LJavaPreparator[TD, PD]],
     algorithmClassMap: JMap[String, Class[_ <: LJavaAlgorithm[PD, _, Q, P]]],
     servingClass: Class[_ <: LJavaServing[Q, P]]
@@ -67,13 +67,13 @@ class JavaEngineParams(
  * serving layer. Current default preparator is IdentityPreparator and serving
  * is FirstServing.
  */
-class JavaSimpleEngine[TD, DP, Q, P, A](
-    dataSourceClass: Class[_ <: LJavaDataSource[DP, TD, Q, A]],
+class JavaSimpleEngine[TD, EI, Q, P, A](
+    dataSourceClass: Class[_ <: LJavaDataSource[TD, EI, Q, A]],
     preparatorClass: Class[_ <: LJavaPreparator[TD, TD]],
     algorithmClassMap
       : JMap[String, Class[_ <: LJavaAlgorithm[TD, _, Q, P]]],
     servingClass: Class[_ <: LJavaServing[Q, P]]
-) extends JavaEngine[TD, DP, TD, Q, P, A](
+) extends JavaEngine[TD, EI, TD, Q, P, A](
     dataSourceClass,
     preparatorClass,
     Map(algorithmClassMap.toSeq: _*),

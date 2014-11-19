@@ -31,6 +31,9 @@ case class EmptyDataSourceParams() extends EmptyParams
 /** Empty data parameters. */
 case class EmptyDataParams() extends AnyRef
 
+/** Empty evaluation info. */
+case class EmptyEvaluationInfo() extends AnyRef
+
 /** Empty preparator parameters. */
 case class EmptyPreparatorParams() extends EmptyParams
 

@@ -96,7 +96,7 @@ object IdentityPreparator {
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: BaseDataSource[_, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: BaseDataSource[TD, _, _, _]]) =
     classOf[IdentityPreparator[TD]]
 }
 
@@ -119,7 +119,7 @@ object PIdentityPreparator {
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: PDataSource[_, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: PDataSource[TD, _, _, _]]) =
     classOf[PIdentityPreparator[TD]]
 }
 
@@ -143,7 +143,7 @@ object LIdentityPreparator {
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: LDataSource[_, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: LDataSource[TD, _, _, _]]) =
     classOf[LIdentityPreparator[TD]]
 }
 

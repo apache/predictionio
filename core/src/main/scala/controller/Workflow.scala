@@ -52,7 +52,7 @@ case class WorkflowParams(
 object Workflow {
   /** Creates a workflow that runs an engine.
     *
-    * @tparam DP Data preparator class.
+    * @tparam EI Evalution info class.
     * @tparam TD Training data class.
     * @tparam PD Prepared data class.
     * @tparam Q Input query class.
@@ -68,14 +68,14 @@ object Workflow {
     * @param evaluatorParams Evaluator parameters.
     */
   def runEngine[
-      DP, TD, PD, Q, P, A,
+      EI, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       params: WorkflowParams = WorkflowParams(),
-      engine: Engine[TD, DP, PD, Q, P, A],
+      engine: Engine[TD, EI, PD, Q, P, A],
       engineParams: EngineParams,
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams()) {
 
@@ -96,7 +96,7 @@ object Workflow {
 
   /** Creates a workflow that runs a collection of engine components.
     *
-    * @tparam DP Data preparator class.
+    * @tparam EI Evalution info class.
     * @tparam TD Training data class.
     * @tparam PD Prepared data class.
     * @tparam Q Input query class.
@@ -119,11 +119,11 @@ object Workflow {
     * @param params Workflow parameters.
     */
   def run[
-      DP, TD, PD, Q, P, A,
+      EI, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[DP, TD, Q, A]]] = None,
+        : Option[Class[_ <: BaseDataSource[TD, EI, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
       preparatorClassOpt
         : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
@@ -136,7 +136,7 @@ object Workflow {
         = None,
       servingParams: Params = EmptyParams(),
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams(),
       params: WorkflowParams = WorkflowParams()

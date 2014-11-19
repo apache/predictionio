@@ -42,7 +42,7 @@ import io.prediction.core.BaseServing
   *
   * @see [[IEngineFactory]]
   * @tparam TD Training data class.
-  * @tparam DP Data parameters class.
+  * @tparam EI Evaluation info class.
   * @tparam PD Prepared data class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
@@ -53,8 +53,8 @@ import io.prediction.core.BaseServing
   * @param servingClass Serving class.
   * @group Engine
   */
-class Engine[TD, DP, PD, Q, P, A](
-    val dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]],
+class Engine[TD, EI, PD, Q, P, A](
+    val dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
     val preparatorClass: Class[_ <: BasePreparator[TD, PD]],
     val algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
     val servingClass: Class[_ <: BaseServing[Q, P]])
@@ -63,14 +63,14 @@ class Engine[TD, DP, PD, Q, P, A](
   /** Returns a new Engine instnace. Mimmic case class's copy method behavior.
     */
   def copy(
-    dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]]
+    dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]]
       = dataSourceClass,
     preparatorClass: Class[_ <: BasePreparator[TD, PD]]
       = preparatorClass,
     algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]
       = algorithmClassMap,
     servingClass: Class[_ <: BaseServing[Q, P]]
-      = servingClass): Engine[TD, DP, PD, Q, P, A] = {
+      = servingClass): Engine[TD, EI, PD, Q, P, A] = {
     new Engine(
       dataSourceClass,
       preparatorClass,
@@ -99,7 +99,7 @@ class EngineParams(
   * `FirstServing`.
   *
   * @tparam TD Training data class.
-  * @tparam DP Data parameters class.
+  * @tparam EI Evaluation info class.
   * @tparam PD Prepared data class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
@@ -108,8 +108,8 @@ class EngineParams(
   * @param algorithmClassMap Map of algorithm names to classes.
   * @group Engine
   */
-class SimpleEngine[TD, DP, Q, P, A](
-    dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]],
+class SimpleEngine[TD, EI, Q, P, A](
+    dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
     algorithmClass: Class[_ <: BaseAlgorithm[TD, _, Q, P]])
   extends Engine(
     dataSourceClass,

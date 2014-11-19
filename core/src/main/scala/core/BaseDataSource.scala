@@ -20,7 +20,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import scala.reflect._
 
-abstract class BaseDataSource[DP, TD, Q, A]
+abstract class BaseDataSource[TD, EI, Q, A]
   extends AbstractDoer {
-  def readBase(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])]
+  def readBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])]
 }

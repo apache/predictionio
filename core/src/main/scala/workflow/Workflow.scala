@@ -271,14 +271,14 @@ object CoreWorkflow {
   // In particular, evaluator needs to be instantiated to keep scala compiler
   // happy.
   def runEngineTypeless[
-      DP, TD, PD, Q, P, A,
-      MDP, MQ, MP, MA,
+      EI, TD, PD, Q, P, A,
+      MEI, MQ, MP, MA,
       MU, MR, MMR <: AnyRef
       ](
-      engine: Engine[TD, DP, PD, Q, P, A],
+      engine: Engine[TD, EI, PD, Q, P, A],
       engineParams: EngineParams,
       evaluator
-        : BaseEvaluator[MDP, MQ, MP, MA, MU, MR, MMR] = null,
+        : BaseEvaluator[MEI, MQ, MP, MA, MU, MR, MMR] = null,
       evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
@@ -308,12 +308,12 @@ object CoreWorkflow {
   // yipjustin: The parameter list has more than 80 columns. But I cannot find a
   // way to spread it to multiple lines while presving the reability.
   def runTypeless[
-      DP, TD, PD, Q, P, A,
-      MDP, MQ, MP, MA,
+      EI, TD, PD, Q, P, A,
+      MEI, MQ, MP, MA,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[DP, TD, Q, A]]] = None,
+        : Option[Class[_ <: BaseDataSource[TD, EI, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
       preparatorClassOpt
         : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
@@ -326,7 +326,7 @@ object CoreWorkflow {
         = None,
       servingParams: Params = EmptyParams(),
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[MDP, MQ, MP, MA, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[MEI, MQ, MP, MA, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
@@ -366,12 +366,12 @@ object CoreWorkflow {
   }
 
   def runTypelessContext[
-      DP, TD, PD, Q, P, A,
-      MDP, MQ, MP, MA,
+      EIN, TD, PD, Q, P, A,
+      MEIN, MQ, MP, MA,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[DP, TD, Q, A]]] = None,
+        : Option[Class[_ <: BaseDataSource[TD, EIN, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
       preparatorClassOpt
         : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
@@ -384,7 +384,7 @@ object CoreWorkflow {
         = None,
       servingParams: Params = EmptyParams(),
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[MDP, MQ, MP, MA, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[MEIN, MQ, MP, MA, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
@@ -424,18 +424,18 @@ object CoreWorkflow {
     val dataSource = Doer(dataSourceClassOpt.get, dataSourceParams)
 
     val evalParamsDataMap
-    : Map[EI, (DP, TD, RDD[(Q, A)])] = dataSource
+    : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
       .readBase(sc)
       .zipWithIndex
       .map(_.swap)
       .toMap
 
-    val localParamsSet: Map[EI, DP] = evalParamsDataMap.map {
-      case(ei, e) => (ei -> e._1)
+    val localParamsSet: Map[EI, EIN] = evalParamsDataMap.map {
+      case(ei, e) => (ei -> e._2)
     }
 
     val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
-      case(ei, e) => (ei -> (e._2, e._3))
+      case(ei, e) => (ei -> (e._1, e._3))
     }
 
     logger.info(s"Number of training set: ${localParamsSet.size}")
@@ -625,10 +625,10 @@ object CoreWorkflow {
 
     // Evaluator Set
     val evalEvaluatorResultsMap
-    : Map[EI, RDD[(MDP, MR)]] = evalEvaluatorUnitMap
+    : Map[EI, RDD[(MEIN, MR)]] = evalEvaluatorUnitMap
     .map{ case (ei, evaluatorUnits) => {
       val evaluatorResults
-      : RDD[(MDP, MR)] = evaluatorUnits
+      : RDD[(MEIN, MR)] = evaluatorUnits
         // shuffle must be true, otherwise all upstream stage will be forced to
         // use a single partition.
         .coalesce(numPartitions=1, shuffle = true)
@@ -838,9 +838,9 @@ object JavaCoreWorkflow {
   // Another method is to use JavaEngineBuilder, add only the components you
   // already have. It will handle the missing ones.
   def run[
-      DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
+      EI, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
     env: JMap[String, String] = new JHashMap(),
-    dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]],
+    dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
     dataSourceParams: Params,
     preparatorClass: Class[_ <: BasePreparator[TD, PD]],
     preparatorParams: Params,
@@ -849,7 +849,7 @@ object JavaCoreWorkflow {
     algorithmParamsList: JIterable[(String, Params)],
     servingClass: Class[_ <: BaseServing[Q, P]],
     servingParams: Params,
-    evaluatorClass: Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]],
+    evaluatorClass: Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]],
     evaluatorParams: Params,
     params: WorkflowParams
   ) = {

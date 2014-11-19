@@ -10,15 +10,15 @@ import java.util.HashMap;
  * and Serving classes as an Engine.
  *
  * @param <TD> Training Data
- * @param <DP> Data Parameters
+ * @param <EI> Evaluation Info
  * @param <PD> Prepared Data
  * @param <Q> Input Query
  * @param <P> Output Prediction
  * @param <A> Actual Value
  */
-public class PJavaEngineBuilder<TD, DP, PD, Q, P, A> {
+public class PJavaEngineBuilder<TD, EI, PD, Q, P, A> {
   /** Data Source class. Default to null. */
-  protected Class<? extends PJavaDataSource<DP, TD, Q, A>>
+  protected Class<? extends PJavaDataSource<TD, EI, Q, A>>
       dataSourceClass = null;
   /** Preparator class. Default to null. */
   protected Class<? extends PJavaPreparator<TD, PD>>
@@ -38,8 +38,8 @@ public class PJavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /**
    * Set the Data Source class of this Engine.
    */
-  public PJavaEngineBuilder<TD, DP, PD, Q, P, A> dataSourceClass(
-      Class<? extends PJavaDataSource<DP, TD, Q, A>> cls) {
+  public PJavaEngineBuilder<TD, EI, PD, Q, P, A> dataSourceClass(
+      Class<? extends PJavaDataSource<TD, EI, Q, A>> cls) {
     dataSourceClass = cls;
     return this;
   }
@@ -47,7 +47,7 @@ public class PJavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /**
    * Set the Preparator class of this Engine.
    */
-  public PJavaEngineBuilder<TD, DP, PD, Q, P, A> preparatorClass(
+  public PJavaEngineBuilder<TD, EI, PD, Q, P, A> preparatorClass(
       Class<? extends PJavaPreparator<TD, PD>> cls) {
     preparatorClass = cls;
     return this;
@@ -56,7 +56,7 @@ public class PJavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /**
    * Add an Algorithm class to this Engine.
    */
-  public PJavaEngineBuilder<TD, DP, PD, Q, P, A> addAlgorithmClass(
+  public PJavaEngineBuilder<TD, EI, PD, Q, P, A> addAlgorithmClass(
       String name, Class<? extends PJavaAlgorithm<PD, ?, Q, P>> cls) {
     algorithmClassMap.put(name, cls);
     return this;
@@ -65,7 +65,7 @@ public class PJavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /**
    * Set the Serving class of this Engine.
    */
-  public PJavaEngineBuilder<TD, DP, PD, Q, P, A> servingClass(
+  public PJavaEngineBuilder<TD, EI, PD, Q, P, A> servingClass(
       Class<? extends LJavaServing<Q, P>> cls) {
     servingClass = cls;
     return this;
@@ -74,7 +74,7 @@ public class PJavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /**
    * Build and return an Engine instance.
    */
-  public PJavaEngine<TD, DP, PD, Q, P, A> build() {
+  public PJavaEngine<TD, EI, PD, Q, P, A> build() {
     return new PJavaEngine<> (dataSourceClass, preparatorClass, algorithmClassMap, servingClass);
   }
 

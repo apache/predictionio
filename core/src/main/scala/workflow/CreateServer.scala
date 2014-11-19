@@ -159,10 +159,10 @@ object CreateServer extends Logging {
     }
   }
 
-  def createServerActorWithEngine[TD, DP, PD, Q, P, A](
+  def createServerActorWithEngine[TD, EIN, PD, Q, P, A](
     sc: ServerConfig,
     engineInstance: EngineInstance,
-    engine: Engine[TD, DP, PD, Q, P, A],
+    engine: Engine[TD, EIN, PD, Q, P, A],
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): ActorRef = {
     implicit val formats = DefaultFormats
@@ -204,13 +204,13 @@ object CreateServer extends Logging {
       logger.info("Data Source")
       val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
       val evalParamsDataMap
-      : Map[EI, (DP, TD, RDD[(Q, A)])] = dataSource
+      : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
         .readBase(sc)
         .zipWithIndex
         .map(_.swap)
         .toMap
       val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
-        case(ei, e) => (ei -> (e._2, e._3))
+        case(ei, e) => (ei -> (e._1, e._3))
       }
       logger.info("Preparator")
       val preparatorParams = WorkflowUtils.extractParams(

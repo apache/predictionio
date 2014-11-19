@@ -17,12 +17,12 @@ package io.prediction.core
 
 import scala.reflect._
 
-abstract class BaseEvaluator[-DP, -Q, P, A, EU, ES, ER <: AnyRef]
+abstract class BaseEvaluator[-EI, -Q, P, A, EU, ES, ER <: AnyRef]
   extends AbstractDoer {
 
   def evaluateUnitBase(input: (Q, P, A)): EU
 
-  def evaluateSetBase(dataParams: DP, metricUnits: Seq[EU]): ES
+  def evaluateSetBase(evalInfo: EI, metricUnits: Seq[EU]): ES
 
-  def evaluateAllBase(input: Seq[(DP, ES)]): ER
+  def evaluateAllBase(input: Seq[(EI, ES)]): ER
 }
