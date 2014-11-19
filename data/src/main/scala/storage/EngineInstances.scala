@@ -74,7 +74,7 @@ case class EngineInstance(
  * Base trait for implementations that interact with EngineInstances in the
  * backend app data store.
  */
-trait EngineInstances {
+private[prediction] trait EngineInstances {
   /** Insert a new EngineInstance. */
   def insert(i: EngineInstance): String
 
@@ -101,7 +101,8 @@ trait EngineInstances {
   def delete(id: String): Unit
 }
 
-class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
+private[prediction] class EngineInstanceSerializer
+    extends CustomSerializer[EngineInstance](
   format => ({
     case JObject(fields) =>
       implicit val formats = DefaultFormats

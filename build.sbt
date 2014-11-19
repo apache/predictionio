@@ -90,6 +90,7 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "akka",
     "breeze",
     "html",
+    "io.prediction.controller.java",
     "io.prediction.core",
     "io.prediction.data.api",
     "io.prediction.data.examples",

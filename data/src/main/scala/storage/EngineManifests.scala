@@ -56,7 +56,8 @@ trait EngineManifests {
   def delete(id: String, version: String): Unit
 }
 
-class EngineManifestSerializer extends CustomSerializer[EngineManifest](format => (
+class EngineManifestSerializer
+    extends CustomSerializer[EngineManifest](format => (
   {
     case JObject(fields) =>
       val seed = EngineManifest(

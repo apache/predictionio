@@ -21,13 +21,12 @@ import scala.collection.JavaConversions._
 import scala.language.existentials
 import scala.reflect.runtime.universe._
 
-case class StorageError(val message: String)
+private[prediction] case class StorageError(val message: String)
 
 /**
- * Settings accessors.
- *
- * This class ensures its users that the configuration is free of error, and
- * provides default values as necessary.
+ * Backend-agnostic data storage layer with lazy initialization and connection
+ * pooling. Use this object when you need to interface with Event Store in your
+ * engine.
  */
 object Storage extends Logging {
   private var errors = 0
@@ -91,9 +90,9 @@ object Storage extends Logging {
   */
 
   /** Reference to the app data repository. */
-  val EventDataRepository = "EVENTDATA"
-  val ModelDataRepository = "MODELDATA"
-  val MetaDataRepository = "METADATA"
+  private val EventDataRepository = "EVENTDATA"
+  private val ModelDataRepository = "MODELDATA"
+  private val MetaDataRepository = "METADATA"
 
   private val repositoriesPrefix = "PIO_STORAGE_REPOSITORIES"
   private def repositoriesPrefixPath(body: String) =
@@ -142,7 +141,7 @@ object Storage extends Logging {
       }
     ).toMap
 
-  def getClient(
+  private def getClient(
       clientConfig: StorageClientConfig,
       pkg: String): BaseStorageClient = {
     val className = "io.prediction.data.storage." + pkg + ".StorageClient"
@@ -159,24 +158,26 @@ object Storage extends Logging {
     }
   }
 
-  def getClient(
+  private def getClient(
       sourceName: String,
       parallel: Boolean): Option[BaseStorageClient] =
     sourcesToClientMetaGet(sourceName, parallel).map(_.client)
 
+  private[prediction]
   def getDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
     val repoDOSourceName = repoDOMeta.sourceName
     getDataObject[T](repoDOSourceName, repoDOMeta.databaseName)
   }
 
+  private[prediction]
   def getPDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
     val repoDOSourceName = repoDOMeta.sourceName
     getPDataObject[T](repoDOSourceName, repoDOMeta.databaseName)
   }
 
-  def getDataObject[T](
+  private[prediction] def getDataObject[T](
       sourceName: String,
       databaseName: String,
       parallel: Boolean = false)(implicit tag: TypeTag[T]): T = {
@@ -213,7 +214,7 @@ object Storage extends Logging {
     }
   }
 
-  def getPDataObject[T](
+  private def getPDataObject[T](
       sourceName: String,
       databaseName: String)(implicit tag: TypeTag[T]): T =
     getDataObject[T](sourceName, databaseName, true)
@@ -224,7 +225,7 @@ object Storage extends Logging {
     Seq(client.client, dbName)
   }
 
-  def verifyAllDataObjects(): Unit = {
+  private[prediction] def verifyAllDataObjects(): Unit = {
     println("  Verifying Meta Data Backend")
     getMetaDataEngineManifests()
     getMetaDataEngineInstances()
@@ -236,24 +237,27 @@ object Storage extends Logging {
     getLEvents()
   }
 
-  def getMetaDataEngineManifests(): EngineManifests =
+  private[prediction] def getMetaDataEngineManifests(): EngineManifests =
     getDataObject[EngineManifests](MetaDataRepository)
 
-  def getMetaDataEngineInstances(): EngineInstances =
+  private[prediction] def getMetaDataEngineInstances(): EngineInstances =
     getDataObject[EngineInstances](MetaDataRepository)
 
-  def getMetaDataApps(): Apps =
+  private[prediction] def getMetaDataApps(): Apps =
     getDataObject[Apps](MetaDataRepository)
 
-  def getMetaDataAccessKeys(): AccessKeys =
+  private[prediction] def getMetaDataAccessKeys(): AccessKeys =
     getDataObject[AccessKeys](MetaDataRepository)
 
-  def getModelDataModels(): Models =
+  private[prediction] def getModelDataModels(): Models =
     getDataObject[Models](ModelDataRepository)
 
-  def getLEvents(): Events =
+  private[prediction] def getLEvents(): Events =
     getDataObject[Events](EventDataRepository)
 
+  /** Obtains a data access object that returns [[Event]] related RDD data
+    * structure.
+    */
   def getPEvents(): PEvents =
     getPDataObject[PEvents](EventDataRepository)
 
@@ -263,15 +267,16 @@ object Storage extends Logging {
   }
 }
 
-trait BaseStorageClient {
+private[prediction] trait BaseStorageClient {
   val config: StorageClientConfig
   val client: AnyRef
   val prefix: String = ""
 }
 
-case class StorageClientConfig(
+private[prediction] case class StorageClientConfig(
   hosts: Seq[String],
   ports: Seq[Int],
   parallel: Boolean = false)
 
-class StorageClientException(msg: String) extends RuntimeException(msg)
+private[prediction] class StorageClientException(msg: String)
+    extends RuntimeException(msg)

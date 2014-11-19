@@ -24,7 +24,7 @@ package io.prediction.data.storage
  * @param appid ID of the app.
  * @param events List of allowed events for this particular app key.
  */
-case class AccessKey(
+private[prediction] case class AccessKey(
   key: String,
   appid: Int,
   events: Seq[String])
@@ -33,7 +33,7 @@ case class AccessKey(
  * Base trait for implementations that interact with AcessKeys in the backend
  * data store.
  */
-trait AccessKeys {
+private[prediction] trait AccessKeys {
   /** Insert a new AccessKey. Returns a generated access key. */
   def insert(k: AccessKey): Option[String]
 
