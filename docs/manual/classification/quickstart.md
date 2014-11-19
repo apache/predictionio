@@ -55,7 +55,7 @@ You should find the following in the console output:
 ```
 
 Take note of the `Access Key` and `App ID`.
-You will need the `Access Key` to refer to "MyApp2" when you collect data. 
+You will need the `Access Key` to refer to "MyApp2" when you collect data.
 At the same time, you will use `App ID` to refer to "MyApp2" in engine code.
 
 ## Create a new Engine from an Engine Template
@@ -172,7 +172,7 @@ $client->createEvent(array(
      'attr0' => <VALUE OF ATTR0>
    )
 ));
- 
+
 $client->createEvent(array(
    'event' => '$set',
    'entityType' => 'user',
@@ -181,7 +181,7 @@ $client->createEvent(array(
      'attr1' => <VALUE OF ATTR1>
    )
 ));
- 
+
 $client->createEvent(array(
    'event' => '$set',
    'entityType' => 'user',
@@ -190,7 +190,7 @@ $client->createEvent(array(
      'attr2' => <VALUE OF ATTR2>
    )
 ));
- 
+
 $client->createEvent(array(
    'event' => '$set',
    'entityType' => 'user',
@@ -263,7 +263,73 @@ client.create_event(
 <div data-lang="REST API">
 
 {% highlight rest %}
-(coming soon)
+
+# Set the 4 properties for a user
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr0" : 0,
+    "attr1" : 1,
+    "attr2" : 0,
+    "plan" : 1
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# You may also set the properties one by one
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr0" : 0
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr1" : 1
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr2" : 0
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "plan" : 1
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
 {% endhighlight %}
 
 </div>

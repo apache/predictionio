@@ -38,21 +38,18 @@ case class FeatureBasedModel(
     Map[String, NaiveBayes[Boolean, String]](),
   val itemFeaturesMap: Map[String, Counter[String, Double]] =
     Map[String, Counter[String, Double]]())
-extends Serializable
-with IPersistentModel[EmptyParams] {
-  def save(id: String, p: EmptyParams, sc: SparkContext): Boolean = true
-}
-
-object FeatureBasedModel
-extends IPersistentModelLoader[EmptyParams, FeatureBasedModel] {
-  def apply(id: String, params: EmptyParams, sc: Option[SparkContext]) = {
-    FeatureBasedModel()
-  }
+extends Serializable {
+  override def toString = "FeatureBasedModel: " +
+    s"features (size = ${features.size}) = [${features.take(3).toSeq}, ...], " +
+    s"userClassifierMap (size = ${userClassifierMap.size}) " +
+    s"= {${userClassifierMap.take(3).toSeq}, ...}, " +
+    s"itemFeaturesMap (size = ${itemFeaturesMap.size}) " +
+    s"= {${itemFeaturesMap.take(3).toSeq}, ...}"
 }
 
 // FeatureBaseAlgorithm use all itypes as features.
 class FeatureBasedAlgorithm
-  extends LAlgorithm[EmptyParams, PreparedData, FeatureBasedModel,
+  extends LAlgorithm[PreparedData, FeatureBasedModel,
       Query, Prediction] {
 
   def train(data: PreparedData): FeatureBasedModel = {

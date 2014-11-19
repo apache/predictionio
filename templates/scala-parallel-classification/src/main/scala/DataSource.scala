@@ -1,7 +1,7 @@
 package org.template.classification
 
 import io.prediction.controller.PDataSource
-import io.prediction.controller.EmptyDataParams
+import io.prediction.controller.EmptyEvaluationInfo
 import io.prediction.controller.EmptyActualResult
 import io.prediction.controller.Params
 import io.prediction.data.storage.Event
@@ -18,8 +18,8 @@ import grizzled.slf4j.Logger
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[DataSourceParams, EmptyDataParams,
-  TrainingData, Query, EmptyActualResult] {
+  extends PDataSource[TrainingData,
+      EmptyEvaluationInfo, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
 
@@ -31,6 +31,8 @@ class DataSource(val dsp: DataSourceParams)
       entityType = "user",
       // only keep entities with these required properties defined
       required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
+      // aggregateProperties() returns RDD pair of
+      // entity ID and its aggregated properties
       .map { case (entityId, properties) =>
         try {
           LabeledPoint(properties.get[Double]("plan"),

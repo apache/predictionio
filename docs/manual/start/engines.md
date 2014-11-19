@@ -25,7 +25,7 @@ An Evaluation Metric quantifies prediction accuracy with a numerical score. It c
 
 > PredictionIO helps you modularize these components so you can build, for
 example, several Serving components for an Engine. You will be able to choose
-which one to be deployed when you create an Engine Instance.
+which one to be deployed when you create an Engine.
 
 
 ![Engine Overview]({{ site.baseurl }}/images/engineinstance-overview.png)

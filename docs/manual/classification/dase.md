@@ -80,8 +80,7 @@ The `def readTraining` of class `DataSource` reads, and selects, data from datas
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[DataSourceParams, EmptyDataParams,
-  TrainingData, Query, EmptyActualResult] {
+  extends PDataSource[TrainingData, Query, EmptyEvalInfo, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
 
@@ -93,6 +92,8 @@ class DataSource(val dsp: DataSourceParams)
       entityType = "user",
       // only keep entities with these required properties defined
       required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
+      // aggregateProperties() returns RDD pair of
+      // entity ID and its aggregated properties
       .map { case (entityId, properties) =>
         try {
           LabeledPoint(properties.get[Double]("plan"),
@@ -117,7 +118,7 @@ class DataSource(val dsp: DataSourceParams)
 ```
 
 `Storage.getPEvents()` gives you access to data you collected through Event Server
-and `eventsDb.aggregateProperties` aggregates the event records of the 4 properties (attr0, attr1, attr2 and plan) for each user. 
+and `eventsDb.aggregateProperties` aggregates the event records of the 4 properties (attr0, attr1, attr2 and plan) for each user.
 
 PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *appId*, to `dsp`.
 
@@ -133,7 +134,7 @@ In ***engine.json***:
 }
 ```
 
-In this sample text data file, columns are delimited by comma (,). The first column are labels. The second column are features. 
+In this sample text data file, columns are delimited by comma (,). The first column are labels. The second column are features.
 
 
 The class definition of `TrainingData` is:
@@ -161,7 +162,7 @@ class PreparedData(
 ) extends Serializable
 
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(trainingData.labeledPoints)
@@ -221,7 +222,7 @@ case class AlgorithmParams(
 
 `def predict` is called when you send a JSON query to http://localhost:8000/queries.json. PredictionIO converts the query, such as  { "features": [4, 3, 8] } to the `Query` class you defined previously.  
 
-The predictive model `NaiveBayesModel` of MLlib NaiveBayes offers a function called `predict`. `predict` takes a dense vector of features. 
+The predictive model `NaiveBayesModel` of MLlib NaiveBayes offers a function called `predict`. `predict` takes a dense vector of features.
 It predicts the label of the item represented by this feature vector.
 
 ```scala
@@ -244,7 +245,7 @@ In MyEngine/src/main/scala/***Serving.scala***
 
 ```scala
 class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+  extends LServing[Query, PredictedResult] {
 
   override
   def serve(query: Query,

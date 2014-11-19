@@ -27,7 +27,22 @@ import scala.concurrent.ExecutionContext
 
 import org.apache.commons.codec.binary.Base64
 
-// separate Event for API before require mo
+/** Each event in the Event Store can be represented by fields in this case
+  * class.
+  *
+  * @param eventId Unique ID of this event.
+  * @param event Name of this event.
+  * @param entityType Type of the entity associated with this event.
+  * @param entityId ID of the entity associated with this event.
+  * @param targetEntityType Type of the target entity associated with this
+  *                         event.
+  * @param targetEntityId ID of the target entity asssociated with this event.
+  * @param properties Properties associated with this event.
+  * @param eventTime Time of the happening of this event.
+  * @param tags Tags of this event.
+  * @param prId PredictedResultId of this event.
+  * @param creationTime Time of creation in the system of this event. 
+  */
 case class Event(
   val eventId: Option[String] = None,
   val event: String,
@@ -48,7 +63,7 @@ case class Event(
   }
 }
 
-object EventValidation {
+private[prediction] object EventValidation {
 
   val defaultTimeZone = DateTimeZone.UTC
 
@@ -107,7 +122,7 @@ object EventValidation {
 
 }
 
-trait Events {
+private[prediction] trait Events {
 
   private def notImplemented(implicit ec: ExecutionContext) = Future {
     Left(StorageError("Not implemented."))

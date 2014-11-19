@@ -7,10 +7,7 @@ title: Customizing Data Preparator
 
 Data Preparator is where pre-processing actions occurs. For example, one may want to remove some very popular items from training data because she thinks that these items may not help finding individual person's tastes or one may have a black list of item that she want to remove from training data before feed the data to the algorithm.
 
-This section assumes that you have created a "MyRecommendation" engine based on the [Recommendation Engine Template: QuickStart](quickstart.html)
-We will demonstrate how to add a filtering logic to exclude a list of items in recommendation. 
-
-A sample black list file containing the items to be excluded is provided in ./data/sample_not_train_data.txt
+This section demonstrates how to add a filtering logic to exclude a list of items from the [Recommendation Engine](quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the [Quckstart Guide](quickstart.html) first.
 
 
 ## The Data Preparator Component
@@ -18,13 +15,13 @@ A sample black list file containing the items to be excluded is provided in ./da
 Recall [the DASE Architecture](/dase.html), data is prepared by 2 components sequentially: *Data Source* and *Data Preparator*.
 *Data Source* reads data from the data store of Event Server and then *Data Preparator* prepares `RDD[Rating]` for the ALS algorithm.
 
-You may modify any component in an engine template to fit your needs.
 This example shows you how to add the filtering logics in Data Preparator.
 
-## Modify the Preparator
+## The Preparator Interface
 
-The Data Preparator component can be found in `/src/main/scala/Preparator.scala` in the "MyRecommendation" directory.
-The unmodified version looks like the following:
+PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Preparator component takes the `TrainingData` and return `PreparedData`.
+
+The original Data Preparator component can be found in `/src/main/scala/Preparator.scala` in the MyEngine directory. By default, it looks like the following:
 
 ```scala
 class Preparator
@@ -34,18 +31,28 @@ class Preparator
     new PreparedData(ratings = trainingData.ratings)
   }
 }
+
+class PreparedData(
+  val ratings: RDD[Rating]
+) extends Serializable
 ```
 
 The `prepare` simply passes the ratings from `TrainingData` to `PreparedData`.
 
-You can modify the `prepare()` method to read a black list of items from a file and remove them from TrainigData. So it becomes:
+In the new customized Preparator, the prepare() method will read a back list of items from a file and remove ratings from TrainigData if the rated item match any of this list, as shown in the following:
 
 ```scala
-class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+import scala.io.Source
+
+case class CustomPreparatorParams(
+  val filepath: String
+) extends Params
+
+class CustomPreparator(pp: CustomPreparatorParams)
+  extends PPreparator[CustomPreparatorParams, TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
-    val noTrainItems = Source.fromFile("./data/sample_not_train_data.txt").getLines.map(_.toInt).toSet
+    val noTrainItems = Source.fromFile(pp.filepath).getLines.map(_.toInt).toSet
     // exclude noTrainItems from original trainingData
     val ratings = trainingData.ratings.filter( r =>
       !noTrainItems.contains(r.product)
@@ -54,12 +61,91 @@ class Preparator
   }
 }
 ```
-> We will show you how not to hardcode the path "./data/sample_not_train_data.txt soon.
+
+> Notice that this is only for demonstration, you may generate this list based on TrainingData.
 
 
-## Deploy the Modified Engine
+# Step-by-Step
 
-Now you can deploy the modified engine as described in the [Quckstart Guide](/quickstart.html).
+Below are the step-by-step instruction of implementing a customized logic.
+
+## Implement the new Preparator
+
+Create a new `CustomPreparator.scala` file or modify from the original `Preparator.scala` and add following import:
+
+```
+import io.prediction.controller.PPreparator
+import io.prediction.controller.Params
+
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
+import org.apache.spark.mllib.recommendation.Rating
+
+import scala.io.Source
+```
+
+Next, we need to define one parameter: The filepath of the blacklist file.
+
+```scala
+case class CustomPreparatorParams(
+  val filepath: String
+) extends Params
+```
+
+The Data Preparator component implementation is trivial. The `prepare()` reads the blacklisted file from disk. Then it removes these items from the `TrainingData`.
+
+```scala
+class CustomPreparator(pp: CustomPreparatorParams)
+  extends PPreparator[CustomPreparatorParams, TrainingData, PreparedData] {
+
+  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
+    val noTrainItems = Source.fromFile(pp.filepath).getLines.map(_.toInt).toSet
+    // exclude noTrainItems from original trainingData
+    val ratings = trainingData.ratings.filter( r =>
+      !noTrainItems.contains(r.product)
+    )
+    new PreparedData(ratings)
+  }
+}
+```
+
+## Define a new engine factory
+
+We need to implement a new engine factory to include this `CustomPreparator`. All we need to do is to modify `Engine.scala` to add a new Engine Factory `RecommendationEngineWithCustomPreparator` which uses the `CustomPreparator` instead of the original `Preparator`.
+
+```scala
+// use CustomPreparator
+object RecommendationEngineWithCustomPreparator extends IEngineFactory {
+  def apply() = {
+    new Engine(
+      classOf[DataSource],
+      classOf[CustomPreparator],
+      Map("als" -> classOf[ALSAlgorithm]),
+      classOf[Serving])
+  }
+}
+```
+
+Lastly, modify `engine.json` to use this new `RecommendationEngineWithCustomPreparator` and define the parameters for the Data Preparator, which requires a parameter `filepath`.
+
+```json
+{
+  ...
+  "engineFactory": "org.template.recommendation.RecommendationEngineWithCustomPreparator",
+  ...
+  "preparator": {
+    "filepath": "./data/sample_not_train_data.txt"
+  },
+  ...
+}
+```
+
+A sample black list file is provided in ./data/sample_not_train_data.txt
+
+## Deploy the Engine as a Service
+
+Now you can deploy the engine as described in the [Quckstart Guide](/quickstart.html).
 
 Make sure the appId defined in the file `engine.json` match your `App ID`:
 
@@ -90,67 +176,4 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
 
-Congratulations, you have learned how to add customized logics to Data Preparator!
-
-
-#  Adding Preparator Parameters
-
-Optionally, you may want to take the hardcoded path ("./data/sample_not_train_data.txt") away from the source code.
-
-PredictionIO offers `PreparatorParams` so you can read varaible values from *engine.json* instead.
-
-Modify `/src/main/scala/Preparator.scala` again in the "MyRecommendation" directory to:
-
-```scala
-import io.prediction.controller.PPreparator
-import io.prediction.controller.Params // CHANGED
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.Rating
-
-import scala.io.Source
-
- // ADDED CustomPreparatorParams case class
-case class CustomPreparatorParams(
-  val filepath: String
-) extends Params
-
-class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
-  extends PPreparator[CustomPreparatorParams, TrainingData, PreparedData] { // ADDED CustomPreparatorParams
-
-  def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
-    val noTrainItems = Source.fromFile(pp.filepath).getLines.map(_.toInt).toSet //CHANGED
-    val ratings = trainingData.ratings.filter( r =>
-      !noTrainItems.contains(r.product)
-    )
-    new PreparedData(ratings)
-  }
-}
-
-```
-
-In `engine.json`, you define the parameters `filepath` for the Data Preparator:
-
-```json
-{
-  ...
-  "preparator": {
-    "filepath": "./data/sample_not_train_data.txt"
-  },
-  ...
-}
-```
-
-Try to build *MyRecommendation* and deploy it again:
-
-```
-$ pio build
-$ pio train
-$ pio deploy
-```
-
-You can change the `filepath` value without re-building the code next time.
-
-#### [Next: Customizing Data Serving](customize-serving.html)
+<!--#### [Next: Customizing Data Serving](customize-serving.html) -->

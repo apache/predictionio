@@ -20,6 +20,9 @@ import org.joda.time.DateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+/** Base trait of a data access object that returns [[Event]] related RDD data
+  * structure.
+  */
 trait PEvents extends Serializable {
 
   /** @deprecated */
@@ -47,13 +50,13 @@ trait PEvents extends Serializable {
     * @param entityId return events of this entityId
     * @param eventNames return events with any of these event names.
     * @param targetEntityType return events of this targetEntityType:
-    *   None means no restriction on targetEntityType
-    *   Some(None) means no targetEntityType for this event
-    *   Some(Some(x)) means targetEntityType should match x.
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
     * @param targetEntityId return events of this targetEntityId
-    *   None means no restriction on targetEntityId
-    *   Some(None) means no targetEntityId for this event
-    *   Some(Some(x)) means targetEntityId should match x.
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
     * @param sc Spark context
     * @return RDD[Event]
     */
@@ -75,6 +78,7 @@ trait PEvents extends Serializable {
     * @param startTime use events with eventTime >= startTime
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
+    * @param sc Spark context
     * @return RDD[(String, DataMap)] RDD of entityId and properties DataMap pair
     */
   def aggregateProperties(

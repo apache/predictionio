@@ -29,7 +29,6 @@ import scala.reflect.runtime.universe._
   * Evaluator compare predicted result with actual known values and produce numerical
   * comparisons.
   *
-  * @tparam EP Evaluator parameters class.
   * @tparam PD Prepared data class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
@@ -39,9 +38,8 @@ import scala.reflect.runtime.universe._
   * @tparam ER Evaluation result class.
   * @group Evaluator
   */
-abstract class Evaluator[
-    EP <: Params : ClassTag, DP, Q, P, A, EU, ES, ER <: AnyRef]
-  extends BaseEvaluator[EP, DP, Q, P, A, EU, ES, ER] {
+abstract class Evaluator[DP, Q, P, A, EU, ES, ER <: AnyRef]
+  extends BaseEvaluator[DP, Q, P, A, EU, ES, ER] {
 
   def evaluateUnitBase(input: (Q, P, A)): EU = {
     evaluateUnit(input._1, input._2, input._3)
@@ -99,7 +97,7 @@ trait NiceRendering {
   *
   * @group Evaluator
   */
-class MeanSquareError extends Evaluator[EmptyParams, AnyRef,
+class MeanSquareError extends Evaluator[AnyRef,
     AnyRef, Double, Double, (Double, Double), String, String] {
   def evaluateUnit(q: AnyRef, p: Double, a: Double): (Double, Double) = (p, a)
 

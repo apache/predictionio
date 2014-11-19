@@ -20,7 +20,7 @@ import org.joda.time.format.ISODateTimeFormat
 
 import java.lang.IllegalArgumentException
 
-object Utils {
+private[prediction] object Utils {
 
   // use dateTime() for strict ISO8601 format
   val dateTimeFormatter = ISODateTimeFormat.dateTime().withOffsetParsed()

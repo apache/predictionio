@@ -57,7 +57,7 @@ You should find the following in the console output:
 ```
 
 Take note of the `Access Key` and `App ID`.
-You will need the `Access Key` to refer to "MyApp1" when you collect data. 
+You will need the `Access Key` to refer to "MyApp1" when you collect data.
 At the same time, you will use `App ID` to refer to "MyApp1" in engine code.
 
 ## Create a new Engine from an Engine Template
@@ -102,11 +102,11 @@ client.create_event(
 
 # A user buys an item
 client.create_event(
-        event="buy",
-        entity_type="user",
-        entity_id=<USER ID>,
-        target_entity_type="item",
-        target_entity_id=<ITEM ID>
+    event="buy",
+    entity_type="user",
+    entity_id=<USER ID>,
+    target_entity_type="item",
+    target_entity_id=<ITEM ID>
 )
 {% endhighlight %}
 
@@ -185,7 +185,33 @@ client.create_event(
 <div data-lang="REST API">
 
 {% highlight rest %}
-(coming soon)
+# A user rates an item
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "rate",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "properties" : {
+    "ratings" : <RATING>
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# A user buys an item
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
 {% endhighlight %}
 
 </div>

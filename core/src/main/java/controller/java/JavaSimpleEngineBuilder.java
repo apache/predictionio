@@ -27,20 +27,20 @@ import java.util.HashMap;
  * by supplying default identity data preparator and first serving classes.
  *
  * @param <TD> Training Data
- * @param <DP> Data Parameters
+ * @param <EI> Evaluation Info
  * @param <Q> Input Query
  * @param <P> Output Prediction
  * @param <A> Actual Value (for evaluation)
  */
-public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
-  extends JavaEngineBuilder<TD, DP, TD, Q, P, A> {
+public class JavaSimpleEngineBuilder<TD, EI, Q, P, A>
+  extends JavaEngineBuilder<TD, EI, TD, Q, P, A> {
 
   /**
    * Set the Data Source class of this Engine.
    */
   @Override
-  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> dataSourceClass(
-      Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> cls) {
+  public JavaSimpleEngineBuilder<TD, EI, Q, P, A> dataSourceClass(
+      Class<? extends LJavaDataSource<TD, EI, Q, A>> cls) {
     super.dataSourceClass = cls;
     return this;
   }
@@ -49,8 +49,8 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    * Set the Preparator class of this Engine.
    */
   @Override
-  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> preparatorClass(
-      Class<? extends LJavaPreparator<? extends Params, TD, TD>> cls) {
+  public JavaSimpleEngineBuilder<TD, EI, Q, P, A> preparatorClass(
+      Class<? extends LJavaPreparator<TD, TD>> cls) {
     super.preparatorClass = cls;
     return this;
   }
@@ -58,7 +58,7 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
   /**
    * Set the Preparator class of this Engine as IdentityPreparator
    */
-  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> preparatorClass() {
+  public JavaSimpleEngineBuilder<TD, EI, Q, P, A> preparatorClass() {
     super.preparatorClass = LJavaIdentityPreparator.apply(this);
     return this;
   }
@@ -68,8 +68,8 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    * a preparator, it will add an identity preparator to the engine.
    */
   @Override
-  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> addAlgorithmClass(
-      String name, Class<? extends LJavaAlgorithm<? extends Params, TD, ?, Q, P>> cls) {
+  public JavaSimpleEngineBuilder<TD, EI, Q, P, A> addAlgorithmClass(
+      String name, Class<? extends LJavaAlgorithm<TD, ?, Q, P>> cls) {
     super.algorithmClassMap.put(name, cls);
     return this;
   }
@@ -78,8 +78,8 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    * Set the Serving class of this Engine.
    */
   @Override
-  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> servingClass(
-      Class<? extends LJavaServing<? extends Params, Q, P>> cls) {
+  public JavaSimpleEngineBuilder<TD, EI, Q, P, A> servingClass(
+      Class<? extends LJavaServing<Q, P>> cls) {
     super.servingClass = cls;
     return this;
   }
@@ -87,7 +87,7 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
   /**
    * Set the Serving class of this Engine as FirstServing.
    */
-  public JavaSimpleEngineBuilder<TD, DP, Q, P, A> servingClass() {
+  public JavaSimpleEngineBuilder<TD, EI, Q, P, A> servingClass() {
     super.servingClass = LJavaFirstServing.apply(this);
     return this;
   }
@@ -96,8 +96,8 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    * Build and return an Engine instance.
    */
   @Override
-  public JavaSimpleEngine<TD, DP, Q, P, A> build() {
-    return new JavaSimpleEngine<TD, DP, Q, P, A> (
+  public JavaSimpleEngine<TD, EI, Q, P, A> build() {
+    return new JavaSimpleEngine<TD, EI, Q, P, A> (
       super.dataSourceClass, super.preparatorClass, super.algorithmClassMap, super.servingClass);
   }
 

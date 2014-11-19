@@ -109,9 +109,7 @@ object ReplayDataSource {
 }
 
 class ReplayDataSource(val dsp: ReplayDataSource.Params)
-  extends LDataSource[
-      ReplayDataSource.Params, ReplaySliceParams, TrainingData, Query, Actual] {
-
+  extends LDataSource[ReplaySliceParams, TrainingData, Query, Actual] {
 
   def load(): (Array[User], Array[Item], Array[U2I]) = {
     implicit val formats = DefaultFormats

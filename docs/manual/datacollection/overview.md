@@ -34,8 +34,6 @@ User properties can be gender, age, location...etc. Item properties can be genre
 Data collection varies quite a bit based on your application and your prediction goal. We are happy to [assist you with your questions](mailto:support@preidiction.io). 
 
 
-### Classification Engine
-
 
 
 <!-- ## Bulk import data -->

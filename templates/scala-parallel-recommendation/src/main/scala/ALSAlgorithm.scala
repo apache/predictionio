@@ -16,7 +16,7 @@ case class ALSAlgorithmParams(
   val lambda: Double) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
-  extends PAlgorithm[ALSAlgorithmParams, PreparedData,
+  extends PAlgorithm[PreparedData,
       PersistentMatrixFactorizationModel, Query, PredictedResult] {
 
   def train(data: PreparedData): PersistentMatrixFactorizationModel = {

@@ -22,7 +22,7 @@ import org.json4s.native.Serialization.{ read, write }
 
 import org.joda.time.DateTime
 
-object EventJson4sSupport {
+private[prediction] object EventJson4sSupport {
 
   // NOTE: don't use json4s to serialize/deserialize joda DateTime
   // because it has some issue with timezone (as of version 3.2.10)

@@ -15,7 +15,6 @@
 
 package io.prediction.core
 
-import io.prediction.controller.Params
 import io.prediction.controller.Utils
 
 import org.apache.spark.SparkContext
@@ -27,8 +26,8 @@ trait WithBaseQuerySerializer {
   @transient lazy val querySerializer = Utils.json4sDefaultFormats
 }
 
-abstract class BaseAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
-  extends AbstractDoer[AP] 
+abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
+  extends AbstractDoer
   with WithBaseQuerySerializer {
 
   def trainBase(sc: SparkContext, pd: PD): M

@@ -11,7 +11,6 @@ import io.prediction.controller.IPersistentModelLoader
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.Rating
 
 class PersistentMatrixFactorizationModel(rank: Int,
     userFeatures: RDD[(Int, Array[Double])],

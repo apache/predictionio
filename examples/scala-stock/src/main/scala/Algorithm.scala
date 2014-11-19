@@ -16,7 +16,6 @@ import scala.collection.immutable.HashMap
 
 abstract class StockStrategy[M: ClassTag]
   extends LAlgorithm[
-      EmptyParams, 
       TrainingData, 
       (TrainingData, M), 
       QueryDate, 
