@@ -113,9 +113,33 @@ client.create_event(
 </div>
 
 <div data-lang="PHP SDK">
-
 {% highlight php %}
-(coming soon)
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user rates an item
+$client->createEvent(array(
+   'event' => 'rate',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>,
+   'properties' => array('ratings'=> <RATING>)
+));
+
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+
+?>
 {% endhighlight %}
 </div>
 
@@ -165,6 +189,16 @@ Importing data...
 1501 events are imported.
 ```
 
+> If you experience error simliar to the following, please update the
+> Python SDK to the latest version.
+>
+> ```
+> Traceback (most recent call last):
+>  File "data/import_eventserver.py", line 55, in <module>
+>      qsize=500)
+>      TypeError: __init__() got an unexpected keyword argument 'access_key'
+> ```
+
 Now the movie ratings data is stored as events inside the Event Store.
 
 
@@ -210,7 +244,18 @@ Simply send a query by making a HTTP request or through the `EngineClient` of a 
 <div data-lang="PHP SDK">
 
 {% highlight php %}
-(coming soon)
+
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('user'=> 1, 'num'=> 4));
+print_r($response);
+
+?>
+
 {% endhighlight %}
 
 </div>
