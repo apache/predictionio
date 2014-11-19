@@ -144,7 +144,63 @@ client.create_event(
 <div data-lang="PHP SDK">
 
 {% highlight php %}
-(coming soon)
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Set the 4 properties for a user
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr0' => <VALUE OF ATTR0>,
+     'attr1' => <VALUE OF ATTR1>,
+     'attr2' => <VALUE OF ATTR2>,
+     'plan' => <VALUE OF PLAN>
+   )
+));
+
+// You may also set the properties one by one
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr0' => <VALUE OF ATTR0>
+   )
+));
+ 
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr1' => <VALUE OF ATTR1>
+   )
+));
+ 
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr2' => <VALUE OF ATTR2>
+   )
+));
+ 
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'plan' => <VALUE OF PLAN>
+   )
+));
+
+?>
 {% endhighlight %}
 </div>
 
@@ -239,7 +295,16 @@ Simply send a query by making a HTTP request or through the `EngineClient` of a 
 <div data-lang="PHP SDK">
 
 {% highlight php %}
-(coming soon)
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('features'=> array(2, 0, 0)));
+print_r($response);
+
+?>
 {% endhighlight %}
 </div>
 
