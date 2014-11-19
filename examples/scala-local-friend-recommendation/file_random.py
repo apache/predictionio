@@ -41,9 +41,9 @@ for line in read_file:
     count += 1
 
 #user_id_list is sorted
-user_id_list.sort()
 
 user_id_list = map(str, user_id_list)
+user_id_list.sort()
 print user_id_list
 print "user_id finished"
 
@@ -87,14 +87,16 @@ index = 0
 # loop through the file to get number of lines in the file
 for line in read_file:
     if line.split()[0] == user_id_list[index]:
+        print user_id_list[index]
         write_file.write(line)
         index += 1
         if index == len(user_id_list):
+            print "break"
             break
 print "user keyword finished"
 #go to file begining
 #getting the user_sns_small
-
+"""
 print user_id_list
 read_file = open("data/user_sns.txt", 'r')
 
@@ -150,6 +152,8 @@ for line in read_file:
         met = True
     if int(line.split()[0]) > int(user_id_list[index]):
         index += 1
+        if index == len(user_id_list):
+            break
 print user_action_list
 write_file = open("data/mini_user_action.txt",'w')
 for line in user_action_list:
@@ -160,4 +164,4 @@ for line in user_action_list:
 print "Done"
 
 
-
+"""
