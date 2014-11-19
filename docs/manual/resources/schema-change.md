@@ -3,10 +3,10 @@ layout: docs
 title: Recommendation Quick Start
 ---
 
-#Upgrade to 0.8.2 
+#Upgrade to 0.8.2
 
-0.8.2 contains HBase and ElasticSearch schema changes from the previous versions. In order to use 0.8.2, you need to first clear them. 
-These will clear out all the data in ElasticSearch and HBase, please be extra cautious. 
+0.8.2 contains HBase and ElasticSearch schema changes from the previous versions. In order to use 0.8.2, you need to first clear them.
+These will clear out all the data in ElasticSearch and HBase, please be extra cautious.
 
 ----
 
@@ -16,16 +16,15 @@ These will clear out all the data in ElasticSearch and HBase, please be extra ca
 
 **To clear Elasticsearch**
 
-http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-delete-index.html
-i.e. with elasticsearch running,
+With Elasticsearch running, do
 
 ```
 $ curl -X DELETE http://localhost:9200/_all
 ```
 
-**To clear HBase**
+For details see http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-delete-index.html.
 
-http://wiki.apache.org/hadoop/Hbase/Shell
+**To clear HBase**
 
 ```
 $ $HBASE_HOME/bin/hbase shell
@@ -35,3 +34,5 @@ $ $HBASE_HOME/bin/hbase shell
 > drop_all 'predictionio.*'
 ...
 ```
+
+For details see http://wiki.apache.org/hadoop/Hbase/Shell.
