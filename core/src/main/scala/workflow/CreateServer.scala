@@ -86,7 +86,8 @@ case class ServerConfig(
   port: Int = 8000,
   feedback: Boolean = false,
   eventServerIp: String = "localhost",
-  eventServerPort: Int = 7070)
+  eventServerPort: Int = 7070,
+  accessKey: String = "")
 
 case class StartServer()
 case class StopServer()
@@ -125,6 +126,9 @@ object CreateServer extends Logging {
       opt[Int]("event-server-port") action { (x, c) =>
         c.copy(eventServerPort = x)
       } text("Event server port. Default: 7070")
+      opt[String]("accesskey") action { (x, c) =>
+        c.copy(accessKey = x)
+      }
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
@@ -477,8 +481,8 @@ class ServerActor[Q, P](
                     Map()
                   }
                 val data = Map(
-                  "appId" ->
-                    dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
+                  //"appId" ->
+                  //  dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
                   "event" -> "predict",
                   "eventTime" -> queryTime.toString(),
                   "entityType" -> "pio_pr", // prediction result
@@ -490,7 +494,7 @@ class ServerActor[Q, P](
                 val f: Future[Int] = future {
                   scalaj.http.Http.postData(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
-                    "events.json", write(data)).
+                    s"events.json?accessKey=${args.accessKey}", write(data)).
                     header("content-type", "application/json").responseCode
                 }
                 f onComplete {
