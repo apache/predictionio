@@ -208,7 +208,46 @@ $client->createEvent(array(
 <div data-lang="Ruby SDK">
 
 {% highlight ruby %}
-(coming soon)
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# Set the 4 properties for a user.
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>, {
+    'properties' => {
+      'attr0' => <VALUE OF ATTR0 (integer)>,
+      'attr1' => <VALUE OF ATTR1 (integer)>,
+      'attr2' => <VALUE OF ATTR2 (integer)>,
+      'plan' => <VALUE OF PLAN (integer)>,
+    }
+  }
+)
+
+# You may also set the properties one by one.
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>, {
+    'properties' => {
+      'attr0' => <VALUE OF ATTR0 (integer)>
+    }
+  }
+)
+
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>, {
+    'properties' => {
+      'attr1' => <VALUE OF ATTR1 (integer)>,
+    }
+  }
+)
+
+# Etc...
+
 {% endhighlight %}
 
 </div>

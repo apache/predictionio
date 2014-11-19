@@ -147,7 +147,29 @@ $client->createEvent(array(
 <div data-lang="Ruby SDK">
 
 {% highlight ruby %}
-(coming soon)
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# A user rates an item.
+client.create_event(
+  'rate',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>,
+    'properties' => { 'rating' => <RATING (float)> }
+  }
+)
+
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
 {% endhighlight %}
 
 </div>
