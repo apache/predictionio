@@ -31,6 +31,8 @@ class DataSource(val dsp: DataSourceParams)
       entityType = "user",
       // only keep entities with these required properties defined
       required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
+      // aggregateProperties() returns RDD pair of
+      // entity ID and its aggregated properties
       .map { case (entityId, properties) =>
         try {
           LabeledPoint(properties.get[Double]("plan"),
