@@ -90,8 +90,8 @@ object WorkflowContext extends Logging {
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
 class AlgoServerWrapper[Q, P, A](
-    val algos: Array[_ <: BaseAlgorithm[_,_,_,Q,P]],
-    val serving: BaseServing[_, Q, P],
+    val algos: Array[_ <: BaseAlgorithm[_,_,Q,P]],
+    val serving: BaseServing[Q, P],
     val skipOpt: Boolean = false,
     val verbose: Int = 0)
 extends Serializable {
@@ -198,14 +198,12 @@ extends Serializable {
     // If all algo support using local model, we will run against all of them
     // in one pass.
     val someNonLocal = algos
-      //.exists(!_.isInstanceOf[LAlgorithm[_, _, _, Q, P]])
       .exists(!_.isInstanceOf[LModelAlgorithm[_, Q, P]])
 
     if (!someNonLocal && !skipOpt) {
       // When algo is local, the model is the only element in RDD[M].
       val localModelAlgo = algos
         .map(_.asInstanceOf[LModelAlgorithm[_, Q, P]])
-        //.map(_.asInstanceOf[LAlgorithm[_, _, _, Q, P]])
       val rddModels = localModelAlgo.zip(models)
         .map{ case (algo, model) => algo.getModel(model) }
       predictLocalModel(rddModels, input)
@@ -217,7 +215,7 @@ extends Serializable {
 
 class EvaluatorWrapper[
     MDP, MQ, MP, MA, MU: ClassTag, MR, MMR <: AnyRef](
-    val evaluator: BaseEvaluator[_,MDP,MQ,MP,MA,MU,MR,MMR])
+    val evaluator: BaseEvaluator[MDP,MQ,MP,MA,MU,MR,MMR])
 extends Serializable {
   def computeUnit[Q, P, A](input: RDD[(Q, P, A)]): RDD[MU] = {
     input
@@ -280,7 +278,7 @@ object CoreWorkflow {
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       evaluator
-        : BaseEvaluator[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR] = null,
+        : BaseEvaluator[MDP, MQ, MP, MA, MU, MR, MMR] = null,
       evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
@@ -315,20 +313,20 @@ object CoreWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
+        : Option[Class[_ <: BaseDataSource[DP, TD, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
       preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
+        : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
       preparatorParams: Params = EmptyParams(),
       algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
+        : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
+      servingClassOpt: Option[Class[_ <: BaseServing[Q, P]]]
         = None,
       servingParams: Params = EmptyParams(),
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[MDP, MQ, MP, MA, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
@@ -373,20 +371,20 @@ object CoreWorkflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
+        : Option[Class[_ <: BaseDataSource[DP, TD, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
       preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
+        : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
       preparatorParams: Params = EmptyParams(),
       algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
+        : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
+      servingClassOpt: Option[Class[_ <: BaseServing[Q, P]]]
         = None,
       servingParams: Params = EmptyParams(),
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[_ <: Params, MDP, MQ, MP, MA, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[MDP, MQ, MP, MA, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams(),
       engineInstance: Option[EngineInstance] = None,
@@ -491,7 +489,7 @@ object CoreWorkflow {
     logger.info("Algo model construction")
 
     // Instantiate algos
-    val algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]] =
+    val algoInstanceList: Array[BaseAlgorithm[PD, _, Q, P]] =
     algorithmParamsList
       .map {
         case (algoName, algoParams) =>
@@ -703,7 +701,7 @@ object CoreWorkflow {
     realEngineInstance: EngineInstance,
     evalAlgoModelMap: Map[EI, Seq[(AI, Any)]],
     algorithmParamsList: Seq[(String, Params)],
-    algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]],
+    algoInstanceList: Array[BaseAlgorithm[PD, _, Q, P]],
     params: WorkflowParams
   ): Seq[Seq[Any]] = {
 
@@ -741,8 +739,8 @@ object CoreWorkflow {
         val algoParams = algorithmParamsList(ai)._2
 
         // Parallel Model
-        if (algo.isInstanceOf[PAlgorithm[_, _, _, _, _]]
-            || algo.isInstanceOf[PJavaAlgorithm[_, _, _, _, _]]) {
+        if (algo.isInstanceOf[PAlgorithm[_, _, _, _]]
+            || algo.isInstanceOf[PJavaAlgorithm[_, _, _, _]]) {
           if (model.isInstanceOf[IPersistentModel[_]]) {
             getPersistentModel(model, realEngineInstance.id, algoParams)
           } else {
@@ -772,7 +770,7 @@ object CoreWorkflow {
       ](
       realEngineInstance: EngineInstance,
       algorithmParamsList: Seq[(String, Params)],
-      algoInstanceList: Array[BaseAlgorithm[_, PD, _, Q, P]],
+      algoInstanceList: Array[BaseAlgorithm[PD, _, Q, P]],
       models: Seq[Seq[Any]],
       mmr: Option[MMR]
       ): String = {
@@ -781,7 +779,7 @@ object CoreWorkflow {
     val translatedAlgorithmsParams = write(
       algorithmParamsList.zip(algoInstanceList).map {
         case ((name, params), inst) =>
-          if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _, _]])
+          if (inst.isInstanceOf[LJavaAlgorithm[_, _, _, _]])
             (name -> WorkflowUtils.javaObjectToJValue(params))
           else
             (name -> params)
@@ -839,20 +837,19 @@ object JavaCoreWorkflow {
   // components.
   // Another method is to use JavaEngineBuilder, add only the components you
   // already have. It will handle the missing ones.
-      //DSP <: Params, PP <: Params, SP <: Params, MP <: Params,
   def run[
       DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
     env: JMap[String, String] = new JHashMap(),
-    dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
+    dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]],
     dataSourceParams: Params,
-    preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]],
+    preparatorClass: Class[_ <: BasePreparator[TD, PD]],
     preparatorParams: Params,
     algorithmClassMap:
-      JMap[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]],
+      JMap[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
     algorithmParamsList: JIterable[(String, Params)],
-    servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]],
+    servingClass: Class[_ <: BaseServing[Q, P]],
     servingParams: Params,
-    evaluatorClass: Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
+    evaluatorClass: Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]],
     evaluatorParams: Params,
     params: WorkflowParams
   ) = {

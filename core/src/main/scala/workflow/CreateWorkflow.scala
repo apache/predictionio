@@ -148,7 +148,7 @@ object CreateWorkflow extends Logging {
       val evaluator = wfc.evaluatorClass.map { mc => //mc => null
         try {
           Class.forName(mc)
-            .asInstanceOf[Class[BaseEvaluator[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
+            .asInstanceOf[Class[BaseEvaluator[_, _, _, _, _, _, _ <: AnyRef]]]
         } catch {
           case e: ClassNotFoundException =>
             error("Unable to obtain evaluator class object ${mc}: " +

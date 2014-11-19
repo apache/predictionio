@@ -25,11 +25,10 @@ import scala.collection.JavaConversions._
  * @param <A> Actual Value
  */
 class PJavaEngine[TD, DP, PD, Q, P, A](
-    dataSourceClass: Class[_ <: PJavaDataSource[_ <: Params, DP, TD, Q, A]],
-    preparatorClass: Class[_ <: PJavaPreparator[_ <: Params, TD, PD]],
-    algorithmClassMap
-      : JMap[String, Class[_ <: PJavaAlgorithm[_ <: Params, PD, _, Q, P]]],
-    servingClass: Class[_ <: LJavaServing[_ <: Params, Q, P]]
+    dataSourceClass: Class[_ <: PJavaDataSource[DP, TD, Q, A]],
+    preparatorClass: Class[_ <: PJavaPreparator[TD, PD]],
+    algorithmClassMap: JMap[String, Class[_ <: PJavaAlgorithm[PD, _, Q, P]]],
+    servingClass: Class[_ <: LJavaServing[Q, P]]
 ) extends Engine(
     dataSourceClass,
     preparatorClass,

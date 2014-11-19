@@ -80,8 +80,7 @@ class DataParams(
 
 class EventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
-  extends LDataSource[AbstractEventsDataSourceParams,
-    DP, TrainingData, Q, A] {
+  extends LDataSource[DP, TrainingData, Q, A] {
 
   @transient lazy val logger = Logger[this.type]
   @transient lazy val batchView = new LBatchView(dsp.appId,

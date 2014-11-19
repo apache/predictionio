@@ -24,17 +24,11 @@ import org.json4s.native.JsonMethods._
 
 import scala.reflect._
 
-abstract class AbstractDoer[P <: Params : ClassTag]
-extends Serializable {
-  override def toString(): String = {
-    val t = classTag[P].runtimeClass.getName
-    s"${this.getClass.getName}(${t})"
-  }
-}
-
+// This class exists for legacy reason.
+abstract class AbstractDoer extends Serializable 
 
 object Doer extends Logging {
-  def apply[C <: AbstractDoer[_ <: Params]] (
+  def apply[C <: AbstractDoer] (
     cls: Class[_ <: C], params: Params): C = {
 
     // Subclasses only allows two kind of constructors.

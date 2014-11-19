@@ -365,10 +365,10 @@ class ServerActor[Q, P](
     val engineLanguage: EngineLanguage.Value,
     val manifest: EngineManifest,
     val dataSourceParams: Params,
-    val algorithms: Seq[BaseAlgorithm[_ <: Params, _, _, Q, P]],
+    val algorithms: Seq[BaseAlgorithm[_, _, Q, P]],
     val algorithmsParams: Seq[Params],
     val models: Seq[Any],
-    val serving: BaseServing[_ <: Params, Q, P],
+    val serving: BaseServing[Q, P],
     val servingParams: Params) extends Actor with HttpService {
   val serverStartTime = DateTime.now
   lazy val gson = new Gson
@@ -419,10 +419,10 @@ class ServerActor[Q, P](
               val queryTime = DateTime.now
               val javaQuery = javaAlgorithms.headOption map { alg =>
                 val queryClass = if (
-                  alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
-                  alg.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].queryClass
+                  alg.isInstanceOf[LJavaAlgorithm[_, _, Q, P]]) {
+                  alg.asInstanceOf[LJavaAlgorithm[_, _, Q, P]].queryClass
                 } else {
-                  alg.asInstanceOf[PJavaAlgorithm[_, _, _, Q, P]].queryClass
+                  alg.asInstanceOf[PJavaAlgorithm[_, _, Q, P]].queryClass
                 }
                 gson.fromJson(queryString, queryClass)
               }
@@ -436,7 +436,7 @@ class ServerActor[Q, P](
                 else
                   a.predictBase(models(ai), scalaQuery.get)
               }
-              val r = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
+              val r = if (serving.isInstanceOf[LJavaServing[Q, P]]) {
                 val prediction = serving.serveBase(javaQuery.get, predictions)
                 // parse to Json4s JObject for later merging with prId
                 (parse(gson.toJson(prediction)), prediction, javaQuery.get)

@@ -15,12 +15,10 @@
 
 package io.prediction.core
 
-import io.prediction.controller.Params
 import scala.reflect._
 
-abstract class BaseEvaluator[EP <: Params : ClassTag,
-    -DP, -Q, P, A, EU, ES, ER <: AnyRef]
-  extends AbstractDoer[EP] {
+abstract class BaseEvaluator[-DP, -Q, P, A, EU, ES, ER <: AnyRef]
+  extends AbstractDoer {
 
   def evaluateUnitBase(input: (Q, P, A)): EU
 

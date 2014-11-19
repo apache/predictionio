@@ -75,7 +75,7 @@ object Workflow {
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams()) {
 
@@ -123,20 +123,20 @@ object Workflow {
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
       dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]] = None,
+        : Option[Class[_ <: BaseDataSource[DP, TD, Q, A]]] = None,
       dataSourceParams: Params = EmptyParams(),
       preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[_ <: Params, TD, PD]]] = None,
+        : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
       preparatorParams: Params = EmptyParams(),
       algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]]
+        : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[_ <: Params, Q, P]]]
+      servingClassOpt: Option[Class[_ <: BaseServing[Q, P]]]
         = None,
       servingParams: Params = EmptyParams(),
       evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]]]
+        : Option[Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]]]
         = None,
       evaluatorParams: Params = EmptyParams(),
       params: WorkflowParams = WorkflowParams()

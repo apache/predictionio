@@ -18,7 +18,7 @@ import grizzled.slf4j.Logger
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[DataSourceParams, EmptyDataParams,
+  extends PDataSource[EmptyDataParams,
   TrainingData, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]

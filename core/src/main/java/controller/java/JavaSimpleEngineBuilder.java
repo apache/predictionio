@@ -40,7 +40,7 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> dataSourceClass(
-      Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> cls) {
+      Class<? extends LJavaDataSource<DP, TD, Q, A>> cls) {
     super.dataSourceClass = cls;
     return this;
   }
@@ -50,7 +50,7 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> preparatorClass(
-      Class<? extends LJavaPreparator<? extends Params, TD, TD>> cls) {
+      Class<? extends LJavaPreparator<TD, TD>> cls) {
     super.preparatorClass = cls;
     return this;
   }
@@ -69,7 +69,7 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> addAlgorithmClass(
-      String name, Class<? extends LJavaAlgorithm<? extends Params, TD, ?, Q, P>> cls) {
+      String name, Class<? extends LJavaAlgorithm<TD, ?, Q, P>> cls) {
     super.algorithmClassMap.put(name, cls);
     return this;
   }
@@ -79,7 +79,7 @@ public class JavaSimpleEngineBuilder<TD, DP, Q, P, A>
    */
   @Override
   public JavaSimpleEngineBuilder<TD, DP, Q, P, A> servingClass(
-      Class<? extends LJavaServing<? extends Params, Q, P>> cls) {
+      Class<? extends LJavaServing<Q, P>> cls) {
     super.servingClass = cls;
     return this;
   }

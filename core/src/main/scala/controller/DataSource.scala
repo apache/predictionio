@@ -28,7 +28,6 @@ import scala.reflect._
   * A local data source runs locally within a single machine and return data
   * that can fit within a single machine.
   *
-  * @tparam DSP Data source parameters class.
   * @tparam DP Data parameters data class.
   * @tparam TD Training data class.
   * @tparam Q Input query class.
@@ -36,12 +35,11 @@ import scala.reflect._
   * @group Data Source
   */
 abstract class LDataSource[
-    DSP <: Params : ClassTag,
     DP : ClassTag,
     TD : ClassTag,
     Q,
     A]
-  extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
+  extends BaseDataSource[DP, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
     val datasets = sc.parallelize(Array(None)).flatMap(_ => read()).zipWithIndex
@@ -89,7 +87,6 @@ abstract class LDataSource[
   * A local sliced data source runs locally within a single machine and return a
   * single slice of data that can fit within a single machine.
   *
-  * @tparam DSP Data source parameters class.
   * @tparam DP Data parameters data class.
   * @tparam TD Training data class.
   * @tparam Q Input query class.
@@ -97,12 +94,11 @@ abstract class LDataSource[
   * @group Data Source
   */
 abstract class LSlicedDataSource[
-    DSP <: Params : ClassTag,
     DP : ClassTag,
     TD : ClassTag,
     Q,
     A]
-  extends LDataSource[DSP, DP, TD, Q, A] {
+  extends LDataSource[DP, TD, Q, A] {
 
   override def read(): Seq[(DP, TD, Seq[(Q, A)])] = {
     generateDataParams().map { dp =>
@@ -131,15 +127,14 @@ abstract class LSlicedDataSource[
   * A parallel data source runs locally within a single machine, or in parallel
   * on a cluster, to return data that is distributed across a cluster.
   *
-  * @tparam DSP Data source parameters class.
   * @tparam DP Data parameters data class.
   * @tparam TD Training data class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
   * @group Data Source
   */
-abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
-  extends BaseDataSource[DSP, DP, TD, Q, A] {
+abstract class PDataSource[DP, TD, Q, A]
+  extends BaseDataSource[DP, TD, Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])] = {
     read(sc).map { case (dp, td, qaRdd) => {
@@ -177,15 +172,14 @@ abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
   * and return training data that can fit within a single machine for being used
   * by local algorithms.
   *
-  * @tparam DSP Data source parameters class.
   * @tparam DP Data parameters data class.
   * @tparam TD Training data class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
   * @group Data Source
   */
-abstract class P2LDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
-  extends BaseDataSource[DSP, DP, RDD[TD], Q, A] {
+abstract class P2LDataSource[DP, TD, Q, A]
+  extends BaseDataSource[DP, RDD[TD], Q, A] {
 
   def readBase(sc: SparkContext): Seq[(DP, RDD[TD], RDD[(Q, A)])] = {
     read(sc).map { case (dp, tdRdd, qaRdd) => {

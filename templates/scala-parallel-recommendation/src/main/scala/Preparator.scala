@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.Rating
 
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(ratings = trainingData.ratings)

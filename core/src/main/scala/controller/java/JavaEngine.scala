@@ -38,11 +38,10 @@ import scala.collection.JavaConversions._
  * @param <A> Actual Value
  */
 class JavaEngine[TD, DP, PD, Q, P, A](
-    dataSourceClass: Class[_ <: LJavaDataSource[_ <: Params, DP, TD, Q, A]],
-    preparatorClass: Class[_ <: LJavaPreparator[_ <: Params, TD, PD]],
-    algorithmClassMap
-      : JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, PD, _, Q, P]]],
-    servingClass: Class[_ <: LJavaServing[_ <: Params, Q, P]]
+    dataSourceClass: Class[_ <: LJavaDataSource[DP, TD, Q, A]],
+    preparatorClass: Class[_ <: LJavaPreparator[TD, PD]],
+    algorithmClassMap: JMap[String, Class[_ <: LJavaAlgorithm[PD, _, Q, P]]],
+    servingClass: Class[_ <: LJavaServing[Q, P]]
 ) extends Engine(
     dataSourceClass,
     preparatorClass,
@@ -69,11 +68,11 @@ class JavaEngineParams(
  * is FirstServing.
  */
 class JavaSimpleEngine[TD, DP, Q, P, A](
-    dataSourceClass: Class[_ <: LJavaDataSource[_ <: Params, DP, TD, Q, A]],
-    preparatorClass: Class[_ <: LJavaPreparator[_ <: Params, TD, TD]],
+    dataSourceClass: Class[_ <: LJavaDataSource[DP, TD, Q, A]],
+    preparatorClass: Class[_ <: LJavaPreparator[TD, TD]],
     algorithmClassMap
-      : JMap[String, Class[_ <: LJavaAlgorithm[_ <: Params, TD, _, Q, P]]],
-    servingClass: Class[_ <: LJavaServing[_ <: Params, Q, P]]
+      : JMap[String, Class[_ <: LJavaAlgorithm[TD, _, Q, P]]],
+    servingClass: Class[_ <: LJavaServing[Q, P]]
 ) extends JavaEngine[TD, DP, TD, Q, P, A](
     dataSourceClass,
     preparatorClass,

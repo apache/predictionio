@@ -34,14 +34,14 @@ import java.util.HashMap;
  */
 public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
   /** Data Source class. Default to null. */
-  protected Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> dataSourceClass = null;
+  protected Class<? extends LJavaDataSource<DP, TD, Q, A>> dataSourceClass = null;
   /** Preparator class. Default to null. */
-  protected Class<? extends LJavaPreparator<? extends Params, TD, PD>> preparatorClass = null;
+  protected Class<? extends LJavaPreparator<TD, PD>> preparatorClass = null;
   /** Map of Algorithm names to respective classes. Default to empty Map. */
-  protected Map<String, Class<? extends LJavaAlgorithm<? extends Params, PD, ?, Q, P>>>
+  protected Map<String, Class<? extends LJavaAlgorithm<PD, ?, Q, P>>>
     algorithmClassMap = new HashMap <> ();
   /** Serving class. Default to null. */
-  protected Class<? extends LJavaServing<? extends Params, Q, P>> servingClass = null;
+  protected Class<? extends LJavaServing<Q, P>> servingClass = null;
 
   /**
    * Instantiate an empty Java-based Engine builder.
@@ -52,7 +52,7 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
    * Set the Data Source class of this Engine.
    */
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> dataSourceClass(
-      Class<? extends LJavaDataSource<? extends Params, DP, TD, Q, A>> cls) {
+      Class<? extends LJavaDataSource<DP, TD, Q, A>> cls) {
     dataSourceClass = cls;
     return this;
   }
@@ -61,7 +61,7 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
    * Set the Preparator class of this Engine.
    */
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> preparatorClass(
-      Class<? extends LJavaPreparator<? extends Params, TD, PD>> cls) {
+      Class<? extends LJavaPreparator<TD, PD>> cls) {
     preparatorClass = cls;
     return this;
   }
@@ -70,7 +70,7 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
    * Add an Algorithm class to this Engine.
    */
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> addAlgorithmClass(
-      String name, Class<? extends LJavaAlgorithm<? extends Params, PD, ?, Q, P>> cls) {
+      String name, Class<? extends LJavaAlgorithm<PD, ?, Q, P>> cls) {
     algorithmClassMap.put(name, cls);
     return this;
   }
@@ -79,7 +79,7 @@ public class JavaEngineBuilder<TD, DP, PD, Q, P, A> {
    * Set the Serving class of this Engine.
    */
   public JavaEngineBuilder<TD, DP, PD, Q, P, A> servingClass(
-      Class<? extends LJavaServing<? extends Params, Q, P>> cls) {
+      Class<? extends LJavaServing<Q, P>> cls) {
     servingClass = cls;
     return this;
   }

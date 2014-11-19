@@ -54,24 +54,22 @@ import io.prediction.core.BaseServing
   * @group Engine
   */
 class Engine[TD, DP, PD, Q, P, A](
-    val dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
-    val preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]],
-    val algorithmClassMap:
-      Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]],
-    val servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]])
+    val dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]],
+    val preparatorClass: Class[_ <: BasePreparator[TD, PD]],
+    val algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
+    val servingClass: Class[_ <: BaseServing[Q, P]])
   extends Serializable {
 
   /** Returns a new Engine instnace. Mimmic case class's copy method behavior.
     */
   def copy(
-    dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]]
+    dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]]
       = dataSourceClass,
-    preparatorClass: Class[_ <: BasePreparator[_ <: Params, TD, PD]]
+    preparatorClass: Class[_ <: BasePreparator[TD, PD]]
       = preparatorClass,
-    algorithmClassMap:
-      Map[String, Class[_ <: BaseAlgorithm[_ <: Params, PD, _, Q, P]]]
+    algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]
       = algorithmClassMap,
-    servingClass: Class[_ <: BaseServing[_ <: Params, Q, P]]
+    servingClass: Class[_ <: BaseServing[Q, P]]
       = servingClass): Engine[TD, DP, PD, Q, P, A] = {
     new Engine(
       dataSourceClass,
@@ -111,8 +109,8 @@ class EngineParams(
   * @group Engine
   */
 class SimpleEngine[TD, DP, Q, P, A](
-    dataSourceClass: Class[_ <: BaseDataSource[_ <: Params, DP, TD, Q, A]],
-    algorithmClass: Class[_ <: BaseAlgorithm[_ <: Params, TD, _, Q, P]])
+    dataSourceClass: Class[_ <: BaseDataSource[DP, TD, Q, A]],
+    algorithmClass: Class[_ <: BaseAlgorithm[TD, _, Q, P]])
   extends Engine(
     dataSourceClass,
     IdentityPreparator(dataSourceClass),

@@ -71,7 +71,7 @@ object JavaWorkflow {
       engine: Engine[TD, DP, PD, Q, P, A],
       engineParams: EngineParams,
       evaluatorClass
-        : Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
+        : Class[_ <: BaseEvaluator[DP, Q, P, A, MU, MR, MMR]],
       evaluatorParams: Params,
       params: WorkflowParams
     ) {
