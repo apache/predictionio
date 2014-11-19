@@ -1,2 +1,2 @@
-data/*.txt
+data/sample_movielens_data.txt
 manifest.json
