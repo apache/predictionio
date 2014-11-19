@@ -27,21 +27,20 @@ private[prediction] case class DataMapException(msg: String, cause: Exception)
   def this(msg: String) = this(msg, null)
 }
 
-/** A DataMap stores properties of the event or entity.
-  * Internally it is a Map whose key is the property name and the value is
-  * the corresponding JSON value.
-  * Use the get() method to retrieve the value of mandatory property or
-  * use getOpt() to retrieve the value of the optional property.
+/** A DataMap stores properties of the event or entity. Internally it is a Map
+  * whose keys are property names and values are corresponding JSON values
+  * respectively. Use the get() method to retrieve the value of mandatory
+  * property or use getOpt() to retrieve the value of the optional property.
   *
   * @param fields Map of property name to JValue
   */
 case class DataMap (
   val fields: Map[String, JValue]
 ) extends Serializable {
-  lazy implicit val formats = DefaultFormats +
+  lazy implicit private val formats = DefaultFormats +
     new DateTimeJson4sSupport.serializer
 
-  /** Check the existence of a required property name. Throw exception if
+  /** Check the existence of a required property name. Throw an exception if
     * it does not exist.
     *
     * @param name The property name
@@ -51,7 +50,7 @@ case class DataMap (
       throw new DataMapException(s"The field ${name} is required.")
   }
 
-  /** Check if this DataMap contains the property
+  /** Check if this DataMap contains a specific property.
     *
     * @param name The property name
     * @return Return true if the property exists, else false.
@@ -60,8 +59,8 @@ case class DataMap (
     fields.contains(name)
   }
 
-  /** Get the value of a mandatory property. Exception is thrown if
-    * the property doesn't exist.
+  /** Get the value of a mandatory property. Exception is thrown if the property
+    * does not exist.
     *
     * @tparam T The type of the property value
     * @param name The property name
@@ -76,8 +75,8 @@ case class DataMap (
     }
   }
 
-  /** Get the value of an optional property. Return None if the property
-    * does not exist.
+  /** Get the value of an optional property. Return None if the property does
+    * not exist.
     *
     * @tparam T The type of the property value
     * @param name The property name
@@ -88,8 +87,8 @@ case class DataMap (
     fields.get(name).flatMap(_.extract[Option[T]])
   }
 
-  /** Get the value of an optional property. Return default value
-    * if the property does not exist.
+  /** Get the value of an optional property. Return default value if the
+    * property does not exist.
     *
     * @tparam T The type of the property value
     * @param name The property name
@@ -100,20 +99,19 @@ case class DataMap (
     getOpt[T](name).getOrElse(default)
   }
 
-  /** Return a new DataMap with elements containing the elements from
-    * the left hand operand followed by the elements from the right hand
-    * operand.
+  /** Return a new DataMap with elements containing elements from the left hand
+    * side operand followed by elements from the right hand side operand.
     *
-    * @param that the DataMap
-    * @return a new DataMap
+    * @param that Right hand side DataMap
+    * @return A new DataMap
     */
   def ++ (that: DataMap) = DataMap(this.fields ++ that.fields)
 
   /** Creates a new DataMap from this DataMap by removing all elements of
     * another collection.
     *
-    * @param that the collection containing the removed property names.
-    * @return a new DataMap
+    * @param that A collection containing the removed property names
+    * @return A new DataMap
     */
   def -- (that: GenTraversableOnce[String]) =
     DataMap(this.fields -- that)
@@ -130,13 +128,13 @@ case class DataMap (
     */
   def keySet = this.fields.keySet
 
-  /** Converts this DataMap to a List
+  /** Converts this DataMap to a List.
     *
     * @return a list of (property name, JSON value) tuples.
     */
   def toList(): List[(String, JValue)] = fields.toList
 
-  /** Converts this DataMap to a JObject
+  /** Converts this DataMap to a JObject.
     *
     * @return the JObject initizalized by this DataMap.
     */
@@ -144,6 +142,7 @@ case class DataMap (
 
 }
 
+/** Companion object of the [[DataMap]] class. */
 object DataMap {
   /** Create an empty DataMap
     * @return an empty DataMap
