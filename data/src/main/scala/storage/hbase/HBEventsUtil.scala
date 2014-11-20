@@ -17,7 +17,6 @@ package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventValidation
-import io.prediction.data.storage.Events
 import io.prediction.data.storage.DataMap
 
 import org.apache.hadoop.hbase.client.Result

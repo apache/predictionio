@@ -1,7 +1,7 @@
 package io.prediction.data.storage.hbase.upgrade
 
 import io.prediction.data.storage.Storage
-import io.prediction.data.storage.hbase.HBEvents
+import io.prediction.data.storage.hbase.HBLEvents
 import io.prediction.data.storage.hbase.HBEventsUtil
 
 import scala.collection.JavaConversions._
@@ -25,7 +25,7 @@ object Upgrade {
     batchSize: Int,
     fromNamespace: String) {
 
-    val events = Storage.getLEvents().asInstanceOf[HBEvents]
+    val events = Storage.getLEvents().asInstanceOf[HBLEvents]
 
     // Assume already run "pio app new <newapp>" (new app already created)
     // TODO: check if new table empty and warn user if not

@@ -392,7 +392,9 @@ Simply send a query by making a HTTP request or through the `EngineClient` of a 
 <div data-lang="Python SDK">
 
 {% highlight python %}
-(coming soon - see REST API)
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({"features": [2, 0, 0]})
 {% endhighlight %}
 
 </div>
