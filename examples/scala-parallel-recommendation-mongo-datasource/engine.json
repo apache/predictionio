@@ -1,7 +1,7 @@
 {
-  "id": "engine-with-mongo",
-  "description": "Use Mongo as DataSource",
-  "engineFactory": "org.examples.recommendation.RecommendationEngineWithMongo",
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
     "host": "127.0.0.1",
     "port": 27017,

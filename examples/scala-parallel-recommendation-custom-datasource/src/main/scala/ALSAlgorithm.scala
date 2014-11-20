@@ -1,4 +1,4 @@
-package org.examples.recommendation
+package org.template.recommendation
 
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
@@ -16,7 +16,7 @@ case class ALSAlgorithmParams(
   val lambda: Double) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
-  extends PAlgorithm[ALSAlgorithmParams, PreparedData,
+  extends PAlgorithm[PreparedData,
       PersistentMatrixFactorizationModel, Query, PredictedResult] {
 
   def train(data: PreparedData): PersistentMatrixFactorizationModel = {

@@ -1,11 +1,9 @@
-package org.examples.recommendation
+package org.template.recommendation
 
 import io.prediction.controller.PDataSource
-import io.prediction.controller.EmptyDataParams
+import io.prediction.controller.EmptyEvaluationInfo
 import io.prediction.controller.EmptyActualResult
 import io.prediction.controller.Params
-import io.prediction.controller.Workflow
-import io.prediction.controller.WorkflowParams
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.Storage
 
@@ -14,23 +12,28 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.Rating
 
-import org.apache.hadoop.conf.Configuration
-import org.bson.BSONObject
-import com.mongodb.hadoop.MongoInputFormat
+import grizzled.slf4j.Logger
 
-case class MongoDataSourceParams(
+import org.apache.hadoop.conf.Configuration // ADDED
+import org.bson.BSONObject // ADDED
+import com.mongodb.hadoop.MongoInputFormat // ADDED
+
+case class DataSourceParams( // CHANGED
   val host: String,
   val port: Int,
   val db: String, // DB name
   val collection: String // collection name
 ) extends Params
 
-class MongoDataSource(val dsp: MongoDataSourceParams)
-  extends PDataSource[MongoDataSourceParams, EmptyDataParams,
-  TrainingData, Query, EmptyActualResult] {
+class DataSource(val dsp: DataSourceParams)
+  extends PDataSource[TrainingData,
+      EmptyEvaluationInfo, Query, EmptyActualResult] {
+
+  @transient lazy val logger = Logger[this.type]
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
+    // CHANGED
     val config = new Configuration()
     config.set("mongo.input.uri",
       s"mongodb://${dsp.host}:${dsp.port}/${dsp.db}.${dsp.collection}")
@@ -50,21 +53,10 @@ class MongoDataSource(val dsp: MongoDataSourceParams)
   }
 }
 
-object MongoDataSourceTest {
-  def main(args: Array[String]) {
-    val dsp = MongoDataSourceParams(
-      host = "127.0.0.1",
-      port = 27017,
-      db = "test",
-      collection = "sample_ratings")
-
-    Workflow.run(
-      dataSourceClassOpt = Some(classOf[MongoDataSource]),
-      dataSourceParams = dsp,
-      params = WorkflowParams(
-        batch = "Template: Recommendations",
-        verbose = 3
-      )
-    )
+class TrainingData(
+  val ratings: RDD[Rating]
+) extends Serializable {
+  override def toString = {
+    s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
   }
 }

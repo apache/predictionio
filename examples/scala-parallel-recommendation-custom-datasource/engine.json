@@ -1,12 +1,9 @@
 {
   "id": "default",
-  "description": "Use text file as DataSource",
-  "engineFactory": "org.examples.recommendation.RecommendationEngineWithCustomPreparator",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
     "filepath": "./data/sample_movielens_data.txt"
-  },
-  "preparator": {
-    "filepath": "./data/sample_not_train_data.txt"
   },
   "algorithms": [
     {
