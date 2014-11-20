@@ -37,7 +37,7 @@ $ pio eventserver
 
 ## Create a Sample App
 
-Let's create a sample app called "MyApp2" now. An app represents the application that generates the data, e.g. a movie rating app.
+Let's create a sample app called "MyApp2" now. An app represents the application that generates the data, e.g. an enterprise service website.
 
 ```
 $ pio app new MyApp2
@@ -392,7 +392,9 @@ Simply send a query by making a HTTP request or through the `EngineClient` of a 
 <div data-lang="Python SDK">
 
 {% highlight python %}
-(coming soon - see REST API)
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({"features": [2, 0, 0]})
 {% endhighlight %}
 
 </div>

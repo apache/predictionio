@@ -39,7 +39,7 @@ $ pio eventserver
 
 ## Create a Sample App
 
-Let's create a sample app called "MyApp1" now. An app prepresents the application that generates the data, e.g. a movie rating app.
+Let's create a sample app called "MyApp1" now. An app represents the application that generates the data, e.g. a movie rental app.
 
 ```
 $ pio app new MyApp1
@@ -272,7 +272,7 @@ $ pio deploy
 
 When your engine is built successfully, you should see a console message **Your engine is ready for training**.
 
-when the engine finishes training, you should see a consile message **Saved engine instance with ID: d7GvtbDbTbWhxlbDBfyydQ**.
+when the engine finishes training, you should see a console message **Saved engine instance with ID: d7GvtbDbTbWhxlbDBfyydQ**.
 
 
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
