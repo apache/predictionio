@@ -17,7 +17,7 @@ technologies that power PredictionIO.
 * Apache HBase 0.98.6
 * Apache Spark 1.1.0 for Hadoop 2.4
 * Elasticsearch 1.3.0
-* Java Development Kit 7
+* Java SE Development Kit 7
 
 > **Notes for Linux Users**
 
@@ -31,26 +31,30 @@ mode](http://spark.apache.org/docs/latest/spark-standalone.html).
 PredictionIO runs on a Java virtual machine, so it runs on most platforms.
 Choose your platform below:
 
-[//]: # (* Deploying PredictionIO on Amazon Web Services)
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
-* [Launching PredictionIO on AWS](launch-aws.html)
+* [Launching PredictionIO on Amazon Web Services](launch-aws.html)
 
-You may also use one of the community-contributed packages to install PredictionIO:
+You may also use one of the community-contributed packages to install
+PredictionIO:
 
-* [Installing PredictionIO with Docker](../projects.html#docker-installation-for-predictionio)
-* [Installing PredictionIO with Vagrant (VirtualBox)](../projects.html#vagrant-installation-for-predictionio)
+* [Installing PredictionIO with
+  Docker](../community/projects.html#docker-installation-for-predictionio)
+* [Installing PredictionIO with Vagrant
+  (VirtualBox)](../community/projects.html#vagrant-installation-for-predictionio)
 
 [//]: # (* *(coming soon)* Installing PredictionIO with Homebrew)
 
 > **Upgrade Note**
 
-> **0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and Elasticsearch. See more [here](../resources/schema-change.html).**
+> **0.8.2 contains schema changes from the previous versions, if you have
+installed the previous versions, you may need to clear both HBase and
+Elasticsearch. See more [here](../resources/schema-change.html).**
 
 
-## Production Deployment
+[//]: # (## Production Deployment)
 
-For production environment setup, please refer to [Production
-Deployment]({{site.baseurl}}/production/deploy.html) guide.
+[//]: # (For production environment setup, please refer to [Production)
+[//]: # (Deployment]({{site.baseurl}}/production/deploy.html) guide.)
 
 #### [Next: Recommendation Engine Quick Start](../recommendation/quickstart.html)
