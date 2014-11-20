@@ -39,7 +39,7 @@ $ pio eventserver
 
 ## Create a Sample App
 
-Let's create a sample app called "MyApp1" now. An app prepresents the application that generates the data, e.g. a movie rating app.
+Let's create a sample app called "MyApp1" now. An app represents the application that generates the data, e.g. a movie rental app.
 
 ```
 $ pio app new MyApp1
