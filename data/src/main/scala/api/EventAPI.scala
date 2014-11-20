@@ -20,7 +20,7 @@ import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.AccessKeys
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
-import io.prediction.data.storage.Events
+import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
 
@@ -52,7 +52,7 @@ import scala.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 class EventServiceActor(
-  val eventClient: Events,
+  val eventClient: LEvents,
   val accessKeysClient: AccessKeys) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -266,7 +266,7 @@ case class StartServer(
 )
 
 class EventServerActor(
-  val eventClient: Events,
+  val eventClient: LEvents,
   val accessKeysClient: AccessKeys) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(

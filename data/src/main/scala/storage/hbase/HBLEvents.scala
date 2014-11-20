@@ -17,7 +17,7 @@ package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventValidation
-import io.prediction.data.storage.Events
+import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.StorageError
@@ -56,8 +56,8 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-class HBEvents(val client: HBClient, val namespace: String)
-  extends Events with Logging {
+class HBLEvents(val client: HBClient, val namespace: String)
+  extends LEvents with Logging {
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
 

@@ -17,7 +17,7 @@ package io.prediction.data.storage.elasticsearch
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.StorageError
-import io.prediction.data.storage.Events
+import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.EventJson4sSupport
 
 import grizzled.slf4j.Logging
@@ -46,7 +46,7 @@ import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.concurrent.ExecutionContext
 
-class ESEvents(client: Client, index: String) extends Events with Logging {
+class ESLEvents(client: Client, index: String) extends LEvents with Logging {
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
   //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all

@@ -16,7 +16,6 @@
 package io.prediction.data.view
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.Events
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Storage
@@ -35,7 +34,7 @@ object ViewPredicates {
   def getStartTimePredicate(startTime: DateTime): (Event => Boolean) = {
     e => (!(e.eventTime.isBefore(startTime) || e.eventTime.isEqual(startTime)))
   }
-  
+
   def getUntilTimePredicate(untilTimeOpt: Option[DateTime])
   : (Event => Boolean) = {
     untilTimeOpt.map(getUntilTimePredicate).getOrElse(_ => true)
@@ -53,7 +52,7 @@ object ViewPredicates {
   def getEntityTypePredicate(entityType: String): (Event => Boolean) = {
     (_.entityType == entityType)
   }
-  
+
   def getEventPredicate(eventOpt: Option[String]): (Event => Boolean)
   = {
     eventOpt.map(getEventPredicate).getOrElse(_ => true)
@@ -90,7 +89,7 @@ object ViewAggregators {
 
 object EventSeq {
   // Need to
-  // >>> import scala.language.implicitConversions 
+  // >>> import scala.language.implicitConversions
   // to enable implicit conversion. Only import in the code where this is
   // necessary to avoid confusion.
   implicit def eventSeqToList(es: EventSeq): List[Event] = es.events
@@ -104,7 +103,7 @@ class EventSeq(val events: List[Event]) {
     entityTypeOpt: Option[String] = None,
     startTimeOpt: Option[DateTime] = None,
     untilTimeOpt: Option[DateTime] = None): EventSeq = {
-    
+
     events
     .filter(ViewPredicates.getEventPredicate(eventOpt))
     .filter(ViewPredicates.getStartTimePredicate(startTimeOpt))

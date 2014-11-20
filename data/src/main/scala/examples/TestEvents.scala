@@ -15,7 +15,7 @@
 
 package io.prediction.data.examples
 
-import  io.prediction.data.storage.Events
+import  io.prediction.data.storage.LEvents
 import  io.prediction.data.storage.Event
 import  io.prediction.data.storage.DataMap
 import  io.prediction.data.storage.hbase
@@ -25,8 +25,8 @@ import  io.prediction.data.storage.Storage
 //import io.prediction.data.storage.elasticsearch.ESStorageClient
 //import io.prediction.data.storage.hbase.HBStorageClient
 
-import io.prediction.data.storage.elasticsearch.ESEvents
-import io.prediction.data.storage.hbase.HBEvents
+import io.prediction.data.storage.elasticsearch.ESLEvents
+import io.prediction.data.storage.hbase.HBLEvents
 
 import org.json4s.JObject
 import org.json4s.native.JsonMethods.parse
@@ -36,12 +36,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.joda.time.DateTime
 
-object TestEvents {
+object TestLEvents {
 
   def main(args: Array[String]) {
     args(0) match {
-      case "HB" => testHBEvents()
-      case "ES" => testESEvents()
+      case "HB" => testHBLEvents()
+      case "ES" => testESLEvents()
     }
   }
 
@@ -63,13 +63,13 @@ object TestEvents {
 
   val e2 = e.copy(properties=DataMap())
 
-  def testESEvents() {
+  def testESLEvents() {
 
     /*val config = StorageClientConfig(Seq("localhost"), Seq(9300))
     val storageClient = new ESStorageClient(config)
     val client = storageClient.client
     val eventConnector = storageClient.eventClient*/
-    val eventConnector = Storage.getDataObject[Events]("predictionio_events_es").asInstanceOf[ESEvents]
+    val eventConnector = Storage.getDataObject[LEvents]("predictionio_events_es").asInstanceOf[ESLEvents]
     implicit val formats = eventConnector.formats
 
     //client.prepareGet("testindex", "events", "Abcdef").get()
@@ -115,9 +115,9 @@ object TestEvents {
     //client.close()
   }
 
-  def testHBEvents() = {
+  def testHBLEvents() = {
 
-    println("testHBEvents")
+    println("testHBLEvents")
 
     /*val config = StorageClientConfig(Seq("localhost"), Seq(9300))
     val storageClient = new HBStorageClient(config)
@@ -127,7 +127,7 @@ object TestEvents {
       hosts = Seq("localhost"),
       ports = Seq(1234)))
 
-    val eventConnector = new hbase.HBEvents(storageClient.client,
+    val eventConnector = new hbase.HBLEvents(storageClient.client,
       "predictionio_events_hb")
 
     val appId = 4
