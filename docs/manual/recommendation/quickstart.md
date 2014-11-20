@@ -270,6 +270,11 @@ $ pio train
 $ pio deploy
 ```
 
+When your engine is built successfully, you should see a console message **Your engine is ready for training**.
+
+when the engine finishes training, you should see a consile message **Saved engine instance with ID: d7GvtbDbTbWhxlbDBfyydQ**.
+
+
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
 
 ![Engine Status]({{ site.baseurl }}/images/engine-server.png)
