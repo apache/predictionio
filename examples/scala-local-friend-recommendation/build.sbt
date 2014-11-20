@@ -2,7 +2,11 @@ import AssemblyKeys._
 
 assemblySettings
 
+<<<<<<< Updated upstream
 name := "examples-friendrecommendation"
+=======
+name := "example-scala-local-friend-recommendation"
+>>>>>>> Stashed changes
 
 organization := "io.prediction"
 
