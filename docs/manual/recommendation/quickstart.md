@@ -39,7 +39,7 @@ $ pio eventserver
 
 ## Create a Sample App
 
-Let's create a sample app called "MyApp1" now. An app prepresents the application that generates the data, e.g. a movie rating app.
+Let's create a sample app called "MyApp1" now. An app represents the application that generates the data, e.g. a movie rental app.
 
 ```
 $ pio app new MyApp1
@@ -319,7 +319,14 @@ print_r($response);
 <div data-lang="Ruby SDK">
 
 {% highlight ruby %}
-(coming soon)
+
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('user' => <USER ID>, 'num' => <NUMBER (integer)>)
+
+puts response
 {% endhighlight %}
 
 </div>
