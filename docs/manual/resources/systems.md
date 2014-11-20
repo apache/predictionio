@@ -27,4 +27,4 @@ This section explains how they are used in PredictionIO.
 
 **HDFS**: The output of training has two parts - a model and meta-data. The model is then stored in HDFS or a local file system. 
 
-**ElasticSearch**: It stores the model meta-data. 
+**Elasticsearch**: It stores the model meta-data. 

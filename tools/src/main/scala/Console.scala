@@ -321,7 +321,10 @@ object Console extends Logging {
           } text("Event server IP. Default: localhost"),
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
-          } text("Event server port. Default: 7070")
+          } text("Event server port. Default: 7070"),
+          opt[String]("accesskey") action { (x, c) =>
+            c.copy(accessKey = c.accessKey.copy(accessKey = x))
+          } text("Access key of the App where feedback data will be stored.")
         )
       note("")
       cmd("undeploy").

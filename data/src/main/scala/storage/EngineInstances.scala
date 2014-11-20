@@ -44,7 +44,7 @@ import org.json4s.native.Serialization
  * @param multipleMetricsResultsHTML HTML results of metrics on all data sets.
  * @param multipleMetricsResultsJSON JSON results of metrics on all data sets.
  */
-case class EngineInstance(
+private[prediction] case class EngineInstance(
   id: String,
   status: String,
   startTime: DateTime,

@@ -1,4 +1,5 @@
 This is the API documentation of PredictionIO.
 
 If you are building a prediction engine, the most interesting package would be
-[[io.prediction.controller]].
+[[io.prediction.controller]]. If your prediction engine uses Event Store, you
+may also want to look at [[io.prediction.data.storage]].

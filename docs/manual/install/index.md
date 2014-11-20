@@ -17,7 +17,7 @@ technologies that power PredictionIO.
 * Apache HBase 0.98.6
 * Apache Spark 1.1.0 for Hadoop 2.4
 * Elasticsearch 1.3.0
-* Java 7
+* Java Development Kit 7
 
 > **Notes for Linux Users**
 
@@ -45,7 +45,7 @@ You may also use one of the community-contributed packages to install Prediction
 
 > **Upgrade Note**
 
-> **0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and ElasticSearch. See more [here](../resources/schema-change.html).**
+> **0.8.2 contains schema changes from the previous versions, if you have installed the previous versions, you may need to clear both HBase and Elasticsearch. See more [here](../resources/schema-change.html).**
 
 
 ## Production Deployment
