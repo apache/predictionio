@@ -314,7 +314,14 @@ print_r($response);
 <div data-lang="Ruby SDK">
 
 {% highlight ruby %}
-(coming soon)
+
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('user' => <USER ID>, 'num' => <NUMBER (integer)>)
+
+puts response
 {% endhighlight %}
 
 </div>
