@@ -224,10 +224,10 @@ You may use the sample movie data from MLlib repo for demonstration purpose. Exe
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 ```
 
-A python import script `import_eventserver.py` is provided to import the data to Event Server using Python SDK. Replace the value of access_key parameter by your `Access Key`.
+A python import script `import_eventserver.py` is provided to import the data to Event Server using Python SDK. Please upgrade to the latest SDK as well so you have the latest script. Replace the value of access_key parameter by your `Access Key`.
 
 ```
-$ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
+$ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
 You should see the following output:

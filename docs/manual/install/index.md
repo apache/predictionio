@@ -17,7 +17,7 @@ technologies that power PredictionIO.
 * Apache HBase 0.98.6
 * Apache Spark 1.1.0 for Hadoop 2.4
 * Elasticsearch 1.3.0
-* Java 7
+* Java Development Kit 7
 
 > **Notes for Linux Users**
 
