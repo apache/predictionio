@@ -19,10 +19,10 @@ Let's look at the code and see how you can customize the Recommendation engine y
 
 ## The Engine Design
 
-As you can see from the Quick Start, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
+As you can see from the Quick Start, *MyRecommendation* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
 a JSON predicted result.
 
-In MyEngine/src/main/scala/***Engine.scala***
+In MyRecommendation/src/main/scala/***Engine.scala***
 
 `Query` case class defines the format of **query**, such as { "user": 1, "num": 4 }:
 
@@ -65,7 +65,7 @@ object RecommendationEngine extends IEngineFactory {
 
 Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]` and train a model, which is a `MatrixFactorizationModel` object.
 
-PredictionIO's MLlib Collaborative Filtering engine template, which *MyEngine* bases on, integrates this algorithm under the DASE architecture.
+PredictionIO's MLlib Collaborative Filtering engine template, which *MyRecommendation* bases on, integrates this algorithm under the DASE architecture.
 We will take a closer look at the DASE code below.
 > [Check this out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to learn more about MLlib's ALS collaborative filtering algorithm.
 
@@ -77,7 +77,7 @@ In the DASE architecture, data is prepared by 2 components sequentially: *Data S
 
 ### Data Source
 
-In MyEngine/src/main/scala/***DataSource.scala***
+In MyRecommendation/src/main/scala/***DataSource.scala***
 
 The `def readTraining` of class `DataSource` reads, and selects, data from datastore of EventServer and it returns `TrainingData`.
 
@@ -124,7 +124,7 @@ class DataSource(val dsp: DataSourceParams)
 ```
 
 `Storage.getPEvents()` gives you access to data you collected through Event Server and `eventsDb.find` specifies the events you want to read.
-PredictionIO automatically loads the parameters of *datasource* specified in MyEngine/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MyRecommendation/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
 
@@ -157,7 +157,7 @@ and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 
 ### Data Preparator
 
-In MyEngine/src/main/scala/***Preparator.scala***
+In MyRecommendation/src/main/scala/***Preparator.scala***
 
 The `def prepare` of class `Preparator` takes `TrainingData`. It then conducts any necessary feature selection and data processing tasks.
 At the end, it returns `PreparedData` which should contain the data *Algorithm* needs. For MLlib ALS, it is `RDD[Rating]`.
@@ -188,7 +188,7 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 ## Algorithm
 
-In MyEngine/src/main/scala/***ALSAlgorithm.scala***
+In MyRecommendation/src/main/scala/***ALSAlgorithm.scala***
 
 The two functions of the algorithm class are `def train` and `def predict`.
 `def train` is responsible for training a predictive model. PredictionIO will store this model and `def predict` is responsible for using this model to make prediction.
@@ -209,7 +209,7 @@ The two functions of the algorithm class are `def train` and `def predict`.
 
 In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*, *iterations* and *lambda*.
 
-The values of these parameters are specified in *algorithms* of MyEngine/***engine.json***:
+The values of these parameters are specified in *algorithms* of MyRecommendation/***engine.json***:
 
 ```
 {
@@ -239,7 +239,7 @@ case class ALSAlgorithmParams(
 `ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD data.
 RDD is a distributed collection of items which *does not* persist. To store the model, `PersistentMatrixFactorizationModel` extends `MatrixFactorizationModel` and makes it persistable.
 
-> The detailed implementation can be found at MyEngine/src/main/scala/***PersistentMatrixFactorizationModel.scala***
+> The detailed implementation can be found at MyRecommendation/src/main/scala/***PersistentMatrixFactorizationModel.scala***
 
 PredictionIO will automatically store the returned model, i.e. `PersistentMatrixFactorizationModel` in this case.
 
@@ -271,7 +271,7 @@ PredictionIO passes the returned `PredictedResult` object to *Serving*.
 The `def serve` of class `Serving` processes predicted result. It is also responsible for combining multiple predicted results into one if you have more than one predictive model.
 *Serving* then returns the final predicted result. PredictionIO will convert it to a JSON response automatically.
 
-In MyEngine/src/main/scala/***Serving.scala***
+In MyRecommendation/src/main/scala/***Serving.scala***
 
 ```scala
 class Serving

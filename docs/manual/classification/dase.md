@@ -19,10 +19,10 @@ Let's look at the code and see how you can customize the Classification engine y
 
 ## The Engine Design
 
-As you can see from the Quick Start, *MyEngine* takes a JSON prediction query, e.g. { "features": [4, 3, 8] }, and return
+As you can see from the Quick Start, *MyClassification* takes a JSON prediction query, e.g. { "features": [4, 3, 8] }, and return
 a JSON predicted result.
 
-In MyEngine/src/main/scala/***Engine.scala***
+In MyClassification/src/main/scala/***Engine.scala***
 
 `Query` case class defines the format of **query**, such as { "features": [4, 3, 8] }:
 
@@ -60,7 +60,7 @@ object ClassificationEngine extends IEngineFactory {
 
 Spark's MLlib NaiveBayes algorithm takes training data of RDD type, i.e. `RDD[LabeledPoint]` and train a model, which is a `NaiveBayesModel` object.
 
-PredictionIO's MLlib Classification engine template, which *MyEngine* bases on, integrates this algorithm under the DASE architecture.
+PredictionIO's MLlib Classification engine template, which *MyClassification* bases on, integrates this algorithm under the DASE architecture.
 We will take a closer look at the DASE code below.
 > [Check this out](https://spark.apache.org/docs/latest/mllib-naive-bayes.html) to learn more about MLlib's NaiveBayes algorithm.
 
@@ -72,7 +72,7 @@ In the DASE architecture, data is prepared by 2 components sequentially: *Data S
 
 ### Data Source
 
-In MyEngine/src/main/scala/***DataSource.scala***
+In MyClassification/src/main/scala/***DataSource.scala***
 
 The `def readTraining` of class `DataSource` reads, and selects, data from datastore of EventServer and it returns `TrainingData`.
 
@@ -149,7 +149,7 @@ and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 
 ### Data Preparator
 
-In MyEngine/src/main/scala/***Preparator.scala***
+In MyClassification/src/main/scala/***Preparator.scala***
 
 The `def prepare` of class `Preparator` takes `TrainingData`. It then conducts any necessary feature selection and data processing tasks.
 At the end, it returns `PreparedData` which should contain the data *Algorithm* needs. For MLlib NaiveBayes, it is `RDD[LabeledPoint]`.
@@ -174,7 +174,7 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 ## Algorithm
 
-In MyEngine/src/main/scala/***NaiveBayesAlgorithm.scala***
+In MyClassification/src/main/scala/***NaiveBayesAlgorithm.scala***
 
 The two functions of the algorithm class are `def train` and `def predict`.
 `def train` is responsible for training a predictive model. PredictionIO will store this model and `def predict` is responsible for using this model to make prediction.
@@ -191,7 +191,7 @@ def train(data: PreparedData): NaiveBayesModel = {
 
 In addition to `RDD[LabeledPoint]` (i.e. `data.labeledPoints`), `NaiveBayes.train` takes 1 parameter: *lambda*.
 
-The values of this parameter is specified in *algorithms* of MyEngine/***engine.json***:
+The values of this parameter is specified in *algorithms* of MyClassification/***engine.json***:
 
 ```
 {
@@ -241,7 +241,7 @@ PredictionIO passes the returned `PredictedResult` object to *Serving*.
 The `def serve` of class `Serving` processes predicted result. It is also responsible for combining multiple predicted results into one if you have more than one predictive model.
 *Serving* then returns the final predicted result. PredictionIO will convert it to a JSON response automatically.
 
-In MyEngine/src/main/scala/***Serving.scala***
+In MyClassification/src/main/scala/***Serving.scala***
 
 ```scala
 class Serving
