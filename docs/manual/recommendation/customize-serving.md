@@ -5,19 +5,36 @@ title: Customizing Serving Component
 
 # Customizing Serving Component ( Recommendation )
 
-Serving component is where post-processing actions occurs. For exmaple, if you are recommending products to users, you may want to remove items that are not currently in stock from the recommended list. 
+Serving component is where post-processing actions occurs. For exmaple, if you
+are recommending products to users, you may want to remove items that are not
+currently in stock from the recommended list. 
 
-This section demonstrates how to add a custom filtering logic to exclude a list of blacklisted movies from the [Movie Recommendation Engine](/quickstart.html) based on the Recommendation Engine Template. It is highly recommended to go through the Quckstart guide first. 
+This section is based on the [Recommendation Engine Template](quickstart.html).
+
+A full end-to-end example can be found under
+"examples/scala-parallel-recommendation-custom-serving/" in Prediction.IO github
+directory.
+
+<!--
+This section demonstrates how to add a custom filtering logic to exclude a list
+of blacklisted movies from the [Movie Recommendation Engine](/quickstart.html)
+based on the Recommendation Engine Template. It is highly recommended to go
+through the Quckstart guide first. 
 
 Complete code example can be found in
 `examples/scala-parallel-recommendation-howto`.
 
 If you simply want to use this customized code, you can skip to the last section.
+-->
 
 ## The Serving Component 
-Recall [the DASE Architecture](/dase.html), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving components. When a Query comes in, it is passed to the Algorithm component for making Predictions.
+Recall [the DASE Architecture](../dase.html), a PredictionIO engine has 4 main
+components: Data Source, Data Preparator, Algorithm, and Serving components.
+When a Query comes in, it is passed to the Algorithm component for making
+Predictions.
 
-The Engine's serving component can be found in `/src/main/scala/Serving.scala` in the *MyRecommendation* directory. By default, it looks like the following:
+The Engine's serving component can be found in `./src/main/scala/Serving.scala`
+in the *MyRecommendation* directory. By default, it looks like the following:
 
 ```scala
 class Serving
@@ -25,188 +42,171 @@ class Serving
 
   override
   def serve(query: Query,
-    predictions: Seq[PredictedResult]): PredictedResult = {
-    predictions.head
+    predictedResults: Seq[PredictedResult]): PredictedResult = {
+    predictedResults.head
   }
 }
 ```
-we will customize the Serving component to remove temporarily disabled items from the Prediction made by Algorithms.
+we will customize the Serving component to remove temporarily disabled items
+from the Prediction made by Algorithms.
 
-## The Serving Interface
-PredictionIO allows you to substitute any component in a prediction engine as long as interface is matched. In this case, the Serving component has to use
-the Query and Prediction class defined by the original engine. The `serve` method performs the filting logic.
+## Modify the Serving Interface
 
-```scala
-class TempFilter(val params: TempFilterParams)
-    extends LServing[TempFilterParams, Query, Prediction] {
-  override def serve(query: Query, predictions: Seq[Prediction])
-  : Prediction = {
-    // Our filtering logic
-  }
-}
-```
-
-We will store the disabled items in a file, one item_id per line. Every time the `serve` method is invoked, it removes items whose id can be found in the file.
-
-> Notice that this is only for demonstration, reading from disk for every query leads to terrible system performance. User can implement more efficient I/O.
-
-Then, we will implement a new engine factory using this new Serving component.
-
-# Step-by-Step
-
-Below are the step-by-step instruction of implementing a customize logic.
-
-## Implement the new filtering component
-
-We need to define one parameter: The filepath of the blacklist file.
+We use a file to specify a list of disabled items. When the `serve()` method is
+called, it loads the file and removes items in the disabled list from 
+`PredictedResult`. The following code snippet illustrates the logic:
 
 ```scala
-case class TempFilterParams(val filepath: String) extends Params
-```
+import scala.io.Source  // ADDED
 
-The Serving component implementation is trivial. Every time the method `serve` is invoked, it reads the blacklisted file from disk. Then it removes these items from the Prediction.
+class Serving extends LServing[Query, PredictedResult] {
 
-```scala
-class TempFilter(val params: TempFilterParams)
-    extends LServing[TempFilterParams, Query, Prediction] {
-  override def serve(query: Query, predictions: Seq[Prediction])
-  : Prediction = {
-    // Read blacklisted items from disk
-    val disabledIids: Set[String] = Source.fromFile(params.filepath)
-      .getLines()
+  override def serve(query: Query, predictedResults: Seq[PredictedResult])
+  : PredictedResult = {
+    // Read the disabled product from file.
+    val disabledProducts: Set[Int] = Source
+      .fromFile("./data/sample_disabled_products.txt")
+      .getLines
+      .map(_.toInt)
       .toSet
 
-    val prediction = predictions.head
-    // prediction.items is a list of (item_id, score)-tuple
-    prediction.copy(items = prediction.items.filter(e => !disabledIids(e._1)))
+    val productScores = predictedResults.head.productScores
+    // Remove products from the original predictedResult
+    PredictedResult(productScores.filter(ps => !disabledProducts(ps.product)))
+  }
+}
+```
+> - We will show you how not to hardcode the path
+> "./data/sample_disabled_products.txt" soon.
+
+> - This example code uses a local relative path. For remote
+> deployment, it is recommended to use a globally accessible absolute path.
+
+> - This is only for demonstration, reading from disk for every query
+> leads to terrible system performance. User can implement more efficient I/O.
+
+
+## Deploy the Modified Engine
+
+Now you can deploy the modified engine as describted in the [Quick Start](
+quickstart.html) guide.
+
+Make sure the appId defined in the file `engine.json` match your `App ID`:
+
+```
+...
+"datasource": {
+  "appId": 1
+},
+...
+```
+
+To build *MyRecommendation* and deploy it as a service:
+
+```
+$ pio build
+$ pio train
+$ pio deploy
+```
+
+This will deploy an engine that binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
+
+Now, You can try to retrieve predicted results.  To recommend 4 movies to user
+whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed
+engine and it will return a JSON of the recommended movies. (Output is
+reformatted to better illustration.)
+
+```
+$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' \
+  http://localhost:8000/queries.json
+
+{"productScores":[
+  {"product":65,"score":6.537168137254073},
+  {"product":69,"score":6.391430405762495},
+  {"product":38,"score":5.829957095096519},
+  {"product":11,"score":5.5991291456974}]}
+```
+
+Now, to verify the blacklisting logic, we add the product 69 (the second item)
+to the blacklisting file "./data/sample_disabled_products.txt". Then, we
+can rerun the curl query. The change should take effect immediately as the
+disabled product list is reloaded everytime the `serve()` method is called.
+
+```
+$ echo "69" >> ./data/sample_disabled_products.txt
+$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' \
+  http://localhost:8000/queries.json
+
+{"productScores":[
+  {"product":65,"score":6.537168137254073},
+  {"product":38,"score":5.829957095096519},
+  {"product":11,"score":5.5991291456974}]}
+```
+
+Congratulations, you have learned how to add customized realtime blacklisting
+logics to Serving component!
+
+## Adding Serving Parameters
+
+Optionally, you may want to take the hardcoded path
+("./data/sample_disabled_products.txt") away from the source code.
+
+PredictionIO offers ServingParams so you can read varaible values from
+`engine.json` instead. Prediction.IO transforms the JSON object specified in 
+`engine.json`'s `serving` field into the ServingParams class.
+
+Modify `src/main/scala/Serving.scala` again in the "MyRecommendation"
+directory to:
+
+```scala
+import scala.io.Source
+
+import io.prediction.controller.Params  // ADDED
+
+// ADDED ServingParams to specify the blacklisting file location.
+case class ServingParams(val filepath: String) extends Params
+
+class Serving(val params: ServingParams)
+  extends LServing[Query, PredictedResult] {
+
+  override
+  def serve(query: Query, predictedResults: Seq[PredictedResult])
+  : PredictedResult = {
+    val disabledProducts: Set[Int] = Source
+      .fromFile(params.filepath)
+      .getLines
+      .map(_.toInt)
+      .toSet
+
+    val productScores = predictedResults.head.productScores
+    PredictedResult(productScores.filter(ps => !disabledProducts(ps.product)))
   }
 }
 ```
 
-## Define a new engine factory
-
-We need to implement a new engine factory to include this filter. All we need to do is to copy and paste the ItemRec's factory, and replace the serving component with `TempFilter`.
-
-```scala
-object TempFilterEngine extends IEngineFactory {
-  def apply() = {
-    new Engine(
-      classOf[EventsDataSource],
-      classOf[ItemRecPreparator],
-      Map("ncMahoutItemBased" -> classOf[NCItemBasedAlgorithm]),
-      classOf[TempFilter]   // The only difference.
-    )
-  }
-}
-```
-
-Lastly, to register the engine with Prediction.IO, we need to edit the `engine.json` file in the project root directory. Below is an example. Two important fields: `id` is a unique id in Prediction.IO to identify the engine, `engineFactory` is the classpath to the engine factory.
+In `engine.json`, you specify the parameter `serving` for the Serving 
+component (the json4s library automatically extract the json object into a scala
+class under the hood):
 
 ```json
 {
-  "id": "scala-local-movielens-filtering",
-  "version": "0.0.1-SNAPSHOT",
-  "name": "scala-local-movielens-filtering",
-  "engineFactory": "myorg.TempFilterEngine"
-}
-```
-
-This project depends on the builtin engines, hence in `build.sbt` under project root, add the following line to libraryDependencies.
-
-```scala
-libraryDependencies ++= Seq(
   ...
-  "io.prediction"    %% "engines"       % "0.8.2-SNAPSHOT" % "provided",
-  ...
-```
-
-## Deploy the new engine
-
-This process is equivalent to the register-train-deploy procedure of implementing a new engine.
-
-### Update parameters files
-
-When we create this project, we have copied the default parameters of the ItemRec Engine. They can be found under the directory `params`.
-
-Specify the `<app_id>` you used for importing in file `params/datasource.json`.
-
-```json
-{
-  "appId": <app_id>,
+  "serving": {
+    "filepath": "./data/sample_disabled_products.txt"
+  },
   ...
 }
 ```
 
-Specify the *full path* of the blacklisting file in `params/serving.json`.
-Notice that this files don't yet have the field `filepath`, since it was the default parameter (which is empty) for the serving component in the ItemRec Engine.
-We have prepared a sample file in `examples/scala-local-movielens-filtering/blacklisted.txt`
-The file should looks like the following:
+Again, to build *MyRecommendation* and deploy it as a service:
 
-```json
-{
-  "filepath": "/home/pio/PredictionIO/examples/scala-local-movielens-filtering/blacklisted.txt"
-}
+```
+$ pio build
+$ pio train
+$ pio deploy
 ```
 
+You can change the `filepath` value without re-building the code next time.
 
-#### Deploy the engine 
 
-```bash
-$PIO_HOME/bin/pio deploy -- --master spark://`hostname`:7077
-...
-[INFO] [10/16/2014 22:45:08.486] ... Bind successful. Ready to serve.
-```
-
-# Play with the customized engine
-
-The engine can now serve live queries. With the sample file `blacklisted.txt`, items 272 and 123 are blacklisted. The new serving component `TempFilter` removes them from Prediction results. If we use the same query as in the
-[Movie Recommendation App (see bottom of the page)](../tutorials/engines/itemrec/movielens.html),
-
-```bash
-$ curl -X POST -d '{"uid": "100", "n": 3}' http://localhost:8000/queries.json
-{"items":[
-  {"313":9.92607593536377},
-  {"347":9.92170524597168}]}
-```
-
-Item 272 is removed from the Prediction result.
-
-We can further test the new serving code by adding more items to the blacklist, suppose we add item 347 to the file, and re-submit the same query:
-
-```bash
-$ cat blacklisted.txt
-272
-123
-347
-$ curl -X POST -d '{"uid": "100", "n": 3}' http://localhost:8000/queries.json
-{"items":[
-  {"313":9.92607593536377}]}
-```
-
-Item 347 is filtered. Only one item left in the Prediction result.
-
-> User may notice that this filtering is a *post-prediction filtering*. Meaning that it may return significantly less items than what is requested in `Query.n`.
-> User should consider using a larger n in order to prevent all items being filtered.
-
-# Side note: Use the code directly.
-
-The above code can be found in
-`examples/scala-local-movielens-filtering`. You can use it directly with
-
-```bash
-# Assuming you are at PredictionIO source root
-$ cd examples/scala-local-movielens-filtering
-# Edit datasource params to use the correct app_id
-$ vim params/datasource.json
-# Edit serving params to the full path of backlisted.txt
-$ vim params/serving.json
-# Register-train-deploy
-$ $PIO_HOME/bin/pio register
-...
-$ $PIO_HOME/bin/pio train -- --master spark://`hostname`:7077
-...
-$ $PIO_HOME/bin/pio deploy -- --master spark://`hostname`:7077
-...
-```
-
-At this point, you should be able to query the prediction server at `http://localhost:8000`.
