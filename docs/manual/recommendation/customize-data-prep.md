@@ -8,10 +8,13 @@ title: Customizing Data Preparator
 Data Preparator is where pre-processing actions occurs. For example, one may want to remove some very popular items from training data because she thinks that these items may not help finding individual person's tastes or one may have a black list of item that she want to remove from training data before feed the data to the algorithm.
 
 This section assumes that you have created a "MyRecommendation" engine based on the [Recommendation Engine Template: QuickStart](quickstart.html)
-We will demonstrate how to add a filtering logic to exclude a list of items in recommendation. 
+We will demonstrate how to add a filtering logic to exclude a list of items in training data.
 
 A sample black list file containing the items to be excluded is provided in ./data/sample_not_train_data.txt
 
+A full end-to-end example can be found under
+"examples/scala-parallel-recommendation-custom-preparator/" in Prediction.IO github
+directory.
 
 ## The Data Preparator Component
 
