@@ -1,0 +1,21 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
+  "datasource": {
+    "appId": 1
+  },
+  "preparator": {
+    "filepath": "./data/sample_not_train_data.txt"
+  },
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01
+      }
+    }
+  ]
+}
