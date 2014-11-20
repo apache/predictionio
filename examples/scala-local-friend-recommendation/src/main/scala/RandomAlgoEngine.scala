@@ -40,16 +40,9 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
   /* override this to return Training Data only */
   override
   def readTraining(): MyTrainingData = {
-<<<<<<< Updated upstream
     val lines = Source.fromFile("file_a").getLines().toList.map{ line =>
         val data = line.split("\\s+")
         (data(0).toInt, data(1).toInt)
-=======
-    val lines = Source.fromFile("data.csv").getLines()
-      .toList.map{ line =>
-        val data = line.split(",")
-        (data(0), data(1).toDouble)
->>>>>>> Stashed changes
       }
 
     new MyTrainingData(lines)
