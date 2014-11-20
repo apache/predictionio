@@ -55,11 +55,25 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
   override
   def train(pd: MyTrainingData): MyModel = {
 
+    //The size of the training data
+    val size = 10000
+    var result : Map[Int, List[UserItemPair]] = Map()
+    for(pair <- pd.user_item){
+      val tmp1 = Math.abs(Random.nextInt % size)
+      val targetItems =  List( 
+        UserItemPair(pair._1, pd.user_item.apply(tmp1)._2),
+        UserItemPair(pair._1, pd.user_item.apply(tmp1)._2),
+        UserItemPair(pair._1, pd.user_item.apply(tmp1)._2),
+        UserItemPair(pair._1, pd.user_item.apply(tmp1)._2),
+        UserItemPair(pair._1, pd.user_item.apply(tmp1)._2))
+      result += pair._1 -> targetItems 
+    }
+    /*
     // Temporary data object... ten random pairs of user_id and parameter
     val sampleUserId = 888
     val sampleTargetItems = List( UserItemPair(Random.nextInt, Random.nextInt),
-                           UserItemPair(Random.nextInt, Random.nextInt),
-                           UserItemPair(Random.nextInt, Random.nextInt),
+      UserItemPair(Random.nextInt, Random.nextInt),
+      UserItemPair(Random.nextInt, Random.nextInt),
                            UserItemPair(Random.nextInt, Random.nextInt),
                            UserItemPair(Random.nextInt, Random.nextInt),
                            UserItemPair(Random.nextInt, Random.nextInt),
@@ -67,12 +81,13 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
                            UserItemPair(Random.nextInt, Random.nextInt),
                            UserItemPair(Random.nextInt, Random.nextInt),
                            UserItemPair(Random.nextInt, Random.nextInt) )
-
+    */
     // Push randomization to prediction step, so that seed can be param of
     // query.
     // val shuffledTargetItems = Random.shuffle(sampleTargetItems)
 
-    new MyModel( Map(sampleUserId -> sampleTargetItems) )
+    //new MyModel( Map(sampleUserId -> sampleTargetItems) )
+    new MyModel(result)
   }
 
   override
