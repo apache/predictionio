@@ -5,7 +5,7 @@ branches:
     - livedoc
 
 script:
-  - cd bin # Temp workaround to prevent the default rake script from running.
+  - cat README.md # Temp workaround to prevent the default rake script from running.
 
 deploy:
   provider: s3
