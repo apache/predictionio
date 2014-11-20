@@ -53,14 +53,17 @@ object Storage extends Logging {
   private case class DataObjectMeta(sourceName: String, databaseName: String)
 
   private val s2cm = scala.collection.mutable.Map[String, Option[ClientMeta]]()
-  private def updateS2CM(k: String): Option[ClientMeta] = {
+  private def updateS2CM(k: String, parallel: Boolean): Option[ClientMeta] = {
     try {
       val keyedPath = sourcesPrefixPath(k)
       val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
       val hosts = sys.env(prefixPath(keyedPath, "HOSTS")).split(',')
       val ports = sys.env(prefixPath(keyedPath, "PORTS")).split(',').
         map(_.toInt)
-      val clientConfig = StorageClientConfig(hosts = hosts, ports = ports)
+      val clientConfig = StorageClientConfig(
+        hosts = hosts,
+        ports = ports,
+        parallel = parallel)
       val client = getClient(clientConfig, sourceType)
       Some(ClientMeta(sourceType, client))
     } catch {
@@ -71,11 +74,15 @@ object Storage extends Logging {
         None
     }
   }
-  private def sourcesToClientMetaGet(source: String): Option[ClientMeta] = {
-    s2cm.getOrElseUpdate(source, updateS2CM(source))
+  private def sourcesToClientMetaGet(
+      source: String,
+      parallel: Boolean): Option[ClientMeta] = {
+    s2cm.getOrElseUpdate(source, updateS2CM(source, parallel))
   }
-  private def sourcesToClientMeta(source: String): ClientMeta =
-    sourcesToClientMetaGet(source).get
+  private def sourcesToClientMeta(
+      source: String,
+      parallel: Boolean): ClientMeta =
+    sourcesToClientMetaGet(source, parallel).get
 
   /*
   if (sys.env.get("PIO_STORAGE_INIT_SOURCES").getOrElse(false)) {
@@ -153,8 +160,10 @@ object Storage extends Logging {
     }
   }
 
-  def getClient(sourceName: String): Option[BaseStorageClient] =
-    sourcesToClientMetaGet(sourceName).map(_.client)
+  def getClient(
+      sourceName: String,
+      parallel: Boolean): Option[BaseStorageClient] =
+    sourcesToClientMetaGet(sourceName, parallel).map(_.client)
 
   def getDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
@@ -162,10 +171,17 @@ object Storage extends Logging {
     getDataObject[T](repoDOSourceName, repoDOMeta.databaseName)
   }
 
+  def getPDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
+    val repoDOMeta = repositoriesToDataObjectMeta(repo)
+    val repoDOSourceName = repoDOMeta.sourceName
+    getPDataObject[T](repoDOSourceName, repoDOMeta.databaseName)
+  }
+
   def getDataObject[T](
       sourceName: String,
-      databaseName: String)(implicit tag: TypeTag[T]): T = {
-    val clientMeta = sourcesToClientMeta(sourceName)
+      databaseName: String,
+      parallel: Boolean = false)(implicit tag: TypeTag[T]): T = {
+    val clientMeta = sourcesToClientMeta(sourceName, parallel)
     val sourceType = clientMeta.sourceType
     val ctorArgs = dataObjectCtorArgs(clientMeta.client, databaseName)
     val classPrefix = clientMeta.client.prefix
@@ -198,10 +214,27 @@ object Storage extends Logging {
     }
   }
 
+  def getPDataObject[T](
+      sourceName: String,
+      databaseName: String)(implicit tag: TypeTag[T]): T =
+    getDataObject[T](sourceName, databaseName, true)
+
   private def dataObjectCtorArgs(
       client: BaseStorageClient,
       dbName: String): Seq[AnyRef] = {
     Seq(client.client, dbName)
+  }
+
+  def verifyAllDataObjects(): Unit = {
+    println("  Verifying Meta Data Backend")
+    getMetaDataEngineManifests()
+    getMetaDataEngineInstances()
+    getMetaDataApps()
+    getMetaDataAppkeys()
+    println("  Verifying Model Data Backend")
+    getModelDataModels()
+    println("  Verifying Event Data Backend")
+    getEventDataEvents()
   }
 
   def getMetaDataEngineManifests(): EngineManifests =
@@ -209,6 +242,12 @@ object Storage extends Logging {
 
   def getMetaDataEngineInstances(): EngineInstances =
     getDataObject[EngineInstances](MetaDataRepository)
+
+  def getMetaDataApps(): Apps =
+    getDataObject[Apps](MetaDataRepository)
+
+  def getMetaDataAppkeys(): Appkeys =
+    getDataObject[Appkeys](MetaDataRepository)
 
   def getModelDataModels(): Models =
     getDataObject[Models](ModelDataRepository)
@@ -235,6 +274,9 @@ object Storage extends Logging {
   def getEventDataEvents(): Events =
     getDataObject[Events](EventDataRepository)
 
+  def getEventDataPEvents(): PEvents =
+    getPDataObject[PEvents](EventDataRepository)
+
   if (errors > 0) {
     error(s"There were $errors configuration errors. Exiting.")
     System.exit(1)
@@ -249,6 +291,7 @@ trait BaseStorageClient {
 
 case class StorageClientConfig(
   hosts: Seq[String],
-  ports: Seq[Int])
+  ports: Seq[Int],
+  parallel: Boolean = false)
 
 class StorageClientException(msg: String) extends RuntimeException(msg)

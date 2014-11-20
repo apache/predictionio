@@ -18,7 +18,7 @@ class MyModel(
   override def toString = s"MyModel's multiplier: ${multiplier.toString}"
 }
 
-class MyPrediction(
+class MyPredictedResult(
   val product: Int
 ) extends Serializable
 
@@ -32,7 +32,7 @@ class MyDataSource(val dsp: MyDataSourceParams) extends LDataSource[
     EmptyDataParams,
     MyTrainingData,
     MyQuery,
-    EmptyActual] {
+    EmptyActualResult] {
 
   /** Implement readTraining() when you do not concern about evaluation.
     *
@@ -47,15 +47,15 @@ class MyAlgorithm extends LAlgorithm[
     MyTrainingData,
     MyModel,
     MyQuery,
-    MyPrediction] {
+    MyPredictedResult] {
 
   override def train(pd: MyTrainingData): MyModel = {
     // Our model is simply one integer...
     new MyModel(pd.multiplier)
   }
 
-  override def predict(model: MyModel, query: MyQuery): MyPrediction = {
-    new MyPrediction(query.multiplicand * model.multiplier)
+  override def predict(model: MyModel, query: MyQuery): MyPredictedResult = {
+    new MyPredictedResult(query.multiplicand * model.multiplier)
   }
 }
 

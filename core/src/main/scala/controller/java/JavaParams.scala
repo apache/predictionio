@@ -52,11 +52,5 @@ case class EmptyPreparedData() extends AnyRef
 /** Empty model. */
 case class EmptyModel() extends AnyRef
 
-/** Empty input query. */
-case class EmptyQuery() extends AnyRef
-
-/** Empty output prediction. */
-case class EmptyPrediction() extends AnyRef
-
-/** Empty actual value. */
-case class EmptyActual() extends AnyRef
+/** Empty actual result. */
+case class EmptyActualResult() extends AnyRef

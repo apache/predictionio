@@ -149,11 +149,26 @@ abstract class PDataSource[DSP <: Params : ClassTag, DP, TD, Q, A]
     }}
   }
 
+  /** Implement this method to only return training data from a data source.
+    */
+  def readTraining(sc: SparkContext): TD = null.asInstanceOf[TD]
+
+  /** Implement this method to return one set of test data (
+    * a sequence of query and actual value pairs) from a data source.
+    * Should also implement readTraining to return correponding training data.
+    */
+  def readTest(sc: SparkContext): (DP, RDD[(Q, A)]) =
+    (null.asInstanceOf[DP], sc.parallelize(Seq.empty[(Q, A)]))
+
   /** Implement this method to return data from a data source. Returned data
     * can optionally include a sequence of query and actual value pairs for
     * evaluation purpose.
     */
-  def read(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])]
+  def read(sc: SparkContext): Seq[(DP, TD, RDD[(Q, A)])] = {
+    val (dp, qa) = readTest(sc)
+    Seq((dp, readTraining(sc), qa))
+  }
+
 }
 
 /** Base class of a parallel-to-local data source.

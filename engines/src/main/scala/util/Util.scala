@@ -162,7 +162,7 @@ object MathUtil {
   }
 }
 
-object MetricsVisualization {
+object EvaluatorVisualization {
   class ObjectInputStreamWithCustomClassLoader(
     fileInputStream: FileInputStream
   ) extends ObjectInputStream(fileInputStream) {

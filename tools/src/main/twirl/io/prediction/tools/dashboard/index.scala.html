@@ -61,8 +61,8 @@
           <th>Batch</th>
           <th>Engine ID</th>
           <th>Engine Version</th>
-          <th>Metrics Class</th>
-          <th>View Metrics Results As</th>
+          <th>Evaluator Class</th>
+          <th>View Evaluator Results As</th>
         </tr>
         @for(i <- evalCompletedInstances) {
         <tr>
@@ -73,13 +73,13 @@
           <td>@{i.engineId}</td>
           <td>@{i.engineVersion}</td>
           <td>
-            <script type="text/javascript">document.write(shorternClassName("@{i.metricsClass}"));</script>
+            <script type="text/javascript">document.write(shorternClassName("@{i.evaluatorClass}"));</script>
           </td>
           <td>
-            <div>@{i.multipleMetricsResults}</div>
+            <div>@{i.evaluatorResults}</div>
             <div> 
-              <a href="/engine_instances/@{i.id}/metrics_results.html" class="btn btn-primary">HTML</a>
-              <a href="/engine_instances/@{i.id}/metrics_results.txt" class="btn btn-success">Plain Text</a>
+              <a href="/engine_instances/@{i.id}/evaluator_results.html" class="btn btn-primary">HTML</a>
+              <a href="/engine_instances/@{i.id}/evaluator_results.txt" class="btn btn-success">Plain Text</a>
             </div>
           </td>
         </tr>
@@ -93,7 +93,7 @@
                 <tr><th>Preparator</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.preparatorParams)')));</script></pre></td></tr>
                 <tr><th>Algorithms</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.algorithmsParams)')));</script></pre></td></tr>
                 <tr><th>Serving</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.servingParams)')));</script></pre></td></tr>
-                <tr><th>Metrics</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.metricsParams)')));</script></pre></td></tr>
+                <tr><th>Evaluator</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.evaluatorParams)')));</script></pre></td></tr>
               </table>
             </div>
           </td>

@@ -1,8 +1,0 @@
-[
-  {
-    "name": "KeywordSimilarityAlgorithm",
-    "params": {
-      "threshold": 0.5
-    }
-  }
-]

@@ -21,13 +21,13 @@ class MyModel(
   override def toString = temperatures.toString
 }
 
-class MyPrediction(
+class MyPredictedResult(
   val temperature: Double
 ) extends Serializable
 
 // controller components
 class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
-  MyTrainingData, MyQuery, EmptyActual] {
+  MyTrainingData, MyQuery, EmptyActualResult] {
 
   /* override this to return Training Data only */
   override
@@ -43,7 +43,7 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
 }
 
 class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
-  MyModel, MyQuery, MyPrediction] {
+  MyModel, MyQuery, MyPredictedResult] {
 
   override
   def train(pd: MyTrainingData): MyModel = {
@@ -60,9 +60,9 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
   }
 
   override
-  def predict(model: MyModel, query: MyQuery): MyPrediction = {
+  def predict(model: MyModel, query: MyQuery): MyPredictedResult = {
     val temp = model.temperatures(query.day)
-    new MyPrediction(temp)
+    new MyPredictedResult(temp)
   }
 }
 

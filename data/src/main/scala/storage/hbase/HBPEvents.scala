@@ -16,7 +16,6 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventID
 import io.prediction.data.storage.PEvents
 
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -32,7 +31,8 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-class HBPEvents(namespace: String) extends PEvents with Logging {
+class HBPEvents(client: HBClient, namespace: String)
+  extends PEvents with Logging {
 
   lazy val table = HBEventsUtil.table
 

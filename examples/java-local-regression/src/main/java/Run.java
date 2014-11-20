@@ -60,7 +60,7 @@ public class Run {
     JavaWorkflow.runEngine(
         (new EngineFactory()).apply(),
         engineParams,
-        MeanSquareMetrics.class,
+        MeanSquareEvaluator.class,
         new EmptyParams(),
         new WorkflowParamsBuilder().batch("java regression engine").verbose(3).build()
         );

@@ -25,7 +25,7 @@ public class Runner3 {
     JavaWorkflow.runEngine(
       (new EngineFactory()).apply(),
       engineParams,
-      Metrics.class,
+      Evaluator.class,
       new EmptyParams(),
       new WorkflowParamsBuilder().batch("MyEngine").verbose(3).build()
     );

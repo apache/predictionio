@@ -16,6 +16,12 @@
 package io.prediction.engines.itemrank
 
 import io.prediction.engines.base
+import io.prediction.engines.base.EventsSlidingEvalParams
+import io.prediction.engines.base.DataParams
+import io.prediction.engines.base.U2IActionTD
+import io.prediction.engines.base.UserTD
+import io.prediction.engines.base.ItemTD
+
 
 import org.joda.time.DateTime
 
@@ -28,7 +34,7 @@ case class EventsDataSourceParams(
   val startTime: Option[DateTime] = None, // event starttime
   val untilTime: Option[DateTime] = None, // event untiltime
   val attributeNames: base.AttributeNames,
-  override val slidingEval: Option[base.EventsSlidingEvalParams] = None
+  override val slidingEval: Option[EventsSlidingEvalParams] = None
 ) extends base.AbstractEventsDataSourceParams
 
 class EventsDataSource(dsp: EventsDataSourceParams)
@@ -43,9 +49,9 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     * semantics of the actions.
     */
   override def generateQueryActualSeq(
-    users: Map[Int, base.UserTD],
-    items: Map[Int, base.ItemTD],
-    actions: Seq[base.U2IActionTD],
+    users: Map[Int, UserTD],
+    items: Map[Int, ItemTD],
+    actions: Seq[U2IActionTD],
     trainUntil: DateTime,
     evalStart: DateTime,
     evalUntil: DateTime): (DataParams, Seq[(Query, Actual)]) = {
@@ -58,14 +64,17 @@ class EventsDataSource(dsp: EventsDataSourceParams)
       .distinct
       .sortBy(identity)
 
-    val userActions: Map[Int, Seq[base.U2IActionTD]] = 
+    val userActions: Map[Int, Seq[U2IActionTD]] = 
       actions.groupBy(_.uindex)
 
     val qaSeq: Seq[(Query, Actual)] = userActions.map { case (ui, actions) => {
       val uid = ui2uid(ui)
       val iids = actions.map(u2i => ii2iid(u2i.iindex))
       val actionTuples = iids.zip(actions).map(e => (uid, e._1, e._2))
-      (Query(uid = uid, iids = allIids), Actual(actionTuples = actionTuples))
+
+      val query = Query(uid = uid, iids = allIids)
+      val actual = Actual(actionTuples = actionTuples)
+      (query, actual)
     }}
     .toSeq
 

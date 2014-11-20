@@ -289,6 +289,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
       _active = active)
   }
 
+  override
   def read(sc: SparkContext)
   : Seq[(DataParams, RDD[TrainingData], RDD[(QueryDate, AnyRef)])] = {
     val historicalSet = getHistoricalDataSet()
@@ -429,7 +430,7 @@ object YahooDataSourceRun {
     //val x =  Series(Vec(1,2,3))
     //println(x)
 
-    val metricsParams = BacktestingParams(
+    val evaluatorParams = BacktestingParams(
       enterThreshold = 0.01,
       exitThreshold = 0.0,
       maxPositions = 10//,
@@ -447,8 +448,8 @@ object YahooDataSourceRun {
       //algorithmParamsList = Seq(("", momentumParams)),
       algorithmParamsList = Seq(("", EmptyParams())),
       servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
-      metricsClassOpt = Some(classOf[BacktestingMetrics]),
-      metricsParams = metricsParams,
+      evaluatorClassOpt = Some(classOf[BacktestingEvaluator]),
+      evaluatorParams = evaluatorParams,
       params = WorkflowParams(
         verbose = 0,
         saveModel = false,

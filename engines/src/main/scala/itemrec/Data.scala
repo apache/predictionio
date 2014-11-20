@@ -36,23 +36,11 @@ case class Prediction(
 }
 
 case class Actual(
-    // (deprecated) actual items the user has performed actions on
-    val iids: Seq[String] = null,
-
     // (uid, iid, action) - tuple
-    val actionTuples: Seq[(String, String, base.U2IActionTD)]
+    val actionTuples: Seq[(String, String, base.U2IActionTD)],
+    // Items served in the testing duration. Used by Metrics to create baseline.
+    // Array is used because we want to enable efficient random access.
+    val servedIids: Vector[String]
   ) extends Serializable {
-  override def toString = s"${iids}"
+  override def toString = s"Actual: [$actionTuples.size]"
 }
-
-class MetricUnit(
-  val score: Double
-) extends Serializable
-
-class MetricResult(
-  val score: Double
-) extends Serializable
-
-class MultipleMetricResult(
-  val score: Double
-) extends Serializable

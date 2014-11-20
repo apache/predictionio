@@ -41,10 +41,10 @@ for line in read_file:
     count += 1
 
 #user_id_list is sorted
-user_id_list.sort()
 
 user_id_list = map(str, user_id_list)
-print user_id_list
+user_id_list.sort()
+#print user_id_list
 print "user_id finished"
 
 print "getting lines from item"
@@ -90,12 +90,13 @@ for line in read_file:
         write_file.write(line)
         index += 1
         if index == len(user_id_list):
+            print "break"
             break
 print "user keyword finished"
 #go to file begining
 #getting the user_sns_small
 
-print user_id_list
+#print user_id_list
 read_file = open("data/user_sns.txt", 'r')
 
 #write_file = open("data/mini_user_sns_small.txt", 'w')
@@ -105,7 +106,7 @@ met = False
 count = 0
 for line in read_file:
     count += 1
-    print count
+    #print count
     #Same user multiple following
     if met:
         if line.split()[0] != user_id_list[index]:
@@ -114,16 +115,18 @@ for line in read_file:
             if index == len(user_id_list):
                 break
     if line.split()[0] == user_id_list[index]:
-        print "here"
+        #print "here"
         user_sns_list.append(line)
         met = True
     # if the current line's user is greater than the user list, that means
     # the user doesn't follow or are following, then we move to next user
-    if int(line.split()[0]) > int(user_id_list[index]):
+    if line.split()[0] > user_id_list[index]:
         index += 1
+        if index == len(user_id_list):
+            break
 
-print user_sns_list
-write_file = open("data/mini_user_sns_small.txt",'w')
+#print user_sns_list
+write_file = open("data/mini_user_sns.txt",'w')
 for line in user_sns_list:
     for user_id in user_id_list:
         if line.split()[1] == user_id:
@@ -137,7 +140,7 @@ met = False
 count = 0
 for line in read_file:
     count += 1
-    print count
+    #print count
     if met:
         if line.split()[0] != user_id_list[index]:
             index += 1
@@ -145,12 +148,14 @@ for line in read_file:
             if index == len(user_id_list):
                 break
     if line.split()[0] == user_id_list[index]:
-        print "here"
+        #print "here"
         user_action_list.append(line)
         met = True
-    if int(line.split()[0]) > int(user_id_list[index]):
+    if line.split()[0] > user_id_list[index]:
         index += 1
-print user_action_list
+        if index == len(user_id_list):
+            break
+#print user_action_list
 write_file = open("data/mini_user_action.txt",'w')
 for line in user_action_list:
     for user_id in user_id_list:
@@ -158,6 +163,4 @@ for line in user_action_list:
             write_file.write(line)
             break
 print "Done"
-
-
 

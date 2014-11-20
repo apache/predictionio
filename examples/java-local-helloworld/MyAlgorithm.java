@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MyAlgorithm extends LJavaAlgorithm<
-  EmptyAlgorithmParams, MyTrainingData, MyModel, MyQuery, MyPrediction> {
+  EmptyAlgorithmParams, MyTrainingData, MyModel, MyQuery, MyPredictedResult> {
 
   final static Logger logger = LoggerFactory.getLogger(MyAlgorithm.class);
 
@@ -43,8 +43,8 @@ public class MyAlgorithm extends LJavaAlgorithm<
   }
 
   @Override
-  public MyPrediction predict(MyModel model, MyQuery query) {
+  public MyPredictedResult predict(MyModel model, MyQuery query) {
     Double temp = model.temperatures.get(query.day);
-    return  new MyPrediction(temp);
+    return  new MyPredictedResult(temp);
   }
 }

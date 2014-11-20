@@ -1,7 +1,19 @@
-
 {
   "id": "scala-parallel-regression",
-  "version": "0.0.1-SNAPSHOT",
-  "name": "scala-parallel-regression",
-  "engineFactory": "io.prediction.examples.regression.parallel.RegressionEngineFactory"
+  "description": "scala-parallel-regression example",
+  "engineFactory": "io.prediction.examples.regression.parallel.RegressionEngineFactory",
+  "datasource": {
+    "filepath": "../data/lr_data.txt",
+    "k": 3,
+    "seed": 9527
+  },
+  "algorithms": [
+    {
+      "name": "SGD",
+      "params": {
+        "numIterations": 800,
+        "stepSize": 0.1
+      }
+    }
+  ]
 }

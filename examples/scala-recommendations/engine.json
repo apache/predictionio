@@ -1,6 +1,19 @@
 {
-  "id": "org.apache.spark.mllib.recommendation.engine",
-  "version": "0.8.1-SNAPSHOT",
-  "name": "Item Recommendations",
-  "engineFactory": "org.apache.spark.mllib.recommendation.engine.RecommendationEngine"
+  "id": "default",
+  "description": "Item Recommendations examples",
+  "engineFactory": "org.apache.spark.mllib.recommendation.engine.RecommendationEngine",
+  "datasource": {
+    "filepath": "../data/movielens.txt"
+  },
+  "algorithms": [
+    {
+      "name": "",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01,
+        "persistModel": true
+      }
+    }
+  ]
 }

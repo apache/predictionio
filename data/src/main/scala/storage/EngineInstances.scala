@@ -30,8 +30,9 @@ import org.json4s.native.Serialization
  * @param endTime End time of the training/evaluation.
  * @param engineId Engine ID of the instance.
  * @param engineVersion Engine version of the instance.
+ * @param engineVariant Engine variant ID of the instance.
  * @param engineFactory Engine factory class for the instance.
- * @param metricsClass Name of metrics class of the evaluation of this instance.
+ * @param evaluatorClass Name of evaluator class of the evaluation of this instance.
  * @param batch A batch label of the engine instance.
  * @param env The environment in which the instance was created.
  * @param dataSourceParams Data source parameters of the instance.
@@ -50,18 +51,24 @@ case class EngineInstance(
   endTime: DateTime,
   engineId: String,
   engineVersion: String,
+  engineVariant: String,
   engineFactory: String,
-  metricsClass: String,
+  evaluatorClass: String,
   batch: String,
   env: Map[String, String],
   dataSourceParams: String,
   preparatorParams: String,
   algorithmsParams: String,
   servingParams: String,
-  metricsParams: String,
+  evaluatorParams: String,
+  evaluatorResults: String,
+  evaluatorResultsHTML: String,
+  evaluatorResultsJSON: String)
+  /*
   multipleMetricsResults: String,
   multipleMetricsResultsHTML: String,
   multipleMetricsResultsJSON: String)
+  */
 
 /**
  * Base trait for implementations that interact with EngineInstances in the
@@ -77,8 +84,10 @@ trait EngineInstances {
   /** Get an instance that has started training the latest and has trained to
     * completion.
     */
-  def getLatestCompleted(engineId: String, engineVersion: String):
-    Option[EngineInstance]
+  def getLatestCompleted(
+      engineId: String,
+      engineVersion: String,
+      engineVariant: String): Option[EngineInstance]
 
   /** Get instances that are produced by evaluation and have run to completion,
     * reverse sorted by the start time.
@@ -103,18 +112,19 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
           endTime = DateTime.now,
           engineId = "",
           engineVersion = "",
+          engineVariant = "",
           engineFactory = "",
-          metricsClass = "",
+          evaluatorClass = "",
           batch = "",
           env = Map(),
           dataSourceParams = "",
           preparatorParams = "",
           algorithmsParams = "",
           servingParams = "",
-          metricsParams = "",
-          multipleMetricsResults = "",
-          multipleMetricsResultsHTML = "",
-          multipleMetricsResultsJSON = "")
+          evaluatorParams = "",
+          evaluatorResults = "",
+          evaluatorResultsHTML = "",
+          evaluatorResultsJSON = "")
       fields.foldLeft(seed) { case (i, field) =>
         field match {
           case JField("id", JString(id)) => i.copy(id = id)
@@ -127,10 +137,12 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
             i.copy(engineId = engineId)
           case JField("engineVersion", JString(engineVersion)) =>
             i.copy(engineVersion = engineVersion)
+          case JField("engineVariant", JString(engineVariant)) =>
+            i.copy(engineVariant = engineVariant)
           case JField("engineFactory", JString(engineFactory)) =>
             i.copy(engineFactory = engineFactory)
-          case JField("metricsClass", JString(metricsClass)) =>
-            i.copy(metricsClass = metricsClass)
+          case JField("metricsClass", JString(evaluatorClass)) =>
+            i.copy(evaluatorClass = evaluatorClass)
           case JField("batch", JString(batch)) => i.copy(batch = batch)
           case JField("env", env) =>
             i.copy(env = Extraction.extract[Map[String, String]](env))
@@ -142,17 +154,17 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
             i.copy(algorithmsParams = algorithmsParams)
           case JField("servingParams", JString(servingParams)) =>
             i.copy(servingParams = servingParams)
-          case JField("metricsParams", JString(metricsParams)) =>
-            i.copy(metricsParams = metricsParams)
+          case JField("metricsParams", JString(evaluatorParams)) =>
+            i.copy(evaluatorParams = evaluatorParams)
           case JField("multipleMetricsResults",
-            JString(multipleMetricsResults)) =>
-              i.copy(multipleMetricsResults = multipleMetricsResults)
+            JString(evaluatorResults)) =>
+              i.copy(evaluatorResults = evaluatorResults)
           case JField("multipleMetricsResultsHTML",
-            JString(multipleMetricsResultsHTML)) =>
-              i.copy(multipleMetricsResultsHTML = multipleMetricsResultsHTML)
+            JString(evaluatorResultsHTML)) =>
+              i.copy(evaluatorResultsHTML = evaluatorResultsHTML)
           case JField("multipleMetricsResultsJSON",
-            JString(multipleMetricsResultsJSON)) =>
-              i.copy(multipleMetricsResultsJSON = multipleMetricsResultsJSON)
+            JString(evaluatorResultsJSON)) =>
+              i.copy(evaluatorResultsJSON = evaluatorResultsJSON)
           case _ => i
         }
       }
@@ -166,20 +178,22 @@ class EngineInstanceSerializer extends CustomSerializer[EngineInstance](
         JField("endTime", JString(i.endTime.toString)) ::
         JField("engineId", JString(i.engineId)) ::
         JField("engineVersion", JString(i.engineVersion)) ::
+        JField("engineVariant", JString(i.engineVariant)) ::
         JField("engineFactory", JString(i.engineFactory)) ::
-        JField("metricsClass", JString(i.metricsClass)) ::
+        JField("metricsClass", JString(i.evaluatorClass)) ::
         JField("batch", JString(i.batch)) ::
         JField("env", Extraction.decompose(i.env)(DefaultFormats)) ::
         JField("dataSourceParams", JString(i.dataSourceParams)) ::
         JField("preparatorParams", JString(i.preparatorParams)) ::
         JField("algorithmsParams", JString(i.algorithmsParams)) ::
         JField("servingParams", JString(i.servingParams)) ::
-        JField("metricsParams", JString(i.metricsParams)) ::
-        JField("multipleMetricsResults", JString(i.multipleMetricsResults)) ::
+        JField("metricsParams", JString(i.evaluatorParams)) ::
+        JField("multipleMetricsResults",
+          JString(i.evaluatorResults)) ::
         JField("multipleMetricsResultsHTML",
-          JString(i.multipleMetricsResultsHTML)) ::
+          JString(i.evaluatorResultsHTML)) ::
         JField("multipleMetricsResultsJSON",
-          JString(i.multipleMetricsResultsJSON)) ::
+          JString(i.evaluatorResultsJSON)) ::
         Nil)
   }
 ))

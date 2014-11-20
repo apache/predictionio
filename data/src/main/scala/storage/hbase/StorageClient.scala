@@ -18,13 +18,13 @@ package io.prediction.data.storage.hbase
 import io.prediction.data.storage.BaseStorageClient
 import io.prediction.data.storage.StorageClientConfig
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HConnectionManager
 import org.apache.hadoop.hbase.client.HConnection
 import org.apache.hadoop.hbase.client.HBaseAdmin
 //import org.apache.hadoop.hbase.NamespaceDescriptor
 //import org.apache.hadoop.hbase.NamespaceExistException
-import org.apache.hadoop.conf.Configuration
 
 case class HBClient(
   val conf: Configuration,
@@ -37,14 +37,21 @@ class StorageClient(val config: StorageClientConfig)
 
   val conf = HBaseConfiguration.create()
   conf.set("hbase.client.retries.number", "3")
-  val connection = HConnectionManager.createConnection(conf)
+  val connection =
+    if (!config.parallel)
+      HConnectionManager.createConnection(conf)
+    else
+      null
 
-  val client = HBClient(
-    conf = conf,
-    connection = connection,
-    admin = new HBaseAdmin(connection)
-  )
-
+  val client =
+    if (!config.parallel)
+      HBClient(
+        conf = conf,
+        connection = connection,
+        admin = new HBaseAdmin(connection)
+      )
+    else
+      null
 /*
   private val namespace = "predictionio_appdata"
 

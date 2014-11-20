@@ -1,6 +1,11 @@
 {
-  "id": "io.prediction.examples.java.parallel.EngineFactory",
-  "version": "0.8.1-SNAPSHOT",
-  "name": "Parallel Hello World Engine",
-  "engineFactory": "io.prediction.examples.java.parallel.EngineFactory"
+  "id": "default",
+  "description": "Parallel Hello World Engine",
+  "engineFactory": "io.prediction.examples.java.parallel.EngineFactory",
+  "algorithms": [
+    {
+      "name": "ParallelAlgorithm",
+      "params": {}
+    }
+  ]
 }

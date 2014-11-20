@@ -3,7 +3,10 @@ layout: docs
 title: Engines
 ---
 
+
 # Engines
+
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.2-SNAPSHOT will be availble soon.</code>
 
 An engine represents a type of prediction. Some examples of engines are Item
 Recommendation, Item Ranking, Churn Analysis.
@@ -61,6 +64,10 @@ $ $PIO_HOME/bin/pio deploy
 than one engine instance, either launch a new console, or put the process into
 the background, then repeat the same command on a different port (by adding a
 `--port` argument).
+
+By default, the engine instance is bound to localhost, which serves only local traffic.
+To serve global traffic, you can use 0.0.0.0, i.e.
+`$ bin/pio deploy --ip 0.0.0.0`
 
 If it is your first time using PredictionIO, these [tutorials and
 samples]({{ site.baseurl }}/tutorials/engines/) should be helpful.

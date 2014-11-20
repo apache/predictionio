@@ -34,16 +34,18 @@ Choose your platform below:
 [//]: # (* Deploying PredictionIO on Amazon Web Services)
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
+* [Launching PredictionIO on AWS](launch-aws.html)
 
-[//]: # (You may also use one of the community-contributed packages to install PredictionIO:)
+You may also use one of the community-contributed packages to install PredictionIO:
 
-[//]: # (* *(coming soon)* Installing PredictionIO with Docker)
-[//]: # (* *(coming soon)* Installing PredictionIO with Vagrant (VirtualBox))
+* [Installing PredictionIO with Docker](../projects.html#docker-installation-for-predictionio)
+* [Installing PredictionIO with Vagrant (VirtualBox)](../projects.html#vagrant-installation-for-predictionio)
+
 [//]: # (* *(coming soon)* Installing PredictionIO with Homebrew)
 
 > **Upgrade Note**
 
-> Upgrade instructions from 0.7 to 0.8 is coming soon.
+> Upgrade instructions from 0.7 to 0.8 are coming soon.
 
 
 ## Production Deployment

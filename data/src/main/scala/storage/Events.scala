@@ -29,7 +29,7 @@ import org.apache.commons.codec.binary.Base64
 
 // separate Event for API before require mo
 case class Event(
-  val eventId: Option[EventID] = None,
+  val eventId: Option[String] = None,
   val event: String,
   val entityType: String,
   val entityId: String,
@@ -43,21 +43,10 @@ case class Event(
   val creationTime: DateTime = DateTime.now
 ) {
   override def toString() = {
-    s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," + 
+    s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," +
     s"tType=$targetEntityType,tId=$targetEntityId,p=$properties,t=$eventTime," +
     s"tags=$tags,appId=$appId,pKey=$predictionKey,ct=$creationTime)"
   }
-}
-
-case class EventID(
-  val bytes: Seq[Byte]
-) {
-  override
-  def toString = Base64.encodeBase64URLSafeString(bytes.toArray)
-}
-
-object EventID {
-  def apply(s: String) = new EventID(Base64.decodeBase64(s))
 }
 
 object EventValidation {
@@ -104,8 +93,7 @@ object EventValidation {
   }
 
   // properties
-
-  val builtinEntityTypes = Set("pio_user", "pio_item")
+  val builtinEntityTypes = Set("pio_user", "pio_item", "pio_pr")
   val builtinProperties = Set(
     "pio_itypes", "pio_starttime", "pio_endtime",
     "pio_inactive", "pio_price", "pio_rating")
@@ -153,6 +141,18 @@ trait Events {
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String])(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Iterator[Event]]]  = notImplemented
+
+  // limit: None or -1: Get all events
+  // order: Either 1 or -1. 1: From earliest; -1: From latest;
+  def futureGetGeneral(
+    appId: Int,
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    entityType: Option[String],
+    entityId: Option[String],
+    limit: Option[Int] = None,
+    reversed: Option[Boolean] = Some(false))(implicit ec: ExecutionContext): 
     Future[Either[StorageError, Iterator[Event]]]  = notImplemented
 
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):

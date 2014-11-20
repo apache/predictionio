@@ -3,12 +3,13 @@ package io.prediction.examples.mlc
 import io.prediction.engines.itemrank.PreparatorParams
 import io.prediction.engines.itemrank.EventsDataSourceParams
 import io.prediction.engines.itemrank.ItemRankEngine
-import io.prediction.engines.itemrank.ItemRankDetailedMetrics
-import io.prediction.engines.itemrank.DetailedMetricsParams
+import io.prediction.engines.itemrank.ItemRankDetailedEvaluator
+import io.prediction.engines.itemrank.DetailedEvaluatorParams
 import io.prediction.engines.itemrank.MeasureType
 import io.prediction.engines.itemrank.mahout.ItemBasedAlgoParams
 import io.prediction.engines.base.AttributeNames
 import io.prediction.engines.base.EventsSlidingEvalParams
+import io.prediction.engines.base.BinaryRatingParams
 import io.prediction.controller.WorkflowParams
 import io.prediction.controller.Workflow
 import io.prediction.controller.EngineParams
@@ -74,10 +75,11 @@ object Evaluation1 {
         ("mahoutItemBased", CommonParams.MahoutAlgoParams0))
     )
 
-    // Metrics Setting
-    val metricsParams = new DetailedMetricsParams(
-      actionsMap = Map("rate" -> None),
-      goodThreshold = 3,
+    // Evaluator Setting
+    val evaluatorParams = new DetailedEvaluatorParams(
+      ratingParams = new BinaryRatingParams(
+        actionsMap = Map("rate" -> None),
+        goodThreshold = 3),
       measureType = MeasureType.PrecisionAtK,
       measureK = 10
     ) 
@@ -87,8 +89,8 @@ object Evaluation1 {
       params = WorkflowParams(batch = "MLC: Evaluation1"),
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[ItemRankDetailedMetrics]),
-      metricsParams = metricsParams
+      evaluatorClassOpt = Some(classOf[ItemRankDetailedEvaluator]),
+      evaluatorParams = evaluatorParams
     )
   }
 }
@@ -105,10 +107,11 @@ object Evaluation2 {
         ("mahoutItemBased", CommonParams.MahoutAlgoParams0))
     )
 
-    // Metrics Setting
-    val metricsParams = new DetailedMetricsParams(
-      actionsMap = Map("rate" -> None),
-      goodThreshold = 3,
+    // Evaluator Setting
+    val evaluatorParams = new DetailedEvaluatorParams(
+      ratingParams = new BinaryRatingParams(
+        actionsMap = Map("rate" -> None),
+        goodThreshold = 3),
       measureType = MeasureType.PrecisionAtK,
       measureK = 10
     ) 
@@ -118,8 +121,8 @@ object Evaluation2 {
       params = WorkflowParams(batch = "MLC: Evaluation2"),
       engine = engine,
       engineParams = engineParams,
-      metricsClassOpt = Some(classOf[ItemRankDetailedMetrics]),
-      metricsParams = metricsParams
+      evaluatorClassOpt = Some(classOf[ItemRankDetailedEvaluator]),
+      evaluatorParams = evaluatorParams
     )
   }
 }

@@ -82,7 +82,7 @@ for event data.
 ```
 $ wget https://archive.apache.org/dist/hbase/{{ site.hbase_basename }}/{{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
 $ tar zxvf {{ site.hbase_basename }}-{{ site.hbase_variant }}.tar.gz
-$ cd {{ site.hbase_basename }}-{{ site.hbase_variant }}
+$ cd {{ site.hbase_basename }}-{{ site.hbase_dir_suffix }}
 ```
 
 You will need to at least add a minimal configuration to HBase to start it in
@@ -119,6 +119,9 @@ Now you may start HBase.
 ```
 $ bin/start-hbase.sh
 ```
+
+Note that even the command returns immediately, you may have to wait for up to
+a minute before all the initialization is done (and then you can run eventserver).
 
 Now you have installed everything you need to run PredictionIO!
 

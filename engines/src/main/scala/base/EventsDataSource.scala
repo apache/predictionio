@@ -17,6 +17,7 @@ package io.prediction.engines.base
 
 import io.prediction.controller.LDataSource
 import io.prediction.controller.Params
+import io.prediction.controller.ParamsWithAppId
 import io.prediction.controller.EmptyDataParams
 import io.prediction.data.view.LBatchView
 
@@ -27,20 +28,21 @@ import scala.reflect.ClassTag
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.List
 
-import scala.language.implicitConversions 
+import scala.language.implicitConversions
 
 import grizzled.slf4j.Logger
 
-abstract class AbstractEventsDataSourceParams extends Params {
+abstract class AbstractEventsDataSourceParams
+    extends Params with ParamsWithAppId {
   val appId: Int
   // default None to include all itypes
   val itypes: Option[Set[String]] // train items with these itypes
   // actions for trainingdata
   val actions: Set[String]
   // only consider events happening after starttime.
-  val startTime: Option[DateTime] 
+  val startTime: Option[DateTime]
   // only consider events happening until untiltime.
-  val untilTime: Option[DateTime] 
+  val untilTime: Option[DateTime]
   // used for mapping attributes from event store.
   val attributeNames: AttributeNames
   // for generating eval data sets. See [[[EventsSlidingEvalParams]]].
@@ -66,6 +68,15 @@ class EventsSlidingEvalParams(
   val evalDuration: Duration = Duration.standardDays(1),
   val evalCount: Int = 1
 ) extends Serializable
+
+class DataParams(
+  val trainUntil: DateTime,
+  val evalStart: DateTime,
+  val evalUntil: DateTime
+) extends Params with HasName {
+  override def toString = s"E: [$evalStart, $evalUntil)"
+  val name = this.toString
+}
 
 class EventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
@@ -102,13 +113,13 @@ class EventsDataSource[DP: ClassTag, Q, A](
 
         println(s"Eval $idx " +
             s"train: [, $trainUntil) eval: [$evalStart, $evalUntil)")
-     
+
         val (uid2ui, users) = extractUsers(Some(trainUntil))
         val (iid2ii, items) = extractItems(Some(trainUntil))
         val trainActions = extractActions(
-          uid2ui, 
-          iid2ii, 
-          startTimeOpt = dsp.startTime, 
+          uid2ui,
+          iid2ii,
+          startTimeOpt = dsp.startTime,
           untilTimeOpt = Some(trainUntil))
 
         val trainingData = new TrainingData(
@@ -119,11 +130,11 @@ class EventsDataSource[DP: ClassTag, Q, A](
         // Use [firstTrain + idx * duration, firstTraing + (idx+1) * duration)
         // as testing
         val evalActions = extractActions(
-          uid2ui, 
-          iid2ii, 
+          uid2ui,
+          iid2ii,
           startTimeOpt = Some(evalStart),
           untilTimeOpt = Some(evalUntil))
-          
+
         val (dp, qaSeq) = generateQueryActualSeq(
           users, items, evalActions, trainUntil, evalStart, evalUntil)
 
@@ -157,7 +168,7 @@ class EventsDataSource[DP: ClassTag, Q, A](
     .map(_.swap)
     .mapValues(_._1)  // value._2 is a DataMap, unused by user.
 
-    (usersMap.map(_.swap), 
+    (usersMap.map(_.swap),
       usersMap.mapValues(entityId => new UserTD(uid=entityId)))
   }
 
@@ -198,7 +209,7 @@ class EventsDataSource[DP: ClassTag, Q, A](
         }.getOrElse(true)
       }
 
-    val indexMap: Map[Int, (String, ItemTD)] = 
+    val indexMap: Map[Int, (String, ItemTD)] =
       itemsMap.zipWithIndex.mapValues(_ + 1).map(_.swap)
 
     (indexMap.mapValues(_._1).map(_.swap), indexMap.mapValues(_._2))
@@ -231,8 +242,6 @@ class EventsDataSource[DP: ClassTag, Q, A](
         s"u2i Event: ${e} cannot have targetEntityId empty.")
       try {
         new U2IActionTD(
-          //uindex = usersMap(e.entityId)._2,
-          //iindex = itemsMap(e.targetEntityId.get)._2,
           uindex = uid2ui(e.entityId),
           iindex = iid2ii(e.targetEntityId.get),
           action = e.event,
