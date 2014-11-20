@@ -100,10 +100,20 @@ Now you may start HBase.
 
 ```
 $ bin/start-hbase.sh
+starting master, logging to /home/abc/{{ site.hbase_basename }}-{{ site.hbase_dir_suffix }}/bin/../logs/hbase-abc-master-yourhost.local.out
 ```
 
-Note that even the command returns immediately, you may have to wait for up to
-a minute before all the initialization is done (and then you can run eventserver).
+Note that even though the command returns immediately, you may have to wait for
+up to a minute before all the initialization is done. If you want to be
+absolutely safe, check your HBase log (replace `.out` from the filename shown
+after `bin/start-hbase.sh` with `.log`) and look for something similar to the
+following.
+
+```
+2014-11-20 15:37:32,359 INFO  [M:0;10.0.27.242:52547] master.HMaster: Master has completed initialization
+```
+
+With this, you can confidently run the Event Server successfully.
 
 Now you have installed everything you need to run PredictionIO!
 
