@@ -1,30 +1,31 @@
 ---
 layout: docs
-title: DASE
+title: DASE Components Explained (Recommendation)
 ---
 
 # DASE Components Explained (Recommendation)
 
-PredictionIO's DASE architecture brings the separation-of-concerns design principle to predictive engine development.
-DASE stands for the following components of an engine:
+PredictionIO's DASE architecture brings the separation-of-concerns design
+principle to predictive engine development. DASE stands for the following
+components of an engine:
 
 * **D**ata - includes Data Source and Data Preparator
 * **A**lgorithm(s)
 * **S**erving
 * **E**valuator
 
-Let's look at the code and see how you can customize the Recommendation engine you built from the Recommendation Engine Template.
+Let's look at the code and see how you can customize the Recommendation engine
+you built from the Recommendation Engine Template.
 
 > Note: Evaluator will not be covered in this tutorial.
 
 ## The Engine Design
 
-As you can see from the Quick Start, *MyRecommendation* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
-a JSON predicted result.
+As you can see from the Quick Start, *MyRecommendation* takes a JSON prediction
+query, e.g. `{ "user": 1, "num": 4 }`, and return a JSON predicted result.
 
-In MyRecommendation/src/main/scala/***Engine.scala***
-
-`Query` case class defines the format of **query**, such as { "user": 1, "num": 4 }:
+In MyRecommendation/src/main/scala/***Engine.scala***, the `Query` case class
+defines the format of **query**, such as `{ "user": 1, "num": 4 }`:
 
 ```scala
 case class Query(
@@ -33,7 +34,12 @@ case class Query(
 ) extends Serializable
 ```
 
-`PredictedResult` case class defines the format of **predicted result**, such as {"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}:
+The `PredictedResult` case class defines the format of **predicted result**,
+such as
+
+```json
+{"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}
+```
 
 ```scala
 case class PredictedResult(
@@ -46,8 +52,9 @@ case class ProductScore(
 ) extends Serializable
 ```
 
-Finally, `RecommendationEngine` is the Engine Factory that defines the components this engine will use:
-Data Source, Data Preparator, Algorithm(s) and Serving components.
+Finally, `RecommendationEngine` is the *Engine Factory* that defines the
+components this engine will use: Data Source, Data Preparator, Algorithm(s) and
+Serving components.
 
 ```scala
 object RecommendationEngine extends IEngineFactory {
@@ -58,28 +65,34 @@ object RecommendationEngine extends IEngineFactory {
       Map("als" -> classOf[ALSAlgorithm]),
       classOf[Serving])
   }
-
+  ...
+}
 ```
 
 ### Spark MLlib
 
-Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]` and train a model, which is a `MatrixFactorizationModel` object.
+Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]`
+and train a model, which is a `MatrixFactorizationModel` object.
 
-PredictionIO's MLlib Collaborative Filtering engine template, which *MyRecommendation* bases on, integrates this algorithm under the DASE architecture.
-We will take a closer look at the DASE code below.
-> [Check this out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to learn more about MLlib's ALS collaborative filtering algorithm.
+PredictionIO's MLlib Collaborative Filtering engine template, which
+*MyRecommendation* bases on, integrates this algorithm under the DASE
+architecture. We will take a closer look at the DASE code below.
+> [Check this
+out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to
+learn more about MLlib's ALS collaborative filtering algorithm.
 
 
 ## Data
 
-In the DASE architecture, data is prepared by 2 components sequentially: *Data Source* and *Data Preparator*.
-*Data Source* and *Data Preparator* takes data from the data store and prepares `RDD[Rating]` for the ALS algorithm.
+In the DASE architecture, data is prepared by 2 components sequentially: *Data
+Source* and *Data Preparator*. *Data Source* and *Data Preparator* takes data
+from the data store and prepares `RDD[Rating]` for the ALS algorithm.
 
 ### Data Source
 
-In MyRecommendation/src/main/scala/***DataSource.scala***
-
-The `def readTraining` of class `DataSource` reads, and selects, data from datastore of EventServer and it returns `TrainingData`.
+In MyRecommendation/src/main/scala/***DataSource.scala***, the `readTraining`
+method of class `DataSource` reads, and selects, data from the *Event Store*
+(data store of the *Event Server*) and returns `TrainingData`.
 
 ```scala
 case class DataSourceParams(val appId: Int) extends Params
@@ -123,8 +136,11 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-`Storage.getPEvents()` gives you access to data you collected through Event Server and `eventsDb.find` specifies the events you want to read.
-PredictionIO automatically loads the parameters of *datasource* specified in MyRecommendation/***engine.json***, including *appId*, to `dsp`.
+`Storage.getPEvents()` returns a data access object which you could use to
+access data that is collected through the *Event Server*, and
+`eventsDb.find(...)` specifies the events that you want to read. PredictionIO
+automatically loads the parameters of *datasource* specified in
+MyRecommendation/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
 
@@ -157,10 +173,11 @@ and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 
 ### Data Preparator
 
-In MyRecommendation/src/main/scala/***Preparator.scala***
-
-The `def prepare` of class `Preparator` takes `TrainingData`. It then conducts any necessary feature selection and data processing tasks.
-At the end, it returns `PreparedData` which should contain the data *Algorithm* needs. For MLlib ALS, it is `RDD[Rating]`.
+In MyRecommendation/src/main/scala/***Preparator.scala***, the `prepare` method
+of class `Preparator` takes `TrainingData` as its input, and performs any
+necessary feature selection and data processing tasks. At the end, it returns
+`PreparedData` which should contain the data *Algorithm* needs. For MLlib ALS,
+it is `RDD[Rating]`.
 
 By default, `prepare` simply copies the unprocessed `TrainingData` data to `PreparedData`:
 
@@ -188,14 +205,15 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 ## Algorithm
 
-In MyRecommendation/src/main/scala/***ALSAlgorithm.scala***
+In MyRecommendation/src/main/scala/***ALSAlgorithm.scala***, the two methods of
+the algorithm class are `train` and `predict`. `train` is responsible for
+training a predictive model. PredictionIO will store this model and `predict` is
+responsible for using this model to make prediction.
 
-The two functions of the algorithm class are `def train` and `def predict`.
-`def train` is responsible for training a predictive model. PredictionIO will store this model and `def predict` is responsible for using this model to make prediction.
+### train(...)
 
-### def train
-
-`def train` is called when you run **pio train**.  This is where MLlib ALS algorithm, i.e. `ALS.train`, is used to train a predictive model.
+`train` is called when you run **pio train**. This is where MLlib ALS algorithm,
+i.e. `ALS.train`, is used to train a predictive model.
 
 ```scala
   def train(data: PreparedData): PersistentMatrixFactorizationModel = {
@@ -207,9 +225,11 @@ The two functions of the algorithm class are `def train` and `def predict`.
   }
 ```
 
-In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*, *iterations* and *lambda*.
+In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*,
+*iterations* and *lambda*.
 
-The values of these parameters are specified in *algorithms* of MyRecommendation/***engine.json***:
+The values of these parameters are specified in *algorithms* of
+MyRecommendation/***engine.json***:
 
 ```
 {
@@ -227,7 +247,9 @@ The values of these parameters are specified in *algorithms* of MyRecommendation
   ...
 }
 ```
-PredictionIO will automatically loads these values into the constructor `ap`, which has a corresponding case case `ALSAlgorithmParams`:
+
+PredictionIO will automatically loads these values into the constructor `ap`,
+which has a corresponding case case `ALSAlgorithmParams`:
 
 ```scala
 case class ALSAlgorithmParams(
@@ -236,21 +258,28 @@ case class ALSAlgorithmParams(
   val lambda: Double) extends Params
 ```
 
-`ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD data.
-RDD is a distributed collection of items which *does not* persist. To store the model, `PersistentMatrixFactorizationModel` extends `MatrixFactorizationModel` and makes it persistable.
+`ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD
+data. RDD is a distributed collection of items which *does not* persist. To
+store the model, `PersistentMatrixFactorizationModel` extends
+`MatrixFactorizationModel` and makes it persistable.
 
-> The detailed implementation can be found at MyRecommendation/src/main/scala/***PersistentMatrixFactorizationModel.scala***
+> The detailed implementation can be found at
+MyRecommendation/src/main/scala/***PersistentMatrixFactorizationModel.scala***
 
 PredictionIO will automatically store the returned model, i.e. `PersistentMatrixFactorizationModel` in this case.
 
 
-### def predict
+### predict(...)
 
-`def predict` is called when you send a JSON query to http://localhost:8000/queries.json. PredictionIO converts the query, such as  { "user": 1, "num": 4 } to the `Query` class you defined previously.  
+`predict` is called when you send a JSON query to
+http://localhost:8000/queries.json. PredictionIO converts the query, such as `{
+"user": 1, "num": 4 }` to the `Query` class you defined previously.
 
-The predictive model `MatrixFactorizationModel` of MLlib ALS, which is now extended as `PersistentMatrixFactorizationModel`,
-offers a function called `recommendProducts`. `recommendProducts` takes two parameters: user id (i.e. query.user) and the number of products to be returned (i.e. query.num).
-It predicts the top *num* of products a user will like.
+The predictive model `MatrixFactorizationModel` of MLlib ALS, which is now
+extended as `PersistentMatrixFactorizationModel`, offers a method called
+`recommendProducts`. `recommendProducts` takes two parameters: user id (i.e.
+`query.user`) and the number of products to be returned (i.e. `query.num`). It
+predicts the top *num* of products a user will like.
 
 ```scala
 def predict(
@@ -268,10 +297,12 @@ PredictionIO passes the returned `PredictedResult` object to *Serving*.
 
 ## Serving
 
-The `def serve` of class `Serving` processes predicted result. It is also responsible for combining multiple predicted results into one if you have more than one predictive model.
-*Serving* then returns the final predicted result. PredictionIO will convert it to a JSON response automatically.
+The `serve` method of class `Serving` processes predicted result. It is also
+responsible for combining multiple predicted results into one if you have more
+than one predictive model. *Serving* then returns the final predicted result.
+PredictionIO will convert it to a JSON response automatically.
 
-In MyRecommendation/src/main/scala/***Serving.scala***
+In MyRecommendation/src/main/scala/***Serving.scala***,
 
 ```scala
 class Serving
@@ -285,15 +316,18 @@ class Serving
 }
 ```
 
-When you send a JSON query to http://localhost:8000/queries.json, `PredictedResult` from all models
-will be passed to `def serve` as a sequence, i.e. `Seq[PredictedResult]`.
+When you send a JSON query to http://localhost:8000/queries.json,
+`PredictedResult` from all models will be passed to `serve` as a sequence, i.e.
+`Seq[PredictedResult]`.
 
-> An engine can train multiple models if you specify more than one Algorithm component in `object RecommendationEngine` inside ***Engine.scala*.
->
-> Since only one ALSAlgorithm is implemented by default, this Sequence contains one element.
+> An engine can train multiple models if you specify more than one Algorithm
+component in `object RecommendationEngine` inside ***Engine.scala***. Since only
+one `ALSAlgorithm` is implemented by default, this `Seq` contains one element.
 
 
-Now you have a good understanding of the DASE model, we will show you an example of customizing the Data Preparator to exclude certain items from your training set.
+Now you should have a good understanding of the DASE model. We will show you an
+example of customizing the Data Preparator to exclude certain items from your
+training set.
 
 #### [Next: Customizing Data Preparator](customize-data-prep.html)
 

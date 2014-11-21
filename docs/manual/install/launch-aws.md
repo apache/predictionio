@@ -44,10 +44,6 @@ The default security group, marked by "AutogenByAWSMP", has the following ports 
 * 8080 (Spark Master)
 * 9200 (Elasticsearch)
 
-## Setting Public IP Address
-
-> Coming soon
-
 ## Start Using PredictionIO
 
 It may take a few minutes after the EC2 instance has launched for all

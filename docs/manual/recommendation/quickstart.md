@@ -5,41 +5,45 @@ title: Recommendation Quick Start
 
 # Quick Start - Recommendation Engine Template
 
-An engine template is a basic skeleton of an engine. PredictionIO's
-Recommendation Engine Template (/templates/scala-parallel-recommendation) has
-integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
-default.  You can customize it easily to fit your specific needs.
+An engine template is an almost-complete implementation of an engine.
+PredictionIO's [Recommendation Engine
+Template](https://github.com/PredictionIO/PredictionIO/tree/master/templates/scala-parallel-recommendation)
+has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
+default. You can customize it easily to fit your specific needs.
 
-We are going to show you how to create your own classification engine for
+We are going to show you how to create your own recommendation engine for
 production use based on this template.
 
 ## Install PredictionIO
 
-First you need to [install PredictionIO {{site.pio_version}}]({{site.baseurl}}/install/)
+First you need to [install PredictionIO
+{{site.pio_version}}]({{site.baseurl}}/install/)
 
+> **Note**
 
-**0.8.2 contains schema changes from the previous versions, if you have
+> **0.8.2 contains schema changes from the previous versions, if you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](../resources/schema-change.html).**
 
-
-Let's say you have installed PredictionIO at */home/yourname/predictionio/*.
-For convenience, add PredictionIO's binary command path to your PATH, i.e. /home/yourname/predictionio/bin:
+Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
+For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/predictionio/bin`:
 
 ```
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
 ```
 
-and please make sure that PredictionIO EventServer, which collects data, is running:
+and please make sure that PredictionIO Event Server, which collects data, is
+running:
 
 ```
 $ pio eventserver
 ```
 
-
 ## Create a Sample App
 
-Let's create a sample app called "MyApp1" now. An app represents the application that generates the data, e.g. a movie rental app.
+Let's create a sample app called "MyApp1" now. An app represents the application
+that generates the data, e.g. a movie rental app.
 
 ```
 $ pio app new MyApp1
@@ -56,26 +60,29 @@ You should find the following in the console output:
 2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
-Take note of the `Access Key` and `App ID`.
-You will need the `Access Key` to refer to "MyApp1" when you collect data.
-At the same time, you will use `App ID` to refer to "MyApp1" in engine code.
+Take note of the `Access Key` and `App ID`. You will need the `Access Key` to
+refer to "MyApp1" when you collect data. At the same time, you will use `App ID`
+to refer to "MyApp1" in engine code.
 
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MyRecommendation* by cloning the MLlib Collaborative Filtering engine template:
+Now let's create a new engine called *MyRecommendation* by cloning the MLlib
+Collaborative Filtering engine template, assuming `/home/yourname/predictionio`
+is the installation directory of PredictionIO:
 
 ```
 $ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyRecommendation
 $ cd MyRecommendation
 ```
-* Assuming /home/yourname/predictionio is the installation directory of PredictionIO.*
 
 ## Collecting Data
 
-Next, let's collect some training data for the app of this Engine.
-By default, the Recommendation Engine Template supports 2 types of events: "rate" and "buy".  A user can give a rating score to an item or he can buy an item.
+Next, let's collect some training data for the app of this Engine. By default,
+the Recommendation Engine Template supports 2 types of events: **rate** and
+**buy**. A user can give a rating score to an item or he can buy an item.
 
-You can send these data to PredictionIO EventServer in real-time easily by making a HTTP request or through the `EventClient` of a SDK
+You can send these data to PredictionIO Event Server in real-time easily by
+making a HTTP request or through the `EventClient` of an SDK.
 
 <div class="codetabs">
 <div data-lang="Python SDK">
@@ -218,13 +225,17 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 </div>
 
 
-You may use the sample movie data from MLlib repo for demonstration purpose. Execute the following to get the data set:
+You may use the sample movie data from MLlib repo for demonstration purpose.
+Execute the following to get the data set:
 
 ```
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 ```
 
-A python import script `import_eventserver.py` is provided to import the data to Event Server using Python SDK. Please upgrade to the latest SDK as well so you have the latest script. Replace the value of access_key parameter by your `Access Key`.
+A Python import script `import_eventserver.py` is provided to import the data to
+Event Server using Python SDK. Please upgrade to the latest SDK as well so you
+have the latest script. Replace the value of access_key parameter by your
+`Access Key`.
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -252,7 +263,8 @@ Now the movie ratings data is stored as events inside the Event Store.
 
 ## Deploy the Engine as a Service
 
-Now you can deploy the engine.  Make sure the appId defined in the file `engine.json` match your `App ID`:
+Now you can deploy the engine.  Make sure the appId defined in the file
+`engine.json` match your `App ID`:
 
 ```
 ...
@@ -275,15 +287,17 @@ When your engine is built successfully, you should see a console message **Your 
 when the engine finishes training, you should see a console message **Saved engine instance with ID: d7GvtbDbTbWhxlbDBfyydQ**.
 
 
-This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
+This will deploy an engine that binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
 
 ![Engine Status]({{ site.baseurl }}/images/engine-server.png)
 
 |
 
-Now, You can try to retrieve predicted results.
-To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
-Simply send a query by making a HTTP request or through the `EngineClient` of a SDK:
+Now, You can try to retrieve predicted results. To recommend 4 movies to user
+whose id is 1, you send this JSON `{ "user": 1, "num": 4 }` to the deployed
+engine and it will return a JSON of the recommended movies. Simply send a query
+by making a HTTP request or through the `EngineClient` of an SDK:
 
 <div class="codetabs">
 <div data-lang="Python SDK">
@@ -350,6 +364,7 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 </div>
 </div>
 
-Your MyRecommendation is now running. Next, we are going to take a look at the engine architecture and explain how you can customize it completely.
+Your engine *MyRecommendation* is now running. Next, we are going to take a look
+at the engine architecture and explain how you can customize it completely.
 
 #### [Next: DASE Components Explained](dase.html)
