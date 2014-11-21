@@ -87,16 +87,17 @@ index = 0
 # loop through the file to get number of lines in the file
 for line in read_file:
     if line.split()[0] == user_id_list[index]:
-        print user_id_list[index]
+        #print user_id_list[index]
         write_file.write(line)
         index += 1
         if index == len(user_id_list):
-            print "break"
+            #print "break"
             break
 print "user keyword finished"
 #go to file begining
 #getting the user_sns_small
 
+print "getting user sns"
 #print user_id_list
 read_file = open("data/user_sns.txt", 'r')
 
@@ -131,6 +132,9 @@ for line in user_sns_list:
         if line.split()[1] == user_id:
             write_file.write(line)
             break
+print "sns got"
+
+print "getting user action"
 #for line in write_file:
 read_file = open("data/user_action.txt", 'r')
 user_action_list = []
@@ -161,5 +165,6 @@ for line in user_action_list:
         if line.split()[1] == user_id:
             write_file.write(line)
             break
+print "user action got"
 print "Done"
 
