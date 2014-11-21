@@ -184,7 +184,29 @@ client.create_event(
 <div data-lang="Java SDK">
 
 {% highlight java %}
-(coming soon)
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user rates an item
+Event rateEvent = new Event()
+    .event("rate")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>)
+    .property("rating", new Float(<RATING>));
+client.createEvent(rateEvent);
+
+// A user buys an item
+Event buyEvent = new Event()
+    .event("buy")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>);
+client.createEvent(buyEvent);
 {% endhighlight %}
 
 </div>
@@ -348,7 +370,19 @@ puts response
 <div data-lang="Java SDK">
 
 {% highlight java %}
-(coming soon)
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+
+// query
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "user", 1,
+        "num",  4
+    ));
 {% endhighlight %}
 
 </div>

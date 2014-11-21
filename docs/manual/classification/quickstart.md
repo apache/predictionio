@@ -269,7 +269,48 @@ client.create_event(
 <div data-lang="Java SDK">
 
 {% highlight java %}
-(coming soon)
+import com.google.common.collect.ImmutableMap;
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// set the 4 properties for a user
+Event event = new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .properties(ImmutableMap.<String, Object>of(
+        "attr0", <VALUE OF ATTR0>,
+        "attr1", <VALUE OF ATTR1>,
+        "attr2", <VALUE OF ATTR2>,
+        "plan", <VALUE OF PLAN>
+    ));
+client.createEvent(event);
+
+/*
+// you may also set the properties one by one
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("attr0", <VALUE OF ATTR0>));
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("attr1", <VALUE OF ATTR1>));
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("attr2", <VALUE OF ATTR2>));
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("plan", <VALUE OF PLAN>));
+*/
 {% endhighlight %}
 
 </div>
@@ -446,7 +487,17 @@ print_r($response);
 <div data-lang="Java SDK">
 
 {% highlight java %}
-(coming soon)
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "features", ImmutableList.of(2, 0, 0)
+    ));
 {% endhighlight %}
 
 </div>
