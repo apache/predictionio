@@ -103,8 +103,7 @@ This will deploy an engine that binds to http://localhost:8000. You can visit
 that page in your web browser to check its status.
 
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
-whose ID is 1, you send this JSON `{ "user": 1, "num": 4 }` to the deployed
-engine
+whose ID is 1, send this JSON `{ "user": 1, "num": 4 }` to the deployed engine
 
 ```
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
@@ -113,7 +112,14 @@ $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://l
 and it will return a JSON of recommended movies.
 
 ```json
-{"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
+{
+  "productScores": [
+    {"product": 22, "score": 4.072304374729956},
+    {"product": 62, "score": 4.058482414005789},
+    {"product": 75, "score": 4.046063009943821},
+    {"product": 68, "score": 3.8153661512945325}
+  ]
+}
 ```
 
 Congratulations! You have learned how to add customized logic to your Data
