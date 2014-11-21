@@ -12,8 +12,6 @@ PredictionIO's SDKs.
 
 > All PredictionIO-compliant engines support the data store (i.e. HBase) and
 data format used by the Event Server.
-<!-- > You may also [modify DataSource]({{site.baseurl}}/cookbook/existingdatasource.html) of an
-engine to read data directly from your existing data store. -->
 
 
 ## Launching the Event Server
@@ -25,19 +23,22 @@ HBase, and a quick configuration can be found
 Please allow a minute (usually less than 30 seconds) after you start HBase for
 initialization to complete before starting eventserver.
 
-Everything about PredictionIO can be done through the `bin/pio` command.
 
-> For this section, `$PIO_HOME` refers to the location where you have installed
-PredictionIO.
+Everything about PredictionIO can be done through the `pio` command. Please add PIO binnary command path to to your PATH first. Assuming PIO is installed at /home/yourname/predictionio/, you can run 
 
 ```
-$ cd $PIO_HOME
-$ bin/pio eventserver
+$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+```
+
+To start the event server, run
+
+```
+$ pio eventserver
 ```
 
 By default, the event server is bound to localhost, which serves only local traffic.
 To serve global traffic, you can use 0.0.0.0, i.e.
-`$ bin/pio eventserver --ip 0.0.0.0`
+`$ pio eventserver --ip 0.0.0.0`
 
 ### Check server status
 
@@ -63,8 +64,7 @@ Content-Length: 18
 First, you need to create a new App before import data with Event Server:
 
 ```
-$ cd $PIO_HOME
-$ bin/pio app new MyTestApp
+$ pio app new MyTestApp
 ```
 (you can replace `MyTestApp` with name of your App)
 
@@ -503,5 +503,5 @@ $ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&e
 > Please use the following CLI command.
 
 ```
-$ $PIO_HOME/bin/pio app data-delete <your_app_name>
+$pio app data-delete <your_app_name>
 ```
