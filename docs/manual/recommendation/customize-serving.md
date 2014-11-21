@@ -37,8 +37,7 @@ The Engine's serving component can be found in `src/main/scala/Serving.scala` in
 the *MyRecommendation* directory. By default, it looks like the following:
 
 ```scala
-class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+class Serving extends LServing[Query, PredictedResult] {
 
   override
   def serve(query: Query,
