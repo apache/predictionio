@@ -1,21 +1,6 @@
 package io.prediction.examples.friendrecommendation
 
 import io.prediction.controller.Evaluator
-import io.prediction.engines.base.EvaluatorOutput
-
-case class Query(
-  val uid:Int,
-  val iid:Int
-)extends Serializable{
-  override def toString = "[${uid},${iid}]"
-}
-
-case class Prediction(
-  val confidenceScore: Double,
-  val acceptance : Int
-) extends Serializable{
-  override def toString = s"[${confidenceScore},${acceptance}]"
-}
 
 case class Actual(
   val acceptance : Int
@@ -24,14 +9,14 @@ case class Actual(
 }
 
 class EvaluatorUnit (
-  val q: Query,
-  val p: Prediction,
+  val q: FriendRecommendationQuery,
+  val p: FriendRecommendationPrediction,
   val a: Actual,
   val score: Double
 ) extends Serializable
 
-class FriendRecEvaluator extends Evaluator[EmptyParam,EmptyParam,Query,Prediction,Actual]{
-  override def evaluateUnit(query: Query, prediction: Prediction,actual:Actual):EvaluatorUnit = {
+class FriendRecEvaluator extends Evaluator[EmptyParam,EmptyParam,FriendRecommendationQuery,FriendRecommendationPrediction,Actual]{
+  override def evaluateUnit(query: FriendRecommendationQuery, prediction: FriendRecommendationPrediction,actual:Actual):EvaluatorUnit = {
     val score: Double = {
       if(actual.acceptance == 0)
         -prediction.confidenceScore
