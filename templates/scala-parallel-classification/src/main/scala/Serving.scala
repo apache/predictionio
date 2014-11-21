@@ -7,7 +7,7 @@ class Serving extends LServing[Query, PredictedResult] {
 
   override
   def serve(query: Query,
-    predictions: Seq[PredictedResult]): PredictedResult = {
-    predictions.head
+    predictedResults: Seq[PredictedResult]): PredictedResult = {
+    predictedResults.head
   }
 }

@@ -310,8 +310,8 @@ class Serving
 
   override
   def serve(query: Query,
-    predictions: Seq[PredictedResult]): PredictedResult = {
-    predictions.head
+    predictedResults: Seq[PredictedResult]): PredictedResult = {
+    predictedResults.head
   }
 }
 ```

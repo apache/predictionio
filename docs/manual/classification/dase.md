@@ -271,8 +271,8 @@ class Serving
 
   override
   def serve(query: Query,
-    predictions: Seq[PredictedResult]): PredictedResult = {
-    predictions.head
+    predictedResults: Seq[PredictedResult]): PredictedResult = {
+    predictedResults.head
   }
 }
 ```
@@ -287,7 +287,7 @@ component in `object RecommendationEngine` inside ***Engine.scala***.
 > Since only one NaiveBayesAlgorithm is implemented by default, this Sequence contains one element.
 
 In this case, `serve` simply returns the predicted result of the first, and the
-only, algorithm, i.e. `predictions.head`.
+only, algorithm, i.e. `predictedResults.head`.
 
 Congratulations! You have just learned how to customize and build a
 production-ready engine. Have fun! 
