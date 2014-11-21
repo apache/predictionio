@@ -1,33 +1,42 @@
 ---
 layout: docs
-title: Customizing Data Preparator
+title: Customizing Data Preparator (Recommendation)
 ---
 
-# Customizing Data Preparator ( Recommendation )
+# Customizing Data Preparator (Recommendation)
 
-Data Preparator is where pre-processing actions occurs. For example, one may want to remove some very popular items from training data because she thinks that these items may not help finding individual person's tastes or one may have a black list of item that she want to remove from training data before feed the data to the algorithm.
+Data Preparator is where pre-processing actions occurs. For example, one may
+want to remove some very popular items from the training data because she thinks
+that these items may not help finding individual person's tastes or one may have
+a black list of item that she wants to remove from the training data before
+feeding it to the algorithm.
 
-This section assumes that you have created a "MyRecommendation" engine based on the [Recommendation Engine Template: QuickStart](quickstart.html)
-We will demonstrate how to add a filtering logic to exclude a list of items in training data.
+This section assumes that you have created a *MyRecommendation* engine based on
+the [Recommendation Engine Template: QuickStart](quickstart.html). We will
+demonstrate how to add a filtering logic to exclude a list of items in the
+training data.
 
-A sample black list file containing the items to be excluded is provided in ./data/sample_not_train_data.txt
+A sample black list file containing the items to be excluded is provided in
+`./data/sample_not_train_data.txt`.
 
-A full end-to-end example can be found under
-"examples/scala-parallel-recommendation-custom-preparator/" in Prediction.IO github
-directory.
+A full end-to-end example can be found on
+[GitHub](https://github.com/PredictionIO/PredictionIO/tree/master/examples/scala-parallel-recommendation-custom-preparator).
 
 ## The Data Preparator Component
 
-Recall [the DASE Architecture](/dase.html), data is prepared by 2 components sequentially: *Data Source* and *Data Preparator*.
-*Data Source* reads data from the data store of Event Server and then *Data Preparator* prepares `RDD[Rating]` for the ALS algorithm.
+Recall [the DASE Architecture](../start/engines.html), data is prepared by 2
+components sequentially: *Data Source* and *Data Preparator*. *Data Source*
+reads data from the data store of Event Server and then *Data Preparator*
+prepares `RDD[Rating]` for the ALS algorithm.
 
-You may modify any component in an engine template to fit your needs.
-This example shows you how to add the filtering logics in Data Preparator.
+You may modify any component in an engine template to fit your needs. This
+example shows you how to add the filtering logics in Data Preparator.
 
 ## Modify the Preparator
 
-The Data Preparator component can be found in `/src/main/scala/Preparator.scala` in the "MyRecommendation" directory.
-The unmodified version looks like the following:
+The Data Preparator component can be found in `src/main/scala/Preparator.scala`
+in the "MyRecommendation" directory. The unmodified version looks like the
+following:
 
 ```scala
 class Preparator
@@ -39,9 +48,11 @@ class Preparator
 }
 ```
 
-The `prepare` simply passes the ratings from `TrainingData` to `PreparedData`.
+The `prepare` method simply passes the ratings from `TrainingData` to
+`PreparedData`.
 
-You can modify the `prepare()` method to read a black list of items from a file and remove them from TrainigData. So it becomes:
+You can modify the `prepare` method to read a black list of items from a file
+and remove them from `TrainingData`, so it becomes:
 
 ```scala
 import scala.io.Source // ADDED
@@ -60,14 +71,17 @@ class Preparator
   }
 }
 ```
-> We will show you how not to hardcode the path "./data/sample_not_train_data.txt soon.
+
+> We will show you how not to hardcode the path
+`./data/sample_not_train_data.txt` soon.
 
 
 ## Deploy the Modified Engine
 
-Now you can deploy the modified engine as described in the [Quckstart Guide](/quickstart.html).
+Now you can deploy the modified engine as described in [Quick
+Start](quickstart.html).
 
-Make sure the appId defined in the file `engine.json` match your `App ID`:
+Make sure the `appId` defined in the file `engine.json` match your *App ID*:
 
 ```
 ...
@@ -85,27 +99,36 @@ $ pio train
 $ pio deploy
 ```
 
-This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
+This will deploy an engine that binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
 
-Now, You can try to retrieve predicted results.
-To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
+Now, You can try to retrieve predicted results. To recommend 4 movies to user
+whose ID is 1, you send this JSON `{ "user": 1, "num": 4 }` to the deployed
+engine
 
 ```
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
+```
 
+and it will return a JSON of recommended movies.
+
+```json
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
 
-Congratulations, you have learned how to add customized logics to Data Preparator!
-
+Congratulations! You have learned how to add customized logic to your Data
+Preparator!
 
 #  Adding Preparator Parameters
 
-Optionally, you may want to take the hardcoded path ("./data/sample_not_train_data.txt") away from the source code.
+Optionally, you may want to take the hardcoded path
+(`./data/sample_not_train_data.txt`) away from the source code.
 
-PredictionIO offers `PreparatorParams` so you can read varaible values from *engine.json* instead.
+PredictionIO offers `PreparatorParams` so you can read variable values from
+`engine.json` instead.
 
-Modify `/src/main/scala/Preparator.scala` again in the "MyRecommendation" directory to:
+Modify `src/main/scala/Preparator.scala` again in the *MyRecommendation*
+directory to:
 
 ```scala
 import io.prediction.controller.Params // ADDED
@@ -151,4 +174,4 @@ $ pio deploy
 
 You can change the `filepath` value without re-building the code next time.
 
-#### [Next: Customizing Data Serving](customize-serving.html)
+#### [Next: Customizing Serving](customize-serving.html)
