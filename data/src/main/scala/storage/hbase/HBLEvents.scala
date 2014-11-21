@@ -16,26 +16,18 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventValidation
-import io.prediction.data.storage.LEvents
-import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.DataMap
+import io.prediction.data.storage.LEvents
+import io.prediction.data.storage.LEventAggregator
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKeyException
-import io.prediction.data.storage.hbase.HBEventsUtil.PartialRowKey
 
 import grizzled.slf4j.Logging
 
-import org.json4s.DefaultFormats
-import org.json4s.JObject
-import org.json4s.native.Serialization.{ read, write }
-
 import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 
 import org.apache.hadoop.hbase.NamespaceDescriptor
-import org.apache.hadoop.hbase.NamespaceExistException
 import org.apache.hadoop.hbase.HTableDescriptor
 import org.apache.hadoop.hbase.HColumnDescriptor
 import org.apache.hadoop.hbase.TableName
@@ -45,11 +37,6 @@ import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.client.Scan
-import org.apache.hadoop.hbase.util.Bytes
-import org.apache.hadoop.hbase.filter.FilterList
-import org.apache.hadoop.hbase.filter.RegexStringComparator
-import org.apache.hadoop.hbase.filter.SingleColumnValueFilter
-import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
 
 import scala.collection.JavaConversions._
 
@@ -59,7 +46,7 @@ import scala.concurrent.ExecutionContext
 class HBLEvents(val client: HBClient, val namespace: String)
   extends LEvents with Logging {
 
-  implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
+  //implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
 
   def resultToEvent(result: Result, appId: Int): Event =
     HBEventsUtil.resultToEvent(result, appId)
@@ -256,6 +243,32 @@ class HBLEvents(val client: HBClient, val namespace: String)
         Right(eventsIt)
       }
   }
+
+  override
+  def futureAggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Map[String, DataMap]]] = {
+      futureFind(
+        appId = appId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = Some(entityType),
+        eventNames = Some(LEventAggregator.eventNames)
+      ).map{ either =>
+        either.right.map{ eventIt =>
+          val dm = LEventAggregator.aggregateProperties(eventIt)
+          if (required.isDefined) {
+            dm.filter { case (k, v) =>
+              required.get.map(v.contains(_)).reduce(_ && _)
+            }
+          } else dm
+        }
+      }
+    }
 
   override
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):

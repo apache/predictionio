@@ -13,6 +13,7 @@
   * limitations under the License.
   */
 
+/* Deprecated */
 package io.prediction.data.view
 
 import io.prediction.data.storage.Event

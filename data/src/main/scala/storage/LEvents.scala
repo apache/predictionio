@@ -78,10 +78,32 @@ private[prediction] trait LEvents {
     untilTime: Option[DateTime],
     entityType: Option[String],
     entityId: Option[String])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]]  = notImplemented
+    Future[Either[StorageError, Iterator[Event]]] = notImplemented
 
-  // limit: None or -1: Get all events
-  // order: Either 1 or -1. 1: From earliest; -1: From latest;
+  /** reads from database and returns a Future of either StorageError or
+    * events iterator.
+    *
+    * @param appId return events of this app ID
+    * @param startTime return events with eventTime >= startTime
+    * @param untilTime return events with eventTime < untilTime
+    * @param entityType return events of this entityType
+    * @param entityId return events of this entityId
+    * @param eventNames return events with any of these event names.
+    * @param targetEntityType return events of this targetEntityType:
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
+    * @param targetEntityId return events of this targetEntityId
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
+    * @param limit Limit number of events. Get all events if None or Some(-1)
+    * @param reversed Reverse the order.
+    *   - return oldest events first if None or Some(false) (default)
+    *   - return latest events first if Some(true)
+    * @param ec ExecutionContext
+    * @return Future[Either[StorageError, Iterator[Event]]]
+    */
   def futureFind(
     appId: Int,
     startTime: Option[DateTime] = None,
@@ -93,7 +115,28 @@ private[prediction] trait LEvents {
     targetEntityId: Option[Option[String]] = None,
     limit: Option[Int] = None,
     reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]]  = notImplemented
+    Future[Either[StorageError, Iterator[Event]]] = notImplemented
+
+  /** Aggregate properties of entities based on these special events:
+    * \$set, \$unset, \$delete events.
+    * and returns a Future of either StorageError or a Map of entityId to
+    * properties.
+    *
+    * @param appId use events of this app ID
+    * @param entityType aggregate properties of the entities of this entityType
+    * @param startTime use events with eventTime >= startTime
+    * @param untilTime use events with eventTime < untilTime
+    * @param required only keep entities with these required properties defined
+    * @param ec ExecutionContext
+    * @return Future[Either[StorageError, Map[String, DataMap]]]
+    */
+  def futureAggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Map[String, DataMap]]] = notImplemented
 
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = notImplemented
@@ -133,6 +176,83 @@ private[prediction] trait LEvents {
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureGetByAppIdAndTimeAndEntity(appId, startTime, untilTime,
       entityType, entityId), timeout)
+  }
+
+  /** reads from database and returns either StorageError or
+    * events iterator.
+    *
+    * @param appId return events of this app ID
+    * @param startTime return events with eventTime >= startTime
+    * @param untilTime return events with eventTime < untilTime
+    * @param entityType return events of this entityType
+    * @param entityId return events of this entityId
+    * @param eventNames return events with any of these event names.
+    * @param targetEntityType return events of this targetEntityType:
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
+    * @param targetEntityId return events of this targetEntityId
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
+    * @param limit Limit number of events. Get all events if None or Some(-1)
+    * @param reversed Reverse the order.
+    *   - return oldest events first if None or Some(false) (default)
+    *   - return latest events first if Some(true)
+    * @param ec ExecutionContext
+    * @return Either[StorageError, Iterator[Event]]
+    */
+  def find(
+    appId: Int,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None,
+    limit: Option[Int] = None,
+    reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
+    Either[StorageError, Iterator[Event]] = {
+    Await.result(futureFind(
+      appId = appId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = entityType,
+      entityId = entityId,
+      eventNames = eventNames,
+      targetEntityType = targetEntityType,
+      targetEntityId = targetEntityId,
+      limit = limit,
+      reversed = reversed), timeout)
+  }
+
+  /** Aggregate properties of entities based on these special events:
+    * \$set, \$unset, \$delete events.
+    * and returns either StorageError or a Map of entityId to
+    * properties.
+    *
+    * @param appId use events of this app ID
+    * @param entityType aggregate properties of the entities of this entityType
+    * @param startTime use events with eventTime >= startTime
+    * @param untilTime use events with eventTime < untilTime
+    * @param required only keep entities with these required properties defined
+    * @param ec ExecutionContext
+    * @return Either[StorageError, Map[String, DataMap]]
+    */
+  def aggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
+    Either[StorageError, Map[String, DataMap]] = {
+    Await.result(futureAggregateProperties(
+      appId = appId,
+      entityType = entityType,
+      startTime = startTime,
+      untilTime = untilTime,
+      required = required), timeout)
   }
 
   def deleteByAppId(appId: Int)(implicit ec: ExecutionContext):

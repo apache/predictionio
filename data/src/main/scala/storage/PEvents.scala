@@ -71,7 +71,7 @@ trait PEvents extends Serializable {
     targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event]
 
   /** Aggregate properties of entities based on these special events:
-    * $set, $unset, $delete events.
+    * \$set, \$unset, \$delete events.
     *
     * @param appId use events of this app ID
     * @param entityType aggregate properties of the entities of this entityType

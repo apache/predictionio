@@ -29,3 +29,13 @@ $ source conf/pio-env.sh
 $ set +a
 $ sbt/sbt "data/run-main io.prediction.data.examples.TestEvents HB"
 ```
+
+
+HBLEventsTest
+```
+$ sbt/sbt "data/compile"
+$ set -a
+$ source conf/pio-env.sh
+$ set +a
+$ sbt/sbt "data/run-main io.prediction.data.examples.HBLEventsTest 2"
+```
