@@ -21,7 +21,7 @@ First you need to [install PredictionIO
 
 > **Note**
 
-> **0.8.2 contains schema changes from the previous versions, if you have
+> **0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](../resources/schema-change.html).**
 
@@ -60,9 +60,9 @@ You should find the following in the console output:
 2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
-Take note of the `Access Key` and `App ID`. You will need the `Access Key` to
-refer to "MyApp1" when you collect data. At the same time, you will use `App ID`
-to refer to "MyApp1" in engine code.
+Take note of the **Access Key** and **App ID**. You will need the **Access Key**
+to refer to "MyApp1" when you collect data. At the same time, you will use **App
+ID** to refer to "MyApp1" in engine code.
 
 ## Create a new Engine from an Engine Template
 
@@ -235,7 +235,7 @@ $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_m
 A Python import script `import_eventserver.py` is provided to import the data to
 Event Server using Python SDK. Please upgrade to the latest SDK as well so you
 have the latest script. Replace the value of access_key parameter by your
-`Access Key`.
+**Access Key**.
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -263,8 +263,8 @@ Now the movie ratings data is stored as events inside the Event Store.
 
 ## Deploy the Engine as a Service
 
-Now you can deploy the engine.  Make sure the appId defined in the file
-`engine.json` match your `App ID`:
+Now you can deploy the engine.  Make sure the `appId` defined in the file
+`engine.json` match your **App ID**:
 
 ```
 ...
