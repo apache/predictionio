@@ -509,7 +509,13 @@ print_r($response);
 <div data-lang="Ruby SDK">
 
 {% highlight ruby %}
-(coming soon)
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('features' => [2, 0, 0])
+
+puts response
 {% endhighlight %}
 
 </div>
