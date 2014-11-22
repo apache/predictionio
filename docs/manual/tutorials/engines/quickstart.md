@@ -4,7 +4,7 @@ title: Quick Start - Using a Built-in Engine
 ---
 
 # Quick Start - Using a Built-in Engine
-<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.2-SNAPSHOT will be availble soon.</code>
+<code>This doc is applicable to 0.8.0 only. Updated version for 0.8.2 will be availble soon.</code>
 
 
 This is a quick start guide of using a PredictionIO's built-in engine and its
