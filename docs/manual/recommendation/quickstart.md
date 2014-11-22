@@ -285,8 +285,8 @@ Now the movie ratings data is stored as events inside the Event Store.
 
 ## Deploy the Engine as a Service
 
-Now you can deploy the engine.  Make sure the `appId` defined in the file
-`engine.json` match your **App ID**:
+Now you can build, train, and deploy the engine. Make sure the `appId` defined
+in the file `engine.json` match your **App ID**:
 
 ```
 ...
@@ -296,18 +296,43 @@ Now you can deploy the engine.  Make sure the `appId` defined in the file
 ...
 ```
 
-To build *MyRecommendation* and deploy it as a service:
+### Building
+
+Start with building your *MyRecommendation* engine.
 
 ```
 $ pio build
-$ pio train
-$ pio deploy
 ```
 
-When your engine is built successfully, you should see a console message **Your engine is ready for training**.
+Upon successful build, you should see a console message similar to the
+following.
 
-when the engine finishes training, you should see a console message **Saved engine instance with ID: d7GvtbDbTbWhxlbDBfyydQ**.
+```
+2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
+```
 
+### Training
+
+Train your successfully-built engine.
+
+```
+$ pio train
+```
+
+When your engine is trained successfully, you should see a console message
+similar to the following.
+
+```
+2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
+```
+
+### Deploying
+
+Now your engine is ready to deploy.
+
+```
+$ pio deploy
+```
 
 This will deploy an engine that binds to http://localhost:8000. You can visit
 that page in your web browser to check its status.

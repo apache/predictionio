@@ -427,11 +427,41 @@ Now you can deploy the engine. Make sure the `appId` defined in the file
 ...
 ```
 
-To build *MyClassification* and deploy it as a service:
+### Building
+
+Start with building your *MyClassification*.
 
 ```
 $ pio build
+```
+
+Upon successful build, you should see a console message similar to the
+following.
+
+```
+2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
+```
+
+### Training
+
+Train your successfully-built engine.
+
+```
 $ pio train
+```
+
+When your engine is trained successfully, you should see a console message
+similar to the following.
+
+```
+2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
+```
+
+### Deploying
+
+Now your engine is ready to deploy.
+
+```
 $ pio deploy
 ```
 

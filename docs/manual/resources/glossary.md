@@ -18,12 +18,6 @@ model training.
 comprised of four components: [D] Data Source and Data Preparator, [A]
 Algorithm, [S] Serving, [E] Evaluation Metrics.
 
-**Engine Instance**
-- An Engine Instance is a deployable implementation of an Engine with defined
-parameter settings. It specifies: one Data Source, one Data Preparator. one or
-more algorithm(s), and one Serving. You can deploy one or more engine instances
-from an engine at the same time.
-
 **EngineClient**
 - Part of PredictionSDK. It sends queries to a deployed engine instance through
 the Engine API and retrives prediction results.

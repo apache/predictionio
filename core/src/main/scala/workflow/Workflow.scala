@@ -363,6 +363,11 @@ object CoreWorkflow {
     sc.stop()
 
     logger.info("CoreWorkflow.run completed.")
+
+    val wait = 3
+    logger.info(s"Waiting ${wait} seconds for all messages to flush...")
+    Thread.sleep(wait * 1000)
+    logger.info("Your engine has been trained successfully.")
   }
 
   def runTypelessContext[
@@ -393,7 +398,7 @@ object CoreWorkflow {
       sc: SparkContext
     ) {
 
-    
+
     val verbose = params.verbose
 
     // Create an engine instance even for runner as well
