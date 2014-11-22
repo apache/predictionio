@@ -204,6 +204,10 @@ object CreateServer extends Logging {
       engineLanguage,
       engineInstance.dataSourceParams,
       engine.dataSourceClass)
+    val preparatorParams = WorkflowUtils.extractParams(
+      engineLanguage,
+      engineInstance.preparatorParams,
+      engine.preparatorClass)
     val evalPreparedMap = sparkContext map { sc =>
       logger.info("Data Source")
       val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
@@ -217,10 +221,6 @@ object CreateServer extends Logging {
         case(ei, e) => (ei -> (e._1, e._3))
       }
       logger.info("Preparator")
-      val preparatorParams = WorkflowUtils.extractParams(
-        engineLanguage,
-        engineInstance.preparatorParams,
-        engine.preparatorClass)
       val preparator = Doer(engine.preparatorClass, preparatorParams)
 
       val evalPreparedMap: Map[EI, PD] = evalDataMap
@@ -272,6 +272,7 @@ object CreateServer extends Logging {
         engineLanguage,
         manifest,
         dataSourceParams,
+        preparatorParams,
         algorithms,
         algorithmsParams,
         models,
@@ -369,6 +370,7 @@ class ServerActor[Q, P](
     val engineLanguage: EngineLanguage.Value,
     val manifest: EngineManifest,
     val dataSourceParams: Params,
+    val preparatorParams: Params,
     val algorithms: Seq[BaseAlgorithm[_, _, Q, P]],
     val algorithmsParams: Seq[Params],
     val models: Seq[Any],
@@ -405,6 +407,8 @@ class ServerActor[Q, P](
                 algorithms.map(_.toString),
                 algorithmsParams.map(_.toString),
                 models.map(_.toString),
+                dataSourceParams.toString,
+                preparatorParams.toString,
                 servingParams.toString,
                 serverStartTime,
                 feedbackEnabled,

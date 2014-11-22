@@ -9,6 +9,8 @@
   algorithms: Seq[String],
   algorithmsParams: Seq[String],
   models: Seq[String],
+  dataSourceParams: String,
+  preparatorParams: String,
   servingParams: String,
   serverStartTime: DateTime,
   feedback: Boolean,
@@ -17,7 +19,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>@{manifest.id} @{manifest.version} - PredictionIO Engine Server at @{args.ip}:@{args.port}</title>
+    <title>@{engineInstance.engineFactory} (@{engineInstance.engineVariant}) - PredictionIO Engine Server at @{args.ip}:@{args.port}</title>
     <link href="/assets/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
     <style type="text/css">
       td { font-family: Menlo, Monaco, Consolas, "Courier New", monospace; }
@@ -27,20 +29,14 @@
     <div class="container">
       <div class="page-header">
         <h1>PredictionIO Engine Server at @{args.ip}:@{args.port}</h1>
-        <p class="lead">@{manifest.id} @{manifest.version}</p>
+        <p class="lead">@{engineInstance.engineFactory} (@{engineInstance.engineVariant})</p>
       </div>
-      <h2>Engine Instance Information</h2>
+      <h2>Engine Information</h2>
       <table class="table table-bordered table-striped">
-        <tr><th>ID</th><td>@{engineInstance.id}</td></tr>
-        <tr><th>Variant ID</th><td>@{engineInstance.engineVariant}</td></tr>
         <tr><th>Training Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.startTime)}</td></tr>
         <tr><th>Training End Time</th><td>@{DateTimeFormat.forStyle("FF").print(engineInstance.endTime)}</td></tr>
-      </table>
-      <h2>Feedback Loop Information</h2>
-      <table class="table table-bordered table-striped">
-        <tr><th>Feedback Loop Enabled?</th><td>@{feedback}</td></tr>
-        <tr><th>Event Server IP</th><td>@{eventServerIp}</td></tr>
-        <tr><th>Event Server Port</th><td>@{eventServerPort}</td></tr>
+        <tr><th>Variant ID</th><td>@{engineInstance.engineVariant}</td></tr>
+        <tr><th>Instance ID</th><td>@{engineInstance.id}</td></tr>
       </table>
       <h2>Server Information</h2>
       <table class="table table-bordered table-striped">
@@ -53,6 +49,14 @@
         @for(f <- manifest.files.drop(1)) {
         <tr><td>@f</td></tr>
         }
+      </table>
+      <h2>Data Source</h2>
+      <table class="table table-bordered table-striped">
+        <tr><th>Parameters</th><td>@{dataSourceParams}</td></tr>
+      </table>
+      <h2>Data Preparator</h2>
+      <table class="table table-bordered table-striped">
+        <tr><th>Parameters</th><td>@{preparatorParams}</td></tr>
       </table>
       <h2>Algorithms and Models</h2>
         <table class="table table-bordered table-striped">
@@ -69,6 +73,12 @@
       <h2>Serving</h2>
       <table class="table table-bordered table-striped">
         <tr><th>Parameters</th><td>@{servingParams}</td></tr>
+      </table>
+      <h2>Feedback Loop Information</h2>
+      <table class="table table-bordered table-striped">
+        <tr><th>Feedback Loop Enabled?</th><td>@{feedback}</td></tr>
+        <tr><th>Event Server IP</th><td>@{eventServerIp}</td></tr>
+        <tr><th>Event Server Port</th><td>@{eventServerPort}</td></tr>
       </table>
     </div>
   </body>
