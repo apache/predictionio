@@ -2,13 +2,14 @@
 layout: docs
 title: Glossary
 ---
+
 # Glossary
 
-**DataPreparator**
+**Data Preparator**
 - Part of Engine. It reads data from source and transforms it to the desired
 format.
 
-**DataSource**
+**Data Source**
 - Part of Engine. It preprocesses the data and forward it to the algorithm for
 model training.
 
@@ -22,7 +23,6 @@ Algorithm, [S] Serving, [E] Evaluation Metrics.
 parameter settings. It specifies: one Data Source, one Data Preparator. one or
 more algorithm(s), and one Serving. You can deploy one or more engine instances
 from an engine at the same time.
-
 
 **EngineClient**
 - Part of PredictionSDK. It sends queries to a deployed engine instance through
@@ -58,4 +58,3 @@ and utility of a predictive relationship.
 - Also commonly referred as Training Set. A set of data used to discover
 potentially predictive relationships. In PredictionIO Engine, training data is
 processed through the Data layer and passed onto algorithm.
-

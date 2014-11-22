@@ -242,8 +242,9 @@ The `predict` method is called when you send a JSON query to
 http://localhost:8000/queries.json. PredictionIO converts the query, such as `{
 "features": [4, 3, 8] }` to the `Query` class you defined previously.  
 
-The predictive model `NaiveBayesModel` of MLlib NaiveBayes offers a function called `predict`. `predict` takes a dense vector of features.
-It predicts the label of the item represented by this feature vector.
+The predictive model `NaiveBayesModel` of MLlib NaiveBayes offers a function
+called `predict`. `predict` takes a dense vector of features. It predicts the
+label of the item represented by this feature vector.
 
 ```scala
   def predict(model: NaiveBayesModel, query: Query): PredictedResult = {
@@ -252,7 +253,7 @@ It predicts the label of the item represented by this feature vector.
   }
 ```
 
-> You have defined the class `PredictedResult` earlier.
+> You have defined the class `PredictedResult` earlier in this page.
 
 PredictionIO passes the returned `PredictedResult` object to *Serving*.
 
@@ -282,12 +283,12 @@ When you send a JSON query to http://localhost:8000/queries.json,
 `Seq[PredictedResult]`.
 
 > An engine can train multiple models if you specify more than one Algorithm
-component in `object RecommendationEngine` inside ***Engine.scala***.
->
-> Since only one NaiveBayesAlgorithm is implemented by default, this Sequence contains one element.
+component in `object RecommendationEngine` inside ***Engine.scala***. Since only
+one `NaiveBayesAlgorithm` is implemented by default, this `Seq` contains one
+element.
 
 In this case, `serve` simply returns the predicted result of the first, and the
 only, algorithm, i.e. `predictedResults.head`.
 
 Congratulations! You have just learned how to customize and build a
-production-ready engine. Have fun! 
+production-ready engine. Have fun!

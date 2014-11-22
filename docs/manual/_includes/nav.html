@@ -13,7 +13,7 @@
         </li>
         {% endfor %}
     </ul>
-    
+
     <h2>Recommendation Template</h2>
     <ul>
         {% for sec in site.data.nav_recommendation %}
@@ -57,7 +57,7 @@
         </li>
         {% endfor %}
     </ul> -->
-    
+
     <h2>Data Collection</h2>
     <ul>
         {% for sec in site.data.nav_datacollection %}
@@ -72,9 +72,9 @@
         </li>
         {% endfor %}
     </ul>
-    
- 
-    
+
+
+
     <!-- <h2>Running on Production</h2>
     <ul>
         {% for sec in site.data.nav_production %}
@@ -89,7 +89,7 @@
         </li>
         {% endfor %}
     </ul> -->
-    
+
 	<h2>Getting Involved</h2>
     <ul>
         {% for sec in site.data.nav_community %}
@@ -117,9 +117,10 @@
 	  <!-- <li><a href="../../contribution/projects.html">Play Framework Plugin</a></li> -->
 	  <!-- <li><a href="../../contribution/projects.html">Symfony2 Bundle</a></li> -->
 	</ul>
-  
+
 	<h2>Resources</h2>
     <ul>
+        <li><a href="http://docs.prediction.io/api/current">API (ScalaDoc)</a></li>
         {% for sec in site.data.nav_resources %}
         <li><a href="{{ site.url }}{{ site.baseurl }}{{ sec.href }}">{{ sec.title }}</a></li>
             {% if sec.subsec != null %}

@@ -7,24 +7,26 @@ title: Event API
 
 *Event Server* is designed to collect data into PredictionIO in an event-based
 style. Once the Event Server is launched, your application can send data to it
-through its *Event API* with HTTP requests or with the *EventClient* of
+through its *Event API* with HTTP requests or with `EventClient`s of
 PredictionIO's SDKs.
 
-> All PredictionIO-compliant engines support the data store (i.e. HBase) and
-data format used by the Event Server.
-
+> All PredictionIO-compliant engines support accessing the Event Store (i.e. the
+data store of Event Server) through [PredictionIO's Storage
+API](http://docs.prediction.io/api/0.8.2/index.html#io.prediction.data.storage.package).
 
 ## Launching the Event Server
 
 > Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, PredictionIO uses
-HBase, and a quick configuration can be found
-[here]({{site.baseurl}}/install/install-linux.html#hbase).
-Please allow a minute (usually less than 30 seconds) after you start HBase for
-initialization to complete before starting eventserver.
+Apache HBase, and a quick configuration can be found
+[here]({{site.baseurl}}/install/install-linux.html#hbase). Please allow a minute
+(usually less than 30 seconds) after HBase is started for its initialization to
+complete before starting the Event Server.
 
 
-Everything about PredictionIO can be done through the `pio` command. Please add PIO binnary command path to to your PATH first. Assuming PIO is installed at /home/yourname/predictionio/, you can run 
+Everything about PredictionIO can be done through the `pio` command. Please add
+PIO binary command path to to your `PATH` first. Assuming PredictionIO is
+installed at `/home/yourname/predictionio/`, you can run
 
 ```
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
@@ -36,11 +38,14 @@ To start the event server, run
 $ pio eventserver
 ```
 
-By default, the event server is bound to localhost, which serves only local traffic.
-To serve global traffic, you can use 0.0.0.0, i.e.
-`$ pio eventserver --ip 0.0.0.0`
+By default, the Event Server is bound to localhost, which serves only local
+traffic. To serve global traffic, you can use 0.0.0.0, i.e.
 
-### Check server status
+```
+$ pio eventserver --ip 0.0.0.0
+```
+
+### Check Server Status
 
 ```
 $ curl -i -X GET http://localhost:7070
@@ -61,30 +66,31 @@ Content-Length: 18
 
 ### Create App
 
-First, you need to create a new App before import data with Event Server:
+First, you need to create a new App before importing data to the Event Server:
 
 ```
 $ pio app new MyTestApp
 ```
-(you can replace `MyTestApp` with name of your App)
 
-Take note of the `Access Key` and `App ID` generated. You need the `Access Key` to use the Event API. You should see something like the following output:
+> You can replace `MyTestApp` with name of your App.
+
+Take note of the *Access Key* and *App ID* generated. You need the *Access Key*
+to use the Event API. You should see something like the following output:
 
 ```
 2014-11-12 08:56:02,519 INFO  tools.Console$ - Created new app:
 2014-11-12 08:56:02,519 INFO  tools.Console$ -         Name: MyTestApp
 2014-11-12 08:56:02,520 INFO  tools.Console$ -           ID: 6
-2014-11-12 08:56:02,520 INFO  tools.Console$ - Access Key: WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB
+2014-11-12 08:56:02,520 INFO  tools.Console$ -   Access Key: WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB
 ```
 
 ### Creating Your First Event
 
 You may connect to the Event Server with HTTP request or by using one of many
-**PredictionIO SDKs**. You may also use [Bulk Loading]({{site.baseurl}}/bulkloading.html) for
-your old data.
+**PredictionIO SDKs**.
 
 The following shows how one can create an event involving a single entity.
-Replace the value of `accessKey` by the `Acceess Key` generated for your App.
+Replace the value of `accessKey` by the *Access Key* generated for your App.
 
 <div class="codetabs">
 <div data-lang="Raw HTTP">
@@ -436,7 +442,13 @@ Field | Type | Description
 
 ## Debugging Recipes
 
-> **Note** The following APIs are mainly for development or debugging purpose only. They should not be supported by SDK nor used by real application under normal circumstances and their availabilities are subject to changes.
+----
+
+__WARNING: The following API are mainly for development or debugging purpose
+only. They should not be supported by SDK nor used by real application under
+normal circumstances and they are subject to changes.__
+
+----
 
 The `accessKey` query parameter is mandatory.
 
@@ -454,7 +466,7 @@ $ curl -i -X GET http://localhost:7070/events/<your_eventId>.json?accessKey=<you
 $ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json?accessKey=<your_accessKey>
 ```
 
-### Get All Events of an app
+### Get All Events of an App
 
 > Use cautiously!
 
@@ -498,10 +510,10 @@ For example, get all events of a specific entity with `eventTime < untilTime`:
 $ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&entityType=<your_entityType>&entityId=<your_entityId>&untilTime=<time in ISO801 format>"
 ```
 
-### Delete All Events of an app
+### Delete All Events of an App
 
 > Please use the following CLI command.
 
 ```
-$pio app data-delete <your_app_name>
+$ pio app data-delete <your_app_name>
 ```
