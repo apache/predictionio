@@ -46,10 +46,20 @@ running:
 $ pio eventserver
 ```
 
+## Create a new Engine from an Engine Template
+
+First, you create a new Classification engine called *MyClassification* by cloning the Classification Engine Template, 
+assuming `/home/yourname/predictionio` is the installation directory of PredictionIO:
+
+```
+$ cp -r /home/yourname/predictionio/templates/scala-parallel-classification MyClassification
+$ cd MyClassification
+```
+
 ## Create a Sample App
 
-Let's create a sample app called "MyApp2" now. An app represents the application
-that generates the data, e.g. an enterprise service website.
+You can now create a sample app called "MyApp2". It represents the application
+that generates the data, e.g. an enterprise service website. You will collect data into it through Event Server soon.
 
 ```
 $ pio app new MyApp2
@@ -70,20 +80,9 @@ Take note of the **Access Key** and **App ID**. You will need the **Access Key**
 to refer to "MyApp2" when you collect data. At the same time, you will use **App
 ID** to refer to "MyApp2" in engine code.
 
-## Create a new Engine from an Engine Template
-
-Now let's create a new engine called *MyClassification* by cloning the MLlib
-Classification engine template, assuming `/home/yourname/predictionio` is the
-installation directory of PredictionIO:
-
-```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-classification MyClassification
-$ cd MyClassification
-```
-
 ## Collecting Data
 
-Next, let's collect some training data for the app of this Engine. For model
+Next, let's collect some training data into the app MyApp2. For model
 training, Classification Engine Template reads 4 properties of a user record:
 attr0, attr1, attr2 and plan.
 
