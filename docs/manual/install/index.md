@@ -19,6 +19,8 @@ technologies that power PredictionIO.
 * Elasticsearch 1.3.0
 * Java SE Development Kit 7
 
+If you are running on a single machine, we recommend minimal of 2GB memeory.  
+
 > **Notes for Linux Users**
 
 > If you are using Linux, Apache Spark local mode, which is the default
