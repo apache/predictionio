@@ -19,7 +19,7 @@ technologies that power PredictionIO.
 * Elasticsearch 1.3.0
 * Java SE Development Kit 7
 
-If you are running on a single machine, we recommend minimal of 2GB memeory.  
+If you are running on a single machine, we recommend minimum memeory of 2GB.  
 
 > **Notes for Linux Users**
 
