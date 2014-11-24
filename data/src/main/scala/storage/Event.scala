@@ -107,7 +107,7 @@ private[prediction] object EventValidation {
   def validateProperties(e: Event) = {
     e.properties.keySet.foreach { k =>
       require(!isReservedPrefix(k) || builtinProperties.contains(k),
-        s"Reserved proeprties ${k} is not supported.")
+        s"Reserved property ${k} is not supported.")
     }
   }
 
