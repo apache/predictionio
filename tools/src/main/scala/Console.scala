@@ -101,7 +101,7 @@ object Console extends Logging {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError = false
       head("PredictionIO Command Line Interface Console", BuildInfo.version)
-      help("help")
+      help("")
       note("Note that it is possible to supply pass-through arguments at\n" +
         "the end of the command by using a '--' separator, e.g.\n\n" +
         "pio train --params-path params -- --master spark://mycluster:7077\n" +
@@ -156,6 +156,15 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "version")
         }
+      note("")
+      cmd("help").action { (_, c) =>
+        c.copy(commands = c.commands :+ "help")
+      } children(
+        arg[String]("<command>") optional()
+          action { (x, c) =>
+            c.copy(commands = c.commands :+ x)
+          }
+        )
       note("")
       cmd("new").
         text("Creates a new engine project in a subdirectory with the same " +
@@ -545,6 +554,9 @@ object Console extends Logging {
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
       ca.commands match {
+        case Seq("") =>
+          System.err.println(help())
+          sys.exit(1)
         case Seq("version") =>
           version(ca)
         case Seq("new") =>
@@ -597,14 +609,186 @@ object Console extends Logging {
         case Seq("accesskey", "delete") =>
           accessKeyDelete(ca)
         case _ =>
-          error(
-            s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
-          System.err.println(parser.usage)
+          System.err.println(help(ca.commands))
           sys.exit(1)
       }
+      sys.exit(0)
+    } getOrElse {
+      val command = args.toSeq.filterNot(_.startsWith("--")).head
+      System.err.println(help(Seq(command)))
+      sys.exit(1)
     }
-    sys.exit(0)
   }
+
+  def help(commands: Seq[String] = Seq()) = {
+    if (commands.isEmpty) {
+      mainHelp
+    } else {
+      val stripped =
+        (if (commands.head == "help") commands.drop(1) else commands).
+          mkString("-")
+      helpText.getOrElse(stripped, s"Help is unavailable for ${stripped}.")
+    }
+  }
+
+  val mainHelp =
+    "Usage: pio <command> [options] <args>...\n\n" +
+    "Options common to all commands:\n" +
+    "  [--pio-home <value>] [--spark-home <value>] [--sbt <value>]\n" +
+    "  [-ei <value>] [-ev <value>] [-v <value>] [-m <value>]\n" +
+    "  [<args>] [-- [<args passed to Spark>] [-- [<args passed to runner]]]\n\n" +
+    "  --sbt <value>\n" +
+    "      Full path of sbt. Default: sbt\n" +
+    "  -ei <value> | --engine-id <value>\n" +
+    "      Specify an engine ID. Usually used by distributed deployment.\n" +
+    "  -ev <value> | --engine-version <value>\n" +
+    "      Specify an engine version. Usually used by distributed deployment.\n" +
+    "  -v <value> | --variant <value>\n" +
+    "      Path to an engine variant JSON file. Default: engine.json\n" +
+    "  -m <value> | --manifest <value>\n" +
+    "      Path to an engine manifest JSON file. Default: manifest.json\n\n" +
+    "Note that it is possible to supply pass-through arguments at the end\n"+
+    "of the command by using a '--' separator, e.g.\n\n" +
+    "  pio train -v my-variant -- --master spark://mycluster:7077\n\n" +
+    "In the example above, the '--master' argument will be passed to the\n" +
+    "underlying spark-submit command. Please refer to the usage section\n" +
+    "for each command for more information.\n\n" +
+    "The most commonly used pio commands are:\n" +
+    "    status        Displays status information about PredictionIO\n" +
+    "    version       Displays the version of this command line console\n" +
+    "    build         Build an engine at the current directory\n" +
+    "    train         Kick off a training using an engine\n" +
+    "    deploy        Deploy an engine as an engine server\n" +
+    "    eventserver   Launch an Event Server\n" +
+    "    app           Manage apps that are used by the Event Server\n" +
+    "    accesskey     Manage app access keys\n\n" +
+    "The following are experimental development commands:\n" +
+    "    run           Launch a driver program\n" +
+    "    eval          Kick off an evaluation using an engine\n" +
+    "    dashboard     Launch an evaluation dashboard\n\n" +
+    "See 'pio help <command>' to read about a specific subcommand."
+
+  val helpText = Map(
+    "" -> mainHelp,
+    "status" -> (
+      "Usage: pio status\n\n" +
+      "Displays status information about the PredictionIO system."),
+    "version" -> (
+      "Usage: pio version\n\n" +
+      "Displays the version of this command line console."),
+    "build" -> (
+      "Usage: pio build [--sbt-extra <value>] [--clean] [--no-asm]\n" +
+      "                 [common options...]\n\n" +
+      "Build an engine at the current directory.\n\n" +
+      "  --sbt-extra <value>\n" +
+      "      Extra command to pass to SBT when it builds your engine.\n" +
+      "  --clean\n" +
+      "      Clean build.\n" +
+      "  --no-asm\n" +
+      "      Skip building external dependencies assembly."),
+    "train" -> (
+      "Usage: pio train [--batch <value>] [common options...]\n\n" +
+      "Kick off a training using an engine (variant) to produce an engine\n" +
+      "instance. This command will pass all pass-through arguments to its\n" +
+      "underlying spark-submit command.\n\n" +
+      "  --batch <value>\n" +
+      "      Batch label of the run."),
+    "deploy" -> (
+      "Usage: pio deploy [--ip <value>] [--port <value>]\n" +
+      "                  [--engine-instance-id <value>]\n" +
+      "                  [--feedback] [--accesskey <value>]\n" +
+      "                  [--event-server-ip <value>] [--event-server-port <value>]\n\n" +
+      "Deploy an engine instance as a prediction server. This command will\n" +
+      "pass all pass-through arguments to its underlying spark-submit command.\n\n" +
+      "  --ip <value>\n" +
+      "      IP to bind to. Default: localhost\n" +
+      "  --port <value>\n" +
+      "      Port to bind to. Default: 8000\n" +
+      "  --engine-instance-id <value>\n" +
+      "      Engine instance ID.\n" +
+      "  --feedback\n" +
+      "      Enable feedback loop to event server.\n" +
+      "  --accesskey <value>\n" +
+      "      Access key of the App where feedback data will be stored.\n" +
+      "  --event-server-ip <value>\n" +
+      "      Event server IP. Default: localhost\n" +
+      "  --event-server-port <value>\n" +
+      "      Event server port. Default: 7070"),
+    "eventserver" -> (
+      "Usage: pio eventserver [--ip <value>] [--port <value>]\n\n" +
+      "  --ip <value>\n" +
+      "      IP to bind to. Default: localhost\n" +
+      "  --port <value>\n" +
+      "      Port to bind to. Default: 7070"),
+    "app" -> (
+      "Usage: pio app new [--id <value>] [--description <value>] <name>\n\n" +
+      "Create a new app key to app ID mapping.\n\n" +
+      "  --id <value>\n" +
+      "      Specify this if you already have data under an app ID.\n" +
+      "  --description <value>\n" +
+      "      Description of the new app.\n" +
+      "  <name>\n" +
+      "      App name.\n\n" +
+      "Usage: pio app list\n\n" +
+      "List all apps.\n\n" +
+      "Usage: pio app delete <name>\n\n" +
+      "Name of the app to be deleted.\n\n" +
+      "  <name>\n" +
+      "      App name.\n\n" +
+      "Usage: pio app data-delete <name>\n\n" +
+      "Delete data of an app.\n\n" +
+      "  <name>\n" +
+      "      App name."),
+    "accesskey" -> (
+      "Usage: pio accesskey new <app name> [<event1> <event2>...]\n\n" +
+      "Add allowed event(s) to an access key.\n\n" +
+      "  <app name>\n" +
+      "      App to be associated with the new access key.\n" +
+      "  <event1> <event2>...\n" +
+      "      Allowed event name(s) to be added to the access key.\n\n" +
+      "Usage: pio accesskey list <app name>\n\n" +
+      "  <app name>\n" +
+      "      App name.\n\n" +
+      "Usage: pio accesskey delete <access key>\n\n" +
+      "  <access key>\n" +
+      "      The access key to be deleted."),
+    "run" -> (
+      "Usage: pio run [--sbt-extra <value>] [--clean] [--no-asm]\n" +
+      "               [common options...] <main class>\n\n" +
+      "Launch a driver program. This command will pass all pass-through\n" +
+      "arguments to its underlying spark-submit command. In addition, it\n" +
+      "also supports a second level of pass-through arguments to the driver\n" +
+      "program, e.g.\n\n" +
+      "  pio run -- --master spark://localhost:7077 -- --driver-arg foo\n\n" +
+      "  <main class>\n" +
+      "      Main class name of the driver program.\n" +
+      "  --sbt-extra <value>\n" +
+      "      Extra command to pass to SBT when it builds your engine.\n" +
+      "  --clean\n" +
+      "      Clean build.\n" +
+      "  --no-asm\n" +
+      "      Skip building external dependencies assembly."),
+    "eval" -> (
+      "Usage: pio eval [--batch <value>] [--metrics-class <value>]\n" +
+      "                [--params-path <value>] [-mp <value>] [common options...]\n\n" +
+      "Kick off an evaluation using an engine (variant) to produce an engine\n" +
+      "instance. This command will pass all pass-through arguments to its\n" +
+      "underlying spark-submit command.\n\n" +
+      "  --batch <value>\n" +
+      "      Batch label of the run.\n" +
+      "  --metrics-class <value>\n" +
+      "      Name of metrics class to run.\n" +
+      "  --params-path <value>\n" +
+      "      Directory to lookup parameters JSON files. Default: params\n" +
+      "  -mp <value>\n" +
+      "      Metrics parameters JSON file. Will try to use metrics.json in\n" +
+      "      '--params-path'."),
+    "dashboard" -> (
+      "Usage: pio dashboard [--ip <value>] [--port <value>]\n\n" +
+      "  --ip <value>\n" +
+      "      IP to bind to. Default: localhost\n" +
+      "  --port <value>\n" +
+      "      Port to bind to. Default: 9000"))
 
   def createProject(ca: ConsoleArgs): Unit = {
     val scalaEngineTemplate = Map(
