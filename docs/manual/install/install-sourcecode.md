@@ -132,7 +132,9 @@ following.
 2014-11-20 15:37:32,359 INFO  [M:0;10.0.27.242:52547] master.HMaster: Master has completed initialization
 ```
 
-With this, you can confidently run the Event Server successfully.
+With this, you can confidently run the Event Server successfully. 
+
+> At any time, you can run $pio status to check the status of the dependencies. 
 
 Now you have installed everything you need to run PredictionIO!
 

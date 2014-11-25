@@ -43,3 +43,11 @@ $ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
 If you have other questions, you can search or post on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user) or [email the
 core team](mailto:support@prediction.io) directly.
+
+|
+
+### Question: How do I check to see if various dependencies, such as ElasticSearch, are running?
+
+You can run **$pio status** from the commandline and it will return the status of various components that PredictionIO depends on. 
+
+
