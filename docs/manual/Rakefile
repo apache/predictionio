@@ -1,0 +1,175 @@
+require 'middleman'
+require 'nokogiri'
+require 'rainbow/ext/string'
+require 'uri'
+require 'net/http'
+
+
+module Sanity
+  module Error
+    class RedirectLoopError < StandardError; end
+  end
+
+  class Cache
+    def initialize(store = {})
+      @store = store
+    end
+
+    def read(uri)
+      @store[uri]
+    end
+
+    def write(uri, value)
+      @store[uri] = value
+    end
+
+    def fetch(uri)
+      if block_given?
+        if exists?(uri)
+          read(uri)
+        else
+          write(uri, yield)
+        end
+      else
+        read(uri)
+      end
+    end
+
+    def exists?(uri)
+      @store.has_key?(uri)
+    end
+  end
+
+  class Page
+    INDEX_FILE = 'index.html'
+
+    def initialize(filename, cache = Sanity::Cache.new)
+      @filename = filename
+      @cache = cache
+      f = File.open(@filename)
+      @doc = Nokogiri::HTML(f)
+
+      @build_path = File.join(Middleman::Application.root, 'build')
+      f.close
+    end
+
+    def check_links
+      @doc.css('a').each do |link|
+        uri = link['href']
+
+        check_href(uri)
+      end
+    end
+
+    def check_href(href)
+      # TODO: add trailing slash, relative url, and in page anchor links.
+      # TODO: Test for missing titles!
+      case href
+      when /\A\s*\z/
+        check_empty_href(href)
+      when /\A(https?):\/\/.+\z/
+        check_external_href(href)
+      when /\A#.+\z/
+        check_anchor_href(href)
+      when /\A#\z/
+        check_empty_anchor_href(href)
+      when /\A\/\z/
+        check_root_href(href)
+      when /\Amailto:.+\z/
+        check_mailto_href(href)
+      else
+        check_internal_href(href)
+      end
+    end
+
+    def check_external_href(href, limit = 20)
+      raise Error::RedirectLoopError, 'to many HTTP redirects' if limit == 0
+
+      response = @cache.fetch(href) do
+        puts "cache [miss] #{href}".color(:white)
+        uri = URI(href)
+        Net::HTTP.get_response(uri)
+      end
+
+      case response
+      when Net::HTTPSuccess
+        puts "external [success] #{href}".color(:green)
+      when Net::HTTPNotFound
+        puts "external [404] #{href}".color(:red)
+      when Net::HTTPRedirection
+        puts "external [redirect] #{href}".color(:blue)
+        location = response['location']
+        check_external_href(location, limit - 1)
+      else
+        puts "external [other] #{href}".color(:red)
+      end
+
+      rescue => e
+        puts "external [exception] #{href} #{e.message}".color(:red).bright
+    end
+
+    def check_anchor_href(href)
+      result = @doc.css(href)
+
+      if result.count > 0
+        puts "anchor [success] #{href}".color(:green)
+      else
+        puts "anchor [not found] #{href}".color(:red)
+      end
+
+      rescue => e
+        puts "anchor [exception] #{href}".color(:red).bright
+    end
+
+    def check_empty_anchor_href(href)
+      puts "empty anchor [ok] #{href}".color(:cyan)
+    end
+
+    def check_root_href(href)
+      filename = File.join(@build_path, INDEX_FILE)
+      if File.exist?(filename)
+        puts "root [success] #{href}".color(:green)
+      else
+        puts "root [not found] #{filename}".color(:red)
+      end
+    end
+
+    def check_mailto_href(href)
+      uri = URI.parse(href)
+      if uri.is_a?(URI::MailTo)
+        puts "mailto [success] #{uri}".color(:green)
+      else
+        puts "mailto [bad] #{href}".color(:red)
+      end
+    end
+
+    def check_empty_href(href)
+      puts "empty link [fail] #{href}".color(:red)
+    end
+
+    def check_internal_href(href)
+      filename = File.join(@build_path, href.gsub('/', File::SEPARATOR))
+      if File.directory?(filename)
+        filename = File.join(filename, INDEX_FILE)
+      end
+
+      if File.exist?(filename)
+        puts "internal [success] #{href}".color(:green)
+      else
+        puts "internal [not found] #{filename}".color(:red)
+      end
+
+    end
+  end
+end
+
+desc 'Check site for broken links'
+task :check do
+  cache = Sanity::Cache.new
+  Dir["build/**/*.html"].each do |filename|
+    p = Sanity::Page.new(filename, cache)
+
+    p.check_links
+  end
+end
+

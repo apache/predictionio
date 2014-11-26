@@ -1,0 +1,11 @@
+body {
+  font-family: $body-font-family;
+}
+
+a {
+  color: $link-color;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,132 @@
+// All Screens
+#active-navigation {
+  float: left;
+  font-size: 40px;
+  height: 40px;
+  margin: 25px 0 25px 20px;
+  color: $header-icon-color;
+  display: block;
+  i {
+    vertical-align: top;
+  }
+}
+
+[role="navigation"],
+[role="main"],
+[role="complementary"] {
+  width: 100%;
+}
+
+[role="navigation"] {
+  margin-left: -100%;
+  float: left;
+}
+
+[role="main"] {
+  margin-left: 0;
+  float: left;
+}
+
+[role="complementary"] {
+  margin-right: -200%;
+  float: left;
+}
+
+// Active Navigation
+.active-navigation [role="navigation"] {
+  margin-left: 0;
+  width: 50%;
+}
+
+.active-navigation [role="main"] {
+  margin-right: -100%;
+}
+
+.active-navigation [role="complementary"] {
+  margin-right: 100%;
+  float: right;
+}
+
+// Active Complementary
+.active-complementary [role="navigation"] {
+  margin-left: -100%;
+}
+.active-complementary [role="main"] {
+  margin-left: -50%;
+}
+.active-complementary [role="complementary"] {
+  margin-left: 0;
+  width: 50%;
+}
+
+// Medium
+@media all and (min-width: 768px) {
+  #active-navigation {
+    display: none;
+  }
+
+  [role="navigation"],
+  .active-navigation [role="navigation"] {
+    width: 25%;
+    margin-left: 0;
+    float: left;
+  }
+
+  [role="main"] {
+    width: 75%;
+  }
+
+  .active-navigation [role="main"] {
+    margin-right: -25%;
+  }
+
+  .active-navigation [role="complementary"] {
+    height: 0;
+  }
+
+  .active-complementary [role="navigation"] {
+    margin-left: -100%;
+  }
+
+  .active-complementary [role="main"] {
+    margin-left: 0;
+    width: 80%;
+  }
+
+  .active-complementary [role="complementary"] {
+    margin-right: -80%;
+    width: 20%;
+  }
+}
+
+// Large
+@media all and (min-width: 1200px) {
+  #active-complementary {
+    display: none;
+  }
+
+  [role="navigation"],
+  .active-navigation [role="navigation"],
+  .active-complementary [role="navigation"] {
+    width: 25%;
+    margin-left: 0;
+    float: left;
+  }
+
+  [role="main"],
+  .active-navigation [role="main"],
+  .active-complementary [role="main"] {
+    width: 55%;
+  }
+
+  [role="complementary"],
+  .active-navigation [role="complementary"],
+  .active-complementary [role="complementary"]{
+    width: 20%;
+    margin-right: 0;
+    float: right;
+    height: auto;
+  }
+}
+
+
