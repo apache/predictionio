@@ -64,6 +64,7 @@ module Sanity
     def check_href(href)
       # TODO: add trailing slash, relative url, and in page anchor links.
       # TODO: Test for missing titles!
+      # TODO: Test for unneeded .html extension!
       case href
       when /\A\s*\z/
         check_empty_href(href)
