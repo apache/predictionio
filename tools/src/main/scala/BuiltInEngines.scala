@@ -13,6 +13,7 @@
   * limitations under the License.
   */
 
+/*
 package io.prediction.tools
 
 import io.prediction.core.BuildInfo
@@ -35,7 +36,9 @@ case class EngineInstanceTemplate(
     Console.joinFile(Seq("params", "algorithms.json")) -> algorithmsJson,
     Console.joinFile(Seq("params", "serving.json")) -> servingJson)
 }
+*/
 
+/*
 object BuiltInEngine {
   // This variable defines all built-in engines. Append new engines to this list.
   val instances: Seq[EngineInstanceTemplate] = Seq(
@@ -73,3 +76,4 @@ object BuiltInEngine {
     .map { eit => (eit.engineId -> eit) }
     .toMap
 }
+*/

@@ -177,20 +177,20 @@ object Console extends Logging {
             c.copy(projectName = Some(x))
           } text("Engine project name.")
         )
-      note("")
-      cmd("instance").
-        text("Creates a new engine instance in a subdirectory with the same " +
-          "name as the engine's ID by default.").
-        action { (_, c) =>
-          c.copy(commands = c.commands :+ "instance")
-        } children(
-          arg[String]("<engine ID>") action { (x, c) =>
-            c.copy(projectName = Some(x))
-          } text("Engine ID."),
-          opt[String]("directory-name") action { (x, c) =>
-            c.copy(directoryName = Some(x))
-          } text("Engine instance directory name.")
-        )
+      //note("")
+      //cmd("instance").
+      //  text("Creates a new engine instance in a subdirectory with the same " +
+      //    "name as the engine's ID by default.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "instance")
+      //  } children(
+      //    arg[String]("<engine ID>") action { (x, c) =>
+      //      c.copy(projectName = Some(x))
+      //    } text("Engine ID."),
+      //    opt[String]("directory-name") action { (x, c) =>
+      //      c.copy(directoryName = Some(x))
+      //    } text("Engine instance directory name.")
+      //  )
       note("")
       cmd("build").
         text("Build an engine at the current directory.").
@@ -561,8 +561,8 @@ object Console extends Logging {
           version(ca)
         case Seq("new") =>
           createProject(ca)
-        case Seq("instance") =>
-          createInstance(ca)
+        //case Seq("instance") =>
+        //  createInstance(ca)
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
           build(ca)
@@ -656,6 +656,7 @@ object Console extends Logging {
     "The most commonly used pio commands are:\n" +
     "    status        Displays status information about PredictionIO\n" +
     "    version       Displays the version of this command line console\n" +
+    "    new           Creates a new engine project\n" +
     "    build         Build an engine at the current directory\n" +
     "    train         Kick off a training using an engine\n" +
     "    deploy        Deploy an engine as an engine server\n" +
@@ -676,6 +677,12 @@ object Console extends Logging {
     "version" -> (
       "Usage: pio version\n\n" +
       "Displays the version of this command line console."),
+    "new" -> (
+      "Usage: pio new <project name>\n\n" +
+      "Creates a new engine project in a subdirectory with the same name as\n" +
+      "the project.\n\n" +
+      "  <project name>\n" +
+      "      Engine project name."),
     "build" -> (
       "Usage: pio build [--sbt-extra <value>] [--clean] [--no-asm]\n" +
       "                 [common options...]\n\n" +
@@ -798,11 +805,11 @@ object Console extends Logging {
         BuildInfo.sparkVersion),
       "engine.json" -> templates.scala.txt.engineJson(
         ca.projectName.get,
-        "0.0.1-SNAPSHOT",
-        ca.projectName.get,
         "myorg.MyEngineFactory"),
-      joinFile(Seq("params", "datasource.json")) ->
-        templates.scala.params.txt.datasourceJson(),
+      "manifest.json" -> templates.scala.txt.manifestJson(
+        ca.projectName.get,
+        "0.0.1-SNAPSHOT",
+        ca.projectName.get),
       joinFile(Seq("project", "assembly.sbt")) ->
         templates.scala.project.txt.assemblySbt(),
       joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
@@ -819,6 +826,7 @@ object Console extends Logging {
     info(s"Engine project created in subdirectory ${ca.projectName.get}.")
   }
 
+  /*
   def createInstance(ca: ConsoleArgs): Unit = {
     val targetDir = ca.directoryName.getOrElse(ca.projectName.get)
     val engineId = ca.projectName.getOrElse("")
@@ -840,6 +848,7 @@ object Console extends Logging {
 
     info(s"Engine instance created in subdirectory ${targetDir}.")
   }
+  */
 
   private def writeTemplate(template: Map[String, Any], targetDir: String) = {
     try {

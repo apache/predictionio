@@ -1,3 +1,0 @@
-{
-  "multiplier": 2
-}
