@@ -7,9 +7,13 @@ html
     meta name="viewport" content="width=device-width, initial-scale=1.0"
     - if current_page.data.description
       meta name="description" content=current_page.data.description
+
+    link href="/images/favicon/normal.png" rel="shortcut icon"
+    link href="/images/favicon/apple.png" rel="apple-touch-icon"
     link rel="canonical" href=absolute_url(current_page.url)
     link href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet"
     link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"
+
     = stylesheet_link_tag 'application'
     /[if lt IE 9]
       = javascript_include_tag '//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js'
