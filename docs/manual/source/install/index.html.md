@@ -18,7 +18,7 @@ technologies that power PredictionIO.
 
 If you are running on a single machine, we recommend a minimum of 2GB memory.
 
-NOTE: If you are using Linux, Apache Spark local mode, which is the default
+INFO: If you are using Linux, Apache Spark local mode, which is the default
 operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
