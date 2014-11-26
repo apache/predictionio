@@ -1,8 +1,6 @@
 ---
-title: Installation
+title: Installation PredictionIO
 ---
-
-# Installing PredictionIO
 
 To get started, install PredictionIO Server and choose a SDK for your
 application.
