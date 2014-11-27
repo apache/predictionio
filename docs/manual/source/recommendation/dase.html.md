@@ -2,8 +2,6 @@
 title: DASE Components Explained (Recommendation)
 ---
 
-# DASE Components Explained (Recommendation)
-
 PredictionIO's DASE architecture brings the separation-of-concerns design
 principle to predictive engine development. DASE stands for the following
 components of an engine:
@@ -76,7 +74,8 @@ and train a model, which is a `MatrixFactorizationModel` object.
 PredictionIO's MLlib Collaborative Filtering engine template, which
 *MyRecommendation* bases on, integrates this algorithm under the DASE
 architecture. We will take a closer look at the DASE code below.
-> [Check this
+
+INFO: [Check this
 out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to
 learn more about MLlib's ALS collaborative filtering algorithm.
 

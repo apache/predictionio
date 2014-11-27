@@ -2,30 +2,28 @@
 title: Engine - A Closer Look
 ---
 
-# A Closer Look at the Engine
-
 An Engine is a type of Machine Learning task. It follows the DASE architecture,
 containing the following components:
 
-## [D] Data Source and Data Preparator
+### [D] Data Source and Data Preparator
 
 Data Source reads data from an input source and transforms it into a desired
 format. Data Preparator preprocesses the data and forwards it to the algorithm
 for model training.
 
-## [A] Algorithm
+### [A] Algorithm
 
 The Algorithm component includes the Machine Learning algorithm, and the
 settings of its parameters, determines how a predictive model is constructed.
 
-## [S] Serving
+### [S] Serving
 
 The Serving component takes prediction *queries* and returns prediction results.
 If the engine has multiple algorithms, Serving will combine the results into
 one. Additionally, business-specific logic can be added in Serving to further
 customize the final returned results.
 
-## [E] Evaluation Metrics
+### [E] Evaluation Metrics
 
 An Evaluation Metric quantifies prediction accuracy with a numerical score. It
 can be used for comparing algorithms or algorithm parameter settings.
@@ -38,7 +36,7 @@ which one to be deployed when you create an Engine.
 ![Engine Overview]({{ site.baseurl }}/images/engineinstance-overview.png)
 
 
-# Engine Templates
+## Engine Templates
 
 While PredictionIO makes it easy to create your own engine completely from
 scratch, it also comes with engine templates that are almost-complete engine
@@ -51,7 +49,7 @@ PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
   (../classification/quickstart.html)
 
 
-# Engine Deployment
+## Engine Deployment
 
 An engine puts all DASE components into a deployable state by specifying:
 
@@ -72,7 +70,7 @@ you may deploy two engines for your mobile application: one for recommending
 news to users and another one for suggesting new friends to users.
 
 
-# Engine Evaluation
+## Engine Evaluation
 
 To evaluate the prediction accuracy of an Engine, all you need to do is to
 specify an Evaluation Metric when you run an evaluation on an Engine, i.e.:

@@ -11,7 +11,9 @@ module TableOfContentsHelpers
 
     # Now the custom Markdown TOC.
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML_TOC.new(nesting_level: 2))
-    output = markdown.render(content)
+    # TOC gets confused with Ruby comments inside code blocks so we removed them.
+    content_without_code = content.gsub(/(```[\s\S]*?```)/, '')
+    output = markdown.render(content_without_code)
 
     content_tag :aside, output, id: 'table-of-contents', role: 'complementary'
   end

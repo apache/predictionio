@@ -2,8 +2,6 @@
 title: System Overview
 ---
 
-#  PredictionIO   Overview
-
 PredictionIO consists of two main components: **Event Server** and **Engine**.
 It ingests data from an application and outputs prediction results.
 

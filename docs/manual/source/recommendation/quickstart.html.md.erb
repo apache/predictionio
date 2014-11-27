@@ -1,8 +1,6 @@
 ---
-title: Recommendation Quick Start
+title: Quick Start - Recommendation Engine Template
 ---
-
-# Quick Start - Recommendation Engine Template
 
 An engine template is an almost-complete implementation of an engine.
 PredictionIO's [Recommendation Engine
@@ -80,10 +78,9 @@ the Recommendation Engine Template supports 2 types of events: **rate** and
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-<div class="codetabs">
-<div data-lang="Python SDK">
-
-{% highlight python %}
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
 import predictionio
 
 client = predictionio.EventClient(
@@ -111,12 +108,10 @@ client.create_event(
     target_entity_type="item",
     target_entity_id=<ITEM ID>
 )
-{% endhighlight %}
-
-</div>
-
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EventClient;
@@ -143,13 +138,10 @@ $client->createEvent(array(
 ));
 
 ?>
-{% endhighlight %}
-</div>
-
-
-<div data-lang="Ruby SDK">
-
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
 
@@ -173,13 +165,10 @@ client.create_event(
     'targetEntityId' => <ITEM ID>
   }
 )
-{% endhighlight %}
-
-</div>
-
-<div data-lang="Java SDK">
-
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import io.prediction.Event;
 import io.prediction.EventClient;
 
@@ -203,13 +192,10 @@ Event buyEvent = new Event()
     .targetEntityType("item")
     .targetEntityId(<ITEM_ID>);
 client.createEvent(buyEvent);
-{% endhighlight %}
-
-</div>
-
-<div data-lang="REST API">
-
-{% highlight rest %}
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
 # A user rates an item
 curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 -H "Content-Type: application/json" \
@@ -236,10 +222,8 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   "targetEntityId" : <ITEM ID>,
   "eventTime" : <TIME OF THIS EVENT>
 }'
-
-{% endhighlight %}
-
-</div>
+```
+  </div>
 </div>
 
 
@@ -266,15 +250,9 @@ Importing data...
 1501 events are imported.
 ```
 
-> If you experience error simliar to the following, please update the
-> Python SDK to the latest version.
->
-> ```
-> Traceback (most recent call last):
->  File "data/import_eventserver.py", line 55, in <module>
->      qsize=500)
->      TypeError: __init__() got an unexpected keyword argument 'access_key'
-> ```
+WARNING: If you experience error similar to the following:
+**TypeError: __init__() got an unexpected keyword argument 'access_key'**
+please update the Python SDK to the latest version.
 
 Now the movie ratings data is stored as events inside the Event Store.
 
@@ -333,30 +311,24 @@ $ pio deploy
 This will deploy an engine that binds to http://localhost:8000. You can visit
 that page in your web browser to check its status.
 
-![Engine Status]({{ site.baseurl }}/images/engine-server.png)
+![Engine Status](/images/engine-server.png)
 
-|
 
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
 whose id is 1, you send this JSON `{ "user": 1, "num": 4 }` to the deployed
 engine and it will return a JSON of the recommended movies. Simply send a query
 by making a HTTP request or through the `EngineClient` of an SDK:
 
-<div class="codetabs">
-<div data-lang="Python SDK">
-
-{% highlight python %}
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
 import predictionio
 engine_client = predictionio.EngineClient(url="http://localhost:8000")
 print engine_client.send_query({"user": 1, "num": 4})
-{% endhighlight %}
-
-</div>
-
-<div data-lang="PHP SDK">
-
-{% highlight php %}
-
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EngineClient;
@@ -367,16 +339,10 @@ $response = $client->sendQuery(array('user'=> 1, 'num'=> 4));
 print_r($response);
 
 ?>
-
-{% endhighlight %}
-
-</div>
-
-
-<div data-lang="Ruby SDK">
-
-{% highlight ruby %}
-
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="php">
+```ruby
 # Create client object.
 client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
 
@@ -384,13 +350,10 @@ client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
 response = client.send_query('user' => <USER ID>, 'num' => <NUMBER (integer)>)
 
 puts response
-{% endhighlight %}
-
-</div>
-
-<div data-lang="Java SDK">
-
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 
@@ -404,22 +367,18 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "user", 1,
         "num",  4
     ));
-{% endhighlight %}
-
-</div>
-
-<div data-lang="REST API">
-
-{% highlight rest %}
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
 $ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
-{% endhighlight %}
-
-</div>
+```
+  </div>
 </div>
 
 Your engine *MyRecommendation* is now running. Next, we are going to take a look
 at the engine architecture and explain how you can customize it completely.
 
-#### [Next: DASE Components Explained](dase.html)
+#### [Next: DASE Components Explained](/recommendation/dase)

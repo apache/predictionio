@@ -94,7 +94,7 @@ This `code is inline`.
 
 # Quotes
 
-> This is a blockquote.
+> This is a blockquote. Don't use these for anything other actual quotes! Use [alerts](#alerts) instead.
 
 # Tables
 

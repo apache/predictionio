@@ -2,7 +2,7 @@
 title: Sizing Samples with an Extra Long Title to Show Wrapping
 ---
 
-# Long Text
+## Long Text
 
 This is a paragraph of text that spans multiple lines.
 This is a paragraph of text that spans multiple lines.

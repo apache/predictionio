@@ -2,7 +2,7 @@
 title: Contribute Documentation
 ---
 
-# How to Write Documentation
+## How to Write Documentation
 
 You can help improve the PredictionIO documentation by submitting tutorials,
 how-tos, fixing error, or adding missing information.

@@ -2,14 +2,14 @@
 title:  Contribute Code
 ---
 
-# Reporting an Issue
+## Reporting an Issue
 
 Report your issues to one of the following:
 
 - [GitHub Issues](https://github.com/PredictionIO/PredictionIO/issues)
 - [PredictionIO JIRA](https://predictionio.atlassian.net)
 
-# How to Add / Propose a New Feature
+## How to Add / Propose a New Feature
 
 If you wish to see a feature added in PredictionIO, you can <a
 href="mailto:support@prediction.io">submit your suggestions</a> directly to us,
@@ -17,7 +17,7 @@ post on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user), or implement
 it yourself and create a pull request.
 
-# How to Help Resolve Existing Issues
+## How to Help Resolve Existing Issues
 
 You can see a list of all issues and tasks
 [here](https://predictionio.atlassian.net). You are free to work on any issues
@@ -25,7 +25,7 @@ you like and submit a pull request. If you are working on an issue, please
 reassign the ticket to yourself so others know that you are working on it.
 
 
-# How to Issue a Pull Request
+## How to Issue a Pull Request
 
 When you have finished your code, you can [create a pull
 request](https://help.github.com/articles/creating-a-pull-request/) against the

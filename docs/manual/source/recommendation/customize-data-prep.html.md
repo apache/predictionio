@@ -2,7 +2,6 @@
 title: Customizing Data Preparator (Recommendation)
 ---
 
-# Customizing Data Preparator (Recommendation)
 
 Data Preparator is where pre-processing actions occurs. For example, one may
 want to remove some very popular items from the training data because she thinks
@@ -124,7 +123,7 @@ and it will return a JSON of recommended movies.
 Congratulations! You have learned how to add customized logic to your Data
 Preparator!
 
-#  Adding Preparator Parameters
+##  Adding Preparator Parameters
 
 Optionally, you may want to take the hardcoded path
 (`./data/sample_not_train_data.txt`) away from the source code.

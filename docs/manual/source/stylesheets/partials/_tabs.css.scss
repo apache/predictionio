@@ -23,9 +23,14 @@
       }
     }
     &.active {
+
       a {
+        background-color: $tab-active-background-color;
         border-bottom: 5px solid #da1111;
         color: $tab-active-link-color;
+        &:hover {
+          background-color: $tab-active-background-color;
+        }
       }
     }
   }

@@ -2,8 +2,6 @@
 title: Customizing Serving Component (Recommendation)
 ---
 
-# Customizing Serving Component (Recommendation)
-
 Serving component is where post-processing occurs. For example, if you are
 recommending products to users, you may want to remove items that are not
 currently in stock from the list of recommendation.
@@ -75,20 +73,20 @@ class Serving extends LServing[Query, PredictedResult] {
   }
 }
 ```
-> - We will show you how not to hardcode the path
-> `./data/sample_disabled_products.txt` soon.
+INFO:We will show you how not to hardcode the path
+`./data/sample_disabled_products.txt` soon.
 
-> - This example code uses a local relative path. For remote deployment, it is
-> recommended to use a globally accessible absolute path.
+WARNING: This example code uses a local relative path. For remote deployment, it is
+recommended to use a globally accessible absolute path.
 
-> - This example is only for demonstration purpose. Reading from disk for every
-> query leads to terrible system performance. Use a more efficient
-> implementation for production deployment.
+DANGER: This example is only for demonstration purpose. Reading from disk for every
+query leads to terrible system performance. Use a more efficient
+implementation for production deployment.
 
 ## Deploy the Modified Engine
 
 Now you can deploy the modified engine as described in the [Quick
-Start](quickstart.html) guide.
+Start](/recommendation/quickstart.html) guide.
 
 Make sure the `appId` defined in the file `engine.json` match your *App ID*:
 

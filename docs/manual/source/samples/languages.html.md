@@ -2,8 +2,6 @@
 title: Language Samples
 ---
 
-# Languages
-
 ## Plain Text
 
 This is a sample code block with no language.
