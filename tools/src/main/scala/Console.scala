@@ -73,7 +73,9 @@ case class CommonArgs(
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
   variantJson: File = new File("engine.json"),
-  manifestJson: File = new File("manifest.json"))
+  manifestJson: File = new File("manifest.json"),
+  verbose: Boolean = false,
+  debug: Boolean = false)
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -150,6 +152,12 @@ object Console extends Logging {
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to sbt. Default: sbt")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(common = c.common.copy(verbose = true))
+      }
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(common = c.common.copy(debug = true))
+      }
       note("")
       cmd("version").
         text("Displays the version of this command line console.").
@@ -636,6 +644,7 @@ object Console extends Logging {
     "Options common to all commands:\n" +
     "  [--pio-home <value>] [--spark-home <value>] [--sbt <value>]\n" +
     "  [-ei <value>] [-ev <value>] [-v <value>] [-m <value>]\n" +
+    "  [--verbose] [--debug]\n" +
     "  [<args>] [-- [<args passed to Spark>] [-- [<args passed to runner]]]\n\n" +
     "  --sbt <value>\n" +
     "      Full path of sbt. Default: sbt\n" +
@@ -646,7 +655,11 @@ object Console extends Logging {
     "  -v <value> | --variant <value>\n" +
     "      Path to an engine variant JSON file. Default: engine.json\n" +
     "  -m <value> | --manifest <value>\n" +
-    "      Path to an engine manifest JSON file. Default: manifest.json\n\n" +
+    "      Path to an engine manifest JSON file. Default: manifest.json\n" +
+    "  --verbose\n" +
+    "      Enable third-party informational messages.\n" +
+    "  --debug\n" +
+    "      Enable all debug messages.\n\n" +
     "Note that it is possible to supply pass-through arguments at the end\n"+
     "of the command by using a '--' separator, e.g.\n\n" +
     "  pio train -v my-variant -- --master spark://mycluster:7077\n\n" +

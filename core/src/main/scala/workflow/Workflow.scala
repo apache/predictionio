@@ -76,13 +76,13 @@ object WorkflowContext extends Logging {
     ): SparkContext = {
     val conf = new SparkConf()
     conf.setAppName(s"PredictionIO: ${batch}")
-    info(s"Executor environment received: ${executorEnv}")
+    debug(s"Executor environment received: ${executorEnv}")
     executorEnv.map(kv => conf.setExecutorEnv(kv._1, kv._2))
-    info(s"SparkConf executor environment: ${conf.getExecutorEnv}")
-    info(s"Application environment received: ${sparkEnv}")
+    debug(s"SparkConf executor environment: ${conf.getExecutorEnv}")
+    debug(s"Application environment received: ${sparkEnv}")
     conf.setAll(sparkEnv)
     val sparkConfString = conf.getAll.toSeq
-    info(s"SparkConf environment: $sparkConfString")
+    debug(s"SparkConf environment: $sparkConfString")
     new SparkContext(conf)
   }
 }
@@ -363,10 +363,6 @@ object CoreWorkflow {
     sc.stop()
 
     logger.info("CoreWorkflow.run completed.")
-
-    val wait = 3
-    logger.info(s"Waiting ${wait} seconds for all messages to flush...")
-    Thread.sleep(wait * 1000)
     logger.info("Your engine has been trained successfully.")
   }
 

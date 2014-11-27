@@ -33,6 +33,12 @@ import grizzled.slf4j.Logging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.Level
+import org.apache.log4j.LogManager
+import org.apache.log4j.PatternLayout
+import org.apache.log4j.spi.Filter
+import org.apache.log4j.spi.LoggingEvent
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
@@ -42,6 +48,19 @@ import scala.reflect.Manifest
 import scala.reflect.runtime.universe
 
 import java.io.File
+
+class PIOFilter(verbose: Boolean = false, debug: Boolean = false)
+    extends Filter {
+  override def decide(event: LoggingEvent): Int = {
+    if (verbose || debug)
+      Filter.NEUTRAL
+    else if (event.getLocationInformation.getClassName.
+      startsWith("grizzled.slf4j.Logger"))
+      Filter.ACCEPT
+    else
+      Filter.DENY
+  }
+}
 
 object CreateWorkflow extends Logging {
 
@@ -57,7 +76,9 @@ object CreateWorkflow extends Logging {
     servingParamsJsonPath: Option[String] = None,
     evaluatorParamsJsonPath: Option[String] = None,
     jsonBasePath: String = "",
-    env: Option[String] = None)
+    env: Option[String] = None,
+    verbose: Boolean = false,
+    debug: Boolean = false)
 
   case class AlgorithmParams(name: String, params: JValue)
 
@@ -120,9 +141,25 @@ object CreateWorkflow extends Logging {
         c.copy(env = Some(x))
       } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
         "format) to pass to the Spark execution environment.")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(verbose = true)
+      } text("Enable verbose output.")
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(debug = true)
+      } text("Enable debug output.")
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
+      // Set up custom logging
+      val layout = new PatternLayout("%d %-5p %c{2} - %m%n")
+      val filter = new PIOFilter(wfc.verbose, wfc.debug)
+      val appender = new ConsoleAppender(layout)
+      appender.addFilter(filter)
+      val rootLogger = LogManager.getRootLogger()
+      rootLogger.removeAllAppenders
+      rootLogger.addAppender(appender)
+      if (wfc.debug) rootLogger.setLevel(Level.DEBUG)
+
       val variantJson = parse(stringFromFile("", wfc.engineVariant))
       val engineFactory = variantJson \ "engineFactory" match {
         case JString(s) => s
