@@ -1,7 +1,7 @@
 package io.prediction.examples.friendrecommendation
 
 
-import io.prediction.controller.Evaluator
+import io.prediction.controller._
 case class Actual(
   val acceptance : Int
 )extends Serializable{
@@ -15,13 +15,13 @@ class EvaluatorUnit (
   val score: Double
 ) extends Serializable
 
-class FriendRecEvaluator extends Evaluator[EmptyParam,FriendRecommendationQuery,FriendRecommendationPrediction,Actual, EvaluatorUnit, Double, Double]{
+class FriendRecommendationEvaluator extends Evaluator[EmptyParams,EmptyParams, FriendRecommendationQuery,FriendRecommendationPrediction,Actual, EvaluatorUnit, Double, Double]{
   override def evaluateUnit(query: FriendRecommendationQuery, prediction: FriendRecommendationPrediction,actual:Actual):EvaluatorUnit = {
     val score: Double = {
       if(actual.acceptance == 0)
-        -prediction.confidenceScore
+        -prediction.confidence
       else
-        prediction.confidenceScore
+        prediction.confidence
     }
     new EvaluatorUnit(
       q = query,
@@ -31,13 +31,13 @@ class FriendRecEvaluator extends Evaluator[EmptyParam,FriendRecommendationQuery,
     )
   }
 
-
-  override def evaluateSet(s: Seq[EvaluatorUnit]):Double = {
-    val sum_value : Double = s.map(x => x.score).sum
-    sum_value / s.size
+  def evaluateAll(input: Seq[(EmptyParams, Double)]): Double = {
+    input.head._2
+  }
+  def evaluateSet(dataParams: EmptyParams,evaluationUnits: Seq[EvaluatorUnit]): Double = 
+  {
+    val sum_value : Double = evaluationUnits.map(x => x.score).sum
+    sum_value / evaluationUnits.size
   }
 
-  override def evaluateAll(d: Double): Double = {
-    d
-  }
 }
