@@ -12,7 +12,7 @@ object Test {
     val model = algo.train(td)
     println(model.keywordSimWeight)
     println(model.keywordSimThreshold)
-    val query1 = new FriendRecommendationQuery(1, 1)
+    val query1 = new FriendRecommendationQuery(2, 2)
     val query2 = new FriendRecommendationQuery(633246, 731434)
     val query3 = new FriendRecommendationQuery(1579051, 1774713)
     val p1 = algo.predict(model, query1)
