@@ -11,7 +11,8 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
     val (itemIdMap, itemKeyword) = readItem(dsp.itemFilePath)
     val (userIdMap, userKeyword) = readUser(dsp.userKeywordFilePath)
     val adjArray = readRelationship(dsp.userActionFilePath, userKeyword.size, userIdMap)
-    new FriendRecommendationTrainingData(userIdMap, itemIdMap, userKeyword, itemKeyword, adjArray)
+    val trainingRecord = readTrainingRecord(dsp.trainingRecordFilePath, userIdMap, itemIdMap)
+    new FriendRecommendationTrainingData(userIdMap, itemIdMap, userKeyword, itemKeyword, adjArray, trainingRecord)
   }
 
   def readItem(file: String) : (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
@@ -78,5 +79,18 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
       }
     }
     adjArray
+  }
+
+  def readTrainingRecord(file: String, userIdMap: HashMap[Int, Int], itemIdMap: HashMap[Int, Int]) : Iterator[(Int, Int, Boolean)] = {
+    val lines = Source.fromFile(file).getLines()
+    val trainingRecord = lines.map{
+      line =>
+      val data = line.split("\\s")
+      val userId = userIdMap(data(0).toInt)
+      val itemId = itemIdMap(data(1).toInt)
+      val result = (data(2).toInt == 1)
+      (userId, itemId, result)
+    }
+    trainingRecord
   }
 }
