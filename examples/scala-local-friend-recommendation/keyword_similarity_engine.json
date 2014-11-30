@@ -6,7 +6,8 @@
   "datasource": {
     "itemFilePath": "data/item.txt",
     "userKeywordFilePath": "data/user_key_word.txt",
-    "userActionFilePath": "data/user_action.txt"
+    "userActionFilePath": "data/user_action.txt",
+    "trainingRecordFilePath": "data/rec_log_train.txt"
   },
   "algorithms": [
     {
