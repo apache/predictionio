@@ -1,7 +1,6 @@
 package io.prediction.examples.friendrecommendation
 
-import io.prediction.controller.Evaluator
-import io.prediction.engines.base.EvaluatorOutput
+import io.prediction.controller._
 
 case class Query(
   val uid:Int,
@@ -30,7 +29,7 @@ class EvaluatorUnit (
   val score: Double
 ) extends Serializable
 
-class FriendRecEvaluator extends Evaluator[EmptyParam,EmptyParam,Query,Prediction,Actual]{
+class FriendRecommendationEvaluator extends Evaluator[EmptyParam,Query,Prediction,Actual, EvaluatorUnit, Double, Double]{
   override def evaluateUnit(query: Query, prediction: Prediction,actual:Actual):EvaluatorUnit = {
     val score: Double = {
       if(actual.acceptance == 0)
