@@ -10,13 +10,13 @@ extends LAlgorithm[FriendRecommendationAlgoParams, FriendRecommendationTrainingD
   RandomModel, FriendRecommendationQuery, FriendRecommendationPrediction] {
   override
   def train(pd: FriendRecommendationTrainingData): RandomModel = {
-    new RandomModel() 
+    new RandomModel(0.5) 
   }
 
   override
   def predict(model: RandomModel, query: FriendRecommendationQuery): FriendRecommendationPrediction = {
     val randomConfidence = Random.nextDouble
-    val acceptance = randomConfidence > ap.threshold
+    val acceptance = randomConfidence >= model.randomThreshold
     new FriendRecommendationPrediction(randomConfidence, acceptance)
   }
 }
