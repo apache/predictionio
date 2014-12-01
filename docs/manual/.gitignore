@@ -8,6 +8,9 @@
 /.sass-cache
 /.cache
 
+# Sanity
+/sanity.html
+
 # OS Files
 .DS_Store
 .DS_Store?
