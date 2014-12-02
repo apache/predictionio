@@ -62,6 +62,12 @@ correct Java version with the command:
 $ javac -version
 ```
 
+### Q: What's the difference between P- and L- prefixed classes and functions? 
+
+Prediction.IO v0.8 is built on the top of Spark, a massively scalable programming framework. A spark algorithm is different from conventional single machine algorithm in a way that spark algorithms use the [RDD](http://spark.apache.org/docs/1.0.1/programming-guide.html#resilient-distributed-datasets-rdds) abstraction as its primary data type.
+
+PredictionIO framework natively support both RDD-based algorithms and traditional single-machine algorithms. For controllers prefixed by "P" (i.e. PJavaDataSource, PJavaAlgorithm), their data include RDD abstraction; For "L" controllers, they are traditional single machine algorithms.
+
  
 
 If you have other questions, you can search or post on the [user
