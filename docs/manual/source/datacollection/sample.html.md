@@ -2,7 +2,6 @@
 title: Sample Data Set
 ---
 
-# Sample Data Set
 
 Here are open sample data sets from various services. You can share your import
 scripts with the community, you can post it on the [user

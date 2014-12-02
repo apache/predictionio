@@ -2,8 +2,6 @@
 title: Event Server Overview
 ---
 
-# Overview
-
 PredictionIO offers an Event Server that collects data in an event-based style
 via a RESTful API. By default, Event Server uses Apache HBase as data store.
 

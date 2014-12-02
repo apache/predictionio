@@ -27,6 +27,12 @@ For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
 ```
 
+Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
+
+```
+$ pio status
+```
+
 and please make sure that PredictionIO Event Server, which collects data, is
 running:
 
@@ -259,8 +265,13 @@ Now the movie ratings data is stored as events inside the Event Store.
 
 ## Deploy the Engine as a Service
 
-Now you can build, train, and deploy the engine. Make sure the `appId` defined
-in the file `engine.json` match your **App ID**:
+Now you can build, train, and deploy the engine. First, make sure you are under the `MyRecommendation` directory.
+
+```
+$ cd MyRecommendation
+```
+ 
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**. 
 
 ```
 ...
