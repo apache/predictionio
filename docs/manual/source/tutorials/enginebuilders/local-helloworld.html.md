@@ -45,45 +45,45 @@ project/
 src/
 ```
 
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 You can find the Scala engine template in <code>src/main/scala/Engine.scala</code>. Please follow the instructions below to edit this file.
-</div>
-<div data-lang="Java">
+  </div>
+  <div data-tab="Java" data-lang="java">
 
 <strong>NOTE:</strong>
 The template is created for Scala codes. For Java, need to do the following:
 
 Under <code>HelloWorld</code> directory:
 
-{% highlight bash %}
+```bash
 $ rm -rf src/main/scala
 $ mkdir -p src/main/java
-{% endhighlight %}
+```
 
-</div>
+  </div>
 </div>
 
 ## 2. Define Data Types
 
 ### Define Training Data
 
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 class MyTrainingData(
   val temperatures: List[(String, Double)]
 ) extends Serializable
-{% endhighlight %}
-</div>
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 
 Create a new file <code>src/main/java/MyTrainingData.java</code>:
 
-{% highlight java %}
+```java
 package myorg;
 
 import java.io.Serializable;
@@ -106,28 +106,28 @@ public class MyTrainingData implements Serializable {
     }
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ### Define Query
 
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 class MyQuery(
   val day: String
 ) extends Serializable
-{% endhighlight %}
-</div>
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 
 Create a new file <code>src/main/java/MyQuery.java</code>:
 
-{% highlight java %}
+```java
 package myorg;
 
 import java.io.Serializable;
@@ -139,17 +139,17 @@ public class MyQuery implements Serializable {
     this.day = day;
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ### Define Model
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 import scala.collection.immutable.HashMap
 
 class MyModel(
@@ -158,13 +158,13 @@ class MyModel(
   override def toString = temperatures.toString
 }
 
-{% endhighlight %}
-</div>
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 
 Create a new file <code>src/main/java/MyModel.java</code>:
 
-{% highlight java %}
+```java
 package myorg;
 
 import java.io.Serializable;
@@ -182,27 +182,27 @@ public class MyModel implements Serializable {
     return temperatures.toString();
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ### Define Predicted Result
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 class MyPredictedResult(
   val temperature: Double
 ) extends Serializable
-{% endhighlight %}
-</div>
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 
 Create a new file <code>src/main/java/MyPredictedResult.java</code>:
 
-{% highlight java %}
+```java
 package myorg;
 
 import java.io.Serializable;
@@ -214,17 +214,18 @@ public class MyPredictedResult implements Serializable {
     this.temperature = temperature;
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 3. Implement the Data Source
-<div class="codetabs">
-<div data-lang="Scala">
+
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 import scala.io.Source
 
 class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
@@ -240,13 +241,13 @@ class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,
   }
 
 }
-{% endhighlight %}
-</div>
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 
 Create a new file <code>src/main/java/MyDataSource.java</code>:
 
-{% highlight java %}
+```java
 package myorg;
 
 import io.prediction.controller.java.*;
@@ -282,8 +283,8 @@ public class MyDataSource extends LJavaDataSource<
     return new MyTrainingData(temperatures);
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 **NOTE**: You need to update the `path/to/data.csv` in this code with the correct path that store the training data.
@@ -291,12 +292,12 @@ public class MyDataSource extends LJavaDataSource<
 
 ## 4. Implement an Algorithm
 
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
   MyModel, MyQuery, MyPredictedResult] {
 
@@ -320,12 +321,12 @@ class MyAlgorithm extends LAlgorithm[EmptyAlgorithmParams, MyTrainingData,
     new MyPredictedResult(temp)
   }
 }
-{% endhighlight %}
-</div>
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 Create a new file <code>src/main/java/MyAlgorithm.java</code>:
 
-{% highlight java %}
+```java
 package myorg;
 
 import io.prediction.controller.java.*;
@@ -371,18 +372,18 @@ public class MyAlgorithm extends LJavaAlgorithm<
     return new MyPredictedResult(temp);
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 5. Implement EngineFactory
 
-<div class="codetabs">
-<div data-lang="Scala">
+<div class="tabs">
+  <div data-tab="Scala" data-lang="scala">
 
 Edit <code>src/main/scala/Engine.scala</code>:
 
-{% highlight scala %}
+```scala
 object MyEngineFactory extends IEngineFactory {
   override
   def apply() = {
@@ -393,14 +394,12 @@ object MyEngineFactory extends IEngineFactory {
     )
   }
 }
-{% endhighlight %}
-</div>
-
-<div data-lang="Java">
+```
+  </div>
+  <div data-tab="Java" data-lang="java">
 Create a new file <code>src/main/java/MyEngineFactory.java</code>:
 
-{% highlight java %}
-
+```java
 package myorg;
 
 import io.prediction.controller.java.*;
@@ -419,8 +418,8 @@ public class MyEngineFactory implements IJavaEngineFactory {
   }
 }
 
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 6. Define engine.json
@@ -452,17 +451,17 @@ After the new engine is built, it is time to deploy an engine instance of it.
 
 ## 1. Register engine:
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio register
-{% endhighlight %}
+```
 
 This command will compile the engine source code and build the necessary binary.
 
 ## 2. Train:
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio train
-{% endhighlight %}
+```
 
 Example output:
 
@@ -475,9 +474,9 @@ This command produce an Engine Instance, which can be deployed.
 
 ## 3. Deploy:
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio deploy
-{% endhighlight %}
+```
 
 You should see the following if the engine instance is deploy sucessfully:
 
@@ -492,9 +491,9 @@ Open another terminal to execute the following:
 
 Retrieve temperature prediction for Monday:
 
-{% highlight bash %}
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
-{% endhighlight %}
+```
 
 You should see the following output:
 
@@ -504,9 +503,9 @@ You should see the following output:
 
 You can send another query to retrieve prediction. For example, retrieve temperature prediction for Tuesday:
 
-{% highlight bash %}
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000/queries.json
-{% endhighlight %}
+```
 
 You should see the following output:
 
@@ -520,22 +519,22 @@ Let's say you have collected more historial temperature data and want to re-trai
 
 Another temperature data set is prepared for you. Run the following to update your data with this new data set. Replace the `path/to/data.csv` with your path used in the steps above.
 
-{% highlight bash %}
+```bash
 $ cp $PIO_HOME/examples/data/helloworld/data2.csv path/to/data.csv
-{% endhighlight %}
+```
 
 In another terminal, go to the `HelloWorld` engine directory. Execute `pio train` and `deploy` again to deploy the latest instance trained with the new data. It would automatically kill the old running engine instance.
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio train
 $ $PIO_HOME/bin/pio deploy
-{% endhighlight %}
+```
 
 Retrieve temperature prediction for Monday again:
 
-{% highlight bash %}
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
-{% endhighlight %}
+```
 
 You should see the following output:
 

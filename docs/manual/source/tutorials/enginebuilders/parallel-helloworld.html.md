@@ -24,14 +24,14 @@ directory of the PredictionIO source code tree.
 Training data in this case is of type `JavaPairRDD<String, Float>` where
 `String` holds the day and `Float` holds the temperature:
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+<div data-tab="Java" data-lang="java">
+```java
 import org.apache.spark.api.java.JavaPairRDD;
 
 JavaPairRDD<String, Float> readings;
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ### Define Prepared Data
@@ -43,9 +43,9 @@ Prepared Data also has type `JavaPairRDD<String, Float>`
 
 This is the same as the local counterpart.
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+  <div data-tab="Java" data-lang="java">
+```java
 public class Query implements Serializable {
   String day;
 
@@ -53,8 +53,8 @@ public class Query implements Serializable {
     this.day = day;
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ### Define Model
@@ -63,9 +63,9 @@ Our Model is of the same type as the Training Data, i.e.
 `JavaPairRDD<String, Float>`. To have it output the contents instead of an
 address when we do `toString()`, we override it:
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+  <div data-tab="Java" data-lang="java">
+```java
 public JavaPairRDD<String, Float> temperatures;
 
 @Override
@@ -90,8 +90,8 @@ public String toString() {
   builder.append(")");
   return builder.toString();
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ### Define Prediction Result
@@ -103,9 +103,9 @@ Prediction result is simply a `Float`.
 Only scala and spark related imports are shown; refer to the source code for
 the whole thing.
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+  <div data-tab="Java" data-lang="java">
+```java
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
@@ -148,17 +148,17 @@ public class DataSource extends PJavaDataSource<
     return data;
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 3. Implement the Preparator
 
 As mentioned above, we convert the scale from Fahrenheit to Celsius:
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+  <div data-tab="Java" data-lang="java">
+```java
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
@@ -178,8 +178,8 @@ public class Preparator extends
       });
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 4. Implement an Algorithm
@@ -187,9 +187,9 @@ public class Preparator extends
 We need to implement `train()`, `batchPredict()` and `predict()`. We create
 a `ReadingAndCount` class for sake of doing aggregation (taking average).
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+<div data-tab="Java" data-lang="java">
+```java
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
@@ -271,8 +271,8 @@ public class Algorithm extends PJavaAlgorithm<
     return reading.get(0);
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 5. Implement the Serving
@@ -281,17 +281,17 @@ Since there is only one algorithm, there is one prediction, so we just extract
 it out. Note that we are using LJavaServing even though other stages are done
 in a parallel manner.
 
-<div class="codetabs">
-<div data-lang="Java">
-{% highlight java %}
+<div class="tabs">
+  <div data-tab="Java" data-lang="java">
+```java
 public class Serving extends LJavaServing<EmptyParams, Query, Float> {
   @Override
   public Float serve(Query query, Iterable<Float> predictions) {
     return predictions.iterator().next();
   }
 }
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 # Deploying the "HelloWorld" Engine Instance
@@ -300,21 +300,21 @@ After the new engine is built, it is time to deploy an engine instance of it.
 
 Prepare training data:
 
-{% highlight bash %}
+```bash
 $ cp $PIO_HOME/examples/data/helloworld/data1.csv path/to/data.csv
-{% endhighlight %}
+```
 
 Register engine:
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio register
-{% endhighlight %}
+```
 
 Train:
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio train
-{% endhighlight %}
+```
 
 Example output:
 
@@ -327,16 +327,14 @@ Example output:
 
 Deploy:
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio deploy
-{% endhighlight %}
-
+```
 Retrieve prediction:
 
-{% highlight bash %}
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
-{% endhighlight %}
-
+```
 Output:
 
 ```json
@@ -345,9 +343,9 @@ Output:
 
 Retrieve prediction:
 
-{% highlight bash %}
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "day": "Tue" }' http://localhost:8000/queries.json
-{% endhighlight %}
+```
 
 Output:
 
@@ -359,20 +357,20 @@ Output:
 
 Re-train with new data:
 
-{% highlight bash %}
+```bash
 $ cp $PIO_HOME/examples/data/helloworld/data2.csv path/to/data.csv
-{% endhighlight %}
+```
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio train
 $ $PIO_HOME/bin/pio deploy
-{% endhighlight %}
+```
 
 Retrieve prediction:
 
-{% highlight bash %}
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "day": "Mon" }' http://localhost:8000/queries.json
-{% endhighlight %}
+```
 
 Output:
 

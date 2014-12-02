@@ -93,7 +93,7 @@ prediction = engine_client.send_query(data={"uid": "1", "n" : 3})
 print(prediction)
 ```
   </div>
-  <div data-tab="Ruby SDK">
+  <div data-tab="Ruby SDK" data-lang="ruby">
 ```ruby
 require 'predictionio'
 
@@ -115,7 +115,6 @@ engineClient.sendQuery(ImmutableMap.<String, Object>of(
     ));
 ```
   </div>
-
 </div>
 
 #### Sample Response

@@ -38,48 +38,51 @@ $ cd quickstartapp
 To communicate with PredictionIO server, we can use a PredictionIO SDK of a
 specific programming language:
 
-<div class="codetabs">
-<div data-lang="PHP SDK">
+<div class="tabs">
+  <div data-tab="PHP SDK" data-lang="php">
 <p>To use the PredictionIO PHP SDK, we are going to install it with Composer:</p>
 <p>1. Create a file called ``composer.json`` in your project directory, which adds predictionio/predictionio as a dependency. It should look like this:</p>
-{% highlight json %}
+
+```json
 {
     "require": {
         "predictionio/predictionio": "~0.8.0"
     }
 }
-{% endhighlight %}
+```
 
 <p>2. Install Composer:</p>
-{% highlight bash %}
+
+```bash
 $ curl -sS https://getcomposer.org/installer | php -d detect_unicode=Off
-{% endhighlight %}
+```
 
 <p>3. Use Composer to install your dependencies:</p>
-{% highlight bash %}
+
+```bash
 $ php composer.phar install
-{% endhighlight %}
+```
 
 <p>Now you are ready to write the actual PHP code.</p>
-</div>
-<div data-lang="Python SDK">
-{% highlight bash %}
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```bash
 $ pip install predictionio
-{% endhighlight %}
+```
 or
-{% highlight bash %}
+```bash
 $ easy_install predictionio
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight bash %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 $ gem install predictionio
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
 To use PredictionIO in your project, add this to the <code>dependencies</code>
 section of your project's <code>pom.xml</code> file:
-{% highlight bash %}
+```bash
 <dependencies>
   <dependency>
     <groupId>io.prediction</groupId>
@@ -87,18 +90,18 @@ section of your project's <code>pom.xml</code> file:
     <version>0.8.0</version>
   </dependency>
 </dependencies>
-{% endhighlight %}
+```
 
 To run examples in PredictionIO Java SDK, clone the PredictionIO-Java-SDK
 repository and build it using Maven:
-{% highlight bash %}
+```bash
 $ cd ~
 $ git clone git://github.com/PredictionIO/PredictionIO-Java-SDK.git
 $ cd PredictionIO-Java-SDK
 $ mvn clean install
-{% endhighlight %}
+```
 Javadoc appears in client/target/apidocs/index.html.
-</div>
+  </div>
 </div>
 
 
@@ -106,17 +109,17 @@ Javadoc appears in client/target/apidocs/index.html.
 
 ## Launch the Event Server
 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio eventserver
-{% endhighlight %}
+```
+
 where `$PIO_HOME` is the installation directory of PredictionIO. As long as the
 Event Server is running, PredictionIO keeps listening to new data.
 
 To bind to a different address, 
-{% highlight bash %}
+```bash
 $ $PIO_HOME/bin/pio eventserver --ip <IP>
-{% endhighlight %}
-
+```
 
 ## Collecting Data
 
@@ -125,11 +128,11 @@ data collection. With the *EventClient* of one of the PredictionIO SDKs, your
 application can send data to the Event Server in real-time easily through the
 [EventAPI](/eventapi.html). In the *quickstartapp* directory:
 
-<div class="codetabs">
-<div data-lang="PHP SDK">
+<div class="tabs">
+  <div data-tab="PHP SDK" data-lang="php">
 <p>Create <em>import.php</em> as below. Replace <code>your_app_id</code> with
 your app id (integer).</p>
-{% highlight php %}
+```php
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
@@ -159,19 +162,17 @@ your app id (integer).</p>
         }
     }
 ?>
-{% endhighlight %}
+```
 and run it:
-{% highlight bash %}
+```php
 $ php import.php
-{% endhighlight %}
-</div>
-
-<div data-lang="Python SDK">
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
 <p>Create <em>import.py</em> as below. Replace <code>your_app_id</code> with
 your app id (integer).</p>
 
-{% highlight python %}
-
+```python
 import predictionio
 import random
 
@@ -202,19 +203,18 @@ for user_id in user_ids:
 
 client.close()
 
-{% endhighlight %}
+```
 and run it:
-{% highlight bash %}
+```bash
 $ python import.py
-{% endhighlight %}
+```
 
-</div>
-
-<div data-lang="Ruby SDK">
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
 <p>Create <em>import.rb</em> as below. Replace <code>your_app_id</code> with
 your app id (integer).</p>
 
-{% highlight ruby %}
+```ruby
 require 'predictionio'
 
 # Instantiate an EventClient
@@ -240,19 +240,18 @@ end
     client.record_user_action_on_item('view', uid.to_s, iid.to_s)
   end
 end
-{% endhighlight %}
+```
 and run it:
-{% highlight bash %}
+```bash
 $ ruby import.rb
-{% endhighlight %}
-</div>
-
-<div data-lang="Java SDK">
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
 <p><em>QuickstartImport.java</em> is located under
 PredictionIO-Java-SDK/examples/quickstart_import/src/main/java/io/prediction/samples/.
 Replace <code>your_app_id</code> with your app id (integer).</p>
 
-{% highlight java %}
+```java
 package io.prediction.samples;
 
 import com.google.common.collect.ImmutableList;
@@ -299,14 +298,14 @@ public class QuickstartImport {
         client.close();
     }
 }
-{% endhighlight %}
+```
 To compile and run it:
-{% highlight bash %}
+```bash
 $ cd PredictionIO-Java-SDK/examples/quickstart_import
 $ mvn clean compile assembly:single
 $ java -jar target/quickstart-import-<latest version>-jar-with-dependencies.jar
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 
@@ -337,9 +336,7 @@ Edit `params/datasource.json` and modify the value of `appId` to fit your app.
 
 Now, you can kick start the predictive model training with:
 
-> **Notes for Linux Users**
-
-> If you are using Linux, Apache Spark local mode, which is the default
+INFO: If you are using **Linux**, Apache Spark local mode, which is the default
 operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
@@ -381,10 +378,10 @@ With the *EngineClients* of a PredictionIO SDK, your application can send
 queries to a deployed engine instance through the Engine API. In the
 *quickstartapp* directory:
 
-<div class="codetabs">
-<div data-lang="PHP SDK">
+<div class="tabs">
+<div data-tab="PHP SDK" data-lang="php">
 <p>Create a file <em>show.php</em> with this code:</p>
-{% highlight php %}
+```php
 <?php
     // use composer's autoloader to load PredictionIO PHP SDK
     require_once("vendor/autoload.php");
@@ -399,18 +396,16 @@ queries to a deployed engine instance through the Engine API. In the
       print_r($response);
     }
 ?>
-{% endhighlight %}
+```
 and run it:
-{% highlight bash %}
+```bash
 $ php show.php
-{% endhighlight %}
-</div>
-
-<div data-lang="Python SDK">
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
 <p>Create a file <em>show.py</em> with this code:</p>
 
-{% highlight python %}
-
+```python
 import predictionio
 
 client = predictionio.EngineClient()
@@ -431,19 +426,17 @@ for user_id in user_ids:
 
 client.close()
 
-{% endhighlight %}
+```
 
 and run it:
 
-{% highlight bash %}
+```bash
 $ python show.py
-{% endhighlight %}
-
-</div>
-
-<div data-lang="Ruby SDK">
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
 <p>Create a file <em>show.rb</em> with this code:</p>
-{% highlight ruby %}
+```ruby
 require 'predictionio'
 
 client = PredictionIO::EngineClient.new
@@ -452,20 +445,19 @@ client = PredictionIO::EngineClient.new
   predictions = client.send_query('uid' => uid.to_s, 'iids' => %w(1 2 3 4 5))
   puts predictions
 end
-{% endhighlight %}
+```
 
 and run it:
 
-{% highlight bash %}
+```bash
 $ ruby show.rb
-{% endhighlight %}
-</div>
-
-<div data-lang="Java SDK">
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
 <p><em>QuickstartShow.java</em> is located under
 PredictionIO-Java-SDK/examples/quickstart_show/src/main/java/io/prediction/samples/.</p>
 
-{% highlight java %}
+```java
 package io.prediction.samples;
 
 import com.google.common.collect.ImmutableList;
@@ -494,15 +486,15 @@ public class QuickstartShow {
         client.close();
     }
 }
-{% endhighlight %}
+```
 
 To compile and run it:
-{% highlight bash %}
+```bash
 $ cd PredictionIO-Java-SDK/examples/quickstart_show
 $ mvn clean compile assembly:single
 $ java -jar target/quickstart-show-<latest version>-jar-with-dependencies.jar
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 Well done! You have created a simple, but production-ready app with PredictionIO

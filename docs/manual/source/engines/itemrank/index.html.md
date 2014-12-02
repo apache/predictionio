@@ -38,9 +38,9 @@ the `eventTime` is the time of this change happened.
 
 To create an user with `id_1`:
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
@@ -50,10 +50,10 @@ $ curl -i -X POST http://localhost:7070/events.json \
   "entityId" : "id_1",
   "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 use predictionio\EventClient;
 
@@ -61,10 +61,10 @@ $appId = 1;
 $client = new EventClient($appId);
 $client->setUser('id_1', array(), '2004-12-13T21:39:45.618-07:00');
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 from predictionio import EventClient
 from datetime import datetime
 import pytz
@@ -74,27 +74,27 @@ event_client = EventClient(app_id=1, url="http://localhost:7070")
 tzinfo = pytz.timezone('US/Mountain')
 event_time = datetime(2014, 12, 13, 21, 39, 45, 618, tzinfo=tzinfo)
 event_client.set_user(uid="id_1", event_time=event_time)
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 require 'predictionio'
 
 event_client = PredictionIO::EventClient.new(1)
 event_client.set_user('id_1',
                       'eventTime' => '2004-12-13T21:39:45.618-07:00')
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EventClient;
 import org.joda.time.DateTime;
 
 EventClient eventClient = new EventClient(1);
 eventClient.setUser("id_1", ImmutableMap.<String, Object>of(), new DateTime("2004-12-13T21:39:45.618-07:00"));
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 
@@ -109,9 +109,9 @@ another `$set` event for this item entity with new properties values and the
 
 To create an item with `id_3` and set its `pio_itypes` to `"type1"`:
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
@@ -124,35 +124,35 @@ $ curl -i -X POST http://localhost:7070/events.json \
   },
   "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 $client->setItem('id_3',
            array('pio_itypes'=>array('type1')),
            '2004-12-13T21:39:45.618-07:00'
          );
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 event_client.set_item(
     iid="id_3",
     properties={"pio_itypes": ["type1"]},
     event_time=event_time)
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 event_client.set_item('id_3',
                       'eventTime' => '2004-12-13T21:39:45.618-07:00',
                       'properties' => { 'pio_itypes' => %w(type1) })
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EventClient;
@@ -162,8 +162,8 @@ import org.joda.time.DateTime;
 Map properties = ImmutableMap.<String, Object>of(
         "pio_types", ImmutableList.of("type1"));
 eventClient.setItem("id_3", properties, new DateTime("2004-12-13T21:39:45.618-07:00"));
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 ## 3. Record events of user-to-item actions.
@@ -177,9 +177,9 @@ below.)
 
 To record that user `id_1` views the item `id_3`:
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
@@ -191,10 +191,10 @@ $ curl -i -X POST http://localhost:7070/events.json \
   "targetEntityId": "id_3",
   "eventTime" : "2012-01-20T20:33:41.452-07:00"
 }'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 $client->recordUserActionOnItem('view',
                        'id_1', 'id_3',
@@ -202,34 +202,34 @@ $client->recordUserActionOnItem('view',
                        '2012-01-20T20:33:41.452-07:00'
          );
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```phython
 event_client.record_user_action_on_item(
     action="view",
     uid="id_1",
     iid="id_3",
     event_time=datetime(2012, 1, 20, 20, 33, 41, 452, tzinfo=tzinfo))
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 event_client.record_user_action_on_item('view', 'id_1', 'id_3',
                                         'eventTime' =>
                                           '2012-01-20T20:33:41.452-07:00')
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EventClient;
 import org.joda.time.DateTime;
 
 eventClient.userActionItem("view", "id_1", "id_3", ImmutableMap.<String, Object>of(),
     new DateTime("2004-12-13T21:39:45.618-07:00"));
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 Optionally, you can specify the `pio_rating` property associate with this event
@@ -237,9 +237,9 @@ of user-to-item action.
 
 To record that user `id_1` rates the item `id_3` with rating of 4:
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:7070/events.json \
 -H "Content-Type: application/json" \
 -d '{
@@ -254,10 +254,10 @@ $ curl -i -X POST http://localhost:7070/events.json \
   }
   "eventTime" : "2012-01-20T20:33:41.452-07:00"
 }'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 $client->recordUserActionOnItem('view',
                        'id_1', 'id_3',
@@ -265,28 +265,28 @@ $client->recordUserActionOnItem('view',
                        '2012-01-20T20:33:41.452-07:00'
          );
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 event_client.record_user_action_on_item(
     action="view",
     uid="id_1",
     iid="id_3",
     properties={"pio_rating": 4},
     event_time=datetime(2012, 1, 20, 20, 33, 41, 452, tzinfo=tzinfo))  
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 event_client.record_user_action_on_item('view', 'id_1', 'id_3',
                                         'eventTime' =>
                                           '2012-01-20T20:33:41.452-07:00',
                                         'properties' => { 'pio_rating' => 4 })
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EventClient;
 import java.util.Map;
@@ -295,8 +295,8 @@ import org.joda.time.DateTime;
 Map properties = ImmutableMap.<String, Object>("pio_rating", 4);
 eventClient.userActionItem("view", "id_1", "id_3", properties,
         new DateTime("2012-01-20T20:33:41.452-07:00"));
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 
@@ -392,20 +392,18 @@ Field | Description
 
 To personalize the order of items of "1", "3", "5", "10" and "11" for user "123":
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
-
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:8000/queries.json \
 -d '{
   "uid" : "123",
   "iids" : ["1", "3", "5", "10", "11"]
 }'
-
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 use predictionio\EngineClient;
 
@@ -418,30 +416,30 @@ $predictions = $engineClient->sendQuery(
                );
 print_r($predictions);
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 from predictionio import EngineClient
 engine_client = EngineClient(url="http://localhost:8000")
 
 prediction = engine_client.send_query(
     data={"uid": "123", "iids": ["1", "3", "5", "10", "11"]})
 print(prediction)
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 require 'predictionio'
 
 client = PredictionIO::EngineClient.new
 
 predictions = client.send_query('uid' => '123', 'iids' => %w(1 3 5 10 11))
 puts predictions
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EngineClient;
@@ -452,8 +450,8 @@ engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "uids", "123",
         "iids", ImmutableList.of("1", "3", "5", "10", "11")
     ));
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 

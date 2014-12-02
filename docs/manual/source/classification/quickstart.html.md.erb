@@ -22,9 +22,7 @@ production use based on this template.
 
 First you need to [install PredictionIO <%= data.versions.pio %>](/install)
 
-> **Note**
-
-> **0.8.2 contains schema changes from previous versions. If you have
+WARNING: **0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](../resources/schema-change.html).**
 
@@ -88,10 +86,9 @@ attr0, attr1, attr2 and plan.
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-<div class="codetabs">
-<div data-lang="Python SDK">
-
-{% highlight python %}
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
 import predictionio
 
 client = predictionio.EventClient(
@@ -149,13 +146,10 @@ client.create_event(
     }
 )
 '''
-{% endhighlight %}
-
-</div>
-
-<div data-lang="PHP SDK">
-
-{% highlight php %}
+```
+<div>
+<div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EventClient;
@@ -213,13 +207,10 @@ $client->createEvent(array(
 ));
 
 ?>
-{% endhighlight %}
-</div>
-
-
-<div data-lang="Ruby SDK">
-
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
 
@@ -260,13 +251,10 @@ client.create_event(
 
 # Etc...
 
-{% endhighlight %}
-
-</div>
-
-<div data-lang="Java SDK">
-
-{% highlight java %}
+```
+  <div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableMap;
 import io.prediction.Event;
 import io.prediction.EventClient;
@@ -309,14 +297,10 @@ client.createEvent(new Event()
     .entityId(<USER ID>)
     .property("plan", <VALUE OF PLAN>));
 */
-{% endhighlight %}
-
-</div>
-
-<div data-lang="REST API">
-
-{% highlight rest %}
-
+```
+  </div>
+  <div data-tab="REST API" data-lang="bash">
+```bash
 # Set the 4 properties for a user
 
 curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
@@ -383,9 +367,8 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   }
   "eventTime" : <TIME OF THIS EVENT>
 }'
-{% endhighlight %}
-
-</div>
+```
+  </div>
 </div>
 
 You may use the sample data from MLlib repo for demonstration purpose. Execute
@@ -476,20 +459,16 @@ you send this JSON { "features": [2, 0, 0] } to the deployed engine and it will
 return a JSON of the predicted plan. Simply send a query by making a HTTP
 request or through the `EngineClient` of an SDK:
 
-<div class="codetabs">
-<div data-lang="Python SDK">
-
-{% highlight python %}
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
 import predictionio
 engine_client = predictionio.EngineClient(url="http://localhost:8000")
 print engine_client.send_query({"features": [2, 0, 0]})
-{% endhighlight %}
-
-</div>
-
-<div data-lang="PHP SDK">
-
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EngineClient;
@@ -500,13 +479,10 @@ $response = $client->sendQuery(array('features'=> array(2, 0, 0)));
 print_r($response);
 
 ?>
-{% endhighlight %}
-</div>
-
-
-<div data-lang="Ruby SDK">
-
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 # Create client object.
 client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
 
@@ -514,13 +490,10 @@ client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
 response = client.send_query('features' => [2, 0, 0])
 
 puts response
-{% endhighlight %}
-
-</div>
-
-<div data-lang="Java SDK">
-
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
@@ -532,19 +505,15 @@ EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
 JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "features", ImmutableList.of(2, 0, 0)
     ));
-{% endhighlight %}
-
-</div>
-
-<div data-lang="REST API">
-
-{% highlight rest %}
+```
+  </div>
+  <div data-tab="REST API" data-lang="bash">
+```bash
 $ curl -H "Content-Type: application/json" -d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
 
 {"label":0.0}
-{% endhighlight %}
-
-</div>
+```
+  </div>
 </div>
 
 Similarly, to predict the label (i.e. *plan* in this case) of a user with

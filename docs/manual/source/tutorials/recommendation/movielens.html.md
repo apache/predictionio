@@ -129,30 +129,30 @@ to a deployed engine instance through the Engine API.
 
 To get 3 personalized item recommendations for user "100".
 
-
-<div class="codetabs">
-<div data-lang="Raw HTTP">
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
 <p>Line breaks are added for illustration in the response.</p>
-{% highlight bash %}
+
+```bash
 $ curl -i -X POST -d '{"uid": "100", "n": 3}' http://localhost:8000/queries.json
 {"items":[
   {"272":9.929327011108398},
   {"313":9.92607593536377},
   {"347":9.92170524597168}]}
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 from predictionio import EngineClient
 client = EngineClient(url="http://localhost:8000")
 prediction = client.send_query({"uid": "100", "n": 3})
 print prediction
-{% endhighlight %}
+```
 
 <p>Output:</p>
-{% highlight bash %}
+```bash
 {u'items': [{u'272': 9.929327011108398}, {u'313': 9.92607593536377}, {u'347':
 9.92170524597168}]}
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>

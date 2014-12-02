@@ -58,15 +58,15 @@ Field | Description
 
 To get top 5 items which are similar to items "12", "1", "19":
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -X POST http://localhost:9997/queries.json \
 -d '{"iids": ["12", "1", "19"], "n": 5}'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 use predictionio\EngineClient;
 
@@ -79,29 +79,29 @@ $predictions = $engineClient->sendQuery(
                );
 print_r($predictions);
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 from predictionio import EngineClient
 engine_client = EngineClient(url="http://localhost:9997")
 
 prediction = engine_client.send_query(data={"iids": ["12", "1", "19"], "n" : 5})
 print(prediction)
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 require 'predictionio'
 
 client = PredictionIO::EngineClient.new('http://localhost:9997')
 
 predictions = client.send_query('iids' => %w(12 1 19), 'n' => 5)
 puts predictions
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EngineClient;
@@ -110,9 +110,8 @@ EngineClient engineClient = new EngineClient("http://localhost:9997");
 engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "iids", ImmutableList.of("12", "1", "19"),
         "n", 5));
-{% endhighlight %}
-</div>
-
+```
+  </div>
 </div>
 
 The API returns the following JSON response:
@@ -142,7 +141,7 @@ Please read [Selecting an
 Algorithm](/cookbook/choosingalgorithms.html) for tips on
 selecting the right algorithm and setting the parameters properly.
 
-> You may also [implement and add your own
+INFO: You may also [implement and add your own
 algorithm](/cookbook/addalgorithm.html) to the engine easily.
 
 Item Similarity Engine comes with the following algorithms:
