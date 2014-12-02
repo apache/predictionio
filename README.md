@@ -27,6 +27,7 @@ Five installation options available.
 
 ## Quick start
 [Recommendation Engine Template Quick Start](http://docs.prediction.io/current/recommendation/quickstart.html) Guide.
+
 [Classification Engine Template Quick Start](http://docs.prediction.io/current/classification/quickstart.html) Guide.
 
 ## Bugs and feature requests
