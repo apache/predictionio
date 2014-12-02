@@ -1,8 +1,34 @@
 ---
 title: Frequently Asked Questions
 ---
+## Using Prediction.IO
+### Q: How to increase Spark driver program and worker executor memory size?
+In general, the Prediction.IO `bin/pio` scripts wraps around Spark's `spark-submit` 
+script. You can specify a lot of Spark configurations (i.e. executor memory, cores, master
+url, etc.) with it. You can supply these as pass-through arguments at the end of 
+`bin/pio` command.
 
-### Question: How to resolve "Error: Could not find or load main class io.prediction.tools.Console" after ./make_distribution.sh?
+For example, the follow command set the Spark master to `spark://localhost:7077`
+(the default url of standalone cluster) and set the executor memory to 24G.
+
+```
+$ pio run io.prediction.examples.mlc.Evaluation1 -- \
+  --master spark://localhost:7077  --executor-memory 24G
+```
+
+### Q: How do I increase the JVM heap size of the Event Server?
+
+```
+$ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
+````
+
+### Q: How do I check to see if various dependencies, such as ElasticSearch, are running?
+
+You can run `$ pio status` from the terminal and it will return the status of various components that PredictionIO depends on.
+
+
+## Building Prediction.IO
+### Q: How to resolve "Error: Could not find or load main class io.prediction.tools.Console" after ./make_distribution.sh?
 
 ```
 $ bin/pio app
@@ -27,16 +53,17 @@ drwxr-xr-x 17 yipjustin yipjustin      4096 Nov 12 00:09 ..
 PredictionIO/assembly$ rm pio-assembly-0.8.1-SNAPSHOT.jar
 ```
 
-### Question: How do I increase the JVM heap size of the Event Server?
+### Q: How to resolve ".......[error] (data/compile:compile) java.lang.AssertionError: assertion failed: java.lang.AutoCloseable" when ./make_distribution.sh?
+
+Prediction.IO only support Java 7 or later. Please make sure you have the
+correct Java version with the command:
 
 ```
-$ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
-````
+$ javac -version
+```
+
+ 
 
 If you have other questions, you can search or post on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user) or [email the
 core team](mailto:support@prediction.io) directly.
-
-### Question: How do I check to see if various dependencies, such as ElasticSearch, are running?
-
-You can run `$ pio status` from the terminal and it will return the status of various components that PredictionIO depends on. 
