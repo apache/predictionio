@@ -80,7 +80,7 @@ case class CommonArgs(
 case class BuildArgs(
   sbt: Option[File] = None,
   sbtExtra: Option[String] = None,
-  sbtAssemblyPackageDependency: Boolean = false,
+  sbtAssemblyPackageDependency: Boolean = true,
   sbtClean: Boolean = false)
 
 case class AppArgs(
@@ -211,9 +211,9 @@ object Console extends Logging {
           opt[Unit]("clean") action { (x, c) =>
             c.copy(build = c.build.copy(sbtClean = true))
           } text("Clean build."),
-          opt[Unit]("asm") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-          } text("Build dependencies assembly.")
+          opt[Unit]("no-asm") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = false))
+          } text("Skip building external dependencies assembly.")
         )
       //note("")
       //cmd("register").
@@ -421,9 +421,9 @@ object Console extends Logging {
           opt[Unit]("clean") action { (x, c) =>
             c.copy(build = c.build.copy(sbtClean = true))
           } text("Clean build."),
-          opt[Unit]("asm") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-          } text("Build dependencies assembly.")
+          opt[Unit]("no-asm") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = false))
+          } text("Skip building external dependencies assembly.")
         )
       note("")
       cmd("status").
