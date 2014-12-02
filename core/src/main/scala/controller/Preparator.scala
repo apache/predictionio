@@ -17,6 +17,7 @@ package io.prediction.controller
 
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BasePreparator
+import io.prediction.controller.java.JavaUtils
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -129,7 +130,8 @@ object PIdentityPreparator {
   *
   * @group Preparator
   */
-class LIdentityPreparator[TD: ClassTag] extends LPreparator[TD, TD] {
+class LIdentityPreparator[TD]
+extends LPreparator[TD, TD]()(JavaUtils.fakeClassTag[TD]) {
   def prepare(td: TD): TD = td
 }
 
