@@ -1,21 +1,19 @@
 ---
-title: Event API
+title: Collecting Data through Event API
 ---
 
-# Collecting Data through Event API
-
-*Event Server* is designed to collect data into PredictionIO in an event-based
+**Event Server** is designed to collect data into PredictionIO in an event-based
 style. Once the Event Server is launched, your application can send data to it
-through its *Event API* with HTTP requests or with `EventClient`s of
+through its **Event API** with HTTP requests or with `EventClient`s of
 PredictionIO's SDKs.
 
-> All PredictionIO-compliant engines support accessing the Event Store (i.e. the
+INFO: All PredictionIO-compliant engines support accessing the Event Store (i.e. the
 data store of Event Server) through [PredictionIO's Storage
 API](http://docs.prediction.io/api/0.8.2/index.html#io.prediction.data.storage.package).
 
 ## Launching the Event Server
 
-> Before launching the Event Server, make sure that your event data store
+INFO: Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, PredictionIO uses
 Apache HBase, and a quick configuration can be found
 [here](/install/install-linux.html#hbase). Please allow a minute
@@ -91,9 +89,9 @@ You may connect to the Event Server with HTTP request or by using one of many
 The following shows how one can create an event involving a single entity.
 Replace the value of `accessKey` by the *Access Key* generated for your App.
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB \
 -H "Content-Type: application/json" \
 -d '{
@@ -110,10 +108,10 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
   }
   "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
   require_once("vendor/autoload.php");
 
@@ -135,10 +133,10 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
                         'eventTime' => '2004-12-13T21:39:45.618-07:00'
                        ));
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 from predictionio import EventClient
 from datetime import datetime
 import pytz
@@ -161,10 +159,10 @@ first_event_response = client.create_event(
     properties=first_event_properties,
     event_time=first_event_time,
 )
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 require 'predictionio'
 
 event_client = PredictionIO::EventClient.new(4)
@@ -176,21 +174,21 @@ event_client.create_event('my_event', 'user', 'uid',
                                             'prop4' => true,
                                             'prop5' => %w(a b c),
                                             'prop6' => 4.56 })
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight bash %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 (coming soon)
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 The following shows how one can create an event involving two entities (with
 `targetEntity`).
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB \
 -H "Content-Type: application/json" \
 -d '{
@@ -205,10 +203,10 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
   },
   "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
   require_once("vendor/autoload.php");
 
@@ -227,10 +225,10 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
                         'eventTime' => '2004-12-13T21:39:45.618Z'
                        ));
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 # Second Event
 second_event_properties = {
     "someProperty" : "value1",
@@ -244,10 +242,10 @@ second_event_response = client.create_event(
     target_entity_id="iid",
     properties=second_event_properties,
     event_time=datetime(2014, 12, 13, 21, 38, 45, 618000, pytz.utc))
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 require 'predictionio'
 
 event_client = PredictionIO::EventClient.new(4)
@@ -257,13 +255,13 @@ event_client.create_event('my_event', 'user', 'uid',
                           'eventTime' => '2004-12-13T21:39:45.618Z',
                           'properties' => { 'someProperty' => 'value1',
                                             'anotherProperty' => 'value2' })
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight bash %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 (coming soon)
-{% endhighlight %}
-</div>
+```
+  </div>
 </div>
 
 
@@ -441,13 +439,9 @@ Field | Type | Description
 
 ## Debugging Recipes
 
-----
-
-__WARNING: The following API are mainly for development or debugging purpose
+WARNING: The following API are mainly for development or debugging purpose
 only. They should not be supported by SDK nor used by real application under
-normal circumstances and they are subject to changes.__
-
-----
+normal circumstances and they are subject to changes.
 
 The `accessKey` query parameter is mandatory.
 

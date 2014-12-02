@@ -17,7 +17,7 @@ PredictionIO.
 If you have built a PredictionIO-related project, we would love to showcase it
 to the community! Simply:
 
-1. Edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/community/projects.md).
+1. Edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/community/projects.html.md).
 
 2. Submit a pull request.
 

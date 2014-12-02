@@ -32,7 +32,7 @@ module Sanity
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Sanity</title>
+    <title>Sanity Report</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
 
@@ -233,6 +233,7 @@ EOT
       # TODO: add trailing slash, relative url, and in page anchor links.
       # TODO: Test for missing titles!
       # TODO: Test for unneeded .html extension!
+      # TODO: Switch from Nokogir to raw ID checker
       case href
       when /\A\s*\z/, nil
         check_empty_href(href)

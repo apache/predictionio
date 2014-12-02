@@ -1,8 +1,6 @@
 ---
-title:  Item Recommendation Engine | Built-in Engines
+title:  Item Recommendation Engine
 ---
-
-# Item Recommendation Engine: Overview
 
 **Recommend N items to a user personally**
 
@@ -17,55 +15,31 @@ Prediction](/images/engine-itemrec-prediction.png)
 In this batch-mode process, the engine predicts a preference score for every
 user-item pair. The scores are computed by the deployed algorithm in the engine.
 
-<!---
-## Step 2: Rank the Query Items
-
-With the predicted scores, this engine can rank all available items for any user
-according to your REST API/SDK queries. Advanced queries, such as Geo-based
-search, is supported. Top N items will then be returned as prediction results.
--->
-
 ## Step 2: Return Personalized High Score Items
 
 With the predicted scores, this engine can rank all available items for any user
 according to your REST API/SDK queries.
 Top N items will then be returned as prediction results.
 
-# Tutorials
+## Tutorials
 
 Create your first Item Recommendation app quickly by following [tutorials and
-samples]({{ site.baseurl }}/tutorials/engines/).
+samples](/tutorials/engines).
 
 
-# Collect Events Data / Events Data Requirement
+## Collect Events Data / Events Data Requirement
 The process of collecting events data for the Item Recommendation Engine is
 equivalent to that of Item Ranking Engine. Please refer to [Item Ranking Engine
-/ Collect Events Data](../itemrank/) for detailed explanation.
+/ Collect Events Data](/engines/itemrank) for detailed explanation.
 
-# Data Source
-Same as [Item Ranking Engine / Data Source](../itemrank/).
+## Data Source
+Same as [Item Ranking Engine / Data Source](/engines/itemrank).
 
-# Data Preparator
-Same as [Item Ranking Engine / Data Preparator](../itemrank/).
+## Data Preparator
+Same as [Item Ranking Engine / Data Preparator](/engines/itemrank).
 
-<!---
-# Prediction Query API
 
-Item Recommendation Engine supports the following API endpoints:
-
-## Get Top N Recommendation
-
-To recommend top N items to a user, make an HTTP GET request to itemrec engine
-URI:
-
-```
-GET /<TODO>
-```
-
-The query is a targeted user while the output is a list of N items.
--->
-
-# Item Recommendation Engine API
+## Item Recommendation Engine API
 
 Item Recommendation Engine supports the following query API endpoints:
 
@@ -87,15 +61,15 @@ Field | Description
 
 To get a 3 personalized item recommendations for user "1".
 
-<div class="codetabs">
-<div data-lang="Raw HTTP">
-{% highlight bash %}
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
 $ curl -X POST http://localhost:9993/queries.json \
 -d '{"uid": "1", "n": 3}'
-{% endhighlight %}
-</div>
-<div data-lang="PHP SDK">
-{% highlight php %}
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 <?php
 use predictionio\EngineClient;
 
@@ -108,29 +82,29 @@ $predictions = $engineClient->sendQuery(
                );
 print_r($predictions);
 ?>
-{% endhighlight %}
-</div>
-<div data-lang="Python SDK">
-{% highlight python %}
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 from predictionio import EngineClient
 engine_client = EngineClient(url="http://localhost:9993")
 
 prediction = engine_client.send_query(data={"uid": "1", "n" : 3})
 print(prediction)
-{% endhighlight %}
-</div>
-<div data-lang="Ruby SDK">
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK">
+```ruby
 require 'predictionio'
 
 client = PredictionIO::EngineClient.new('http://localhost:9993')
 
 predictions = client.send_query('uid' => '1', 'n' => 3)
 puts predictions
-{% endhighlight %}
-</div>
-<div data-lang="Java SDK">
-{% highlight java %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 import com.google.common.collect.ImmutableMap;
 import io.prediction.EngineClient;
 
@@ -139,8 +113,8 @@ engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "uid", "1",
         "n", 3
     ));
-{% endhighlight %}
-</div>
+```
+  </div>
 
 </div>
 
@@ -149,15 +123,14 @@ engineClient.sendQuery(ImmutableMap.<String, Object>of(
 The API returns the following JSON response:
 
 Field | Description
-:---- | :----------
-`items` | array of { item Entity ID : predicted preference score }
-        | in descending order.
+---- | ----------
+`items` | array of { item Entity ID : predicted preference score } in descending order.
 
 ```json
 {"items":[{"1":5.9279937744140625},{"19":5.583907127380371},{"2":5.424792289733887}]}
 ```
 
-# Algorithms
+## Algorithms
 
 ## Changing Algorithm and Its Parameters
 
@@ -170,7 +143,7 @@ Please read [Selecting an
 Algorithm](/cookbook/choosingalgorithms.html) for tips on
 selecting the right algorithm and setting the parameters properly.
 
-> You may also [implement and add your own
+INFO: You may also [implement and add your own
 algorithm](/cookbook/addalgorithm.html) to the engine easily.
 
 Item Recommendation Engine comes with the following algorithms:
@@ -185,7 +158,7 @@ based on user recent history and the item similarity matrix.
 **Parameters:**
 
 Field | Type | Description
-:---- | :----| :------
+---- | ----| ------
 `booleanData` | boolean | Treat input data as having no preference values.
 `itemSimilarity`| String | Item Similarity Measure. See **Note**
 `weighted` | boolean | The Similarity score is weighted (only applied to Euclidean Distance, Pearson Correlation, Uncentered Cosine item similarity).
@@ -199,8 +172,8 @@ Field | Type | Description
 
 Supported value for `itemSimilarity`
 
-Name | Value
-:---- | :----
+|Name | Value |
+|---- | ----  |
 City Block | `CityBlockSimilarity`
 Euclidean Distance | `EuclideanDistanceSimilarity`
 Log-Likelihood | `LogLikelihoodSimilarity`

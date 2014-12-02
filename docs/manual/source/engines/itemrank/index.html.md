@@ -11,7 +11,7 @@ application. The engine rank items in two steps:
 
 ## Step 1: Predict User Preferences
 
-![Item Ranking Score Prediction]({{ site.baseurl }}/images/engine-itemrec-prediction.png)
+![Item Ranking Score Prediction](/images/engine-itemrec-prediction.png)
 
 In this batch-mode process, the engine predicts preference scores for the
 queried items. The scores are computed by the deployed algorithm in the engine.
@@ -25,8 +25,7 @@ order of the items is preserved if the algorithm couldn't predict the score.
 # Collect Events Data
 
 You may collect events data with HTTP request or by using one of many
-**PredictionIO SDKs**. You may also use [Bulk
-Loading](/bulkloading.html) for your old data.
+**PredictionIO SDKs**.
 
 ## 1. Setting user entity
 

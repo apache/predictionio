@@ -3,7 +3,7 @@ title: Customize Serving Layer
 ---
 
 This tutorial teaches how to implement custom filtering logic.
-It is based [Movie Recommendation App with ItemRec Engine](../tutorials/engines/itemrec/movielens.html), we demonstrate how to add a custom filtering logic to the ItemRecommendation Engine.
+It is based [Movie Recommendation App with ItemRec Engine](/tutorials/engines/itemrec/movielens.html), we demonstrate how to add a custom filtering logic to the ItemRecommendation Engine.
 
 Complete code example can be found in
 `examples/scala-local-movielens-filtering`.
@@ -16,7 +16,7 @@ Some items may run out of stock temporarily, we would like to remove them from t
 
 # Customizing the ItemRec Engine
 
-Recall [the DASE Architecture](../enginebuilders/), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving Layer.
+Recall [the DASE Architecture](/enginebuilders), a PredictionIO engine has 4 main components: Data Source, Data Preparator, Algorithm, and Serving Layer.
 When a Query comes in, it is passed to the Algorithm components for making Predictions (notice that we use plural as the infrastructure allows multiple algorithms to run concurrently), then the Serving component consolidates these
 Predictions into one, and returns it.
 
@@ -212,7 +212,7 @@ $PIO_HOME/bin/pio deploy -- --master spark://`hostname`:7077
 # Play with the customized engine
 
 The engine can now serve live queries. With the sample file `blacklisted.txt`, items 272 and 123 are blacklisted. The new serving component `TempFilter` removes them from Prediction results. If we use the same query as in the
-[Movie Recommendation App (see bottom of the page)](../tutorials/engines/itemrec/movielens.html),
+[Movie Recommendation App (see bottom of the page)](/tutorials/engines/itemrec/movielens.html),
 
 ```bash
 $ curl -X POST -d '{"uid": "100", "n": 3}' http://localhost:8000/queries.json

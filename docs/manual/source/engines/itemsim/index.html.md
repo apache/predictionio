@@ -13,7 +13,7 @@ The engine suggests similar items through a two-step process:
 
 ## Step 1: Estimate Item Similarity
 
-![Item Sim Score Prediction]({{ site.baseurl }}/images/engine-itemsim-score.png)
+![Item Sim Score Prediction](/images/engine-itemsim-score.png)
 
 In this batch-mode process, the engine estimates a similarity score for every item-item pair. The scores are computed by the deployed algorithm in the engine.
 
@@ -25,13 +25,13 @@ With the similarity scores, this engine can rank all available items according t
 # Collect Events Data / Events Data Requirement
 The process of collecting events data for the Item Similarity Engine is
 equivalent to that of Item Ranking Engine. Please refer to [Item Ranking Engine
-/ Collect Events Data](../itemrank/) for detailed explanation.
+/ Collect Events Data](/engines/itemrank) for detailed explanation.
 
 # Data Source
-Same as [Item Ranking Engine / Data Source](../itemrank/).
+Same as [Item Ranking Engine / Data Source](/engines/itemrank).
 
 # Data Preparator
-Same as [Item Ranking Engine / Data Preparator](../itemrank/).
+Same as [Item Ranking Engine / Data Preparator](/engines/itemrank).
 
 # Item Similarity Engine API
 

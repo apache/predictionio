@@ -69,7 +69,7 @@ To serve global traffic, you can use 0.0.0.0, i.e.
 `$ bin/pio deploy --ip 0.0.0.0`
 
 If it is your first time using PredictionIO, these [tutorials and
-samples]({{ site.baseurl }}/tutorials/engines/) should be helpful.
+samples](/tutorials/engines) should be helpful.
 
 
 ## Schedule Model Re-training
@@ -92,12 +92,12 @@ command.
 
 PredictionIO comes with the following engines.
 
-* [Item Ranking]({{ site.baseurl }}/engines/itemrank)
-* [Item Recommendation]({{ site.baseurl }}/engines/itemrec)
-* [Item Similarity]({{ site.baseurl }}/engines/itemsim)
+* [Item Ranking](/engines/itemrank)
+* [Item Recommendation](/engines/itemrec)
+* [Item Similarity](/engines/itemsim)
 
-You may start with these [tutorials and samples]({{ site.baseurl }}/tutorials/engines).
+You may start with these [tutorials and samples](/tutorials/engines).
 
 ## Building your own Engine
 
-Please read the [Engine Builders' Guide]({{ site.baseurl }}/enginebuilders/) for details.
+Please read the [Engine Builders' Guide](/enginebuilders/) for details.

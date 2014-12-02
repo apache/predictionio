@@ -33,7 +33,7 @@ example, several Serving components for an Engine. You will be able to choose
 which one to be deployed when you create an Engine.
 
 
-![Engine Overview]({{ site.baseurl }}/images/engineinstance-overview.png)
+![Engine Overview](/images/engineinstance-overview.png)
 
 
 ## Engine Templates
@@ -44,9 +44,9 @@ implementations. You can customize it easily to fit your specific needs.
 PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
 
 * [Collaborative Filtering Engine Template - with MLlib ALS]
-  (../recommendation/quickstart.html)
+  (/recommendation/quickstart)
 * [Classification Engine Template - with MLlib Naive Bayes]
-  (../classification/quickstart.html)
+  (/classification/quickstart)
 
 
 ## Engine Deployment
@@ -61,7 +61,7 @@ An engine puts all DASE components into a deployable state by specifying:
 
 * One Serving
 
-> If more than one algorithm is specified, each of their model prediction
+INFO: If more than one algorithm is specified, each of their model prediction
 results will be passed to Serving for ensembling.
 
 Each Engine processes data and constructs predictive models independently.
@@ -83,4 +83,4 @@ specify an Evaluation Metric when you run an evaluation on an Engine, i.e.:
 Having a good understanding of Engine and Engine Template, you can now follow
 the Quick Start guide and develop a custom engine.
 
-#### [Next: Recommendation Engine Quick Start](../recommendation/quickstart.html)
+#### [Next: Recommendation Engine Quick Start](/recommendation/quickstart)
