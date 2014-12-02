@@ -28,7 +28,7 @@ nav#nav-main role="navigation"
       = link_to 'Get Involved', '#'
       ul
         li = link_to_with_active 'Contribute Code', '/community/contribute-code'
-        li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation'
+        / li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation'
         li = link_to_with_active 'Community Projects', '/community/projects'
     li.expand
       = link_to 'SDKs and Plugins', '#'
@@ -46,10 +46,10 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Glossary', '/resources/glossary'
         li = link_to_with_active 'API Docs', 'http://docs.prediction.io/api/current/#package'
     - unless build?
-      li
-        = link_to 'Samples', '#'
-        ul
-          li = link_to_with_active 'Typography', '/samples'
-          li = link_to_with_active 'Sizing', '/samples/sizing'
-          li = link_to_with_active 'Tabs', '/samples/tabs'
-          li = link_to_with_active 'Languages', '/samples/languages'
+      / li
+      /   = link_to 'Samples', '#'
+      /   ul
+      /     li = link_to_with_active 'Typography', '/samples'
+      /     li = link_to_with_active 'Sizing', '/samples/sizing'
+      /     li = link_to_with_active 'Tabs', '/samples/tabs'
+      /     li = link_to_with_active 'Languages', '/samples/languages'
