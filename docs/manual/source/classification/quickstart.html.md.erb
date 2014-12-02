@@ -88,10 +88,9 @@ attr0, attr1, attr2 and plan.
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-<div class="codetabs">
-<div data-lang="Python SDK">
-
-{% highlight python %}
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
 import predictionio
 
 client = predictionio.EventClient(
@@ -151,11 +150,11 @@ client.create_event(
 '''
 {% endhighlight %}
 
-</div>
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
 
-<div data-lang="PHP SDK">
-
-{% highlight php %}
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EventClient;
@@ -214,12 +213,10 @@ $client->createEvent(array(
 
 ?>
 {% endhighlight %}
-</div>
-
-
-<div data-lang="Ruby SDK">
-
-{% highlight ruby %}
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
 
@@ -260,13 +257,11 @@ client.create_event(
 
 # Etc...
 
-{% endhighlight %}
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 
-</div>
-
-<div data-lang="Java SDK">
-
-{% highlight java %}
 import com.google.common.collect.ImmutableMap;
 import io.prediction.Event;
 import io.prediction.EventClient;
@@ -311,11 +306,10 @@ client.createEvent(new Event()
 */
 {% endhighlight %}
 
-</div>
-
-<div data-lang="REST API">
-
-{% highlight rest %}
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
 
 # Set the 4 properties for a user
 
@@ -383,9 +377,9 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   }
   "eventTime" : <TIME OF THIS EVENT>
 }'
-{% endhighlight %}
 
-</div>
+```
+  </div>
 </div>
 
 You may use the sample data from MLlib repo for demonstration purpose. Execute
