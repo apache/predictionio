@@ -43,6 +43,7 @@ Interested in helping with our documentation? Read [Contributing Documentation](
 
 [![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
 
+[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc)](https://travis-ci.org/PredictionIO/PredictionIO)
 
 
 ## Community
