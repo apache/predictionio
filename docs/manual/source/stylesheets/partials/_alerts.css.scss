@@ -23,6 +23,10 @@
     background-color: $danger-background-color;
     border-left: 10px solid $danger-color;
   }
+  &.note {
+    background-color: $note-background-color;
+    border-left: 10px solid $note-color;
+  }
   &.todo {
     background-color: $todo-background-color;
     border-left: 10px solid $todo-color;

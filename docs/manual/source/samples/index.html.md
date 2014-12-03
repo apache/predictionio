@@ -2,33 +2,39 @@
 title: Sample Style Page
 ---
 
-# Alerts
+## Alerts
 
-## Info
+### Info
 
 Markdown: `INFO: This is a info message!` will display this:
 
 INFO: This is a info message!
 
-## Success
+### Success
 
 Markdown: `SUCCESS: This is a success message!` will display this:
 
 SUCCESS: This is a success message!
 
-## Warning
+### Warning
 
 Markdown: `WARNING: This is a warning message!` will display this:
 
 WARNING: This is a warning message!
 
-## Danger
+### Danger
 
 Markdown: `DANGER: This is a danger message!` will display this:
 
 DANGER: This is a danger message!
 
-## TODO
+### Note
+
+Markdown: `NOTE: This is a note message!` will display this:
+
+NOTE: This is a note message!
+
+### TODO
 
 Markdown: `TODO: This is a TODO message!` will display this:
 
@@ -39,7 +45,7 @@ This message is longer to demonstrate what a multi line message would look like.
 Yes **bold** and other styling still work inside alerts!
 
 
-# Text
+## Text
 
 This is the normal paragraph font.
 This is a [internal link](/samples/tabs).
@@ -56,7 +62,7 @@ This is another paragraph.
 
 View [additional sizing](/samples/sizing) samples.
 
-# Lists
+## Lists
 
 * Bullet 1
 * Bullet 2
@@ -68,9 +74,9 @@ View [additional sizing](/samples/sizing) samples.
 2. Second item
 3. Third item
 
-# Code
+## Code
 
-## Block
+### Block
 
 This is a Scala code block:
 
@@ -85,27 +91,27 @@ case class Query(
 See a full list of [supported languages](/samples/languages).
 
 
-## Inline
+### Inline
 
 This `code is inline`.
 
-# Image
+## Image
 
 ![Sample Image](/images/tutorials/rails/localhost-8000.png)
 
 
-# Quotes
+## Quotes
 
 > This is a blockquote. Don't use these for anything other actual quotes! Use [alerts](#alerts) instead.
 
-# Tables
+## Tables
 
 | First Header  | Second Header |
 | ------------- | ------------- |
 | Content Cell  | Content Cell  |
 | Content Cell  | Content Cell  |
 
-# Other
+## Other
 
 This is a horizontal rule:
 

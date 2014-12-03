@@ -1,6 +1,8 @@
 ---
 title: Tabs
 ---
+
+This page is used to test the tabs plugin based on [Tabslet](https://github.com/vdw/Tabslet).
 <div class="tabs">
   <div data-tab="Ruby" data-lang="ruby">
 ```ruby

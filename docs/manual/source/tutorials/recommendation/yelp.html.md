@@ -98,7 +98,7 @@ type `$ ps aux | grep eventserver` which should output something like this:
 
 For Elasticsearch use `$ ps aux | grep elasticsearch`. For HBase use `$ ps aux | grep hbase`.
 
-For additional help read [installing PredictionIO]({{site.baseulr}}/install/).
+For additional help read [installing PredictionIO](/install/).
 
 ## Creating the Engine
 
@@ -186,7 +186,7 @@ You should see something like this:
 
 ![localhost:8000](/images/tutorials/rails/localhost-8000.png)
 
-If not check out the [engine documentation]({{site.baseulr}}/engines/) for additional troubleshooting options.
+If not check out the [engine documentation](/engines/) for additional troubleshooting options.
 
 You can also run a quick query to double check that everything is good to go:
 

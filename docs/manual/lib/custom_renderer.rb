@@ -8,7 +8,7 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
 
   def paragraph(text)
     case text
-    when/\A(INFO|SUCCESS|WARNING|DANGER|TODO):/
+    when/\A(INFO|SUCCESS|WARNING|DANGER|NOTE|TODO):/
       convert_alerts(text)
     else
       %Q(<p>#{text}</p>)
@@ -50,7 +50,7 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
   private
 
   def convert_alerts(text)
-    text.gsub(/\A(INFO|SUCCESS|WARNING|DANGER|TODO):(.*?)(\n(?=\n)|\z)/m) do
+    text.gsub(/\A(INFO|SUCCESS|WARNING|DANGER|NOTE|TODO):(.*?)(\n(?=\n)|\z)/m) do
       css_class = $1.downcase
       content = $2.strip
       %Q(<div class="alert #{css_class}"><p>#{content}</p></div>)
