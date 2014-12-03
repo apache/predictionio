@@ -25,4 +25,12 @@ $(document).ready(function() {
   // Tabslet
   $('.tabs').tabslet();
 
+  // External Links
+  $("a[href^='http']").each(function() {
+    $(this).click(function(event) {
+      event.preventDefault();
+      window.open(this.href);
+    }).addClass('external');
+  });
+
 });

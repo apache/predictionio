@@ -42,7 +42,9 @@ Yes **bold** and other styling still work inside alerts!
 # Text
 
 This is the normal paragraph font.
-This is a [link](http://google.com/).
+This is a [internal link](/samples/tabs).
+This is an [external link](http://google.com/)
+This is a [secure external link](https://google.com/)
 This is **bold**.
 This is *italic*.
 This is _underlined_.
