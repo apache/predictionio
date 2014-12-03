@@ -18,7 +18,7 @@ Use the `livedoc` branch if you want to update the current documentation.
 
 <a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc" alt="Build Status" class="static" /></a>
 
-Use the `develop` branch if you want to write documentation for the next version.
+Use the `develop` branch if you want to write documentation for the next release.
 
 <a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=develop" alt="Build Status" class="static" /></a>
 
@@ -57,7 +57,19 @@ Please follow this styleguide for any documentation contributions.
 
 ### Text
 
-View our [Sample Typography](/samples/) page for all posible CSS styles.
+View our [Sample Typography](/samples/) page for all posible styles.
+
+### Headings
+
+The main heading `h1` is derived from the title data attribute:
+
+```
+---
+title: Page Title
+---
+```
+
+Start other headings with `h2`. Prefer the `## Heading` format in Markdown.
 
 ### Links
 
@@ -89,6 +101,29 @@ WARNING: **OS X** users please [Disable Shadows](http://www.idownloadblog.com/20
 before taking a screenshot.
 
 Images should only show the relavent tab/terminal. Hide any additional toolbars.
+
+### Code Blocks
+
+Fenced code blocks are created using the <code>```language</code> format.
+
+A example of each language is available on our [Language Samples](/samples/languages) page.
+
+### Code Tabs
+
+Code tabs use the following HTML format:
+
+```html
+<div class="tabs">
+  <div data-tab="Tab Title" data-lang="language">
+    Markdown, code blocks, or HTML is OK inside a tab.
+  </div>
+  <div data-tab="Second Tab" data-lang="optional">
+    ...
+  </div>
+</div>
+```
+
+You can see an example of this on our [Tab Samples](/samples/tabs/) page.
 
 ## Going Live
 

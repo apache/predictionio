@@ -51,9 +51,7 @@ $ cd path/to/your/file
 ```
   </div>
   <div data-tab="HTML" data-lang="html">
-```html
-<p>Yes you can still use HTML in code blocks!</p>
-```
+<p>This HTML is <b>hard coded</b>.</p>
   </div>
   <div data-tab="Python" data-lang="python">
 ```python

@@ -28,7 +28,7 @@ class Preparator
 
 class PreparedData(
   val ratings: RDD[Rating]
-) 
+)
 ```
 
 ## Ruby
@@ -62,6 +62,32 @@ This is a sample JSON code block:
   ]
   ...
 }
+```
+
+## PHP
+
+This is a sample PHP code block:
+
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Set the 4 properties for a user
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'user',
+  'entityId' => <USER ID>,
+  'properties' => array(
+    'attr0' => <VALUE OF ATTR0>,
+    'attr1' => <VALUE OF ATTR1>,
+    'attr2' => <VALUE OF ATTR2>,
+    'plan' => <VALUE OF PLAN>
+    )
+  ));
+?>
 ```
 
 ## Python
