@@ -37,20 +37,12 @@ Have a bug or a feature request?  Please search for existing and closed issues o
 
 ## Documentation
 
-PredictionIO’s documentation, included in this repo in the root directory, is built with [Jekyll](http://jekyllrb.com) and publicly hosted at <http://docs.prediction.io/current/>. The docs may also be run locally.
+PredictionIO's documentation, included in this repo in the `docs/manual` directory, is built with [Middleman](http://middlemanapp.com/) and publicly hosted at http://docs.prediction.io/.
 
+Interested in helping with our documentation? Read [Contributing Documentation](http://docs.prediction.io/community/contribute-documentation/).
 
-### Running documentation locally
+[![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
 
-1. If necessary, [install Jekyll](http://jekyllrb.com/docs/installation) (requires v2.4.x).
-  - **Windows users:** Read [this unofficial guide](http://jekyll-windows.juthilo.com/) to get Jekyll up and running without problems.
-2. Install the Ruby-based syntax highlighter, [Rouge](https://github.com/jneen/rouge), with `gem install rouge`.
-
-3. From the `/docs/manual` directory, run `jekyll serve` in the command line.
-
-4. Open Server address ( http://0.0.0.0:4000/current/ ) in your browser, and you should see the documentation.
-
-Learn more about using Jekyll by reading its [documentation](http://jekyllrb.com/docs/home/).
 
 
 ## Community
