@@ -37,11 +37,11 @@ Have a bug or a feature request?  Please search for existing and closed issues o
 
 ## Documentation
 
-PredictionIO's documentation, included in this repo in the `docs/manual` directory, is built with [Middleman](http://middlemanapp.com/) and publicly hosted at http://docs.prediction.io/.
+PredictionIO's documentation, included in this repo in the `docs/manual` directory, is built with [Middleman](http://middlemanapp.com/) and publicly hosted at [docs.prediction.io](http://docs.prediction.io/).
 
 Interested in helping with our documentation? Read [Contributing Documentation](http://docs.prediction.io/community/contribute-documentation/).
 
-[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc)](https://travis-ci.org/PredictionIO/PredictionIO)[![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
+[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc)](https://travis-ci.org/PredictionIO/PredictionIO) [![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
 
 ## Community
 
