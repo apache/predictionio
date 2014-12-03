@@ -1,4 +1,12 @@
 .highlight {
+  // Reset existing table styles!
+  table {
+    width: auto;
+    tr {
+      border-bottom: none;
+    }
+  }
+
   overflow: auto;
   background-color: $code-block-background-color;
   border: 1px solid $code-block-border-color;
@@ -7,11 +15,12 @@
   font-size: 14px;
   line-height: 18px;
   margin: 16px 0 16px 0;
+
   pre {
     margin: 0;
   }
-  td {
 
+  td {
     &.gutter {
       border-right: 3px solid $code-line-numbers-border-color;
       padding: 10px 15px 10px 15px;
@@ -21,7 +30,6 @@
     &.code {
       padding: 10px 10px 10px 10px;
     }
-
   }
 }
 

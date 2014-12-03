@@ -22,7 +22,6 @@ Use the `develop` branch if you want to write documentation for the next release
 
 <a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=develop" alt="Build Status" class="static" /></a>
 
-
 ## Installing Locally
 
 PredictionIO documentation uses [Middleman](http://middlemanapp.com/) and is hosted on [S3](http://aws.amazon.com/s3/).
@@ -152,5 +151,3 @@ $ bundle exec rake check
 ```
 
 The `rake check` task parses each HTML page in the `build` folder and checks it for common errors including 404s.
-
-
