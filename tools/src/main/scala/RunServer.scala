@@ -65,7 +65,9 @@ object RunServer extends Logging {
         ca.eventServer.port.toString,
         "--accesskey",
         ca.accessKey.accessKey) ++
-        (if (ca.eventServer.enabled) Seq("--feedback") else Seq())
+      (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
+      (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
+      (if (ca.common.debug) Seq("--debug") else Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 

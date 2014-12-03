@@ -29,6 +29,12 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.Level
+import org.apache.log4j.LogManager
+import org.apache.log4j.PatternLayout
+import org.apache.log4j.spi.Filter
+import org.apache.log4j.spi.LoggingEvent
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
@@ -174,6 +180,30 @@ object WorkflowUtils extends Logging {
         if (new File(p).exists) Seq(p) else Seq[String]()
       } getOrElse Seq[String]()
     }.flatten
+  }
+
+  def setupLogging(verbose: Boolean, debug: Boolean): Unit = {
+    val layout = new PatternLayout("%d %-5p %c{2} - %m%n")
+    val filter = new PIOFilter(verbose, debug)
+    val appender = new ConsoleAppender(layout)
+    appender.addFilter(filter)
+    val rootLogger = LogManager.getRootLogger()
+    rootLogger.removeAllAppenders
+    rootLogger.addAppender(appender)
+    if (debug) rootLogger.setLevel(Level.DEBUG)
+  }
+}
+
+class PIOFilter(verbose: Boolean = false, debug: Boolean = false)
+    extends Filter {
+  override def decide(event: LoggingEvent): Int = {
+    if (verbose || debug)
+      Filter.NEUTRAL
+    else if (event.getLocationInformation.getClassName.
+      startsWith("grizzled.slf4j.Logger"))
+      Filter.ACCEPT
+    else
+      Filter.DENY
   }
 }
 

@@ -1025,8 +1025,11 @@ object Console extends Logging {
         new File(ca.common.pioHome.get))
       info(s"Going to run: ${cmd}")
       try {
-        val r = cmd.!(ProcessLogger(
-          line => info(line), line => error(line)))
+        val r =
+          if (ca.common.verbose || ca.common.debug)
+            cmd.!(ProcessLogger(line => info(line), line => error(line)))
+          else
+            cmd.!(ProcessLogger(line => Unit, line => Unit))
         if (r != 0) {
           error(s"Return code of previous step is ${r}. Aborting.")
           sys.exit(1)
@@ -1056,8 +1059,11 @@ object Console extends Logging {
         s"package${asm}"
       info(s"Going to run: ${buildCmd}")
       try {
-        val r = buildCmd.!(ProcessLogger(
-          line => info(line), line => error(line)))
+        val r =
+          if (ca.common.verbose || ca.common.debug)
+          buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
+          else
+          buildCmd.!(ProcessLogger(line => Unit, line => Unit))
         if (r != 0) {
           error(s"Return code of previous step is ${r}. Aborting.")
           sys.exit(1)
