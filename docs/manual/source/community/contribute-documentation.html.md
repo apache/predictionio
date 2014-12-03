@@ -41,7 +41,7 @@ Start the server with:
 $ bundle exec middleman server
 ```
 
-This will start the local web server at [http://localhost:4567](http://localhost:4567/).
+This will start the local web server at [localhost:4567](http://localhost:4567/).
 
 ## Building the Site
 
