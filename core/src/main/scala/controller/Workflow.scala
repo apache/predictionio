@@ -39,7 +39,9 @@ case class WorkflowParams(
   verbose: Int = 2,
   saveModel: Boolean = true,
   sparkEnv: Map[String, String] =
-    Map[String, String]("spark.executor.extraClassPath" -> ".")) {
+    Map[String, String]("spark.executor.extraClassPath" -> "."),
+  stopAfterRead: Boolean = false,
+  stopAfterPrepare: Boolean = false) {
   // Temporary workaround for WorkflowParamsBuilder for Java. It doesn't support
   // custom spark environment yet.
   def this(batch: String, verbose: Int, saveModel: Boolean)

@@ -363,7 +363,16 @@ object CoreWorkflow {
     sc.stop()
 
     logger.info("CoreWorkflow.run completed.")
-    logger.info("Your engine has been trained successfully.")
+
+    if (params.stopAfterRead)
+      logger.info(
+        "Training has stopped after reading from data source and is " +
+        "incomplete.")
+    else if (params.stopAfterPrepare)
+      logger.info(
+        "Training has stopped after data preparation and is incomplete.")
+    else
+      logger.info("Your engine has been trained successfully.")
   }
 
   def runTypelessContext[
@@ -460,8 +469,13 @@ object CoreWorkflow {
 
     logger.info("Data source complete")
 
+    if (params.stopAfterRead) {
+      logger.info("Stopping here because --stop-after-read is set.")
+      return
+    }
+
     if (preparatorClassOpt.isEmpty) {
-      logger.info("Preparator is null. Stop here")
+      logger.info("Preparator is null. Stop here.")
       return
     }
 
@@ -481,6 +495,11 @@ object CoreWorkflow {
     }
 
     logger.info("Preparator complete")
+
+    if (params.stopAfterPrepare) {
+      logger.info("Stopping here because --stop-after-prepare is set.")
+      return
+    }
 
     if (algorithmClassMapOpt.isEmpty) {
       logger.info("Algo is null. Stop here")

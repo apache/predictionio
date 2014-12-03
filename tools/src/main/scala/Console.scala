@@ -74,6 +74,8 @@ case class CommonArgs(
   engineVersion: Option[String] = None,
   variantJson: File = new File("engine.json"),
   manifestJson: File = new File("manifest.json"),
+  stopAfterRead: Boolean = false,
+  stopAfterPrepare: Boolean = false,
   verbose: Boolean = false,
   debug: Boolean = false)
 
@@ -273,7 +275,13 @@ object Console extends Logging {
           opt[String]("metrics-params") abbr("mp") action { (x, c) =>
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
-            "        metrics.json in the base path.")
+            "        metrics.json in the base path."),
+          opt[Unit]("stop-after-read") abbr("sar") action { (x, c) =>
+            c.copy(common = c.common.copy(stopAfterRead = true))
+          },
+          opt[Unit]("stop-after-prepare") abbr("sap") action { (x, c) =>
+            c.copy(common = c.common.copy(stopAfterPrepare = true))
+          }
         )
       note("")
       cmd("eval").

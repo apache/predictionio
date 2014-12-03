@@ -58,6 +58,8 @@ object CreateWorkflow extends Logging {
     evaluatorParamsJsonPath: Option[String] = None,
     jsonBasePath: String = "",
     env: Option[String] = None,
+    stopAfterRead: Boolean = false,
+    stopAfterPrepare: Boolean = false,
     verbose: Boolean = false,
     debug: Boolean = false)
 
@@ -128,6 +130,12 @@ object CreateWorkflow extends Logging {
       opt[Unit]("debug") action { (x, c) =>
         c.copy(debug = true)
       } text("Enable debug output.")
+      opt[Unit]("stop-after-read") action { (x, c) =>
+        c.copy(stopAfterRead = true)
+      }
+      opt[Unit]("stop-after-prepare") action { (x, c) =>
+        c.copy(stopAfterPrepare = true)
+      }
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
@@ -300,7 +308,9 @@ object CreateWorkflow extends Logging {
         env = pioEnvVars,
         params = WorkflowParams(
           verbose = 3,
-          batch = wfc.batch),
+          batch = wfc.batch,
+          stopAfterRead = wfc.stopAfterRead,
+          stopAfterPrepare = wfc.stopAfterPrepare),
         engine = engine,
         engineParams = engineParams,
         evaluator = evaluatorInstance,
