@@ -9,6 +9,8 @@ writing how-tos, fixing errors, and adding missing information. You can edit any
 live on [GitHub](https://github.com/PredictionIO/PredictionIO) by clicking the pencil icon on any page or open a
 [pull request](https://help.github.com/articles/creating-a-pull-request/).
 
+<a href="https://gemnasium.com/PredictionIO/PredictionIO"><img src="https://gemnasium.com/PredictionIO/PredictionIO.svg" alt="Dependency Status" class="static" /></a>
+
 
 ## Branching
 

@@ -5,7 +5,6 @@ set :css_dir,       'stylesheets'
 set :js_dir,        'javascripts'
 set :images_dir,    'images'
 set :partials_dir,  'partials'
-set :trailing_slash, false
 
 activate :directory_indexes
 activate :gzip
