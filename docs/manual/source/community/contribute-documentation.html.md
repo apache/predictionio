@@ -59,8 +59,6 @@ Please follow this styleguide for any documentation contributions.
 
 View our [Sample Typography](/samples/) page for all posible CSS styles.
 
-
-
 ### Links
 
 Internal links:
