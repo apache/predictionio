@@ -29,7 +29,7 @@ reassign the ticket to yourself so others know that you are working on it.
 
 When you have finished your code, you can [create a pull
 request](https://help.github.com/articles/creating-a-pull-request/) against the
-**develop** branch.
+**develop** branch. You also need to complete the [Contributor Agreement](http://prediction.io/cla). We cannot accept your PR without the agreement. 
 
 - Make sure the title and description are clear and concise. For more details on
   writing a good commit message, check out [this
