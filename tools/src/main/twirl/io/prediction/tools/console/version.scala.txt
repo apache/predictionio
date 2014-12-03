@@ -1,0 +1,3 @@
+Usage: pio version
+
+Displays the version of this command line console.
