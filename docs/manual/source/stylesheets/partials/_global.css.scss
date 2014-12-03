@@ -17,6 +17,9 @@
   padding: 0 25px 0 25px;
   img {
     width: 100%;
+    &.static {
+      width: auto;
+    }
   }
 
   h1 {

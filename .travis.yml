@@ -1,6 +1,5 @@
 branches:
   only:
-    - develop
     - master
     - livedoc
 
