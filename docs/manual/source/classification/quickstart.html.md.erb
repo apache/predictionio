@@ -146,11 +146,10 @@ client.create_event(
     }
 )
 '''
-
+```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
 ```php
-
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EventClient;
@@ -208,7 +207,6 @@ $client->createEvent(array(
 ));
 
 ?>
-
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
@@ -252,7 +250,6 @@ client.create_event(
 )
 
 # Etc...
-
 ```
   <div>
   <div data-tab="Java SDK" data-lang="java">
@@ -299,12 +296,10 @@ client.createEvent(new Event()
     .entityId(<USER ID>)
     .property("plan", <VALUE OF PLAN>));
 */
-
 ```
-
   </div>
   <div data-tab="REST API" data-lang="json">
-
+```
 # Set the 4 properties for a user
 
 curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
@@ -528,4 +523,3 @@ Your MyEngine is now running. Next, we are going to take a look at the engine
 architecture and explain how you can customize it completely.
 
 #### [Next: DASE Components Explained](dase.html)
-
