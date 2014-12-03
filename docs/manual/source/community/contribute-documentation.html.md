@@ -25,7 +25,14 @@ Use the `develop` branch if you want to write documentation for the next release
 
 ## Installing Locally
 
-PredictionIO documentation uses [Middleman](http://middlemanapp.com/). You can install it with the following commands:
+PredictionIO documentation uses [Middleman](http://middlemanapp.com/) and is hosted on [S3](http://aws.amazon.com/s3/).
+
+[Gems](http://rubygems.org/) are managed with [Bundler](http://bundler.io/). Front end code with [Bower](http://bower.io/).
+
+Requires [Ruby](https://www.ruby-lang.org/en/) 2.1 or greater.
+We recommend [RVM](http://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+
+You can install everything with the following commands:
 
 ```bash
 $ cd docs/manual
@@ -145,3 +152,5 @@ $ bundle exec rake check
 ```
 
 The `rake check` task parses each HTML page in the `build` folder and checks it for common errors including 404s.
+
+
