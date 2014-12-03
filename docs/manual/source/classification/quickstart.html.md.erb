@@ -2,8 +2,6 @@
 title: Classification Quick Start
 ---
 
-# Quick Start - Classification Engine Template
-
 An engine template is an almost-complete implementation of an engine.
 PredictionIO's [Classification Engine
 Template](https://github.com/PredictionIO/PredictionIO/tree/master/templates/scala-parallel-classification)
@@ -88,6 +86,7 @@ making a HTTP request or through the `EventClient` of an SDK.
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
+  
 ```python
 import predictionio
 
@@ -111,7 +110,6 @@ client.create_event(
     }
 )
 
-'''
 # You may also set the properties one by one
 client.create_event(
     event="$set",
@@ -145,12 +143,10 @@ client.create_event(
       "plan" : int(<VALUE OF PLAN>)
     }
 )
-'''
-
+```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
 ```php
-
 <?php
 require_once("vendor/autoload.php");
 use predictionio\EventClient;
@@ -208,7 +204,6 @@ $client->createEvent(array(
 ));
 
 ?>
-
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
@@ -252,9 +247,8 @@ client.create_event(
 )
 
 # Etc...
-
 ```
-  <div>
+  </div>
   <div data-tab="Java SDK" data-lang="java">
 ```java
 import com.google.common.collect.ImmutableMap;
@@ -301,10 +295,9 @@ client.createEvent(new Event()
 */
 
 ```
-
   </div>
   <div data-tab="REST API" data-lang="json">
-
+```bash
 # Set the 4 properties for a user
 
 curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
@@ -455,7 +448,6 @@ that page in your web browser to check its status.
 
 ![Engine Status](/images/engine-server.png)
 
-|
 
 Now, You can try to retrieve predicted results. For example, to predict the
 label (i.e. *plan* in this case) of a user with attr0=2, attr1=0 and attr2=0,
@@ -497,6 +489,7 @@ puts response
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
+
 ```java
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
