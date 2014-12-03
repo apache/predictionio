@@ -41,10 +41,7 @@ PredictionIO's documentation, included in this repo in the `docs/manual` directo
 
 Interested in helping with our documentation? Read [Contributing Documentation](http://docs.prediction.io/community/contribute-documentation/).
 
-[![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
-
-[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc)](https://travis-ci.org/PredictionIO/PredictionIO)
-
+[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc)](https://travis-ci.org/PredictionIO/PredictionIO)[![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
 
 ## Community
 
