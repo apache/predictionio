@@ -7,7 +7,7 @@ title: Contribute Documentation
 You can help improve the PredictionIO documentation by submitting tutorials,
 writing how-tos, fixing errors, and adding missing information. You can edit any page
 live on [GitHub](https://github.com/PredictionIO/PredictionIO) by clicking the pencil icon on any page or open a
-[pull request](https://help.github.com/articles/creating-a-pull-request/).
+[Pull Request](https://help.github.com/articles/creating-a-pull-request/).
 
 <a href="https://gemnasium.com/PredictionIO/PredictionIO"><img src="https://gemnasium.com/PredictionIO/PredictionIO.svg" alt="Dependency Status" class="static" /></a>
 
@@ -16,11 +16,11 @@ live on [GitHub](https://github.com/PredictionIO/PredictionIO) by clicking the p
 
 Use the `livedoc` branch if you want to update the current documentation.
 
-<img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc" alt="Build Status" class="static" />
+<a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc" alt="Build Status" class="static" /></a>
 
 Use the `develop` branch if you want to write documentation for the next version.
 
-<img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=develop" alt="Build Status" class="static" />
+<a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=develop" alt="Build Status" class="static" /></a>
 
 
 ## Installing Locally
@@ -55,6 +55,12 @@ $ bundle exec middleman build
 
 Please follow this styleguide for any documentation contributions.
 
+### Text
+
+View our [Sample Typography](/samples/) page for all posible CSS styles.
+
+
+
 ### Links
 
 Internal links:
@@ -75,6 +81,16 @@ Middleman is configured for directory indexes. Linking to a file in `sources/sam
 [Bad](/path/to/page) Does not end with a /.
 
 ```
+
+### Images
+
+Images should be exactly 900px wide. [Chrome Window Resizer](https://chrome.google.com/webstore/detail/window-resizer/kkelicaakdanhinjdeammmilcgefonfh)
+is an excellent extension for browser resizing.
+
+WARNING: **OS X** users please [Disable Shadows](http://www.idownloadblog.com/2014/08/03/how-to-remove-the-shadow-window-screenshots-on-mac-os-x/)
+before taking a screenshot.
+
+Images should only show the relavent tab/terminal. Hide any additional toolbars.
 
 ## Going Live
 

@@ -91,7 +91,7 @@ This `code is inline`.
 
 # Image
 
-![Alt Text](/images/samples/middleman.png "Title Text")
+![Sample Image](/images/tutorials/rails/localhost-8000.png)
 
 
 # Quotes
