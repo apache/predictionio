@@ -875,7 +875,9 @@ object Console extends Logging {
           if (ca.common.verbose || ca.common.debug)
             cmd.!(ProcessLogger(line => info(line), line => error(line)))
           else
-            cmd.!(ProcessLogger(line => Unit, line => Unit))
+            cmd.!(ProcessLogger(
+              line => outputSbtError(line),
+              line => outputSbtError(line)))
         if (r != 0) {
           error(s"Return code of previous step is ${r}. Aborting.")
           sys.exit(1)
@@ -909,7 +911,9 @@ object Console extends Logging {
           if (ca.common.verbose || ca.common.debug)
           buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
           else
-          buildCmd.!(ProcessLogger(line => Unit, line => Unit))
+          buildCmd.!(ProcessLogger(
+            line => outputSbtError(line),
+            line => outputSbtError(line)))
         if (r != 0) {
           error(s"Return code of previous step is ${r}. Aborting.")
           sys.exit(1)
@@ -921,6 +925,10 @@ object Console extends Logging {
           sys.exit(1)
       }
     }
+  }
+
+  private def outputSbtError(line: String): Unit = {
+    """\[.*error.*\]""".r findFirstIn line foreach { _ => error(line) }
   }
 
   def run(ca: ConsoleArgs): Unit = {
