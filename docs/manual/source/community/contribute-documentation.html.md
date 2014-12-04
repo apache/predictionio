@@ -110,7 +110,7 @@ Images should only show the relavent tab/terminal. Hide any additional toolbars.
 
 ### Code Blocks
 
-Fenced code blocks are created using the <code>```language</code> format.
+Fenced code blocks are created using the <code>&#96;&#96;&#96;language</code> format.
 
 A example of each language is available on our [Language Samples](/samples/languages) page.
 
@@ -130,6 +130,15 @@ Code tabs use the following HTML format:
 ```
 
 You can see an example of this on our [Tab Samples](/samples/tabs/) page.
+
+## Important Files
+
+| Description   | File          |
+| ------------- | ------------- |
+| Left side navigation. | `source/partials/nav/main.html.slim` |
+| Main site layout. | `source/layouts/layout.html.slim` |
+| Custom Markdown renderer based on [Redcarpet](https://github.com/vmg/redcarpet). | `lib/custom_renderer.rb` |
+| Custom TOC helper. | `helpers/table_of_contents_helpers.rb` |
 
 ## Going Live
 
