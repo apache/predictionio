@@ -736,7 +736,14 @@ object Console extends Logging {
       sys.exit(1)
     }
     jarFiles foreach { f => info(s"Found ${f.getName}")}
-    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
+    val copyLocal = if (sys.env.contains("HADOOP_CONF_DIR")) {
+      info("HADOOP_CONF_DIR is set. Assuming HDFS is available.")
+      true
+    } else {
+      info("HADOOP_CONF_DIR is not set. Assuming HDFS is unavailable.")
+      false
+    }
+    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles, copyLocal)
     info("Your engine is ready for training.")
   }
 
