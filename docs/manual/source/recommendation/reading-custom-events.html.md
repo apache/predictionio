@@ -53,7 +53,7 @@ val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
     }
 ```
 
-That's it! Your engine can read a custom like event. 
+That's it! Your engine now reads a custom **like** event. 
 
 
 #### [Next: Customizing Data Preparator](customize-data-prep.html)
