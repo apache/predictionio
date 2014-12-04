@@ -68,12 +68,31 @@ configure :build do
   end
 end
 
-# Hacks
-Slim::Engine.disable_option_validator! # https://github.com/middleman/middleman/issues/612
-
 # CloudFront
 activate :cloudfront do |cf|
   cf.access_key_id = ENV['AWS_ACCESS_KEY_ID']
   cf.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
   cf.distribution_id = ENV['CF_DISTRIBUTION_ID']
 end
+
+# Hacks
+Slim::Engine.disable_option_validator! # https://github.com/middleman/middleman/issues/612
+
+# https://github.com/Aupajo/middleman-search_engine_sitemap/issues/2
+set :file_watcher_ignore, [
+  /^bin(\/|$)/,
+  /^\.bundle(\/|$)/,
+  # /^vendor(\/|$)/, # Keep this commented out!
+  /^node_modules(\/|$)/,
+  /^\.sass-cache(\/|$)/,
+  /^\.cache(\/|$)/,
+  /^\.git(\/|$)/,
+  /^\.gitignore$/,
+  /\.DS_Store/,
+  /^\.rbenv-.*$/,
+  /^Gemfile$/,
+  /^Gemfile\.lock$/,
+  /~$/,
+  /(^|\/)\.?#/,
+  /^tmp\//
+]
