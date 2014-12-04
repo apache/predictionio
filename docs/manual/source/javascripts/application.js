@@ -11,6 +11,9 @@ $(document).ready(function() {
 
   $('#nav-main .active').parent().parent().show();
 
+  $('#content').on('click', function(event) {
+    $('body').removeClass('active-navigation active-complementary')
+  });
 
   $('#active-navigation').on('click', function(event) {
     event.preventDefault();
@@ -21,6 +24,10 @@ $(document).ready(function() {
     event.preventDefault();
     $('body').toggleClass('active-complementary').removeClass('active-navigation')
   });
+
+  if ($('#table-of-contents').is(':empty')) {
+    $('#table-of-contents').addClass('empty')
+  }
 
   // Tabslet
   $('.tabs').tabslet();

@@ -1,4 +1,3 @@
-// All Screens
 #active-navigation {
   float: left;
   font-size: 40px;
@@ -11,53 +10,43 @@
   }
 }
 
-[role="navigation"],
-[role="main"],
-[role="complementary"] {
-  width: 100%;
-}
-
 [role="navigation"] {
-  margin-left: -100%;
-  float: left;
+  width: $navigation-role-width;
+  min-width: $navigation-role-width;
+  display: none;
 }
 
 [role="main"] {
-  margin-left: 0;
-  float: left;
+ width: 100%;
 }
 
 [role="complementary"] {
-  margin-right: -200%;
-  float: left;
+  width: $complementary-role-width;
+  min-width: $complementary-role-width;
+  display: none;
 }
 
-// Active Navigation
-.active-navigation [role="navigation"] {
-  margin-left: 0;
-  width: 50%;
+.active-navigation {
+  [role="navigation"] {
+    display: block;
+  }
+
+  [role="main"] {
+    margin-right: -$navigation-role-width;
+  }
 }
 
-.active-navigation [role="main"] {
-  margin-right: -100%;
+.active-complementary {
+  [role="main"] {
+    margin-left: -$complementary-role-width;
+  }
+
+  [role="complementary"] {
+    display: block;
+  }
 }
 
-.active-navigation [role="complementary"] {
-  margin-right: 100%;
-  float: right;
-}
 
-// Active Complementary
-.active-complementary [role="navigation"] {
-  margin-left: -100%;
-}
-.active-complementary [role="main"] {
-  margin-left: -50%;
-}
-.active-complementary [role="complementary"] {
-  margin-left: 0;
-  width: 50%;
-}
 
 // Medium
 @media all and (min-width: 768px) {
@@ -65,37 +54,24 @@
     display: none;
   }
 
-  [role="navigation"],
-  .active-navigation [role="navigation"] {
-    width: 25%;
-    margin-left: 0;
-    float: left;
+  [role="navigation"] {
+    display: block;
   }
 
-  [role="main"] {
-    width: 75%;
+  .active-navigation {
+    [role="main"] {
+      margin-right: 0;
+    }
   }
 
-  .active-navigation [role="main"] {
-    margin-right: -25%;
-  }
+  .active-complementary {
+    [role="main"] {
+      margin-left: 0;
+    }
 
-  .active-navigation [role="complementary"] {
-    height: 0;
-  }
-
-  .active-complementary [role="navigation"] {
-    margin-left: -100%;
-  }
-
-  .active-complementary [role="main"] {
-    margin-left: 0;
-    width: 80%;
-  }
-
-  .active-complementary [role="complementary"] {
-    margin-right: -80%;
-    width: 20%;
+    [role="navigation"] {
+      margin-left: -$complementary-role-width;
+    }
   }
 }
 
@@ -105,28 +81,13 @@
     display: none;
   }
 
-  [role="navigation"],
-  .active-navigation [role="navigation"],
-  .active-complementary [role="navigation"] {
-    width: 25%;
-    margin-left: 0;
-    float: left;
+  [role="complementary"] {
+    display: block;
   }
 
-  [role="main"],
-  .active-navigation [role="main"],
-  .active-complementary [role="main"] {
-    width: 55%;
-  }
-
-  [role="complementary"],
-  .active-navigation [role="complementary"],
-  .active-complementary [role="complementary"]{
-    width: 20%;
-    margin-right: 0;
-    float: right;
-    height: auto;
+  .active-complementary {
+    [role="navigation"] {
+      margin-left: 0;
+    }
   }
 }
-
-
