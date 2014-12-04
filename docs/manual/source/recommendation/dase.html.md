@@ -168,6 +168,7 @@ and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 > You may modify readTraining function to read from other datastores, such as MongoDB -  [link]
 -->
 
+INFO: You could [modify the DataSource to read custom events](reading-custom-events.html) other than the default **rate** and **buy**.
 
 ### Data Preparator
 
@@ -327,7 +328,7 @@ Now you should have a good understanding of the DASE model. We will show you an
 example of customizing the Data Preparator to exclude certain items from your
 training set.
 
-#### [Next: Customizing Data Preparator](customize-data-prep.html)
+#### [Next: Reading Custom Events](reading-custom-events.html)
 
 
 
