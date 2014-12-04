@@ -1,0 +1,37 @@
+.tabs {
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 0;
+    display: inline-block;
+  }
+  li {
+    display: block;
+    float: left;
+    margin: 0 10px 0 0;
+    a {
+      display: inline-block;
+      background-color: $tab-background-color;
+      padding: 10px 15px 5px 15px;
+      border-bottom: 5px solid $border-color;
+      color: $tab-link-color;
+      text-decoration: none;
+
+      &:hover {
+        background-color: $tab-hover-background-color;
+        color: $tab-hover-link-color;
+      }
+    }
+    &.active {
+
+      a {
+        background-color: $tab-active-background-color;
+        border-bottom: 5px solid #da1111;
+        color: $tab-active-link-color;
+        &:hover {
+          background-color: $tab-active-background-color;
+        }
+      }
+    }
+  }
+}

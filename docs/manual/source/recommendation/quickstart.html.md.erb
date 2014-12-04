@@ -1,0 +1,406 @@
+---
+title: Quick Start - Recommendation Engine Template
+---
+
+An engine template is an almost-complete implementation of an engine.
+PredictionIO's [Recommendation Engine
+Template](https://github.com/PredictionIO/PredictionIO/tree/master/templates/scala-parallel-recommendation)
+has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
+default. You can customize it easily to fit your specific needs.
+
+We are going to show you how to create your own recommendation engine for
+production use based on this template.
+
+## Install PredictionIO
+
+First you need to [install PredictionIO <%= data.versions.pio %>](/install)
+
+INFO: 0.8.2 contains schema changes from previous versions. If you have
+installed the previous versions, you may need to clear both HBase and
+Elasticsearch. See more [here](../resources/schema-change.html).
+
+Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
+For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/predictionio/bin`:
+
+```
+$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+```
+
+Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
+
+```
+$ pio status
+```
+
+and please make sure that PredictionIO Event Server, which collects data, is
+running:
+
+```
+$ pio eventserver
+```
+
+## Create a Sample App
+
+Let's create a sample app called "MyApp1" now. An app represents the application
+that generates the data, e.g. a movie rental app.
+
+```
+$ pio app new MyApp1
+```
+
+You should find the following in the console output:
+
+```
+...
+2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
+2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
+2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
+2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
+2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+Take note of the **Access Key** and **App ID**. You will need the **Access Key**
+to refer to "MyApp1" when you collect data. At the same time, you will use **App
+ID** to refer to "MyApp1" in engine code.
+
+`$ pio app list` will return a list of names and IDs of apps created in the Event Server.
+
+```
+$ pio app list
+2014-12-03 14:19:34,134 INFO  elasticsearch.plugins - [Hephaestus] loaded [], sites []
+2014-12-03 14:19:36,206 INFO  tools.Console$ -                 Name |   ID
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp1 |    1
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp2 |    2
+2014-12-03 14:19:36,209 INFO  tools.Console$ - Finished listing 2 app(s).
+```
+
+## Create a new Engine from an Engine Template
+
+Now let's create a new engine called *MyRecommendation* by cloning the MLlib
+Collaborative Filtering engine template, assuming `/home/yourname/predictionio`
+is the installation directory of PredictionIO:
+
+```
+$ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyRecommendation
+$ cd MyRecommendation
+```
+
+## Collecting Data
+
+Next, let's collect some training data for the app of this Engine. By default,
+the Recommendation Engine Template supports 2 types of events: **rate** and
+**buy**. A user can give a rating score to an item or he can buy an item.
+
+You can send these data to PredictionIO Event Server in real-time easily by
+making a HTTP request or through the `EventClient` of an SDK.
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+
+client = predictionio.EventClient(
+    access_key=<ACCESS KEY>,
+    url=<URL OF EVENTSERVER>,
+    threads=5,
+    qsize=500
+)
+
+# A user rates an item
+client.create_event(
+    event="rate",
+    entity_type="user",
+    entity_id=<USER ID>,
+    target_entity_type="item",
+    target_entity_id=<ITEM ID>,
+    properties= { "rating" : float(<RATING>) }
+)
+
+# A user buys an item
+client.create_event(
+    event="buy",
+    entity_type="user",
+    entity_id=<USER ID>,
+    target_entity_type="item",
+    target_entity_id=<ITEM ID>
+)
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user rates an item
+$client->createEvent(array(
+   'event' => 'rate',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>,
+   'properties' => array('ratings'=> <RATING>)
+));
+
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# A user rates an item.
+client.create_event(
+  'rate',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>,
+    'properties' => { 'rating' => <RATING (float)> }
+  }
+)
+
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user rates an item
+Event rateEvent = new Event()
+    .event("rate")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>)
+    .property("rating", new Float(<RATING>));
+client.createEvent(rateEvent);
+
+// A user buys an item
+Event buyEvent = new Event()
+    .event("buy")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>);
+client.createEvent(buyEvent);
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+# A user rates an item
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "rate",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "properties" : {
+    "ratings" : <RATING>
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# A user buys an item
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+```
+  </div>
+</div>
+
+
+You may use the sample movie data from MLlib repo for demonstration purpose.
+Execute the following to get the data set:
+
+```
+$ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
+```
+
+A Python import script `import_eventserver.py` is provided to import the data to
+Event Server using Python SDK. Please upgrade to the latest SDK as well so you
+have the latest script. Replace the value of access_key parameter by your
+**Access Key**.
+
+```
+$ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+You should see the following output:
+
+```
+Importing data...
+1501 events are imported.
+```
+
+WARNING: If you experience error similar to the following:
+**TypeError: __init__() got an unexpected keyword argument 'access_key'**
+please update the Python SDK to the latest version.
+
+Now the movie ratings data is stored as events inside the Event Store.
+
+
+## Deploy the Engine as a Service
+
+Now you can build, train, and deploy the engine. First, make sure you are under the `MyRecommendation` directory.
+
+```
+$ cd MyRecommendation
+```
+ 
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**. 
+
+```
+...
+"datasource": {
+  "appId": 1
+},
+...
+```
+
+### Building
+
+Start with building your *MyRecommendation* engine.
+
+```
+$ pio build
+```
+
+Upon successful build, you should see a console message similar to the
+following.
+
+```
+2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
+```
+
+### Training
+
+Train your successfully-built engine.
+
+```
+$ pio train
+```
+
+When your engine is trained successfully, you should see a console message
+similar to the following.
+
+```
+2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
+```
+
+### Deploying
+
+Now your engine is ready to deploy.
+
+```
+$ pio deploy
+```
+
+This will deploy an engine that binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
+
+![Engine Status](/images/engine-server.png)
+
+
+Now, You can try to retrieve predicted results. To recommend 4 movies to user
+whose id is 1, you send this JSON `{ "user": 1, "num": 4 }` to the deployed
+engine and it will return a JSON of the recommended movies. Simply send a query
+by making a HTTP request or through the `EngineClient` of an SDK:
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({"user": 1, "num": 4})
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('user'=> 1, 'num'=> 4));
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="php">
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('user' => <USER ID>, 'num' => <NUMBER (integer)>)
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+
+// query
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "user", 1,
+        "num",  4
+    ));
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
+
+{"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
+```
+  </div>
+</div>
+
+Your engine *MyRecommendation* is now running. Next, we are going to take a look
+at the engine architecture and explain how you can customize it completely.
+
+#### [Next: DASE Components Explained](/recommendation/dase)
