@@ -90,13 +90,6 @@ class RegressionStrategy (params: RegressionStrategyParams) extends StockStrateg
     ticker: String,
     dataView: DataView): Double = {
 
-    System.out.print("PredictOne: coefficient: ")
-    var y = 0
-    for (y <- 0 to coef.length - 1) {
-      System.out.print( coef(y) )
-    }
-    System.out.println()
-
     var densVecArray = Array[Double]();
     var x = 0
     for (x <- 0 to params.indicators.length - 1) {
