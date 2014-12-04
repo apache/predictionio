@@ -1,5 +1,6 @@
 ---
 title: Tabs
+hidden: true
 ---
 
 This page is used to test the tabs plugin based on [Tabslet](https://github.com/vdw/Tabslet).

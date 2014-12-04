@@ -31,6 +31,9 @@ PredictionIO documentation uses [Middleman](http://middlemanapp.com/) and is hos
 Requires [Ruby](https://www.ruby-lang.org/en/) 2.1 or greater.
 We recommend [RVM](http://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 
+WARNING: **OS X** users you will need to install [Xcode Command Line Tools](https://developer.apple.com/xcode/downloads/)
+with: `$ xcode-select --install` first.
+
 You can install everything with the following commands:
 
 ```bash
@@ -38,6 +41,7 @@ $ cd docs/manual
 $ gem install bundler
 $ bundle install
 ```
+
 
 ## Starting the Server
 
@@ -130,6 +134,18 @@ Code tabs use the following HTML format:
 ```
 
 You can see an example of this on our [Tab Samples](/samples/tabs/) page.
+
+### SEO
+
+You can hide a page from the `sitemap.xml` file by setting the pages
+[Frontmater](http://middlemanapp.com/basics/frontmatter/) like this:
+
+```md
+---
+title: Secret Page
+hidden: true
+---
+```
 
 ## Important Files
 

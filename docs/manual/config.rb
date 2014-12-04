@@ -26,6 +26,10 @@ set :markdown,
 # Sprockets
 sprockets.append_path File.join root, 'bower_components'
 
+# Sitemap
+set :url_root, 'http://docs.prediction.io'
+activate :search_engine_sitemap, exclude_attr: 'hidden'
+
 # Development Settings
 configure :development do
   set :scheme, 'http'

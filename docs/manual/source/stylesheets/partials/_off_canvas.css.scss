@@ -46,8 +46,6 @@
   }
 }
 
-
-
 // Medium
 @media all and (min-width: 768px) {
   #active-navigation {
@@ -83,6 +81,9 @@
 
   [role="complementary"] {
     display: block;
+    &.empty {
+      display: none;
+    }
   }
 
   .active-complementary {

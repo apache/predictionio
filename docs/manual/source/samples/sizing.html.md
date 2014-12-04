@@ -1,5 +1,6 @@
 ---
 title: Sizing Samples with an Extra Long Title to Show Wrapping
+hidden: true
 ---
 
 ## Long Text

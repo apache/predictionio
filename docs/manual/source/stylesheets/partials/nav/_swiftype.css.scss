@@ -1,0 +1,19 @@
+#swiftype {
+  display: block;
+  float: right;
+  margin: 25px 25px 25px 0;
+
+  .st-search-input {
+    color: $body-font-color;
+    border-radius: 5px;
+    height: 40px;
+    box-sizing: border-box;
+    border: 1px solid $border-color;
+    box-shadow: none;
+    font-weight: 400;
+    font-size: 16px;
+    background: none;
+    background-color: #ffffff;
+    padding: 5px 5px 5px 10px;
+  }
+}
