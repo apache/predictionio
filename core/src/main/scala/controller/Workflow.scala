@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
   * @param verbose Verbosity level.
   * @param saveModel Controls whether trained models are persisted.
   * @param sparkEnv Spark properties that will be set in SparkConf.setAll().
+  * @param stopAfterRead Stops workflow after reading from data source.
+  * @param stopAfterPrepare Stops workflow after data preparation.
   * @group Workflow
   */
 case class WorkflowParams(
