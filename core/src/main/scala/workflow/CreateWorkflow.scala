@@ -58,6 +58,7 @@ object CreateWorkflow extends Logging {
     evaluatorParamsJsonPath: Option[String] = None,
     jsonBasePath: String = "",
     env: Option[String] = None,
+    skipSanityCheck: Boolean = false,
     stopAfterRead: Boolean = false,
     stopAfterPrepare: Boolean = false,
     verbose: Boolean = false,
@@ -130,6 +131,9 @@ object CreateWorkflow extends Logging {
       opt[Unit]("debug") action { (x, c) =>
         c.copy(debug = true)
       } text("Enable debug output.")
+      opt[Unit]("skip-sanity-check") action { (x, c) =>
+        c.copy(skipSanityCheck = true)
+      }
       opt[Unit]("stop-after-read") action { (x, c) =>
         c.copy(stopAfterRead = true)
       }
@@ -309,6 +313,7 @@ object CreateWorkflow extends Logging {
         params = WorkflowParams(
           verbose = 3,
           batch = wfc.batch,
+          skipSanityCheck = wfc.skipSanityCheck,
           stopAfterRead = wfc.stopAfterRead,
           stopAfterPrepare = wfc.stopAfterPrepare),
         engine = engine,

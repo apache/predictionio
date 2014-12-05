@@ -24,6 +24,7 @@ import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
+import io.prediction.controller.SanityCheck
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
@@ -424,6 +425,11 @@ object CoreWorkflow {
       i.copy(id = iid)
     }
 
+    if (params.skipSanityCheck)
+      logger.info("Data sanity checking is off.")
+    else
+      logger.info("Data sanity checking is on.")
+
     //if (dataSourceClass == null || dataSourceParams == null) {
     if (dataSourceClassOpt.isEmpty) {
       logger.info("Dataprep Class or Params is null. Stop here");
@@ -450,21 +456,39 @@ object CoreWorkflow {
 
     logger.info(s"Number of training set: ${localParamsSet.size}")
 
-    if (verbose > 2) {
-      evalDataMap.foreach{ case (ei, data) => {
+    if (!params.skipSanityCheck || verbose > 2) {
+      if (!params.skipSanityCheck)
+        logger.info("Performing data sanity check on training data.")
+
+      evalDataMap foreach { case (ei, data) =>
         val (trainingData, testingData) = data
         //val collectedValidationData = testingData.collect
-        val trainingDataStr = WorkflowUtils.debugString(trainingData)
-        val testingDataStrs = testingData.collect
-          .map(WorkflowUtils.debugString)
 
-        logger.info(s"Data Set $ei")
-        logger.info(s"Params: ${localParamsSet(ei)}")
-        logger.info(s"TrainingData:")
-        logger.info(trainingDataStr)
-        logger.info(s"TestingData: (count=${testingDataStrs.length})")
-        testingDataStrs.foreach { logger.info(_) }
-      }}
+        if (!params.skipSanityCheck) {
+          if (trainingData.isInstanceOf[SanityCheck]) {
+            logger.info(
+              s"${trainingData.getClass.getName} supports data sanity check. " +
+              "Performing check.")
+            trainingData.asInstanceOf[SanityCheck].sanityCheck()
+          } else {
+            logger.info(s"${trainingData.getClass.getName} does not support " +
+              "data sanity check. Skipping check.")
+          }
+        }
+
+        if (verbose > 2) {
+          val trainingDataStr = WorkflowUtils.debugString(trainingData)
+          val testingDataStrs = testingData.collect
+            .map(WorkflowUtils.debugString)
+
+          logger.info(s"Data Set $ei")
+          logger.info(s"Params: ${localParamsSet(ei)}")
+          logger.info(s"TrainingData:")
+          logger.info(trainingDataStr)
+          logger.info(s"TestingData: (count=${testingDataStrs.length})")
+          testingDataStrs.foreach { logger.info(_) }
+        }
+      }
     }
 
     logger.info("Data source complete")

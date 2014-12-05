@@ -76,6 +76,7 @@ case class CommonArgs(
   manifestJson: File = new File("manifest.json"),
   stopAfterRead: Boolean = false,
   stopAfterPrepare: Boolean = false,
+  skipSanityCheck: Boolean = false,
   verbose: Boolean = false,
   debug: Boolean = false)
 
@@ -276,6 +277,9 @@ object Console extends Logging {
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
             "        metrics.json in the base path."),
+          opt[Unit]("skip-sanity-check") abbr("ssc") action { (x, c) =>
+            c.copy(common = c.common.copy(skipSanityCheck = true))
+          },
           opt[Unit]("stop-after-read") abbr("sar") action { (x, c) =>
             c.copy(common = c.common.copy(stopAfterRead = true))
           },
