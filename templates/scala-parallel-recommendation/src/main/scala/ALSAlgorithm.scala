@@ -2,7 +2,7 @@ package org.template.recommendation
 
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
-import io.prediction.data.storage.StrToIntBiMap
+import io.prediction.data.storage.BiMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -22,8 +22,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
   def train(data: PreparedData): ALSModel = {
     // Convert user and product String IDs to Int index for MLlib
-    val userIdToIxMap = StrToIntBiMap(data.ratings.map(_.user))
-    val productIdToIxMap = StrToIntBiMap(data.ratings.map(_.product))
+    val userIdToIxMap = BiMap.stringInt(data.ratings.map(_.user))
+    val productIdToIxMap = BiMap.stringInt(data.ratings.map(_.product))
     val mllibRatings = data.ratings.map( r =>
       // MLlibRating requires integer index for user and product
       MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)

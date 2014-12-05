@@ -25,15 +25,14 @@ import scala.collection.JavaConversions._
   */
 class BiMap[K, V] private[prediction] (private val m: ImmutableBiMap[K, V])
   extends Serializable {
-//class BiMap[K, V] (private val m: ImmutableBiMap[K, V]) extends Serializable {
-
-  def this(x: Map[K, V]) = this(ImmutableBiMap.copyOf[K, V](x))
 
   def inverse: BiMap[V, K] = new BiMap(m.inverse())
 
   def get(k: K): Option[V] = Option(m.get(k))
 
   def getOrElse(k: K, default: => V): V = get(k).getOrElse(default)
+
+  def contains(k: K): Boolean = m.containsKey(k)
 
   def apply(k: K): V = {
     if (m.containsKey(k))
@@ -53,49 +52,55 @@ class BiMap[K, V] private[prediction] (private val m: ImmutableBiMap[K, V])
   def toSeq: Seq[(K, V)] = m.toSeq
 }
 
-object StrToLongBiMap {
+object BiMap {
 
-  /** Create a String to Long BiMap from a set of String
+  def apply[K, V](x: Map[K, V]): BiMap[K, V] =
+    new BiMap(ImmutableBiMap.copyOf[K, V](x))
+
+  /** Create a BiMap[String, Long] from a set of String. The Long index starts
+    * from 0.
     * @param keys a set of String
     * @return a String to Long BiMap
     */
-  def apply(keys: Set[String]): BiMap[String, Long] = {
+  def stringLong(keys: Set[String]): BiMap[String, Long] = {
     val builder: ImmutableBiMap.Builder[String, Long] = ImmutableBiMap.builder()
 
     keys.zipWithIndex.foreach { case (k, v) =>
       builder.put(k, v)
     }
-    new BiMap[String, Long](builder.build())
+    new BiMap(builder.build())
   }
 
-  /** Create a String to Long BiMap from RDD[String]
+  /** Create a BiMap[String, Long] from RDD[String]. The Long index starts
+    * from 0.
     * @param keys RDD of String
-    * @return a String to Long BiMap (local)
+    * @return a String to Long BiMap
     */
-  def apply(keys: RDD[String]): BiMap[String, Long] = {
-    apply(keys.distinct.collect.toSet)
+  def stringLong(keys: RDD[String]): BiMap[String, Long] = {
+    stringLong(keys.distinct.collect.toSet)
   }
-}
 
-object StrToIntBiMap {
-  /** Create a String to Long BiMap from a set of String
+  /** Create a BiMap[String, Int] from a set of String. The Int index starts
+    * from 0.
     * @param keys a set of String
-    * @return BiMap[String, Long] a String to Long BiMap
+    * @return a String to Int BiMap
     */
-  def apply(keys: Set[String]): BiMap[String, Int] = {
+  def stringInt(keys: Set[String]): BiMap[String, Int] = {
     val builder: ImmutableBiMap.Builder[String, Int] = ImmutableBiMap.builder()
 
     keys.zipWithIndex.foreach { case (k, v) =>
       builder.put(k, v)
     }
-    new BiMap[String, Int](builder.build())
+    new BiMap(builder.build())
   }
 
-  /** Create a String to Long BiMap from RDD[String]
+  /** Create a BiMap[String, Int] from RDD[String]. The Int index starts
+    * from 0.
     * @param keys RDD of String
-    * @return a String to Long BiMap (local)
+    * @return a String to Int BiMap
     */
-  def apply(keys: RDD[String]): BiMap[String, Int] = {
-    apply(keys.distinct.collect.toSet)
+  def stringInt(keys: RDD[String]): BiMap[String, Int] = {
+    stringInt(keys.distinct.collect.toSet)
   }
+
 }

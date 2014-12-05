@@ -20,6 +20,8 @@ import org.joda.time.DateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import scala.reflect.ClassTag
+
 /** Base trait of a data access object that returns [[Event]] related RDD data
   * structure.
   */
@@ -88,4 +90,13 @@ trait PEvents extends Serializable {
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
     (sc: SparkContext): RDD[(String, DataMap)]
+
+  /** @Experimental */
+  def extractEntityMap[A: ClassTag](
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)
+    (sc: SparkContext)(extract: DataMap => A): EntityMap[A]
 }
