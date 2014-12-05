@@ -10,14 +10,13 @@ import io.prediction.data.storage.Storage
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.Rating
 
 import grizzled.slf4j.Logger
 
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[TrainingData, 
+  extends PDataSource[TrainingData,
       EmptyEvaluationInfo, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
@@ -39,9 +38,9 @@ class DataSource(val dsp: DataSourceParams)
           case "buy" => 4.0 // map buy event to rating value of 4
           case _ => throw new Exception(s"Unexpected event ${event} is read.")
         }
-        // assume entityId and targetEntityId is originally Int type
-        Rating(event.entityId.toInt,
-          event.targetEntityId.get.toInt,
+        // entityId and targetEntityId is String
+        Rating(event.entityId,
+          event.targetEntityId.get,
           ratingValue)
       } catch {
         case e: Exception => {

@@ -31,6 +31,7 @@ libraryDependencies ++= Seq(
   "commons-codec"           % "commons-codec"   % "1.9",
   "org.spark-project.akka" %% "akka-actor"      % "2.2.3-shaded-protobuf",
   "org.specs2"             %% "specs2"          % "2.3.13" % "test",
+  "com.google.guava"       % "guava"            % "18",
   // added for Parallel storage interface
   "org.apache.hbase" % "hbase-server" % "0.98.5-hadoop2"
     exclude("org.mortbay.jetty", "servlet-api-2.5")

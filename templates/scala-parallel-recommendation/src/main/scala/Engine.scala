@@ -3,8 +3,14 @@ package org.template.recommendation
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
+case class Rating(
+  val user: String,
+  val product: String,
+  val rating: Double
+)
+
 case class Query(
-  val user: Int,
+  val user: String,
   val num: Int
 ) extends Serializable
 
@@ -13,7 +19,7 @@ case class PredictedResult(
 ) extends Serializable
 
 case class ProductScore(
-  product: Int,
+  product: String,
   score: Double
 ) extends Serializable
 

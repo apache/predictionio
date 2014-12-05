@@ -2,13 +2,14 @@ package org.template.recommendation
 
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
+import io.prediction.data.storage.StrToIntBiMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.ALS
-import org.apache.spark.mllib.recommendation.Rating
-import org.apache.spark.mllib.recommendation.PersistentMatrixFactorizationModel
+import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
+import org.apache.spark.mllib.recommendation.ALSModel
 
 case class ALSAlgorithmParams(
   val rank: Int,
@@ -17,21 +18,33 @@ case class ALSAlgorithmParams(
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
   extends PAlgorithm[PreparedData,
-      PersistentMatrixFactorizationModel, Query, PredictedResult] {
+      ALSModel, Query, PredictedResult] {
 
-  def train(data: PreparedData): PersistentMatrixFactorizationModel = {
-    val m = ALS.train(data.ratings, ap.rank, ap.numIterations, ap.lambda)
-    new PersistentMatrixFactorizationModel(
+  def train(data: PreparedData): ALSModel = {
+    // Convert user and product String IDs to Int index for MLlib
+    val userIdToIxMap = StrToIntBiMap(data.ratings.map(_.user))
+    val productIdToIxMap = StrToIntBiMap(data.ratings.map(_.product))
+    val mllibRatings = data.ratings.map( r =>
+      // MLlibRating requires integer index for user and product
+      MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)
+    )
+    val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
+    new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
-      productFeatures = m.productFeatures)
+      productFeatures = m.productFeatures,
+      userIdToIxMap = userIdToIxMap,
+      productIdToIxMap = productIdToIxMap)
   }
 
-  def predict(
-    model: PersistentMatrixFactorizationModel,
-    query: Query): PredictedResult = {
-    val productScores = model.recommendProducts(query.user, query.num)
-      .map (r => ProductScore(r.product, r.rating))
+  def predict(model: ALSModel, query: Query): PredictedResult = {
+    // Convert String ID to Int index for Mllib
+    val userIx = model.userIdToIxMap(query.user)
+    val productIxToIdMap = model.productIdToIxMap.inverse
+    // ALSModel returns product Int index. Convert it to String ID for
+    // returning PredictedResult
+    val productScores = model.recommendProducts(userIx, query.num)
+      .map (r => ProductScore(productIxToIdMap(r.product), r.rating))
     new PredictedResult(productScores)
   }
 
