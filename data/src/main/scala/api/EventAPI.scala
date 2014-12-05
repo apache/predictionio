@@ -15,12 +15,14 @@
 
 package io.prediction.data.api
 
-import io.prediction.data.storage.Events
+import io.prediction.data.Utils
+import io.prediction.data.storage.AccessKey
+import io.prediction.data.storage.AccessKeys
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
-import io.prediction.data.storage.EventJson4sSupport
-import io.prediction.data.Utils
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -29,25 +31,29 @@ import akka.io.IO
 import akka.event.Logging
 import akka.pattern.ask
 import akka.util.Timeout
-import java.util.concurrent.TimeUnit
 
 import org.json4s.DefaultFormats
 //import org.json4s.ext.JodaTimeSerializers
 
-import spray.http.StatusCodes
-import spray.http.MediaTypes
+import spray.can.Http
 import spray.http.HttpCharsets
 import spray.http.HttpEntity
 import spray.http.HttpResponse
+import spray.http.MediaTypes
+import spray.http.StatusCodes
 import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling.Unmarshaller
-import spray.can.Http
 import spray.routing._
+import spray.routing.authentication.Authentication
 import spray.routing.Directives._
 
 import scala.concurrent.Future
 
-class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
+import java.util.concurrent.TimeUnit
+
+class EventServiceActor(
+  val eventClient: LEvents,
+  val accessKeysClient: AccessKeys) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
@@ -69,9 +75,33 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
   val rejectionHandler = RejectionHandler {
     case MalformedRequestContentRejection(msg, _) :: _ =>
       complete(StatusCodes.BadRequest, Map("message" -> msg))
+    case MissingQueryParamRejection(msg) :: _ =>
+      complete(StatusCodes.NotFound,
+        Map("message" -> s"missing required query parameter ${msg}."))
+    case AuthenticationFailedRejection(cause, challengeHeaders) :: _ =>
+      complete(StatusCodes.Unauthorized, challengeHeaders,
+        Map("message" -> s"Invalid accessKey."))
   }
 
   val jsonPath = """(.+)\.json$""".r
+
+  /* with accessKey in query, return appId if succeed */
+  def withAccessKey: RequestContext => Future[Authentication[Int]] = {
+    ctx: RequestContext =>
+      val accessKeyOpt = ctx.request.uri.query.get("accessKey")
+      Future {
+        accessKeyOpt.map { accessKey =>
+          val accessKeyOpt = accessKeysClient.get(accessKey)
+          accessKeyOpt match {
+            case Some(k) => Right(k.appid)
+            case None => Left(AuthenticationFailedRejection(
+              AuthenticationFailedRejection.CredentialsRejected, List()))
+          }
+        }.getOrElse { Left(AuthenticationFailedRejection(
+          AuthenticationFailedRejection.CredentialsMissing, List()))
+        }
+      }
+  }
 
   val route: Route =
     pathSingleSlash {
@@ -82,45 +112,54 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
       }
     } ~
     path("events" / jsonPath ) { eventId =>
-    //path("events" / Segment ) { eventId =>
       get {
-        respondWithMediaType(MediaTypes.`application/json`) {
-          complete {
-            log.debug(s"GET event ${eventId}.")
-            val data = eventClient.futureGet(eventId).map { r =>
-              r match {
-                case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, Map("message" -> message))
-                case Right(eventOpt) => {
-                  eventOpt.map( event =>
-                    (StatusCodes.OK, event)
-                  ).getOrElse(
-                    (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                  )
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete {
+                log.debug(s"GET event ${eventId}.")
+                val data = eventClient.futureGet(eventId, appId).map { r =>
+                  r match {
+                    case Left(StorageError(message)) =>
+                      (StatusCodes.InternalServerError,
+                        Map("message" -> message))
+                    case Right(eventOpt) => {
+                      eventOpt.map( event =>
+                        (StatusCodes.OK, event)
+                      ).getOrElse(
+                        (StatusCodes.NotFound, Map("message" -> "Not Found"))
+                      )
+                    }
+                  }
                 }
+                data
               }
             }
-            data
           }
         }
       } ~
       delete {
-        respondWithMediaType(MediaTypes.`application/json`) {
-          complete {
-            log.debug(s"DELETE event ${eventId}.")
-            val data = eventClient.futureDelete(eventId).map { r =>
-              r match {
-                case Left(StorageError(message)) =>
-                  (StatusCodes.InternalServerError, Map("message" -> message))
-                case Right(found) =>
-                  if (found) {
-                    (StatusCodes.OK, Map("message" -> "Found"))
-                  } else {
-                    (StatusCodes.NotFound, Map("message" -> "Not Found"))
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete {
+                log.debug(s"DELETE event ${eventId}.")
+                val data = eventClient.futureDelete(eventId, appId).map { r =>
+                  r match {
+                    case Left(StorageError(message)) =>
+                      (StatusCodes.InternalServerError,
+                        Map("message" -> message))
+                    case Right(found) =>
+                      if (found) {
+                        (StatusCodes.OK, Map("message" -> "Found"))
+                      } else {
+                        (StatusCodes.NotFound, Map("message" -> "Not Found"))
+                      }
                   }
+                }
+                data
               }
             }
-            data
           }
         }
       }
@@ -128,90 +167,88 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
     path("events.json") {
       post {
         handleRejections(rejectionHandler) {
-          entity(as[Event]) { event =>
-            //val event = jsonObj.extract[Event]
-            complete {
-              log.debug(s"POST events")
-              val data = eventClient.futureInsert(event).map { r =>
-                r match {
-                  case Left(StorageError(message)) =>
-                    (StatusCodes.InternalServerError, Map("message" -> message))
-                  case Right(id) =>
-                    (StatusCodes.Created, Map("eventId" -> s"${id}"))
+          authenticate(withAccessKey) { appId =>
+            entity(as[Event]) { event =>
+              complete {
+                log.debug(s"POST events")
+                val data = eventClient.futureInsert(event, appId).map { r =>
+                  r match {
+                    case Left(StorageError(message)) =>
+                      (StatusCodes.InternalServerError,
+                        Map("message" -> message))
+                    case Right(id) =>
+                      (StatusCodes.Created, Map("eventId" -> s"${id}"))
+                  }
                 }
+                data
               }
-              data
             }
           }
         }
       } ~
       get {
-        parameters(
-          'appId.as[Int],
-          'startTime.as[Option[String]],
-          'untilTime.as[Option[String]],
-          'entityType.as[Option[String]],
-          'entityId.as[Option[String]],
-          'limit.as[Option[Int]],
-          'reversed.as[Option[Boolean]]) {
-          (appId, startTimeStr, untilTimeStr, entityType, entityId, 
-            limit, reversed) =>
-          respondWithMediaType(MediaTypes.`application/json`) {
-            complete {
-              log.debug(
-                s"GET events of appId=${appId} " +
-                s"st=${startTimeStr} ut=${untilTimeStr} " +
-                s"et=${entityType} eid=${entityId} " +
-                s"li=${limit} rev=${reversed} ")
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            parameters(
+              'startTime.as[Option[String]],
+              'untilTime.as[Option[String]],
+              'entityType.as[Option[String]],
+              'entityId.as[Option[String]],
+              'event.as[Option[String]],
+              'targetEntityType.as[Option[String]],
+              'targetEntityId.as[Option[String]],
+              'limit.as[Option[Int]],
+              'reversed.as[Option[Boolean]]) {
+              (startTimeStr, untilTimeStr, entityType, entityId,
+                eventName,  // only support one event name
+                targetEntityType, targetEntityId,
+                limit, reversed) =>
+              respondWithMediaType(MediaTypes.`application/json`) {
+                complete {
+                  log.debug(
+                    s"GET events of appId=${appId} " +
+                    s"st=${startTimeStr} ut=${untilTimeStr} " +
+                    s"et=${entityType} eid=${entityId} " +
+                    s"li=${limit} rev=${reversed} ")
 
-              val parseTime = Future {
-                val startTime = startTimeStr.map(Utils.stringToDateTime(_))
-                val untilTime = untilTimeStr.map(Utils.stringToDateTime(_))
-                (startTime, untilTime)
-              }
-
-              parseTime.flatMap { case (startTime, untilTime) =>
-                val data = eventClient.futureGetGeneral(
-                  appId,
-                  startTime, untilTime,
-                  entityType, entityId,
-                  limit.orElse(Some(20)),
-                  reversed)
-                  .map { r =>
-                    r match {
-                      case Left(StorageError(message)) =>
-                        (StatusCodes.InternalServerError,
-                          Map("message" -> message))
-                      case Right(eventIter) =>
-                        if (eventIter.hasNext)
-                          (StatusCodes.OK, eventIter.toArray)
-                        else
-                          (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                    }
+                  val parseTime = Future {
+                    val startTime = startTimeStr.map(Utils.stringToDateTime(_))
+                    val untilTime = untilTimeStr.map(Utils.stringToDateTime(_))
+                    (startTime, untilTime)
                   }
-                data
-              }.recover {
-                case e: Exception =>
-                  (StatusCodes.BadRequest, Map("message" -> s"${e}"))
-              }
-            }
-          }
-        }
-      } ~
-      delete {
-        parameter('appId.as[Int]) { appId =>
-          respondWithMediaType(MediaTypes.`application/json`) {
-            complete {
-              log.debug(s"DELETE events of appId=${appId}")
-              val data = eventClient.futureDeleteByAppId(appId).map { r =>
-                r match {
-                  case Left(StorageError(message)) =>
-                    (StatusCodes.InternalServerError, Map("message" -> message))
-                  case Right(()) =>
-                    (StatusCodes.OK, None)
+
+                  parseTime.flatMap { case (startTime, untilTime) =>
+                    val data = eventClient.futureFind(
+                      appId = appId,
+                      startTime = startTime,
+                      untilTime = untilTime,
+                      entityType = entityType,
+                      entityId = entityId,
+                      eventNames = eventName.map(List(_)),
+                      targetEntityType = targetEntityType.map(Some(_)),
+                      targetEntityId = targetEntityId.map(Some(_)),
+                      limit = limit.orElse(Some(20)),
+                      reversed = reversed)
+                      .map { r =>
+                        r match {
+                          case Left(StorageError(message)) =>
+                            (StatusCodes.InternalServerError,
+                              Map("message" -> message))
+                          case Right(eventIter) =>
+                            if (eventIter.hasNext)
+                              (StatusCodes.OK, eventIter.toArray)
+                            else
+                              (StatusCodes.NotFound,
+                                Map("message" -> "Not Found"))
+                        }
+                      }
+                    data
+                  }.recover {
+                    case e: Exception =>
+                      (StatusCodes.BadRequest, Map("message" -> s"${e}"))
+                  }
                 }
               }
-              data
             }
           }
         }
@@ -222,17 +259,18 @@ class EventServiceActor(val eventClient: Events) extends HttpServiceActor {
 
 }
 
-
 /* message */
 case class StartServer(
   val host: String,
   val port: Int
 )
 
-class EventServerActor(val eventClient: Events) extends Actor {
+class EventServerActor(
+  val eventClient: LEvents,
+  val accessKeysClient: AccessKeys) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[EventServiceActor], eventClient),
+    Props(classOf[EventServiceActor], eventClient, accessKeysClient),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -256,10 +294,11 @@ object EventServer {
   def createEventServer(config: EventServerConfig) = {
     implicit val system = ActorSystem("EventServerSystem")
 
-    val eventClient = Storage.getEventDataEvents
+    val eventClient = Storage.getLEvents()
+    val accessKeysClient = Storage.getMetaDataAccessKeys
 
     val serverActor = system.actorOf(
-      Props(classOf[EventServerActor], eventClient),
+      Props(classOf[EventServerActor], eventClient, accessKeysClient),
       "EventServerActor")
     serverActor ! StartServer(config.ip, config.port)
     system.awaitTermination

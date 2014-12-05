@@ -1,0 +1,21 @@
+footer#footer
+  .column
+    h2 PredictionIO
+    ul
+      li = link_to 'Download', '/download/'
+      li = link_to 'Docs', '/'
+      li = link_to 'Enterprise', 'http://enterprise.prediction.io/'
+      li = mail_to 'support@prediction.io', 'Contact Us'
+  .column
+    h2 Get Involved
+    ul
+      li = link_to 'Source Code', 'https://github.com/PredictionIO/PredictionIO'
+      li = link_to 'Report a Bug', 'https://predictionio.atlassian.net/'
+      li = link_to 'Support Forum', 'https://groups.google.com/forum/#!forum/predictionio-dev'
+      li = link_to 'Contributor Agreement', 'http://prediction.io/cla'
+  .column
+    h2 Follow Us
+    ul.social
+      li = link_to '<i class="fa fa-github"></i>', 'https://github.com/PredictionIO'
+      li = link_to '<i class="fa fa-facebook"></i>', 'https://www.facebook.com/predictionio'
+      li = link_to '<i class="fa fa-twitter"></i>', 'https://twitter.com/PredictionIO'

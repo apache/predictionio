@@ -18,7 +18,7 @@ import UnidocKeys._
 
 name := "pio"
 
-version in ThisBuild := "0.8.2-SNAPSHOT"
+version in ThisBuild := "0.8.3-SNAPSHOT"
 
 organization in ThisBuild := "io.prediction"
 
@@ -90,7 +90,21 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "akka",
     "breeze",
     "html",
-    "io.prediction.tools").mkString(":"),
+    "io.prediction.controller.java",
+    "io.prediction.core",
+    "io.prediction.data.api",
+    "io.prediction.data.examples",
+    "io.prediction.data.storage.elasticsearch",
+    "io.prediction.data.storage.examples",
+    "io.prediction.data.storage.hbase",
+    "io.prediction.data.storage.hdfs",
+    "io.prediction.data.storage.localfs",
+    "io.prediction.data.storage.mongodb",
+    "io.prediction.data.view",
+    "io.prediction.engines",
+    "io.prediction.workflow",
+    "io.prediction.tools",
+    "org").mkString(":"),
   "-doc-title",
   "PredictionIO ScalaDoc",
   "-doc-version",

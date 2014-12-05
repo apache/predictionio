@@ -148,8 +148,7 @@ class NCItemBasedAlgorithmModel(
 
 abstract class AbstractNCItemBasedAlgorithm[Q : Manifest, P](
   params: AbstractItemBasedAlgorithmParams)
-  extends LAlgorithm[AbstractItemBasedAlgorithmParams, PreparedData,
-  NCItemBasedAlgorithmModel, Q, P] {
+  extends LAlgorithm[PreparedData, NCItemBasedAlgorithmModel, Q, P] {
 
   @transient lazy val logger = Logger[this.type]
   @transient lazy val recommendationTime = params.recommendationTime.getOrElse(

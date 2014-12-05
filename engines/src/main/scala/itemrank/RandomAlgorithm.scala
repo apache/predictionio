@@ -29,8 +29,7 @@ class RandomAlgoParams() extends Params {
 class RandomModel() extends Serializable {}
 
 class RandomAlgorithm(params: RandomAlgoParams)
-  extends LAlgorithm[RandomAlgoParams, PreparedData, RandomModel,
-  Query, Prediction] {
+  extends LAlgorithm[PreparedData, RandomModel, Query, Prediction] {
 
   @transient lazy val rand = new Random(3) // TODO: pass seed from init()
 

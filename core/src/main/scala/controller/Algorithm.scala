@@ -17,6 +17,7 @@ package io.prediction.controller
 
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.LModelAlgorithm
+import io.prediction.core.WithBaseQuerySerializer
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -30,7 +31,6 @@ import scala.reflect.runtime.universe._
   * A local algorithm runs locally within a single machine and produces a model
   * that can fit within a single machine.
   *
-  * @tparam AP Algorithm parameters class.
   * @tparam PD Prepared data class.
   * @tparam M Trained model class.
   * @tparam Q Input query class.
@@ -38,12 +38,11 @@ import scala.reflect.runtime.universe._
   * @group Algorithm
   */
 abstract class LAlgorithm[
-    AP <: Params : ClassTag,
     PD,
     M : ClassTag,
     Q : Manifest,
     P]
-  extends BaseAlgorithm[AP, RDD[PD], RDD[M], Q, P]
+  extends BaseAlgorithm[RDD[PD], RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
 
   /** Do not use directly or override this method, as this is called by
@@ -76,16 +75,14 @@ abstract class LAlgorithm[
   * A parallel-to-local algorithm can be run in parallel on a cluster and
   * produces a model that can fit within a single machine.
   *
-  * @tparam AP Algorithm parameters class.
   * @tparam PD Prepared data class.
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @group Algorithm
   */
-abstract class P2LAlgorithm[
-    AP <: Params : ClassTag, PD, M : ClassTag, Q : Manifest, P]
-  extends BaseAlgorithm[AP, PD, RDD[M], Q, P]
+abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
+  extends BaseAlgorithm[PD, RDD[M], Q, P]
   with LModelAlgorithm[M, Q, P] {
 
   /** Do not use directly or override this method, as this is called by
@@ -124,15 +121,14 @@ abstract class P2LAlgorithm[
   * A parallel algorithm can be run in parallel on a cluster and produces a
   * model that can also be distributed across a cluster.
   *
-  * @tparam AP Algorithm parameters class.
   * @tparam PD Prepared data class.
   * @tparam M Trained model class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @group Algorithm
   */
-abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
-  extends BaseAlgorithm[AP, PD, M, Q, P] {
+abstract class PAlgorithm[PD, M, Q : Manifest, P]
+  extends BaseAlgorithm[PD, M, Q, P] {
 
   /** Do not use directly or override this method, as this is called by
     * PredictionIO workflow to train a model.
@@ -190,3 +186,12 @@ abstract class PAlgorithm[AP <: Params : ClassTag, PD, M, Q : Manifest, P]
   def isJava = false
   def isParallel = true
 }
+
+/** Implement in this trait to enable custom json4s serializer.
+  * This is useful when your query requires a custom serializer. The algorithm
+  * classes using this query only need to mix in the trait to enable the custom
+  * serializer.
+  *
+  * @group General
+  */
+trait WithQuerySerializer extends WithBaseQuerySerializer

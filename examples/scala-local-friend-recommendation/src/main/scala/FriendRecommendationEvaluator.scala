@@ -15,7 +15,15 @@ class EvaluatorUnit (
   val score: Double
 ) extends Serializable
 
+<<<<<<< HEAD
 class FriendRecommendationEvaluator extends Evaluator[EmptyParams, FriendRecommendationQuery,FriendRecommendationPrediction,Actual, EvaluatorUnit, Double, Double]{
+=======
+class EvalResult(
+  val score: Double
+) extends Serializable
+
+class FriendRecommendationEvaluator extends Evaluator[EmptyParams,EmptyParams, FriendRecommendationQuery,FriendRecommendationPrediction,Actual, EvaluatorUnit, EvalResult, EvalResult]{
+>>>>>>> a2d9a9d9985f2ae526f765023039698cfcc75ffe
   override def evaluateUnit(query: FriendRecommendationQuery, prediction: FriendRecommendationPrediction,actual:Actual):EvaluatorUnit = {
     val score: Double = {
       if(actual.acceptance == 0)
@@ -31,13 +39,13 @@ class FriendRecommendationEvaluator extends Evaluator[EmptyParams, FriendRecomme
     )
   }
 
-  def evaluateAll(input: Seq[(EmptyParams, Double)]): Double = {
-    input.head._2
+  def evaluateAll(input: Seq[(EmptyParams, EvalResult)]): EvalResult = {
+    new EvalResult(input.head._2.score)
   }
-  def evaluateSet(dataParams: EmptyParams,evaluationUnits: Seq[EvaluatorUnit]): Double = 
+  def evaluateSet(dataParams: EmptyParams,evaluationUnits: Seq[EvaluatorUnit]): EvalResult = 
   {
     val sum_value : Double = evaluationUnits.map(x => x.score).sum
-    sum_value / evaluationUnits.size
+    new EvalResult(sum_value / evaluationUnits.size)
   }
 
 }

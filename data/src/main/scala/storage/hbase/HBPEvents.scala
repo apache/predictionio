@@ -16,7 +16,9 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
+import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.PEvents
+import io.prediction.data.storage.PEventAggregator
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
@@ -34,22 +36,31 @@ import org.apache.spark.rdd.RDD
 class HBPEvents(client: HBClient, namespace: String)
   extends PEvents with Logging {
 
-  lazy val table = HBEventsUtil.table
-
-  def resultToEvent(result: Result): Event = HBEventsUtil.resultToEvent(result)
-
   override
-  def getByAppIdAndTimeAndEntity(appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String])(sc: SparkContext): RDD[Event] = {
+  def find(
+    appId: Int,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None
+    )(sc: SparkContext): RDD[Event] = {
 
     val conf = HBaseConfiguration.create()
-    conf.set(TableInputFormat.INPUT_TABLE, s"${namespace}:${table}")
+    conf.set(TableInputFormat.INPUT_TABLE,
+      HBEventsUtil.tableName(namespace, appId))
 
-    val scan = HBEventsUtil.createScan(appId, startTime, untilTime,
-      entityType, entityId)
+    val scan = HBEventsUtil.createScan(
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = entityType,
+        entityId = entityId,
+        eventNames = eventNames,
+        targetEntityType = targetEntityType,
+        targetEntityId = targetEntityId,
+        reversed = None)
     scan.setCaching(500) // TODO
     scan.setCacheBlocks(false) // TODO
 
@@ -58,10 +69,36 @@ class HBPEvents(client: HBClient, namespace: String)
     val rdd = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
       classOf[Result]).map {
-        case (key, row) => resultToEvent(row)
+        case (key, row) => HBEventsUtil.resultToEvent(row, appId)
       }
 
     rdd
+  }
+
+  override
+  def aggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)
+    (sc: SparkContext): RDD[(String, DataMap)] = {
+
+    val eventRDD = find(
+      appId = appId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      eventNames = Some(PEventAggregator.eventNames))(sc)
+
+    val dmRDD = PEventAggregator.aggregateProperties(eventRDD)
+
+    if (required.isDefined) {
+      dmRDD.filter { case (k, v) =>
+        required.get.map(v.contains(_)).reduce(_ && _)
+      }
+    } else dmRDD
+
   }
 
 }

@@ -74,7 +74,7 @@ class EventsSpec extends Specification {
         eventTime = DateTime.now,
         tags = List("tag1", "tag2"),
         appId = 4,
-        predictionKey = Some("my_prediction_key")
+        prId = Some("my_prid")
       ),
       Event(
         event = "my_event2",
@@ -95,7 +95,7 @@ class EventsSpec extends Specification {
           }"""
           ).asInstanceOf[JObject]),
         appId = 4,
-        predictionKey = Some("my_prediction_key")
+        prId = Some("my_prid")
       )
     )
     val insertResp = listOfEvents.map { eventClient.insert(_) }

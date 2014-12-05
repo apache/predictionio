@@ -1,0 +1,12 @@
+.hide-text {
+  text-indent: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.container {
+  float: left;
+  width: 100%;
+  overflow: hidden;
+  background-color: $off-canvas-background-color;
+}

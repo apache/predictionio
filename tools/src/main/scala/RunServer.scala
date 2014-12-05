@@ -16,6 +16,7 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
+import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
 
@@ -36,6 +37,8 @@ object RunServer extends Logging {
     val sparkHome = ca.common.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
+    val extraFiles = WorkflowUtils.hadoopEcoConfFiles
+
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
       ca.common.sparkPassThrough ++
@@ -46,7 +49,9 @@ object RunServer extends Logging {
         s"PredictionIO Engine Instance: ${engineInstanceId}",
         "--jars",
         (em.files ++ Console.builtinEngines(
-          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","),
+          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(",")) ++
+      (if (extraFiles.size > 0) Seq("--files") ++ extraFiles else Seq()) ++
+      Seq(
         core.getCanonicalPath,
         "--engineInstanceId",
         engineInstanceId,
@@ -57,8 +62,12 @@ object RunServer extends Logging {
         "--event-server-ip",
         ca.eventServer.ip,
         "--event-server-port",
-        ca.eventServer.port.toString) ++
-        (if (ca.eventServer.enabled) Seq("--feedback") else Seq())
+        ca.eventServer.port.toString,
+        "--accesskey",
+        ca.accessKey.accessKey) ++
+      (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
+      (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
+      (if (ca.common.debug) Seq("--debug") else Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 

@@ -57,7 +57,11 @@ object CreateWorkflow extends Logging {
     servingParamsJsonPath: Option[String] = None,
     evaluatorParamsJsonPath: Option[String] = None,
     jsonBasePath: String = "",
-    env: Option[String] = None)
+    env: Option[String] = None,
+    stopAfterRead: Boolean = false,
+    stopAfterPrepare: Boolean = false,
+    verbose: Boolean = false,
+    debug: Boolean = false)
 
   case class AlgorithmParams(name: String, params: JValue)
 
@@ -120,9 +124,22 @@ object CreateWorkflow extends Logging {
         c.copy(env = Some(x))
       } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
         "format) to pass to the Spark execution environment.")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(verbose = true)
+      } text("Enable verbose output.")
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(debug = true)
+      } text("Enable debug output.")
+      opt[Unit]("stop-after-read") action { (x, c) =>
+        c.copy(stopAfterRead = true)
+      }
+      opt[Unit]("stop-after-prepare") action { (x, c) =>
+        c.copy(stopAfterPrepare = true)
+      }
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
+      WorkflowUtils.setupLogging(wfc.verbose, wfc.debug)
       val variantJson = parse(stringFromFile("", wfc.engineVariant))
       val engineFactory = variantJson \ "engineFactory" match {
         case JString(s) => s
@@ -148,7 +165,7 @@ object CreateWorkflow extends Logging {
       val evaluator = wfc.evaluatorClass.map { mc => //mc => null
         try {
           Class.forName(mc)
-            .asInstanceOf[Class[BaseEvaluator[_ <: Params, _, _, _, _, _, _, _ <: AnyRef]]]
+            .asInstanceOf[Class[BaseEvaluator[_, _, _, _, _, _, _ <: AnyRef]]]
         } catch {
           case e: ClassNotFoundException =>
             error("Unable to obtain evaluator class object ${mc}: " +
@@ -291,7 +308,9 @@ object CreateWorkflow extends Logging {
         env = pioEnvVars,
         params = WorkflowParams(
           verbose = 3,
-          batch = wfc.batch),
+          batch = wfc.batch,
+          stopAfterRead = wfc.stopAfterRead,
+          stopAfterPrepare = wfc.stopAfterPrepare),
         engine = engine,
         engineParams = engineParams,
         evaluator = evaluatorInstance,

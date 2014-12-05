@@ -1,0 +1,22 @@
+source 'https://rubygems.org'
+ruby '2.1.5'
+
+gem 'middleman', '~> 3.3.7'
+gem 'middleman-livereload', '~> 3.3.4'
+gem 'middleman-autoprefixer'
+gem 'middleman-minify-html'
+gem 'middleman-syntax'
+gem 'middleman-cloudfront'
+
+gem 'slim'
+gem 'therubyracer'
+gem 'oj'
+gem 'redcarpet'
+gem 'travis'
+gem 'nokogiri'
+gem 'rainbow'
+
+platforms :mswin, :mingw do
+  gem 'tzinfo-data'
+  gem 'wdm', '~> 0.1.0'
+end

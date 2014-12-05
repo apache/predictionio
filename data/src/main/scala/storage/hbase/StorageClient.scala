@@ -36,7 +36,7 @@ class StorageClient(val config: StorageClientConfig)
   extends BaseStorageClient {
 
   val conf = HBaseConfiguration.create()
-  conf.set("hbase.client.retries.number", "3")
+  conf.set("hbase.client.retries.number", "1")
   val connection =
     if (!config.parallel)
       HConnectionManager.createConnection(conf)
