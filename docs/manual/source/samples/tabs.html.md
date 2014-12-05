@@ -4,6 +4,7 @@ hidden: true
 ---
 
 This page is used to test the tabs plugin based on [Tabslet](https://github.com/vdw/Tabslet).
+
 <div class="tabs">
   <div data-tab="Ruby" data-lang="ruby">
 ```ruby
@@ -60,5 +61,18 @@ $ cd path/to/your/file
 ```python
 # The other group does not have a Python tab.
 ```
+  </div>
+</div>
+
+<div class="tabs">
+  <div data-tab="Java" data-lang="java">
+```Java
+// Java code..
+```
+  </div>
+  <div data-tab="HTML" data-lang="html">
+  
+  This includes **bold** with Markdown.
+  
   </div>
 </div>

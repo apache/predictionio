@@ -76,7 +76,9 @@ activate :cloudfront do |cf|
 end
 
 # Hacks
-Slim::Engine.disable_option_validator! # https://github.com/middleman/middleman/issues/612
+
+# https://github.com/middleman/middleman/issues/612
+Slim::Engine.disable_option_validator!
 
 # https://github.com/Aupajo/middleman-search_engine_sitemap/issues/2
 set :file_watcher_ignore, [

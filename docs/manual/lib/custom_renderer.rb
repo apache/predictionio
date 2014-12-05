@@ -23,13 +23,17 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
       raw_html
     else
       ul = Nokogiri::XML::Node.new('ul', doc)
+      ul['class'] = 'control'
 
       nodes.each do |node|
         title = node.attribute('data-tab').to_s
+        lang = node.attribute('data-lang').to_s
+
         uuid = SecureRandom.uuid
         id = "tab-#{uuid}"
 
         li = Nokogiri::XML::Node.new('li', doc)
+        li['data-lang'] = lang
         li.inner_html = %Q(<a href="##{id}">#{title}</a>)
 
         ul.add_child(li)

@@ -11,7 +11,7 @@ gemfile: docs/manual/Gemfile
 
 script:
   - cd docs/manual
-  - bundle exec middleman build --verbose
+  - bundle exec middleman build
 deploy:
   - provider: s3
     access_key_id:
