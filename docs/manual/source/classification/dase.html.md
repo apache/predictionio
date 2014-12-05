@@ -2,8 +2,6 @@
 title: DASE Components Explained (Classification)
 ---
 
-# DASE Components Explained (Classification)
-
 PredictionIO's DASE architecture brings the separation-of-concerns design
 principle to predictive engine development. DASE stands for the following
 components of an engine:
