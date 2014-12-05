@@ -509,13 +509,30 @@ object CoreWorkflow {
     val evalPreparedMap: Map[EI, PD] = evalDataMap
     .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
 
-    if (verbose > 2) {
-      evalPreparedMap.foreach{ case (ei, pd) => {
-        val s = WorkflowUtils.debugString(pd)
-        logger.info(s"Prepared Data Set $ei")
-        logger.info(s"Params: ${localParamsSet(ei)}")
-        logger.info(s"PreparedData: $s")
-      }}
+    if (!params.skipSanityCheck || verbose > 2) {
+      if (!params.skipSanityCheck)
+        logger.info("Performing data sanity check on prepared data.")
+
+      evalPreparedMap foreach { case (ei, pd) =>
+        if (!params.skipSanityCheck) {
+          if (pd.isInstanceOf[SanityCheck]) {
+            logger.info(
+              s"${pd.getClass.getName} supports data sanity check. " +
+              "Performing check.")
+              pd.asInstanceOf[SanityCheck].sanityCheck()
+          } else {
+            logger.info(s"${pd.getClass.getName} does not support " +
+              "data sanity check. Skipping check.")
+          }
+        }
+
+        if (verbose > 2) {
+          val s = WorkflowUtils.debugString(pd)
+          logger.info(s"Prepared Data Set $ei")
+          logger.info(s"Params: ${localParamsSet(ei)}")
+          logger.info(s"PreparedData: $s")
+        }
+      }
     }
 
     logger.info("Preparator complete")
@@ -583,14 +600,31 @@ object CoreWorkflow {
     .seq
     .toMap
 
-    if (verbose > 2) {
-      evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
-        aiModelSeq.map { case(ai, model) => {
-          val ms = WorkflowUtils.debugString(model)
-          logger.info(s"Model ei: $ei ai: $ai")
-          logger.info(ms)
-        }}
-      }}
+    if (!params.skipSanityCheck || verbose > 2) {
+      if (!params.skipSanityCheck)
+        logger.info("Performing data sanity check on model data.")
+
+      evalAlgoModelMap foreach { case (ei, aiModelSeq) =>
+        aiModelSeq foreach { case (ai, model) =>
+          if (!params.skipSanityCheck) {
+            if (model.isInstanceOf[SanityCheck]) {
+              logger.info(
+                s"${model.getClass.getName} supports data sanity check. " +
+                "Performing check.")
+              model.asInstanceOf[SanityCheck].sanityCheck()
+            } else {
+              logger.info(s"${model.getClass.getName} does not support " +
+                "data sanity check. Skipping check.")
+            }
+          }
+
+          if (verbose > 2) {
+            val ms = WorkflowUtils.debugString(model)
+            logger.info(s"Model ei: $ei ai: $ai")
+            logger.info(ms)
+          }
+        }
+      }
     }
 
     if (evaluatorClassOpt.isEmpty) {
