@@ -14,5 +14,5 @@ class FriendRecommendationTrainingData (
   // User relationship array, src internal id index, dest-internal-id-weight list item
   val socialAction: Array[List[(Int, Int)]],
   // Training record for training purpose
-  val trainingRecord: Iterator[(Int, Int, Boolean)]
+  val trainingRecord: Stream[(Int, Int, Boolean)]
 ) extends Serializable

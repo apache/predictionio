@@ -5,23 +5,23 @@ import scala.collection.immutable.HashMap
 import scala.math
 
 class KeywordSimilarityAlgorithm (val ap: FriendRecommendationAlgoParams)
-extends LAlgorithm[FriendRecommendationAlgoParams, FriendRecommendationTrainingData,
+extends LAlgorithm[FriendRecommendationTrainingData,
   KeywordSimilarityModel, FriendRecommendationQuery, FriendRecommendationPrediction] {
   override
   def train(td: FriendRecommendationTrainingData): KeywordSimilarityModel = {
     var keywordSimWeight = 0.0
     var keywordSimThreshold = 0.0
-    td.trainingRecord.foreach{
-      record =>
-      val sim = findKeywordSimilarity(td.userKeyword(record._1),
-                                      td.itemKeyword(record._2))
-      val prediction = (keywordSimWeight * sim - keywordSimThreshold >= 0)
-      if (prediction != record._3) {
-        val y = if (record._3) 1 else -1
-        keywordSimWeight += y * sim
-        keywordSimThreshold += y * -1
-      }
-    }
+    //td.trainingRecord.foreach{
+    //  record =>
+    //  val sim = findKeywordSimilarity(td.userKeyword(record._1),
+    //                                  td.itemKeyword(record._2))
+    //  val prediction = (keywordSimWeight * sim - keywordSimThreshold >= 0)
+    //  if (prediction != record._3) {
+    //    val y = if (record._3) 1 else -1
+    //    keywordSimWeight += y * sim
+    //    keywordSimThreshold += y * -1
+    //  }
+    //}
     new KeywordSimilarityModel(td.userIdMap, td.itemIdMap, td.userKeyword, td.itemKeyword, keywordSimWeight, keywordSimThreshold)
   }
 

@@ -5,7 +5,7 @@ import scala.io.Source
 import scala.collection.immutable.HashMap
 
 class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourceParams)
-  extends LDataSource[FriendRecommendationDataSourceParams, EmptyDataParams, FriendRecommendationTrainingData, FriendRecommendationQuery, EmptyActualResult] {
+  extends LDataSource[FriendRecommendationTrainingData, EmptyEvaluationInfo, FriendRecommendationQuery, EmptyActualResult] {
   override
   def readTraining() : FriendRecommendationTrainingData = {
     val (itemIdMap, itemKeyword) = readItem(dsp.itemFilePath)
@@ -81,15 +81,16 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
     adjArray
   }
 
-  def readTrainingRecord(file: String, userIdMap: HashMap[Int, Int], itemIdMap: HashMap[Int, Int]) : Iterator[(Int, Int, Boolean)] = {
+  def readTrainingRecord(file: String, userIdMap: HashMap[Int, Int], itemIdMap: HashMap[Int, Int]) : Stream[(Int, Int, Boolean)] = {
     val lines = Source.fromFile(file).getLines()
-    val trainingRecord = lines.map{
+    var trainingRecord: Stream[(Int, Int, Boolean)] = Stream() 
+    lines.foreach{
       line =>
       val data = line.split("\\s")
       val userId = userIdMap(data(0).toInt)
       val itemId = itemIdMap(data(1).toInt)
       val result = (data(2).toInt == 1)
-      (userId, itemId, result)
+      trainingRecord = (userId, itemId, result) #:: trainingRecord
     }
     trainingRecord
   }
