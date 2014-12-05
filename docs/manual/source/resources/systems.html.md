@@ -1,5 +1,5 @@
 ---
-title: System Overview and Dependencies
+title: Architecture and Dependencies
 ---
 
 During the [installation](/install), you have installed the following

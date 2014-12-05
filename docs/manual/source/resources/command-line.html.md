@@ -76,9 +76,15 @@ See 'pio help <command>' to read about a specific subcommand.
 ##Event Server Commands
 ```app```           Manage apps that are used by the Event Server. 
 
-** ```pio app data-delete <name>``` deletes all data associated with the app. ```pio app delete <name>``` deletes the app and its data.
+```pio app data-delete <name>``` deletes all data associated with the app. 
+  
+```pio app delete <name>``` deletes the app and its data.
 
-```eventserver```   Launch an Event Server.
+```eventserver```   Launch an Event Server. 
+
+  ```--ip <value>``` IP to bind to. Default to localhost. 
+  
+  ```--port <value>``` Port to bind to. Default to 7070.
 
 
 ```accesskey```     Manage app access keys.
