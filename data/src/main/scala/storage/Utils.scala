@@ -19,7 +19,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 
 /** Backend-agnostic storage utilities. */
-object Utils {
+private[prediction] object Utils {
   /**
    * Add prefix to custom attribute keys.
    */

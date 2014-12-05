@@ -1,0 +1,40 @@
+.highlight {
+  // Reset existing table styles!
+  table {
+    width: auto;
+    tr {
+      border-bottom: none;
+    }
+  }
+
+  overflow: auto;
+  background-color: $code-block-background-color;
+  border: 1px solid $code-block-border-color;
+  border-radius: 5px;
+  font-family: $code-font-family;
+  font-size: 14px;
+  line-height: 18px;
+  margin: 16px 0 16px 0;
+
+  pre {
+    margin: 0;
+  }
+
+  td {
+    &.gutter {
+      border-right: 3px solid $code-line-numbers-border-color;
+      padding: 10px 15px 10px 15px;
+      background-color: $code-line-numbers-background-color;
+      color: $code-line-numbers-font-color;
+    }
+    &.code {
+      padding: 10px 10px 10px 10px;
+    }
+  }
+}
+
+code {
+  background-color: $code-inline-background-color;
+  border: 1px solid $code-inline-border-color;
+  padding: 0 5px 0 5px;
+}

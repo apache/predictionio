@@ -1,0 +1,15 @@
+#nav-page {
+  font-size: 24px;
+
+  display: inline-block;
+  margin: 15px 25px 0 -100px;
+  float: right;
+  a {
+    color: $nav-page-icon-color;
+  }
+
+}
+
+#active-complementary {
+  margin-left: 20px;
+}

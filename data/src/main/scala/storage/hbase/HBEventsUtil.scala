@@ -17,16 +17,19 @@ package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventValidation
-import io.prediction.data.storage.Events
 import io.prediction.data.storage.DataMap
 
 import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.client.Put
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.filter.FilterList
 import org.apache.hadoop.hbase.filter.RegexStringComparator
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter
 import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
+import org.apache.hadoop.hbase.filter.BinaryComparator
+import org.apache.hadoop.hbase.filter.QualifierFilter
+import org.apache.hadoop.hbase.filter.SkipFilter
 
 import org.json4s.DefaultFormats
 import org.json4s.JObject
@@ -36,13 +39,16 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import org.apache.commons.codec.binary.Base64
+import java.security.MessageDigest
+
+import java.util.UUID
 
 /* common utility function for acessing EventsStore in HBase */
 object HBEventsUtil {
 
   implicit val formats = DefaultFormats
 
-  val table = "events"
+  def tableName(namespace: String, appId: Int) = s"${namespace}:events_${appId}"
 
   // column nams for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(
@@ -52,28 +58,49 @@ object HBEventsUtil {
     "targetEntityType" -> "tety",
     "targetEntityId" -> "teid",
     "properties" -> "p",
-    "predictionKey" -> "pk",
+    "prId" -> "prid",
+    "eventTime" -> "et",
     "eventTimeZone" -> "etz",
+    "creationTime" -> "ct",
     "creationTimeZone" -> "ctz"
   ).mapValues(Bytes.toBytes(_))
 
+  def hash(entityType: String, entityId: String): Array[Byte] = {
+    val s = entityType + "-" + entityId
+    // get a new MessgaeDigest object each time for thread-safe
+    val md5 = MessageDigest.getInstance("MD5")
+    md5.digest(Bytes.toBytes(s))
+  }
+
   class RowKey(
-    val appId: Int,
-    val millis: Long,
-    val uuidLow: Long
+    val b: Array[Byte]
   ) {
-    lazy val toBytes: Array[Byte] = {
-      // add UUID least significant bits for multiple actions at the same time
-      // (UUID's most significantbits are actually timestamp,
-      // use eventTime instead).
-      Bytes.toBytes(appId) ++ Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
-    }
+    require((b.size == 32), s"Incorrect b size: ${b.size}")
+    lazy val entityHash: Array[Byte] = b.slice(0, 16)
+    lazy val millis: Long = Bytes.toLong(b.slice(16, 24))
+    lazy val uuidLow: Long = Bytes.toLong(b.slice(24, 32))
+
+    lazy val toBytes: Array[Byte] = b
+
     override def toString: String = {
       Base64.encodeBase64URLSafeString(toBytes)
     }
   }
 
   object RowKey {
+    def apply(
+      entityType: String,
+      entityId: String,
+      millis: Long,
+      uuidLow: Long): RowKey = {
+        // add UUID least significant bits for multiple actions at the same time
+        // (UUID's most significantbits are actually timestamp,
+        // use eventTime instead).
+        val b = hash(entityType, entityId) ++
+          Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
+        new RowKey(b)
+      }
+
     // get RowKey from string representation
     def apply(s: String): RowKey = {
       try {
@@ -85,33 +112,89 @@ object HBEventsUtil {
     }
 
     def apply(b: Array[Byte]): RowKey = {
-      if (b.size != 20) {
+      if (b.size != 32) {
         val bString = b.mkString(",")
         throw new RowKeyException(
           s"Incorrect byte array size. Bytes: ${bString}.")
       }
-
-      new RowKey(
-        appId = Bytes.toInt(b.slice(0, 4)),
-        millis = Bytes.toLong(b.slice(4, 12)),
-        uuidLow = Bytes.toLong(b.slice(12, 20))
-      )
+      new RowKey(b)
     }
+
   }
 
-  class RowKeyException(msg: String, cause: Exception)
+  class RowKeyException(val msg: String, val cause: Exception)
     extends Exception(msg, cause) {
       def this(msg: String) = this(msg, null)
     }
 
-  case class PartialRowKey(val appId: Int, val millis: Option[Long] = None) {
+  case class PartialRowKey(entityType: String, entityId: String,
+    millis: Option[Long] = None) {
     val toBytes: Array[Byte] = {
-      Bytes.toBytes(appId) ++
+      hash(entityType, entityId) ++
         (millis.map(Bytes.toBytes(_)).getOrElse(Array[Byte]()))
     }
   }
 
-  def resultToEvent(result: Result): Event = {
+  def eventToPut(event: Event, appId: Int): (Put, RowKey) = {
+    // TOOD: use real UUID. not psuedo random
+    val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
+    val rowKey = RowKey(
+      entityType = event.entityType,
+      entityId = event.entityId,
+      millis = event.eventTime.getMillis,
+      uuidLow = uuidLow
+    )
+
+    val eBytes = Bytes.toBytes("e")
+    // use eventTime as HBase's cell timestamp
+    val put = new Put(rowKey.toBytes, event.eventTime.getMillis)
+
+    def addStringToE(col: Array[Byte], v: String) = {
+      put.add(eBytes, col, Bytes.toBytes(v))
+    }
+
+    def addLongToE(col: Array[Byte], v: Long) = {
+      put.add(eBytes, col, Bytes.toBytes(v))
+    }
+
+    addStringToE(colNames("event"), event.event)
+    addStringToE(colNames("entityType"), event.entityType)
+    addStringToE(colNames("entityId"), event.entityId)
+
+    event.targetEntityType.foreach { targetEntityType =>
+      addStringToE(colNames("targetEntityType"), targetEntityType)
+    }
+
+    event.targetEntityId.foreach { targetEntityId =>
+      addStringToE(colNames("targetEntityId"), targetEntityId)
+    }
+
+    // TODO: make properties Option[]
+    if (!event.properties.isEmpty) {
+      addStringToE(colNames("properties"), write(event.properties.toJObject))
+    }
+
+    event.prId.foreach { prId =>
+      addStringToE(colNames("prId"), prId)
+    }
+
+    addLongToE(colNames("eventTime"), event.eventTime.getMillis)
+    val eventTimeZone = event.eventTime.getZone
+    if (!eventTimeZone.equals(EventValidation.defaultTimeZone)) {
+      addStringToE(colNames("eventTimeZone"), eventTimeZone.getID)
+    }
+
+    addLongToE(colNames("creationTime"), event.creationTime.getMillis)
+    val creationTimeZone = event.creationTime.getZone
+    if (!creationTimeZone.equals(EventValidation.defaultTimeZone)) {
+      addStringToE(colNames("creationTimeZone"), creationTimeZone.getID)
+    }
+
+    // can use zero-length byte array for tag cell value
+    (put, rowKey)
+  }
+
+  def resultToEvent(result: Result, appId: Int): Event = {
     val rowKey = RowKey(result.getRow())
 
     val eBytes = Bytes.toBytes("e")
@@ -125,6 +208,16 @@ object HBEventsUtil {
         s"StringBinary: ${Bytes.toStringBinary(result.getRow())}.")
 
       Bytes.toString(r)
+    }
+
+    def getLongCol(col: String): Long = {
+      val r = result.getValue(eBytes, colNames(col))
+      require(r != null,
+        s"Failed to get value for column ${col}. " +
+        s"Rowkey: ${rowKey.toString} " +
+        s"StringBinary: ${Bytes.toStringBinary(result.getRow())}.")
+
+      Bytes.toLong(r)
     }
 
     def getOptStringCol(col: String): Option[String] = {
@@ -146,17 +239,17 @@ object HBEventsUtil {
     val targetEntityId = getOptStringCol("targetEntityId")
     val properties: DataMap = getOptStringCol("properties")
       .map(s => DataMap(read[JObject](s))).getOrElse(DataMap())
-    val predictionKey = getOptStringCol("predictionKey")
+    val prId = getOptStringCol("prId")
     val eventTimeZone = getOptStringCol("eventTimeZone")
       .map(DateTimeZone.forID(_))
       .getOrElse(EventValidation.defaultTimeZone)
+    val eventTime = new DateTime(
+      getLongCol("eventTime"), eventTimeZone)
     val creationTimeZone = getOptStringCol("creationTimeZone")
       .map(DateTimeZone.forID(_))
       .getOrElse(EventValidation.defaultTimeZone)
-
     val creationTime: DateTime = new DateTime(
-      getTimestamp("event"), creationTimeZone
-    )
+      getLongCol("creationTime"), creationTimeZone)
 
     Event(
       eventId = Some(RowKey(result.getRow()).toString),
@@ -166,58 +259,134 @@ object HBEventsUtil {
       targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
       properties = properties,
-      eventTime = new DateTime(rowKey.millis, eventTimeZone),
+      eventTime = eventTime,
       tags = Seq(),
-      appId = rowKey.appId,
-      predictionKey = predictionKey,
+      prId = prId,
       creationTime = creationTime
     )
   }
 
 
+  // for mandatory field. None means don't care.
+  // for optional field. None means don't care.
+  //    Some(None) means not exist.
+  //    Some(Some(x)) means it should match x
   def createScan(
-    appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String],
-    reversed: Option[Boolean] = Some(false)): Scan = {
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None,
+    reversed: Option[Boolean] = None): Scan = {
 
-    val start = PartialRowKey(appId, startTime.map(_.getMillis))
-    // if no untilTime, stop when reach next appId
-    val stop = untilTime.map(t => PartialRowKey(appId, Some(t.getMillis)))
-      .getOrElse(PartialRowKey(appId+1))
+    val scan: Scan = new Scan()
 
+    (entityType, entityId) match {
+      case (Some(et), Some(eid)) => {
+        val start = PartialRowKey(et, eid,
+          startTime.map(_.getMillis)).toBytes
+        // if no untilTime, stop when reach next bytes of entityTypeAndId
+        val stop = PartialRowKey(et, eid,
+          untilTime.map(_.getMillis).orElse(Some(-1))).toBytes
 
-    val scan: Scan = (if (reversed.getOrElse(false)) {
-        // Reversed order.
-        val s = new Scan(stop.toBytes, start.toBytes)
-        s.setReversed(true)
-      } else {
-        new Scan(start.toBytes, stop.toBytes)
+        if (reversed.getOrElse(false)) {
+          // Reversed order.
+          // If you specify a startRow and stopRow,
+          // to scan in reverse, the startRow needs to be lexicographically
+          // after the stopRow.
+          scan.setStartRow(stop)
+          scan.setStopRow(start)
+          scan.setReversed(true)
+        } else {
+          scan.setStartRow(start)
+          scan.setStopRow(stop)
+        }
       }
-    )
-
-
-    if ((entityType != None) || (entityId != None)) {
-      val filters = new FilterList()
-      val eBytes = Bytes.toBytes("e")
-      entityType.foreach { etype =>
-        val compType = new RegexStringComparator("^"+etype+"$")
-        val filterType = new SingleColumnValueFilter(
-          eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
-        filters.addFilter(filterType)
+      case (_, _) => {
+        val minTime: Long = startTime.map(_.getMillis).getOrElse(0)
+        val maxTime: Long = untilTime.map(_.getMillis).getOrElse(Long.MaxValue)
+        scan.setTimeRange(minTime, maxTime)
+        if (reversed.getOrElse(false)) {
+          scan.setReversed(true)
+        }
       }
-      entityId.foreach { eid =>
-        val compId = new RegexStringComparator("^"+eid+"$")
-        val filterId = new SingleColumnValueFilter(
-          eBytes, colNames("entityId"), CompareOp.EQUAL, compId)
-        filters.addFilter(filterId)
-      }
-      scan.setFilter(filters)
     }
 
-    //scan.setReversed(reversed.getOrElse(false))
+    val filters = new FilterList(FilterList.Operator.MUST_PASS_ALL)
+
+    val eBytes = Bytes.toBytes("e")
+
+    def createBinaryFilter(col: String, value: Array[Byte]) = {
+      val comp = new BinaryComparator(value)
+      new SingleColumnValueFilter(
+        eBytes, colNames(col), CompareOp.EQUAL, comp)
+    }
+
+    entityType.foreach { et =>
+      val compType = new BinaryComparator(Bytes.toBytes(et))
+      val filterType = new SingleColumnValueFilter(
+        eBytes, colNames("entityType"), CompareOp.EQUAL, compType)
+      filters.addFilter(filterType)
+    }
+
+    entityId.foreach { eid =>
+      val compId = new BinaryComparator(Bytes.toBytes(eid))
+      val filterId = new SingleColumnValueFilter(
+        eBytes, colNames("entityId"), CompareOp.EQUAL, compId)
+      filters.addFilter(filterId)
+    }
+
+    eventNames.foreach { eventsList =>
+      // match any of event in the eventsList
+      val eventFilters = new FilterList(FilterList.Operator.MUST_PASS_ONE)
+      eventsList.foreach { e =>
+        val compEvent = new BinaryComparator(Bytes.toBytes(e))
+        val filterEvent = new SingleColumnValueFilter(
+          eBytes, colNames("event"), CompareOp.EQUAL, compEvent)
+        eventFilters.addFilter(filterEvent)
+      }
+      if (!eventFilters.getFilters().isEmpty)
+        filters.addFilter(eventFilters)
+    }
+
+    targetEntityType.foreach { tetOpt =>
+      if (tetOpt.isEmpty) {
+        val comp = new BinaryComparator(Bytes.toBytes("targetEntityType"))
+        val q = new QualifierFilter(CompareOp.EQUAL, comp)
+        val filter = new SkipFilter(q)
+        filters.addFilter(filter)
+      } else {
+        tetOpt.foreach { tet =>
+          val filter = createBinaryFilter(
+            "targetEntityType", Bytes.toBytes(tet))
+          // the entire row will be skipped if the column is not found.
+          filter.setFilterIfMissing(true)
+          filters.addFilter(filter)
+        }
+      }
+    }
+
+    targetEntityId.foreach { teidOpt =>
+      if (teidOpt.isEmpty) {
+        val comp = new BinaryComparator(Bytes.toBytes("targetEntityId"))
+        val q = new QualifierFilter(CompareOp.EQUAL, comp)
+        val filter = new SkipFilter(q)
+        filters.addFilter(filter)
+      } else {
+        teidOpt.foreach { teid =>
+          val filter = createBinaryFilter(
+            "targetEntityId", Bytes.toBytes(teid))
+          // the entire row will be skipped if the column is not found.
+          filter.setFilterIfMissing(true)
+          filters.addFilter(filter)
+        }
+      }
+    }
+
+    if (!filters.getFilters().isEmpty)
+      scan.setFilter(filters)
 
     scan
   }

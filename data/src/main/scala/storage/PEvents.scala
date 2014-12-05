@@ -20,12 +20,72 @@ import org.joda.time.DateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+/** Base trait of a data access object that returns [[Event]] related RDD data
+  * structure.
+  */
 trait PEvents extends Serializable {
 
+  /** @deprecated */
   def getByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
-    entityId: Option[String])(sc: SparkContext): RDD[Event]
+    entityId: Option[String])(sc: SparkContext): RDD[Event] = {
+      find(
+        appId = appId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = entityType,
+        entityId = entityId,
+        eventNames = None
+      )(sc)
+    }
 
+  /** Read from database and return the events.
+    *
+    * @param appId return events of this app ID
+    * @param startTime return events with eventTime >= startTime
+    * @param untilTime return events with eventTime < untilTime
+    * @param entityType return events of this entityType
+    * @param entityId return events of this entityId
+    * @param eventNames return events with any of these event names.
+    * @param targetEntityType return events of this targetEntityType:
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
+    * @param targetEntityId return events of this targetEntityId
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
+    * @param sc Spark context
+    * @return RDD[Event]
+    */
+  def find(
+    appId: Int,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event]
+
+  /** Aggregate properties of entities based on these special events:
+    * \$set, \$unset, \$delete events.
+    *
+    * @param appId use events of this app ID
+    * @param entityType aggregate properties of the entities of this entityType
+    * @param startTime use events with eventTime >= startTime
+    * @param untilTime use events with eventTime < untilTime
+    * @param required only keep entities with these required properties defined
+    * @param sc Spark context
+    * @return RDD[(String, DataMap)] RDD of entityId and properties DataMap pair
+    */
+  def aggregateProperties(
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)
+    (sc: SparkContext): RDD[(String, DataMap)]
 }

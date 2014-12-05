@@ -22,7 +22,7 @@ import org.json4s.native.Serialization.{ read, write }
 
 import org.joda.time.DateTime
 
-object DateTimeJson4sSupport {
+private[prediction] object DateTimeJson4sSupport {
 
   implicit val formats = DefaultFormats
 

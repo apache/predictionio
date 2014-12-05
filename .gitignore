@@ -13,7 +13,7 @@ examples/data/ml-*
 fs/
 supervisord.conf
 assembly/
-dist/
+/dist
 *.tar.gz
 *.pyc
 # Ignore source files whose name prefixed with "Private"

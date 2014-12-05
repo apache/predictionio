@@ -1,0 +1,34 @@
+#content {
+  padding: 0 25px 0 25px;
+  img {
+    width: 100%;
+    &.static {
+      width: auto;
+    }
+  }
+
+  h1 {
+    color: $heading-1-font-color;
+  }
+
+  h2 {
+    color: $heading-2-font-color;
+    font-weight: 400;
+  }
+
+  h3 {
+    color: $heading-3-font-color;
+  }
+
+  h4 {
+    color: $heading-4-font-color;
+  }
+
+  h5 {
+    color: $heading-5-font-color;
+  }
+
+  h6 {
+    color: $heading-6-font-color;
+  }
+}

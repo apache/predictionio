@@ -25,16 +25,13 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
-/** Base class of local serving. For deployment, there should only be local
-  * serving class.
+/** Base class of serving. 
   *
-  * @tparam AP Algorithm parameters class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @group Serving
   */
-abstract class LServing[AP <: Params : ClassTag, Q, P]
-  extends BaseServing[AP, Q, P] {
+abstract class LServing[Q, P] extends BaseServing[Q, P] {
   def serveBase(q: Q, ps: Seq[P]): P = {
     serve(q, ps)
   }
@@ -53,7 +50,7 @@ abstract class LServing[AP <: Params : ClassTag, Q, P]
   *
   * @group Serving
   */
-class FirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
+class LFirstServing[Q, P] extends LServing[Q, P] {
   /** Returns the first algorithm's prediction. */
   def serve(query: Q, predictions: Seq[P]): P = predictions.head
 }
@@ -63,10 +60,10 @@ class FirstServing[Q, P] extends LServing[EmptyParams, Q, P] {
   *
   * @group Serving
   */
-object FirstServing {
-  /** Returns an instance of [[FirstServing]]. */
-  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, _, Q, P]]) =
-    classOf[FirstServing[Q, P]]
+object LFirstServing {
+  /** Returns an instance of [[LFirstServing]]. */
+  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]) =
+    classOf[LFirstServing[Q, P]]
 }
 
 /** A concrete implementation of [[LServing]] returning the average of all
@@ -74,7 +71,7 @@ object FirstServing {
   *
   * @group Serving
   */
-class AverageServing[Q] extends LServing[EmptyParams, Q, Double] {
+class LAverageServing[Q] extends LServing[Q, Double] {
   /** Returns the average of all algorithms' predictions. */
   def serve(query: Q, predictions: Seq[Double]): Double = {
     predictions.sum / predictions.length
@@ -86,8 +83,8 @@ class AverageServing[Q] extends LServing[EmptyParams, Q, Double] {
   *
   * @group Serving
   */
-object AverageServing {
-  /** Returns an instance of [[AverageServing]]. */
-  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, _, Q, _]]) =
-    classOf[AverageServing[Q]]
+object LAverageServing {
+  /** Returns an instance of [[LAverageServing]]. */
+  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, Q, _]]) =
+    classOf[LAverageServing[Q]]
 }

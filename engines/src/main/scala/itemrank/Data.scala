@@ -15,7 +15,7 @@
 
 package io.prediction.engines.itemrank
 
-import io.prediction.controller.WithPredictionKey
+import io.prediction.controller.WithPrId
 
 import io.prediction.engines.util
 import io.prediction.engines.base
@@ -34,7 +34,7 @@ case class Prediction(
   // the ranked iid with score
     val items: Seq[(String, Double)],
     val isOriginal: Boolean = false
-  ) extends Serializable with WithPredictionKey {
+  ) extends Serializable with WithPrId {
   override def toString = s"${items}"
 }
 

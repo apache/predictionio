@@ -32,8 +32,7 @@ import org.apache.spark.SparkContext._
 
 class PEventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
-  extends PDataSource[AbstractEventsDataSourceParams,
-    DP, PTrainingData, Q, A] {
+  extends PDataSource[DP, PTrainingData, Q, A] {
 
   @transient lazy val logger = Logger[this.type]
 

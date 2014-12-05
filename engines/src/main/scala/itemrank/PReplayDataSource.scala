@@ -28,7 +28,6 @@ import io.prediction.engines.base.TrainingData
 
 class PReplayDataSource(val dsp: ReplayDataSource.Params)
   extends P2LDataSource[
-      ReplayDataSource.Params,
       ReplaySliceParams,
       TrainingData,
       Query,

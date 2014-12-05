@@ -24,7 +24,7 @@ import org.apache.spark.SparkContext
   *
   * {{{
   * class MyModel extends IPersistentModel[MyParams] {
-  *   def save(id: String, params: MyParams): Unit = {
+  *   def save(id: String, params: MyParams, sc: SparkContext): Boolean = {
   *     ...
   *   }
   * }
@@ -42,7 +42,7 @@ import org.apache.spark.SparkContext
   * {{{
   * public class MyModel implements IPersistentModel<MyParams>, Serializable {
   *   ...
-  *   public void save(String id, MyParams params) {
+  *   public boolean save(String id, MyParams params, SparkContext sc) {
   *     ...
   *   }
   *

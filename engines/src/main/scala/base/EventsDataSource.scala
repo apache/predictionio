@@ -80,15 +80,14 @@ class DataParams(
 
 class EventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
-  extends LDataSource[AbstractEventsDataSourceParams,
-    DP, TrainingData, Q, A] {
+  extends LDataSource[TrainingData, DP, Q, A] {
 
   @transient lazy val logger = Logger[this.type]
   @transient lazy val batchView = new LBatchView(dsp.appId,
     dsp.startTime, dsp.untilTime)
 
   override
-  def read(): Seq[(DP, TrainingData, Seq[(Q, A)])] = {
+  def read(): Seq[(TrainingData, DP, Seq[(Q, A)])] = {
     if (dsp.slidingEval.isEmpty) {
       val (uid2ui, users) = extractUsers(dsp.untilTime)
       val (iid2ii, items) = extractItems(dsp.untilTime)
@@ -99,7 +98,7 @@ class EventsDataSource[DP: ClassTag, Q, A](
         items = HashMap[Int, ItemTD]() ++ items,
         u2iActions = actions.toList)
 
-      return Seq((null.asInstanceOf[DP], trainingData, Seq[(Q, A)]()))
+      return Seq((trainingData, null.asInstanceOf[DP], Seq[(Q, A)]()))
     } else {
       val evalParams = dsp.slidingEval.get
       val evalDuration = evalParams.evalDuration
@@ -138,7 +137,7 @@ class EventsDataSource[DP: ClassTag, Q, A](
         val (dp, qaSeq) = generateQueryActualSeq(
           users, items, evalActions, trainUntil, evalStart, evalUntil)
 
-        (dp, trainingData, qaSeq)
+        (trainingData, dp, qaSeq)
       }}
     }
   }

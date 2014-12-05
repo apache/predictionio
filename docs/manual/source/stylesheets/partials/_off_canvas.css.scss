@@ -1,0 +1,93 @@
+#active-navigation {
+  float: left;
+  font-size: 40px;
+  height: 40px;
+  margin: 25px 0 25px 20px;
+  color: $header-icon-color;
+  display: block;
+  i {
+    vertical-align: top;
+  }
+}
+
+[role="navigation"] {
+  width: $navigation-role-width;
+  min-width: $navigation-role-width;
+  display: none;
+}
+
+[role="main"] {
+ width: 100%;
+}
+
+[role="complementary"] {
+  width: $complementary-role-width;
+  min-width: $complementary-role-width;
+  display: none;
+}
+
+.active-navigation {
+  [role="navigation"] {
+    display: block;
+  }
+
+  [role="main"] {
+    margin-right: -$navigation-role-width;
+  }
+}
+
+.active-complementary {
+  [role="main"] {
+    margin-left: -$complementary-role-width;
+  }
+
+  [role="complementary"] {
+    display: block;
+  }
+}
+
+
+
+// Medium
+@media all and (min-width: 768px) {
+  #active-navigation {
+    display: none;
+  }
+
+  [role="navigation"] {
+    display: block;
+  }
+
+  .active-navigation {
+    [role="main"] {
+      margin-right: 0;
+    }
+  }
+
+  .active-complementary {
+    [role="main"] {
+      margin-left: 0;
+    }
+
+    [role="navigation"] {
+      margin-left: -$complementary-role-width;
+    }
+  }
+}
+
+// Large
+@media all and (min-width: 1200px) {
+  #active-complementary {
+    display: none;
+  }
+
+  [role="complementary"] {
+    display: block;
+  }
+
+  .active-complementary {
+    [role="navigation"] {
+      margin-left: 0;
+    }
+  }
+}

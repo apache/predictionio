@@ -1,0 +1,35 @@
+.alert {
+  min-height: 65px;
+  margin: 1em 0 1em 0;
+
+  p {
+    padding: 20px 20px 20px 20px;
+    margin: 0;
+  }
+
+  &.info {
+    background-color: $info-background-color;
+    border-left: 10px solid $info-color;
+  }
+  &.success {
+    background-color: $success-background-color;
+    border-left: 10px solid $success-color;
+  }
+  &.warning {
+    background-color: $warning-background-color;
+    border-left: 10px solid $warning-color;
+  }
+  &.danger {
+    background-color: $danger-background-color;
+    border-left: 10px solid $danger-color;
+  }
+  &.note {
+    background-color: $note-background-color;
+    border-left: 10px solid $note-color;
+  }
+  &.todo {
+    background-color: $todo-background-color;
+    border-left: 10px solid $todo-color;
+  }
+}
+

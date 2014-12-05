@@ -3,7 +3,7 @@
   "description": "Default settings",
   "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
-    "filepath": "./data/sample_movielens_data.txt"
+    "appId": 1
   },
   "algorithms": [
     {

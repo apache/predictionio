@@ -1,0 +1,56 @@
+nav#nav-main role="navigation"
+  ul
+    li.expand
+      = link_to 'Getting Started', '#'
+      ul
+        li = link_to_with_active 'Overview', '/start/'
+        li = link_to_with_active 'Installing PredictionIO', '/install/'
+        li = link_to_with_active 'Engine - A Closer Look', '/start/engines/'
+    li.expand
+      = link_to 'Recommendation Template', '#'
+      ul
+        li = link_to_with_active 'Quick Start', '/recommendation/quickstart/'
+        li = link_to_with_active 'DASE Components Explained', '/recommendation/dase/'
+        li = link_to_with_active 'Reading Custom Events', '/recommendation/reading-custom-events'
+        li = link_to_with_active 'Customizing Data Preparator', '/recommendation/customize-data-prep/'
+        li = link_to_with_active 'Customizing Serving', '/recommendation/customize-serving/'
+    li.expand
+      = link_to 'Classification Template', '#'
+      ul
+        li = link_to_with_active 'Quick Start', '/classification/quickstart/'
+        li = link_to_with_active 'DASE Components Explained', '/classification/dase/'
+    li.expand
+      = link_to 'Data Collection', '#'
+      ul
+        li = link_to_with_active 'Overview', '/datacollection/overview/'
+        li = link_to_with_active 'Collecting Data', '/datacollection/eventapi/'
+        li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'
+    li.expand
+      = link_to 'Get Involved', '#'
+      ul
+        li = link_to_with_active 'Contribute Code', '/community/contribute-code/'
+        li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation/'
+        li = link_to_with_active 'Community Projects', '/community/projects/'
+    li.expand
+      = link_to 'SDKs and Plugins', '#'
+      ul
+        li = link_to_with_active 'Java & Android SDK', '/sdk/java/'
+        li = link_to_with_active 'PHP SDK', '/sdk/php/'
+        li = link_to_with_active 'Python SDK', '/sdk/python/'
+        li = link_to_with_active 'Ruby SDK', '/sdk/ruby/'
+    li.expand
+      = link_to 'Resources', '#'
+      ul
+        li = link_to_with_active 'FAQs', '/resources/faq/'
+        li = link_to_with_active 'Upgrading to 0.8.2', '/resources/schema-change/'
+        li = link_to_with_active 'System Overview', '/resources/systems/'
+        li = link_to_with_active 'Glossary', '/resources/glossary/'
+        li = link_to_with_active 'API Docs', 'http://docs.prediction.io/api/current/#package'
+    - unless build?
+      li
+        = link_to 'Samples', '#'
+        ul
+          li = link_to_with_active 'Typography', '/samples/'
+          li = link_to_with_active 'Sizing', '/samples/sizing/'
+          li = link_to_with_active 'Tabs', '/samples/tabs/'
+          li = link_to_with_active 'Languages', '/samples/languages/'

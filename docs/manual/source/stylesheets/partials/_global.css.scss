@@ -1,0 +1,17 @@
+#global {
+  min-width: 320px;
+  width: 100%;
+  overflow: hidden;
+}
+
+#main {
+  background-color: $main-background-color;
+  padding: 0 0 25px 0;
+}
+
+
+#page {
+  display: flex;
+  flex-direction: row;
+}
+

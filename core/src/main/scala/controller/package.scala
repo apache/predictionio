@@ -31,6 +31,11 @@ package object controller {
     * @group General
     */
   type EmptyDataParams = EmptyParams
+  
+  /** Empty evaluation info.
+    * @group General
+    */
+  type EmptyEvaluationInfo = EmptyParams
 
   /** Empty preparator parameters.
     * @group General

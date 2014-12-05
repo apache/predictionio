@@ -22,7 +22,7 @@ import org.json4s.native.Serialization.{ read, write }
 
 import org.joda.time.DateTime
 
-object EventJson4sSupport {
+private[prediction] object EventJson4sSupport {
 
   // NOTE: don't use json4s to serialize/deserialize joda DateTime
   // because it has some issue with timezone (as of version 3.2.10)
@@ -58,9 +58,7 @@ object EventJson4sSupport {
         val tags = List()
       //val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
 
-        val appId = fields.get[Int]("appId")
-
-        val predictionKey = fields.getOpt[String]("predictionKey")
+        val prId = fields.getOpt[String]("prId")
 
         // don't allow user set creationTime from API for now.
         val creationTime = currentTime
@@ -83,8 +81,7 @@ object EventJson4sSupport {
           targetEntityId = targetEntityId,
           properties = DataMap(properties),
           eventTime = eventTime,
-          appId = appId,
-          predictionKey = predictionKey,
+          prId = prId,
           creationTime = creationTime
         )
         EventValidation.validate(newEvent)
@@ -101,7 +98,6 @@ object EventJson4sSupport {
       JObject(
         JField("eventId",
           d.eventId.map( eid => JString(eid)).getOrElse(JNothing)) ::
-        JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
@@ -114,8 +110,8 @@ object EventJson4sSupport {
         // disable tags from API for now
         //JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
         // disable tags from API for now
-        JField("predictionKey",
-          d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+        JField("prId",
+          d.prId.map(JString(_)).getOrElse(JNothing)) ::
         // don't show creationTime for now
         //JField("creationTime",
         //  JString(DataUtils.dateTimeToString(d.creationTime))) ::
@@ -134,8 +130,7 @@ object EventJson4sSupport {
       val eventTime = DataUtils.stringToDateTime(
         (jv \ "eventTime").extract[String])
       val tags = (jv \ "tags").extract[Seq[String]]
-      val appId = (jv \ "appId").extract[Int]
-      val predictionKey = (jv \ "predictionKey").extract[Option[String]]
+      val prId = (jv \ "prId").extract[Option[String]]
       val creationTime = DataUtils.stringToDateTime(
         (jv \ "creationTime").extract[String])
       Event(
@@ -147,8 +142,7 @@ object EventJson4sSupport {
         properties = DataMap(properties),
         eventTime = eventTime,
         tags = tags,
-        appId = appId,
-        predictionKey = predictionKey,
+        prId = prId,
         creationTime = creationTime)
     }
   }
@@ -156,7 +150,6 @@ object EventJson4sSupport {
   def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
-        JField("appId", JInt(d.appId)) ::
         JField("event", JString(d.event)) ::
         JField("entityType", JString(d.entityType)) ::
         JField("entityId", JString(d.entityId)) ::
@@ -167,8 +160,8 @@ object EventJson4sSupport {
         JField("properties", d.properties.toJObject) ::
         JField("eventTime", JString(DataUtils.dateTimeToString(d.eventTime))) ::
         JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
-        JField("predictionKey",
-          d.predictionKey.map(JString(_)).getOrElse(JNothing)) ::
+        JField("prId",
+          d.prId.map(JString(_)).getOrElse(JNothing)) ::
         JField("creationTime",
           JString(DataUtils.dateTimeToString(d.creationTime))) ::
         Nil)

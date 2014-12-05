@@ -1,0 +1,377 @@
+require 'middleman'
+require 'nokogiri'
+require 'rainbow/ext/string'
+require 'uri'
+require 'net/http'
+
+
+desc 'Check site for broken links'
+task :check do
+
+  sets = []
+  cache = Sanity::Cache.new
+
+  Dir["build/**/*.html"].each do |filename|
+    p = Sanity::Page.new(filename, cache)
+
+    sets << p.check_links
+  end
+
+  html = Sanity::Report::HTML.new(sets.map{ |s| s.to_html })
+  File.open('sanity.html', 'w') { |file| file.write(html) }
+end
+
+
+module Sanity
+  module Report
+
+    class HTML
+      include Padrino::Helpers
+
+      HEADER = <<EOT
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Sanity Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+  </head>
+  <body>
+    <div class="jumbotron">
+      <div class="container-fluid">
+        <h1>Sanity Report</h1>
+      </div>
+    </div>
+    <div class="container-fluid">
+
+EOT
+      FOOTER = <<EOT
+    </div>
+  </body>
+</html>
+EOT
+
+
+
+
+      def initialize(content)
+        if content.respond_to?(:to_html)
+          html = content.to_html
+        else
+          html = content
+        end
+
+        @content = content_tag(:div, html, id: 'content')
+      end
+
+      def to_html
+        "#{HEADER}#{@content}#{FOOTER}"
+      end
+
+      def to_s
+        to_html
+      end
+    end
+  end
+
+  class ResultSet
+    include Padrino::Helpers
+    attr_accessor :set
+    def initialize(path, set = [])
+      @path = path
+      @set = set
+    end
+
+    def push(item)
+      @set.push(item)
+    end
+
+    def to_html
+      content_tag(:h2, @path) <<
+      content_tag(:table, class: 'table table-striped') do
+        content_tag(:thead) do
+          content_tag(:tr) do
+            content_tag(:th, 'Type') <<
+            content_tag(:th, 'Status') <<
+            content_tag(:th, 'URI') <<
+            content_tag(:th, 'Message') <<
+            content_tag(:th, 'Path')
+          end
+        end <<
+        content_tag(:tbody) do
+          @set.map do |item|
+            item.to_html
+          end
+        end
+      end
+    end
+  end
+
+  class Result
+    include Padrino::Helpers
+    attr_accessor :type, :status, :path, :uri, :message, :cache, :backtrace
+
+    def initialize
+    end
+
+    def exception=(e)
+      @status = :exception
+      @message = e.message
+      @backtrace = e.backtrace
+    end
+
+    def to_s
+      "#{@type} [#{@status}] #{@uri} #{@message} #{@path}".color(terminal_color)
+    end
+
+    def to_html
+      content_tag(:tr, class: bootstrap_css_class) do
+        content_tag(:td, @type) <<
+        content_tag(:td, @status) <<
+        content_tag(:td, @uri) <<
+        content_tag(:td, @message) <<
+        content_tag(:td, @path)
+      end
+    end
+
+
+
+    private
+
+    def bootstrap_css_class
+      case @status
+      when :success
+        'success'
+      when :info
+        'info'
+      when :warning
+        'warning'
+      when :error
+        'danger'
+      when :exception
+        'danger'
+      else
+        raise ArgumentError, "Status `#{@status}` is not a valid type"
+      end
+    end
+
+    def terminal_color
+      case @status
+      when :success
+        :green
+      when :info
+       :blue
+      when :warning
+        :yellow
+      when :error
+        :red
+      when :exception
+        :red
+      else
+        raise ArgumentError, "Status `#{@status}` is not a valid type"
+      end
+    end
+  end
+
+  class Cache
+    def initialize(store = {})
+      @store = store
+    end
+
+    def read(uri)
+      @store[uri]
+    end
+
+    def write(uri, value)
+      @store[uri] = value
+    end
+
+    def fetch(uri)
+      if block_given?
+        if exists?(uri)
+          read(uri)
+        else
+          write(uri, yield)
+        end
+      else
+        read(uri)
+      end
+    end
+
+    def exists?(uri)
+      @store.has_key?(uri)
+    end
+  end
+
+  class Page
+    INDEX_FILE = 'index.html'
+
+    def initialize(filename, cache = Sanity::Cache.new)
+      @filename = filename
+      @cache = cache
+      f = File.open(@filename)
+      @doc = Nokogiri::HTML(f)
+
+      @build_path = File.join(Middleman::Application.root, 'build')
+      f.close
+    end
+
+    def check_links
+      rs = Sanity::ResultSet.new(@filename)
+      @doc.css('a').each do |link|
+        uri = link['href']
+        r = check_href(uri)
+        r.path = @filename
+        puts r
+        rs.push(r)
+      end
+      rs
+    end
+
+    def check_href(href)
+      # TODO: add trailing slash, relative url, and in page anchor links.
+      # TODO: Test for missing titles!
+      # TODO: Test for unneeded .html extension!
+      # TODO: Switch from Nokogir to raw ID checker
+      case href
+      when /\A\s*\z/, nil
+        check_empty_href(href)
+      when /\A(https?):\/\/.+\z/
+        check_external_href(href)
+      when /\A#.+\z/
+        check_anchor_href(href)
+      when /\A#\z/
+        check_empty_anchor_href(href)
+      when /\A\/\z/
+        check_root_href(href)
+      when /\Amailto:.+\z/
+        check_mailto_href(href)
+      else
+        check_internal_href(href)
+      end
+    end
+
+    def check_external_href(href)
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :external_uri
+      begin
+        response = @cache.fetch(href) do
+          r.cache = :miss
+          uri = URI(href)
+          Net::HTTP.get_response(uri)
+        end
+
+        case response
+        when Net::HTTPSuccess
+          r.status = :success
+        when Net::HTTPNotFound
+          r.status = :error
+        when Net::HTTPRedirection
+          location = response['location']
+          r.status = :info
+          r.message = "Redirect: #{location}"
+        else
+          r.status = :warning
+          r.message = "Response: #{response.class}"
+        end
+      rescue => e
+        r.exception = e
+      end
+      r
+    end
+
+    def check_anchor_href(href)
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :anchor
+      begin
+        result = @doc.css(href)
+
+        if result.count > 0
+          r.status = :success
+        else
+          r.status = :error
+        end
+
+      rescue => e
+        r.exception = e
+      end
+      r
+    end
+
+    def check_empty_anchor_href(href)
+
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :empty_anchor
+      r.status = :info
+      r
+    end
+
+    def check_root_href(href)
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :root_path
+
+      filename = File.join(@build_path, INDEX_FILE)
+      if File.exist?(filename)
+        r.status = :success
+      else
+        r.status = :error
+        r.message "Not found: #{filename}"
+      end
+
+      r
+    end
+
+    def check_mailto_href(href)
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :mailto
+
+      uri = URI.parse(href)
+      if uri.is_a?(URI::MailTo)
+        r.status = :success
+
+      else
+        r.status = :error
+      end
+
+      r
+    end
+
+    def check_empty_href(href)
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :empty_uri
+      r.status = :error
+      r
+    end
+
+    def check_internal_href(href)
+
+      r = Sanity::Result.new
+      r.uri = href
+      r.type = :internal_uri
+
+      filename = File.join(@build_path, href.gsub('/', File::SEPARATOR))
+      if File.directory?(filename)
+        filename = File.join(filename, INDEX_FILE)
+      end
+
+      if File.exist?(filename)
+
+        r.status = :success
+      else
+
+        r.status = :error
+      end
+
+      r
+    end
+  end
+end
+
+
