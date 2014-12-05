@@ -21,7 +21,7 @@ import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.ParamsWithAppId
-import io.prediction.controller.WithPredictionKey
+import io.prediction.controller.WithPrId
 import io.prediction.controller.Utils
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
@@ -86,7 +86,10 @@ case class ServerConfig(
   port: Int = 8000,
   feedback: Boolean = false,
   eventServerIp: String = "localhost",
-  eventServerPort: Int = 7070)
+  eventServerPort: Int = 7070,
+  accessKey: String = "",
+  verbose: Boolean = false,
+  debug: Boolean = false)
 
 case class StartServer()
 case class StopServer()
@@ -125,9 +128,19 @@ object CreateServer extends Logging {
       opt[Int]("event-server-port") action { (x, c) =>
         c.copy(eventServerPort = x)
       } text("Event server port. Default: 7070")
+      opt[String]("accesskey") action { (x, c) =>
+        c.copy(accessKey = x)
+      } text("Event server access key.")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(verbose = true)
+      } text("Enable verbose output.")
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(debug = true)
+      } text("Enable debug output.")
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
+      WorkflowUtils.setupLogging(sc.verbose, sc.debug)
       engineInstances.get(sc.engineInstanceId) map { engineInstance =>
         val engineId = sc.engineId.getOrElse(engineInstance.engineId)
         val engineVersion = sc.engineVersion.getOrElse(
@@ -159,10 +172,10 @@ object CreateServer extends Logging {
     }
   }
 
-  def createServerActorWithEngine[TD, DP, PD, Q, P, A](
+  def createServerActorWithEngine[TD, EIN, PD, Q, P, A](
     sc: ServerConfig,
     engineInstance: EngineInstance,
-    engine: Engine[TD, DP, PD, Q, P, A],
+    engine: Engine[TD, EIN, PD, Q, P, A],
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): ActorRef = {
     implicit val formats = DefaultFormats
@@ -200,23 +213,23 @@ object CreateServer extends Logging {
       engineLanguage,
       engineInstance.dataSourceParams,
       engine.dataSourceClass)
+    val preparatorParams = WorkflowUtils.extractParams(
+      engineLanguage,
+      engineInstance.preparatorParams,
+      engine.preparatorClass)
     val evalPreparedMap = sparkContext map { sc =>
       logger.info("Data Source")
       val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
       val evalParamsDataMap
-      : Map[EI, (DP, TD, RDD[(Q, A)])] = dataSource
+      : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
         .readBase(sc)
         .zipWithIndex
         .map(_.swap)
         .toMap
       val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
-        case(ei, e) => (ei -> (e._2, e._3))
+        case(ei, e) => (ei -> (e._1, e._3))
       }
       logger.info("Preparator")
-      val preparatorParams = WorkflowUtils.extractParams(
-        engineLanguage,
-        engineInstance.preparatorParams,
-        engine.preparatorClass)
       val preparator = Doer(engine.preparatorClass, preparatorParams)
 
       val evalPreparedMap: Map[EI, PD] = evalDataMap
@@ -237,7 +250,7 @@ object CreateServer extends Logging {
           if (m.isInstanceOf[PersistentModelManifest]) {
             info("Custom-persisted model detected for algorithm " +
               a.getClass.getName)
-            WorkflowUtils.getPersistentModel(
+            SparkWorkflowUtils.getPersistentModel(
               m.asInstanceOf[PersistentModelManifest],
               engineInstance.id,
               p,
@@ -268,6 +281,7 @@ object CreateServer extends Logging {
         engineLanguage,
         manifest,
         dataSourceParams,
+        preparatorParams,
         algorithms,
         algorithmsParams,
         models,
@@ -365,10 +379,11 @@ class ServerActor[Q, P](
     val engineLanguage: EngineLanguage.Value,
     val manifest: EngineManifest,
     val dataSourceParams: Params,
-    val algorithms: Seq[BaseAlgorithm[_ <: Params, _, _, Q, P]],
+    val preparatorParams: Params,
+    val algorithms: Seq[BaseAlgorithm[_, _, Q, P]],
     val algorithmsParams: Seq[Params],
     val models: Seq[Any],
-    val serving: BaseServing[_ <: Params, Q, P],
+    val serving: BaseServing[Q, P],
     val servingParams: Params) extends Actor with HttpService {
   val serverStartTime = DateTime.now
   lazy val gson = new Gson
@@ -401,6 +416,8 @@ class ServerActor[Q, P](
                 algorithms.map(_.toString),
                 algorithmsParams.map(_.toString),
                 models.map(_.toString),
+                dataSourceParams.toString,
+                preparatorParams.toString,
                 servingParams.toString,
                 serverStartTime,
                 feedbackEnabled,
@@ -419,10 +436,10 @@ class ServerActor[Q, P](
               val queryTime = DateTime.now
               val javaQuery = javaAlgorithms.headOption map { alg =>
                 val queryClass = if (
-                  alg.isInstanceOf[LJavaAlgorithm[_, _, _, Q, P]]) {
-                  alg.asInstanceOf[LJavaAlgorithm[_, _, _, Q, P]].queryClass
+                  alg.isInstanceOf[LJavaAlgorithm[_, _, Q, P]]) {
+                  alg.asInstanceOf[LJavaAlgorithm[_, _, Q, P]].queryClass
                 } else {
-                  alg.asInstanceOf[PJavaAlgorithm[_, _, _, Q, P]].queryClass
+                  alg.asInstanceOf[PJavaAlgorithm[_, _, Q, P]].queryClass
                 }
                 gson.fromJson(queryString, queryClass)
               }
@@ -436,9 +453,9 @@ class ServerActor[Q, P](
                 else
                   a.predictBase(models(ai), scalaQuery.get)
               }
-              val r = if (serving.isInstanceOf[LJavaServing[_, Q, P]]) {
+              val r = if (serving.isInstanceOf[LJavaServing[Q, P]]) {
                 val prediction = serving.serveBase(javaQuery.get, predictions)
-                // parse to Json4s JObject for later merging with predictionKey
+                // parse to Json4s JObject for later merging with prId
                 (parse(gson.toJson(prediction)), prediction, javaQuery.get)
               } else {
                 val prediction = serving.serveBase(scalaQuery.get, predictions)
@@ -453,7 +470,7 @@ class ServerActor[Q, P](
                 * - engineInstanceId
                 * - query
                 * - prediction
-                * - predictionKey
+                * - prId
                 */
               val result = if (feedbackEnabled) {
                 implicit val formats =
@@ -461,35 +478,36 @@ class ServerActor[Q, P](
                     scalaAlgorithms.head.querySerializer
                   else
                     Utils.json4sDefaultFormats
-                //val key = Random.alphanumeric.take(64).mkString
-                def genKey: String = Random.alphanumeric.take(64).mkString
-                val key = if (r._2.isInstanceOf[WithPredictionKey]) {
-                  val org = r._2.asInstanceOf[WithPredictionKey].predictionKey
-                  if (org.isEmpty) genKey else org
-                } else genKey
+                //val genPrId = Random.alphanumeric.take(64).mkString
+                def genPrId: String = Random.alphanumeric.take(64).mkString
+                val newPrId = if (r._2.isInstanceOf[WithPrId]) {
+                  val org = r._2.asInstanceOf[WithPrId].prId
+                  if (org.isEmpty) genPrId else org
+                } else genPrId
 
-                val predictionKey =
-                  if (r._3.isInstanceOf[WithPredictionKey]) {
-                    Map("predictionKey" ->
-                      r._3.asInstanceOf[WithPredictionKey].predictionKey)
+                // also save Query's prId as prId of this pio_pr predict events
+                val queryPrId =
+                  if (r._3.isInstanceOf[WithPrId]) {
+                    Map("prId" ->
+                      r._3.asInstanceOf[WithPrId].prId)
                   } else {
                     Map()
                   }
                 val data = Map(
-                  "appId" ->
-                    dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
+                  //"appId" ->
+                  //  dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
                   "event" -> "predict",
                   "eventTime" -> queryTime.toString(),
                   "entityType" -> "pio_pr", // prediction result
-                  "entityId" -> key,
+                  "entityId" -> newPrId,
                   "properties" -> Map(
                     "engineInstanceId" -> engineInstance.id,
                     "query" -> r._3,
-                    "prediction" -> r._2)) ++ predictionKey
+                    "prediction" -> r._2)) ++ queryPrId
                 val f: Future[Int] = future {
                   scalaj.http.Http.postData(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
-                    "events.json", write(data)).
+                    s"events.json?accessKey=${args.accessKey}", write(data)).
                     header("content-type", "application/json").responseCode
                 }
                 f onComplete {
@@ -502,12 +520,12 @@ class ServerActor[Q, P](
                   case Failure(t) => {
                     log.error(s"Feedback event failed: ${t.getMessage}") }
                 }
-                // overwrite predictionKey
-                // - if it is WithPredictionKey,
-                //   then overwrite with new key or org key
-                // - if it is not WithPredictionKey, no predictionKey injection
-                if (r._2.isInstanceOf[WithPredictionKey])
-                  r._1 merge parse(s"""{"predictionKey" : "${key}"}""")
+                // overwrite prId in predictedResult
+                // - if it is WithPrId,
+                //   then overwrite with new prId
+                // - if it is not WithPrId, no prId injection
+                if (r._2.isInstanceOf[WithPrId])
+                  r._1 merge parse(s"""{"prId" : "${newPrId}"}""")
                 else r._1
               } else r._1
 

@@ -1,0 +1,18 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
+  "datasource": {
+    "filepath": "./data/sample_movielens_data.txt"
+  },
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01
+      }
+    }
+  ]
+}

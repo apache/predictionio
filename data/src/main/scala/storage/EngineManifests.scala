@@ -30,7 +30,7 @@ import org.json4s._
  * @param files Paths to engine files.
  * @param engineFactory Engine's factory class name.
  */
-case class EngineManifest(
+private[prediction] case class EngineManifest(
   id: String,
   version: String,
   name: String,
@@ -39,7 +39,7 @@ case class EngineManifest(
   engineFactory: String)
 
 /** Base trait for implementations that interact with engine manifests in the backend data store. */
-trait EngineManifests {
+private[prediction] trait EngineManifests {
   /** Inserts an engine manifest. */
   def insert(engineManifest: EngineManifest): Unit
 
@@ -56,7 +56,8 @@ trait EngineManifests {
   def delete(id: String, version: String): Unit
 }
 
-class EngineManifestSerializer extends CustomSerializer[EngineManifest](format => (
+private[prediction] class EngineManifestSerializer
+    extends CustomSerializer[EngineManifest](format => (
   {
     case JObject(fields) =>
       val seed = EngineManifest(

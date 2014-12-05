@@ -13,6 +13,7 @@
   * limitations under the License.
   */
 
+/* Deprecated */
 package io.prediction.data.view
 
 import io.prediction.data.storage.hbase.HBPEvents
@@ -171,7 +172,7 @@ class PBatchView(
   val sc: SparkContext) {
 
   // NOTE: parallel Events DB interface
-  @transient lazy val eventsDb = Storage.getEventDataPEvents()
+  @transient lazy val eventsDb = Storage.getPEvents()
 
   @transient lazy val _events: RDD[Event] =
     eventsDb.getByAppIdAndTimeAndEntity(

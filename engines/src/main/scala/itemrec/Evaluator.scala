@@ -106,7 +106,7 @@ class ItemRecPrecision(val k: Int, val ratingParams: BinaryRatingParams)
 
 
 class ItemRecEvaluator(params: ItemRecEvaluatorParams) 
-  extends Evaluator[ItemRecEvaluatorParams, HasName,
+  extends Evaluator[HasName,
       Query, Prediction, Actual,
       EvaluatorUnit, Seq[EvaluatorUnit], EvaluatorOutput] {
   

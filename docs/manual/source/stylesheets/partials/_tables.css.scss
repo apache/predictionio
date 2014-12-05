@@ -1,0 +1,15 @@
+table {
+  width: 100%;
+  th {
+    text-align: left;
+  }
+
+  tr {
+    border-bottom: 1px solid $border-color;
+  }
+
+  td, th {
+    padding: 2px 20px 2px 0;
+  }
+
+}

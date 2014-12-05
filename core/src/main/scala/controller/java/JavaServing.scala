@@ -29,12 +29,11 @@ import java.util.{ List => JList }
  * Base class of local serving. For deployment, there should only be local
  * serving class.
  *
- * @param <SP> Serving Parameters
  * @param <Q> Input Query
  * @param <P> Output Prediction
  */
-abstract class LJavaServing[SP <: Params, Q, P]
-  extends BaseServing[SP, Q, P]()(JavaUtils.fakeClassTag[SP]) {
+abstract class LJavaServing[Q, P]
+  extends BaseServing[Q, P] {
 
   def serveBase(q: Q, ps: Seq[P]): P = serve(q, seqAsJavaList(ps))
 
@@ -52,7 +51,7 @@ abstract class LJavaServing[SP <: Params, Q, P]
  * @param <Q> Input Query
  * @param <P> Output Prediction
  */
-class LJavaFirstServing[Q, P] extends LJavaServing[EmptyParams, Q, P] {
+class LJavaFirstServing[Q, P] extends LJavaServing[Q, P] {
   override def serve(query: Q, predictions: JIterable[P]): P = {
     predictions.iterator().next()
   }
@@ -64,7 +63,7 @@ class LJavaFirstServing[Q, P] extends LJavaServing[EmptyParams, Q, P] {
  */
 object LJavaFirstServing {
   /** Returns an instance of {@link LJavaFirstServing}. */
-  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, _, Q, P]]) =
+  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]) =
     classOf[LJavaFirstServing[Q, P]]
 
   /**

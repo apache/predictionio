@@ -1,0 +1,13 @@
+Usage: pio train [--batch <value>] [common options...]
+
+Kick off a training using an engine (variant) to produce an engine instance.
+This command will pass all pass-through arguments to its underlying spark-submit
+command.
+
+  --batch <value>
+      Batch label of the run.
+  --stop-after-read
+      Stop the training process after DataSource.read(). Useful for debugging.
+  --stop-after-prepare
+      Stop the training process after Preparator.prepare(). Useful for
+      debugging.

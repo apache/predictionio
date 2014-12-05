@@ -152,7 +152,7 @@ class DetailedEvaluatorParams(
 ) extends Params {}
 
 class ItemRankDetailedEvaluator(params: DetailedEvaluatorParams)
-  extends Evaluator[DetailedEvaluatorParams,
+  extends Evaluator[
     HasName, Query, Prediction, Actual,
       EvaluationUnit, Seq[EvaluationUnit], EvaluatorOutput] {
 

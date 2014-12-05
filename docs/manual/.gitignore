@@ -1,3 +1,27 @@
-_site
-.sass-cache
-.project
+# Bundler
+/.bundle
+
+# Build Directory
+/build
+
+# Cache
+/.sass-cache
+/.cache
+
+# Sanity
+/sanity.html
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+Desktop.ini
+Icon?
+ehthumbs.db
+Thumbs.db
+*~

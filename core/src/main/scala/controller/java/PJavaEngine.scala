@@ -18,18 +18,17 @@ import scala.collection.JavaConversions._
  * For now it only accepts LJavaServing as the serving class.
  *
  * @param <TD> Training Data
- * @param <DP> Data Parameters
+ * @param <EI> EvaluationInfo
  * @param <PD> Prepared Data
  * @param <Q> Input Query
  * @param <P> Output Prediction
  * @param <A> Actual Value
  */
-class PJavaEngine[TD, DP, PD, Q, P, A](
-    dataSourceClass: Class[_ <: PJavaDataSource[_ <: Params, DP, TD, Q, A]],
-    preparatorClass: Class[_ <: PJavaPreparator[_ <: Params, TD, PD]],
-    algorithmClassMap
-      : JMap[String, Class[_ <: PJavaAlgorithm[_ <: Params, PD, _, Q, P]]],
-    servingClass: Class[_ <: LJavaServing[_ <: Params, Q, P]]
+class PJavaEngine[TD, EI, PD, Q, P, A](
+    dataSourceClass: Class[_ <: PJavaDataSource[TD, EI, Q, A]],
+    preparatorClass: Class[_ <: PJavaPreparator[TD, PD]],
+    algorithmClassMap: JMap[String, Class[_ <: PJavaAlgorithm[PD, _, Q, P]]],
+    servingClass: Class[_ <: LJavaServing[Q, P]]
 ) extends Engine(
     dataSourceClass,
     preparatorClass,

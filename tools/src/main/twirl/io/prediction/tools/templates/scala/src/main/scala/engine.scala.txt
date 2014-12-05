@@ -1,7 +1,13 @@
 package myorg
 
-// Pulls in all PredictionIO controller components
-import io.prediction.controller._
+// Pulls in necessary PredictionIO controller components
+import io.prediction.controller.EmptyActualResult
+import io.prediction.controller.EmptyEvaluationInfo
+import io.prediction.controller.IEngineFactory
+import io.prediction.controller.LAlgorithm
+import io.prediction.controller.LDataSource
+import io.prediction.controller.Params
+import io.prediction.controller.SimpleEngine
 
 // All data classes must be an instance of Serializable
 class MyTrainingData(
@@ -28,13 +34,12 @@ case class MyDataSourceParams(
 
 // Your controller components
 class MyDataSource(val dsp: MyDataSourceParams) extends LDataSource[
-    MyDataSourceParams,
-    EmptyDataParams,
     MyTrainingData,
+    EmptyEvaluationInfo,
     MyQuery,
     EmptyActualResult] {
 
-  /** Implement readTraining() when you do not concern about evaluation.
+  /** Implement readTraining() when you are not concerned about evaluation.
     *
     */
   override def readTraining(): MyTrainingData = {
@@ -43,7 +48,6 @@ class MyDataSource(val dsp: MyDataSourceParams) extends LDataSource[
 }
 
 class MyAlgorithm extends LAlgorithm[
-    EmptyAlgorithmParams,
     MyTrainingData,
     MyModel,
     MyQuery,

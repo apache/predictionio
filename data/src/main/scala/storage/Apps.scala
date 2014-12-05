@@ -24,7 +24,7 @@ package io.prediction.data.storage
  * @param name Name of the app.
  * @param description Long description of the app.
  */
-case class App(
+private[prediction] case class App(
   id: Int,
   name: String,
   description: Option[String])
@@ -33,7 +33,7 @@ case class App(
  * Base trait for implementations that interact with Apps in the backend data
  * store.
  */
-trait Apps {
+private[prediction] trait Apps {
   /** Insert a new App. Returns a generated app ID. */
   def insert(app: App): Option[Int]
 

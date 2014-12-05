@@ -1,0 +1,28 @@
+Usage: pio app new [--id <value>] [--description <value>] <name>
+
+Create a new app key to app ID mapping.
+
+  --id <value>
+      Specify this if you already have data under an app ID.
+  --description <value>
+      Description of the new app.
+  <name>
+      App name.
+
+Usage: pio app list
+
+List all apps.
+
+Usage: pio app delete <name>
+
+Name of the app to be deleted.
+
+  <name>
+      App name.
+
+Usage: pio app data-delete <name>
+
+Delete data of an app.
+
+  <name>
+      App name."),
