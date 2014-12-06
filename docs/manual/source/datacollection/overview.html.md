@@ -20,7 +20,7 @@ Preparator.
 With Collaborative Filtering based Recommendation Engine, a common pattern is
 
 ```
-user — action — item
+user ��� action ��� item
 ```
 
 where users and items have properties associated with them.
@@ -43,3 +43,6 @@ questions](mailto:support@preidiction.io).
 
 
 <!-- ## Bulk import data -->
+
+
+#### [Next: Using Event API to collect data into Event Server](eventapi.html)
