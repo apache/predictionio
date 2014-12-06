@@ -25,9 +25,9 @@ python file_random $UserSize $ItemSize
 
 The program runs with files:
 
-And outputs files:
+And output files:
 
-After sampling, please set the file path parameters in *$EngineJson* (described below) to point to the sampled files in order to use them.
+After sampling, please set the file path parameters in *$EngineJson* (described below) to point to the output in order to use them.
 
 #####Notice about Spark settings:
 As the data set is large, we recommend setting spark memories to be large. Please set the below two lines with the two values *$E_M* and *$D_M* in the *$SPARK_HOME/conf/spark-defaults.conf*
