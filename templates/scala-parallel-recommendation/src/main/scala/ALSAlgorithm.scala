@@ -11,14 +11,17 @@ import org.apache.spark.mllib.recommendation.ALS
 import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 import org.apache.spark.mllib.recommendation.ALSModel
 
+import grizzled.slf4j.Logger
+
 case class ALSAlgorithmParams(
   val rank: Int,
   val numIterations: Int,
   val lambda: Double) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
-  extends PAlgorithm[PreparedData,
-      ALSModel, Query, PredictedResult] {
+  extends PAlgorithm[PreparedData, ALSModel, Query, PredictedResult] {
+
+  @transient lazy val logger = Logger[this.type]
 
   def train(data: PreparedData): ALSModel = {
     // Convert user and product String IDs to Int index for MLlib
@@ -39,13 +42,17 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
   def predict(model: ALSModel, query: Query): PredictedResult = {
     // Convert String ID to Int index for Mllib
-    val userIx = model.userIdToIxMap(query.user)
-    val productIxToIdMap = model.productIdToIxMap.inverse
-    // ALSModel returns product Int index. Convert it to String ID for
-    // returning PredictedResult
-    val productScores = model.recommendProducts(userIx, query.num)
-      .map (r => ProductScore(productIxToIdMap(r.product), r.rating))
-    new PredictedResult(productScores)
+    model.userIdToIxMap.get(query.user).map { userIx =>
+      val productIxToIdMap = model.productIdToIxMap.inverse
+      // ALSModel returns product Int index. Convert it to String ID for
+      // returning PredictedResult
+      val productScores = model.recommendProducts(userIx, query.num)
+        .map (r => ProductScore(productIxToIdMap(r.product), r.rating))
+      new PredictedResult(productScores)
+    }.getOrElse{
+      logger.info(s"No prediction for unknown user ${query.user}.")
+      new PredictedResult(Array.empty)
+    }
   }
 
 }
