@@ -13,5 +13,5 @@ pio deploy --port 8123
 You can also specify the binding IP with *--ip*, which is set to *localhost* if not specified. For example:
 
 ```
-pio deploy --port 8123 -ip 1.2.3.4
+pio deploy --port 8123 --ip 1.2.3.4
 ```
