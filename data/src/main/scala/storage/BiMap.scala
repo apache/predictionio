@@ -77,13 +77,28 @@ object BiMap {
     new BiMap(builder.build())
   }
 
+  /** Create a BiMap[String, Long] from an array of String.
+    * NOTE: the the array cannot have duplicated element.
+    * The Long index starts from 0.
+    * @param keys a set of String
+    * @return a String to Long BiMap
+    */
+  def stringLong(keys: Array[String]): BiMap[String, Long] = {
+    val builder: ImmutableBiMap.Builder[String, Long] = ImmutableBiMap.builder()
+
+    keys.zipWithIndex.foreach { case (k, v) =>
+      builder.put(k, v)
+    }
+    new BiMap(builder.build())
+  }
+
   /** Create a BiMap[String, Long] from RDD[String]. The Long index starts
     * from 0.
     * @param keys RDD of String
     * @return a String to Long BiMap
     */
   def stringLong(keys: RDD[String]): BiMap[String, Long] = {
-    stringLong(keys.distinct.collect.toSet)
+    stringLong(keys.distinct.collect)
   }
 
   /** Create a BiMap[String, Int] from a set of String. The Int index starts
@@ -100,13 +115,28 @@ object BiMap {
     new BiMap(builder.build())
   }
 
+  /** Create a BiMap[String, Int] from an array of String.
+    * NOTE: the the array cannot have duplicated element.
+    * The Int index starts from 0.
+    * @param keys a set of String
+    * @return a String to Int BiMap
+    */
+  def stringInt(keys: Array[String]): BiMap[String, Int] = {
+    val builder: ImmutableBiMap.Builder[String, Int] = ImmutableBiMap.builder()
+
+    keys.zipWithIndex.foreach { case (k, v) =>
+      builder.put(k, v)
+    }
+    new BiMap(builder.build())
+  }
+
   /** Create a BiMap[String, Int] from RDD[String]. The Int index starts
     * from 0.
     * @param keys RDD of String
     * @return a String to Int BiMap
     */
   def stringInt(keys: RDD[String]): BiMap[String, Int] = {
-    stringInt(keys.distinct.collect.toSet)
+    stringInt(keys.distinct.collect)
   }
 
 }
