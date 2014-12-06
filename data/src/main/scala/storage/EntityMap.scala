@@ -14,7 +14,8 @@
   */
 package io.prediction.data.storage
 
-class EntityIdIxMap(val idToIx: BiMap[String, Long]) {
+/* @experimental */
+class EntityIdIxMap(val idToIx: BiMap[String, Long]) extends Serializable {
 
   val ixToId: BiMap[Long, String] = idToIx.inverse
 
@@ -45,6 +46,7 @@ class EntityIdIxMap(val idToIx: BiMap[String, Long]) {
   override def toString = idToIx.toString
 }
 
+/* @experimental */
 class EntityMap[A](val idToData: Map[String, A],
   override val idToIx: BiMap[String, Long]) extends EntityIdIxMap(idToIx) {
 
