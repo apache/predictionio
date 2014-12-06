@@ -3,12 +3,6 @@ package org.template.recommendation
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
-case class Rating(
-  val user: String,
-  val product: String,
-  val rating: Double
-)
-
 case class Query(
   val user: String,
   val num: Int

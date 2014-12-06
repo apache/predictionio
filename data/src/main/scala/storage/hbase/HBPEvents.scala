@@ -122,10 +122,19 @@ class HBPEvents(client: HBClient, namespace: String)
       startTime = startTime,
       untilTime = untilTime,
       required = required
-    )(sc).map{ case (id, dm) => (id, extract(dm)) }.collectAsMap.toMap
+    )(sc).map{ case (id, dm) =>
+      try {
+        (id, extract(dm))
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get extract entity from DataMap ${dm} of" +
+            s" entityId ${id}. Exception: ${e}.")
+          throw e
+        }
+      }
+    }.collectAsMap.toMap
 
-    val idToIx = BiMap.stringLong(idToData.keySet)
-    new EntityMap(idToIx, idToData)
+    new EntityMap(idToData)
   }
 
 }

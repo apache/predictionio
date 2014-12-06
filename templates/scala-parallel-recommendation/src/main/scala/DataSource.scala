@@ -54,6 +54,12 @@ class DataSource(val dsp: DataSourceParams)
   }
 }
 
+case class Rating(
+  val user: String,
+  val product: String,
+  val rating: Double
+)
+
 class TrainingData(
   val ratings: RDD[Rating]
 ) extends Serializable {

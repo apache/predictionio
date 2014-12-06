@@ -14,19 +14,13 @@
   */
 package io.prediction.data.storage
 
-class EntityMap[A](
-  val idToIx: BiMap[String, Long],
-  val idToData: Map[String, A]) {
+class EntityIdIxMap(val idToIx: BiMap[String, Long]) {
 
-  private val ixToId: BiMap[Long, String] = idToIx.inverse
+  val ixToId: BiMap[Long, String] = idToIx.inverse
 
   def apply(id: String): Long = idToIx(id)
 
   def apply(ix: Long): String = ixToId(ix)
-
-  def data(id: String): A = idToData(id)
-
-  def data(ix: Long): A = idToData(ixToId(ix))
 
   def contains(id: String): Boolean = idToIx.contains(id)
 
@@ -42,8 +36,43 @@ class EntityMap[A](
   def getOrElse(ix: Long, default: => String): String =
     ixToId.getOrElse(ix, default)
 
+  def toMap: Map[String, Long] = idToIx.toMap
+
+  def size = idToIx.size
+
+  def take(n: Int) = new EntityIdIxMap(idToIx.take(n))
+
+  override def toString = idToIx.toString
+}
+
+class EntityMap[A](val idToData: Map[String, A],
+  override val idToIx: BiMap[String, Long]) extends EntityIdIxMap(idToIx) {
+
+  def this(idToData: Map[String, A]) = this(
+    idToData,
+    BiMap.stringLong(idToData.keySet)
+  )
+
+  def data(id: String): A = idToData(id)
+
+  def data(ix: Long): A = idToData(ixToId(ix))
+
   def getData(id: String): Option[A] = idToData.get(id)
 
   def getData(ix: Long): Option[A] = idToData.get(ixToId(ix))
-  
+
+  def getOrElseData(id: String, default: => A): A =
+    getData(id).getOrElse(default)
+
+  def getOrElseData(ix: Long, default: => A): A =
+    getData(ix).getOrElse(default)
+
+  override def take(n: Int): EntityMap[A] = {
+    val newIdToIx = idToIx.take(n)
+    new EntityMap[A](idToData.filterKeys(newIdToIx.contains(_)), newIdToIx)
+  }
+
+  override def toString = {
+    s"idToData: ${idToData.toString} " + s"idToix: ${idToIx.toString}"
+  }
 }

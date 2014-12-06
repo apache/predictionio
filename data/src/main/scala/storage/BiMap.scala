@@ -50,6 +50,12 @@ class BiMap[K, V] private[prediction] (private val m: ImmutableBiMap[K, V])
     * @return a sequence containing all elements of this map
     */
   def toSeq: Seq[(K, V)] = m.toSeq
+
+  def size = m.size
+
+  def take(n: Int) = BiMap(m.toMap.take(n))
+
+  override def toString = m.toString
 }
 
 object BiMap {

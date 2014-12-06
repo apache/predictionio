@@ -34,6 +34,17 @@ class ALSModel(
       .saveAsObjectFile(s"/tmp/${id}/productIdToIxMap")
     true
   }
+
+  override def toString = {
+    s"userFeatures: [${userFeatures.count()}]" +
+    s"(${userFeatures.take(2).toList}...)" +
+    s" productFeatures: [${productFeatures.count()}]" +
+    s"(${productFeatures.take(2).toList}...)" +
+    s" userIdToIxMap: [${userIdToIxMap.size}]" +
+    s"(${userIdToIxMap.take(2)}...)" +
+    s" productIdToIxMap: [${productIdToIxMap.size}]" +
+    s"(${productIdToIxMap.take(2)}...)"
+  }
 }
 
 object ALSModel

@@ -91,7 +91,10 @@ trait PEvents extends Serializable {
     required: Option[Seq[String]] = None)
     (sc: SparkContext): RDD[(String, DataMap)]
 
-  /** @Experimental */
+  /** @experimental
+    * Extract EntityMap[A] from events for the entityType
+    * NOTE: it is local EntityMap[A]
+    */
   def extractEntityMap[A: ClassTag](
     appId: Int,
     entityType: String,
