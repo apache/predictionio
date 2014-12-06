@@ -337,7 +337,7 @@ that page in your web browser to check its status.
 
 
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
-whose id is 1, you send this JSON `{ "user": 1, "num": 4 }` to the deployed
+whose id is 1, you send this JSON `{ "user": "1", "num": 4 }` to the deployed
 engine and it will return a JSON of the recommended movies. Simply send a query
 by making a HTTP request or through the `EngineClient` of an SDK:
 
@@ -346,7 +346,7 @@ by making a HTTP request or through the `EngineClient` of an SDK:
 ```python
 import predictionio
 engine_client = predictionio.EngineClient(url="http://localhost:8000")
-print engine_client.send_query({"user": 1, "num": 4})
+print engine_client.send_query({"user": "1", "num": 4})
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
@@ -386,14 +386,14 @@ EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
 
 // query
 JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
-        "user", 1,
+        "user", "1",
         "num",  4
     ));
 ```
   </div>
   <div data-tab="REST API" data-lang="json">
 ```
-$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
+$ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
