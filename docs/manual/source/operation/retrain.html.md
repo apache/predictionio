@@ -2,22 +2,13 @@
 title: Model Re-training
 ---
 
-# Model Re-training
+You probably want to update the trained predictive model with newly collected data regularly.
+To do so, run the *train* and *deploy* commands again:
 
-You can update the predictive model with new data by making the *train* and *deploy* commands again:
-
-1.  Assuming you already have a deployed engine running, go to http://localhost:8000 to check its status. Take note of the
-    **Instance ID** at the top.
-
-2.  Run training and deploy again. There is no need to manually terminate the previous deploy instance.
-
-    ```
-    $ pio train
-    $ pio deploy
-    ```
-
-3.  Refresh the page at http://localhost:8000, you should see the status page with a new **Instance ID** at the top.
-
+```
+$ pio train
+$ pio deploy
+```
 
 For example, if you want to re-train the model every day, you may add this to your *crontab*:
 
