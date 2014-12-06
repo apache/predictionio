@@ -19,14 +19,13 @@ you built from the Recommendation Engine Template.
 ## The Engine Design
 
 As you can see from the Quick Start, *MyRecommendation* takes a JSON prediction
-query, e.g. `{ "user": 1, "num": 4 }`, and return a JSON predicted result.
-
+query, e.g. `{ "user": "1", "num": 4 }`, and return a JSON predicted result. 
 In MyRecommendation/src/main/scala/***Engine.scala***, the `Query` case class
-defines the format of **query**, such as `{ "user": 1, "num": 4 }`:
+defines the format of such **query**:
 
 ```scala
 case class Query(
-  val user: Int,
+  val user: String,
   val num: Int
 ) extends Serializable
 ```
@@ -37,6 +36,8 @@ such as
 ```json
 {"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}
 ```
+
+with:
 
 ```scala
 case class PredictedResult(
@@ -96,8 +97,9 @@ method of class `DataSource` reads, and selects, data from the *Event Store*
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[TrainingData, Query, EmptyEvalInfo, EmptyActualResult] {
-
+  extends PDataSource[TrainingData,
+      EmptyEvaluationInfo, Query, EmptyActualResult] {
+      
   @transient lazy val logger = Logger[this.type]
 
   override
@@ -117,9 +119,9 @@ class DataSource(val dsp: DataSourceParams)
           case "buy" => 4.0 // map buy event to rating value of 4
           case _ => throw new Exception(s"Unexpected event ${event} is read.")
         }
-        // assume entityId and targetEntityId is originally Int type
-        Rating(event.entityId.toInt,
-          event.targetEntityId.get.toInt,
+        // entityId and targetEntityId is String
+        Rating(event.entityId,
+          event.targetEntityId.get,
           ratingValue)
       } catch {
         case e: Exception => {
@@ -135,7 +137,7 @@ class DataSource(val dsp: DataSourceParams)
 ```
 
 `Storage.getPEvents()` returns a data access object which you could use to
-access data that is collected through the *Event Server*, and
+access data that is collected by PredictionIO *Event Server*.
 `eventsDb.find(...)` specifies the events that you want to read. PredictionIO
 automatically loads the parameters of *datasource* specified in
 MyRecommendation/***engine.json***, including *appId*, to `dsp`.
@@ -152,13 +154,24 @@ In ***engine.json***:
 }
 ```
 
+Each *rate* and *buy* user event data is read as `Rating`.
+For flexibility, this Recommendation engine template is designed to support user ID and product ID in `String`.
+Since Spark MLlib's `Rating` class assumes `Int`-only user ID and product ID, you have to define a new `Rating` class:  
 
-The class definition of `TrainingData` is:
+```scala
+case class Rating(
+  val user: String,
+  val product: String,
+  val rating: Double
+)
+```
+
+`TrainingData` contains an RDD of all these `Rating` events. The class definition of `TrainingData` is:
 
 ```scala
 class TrainingData(
   val ratings: RDD[Rating]
-) extends Serializable
+) extends Serializable {...}
 ```
 and PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
 
@@ -173,7 +186,7 @@ INFO: You could [modify the DataSource to read custom events](reading-custom-eve
 ### Data Preparator
 
 In MyRecommendation/src/main/scala/***Preparator.scala***, the `prepare` method
-of class `Preparator` takes `TrainingData` as its input, and performs any
+of class `Preparator` takes `TrainingData` as its input and performs any
 necessary feature selection and data processing tasks. At the end, it returns
 `PreparedData` which should contain the data *Algorithm* needs. For MLlib ALS,
 it is `RDD[Rating]`.
@@ -214,17 +227,52 @@ responsible for using this model to make prediction.
 `train` is called when you run **pio train**. This is where MLlib ALS algorithm,
 i.e. `ALS.train`, is used to train a predictive model.
 
+
 ```scala
-  def train(data: PreparedData): PersistentMatrixFactorizationModel = {
-    val m = ALS.train(data.ratings, ap.rank, ap.numIterations, ap.lambda)
-    new PersistentMatrixFactorizationModel(
+  def train(data: PreparedData): ALSModel = {
+    // Convert user and product String IDs to Int index for MLlib
+    val userIdToIxMap = BiMap.stringInt(data.ratings.map(_.user))
+    val productIdToIxMap = BiMap.stringInt(data.ratings.map(_.product))
+    val mllibRatings = data.ratings.map( r =>
+      // MLlibRating requires integer index for user and product
+      MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)
+    )
+    val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
+    new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
-      productFeatures = m.productFeatures)
+      productFeatures = m.productFeatures,
+      userIdToIxMap = userIdToIxMap,
+      productIdToIxMap = productIdToIxMap)
   }
 ```
 
-In addition to `RDD[Rating]`, `ALS.train` takes 3 parameters: *rank*,
+#### Working with Spark MLlib's ALS.train(....)
+
+As mentioned above, MLlib's `Rating` does not support `String` user ID and product ID.
+Its `ALS.train` thus also assumes `Int`-only `Rating`.
+
+Here you need to map your String-supported `Rating` to MLlib's Integer-only `Rating`.
+First, you can rename MLlib's Integer-only `Rating` to `MLlibRating` for clarity: 
+
+```
+import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
+```
+
+You then create a bi-directional map with `BiMap.stringInt` which maps each String record to an Integer index.
+
+```
+val userIdToIxMap = BiMap.stringInt(data.ratings.map(_.user))
+val productIdToIxMap = BiMap.stringInt(data.ratings.map(_.product))
+```
+Finally, you re-create each `Rating` event as `MLlibRating`:
+
+```
+MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)
+```
+
+
+In addition to `RDD[MLlibRating]`, `ALS.train` takes 3 parameters: *rank*,
 *iterations* and *lambda*.
 
 The values of these parameters are specified in *algorithms* of
@@ -259,36 +307,45 @@ case class ALSAlgorithmParams(
 
 `ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD
 data. RDD is a distributed collection of items which *does not* persist. To
-store the model, `PersistentMatrixFactorizationModel` extends
-`MatrixFactorizationModel` and makes it persistable.
+store the model, you convert the model to `ALSModel` class at the end.
+`ALSModel` is a persistable class that extends `MatrixFactorizationModel`.
 
 > The detailed implementation can be found at
-MyRecommendation/src/main/scala/***PersistentMatrixFactorizationModel.scala***
+MyRecommendation/src/main/scala/***ALSModel.scala***
 
-PredictionIO will automatically store the returned model, i.e. `PersistentMatrixFactorizationModel` in this case.
+PredictionIO will automatically store the returned model, i.e. `ALSModel` in this case.
 
 
 ### predict(...)
 
 `predict` is called when you send a JSON query to
 http://localhost:8000/queries.json. PredictionIO converts the query, such as `{
-"user": 1, "num": 4 }` to the `Query` class you defined previously.
+"user": "1", "num": 4 }` to the `Query` class you defined previously.
 
 The predictive model `MatrixFactorizationModel` of MLlib ALS, which is now
-extended as `PersistentMatrixFactorizationModel`, offers a method called
+extended as `ALSModel`, offers a method called
 `recommendProducts`. `recommendProducts` takes two parameters: user id (i.e.
-`query.user`) and the number of products to be returned (i.e. `query.num`). It
+the `Int` index of `query.user`) and the number of products to be returned (i.e. `query.num`). It
 predicts the top *num* of products a user will like.
 
 ```scala
-def predict(
-    model: PersistentMatrixFactorizationModel,
-    query: Query): PredictedResult = {
-    val productScores = model.recommendProducts(query.user, query.num)
-      .map (r => ProductScore(r.product, r.rating))
-    new PredictedResult(productScores)
-}
+  def predict(model: ALSModel, query: Query): PredictedResult = {
+    // Convert String ID to Int index for Mllib
+    model.userIdToIxMap.get(query.user).map { userIx =>
+      val productIxToIdMap = model.productIdToIxMap.inverse
+      // ALSModel returns product Int index. Convert it to String ID for
+      // returning PredictedResult
+      val productScores = model.recommendProducts(userIx, query.num)
+        .map (r => ProductScore(productIxToIdMap(r.product), r.rating))
+      new PredictedResult(productScores)
+    }.getOrElse{
+      logger.info(s"No prediction for unknown user ${query.user}.")
+      new PredictedResult(Array.empty)
+    }
+  }
 ```
+
+Note that `recommendProducts` returns the `Int` indices of products. You map them back to `String` with `productIxToIdMap` before they are returned.
 
 > You have defined the class `PredictedResult` earlier.
 
