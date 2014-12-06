@@ -16,10 +16,10 @@
   .button-download {
     text-align: center;
     float: right;
-    display: block;
+    display: none;
     margin: 25px 25px 25px 0;
     @include large {
-      display: none;
+      display: block;
     }
   }
 }

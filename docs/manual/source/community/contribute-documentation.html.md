@@ -156,6 +156,12 @@ hidden: true
 | Custom Markdown renderer based on [Redcarpet](https://github.com/vmg/redcarpet). | `lib/custom_renderer.rb` |
 | Custom TOC helper. | `helpers/table_of_contents_helpers.rb` |
 
+### Versions
+
+Various site wide versions are defined in `data/versions.yml` and embedded with ERB like `<%= data.versions.pio %>`.
+
+NOTE: Files must end with a `.erb` extension to be processed as ERB.
+
 ## Going Live
 
 Pushing to the `livedoc` branch will update [docs.prediction.io](http://docs.prediction.io/) in about 5 minutes.

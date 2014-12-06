@@ -1,7 +1,8 @@
 #swiftype {
-  display: block;
+  display: none;
   float: right;
   margin: 25px 25px 25px 0;
+  box-sizing: border-box;
 
   .st-search-input {
     color: $body-font-color;
@@ -16,4 +17,35 @@
     background-color: #ffffff;
     padding: 5px 5px 5px 10px;
   }
+
+  @include medium {
+    display: block;
+  }
+}
+
+
+
+.swiftype-widget .autocomplete ul li p.title {
+  color: $body-font-color;
+}
+
+/* Change background color of selected search result */
+.swiftype-widget .autocomplete ul li.active {
+  background: none;
+  background-color: $nav-main-hover-background-color;
+  border: none;
+  box-shadow: none;
+}
+
+/* change the color of the section text (displayed below the title) */
+.swiftype-widget .autocomplete ul li.active .sections em {
+  color: #ffffff;
+}
+
+.swiftype-widget .autocomplete li.active p.title {
+  text-shadow: none;
+}
+
+.swiftype-widget .autocomplete  {
+  box-shadow: none;
 }
