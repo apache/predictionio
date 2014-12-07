@@ -23,9 +23,22 @@ python file_random $UserSize $ItemSize
 ```
 *$UserSize* and *$ItemSize* are the sample sizes of users and items respectively.
 
+Put the input files into the data folder
 The program runs with files:
+1. item.txt
+2. user_profile.txt
+3. user_key_word.txt
+4. user_action.txt
+5. user_sns.txt
+6. rec_log_train.txt
 
 And output files:
+1. mini_item.txt
+2. mini_user_profile.txt
+3. mini_user_key_word.txt
+4. mini_user_action.txt
+5. mini_user_sns.txt
+6. mini_rec_log_train.txt
 
 After sampling, please set the file path parameters in *$EngineJson* (described below) to point to the output in order to use them.
 
