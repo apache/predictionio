@@ -56,7 +56,7 @@ class DataSource(val dsp: DataSourceParams)
 
 case class Rating(
   val user: String,
-  val product: String,
+  val item: String,
   val rating: Double
 )
 

@@ -9,11 +9,11 @@ case class Query(
 ) extends Serializable
 
 case class PredictedResult(
-  val productScores: Array[ProductScore]
+  val itemScores: Array[ItemScore]
 ) extends Serializable
 
-case class ProductScore(
-  product: String,
+case class ItemScore(
+  item: String,
   score: Double
 ) extends Serializable
 

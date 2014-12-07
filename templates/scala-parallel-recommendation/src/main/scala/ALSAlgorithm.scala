@@ -24,31 +24,33 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   @transient lazy val logger = Logger[this.type]
 
   def train(data: PreparedData): ALSModel = {
-    // Convert user and product String IDs to Int index for MLlib
-    val userIdToIxMap = BiMap.stringInt(data.ratings.map(_.user))
-    val productIdToIxMap = BiMap.stringInt(data.ratings.map(_.product))
+    // Convert user and item String IDs to Int index for MLlib
+    val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
+    val itemStringIntMap = BiMap.stringInt(data.ratings.map(_.item))
     val mllibRatings = data.ratings.map( r =>
-      // MLlibRating requires integer index for user and product
-      MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)
+      // MLlibRating requires integer index for user and item
+      MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
     )
     val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
     new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
       productFeatures = m.productFeatures,
-      userIdToIxMap = userIdToIxMap,
-      productIdToIxMap = productIdToIxMap)
+      userStringIntMap = userStringIntMap,
+      itemStringIntMap = itemStringIntMap)
   }
 
   def predict(model: ALSModel, query: Query): PredictedResult = {
     // Convert String ID to Int index for Mllib
-    model.userIdToIxMap.get(query.user).map { userIx =>
-      val productIxToIdMap = model.productIdToIxMap.inverse
-      // ALSModel returns product Int index. Convert it to String ID for
+    model.userStringIntMap.get(query.user).map { userInt =>
+      // create inverse view of itemStringIntMap
+      val itemIntStringMap = model.itemStringIntMap.inverse
+      // ALSModel returns item Int index. Convert it to String ID for
       // returning PredictedResult
-      val productScores = model.recommendProducts(userIx, query.num)
-        .map (r => ProductScore(productIxToIdMap(r.product), r.rating))
-      new PredictedResult(productScores)
+      // recommendProducts() returns Array[MLlibRating]
+      val itemScores = model.recommendProducts(userInt, query.num)
+        .map (r => ItemScore(itemIntStringMap(r.product), r.rating))
+      new PredictedResult(itemScores)
     }.getOrElse{
       logger.info(s"No prediction for unknown user ${query.user}.")
       new PredictedResult(Array.empty)

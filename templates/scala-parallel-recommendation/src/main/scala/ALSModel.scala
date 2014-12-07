@@ -17,8 +17,8 @@ class ALSModel(
     override val rank: Int,
     override val userFeatures: RDD[(Int, Array[Double])],
     override val productFeatures: RDD[(Int, Array[Double])],
-    val userIdToIxMap: BiMap[String, Int],
-    val productIdToIxMap: BiMap[String, Int])
+    val userStringIntMap: BiMap[String, Int],
+    val itemStringIntMap: BiMap[String, Int])
   extends MatrixFactorizationModel(rank, userFeatures, productFeatures)
   with IPersistentModel[ALSAlgorithmParams] {
 
@@ -28,10 +28,10 @@ class ALSModel(
     sc.parallelize(Seq(rank)).saveAsObjectFile(s"/tmp/${id}/rank")
     userFeatures.saveAsObjectFile(s"/tmp/${id}/userFeatures")
     productFeatures.saveAsObjectFile(s"/tmp/${id}/productFeatures")
-    sc.parallelize(Seq(userIdToIxMap))
-      .saveAsObjectFile(s"/tmp/${id}/userIdToIxMap")
-    sc.parallelize(Seq(productIdToIxMap))
-      .saveAsObjectFile(s"/tmp/${id}/productIdToIxMap")
+    sc.parallelize(Seq(userStringIntMap))
+      .saveAsObjectFile(s"/tmp/${id}/userStringIntMap")
+    sc.parallelize(Seq(itemStringIntMap))
+      .saveAsObjectFile(s"/tmp/${id}/itemStringIntMap")
     true
   }
 
@@ -40,10 +40,10 @@ class ALSModel(
     s"(${userFeatures.take(2).toList}...)" +
     s" productFeatures: [${productFeatures.count()}]" +
     s"(${productFeatures.take(2).toList}...)" +
-    s" userIdToIxMap: [${userIdToIxMap.size}]" +
-    s"(${userIdToIxMap.take(2)}...)" +
-    s" productIdToIxMap: [${productIdToIxMap.size}]" +
-    s"(${productIdToIxMap.take(2)}...)"
+    s" userStringIntMap: [${userStringIntMap.size}]" +
+    s"(${userStringIntMap.take(2)}...)" +
+    s" itemStringIntMap: [${itemStringIntMap.size}]" +
+    s"(${itemStringIntMap.take(2)}...)"
   }
 }
 
@@ -55,9 +55,9 @@ object ALSModel
       rank = sc.get.objectFile[Int](s"/tmp/${id}/rank").first,
       userFeatures = sc.get.objectFile(s"/tmp/${id}/userFeatures"),
       productFeatures = sc.get.objectFile(s"/tmp/${id}/productFeatures"),
-      userIdToIxMap = sc.get
-        .objectFile[BiMap[String, Int]](s"/tmp/${id}/userIdToIxMap").first,
-      productIdToIxMap = sc.get
-        .objectFile[BiMap[String, Int]](s"/tmp/${id}/productIdToIxMap").first)
+      userStringIntMap = sc.get
+        .objectFile[BiMap[String, Int]](s"/tmp/${id}/userStringIntMap").first,
+      itemStringIntMap = sc.get
+        .objectFile[BiMap[String, Int]](s"/tmp/${id}/itemStringIntMap").first)
   }
 }
