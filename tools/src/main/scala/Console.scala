@@ -1349,7 +1349,9 @@ object Console extends Logging {
       op
     } getOrElse {
       error(s"Engine ${id} ${version} cannot be found in the system.")
-      error("Have you run the 'build' command to build your engine yet?")
+      error("Possible reasons:")
+      error("- the engine is not yet built by the 'build' command;")
+      error("- the meta data store is offline.")
       sys.exit(1)
     }
   }

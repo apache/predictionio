@@ -201,7 +201,9 @@ class PIOFilter(verbose: Boolean = false, debug: Boolean = false)
       Filter.NEUTRAL
     else if (event.getLocationInformation.getClassName.
       startsWith("grizzled.slf4j.Logger"))
-      Filter.ACCEPT
+      Filter.NEUTRAL
+    else if (event.getLevel.isGreaterOrEqual(Level.ERROR))
+      Filter.NEUTRAL
     else
       Filter.DENY
   }
