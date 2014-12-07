@@ -573,6 +573,7 @@ object Console extends Logging {
       val ca = pca.copy(common = pca.common.copy(
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
+      WorkflowUtils.setupLogging(ca.common.verbose, ca.common.debug)
       ca.commands match {
         case Seq("") =>
           System.err.println(help())
