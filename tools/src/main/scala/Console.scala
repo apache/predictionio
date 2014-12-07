@@ -536,7 +536,7 @@ object Console extends Logging {
             action { (_, c) =>
               c.copy(commands = c.commands :+ "list")
             } children(
-              arg[String]("<app name>") action { (x, c) =>
+              arg[String]("<app name>") optional() action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
               } text("App name.")
             ),
@@ -1054,10 +1054,17 @@ object Console extends Logging {
 
   def appList(ca: ConsoleArgs): Unit = {
     val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
+    val accessKeys = Storage.getMetaDataAccessKeys
     val title = "Name"
-    info(f"$title%20s |   ID")
+    val ak = "Access Key"
+    info(f"$title%20s |   ID | $ak%64s | Allowed Event(s)")
     apps foreach { app =>
-      info(f"${app.name}%20s | ${app.id}%4d")
+      val keys = accessKeys.getByAppid(app.id)
+      keys foreach { k =>
+        val events =
+          if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
+        info(f"${app.name}%20s | ${app.id}%4d | ${k.key}%s | ${events}%s")
+      }
     }
     info(s"Finished listing ${apps.size} app(s).")
   }
@@ -1160,8 +1167,9 @@ object Console extends Logging {
       }
     val title = "Access Key(s)"
     info(f"$title%64s | App ID | Allowed Event(s)")
-    keys foreach { k =>
-      val events = if (k.events.size > 0) k.events.mkString(",") else "(all)"
+    keys.sortBy(k => k.appid) foreach { k =>
+      val events =
+        if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
       info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
     }
     info(s"Finished listing ${keys.size} access key(s).")

@@ -7,7 +7,7 @@ Add allowed event(s) to an access key.
   <event1> <event2>...
       Allowed event name(s) to be added to the access key.
 
-Usage: pio accesskey list <app name>
+Usage: pio accesskey list [<app name>]
 
   <app name>
       App name.
