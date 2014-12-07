@@ -24,6 +24,7 @@ python file_random $UserSize $ItemSize
 *$UserSize* and *$ItemSize* are the sample sizes of users and items respectively.
 
 Put the input files into the data folder
+
 The program runs with files:
 1. item.txt
 2. user_profile.txt
