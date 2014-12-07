@@ -25,4 +25,4 @@ Usage: pio app data-delete <name>
 Delete data of an app.
 
   <name>
-      App name."),
+      App name.
