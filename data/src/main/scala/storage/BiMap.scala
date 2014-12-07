@@ -23,10 +23,12 @@ import scala.collection.JavaConversions._
 /** Immutable Bi-directional Map
   *
   */
-class BiMap[K, V] private[prediction] (private val m: ImmutableBiMap[K, V])
-  extends Serializable {
+class BiMap[K, V] private[prediction] (
+  private val m: ImmutableBiMap[K, V],
+  private val i: Option[BiMap[V, K]] = None
+  ) extends Serializable {
 
-  def inverse: BiMap[V, K] = new BiMap(m.inverse())
+  val inverse: BiMap[V, K] = i.getOrElse(new BiMap(m.inverse, Some(this)))
 
   def get(k: K): Option[V] = Option(m.get(k))
 
@@ -51,7 +53,7 @@ class BiMap[K, V] private[prediction] (private val m: ImmutableBiMap[K, V])
     */
   def toSeq: Seq[(K, V)] = m.toSeq
 
-  def size = m.size
+  def size: Int = m.size
 
   def take(n: Int) = BiMap(m.toMap.take(n))
 
