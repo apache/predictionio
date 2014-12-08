@@ -1,7 +1,6 @@
 package org.template.recommendation
 
 import io.prediction.controller.PPreparator
-import io.prediction.controller.EmptyPreparatorParams
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

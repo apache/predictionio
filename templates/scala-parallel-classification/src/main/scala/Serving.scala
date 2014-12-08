@@ -1,7 +1,6 @@
 package org.template.classification
 
 import io.prediction.controller.LServing
-import io.prediction.controller.EmptyServingParams
 
 class Serving extends LServing[Query, PredictedResult] {
 
