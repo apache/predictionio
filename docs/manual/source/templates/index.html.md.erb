@@ -216,7 +216,7 @@ By default, `prepare` simply copies the unprocessed `TrainingData` data to `Prep
 
 ```scala
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(ratings = trainingData.ratings)
@@ -325,7 +325,7 @@ In MyEngine/src/main/scala/***Serving.scala***
 
 ```scala
 class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+  extends LServing[Query, PredictedResult] {
 
   override
   def serve(query: Query,
