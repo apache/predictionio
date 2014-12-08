@@ -92,6 +92,12 @@ case class Item(
   val attrC: Boolean
 )
 
+case class Rating(
+  val user: String,
+  val item: String,
+  val rating: Double
+)
+
 class TrainingData(
   val users: EntityMap[User],
   val items: EntityMap[Item],

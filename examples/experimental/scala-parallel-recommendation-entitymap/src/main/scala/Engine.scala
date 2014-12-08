@@ -3,23 +3,17 @@ package org.template.recommendation
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
-case class Rating(
-  val user: String,
-  val product: String,
-  val rating: Double
-)
-
 case class Query(
   val user: String,
   val num: Int
 ) extends Serializable
 
 case class PredictedResult(
-  val productScores: Array[ProductScore]
+  val itemScores: Array[ItemScore]
 ) extends Serializable
 
-case class ProductScore(
-  product: String,
+case class ItemScore(
+  item: String,
   score: Double
 ) extends Serializable
 
