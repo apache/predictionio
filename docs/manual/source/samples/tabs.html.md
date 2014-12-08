@@ -3,31 +3,11 @@ title: Tabs
 hidden: true
 ---
 
-```
-Test 0 <>
-Test 1 >
-Test 3 <
-Test 4 ><
-Test 5 =>
-Test 6 <=
-Test 7 <>
-<p><b>Test</b></p>
-```
-
 This page is used to test the tabs plugin based on [Tabslet](https://github.com/vdw/Tabslet).
 
 <div class="tabs">
   <div data-tab="Ruby" data-lang="ruby">
-```
-Test 0 <>
-Test 1 >
-Test 3 <
-Test 4 ><
-Test 5 =>
-Test 6 <=
-Test 7 <>
-<p><b>Test</b></p>
-
+```ruby
 # This is a ruby file.
 class MyClass
   def foo
@@ -47,6 +27,18 @@ $ cd path/to/your/file
   <div data-tab="HTML" data-lang="html">
 ```html
 <p>Yes you can still use HTML in code blocks!</p>
+```
+  </div>
+  <div data-tab="Test">
+```
+Test 0 <>
+Test 1 >
+Test 3 <
+Test 4 ><
+Test 5 =>
+Test 6 <=
+Test 7 <>
+<p><b>Test</b></p>
 ```
   </div>
 </div>

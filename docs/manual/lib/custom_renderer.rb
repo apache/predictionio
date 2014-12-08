@@ -16,7 +16,13 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
   end
 
   def block_html(raw_html)
-    doc = Nokogiri::HTML::DocumentFragment.parse(raw_html)
+    # Render fenced code blocks first!
+    replace = raw_html.gsub(/(```.*?```)/m) do |match|
+      markdown = Redcarpet::Markdown.new(CustomRenderer, fenced_code_blocks: true)
+      markdown.render(match)
+    end
+
+    doc = Nokogiri::HTML::DocumentFragment.parse(replace)
     nodes = doc.css('div.tabs > div')
 
     if nodes.empty?
@@ -38,10 +44,6 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
 
         ul.add_child(li)
 
-        markdown = Redcarpet::Markdown.new(CustomRenderer, fenced_code_blocks: true)
-        output = markdown.render(node.inner_html)
-
-        node.inner_html = output
         node['id'] = id
       end
 
@@ -50,6 +52,7 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
       doc.to_html
     end
   end
+
 
   private
 
