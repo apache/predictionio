@@ -30,7 +30,7 @@ $ cd path/to/your/file
 ```
   </div>
   <div data-tab="Test">
-```
+```php
 Test 0 <>
 Test 1 >
 Test 3 <

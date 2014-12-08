@@ -46,4 +46,5 @@ $(document).ready(function() {
       window.open(this.href);
     }).addClass('external');
   });
+
 });

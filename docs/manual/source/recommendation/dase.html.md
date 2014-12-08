@@ -14,7 +14,7 @@ components of an engine:
 Let's look at the code and see how you can customize the Recommendation engine
 you built from the Recommendation Engine Template.
 
-> Note: Evaluator will not be covered in this tutorial.
+INFO: Evaluator will not be covered in this tutorial.
 
 ## The Engine Design
 
@@ -261,7 +261,7 @@ data. RDD is a distributed collection of items which *does not* persist. To
 store the model, `PersistentMatrixFactorizationModel` extends
 `MatrixFactorizationModel` and makes it persistable.
 
-> The detailed implementation can be found at
+NOTE: The detailed implementation can be found at
 MyRecommendation/src/main/scala/***PersistentMatrixFactorizationModel.scala***
 
 PredictionIO will automatically store the returned model, i.e. `PersistentMatrixFactorizationModel` in this case.

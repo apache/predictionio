@@ -1,5 +1,6 @@
 #table-of-contents {
-  height: 0;
+  border-left: 1px solid $border-color;
+  box-sizing: border-box;
   & > ul {
     margin: 20px 20px 20px 20px;
   }
