@@ -3,6 +3,90 @@ require 'nokogiri'
 require 'rainbow/ext/string'
 require 'uri'
 require 'net/http'
+require 'redcarpet'
+require File.join(File.dirname(__FILE__), 'lib', 'custom_renderer')
+
+
+task :test do
+
+HTML = <<EOT
+<div class="tabs">
+  <div data-tab="PHP" data-lang="php">
+```
+Test 0 <>
+Test 1 >
+Test 3 <
+Test 4 ><
+Test 5 =>
+Test 6 <=
+Test 7 <>
+<p><b>Test 8</b></p>
+```
+  </div>
+</div>
+EOT
+
+  def block_html(raw_html)
+    doc = Nokogiri::HTML::DocumentFragment.parse(raw_html)
+
+    puts 'start doc'
+    puts doc
+    puts 'end doc'
+
+    markdown = Redcarpet::Markdown.new(CustomRenderer, fenced_code_blocks: true)
+
+    puts 'start test'
+    puts markdown.render(raw_html)
+    puts 'end test'
+
+
+    nodes = doc.css('div.tabs > div')
+
+    if nodes.empty?
+      raw_html
+    else
+      ul = Nokogiri::XML::Node.new('ul', doc)
+      ul['class'] = 'control'
+
+      nodes.each do |node|
+        title = node.attribute('data-tab').to_s
+        lang = node.attribute('data-lang').to_s
+
+        uuid = SecureRandom.uuid
+        id = "tab-#{uuid}"
+
+        li = Nokogiri::XML::Node.new('li', doc)
+        li['data-lang'] = lang
+        li.inner_html = %Q(<a href="##{id}">#{title}</a>)
+
+        ul.add_child(li)
+
+        markdown = Redcarpet::Markdown.new(CustomRenderer, fenced_code_blocks: true)
+        puts 'start node'
+        puts node.content
+        puts 'end node'
+
+        output = markdown.render(node.inner_html)
+
+        puts 'start output'
+        puts output
+        puts 'end output'
+
+        node.inner_html = output
+        node['id'] = id
+      end
+
+      nodes.first.before(ul)
+
+      doc.to_html
+    end
+  end
+  puts 'start html'
+  puts HTML
+  puts 'end html'
+
+  puts block_html(HTML)
+end
 
 
 desc 'Check site for broken links'

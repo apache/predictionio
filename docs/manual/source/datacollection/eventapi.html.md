@@ -111,14 +111,14 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
-```php
+```
 <?php
   require_once("vendor/autoload.php");
 
   use predictionio\EventClient;
 
-  $appId = 4;
-  $client = new EventClient($appId);
+  $accessKey = 'YOUR_ACCESS_KEY';
+  $client = new EventClient($accessKey);
   $response = $client->createEvent(array(
                         'event' => 'my_event',
                         'entityType' => 'user',
@@ -140,7 +140,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 from predictionio import EventClient
 from datetime import datetime
 import pytz
-client = EventClient(app_id=4, url="http://localhost:7070")
+client = EventClient('YOUR_ACCESS_KEY', "http://localhost:7070")
 
 first_event_properties = {
     "prop1" : 1,
@@ -165,7 +165,7 @@ first_event_response = client.create_event(
 ```ruby
 require 'predictionio'
 
-event_client = PredictionIO::EventClient.new(4)
+event_client = PredictionIO::EventClient.new('YOUR_ACCESS_KEY')
 event_client.create_event('my_event', 'user', 'uid',
                           'eventTime' => '2004-12-13T21:39:45.618-07:00',
                           'properties' => { 'prop1' => 1,
@@ -212,8 +212,8 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 
   use predictionio\EventClient;
 
-  $appId = 4;
-  $client = new EventClient($appId);
+  $accessKey = 'YOUR_ACCESS_KEY';
+  $client = new EventClient($accessKey);
   $response = $client->createEvent(array(
                         'event' => 'my_event',
                         'entityType' => 'user',
@@ -248,7 +248,7 @@ second_event_response = client.create_event(
 ```ruby
 require 'predictionio'
 
-event_client = PredictionIO::EventClient.new(4)
+event_client = PredictionIO::EventClient.new('YOUR_ACCESS_KEY')
 event_client.create_event('my_event', 'user', 'uid',
                           'targetEntityType' => 'item',
                           'targetEntityId' => 'iid',
