@@ -95,7 +95,7 @@ for line in read_file:
 print "user keyword finished"
 #go to file begining
 #getting the user_sns_small
-"""
+
 print "getting user sns"
 #print user_id_list
 read_file = open("data/user_sns.txt", 'r')
@@ -167,7 +167,7 @@ for line in user_action_list:
             write_file.write(line)
             break
 print "user action got"
-"""
+
 print "getting rec_log_train"
 user_set = set(user_id_list)
 item_set = set(item_id_list)
