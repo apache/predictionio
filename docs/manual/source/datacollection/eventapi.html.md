@@ -111,7 +111,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
-```
+```php
 <?php
   require_once("vendor/autoload.php");
 
@@ -123,12 +123,12 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
-                        'properties' => array('prop1'=>1,
-                                              'prop2'=>'value2',
-                                              'prop3'=>array(1,2,3),
-                                              'prop4'=>true,
-                                              'prop5'=>array('a','b','c'),
-                                              'prop6'=>4.56
+                        'properties' => array('prop1' => 1,
+                                              'prop2' => 'value2',
+                                              'prop3' => array(1,2,3),
+                                              'prop4' => true,
+                                              'prop5' => array('a','b','c'),
+                                              'prop6' => 4.56
                                         ),
                         'eventTime' => '2004-12-13T21:39:45.618-07:00'
                        ));
