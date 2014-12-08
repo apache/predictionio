@@ -14,8 +14,8 @@
         "lambda": 0.01
       }
     }
-  ]
+  ],
   "serving": {
-    "filepath": "./data/sample_disabled_products.txt"
+    "filepath": "./data/sample_disabled_items.txt"
   }
 }

@@ -1,9 +1,12 @@
 package org.template.recommendation
 
 import io.prediction.controller.LServing
-import io.prediction.controller.Params
+
 import scala.io.Source
 
+import io.prediction.controller.Params  // ADDED
+
+// ADDED ServingParams to specify the blacklisting file location.
 case class ServingParams(val filepath: String) extends Params
 
 class Serving(val params: ServingParams)
@@ -12,13 +15,12 @@ class Serving(val params: ServingParams)
   override
   def serve(query: Query, predictedResults: Seq[PredictedResult])
   : PredictedResult = {
-    val disabledProducts: Set[Int] = Source
+    val disabledProducts: Set[String] = Source
       .fromFile(params.filepath)
       .getLines
-      .map(_.toInt)
       .toSet
 
-    val productScores = predictedResults.head.productScores
-    PredictedResult(productScores.filter(ps => !disabledProducts(ps.product)))
+    val itemScores = predictedResults.head.itemScores
+    PredictedResult(itemScores.filter(ps => !disabledProducts(ps.item)))
   }
 }

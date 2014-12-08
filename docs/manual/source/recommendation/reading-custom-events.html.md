@@ -3,8 +3,8 @@ title: Reading Custom Events (Recommendation)
 ---
 
 You can modify the [default DataSource](dase.html#data) to read
- 
-- Custom events other than the default **rate** and **buy** events. 
+
+- Custom events other than the default **rate** and **buy** events.
 - Events which involve different entity types other than the default **user** and **item**.
 
 
@@ -27,7 +27,7 @@ val eventsRDD: RDD[Event] = eventsDb.find(
 
 ## Map the Custom Event
 
- MLlib ALS algorithm uses `Rating` object as input, so it is neccesary to specify the mapping of your custom event to the MLlib's Rating object. You can do so in MyRecommendation/src/main/scala/***DataSource.scala***.
+The ALS algorithm uses `Rating` object as input, so it is necessary to specify the mapping of your custom event to the Rating object. You can do so in MyRecommendation/src/main/scala/***DataSource.scala***.
 
 To map a **like** event to a Rating object with value of 4:
 
@@ -39,9 +39,9 @@ val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
           case "like" => 4.0 // map a like event to a rating of 4.0
           case _ => throw new Exception(s"Unexpected event ${event} is read.")
         }
-        // assume entityId and targetEntityId is originally Int type
-        Rating(event.entityId.toInt,
-          event.targetEntityId.get.toInt,
+        // entityId and targetEntityId is String
+        Rating(event.entityId,
+          event.targetEntityId.get,
           ratingValue)
       } catch {
         case e: Exception => {
@@ -53,7 +53,7 @@ val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
     }
 ```
 
-That's it! Your engine can read a custom like event. 
+That's it! Your engine can read a custom like event.
 
 
 #### [Next: Customizing Data Preparator](customize-data-prep.html)

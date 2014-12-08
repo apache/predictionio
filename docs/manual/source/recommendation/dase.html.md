@@ -19,7 +19,7 @@ you built from the Recommendation Engine Template.
 ## The Engine Design
 
 As you can see from the Quick Start, *MyRecommendation* takes a JSON prediction
-query, e.g. `{ "user": "1", "num": 4 }`, and return a JSON predicted result. 
+query, e.g. `{ "user": "1", "num": 4 }`, and return a JSON predicted result.
 In MyRecommendation/src/main/scala/***Engine.scala***, the `Query` case class
 defines the format of such **query**:
 
@@ -34,18 +34,18 @@ The `PredictedResult` case class defines the format of **predicted result**,
 such as
 
 ```json
-{"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}
+{"itemScores":[{"item":"22","score":4.07},{"item":"62","score":4.05},{"item":"75","score":4.04},{"item":"68","score":3.81}]}
 ```
 
 with:
 
 ```scala
 case class PredictedResult(
-  val productScores: Array[ProductScore]
+  val itemScores: Array[ItemScore]
 ) extends Serializable
 
-case class ProductScore(
-  product: Int,
+case class ItemScore(
+  item: String,
   score: Double
 ) extends Serializable
 ```
@@ -99,7 +99,7 @@ case class DataSourceParams(val appId: Int) extends Params
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
       EmptyEvaluationInfo, Query, EmptyActualResult] {
-      
+
   @transient lazy val logger = Logger[this.type]
 
   override
@@ -155,13 +155,13 @@ In ***engine.json***:
 ```
 
 Each *rate* and *buy* user event data is read as `Rating`.
-For flexibility, this Recommendation engine template is designed to support user ID and product ID in `String`.
-Since Spark MLlib's `Rating` class assumes `Int`-only user ID and product ID, you have to define a new `Rating` class:  
+For flexibility, this Recommendation engine template is designed to support user ID and item ID in `String`.
+Since Spark MLlib's `Rating` class assumes `Int`-only user ID and item ID, you have to define a new `Rating` class:  
 
 ```scala
 case class Rating(
   val user: String,
-  val product: String,
+  val item: String,
   val rating: Double
 )
 ```
@@ -230,30 +230,30 @@ i.e. `ALS.train`, is used to train a predictive model.
 
 ```scala
   def train(data: PreparedData): ALSModel = {
-    // Convert user and product String IDs to Int index for MLlib
-    val userIdToIxMap = BiMap.stringInt(data.ratings.map(_.user))
-    val productIdToIxMap = BiMap.stringInt(data.ratings.map(_.product))
+    // Convert user and item String IDs to Int index for MLlib
+    val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
+    val itemStringIntMap = BiMap.stringInt(data.ratings.map(_.item))
     val mllibRatings = data.ratings.map( r =>
-      // MLlibRating requires integer index for user and product
-      MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)
+      // MLlibRating requires integer index for user and item
+      MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
     )
     val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
     new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
       productFeatures = m.productFeatures,
-      userIdToIxMap = userIdToIxMap,
-      productIdToIxMap = productIdToIxMap)
+      userStringIntMap = userStringIntMap,
+      itemStringIntMap = itemStringIntMap)
   }
 ```
 
 #### Working with Spark MLlib's ALS.train(....)
 
-As mentioned above, MLlib's `Rating` does not support `String` user ID and product ID.
+As mentioned above, MLlib's `Rating` does not support `String` user ID and item ID.
 Its `ALS.train` thus also assumes `Int`-only `Rating`.
 
 Here you need to map your String-supported `Rating` to MLlib's Integer-only `Rating`.
-First, you can rename MLlib's Integer-only `Rating` to `MLlibRating` for clarity: 
+First, you can rename MLlib's Integer-only `Rating` to `MLlibRating` for clarity:
 
 ```
 import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
@@ -262,13 +262,13 @@ import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 You then create a bi-directional map with `BiMap.stringInt` which maps each String record to an Integer index.
 
 ```
-val userIdToIxMap = BiMap.stringInt(data.ratings.map(_.user))
-val productIdToIxMap = BiMap.stringInt(data.ratings.map(_.product))
+val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
+val itemStringIntMap = BiMap.stringInt(data.ratings.map(_.item))
 ```
 Finally, you re-create each `Rating` event as `MLlibRating`:
 
 ```
-MLlibRating(userIdToIxMap(r.user), productIdToIxMap(r.product), r.rating)
+MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
 ```
 
 
@@ -325,19 +325,20 @@ http://localhost:8000/queries.json. PredictionIO converts the query, such as `{
 The predictive model `MatrixFactorizationModel` of MLlib ALS, which is now
 extended as `ALSModel`, offers a method called
 `recommendProducts`. `recommendProducts` takes two parameters: user id (i.e.
-the `Int` index of `query.user`) and the number of products to be returned (i.e. `query.num`). It
-predicts the top *num* of products a user will like.
+the `Int` index of `query.user`) and the number of items to be returned (i.e. `query.num`). It
+predicts the top *num* of items a user will like.
 
 ```scala
   def predict(model: ALSModel, query: Query): PredictedResult = {
     // Convert String ID to Int index for Mllib
-    model.userIdToIxMap.get(query.user).map { userIx =>
-      val productIxToIdMap = model.productIdToIxMap.inverse
-      // ALSModel returns product Int index. Convert it to String ID for
-      // returning PredictedResult
-      val productScores = model.recommendProducts(userIx, query.num)
-        .map (r => ProductScore(productIxToIdMap(r.product), r.rating))
-      new PredictedResult(productScores)
+    model.userStringIntMap.get(query.user).map { userInt =>
+      // create inverse view of itemStringIntMap
+      val itemIntStringMap = model.itemStringIntMap.inverse
+      // recommendProducts() returns Array[MLlibRating], which uses item Int
+      // index. Convert it to String ID for returning PredictedResult
+      val itemScores = model.recommendProducts(userInt, query.num)
+        .map (r => ItemScore(itemIntStringMap(r.product), r.rating))
+      new PredictedResult(itemScores)
     }.getOrElse{
       logger.info(s"No prediction for unknown user ${query.user}.")
       new PredictedResult(Array.empty)
@@ -345,7 +346,7 @@ predicts the top *num* of products a user will like.
   }
 ```
 
-Note that `recommendProducts` returns the `Int` indices of products. You map them back to `String` with `productIxToIdMap` before they are returned.
+Note that `recommendProducts` returns the `Int` indices of items. You map them back to `String` with `itemIntStringMap` before they are returned.
 
 > You have defined the class `PredictedResult` earlier.
 
@@ -392,9 +393,9 @@ training set.
 <!-- TODO
 > HOW-TO:
 >
-> Recommend products that the targeted user has not seen before [link]
+> Recommend items that the targeted user has not seen before [link]
 >
-> Give higher priority to newer products
+> Give higher priority to newer items
 >
 > Combining several predictive model to improve prediction accuracy
 -->

@@ -60,10 +60,11 @@ class Preparator
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     // MODIFIED HERE
-    val noTrainItems = Source.fromFile("./data/sample_not_train_data.txt").getLines.map(_.toInt).toSet
+    val noTrainItems = Source.fromFile("./data/sample_not_train_data.txt")
+      .getLines.toSet
     // exclude noTrainItems from original trainingData
     val ratings = trainingData.ratings.filter( r =>
-      !noTrainItems.contains(r.product)
+      !noTrainItems.contains(r.item)
     )
     new PreparedData(ratings)
   }
@@ -111,11 +112,11 @@ and it will return a JSON of recommended movies.
 
 ```json
 {
-  "productScores": [
-    {"product": 22, "score": 4.072304374729956},
-    {"product": 62, "score": 4.058482414005789},
-    {"product": 75, "score": 4.046063009943821},
-    {"product": 68, "score": 3.8153661512945325}
+  "itemScores": [
+    {"item": "22", "score": 4.072304374729956},
+    {"item": "62", "score": 4.058482414005789},
+    {"item": "75", "score": 4.046063009943821},
+    {"item": "68", "score": 3.8153661512945325}
   ]
 }
 ```
@@ -143,12 +144,12 @@ case class CustomPreparatorParams(
 ) extends Params
 
 class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
-  extends PPreparator[TrainingData, PreparedData] { // ADDED CustomPreparatorParams
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
-    val noTrainItems = Source.fromFile(pp.filepath).getLines.map(_.toInt).toSet //CHANGED
+    val noTrainItems = Source.fromFile(pp.filepath).getLines.toSet //CHANGED
     val ratings = trainingData.ratings.filter( r =>
-      !noTrainItems.contains(r.product)
+      !noTrainItems.contains(r.item)
     )
     new PreparedData(ratings)
   }
