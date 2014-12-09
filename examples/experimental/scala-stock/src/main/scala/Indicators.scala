@@ -41,8 +41,11 @@ class RSIIndicator(period: Int, RsiPeriod: Int = 14) extends BaseIndicator {
 	private def calcRS(logPrice: Series[DateTime, Double]): 
     Series[DateTime, Double] = {
 		//Positive and Negative Vecs
-		val posSeries = logPrice.mapValues[Double]((x:Double) => if (x > 0) x else 0)
-		val negSeries = logPrice.mapValues[Double]((x:Double) => if (x < 0) x else 0)
+		val posSeries = logPrice.mapValues[Double]((x: Double) 
+      => if (x > 0) x else 0)
+		val negSeries = logPrice.mapValues[Double]((x: Double) 
+      => if (x < 0) x else 0)
+    
 		//Get the sum of positive/negative Frame
 		val avgPosSeries = posSeries.rolling[Double] 
       (RsiPeriod, (f: Series[DateTime,Double]) => f.mean)
@@ -54,7 +57,8 @@ class RSIIndicator(period: Int, RsiPeriod: Int = 14) extends BaseIndicator {
 	}
 
 	// Computes RSI of price data over the defined training window time frame
-	def getTraining(logPrice: Series[DateTime, Double]): Series[DateTime, Double] = {
+	def getTraining(logPrice: Series[DateTime, Double])
+    : Series[DateTime, Double] = {
 		val rsSeries = calcRS(getRet(logPrice))
 		val rsiSeries = rsSeries.mapValues[Double]( 
         (x:Double) => 100 - ( 100 / (1 + x)))
@@ -72,16 +76,17 @@ class RSIIndicator(period: Int, RsiPeriod: Int = 14) extends BaseIndicator {
 // Indicator that calcuates differences of closing prices
 class ShiftsIndicator(period: Int) extends BaseIndicator {
 
-  private def getRet(logPrice: Series[DateTime, Double], frameShift: Int = period) =
-		(logPrice - logPrice.shift(frameShift)).fillNA(_ => 0.0)
+  private def getRet(logPrice: Series[DateTime, Double], frame: Int = period) =
+	 (logPrice - logPrice.shift(frame)).fillNA(_ => 0.0)
 
-	def getMinWindowSize(): Int = period + 1
+  def getMinWindowSize(): Int = period + 1
 
-	def getTraining(logPrice: Series[DateTime, Double]): Series[DateTime, Double] = {
-		getRet(logPrice)
-	}
+  def getTraining(logPrice: Series[DateTime, Double])
+    : Series[DateTime, Double] = {
+    getRet(logPrice)
+  }
 
-	def getOne(logPrice: Series[DateTime, Double]): Double = {
-		getRet(logPrice).last
-	}
+  def getOne(logPrice: Series[DateTime, Double]): Double = {
+    getRet(logPrice).last
+  }
 }
