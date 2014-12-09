@@ -31,19 +31,54 @@ if __name__ == '__main__':
 And, uncomment the first import, replacing app_id with your own id. Next, comment the second import statement (import_data_with_gaps).
 
 ### Step 3: Import Yahoo Finance data.
-Where: PredictionIO-Python-SDK
+Where: PredictionIO-Python-SDK/examples
 
-Run: python -m examples.import_yahoo
+Run: sudo python -m examples.import_yahoo
 
-### Step 4: Now make the distribution of PredictionIO
+### Step 4: Start spark master and slave (worker)
+Where: within the spark directory (in our version:
+spark-1.1.0-bin-hadoop2.4)
+
+Run:
+```
+sbin/start-master.sh
+sbin/start-slave.sh
+```
+OR
+```
+sbin/start-all.sh
+```
+
+### Step 5: Start Hbase
+Where: hbase source folder (our version: hbase-0.98.6-hadoop2)
+```
+bin/start-hbase.sh
+```
+
+### Step 6: Start ElasticSearch
+Where: elasticsearch source folder (our version: elasticsearch-1.3.4)
+```
+bin/elasticsearch
+```
+
+### Step 7: Configure PredictionIO template
+Where: PredictionIO/conf
+Run
+```
+mv pio.env.sh.template pio.env.sh
+```
+Now Edit the file: pio.env.sh
+
+Find the following line and fill it in with your spark directory path:
+SPARK_HOME= <current address of spark directory>
+
+### Step 8: Now make the distribution of PredictionIO
 Where: cloned PredictionIO directory (with source code, make sure code is updated, git pull)
 ```
 ./make-distribution.sh
 ```
 
-### Step 5: Ensure all dependencies are working
-See here for more information: http://docs.prediction.io/0.8.1/install/
-
+### Step 9: Ensure all dependencies are working
 Type
 ```
 jps
@@ -56,12 +91,12 @@ Worker
 Hbase
 ElasticSearch
 ```
-### Step 6: Check Localhost8080
+### Step 10: Check Localhost8080
 -Navigate to http://localhost:8080
 
 -Should see a master address and worker node
 
-### Step 7: Edit scala-stock
+### Step 11: Edit scala-stock
 go to examples/scala-stock/src/main/scala
 
 Edit YahooDataSource.scala
@@ -70,14 +105,14 @@ Go to end of file to PredefinedDSP function
 
 Edit app_id to match the one from step 2
 
-### Step 8: Run scala-stock
+### Step 12: Run scala-stock
 Go to PredictionIO/examples/scala-stock
 
 Now type:
 ```
 ../../bin/pio run --asm io.prediction.examples.stock.YahooDataSourceRun -- --master <Your spark master address found at http:local8080> --driver-memory <4-12G>
 ```
-### Step 9: Open dashboard and view results
+### Step 13: Open dashboard and view results
 In PredictionIO folder
 
 Type /bin/pio dashboard
@@ -85,11 +120,83 @@ Type /bin/pio dashboard
 go to url: http://localhost:9000 to view output
 
 
+---
+#PredictionIO Scala Stock Tutorial
+
+##Implementing New Indicators
+
+Start by implementing the BaseIndicator class. 
+    <br> RSIIndicator class can serve as an example for how to do this:
+```
+abstract class BaseIndicator extends Serializable {
+    def getTraining(logPrice: Series[DateTime, Double]): Series[DateTime, Double]
+	def getOne(input: Series[DateTime, Double]): Double
+	def minWindowSize(): Int
+}
+```
+####`getTraining`
+######Parameters:
+This function takes in a Series of `logPrices` created from the closing prices of the YahooFinanace Data imported in YahooFinance.scala. `logPrices` refers to the logarithm of each price in the series.
+######Functionality:
+Performs a transformation over every value in the series to return a training series that will be used in the regression.
+####`getOne()`
+######Parameters:
+This function takes in a smaller window of the price series representing the closing price of a single stock over `minWindowSize()`. The size of this series is defined by the return value of `minWindowSize()`
+######Functionality:
+This function performs the same function as `getTraining()` over a smaller window defined by the return value of `minWindowSize()`. 
+####`minWindowSize()`
+######Functionality:
+Returns the minimum window sized required to do a single calculation of the Indicator function implemented by `getTraining()`.
+For example, an indicator that requires seeing the previous day to make a calculation would have a `minWindowSize` of 2 days.
+
+##Running New Indicators
+In order to run a newly implemented indicator, open YahooDataSource.scala. This file imports the YahooFinanceData, cleans it for use and then implements and runs the Predictive Engine.
+
+Navigate to Workflow.run() in the `YahooDataSourceRun` object:
+```
+   Workflow.run(
+      dataSourceClassOpt = Some(classOf[YahooDataSource]),
+      dataSourceParams = dsp,
+      preparatorClassOpt = Some(IdentityPreparator(classOf[DataSource])),
+      algorithmClassMapOpt = Some(Map(
+        //"" -> classOf[MomentumStrategy]
+        "" -> classOf[RegressionStrategy]
+      )),
+      //algorithmParamsList = Seq(("", momentumParams)),
+      algorithmParamsList = Seq(("", RegressionStrategyParams(Seq[(String, BaseIndicator)](
+        ("RSI1", new RSIIndicator(period=1)), 
+        ("RSI5", new RSIIndicator(period=5)), 
+        ("RSI22", new RSIIndicator(period=22))), 
+      200))),
+      servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
+      metricsClassOpt = Some(classOf[BacktestingMetrics]),
+      metricsParams = metricsParams,
+      params = WorkflowParams(
+        verbose = 0,
+        saveModel = false,
+```
+####  `algorithmParamsList ()`
+Edit the sequence being passed into this parameter to include the newly implemented Indicator function and all the Indicator functions you would like your predictive engine to use when creating the predictive model. In this example you would change RSIIndicator to your new indicator with the appropriate parameters. 
+
+### Viewing Your Results
+To view the backtesting metrics, run the program and open up localhost:9000 in your browser. 
+Click on HTML for the run you want to see the results of. 
+On this page, the sharpe ratio is indicative of how effective the Indicator your implemented is in predictions.
+
+### Tips and Tricks
+To reduce run time run your code on a smaller dataset:  
+1. Open `YahooDataSource.scala`  
+2. Look for line `val dsp = PredefinedDSP.BigSP500` and comment it out.  
+3. Uncomment out the line: `val dsp = PredefinedDSP.SmallSP500`  
+4. In the `PredefinedDSP` object, switch the `appId` for `BigSP500`with the `appId` for `SmallSP500`. *Note: It should match the appID in your runnable  
+
+To view standard output:  
+1. Open localhost:8080 (spark)  
+2. Click on the most recent worker  
+3. Click on stdout or stderr to view the data in 100kb increments  
 
 
-
-
-
+---
 
 
 # OLD DOCUMENTATION
@@ -317,3 +424,5 @@ PredictionIO infrastructure. *A lot of* possible improvements can be done:
 - Better backtesting method. Should be able to handle cost of capital, margin,
   transaction costs, variable position sizes, etc.
 - And a lot more.....
+
+
