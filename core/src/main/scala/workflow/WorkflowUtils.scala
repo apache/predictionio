@@ -165,21 +165,29 @@ object WorkflowUtils extends Logging {
     s
   }
 
-  /** Detect available Hadoop ecosystem configuration files to be submitted as
+  /** Detect third party software configuration files to be submitted as
     * extras to Apache Spark. This makes sure all executors receive the same
     * configuration.
     */
-  def hadoopEcoConfFiles: Seq[String] = {
-    val ecoFiles = Map(
+  def thirdPartyConfFiles: Seq[String] = {
+    val thirdPartyFiles = Map(
+      "ES_CONF_DIR" -> "elasticsearch.yml",
       "HADOOP_CONF_DIR" -> "core-site.xml",
       "HBASE_CONF_DIR" -> "hbase-site.xml")
 
-    ecoFiles.keys.toSeq.map { k: String =>
+    thirdPartyFiles.keys.toSeq.map { k: String =>
       sys.env.get(k) map { x =>
-        val p = Seq(x, ecoFiles(k)).mkString(File.separator)
+        val p = Seq(x, thirdPartyFiles(k)).mkString(File.separator)
         if (new File(p).exists) Seq(p) else Seq[String]()
       } getOrElse Seq[String]()
     }.flatten
+  }
+
+  def thirdPartyClasspaths: Seq[String] = {
+    val thirdPartyPaths = Seq("ES_CONF_DIR")
+    thirdPartyPaths.map(p =>
+      sys.env.get(p).map(Seq(_)).getOrElse(Seq[String]())
+    ).flatten
   }
 
   def setupLogging(verbose: Boolean, debug: Boolean): Unit = {

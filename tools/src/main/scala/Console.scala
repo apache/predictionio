@@ -954,7 +954,7 @@ object Console extends Logging {
   def run(ca: ConsoleArgs): Unit = {
     compile(ca)
 
-    val extraFiles = WorkflowUtils.hadoopEcoConfFiles
+    val extraFiles = WorkflowUtils.thirdPartyConfFiles
 
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }

@@ -10,8 +10,13 @@
 # SPARK_HOME: Apache Spark is a hard dependency and must be configured.
 SPARK_HOME=/path_to_apache_spark
 
+# ES_CONF_DIR: You must configure this if you have advanced configuration for
+#              your Elasticsearch setup.
+# ES_CONF_DIR=/opt/elasticsearch
+
 # HADOOP_CONF_DIR: You must configure this if you intend to run PredictionIO
 #                  with Hadoop 2.
+# HADOOP_CONF_DIR=/opt/hadoop
 
 # HBASE_CONF_DIR: You must configure this if you intend to run PredictionIO
 #                 with HBase on a remote cluster.
