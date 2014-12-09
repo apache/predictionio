@@ -31,8 +31,7 @@ abstract class BaseIndicator extends Serializable {
 /* Calculates RSI day averages
  * Input: period - differences in closing cost is calculated over
  */
-class RSIIndicator(period: Int) extends BaseIndicator {
-  val RsiPeriod = 14
+class RSIIndicator(period: Int, RsiPeriod: Int = 14) extends BaseIndicator {
 
 	private def getRet(logPrice: Series[DateTime, Double]) =
 		(logPrice - logPrice.shift(period)).fillNA(_ => 0.0)
