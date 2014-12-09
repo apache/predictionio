@@ -89,25 +89,26 @@ private[prediction] object EventValidation {
       s"Reserved event ${e.event} cannot have targetEntity")
     require(!isReservedPrefix(e.entityType) ||
       isBuiltinEntityTypes(e.entityType),
-      s"Reserved entityType ${e.entityType} is not supported.")
+      s"The entityType ${e.entityType} is not allowed. " +
+        s"'pio_' is a reserved name prefix.")
     require(e.targetEntityType.map{ t =>
       (!isReservedPrefix(t) || isBuiltinEntityTypes(t))}.getOrElse(true),
-      s"Reserved targetEntityType ${e.targetEntityType} is not supported.")
+      s"The targetEntityType ${e.targetEntityType.get} is not allowed. " +
+        s"'pio_' is a reserved name prefix.")
     validateProperties(e)
   }
 
   // properties
-  val builtinEntityTypes = Set("pio_user", "pio_item", "pio_pr")
-  val builtinProperties = Set(
-    "pio_itypes", "pio_starttime", "pio_endtime",
-    "pio_inactive", "pio_price", "pio_rating")
+  val builtinEntityTypes: Set[String] = Set("pio_pr")
+  val builtinProperties: Set[String] = Set()
 
   def isBuiltinEntityTypes(name: String) = builtinEntityTypes.contains(name)
 
   def validateProperties(e: Event) = {
     e.properties.keySet.foreach { k =>
       require(!isReservedPrefix(k) || builtinProperties.contains(k),
-        s"Reserved property ${k} is not supported.")
+        s"The property ${k} is not allowed. " +
+          s"'pio_' is a reserved name prefix.")
     }
   }
 
