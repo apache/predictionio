@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 object JavaWorkflow {
   /** Creates a workflow that runs an engine.
     *
-    * @tparam DP Data preparator class.
+    * @tparam EI Evaluation Info class.
     * @tparam TD Training data class.
     * @tparam PD Prepared data class.
     * @tparam Q Input query class.
@@ -38,8 +38,8 @@ object JavaWorkflow {
     * @param engineParams Engine parameters.
     * @param params Workflow parameters.
     */
-  def runEngine[DP, TD, PD, Q, P, A](
-    engine: Engine[TD, DP, PD, Q, P, A],
+  def runEngine[EI, TD, PD, Q, P, A](
+    engine: Engine[TD, EI, PD, Q, P, A],
     engineParams: EngineParams,
     params: WorkflowParams
   ) {
@@ -54,7 +54,7 @@ object JavaWorkflow {
 
   /** Creates a workflow that runs an engine.
     *
-    * @tparam DP Data preparator class.
+    * @tparam EI Evaluation Info class.
     * @tparam TD Training data class.
     * @tparam PD Prepared data class.
     * @tparam Q Input query class.
@@ -67,11 +67,11 @@ object JavaWorkflow {
     * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.
     */
-  def runEngine[DP, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
-      engine: Engine[TD, DP, PD, Q, P, A],
+  def runEngine[EI, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
+      engine: Engine[TD, EI, PD, Q, P, A],
       engineParams: EngineParams,
       evaluatorClass
-        : Class[_ <: BaseEvaluator[_ <: Params, DP, Q, P, A, MU, MR, MMR]],
+        : Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]],
       evaluatorParams: Params,
       params: WorkflowParams
     ) {

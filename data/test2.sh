@@ -1,39 +1,39 @@
+#!/usr/bin/env bash
 
+# simple test script for dataapi
+accessKey=$1
 
-curl -i -X POST "http://localhost:7070/events.json" \
+curl -i -X POST "http://localhost:7070/events.json?accessKey=$accessKey" \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$delete",
   "entityType" : "pio_user",
-  "entityId" : "123",
-  "appId" : 2
+  "entityId" : "123"
 }'
 
 
-curl -i -X POST "http://localhost:7070/events.json" \
+curl -i -X POST "http://localhost:7070/events.json?accessKey=$accessKey" \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$delete",
   "entityType" : "pio_item",
-  "entityId" : "174",
-  "appId" : 2,
+  "entityId" : "174"
 }'
 
 
-curl -i -X POST "http://localhost:7070/events.json" \
+curl -i -X POST "http://localhost:7070/events.json?accessKey=$accessKey" \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
   "entityType" : "pio_item",
   "entityId" : "174",
-  "appId" : 4,
   "properties" : {
     "piox_a" : 1
   }
 }'
 
 
-curl -i -X POST "http://localhost:7070/events.json" \
+curl -i -X POST "http://localhost:7070/events.json?accessKey=$accessKey" \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
@@ -45,12 +45,11 @@ curl -i -X POST "http://localhost:7070/events.json" \
     "prop1" : 1,
     "prop2" : null,
   }
-  "eventTime" : "2004-12-13T21:39:45.618Z",
-  "appId" : 4
+  "eventTime" : "2004-12-13T21:39:45.618Z"
 }'
 
 
-curl -i -X POST "http://localhost:7070/events.json" \
+curl -i -X POST "http://localhost:7070/events.json?accessKey=$accessKey" \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
@@ -59,18 +58,16 @@ curl -i -X POST "http://localhost:7070/events.json" \
   "targetEntityType" : null,
   "targetEntityId" : null,
   "properties" : null,
-  "eventTime" : null,
-  "appId" : 4
+  "eventTime" : null
 }'
 
 
-## predictionKey
-curl -i -X POST "http://localhost:7070/events.json" \
+## prId
+curl -i -X POST "http://localhost:7070/events.json?accessKey=$accessKey" \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "some_event",
   "entityType" : "pio_user",
   "entityId" : "123",
-  "appId" : 2,
-  "predictionKey" : "AbcdefXXFFdsf1"
+  "prId" : "AbcdefXXFFdsf1"
 }'

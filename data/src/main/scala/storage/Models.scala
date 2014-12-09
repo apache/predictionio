@@ -27,7 +27,7 @@ import org.json4s.native.Serialization
  * @param id ID of the model, which should be the same as engine instance ID.
  * @param models Trained models of all algorithms.
  */
-case class Model(
+private[prediction] case class Model(
   id: String,
   models: Array[Byte])
 
@@ -35,7 +35,7 @@ case class Model(
  * Base trait for implementations that interact with Models in the backend data
  * store.
  */
-trait Models {
+private[prediction] trait Models {
   /** Insert a new Model. */
   def insert(i: Model): Unit
 
@@ -46,7 +46,7 @@ trait Models {
   def delete(id: String): Unit
 }
 
-class ModelSerializer extends CustomSerializer[Model](
+private[prediction] class ModelSerializer extends CustomSerializer[Model](
   format => ({
     case JObject(fields) =>
       implicit val formats = DefaultFormats

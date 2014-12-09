@@ -388,7 +388,7 @@ object PredefinedDSP {
       tickerList = Run.sp500List))
 
   val SmallSP500 = YahooDataSource.Params(
-    appId = 3,
+    appId = 4,
     entityType = "yahoo",
     untilTime = None,
     windowParams = DataSourceParams(

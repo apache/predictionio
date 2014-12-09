@@ -44,8 +44,29 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
   private val estype = "apps"
   private val seq = new ESSequences(client, index)
 
+  val indices = client.admin.indices
+  val indexExistResponse = indices.prepareExists(index).get
+  if (!indexExistResponse.isExists) {
+    indices.prepareCreate(index).get
+  }
+  val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get
+  if (!typeExistResponse.isExists) {
+    val json =
+      (estype ->
+        ("properties" ->
+          ("name" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
+    indices.preparePutMapping(index).setType(estype).
+      setSource(compact(render(json))).get
+  }
+
   def insert(app: App) = {
-    val id = if (app.id == 0) seq.genNext("apps") else app.id
+    val id =
+      if (app.id == 0) {
+        var roll = seq.genNext("apps")
+        while (!get(roll).isEmpty) roll = seq.genNext("apps")
+        roll
+      }
+      else app.id
     val realapp = app.copy(id = id)
     if (update(realapp)) Some(id) else None
   }

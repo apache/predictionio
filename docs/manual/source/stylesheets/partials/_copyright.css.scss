@@ -1,0 +1,20 @@
+#copyright {
+  display: inline-block;
+  width: 100%;
+  background-color: $footer-background-color;
+  text-align: center;
+  color: $copyright-font-color;
+  padding: 25px 0 25px 0;
+  font-size: 14px;
+  a {
+    color: $copyright-link-color;
+  }
+
+  .logo {
+    margin-top: 10px;
+    display: inline-block;
+    width: 60px;
+    height: 43px;
+    background-image: url(/images/logos/copyright.png);
+  }
+}

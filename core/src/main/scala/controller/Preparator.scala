@@ -17,6 +17,7 @@ package io.prediction.controller
 
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BasePreparator
+import io.prediction.controller.java.JavaUtils
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -30,13 +31,12 @@ import scala.reflect.runtime.universe._
   * A local preparator runs locally within a single machine and produces
   * prepared data that can fit within a single machine.
   *
-  * @tparam PP Preparator parameters class.
   * @tparam TD Training data class.
   * @tparam PD Prepared data class.
   * @group Preparator
   */
-abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
-  extends BasePreparator[PP, RDD[TD], RDD[PD]] {
+abstract class LPreparator[TD, PD : ClassTag]
+  extends BasePreparator[RDD[TD], RDD[PD]] {
 
   def prepareBase(sc: SparkContext, rddTd: RDD[TD]): RDD[PD] = {
     rddTd.map(prepare)
@@ -55,13 +55,12 @@ abstract class LPreparator[PP <: Params : ClassTag, TD, PD : ClassTag]
   * A parallel preparator can be run in parallel on a cluster and produces a
   * prepared data that is distributed across a cluster.
   *
-  * @tparam PP Preparator parameters class.
   * @tparam TD Training data class.
   * @tparam PD Prepared data class.
   * @group Preparator
   */
-abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
-  extends BasePreparator[PP, TD, PD] {
+abstract class PPreparator[TD, PD]
+  extends BasePreparator[TD, PD] {
 
   def prepareBase(sc: SparkContext, td: TD): PD = {
     prepare(sc, td)
@@ -82,7 +81,8 @@ abstract class PPreparator[PP <: Params : ClassTag, TD, PD]
   *
   * @group Preparator
   */
-class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
+private[prediction] 
+class IdentityPreparator[TD] extends BasePreparator[TD, TD] {
   def prepareBase(sc: SparkContext, td: TD): TD = td
 }
 
@@ -91,11 +91,62 @@ class IdentityPreparator[TD] extends BasePreparator[EmptyParams, TD, TD] {
   *
   * @group Preparator
   */
+private[prediction] 
 object IdentityPreparator {
   /** Produces an instance of [[IdentityPreparator]].
     *
     * @param ds Data source.
     */
-  def apply[TD](ds: Class[_ <: BaseDataSource[_, _, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: BaseDataSource[TD, _, _, _]]) =
     classOf[IdentityPreparator[TD]]
 }
+
+/** A helper concrete implementation of [[io.prediction.controller.PPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+class PIdentityPreparator[TD] extends PPreparator[TD, TD] {
+  def prepare(sc: SparkContext, td: TD): TD = td
+}
+
+/** A helper concrete implementation of [[io.prediction.controller.PPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+object PIdentityPreparator {
+  /** Produces an instance of [[PIdentityPreparator]].
+    *
+    * @param ds Data source.
+    */
+  def apply[TD](ds: Class[_ <: PDataSource[TD, _, _, _]]) =
+    classOf[PIdentityPreparator[TD]]
+}
+
+
+/** A helper concrete implementation of [[io.prediction.controller.LPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+class LIdentityPreparator[TD]
+extends LPreparator[TD, TD]()(JavaUtils.fakeClassTag[TD]) {
+  def prepare(td: TD): TD = td
+}
+
+/** A helper concrete implementation of [[io.prediction.controller.LPreparator]]
+  * that pass training data through without any special preparation.
+  *
+  * @group Preparator
+  */
+object LIdentityPreparator {
+  /** Produces an instance of [[LIdentityPreparator]].
+    *
+    * @param ds Data source.
+    */
+  def apply[TD](ds: Class[_ <: LDataSource[TD, _, _, _]]) =
+    classOf[LIdentityPreparator[TD]]
+}
+
+

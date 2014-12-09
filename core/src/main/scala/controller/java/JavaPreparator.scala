@@ -36,13 +36,11 @@ import scala.reflect._
  * A local preparator runs locally within a single machine and produces prepared
  * data that can fit within a single machine.
  *
- * @param <PP> Preparator Parameters
  * @param <TD> Training Data
  * @param <PD> Prepared Data
  */
-abstract class LJavaPreparator[PP <: Params, TD, PD]
-  extends BasePreparator[PP, RDD[TD], RDD[PD]]() (
-    JavaUtils.fakeClassTag[PP]) {
+abstract class LJavaPreparator[TD, PD]
+  extends BasePreparator[RDD[TD], RDD[PD]]{ 
 
   def prepareBase(sc: SparkContext, td: RDD[TD]): RDD[PD] = {
     implicit val fakeTdTag: ClassTag[PD] = JavaUtils.fakeClassTag[PD]
@@ -62,7 +60,7 @@ abstract class LJavaPreparator[PP <: Params, TD, PD]
  *
  * @param <TD> Training Data
  */
-class LJavaIdentityPreparator[TD] extends LJavaPreparator[EmptyParams, TD, TD] {
+class LJavaIdentityPreparator[TD] extends LJavaPreparator[TD, TD] {
   override def prepare(td: TD): TD = td
 }
 
@@ -72,7 +70,7 @@ class LJavaIdentityPreparator[TD] extends LJavaPreparator[EmptyParams, TD, TD] {
  */
 object LJavaIdentityPreparator {
   /** Produces an instance of {@link LJavaIdentityPreparator}. */
-  def apply[TD](ds: Class[_ <: LJavaDataSource[_, _, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: LJavaDataSource[_, TD, _, _]]) =
     classOf[LJavaIdentityPreparator[TD]]
 
   /**
@@ -89,14 +87,11 @@ object LJavaIdentityPreparator {
   * A parallel preparator can be run in parallel on a cluster and produces a
   * prepared data that is distributed across a cluster.
   *
-  * @param <PP> Preparator parameters class.
   * @param <TD> Training data class.
   * @param <PD> Prepared data class.
   */
-abstract class PJavaPreparator[PP <: Params, TD, PD]
-  extends BasePreparator[PP, TD, PD]() (
-    JavaUtils.fakeClassTag[PP]) {
-
+abstract class PJavaPreparator[TD, PD]
+  extends BasePreparator[TD, PD] {
   def prepareBase(sc: SparkContext, td: TD): PD = {
     implicit val fakeTdTag: ClassTag[PD] = JavaUtils.fakeClassTag[PD]
     prepare(new JavaSparkContext(sc), td)
@@ -117,7 +112,7 @@ abstract class PJavaPreparator[PP <: Params, TD, PD]
  *
  * @param <TD> Training Data
  */
-class PJavaIdentityPreparator[TD] extends PJavaPreparator[EmptyParams, TD, TD] {
+class PJavaIdentityPreparator[TD] extends PJavaPreparator[TD, TD] {
   override def prepare(jsc: JavaSparkContext, td: TD): TD = td
 }
 
@@ -127,7 +122,7 @@ class PJavaIdentityPreparator[TD] extends PJavaPreparator[EmptyParams, TD, TD] {
  */
 object PJavaIdentityPreparator {
   /** Produces an instance of {@link PJavaIdentityPreparator}. */
-  def apply[TD](ds: Class[_ <: PJavaDataSource[_, _, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: PJavaDataSource[_, TD, _, _]]) =
     classOf[PJavaIdentityPreparator[TD]]
 
   /**

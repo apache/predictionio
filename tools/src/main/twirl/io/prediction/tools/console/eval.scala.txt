@@ -1,0 +1,16 @@
+Usage: pio eval [--batch <value>] [--metrics-class <value>]
+                [--params-path <value>] [-mp <value>] [common options...]
+
+Kick off an evaluation using an engine (variant) to produce an engine instance.
+This command will pass all pass-through arguments to its underlying spark-submit
+command.
+
+  --batch <value>
+      Batch label of the run.
+  --metrics-class <value>
+      Name of metrics class to run.
+  --params-path <value>
+      Directory to lookup parameters JSON files. Default: params
+  -mp <value>
+      Metrics parameters JSON file. Will try to use metrics.json in
+      '--params-path'.

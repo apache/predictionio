@@ -55,8 +55,8 @@ object Preparator {
   */
 }
 
-class Preparator(pp: AbstractPreparatorParams) extends LPreparator[
-    AbstractPreparatorParams, TrainingData, PreparedData] {
+class Preparator(pp: AbstractPreparatorParams) 
+    extends LPreparator[TrainingData, PreparedData] {
 
   final val CONFLICT_LATEST: String = "latest"
   final val CONFLICT_HIGHEST: String = "highest"

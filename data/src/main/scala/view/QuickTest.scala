@@ -16,7 +16,7 @@
 package io.prediction.data.view
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.Events
+import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Storage
@@ -28,8 +28,8 @@ import org.joda.time.DateTime
 
 import scala.language.implicitConversions
 
-class TestHBEvents() {
-  @transient lazy val eventsDb = Storage.getEventDataEvents()
+class TestHBLEvents() {
+  @transient lazy val eventsDb = Storage.getLEvents()
 
   def run() = {
     val r = eventsDb
@@ -53,7 +53,7 @@ class TestSource(val appId: Int) {
 object QuickTest {
 
   def main(args: Array[String]) {
-    val t = new TestHBEvents()
+    val t = new TestHBLEvents()
     t.run()
 
     //val ts = new TestSource(args(0).toInt)
@@ -66,7 +66,7 @@ object TestEventTime {
 
   //implicit def back2list(es: EventSeq) = es.events
 
-  def main(args: Array[String]) { 
+  def main(args: Array[String]) {
     val e = batchView.events.filter(
       eventOpt = Some("rate"),
       startTimeOpt = Some(new DateTime(1998, 1, 1, 0, 0))

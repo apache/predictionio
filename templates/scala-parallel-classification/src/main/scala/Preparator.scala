@@ -1,6 +1,6 @@
 package org.template.classification
 
-import io.prediction.controller._
+import io.prediction.controller.PPreparator
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -11,8 +11,7 @@ class PreparedData(
   val labeledPoints: RDD[LabeledPoint]
 ) extends Serializable
 
-class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+class Preparator extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(trainingData.labeledPoints)

@@ -1,0 +1,522 @@
+---
+title: Classification Quick Start
+---
+
+An engine template is an almost-complete implementation of an engine.
+PredictionIO's [Classification Engine
+Template](https://github.com/PredictionIO/PredictionIO/tree/master/templates/scala-parallel-classification)
+has integrated **Apache Spark MLlib**'s Naive Bayes algorithm by default.
+
+The default use case of Classification Engine Template is to predict the service
+plan (*plan*) a user will subscribe to based on his 3 properties: *attr0*,
+*attr1* and *attr2*.
+
+You can customize it easily to fit your specific use case and needs.
+
+We are going to show you how to create your own classification engine for
+production use based on this template.
+
+## Install PredictionIO
+
+First you need to [install PredictionIO <%= data.versions.pio %>](/install)
+
+WARNING: **0.8.2 contains schema changes from previous versions. If you have
+installed the previous versions, you may need to clear both HBase and
+Elasticsearch. See more [here](../resources/schema-change.html).**
+
+
+Let's say you have installed PredictionIO at `/home/yourname/predictionio/`. For
+convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/predictionio/bin`:
+
+```
+$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+```
+
+and please make sure that PredictionIO Event Server, which collects data, is
+running:
+
+```
+$ pio eventserver
+```
+
+## Create a Sample App
+
+Let's create a sample app called "MyApp2" now. An app represents the application
+that generates the data, e.g. an enterprise service website.
+
+```
+$ pio app new MyApp2
+```
+
+You should find the following in the console output:
+
+```
+...
+2014-11-18 12:40:57,424 INFO  tools.Console$ - Initialized Event Store for this app ID: 2.
+2014-11-18 12:40:57,456 INFO  tools.Console$ - Created new app:
+2014-11-18 12:40:57,457 INFO  tools.Console$ -       Name: MyApp2
+2014-11-18 12:40:57,458 INFO  tools.Console$ -         ID: 2
+2014-11-18 12:40:57,459 INFO  tools.Console$ - Access Key: 3pr1YWsSONhpalMGAB2Jry41PUuh7Mve3nOPx5draGD9CKHNXVtZXskBeSnJq3vz
+```
+
+Take note of the **Access Key** and **App ID**. You will need the **Access Key**
+to refer to "MyApp2" when you collect data. At the same time, you will use **App
+ID** to refer to "MyApp2" in engine code.
+
+## Create a new Engine from an Engine Template
+
+Now let's create a new engine called *MyClassification* by cloning the MLlib
+Classification engine template, assuming `/home/yourname/predictionio` is the
+installation directory of PredictionIO:
+
+```
+$ cp -r /home/yourname/predictionio/templates/scala-parallel-classification MyClassification
+$ cd MyClassification
+```
+
+## Collecting Data
+
+Next, let's collect some training data for the app of this Engine. For model
+training, Classification Engine Template reads 4 properties of a user record:
+attr0, attr1, attr2 and plan.
+
+You can send these data to PredictionIO Event Server in real-time easily by
+making a HTTP request or through the `EventClient` of an SDK.
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+  
+```python
+import predictionio
+
+client = predictionio.EventClient(
+    access_key=<ACCESS KEY>,
+    url=<URL OF EVENTSERVER>,
+    threads=5,
+    qsize=500
+)
+
+# Set the 4 properties for a user
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "attr0" : int(<VALUE OF ATTR0>),
+      "attr1" : int(<VALUE OF ATTR1>),
+      "attr2" : int(<VALUE OF ATTR2>),
+      "plan" : int(<VALUE OF PLAN>)
+    }
+)
+
+# You may also set the properties one by one
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "attr0" : int(<VALUE OF ATTR0>)
+    }
+)
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "attr1" : int(<VALUE OF ATTR1>)
+    }
+)
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "attr2" : int(<VALUE OF ATTR2>)
+    }
+)
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "plan" : int(<VALUE OF PLAN>)
+    }
+)
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Set the 4 properties for a user
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr0' => <VALUE OF ATTR0>,
+     'attr1' => <VALUE OF ATTR1>,
+     'attr2' => <VALUE OF ATTR2>,
+     'plan' => <VALUE OF PLAN>
+   )
+));
+
+// You may also set the properties one by one
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr0' => <VALUE OF ATTR0>
+   )
+));
+
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr1' => <VALUE OF ATTR1>
+   )
+));
+
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr2' => <VALUE OF ATTR2>
+   )
+));
+
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'plan' => <VALUE OF PLAN>
+   )
+));
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# Set the 4 properties for a user.
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>, {
+    'properties' => {
+      'attr0' => <VALUE OF ATTR0 (integer)>,
+      'attr1' => <VALUE OF ATTR1 (integer)>,
+      'attr2' => <VALUE OF ATTR2 (integer)>,
+      'plan' => <VALUE OF PLAN (integer)>,
+    }
+  }
+)
+
+# You may also set the properties one by one.
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>, {
+    'properties' => {
+      'attr0' => <VALUE OF ATTR0 (integer)>
+    }
+  }
+)
+
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>, {
+    'properties' => {
+      'attr1' => <VALUE OF ATTR1 (integer)>,
+    }
+  }
+)
+
+# Etc...
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import com.google.common.collect.ImmutableMap;
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// set the 4 properties for a user
+Event event = new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .properties(ImmutableMap.<String, Object>of(
+        "attr0", <VALUE OF ATTR0>,
+        "attr1", <VALUE OF ATTR1>,
+        "attr2", <VALUE OF ATTR2>,
+        "plan", <VALUE OF PLAN>
+    ));
+client.createEvent(event);
+
+/*
+// you may also set the properties one by one
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("attr0", <VALUE OF ATTR0>));
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("attr1", <VALUE OF ATTR1>));
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("attr2", <VALUE OF ATTR2>));
+client.createEvent(new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .property("plan", <VALUE OF PLAN>));
+*/
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```bash
+# Set the 4 properties for a user
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr0" : 0,
+    "attr1" : 1,
+    "attr2" : 0,
+    "plan" : 1
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# You may also set the properties one by one
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr0" : 0
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr1" : 1
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "attr2" : 0
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "properties" : {
+    "plan" : 1
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+```
+  </div>
+</div>
+
+You may use the sample data from MLlib repo for demonstration purpose. Execute
+the following to get the data set:
+
+```
+$ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_naive_bayes_data.txt --create-dirs -o data/sample_naive_bayes_data.txt
+```
+
+A Python import script `import_eventserver.py` is provided to import the data to
+Event Server using Python SDK. Replace the value of access_key parameter by your
+**Access Key**.
+
+```
+$ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
+```
+
+You should see the following output:
+
+```
+Importing data...
+6 events are imported.
+```
+
+Now the training data is stored as events inside the Event Store.
+
+## Deploy the Engine as a Service
+
+Now you can deploy the engine. Make sure the `appId` defined in the file
+`engine.json` match your **App ID**:
+
+```
+...
+"datasource": {
+  "appId": 2
+},
+...
+```
+
+### Building
+
+Start with building your *MyClassification*.
+
+```
+$ pio build
+```
+
+Upon successful build, you should see a console message similar to the
+following.
+
+```
+2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
+```
+
+### Training
+
+Train your successfully-built engine.
+
+```
+$ pio train
+```
+
+When your engine is trained successfully, you should see a console message
+similar to the following.
+
+```
+2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
+```
+
+### Deploying
+
+Now your engine is ready to deploy.
+
+```
+$ pio deploy
+```
+
+This will deploy an engine that binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
+
+![Engine Status](/images/engine-server.png)
+
+
+Now, You can try to retrieve predicted results. For example, to predict the
+label (i.e. *plan* in this case) of a user with attr0=2, attr1=0 and attr2=0,
+you send this JSON { "features": [2, 0, 0] } to the deployed engine and it will
+return a JSON of the predicted plan. Simply send a query by making a HTTP
+request or through the `EngineClient` of an SDK:
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({"features": [2, 0, 0]})
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('features'=> array(2, 0, 0)));
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('features' => [2, 0, 0])
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "features", ImmutableList.of(2, 0, 0)
+    ));
+```
+  </div>
+  <div data-tab="REST API" data-lang="bash">
+```bash
+$ curl -H "Content-Type: application/json" -d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
+
+{"label":0.0}
+```
+  </div>
+</div>
+
+Similarly, to predict the label (i.e. *plan* in this case) of a user with
+attr0=4, attr1=3 and attr2=8, you send this JSON `{ "features": [4, 3, 8] }` to
+the deployed engine and it will return a JSON of the predicted plan.
+
+Your MyEngine is now running. Next, we are going to take a look at the engine
+architecture and explain how you can customize it completely.
+
+#### [Next: DASE Components Explained](dase.html)
