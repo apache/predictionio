@@ -237,6 +237,7 @@ object Storage extends Logging {
     getModelDataModels()
     println("  Verifying Event Data Backend")
     val eventsDb = getLEvents()
+    println("  Test write Event Store (App Id 0)")
     // use appId=0 for testing purpose
     eventsDb.init(0)
     eventsDb.insert(Event(
