@@ -21,6 +21,8 @@ import scala.collection.JavaConversions._
 import scala.language.existentials
 import scala.reflect.runtime.universe._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 private[prediction] case class StorageError(val message: String)
 
 /**
@@ -234,7 +236,15 @@ object Storage extends Logging {
     println("  Verifying Model Data Backend")
     getModelDataModels()
     println("  Verifying Event Data Backend")
-    getLEvents()
+    val eventsDb = getLEvents()
+    // use appId=0 for testing purpose
+    eventsDb.init(0)
+    eventsDb.insert(Event(
+      event="test",
+      entityType="test",
+      entityId="test"), 0)
+    eventsDb.remove(0)
+    eventsDb.close()
   }
 
   private[prediction] def getMetaDataEngineManifests(): EngineManifests =

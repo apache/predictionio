@@ -82,6 +82,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
     try {
       if (client.admin.tableExists(tableName)) {
+        info(s"Removing table ${tableName.getNameAsString()}...")
         client.admin.disableTable(tableName)
         client.admin.deleteTable(tableName)
       } else {
