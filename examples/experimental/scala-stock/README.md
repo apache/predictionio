@@ -41,30 +41,7 @@ Where: cloned PredictionIO directory (with source code, make sure code is update
 ```
 ./make-distribution.sh
 ```
-
-<<<<<<< HEAD:examples/scala-stock/README.md
-### Step 5: Edit scala-stock
-=======
-### Step 5: Ensure all dependencies are working
-Type
-```
-jps
-```
-You should see
-```
-jps
-Master
-Worker
-Hbase
-Elasticsearch
-```
-### Step 6: Check Localhost8080
--Navigate to http://localhost:8080
-
--Should see a master address and worker node
-
-### Step 7: Edit scala-stock
->>>>>>> upstream/develop:examples/experimental/scala-stock/README.md
+### Step 5: Edit scald-stock
 go to examples/scala-stock/src/main/scala
 
 Edit YahooDataSource.scala
