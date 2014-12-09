@@ -237,6 +237,9 @@ i.e. `ALS.train`, is used to train a predictive model.
       // MLlibRating requires integer index for user and item
       MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
     )
+    // If you only have one type of implicit event (Eg. "view" event only),
+    // replace ALS.train(...) with
+    // ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
     val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
     new ALSModel(
       rank = m.rank,
