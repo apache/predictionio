@@ -3,7 +3,12 @@ title: Reading Custom Events (Recommendation)
 ---
 
 You can modify the [default DataSource](dase.html#data) to read
+<<<<<<< HEAD
 - Custom events other than the default **rate** and **buy** events.
+=======
+ 
+- Custom events other than the default **rate** and **buy** events. 
+>>>>>>> livedoc
 - Events which involve different entity types other than the default **user** and **item**.
 
 
@@ -14,6 +19,7 @@ To read custom events, modify the function call `eventsDb.find()` in MyRecommend
 - Specify the entity types involved in the events in the `entityType` and `targetEntityType` parameters accordingly
 
 In this example below, we modify DataSource to read custom **like** and **dislike** events where a customer likes or dislikes a product. The event has new entityType **customer** and targetEntityType **product**:
+
 
 ```scala
 val eventsRDD: RDD[Event] = eventsDb.find(
@@ -37,6 +43,7 @@ val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
         val ratingValue: Double = event.event match {
           // MODIFIED
           case "like" => 4.0 // map a like event to a rating of 4.0
+
 
           case "dislike" => 1.0  // map a like event to a rating of 1.0
           case _ => throw new Exception(s"Unexpected event ${event} is read.")

@@ -316,6 +316,7 @@ store the model, you convert the model to `ALSModel` class at the end.
 > The detailed implementation can be found at
 MyRecommendation/src/main/scala/***ALSModel.scala***
 
+
 PredictionIO will automatically store the returned model, i.e. `ALSModel` in this case.
 
 
