@@ -36,7 +36,7 @@ class StorageClient(val config: StorageClientConfig)
   extends BaseStorageClient {
 
   val conf = HBaseConfiguration.create()
-  conf.set("hbase.client.retries.number", "1")
+  conf.set("hbase.client.retries.number", "3")
   conf.set("zookeeper.session.timeout", "30000");
   conf.set("zookeeper.recovery.retry", "1")
 
