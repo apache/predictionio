@@ -15,6 +15,15 @@ import scala.math
 
 import nak.regress.LinearRegression
 
+/** Case Class
+  *
+  * @param indicators a sequence of tuples. The first element is a string that
+  *                   can be helpful in acting as a label for the indicator,
+  *                   such as for debugging. Pass in empty string if no label
+  *                   desired.
+  * @param maxTrainingWindowSize maximum window size of price frame desired
+  *                              for training
+  */
 case class RegressionStrategyParams (
   indicators: Seq[(String, BaseIndicator)],
   maxTrainingWindowSize: Int
