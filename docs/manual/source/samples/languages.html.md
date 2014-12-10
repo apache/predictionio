@@ -1,5 +1,6 @@
 ---
 title: Language Samples
+hidden: true
 ---
 
 ## Plain Text

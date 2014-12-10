@@ -1,0 +1,205 @@
+#swiftype {
+  display: none;
+  float: right;
+  margin: 25px 25px 25px 0;
+  box-sizing: border-box;
+
+  .st-search-input {
+    color: $body-font-color;
+    border-radius: 5px;
+    height: 40px;
+    box-sizing: border-box;
+    border: 1px solid $border-color;
+    box-shadow: none;
+    font-weight: 400;
+    font-size: 16px;
+    background: none;
+    background-color: $swiftype-input-background-color;
+    padding: 5px 5px 5px 10px;
+    width: 220px;
+  }
+
+  @include medium {
+    display: block;
+  }
+}
+
+body { // Using body forces a higher specificity over the Swiftype stylesheet!
+  div.swiftype div.st-result-listing div.st-search-summary {
+    border-bottom: 1px solid $border-color;
+    margin: 15px 0 15px 0;
+    padding-bottom: 10px;
+  }
+
+  div.swiftype div.st-result-listing div.st-search-summary h2 {
+    color: $body-font-color;
+    font-size: 13px;
+    font-weight: normal;
+    margin: 0;
+  }
+
+  div.swiftype div.st-result-listing div.st-search-summary h2 .st-query {
+    color: $body-font-color;
+    font-style: italic;
+  }
+
+  div.swiftype div.st-result-listing div.st-search-summary div.st-logo-header {
+    display: none;
+  }
+
+  div.swiftype div.st-result-listing div.st-result {
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  div.swiftype div.st-result-listing div.st-result div.st-result-text h3 {
+    font-size: 16px;
+    margin: 5px 0;
+  }
+
+  div.swiftype div.st-result-listing div.st-result .st-metadata {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  div.swiftype div.st-result-listing div.st-result div.st-result-text div.st-metadata .st-snippet {
+    color: $body-font-color;
+  }
+
+  div.swiftype div.st-result-listing div.st-result .st-result-image {
+    float: left;
+    margin-right: 10px;
+    overflow: hidden;
+  }
+
+  div.swiftype div.st-result-listing div.st-result.with_image .st-result-text {
+    margin-left: 100px;
+  }
+
+  div.swiftype div.st-result-listing div.st-result.final {
+    border-bottom: medium none;
+    margin-bottom: 0;
+  }
+
+  div.swiftype div.st-result-listing .st-pagination {
+    border-top: 1px solid $border-color;
+    margin-top: 5px;
+    padding-top: 5px;
+  }
+
+  div.swiftype div.st-result-listing .st-pagination .st-prev {
+    margin-right: 20px;
+  }
+
+  div.swiftype div.st-result-listing div.st-logo-footer {
+    display: none;
+  }
+
+  .swiftype-widget .autocomplete {
+    background-color: $swiftype-background-color;
+    border-radius: 0;
+    box-shadow: none;
+    display: block;
+    font-family: $body-font-family;
+    list-style-type: none;
+    margin: 5px 0 0 0;
+    padding: 0;
+    position: absolute;
+    text-align: left;
+    border: 1px solid $border-color;
+    border-bottom: none;
+  }
+
+  .swiftype-widget .autocomplete ul {
+    background-color: $swiftype-background-color;
+    border-radius: 0;
+    display: block;
+    font-family: $body-font-family;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .swiftype-widget .autocomplete li {
+    background-image: none;
+    border-bottom: 1px solid $border-color;
+    border-top: 0;
+    cursor: pointer;
+    font-size: 13px;
+    list-style-type: none;
+    margin: 0;
+    padding: 10px 8px;
+  }
+
+  .swiftype-widget .autocomplete li:first-child {
+    border-radius: 0;
+    border-top: 0;
+  }
+
+  .swiftype-widget .autocomplete li:last-child {
+    border-radius: 0;
+  }
+
+  .swiftype-widget .autocomplete li.active {
+    background: none;
+    background-color: $nav-main-hover-background-color;
+    border-bottom: 1px solid $border-color;
+    border-top: 0;
+    box-shadow: none;
+  }
+
+  .swiftype-widget .autocomplete li p {
+    font-size: 14px;
+    line-height: 20px;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .swiftype-widget .autocomplete li p.title {
+    color: $swiftype-link-color;
+    font-weight: bold;
+  }
+
+  .swiftype-widget .autocomplete li p.title em {
+    color: $body-font-color;
+    font-style: normal;
+    font-weight: bold;
+  }
+
+  .swiftype-widget .autocomplete li.active p.title {
+    color: $swiftype-background-color;
+    text-shadow: none;
+  }
+
+  .swiftype-widget .autocomplete li.active p.title em {
+    color: $swiftype-background-color;
+    font-style: normal;
+  }
+
+  .swiftype-widget .autocomplete li .sections {
+    color: $body-font-color;
+    font-size: 11px;
+  }
+
+  .swiftype-widget .autocomplete li .sections em {
+    color: $body-font-color;
+    font-style: normal;
+  }
+
+  .swiftype-widget .autocomplete li .sections .section {
+    display: inline;
+  }
+
+  .swiftype-widget .autocomplete li.active .sections {
+    color: $swiftype-font-active-color;
+    text-shadow: none;
+  }
+
+  .swiftype-widget .autocomplete li.active .sections em {
+    color: $swiftype-font-active-color;
+    font-style: normal;
+  }
+}

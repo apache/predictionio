@@ -46,7 +46,7 @@ $ curl -i -X POST http://localhost:7070/events.json \
 -d '{
   "appId" : 1,
   "event" : "$set",
-  "entityType" : "pio_user",
+  "entityType" : "user",
   "entityId" : "id_1",
   "eventTime" : "2004-12-13T21:39:45.618-07:00"
 }'

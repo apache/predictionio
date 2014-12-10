@@ -9,7 +9,7 @@ PredictionIO's SDKs.
 
 INFO: All PredictionIO-compliant engines support accessing the Event Store (i.e. the
 data store of Event Server) through [PredictionIO's Storage
-API](http://docs.prediction.io/api/0.8.2/index.html#io.prediction.data.storage.package).
+API](http://docs.prediction.io/api/current/index.html#io.prediction.data.storage.package).
 
 ## Launching the Event Server
 
@@ -117,18 +117,18 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 
   use predictionio\EventClient;
 
-  $appId = 4;
-  $client = new EventClient($appId);
+  $accessKey = 'YOUR_ACCESS_KEY';
+  $client = new EventClient($accessKey);
   $response = $client->createEvent(array(
                         'event' => 'my_event',
                         'entityType' => 'user',
                         'entityId' => 'uid',
-                        'properties' => array('prop1'=>1,
-                                              'prop2'=>'value2',
-                                              'prop3'=>array(1,2,3),
-                                              'prop4'=>true,
-                                              'prop5'=>array('a','b','c'),
-                                              'prop6'=>4.56
+                        'properties' => array('prop1' => 1,
+                                              'prop2' => 'value2',
+                                              'prop3' => array(1,2,3),
+                                              'prop4' => true,
+                                              'prop5' => array('a','b','c'),
+                                              'prop6' => 4.56
                                         ),
                         'eventTime' => '2004-12-13T21:39:45.618-07:00'
                        ));
@@ -140,7 +140,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 from predictionio import EventClient
 from datetime import datetime
 import pytz
-client = EventClient(app_id=4, url="http://localhost:7070")
+client = EventClient('YOUR_ACCESS_KEY', "http://localhost:7070")
 
 first_event_properties = {
     "prop1" : 1,
@@ -165,7 +165,7 @@ first_event_response = client.create_event(
 ```ruby
 require 'predictionio'
 
-event_client = PredictionIO::EventClient.new(4)
+event_client = PredictionIO::EventClient.new('YOUR_ACCESS_KEY')
 event_client.create_event('my_event', 'user', 'uid',
                           'eventTime' => '2004-12-13T21:39:45.618-07:00',
                           'properties' => { 'prop1' => 1,
@@ -212,8 +212,8 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 
   use predictionio\EventClient;
 
-  $appId = 4;
-  $client = new EventClient($appId);
+  $accessKey = 'YOUR_ACCESS_KEY';
+  $client = new EventClient($accessKey);
   $response = $client->createEvent(array(
                         'event' => 'my_event',
                         'entityType' => 'user',
@@ -248,7 +248,7 @@ second_event_response = client.create_event(
 ```ruby
 require 'predictionio'
 
-event_client = PredictionIO::EventClient.new(4)
+event_client = PredictionIO::EventClient.new('YOUR_ACCESS_KEY')
 event_client.create_event('my_event', 'user', 'uid',
                           'targetEntityType' => 'item',
                           'targetEntityId' => 'iid',

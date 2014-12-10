@@ -1,15 +1,16 @@
 #page-title {
+  display: flex;
   h1 {
     margin: 0;
     display: inline-block;
+    width: 100%;
     font-size: 25px;
     padding: 15px 15px 0 25px;
     color: $page-title-font-color;
     margin-right: 100px;
+    word-wrap: break-word;
     &.missing {
       color: $danger-color;
     }
   }
-
-
 }

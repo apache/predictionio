@@ -1,5 +1,5 @@
 #nav-header {
-  display: inline-block;
+  display: none;
   margin: 0 25px 0 0;
   ul {
     padding: 0;
@@ -20,6 +20,6 @@
 
 
   @include medium {
-    display :none;
+    display :inline-block;
   }
 }

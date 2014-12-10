@@ -2,7 +2,6 @@
 //= require 'Tabslet'
 
 $(document).ready(function() {
-
   // Main Navigation
   $('#nav-main > ul > li > a').on('click', function(event) {
     event.preventDefault();
@@ -31,6 +30,14 @@ $(document).ready(function() {
 
   // Tabslet
   $('.tabs').tabslet();
+
+  // Tab Syncing
+  $('.control li').on('mousedown', function(event) {
+    lang = $(this).data('lang')
+    $('.control li[data-lang="' + lang + '"]').each(function() {
+      $(this).children('a:first').trigger('click')
+    });
+  });
 
   // External Links
   $("a[href^='http']").each(function() {

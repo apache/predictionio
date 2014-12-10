@@ -1,9 +1,10 @@
 // General
+$body-font-color: #373535;
 $link-color: #1ba4d8;
 $border-color: #e3e3e3;
 $header-background-color: #eaf6fc;
 $header-icon-color: #373535;
-$off-canvas-background-color: #434445;
+$off-canvas-background-color: #f0f0f0;
 $main-background-color: #ffffff;
 
 // Alerts
@@ -31,13 +32,9 @@ $nav-header-link-color: #373535;
 $nav-main-link-color: #3482ab;
 $nav-main-hover-background-color: #7f93a8;
 $nav-main-hover-link-color: #ffffff;
-
-$nav-main-level-1-even-background-color: #e9e9e9;
-$nav-main-level-1-odd-background-color: #f0f0f0;
+$nav-main-level-1-background-color: #f0f0f0;
 $nav-main-level-1-font-color: #5f5f5f;
-
-$nav-main-level-2-even-background-color: #fafafa;
-$nav-main-level-2-odd-background-color: #fdfdfd;
+$nav-main-level-2-background-color: #fcfcfc;
 $nav-main-level-2-hover-background-color: #444444;
 $nav-main-level-2-active-background-color: #ffffff;
 $nav-main-level-2-active-border-color: #da1111;
@@ -59,7 +56,6 @@ $tab-hover-link-color: #ffffff;
 $button-download-font-color: #ffffff;
 $button-download-background-color: #0f99dd;
 
-
 // Code Blocks
 $code-block-background-color: #f7f7f7;
 $code-block-border-color: #e5e5e5;
@@ -69,19 +65,19 @@ $code-line-numbers-font-color: #373535;
 $code-inline-background-color: #f0f0f0;
 $code-inline-border-color: $border-color;
 
-
 // Table of Contents
-$table-of-contents-font-color: #e0e0e0;
+$table-of-contents-font-color: #5f5f5f;
 
 // Footer
-$footer-background-color: #434445;
-$footer-link-color: #ffffff;
-$footer-social-link-color: #1a1919;
+$footer-background-color: #2a2b2b;
+$footer-link-color: #f0f0f0;
+$footer-social-link-color: #828385;
+$footer-social-link-hover-color: #f0f0f0;
 $footer-heading-2-color: #828385;
 
 // Copyright
-$copyright-font-color: #ffffff;
-$copyright-link-color: #ffffff;
+$copyright-font-color: #f0f0f0;
+$copyright-link-color: #f0f0f0;
 
 // Page Title
 $page-title-font-color: #586276;
@@ -96,3 +92,9 @@ $heading-6-font-color: #373535;
 
 // Tags
 $blockquote-background-color: #f0f0f0;
+
+// Swiftype
+$swiftype-link-color: #3482ab;
+$swiftype-background-color: #fcfcfc;
+$swiftype-input-background-color: #ffffff;
+$swiftype-font-active-color: #ffffff;

@@ -31,6 +31,9 @@ PredictionIO documentation uses [Middleman](http://middlemanapp.com/) and is hos
 Requires [Ruby](https://www.ruby-lang.org/en/) 2.1 or greater.
 We recommend [RVM](http://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 
+WARNING: **OS X** users you will need to install [Xcode Command Line Tools](https://developer.apple.com/xcode/downloads/)
+with: `$ xcode-select --install` first.
+
 You can install everything with the following commands:
 
 ```bash
@@ -38,6 +41,7 @@ $ cd docs/manual
 $ gem install bundler
 $ bundle install
 ```
+
 
 ## Starting the Server
 
@@ -110,7 +114,7 @@ Images should only show the relavent tab/terminal. Hide any additional toolbars.
 
 ### Code Blocks
 
-Fenced code blocks are created using the <code>```language</code> format.
+Fenced code blocks are created using the <code>&#96;&#96;&#96;language</code> format.
 
 A example of each language is available on our [Language Samples](/samples/languages) page.
 
@@ -130,6 +134,33 @@ Code tabs use the following HTML format:
 ```
 
 You can see an example of this on our [Tab Samples](/samples/tabs/) page.
+
+### SEO
+
+You can hide a page from the `sitemap.xml` file by setting the pages
+[Frontmater](http://middlemanapp.com/basics/frontmatter/) like this:
+
+```md
+---
+title: Secret Page
+hidden: true
+---
+```
+
+## Important Files
+
+| Description   | File          |
+| ------------- | ------------- |
+| Left side navigation. | `source/partials/nav/main.html.slim` |
+| Main site layout. | `source/layouts/layout.html.slim` |
+| Custom Markdown renderer based on [Redcarpet](https://github.com/vmg/redcarpet). | `lib/custom_renderer.rb` |
+| Custom TOC helper. | `helpers/table_of_contents_helpers.rb` |
+
+### Versions
+
+Various site wide versions are defined in `data/versions.yml` and embedded with ERB like `<%= data.versions.pio %>`.
+
+NOTE: Files must end with a `.erb` extension to be processed as ERB.
 
 ## Going Live
 

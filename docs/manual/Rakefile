@@ -3,6 +3,108 @@ require 'nokogiri'
 require 'rainbow/ext/string'
 require 'uri'
 require 'net/http'
+require 'redcarpet'
+require File.join(File.dirname(__FILE__), 'lib', 'custom_renderer')
+
+
+task :test do
+
+HTML = <<EOT
+<div class="tabs">
+  <div data-tab="PHP" data-lang="php">
+```
+Test 0 <>
+Test 1 >
+Test 3 <
+Test 4 ><
+Test 5 =>
+Test 6 <=
+Test 7 <>
+<p><b>Test 8</b></p>
+```
+  </div>
+</div>
+EOT
+
+HTML2 = <<EOT
+<div class="tabs">
+  <div data-tab="Ruby" data-lang="ruby">
+```ruby
+Test 0 <>
+Test 1 >
+Test 3 <
+Test 4 ><
+Test 5 =>
+Test 6 <=
+Test 7 <>
+<p><b>Test</b></p>
+
+# This is a ruby file.
+class MyClass
+  def foo
+    'bar'
+  end
+end
+```
+  </div>
+  <div data-tab="Plain">
+This is a test of **markdown** inside a tab!
+
+```
+// This tab does not have the data-lang attribute set!
+$ cd path/to/your/file
+```
+  </div>
+  <div data-tab="HTML" data-lang="html">
+```html
+<p>Yes you can still use HTML in code blocks!</p>
+```
+  </div>
+</div>
+EOT
+
+  def block_html(raw_html)
+    done = raw_html.gsub(/(```.*?```)/m) do |match|
+      markdown = Redcarpet::Markdown.new(CustomRenderer, fenced_code_blocks: true)
+      markdown.render(match)
+    end
+
+    doc = Nokogiri::HTML::DocumentFragment.parse(done)
+    nodes = doc.css('div.tabs > div')
+
+    if nodes.empty?
+      raw_html
+    else
+      ul = Nokogiri::XML::Node.new('ul', doc)
+      ul['class'] = 'control'
+
+      nodes.each do |node|
+        title = node.attribute('data-tab').to_s
+        lang = node.attribute('data-lang').to_s
+
+        uuid = SecureRandom.uuid
+        id = "tab-#{uuid}"
+
+        li = Nokogiri::XML::Node.new('li', doc)
+        li['data-lang'] = lang
+        li.inner_html = %Q(<a href="##{id}">#{title}</a>)
+
+        ul.add_child(li)
+
+        node['id'] = id
+      end
+
+      nodes.first.before(ul)
+
+      doc.to_html
+    end
+  end
+
+
+  puts 'start block'
+  puts block_html(HTML2)
+  puts 'end block'
+end
 
 
 desc 'Check site for broken links'

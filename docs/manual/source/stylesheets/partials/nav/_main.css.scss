@@ -1,12 +1,13 @@
 #nav-main {
+  border-right: 1px solid $border-color;
+  box-sizing: border-box;
   ul {
     margin: 0;
     padding: 0;
     display: inline-block;
     width: 100%;
     list-style-type: none;
-    border-right: 1px solid $border-color;
-    box-sizing: border-box;
+
   }
   a {
     color: $nav-main-link-color;
@@ -22,11 +23,7 @@
 
     // Level 1
     & > li {
-      background-color: $nav-main-level-1-even-background-color;
-
-      &:nth-child(2n) {
-        background-color: $nav-main-level-1-odd-background-color;
-      }
+      background-color: $nav-main-level-1-background-color;
       & > a {
         border-bottom: 1px solid $border-color;
         min-height: 50px;
@@ -51,11 +48,8 @@
       }
 
       li {
-        background-color: $nav-main-level-2-even-background-color;
+        background-color: $nav-main-level-2-background-color;
         border-bottom: 1px solid $border-color;
-        &:nth-child(2n) {
-          background-color: $nav-main-level-2-odd-background-color;
-        }
         & > a {
           min-height: 40px;
           font-size: 14px;

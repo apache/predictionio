@@ -47,9 +47,7 @@
 }
 
 
-
-// Medium
-@media all and (min-width: 768px) {
+@include medium {
   #active-navigation {
     display: none;
   }
@@ -76,13 +74,16 @@
 }
 
 // Large
-@media all and (min-width: 1200px) {
+@include x-large {
   #active-complementary {
     display: none;
   }
 
   [role="complementary"] {
     display: block;
+    &.empty {
+      display: none;
+    }
   }
 
   .active-complementary {

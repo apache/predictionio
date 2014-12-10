@@ -5,8 +5,10 @@ html
     meta charset="utf-8"
     meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"
     meta name="viewport" content="width=device-width, initial-scale=1.0"
+    meta class="swiftype" name="title" data-type="string" content=current_page.data.title
     - if current_page.data.description
       meta name="description" content=current_page.data.description
+      meta class="swiftype" name="body" data-type="text" content=current_page.data.description
 
     link href="/images/favicon/normal.png" rel="shortcut icon"
     link href="/images/favicon/apple.png" rel="apple-touch-icon"
@@ -24,11 +26,12 @@ html
       = partial 'header'
       #page.container
         = partial 'nav/main'
-        #main role="main"
+        #main role="main" data-swiftype-index="true"
           = partial 'page_title'
           #content
             = yield
         == table_of_contents(current_page)
       = partial 'footer'
       = partial 'copyright'
+    = partial 'swiftype'
     = javascript_include_tag  'application'
