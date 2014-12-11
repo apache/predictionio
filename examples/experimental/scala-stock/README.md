@@ -70,8 +70,8 @@ go to url: http://localhost:9000 to view output
 
 ##Implementing New Indicators
 
-If you don't need to introduce any new indicators, skip this step. To introduce a new indicator, go to Indicators.scala and implement the `BaseIndicator` class.
-    <br> 'ShiftsIndicator' can serve as an example for how to do this:
+If you don't need to introduce any new indicators, skip this step. To introduce a new indicator, go to Indicators.scala and implement the `BaseIndicator` class. 'ShiftsIndicator' can serve as an example for how to do this:
+
 ```
 abstract class BaseIndicator extends Serializable {
     def getTraining(logPrice: Series[DateTime, Double]): Series[DateTime, Double]
