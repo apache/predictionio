@@ -70,8 +70,8 @@ go to url: http://localhost:9000 to view output
 
 ##Implementing New Indicators
 
-Start by implementing the BaseIndicator class. 
-    <br> RSIIndicator class can serve as an example for how to do this:
+If you don't need to introduce any new indicators, skip this step. To introduce a new indicator, go to Indicators.scala and implement the `BaseIndicator` class.
+    <br> 'ShiftsIndicator' can serve as an example for how to do this:
 ```
 abstract class BaseIndicator extends Serializable {
     def getTraining(logPrice: Series[DateTime, Double]): Series[DateTime, Double]
@@ -95,7 +95,7 @@ Returns the minimum window sized required to do a single calculation of the Indi
 For example, an indicator that requires seeing the previous day to make a calculation would have a `minWindowSize` of 2 days.
 
 ##Running New Indicators
-In order to run a newly implemented indicator, open YahooDataSource.scala. This file imports the YahooFinanceData, cleans it for use and then implements and runs the Predictive Engine.
+To change which indicators to include in your run, open YahooDataSource.scala. This file imports the Yahoo finance data, prepares it, and runs the predictive engine.
 
 Navigate to Workflow.run() in the `YahooDataSourceRun` object:
 ```
@@ -121,17 +121,15 @@ Navigate to Workflow.run() in the `YahooDataSourceRun` object:
         saveModel = false,
 ```
 ####  `algorithmParamsList ()`
-Edit the sequence being passed into this parameter to include the newly implemented Indicator function and all the Indicator functions you would like your predictive engine to use when creating the predictive model. In this example you would change RSIIndicator to your new indicator with the appropriate parameters. 
+Edit these parameters to include any newly implemented indicator functions the predictive model should include. In this example you would change 'RSIIndicator' to your new indicator. If you would like to modify the strategy used, make sure to also change the constructor parameter, i.e. 'RegressionStrategyParams'.
 
 ### Viewing Your Results
-To view the backtesting metrics, run the program and open up localhost:9000 in your browser. 
-Click on HTML for the run you want to see the results of. 
-On this page, the sharpe ratio is indicative of how effective the Indicator your implemented is in predictions.
+To view the backtesting metrics, open up localhost:9000 in your browser and click on the 'HTML' button for the run you want to see the results of. On this page, the sharpe ratio is indicative of how effective your indicator implementations are in predictions.
 
 ### Tips and Tricks
 To reduce run time run your code on a smaller dataset:  
 1. Open `YahooDataSource.scala`  
-2. Look for line `val dsp = PredefinedDSP.BigSP500` and comment it out.  
+2. Look for line `val dsp = PredefinedDSP.BigSP500` and comment it out
 3. Uncomment out the line: `val dsp = PredefinedDSP.SmallSP500`  
 4. In the `PredefinedDSP` object, switch the `appId` for `BigSP500`with the `appId` for `SmallSP500`. *Note: It should match the appID in your runnable  
 
