@@ -7,9 +7,8 @@ object RandomEngineFactory extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[FriendRecommendationDataSource],
-      IdentityPreparator(classOf[FriendRecommendationDataSource]),
+      classOf[LIdentityPreparator[FriendRecommendationTrainingData]],
       Map("RandomAlgorithm" -> classOf[RandomAlgorithm]),
-      FirstServing(classOf[RandomAlgorithm])
-    )
+      classOf[LFirstServing[FriendRecommendationQuery, FriendRecommendationPrediction]])
   }
 }

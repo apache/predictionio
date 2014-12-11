@@ -7,8 +7,8 @@ object KeywordSimilarityEngineFactory extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[FriendRecommendationDataSource],
-      IdentityPreparator(classOf[FriendRecommendationDataSource]),
+      classOf[LIdentityPreparator[FriendRecommendationTrainingData]],
       Map("KeywordSimilarityAlgorithm" -> classOf[KeywordSimilarityAlgorithm]),
-      FirstServing(classOf[KeywordSimilarityAlgorithm]))
+      classOf[LFirstServing[FriendRecommendationQuery, FriendRecommendationPrediction]])
   }
 }

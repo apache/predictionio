@@ -167,5 +167,23 @@ for line in user_action_list:
             write_file.write(line)
             break
 print "user action got"
+
+print "getting rec_log_train"
+user_set = set(user_id_list)
+item_set = set(item_id_list)
+read_file = open("data/rec_log_train.txt", 'r')
+write_file = open("data/mini_rec_log_train.txt",'w')
+count = 0
+for item in item_set:
+    print type(item)
+for user in user_set:
+    print type(user)
+for line in read_file:
+    words = line.split()
+    if words[0] in user_set and (words[1] in user_set or words[1] in item_set):
+        write_file.write(line)
+    print count
+    count += 1
+
 print "Done"
 
