@@ -25,7 +25,7 @@ import nak.regress.LinearRegression
   */
 @SerialVersionUID(100L)
 abstract class BaseIndicator extends Serializable {
-	/** Calculates training series for a particular stock.
+  /** Calculates training series for a particular stock.
     *
 	  * @param logPrice series of logarithm of all prices for a particular stock.
 	  *				   Logarithm values are recommended for more accurate results.
@@ -36,30 +36,30 @@ abstract class BaseIndicator extends Serializable {
   /** Applies indicator on a window size of the value returned by 
   	* getMinWindowSize() and returns the last value in the resulting series to
   	* be used for prediction in RegressionStrategy.
-	  *
-		* @param logPrice series of logarithm of all prices for a particular stock
-		* @return the last value in the resulting series from the feature 
-		*          calculation
-		*/
+    *
+    * @param logPrice series of logarithm of all prices for a particular stock
+    * @return the last value in the resulting series from the feature 
+    *           calculation
+    */
   def getOne(input: Series[DateTime, Double]): Double
 
   /** Returns window size to be used in getOne()
-	  *
-	  * @return the window size
-	  */
+    *
+    * @return the window size
+    */
   def getMinWindowSize(): Int
 }
 
 /** Indicator that implements a relative strength index formula
   *
-	* @constructor create an instance of an RSIIndicator
-	* @param period number of days to use for each of the 14 periods
-	*         that are used in the RSI calculation
+  * @constructor create an instance of an RSIIndicator
+  * @param period number of days to use for each of the 14 periods
+  *         that are used in the RSI calculation
   */
-class RSIIndicator(period: Int, RsiPeriod: Int = 14) extends BaseIndicator {
+class RSIIndicator(RsiPeriod: Int = 14) extends BaseIndicator {
 
 	private def getRet(dailyReturn: Series[DateTime, Double]) =
-		(dailyReturn - dailyReturn.shift(period)).fillNA(_ => 0.0)
+		(dailyReturn - dailyReturn.shift(1)).fillNA(_ => 0.0)
 
 	def getMinWindowSize(): Int = RsiPeriod + 1
 
@@ -102,10 +102,10 @@ class RSIIndicator(period: Int, RsiPeriod: Int = 14) extends BaseIndicator {
 
 /** Indicator that calcuate differences of closing prices
   *
-	* @constructor create an instance of a ShiftsIndicator
-	* @param period number of days between any 2 closing prices to consider for 
-	*					calculating a return
-	*/
+  * @constructor create an instance of a ShiftsIndicator
+  * @param period number of days between any 2 closing prices to consider for 
+  *	         calculating a return
+  */
 class ShiftsIndicator(period: Int) extends BaseIndicator {
 
   private def getRet(logPrice: Series[DateTime, Double], frame: Int = period) =

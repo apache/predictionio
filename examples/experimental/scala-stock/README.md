@@ -41,7 +41,7 @@ Where: cloned PredictionIO directory (with source code, make sure code is update
 ```
 ./make-distribution.sh
 ```
-### Step 5: Edit scald-stock
+### Step 5: Edit scala-stock
 go to examples/scala-stock/src/main/scala
 
 Edit YahooDataSource.scala
