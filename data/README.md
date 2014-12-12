@@ -1,6 +1,6 @@
 ## Data Collection API
 
-Please refer to the documentation site. (TODO: add link)
+Please refer to the documentation site - [Collecting Data through Event API](http://docs.prediction.io/datacollection/eventapi/).
 
 ## For Development Use only:
 
