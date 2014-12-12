@@ -92,7 +92,7 @@ object RunWorkflow extends Logging {
         "--engineVersion",
         em.version,
         "--engineVariant",
-        variantJson.getName) ++
+        variantJson.getCanonicalPath) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.debug) Seq("--debug") else Seq()) ++
       (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++

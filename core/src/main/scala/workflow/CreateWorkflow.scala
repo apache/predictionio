@@ -70,15 +70,19 @@ object CreateWorkflow extends Logging {
 
   val hadoopConf = new Configuration
   val hdfs = FileSystem.get(hadoopConf)
+  val localfs = FileSystem.getLocal(hadoopConf)
 
-  private def stringFromFile(basePath: String, filePath: String): String = {
+  private def stringFromFile(
+      basePath: String,
+      filePath: String,
+      fs: FileSystem = hdfs): String = {
     try {
       val p =
         if (basePath == "")
           new Path(filePath)
         else
           new Path(basePath + Path.SEPARATOR + filePath)
-      new String(ByteStreams.toByteArray(hdfs.open(p)).map(_.toChar))
+      new String(ByteStreams.toByteArray(fs.open(p)).map(_.toChar))
     } catch {
       case e: java.io.IOException =>
         error(s"Error reading from file: ${e.getMessage}. Aborting workflow.")
@@ -144,7 +148,7 @@ object CreateWorkflow extends Logging {
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
       WorkflowUtils.setupLogging(wfc.verbose, wfc.debug)
-      val variantJson = parse(stringFromFile("", wfc.engineVariant))
+      val variantJson = parse(stringFromFile("", wfc.engineVariant, localfs))
       val engineFactory = variantJson \ "engineFactory" match {
         case JString(s) => s
         case _ =>
