@@ -4,7 +4,7 @@ title: Command Line
 
 ##Overview
 
-Interaction with PreidctionIO is done through the commaond line interface. It follows the format of: 
+Interaction with PredictionIO is done through the command line interface. It follows the format of: 
 
 ```pio <command> [options] <args>...```
 
@@ -66,7 +66,7 @@ See 'pio help <command>' to read about a specific subcommand.
 
 
 ##General Commands
-```help```          Display usage summary. 'pio help <command>' to read about a specific subcommand.
+```help```          Display usage summary. `pio help <command>` to read about a specific subcommand.
   
 ```version```       Displays the version of the installed PredictionIO.
 
