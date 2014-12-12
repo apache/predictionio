@@ -1,11 +1,11 @@
 ---
-title: Upgrading to 0.8.2
+title: Upgrading to 0.8.2 and above
 ---
 
 # Schema Changes in 0.8.2
 
 0.8.2 contains HBase and Elasticsearch schema changes from previous versions. In
-order to use 0.8.2, you need to first clear them. These will clear out all data
+order to use 0.8.2 and versions above, you need to first clear them. These will clear out all data
 in Elasticsearch and HBase. Please be extra cautious.
 
 DANGER: **ALL EXISTING DATA WILL BE LOST!**

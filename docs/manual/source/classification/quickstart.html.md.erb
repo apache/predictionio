@@ -516,7 +516,10 @@ Similarly, to predict the label (i.e. *plan* in this case) of a user with
 attr0=4, attr1=3 and attr2=8, you send this JSON `{ "features": [4, 3, 8] }` to
 the deployed engine and it will return a JSON of the predicted plan.
 
-Your MyEngine is now running. Next, we are going to take a look at the engine
+*MyClassification* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. 
+
+
+Next, we are going to take a look at the engine
 architecture and explain how you can customize it completely.
 
 #### [Next: DASE Components Explained](dase.html)

@@ -400,7 +400,12 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
   </div>
 </div>
 
-Your engine *MyRecommendation* is now running. Next, we are going to take a look
+*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. 
+
+
+
+
+Next, we are going to take a look
 at the engine architecture and explain how you can customize it completely.
 
 #### [Next: DASE Components Explained](/recommendation/dase)
