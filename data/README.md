@@ -50,18 +50,17 @@ old one using hbase import / export tool.
 
 Suppose we are migrating `<old_app_id>`.
 
+#### 1. First create a new app:
+
 ```
 $ set -a
 $ source conf/pio-env.sh
 $ set +a
 $ bin/pio app new NewApp
-... you will see <new_app_id> 
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3 <old_app_id> <new_app_id>"
-... Done.
+... you will see <new_app_id>
 ```
 
-`<new_app_id>` must be empty when you upgrade. You can check the status of an
-app using:
+The App with `<new_app_id>` must be empty before you upgrade. You can check the status of this new created app using:
 
 ```
 $ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
@@ -73,4 +72,15 @@ If it shows that it is non-empty, you can clean it with
 $ bin/pio app data-delete <new_app_name>
 ```
 
+#### 2. Run the following to migrate from <old_app_id> to <new_app_id>
 
+```
+$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3 <old_app_id> <new_app_id>"
+... Done.
+```
+
+You can use the following to check the <new_app_id> again. It should display the number of data being migrated:
+
+```
+$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
+```
