@@ -27,15 +27,15 @@ import nak.regress.LinearRegression
 abstract class BaseIndicator extends Serializable {
   /** Calculates training series for a particular stock.
     *
-	  * @param logPrice series of logarithm of all prices for a particular stock.
-	  *				   Logarithm values are recommended for more accurate results.
-	  * @return the training series of the stock
-	  */
+    * @param logPrice series of logarithm of all prices for a particular stock.
+    * 	      Logarithm values are recommended for more accurate results.
+    * @return the training series of the stock
+    */
   def getTraining(logPrice: Series[DateTime, Double]): Series[DateTime, Double]
 
   /** Applies indicator on a window size of the value returned by 
-  	* getMinWindowSize() and returns the last value in the resulting series to
-  	* be used for prediction in RegressionStrategy.
+    * getMinWindowSize() and returns the last value in the resulting series to
+    * be used for prediction in RegressionStrategy.
     *
     * @param logPrice series of logarithm of all prices for a particular stock
     * @return the last value in the resulting series from the feature 
@@ -56,12 +56,12 @@ abstract class BaseIndicator extends Serializable {
   * @param period number of days to use for each of the 14 periods
   *         that are used in the RSI calculation
   */
-class RSIIndicator(RsiPeriod: Int = 14) extends BaseIndicator {
+class RSIIndicator(rsiPeriod: Int = 14) extends BaseIndicator {
 
 	private def getRet(dailyReturn: Series[DateTime, Double]) =
 		(dailyReturn - dailyReturn.shift(1)).fillNA(_ => 0.0)
 
-	def getMinWindowSize(): Int = RsiPeriod + 1
+	def getMinWindowSize(): Int = rsiPeriod + 1
 
 	private def calcRS(logPrice: Series[DateTime, Double])
     : Series[DateTime, Double] = {
@@ -73,10 +73,10 @@ class RSIIndicator(RsiPeriod: Int = 14) extends BaseIndicator {
     
 		//Get the sum of positive/negative Frame
 		val avgPosSeries = 
-      posSeries.rolling[Double] (RsiPeriod, (f: Series[DateTime,Double]) 
+      posSeries.rolling[Double] (rsiPeriod, (f: Series[DateTime,Double]) 
         => f.mean)
 		val avgNegSeries = 
-      negSeries.rolling[Double] (RsiPeriod, (f: Series[DateTime,Double]) 
+      negSeries.rolling[Double] (rsiPeriod, (f: Series[DateTime,Double]) 
         => f.mean)
 
 		val rsSeries = avgPosSeries / avgNegSeries
