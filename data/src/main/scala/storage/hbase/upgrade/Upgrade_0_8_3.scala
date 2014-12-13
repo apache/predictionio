@@ -2,6 +2,7 @@ package io.prediction.data.storage.hbase.upgrade
 
 import grizzled.slf4j.Logger
 import io.prediction.data.storage.Storage
+import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.hbase.HBLEvents
 import io.prediction.data.storage.hbase.HBEventsUtil
 
@@ -65,6 +66,21 @@ object Upgrade_0_8_3 {
     upgrade(fromAppId, toAppId)
   }
 
+
+  val obsEntityTypes = Set("pio_user", "pio_item")
+  val obsProperties = Set(
+    "pio_itypes", "pio_starttime", "pio_endtime",
+    "pio_inactive", "pio_price", "pio_rating")
+
+  def hasPIOPrefix(eventClient: LEvents, appId: Int): Boolean = {
+    eventClient.find(appId = appId).right.get.filter( e =>
+      (obsEntityTypes.contains(e.entityType) ||
+       e.targetEntityType.map(obsEntityTypes.contains(_)).getOrElse(false) ||
+       (!e.properties.keySet.forall(!obsProperties.contains(_)))
+      )
+    ).hasNext
+  }
+
   def isEmpty(eventClient: LEvents, appId: Int): Boolean =
     !eventClient.find(appId = appId).right.get.hasNext
 
@@ -94,9 +110,20 @@ object Upgrade_0_8_3 {
       val toTargetEntityType = fromTargetEntityType
         .map { et => NameMap.getOrElse(et, et) }
 
+      val toProperties = DataMap(fromEvent.properties.fields.map {
+        case (k, v) =>
+          val newK = if (obsProperties.contains(k)) {
+            val nK = k.stripPrefix("pio_")
+            logger.info(s"property ${k} will be renamed to ${nK}")
+            nK
+          } else k
+          (newK, v)
+      })
+
       val toEvent = fromEvent.copy(
         entityType = toEntityType,
-        targetEntityType = toTargetEntityType)
+        targetEntityType = toTargetEntityType,
+        properties = toProperties)
 
       eventClient.insert(toEvent, toAppId)
     }}
@@ -155,16 +182,25 @@ object Upgrade_0_8_3 {
     require(fromAppId != toAppId,
       s"FromAppId: $fromAppId must be different from toAppId: $toAppId")
 
-    require(
-      isEmpty(eventClient, toAppId),
-      s"Target appId: $toAppId is not empty. Please run " +
-      "`pio app data-delete <app_name>` to clean the data before upgrading")
+    if (hasPIOPrefix(eventClient, fromAppId)) {
+      require(
+        isEmpty(eventClient, toAppId),
+        s"Target appId: $toAppId is not empty. Please run " +
+        "`pio app data-delete <app_name>` to clean the data before upgrading")
 
+      logger.info(s"$fromAppId isEmpty: " + isEmpty(eventClient, fromAppId))
 
-    logger.info(s"$fromAppId isEmpty: " + isEmpty(eventClient, fromAppId))
+      upgradeCopy(eventClient, fromAppId, toAppId)
 
-    upgradeCopy(eventClient, fromAppId, toAppId)
+    } else {
+      logger.info(s"From appId: ${fromAppId} doesn't contain"
+        + s" obsolete entityTypes ${obsEntityTypes} or"
+        + s" obsolete properties ${obsProperties}."
+        + " No need data migration."
+        + s" You can continue to use appId ${fromAppId}.")
+    }
 
+    logger.info("Done.")
   }
 
 
