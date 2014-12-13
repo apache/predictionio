@@ -29,14 +29,18 @@ object CheckDistribution {
     }
   }
 
-  def main(args: Array[String]) {
+  def runMain(appId: Int) {
     val eventClient = Storage.getLEvents().asInstanceOf[HBLEvents]
-  
-    entityType(eventClient, args(0).toInt)
+
+    entityType(eventClient, appId)
     .toSeq
     .sortBy(-_._2)
     .foreach { println }
-  
+
+  }
+
+  def main(args: Array[String]) {
+    runMain(args(0).toInt)
   }
 
 }
@@ -54,11 +58,15 @@ object Upgrade_0_8_3 {
     val fromAppId = args(0).toInt
     val toAppId = args(1).toInt
 
-    upgrade(fromAppId, toAppId) 
+    runMain(fromAppId, toAppId)
+  }
+
+  def runMain(fromAppId: Int, toAppId: Int) = {
+    upgrade(fromAppId, toAppId)
   }
 
   def isEmpty(eventClient: LEvents, appId: Int): Boolean =
-    !eventClient.find(appId = appId).right.get.hasNext 
+    !eventClient.find(appId = appId).right.get.hasNext
 
 
   def upgradeCopy(eventClient: LEvents, fromAppId: Int, toAppId: Int) {
@@ -89,7 +97,7 @@ object Upgrade_0_8_3 {
       val toEvent = fromEvent.copy(
         entityType = toEntityType,
         targetEntityType = toTargetEntityType)
-      
+
       eventClient.insert(toEvent, toAppId)
     }}
 
@@ -109,9 +117,14 @@ object Upgrade_0_8_3 {
         val net = NameMap.getOrElse(et, et)
         val ntet = tet.map(tet => NameMap.getOrElse(tet, tet))
         val nk = (net, ntet)
-        (c == toDist.getOrElse(nk, -1)) 
+        val nc = toDist.getOrElse(nk, -1)
+        val checkMatch = (c == nc)
+        if (!checkMatch) {
+          logger.info(s"${k} doesn't match: old has ${c}. new has ${nc}.")
+        }
+        checkMatch
       }}
-    
+
     val toGood = toDist
       .toSeq
       .forall { case (k, c) => {
@@ -119,9 +132,14 @@ object Upgrade_0_8_3 {
         val oet = RevNameMap.getOrElse(et, et)
         val otet = tet.map(tet => RevNameMap.getOrElse(tet, tet))
         val ok = (oet, otet)
-        (c == fromDist.getOrElse(ok, -1)) 
+        val oc = fromDist.getOrElse(ok, -1)
+        val checkMatch = (c == oc)
+        if (!checkMatch) {
+          logger.info(s"${k} doesn't match: new has ${c}. old has ${oc}.")
+        }
+        checkMatch
       }}
-   
+
     if (!fromGood || !toGood) {
       logger.error("Doesn't match!! There is an import error.")
     } else {
@@ -138,14 +156,14 @@ object Upgrade_0_8_3 {
       s"FromAppId: $fromAppId must be different from toAppId: $toAppId")
 
     require(
-      isEmpty(eventClient, toAppId), 
+      isEmpty(eventClient, toAppId),
       s"Target appId: $toAppId is not empty. Please run " +
       "`pio app data-delete <app_name>` to clean the data before upgrading")
 
 
     logger.info(s"$fromAppId isEmpty: " + isEmpty(eventClient, fromAppId))
-   
-    upgradeCopy(eventClient, fromAppId, toAppId)  
+
+    upgradeCopy(eventClient, fromAppId, toAppId)
 
   }
 

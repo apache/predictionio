@@ -22,6 +22,8 @@ import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
+import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
+import io.prediction.data.storage.hbase.upgrade.CheckDistribution
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
@@ -49,6 +51,7 @@ case class ConsoleArgs(
   app: AppArgs = AppArgs(),
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  upgrade: UpgradeArgs = UpgradeArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -99,6 +102,13 @@ case class EventServerArgs(
   enabled: Boolean = false,
   ip: String = "localhost",
   port: Int = 7070)
+
+case class UpgradeArgs(
+  from: String = "0.0.0",
+  to: String = "0.0.0",
+  oldAppId: Int = 0,
+  newAppId: Int = 0
+)
 
 object Console extends Logging {
   val distFilename = "DIST"
@@ -443,6 +453,25 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "status")
         }
+      note("")
+      cmd("upgrade").
+        text("Upgrade tool").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "upgrade")
+        } children(
+          arg[String]("<from version>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(from = x))
+          } text("The version upgraded from."),
+          arg[String]("<to version>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(to = x))
+          } text("The version upgraded to."),
+          arg[Int]("<old App ID>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(oldAppId = x))
+          } text("Old App ID."),
+          arg[Int]("<new App ID>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(newAppId = x))
+          } text("New App ID.")
+        )
       //note("")
       //cmd("dist").
       //  text("Build an engine at the current directory and create a \n" +
@@ -615,6 +644,8 @@ object Console extends Logging {
           dist(ca)
         case Seq("status") =>
           status(ca)
+        case Seq("upgrade") =>
+          upgrade(ca)
         case Seq("app", "new") =>
           appNew(ca)
         case Seq("app", "list") =>
@@ -657,6 +688,7 @@ object Console extends Logging {
   val helpText = Map(
     "" -> mainHelp,
     "status" -> console.txt.status().toString,
+    "upgrade" -> console.txt.upgrade().toString,
     "version" -> console.txt.version().toString,
     "new" -> console.txt.newCommand().toString,
     "build" -> console.txt.build().toString,
@@ -1237,6 +1269,17 @@ object Console extends Logging {
     println("(sleeping 5 seconds for all messages to show up...)")
     Thread.sleep(5000)
     println("Your system is all ready to go.")
+  }
+
+  def upgrade(ca: ConsoleArgs): Unit = {
+    (ca.upgrade.from, ca.upgrade.to) match {
+      case ("0.8.2", "0.8.3") => {
+        Upgrade_0_8_3.runMain(ca.upgrade.oldAppId, ca.upgrade.newAppId)
+      }
+      case _ =>
+        println(s"Upgrade from version ${ca.upgrade.from} to ${ca.upgrade.to}"
+          + s" is not supported.")
+    }
   }
 
   def coreAssembly(pioHome: String): File = {
