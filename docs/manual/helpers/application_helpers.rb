@@ -2,13 +2,20 @@ module ApplicationHelpers
   def page_title
     if current_page.data.title
       content_tag :h1 do
-        current_page.data.title
+        rendered_title
       end
     else
       content_tag :h1, class: 'missing' do
         'Missing Title'
       end
     end
+  end
+
+  def rendered_title
+    return unless current_page.data.title
+    title = current_page.data.title
+    template = Tilt['erb'].new { title }
+    template.render(self, current_page.data)
   end
 
   def github_url
