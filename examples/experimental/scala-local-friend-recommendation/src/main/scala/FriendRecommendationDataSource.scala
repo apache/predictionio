@@ -4,18 +4,25 @@ import io.prediction.controller._
 import scala.io.Source
 import scala.collection.immutable.HashMap
 
-class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourceParams)
-  extends LDataSource[FriendRecommendationTrainingData, EmptyEvaluationInfo, FriendRecommendationQuery, EmptyActualResult] {
+class FriendRecommendationDataSource (
+  val dsp: FriendRecommendationDataSourceParams
+) extends LDataSource[FriendRecommendationTrainingData, 
+    EmptyEvaluationInfo, FriendRecommendationQuery, EmptyActualResult] {
+
   override
   def readTraining() : FriendRecommendationTrainingData = {
     val (itemIdMap, itemKeyword) = readItem(dsp.itemFilePath)
     val (userIdMap, userKeyword) = readUser(dsp.userKeywordFilePath)
-    val adjArray = readRelationship(dsp.userActionFilePath, userKeyword.size, userIdMap)
-    val trainingRecord = readTrainingRecord(dsp.trainingRecordFilePath, userIdMap, itemIdMap)
-    new FriendRecommendationTrainingData(userIdMap, itemIdMap, userKeyword, itemKeyword, adjArray, trainingRecord)
+    val adjArray = readRelationship(dsp.userActionFilePath, 
+      userKeyword.size, userIdMap)
+    val trainingRecord = readTrainingRecord(dsp.trainingRecordFilePath, 
+      userIdMap, itemIdMap)
+    new FriendRecommendationTrainingData(userIdMap, 
+      itemIdMap, userKeyword, itemKeyword, adjArray, trainingRecord)
   }
 
-  def readItem(file: String) : (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
+  def readItem(file: String) : 
+    (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
     val itemSize = Source.fromFile(file).getLines().size
     val lines = Source.fromFile(file).getLines()
     // An array on Map[keywordId -> weight] values with internal item id index
@@ -38,7 +45,8 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
     (itemIdMap, itemKeyword)
   }
 
-  def readUser(file: String) : (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
+  def readUser(file: String) : 
+    (HashMap[Int, Int], Array[HashMap[Int, Double]]) = {
     val userSize = Source.fromFile(file).getLines().size
     val lines = Source.fromFile(file).getLines()
     // An array on Map[keywordId -> weight] values with internal item id index
@@ -62,7 +70,9 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
     (userIdMap, userKeyword)
   }
 
-  def readRelationship(file: String, userSize: Int, userIdMap: HashMap[Int, Int]) : Array[List[(Int, Int)]] = {
+  def readRelationship(file: String, 
+    userSize: Int, userIdMap: HashMap[Int, Int]) : 
+    Array[List[(Int, Int)]] = {
     val adjArray = new Array[List[(Int, Int)]](userSize)
     val lines = Source.fromFile(file).getLines()
     lines.foreach{
@@ -72,16 +82,20 @@ class FriendRecommendationDataSource (val dsp: FriendRecommendationDataSourcePar
         val srcInternalId = userIdMap(data(0))
         val destInternalId = userIdMap(data(1))
         if (adjArray(srcInternalId) == null) {
-          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)::List()
+          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)
+            ::List()
         } else {
-          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)::adjArray(srcInternalId)
+          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)
+            ::adjArray(srcInternalId)
         }
       }
     }
     adjArray
   }
 
-  def readTrainingRecord(file: String, userIdMap: HashMap[Int, Int], itemIdMap: HashMap[Int, Int]) : Stream[(Int, Int, Boolean)] = {
+  def readTrainingRecord(file: String, 
+    userIdMap: HashMap[Int, Int], itemIdMap: HashMap[Int, Int]) : 
+    Stream[(Int, Int, Boolean)] = {
     val lines = Source.fromFile(file).getLines()
     var trainingRecord: Stream[(Int, Int, Boolean)] = Stream() 
     lines.foreach{
