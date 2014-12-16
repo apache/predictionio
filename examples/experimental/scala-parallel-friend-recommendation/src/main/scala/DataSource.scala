@@ -69,10 +69,11 @@ class ForestFireSamplingDataSource(val dsp: FFSamplingDSParams)
   override
   def readTraining(sc:SparkContext) : TrainingData = {
     val g = GraphLoader.edgeListFile(sc, dsp.graphEdgelistPath)
-    val sampled = Sampling.forestFireSamplingInduced(sc,
-                                                     g,
-                                                     dsp.sampleFraction,
-                                                     dsp.geoParam)
+    val sampled = Sampling.forestFireSamplingInduced(
+                                                  sc,
+                                                  g,
+                                                  dsp.sampleFraction,
+                                                  dsp.geoParam)
 
     val identity = DeltaSimRankRDD.identityMatrix(sc, g.vertices.count())
     new TrainingData(sampled, identity)
