@@ -26,15 +26,15 @@ object DeltaSimRankRDD {
 
     val pairList = prevDelta.toArray
     val kvPairs = pairList.map(pair => {
-        val a = pair._1._1.toInt
-        val b = pair._1._2.toInt
-        val delta = pair._2
-        val b_adj = g.edges.filter(e => e.dstId == b).map(x=>x.srcId)
-        val a_adj = g.edges.filter(e => e.dstId == a).map(x=>x.srcId)
+      val a = pair._1._1.toInt
+      val b = pair._1._2.toInt
+      val delta = pair._2
+      val b_adj = g.edges.filter(e => e.dstId == b).map(x=>x.srcId)
+      val a_adj = g.edges.filter(e => e.dstId == a).map(x=>x.srcId)
 
-        val scorePairs = a_adj.cartesian(b_adj)
-        scorePairs.filter(pair=> pair._1 != pair._2).map(pair => (pair, delta))
-        })
+      val scorePairs = a_adj.cartesian(b_adj)
+      scorePairs.filter(pair=> pair._1 != pair._2).map(pair => (pair, delta))
+      })
 
     var union = kvPairs(0)
     var index = 0
