@@ -83,3 +83,17 @@ Our local algorithm provides two predicted values as below for each user-item pa
 
 1. confidence (how confident the algorithm is to predict that the user will accept the item)
 2. acceptance (when the confidence is high, the algorithm will predict that the user will accept the item)
+
+#####Example *$UserId*-*$ItemId* pairs:
+While "Random" provides a uniformly distributed random result for any query,
+"Keyword Similarity KNN" may generate a zero confidence score for many queries.
+This is due to the sparsity of the keyword space in the given data that many id pairs
+do not have overlapping keywords. Below are six example pairs of *$UserId*-*$ItemId* 
+in the full data set that generates positive scores.
+
+1. 1051216-1774844
+2. 1052586-1774844
+3. 1001726-1775038
+4. 1019789-1775038
+5. 1041986-1774522
+6. 1048438-1774522
