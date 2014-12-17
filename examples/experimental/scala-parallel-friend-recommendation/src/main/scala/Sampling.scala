@@ -50,10 +50,12 @@ object Sampling {
   // Fraction denotes fraction of total graph vertices to sample and geoParam
   // denotes the parameter for geometric distribution, which is used to
   // determine branching factor at each iteration of forest fire process.
-  def forestFireSamplingInduced(sc: SparkContext,
-                               graph: Graph[Int,Int],
-                               fraction: Double,
-                               geoParam: Double = 0.7) = {
+  def forestFireSamplingInduced (
+    sc: SparkContext,
+    graph: Graph[Int,Int],
+    fraction: Double,
+    geoParam: Double = 0.7) =
+  {
     var g = graph
     var e = sortBySrc(g.edges.toArray)
     val targetVertexCount = (graph.vertices.count() * fraction).toInt
@@ -77,9 +79,9 @@ object Sampling {
           })
         val burnFraction = numToSample.toDouble / burnCandidate.count.toDouble
         val burnEdges = burnCandidate.sample(
-                                        false,
-                                        burnFraction,
-                                        Random.nextLong)
+          false,
+          burnFraction,
+          Random.nextLong)
         val neighborVertexIds = burnEdges.map((e:Edge[Int]) => e.dstId)
         sampledVertices = sampledVertices ++ neighborVertexIds.toArray
         burnQueue = burnQueue ++ neighborVertexIds.toArray
@@ -89,12 +91,11 @@ object Sampling {
         }
       }
     }
-    val vertex: Seq[(VertexId, Int)] = sampledVertices.map((v:VertexId) => {
-        (v,1)
-      }).toSeq
-    val edges = graph.edges.filter(e => {
+    val vertex: Seq[(VertexId, Int)] = sampledVertices.map(v => (v,1))
+      .toSeq
+    val edges = graph.edges.filter(e =>
         sampledVertices.contains(e.srcId) && sampledVertices.contains(e.dstId)
-      })
+      )
     Graph(sc.parallelize(vertex), edges)
   }
 
@@ -102,22 +103,22 @@ object Sampling {
   def nodeSampling(sc:SparkContext, graph:Graph[Int,Int], fraction:Double) = {
     val vertices = graph.vertices.sample(false, fraction, Random.nextLong)
     val vertexMap = vertices.collectAsMap()
-    val edges = graph.edges.filter(e => {
+    val edges = graph.edges.filter(e =>
       vertexMap.contains(e.srcId) && vertexMap.contains(e.dstId)
-    })
+    )
     val graph2 = Graph(vertices, edges)
     graph2
   }
 
   // Get all edges with source vertexId of target
   def accumulateEdges(
-                    e:Array[Edge[Int]],
-                    target:VertexId) : ListBuffer[Edge[Int]] = {
+    e:Array[Edge[Int]],
+    target:VertexId) : ListBuffer[Edge[Int]] = 
+  {
     val idx = binarySearchE(e, target)(0, e.size-1)
     var outEdges: ListBuffer[Edge[Int]] = ListBuffer()
-    if (idx == -1) {
+    if (idx == -1)
       return outEdges
-    }
     outEdges.append(e(idx))
     var tIdx = idx+1
     var edge:Edge[Int] = null

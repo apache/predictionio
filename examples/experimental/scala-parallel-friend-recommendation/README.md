@@ -14,7 +14,10 @@ Prerequisite: GraphX package.
 
 Parameter Explained
 -------------------
-datasource - graphEdgelistPath : The edge-list passed to GraphX's graph loader. For efficient memory storage of intermediate SimRank score calculations, the vertex ids should be in a contiguous range from 0 to (#Vertex-1). There is a utility function for re-mapping the vertex Id values : io.prediction.examples.pfriendrecommendation.DeltaSimRankRDD.normalizeGraph.
+datasource - graphEdgelistPath : The edge-list passed to GraphX's graph loader. For efficient memory storage of intermediate SimRank score calculations, the vertex ids should be in a contiguous range from 0 to (#Vertex-1). There is a utility function for re-mapping the vertex Id values : io.prediction.examples.pfriendrecommendation.DeltaSimRankRDD.normalizeGraph. 
+
+The provided DataSource class uses the GraphLoader provided by GraphX. Graphs can be specified by a tab-separated edge list, where each line specifies one edge.
+The the user can refer to the provided example edge list at `$EXAMPLE_HOME/data/edge_list_small.txt` for a graph specification with 10 vertices and 20 edges.
 
 algorithms - numIterations : Number of iterations for calculating SimRank. Typical recommended is 6-8 in various papers (e.g. http://www-cs-students.stanford.edu/~glenj/simrank.pdf)
 
@@ -36,6 +39,6 @@ an additional parameter, geoParam, which is the parameter for a geometric
 distribution that is used within forest fire sampling.
 
 ### Example query 
-curl -H "Content-Type: application/json" -d '{"item1":0, "item2":2}' http://localhost:8000/queries.json
+curl -H "Content-Type: application/json" -d '{"item1":10, "item2":9}' http://localhost:8000/queries.json
 
-This queries the SimRank score between nodes with ids 0 and 2,
+This queries the SimRank score between nodes with ids 10 and 9.

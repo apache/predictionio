@@ -15,11 +15,11 @@ object DeltaSimRankRDD {
   var numNodes:Int = 0
 
   def calculateNthIter(
-                     numNodes:Int,
-                     g:Graph[Int, Int],
-                     prevDelta:RDD[((VertexId,VertexId),Double)],
-                     outDegreeMap:scala.collection.Map[VertexId,Long]
-                     ) : RDD[((VertexId,VertexId), Double)] = 
+    numNodes:Int,
+    g:Graph[Int, Int],
+    prevDelta:RDD[((VertexId,VertexId),Double)],
+    outDegreeMap:scala.collection.Map[VertexId,Long])
+    : RDD[((VertexId,VertexId), Double)] =
   {
     // No changes in last iteration -> no changes this iteration.
     if (prevDelta.count() == 0)
@@ -43,9 +43,9 @@ object DeltaSimRankRDD {
       union = union ++ kvPairs(index)
 
     val newDelta = union.reduceByKey(_ + _)
-      .map(k => {
-          (k._1, k._2*decay/(outDegreeMap(k._1._1) + outDegreeMap(k._1._2)))
-      })
+      .map(k =>
+        (k._1, k._2*decay/(outDegreeMap(k._1._1) + outDegreeMap(k._1._2)))
+      )
     newDelta
   }
 
@@ -68,9 +68,9 @@ object DeltaSimRankRDD {
   }
 
   def joinDelta(
-              prevIter:RDD[(Long, Double)],
-              numCols:Int,
-              delta:RDD[((VertexId,VertexId), Double)]) : RDD[(Long,Double)] =
+    prevIter:RDD[(Long, Double)],
+    numCols:Int,
+    delta:RDD[((VertexId,VertexId), Double)]) : RDD[(Long,Double)] =
   {
     val deltaToIndex:RDD[(Long,Double)] = delta.map(x => {
       val index = x._1._1*numCols + x._1._2
@@ -97,10 +97,10 @@ object DeltaSimRankRDD {
   }
 
   def compute(
-            g:Graph[Int,Int],
-            numIterations:Int,
-            identityMatrix:RDD[(VertexId,Double)],
-            newDecay:Double) : RDD[(VertexId,Double)] =
+    g:Graph[Int,Int],
+    numIterations:Int,
+    identityMatrix:RDD[(VertexId,Double)],
+    newDecay:Double) : RDD[(VertexId,Double)] =
   {
     numNodes = g.vertices.count().toInt
     decay = newDecay
