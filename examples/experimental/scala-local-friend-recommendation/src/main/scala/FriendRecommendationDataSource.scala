@@ -15,8 +15,11 @@ class FriendRecommendationDataSource (
     val (userIdMap, userKeyword) = readUser(dsp.userKeywordFilePath)
     val adjArray = readRelationship(dsp.userActionFilePath, 
       userKeyword.size, userIdMap)
-    val trainingRecord = readTrainingRecord(dsp.trainingRecordFilePath, 
-      userIdMap, itemIdMap)
+    // Originally for the purpose of training an acceptance threshold
+    // Commented out here due to the high time and space complexity of training
+    // val trainingRecord = readTrainingRecord(dsp.trainingRecordFilePath, 
+    //   userIdMap, itemIdMap)
+    val trainingRecord = null
     new FriendRecommendationTrainingData(userIdMap, 
       itemIdMap, userKeyword, itemKeyword, adjArray, trainingRecord)
   }
@@ -82,11 +85,11 @@ class FriendRecommendationDataSource (
         val srcInternalId = userIdMap(data(0))
         val destInternalId = userIdMap(data(1))
         if (adjArray(srcInternalId) == null) {
-          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)
-            ::List()
+          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)::
+            List()
         } else {
-          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)
-            ::adjArray(srcInternalId)
+          adjArray(srcInternalId) = (destInternalId, data.slice(2,5).sum)::
+            adjArray(srcInternalId)
         }
       }
     }
