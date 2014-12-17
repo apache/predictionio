@@ -23,6 +23,10 @@ algorithms - numIterations : Number of iterations for calculating SimRank. Typic
 
 algorithms - decay : Decay constant used in calculating incremental changes to SimRank
 
+### Using SimRank to Recommend Similar Items
+SimRank's intuition says two items are similar if they have similar neighbor items. In a Facebook friend recommendation scenario, neighbors to a person can be that person's friends. Two people in the same circle of friends will have higher SimRank compared to two people in different friend circles.
+For example, SimRank(Obama, George Bush) is high since they have many mutual president friends and belong to shared friend networks, whereas SimRank(Obama, Usher) is low since they have few mutual friends or friend networks.
+
 ### Configurable Datasources for Sampling
 Three data sources can be configured from the engine factory : 
 
