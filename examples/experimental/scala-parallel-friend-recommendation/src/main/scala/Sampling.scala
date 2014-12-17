@@ -149,7 +149,8 @@ object Sampling {
 
   // Binary search to find an edge with target vertexId
   def binarySearchE(list: Array[Edge[Int]], target: VertexId)
-                   (start: Int=0, end: Int=list.length-1): Int = {
+    (start: Int=0, end: Int=list.length-1): Int = 
+  {
     if (start>end) 
       return -1
     val mid = start + (end-start+1)/2
