@@ -97,3 +97,14 @@ in the full data set that generates positive scores.
 4. 1019789-1775038
 5. 1041986-1774522
 6. 1048438-1774522
+ 
+#####Threshold training for "Keyword Similarity KNN":
+When the confidence is higher than a threshold, 
+the algorithm will predict that the user will accept the item.
+Instead of mannually setting the threshold, 
+perceptron was implemented to train the threshold automatically.
+However, due to the high complexity in time and space, 
+this part is commented out. 
+Users can change the corresponding parts in FriendRecommendationDataSource.scala
+and eywordSimilarityAlgorithm.scala 
+with comments about "training an acceptance threshold".
