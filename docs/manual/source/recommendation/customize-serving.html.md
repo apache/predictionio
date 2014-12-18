@@ -160,7 +160,7 @@ Optionally, you may want to take the hardcoded path
 (`./data/sample_disabled_items.txt`) away from the source code.
 
 PredictionIO offers `ServingParams` so you can read variable values from
-`engine.json` instead. Prediction.IO transforms the JSON object specified in
+`engine.json` instead. PredictionIO transforms the JSON object specified in
 `engine.json`'s `serving` field into the `ServingParams` class.
 
 Modify `src/main/scala/Serving.scala` again in the *MyRecommendation*

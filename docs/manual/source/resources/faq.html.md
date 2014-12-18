@@ -1,11 +1,11 @@
 ---
 title: Frequently Asked Questions
 ---
-## Using Prediction.IO
+## Using PredictionIO
 ### Q: How to increase Spark driver program and worker executor memory size?
-In general, the Prediction.IO `bin/pio` scripts wraps around Spark's `spark-submit` 
+In general, the PredictionIO `bin/pio` scripts wraps around Spark's `spark-submit`
 script. You can specify a lot of Spark configurations (i.e. executor memory, cores, master
-url, etc.) with it. You can supply these as pass-through arguments at the end of 
+url, etc.) with it. You can supply these as pass-through arguments at the end of
 `bin/pio` command.
 
 For example, the follow command set the Spark master to `spark://localhost:7077`
@@ -27,7 +27,7 @@ $ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
 You can run `$ pio status` from the terminal and it will return the status of various components that PredictionIO depends on.
 
 
-## Building Prediction.IO
+## Building PredictionIO
 ### Q: How to resolve "Error: Could not find or load main class io.prediction.tools.Console" after ./make_distribution.sh?
 
 ```
@@ -55,20 +55,20 @@ PredictionIO/assembly$ rm pio-assembly-0.8.1-SNAPSHOT.jar
 
 ### Q: How to resolve ".......[error] (data/compile:compile) java.lang.AssertionError: assertion failed: java.lang.AutoCloseable" when ./make_distribution.sh?
 
-Prediction.IO only support Java 7 or later. Please make sure you have the
+PredictionIO only support Java 7 or later. Please make sure you have the
 correct Java version with the command:
 
 ```
 $ javac -version
 ```
 
-### Q: What's the difference between P- and L- prefixed classes and functions? 
+### Q: What's the difference between P- and L- prefixed classes and functions?
 
-Prediction.IO v0.8 is built on the top of Spark, a massively scalable programming framework. A spark algorithm is different from conventional single machine algorithm in a way that spark algorithms use the [RDD](http://spark.apache.org/docs/1.0.1/programming-guide.html#resilient-distributed-datasets-rdds) abstraction as its primary data type.
+PredictionIO v0.8 is built on the top of Spark, a massively scalable programming framework. A spark algorithm is different from conventional single machine algorithm in a way that spark algorithms use the [RDD](http://spark.apache.org/docs/1.0.1/programming-guide.html#resilient-distributed-datasets-rdds) abstraction as its primary data type.
 
 PredictionIO framework natively support both RDD-based algorithms and traditional single-machine algorithms. For controllers prefixed by "P" (i.e. PJavaDataSource, PJavaAlgorithm), their data include RDD abstraction; For "L" controllers, they are traditional single machine algorithms.
 
- 
+
 
 If you have other questions, you can search or post on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user) or [email the
