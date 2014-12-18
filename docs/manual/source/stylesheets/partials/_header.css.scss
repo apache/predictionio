@@ -3,13 +3,15 @@
   text-align: right;
   background-color: $header-background-color;
   border-bottom: 1px solid $border-color;
+  display: inline-block;
+  width: 100%;
 
   .logo {
     width: 200px;
     height: 22px;
     display: block;
     background-image: url(/images/logos/header.png);
-    margin: 34px 0 34px 25px;
+    margin: 8px 0 0 25px;
     float: left;
   }
 
@@ -17,10 +19,14 @@
     text-align: center;
     float: right;
     display: none;
-    margin: 25px 25px 25px 0;
+    margin: 5px 25px 25px 0;
     @include large {
       display: block;
     }
+  }
+
+  .github {
+    padding: 2px 17px 0 0;
   }
 }
 
