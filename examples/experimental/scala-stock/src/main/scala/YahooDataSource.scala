@@ -3,7 +3,6 @@ package io.prediction.examples.stock
 // YahooDataSource reads PredictionIO event store directly.
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.Events
 import io.prediction.data.storage.Storage
 import io.prediction.data.view.LBatchView
 import io.prediction.data.storage.DataMap
@@ -288,6 +287,7 @@ class YahooDataSource(val params: YahooDataSource.Params)
       _active = active)
   }
 
+  override
   def read(sc: SparkContext)
   : Seq[(RDD[TrainingData], DataParams, RDD[(QueryDate, AnyRef)])] = {
     val historicalSet = getHistoricalDataSet()
@@ -451,13 +451,13 @@ object YahooDataSourceRun {
       )),
       //algorithmParamsList = Seq(("", momentumParams)),
       algorithmParamsList = Seq(("", RegressionStrategyParams(Seq[(String, BaseIndicator)](
-        ("RSI1", new RSIIndicator(RsiPeriod=1)), 
-        ("RSI5", new RSIIndicator(RsiPeriod=5)), 
-        ("RSI22", new RSIIndicator(RsiPeriod=22))), 
+        ("RSI1", new RSIIndicator(rsiPeriod=1)), 
+        ("RSI5", new RSIIndicator(rsiPeriod=5)), 
+        ("RSI22", new RSIIndicator(rsiPeriod=22))), 
       200))),
-      servingClassOpt = Some(FirstServing(classOf[EmptyStrategy])),
-      metricsClassOpt = Some(classOf[BacktestingMetrics]),
-      metricsParams = metricsParams,
+      servingClassOpt = Some(LFirstServing(classOf[EmptyStrategy])),
+      evaluatorClassOpt = Some(classOf[BacktestingEvaluator]),
+      evaluatorParams = metricsParams,
       params = WorkflowParams(
         verbose = 0,
         saveModel = false,
