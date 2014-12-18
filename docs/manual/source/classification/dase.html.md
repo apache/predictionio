@@ -135,7 +135,9 @@ In ***engine.json***:
 {
   ...
   "datasource": {
-    "appId": 2
+    "params": {
+      "appId": 2
+    }
   },
   ...
 }

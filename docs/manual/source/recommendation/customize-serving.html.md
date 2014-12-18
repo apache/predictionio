@@ -92,7 +92,9 @@ Make sure the `appId` defined in the file `engine.json` match your *App ID*:
 ```
 ...
 "datasource": {
-  "appId": 1
+  "params": {
+    "appId": 1
+  }
 },
 ...
 ```
@@ -199,7 +201,9 @@ under the hood):
 {
   ...
   "serving": {
-    "filepath": "./data/sample_disabled_items.txt"
+    "params": {
+      "filepath": "./data/sample_disabled_items.txt"
+    }
   },
   ...
 }

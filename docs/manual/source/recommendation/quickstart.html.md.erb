@@ -287,7 +287,9 @@ Under the directory, you should find an `engine.json` file; this is where you sp
 ```
 ...
 "datasource": {
-  "appId": 1
+  "params" : {
+    "appId": 1
+  }
 },
 ...
 ```
@@ -400,7 +402,7 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
   </div>
 </div>
 
-*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. 
+*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`.
 
 
 

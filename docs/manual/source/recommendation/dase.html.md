@@ -153,7 +153,9 @@ In ***engine.json***:
 {
   ...
   "datasource": {
-    "appId": 1
+    "params" : {
+      "appId": 1
+    }
   },
   ...
 }

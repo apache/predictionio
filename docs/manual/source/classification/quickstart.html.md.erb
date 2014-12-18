@@ -86,7 +86,7 @@ making a HTTP request or through the `EventClient` of an SDK.
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
-  
+
 ```python
 import predictionio
 
@@ -399,7 +399,9 @@ Now you can deploy the engine. Make sure the `appId` defined in the file
 ```
 ...
 "datasource": {
-  "appId": 2
+  "params": {
+    "appId": 2
+  }
 },
 ...
 ```
@@ -516,7 +518,7 @@ Similarly, to predict the label (i.e. *plan* in this case) of a user with
 attr0=4, attr1=3 and attr2=8, you send this JSON `{ "features": [4, 3, 8] }` to
 the deployed engine and it will return a JSON of the predicted plan.
 
-*MyClassification* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. 
+*MyClassification* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`.
 
 
 Next, we are going to take a look at the engine

@@ -3,10 +3,14 @@
   "description": "Default settings",
   "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
-    "appId": 1
+    "params" : {
+      "appId": 1
+    }
   },
   "preparator": {
-    "filepath": "./data/sample_not_train_data.txt"
+    "params": {
+      "filepath": "./data/sample_not_train_data.txt"
+    }
   },
   "algorithms": [
     {

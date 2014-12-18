@@ -85,7 +85,9 @@ Make sure the `appId` defined in the file `engine.json` match your *App ID*:
 ```
 ...
 "datasource": {
-  "appId": 1
+  "params" : {
+    "appId": 1
+  }
 },
 ...
 ```
@@ -163,7 +165,9 @@ In `engine.json`, you define the parameters `filepath` for the Data Preparator:
 {
   ...
   "preparator": {
-    "filepath": "./data/sample_not_train_data.txt"
+    "params": {
+      "filepath": "./data/sample_not_train_data.txt"
+    }
   },
   ...
 }
