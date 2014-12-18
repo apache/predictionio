@@ -3,7 +3,6 @@ package io.prediction.examples.stock
 // YahooDataSource reads PredictionIO event store directly.
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.Events
 import io.prediction.data.storage.Storage
 import io.prediction.data.view.LBatchView
 import io.prediction.data.storage.DataMap
@@ -426,7 +425,7 @@ object YahooDataSourceRun {
     // Make sure you have a lot of memory.
     // --driver-memory 12G
 
-    //val dsp = PredefinedDSP.BigSP500
+    // val dsp = PredefinedDSP.BigSP500
     val dsp = PredefinedDSP.SmallSP500
     //val dsp = PredefinedDSP.Test
 
@@ -435,7 +434,7 @@ object YahooDataSourceRun {
     //val x =  Series(Vec(1,2,3))
     //println(x)
 
-    val evaluatorParams = BacktestingParams(
+    val metricsParams = BacktestingParams(
       enterThreshold = 0.01,
       exitThreshold = 0.0,
       maxPositions = 10//,
@@ -451,10 +450,14 @@ object YahooDataSourceRun {
         "" -> classOf[RegressionStrategy]
       )),
       //algorithmParamsList = Seq(("", momentumParams)),
-      algorithmParamsList = Seq(("", EmptyParams())),
+      algorithmParamsList = Seq(("", RegressionStrategyParams(Seq[(String, BaseIndicator)](
+        ("RSI1", new RSIIndicator(rsiPeriod=1)), 
+        ("RSI5", new RSIIndicator(rsiPeriod=5)), 
+        ("RSI22", new RSIIndicator(rsiPeriod=22))), 
+      200))),
       servingClassOpt = Some(LFirstServing(classOf[EmptyStrategy])),
       evaluatorClassOpt = Some(classOf[BacktestingEvaluator]),
-      evaluatorParams = evaluatorParams,
+      evaluatorParams = metricsParams,
       params = WorkflowParams(
         verbose = 0,
         saveModel = false,
