@@ -54,28 +54,40 @@ import io.prediction.core.BaseServing
   * @group Engine
   */
 class Engine[TD, EI, PD, Q, P, A](
-    val dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
-    val preparatorClass: Class[_ <: BasePreparator[TD, PD]],
+    val dataSourceClassMap: Map[String,
+      Class[_ <: BaseDataSource[TD, EI, Q, A]]],
+    val preparatorClassMap: Map[String, Class[_ <: BasePreparator[TD, PD]]],
     val algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
-    val servingClass: Class[_ <: BaseServing[Q, P]])
+    val servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]])
   extends Serializable {
+
+  def this(
+    dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
+    preparatorClass: Class[_ <: BasePreparator[TD, PD]],
+    algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
+    servingClass: Class[_ <: BaseServing[Q, P]]) = this(
+      Map("" -> dataSourceClass),
+      Map("" -> preparatorClass),
+      algorithmClassMap,
+      Map("" -> servingClass)
+    )
 
   /** Returns a new Engine instnace. Mimmic case class's copy method behavior.
     */
   def copy(
-    dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]]
-      = dataSourceClass,
-    preparatorClass: Class[_ <: BasePreparator[TD, PD]]
-      = preparatorClass,
+    dataSourceClassMap: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]
+      = dataSourceClassMap,
+    preparatorClassMap: Map[String, Class[_ <: BasePreparator[TD, PD]]]
+      = preparatorClassMap,
     algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]
       = algorithmClassMap,
-    servingClass: Class[_ <: BaseServing[Q, P]]
-      = servingClass): Engine[TD, EI, PD, Q, P, A] = {
+    servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]]
+      = servingClassMap): Engine[TD, EI, PD, Q, P, A] = {
     new Engine(
-      dataSourceClass,
-      preparatorClass,
+      dataSourceClassMap,
+      preparatorClassMap,
       algorithmClassMap,
-      servingClass)
+      servingClassMap)
   }
 }
 
@@ -88,11 +100,24 @@ class Engine[TD, EI, PD, Q, P, A](
   * @group Engine
   */
 class EngineParams(
-    val dataSourceParams: Params = EmptyParams(),
-    val preparatorParams: Params = EmptyParams(),
+    val dataSourceParams: (String, Params) = ("", EmptyParams()),
+    val preparatorParams: (String, Params) = ("", EmptyParams()),
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
-    val servingParams: Params = EmptyParams())
-  extends Serializable
+    val servingParams: (String, Params) = ("", EmptyParams()))
+  extends Serializable {
+    def this(
+      dataSourceParams: Params,
+      preparatorParams: Params,
+      algorithmParamsList: Seq[(String, Params)],
+      servingParams: Params
+    ) = this(
+      ("", dataSourceParams),
+      ("", preparatorParams),
+      algorithmParamsList,
+      ("", servingParams)
+    )
+
+  }
 
 /** SimpleEngine has only one algorithm, and uses default preparator and serving
   * layer. Current default preparator is `IdentityPreparator` and serving is
@@ -127,7 +152,7 @@ class SimpleEngineParams(
     dataSourceParams: Params = EmptyParams(),
     algorithmParams: Params = EmptyParams())
   extends EngineParams(
-    dataSourceParams = dataSourceParams,
+    dataSourceParams = ("", dataSourceParams),
     algorithmParamsList = Seq(("", algorithmParams)))
 
 /** If you intend to let PredictionIO create workflow and deploy serving

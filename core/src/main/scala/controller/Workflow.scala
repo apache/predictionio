@@ -86,13 +86,13 @@ object Workflow {
       evaluatorParams: Params = EmptyParams()) {
 
     run(
-      dataSourceClassOpt = Some(engine.dataSourceClass),
+      dataSourceClassMapOpt = Some(engine.dataSourceClassMap),
       dataSourceParams = engineParams.dataSourceParams,
-      preparatorClassOpt = Some(engine.preparatorClass),
+      preparatorClassMapOpt = Some(engine.preparatorClassMap),
       preparatorParams = engineParams.preparatorParams,
       algorithmClassMapOpt = Some(engine.algorithmClassMap),
       algorithmParamsList = engineParams.algorithmParamsList,
-      servingClassOpt = Some(engine.servingClass),
+      servingClassMapOpt = Some(engine.servingClassMap),
       servingParams = engineParams.servingParams,
       evaluatorClassOpt = evaluatorClassOpt,
       evaluatorParams = evaluatorParams,
@@ -128,19 +128,19 @@ object Workflow {
       EI, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
-      dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[TD, EI, Q, A]]] = None,
-      dataSourceParams: Params = EmptyParams(),
-      preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
-      preparatorParams: Params = EmptyParams(),
+      dataSourceClassMapOpt
+        : Option[Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]] = None,
+      dataSourceParams: (String, Params) = ("", EmptyParams()),
+      preparatorClassMapOpt
+        : Option[Map[String, Class[_ <: BasePreparator[TD, PD]]]] = None,
+      preparatorParams: (String, Params) = ("", EmptyParams()),
       algorithmClassMapOpt
         : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[Q, P]]]
+      servingClassMapOpt: Option[Map[String, Class[_ <: BaseServing[Q, P]]]]
         = None,
-      servingParams: Params = EmptyParams(),
+      servingParams: (String, Params) = ("", EmptyParams()),
       evaluatorClassOpt
         : Option[Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]]]
         = None,
@@ -149,10 +149,10 @@ object Workflow {
     ) {
 
     CoreWorkflow.runTypeless(
-        dataSourceClassOpt, dataSourceParams,
-        preparatorClassOpt, preparatorParams,
+        dataSourceClassMapOpt, dataSourceParams,
+        preparatorClassMapOpt, preparatorParams,
         algorithmClassMapOpt, algorithmParamsList,
-        servingClassOpt, servingParams,
+        servingClassMapOpt, servingParams,
         evaluatorClassOpt, evaluatorParams,
         params = params
       )

@@ -196,30 +196,61 @@ object CreateServer extends Logging {
       Doer(engine.algorithmClassMap(n), p)
     }
 
-    val servingParams =
+    val servingParamsWithName: (String, Params) = {
+      val (name, params) = read[(String, JValue)](engineInstance.servingParams)
+      val extractedParams = WorkflowUtils.extractParams(
+        engineLanguage,
+        compact(render(params)),
+        engine.servingClassMap(name))
+      (name, extractedParams)
+    }
+
+    /*val servingParams =
       if (engineInstance.servingParams == "")
         EmptyParams()
       else
         WorkflowUtils.extractParams(
           engineLanguage,
           engineInstance.servingParams,
-          engine.servingClass)
-    val serving = Doer(engine.servingClass, servingParams)
+          engine.servingClass) */
+    val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
+      servingParamsWithName._2)
 
     val sparkContext =
       Option(WorkflowContext(engineInstance.batch, engineInstance.env)).
         filter(_ => algorithms.exists(_.isParallel))
-    val dataSourceParams = WorkflowUtils.extractParams(
+    /*val dataSourceParams = WorkflowUtils.extractParams(
       engineLanguage,
       engineInstance.dataSourceParams,
-      engine.dataSourceClass)
-    val preparatorParams = WorkflowUtils.extractParams(
+      engine.dataSourceClass)*/
+    val dataSourceParamsWithName: (String, Params) = {
+      val (name, params) =
+        read[(String, JValue)](engineInstance.dataSourceParams)
+      val extractedParams = WorkflowUtils.extractParams(
+        engineLanguage,
+        compact(render(params)),
+        engine.dataSourceClassMap(name))
+      (name, extractedParams)
+    }
+    /*val preparatorParams = WorkflowUtils.extractParams(
       engineLanguage,
       engineInstance.preparatorParams,
-      engine.preparatorClass)
+      engine.preparatorClass)*/
+    val preparatorParamsWithName: (String, Params) = {
+      val (name, params) =
+        read[(String, JValue)](engineInstance.preparatorParams)      
+      val extractedParams = WorkflowUtils.extractParams(
+        engineLanguage,
+        compact(render(params)),
+        engine.preparatorClassMap(name))
+      (name, extractedParams)
+    }
+
     val evalPreparedMap = sparkContext map { sc =>
       logger.info("Data Source")
-      val dataSource = Doer(engine.dataSourceClass, dataSourceParams)
+      val dataSource = Doer(
+        engine.dataSourceClassMap(dataSourceParamsWithName._1),
+        dataSourceParamsWithName._2)
       val evalParamsDataMap
       : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
         .readBase(sc)
@@ -230,7 +261,9 @@ object CreateServer extends Logging {
         case(ei, e) => (ei -> (e._1, e._3))
       }
       logger.info("Preparator")
-      val preparator = Doer(engine.preparatorClass, preparatorParams)
+      val preparator = Doer(
+        engine.preparatorClassMap(preparatorParamsWithName._1),
+        preparatorParamsWithName._2)
 
       val evalPreparedMap: Map[EI, PD] = evalDataMap
       .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
@@ -280,13 +313,13 @@ object CreateServer extends Logging {
         engine,
         engineLanguage,
         manifest,
-        dataSourceParams,
-        preparatorParams,
+        dataSourceParamsWithName._2,
+        preparatorParamsWithName._2,
         algorithms,
         algorithmsParams,
         models,
         serving,
-        servingParams))
+        servingParamsWithName._2))
   }
 }
 

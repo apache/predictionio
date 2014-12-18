@@ -65,8 +65,41 @@ object CreateWorkflow extends Logging {
     debug: Boolean = false)
 
   case class AlgorithmParams(name: String, params: JValue)
+  case class NameParams(name: String, params: Option[JValue])
 
-  implicit lazy val formats = Utils.json4sDefaultFormats
+  def extractNameParams(jv: JValue): NameParams = {
+    val nameOpt = (jv \ "name").extract[Option[String]]
+    val paramsOpt = (jv \ "params").extract[Option[JValue]]
+
+    if (nameOpt.isEmpty && paramsOpt.isEmpty) {
+      error(s"Unable to find 'name' or 'params' fields in ${jv}")
+      sys.exit(1)
+    }
+
+    if (nameOpt.isEmpty)
+      info(s"No 'name' is found. Default empty String wil be used.")
+
+    if (paramsOpt.isEmpty)
+      info(s"No 'params' is found. Default EmptyParams will be used.")
+
+    NameParams(
+      name = nameOpt.getOrElse(""),
+      params = paramsOpt
+    )
+  }
+  class NameParamsSerializer extends CustomSerializer[NameParams](format => (
+    {
+      case jv: JValue => extractNameParams(jv)
+    },
+    {
+      case x: NameParams =>
+        JObject(JField("name", JString(x.name)) ::
+          JField("params", x.params.getOrElse(JNothing)) :: Nil)
+    }
+  ))
+
+  implicit lazy val formats = Utils.json4sDefaultFormats +
+    new NameParamsSerializer
 
   val hadoopConf = new Configuration
   val hdfs = FileSystem.get(hadoopConf)
@@ -186,29 +219,80 @@ object CreateWorkflow extends Logging {
       //    engineLanguage,
       //    stringFromFile(wfc.jsonBasePath, p),
       //    engine.dataSourceClass)).getOrElse(EmptyParams())
-      val dataSourceParams = variantJson findField {
+      info(s"Extracting datasource params...")
+      val dataSourceParams: (String, Params) = variantJson findField {
         case JField("datasource", _) => true
         case _ => false
       } map { jv =>
-        WorkflowUtils.extractParams(
-          engineLanguage,
-          compact(render(jv._2)),
-          engine.dataSourceClass)
-      } getOrElse EmptyParams()
+        val np: NameParams = try {
+          jv._2.extract[NameParams]
+        } catch {
+          case e: Exception => {
+            error(s"Unable to extract datasource name and params ${jv}")
+            throw e
+          }
+        }
+        val extractedParams = np.params.map { p =>
+          try {
+            if (!engine.dataSourceClassMap.contains(np.name)) {
+              error(s"Unable to find datasource class with name '${np.name}'" +
+                " defined in Engine.")
+              sys.exit(1)
+            }
+            WorkflowUtils.extractParams(
+              engineLanguage,
+              compact(render(p)),
+              engine.dataSourceClassMap(np.name))
+          } catch {
+            case e: Exception => {
+              error(s"Unable to extract datasource params ${p}")
+              throw e
+            }
+          }
+        }.getOrElse(EmptyParams())
+
+        (np.name, extractedParams)
+      } getOrElse ("", EmptyParams())
+      info(s"datasource: ${dataSourceParams}")
       //val preparatorParams = wfc.preparatorParamsJsonPath.map(p =>
       //  WorkflowUtils.extractParams(
       //    engineLanguage,
       //    stringFromFile(wfc.jsonBasePath, p),
       //    engine.preparatorClass)).getOrElse(EmptyParams())
-      val preparatorParams = variantJson findField {
+      info(s"Extracting preparator params...")
+      val preparatorParams: (String, Params) = variantJson findField {
         case JField("preparator", _) => true
         case _ => false
       } map { jv =>
-        WorkflowUtils.extractParams(
-          engineLanguage,
-          compact(render(jv._2)),
-          engine.preparatorClass)
-      } getOrElse EmptyParams()
+        val np: NameParams = try {
+          jv._2.extract[NameParams]
+        } catch {
+          case e: Exception => {
+            error(s"Unable to extract preparator name and params ${jv}")
+            throw e
+          }
+        }
+        val extractedParams = np.params.map { p =>
+          try {
+            if (!engine.preparatorClassMap.contains(np.name)) {
+              error(s"Unable to find preparator class with name '${np.name}'" +
+                " defined in Engine.")
+              sys.exit(1)
+            }
+            WorkflowUtils.extractParams(
+              engineLanguage,
+              compact(render(p)),
+              engine.preparatorClassMap(np.name))
+          } catch {
+            case e: Exception => {
+              error(s"Unable to extract preparator params ${p}")
+              throw e
+            }
+          }
+        }.getOrElse(EmptyParams())
+        (np.name, extractedParams)
+      } getOrElse ("", EmptyParams())
+      info(s"preparator: ${preparatorParams}")
       //val algorithmsParams: Seq[(String, Params)] =
       //  wfc.algorithmsParamsJsonPath.map { p =>
       //    val algorithmsParamsJson = parse(stringFromFile(wfc.jsonBasePath, p))
@@ -251,15 +335,41 @@ object CreateWorkflow extends Logging {
       //    engineLanguage,
       //    stringFromFile(wfc.jsonBasePath, p),
       //    engine.servingClass)).getOrElse(EmptyParams())
-      val servingParams = variantJson findField {
+      info(s"Extracting serving params...")
+      val servingParams: (String, Params) = variantJson findField {
         case JField("serving", _) => true
         case _ => false
       } map { jv =>
-        WorkflowUtils.extractParams(
-          engineLanguage,
-          compact(render(jv._2)),
-          engine.servingClass)
-      } getOrElse EmptyParams()
+        val np: NameParams = try {
+          jv._2.extract[NameParams]
+        } catch {
+          case e: Exception => {
+            error(s"Unable to extract serving name and params ${jv}")
+            throw e
+          }
+        }
+        val extractedParams = np.params.map { p =>
+          try {
+            if (!engine.servingClassMap.contains(np.name)) {
+              error(s"Unable to find serving class with name '${np.name}'" +
+                " defined in Engine.")
+              sys.exit(1)
+            }
+            WorkflowUtils.extractParams(
+              engineLanguage,
+              compact(render(p)),
+              engine.servingClassMap(np.name))
+          } catch {
+            case e: Exception => {
+              error(s"Unable to extract serving params ${p}")
+              throw e
+            }
+          }
+        }.getOrElse(EmptyParams())
+        (np.name, extractedParams)
+      } getOrElse ("", EmptyParams())
+      info(s"serving: ${servingParams}")
+
       val evaluatorParams = wfc.evaluatorParamsJsonPath.map(p =>
         if (evaluator.isEmpty)
           EmptyParams()

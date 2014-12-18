@@ -48,8 +48,8 @@ object PEventsDataSourceRunner {
     )
 
     Workflow.run(
-      dataSourceClassOpt = Some(classOf[PEventsDataSource]),
-      dataSourceParams = dsp,
+      dataSourceClassMapOpt = Some(Map("" -> classOf[PEventsDataSource])),
+      dataSourceParams = ("", dsp),
       params = WorkflowParams(
         batch = "Itemsim PEventsDataSource",
         verbose = 3

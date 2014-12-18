@@ -3,7 +3,9 @@
   "description": "Default settings",
   "engineFactory": "org.template.classification.ClassificationEngine",
   "datasource": {
-    "appId": 2
+    "params": {
+      "appId": 2
+    }
   },
   "algorithms": [
     {

@@ -76,13 +76,13 @@ object JavaWorkflow {
       params: WorkflowParams
     ) {
     JavaCoreWorkflow.run(
-      dataSourceClass = engine.dataSourceClass,
+      dataSourceClassMap = engine.dataSourceClassMap,
       dataSourceParams = engineParams.dataSourceParams,
-      preparatorClass = engine.preparatorClass,
+      preparatorClassMap = engine.preparatorClassMap,
       preparatorParams = engineParams.preparatorParams,
       algorithmClassMap = engine.algorithmClassMap,
       algorithmParamsList = engineParams.algorithmParamsList,
-      servingClass = engine.servingClass,
+      servingClassMap = engine.servingClassMap,
       servingParams = engineParams.servingParams,
       evaluatorClass = evaluatorClass,
       evaluatorParams = evaluatorParams,

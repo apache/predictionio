@@ -289,13 +289,13 @@ object CoreWorkflow {
     runTypeless(
       env = env,
       params = params,
-      dataSourceClassOpt = Some(engine.dataSourceClass),
+      dataSourceClassMapOpt = Some(engine.dataSourceClassMap),
       dataSourceParams = engineParams.dataSourceParams,
-      preparatorClassOpt = Some(engine.preparatorClass),
+      preparatorClassMapOpt = Some(engine.preparatorClassMap),
       preparatorParams = engineParams.preparatorParams,
       algorithmClassMapOpt = Some(engine.algorithmClassMap),
       algorithmParamsList = engineParams.algorithmParamsList,
-      servingClassOpt = Some(engine.servingClass),
+      servingClassMapOpt = Some(engine.servingClassMap),
       servingParams = engineParams.servingParams,
       evaluatorClassOpt = (if (evaluator == null) None else Some(evaluator.getClass)),
       evaluatorParams = evaluatorParams,
@@ -313,19 +313,19 @@ object CoreWorkflow {
       MEI, MQ, MP, MA,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
-      dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[TD, EI, Q, A]]] = None,
-      dataSourceParams: Params = EmptyParams(),
-      preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
-      preparatorParams: Params = EmptyParams(),
+      dataSourceClassMapOpt
+        : Option[Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]] = None,
+      dataSourceParams: (String, Params) = ("", EmptyParams()),
+      preparatorClassMapOpt
+        : Option[Map[String, Class[_ <: BasePreparator[TD, PD]]]] = None,
+      preparatorParams: (String, Params) = ("", EmptyParams()),
       algorithmClassMapOpt
         : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[Q, P]]]
+      servingClassMapOpt: Option[Map[String, Class[_ <: BaseServing[Q, P]]]]
         = None,
-      servingParams: Params = EmptyParams(),
+      servingParams: (String, Params) = ("", EmptyParams()),
       evaluatorClassOpt
         : Option[Class[_ <: BaseEvaluator[MEI, MQ, MP, MA, MU, MR, MMR]]]
         = None,
@@ -345,13 +345,13 @@ object CoreWorkflow {
     val sc = WorkflowContext(params.batch, env, params.sparkEnv)
 
     runTypelessContext(
-      dataSourceClassOpt,
+      dataSourceClassMapOpt,
       dataSourceParams,
-      preparatorClassOpt,
+      preparatorClassMapOpt,
       preparatorParams,
       algorithmClassMapOpt,
       algorithmParamsList,
-      servingClassOpt,
+      servingClassMapOpt,
       servingParams,
       evaluatorClassOpt,
       evaluatorParams,
@@ -381,19 +381,19 @@ object CoreWorkflow {
       MEIN, MQ, MP, MA,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
       ](
-      dataSourceClassOpt
-        : Option[Class[_ <: BaseDataSource[TD, EIN, Q, A]]] = None,
-      dataSourceParams: Params = EmptyParams(),
-      preparatorClassOpt
-        : Option[Class[_ <: BasePreparator[TD, PD]]] = None,
-      preparatorParams: Params = EmptyParams(),
+      dataSourceClassMapOpt
+        : Option[Map[String, Class[_ <: BaseDataSource[TD, EIN, Q, A]]]] = None,
+      dataSourceParams: (String, Params) = ("", EmptyParams()),
+      preparatorClassMapOpt
+        : Option[Map[String, Class[_ <: BasePreparator[TD, PD]]]] = None,
+      preparatorParams: (String, Params) = ("", EmptyParams()),
       algorithmClassMapOpt
         : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
         = None,
       algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassOpt: Option[Class[_ <: BaseServing[Q, P]]]
+      servingClassMapOpt: Option[Map[String, Class[_ <: BaseServing[Q, P]]]]
         = None,
-      servingParams: Params = EmptyParams(),
+      servingParams: (String, Params) = ("", EmptyParams()),
       evaluatorClassOpt
         : Option[Class[_ <: BaseEvaluator[MEIN, MQ, MP, MA, MU, MR, MMR]]]
         = None,
@@ -431,13 +431,15 @@ object CoreWorkflow {
       logger.info("Data sanity checking is on.")
 
     //if (dataSourceClass == null || dataSourceParams == null) {
-    if (dataSourceClassOpt.isEmpty) {
-      logger.info("Dataprep Class or Params is null. Stop here");
+    if (dataSourceClassMapOpt.isEmpty ||
+      dataSourceClassMapOpt.get.get(dataSourceParams._1).isEmpty) {
+      logger.info("Dataprep Class or Params is null. Stop here")
       return
     }
 
     logger.info("Data Source")
-    val dataSource = Doer(dataSourceClassOpt.get, dataSourceParams)
+    val dataSource = Doer(dataSourceClassMapOpt.get.apply(dataSourceParams._1),
+      dataSourceParams._2)
 
     val evalParamsDataMap
     : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
@@ -498,13 +500,15 @@ object CoreWorkflow {
       return
     }
 
-    if (preparatorClassOpt.isEmpty) {
+    if (preparatorClassMapOpt.isEmpty ||
+      preparatorClassMapOpt.get.get(preparatorParams._1).isEmpty) {
       logger.info("Preparator is null. Stop here.")
       return
     }
 
     logger.info("Preparator")
-    val preparator = Doer(preparatorClassOpt.get, preparatorParams)
+    val preparator = Doer(preparatorClassMapOpt.get.apply(preparatorParams._1),
+      preparatorParams._2)
 
     val evalPreparedMap: Map[EI, PD] = evalDataMap
     .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
@@ -647,11 +651,13 @@ object CoreWorkflow {
       return
     }
 
-    if (servingClassOpt.isEmpty) {
+    if (servingClassMapOpt.isEmpty ||
+      servingClassMapOpt.get.get(servingParams._1).isEmpty) {
       logger.info("Serving is null. Stop here")
       return
     }
-    val serving = Doer(servingClassOpt.get, servingParams)
+    val serving = Doer(servingClassMapOpt.get.apply(servingParams._1),
+      servingParams._2)
 
     logger.info("Algo prediction")
 
@@ -918,19 +924,31 @@ object JavaCoreWorkflow {
   def run[
       EI, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
     env: JMap[String, String] = new JHashMap(),
-    dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
-    dataSourceParams: Params,
-    preparatorClass: Class[_ <: BasePreparator[TD, PD]],
-    preparatorParams: Params,
+    dataSourceClassMap: JMap[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]],
+    dataSourceParams: (String, Params),
+    preparatorClassMap: JMap[String, Class[_ <: BasePreparator[TD, PD]]],
+    preparatorParams: (String, Params),
     algorithmClassMap:
       JMap[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
     algorithmParamsList: JIterable[(String, Params)],
-    servingClass: Class[_ <: BaseServing[Q, P]],
-    servingParams: Params,
+    servingClassMap: JMap[String, Class[_ <: BaseServing[Q, P]]],
+    servingParams: (String, Params),
     evaluatorClass: Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]],
     evaluatorParams: Params,
     params: WorkflowParams
   ) = {
+
+    val scalaDataSourceClassMap =
+      if (dataSourceClassMap == null) null
+      else Map(dataSourceClassMap.toSeq:_ *)
+
+    val scalaPreparatorClassMap =
+      if (preparatorClassMap == null) null
+      else Map(preparatorClassMap.toSeq:_ *)
+
+    val scalaServingClassMap =
+      if (servingClassMap == null) null
+      else Map(servingClassMap.toSeq:_ *)
 
     val scalaAlgorithmClassMap = (
       if (algorithmClassMap == null) null
@@ -943,13 +961,13 @@ object JavaCoreWorkflow {
     CoreWorkflow.runTypeless(
       env = mapAsScalaMap(env).toMap,
       params = params,
-      dataSourceClassOpt = noneIfNull(dataSourceClass),
+      dataSourceClassMapOpt = noneIfNull(scalaDataSourceClassMap),
       dataSourceParams = dataSourceParams,
-      preparatorClassOpt = noneIfNull(preparatorClass),
+      preparatorClassMapOpt = noneIfNull(scalaPreparatorClassMap),
       preparatorParams = preparatorParams,
       algorithmClassMapOpt = noneIfNull(scalaAlgorithmClassMap),
       algorithmParamsList = scalaAlgorithmParamsList,
-      servingClassOpt = noneIfNull(servingClass),
+      servingClassMapOpt = noneIfNull(scalaServingClassMap),
       servingParams = servingParams,
       evaluatorClassOpt = noneIfNull(evaluatorClass),
       evaluatorParams = evaluatorParams
