@@ -19,7 +19,7 @@
     text-align: center;
     float: right;
     display: none;
-    margin: 5px 25px 25px 0;
+    margin: 0 25px 0 0;
     @include large {
       display: block;
     }
@@ -27,6 +27,10 @@
 
   .github {
     padding: 2px 17px 0 0;
+  }
+
+  .group {
+    margin-top: 5px;
   }
 }
 
