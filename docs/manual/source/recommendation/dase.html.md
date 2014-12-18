@@ -35,7 +35,12 @@ The `PredictedResult` case class defines the format of **predicted result**,
 such as
 
 ```json
-{"productScores":[{"product":22,"score":4.07},{"product":62,"score":4.05},{"product":75,"score":4.04},{"product":68,"score":3.81}]}
+{"productScores":[
+  {"product":22,"score":4.07},
+  {"product":62,"score":4.05},
+  {"product":75,"score":4.04},
+  {"product":68,"score":3.81}
+]}
 ```
 
 ```scala
@@ -329,14 +334,3 @@ training set.
 
 #### [Next: Customizing Data Preparator](customize-data-prep.html)
 
-
-
-<!-- TODO
-> HOW-TO:
->
-> Recommend products that the targeted user has not seen before [link]
->
-> Give higher priority to newer products
->
-> Combining several predictive model to improve prediction accuracy
--->
