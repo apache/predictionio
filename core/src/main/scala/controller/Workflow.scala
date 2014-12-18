@@ -111,15 +111,15 @@ object Workflow {
     * @tparam MU Evaluator unit class.
     * @tparam MR Evaluator result class.
     * @tparam MMR Multiple evaluator results class.
-    * @param dataSourceClassOpt Optional data source class.
-    * @param dataSourceParams Data source parameters.
-    * @param preparatorClassOpt Optional preparator class.
-    * @param preparatorParams Preparator parameters.
+    * @param dataSourceClassMapOpt Optional map of data source class.
+    * @param dataSourceParams Tuple of data source name and parameters.
+    * @param preparatorClassMapOpt Optional map of preparator class.
+    * @param preparatorParams Tuple of preparator name and parameters.
     * @param algorithmClassMapOpt Optional map of algorithm names to classes.
     * @param algorithmParamsList List of instantiated algorithms and their
     *                            parameters.
-    * @param servingClassOpt Optional serving class.
-    * @param servingParams Serving parameters.
+    * @param servingClassMapOpt Optional map of serving class.
+    * @param servingParams Tuple of serving name and parameters.
     * @param evaluatorClassOpt Optional evaluator class.
     * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.

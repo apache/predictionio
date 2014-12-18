@@ -47,10 +47,10 @@ import io.prediction.core.BaseServing
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @tparam A Actual value class.
-  * @param dataSourceClass Data source class.
-  * @param preparatorClass Preparator class.
+  * @param dataSourceClassMap Map of data source class.
+  * @param preparatorClassMap Map of preparator class.
   * @param algorithmClassMap Map of algorithm names to classes.
-  * @param servingClass Serving class.
+  * @param servingClassMap Map of serving class.
   * @group Engine
   */
 class Engine[TD, EI, PD, Q, P, A](
@@ -61,6 +61,13 @@ class Engine[TD, EI, PD, Q, P, A](
     val servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]])
   extends Serializable {
 
+  /**
+    * @param dataSourceClass Data source class.
+    * @param preparatorClass Preparator class.
+    * @param algorithmClassMap Map of algorithm names to classes.
+    * @param servingClass Serving class.
+    * @group Engine
+    */
   def this(
     dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
     preparatorClass: Class[_ <: BasePreparator[TD, PD]],
