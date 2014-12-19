@@ -43,7 +43,7 @@ scratch, it also comes with engine templates that are almost-complete engine
 implementations. You can customize it easily to fit your specific needs.
 PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
 
-* [Collaborative Filtering Engine Template - with MLlib ALS]
+* [Recommendation Engine Template - with MLlib ALS]
   (/recommendation/quickstart)
 * [Classification Engine Template - with MLlib Naive Bayes]
   (/classification/quickstart)

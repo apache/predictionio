@@ -77,7 +77,7 @@ object RecommendationEngine extends IEngineFactory {
 Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]`
 and train a model, which is a `MatrixFactorizationModel` object.
 
-PredictionIO's MLlib Collaborative Filtering engine template, which
+PredictionIO Recommendation Engine Template, which
 *MyRecommendation* bases on, integrates this algorithm under the DASE
 architecture. We will take a closer look at the DASE code below.
 

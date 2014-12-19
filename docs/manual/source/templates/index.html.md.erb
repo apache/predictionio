@@ -3,10 +3,10 @@
 
 PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
 
-* Collaborative Filtering Engine Template - with MLlib ALS (/templates/scala-parallel-recommendation)
+* Recommendation Engine Template - with MLlib ALS (/templates/scala-parallel-recommendation)
 * Classification Engine Template - with MLlib Naive Bayes  (/templates/scala-parallel-classification)
 
-This tutorial shows you how to use the Collaborative Filtering Engine Template to build your own recommendation engine for production use.
+This tutorial shows you how to use the Recommendation Engine Template to build your own recommendation engine for production use.
 The usage of other engine templates are very similar.
 
 > What is an Engine Template?
@@ -35,7 +35,7 @@ For convenience, add PredictionIO's binary command path to your PATH, i.e. /home
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
 ```
 
-Now you create a new engine called *MyEngine* by cloning the MLlib Collaborative Filtering engine template:
+Now you create a new engine called *MyEngine* by cloning the Recommendation Engine Template:
 
 ```
 $ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyEngine
@@ -137,7 +137,7 @@ object RecommendationEngine extends IEngineFactory {
 
 Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]` and train a model, which is a `MatrixFactorizationModel` object.
 
-PredictionIO's MLlib Collaborative Filtering engine template, which *MyEngine* bases on, integrates this algorithm under the DASE architecture.
+PredictionIO Recommendation Engine Template, which *MyEngine* bases on, integrates this algorithm under the DASE architecture.
 We will take a closer look at the DASE code below.
 > [Check this out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to learn more about MLlib's ALS collaborative filtering algorithm.
 
