@@ -3,9 +3,11 @@
   "description": "scala-parallel-regression example",
   "engineFactory": "io.prediction.examples.regression.parallel.RegressionEngineFactory",
   "datasource": {
-    "filepath": "../data/lr_data.txt",
-    "k": 3,
-    "seed": 9527
+    "params": {
+      "filepath": "../data/lr_data.txt",
+      "k": 3,
+      "seed": 9527
+    }
   },
   "algorithms": [
     {

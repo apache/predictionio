@@ -3,7 +3,9 @@
   "description": "Default settings",
   "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
-    "appId": 1
+    "params": {
+      "appId": 1
+    }
   },
   "algorithms": [
     {

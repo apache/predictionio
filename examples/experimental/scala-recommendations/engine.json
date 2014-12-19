@@ -3,7 +3,9 @@
   "description": "Item Recommendations examples",
   "engineFactory": "org.apache.spark.mllib.recommendation.engine.RecommendationEngine",
   "datasource": {
-    "filepath": "../data/movielens.txt"
+    "params": {
+      "filepath": "../data/movielens.txt"
+    }
   },
   "algorithms": [
     {

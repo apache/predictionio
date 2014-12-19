@@ -3,10 +3,14 @@
   "description": "java-local-regression",
   "engineFactory": "io.prediction.examples.java.regression.EngineFactory",
   "datasource": {
-    "filepath": "PATH-TO-lr_data.txt"
+    "params": {
+      "filepath": "PATH-TO-lr_data.txt"
+    }
   },
   "preparator": {
-    "r": 0.8
+    "params": {
+      "r": 0.8
+    }
   },
   "algorithms": [
     {

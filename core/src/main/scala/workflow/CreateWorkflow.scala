@@ -72,7 +72,13 @@ object CreateWorkflow extends Logging {
     val paramsOpt = (jv \ "params").extract[Option[JValue]]
 
     if (nameOpt.isEmpty && paramsOpt.isEmpty) {
-      error(s"Unable to find 'name' or 'params' fields in ${jv}")
+      error("Unable to find 'name' or 'params' fields in" +
+        s" ${compact(render(jv))}.\n" +
+        "Since 0.8.4, the 'params' field is required in engine.json" +
+        " in order to specify parameters for DataSource, Preparator or" +
+        " Serving.\n" +
+        "Please go to http://docs.prediction.io/resources/upgrade/" +
+        " for detailed instruction of how to change engine.json.")
       sys.exit(1)
     }
 
