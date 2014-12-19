@@ -1,0 +1,15 @@
+Usage: pio upgrade <from version> <to version> <old App ID> <new app ID>
+
+Migrate the event data from old App ID to new App ID which can be used with <to version> of PredictionIO.
+
+  <from version>
+    The version upgraded from.
+
+  <to version>
+    The version upgraded to.
+
+  <old App ID>
+    Old App ID.
+
+  <new app ID>
+    Mew App ID.

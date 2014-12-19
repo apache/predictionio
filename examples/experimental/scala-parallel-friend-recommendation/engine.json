@@ -1,0 +1,22 @@
+{
+  "id": "SimRankParallelEngine",
+  "description": "Engine for graph vertex similarity using SimRank",
+  "engineFactory": "io.prediction.examples.pfriendrecommendation.PSimRankEngineFactory",
+
+  "datasource":
+    {
+        "graphEdgelistPath":"data/edge_list_small.txt",
+        "sampleFraction":1.0,
+        "geoParam":0.7
+    }
+  ,
+  "algorithms": [
+    {
+      "name": "simrank",
+      "params": {
+        "numIterations": 6,
+        "decay":0.7
+      }
+    }
+  ]
+}

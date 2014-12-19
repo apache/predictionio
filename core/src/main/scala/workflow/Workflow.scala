@@ -24,6 +24,7 @@ import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
+import io.prediction.controller.SanityCheck
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
@@ -76,13 +77,13 @@ object WorkflowContext extends Logging {
     ): SparkContext = {
     val conf = new SparkConf()
     conf.setAppName(s"PredictionIO: ${batch}")
-    info(s"Executor environment received: ${executorEnv}")
+    debug(s"Executor environment received: ${executorEnv}")
     executorEnv.map(kv => conf.setExecutorEnv(kv._1, kv._2))
-    info(s"SparkConf executor environment: ${conf.getExecutorEnv}")
-    info(s"Application environment received: ${sparkEnv}")
+    debug(s"SparkConf executor environment: ${conf.getExecutorEnv}")
+    debug(s"Application environment received: ${sparkEnv}")
     conf.setAll(sparkEnv)
     val sparkConfString = conf.getAll.toSeq
-    info(s"SparkConf environment: $sparkConfString")
+    debug(s"SparkConf environment: $sparkConfString")
     new SparkContext(conf)
   }
 }
@@ -364,10 +365,15 @@ object CoreWorkflow {
 
     logger.info("CoreWorkflow.run completed.")
 
-    val wait = 3
-    logger.info(s"Waiting ${wait} seconds for all messages to flush...")
-    Thread.sleep(wait * 1000)
-    logger.info("Your engine has been trained successfully.")
+    if (params.stopAfterRead)
+      logger.info(
+        "Training has stopped after reading from data source and is " +
+        "incomplete.")
+    else if (params.stopAfterPrepare)
+      logger.info(
+        "Training has stopped after data preparation and is incomplete.")
+    else
+      logger.info("Your engine has been trained successfully.")
   }
 
   def runTypelessContext[
@@ -419,6 +425,11 @@ object CoreWorkflow {
       i.copy(id = iid)
     }
 
+    if (params.skipSanityCheck)
+      logger.info("Data sanity checking is off.")
+    else
+      logger.info("Data sanity checking is on.")
+
     //if (dataSourceClass == null || dataSourceParams == null) {
     if (dataSourceClassOpt.isEmpty) {
       logger.info("Dataprep Class or Params is null. Stop here");
@@ -445,27 +456,50 @@ object CoreWorkflow {
 
     logger.info(s"Number of training set: ${localParamsSet.size}")
 
-    if (verbose > 2) {
-      evalDataMap.foreach{ case (ei, data) => {
+    if (!params.skipSanityCheck || verbose > 2) {
+      if (!params.skipSanityCheck)
+        logger.info("Performing data sanity check on training data.")
+
+      evalDataMap foreach { case (ei, data) =>
         val (trainingData, testingData) = data
         //val collectedValidationData = testingData.collect
-        val trainingDataStr = WorkflowUtils.debugString(trainingData)
-        val testingDataStrs = testingData.collect
-          .map(WorkflowUtils.debugString)
 
-        logger.info(s"Data Set $ei")
-        logger.info(s"Params: ${localParamsSet(ei)}")
-        logger.info(s"TrainingData:")
-        logger.info(trainingDataStr)
-        logger.info(s"TestingData: (count=${testingDataStrs.length})")
-        testingDataStrs.foreach { logger.info(_) }
-      }}
+        if (!params.skipSanityCheck) {
+          if (trainingData.isInstanceOf[SanityCheck]) {
+            logger.info(
+              s"${trainingData.getClass.getName} supports data sanity check. " +
+              "Performing check.")
+            trainingData.asInstanceOf[SanityCheck].sanityCheck()
+          } else {
+            logger.info(s"${trainingData.getClass.getName} does not support " +
+              "data sanity check. Skipping check.")
+          }
+        }
+
+        if (verbose > 2) {
+          val trainingDataStr = WorkflowUtils.debugString(trainingData)
+          val testingDataStrs = testingData.collect
+            .map(WorkflowUtils.debugString)
+
+          logger.info(s"Data Set $ei")
+          logger.info(s"Params: ${localParamsSet(ei)}")
+          logger.info(s"TrainingData:")
+          logger.info(trainingDataStr)
+          logger.info(s"TestingData: (count=${testingDataStrs.length})")
+          testingDataStrs.foreach { logger.info(_) }
+        }
+      }
     }
 
     logger.info("Data source complete")
 
+    if (params.stopAfterRead) {
+      logger.info("Stopping here because --stop-after-read is set.")
+      return
+    }
+
     if (preparatorClassOpt.isEmpty) {
-      logger.info("Preparator is null. Stop here")
+      logger.info("Preparator is null. Stop here.")
       return
     }
 
@@ -475,16 +509,38 @@ object CoreWorkflow {
     val evalPreparedMap: Map[EI, PD] = evalDataMap
     .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
 
-    if (verbose > 2) {
-      evalPreparedMap.foreach{ case (ei, pd) => {
-        val s = WorkflowUtils.debugString(pd)
-        logger.info(s"Prepared Data Set $ei")
-        logger.info(s"Params: ${localParamsSet(ei)}")
-        logger.info(s"PreparedData: $s")
-      }}
+    if (!params.skipSanityCheck || verbose > 2) {
+      if (!params.skipSanityCheck)
+        logger.info("Performing data sanity check on prepared data.")
+
+      evalPreparedMap foreach { case (ei, pd) =>
+        if (!params.skipSanityCheck) {
+          if (pd.isInstanceOf[SanityCheck]) {
+            logger.info(
+              s"${pd.getClass.getName} supports data sanity check. " +
+              "Performing check.")
+              pd.asInstanceOf[SanityCheck].sanityCheck()
+          } else {
+            logger.info(s"${pd.getClass.getName} does not support " +
+              "data sanity check. Skipping check.")
+          }
+        }
+
+        if (verbose > 2) {
+          val s = WorkflowUtils.debugString(pd)
+          logger.info(s"Prepared Data Set $ei")
+          logger.info(s"Params: ${localParamsSet(ei)}")
+          logger.info(s"PreparedData: $s")
+        }
+      }
     }
 
     logger.info("Preparator complete")
+
+    if (params.stopAfterPrepare) {
+      logger.info("Stopping here because --stop-after-prepare is set.")
+      return
+    }
 
     if (algorithmClassMapOpt.isEmpty) {
       logger.info("Algo is null. Stop here")
@@ -544,14 +600,31 @@ object CoreWorkflow {
     .seq
     .toMap
 
-    if (verbose > 2) {
-      evalAlgoModelMap.map{ case(ei, aiModelSeq) => {
-        aiModelSeq.map { case(ai, model) => {
-          val ms = WorkflowUtils.debugString(model)
-          logger.info(s"Model ei: $ei ai: $ai")
-          logger.info(ms)
-        }}
-      }}
+    if (!params.skipSanityCheck || verbose > 2) {
+      if (!params.skipSanityCheck)
+        logger.info("Performing data sanity check on model data.")
+
+      evalAlgoModelMap foreach { case (ei, aiModelSeq) =>
+        aiModelSeq foreach { case (ai, model) =>
+          if (!params.skipSanityCheck) {
+            if (model.isInstanceOf[SanityCheck]) {
+              logger.info(
+                s"${model.getClass.getName} supports data sanity check. " +
+                "Performing check.")
+              model.asInstanceOf[SanityCheck].sanityCheck()
+            } else {
+              logger.info(s"${model.getClass.getName} does not support " +
+                "data sanity check. Skipping check.")
+            }
+          }
+
+          if (verbose > 2) {
+            val ms = WorkflowUtils.debugString(model)
+            logger.info(s"Model ei: $ei ai: $ai")
+            logger.info(ms)
+          }
+        }
+      }
     }
 
     if (evaluatorClassOpt.isEmpty) {

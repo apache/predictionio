@@ -64,10 +64,10 @@ $ pio deploy
 This will deploy an engine that binds to http://localhost:8000. You can visit that page in your web browser to check its status.
 
 Now, You can try to retrieve predicted results.
-To recommend 4 movies to user whose id is 1, you send this JSON { "user": 1, "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
+To recommend 4 movies to user whose id is 1, you send this JSON { "user": "1", "num": 4 } to the deployed engine and it will return a JSON of the recommended movies.
 
 ```
-$ curl -H "Content-Type: application/json" -d '{ "user": 1, "num": 4 }' http://localhost:8000/queries.json
+$ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
 
 {"productScores":[{"product":22,"score":4.072304374729956},{"product":62,"score":4.058482414005789},{"product":75,"score":4.046063009943821},{"product":68,"score":3.8153661512945325}]}
 ```
@@ -91,12 +91,12 @@ Let's look at the code and see how you can customize the engine.
 
 ## The Engine Design
 
-As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": 1, "num": 4 }, and return
+As you can see from the above, *MyEngine* takes a JSON prediction query, e.g. { "user": "1", "num": 4 }, and return
 a JSON predicted result.
 
 In MyEngine/src/main/scala/***Engine.scala***
 
-`Query` case class defines the format of **query**, such as { "user": 1, "num": 4 }:
+`Query` case class defines the format of **query**, such as { "user": "1", "num": 4 }:
 
 ```scala
 case class Query(
@@ -216,7 +216,7 @@ By default, `prepare` simply copies the unprocessed `TrainingData` data to `Prep
 
 ```scala
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(ratings = trainingData.ratings)
@@ -296,7 +296,7 @@ PredictionIO will automatically store the returned model, i.e. `PersistentMatrix
 
 ### def predict
 
-`def predict` is called when you send a JSON query to http://localhost:8000/queries.json. PredictionIO converts the query, such as  { "user": 1, "num": 4 } to the `Query` class you defined previously.  
+`def predict` is called when you send a JSON query to http://localhost:8000/queries.json. PredictionIO converts the query, such as  { "user": "1", "num": 4 } to the `Query` class you defined previously.
 
 The predictive model `MatrixFactorizationModel` of MLlib ALS, which is now extended as `PersistentMatrixFactorizationModel`,
 offers a function called `recommendProducts`. `recommendProducts` takes two parameters: user id (i.e. query.user) and the number of products to be returned (i.e. query.num).
@@ -325,7 +325,7 @@ In MyEngine/src/main/scala/***Serving.scala***
 
 ```scala
 class Serving
-  extends LServing[EmptyServingParams, Query, PredictedResult] {
+  extends LServing[Query, PredictedResult] {
 
   override
   def serve(query: Query,

@@ -1,0 +1,3 @@
+Usage: pio status
+
+Displays status information about the PredictionIO system.

@@ -82,6 +82,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
     try {
       if (client.admin.tableExists(tableName)) {
+        info(s"Removing table ${tableName.getNameAsString()}...")
         client.admin.disableTable(tableName)
         client.admin.deleteTable(tableName)
       } else {
@@ -233,10 +234,12 @@ class HBLEvents(val client: HBClient, val namespace: String)
 
         val eventsIter = scanner.iterator()
 
-        val results: Iterator[Result]  = (
-          if (limit.isEmpty) eventsIter
-          else eventsIter.take(limit.get)
-        )
+        // Get all events if None or Some(-1)
+        val results: Iterator[Result] = limit match {
+          case Some(-1) => eventsIter
+          case None => eventsIter
+          case Some(x) => eventsIter.take(x)
+        }
 
         val eventsIt = results.map { resultToEvent(_, appId) }
 

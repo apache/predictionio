@@ -29,6 +29,12 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.Level
+import org.apache.log4j.LogManager
+import org.apache.log4j.PatternLayout
+import org.apache.log4j.spi.Filter
+import org.apache.log4j.spi.LoggingEvent
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
@@ -159,21 +165,55 @@ object WorkflowUtils extends Logging {
     s
   }
 
-  /** Detect available Hadoop ecosystem configuration files to be submitted as
+  /** Detect third party software configuration files to be submitted as
     * extras to Apache Spark. This makes sure all executors receive the same
     * configuration.
     */
-  def hadoopEcoConfFiles: Seq[String] = {
-    val ecoFiles = Map(
+  def thirdPartyConfFiles: Seq[String] = {
+    val thirdPartyFiles = Map(
+      "ES_CONF_DIR" -> "elasticsearch.yml",
       "HADOOP_CONF_DIR" -> "core-site.xml",
       "HBASE_CONF_DIR" -> "hbase-site.xml")
 
-    ecoFiles.keys.toSeq.map { k: String =>
+    thirdPartyFiles.keys.toSeq.map { k: String =>
       sys.env.get(k) map { x =>
-        val p = Seq(x, ecoFiles(k)).mkString(File.separator)
+        val p = Seq(x, thirdPartyFiles(k)).mkString(File.separator)
         if (new File(p).exists) Seq(p) else Seq[String]()
       } getOrElse Seq[String]()
     }.flatten
+  }
+
+  def thirdPartyClasspaths: Seq[String] = {
+    val thirdPartyPaths = Seq("ES_CONF_DIR")
+    thirdPartyPaths.map(p =>
+      sys.env.get(p).map(Seq(_)).getOrElse(Seq[String]())
+    ).flatten
+  }
+
+  def setupLogging(verbose: Boolean, debug: Boolean): Unit = {
+    val layout = new PatternLayout("%d %-5p %c{2} - %m%n")
+    val filter = new PIOFilter(verbose, debug)
+    val appender = new ConsoleAppender(layout)
+    appender.addFilter(filter)
+    val rootLogger = LogManager.getRootLogger()
+    rootLogger.removeAllAppenders
+    rootLogger.addAppender(appender)
+    if (debug) rootLogger.setLevel(Level.DEBUG)
+  }
+}
+
+class PIOFilter(verbose: Boolean = false, debug: Boolean = false)
+    extends Filter {
+  override def decide(event: LoggingEvent): Int = {
+    if (verbose || debug)
+      Filter.NEUTRAL
+    else if (event.getLocationInformation.getClassName.
+      startsWith("grizzled.slf4j.Logger"))
+      Filter.NEUTRAL
+    else if (event.getLevel.isGreaterOrEqual(Level.ERROR))
+      Filter.NEUTRAL
+    else
+      Filter.DENY
   }
 }
 

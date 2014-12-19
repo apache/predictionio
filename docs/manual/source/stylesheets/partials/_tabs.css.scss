@@ -1,4 +1,8 @@
 .tabs {
+  & > div {
+    display: inline-block; // Hack to fix scrollbar issue PDIO-450.
+    width: 100%;
+  }
   ul {
     list-style-type: none;
     padding: 0;

@@ -22,6 +22,8 @@ import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
+import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
+import io.prediction.data.storage.hbase.upgrade.CheckDistribution
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
@@ -49,6 +51,7 @@ case class ConsoleArgs(
   app: AppArgs = AppArgs(),
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  upgrade: UpgradeArgs = UpgradeArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "Transient Lazy Val",
   metricsClass: Option[String] = None,
@@ -73,12 +76,17 @@ case class CommonArgs(
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
   variantJson: File = new File("engine.json"),
-  manifestJson: File = new File("manifest.json"))
+  manifestJson: File = new File("manifest.json"),
+  stopAfterRead: Boolean = false,
+  stopAfterPrepare: Boolean = false,
+  skipSanityCheck: Boolean = false,
+  verbose: Boolean = false,
+  debug: Boolean = false)
 
 case class BuildArgs(
   sbt: Option[File] = None,
   sbtExtra: Option[String] = None,
-  sbtAssemblyPackageDependency: Boolean = false,
+  sbtAssemblyPackageDependency: Boolean = true,
   sbtClean: Boolean = false)
 
 case class AppArgs(
@@ -95,13 +103,20 @@ case class EventServerArgs(
   ip: String = "localhost",
   port: Int = 7070)
 
+case class UpgradeArgs(
+  from: String = "0.0.0",
+  to: String = "0.0.0",
+  oldAppId: Int = 0,
+  newAppId: Int = 0
+)
+
 object Console extends Logging {
   val distFilename = "DIST"
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError = false
       head("PredictionIO Command Line Interface Console", BuildInfo.version)
-      help("help")
+      help("")
       note("Note that it is possible to supply pass-through arguments at\n" +
         "the end of the command by using a '--' separator, e.g.\n\n" +
         "pio train --params-path params -- --master spark://mycluster:7077\n" +
@@ -150,12 +165,27 @@ object Console extends Logging {
         else
           failure(s"${x.getCanonicalPath} does not exist.")
       } text("Path to sbt. Default: sbt")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(common = c.common.copy(verbose = true))
+      }
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(common = c.common.copy(debug = true))
+      }
       note("")
       cmd("version").
         text("Displays the version of this command line console.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "version")
         }
+      note("")
+      cmd("help").action { (_, c) =>
+        c.copy(commands = c.commands :+ "help")
+      } children(
+        arg[String]("<command>") optional()
+          action { (x, c) =>
+            c.copy(commands = c.commands :+ x)
+          }
+        )
       note("")
       cmd("new").
         text("Creates a new engine project in a subdirectory with the same " +
@@ -168,20 +198,20 @@ object Console extends Logging {
             c.copy(projectName = Some(x))
           } text("Engine project name.")
         )
-      note("")
-      cmd("instance").
-        text("Creates a new engine instance in a subdirectory with the same " +
-          "name as the engine's ID by default.").
-        action { (_, c) =>
-          c.copy(commands = c.commands :+ "instance")
-        } children(
-          arg[String]("<engine ID>") action { (x, c) =>
-            c.copy(projectName = Some(x))
-          } text("Engine ID."),
-          opt[String]("directory-name") action { (x, c) =>
-            c.copy(directoryName = Some(x))
-          } text("Engine instance directory name.")
-        )
+      //note("")
+      //cmd("instance").
+      //  text("Creates a new engine instance in a subdirectory with the same " +
+      //    "name as the engine's ID by default.").
+      //  action { (_, c) =>
+      //    c.copy(commands = c.commands :+ "instance")
+      //  } children(
+      //    arg[String]("<engine ID>") action { (x, c) =>
+      //      c.copy(projectName = Some(x))
+      //    } text("Engine ID."),
+      //    opt[String]("directory-name") action { (x, c) =>
+      //      c.copy(directoryName = Some(x))
+      //    } text("Engine instance directory name.")
+      //  )
       note("")
       cmd("build").
         text("Build an engine at the current directory.").
@@ -194,9 +224,9 @@ object Console extends Logging {
           opt[Unit]("clean") action { (x, c) =>
             c.copy(build = c.build.copy(sbtClean = true))
           } text("Clean build."),
-          opt[Unit]("asm") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-          } text("Build dependencies assembly.")
+          opt[Unit]("no-asm") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = false))
+          } text("Skip building external dependencies assembly.")
         )
       //note("")
       //cmd("register").
@@ -256,7 +286,16 @@ object Console extends Logging {
           opt[String]("metrics-params") abbr("mp") action { (x, c) =>
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
-            "        metrics.json in the base path.")
+            "        metrics.json in the base path."),
+          opt[Unit]("skip-sanity-check") abbr("ssc") action { (x, c) =>
+            c.copy(common = c.common.copy(skipSanityCheck = true))
+          },
+          opt[Unit]("stop-after-read") abbr("sar") action { (x, c) =>
+            c.copy(common = c.common.copy(stopAfterRead = true))
+          },
+          opt[Unit]("stop-after-prepare") abbr("sap") action { (x, c) =>
+            c.copy(common = c.common.copy(stopAfterPrepare = true))
+          }
         )
       note("")
       cmd("eval").
@@ -404,9 +443,9 @@ object Console extends Logging {
           opt[Unit]("clean") action { (x, c) =>
             c.copy(build = c.build.copy(sbtClean = true))
           } text("Clean build."),
-          opt[Unit]("asm") action { (x, c) =>
-            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-          } text("Build dependencies assembly.")
+          opt[Unit]("no-asm") action { (x, c) =>
+            c.copy(build = c.build.copy(sbtAssemblyPackageDependency = false))
+          } text("Skip building external dependencies assembly.")
         )
       note("")
       cmd("status").
@@ -414,6 +453,25 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "status")
         }
+      note("")
+      cmd("upgrade").
+        text("Upgrade tool").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "upgrade")
+        } children(
+          arg[String]("<from version>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(from = x))
+          } text("The version upgraded from."),
+          arg[String]("<to version>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(to = x))
+          } text("The version upgraded to."),
+          arg[Int]("<old App ID>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(oldAppId = x))
+          } text("Old App ID."),
+          arg[Int]("<new App ID>") action { (x, c) =>
+            c.copy(upgrade = c.upgrade.copy(newAppId = x))
+          } text("New App ID.")
+        )
       //note("")
       //cmd("dist").
       //  text("Build an engine at the current directory and create a \n" +
@@ -507,7 +565,7 @@ object Console extends Logging {
             action { (_, c) =>
               c.copy(commands = c.commands :+ "list")
             } children(
-              arg[String]("<app name>") action { (x, c) =>
+              arg[String]("<app name>") optional() action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
               } text("App name.")
             ),
@@ -544,13 +602,17 @@ object Console extends Logging {
       val ca = pca.copy(common = pca.common.copy(
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
+      WorkflowUtils.setupLogging(ca.common.verbose, ca.common.debug)
       ca.commands match {
+        case Seq("") =>
+          System.err.println(help())
+          sys.exit(1)
         case Seq("version") =>
           version(ca)
         case Seq("new") =>
           createProject(ca)
-        case Seq("instance") =>
-          createInstance(ca)
+        //case Seq("instance") =>
+        //  createInstance(ca)
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
           build(ca)
@@ -582,6 +644,8 @@ object Console extends Logging {
           dist(ca)
         case Seq("status") =>
           status(ca)
+        case Seq("upgrade") =>
+          upgrade(ca)
         case Seq("app", "new") =>
           appNew(ca)
         case Seq("app", "list") =>
@@ -597,14 +661,45 @@ object Console extends Logging {
         case Seq("accesskey", "delete") =>
           accessKeyDelete(ca)
         case _ =>
-          error(
-            s"Unrecognized command sequence: ${ca.commands.mkString(" ")}\n")
-          System.err.println(parser.usage)
+          System.err.println(help(ca.commands))
           sys.exit(1)
       }
+      sys.exit(0)
+    } getOrElse {
+      val command = args.toSeq.filterNot(_.startsWith("--")).head
+      System.err.println(help(Seq(command)))
+      sys.exit(1)
     }
-    sys.exit(0)
   }
+
+  def help(commands: Seq[String] = Seq()) = {
+    if (commands.isEmpty) {
+      mainHelp
+    } else {
+      val stripped =
+        (if (commands.head == "help") commands.drop(1) else commands).
+          mkString("-")
+      helpText.getOrElse(stripped, s"Help is unavailable for ${stripped}.")
+    }
+  }
+
+  val mainHelp = console.txt.main().toString
+
+  val helpText = Map(
+    "" -> mainHelp,
+    "status" -> console.txt.status().toString,
+    "upgrade" -> console.txt.upgrade().toString,
+    "version" -> console.txt.version().toString,
+    "new" -> console.txt.newCommand().toString,
+    "build" -> console.txt.build().toString,
+    "train" -> console.txt.train().toString,
+    "deploy" -> console.txt.deploy().toString,
+    "eventserver" -> console.txt.eventserver().toString,
+    "app" -> console.txt.app().toString,
+    "accesskey" -> console.txt.accesskey().toString,
+    "run" -> console.txt.run().toString,
+    "eval" -> console.txt.eval().toString,
+    "dashboard" -> console.txt.dashboard().toString)
 
   def createProject(ca: ConsoleArgs): Unit = {
     val scalaEngineTemplate = Map(
@@ -614,11 +709,11 @@ object Console extends Logging {
         BuildInfo.sparkVersion),
       "engine.json" -> templates.scala.txt.engineJson(
         ca.projectName.get,
-        "0.0.1-SNAPSHOT",
-        ca.projectName.get,
         "myorg.MyEngineFactory"),
-      joinFile(Seq("params", "datasource.json")) ->
-        templates.scala.params.txt.datasourceJson(),
+      "manifest.json" -> templates.scala.txt.manifestJson(
+        ca.projectName.get,
+        "0.0.1-SNAPSHOT",
+        ca.projectName.get),
       joinFile(Seq("project", "assembly.sbt")) ->
         templates.scala.project.txt.assemblySbt(),
       joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
@@ -635,6 +730,7 @@ object Console extends Logging {
     info(s"Engine project created in subdirectory ${ca.projectName.get}.")
   }
 
+  /*
   def createInstance(ca: ConsoleArgs): Unit = {
     val targetDir = ca.directoryName.getOrElse(ca.projectName.get)
     val engineId = ca.projectName.getOrElse("")
@@ -656,6 +752,7 @@ object Console extends Logging {
 
     info(s"Engine instance created in subdirectory ${targetDir}.")
   }
+  */
 
   private def writeTemplate(template: Map[String, Any], targetDir: String) = {
     try {
@@ -684,7 +781,14 @@ object Console extends Logging {
       sys.exit(1)
     }
     jarFiles foreach { f => info(s"Found ${f.getName}")}
-    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
+    val copyLocal = if (sys.env.contains("HADOOP_CONF_DIR")) {
+      info("HADOOP_CONF_DIR is set. Assuming HDFS is available.")
+      true
+    } else {
+      info("HADOOP_CONF_DIR is not set. Assuming HDFS is unavailable.")
+      false
+    }
+    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles, copyLocal)
     info("Your engine is ready for training.")
   }
 
@@ -819,8 +923,13 @@ object Console extends Logging {
         new File(ca.common.pioHome.get))
       info(s"Going to run: ${cmd}")
       try {
-        val r = cmd.!(ProcessLogger(
-          line => info(line), line => error(line)))
+        val r =
+          if (ca.common.verbose || ca.common.debug)
+            cmd.!(ProcessLogger(line => info(line), line => error(line)))
+          else
+            cmd.!(ProcessLogger(
+              line => outputSbtError(line),
+              line => outputSbtError(line)))
         if (r != 0) {
           error(s"Return code of previous step is ${r}. Aborting.")
           sys.exit(1)
@@ -850,8 +959,13 @@ object Console extends Logging {
         s"package${asm}"
       info(s"Going to run: ${buildCmd}")
       try {
-        val r = buildCmd.!(ProcessLogger(
-          line => info(line), line => error(line)))
+        val r =
+          if (ca.common.verbose || ca.common.debug)
+          buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
+          else
+          buildCmd.!(ProcessLogger(
+            line => outputSbtError(line),
+            line => outputSbtError(line)))
         if (r != 0) {
           error(s"Return code of previous step is ${r}. Aborting.")
           sys.exit(1)
@@ -865,10 +979,14 @@ object Console extends Logging {
     }
   }
 
+  private def outputSbtError(line: String): Unit = {
+    """\[.*error.*\]""".r findFirstIn line foreach { _ => error(line) }
+  }
+
   def run(ca: ConsoleArgs): Unit = {
     compile(ca)
 
-    val extraFiles = WorkflowUtils.hadoopEcoConfFiles
+    val extraFiles = WorkflowUtils.thirdPartyConfFiles
 
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
@@ -968,10 +1086,17 @@ object Console extends Logging {
 
   def appList(ca: ConsoleArgs): Unit = {
     val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
+    val accessKeys = Storage.getMetaDataAccessKeys
     val title = "Name"
-    info(f"$title%20s |   ID")
+    val ak = "Access Key"
+    info(f"$title%20s |   ID | $ak%64s | Allowed Event(s)")
     apps foreach { app =>
-      info(f"${app.name}%20s | ${app.id}%4d")
+      val keys = accessKeys.getByAppid(app.id)
+      keys foreach { k =>
+        val events =
+          if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
+        info(f"${app.name}%20s | ${app.id}%4d | ${k.key}%s | ${events}%s")
+      }
     }
     info(s"Finished listing ${apps.size} app(s).")
   }
@@ -1074,8 +1199,9 @@ object Console extends Logging {
       }
     val title = "Access Key(s)"
     info(f"$title%64s | App ID | Allowed Event(s)")
-    keys foreach { k =>
-      val events = if (k.events.size > 0) k.events.mkString(",") else "(all)"
+    keys.sortBy(k => k.appid) foreach { k =>
+      val events =
+        if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
       info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
     }
     info(s"Finished listing ${keys.size} access key(s).")
@@ -1143,6 +1269,17 @@ object Console extends Logging {
     println("(sleeping 5 seconds for all messages to show up...)")
     Thread.sleep(5000)
     println("Your system is all ready to go.")
+  }
+
+  def upgrade(ca: ConsoleArgs): Unit = {
+    (ca.upgrade.from, ca.upgrade.to) match {
+      case ("0.8.2", "0.8.3") => {
+        Upgrade_0_8_3.runMain(ca.upgrade.oldAppId, ca.upgrade.newAppId)
+      }
+      case _ =>
+        println(s"Upgrade from version ${ca.upgrade.from} to ${ca.upgrade.to}"
+          + s" is not supported.")
+    }
   }
 
   def coreAssembly(pioHome: String): File = {
@@ -1264,7 +1401,9 @@ object Console extends Logging {
       op
     } getOrElse {
       error(s"Engine ${id} ${version} cannot be found in the system.")
-      error("Have you run the 'build' command to build your engine yet?")
+      error("Possible reasons:")
+      error("- the engine is not yet built by the 'build' command;")
+      error("- the meta data store is offline.")
       sys.exit(1)
     }
   }

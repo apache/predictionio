@@ -32,6 +32,9 @@ import scala.reflect.ClassTag
   * @param verbose Verbosity level.
   * @param saveModel Controls whether trained models are persisted.
   * @param sparkEnv Spark properties that will be set in SparkConf.setAll().
+  * @param skipSanityCheck Skips all data sanity check.
+  * @param stopAfterRead Stops workflow after reading from data source.
+  * @param stopAfterPrepare Stops workflow after data preparation.
   * @group Workflow
   */
 case class WorkflowParams(
@@ -39,7 +42,10 @@ case class WorkflowParams(
   verbose: Int = 2,
   saveModel: Boolean = true,
   sparkEnv: Map[String, String] =
-    Map[String, String]("spark.executor.extraClassPath" -> ".")) {
+    Map[String, String]("spark.executor.extraClassPath" -> "."),
+  skipSanityCheck: Boolean = false,
+  stopAfterRead: Boolean = false,
+  stopAfterPrepare: Boolean = false) {
   // Temporary workaround for WorkflowParamsBuilder for Java. It doesn't support
   // custom spark environment yet.
   def this(batch: String, verbose: Int, saveModel: Boolean)

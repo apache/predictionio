@@ -57,7 +57,12 @@ object CreateWorkflow extends Logging {
     servingParamsJsonPath: Option[String] = None,
     evaluatorParamsJsonPath: Option[String] = None,
     jsonBasePath: String = "",
-    env: Option[String] = None)
+    env: Option[String] = None,
+    skipSanityCheck: Boolean = false,
+    stopAfterRead: Boolean = false,
+    stopAfterPrepare: Boolean = false,
+    verbose: Boolean = false,
+    debug: Boolean = false)
 
   case class AlgorithmParams(name: String, params: JValue)
 
@@ -65,15 +70,19 @@ object CreateWorkflow extends Logging {
 
   val hadoopConf = new Configuration
   val hdfs = FileSystem.get(hadoopConf)
+  val localfs = FileSystem.getLocal(hadoopConf)
 
-  private def stringFromFile(basePath: String, filePath: String): String = {
+  private def stringFromFile(
+      basePath: String,
+      filePath: String,
+      fs: FileSystem = hdfs): String = {
     try {
       val p =
         if (basePath == "")
           new Path(filePath)
         else
           new Path(basePath + Path.SEPARATOR + filePath)
-      new String(ByteStreams.toByteArray(hdfs.open(p)).map(_.toChar))
+      new String(ByteStreams.toByteArray(fs.open(p)).map(_.toChar))
     } catch {
       case e: java.io.IOException =>
         error(s"Error reading from file: ${e.getMessage}. Aborting workflow.")
@@ -120,10 +129,26 @@ object CreateWorkflow extends Logging {
         c.copy(env = Some(x))
       } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
         "format) to pass to the Spark execution environment.")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(verbose = true)
+      } text("Enable verbose output.")
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(debug = true)
+      } text("Enable debug output.")
+      opt[Unit]("skip-sanity-check") action { (x, c) =>
+        c.copy(skipSanityCheck = true)
+      }
+      opt[Unit]("stop-after-read") action { (x, c) =>
+        c.copy(stopAfterRead = true)
+      }
+      opt[Unit]("stop-after-prepare") action { (x, c) =>
+        c.copy(stopAfterPrepare = true)
+      }
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
-      val variantJson = parse(stringFromFile("", wfc.engineVariant))
+      WorkflowUtils.setupLogging(wfc.verbose, wfc.debug)
+      val variantJson = parse(stringFromFile("", wfc.engineVariant, localfs))
       val engineFactory = variantJson \ "engineFactory" match {
         case JString(s) => s
         case _ =>
@@ -291,7 +316,10 @@ object CreateWorkflow extends Logging {
         env = pioEnvVars,
         params = WorkflowParams(
           verbose = 3,
-          batch = wfc.batch),
+          batch = wfc.batch,
+          skipSanityCheck = wfc.skipSanityCheck,
+          stopAfterRead = wfc.stopAfterRead,
+          stopAfterPrepare = wfc.stopAfterPrepare),
         engine = engine,
         engineParams = engineParams,
         evaluator = evaluatorInstance,

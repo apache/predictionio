@@ -26,9 +26,9 @@ Five installation options available.
 
 
 ## Quick start
-See [Engine Template Quick Start](http://docs.prediction.io/current/templates/) Guide.
+[Recommendation Engine Template Quick Start](http://docs.prediction.io/current/recommendation/quickstart.html) Guide.
 
-
+[Classification Engine Template Quick Start](http://docs.prediction.io/current/classification/quickstart.html) Guide.
 
 ## Bugs and feature requests
 
@@ -37,21 +37,11 @@ Have a bug or a feature request?  Please search for existing and closed issues o
 
 ## Documentation
 
-PredictionIO’s documentation, included in this repo in the root directory, is built with [Jekyll](http://jekyllrb.com) and publicly hosted at <http://docs.prediction.io/current/>. The docs may also be run locally.
+PredictionIO's documentation, included in this repo in the `docs/manual` directory, is built with [Middleman](http://middlemanapp.com/) and publicly hosted at [docs.prediction.io](http://docs.prediction.io/).
 
+Interested in helping with our documentation? Read [Contributing Documentation](http://docs.prediction.io/community/contribute-documentation/).
 
-### Running documentation locally
-
-1. If necessary, [install Jekyll](http://jekyllrb.com/docs/installation) (requires v2.4.x).
-  - **Windows users:** Read [this unofficial guide](http://jekyll-windows.juthilo.com/) to get Jekyll up and running without problems.
-2. Install the Ruby-based syntax highlighter, [Rouge](https://github.com/jneen/rouge), with `gem install rouge`.
-
-3. From the `/docs/manual` directory, run `jekyll serve` in the command line.
-
-4. Open Server address ( http://0.0.0.0:4000/current/ ) in your browser, and you should see the documentation.
-
-Learn more about using Jekyll by reading its [documentation](http://jekyllrb.com/docs/home/).
-
+[![Build Status](https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc)](https://travis-ci.org/PredictionIO/PredictionIO) [![Dependency Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
 
 ## Community
 

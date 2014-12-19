@@ -1,0 +1,17 @@
+Usage: pio run [--sbt-extra <value>] [--clean] [--no-asm]
+               [common options...] <main class>
+
+Launch a driver program. This command will pass all pass-through arguments to
+its underlying spark-submit command. In addition, it also supports a second
+level of pass-through arguments to the driver program, e.g.
+
+  pio run -- --master spark://localhost:7077 -- --driver-arg foo
+
+  <main class>
+      Main class name of the driver program.
+  --sbt-extra <value>
+      Extra command to pass to SBT when it builds your engine.
+  --clean
+      Clean build.
+  --no-asm
+      Skip building external dependencies assembly.

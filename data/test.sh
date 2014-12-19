@@ -328,6 +328,66 @@ checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 testdata='asfd'
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
 
+# invalid pio_ entityType
+testdata='{
+  "event" : "my_event",
+  "entityType" : "pio_xx",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : "value2"
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}'
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
+
+# invalid pio_ targetEntityType
+testdata='{
+  "event" : "my_event",
+  "entityType" : "food",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "pio_xxx",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : "value2"
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}'
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
+
+# invalid pio_ properties
+testdata='{
+  "event" : "my_event",
+  "entityType" : "food",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "food2",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "pio_aaa" : 1,
+    "prop2" : "value2"
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}'
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
+
+# valid pio_pr entityType
+testdata='{
+  "event" : "my_event",
+  "entityType" : "pio_pr",
+  "entityId" : "my_entity_id",
+  "targetEntityType" : "my_target_entity_type",
+  "targetEntityId" : "my_target_entity_id",
+  "properties" : {
+    "prop1" : 1,
+    "prop2" : "value2"
+  }
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}'
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
+
 # -----
 # get events
 # ----

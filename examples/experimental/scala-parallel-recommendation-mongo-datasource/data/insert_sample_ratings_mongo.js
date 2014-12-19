@@ -14,8 +14,8 @@ print("Insert random movie rating data into test.sample_ratings collection...")
 for (var uid = 0; uid < 10; uid++) {
   for (var n = 0; n < 10; n++) {
     db.sample_ratings.insert( {
-      "uid" : NumberInt(uid),
-      "iid" : NumberInt(getRandomInt(0, 50)), // 0 <= iid < 50
+      "uid" : uid.toString(),
+      "iid" : getRandomInt(0, 50).toString(), // 0 <= iid < 50
       "rating" : getRandomInt(1, 6) // 1 <= rating < 6
     })
   }

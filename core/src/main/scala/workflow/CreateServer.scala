@@ -87,7 +87,9 @@ case class ServerConfig(
   feedback: Boolean = false,
   eventServerIp: String = "localhost",
   eventServerPort: Int = 7070,
-  accessKey: String = "")
+  accessKey: String = "",
+  verbose: Boolean = false,
+  debug: Boolean = false)
 
 case class StartServer()
 case class StopServer()
@@ -128,10 +130,17 @@ object CreateServer extends Logging {
       } text("Event server port. Default: 7070")
       opt[String]("accesskey") action { (x, c) =>
         c.copy(accessKey = x)
-      }
+      } text("Event server access key.")
+      opt[Unit]("verbose") action { (x, c) =>
+        c.copy(verbose = true)
+      } text("Enable verbose output.")
+      opt[Unit]("debug") action { (x, c) =>
+        c.copy(debug = true)
+      } text("Enable debug output.")
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
+      WorkflowUtils.setupLogging(sc.verbose, sc.debug)
       engineInstances.get(sc.engineInstanceId) map { engineInstance =>
         val engineId = sc.engineId.getOrElse(engineInstance.engineId)
         val engineVersion = sc.engineVersion.getOrElse(

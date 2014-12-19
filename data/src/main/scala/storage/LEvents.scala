@@ -28,7 +28,7 @@ private[prediction] trait LEvents {
   private def notImplemented(implicit ec: ExecutionContext) = Future {
     Left(StorageError("Not implemented."))
   }
-  val timeout = Duration(5, "seconds")
+  val defaultTimeout = Duration(60, "seconds")
 
   /** Initialize Event Store for the appId.
    * initailization routine to be called when app is first created.
@@ -142,28 +142,33 @@ private[prediction] trait LEvents {
     Future[Either[StorageError, Unit]] = notImplemented
 
   // following is blocking
-  def insert(event: Event, appId: Int)(implicit ec: ExecutionContext):
+  def insert(event: Event, appId: Int,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, String] = {
     Await.result(futureInsert(event, appId), timeout)
   }
 
-  def get(eventId: String, appId: Int)(implicit ec: ExecutionContext):
+  def get(eventId: String, appId: Int,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Option[Event]] = {
     Await.result(futureGet(eventId, appId), timeout)
   }
 
-  def delete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
+  def delete(eventId: String, appId: Int,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Boolean] = {
     Await.result(futureDelete(eventId, appId), timeout)
   }
 
-  def getByAppId(appId: Int)(implicit ec: ExecutionContext):
+  def getByAppId(appId: Int,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureGetByAppId(appId), timeout)
   }
 
   def getByAppIdAndTime(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime])(implicit ec: ExecutionContext):
+    untilTime: Option[DateTime],
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureGetByAppIdAndTime(appId, startTime, untilTime), timeout)
   }
@@ -172,7 +177,8 @@ private[prediction] trait LEvents {
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
-    entityId: Option[String])(implicit ec: ExecutionContext):
+    entityId: Option[String],
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureGetByAppIdAndTimeAndEntity(appId, startTime, untilTime,
       entityType, entityId), timeout)
@@ -212,7 +218,8 @@ private[prediction] trait LEvents {
     targetEntityType: Option[Option[String]] = None,
     targetEntityId: Option[Option[String]] = None,
     limit: Option[Int] = None,
-    reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
+    reversed: Option[Boolean] = None,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureFind(
       appId = appId,
@@ -245,7 +252,8 @@ private[prediction] trait LEvents {
     entityType: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
-    required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
+    required: Option[Seq[String]] = None,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Map[String, DataMap]] = {
     Await.result(futureAggregateProperties(
       appId = appId,
@@ -255,7 +263,8 @@ private[prediction] trait LEvents {
       required = required), timeout)
   }
 
-  def deleteByAppId(appId: Int)(implicit ec: ExecutionContext):
+  def deleteByAppId(appId: Int,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Unit] = {
     Await.result(futureDeleteByAppId(appId), timeout)
   }

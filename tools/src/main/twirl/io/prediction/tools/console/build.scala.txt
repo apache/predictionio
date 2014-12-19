@@ -1,0 +1,11 @@
+Usage: pio build [--sbt-extra <value>] [--clean] [--no-asm]
+                 [common options...]
+                 
+Build an engine at the current directory.
+
+  --sbt-extra <value>
+      Extra command to pass to SBT when it builds your engine.
+  --clean
+      Clean build.
+  --no-asm
+      Skip building external dependencies assembly.

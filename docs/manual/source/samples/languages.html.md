@@ -20,7 +20,7 @@ This is a sample Scala code block:
 
 ```scala
 class Preparator
-  extends PPreparator[EmptyPreparatorParams, TrainingData, PreparedData] {
+  extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
     new PreparedData(ratings = trainingData.ratings)

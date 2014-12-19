@@ -10,7 +10,6 @@ import io.prediction.data.storage.Storage
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.Rating
 
 import grizzled.slf4j.Logger
 
@@ -45,13 +44,19 @@ class DataSource(val dsp: DataSourceParams)
 
     // mongoRDD contains tuples of (ObjectId, BSONObject)
     val ratings = mongoRDD.map { case (id, bson) =>
-      Rating(bson.get("uid").asInstanceOf[Int],
-        bson.get("iid").asInstanceOf[Int],
+      Rating(bson.get("uid").asInstanceOf[String],
+        bson.get("iid").asInstanceOf[String],
         bson.get("rating").asInstanceOf[Double])
     }
     new TrainingData(ratings)
   }
 }
+
+case class Rating(
+  val user: String,
+  val item: String,
+  val rating: Double
+)
 
 class TrainingData(
   val ratings: RDD[Rating]

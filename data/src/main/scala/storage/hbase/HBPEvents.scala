@@ -19,6 +19,8 @@ import io.prediction.data.storage.Event
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.PEvents
 import io.prediction.data.storage.PEventAggregator
+import io.prediction.data.storage.EntityMap
+import io.prediction.data.storage.BiMap
 
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
@@ -30,8 +32,12 @@ import org.joda.time.DateTimeZone
 
 import grizzled.slf4j.Logging
 
+import scala.reflect.ClassTag
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
+import org.apache.spark.SparkContext._
 
 class HBPEvents(client: HBClient, namespace: String)
   extends PEvents with Logging {
@@ -99,6 +105,36 @@ class HBPEvents(client: HBClient, namespace: String)
       }
     } else dmRDD
 
+  }
+
+  override
+  def extractEntityMap[A: ClassTag](
+    appId: Int,
+    entityType: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    required: Option[Seq[String]] = None)
+    (sc: SparkContext)(extract: DataMap => A): EntityMap[A] = {
+
+    val idToData: Map[String, A] = aggregateProperties(
+      appId = appId,
+      entityType = entityType,
+      startTime = startTime,
+      untilTime = untilTime,
+      required = required
+    )(sc).map{ case (id, dm) =>
+      try {
+        (id, extract(dm))
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get extract entity from DataMap ${dm} of" +
+            s" entityId ${id}. Exception: ${e}.")
+          throw e
+        }
+      }
+    }.collectAsMap.toMap
+
+    new EntityMap(idToData)
   }
 
 }

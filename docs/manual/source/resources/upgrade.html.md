@@ -2,36 +2,36 @@
 title: Changes and Upgrades
 ---
 
-This page highlights major changes in each version and upgrad tools. 
+This page highlights major changes in each version and upgrade tools. 
 
 
 ##Upgrade from 0.8.2 to 0.8.3
 
 0.8.3 disallows entity types **pio_user** and **pio_item**. These types are used by default for most SDKs. They are deprecated in 0.8.3, and SDKs helper functions have been updated to use **user** and **item** instead.
 
-This script performs the migration by copying one appId to another. You can either point the engine to the new appId, or can migrate the data back to the old one using hbase import / export tool.
+If you are upgrading to 0.8.3, you can follow these steps to migrate your data. 
 
-Suppose we are migrating <old_app_id>.
-
-```
-$ set -a
-$ source conf/pio-env.sh
-$ set +a
-$ bin/pio app new NewApp
-... you will see <new_app_id> 
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3 <old_app_id> <new_app_id>"
-... Done.
-```
-
-*new_app_id* must be empty when you upgrade. You can check the status of an app using:
+##### 1. Create a new app 
 
 ```
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
+$ pio app new <my app name>
 ```
-If it shows that it is non-empty, you can clean it with
+Please take note of the <new app id> generated for the new app.
+
+##### 2. Run the upgrade command 
 
 ```
-$ bin/pio app data-delete <new_app_name>
+$ pio upgrade 0.8.2 0.8.3 <old app id> <new app id>
+```
+
+It will run a script that creates a new app with the new app id and migreate the data to the new app. 
+
+##### 3. Update **engine.json** to use the new app id. **Engine.json** is located under your engine project directory. 
+
+```
+  "datasource": {
+    "appId": <new app id>
+  },
 ```
 
 ## Schema Changes in 0.8.2

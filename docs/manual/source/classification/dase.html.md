@@ -84,7 +84,7 @@ EventServer and it returns `TrainingData`.
 case class DataSourceParams(val appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[TrainingData, Query, EmptyEvalInfo, EmptyActualResult] {
+  extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
 

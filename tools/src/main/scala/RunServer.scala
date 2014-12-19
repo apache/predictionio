@@ -37,7 +37,17 @@ object RunServer extends Logging {
     val sparkHome = ca.common.sparkHome.getOrElse(
       sys.env.get("SPARK_HOME").getOrElse("."))
 
-    val extraFiles = WorkflowUtils.hadoopEcoConfFiles
+    val extraFiles = WorkflowUtils.thirdPartyConfFiles
+
+    val driverClassPathIndex =
+      ca.common.sparkPassThrough.indexOf("--driver-class-path")
+    val driverClassPathPrefix =
+      if (driverClassPathIndex != -1)
+        Seq(ca.common.sparkPassThrough(driverClassPathIndex + 1))
+      else
+        Seq()
+    val extraClasspaths =
+      driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
@@ -50,7 +60,14 @@ object RunServer extends Logging {
         "--jars",
         (em.files ++ Console.builtinEngines(
           ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(",")) ++
-      (if (extraFiles.size > 0) Seq("--files") ++ extraFiles else Seq()) ++
+      (if (extraFiles.size > 0)
+        Seq("--files", extraFiles.mkString(","))
+      else
+        Seq()) ++
+      (if (extraClasspaths.size > 0)
+        Seq("--driver-class-path", extraClasspaths.mkString(":"))
+      else
+        Seq()) ++
       Seq(
         core.getCanonicalPath,
         "--engineInstanceId",
@@ -62,10 +79,12 @@ object RunServer extends Logging {
         "--event-server-ip",
         ca.eventServer.ip,
         "--event-server-port",
-        ca.eventServer.port.toString,
-        "--accesskey",
-        ca.accessKey.accessKey) ++
-        (if (ca.eventServer.enabled) Seq("--feedback") else Seq())
+        ca.eventServer.port.toString) ++
+      (if (ca.accessKey.accessKey != "")
+        Seq("--accesskey", ca.accessKey.accessKey) else Seq()) ++
+      (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
+      (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
+      (if (ca.common.debug) Seq("--debug") else Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 

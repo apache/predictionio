@@ -10,7 +10,6 @@ import io.prediction.data.storage.Storage
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.Rating
 
 import grizzled.slf4j.Logger
 
@@ -28,11 +27,17 @@ class DataSource(val dsp: DataSourceParams)
     val data = sc.textFile(dsp.filepath)
     val ratings: RDD[Rating] = data.map(_.split("::") match {
       case Array(user, item, rate) =>
-        Rating(user.toInt, item.toInt, rate.toDouble)
+        Rating(user, item, rate.toDouble)
     })
     new TrainingData(ratings)
   }
 }
+
+case class Rating(
+  val user: String,
+  val item: String,
+  val rating: Double
+)
 
 class TrainingData(
   val ratings: RDD[Rating]
