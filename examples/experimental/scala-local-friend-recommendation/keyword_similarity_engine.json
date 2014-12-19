@@ -1,0 +1,19 @@
+{
+  "id": "io.prediction.examples.friendrecommendation.keywordsimilarity",
+  "version": "0.1",
+  "name": "Friend Recommendation Engine with Keyword Similarity Method",
+  "engineFactory": "io.prediction.examples.friendrecommendation.KeywordSimilarityEngineFactory",
+  "datasource": {
+    "itemFilePath": "data/item.txt",
+    "userKeywordFilePath": "data/user_key_word.txt",
+    "userActionFilePath": "data/user_action.txt",
+    "trainingRecordFilePath": "data/rec_log_train.txt"
+  },
+  "algorithms": [
+    {
+      "name": "KeywordSimilarityAlgorithm",
+      "params": {
+      }
+    }
+  ]
+}
