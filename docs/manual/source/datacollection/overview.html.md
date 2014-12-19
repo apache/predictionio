@@ -20,7 +20,7 @@ Preparator.
 With Collaborative Filtering based Recommendation Engine, a common pattern is
 
 ```
-user ��� action ��� item
+user -- action -- item
 ```
 
 where users and items have properties associated with them.
