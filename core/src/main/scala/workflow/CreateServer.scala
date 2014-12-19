@@ -198,6 +198,11 @@ object CreateServer extends Logging {
 
     val servingParamsWithName: (String, Params) = {
       val (name, params) = read[(String, JValue)](engineInstance.servingParams)
+      if (!engine.servingClassMap.contains(name)) {
+        error(s"Unable to find serving class with name '${name}'" +
+          " defined in Engine.")
+        sys.exit(1)
+      }
       val extractedParams = WorkflowUtils.extractParams(
         engineLanguage,
         compact(render(params)),
@@ -226,6 +231,11 @@ object CreateServer extends Logging {
     val dataSourceParamsWithName: (String, Params) = {
       val (name, params) =
         read[(String, JValue)](engineInstance.dataSourceParams)
+      if (!engine.dataSourceClassMap.contains(name)) {
+        error(s"Unable to find datasource class with name '${name}'" +
+          " defined in Engine.")
+        sys.exit(1)
+      }
       val extractedParams = WorkflowUtils.extractParams(
         engineLanguage,
         compact(render(params)),
@@ -238,7 +248,12 @@ object CreateServer extends Logging {
       engine.preparatorClass)*/
     val preparatorParamsWithName: (String, Params) = {
       val (name, params) =
-        read[(String, JValue)](engineInstance.preparatorParams)      
+        read[(String, JValue)](engineInstance.preparatorParams)
+      if (!engine.preparatorClassMap.contains(name)) {
+        error(s"Unable to find preparator class with name '${name}'" +
+          " defined in Engine.")
+        sys.exit(1)
+      }
       val extractedParams = WorkflowUtils.extractParams(
         engineLanguage,
         compact(render(params)),

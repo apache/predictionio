@@ -20,6 +20,8 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 
+import scala.language.implicitConversions
+
 /** This class chains up the entire data process. PredictionIO uses this
   * information to create workflows and deployments. In Scala, you should
   * implement an object that extends the `IEngineFactory` trait similar to the
@@ -98,6 +100,62 @@ class Engine[TD, EI, PD, Q, P, A](
   }
 }
 
+object Engine {
+
+  class DataSourceMap[TD, EI, Q, A](
+    val m: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]) {
+    def this(c: Class[_ <: BaseDataSource[TD, EI, Q, A]]) = this(Map("" -> c))
+  }
+
+  object DataSourceMap {
+    implicit def cToMap[TD, EI, Q, A](
+      c: Class[_ <: BaseDataSource[TD, EI, Q, A]]):
+      DataSourceMap[TD, EI, Q, A] = new DataSourceMap(c)
+    implicit def mToMap[TD, EI, Q, A](
+      m: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]):
+      DataSourceMap[TD, EI, Q, A] = new DataSourceMap(m)
+  }
+
+  class PreparatorMap[TD, PD](
+    val m: Map[String, Class[_ <: BasePreparator[TD, PD]]]) {
+    def this(c: Class[_ <: BasePreparator[TD, PD]]) = this(Map("" -> c))
+  }
+
+  object PreparatorMap {
+    implicit def cToMap[TD, PD](
+      c: Class[_ <: BasePreparator[TD, PD]]):
+      PreparatorMap[TD, PD] = new PreparatorMap(c)
+    implicit def mToMap[TD, PD](
+      m: Map[String, Class[_ <: BasePreparator[TD, PD]]]):
+      PreparatorMap[TD, PD] = new PreparatorMap(m)
+  }
+
+  class ServingMap[Q, P](
+    val m: Map[String, Class[_ <: BaseServing[Q, P]]]) {
+    def this(c: Class[_ <: BaseServing[Q, P]]) = this(Map("" -> c))
+  }
+
+  object ServingMap {
+    implicit def cToMap[Q, P](
+      c: Class[_ <: BaseServing[Q, P]]): ServingMap[Q, P] =
+        new ServingMap(c)
+    implicit def mToMap[Q, P](
+      m: Map[String, Class[_ <: BaseServing[Q, P]]]): ServingMap[Q, P] =
+        new ServingMap(m)
+  }
+
+  def apply[TD, EI, PD, Q, P, A](
+    dataSourceMap: DataSourceMap[TD, EI, Q, A],
+    preparatorMap: PreparatorMap[TD, PD],
+    algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
+    servingMap: ServingMap[Q, P]) = new Engine(
+      dataSourceMap.m,
+      preparatorMap.m,
+      algorithmClassMap,
+      servingMap.m
+    )
+
+}
 /** This class serves as a logical grouping of all required engine's parameters.
   *
   * @param dataSourceParams Data source parameters.
