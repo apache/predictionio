@@ -1,8 +1,61 @@
 ---
-title: Changes and Upgrades
+title: Upgrade Instructions
 ---
 
 This page highlights major changes in each version and upgrade tools. 
+
+##Upgrade to 0.8.4
+
+**engine.json** has slightly changed its format in 0.8.4 in order to make engine more flexible. If you are upgrading to 0.8.4, engine.json needs to have the **Params** field for *datasource*, *preparator*, and *serving*. Here is the sample engine.json from templates/scala-parallel-recommendation-custom-preparator that demonstrate the change for *datasource* (line 7).
+
+
+```
+In 0.8.3 
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
+  "datasource": {
+    "appId": 1
+  },
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01
+      }
+    }
+  ]
+}
+```
+
+
+
+```
+In 0.8.4
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
+  "datasource": {
+    "params" : {
+      "appId": 1
+    }
+  },
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "rank": 10,
+        "numIterations": 20,
+        "lambda": 0.01
+      }
+    }
+  ]
+```
+
 
 
 ##Upgrade from 0.8.2 to 0.8.3
