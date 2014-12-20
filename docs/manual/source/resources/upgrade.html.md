@@ -6,7 +6,7 @@ This page highlights major changes in each version and upgrade tools.
 
 ##Upgrade to 0.8.4
 
-**engine.json** has slightly changed its format in 0.8.4 in order to make engine more flexible. If you are upgrading to 0.8.4, engine.json needs to have the **Params** field for *datasource*, *preparator*, and *serving*. Here is the sample engine.json from templates/scala-parallel-recommendation-custom-preparator that demonstrate the change for *datasource* (line 7).
+**engine.json** has slightly changed its format in 0.8.4 in order to make engine more flexible. If you are upgrading to 0.8.4, engine.json needs to have the ```params``` field for *datasource*, *preparator*, and *serving*. Here is the sample engine.json from templates/scala-parallel-recommendation-custom-preparator that demonstrate the change for *datasource* (line 7).
 
 
 ```
