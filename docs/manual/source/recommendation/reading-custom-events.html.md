@@ -3,12 +3,8 @@ title: Reading Custom Events (Recommendation)
 ---
 
 You can modify the [default DataSource](dase.html#data) to read
-<<<<<<< HEAD
+
 - Custom events other than the default **rate** and **buy** events.
-=======
- 
-- Custom events other than the default **rate** and **buy** events. 
->>>>>>> livedoc
 - Events which involve different entity types other than the default **user** and **item**.
 
 

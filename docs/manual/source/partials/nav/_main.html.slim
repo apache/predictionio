@@ -20,15 +20,11 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Quick Start', '/classification/quickstart/'
         li = link_to_with_active 'DASE Components Explained', '/classification/dase/'
     li.expand
-      = link_to 'Collecting Data', '#'
+      = link_to 'Data Collection', '#'
       ul
-        li = link_to_with_active 'Overview of Event Server', '/datacollection/overview/'
-        li = link_to_with_active 'Using Event API', '/datacollection/eventapi/'
+        li = link_to_with_active 'Overview', '/datacollection/overview/'
+        li = link_to_with_active 'Collecting Data', '/datacollection/eventapi/'
         li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'
-    li.expand
-      = link_to 'Engine Operation', '#'
-      ul
-        li = link_to_with_active 'Running an Engine', '/operation/engine/'
     li.expand
       = link_to 'Get Involved', '#'
       ul
@@ -46,7 +42,7 @@ nav#nav-main role="navigation"
       = link_to 'Resources', '#'
       ul
         li = link_to_with_active 'FAQs', '/resources/faq/'
-        li = link_to_with_active 'Upgrading', '/resources/schema-change/'
+        li = link_to_with_active 'Upgrade Tips', '/resources/upgrade/'
         li = link_to_with_active 'Architecture', '/resources/systems/'
         li = link_to_with_active 'Command Line', '/resources/command-line/'
         li = link_to_with_active 'Glossary', '/resources/glossary/'
