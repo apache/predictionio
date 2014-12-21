@@ -7,5 +7,5 @@ name := "example-java-local-helloworld"
 organization := "org.sample"
 
 libraryDependencies ++= Seq(
-  "io.prediction" %% "core" % "0.8.4-SNAPSHOT" % "provided",
+  "io.prediction" %% "core" % "0.8.4" % "provided",
   "org.apache.spark" %% "spark-core" % "1.2.0" % "provided")
