@@ -11,7 +11,7 @@ version := "0.0.1-SNAPSHOT"
 
 libraryDependencies ++= Seq(
   "io.prediction"    %% "core"          % "0.8.4-SNAPSHOT" % "provided",
-  "org.apache.spark" %% "spark-core"    % "1.1.0" % "provided",
-  "org.apache.spark"  %% "spark-mllib"    % "1.1.0"
+  "org.apache.spark" %% "spark-core"    % "1.2.0" % "provided",
+  "org.apache.spark"  %% "spark-mllib"    % "1.2.0"
     exclude("org.apache.spark", "spark-core_2.10")
     exclude("org.eclipse.jetty", "jetty-server"))

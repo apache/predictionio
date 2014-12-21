@@ -20,8 +20,8 @@ name := "tools"
 
 libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"          % "3.2.0",
-  "io.spray"                % "spray-can"      % "1.2.1",
-  "io.spray"                % "spray-routing"  % "1.2.1",
+  "io.spray"               %% "spray-can"      % "1.3.2",
+  "io.spray"               %% "spray-routing"  % "1.3.2",
   "me.lessis"              %% "semverfi"       % "0.1.3",
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
   "org.apache.hadoop"       % "hadoop-hdfs"    % "2.5.0",
@@ -29,7 +29,7 @@ libraryDependencies ++= Seq(
   "org.json4s"             %% "json4s-native"  % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
   "org.scalaj"             %% "scalaj-http"    % "0.3.16",
-  "org.spark-project.akka" %% "akka-actor"     % "2.2.3-shaded-protobuf")
+  "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark")
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {

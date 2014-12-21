@@ -15,26 +15,31 @@
 name := "data"
 
 libraryDependencies ++= Seq(
-  "com.google.guava"        % "guava"           % "18.0",
-  "io.spray"                % "spray-can"       % "1.2.1",
-  "io.spray"                % "spray-routing"   % "1.2.1",
-  "org.apache.hadoop"       % "hadoop-common"   % "2.5.0",
-  "org.apache.hbase"        % "hbase-common"    % "0.98.5-hadoop2",
-  "org.apache.hbase"        % "hbase-client"    % "0.98.5-hadoop2",
-  "org.clapper"            %% "grizzled-slf4j"  % "1.0.2",
-  "org.elasticsearch"       % "elasticsearch"   % elasticsearchVersion.value,
-  "org.json4s"             %% "json4s-native"   % json4sVersion.value,
-  "org.json4s"             %% "json4s-ext"      % json4sVersion.value,
-  "org.mongodb"            %% "casbah"          % "2.7.2",
-  "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
-  "org.slf4j"               % "slf4j-log4j12"   % "1.7.7",
-  "commons-codec"           % "commons-codec"   % "1.9",
-  "org.spark-project.akka" %% "akka-actor"      % "2.2.3-shaded-protobuf",
-  "org.specs2"             %% "specs2"          % "2.3.13" % "test",
-  "com.google.guava"       % "guava"            % "18",
+  "com.google.guava"        % "guava"          % "18.0",
+  "commons-codec"           % "commons-codec"  % "1.9",
+  "io.spray"               %% "spray-can"      % "1.3.2",
+  "io.spray"               %% "spray-routing"  % "1.3.2",
+  "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
+  "org.apache.hbase"        % "hbase-common"   % "0.98.5-hadoop2",
+  "org.apache.hbase"        % "hbase-client"   % "0.98.5-hadoop2"
+    exclude("org.apache.zookeeper", "zookeeper"),
   // added for Parallel storage interface
-  "org.apache.hbase" % "hbase-server" % "0.98.5-hadoop2"
+  "org.apache.hbase"        % "hbase-server"   % "0.98.5-hadoop2"
+    exclude("org.apache.hbase", "hbase-client")
+    exclude("org.apache.zookeeper", "zookeeper")
     exclude("org.mortbay.jetty", "servlet-api-2.5")
     exclude("org.mortbay.jetty", "jsp-api-2.1")
     exclude("org.mortbay.jetty", "jsp-2.1"),
-  "org.apache.spark" %% "spark-core" % sparkVersion.value % "provided")
+  "org.apache.zookeeper"    % "zookeeper"      % "3.4.6"
+    exclude("org.slf4j", "slf4j-api")
+    exclude("org.slf4j", "slf4j-log4j12"),
+  "org.apache.spark"       %% "spark-core"     % sparkVersion.value % "provided",
+  "org.clapper"            %% "grizzled-slf4j" % "1.0.2",
+  "org.elasticsearch"       % "elasticsearch"  % elasticsearchVersion.value,
+  "org.json4s"             %% "json4s-native"  % json4sVersion.value,
+  "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
+  "org.mongodb"            %% "casbah"         % "2.7.2",
+  "org.scalatest"          %% "scalatest"      % "2.1.6" % "test",
+  "org.slf4j"               % "slf4j-log4j12"  % "1.7.7",
+  "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
+  "org.specs2"             %% "specs2"         % "2.3.13" % "test")

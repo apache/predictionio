@@ -38,7 +38,7 @@ fi
 
 # Make sure the Apache Spark version meets the prerequisite if it is a binary
 # distribution
-MIN_SPARK_VERSION="1.1.0"
+MIN_SPARK_VERSION="1.2.0"
 if [ -r "$SPARK_HOME/RELEASE" ]; then
   SPARK_VERSION=`awk '{print $2}' $SPARK_HOME/RELEASE`
   if semverLT $SPARK_VERSION $MIN_SPARK_VERSION; then

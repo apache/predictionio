@@ -32,7 +32,7 @@ PredictionIO binary distribution created at PredictionIO-<%= data.versions.pio %
 ### Spark Setup
 
 Apache Spark is the default processing engine for PredictionIO. Download [Apache
-Spark release 1.1.0 package hadoop2.4](http://spark.apache.org/downloads.html).
+Spark release 1.2.0 package hadoop2.4](http://spark.apache.org/downloads.html).
 
 
 ```
@@ -71,13 +71,13 @@ Elasticsearch.
 
 
 If you are not using the default setting at localhost. You may change ```conf/pio-env.sh``` to fit your setup.
-   
+
 ```
 PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
 PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
 PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
   ```
-   
+
 
 #### <a name="hbase"></a>HBase Setup
 
@@ -138,7 +138,7 @@ following.
 
 With this, you can confidently run the Event Server successfully.
 
-At any time, you can run `$ pio status` to check the status of the dependencies. 
+At any time, you can run `$ pio status` to check the status of the dependencies.
 
 Now you have installed everything you need to run PredictionIO!
 

@@ -22,13 +22,15 @@ libraryDependencies ++= Seq(
   "com.github.scopt"  %% "scopt"          % "3.2.0",
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",
-  "org.apache.mahout"  % "mahout-core"    % "0.9",
+  "org.apache.mahout"  % "mahout-core"    % "0.9"
+    exclude("org.slf4j", "slf4j-api")
+    exclude("org.slf4j", "slf4j-log4j12"),
   "org.apache.spark"  %% "spark-core"     % sparkVersion.value % "provided",
   "org.apache.spark"  %% "spark-mllib"    % sparkVersion.value % "provided",
   "org.clapper"       %% "grizzled-slf4j" % "1.0.2",
   "org.json4s"        %% "json4s-native"  % json4sVersion.value,
-  "org.scalanlp"      %% "breeze"         % "0.9",
-  "org.scalanlp"      %% "breeze-natives" % "0.9",
+  "org.scalanlp"      %% "breeze"         % "0.10",
+  "org.scalanlp"      %% "breeze-natives" % "0.10",
   "org.scalanlp"      %% "nak"            % "1.3",
   "org.scalatest"     %% "scalatest"      % "2.2.0" % "test")
 
