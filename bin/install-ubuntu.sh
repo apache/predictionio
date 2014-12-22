@@ -16,7 +16,7 @@ PIO_VERSION=0.8.4
 PIO_DIR=$INSTALL_DIR/PredictionIO
 PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
 VENDORS_DIR=$PIO_DIR/vendors
-SPARK_DIR=$VENDORS_DIR/spark-1.1.0
+SPARK_DIR=$VENDORS_DIR/spark-1.2.0
 ELASTICSEARCH_DIR=$VENDORS_DIR/elasticsearch-1.3.2
 HBASE_DIR=$VENDORS_DIR/hbase-0.98.6
 ZOOKEEPER_DIR=$VENDORS_DIR/zookeeper
@@ -56,13 +56,13 @@ mkdir $VENDORS_DIR
 
 # Spark
 echo "Starting Spark setup in: $SPARK_DIR"
-if [ ! -e spark-1.1.0-bin-hadoop2.4.tgz ]; then
+if [ ! -e spark-1.2.0-bin-hadoop2.4.tgz ]; then
   echo "Downloading Spark..."
-  wget http://d3kbcqa49mib13.cloudfront.net/spark-1.1.0-bin-hadoop2.4.tgz
+  wget http://d3kbcqa49mib13.cloudfront.net/spark-1.2.0-bin-hadoop2.4.tgz
 fi
-tar xf spark-1.1.0-bin-hadoop2.4.tgz
+tar xf spark-1.2.0-bin-hadoop2.4.tgz
 rm -rf $SPARK_DIR
-mv spark-1.1.0-bin-hadoop2.4 $SPARK_DIR
+mv spark-1.2.0-bin-hadoop2.4 $SPARK_DIR
 
 echo "Updating: $PIO_DIR/conf/pio-env.sh"
 sed -i "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$SPARK_DIR|g" $PIO_DIR/conf/pio-env.sh
@@ -110,7 +110,7 @@ cat <<EOT > $HBASE_DIR/conf/hbase-site.xml
 EOT
 
 echo "Updating: $HBASE_DIR/conf/hbase-env.sh to include $JAVA_HOME"
-sed -i "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $HBASE_DIR/conf/hbase-env.sh
+sed -i "s|# export JAVA_HOME=/usr/java/jdk1.7.0/|export JAVA_HOME=$JAVA_HOME|" $HBASE_DIR/conf/hbase-env.sh
 
 echo "HBase setup done!"
 
