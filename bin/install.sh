@@ -7,8 +7,6 @@
 # Documentation: http://docs.prediction.io
 #
 # License: http://www.apache.org/licenses/LICENSE-2.0
-#
-#
 
 OS=`uname`
 PIO_VERSION=0.8.4
@@ -69,7 +67,6 @@ elif [ $OS = "Linux" ]
   echo "Java install done!"
 fi
 
-
 # PredictionIO
 echo "Starting PredictionIO setup in: $PIO_DIR"
 cd $TEMP_DIR
@@ -115,7 +112,6 @@ fi
 tar zxf elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
 rm -rf $ELASTICSEARCH_DIR
 mv elasticsearch-$ELASTICSEARCH_VERSION $ELASTICSEARCH_DIR
-
 
 echo "Updating: $ELASTICSEARCH_DIR/config/elasticsearch.yml"
 echo 'network.host: 127.0.0.1' >> $ELASTICSEARCH_DIR/config/elasticsearch.yml
