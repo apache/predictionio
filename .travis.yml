@@ -24,7 +24,8 @@ deploy:
     endpoint: docs.prediction.io.s3-website-us-east-1.amazonaws.com
     local-dir: build
     detect_encoding: true
-    on: livedoc
+    on:
+      branch: livedoc
   - provider: s3
     access_key_id:
       secure: "PxUW6LxwsJ2UlakxsPtkgIwbE949QyJbDF31IdjDIVX5H7KLWA0xkpECj+DXW7/lODsuGLxi02w4Y+KE0Ujo27ovnQAu2F1D6NDGn+D/JIu/wqjRJ4OOOg65j/06zyj5jzWMckLh6wYKABMiInsWiXtr4ehLS6pHVyJVXaLuBPE="
@@ -37,4 +38,5 @@ deploy:
     endpoint: install.prediction.io.s3-website-us-east-1.amazonaws.com
     local-dir: ../../bin
     detect_encoding: true
-    on: master
+    on:
+      branch: master
