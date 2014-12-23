@@ -21,12 +21,13 @@ then
   echo "Installing on Mac"
   INSTALL_DIR=/Users/$USER
   USER_PROFILE=/Users/$USER/.profile
-
+  SED_CMD="sed -i ''"
 elif [ $OS = "Linux" ]
 then
   echo "Installing on Linux"
   INSTALL_DIR=/home/$USER
   USER_PROFILE=/home/$USER/.profile
+  SED_CMD="sed -i"
 else
   echo "Platform not recognized! Aborting!"
   exit 1
@@ -101,7 +102,7 @@ rm -rf $SPARK_DIR
 mv spark-$SPARK_VERSION-bin-hadoop2.4 $SPARK_DIR
 
 echo "Updating: $PIO_DIR/conf/pio-env.sh"
-sed -i "" "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$SPARK_DIR|g" $PIO_DIR/conf/pio-env.sh
+$SED_CMD "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$SPARK_DIR|g" $PIO_DIR/conf/pio-env.sh
 
 echo "Spark setup done!"
 
@@ -146,7 +147,7 @@ cat <<EOT > $HBASE_DIR/conf/hbase-site.xml
 EOT
 
 echo "Updating: $HBASE_DIR/conf/hbase-env.sh to include $JAVA_HOME"
-sed -i "" "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $HBASE_DIR/conf/hbase-env.sh
+$SED_CMD "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $HBASE_DIR/conf/hbase-env.sh
 
 echo "HBase setup done!"
 
