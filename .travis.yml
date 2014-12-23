@@ -35,6 +35,6 @@ deploy:
     skip_cleanup: true
     acl: public_read
     endpoint: install.prediction.io.s3-website-us-east-1.amazonaws.com
-    local-dir: bin
+    local-dir: ../../bin
     detect_encoding: true
     on: master
