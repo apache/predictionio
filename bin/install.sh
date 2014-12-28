@@ -19,20 +19,18 @@ HBASE_VERSION=0.98.6
 if [ $OS = "Darwin" ]
 then
   echo "Installing on Mac"
-  INSTALL_DIR=/Users/$USER
-  USER_PROFILE=/Users/$USER/.profile
   SED_CMD="sed -i ''"
 elif [ $OS = "Linux" ]
 then
   echo "Installing on Linux"
-  INSTALL_DIR=/home/$USER
-  USER_PROFILE=/home/$USER/.profile
   SED_CMD="sed -i"
 else
   echo "Platform not recognized! Aborting!"
   exit 1
 fi
 
+INSTALL_DIR=$HOME
+USER_PROFILE=$HOME/.profile
 TEMP_DIR=/tmp
 PIO_DIR=$INSTALL_DIR/PredictionIO
 PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
