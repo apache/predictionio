@@ -1,5 +1,5 @@
-#!/bin/sh
-#
+#!/usr/bin/env bash
+
 # Copyright 2014 TappingStone, Inc.
 #
 # This script will install PredictionIO onto your computer!
@@ -7,8 +7,6 @@
 # Documentation: http://docs.prediction.io
 #
 # License: http://www.apache.org/licenses/LICENSE-2.0
-#
-#
 
 OS=`uname`
 PIO_VERSION=0.8.4
@@ -16,19 +14,32 @@ SPARK_VERSION=1.2.0
 ELASTICSEARCH_VERSION=1.3.3
 HBASE_VERSION=0.98.6
 
+echo -e "\033[1;32mWelcome to PredictionIO $PIO_VERSION!\033[0m"
+
 if [ $OS = "Darwin" ]
 then
-  echo "\033[1;32mInstalling PredictionIO $PIO_VERIONS on Mac...\033[0m"
+  echo "\033[1;34mMac OS detected!\033[0m"
   SED_CMD="sed -i ''"
 elif [ $OS = "Linux" ]
 then
-  echo "\033[1;32mInstalling PredictionIO $PIO_VERSION on Linux...\033[0m"
+  echo "\033[1;34mLinux OS detected!\033[0m"
   SED_CMD="sed -i"
 else
   echo "\033[1;31mYour OS $OS is not yet supported for automatic install :(\033[0m"
   echo "\033[1;31mPlease do a manual install!\033[0m"
   exit 1
 fi
+
+name="Ricardo"
+read -e -i "$name" -p "Please enter your name: " input
+name="${input:-$name}"
+
+echo -n "Installation path: "
+read PIO_DIR
+
+echo $PIO_DIR
+
+exit
 
 PIO_DIR=$HOME/PredictionIO
 VENDORS_DIR=$PIO_DIR/vendors
@@ -44,7 +55,7 @@ ZOOKEEPER_DIR=$VENDORS_DIR/zookeeper
 # Java
 if [ $OS = "Darwin" ]
   then
-  echo "\033[1;36mStarting Java on Mac...\033[0m"
+  echo "\033[1;36mStarting Java install...\033[0m"
 
   JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
   JAVA_HOME=`/usr/libexec/java_home`
@@ -56,7 +67,7 @@ if [ $OS = "Darwin" ]
 elif [ $OS = "Linux" ]
   then
   # Java
-  echo "\033[1;36mStarting Java install on Linux...\033[0m"
+  echo "\033[1;36mStarting Java install...\033[0m"
 
   echo "\033[33mThis script requires superuser access!\033[0m"
   echo "\033[33mYou will be prompted for your password by sudo:\033[0m"
@@ -155,10 +166,12 @@ echo "Updating permissions on: $VENDORS_DIR"
 
 chown -R $USER $VENDORS_DIR
 
-echo "\033[1;32mStarting Elasticserach and HBase...\033[0m"
+
 
 $ELASTICSEARCH_DIR/bin/elasticsearch -d
 $HBASE_DIR/bin/start-hbase.sh
+
+echo "\033[1;32mElasticserach and HBase started!\033[0m"
 
 echo "\033[42m################################################################################\033[0m"
 echo "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
@@ -167,5 +180,5 @@ echo "Run: '\033[1mpio eventserver --ip 0.0.0.0\033[0m'"
 echo "Check the eventserver status with: '\033[1mcurl -i -X GET http://localhost:7070\033[0m'"
 echo "Use: '\033[1mpio [train|deploy|...]\033[0m' commands"
 echo "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
-echo "\033[1;34mDocumentation at http://docs.prediction.io\033[0m"
+echo "\033[1;34mDocumentation at: http://docs.prediction.io\033[0m"
 echo "\033[42m################################################################################\033[0m"
