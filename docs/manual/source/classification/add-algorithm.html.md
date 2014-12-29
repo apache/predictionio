@@ -4,11 +4,11 @@ title: Using Alternative Algorithm
 
 The classification template uses the Naive Bayes algorithm by default. You can easily add and use other MLlib classification algorithms. The following will demonstrate how to add the [MLlib Random Forests algorithm](https://spark.apache.org/docs/latest/mllib-ensembles.html) into the engine.
 
-## 1. Create a new file `RandomForestAlgorithm.scala`.
+## Create a new file RandomForestAlgorithm.scala
 
 Locate `src/main/scala/NaiveBayesAlgorithm.scala` under your engine directory, which should be /MyClassification if you are following the [Classification QuickStart](/classification/quickstart/).  Copy `NaiveBayesAlgorithm.scala` and create a new file `RandomForestAlgorithm.scala`. You will modify this file and follow the instructions below to define a new RandomForestAlgorithm class.
 
-## 2. Define the algorithm class and parameters
+##  Define the algorithm class and parameters
 
 In 'RandomForestAlgorithm.scala', import the MLlib Random Forests algorithm by changing the following lines: 
 
@@ -86,7 +86,7 @@ class RandomForestAlgorithm(val ap: RandomForestAlgorithmParams) // CHANGED
 }
 ```
 Note that the MLlib Random Forest algorithm takes the same training data as the Navie Bayes algoithm (ie, RDD[LabeledPoint]) so you don't need to modify the `DataSource`, `TrainigData` and `PreparedData` classes. If the new algoritm to be added requires different types of training data, then you need to modify these classes accordingly to accomodate your new algorithm.
-## 3. Update Engine.scala
+##  Update Engine.scala
 
 Modify the EngineFactory to add the new algorithm class `RandomForestAlgorithm` you just defined and give it a name `"randomforest"`. The name will be used in `engne.json` to specify which algorithm to use.
 
@@ -105,7 +105,7 @@ object ClassificationEngine extends IEngineFactory {
 
 This engine factory now returns an engine with two algorithms and they are named as `"naive"` and `"randomforest"` respectively.
 
-## 4. Update engine.json
+##  Update engine.json
 
 In order to use the new algorithm, you need to modify `engine.json` to specify the name of the algorithm and the parameters.
 
