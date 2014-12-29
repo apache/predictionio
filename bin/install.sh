@@ -11,35 +11,36 @@
 #
 
 OS=`uname`
-PIO_VERSION=0.8.5
+PIO_VERSION=0.8.4
 SPARK_VERSION=1.2.0
 ELASTICSEARCH_VERSION=1.3.3
 HBASE_VERSION=0.98.6
 
 if [ $OS = "Darwin" ]
 then
-  echo "Installing on Mac"
+  echo "Installing PredictionIO $PIO_VERIONS on Mac"
   SED_CMD="sed -i ''"
 elif [ $OS = "Linux" ]
 then
-  echo "Installing on Linux"
+  echo "Installing PredictionIO $PIO_VERSION on Linux"
   SED_CMD="sed -i"
 else
   echo "Platform not recognized! Aborting!"
   exit 1
 fi
 
-INSTALL_DIR=$HOME
+PIO_DIR=$HOME/PredictionIO
+VENDORS_DIR=$PIO_DIR/vendors
+
 USER_PROFILE=$HOME/.profile
 TEMP_DIR=/tmp
-PIO_DIR=$INSTALL_DIR/PredictionIO
 PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
-VENDORS_DIR=$PIO_DIR/vendors
+
 SPARK_DIR=$VENDORS_DIR/spark-$SPARK_VERSION
 ELASTICSEARCH_DIR=$VENDORS_DIR/elasticsearch-$ELASTICSEARCH_VERSION
 HBASE_DIR=$VENDORS_DIR/hbase-$HBASE_VERSION
 ZOOKEEPER_DIR=$VENDORS_DIR/zookeeper
-
+OS=lsjkdf
 # Java
 if [ $OS = "Darwin" ]
   then
@@ -65,6 +66,10 @@ elif [ $OS = "Linux" ]
 
   echo "JAVA_HOME is now set to: $JAVA_HOME"
   echo "Java install done!"
+else
+  echo "\033[1;31mYour OS $OS is not yet supported for automatic install :(\033[0m"
+  echo "\033[1;31mPlease do a manual install!\033[0m"
+  exit 1
 fi
 
 
@@ -158,8 +163,9 @@ echo "Starting Elasticserach and HBase!"
 $ELASTICSEARCH_DIR/bin/elasticsearch -d
 $HBASE_DIR/bin/start-hbase.sh
 
-echo "Installation completed!"
+tput setab 2
 echo "################################################################################"
+echo "Installation of PredictionIO $PIO_VERSION complete!"
 echo "IMPORTANT: You still have to start the eventserver manually:"
 echo "Run 'pio eventserver --ip 0.0.0.0'"
 echo "Check the eventserver status with 'curl -i -X GET http://localhost:7070'"
@@ -167,3 +173,4 @@ echo "Use 'pio [train|deploy|...] commands"
 echo "Please report any problems to support@prediction.io"
 echo "Documentation at http://docs.prediction.io"
 echo "################################################################################"
+tput sgr0
