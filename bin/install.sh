@@ -178,7 +178,7 @@ echo -e "\033[1;32mElasticserach and HBase started!\033[0m"
 
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
-echo -e "\033[1;33mIMPORTANT: You still have to start the eventserver manually:\033[0m"
+echo -e "\033[1;33mIMPORTANT: You still have to start the Event Server manually:\033[0m"
 echo -e "Run: '\033[1mpio eventserver --ip 0.0.0.0\033[0m'"
 echo -e "Check the Event Server status with: '\033[1mcurl -i -X GET http://localhost:7070\033[0m'"
 echo -e "Use: '\033[1mpio [train|deploy|...]\033[0m' commands"
