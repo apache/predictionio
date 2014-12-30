@@ -32,7 +32,7 @@ else
   exit 1
 fi
 
-# Installation Path
+# Installation Paths
 while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
 echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
 echo -n "Installation path ($PIO_DIR): "
@@ -72,7 +72,6 @@ if [[ "$OS" = "Darwin" ]]; then
   echo "Your Java version is: $JAVA_VERSION"
   echo "JAVA_HOME is now set to: $JAVA_HOME"
   echo -e "\033[1;32mJava done!\033[0m"
-
 elif [[ "$OS" = "Linux" ]]; then
   # Java
   echo -e "\033[1;36mStarting Java install...\033[0m"
@@ -133,7 +132,6 @@ fi
 tar zxf elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
 rm -rf $elasticsearch_dir
 mv elasticsearch-$ELASTICSEARCH_VERSION $elasticsearch_dir
-
 
 echo "Updating: $elasticsearch_dir/config/elasticsearch.yml"
 echo 'network.host: 127.0.0.1' >> $elasticsearch_dir/config/elasticsearch.yml
