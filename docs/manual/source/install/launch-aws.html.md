@@ -2,8 +2,6 @@
 title: Launching PredictionIO on AWS
 ---
 
-# Launching PredictionIO on AWS
-
 Deploying PredictionIO on Amazon Web Services is extremely easy thanks
 to AWS Marketplace. As long as you have access to AWS, you can launch a
 ready-to-use PredictionIO Amazon EC2 instance with a single click.
