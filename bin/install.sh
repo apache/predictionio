@@ -13,14 +13,18 @@ PIO_VERSION=0.8.4
 SPARK_VERSION=1.2.0
 ELASTICSEARCH_VERSION=1.3.3
 HBASE_VERSION=0.98.6
+PIO_DIR=$HOME/PredictionIO
+USER_PROFILE=$HOME/.profile
+PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
+TEMP_DIR=/tmp
 
 echo -e "\033[1;32mWelcome to PredictionIO $PIO_VERSION!\033[0m"
 
 if [[ "$OS" = "Darwin" ]]; then
-  echo -e "\033[1;34mMac OS detected!\033[0m"
+  echo "Mac OS detected!"
   SED_CMD="sed -i ''"
 elif [[ "$OS" = "Linux" ]]; then
-  echo -e "\033[1;34mLinux OS detected!\033[0m"
+  echo -e "Linux OS detected!"
   SED_CMD="sed -i"
 else
   echo -e "\033[1;31mYour OS $OS is not yet supported for automatic install :(\033[0m"
@@ -28,41 +32,36 @@ else
   exit 1
 fi
 
-PIO_DIR=$HOME/PredictionIO
-VENDORS_DIR=$PIO_DIR/vendors
-
-correct="N"
-
-while [[ "$correct" != "Y" && "$correct" != "y" ]]
-do
-
+# Installation Path
+while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
+echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
 echo -n "Installation path ($PIO_DIR): "
 read pio_dir
+pio_dir=${pio_dir:-$PIO_DIR}
 
-echo -n "Vendors path ($VENDORS_DIR): "
+echo -n "Vendor path ($pio_dir/vendors): "
 read vendors_dir
+vendors_dir=${vendors_dir:-$pio_dir/vendors}
 
-echo $pio_dir
-echo $vendors_dir
+spark_dir=$vendors_dir/spark-$SPARK_VERSION
+elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+zookeeper_dir=$vendors_dir/zookeeper
 
-read -p "Is this correct? [Y/n] " correct
-correct=${correct:-Y}
-echo $correct
-
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[1;32mOK, looks good!\033[0m"
+echo "You are going to install PredictionIO to: $pio_dir"
+echo -e "Vendor applications will go in: $vendors_dir\n"
+echo "Spark: $spark_dir"
+echo "Elasticsearch: $elasticsearch_dir"
+echo "HBase: $hbase_dir"
+echo "ZooKeeper: $zookeeper_dir"
+echo "--------------------------------------------------------------------------------"
+echo -ne "\033[1mIs this correct?\033[0m [Y/n] "
+read response
+response=${response:-Y}
 done
 
-
-
-
-
-USER_PROFILE=$HOME/.profile
-TEMP_DIR=/tmp
-PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
-
-SPARK_DIR=$VENDORS_DIR/spark-$SPARK_VERSION
-ELASTICSEARCH_DIR=$VENDORS_DIR/elasticsearch-$ELASTICSEARCH_VERSION
-HBASE_DIR=$VENDORS_DIR/hbase-$HBASE_VERSION
-ZOOKEEPER_DIR=$VENDORS_DIR/zookeeper
 # Java
 if [[ "$OS" = "Darwin" ]]; then
   echo -e "\033[1;36mStarting Java install...\033[0m"
@@ -89,98 +88,97 @@ elif [[ "$OS" = "Linux" ]]; then
   echo -e "\033[1;32mJava install done!\033[0m"
 fi
 
-
 # PredictionIO
-echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $PIO_DIR"
+echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
 cd $TEMP_DIR
 if [[ ! -e $PIO_FILE ]]; then
   echo "Downloading PredictionIO..."
   curl -O http://download.prediction.io/$PIO_FILE
 fi
 tar zxf $PIO_FILE
-rm -rf $PIO_DIR
-mv PredictionIO-$PIO_VERSION $PIO_DIR
+rm -rf $pio_dir
+mv PredictionIO-$PIO_VERSION $pio_dir
 
-chown -R $USER $PIO_DIR
+chown -R $USER $pio_dir
 
-echo "Updating ~/.profile to include: $PIO_DIR"
-PATH=$PATH:$PIO_DIR/bin
-echo "export PATH=\$PATH:$PIO_DIR/bin" >> $USER_PROFILE
+echo "Updating ~/.profile to include: $pio_dir"
+PATH=$PATH:$pio_dir/bin
+echo "export PATH=\$PATH:$pio_dir/bin" >> $USER_PROFILE
 
 echo -e "\033[1;32mPredictionIO setup done!\033[0m"
 
-mkdir $VENDORS_DIR
+mkdir $vendors_dir
 
 # Spark
-echo -e "\033[1;36mStarting Spark setup in:\033[0m $SPARK_DIR"
+echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
 if [[ ! -e spark-$SPARK_VERSION-bin-hadoop2.4.tgz ]]; then
   echo "Downloading Spark..."
   curl -O http://d3kbcqa49mib13.cloudfront.net/spark-$SPARK_VERSION-bin-hadoop2.4.tgz
 fi
 tar xf spark-$SPARK_VERSION-bin-hadoop2.4.tgz
-rm -rf $SPARK_DIR
-mv spark-$SPARK_VERSION-bin-hadoop2.4 $SPARK_DIR
+rm -rf $spark_dir
+mv spark-$SPARK_VERSION-bin-hadoop2.4 $spark_dir
 
-echo "Updating: $PIO_DIR/conf/pio-env.sh"
-$SED_CMD "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$SPARK_DIR|g" $PIO_DIR/conf/pio-env.sh
+echo "Updating: $pio_dir/conf/pio-env.sh"
+$SED_CMD "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$spark_dir|g" $pio_dir/conf/pio-env.sh
 
 echo -e "\033[1;32mSpark setup done!\033[0m"
 
 # Elasticsearch
-echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $ELASTICSEARCH_DIR"
+echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
 if [[ ! -e elasticsearch-$ELASTICSEARCH_VERSION.tar.gz ]]; then
   echo "Downloading Elasticsearch..."
   curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
 fi
 tar zxf elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
-rm -rf $ELASTICSEARCH_DIR
-mv elasticsearch-$ELASTICSEARCH_VERSION $ELASTICSEARCH_DIR
+rm -rf $elasticsearch_dir
+mv elasticsearch-$ELASTICSEARCH_VERSION $elasticsearch_dir
 
 
-echo "Updating: $ELASTICSEARCH_DIR/config/elasticsearch.yml"
-echo 'network.host: 127.0.0.1' >> $ELASTICSEARCH_DIR/config/elasticsearch.yml
+echo "Updating: $elasticsearch_dir/config/elasticsearch.yml"
+echo 'network.host: 127.0.0.1' >> $elasticsearch_dir/config/elasticsearch.yml
 
 echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
 # HBase
-echo -e "\033[1;36mStarting HBase setup in:\033[0m $HBASE_DIR"
+echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
 if [[ ! -e hbase-$HBASE_VERSION-hadoop2-bin.tar.gz ]]; then
   echo "Downloading HBase..."
   curl -O http://archive.apache.org/dist/hbase/hbase-$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
 fi
 tar zxf hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
-rm -rf $HBASE_DIR
-mv hbase-$HBASE_VERSION-hadoop2 $HBASE_DIR
+rm -rf $hbase_dir
+mv hbase-$HBASE_VERSION-hadoop2 $hbase_dir
 
-echo "Creating default site in: $HBASE_DIR/conf/hbase-site.xml"
-cat <<EOT > $HBASE_DIR/conf/hbase-site.xml
+echo "Creating default site in: $hbase_dir/conf/hbase-site.xml"
+cat <<EOT > $hbase_dir/conf/hbase-site.xml
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>file://$HBASE_DIR</value>
+    <value>file://$hbase_dir</value>
   </property>
   <property>
     <name>hbase.zookeeper.property.dataDir</name>
-    <value>$ZOOKEEPER_DIR</value>
+    <value>$zookeeper_dir</value>
   </property>
 </configuration>
 EOT
 
-echo "Updating: $HBASE_DIR/conf/hbase-env.sh to include $JAVA_HOME"
-$SED_CMD "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $HBASE_DIR/conf/hbase-env.sh
+echo "Updating: $hbase_dir/conf/hbase-env.sh to include $JAVA_HOME"
+$SED_CMD "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $hbase_dir/conf/hbase-env.sh
 
 echo -e "\033[1;32mHBase setup done!\033[0m"
 
-echo "Updating permissions on: $VENDORS_DIR"
+echo "Updating permissions on: $vendors_dir"
 
-chown -R $USER $VENDORS_DIR
+chown -R $USER $vendors_dir
 
-$ELASTICSEARCH_DIR/bin/elasticsearch -d
-$HBASE_DIR/bin/start-hbase.sh
+$elasticsearch_dir/bin/elasticsearch -d
+$hbase_dir/bin/start-hbase.sh
 
 echo -e "\033[1;32mElasticserach and HBase started!\033[0m"
 
-echo -e "\033[42m################################################################################\033[0m"
+echo "--------------------------------------------------------------------------------"
 echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
 echo -e "\033[1;33mIMPORTANT: You still have to start the eventserver manually:\033[0m"
 echo -e "Run: '\033[1mpio eventserver --ip 0.0.0.0\033[0m'"
@@ -188,4 +186,4 @@ echo -e "Check the eventserver status with: '\033[1mcurl -i -X GET http://localh
 echo -e "Use: '\033[1mpio [train|deploy|...]\033[0m' commands"
 echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
 echo -e "\033[1;34mDocumentation at: http://docs.prediction.io\033[0m"
-echo -e "\033[42m################################################################################\033[0m"
+echo "--------------------------------------------------------------------------------"
