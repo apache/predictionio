@@ -1,0 +1,18 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.similar.SimilarityEngine",
+  "datasource": {
+    "params" : {
+      "appId": 6
+    }
+  },
+  "algorithms": [
+    {
+      "name": "dimsum",
+      "params": {
+        "threshold": 0.0
+      }
+    }
+  ]
+}
