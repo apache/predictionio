@@ -4,11 +4,10 @@ import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
 case class Query(
-  //val items: List[String],
-  val item: String,
-  val num: Int
-  //val whiteList: Option[List[String]],
-  //val blackList: Option[List[String]]
+  val items: List[String],
+  val num: Int,
+  val whiteList: Option[Set[String]],
+  val blackList: Option[Set[String]]
 ) extends Serializable
 
 case class PredictedResult(

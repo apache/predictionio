@@ -102,15 +102,45 @@ class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
 
   def predict(model: DIMSUMModel, query: Query): PredictedResult = {
     val itemIntStringMap = model.itemStringIntMap.inverse
-    // TODO: handle unknown item
-    val index = model.itemStringIntMap(query.item)
-    val sims = model.similarities.lookup(index).head
 
-    val indexScores = sims.indices.zip(sims.values)
+    // convert the whilte and black list items to Int index
+    val whiteList: Option[Set[Int]] = query.whiteList.map( set =>
+      set.map(model.itemStringIntMap.get(_)).flatten
+    )
+    val blackList: Option[Set[Int]] = query.blackList.map ( set =>
+      set.map(model.itemStringIntMap.get(_)).flatten
+    )
 
-    // largest to smallest order
+    val queryList: Set[Int] = query.items.map(
+      model.itemStringIntMap.get(_)).flatten.toSet
+
+    val indexScores = query.items.flatMap { item =>
+      model.itemStringIntMap.get(item).map { itemInt =>
+        val simsSeq = model.similarities.lookup(itemInt)
+        if (simsSeq.isEmpty) {
+          logger.info(s"No similar items found for ${item}.")
+          Array.empty[(Int, Double)]
+        } else {
+          val sims = simsSeq.head
+          sims.indices.zip(sims.values).filter { case (i, v) =>
+            whiteList.map(_.contains(i)).getOrElse(true) &&
+            blackList.map(!_.contains(i)).getOrElse(true) &&
+            // discard items in query as well
+            (!queryList.contains(i))
+          }
+        }
+      }.getOrElse {
+        logger.info(s"No similar items for unknown item ${item}.")
+        Array.empty[(Int, Double)]
+      }
+    }
+
+    val aggregatedScores = indexScores.groupBy(_._1)
+      .mapValues(_.foldLeft[Double](0)( (b,a) => b + a._2))
+      .toList
+
     val ord = Ordering.by[(Int, Double), Double](_._2).reverse
-    val itemScores = getTopN(indexScores, query.num)(ord)
+    val itemScores = getTopN(aggregatedScores, query.num)(ord)
       .map{ case (i, s) =>
         new ItemScore(
           item = itemIntStringMap(i),
