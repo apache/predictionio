@@ -1,6 +1,7 @@
 package org.template.similar
 
 import io.prediction.controller.PPreparator
+import io.prediction.data.storage.EntityMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -10,10 +11,15 @@ class Preparator
   extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, trainingData: TrainingData): PreparedData = {
-    new PreparedData(ratings = trainingData.ratings)
+    new PreparedData(
+      users = trainingData.users,
+      items = trainingData.items,
+      ratings = trainingData.ratings)
   }
 }
 
 class PreparedData(
+  val users: EntityMap[User],
+  val items: EntityMap[Item],
   val ratings: RDD[Rating]
 ) extends Serializable
