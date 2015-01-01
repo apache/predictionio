@@ -15,6 +15,10 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Customizing Data Preparator', '/recommendation/customize-data-prep/'
         li = link_to_with_active 'Customizing Serving', '/recommendation/customize-serving/'
     li.expand
+      = link_to 'Similar Product Discovery Template', '#'
+      ul
+        li = link_to_with_active 'Quick Start', '/similar/quickstart/'
+    li.expand
       = link_to 'Classification Template', '#'
       ul
         li = link_to_with_active 'Quick Start', '/classification/quickstart/'
