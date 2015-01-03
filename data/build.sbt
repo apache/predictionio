@@ -42,4 +42,5 @@ libraryDependencies ++= Seq(
   "org.scalatest"          %% "scalatest"      % "2.1.6" % "test",
   "org.slf4j"               % "slf4j-log4j12"  % "1.7.7",
   "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
+  "com.typesafe.akka"       %% "akka-slf4j"    % "2.3.6",
   "org.specs2"             %% "specs2"         % "2.3.13" % "test")
