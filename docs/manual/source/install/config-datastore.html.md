@@ -5,7 +5,7 @@ title: Changing Data Store
 Changing Storage Setup
 ===================
 
-PredictionIO relies on a data store to store its metadata. At the moment, PredictionIO's storage layer supports both [Elasticsearch](http://www.elasticsearch.org/) and [MongoDB](http://www.mongodb.org/). Make sure you have one of these running and functioning properly on your computer.
+PredictionIO relies on a data store to store its metadata. At the moment, PredictionIO's storage layer supports [Elasticsearch](http://www.elasticsearch.org/). Make sure you have it running and functioning properly on your computer.
 
 1. If you are using Elasticsearch at the localhost and its default settings, you may stop here.
 
@@ -16,7 +16,7 @@ PredictionIO relies on a data store to store its metadata. At the moment, Predic
    PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
    PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
    ```
-
+<!--
    If you use MongoDB, add and modify the following to fit your setup.
 
    ```
@@ -37,5 +37,6 @@ PredictionIO relies on a data store to store its metadata. At the moment, Predic
    ```
    PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=MONGODB
    ```
+-->
 
 Save ``conf/pio-env.sh`` and you are done!
