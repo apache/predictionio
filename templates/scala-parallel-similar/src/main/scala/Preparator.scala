@@ -13,12 +13,12 @@ class Preparator
     new PreparedData(
       users = trainingData.users,
       items = trainingData.items,
-      ratings = trainingData.ratings)
+      u2iEvents = trainingData.u2iEvents)
   }
 }
 
 class PreparedData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
-  val ratings: RDD[Rating]
+  val u2iEvents: RDD[U2IEvent]
 ) extends Serializable

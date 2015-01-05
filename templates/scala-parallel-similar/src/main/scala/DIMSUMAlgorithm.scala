@@ -82,13 +82,27 @@ class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
     val itemCount = items.size
 
     // each row is a sparse vector of rated items by this user
-    val rows: RDD[Vector] = data.ratings.map ( r =>
+    val rows: RDD[Vector] = data.u2iEvents.map ( r =>
       // Convert user and item String IDs to Int index for MLlib
       // (userIndex, (itemIndex, rating))
-      (userStringIntMap(r.user), (itemStringIntMap(r.item), r.rating))
+      (userStringIntMap(r.user), (itemStringIntMap(r.item), 1.0))
     ).groupByKey().map { case (u, ir) =>
-      val irSorted = ir.toArray.sortBy(_._1)
-      // NOTE: index array must be strictly increasing.
+      // de-duplicate if user has multiple events on same item
+      val irDedup: Map[Int, Double] = ir.groupBy(_._1) // group By item index
+        .map { case (i, irGroup) =>
+          // same item index group of (item index, rating value) tuple
+          val r = irGroup.reduce { (a, b) =>
+            // Simply keep one copy.
+            a
+            // You may modify here to reduce same item tuple differently,
+            // such as summing all values:
+            //(a._1, (a._2 + b._2))
+          }
+          (i, r._2)
+        }
+
+      // NOTE: index array must be strictly increasing for Sparse Vector
+      val irSorted = irDedup.toArray.sortBy(_._1)
       val indexes = irSorted.map(_._1)
       val values = irSorted.map(_._2)
       Vectors.sparse(itemCount, indexes, values)

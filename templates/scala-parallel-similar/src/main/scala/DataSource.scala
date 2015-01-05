@@ -68,31 +68,29 @@ class DataSource(val dsp: DataSourceParams)
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("item")))(sc)
 
-    // TODO: handle view same item multiple times
-    val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
-      val rating = try {
-        val ratingValue: Double = event.event match {
-          //case "rate" => event.properties.get[Double]("rating")
-          case "view" => 1.0
+    val u2iEventsRDD: RDD[U2IEvent] = eventsRDD.map { event =>
+      val u2iEvent = try {
+        event.event match {
+          case "view" => U2IEvent(
+            user = event.entityId,
+            item = event.targetEntityId.get,
+            event = "view",
+            t = event.eventTime.getMillis)
           case _ => throw new Exception(s"Unexpected event ${event} is read.")
         }
-        // entityId and targetEntityId is String
-        Rating(event.entityId,
-          event.targetEntityId.get,
-          ratingValue)
       } catch {
         case e: Exception => {
-          logger.error(s"Cannot convert ${event} to Rating. Exception: ${e}.")
+          logger.error(s"Cannot convert ${event} to U2IEvent. Exception: ${e}.")
           throw e
         }
       }
-      rating
+      u2iEvent
     }
 
     new TrainingData(
       users = usersRDD,
       items = itemsRDD,
-      ratings = ratingsRDD
+      u2iEvents = u2iEventsRDD
     )
   }
 }
@@ -101,20 +99,22 @@ case class User()
 
 case class Item(val categories: Option[List[String]])
 
-case class Rating(
+case class U2IEvent(
   val user: String,
   val item: String,
-  val rating: Double
+  val event: String,
+  val t: Long,
+  val rating: Option[Double] = None
 )
 
 class TrainingData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
-  val ratings: RDD[Rating]
+  val u2iEvents: RDD[U2IEvent]
 ) extends Serializable {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
     s"items: [${items.count()} (${items.take(2).toList}...)]" +
-    s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
+    s"ratings: [${u2iEvents.count()}] (${u2iEvents.take(2).toList}...)"
   }
 }
