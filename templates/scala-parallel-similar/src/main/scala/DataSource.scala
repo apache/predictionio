@@ -6,7 +6,6 @@ import io.prediction.controller.EmptyActualResult
 import io.prediction.controller.Params
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.Storage
-import io.prediction.data.storage.EntityMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -26,20 +25,39 @@ class DataSource(val dsp: DataSourceParams)
   def readTraining(sc: SparkContext): TrainingData = {
     val eventsDb = Storage.getPEvents()
 
-    val users: EntityMap[User] = eventsDb.extractEntityMap[User](
+    // create a RDD of (entityID, User)
+    val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "user"
-    )(sc) { dm =>
-      User()
+    )(sc).map { case (entityId, properties) =>
+      val user = try {
+        User()
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get properties ${properties} of" +
+            s" user ${entityId}. Exception: ${e}.")
+          throw e
+        }
+      }
+      (entityId, user)
     }
 
-    val items: EntityMap[Item] = eventsDb.extractEntityMap[Item](
+    // create a RDD of (entityID, Item)
+    val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "item"
-    )(sc) { dm =>
-      Item(
-        categories = dm.getOpt[List[String]]("categories").getOrElse(List.empty)
-      )
+    )(sc).map { case (entityId, properties) =>
+      val item = try {
+        // Assume categories is optional property of item.
+        Item(categories = properties.getOpt[List[String]]("categories"))
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get properties ${properties} of" +
+            s" item ${entityId}. Exception: ${e}.")
+          throw e
+        }
+      }
+      (entityId, item)
     }
 
     // get all "user" "view" "item" events
@@ -70,9 +88,10 @@ class DataSource(val dsp: DataSourceParams)
       }
       rating
     }
+
     new TrainingData(
-      users = users,
-      items = items,
+      users = usersRDD,
+      items = itemsRDD,
       ratings = ratingsRDD
     )
   }
@@ -80,7 +99,7 @@ class DataSource(val dsp: DataSourceParams)
 
 case class User()
 
-case class Item(val categories: List[String])
+case class Item(val categories: Option[List[String]])
 
 case class Rating(
   val user: String,
@@ -89,13 +108,13 @@ case class Rating(
 )
 
 class TrainingData(
-  val users: EntityMap[User],
-  val items: EntityMap[Item],
+  val users: RDD[(String, User)],
+  val items: RDD[(String, Item)],
   val ratings: RDD[Rating]
 ) extends Serializable {
   override def toString = {
-    s"users: [${users.size} (${users.take(2).toString}...)]" +
-    s"items: [${items.size} (${items.take(2).toString}...)]" +
+    s"users: [${users.count()} (${users.take(2).toList}...)]" +
+    s"items: [${items.count()} (${items.take(2).toList}...)]" +
     s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
   }
 }

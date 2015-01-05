@@ -1,7 +1,6 @@
 package org.template.similar
 
 import io.prediction.controller.PPreparator
-import io.prediction.data.storage.EntityMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -19,7 +18,7 @@ class Preparator
 }
 
 class PreparedData(
-  val users: EntityMap[User],
-  val items: EntityMap[Item],
+  val users: RDD[(String, User)],
+  val items: RDD[(String, Item)],
   val ratings: RDD[Rating]
 ) extends Serializable
