@@ -20,11 +20,12 @@ TEMP_DIR=/tmp
 
 echo -e "\033[1;32mWelcome to PredictionIO $PIO_VERSION!\033[0m"
 
+# Detect OS
 if [[ "$OS" = "Darwin" ]]; then
   echo "Mac OS detected!"
   SED_CMD="sed -i ''"
 elif [[ "$OS" = "Linux" ]]; then
-  echo -e "Linux OS detected!"
+  echo "Linux OS detected!"
   SED_CMD="sed -i"
 else
   echo -e "\033[1;31mYour OS $OS is not yet supported for automatic install :(\033[0m"
@@ -32,35 +33,65 @@ else
   exit 1
 fi
 
+if [[ $USER ]]; then
+  echo "Using user: $USER"
+else
+  echo "No user found - this is OK!"
+fi
+
 # Installation Paths
-while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
-echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
-echo -n "Installation path ($PIO_DIR): "
-read pio_dir
-pio_dir=${pio_dir:-$PIO_DIR}
+if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
+  # Docker
+  echo -e "\033[1;33mDocker detected!\033[0m"
+  echo -e "\033[1;33mForcing Docker defaults!\033[0m"	
+  pio_dir=$PIO_DIR
+  vendors_dir=$pio_dir/vendors
 
-echo -n "Vendor path ($pio_dir/vendors): "
-read vendors_dir
-vendors_dir=${vendors_dir:-$pio_dir/vendors}
+  spark_dir=$vendors_dir/spark-$SPARK_VERSION
+  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+  zookeeper_dir=$vendors_dir/zookeeper
 
-spark_dir=$vendors_dir/spark-$SPARK_VERSION
-elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
-hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
-zookeeper_dir=$vendors_dir/zookeeper
+  echo "--------------------------------------------------------------------------------"
+  echo -e "\033[1;32mOK, looks good!\033[0m"
+  echo "You are going to install PredictionIO to: $pio_dir"
+  echo -e "Vendor applications will go in: $vendors_dir\n"
+  echo "Spark: $spark_dir"
+  echo "Elasticsearch: $elasticsearch_dir"
+  echo "HBase: $hbase_dir"
+  echo "ZooKeeper: $zookeeper_dir"
+  echo "--------------------------------------------------------------------------------"
+else
+  # Interactive
+  while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
+  echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
+  echo -n "Installation path ($PIO_DIR): "
+  read pio_dir
+  pio_dir=${pio_dir:-$PIO_DIR}
 
-echo "--------------------------------------------------------------------------------"
-echo -e "\033[1;32mOK, looks good!\033[0m"
-echo "You are going to install PredictionIO to: $pio_dir"
-echo -e "Vendor applications will go in: $vendors_dir\n"
-echo "Spark: $spark_dir"
-echo "Elasticsearch: $elasticsearch_dir"
-echo "HBase: $hbase_dir"
-echo "ZooKeeper: $zookeeper_dir"
-echo "--------------------------------------------------------------------------------"
-echo -ne "\033[1mIs this correct?\033[0m [Y/n] "
-read response
-response=${response:-Y}
-done
+  echo -n "Vendor path ($pio_dir/vendors): "
+  read vendors_dir
+  vendors_dir=${vendors_dir:-$pio_dir/vendors}
+
+  spark_dir=$vendors_dir/spark-$SPARK_VERSION
+  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+  zookeeper_dir=$vendors_dir/zookeeper
+
+  echo "--------------------------------------------------------------------------------"
+  echo -e "\033[1;32mOK, looks good!\033[0m"
+  echo "You are going to install PredictionIO to: $pio_dir"
+  echo -e "Vendor applications will go in: $vendors_dir\n"
+  echo "Spark: $spark_dir"
+  echo "Elasticsearch: $elasticsearch_dir"
+  echo "HBase: $hbase_dir"
+  echo "ZooKeeper: $zookeeper_dir"
+  echo "--------------------------------------------------------------------------------"
+  echo -ne "\033[1mIs this correct?\033[0m [Y/n] "
+  read response
+  response=${response:-Y}
+  done
+fi
 
 # Java
 if [[ "$OS" = "Darwin" ]]; then
@@ -76,10 +107,11 @@ elif [[ "$OS" = "Linux" ]]; then
   # Java
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
-  echo -e "\033[33mThis script requires superuser access!\033[0m"
-  echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
+  echo -e "\033[1;33mThis script requires superuser access!\033[0m"
+  echo -e "\033[1;33mYou will be prompted for your password by sudo:\033[0m"
 
-  sudo apt-get install openjdk-7-jdk -y
+  sudo apt-get update
+  sudo apt-get install openjdk-7-jre openjdk-7-jdk -y
 
   JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 
@@ -98,7 +130,9 @@ tar zxf $PIO_FILE
 rm -rf $pio_dir
 mv PredictionIO-$PIO_VERSION $pio_dir
 
-chown -R $USER $pio_dir
+if [[ $USER ]]; then
+  chown -R $USER $pio_dir
+fi
 
 echo "Updating ~/.profile to include: $pio_dir"
 PATH=$PATH:$pio_dir/bin
@@ -169,7 +203,9 @@ echo -e "\033[1;32mHBase setup done!\033[0m"
 
 echo "Updating permissions on: $vendors_dir"
 
-chown -R $USER $vendors_dir
+if [[ $USER ]]; then
+  chown -R $USER $vendors_dir
+fi
 
 $elasticsearch_dir/bin/elasticsearch -d
 $hbase_dir/bin/start-hbase.sh
@@ -178,9 +214,9 @@ echo -e "\033[1;32mElasticserach and HBase started!\033[0m"
 
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
-echo -e "\033[1;33mIMPORTANT: You still have to start the Event Server manually:\033[0m"
+echo -e "\033[1;33mIMPORTANT: You still have to start the eventserver manually:\033[0m"
 echo -e "Run: '\033[1mpio eventserver --ip 0.0.0.0\033[0m'"
-echo -e "Check the Event Server status with: '\033[1mcurl -i -X GET http://localhost:7070\033[0m'"
+echo -e "Check the eventserver status with: '\033[1mcurl -i -X GET http://localhost:7070\033[0m'"
 echo -e "Use: '\033[1mpio [train|deploy|...]\033[0m' commands"
 echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
 echo -e "\033[1;34mDocumentation at: http://docs.prediction.io\033[0m"
