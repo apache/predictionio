@@ -19,9 +19,9 @@ INFO: 0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](../resources/schema-change.html).
 
-Let's say you have installed PredictionIO at `/home/yourname/PredictionIo/`.
+Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
 For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/PredictionIo/bin`:
+`/home/yourname/predictionio/bin`:
 
 ```
 $ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
@@ -95,9 +95,6 @@ the Recommendation Engine Template supports 2 types of events: **rate** and
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-To use the SDK, first install the SDK in the language of your choice - [Java](/sdk/java/), [PHP](/sdk/php), [Python](/sdk/python), or [Ruby](/sdk/ruby). 
-
-
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
 ```python
@@ -145,7 +142,7 @@ $client->createEvent(array(
    'entityId' => <USER ID>,
    'targetEntityType' => 'item',
    'targetEntityId' => <ITEM ID>,
-   'properties' => array('rating'=> <RATING>)
+   'properties' => array('ratings'=> <RATING>)
 ));
 
 // A user buys an item
@@ -226,7 +223,7 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   "targetEntityType" : "item",
   "targetEntityId" : <ITEM ID>,
   "properties" : {
-    "rating" : <RATING>
+    "ratings" : <RATING>
   }
   "eventTime" : <TIME OF THIS EVENT>
 }'
@@ -405,9 +402,7 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
   </div>
 </div>
 
-*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`.
-
-
+*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. The engine will continue to serve prediction results during the re-train process. After the training is completed, `$pio deploy` will automatically shutdown the existing engine server and bring up a new process on the same port.
 
 
 Next, we are going to take a look
