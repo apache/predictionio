@@ -57,10 +57,10 @@ class JavaEngineParams(
     algorithmParamsList: JIterable[(String, Params)],
     servingParams: Params
 ) extends EngineParams(
-    dataSourceParams,
-    preparatorParams,
+    ("", dataSourceParams),
+    ("", preparatorParams),
     algorithmParamsList.toSeq,
-    servingParams)
+    ("", servingParams))
 
 /**
  * JavaSimpleEngine has only one algorithm, and uses default preparator and
