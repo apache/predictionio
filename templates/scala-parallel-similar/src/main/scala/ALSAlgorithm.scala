@@ -112,8 +112,6 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         MLlibRating(u, i, v)
       }
 
-    mllibRatings.foreach(println(_)) // debug
-
     val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
     //val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
     // productFeature is RDD[(Int, Array[Double])],
