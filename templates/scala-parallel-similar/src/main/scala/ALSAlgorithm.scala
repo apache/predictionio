@@ -9,28 +9,31 @@ import io.prediction.data.storage.BiMap
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.mllib.linalg.Vector
-import org.apache.spark.mllib.linalg.SparseVector
+import org.apache.spark.mllib.recommendation.ALS
+import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry
-import org.apache.spark.mllib.linalg.distributed.RowMatrix
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix
 
 import grizzled.slf4j.Logger
 
 import scala.collection.mutable.PriorityQueue
 
-case class DIMSUMAlgorithmParams(val threshold: Double) extends Params
+case class ALSAlgorithmParams(
+  val rank: Int,
+  val numIterations: Int,
+  //val lambda: Double,
+  val threshold: Double // for DIMSUM
+) extends Params
 
-class DIMSUMModel(
-    val similarities: RDD[(Int, SparseVector)],
-    val itemStringIntMap: BiMap[String, Int],
-    val items: Map[Int, Item]
-  ) extends IPersistentModel[DIMSUMAlgorithmParams] {
+class ALSModel(
+  val similarities: RDD[(Int, Vector[(Int, Double)])],
+  val itemStringIntMap: BiMap[String, Int],
+  val items: Map[Int, Item]
+) extends IPersistentModel[ALSAlgorithmParams] {
 
   @transient lazy val itemIntStringMap = itemStringIntMap.inverse
 
-  def save(id: String, params: DIMSUMAlgorithmParams,
+  def save(id: String, params: ALSAlgorithmParams,
     sc: SparkContext): Boolean = {
 
     similarities.saveAsObjectFile(s"/tmp/${id}/similarities")
@@ -51,11 +54,11 @@ class DIMSUMModel(
   }
 }
 
-object DIMSUMModel
-  extends IPersistentModelLoader[DIMSUMAlgorithmParams, DIMSUMModel] {
-  def apply(id: String, params: DIMSUMAlgorithmParams,
+object ALSModel
+  extends IPersistentModelLoader[ALSAlgorithmParams, ALSModel] {
+  def apply(id: String, params: ALSAlgorithmParams,
     sc: Option[SparkContext]) = {
-    new DIMSUMModel(
+    new ALSModel(
       similarities = sc.get.objectFile(s"/tmp/${id}/similarities"),
       itemStringIntMap = sc.get
         .objectFile[BiMap[String, Int]](s"/tmp/${id}/itemStringIntMap").first,
@@ -64,13 +67,16 @@ object DIMSUMModel
   }
 }
 
-class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
-  extends PAlgorithm[PreparedData, DIMSUMModel, Query, PredictedResult] {
+
+/**
+  * Use ALS to build item x feature matrix and run DIMSUM column similarity
+  */
+class ALSAlgorithm(val ap: ALSAlgorithmParams)
+  extends PAlgorithm[PreparedData, ALSModel, Query, PredictedResult] {
 
   @transient lazy val logger = Logger[this.type]
 
-  def train(data: PreparedData): DIMSUMModel = {
-
+  def train(data: PreparedData): ALSModel = {
     // create User and item's String ID to integer index BiMap
     val userStringIntMap = BiMap.stringInt(data.users.keys)
     val itemStringIntMap = BiMap.stringInt(data.items.keys)
@@ -79,10 +85,10 @@ class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
     val items: Map[Int, Item] = data.items.map { case (id, item) =>
       (itemStringIntMap(id), item)
     }.collectAsMap.toMap
+
     val itemCount = items.size
 
-    // each row is a sparse vector of rated items by this user
-    val rows: RDD[Vector] = data.viewEvents
+    val mllibRatings = data.viewEvents
       .map { r =>
         // Convert user and item String IDs to Int index for MLlib
         val uindex = userStringIntMap.getOrElse(r.user, -1)
@@ -96,48 +102,47 @@ class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
           logger.info(s"Couldn't convert nonexistent item ID ${r.item}"
             + " to Int index.")
 
-        (uindex, (iindex, 1.0))
-      }.filter { case (uindex, (iindex, v)) =>
+        ((uindex, iindex), 1)
+      }.filter { case ((u, i), v) =>
         // keep events with valid user and item index
-        (uindex != -1) && (iindex != -1)
-      }.groupByKey().map { case (u, ir) =>
-        // de-duplicate if user has multiple events on same item
-        val irDedup: Map[Int, Double] = ir.groupBy(_._1) // group By item index
-          .map { case (i, irGroup) =>
-            // same item index group of (item index, rating value) tuple
-            val r = irGroup.reduce { (a, b) =>
-              // Simply keep one copy.
-              a
-              // You may modify here to reduce same item tuple differently,
-              // such as summing all values:
-              //(a._1, (a._2 + b._2))
-            }
-            (i, r._2)
-          }
-
-        // NOTE: index array must be strictly increasing for Sparse Vector
-        val irSorted = irDedup.toArray.sortBy(_._1)
-        val indexes = irSorted.map(_._1)
-        val values = irSorted.map(_._2)
-        Vectors.sparse(itemCount, indexes, values)
+        (u != -1) && (i != -1)
+      }.reduceByKey(_ + _) // aggregate all view events of same user-item pair
+      .map { case ((u, i), v) =>
+        // MLlibRating requires integer index for user and item
+        MLlibRating(u, i, v)
       }
 
-    val mat = new RowMatrix(rows)
-    val scores = mat.columnSimilarities(ap.threshold)
-    val reversedEntries: RDD[MatrixEntry] = scores.entries
-      .map(e => new MatrixEntry(e.j, e.i, e.value))
-    val combined = new CoordinateMatrix(scores.entries.union(reversedEntries))
-    val similarities = combined.toIndexedRowMatrix.rows
-      .map( row => (row.index.toInt, row.vector.asInstanceOf[SparseVector]))
+    mllibRatings.foreach(println(_)) // debug
 
-    new DIMSUMModel(
+    val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
+    //val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
+    // productFeature is RDD[(Int, Array[Double])],
+    val entries: RDD[MatrixEntry] = m.productFeatures
+      .flatMap { case (i, features) =>
+        features.zipWithIndex.map { case (v, r) => MatrixEntry(r, i, v) }
+      }
+    val corMat = new CoordinateMatrix(entries, m.rank, itemCount)
+    // columnSimilarities returns is n x n sparse upper-triangular
+    // coordinate matrix of cosine similarities between columns
+    val half = corMat.toRowMatrix
+      .columnSimilarities(ap.threshold)
+      .entries
+
+    val similarities: RDD[(Int, Vector[(Int, Double)])] = half
+      .union(half.map(e => MatrixEntry(e.j, e.i, e.value)))
+      .map(e => (e.i.toInt, (e.j.toInt, e.value)))
+      .aggregateByKey(Vector[(Int, Double)]())(
+        seqOp = ( (u, v) => v +: u ),
+        combOp = ( (u1, u2) => u1 ++ u2))
+
+    new ALSModel(
       similarities = similarities,
       itemStringIntMap = itemStringIntMap,
       items = items
     )
   }
 
-  def predict(model: DIMSUMModel, query: Query): PredictedResult = {
+  def predict(model: ALSModel, query: Query): PredictedResult = {
     // convert the white and black list items to Int index
     val whiteList: Option[Set[Int]] = query.whiteList.map( set =>
       set.map(model.itemStringIntMap.get(_)).flatten
@@ -154,10 +159,10 @@ class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
         val simsSeq = model.similarities.lookup(itemInt)
         if (simsSeq.isEmpty) {
           logger.info(s"No similar items found for ${iid}.")
-          Array.empty[(Int, Double)]
+          Vector[(Int, Double)]()
         } else {
           val sims = simsSeq.head
-          sims.indices.zip(sims.values).filter { case (i, v) =>
+          sims.filter { case (i, v) =>
             whiteList.map(_.contains(i)).getOrElse(true) &&
             blackList.map(!_.contains(i)).getOrElse(true) &&
             // discard items in query as well
@@ -173,7 +178,7 @@ class DIMSUMAlgorithm(val ap: DIMSUMAlgorithmParams)
         }
       }.getOrElse {
         logger.info(s"No similar items for unknown item ${iid}.")
-        Array.empty[(Int, Double)]
+        Vector[(Int, Double)]()
       }
     }
 

@@ -9,8 +9,10 @@
   },
   "algorithms": [
     {
-      "name": "dimsum",
+      "name": "als",
       "params": {
+        "rank": 10,
+        "numIterations": 20,
         "threshold": 0.0
       }
     }

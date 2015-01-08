@@ -6,7 +6,7 @@ import io.prediction.controller.Engine
 case class Query(
   val items: List[String],
   val num: Int,
-  val categories: Option[Set[String]], 
+  val categories: Option[Set[String]],
   val whiteList: Option[Set[String]],
   val blackList: Option[Set[String]]
 ) extends Serializable
@@ -25,7 +25,7 @@ object SimilarityEngine extends IEngineFactory {
     new Engine(
       classOf[DataSource],
       classOf[Preparator],
-      Map("dimsum" -> classOf[DIMSUMAlgorithm]),
+      Map("als" -> classOf[ALSAlgorithm]),
       classOf[Serving])
   }
 }

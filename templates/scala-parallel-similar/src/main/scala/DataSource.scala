@@ -68,13 +68,12 @@ class DataSource(val dsp: DataSourceParams)
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("item")))(sc)
 
-    val u2iEventsRDD: RDD[U2IEvent] = eventsRDD.map { event =>
-      val u2iEvent = try {
+    val viewEventsRDD: RDD[ViewEvent] = eventsRDD.map { event =>
+      val viewEvent = try {
         event.event match {
-          case "view" => U2IEvent(
+          case "view" => ViewEvent(
             user = event.entityId,
             item = event.targetEntityId.get,
-            event = "view",
             t = event.eventTime.getMillis)
           case _ => throw new Exception(s"Unexpected event ${event} is read.")
         }
@@ -84,13 +83,13 @@ class DataSource(val dsp: DataSourceParams)
           throw e
         }
       }
-      u2iEvent
+      viewEvent
     }
 
     new TrainingData(
       users = usersRDD,
       items = itemsRDD,
-      u2iEvents = u2iEventsRDD
+      viewEvents = viewEventsRDD
     )
   }
 }
@@ -99,22 +98,20 @@ case class User()
 
 case class Item(val categories: Option[List[String]])
 
-case class U2IEvent(
+case class ViewEvent(
   val user: String,
   val item: String,
-  val event: String,
-  val t: Long,
-  val rating: Option[Double] = None
+  val t: Long
 )
 
 class TrainingData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
-  val u2iEvents: RDD[U2IEvent]
+  val viewEvents: RDD[ViewEvent]
 ) extends Serializable {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
     s"items: [${items.count()} (${items.take(2).toList}...)]" +
-    s"ratings: [${u2iEvents.count()}] (${u2iEvents.take(2).toList}...)"
+    s"ratings: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)"
   }
 }
