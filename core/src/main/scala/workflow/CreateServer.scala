@@ -444,7 +444,7 @@ class ServerActor[Q, P](
 
   val feedbackEnabled = if (args.feedback) {
     if (args.accessKey.isEmpty) {
-      log.warning("Feedback loop cannot be enabled because accessKey is empty.")
+      log.error("Feedback loop cannot be enabled because accessKey is empty.")
       false
     } else {
       true
