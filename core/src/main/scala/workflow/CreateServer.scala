@@ -87,7 +87,7 @@ case class ServerConfig(
   feedback: Boolean = false,
   eventServerIp: String = "localhost",
   eventServerPort: Int = 7070,
-  accessKey: String = "",
+  accessKey: Option[String] = None,
   verbose: Boolean = false,
   debug: Boolean = false)
 
@@ -129,7 +129,7 @@ object CreateServer extends Logging {
         c.copy(eventServerPort = x)
       } text("Event server port. Default: 7070")
       opt[String]("accesskey") action { (x, c) =>
-        c.copy(accessKey = x)
+        c.copy(accessKey = Some(x))
       } text("Event server access key.")
       opt[Unit]("verbose") action { (x, c) =>
         c.copy(verbose = true)
@@ -443,11 +443,11 @@ class ServerActor[Q, P](
   def receive = runRoute(myRoute)
 
   val feedbackEnabled = if (args.feedback) {
-    if (dataSourceParams.isInstanceOf[ParamsWithAppId]) true else {
-      log.warning("Feedback loop cannot be enabled because " +
-        dataSourceParams.getClass.getName +
-        " does not contain an app ID (not an instance of ParamsWithAppId).")
+    if (args.accessKey.isEmpty) {
+      log.warning("Feedback loop cannot be enabled because accessKey is empty.")
       false
+    } else {
+      true
     }
   } else false
 
@@ -552,10 +552,12 @@ class ServerActor[Q, P](
                     "engineInstanceId" -> engineInstance.id,
                     "query" -> r._3,
                     "prediction" -> r._2)) ++ queryPrId
+                // At this point args.accessKey should be Some(String).
+                val accessKey = args.accessKey.getOrElse("")
                 val f: Future[Int] = future {
                   scalaj.http.Http.postData(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
-                    s"events.json?accessKey=${args.accessKey}", write(data)).
+                    s"events.json?accessKey=$accessKey", write(data)).
                     header("content-type", "application/json").responseCode
                 }
                 f onComplete {
