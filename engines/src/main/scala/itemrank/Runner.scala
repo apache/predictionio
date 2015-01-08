@@ -66,7 +66,7 @@ object Runner {
         goodThreshold = 3),
       measureType = MeasureType.PrecisionAtK,
       measureK = 10
-    ) 
+    )
 
     val pp = new PreparatorParams(
       actions = Map(
@@ -105,7 +105,7 @@ object Runner {
     val sp = new EmptyParams()
 
     val engine = ItemRankEngine()
-    val engineParams = new EngineParams(
+    val engineParams = EngineParams(
       dataSourceParams = dsp,
       preparatorParams = pp,
       //algorithmParamsList = Seq(("mahoutItemBased", mahoutAlgoParams)),

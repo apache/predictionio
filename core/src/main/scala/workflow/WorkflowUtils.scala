@@ -184,7 +184,7 @@ object WorkflowUtils extends Logging {
   }
 
   def thirdPartyClasspaths: Seq[String] = {
-    val thirdPartyPaths = Seq("ES_CONF_DIR")
+    val thirdPartyPaths = Seq("ES_CONF_DIR", "HADOOP_CONF_DIR", "HBASE_CONF_DIR")
     thirdPartyPaths.map(p =>
       sys.env.get(p).map(Seq(_)).getOrElse(Seq[String]())
     ).flatten

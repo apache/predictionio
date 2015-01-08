@@ -158,10 +158,10 @@ object Engine {
 }
 /** This class serves as a logical grouping of all required engine's parameters.
   *
-  * @param dataSourceParams Data source parameters.
-  * @param preparatorParams Preparator parameters.
+  * @param dataSourceParams Data Source name-parameters tuple.
+  * @param preparatorParams Preparator name-parameters tuple.
   * @param algorithmParamsList List of algorithm name-parameter pairs.
-  * @param servingParams Serving parameters.
+  * @param servingParams Serving name-parameters tuple.
   * @group Engine
   */
 class EngineParams(
@@ -169,20 +169,35 @@ class EngineParams(
     val preparatorParams: (String, Params) = ("", EmptyParams()),
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
     val servingParams: (String, Params) = ("", EmptyParams()))
-  extends Serializable {
-    def this(
-      dataSourceParams: Params,
-      preparatorParams: Params,
-      algorithmParamsList: Seq[(String, Params)],
-      servingParams: Params
-    ) = this(
-      ("", dataSourceParams),
-      ("", preparatorParams),
-      algorithmParamsList,
-      ("", servingParams)
-    )
+  extends Serializable {}
 
-  }
+object EngineParams {
+  /** Create EngineParams
+    * @param dataSourceName Data Soure name
+    * @param dataSourceParams Data Soure parameters
+    * @param preparatorName Preparator name
+    * @param preparatorParams Preparator parameters
+    * @param algorithmParamsList List of algorithm name-parameter pairs.
+    * @param servingName Serving name
+    * @param servingParams Serving parameters
+    * @group Engine
+    */
+  def apply(
+    dataSourceName: String = "",
+    dataSourceParams: Params = EmptyParams(),
+    preparatorName: String = "",
+    preparatorParams: Params = EmptyParams(),
+    algorithmParamsList: Seq[(String, Params)] = Seq(),
+    servingName: String = "",
+    servingParams: Params = EmptyParams()): EngineParams = {
+      new EngineParams(
+        dataSourceParams = (dataSourceName, dataSourceParams),
+        preparatorParams = (preparatorName, preparatorParams),
+        algorithmParamsList = algorithmParamsList,
+        servingParams = (servingName, servingParams)
+      )
+    }
+}
 
 /** SimpleEngine has only one algorithm, and uses default preparator and serving
   * layer. Current default preparator is `IdentityPreparator` and serving is
