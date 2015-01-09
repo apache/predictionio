@@ -20,23 +20,21 @@ import scala.collection.mutable.PriorityQueue
 
 case class ALSAlgorithmParams(
   val rank: Int,
-  val numIterations: Int,
-  //val lambda: Double,
-  val threshold: Double // for DIMSUM
+  val numIterations: Int
 ) extends Params
 
 class ALSModel(
-  val similarities: RDD[(Int, Vector[(Int, Double)])],
+  val productFeatures: RDD[(Int, Array[Double])],
   val itemStringIntMap: BiMap[String, Int],
   val items: Map[Int, Item]
-) extends IPersistentModel[ALSAlgorithmParams] {
+) extends IPersistentModel[ALSAlgorithmParams] with Serializable {
 
   @transient lazy val itemIntStringMap = itemStringIntMap.inverse
 
   def save(id: String, params: ALSAlgorithmParams,
     sc: SparkContext): Boolean = {
 
-    similarities.saveAsObjectFile(s"/tmp/${id}/similarities")
+    productFeatures.saveAsObjectFile(s"/tmp/${id}/productFeatures")
     sc.parallelize(Seq(itemStringIntMap))
       .saveAsObjectFile(s"/tmp/${id}/itemStringIntMap")
     sc.parallelize(Seq(items))
@@ -45,8 +43,8 @@ class ALSModel(
   }
 
   override def toString = {
-    s"similarities: [${similarities.count()}]" +
-    s"(${similarities.take(2).toList}...)" +
+    s" productFeatures: [${productFeatures.count()}]" +
+    s"(${productFeatures.take(2).toList}...)" +
     s" itemStringIntMap: [${itemStringIntMap.size}]" +
     s"(${itemStringIntMap.take(2).toString}...)]" +
     s" items: [${items.size}]" +
@@ -59,7 +57,7 @@ object ALSModel
   def apply(id: String, params: ALSAlgorithmParams,
     sc: Option[SparkContext]) = {
     new ALSModel(
-      similarities = sc.get.objectFile(s"/tmp/${id}/similarities"),
+      productFeatures = sc.get.objectFile(s"/tmp/${id}/productFeatures"),
       itemStringIntMap = sc.get
         .objectFile[BiMap[String, Int]](s"/tmp/${id}/itemStringIntMap").first,
       items = sc.get
@@ -67,9 +65,8 @@ object ALSModel
   }
 }
 
-
 /**
-  * Use ALS to build item x feature matrix and run DIMSUM column similarity
+  * Use ALS to build item x feature matrix
   */
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
   extends PAlgorithm[PreparedData, ALSModel, Query, PredictedResult] {
@@ -87,7 +84,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     }.collectAsMap.toMap
 
     val itemCount = items.size
-
+    val sc = data.viewEvents.context
     val mllibRatings = data.viewEvents
       .map { r =>
         // Convert user and item String IDs to Int index for MLlib
@@ -113,35 +110,26 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       }
 
     val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
-    //val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
-    // productFeature is RDD[(Int, Array[Double])],
-    val entries: RDD[MatrixEntry] = m.productFeatures
-      .flatMap { case (i, features) =>
-        features.zipWithIndex.map { case (v, r) => MatrixEntry(r, i, v) }
-      }
-    val corMat = new CoordinateMatrix(entries, m.rank, itemCount)
-    // columnSimilarities returns is n x n sparse upper-triangular
-    // coordinate matrix of cosine similarities between columns
-    val half = corMat.toRowMatrix
-      .columnSimilarities(ap.threshold)
-      .entries
-
-    val similarities: RDD[(Int, Vector[(Int, Double)])] = half
-      .union(half.map(e => MatrixEntry(e.j, e.i, e.value)))
-      .map(e => (e.i.toInt, (e.j.toInt, e.value)))
-      .aggregateByKey(Vector[(Int, Double)]())(
-        seqOp = ( (u, v) => v +: u ),
-        combOp = ( (u1, u2) => u1 ++ u2))
 
     new ALSModel(
-      similarities = similarities,
+      productFeatures = m.productFeatures,
       itemStringIntMap = itemStringIntMap,
       items = items
     )
   }
 
   def predict(model: ALSModel, query: Query): PredictedResult = {
-    // convert the white and black list items to Int index
+
+    // convert items to Int index
+    val queryList: Set[Int] = query.items.map(model.itemStringIntMap.get(_))
+      .flatten.toSet
+
+    val queryFeatures: Vector[Array[Double]] = queryList.toVector.par
+      .map { item =>
+        val qf: Array[Double] = model.productFeatures.lookup(item).head
+        qf
+      }.seq
+
     val whiteList: Option[Set[Int]] = query.whiteList.map( set =>
       set.map(model.itemStringIntMap.get(_)).flatten
     )
@@ -149,49 +137,40 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       set.map(model.itemStringIntMap.get(_)).flatten
     )
 
-    val queryList: Set[Int] = query.items.map(model.itemStringIntMap.get(_))
-      .flatten.toSet
+    val ord = Ordering.by[(Int, Double), Double](_._2).reverse
 
-    val indexScores = query.items.flatMap { iid =>
-      model.itemStringIntMap.get(iid).map { itemInt =>
-        val simsSeq = model.similarities.lookup(itemInt)
-        if (simsSeq.isEmpty) {
-          logger.info(s"No similar items found for ${iid}.")
-          Vector[(Int, Double)]()
-        } else {
-          val sims = simsSeq.head
-          sims.filter { case (i, v) =>
-            whiteList.map(_.contains(i)).getOrElse(true) &&
-            blackList.map(!_.contains(i)).getOrElse(true) &&
-            // discard items in query as well
-            (!queryList.contains(i)) &&
-            // filter categories
-            query.categories.map { cat =>
-              model.items(i).categories.map { itemCat =>
-                // keep this item if has ovelap categories with the query
-                !(itemCat.toSet.intersect(cat).isEmpty)
-              }.getOrElse(false) // discard this item if it has no categories
-            }.getOrElse(true)
-          }
+    val indexScores: Array[(Int, Double)] = if (queryFeatures.isEmpty) {
+      logger.info(s"No valid items in ${query.items}.")
+      Array[(Int, Double)]()
+    } else {
+      model.productFeatures
+        .mapValues { f =>
+          queryFeatures.map{ qf =>
+            cosine(qf, f)
+          }.reduce(_ + _)
         }
-      }.getOrElse {
-        logger.info(s"No similar items for unknown item ${iid}.")
-        Vector[(Int, Double)]()
-      }
+        .collect()
     }
 
-    val aggregatedScores = indexScores.groupBy(_._1)
-      .mapValues(_.foldLeft[Double](0)( (b,a) => b + a._2))
-      .toList
+    val filteredScore = indexScores.view.filter { case (i, v) =>
+      isCandidateItem(
+        i = i,
+        items = model.items,
+        categories = query.categories,
+        queryList = queryList,
+        whiteList = whiteList,
+        blackList = blackList
+      )
+    }
 
-    val ord = Ordering.by[(Int, Double), Double](_._2).reverse
-    val itemScores = getTopN(aggregatedScores, query.num)(ord)
-      .map{ case (i, s) =>
-        new ItemScore(
-          item = model.itemIntStringMap(i),
-          score = s
-        )
-      }.toArray
+    val topScores = getTopN(filteredScore, query.num)(ord).toArray
+
+    val itemScores = topScores.map { case (i, s) =>
+      new ItemScore(
+        item = model.itemIntStringMap(i),
+        score = s
+      )
+    }
 
     new PredictedResult(itemScores)
   }
@@ -215,4 +194,43 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
     q.dequeueAll.toSeq.reverse
   }
+
+  private
+  def cosine(v1: Array[Double], v2: Array[Double]): Double = {
+    val size = v1.size
+    var i = 0
+    var n1: Double = 0
+    var n2: Double = 0
+    var d: Double = 0
+    while (i < size) {
+      n1 += v1(i) * v1(i)
+      n2 += v2(i) * v2(i)
+      d += v1(i) * v2(i)
+      i += 1
+    }
+    d / (math.sqrt(n1) * math.sqrt(n2))
+  }
+
+  private
+  def isCandidateItem(
+    i: Int,
+    items: Map[Int, Item],
+    categories: Option[Set[String]],
+    queryList: Set[Int],
+    whiteList: Option[Set[Int]],
+    blackList: Option[Set[Int]]
+  ): Boolean = {
+    whiteList.map(_.contains(i)).getOrElse(true) &&
+    blackList.map(!_.contains(i)).getOrElse(true) &&
+    // discard items in query as well
+    (!queryList.contains(i)) &&
+    // filter categories
+    categories.map { cat =>
+      items(i).categories.map { itemCat =>
+        // keep this item if has ovelap categories with the query
+        !(itemCat.toSet.intersect(cat).isEmpty)
+      }.getOrElse(false) // discard this item if it has no categories
+    }.getOrElse(true)
+  }
+
 }
