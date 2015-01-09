@@ -606,23 +606,25 @@ object Console extends Logging {
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
       WorkflowUtils.setupLogging(ca.common.verbose, ca.common.debug)
-      ca.commands match {
+      val rv: Int = ca.commands match {
         case Seq("") =>
           System.err.println(help())
-          sys.exit(1)
+          1
         case Seq("version") =>
           version(ca)
+          0
         case Seq("new") =>
           createProject(ca)
-        //case Seq("instance") =>
-        //  createInstance(ca)
+          0
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
           build(ca)
         case Seq("register") =>
           register(ca)
+          0
         case Seq("unregister") =>
           unregister(ca)
+          0
         case Seq("train") =>
           regenerateManifestJson(ca.common.manifestJson)
           train(ca)
@@ -635,20 +637,25 @@ object Console extends Logging {
           undeploy(ca)
         case Seq("dashboard") =>
           dashboard(ca)
+          0
         case Seq("eventserver") =>
           eventserver(ca)
+          0
         case Seq("compile") =>
           generateManifestJson(ca.common.manifestJson)
           compile(ca)
+          0
         case Seq("run") =>
           generateManifestJson(ca.common.manifestJson)
           run(ca)
         case Seq("dist") =>
           dist(ca)
+          0
         case Seq("status") =>
           status(ca)
         case Seq("upgrade") =>
           upgrade(ca)
+          0
         case Seq("app", "new") =>
           appNew(ca)
         case Seq("app", "list") =>
@@ -665,9 +672,9 @@ object Console extends Logging {
           accessKeyDelete(ca)
         case _ =>
           System.err.println(help(ca.commands))
-          sys.exit(1)
+          1
       }
-      sys.exit(0)
+      sys.exit(rv)
     } getOrElse {
       val command = args.toSeq.filterNot(_.startsWith("--")).head
       System.err.println(help(Seq(command)))
@@ -775,13 +782,13 @@ object Console extends Logging {
 
   def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
 
-  def build(ca: ConsoleArgs): Unit = {
+  def build(ca: ConsoleArgs): Int = {
     compile(ca)
     info("Looking for an engine...")
     val jarFiles = jarFilesForScala
     if (jarFiles.size == 0) {
       error("No engine found. Your build might have failed. Aborting.")
-      sys.exit(1)
+      return 1
     }
     jarFiles foreach { f => info(s"Found ${f.getName}")}
     val copyLocal = if (sys.env.contains("HADOOP_CONF_DIR")) {
@@ -793,6 +800,7 @@ object Console extends Logging {
     }
     RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles, copyLocal)
     info("Your engine is ready for training.")
+    0
   }
 
   def register(ca: ConsoleArgs): Unit = {
@@ -819,7 +827,7 @@ object Console extends Logging {
     RegisterEngine.unregisterEngine(ca.common.manifestJson)
   }
 
-  def train(ca: ConsoleArgs): Unit = {
+  def train(ca: ConsoleArgs): Int = {
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,
@@ -832,7 +840,7 @@ object Console extends Logging {
     }
   }
 
-  def deploy(ca: ConsoleArgs): Unit = {
+  def deploy(ca: ConsoleArgs): Int = {
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,
@@ -843,7 +851,7 @@ object Console extends Logging {
         case _ =>
           error("Unable to read engine variant ID from " +
             s"${ca.common.variantJson.getCanonicalPath}. Aborting.")
-          sys.exit(1)
+          return 1
       }
       val engineInstances = Storage.getMetaDataEngineInstances
       val engineInstance = ca.engineInstanceId map { eid =>
@@ -867,7 +875,7 @@ object Console extends Logging {
             s"No valid engine instance found for engine ${em.id} " +
               s"${em.version}.\nTry running 'train' before 'deploy'. Aborting.")
         }
-        sys.exit(1)
+        1
       }
     }
   }
@@ -886,20 +894,22 @@ object Console extends Logging {
       port = ca.port))
   }
 
-  def undeploy(ca: ConsoleArgs): Unit = {
+  def undeploy(ca: ConsoleArgs): Int = {
     val serverUrl = s"http://${ca.ip}:${ca.port}"
     info(
       s"Undeploying any existing engine instance at ${serverUrl}")
     try {
       Http(s"${serverUrl}/stop").asString
+      0
     } catch {
       case e: scalaj.http.HttpException => e.code match {
         case 404 =>
           error(s"Another process is using ${serverUrl}. Aborting.")
-          sys.exit(1)
+          1
       }
       case e: java.net.ConnectException =>
         warn(s"Nothing at ${serverUrl}")
+        0
     }
   }
 
@@ -986,7 +996,7 @@ object Console extends Logging {
     """\[.*error.*\]""".r findFirstIn line foreach { _ => error(line) }
   }
 
-  def run(ca: ConsoleArgs): Unit = {
+  def run(ca: ConsoleArgs): Int = {
     compile(ca)
 
     val extraFiles = WorkflowUtils.thirdPartyConfFiles
@@ -1011,8 +1021,9 @@ object Console extends Logging {
     val r = proc.!
     if (r != 0) {
       error(s"Return code of previous step is ${r}. Aborting.")
-      sys.exit(1)
+      return 1
     }
+    r
   }
 
   def dist(ca: ConsoleArgs): Unit = {
@@ -1042,17 +1053,18 @@ object Console extends Logging {
     info(s"Successfully created distributable at: ${distDir.getCanonicalPath}")
   }
 
-  def appNew(ca: ConsoleArgs): Unit = {
+  def appNew(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
       error(s"App ${ca.app.name} already exists. Aborting.")
+      1
     } getOrElse {
       ca.app.id.map { id =>
         apps.get(id) map { app =>
           error(
             s"App ID ${id} already exists and maps to the app '${app.name}'. " +
             "Aborting.")
-          sys.exit(1)
+          return 1
         }
       }
       val appid = apps.insert(App(
@@ -1062,7 +1074,7 @@ object Console extends Logging {
       appid map { id =>
         val events = Storage.getLEvents()
         val dbInit = events.init(id)
-        if (dbInit) {
+        val r = if (dbInit) {
           info(s"Initialized Event Store for this app ID: ${id}.")
           val accessKeys = Storage.getMetaDataAccessKeys
           val accessKey = accessKeys.insert(AccessKey(
@@ -1074,20 +1086,25 @@ object Console extends Logging {
             info(s"      Name: ${ca.app.name}")
             info(s"        ID: ${id}")
             info(s"Access Key: ${k}")
+            0
           } getOrElse {
             error(s"Unable to create new access key.")
+            1
           }
         } else {
           error(s"Unable to initialize Event Store for this app ID: ${id}.")
+          1
         }
         events.close()
+        r
       } getOrElse {
         error(s"Unable to create new app.")
+        1
       }
     }
   }
 
-  def appList(ca: ConsoleArgs): Unit = {
+  def appList(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
     val accessKeys = Storage.getMetaDataAccessKeys
     val title = "Name"
@@ -1102,9 +1119,10 @@ object Console extends Logging {
       }
     }
     info(s"Finished listing ${apps.size} app(s).")
+    0
   }
 
-  def appDelete(ca: ConsoleArgs): Unit = {
+  def appDelete(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
       info(s"The following app will be deleted. Are you sure?")
@@ -1115,26 +1133,34 @@ object Console extends Logging {
       choice match {
         case "YES" => {
           val events = Storage.getLEvents()
-          if (events.remove(app.id)) {
+          val r = if (events.remove(app.id)) {
             info(s"Removed Event Store for this app ID: ${app.id}")
-            if (Storage.getMetaDataApps.delete(app.id))
+            if (Storage.getMetaDataApps.delete(app.id)) {
               info(s"Deleted app ${app.name}.")
-            else
+              0
+            } else {
               error(s"Error deleting app ${app.name}.")
+              1
+            }
           } else {
             error(s"Error removing Event Store for this app.")
+            1
           }
           events.close()
           info("Done.")
+          r
         }
-        case _ => info("Aborted.")
+        case _ =>
+          info("Aborted.")
+          0
       }
     } getOrElse {
       error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
     }
   }
 
-  def appDataDelete(ca: ConsoleArgs): Unit = {
+  def appDataDelete(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
       info(s"The data of the following app will be deleted. Are you sure?")
@@ -1146,30 +1172,38 @@ object Console extends Logging {
         case "YES" => {
           val events = Storage.getLEvents()
           // remove table
-          if (events.remove(app.id)) {
+          val r1 = if (events.remove(app.id)) {
             info(s"Removed Event Store for this app ID: ${app.id}")
+            0
           } else {
             error(s"Error removing Event Store for this app.")
+            1
           }
           // re-create table
           val dbInit = events.init(app.id)
-          if (dbInit) {
+          val r2 = if (dbInit) {
             info(s"Initialized Event Store for this app ID: ${app.id}.")
+            0
           } else {
             error(s"Unable to initialize Event Store for this appId:" +
               s" ${app.id}.")
+            1
           }
           events.close()
           info("Done.")
+          r1 + r2
         }
-        case _ => info("Aborted.")
+        case _ =>
+          info("Aborted.")
+          0
       }
     } getOrElse {
       error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
     }
   }
 
-  def accessKeyNew(ca: ConsoleArgs): Unit = {
+  def accessKeyNew(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
       val accessKeys = Storage.getMetaDataAccessKeys
@@ -1179,15 +1213,18 @@ object Console extends Logging {
         events = ca.accessKey.events))
       accessKey map { k =>
         info(s"Created new access key: ${k}")
+        0
       } getOrElse {
         error(s"Unable to create new access key.")
+        1
       }
     } getOrElse {
       error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
     }
   }
 
-  def accessKeyList(ca: ConsoleArgs): Unit = {
+  def accessKeyList(ca: ConsoleArgs): Int = {
     val keys =
       if (ca.app.name == "")
         Storage.getMetaDataAccessKeys.getAll
@@ -1197,7 +1234,7 @@ object Console extends Logging {
           Storage.getMetaDataAccessKeys.getByAppid(app.id)
         } getOrElse {
           error(s"App ${ca.app.name} does not exist. Aborting.")
-          sys.exit(1)
+          return 1
         }
       }
     val title = "Access Key(s)"
@@ -1208,23 +1245,27 @@ object Console extends Logging {
       info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
     }
     info(s"Finished listing ${keys.size} access key(s).")
+    0
   }
 
-  def accessKeyDelete(ca: ConsoleArgs): Unit = {
-    if (Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey))
+  def accessKeyDelete(ca: ConsoleArgs): Int = {
+    if (Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)) {
       info(s"Deleted access key ${ca.accessKey.accessKey}.")
-    else
+      0
+    } else {
       error(s"Error deleting access key ${ca.accessKey.accessKey}.")
+      1
+    }
   }
 
-  def status(ca: ConsoleArgs): Unit = {
+  def status(ca: ConsoleArgs): Int = {
     println("PredictionIO")
     ca.common.pioHome map { pioHome =>
       println(s"  Installed at: ${pioHome}")
       println(s"  Version: ${BuildInfo.version}")
     } getOrElse {
       println("Unable to locate PredictionIO installation. Aborting.")
-      sys.exit(1)
+      return 1
     }
     println("")
     val sparkHome = getSparkHome(ca.common.sparkHome)
@@ -1254,7 +1295,7 @@ object Console extends Logging {
       }
     } else {
       println("Unable to locate a proper Apache Spark installation. Aborting.")
-      sys.exit(1)
+      return 1
     }
     println("")
     println("Storage Backend Connections")
@@ -1266,12 +1307,13 @@ object Console extends Logging {
         println("")
         println("Unable to connect to all storage backend(s) successfully. " +
           "Please refer to error message(s) above. Aborting.")
-        sys.exit(1)
+        return 1
     }
     println("")
     println("(sleeping 5 seconds for all messages to show up...)")
     Thread.sleep(5000)
     println("Your system is all ready to go.")
+    0
   }
 
   def upgrade(ca: ConsoleArgs): Unit = {
@@ -1396,7 +1438,7 @@ object Console extends Logging {
       json: File,
       engineId: Option[String],
       engineVersion: Option[String])(
-      op: EngineManifest => Unit): Unit = {
+      op: EngineManifest => Int): Int = {
     val ej = readManifestJson(json)
     val id = engineId getOrElse ej.id
     val version = engineVersion getOrElse ej.version
@@ -1407,7 +1449,7 @@ object Console extends Logging {
       error("Possible reasons:")
       error("- the engine is not yet built by the 'build' command;")
       error("- the meta data store is offline.")
-      sys.exit(1)
+      1
     }
   }
 

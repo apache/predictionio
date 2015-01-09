@@ -32,7 +32,7 @@ object RunWorkflow extends Logging {
       ca: ConsoleArgs,
       core: File,
       em: EngineManifest,
-      variantJson: File): Unit = {
+      variantJson: File): Int = {
     // Collect and serialize PIO_* environmental variables
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"

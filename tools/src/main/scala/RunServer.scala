@@ -29,7 +29,7 @@ object RunServer extends Logging {
       ca: ConsoleArgs,
       core: File,
       em: EngineManifest,
-      engineInstanceId: String): Unit = {
+      engineInstanceId: String): Int = {
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"
     ).mkString(",")
