@@ -93,6 +93,7 @@ object RunWorkflow extends Logging {
         em.version,
         "--engineVariant",
         variantJson.getCanonicalPath) ++
+      (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.debug) Seq("--debug") else Seq()) ++
       (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++

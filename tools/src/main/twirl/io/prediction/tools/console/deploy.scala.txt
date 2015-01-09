@@ -2,6 +2,7 @@ Usage: pio deploy [--ip <value>] [--port <value>]
                   [--engine-instance-id <value>]
                   [--feedback] [--accesskey <value>]
                   [--event-server-ip <value>] [--event-server-port <value>]
+                  [--batch <value>]
 
 Deploy an engine instance as a prediction server. This command will pass all
 pass-through arguments to its underlying spark-submit command.
@@ -20,3 +21,5 @@ pass-through arguments to its underlying spark-submit command.
       Event server IP. Default: localhost
   --event-server-port <value>
       Event server port. Default: 7070
+  --batch <value>
+      Batch label of the deployment.

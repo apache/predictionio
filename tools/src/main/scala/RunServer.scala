@@ -83,6 +83,7 @@ object RunServer extends Logging {
       (if (ca.accessKey.accessKey != "")
         Seq("--accesskey", ca.accessKey.accessKey) else Seq()) ++
       (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
+      (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.debug) Seq("--debug") else Seq())
 

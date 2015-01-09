@@ -53,7 +53,7 @@ case class ConsoleArgs(
   eventServer: EventServerArgs = EventServerArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   commands: Seq[String] = Seq(),
-  batch: String = "Transient Lazy Val",
+  batch: String = "",
   metricsClass: Option[String] = None,
   dataSourceParamsJsonPath: Option[String] = None,
   preparatorParamsJsonPath: Option[String] = None,
@@ -343,6 +343,9 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "deploy")
         } children(
+          opt[String]("batch") action { (x, c) =>
+            c.copy(batch = x)
+          } text("Batch label of the deployment."),
           opt[String]("engine-instance-id") action { (x, c) =>
             c.copy(engineInstanceId = Some(x))
           } text("Engine instance ID."),

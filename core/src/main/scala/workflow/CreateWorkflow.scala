@@ -46,7 +46,7 @@ import java.io.File
 object CreateWorkflow extends Logging {
 
   case class WorkflowConfig(
-    batch: String = "Transient Lazy Val",
+    batch: String = "",
     engineId: String = "",
     engineVersion: String = "",
     engineVariant: String = "",
@@ -415,7 +415,7 @@ object CreateWorkflow extends Logging {
         engineVariant = variantId,
         engineFactory = engineFactory,
         evaluatorClass = wfc.evaluatorClass.getOrElse(""),
-        batch = wfc.batch,
+        batch = (if (wfc.batch == "") engineFactory else wfc.batch),
         env = pioEnvVars,
         dataSourceParams = write(dataSourceParams),
         preparatorParams = write(preparatorParams),
@@ -432,7 +432,7 @@ object CreateWorkflow extends Logging {
         env = pioEnvVars,
         params = WorkflowParams(
           verbose = 3,
-          batch = wfc.batch,
+          batch = (if (wfc.batch == "") engineFactory else wfc.batch),
           skipSanityCheck = wfc.skipSanityCheck,
           stopAfterRead = wfc.stopAfterRead,
           stopAfterPrepare = wfc.stopAfterPrepare),

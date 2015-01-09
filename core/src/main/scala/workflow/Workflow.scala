@@ -73,10 +73,12 @@ object WorkflowContext extends Logging {
   def apply(
       batch: String = "",
       executorEnv: Map[String, String] = Map(),
-      sparkEnv: Map[String, String] = Map()
+      sparkEnv: Map[String, String] = Map(),
+      mode: String = ""
     ): SparkContext = {
     val conf = new SparkConf()
-    conf.setAppName(s"PredictionIO: ${batch}")
+    val prefix = if (mode == "") "PredictionIO" else s"PredictionIO ${mode}"
+    conf.setAppName(s"${prefix}: ${batch}")
     debug(s"Executor environment received: ${executorEnv}")
     executorEnv.map(kv => conf.setExecutorEnv(kv._1, kv._2))
     debug(s"SparkConf executor environment: ${conf.getExecutorEnv}")
@@ -337,12 +339,15 @@ object CoreWorkflow {
     logger.info("CoreWorkflow.run")
     logger.info("Start spark context")
 
-    evaluatorClassOpt.map(_ => WorkflowUtils.checkUpgrade("evaluation")).
-      getOrElse(WorkflowUtils.checkUpgrade("training"))
+    val mode = evaluatorClassOpt.map(_ => "evaluation").getOrElse("training")
 
+    WorkflowUtils.checkUpgrade(mode)
 
-    //val sc = WorkflowContext(params.batch, env)
-    val sc = WorkflowContext(params.batch, env, params.sparkEnv)
+    val sc = WorkflowContext(
+      params.batch,
+      env,
+      params.sparkEnv,
+      mode.capitalize)
 
     runTypelessContext(
       dataSourceClassMapOpt,

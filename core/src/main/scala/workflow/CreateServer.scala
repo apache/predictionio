@@ -79,6 +79,7 @@ class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
 }
 
 case class ServerConfig(
+  batch: String = "",
   engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
@@ -104,6 +105,9 @@ object CreateServer extends Logging {
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ServerConfig]("CreateServer") {
+      opt[String]("batch") action { (x, c) =>
+        c.copy(batch = x)
+      } text("Batch label of the deployment.")
       opt[String]("engineId") action { (x, c) =>
         c.copy(engineId = Some(x))
       } text("Engine ID.")
@@ -222,7 +226,10 @@ object CreateServer extends Logging {
       servingParamsWithName._2)
 
     val sparkContext =
-      Option(WorkflowContext(engineInstance.batch, engineInstance.env)).
+      Option(WorkflowContext(
+        batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
+        executorEnv = engineInstance.env,
+        mode = "Serving")).
         filter(_ => algorithms.exists(_.isParallel))
     /*val dataSourceParams = WorkflowUtils.extractParams(
       engineLanguage,
