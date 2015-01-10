@@ -1,6 +1,6 @@
 package org.template.vanilla
 
-import io.prediction.controller.PAlgorithm
+import io.prediction.controller.P2LAlgorithm
 import io.prediction.controller.Params
 
 import org.apache.spark.SparkContext
@@ -12,7 +12,8 @@ import grizzled.slf4j.Logger
 case class AlgorithmParams(val mult: Int) extends Params
 
 class Algorithm(val ap: AlgorithmParams)
-  extends PAlgorithm[PreparedData, Model, Query, PredictedResult] {
+  // extends PAlgorithm if Model contains RDD[]
+  extends P2LAlgorithm[PreparedData, Model, Query, PredictedResult] {
 
   @transient lazy val logger = Logger[this.type]
 
@@ -31,4 +32,6 @@ class Algorithm(val ap: AlgorithmParams)
   }
 }
 
-class Model(val mc: Int) extends Serializable
+class Model(val mc: Int) extends Serializable {
+  override def toString = s"mc=${mc}"
+}
