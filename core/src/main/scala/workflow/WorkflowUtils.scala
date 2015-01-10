@@ -198,7 +198,11 @@ object WorkflowUtils extends Logging {
     val rootLogger = LogManager.getRootLogger()
     rootLogger.removeAllAppenders
     rootLogger.addAppender(appender)
-    if (debug) rootLogger.setLevel(Level.DEBUG)
+    if (debug) {
+      rootLogger.setLevel(Level.DEBUG)
+    } else {
+      rootLogger.setLevel(Level.INFO)
+    }
   }
 }
 
