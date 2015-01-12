@@ -87,7 +87,8 @@ case class BuildArgs(
   sbt: Option[File] = None,
   sbtExtra: Option[String] = None,
   sbtAssemblyPackageDependency: Boolean = true,
-  sbtClean: Boolean = false)
+  sbtClean: Boolean = false,
+  uberJar: Boolean = false)
 
 case class AppArgs(
   id: Option[Int] = None,
@@ -226,7 +227,10 @@ object Console extends Logging {
           } text("Clean build."),
           opt[Unit]("no-asm") action { (x, c) =>
             c.copy(build = c.build.copy(sbtAssemblyPackageDependency = false))
-          } text("Skip building external dependencies assembly.")
+          } text("Skip building external dependencies assembly."),
+          opt[Unit]("uber-jar") action { (x, c) =>
+            c.copy(build = c.build.copy(uberJar = true))
+          }
         )
       //note("")
       //cmd("register").
@@ -295,6 +299,9 @@ object Console extends Logging {
           },
           opt[Unit]("stop-after-prepare") abbr("sap") action { (x, c) =>
             c.copy(common = c.common.copy(stopAfterPrepare = true))
+          },
+          opt[Unit]("uber-jar") action { (x, c) =>
+            c.copy(build = c.build.copy(uberJar = true))
           }
         )
       note("")
@@ -366,7 +373,10 @@ object Console extends Logging {
           } text("Event server port. Default: 7070"),
           opt[String]("accesskey") action { (x, c) =>
             c.copy(accessKey = c.accessKey.copy(accessKey = x))
-          } text("Access key of the App where feedback data will be stored.")
+          } text("Access key of the App where feedback data will be stored."),
+          opt[Unit]("uber-jar") action { (x, c) =>
+            c.copy(build = c.build.copy(uberJar = true))
+          }
         )
       note("")
       cmd("undeploy").
@@ -832,11 +842,17 @@ object Console extends Logging {
       ca.common.manifestJson,
       ca.common.engineId,
       ca.common.engineVersion) { em =>
-      RunWorkflow.runWorkflow(
-        ca,
-        coreAssembly(ca.common.pioHome.get),
-        em,
-        ca.common.variantJson)
+      if (em.files.size > 1 && ca.build.uberJar) {
+        error("Uber JAR mode cannot be turned on when current build produced " +
+          "more than 1 engine JAR files. Aborting.")
+        1
+      } else {
+        RunWorkflow.runWorkflow(
+          ca,
+          coreAssembly(ca.common.pioHome.get),
+          em,
+          ca.common.variantJson)
+      }
     }
   }
 
@@ -915,7 +931,7 @@ object Console extends Logging {
       case e: java.net.ConnectException =>
         warn(s"Nothing at ${serverUrl}")
         0
-      case _ =>
+      case _: Throwable =>
         error(s"Another process might be occupying ${ca.ip}:${ca.port}. " +
           "Unable to undeploy.")
         1
@@ -978,7 +994,20 @@ object Console extends Logging {
           ""
       val clean = if (ca.build.sbtClean) " clean" else ""
       val buildCmd = s"${sbt} ${ca.build.sbtExtra.getOrElse("")}${clean} " +
-        s"package${asm}"
+        (if (ca.build.uberJar) "assembly" else s"package${asm}")
+      val core = new File(s"pio-assembly-${BuildInfo.version}.jar")
+      if (ca.build.uberJar) {
+        info(s"Uber JAR enabled. Putting ${core.getName} in lib.")
+        val dst = new File("lib")
+        dst.mkdir()
+        FileUtils.copyFileToDirectory(
+          coreAssembly(ca.common.pioHome.get),
+          dst,
+          true)
+      } else {
+        info(s"Uber JAR disabled. Making sure lib/${core.getName} is absent.")
+        new File("lib", core.getName).delete()
+      }
       info(s"Going to run: ${buildCmd}")
       try {
         val r =
