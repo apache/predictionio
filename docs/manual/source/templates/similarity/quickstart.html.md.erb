@@ -1,32 +1,25 @@
 ---
-title: Quick Start - Similar Product Discovey Engine Template
+title: Quick Start - Similar Products Engine Template
 ---
 
 ## Overview
-This engine template predicts (or recommends) products that are "similar" to the targeted product(s).
-Similarity is not defined by text description but by users' previous "view" action.
-For example, product A and B are considered similar if most users who view A also view B.
+This engine template recommends products that are "similar" to the input product(s).
+Similarity is not defined by text description but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B.
 
-### Use Cases
-
-1. Product Recommendation - For both *first-time* visitors and *existing* customers
-
-This template is ideal for recommending products to customers based on their recent actions on a website or mobile app.
+This template is ideal for recommending products to customers based on their recent actions.
 Use the IDs of the recently viewed products of a customer as the *Query*, 
 the engine will predict other products that this customer may also like.
 
-This kind of recommendation works perfectly even for customers who have not signed in and  first-time vistors.
+This approach works perfectly for customers who are **first-time visitors** or have not signed in.
 Recommendations are made dynamically in *real-time* based on the most recently product preference you provide in the *Query*. 
 You can, therefore, recommend products to visitors without knowing a long history about them.
 
-2. People who view A also view X, Y, Z
-
-You can also use this template to build the popular feature of Amazon: "Customers Who Viewed This Item Also Viewed..." quickly.
+You can also use this template to build the popular feature of Amazon: **"Customers Who Viewed This Item Also Viewed..."** quickly.
 Help your customers explore more products that they like, sell more products.
 
-### Usage
+## Usage
 
-Query (Input):
+Input Query:
 
 - List of ItemIDs, which are the targeted products
 - N (number of items to be recommended)
@@ -34,33 +27,29 @@ Query (Input):
 - List of white-listed ItemIds (optional)
 - List of black-listed ItemIds (optional)
 
-If a white-list is provided, the engine will include only those products in the recommendation.
+The template also supports black-list and white-list. If a white-list is provided, the engine will include only those products in the recommendation.
 Likewise, if a black-list is provided, the engine will exclude those products in the recommendation.
 
-PredictedResult (Output):
+Output PredictedResult:
 
 - a ranked list of recommended itemIDs
 
 ### Predictive Model Training
 
-This template takes the following data from Event Server as Training Data:
+By default, this template takes the following data from Event Server as Training Data:
 
 - Users' *view* events
 - Items' *categories* properties
 
 
-### Extendibility
 
-1. Consider more events
-This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
+INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
 You can offer features like "Customers Who Bought This Item Also Bought....".
 
 
-## Quick Start - Step-by-Step
-
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MySimilar* by cloning the Similar Product Discovery Engine Template, assuming `/home/yourname/predictionio`
+Now let's create a new engine called *MySimilar* by copying the Similar Product Discovery Engine Template, assuming `/home/yourname/predictionio`
 is the installation directory of PredictionIO:
 
 ```
@@ -73,7 +62,7 @@ $ cd MySimilar
 
 Next, let's collect some training data for the app of this Engine. By default,
 the Similar Engine Template supports 2 types of entities: **user** and
-**item** and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item.
+**item**, and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item.
 
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
@@ -258,7 +247,7 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 
 For demonstration purpose, a python script is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50") with some random assigned categories ( with categories "c1" to "c6"). Each user then randomly view 10 items.
 
-First, make sure you are under the `MySimilar` directory. Execute the following to import the data (Replace the value of access_key parameter by your **Access Key**):
+First, make sure you are under the `MySimilar` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -277,8 +266,7 @@ User u10 views item i29
 160 events are imported.
 ```
 
-WARNING: If you experience error similar to the following:
-**TypeError: __init__() got an unexpected keyword argument 'access_key'**
+WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**, 
 please update the Python SDK to the latest version.
 
 ## Deploy the Engine as a Service
@@ -318,7 +306,7 @@ following.
 
 ### Training the Predictive Model
 
-Train your successfully-built engine.
+Train your engine.
 
 ```
 $ pio train
@@ -344,9 +332,9 @@ that page in your web browser to check its status.
 
 ![Engine Status](/images/engine-server.png)
 
-### Using the Engine
+## Using the Engine
 
-Now, You can try to retrieve predicted results. To retrieve 4 items which are similar to item ID "i1". You send this JSON `{ "items": ["i1"], "num": 4 }` to the deployed engine and it will return a JSON of the recommended items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+Now, You can retrieve predicted results. To retrieve 4 items which are similar to item ID "i1". You send this JSON `{ "items": ["i1"], "num": 4 }` to the deployed engine and it will return a JSON of the recommended items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -417,7 +405,7 @@ http://localhost:8000/queries.json
 
 ## Advanced Query
 
-Recommend items which are similar to multiple items:
+### Recommend items which are similar to multiple items:
 
 ```
 curl -H "Content-Type: application/json" \
@@ -427,9 +415,9 @@ http://localhost:8000/queries.json
 {"itemScores":[{"item":"i12","score":1.1700499715209998},{"item":"i21","score":1.1153550716504106},{"item":"i43","score":1.1153550716504106},{"item":"i14","score":1.0773502691896257},{"item":"i39","score":1.0773502691896257},{"item":"i26","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i38","score":0.9553418012614798},{"item":"i36","score":0.9106836025229592},{"item":"i46","score":0.9106836025229592}]}
 ```
 
-In addition, the Query support the following optional parmaters `categories`, `whiteList` and `blackList`.
+In addition, the Query support the following optional parameters `categories`, `whiteList` and `blackList`.
 
-Recommend items with selected categories:
+### Recommend items in selected categories:
 
 ```
 curl -H "Content-Type: application/json" \
@@ -443,7 +431,7 @@ http://localhost:8000/queries.json
 {"itemScores":[{"item":"i21","score":1.1153550716504106},{"item":"i14","score":1.0773502691896257},{"item":"i26","score":1.0773502691896257},{"item":"i39","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i45","score":0.7886751345948129},{"item":"i47","score":0.7618016810571367},{"item":"i9","score":0.7618016810571367},{"item":"i28","score":0.7618016810571367},{"item":"i6","score":0.7618016810571367}]}
 ```
 
-Recommend items in the whiteList:
+### Recommend items in the whiteList:
 
 ```
 curl -H "Content-Type: application/json" \
@@ -458,7 +446,7 @@ http://localhost:8000/queries.json
 {"itemScores":[{"item":"i21","score":1.1153550716504106},{"item":"i26","score":1.0773502691896257}]}
 ```
 
-Recommend items not in the blackList:
+### Recommend items not in the blackList:
 
 ```
 curl -H "Content-Type: application/json" \
