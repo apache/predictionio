@@ -69,15 +69,13 @@ Elasticsearch looks for other machines on the network upon setup and you may run
 into weird errors if there are other machines that is also running
 Elasticsearch.
 
-
-If you are not using the default setting at localhost. You may change ```conf/pio-env.sh``` to fit your setup.
+If you are not using the default setting at localhost. You may change the following in ```conf/pio-env.sh``` to fit your setup.
 
 ```
 PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
 PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
 PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
-  ```
-
+```
 
 #### <a name="hbase"></a>HBase Setup
 

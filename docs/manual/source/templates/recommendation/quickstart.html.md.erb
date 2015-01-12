@@ -402,9 +402,7 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
   </div>
 </div>
 
-*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`.
-
-
+*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. The engine will continue to serve prediction results during the re-train process. After the training is completed, `$pio deploy` will automatically shutdown the existing engine server and bring up a new process on the same port.
 
 
 Next, we are going to take a look

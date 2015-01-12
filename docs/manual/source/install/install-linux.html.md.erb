@@ -2,9 +2,18 @@
 title: Installing PredictionIO on Linux / Mac OS X
 ---
 
-# Installing PredictionIO on Linux / Mac OS X
+## Quick Install
 
-## Download PredictionIO
+NOTE: <span class="new">**New!**</span> PredictionIO can now be installed with a single command:<br />
+`$ bash -c "$(curl -s http://install.prediction.io/install.sh)"`
+
+The above script will complete the rest of the instructions on this page for you and you can proceed to the [Recommendation QuickStart](/recommendation/quickstart/) or [Classification QuickStart](/classification/quickstart/).
+
+## Manual Install
+
+If you don't want to use the install script above, you can follow the steps below to setup PredictionIO and its dependencies.
+
+### Download PredictionIO
 
 Simply download PredictionIO's binary distribution and extract it.
 
@@ -14,9 +23,11 @@ $ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
 $ cd PredictionIO-<%= data.versions.pio %>
 ```
 
-## Installing Dependencies
+### Installing Dependencies
 
-### Spark Setup
+
+
+#### Spark Setup
 
 Apache Spark is the default processing engine for PredictionIO. Download [Apache
 Spark release 1.2.0 package hadoop2.4](http://spark.apache.org/downloads.html).
@@ -34,8 +45,6 @@ For example,
 ```
 SPARK_HOME=/home/abc/Downloads/<%= data.versions.spark_download_filename %>
 ```
-
-### Storage Setup
 
 #### Elasticsearch Setup
 
@@ -56,9 +65,13 @@ Elasticsearch looks for other machines on the network upon setup and you may run
 into weird errors if there are other machines that is also running
 Elasticsearch.
 
-You may change the settings or even use another data store such as
-[MongoDB](http://www.mongodb.org/). For details, please read [Changing the Data
-Store](config-datastore.html).
+If you are not using the default setting at localhost. You may change the following in ```conf/pio-env.sh``` to fit your setup.
+
+```
+PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
+PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
+PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
+```
 
 #### HBase Setup<a class="anchor" name="hbase">&nbsp;</a>
 
