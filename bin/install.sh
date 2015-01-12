@@ -59,6 +59,7 @@ fi
 
 if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # Docker
+  # REQUIRED: No user input for Docker!
   echo -e "\033[1;33mDocker detected!\033[0m"
   echo -e "\033[1;33mForcing Docker defaults!\033[0m"	
   pio_dir=$PIO_DIR
@@ -89,31 +90,31 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 else
   # Interactive
-  while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
-  echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
-  read -e -p "Installation path ($PIO_DIR): " pio_dir
-  pio_dir=${pio_dir:-$PIO_DIR}
-
-  read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
-  vendors_dir=${vendors_dir:-$pio_dir/vendors}
-
-  spark_dir=$vendors_dir/spark-$SPARK_VERSION
-  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
-  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
-  zookeeper_dir=$vendors_dir/zookeeper
-
-  echo "--------------------------------------------------------------------------------"
-  echo -e "\033[1;32mOK, looks good!\033[0m"
-  echo "You are going to install PredictionIO to: $pio_dir"
-  echo -e "Vendor applications will go in: $vendors_dir\n"
-  echo "Spark: $spark_dir"
-  echo "Elasticsearch: $elasticsearch_dir"
-  echo "HBase: $hbase_dir"
-  echo "ZooKeeper: $zookeeper_dir"
-  echo "--------------------------------------------------------------------------------"
-  echo -ne "\033[1mIs this correct?\033[0m [Y/n] "
-  read response
-  response=${response:-Y}
+  while true; do
+    echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
+    read -e -p "Installation path ($PIO_DIR): " pio_dir
+    pio_dir=${pio_dir:-$PIO_DIR}
+  
+    read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
+    vendors_dir=${vendors_dir:-$pio_dir/vendors}
+  
+    spark_dir=$vendors_dir/spark-$SPARK_VERSION
+    elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+    hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+    zookeeper_dir=$vendors_dir/zookeeper
+  
+    echo "--------------------------------------------------------------------------------"
+    echo -e "\033[1;32mOK, looks good!\033[0m"
+    echo "You are going to install PredictionIO to: $pio_dir"
+    echo -e "Vendor applications will go in: $vendors_dir\n"
+    echo "Spark: $spark_dir"
+    echo "Elasticsearch: $elasticsearch_dir"
+    echo "HBase: $hbase_dir"
+    echo "ZooKeeper: $zookeeper_dir"
+    echo "--------------------------------------------------------------------------------"
+    if confirm "\033[1mIs this correct?\033[0m"; then
+      break;
+    fi
   done
 
   # Java Install
@@ -144,7 +145,7 @@ else
   fi
   
   # Try to find JAVA_HOME
-  echo "Locating JAVA_HOME... "
+  echo "Locating JAVA_HOME..."
   if [[ "$OS" = "Darwin" ]]; then
     JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
     JAVA_HOME=`/usr/libexec/java_home`
@@ -153,10 +154,11 @@ else
   fi
   echo "Found: $JAVA_HOME"
   
-  # Check if the JAVA_HOME is correct
+  # Check JAVA_HOME
   while [ ! -f "$JAVA_HOME/bin/javac" ]; do
     echo -e "\033[1;31mJAVA_HOME is incorrect!\033[0m"
-    read -e -p "Please enter JAVA_HOME manually (it should contain file \"bin/javac\"): " JAVA_HOME
+    echo -e "\033[1;33mJAVA_HOME should be a directory containing \"bin/javac\"!\033[0m"
+    read -e -p "Please enter JAVA_HOME manually: " JAVA_HOME
   done;
 fi
 
