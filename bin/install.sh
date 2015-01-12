@@ -18,13 +18,32 @@ USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
 TEMP_DIR=/tmp
 
+# Ask a yes/no question, with a default of "yes".
+confirm () {
+  echo -ne $@ "[Y/n] "
+  read -r response
+
+  case $response in
+    [yY][eE][sS]|[yY]|"")
+      true
+      ;;
+    [nN][oO]|[nN])
+      false
+      ;;
+    *)
+      confirm $@
+      ;;
+  esac
+}
+
 echo -e "\033[1;32mWelcome to PredictionIO $PIO_VERSION!\033[0m"
 
+# Detect OS
 if [[ "$OS" = "Darwin" ]]; then
   echo "Mac OS detected!"
   SED_CMD="sed -i ''"
 elif [[ "$OS" = "Linux" ]]; then
-  echo -e "Linux OS detected!"
+  echo "Linux OS detected!"
   SED_CMD="sed -i"
 else
   echo -e "\033[1;31mYour OS $OS is not yet supported for automatic install :(\033[0m"
@@ -32,60 +51,121 @@ else
   exit 1
 fi
 
-# Installation Paths
-while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
-echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
-echo -n "Installation path ($PIO_DIR): "
-read pio_dir
-pio_dir=${pio_dir:-$PIO_DIR}
+if [[ $USER ]]; then
+  echo "Using user: $USER"
+else
+  echo "No user found - this is OK!"
+fi
 
-echo -n "Vendor path ($pio_dir/vendors): "
-read vendors_dir
-vendors_dir=${vendors_dir:-$pio_dir/vendors}
+if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
+  # Docker
+  # REQUIRED: No user input for Docker!
+  echo -e "\033[1;33mDocker detected!\033[0m"
+  echo -e "\033[1;33mForcing Docker defaults!\033[0m"	
+  pio_dir=$PIO_DIR
+  vendors_dir=$pio_dir/vendors
 
-spark_dir=$vendors_dir/spark-$SPARK_VERSION
-elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
-hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
-zookeeper_dir=$vendors_dir/zookeeper
+  spark_dir=$vendors_dir/spark-$SPARK_VERSION
+  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+  zookeeper_dir=$vendors_dir/zookeeper
 
-echo "--------------------------------------------------------------------------------"
-echo -e "\033[1;32mOK, looks good!\033[0m"
-echo "You are going to install PredictionIO to: $pio_dir"
-echo -e "Vendor applications will go in: $vendors_dir\n"
-echo "Spark: $spark_dir"
-echo "Elasticsearch: $elasticsearch_dir"
-echo "HBase: $hbase_dir"
-echo "ZooKeeper: $zookeeper_dir"
-echo "--------------------------------------------------------------------------------"
-echo -ne "\033[1mIs this correct?\033[0m [Y/n] "
-read response
-response=${response:-Y}
-done
-
-# Java
-if [[ "$OS" = "Darwin" ]]; then
+  echo "--------------------------------------------------------------------------------"
+  echo -e "\033[1;32mOK, looks good!\033[0m"
+  echo "You are going to install PredictionIO to: $pio_dir"
+  echo -e "Vendor applications will go in: $vendors_dir\n"
+  echo "Spark: $spark_dir"
+  echo "Elasticsearch: $elasticsearch_dir"
+  echo "HBase: $hbase_dir"
+  echo "ZooKeeper: $zookeeper_dir"
+  echo "--------------------------------------------------------------------------------"
+  
+  # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
-
-  JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
-  JAVA_HOME=`/usr/libexec/java_home`
-
-  echo "Your Java version is: $JAVA_VERSION"
-  echo "JAVA_HOME is now set to: $JAVA_HOME"
-  echo -e "\033[1;32mJava done!\033[0m"
-elif [[ "$OS" = "Linux" ]]; then
-  # Java
-  echo -e "\033[1;36mStarting Java install...\033[0m"
-
-  echo -e "\033[33mThis script requires superuser access!\033[0m"
-  echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
   sudo apt-get install openjdk-7-jdk -y
 
-  JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-
-  echo "JAVA_HOME is now set to: $JAVA_HOME"
   echo -e "\033[1;32mJava install done!\033[0m"
+  
+  JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+else
+  # Interactive
+  while true; do
+    echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
+    read -e -p "Installation path ($PIO_DIR): " pio_dir
+    pio_dir=${pio_dir:-$PIO_DIR}
+  
+    read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
+    vendors_dir=${vendors_dir:-$pio_dir/vendors}
+  
+    spark_dir=$vendors_dir/spark-$SPARK_VERSION
+    elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+    hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+    zookeeper_dir=$vendors_dir/zookeeper
+  
+    echo "--------------------------------------------------------------------------------"
+    echo -e "\033[1;32mOK, looks good!\033[0m"
+    echo "You are going to install PredictionIO to: $pio_dir"
+    echo -e "Vendor applications will go in: $vendors_dir\n"
+    echo "Spark: $spark_dir"
+    echo "Elasticsearch: $elasticsearch_dir"
+    echo "HBase: $hbase_dir"
+    echo "ZooKeeper: $zookeeper_dir"
+    echo "--------------------------------------------------------------------------------"
+    if confirm "\033[1mIs this correct?\033[0m"; then
+      break;
+    fi
+  done
+
+  # Java Install
+  if [[ $OS = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
+    echo -e "\033[1mSelect your linux distribution:\033[0m"
+    select distribution in "Debian/Ubuntu" "Other"; do
+      case $distribution in
+        "Debian/Ubuntu")
+          echo -e "\033[1;36mStarting Java install...\033[0m"
+  
+          echo -e "\033[33mThis script requires superuser access!\033[0m"
+          echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
+  
+          sudo apt-get install openjdk-7-jdk -y
+  
+          echo -e "\033[1;32mJava install done!\033[0m"
+          break
+          ;;
+        "Other")
+          echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+          echo -e "\033[1;31mPlease install Java manually!\033[0m"
+          exit 2
+          ;;
+        *)
+          ;;
+      esac
+    done
+  fi
+  
+  # Try to find JAVA_HOME
+  echo "Locating JAVA_HOME..."
+  if [[ "$OS" = "Darwin" ]]; then
+    JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
+    JAVA_HOME=`/usr/libexec/java_home`
+  elif [[ "$OS" = "Linux" ]]; then
+    JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+  fi
+  echo "Found: $JAVA_HOME"
+  
+  # Check JAVA_HOME
+  while [ ! -f "$JAVA_HOME/bin/javac" ]; do
+    echo -e "\033[1;31mJAVA_HOME is incorrect!\033[0m"
+    echo -e "\033[1;33mJAVA_HOME should be a directory containing \"bin/javac\"!\033[0m"
+    read -e -p "Please enter JAVA_HOME manually: " JAVA_HOME
+  done;
 fi
+
+if [ -n "$JAVA_VERSION" ]; then
+  echo "Your Java version is: $JAVA_VERSION"
+fi
+echo "JAVA_HOME is now set to: $JAVA_HOME"
 
 # PredictionIO
 echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
@@ -98,7 +178,9 @@ tar zxf $PIO_FILE
 rm -rf $pio_dir
 mv PredictionIO-$PIO_VERSION $pio_dir
 
-chown -R $USER $pio_dir
+if [[ $USER ]]; then
+  chown -R $USER $pio_dir
+fi
 
 echo "Updating ~/.profile to include: $pio_dir"
 PATH=$PATH:$pio_dir/bin
@@ -169,7 +251,9 @@ echo -e "\033[1;32mHBase setup done!\033[0m"
 
 echo "Updating permissions on: $vendors_dir"
 
-chown -R $USER $vendors_dir
+if [[ $USER ]]; then
+  chown -R $USER $vendors_dir
+fi
 
 $elasticsearch_dir/bin/elasticsearch -d
 $hbase_dir/bin/start-hbase.sh
