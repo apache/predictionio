@@ -57,7 +57,6 @@ else
   echo "No user found - this is OK!"
 fi
 
-# Installation Paths
 if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # Docker
   echo -e "\033[1;33mDocker detected!\033[0m"
@@ -79,6 +78,15 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   echo "HBase: $hbase_dir"
   echo "ZooKeeper: $zookeeper_dir"
   echo "--------------------------------------------------------------------------------"
+  
+  # Java Install
+  echo -e "\033[1;36mStarting Java install...\033[0m"
+
+  sudo apt-get install openjdk-7-jdk -y
+
+  echo -e "\033[1;32mJava install done!\033[0m"
+  
+  JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 else
   # Interactive
   while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
@@ -107,50 +115,50 @@ else
   read response
   response=${response:-Y}
   done
+
+  # Java Install
+  if [[ $OS = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
+    echo -e "\033[1mSelect your linux distribution:\033[0m"
+    select distribution in "Debian/Ubuntu" "Other"; do
+      case $distribution in
+        "Debian/Ubuntu")
+          echo -e "\033[1;36mStarting Java install...\033[0m"
+  
+          echo -e "\033[33mThis script requires superuser access!\033[0m"
+          echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
+  
+          sudo apt-get install openjdk-7-jdk -y
+  
+          echo -e "\033[1;32mJava install done!\033[0m"
+          break
+          ;;
+        "Other")
+          echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+          echo -e "\033[1;31mPlease install Java manually!\033[0m"
+          exit 2
+          ;;
+        *)
+          ;;
+      esac
+    done
+  fi
+  
+  # Try to find JAVA_HOME
+  echo "Locating JAVA_HOME... "
+  if [[ "$OS" = "Darwin" ]]; then
+    JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
+    JAVA_HOME=`/usr/libexec/java_home`
+  elif [[ "$OS" = "Linux" ]]; then
+    JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+  fi
+  echo -e "\033[1;33mFound: $JAVA_HOME\033[0m"
+  
+  # Check if the JAVA_HOME is correct
+  while [ ! -f "$JAVA_HOME/bin/javac" ]; do
+    echo -e "\033[1;31mJAVA_HOME is incorrect!\033[0m"
+    read -e -p "Please enter JAVA_HOME manually (it should contain file \"bin/javac\"): " JAVA_HOME
+  done;
 fi
-
-# Java install
-if [[ $OS = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
-  echo -e "\033[1mSelect your linux distribution:\033[0m"
-  select distribution in "Debian/Ubuntu" "Other"; do
-    case $distribution in
-      "Debian/Ubuntu")
-        echo -e "\033[1;36mStarting Java install...\033[0m"
-
-        echo -e "\033[33mThis script requires superuser access!\033[0m"
-        echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
-
-        sudo apt-get install openjdk-7-jdk -y
-
-        echo -e "\033[1;32mJava install done!\033[0m"
-        break
-        ;;
-      "Other")
-        echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
-        echo -e "\033[1;31mPlease install Java manually!\033[0m"
-        exit 2
-        ;;
-      *)
-        ;;
-    esac
-  done
-fi
-
-# Try to find JAVA_HOME
-echo -n "Locating JAVA_HOME... "
-if [[ "$OS" = "Darwin" ]]; then
-  JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
-  JAVA_HOME=`/usr/libexec/java_home`
-elif [[ "$OS" = "Linux" ]]; then
-  JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-fi
-echo "found \"$JAVA_HOME\"."
-
-# Check if the JAVA_HOME is correct
-while [ ! -f "$JAVA_HOME/bin/javac" ]; do
-  echo -e "\033[1;31mThe JAVA_HOME is incorrect!\033[0m"
-  read -e -p "Please enter JAVA_HOME manually (it should contain file \"bin/javac\"): " JAVA_HOME
-done;
 
 if [ -n "$JAVA_VERSION" ]; then
   echo "Your Java version is: $JAVA_VERSION"
