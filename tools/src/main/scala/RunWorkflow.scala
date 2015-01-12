@@ -71,10 +71,13 @@ object RunWorkflow extends Logging {
         "--class",
         "io.prediction.workflow.CreateWorkflow",
         "--name",
-        s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.batch})",
-        "--jars",
-        (em.files ++ Console.builtinEngines(
-          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(",")) ++
+        s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.batch})") ++
+      (if (!ca.build.uberJar) {
+        Seq(
+          "--jars",
+          (em.files ++ Console.builtinEngines(
+            ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","))
+      } else Seq()) ++
       (if (extraFiles.size > 0)
         Seq("--files", extraFiles.mkString(","))
       else
@@ -84,7 +87,7 @@ object RunWorkflow extends Logging {
       else
         Seq()) ++
       Seq(
-        core.getCanonicalPath,
+        (if (ca.build.uberJar) em.files.head else core.getCanonicalPath),
         "--env",
         pioEnvVars,
         "--engineId",

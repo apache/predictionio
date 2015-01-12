@@ -56,10 +56,13 @@ object RunServer extends Logging {
         "--class",
         "io.prediction.workflow.CreateServer",
         "--name",
-        s"PredictionIO Engine Instance: ${engineInstanceId}",
-        "--jars",
-        (em.files ++ Console.builtinEngines(
-          ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(",")) ++
+        s"PredictionIO Engine Instance: ${engineInstanceId}") ++
+      (if (!ca.build.uberJar) {
+        Seq(
+          "--jars",
+          (em.files ++ Console.builtinEngines(
+            ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","))
+      } else Seq()) ++
       (if (extraFiles.size > 0)
         Seq("--files", extraFiles.mkString(","))
       else
@@ -69,7 +72,7 @@ object RunServer extends Logging {
       else
         Seq()) ++
       Seq(
-        core.getCanonicalPath,
+        (if (ca.build.uberJar) em.files.head else core.getCanonicalPath),
         "--engineInstanceId",
         engineInstanceId,
         "--ip",
