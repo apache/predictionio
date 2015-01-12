@@ -20,7 +20,7 @@ TEMP_DIR=/tmp
 
 # Ask a yes/no question, with a default of "yes".
 confirm () {
-  echo -ne $@ " [Y/n] "
+  echo -ne $@ "[Y/n] "
   read -r response
 
   case $response in
@@ -151,7 +151,7 @@ else
   elif [[ "$OS" = "Linux" ]]; then
     JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
   fi
-  echo -e "\033[1;33mFound: $JAVA_HOME\033[0m"
+  echo "Found: $JAVA_HOME"
   
   # Check if the JAVA_HOME is correct
   while [ ! -f "$JAVA_HOME/bin/javac" ]; do
