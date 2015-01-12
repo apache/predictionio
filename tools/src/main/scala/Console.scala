@@ -904,12 +904,21 @@ object Console extends Logging {
     } catch {
       case e: scalaj.http.HttpException => e.code match {
         case 404 =>
-          error(s"Another process is using ${serverUrl}. Aborting.")
+          error(s"Another process is using ${serverUrl}. Unable to undeploy.")
+          1
+        case _ =>
+          error(s"Another process is using ${serverUrl}, or an existing " +
+            s"engine server is not responding properly (HTTP ${e.code}). " +
+            "Unable to undeploy.")
           1
       }
       case e: java.net.ConnectException =>
         warn(s"Nothing at ${serverUrl}")
         0
+      case _ =>
+        error(s"Another process might be occupying ${ca.ip}:${ca.port}. " +
+          "Unable to undeploy.")
+        1
     }
   }
 
