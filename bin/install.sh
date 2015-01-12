@@ -18,6 +18,24 @@ USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
 TEMP_DIR=/tmp
 
+# Ask a yes/no question, with a default of "yes".
+confirm () {
+  echo -ne $@ " [Y/n] "
+  read -r response
+
+  case $response in
+    [yY][eE][sS]|[yY]|"")
+      true
+      ;;
+    [nN][oO]|[nN])
+      false
+      ;;
+    *)
+      confirm $@
+      ;;
+  esac
+}
+
 echo -e "\033[1;32mWelcome to PredictionIO $PIO_VERSION!\033[0m"
 
 # Detect OS
@@ -65,12 +83,10 @@ else
   # Interactive
   while [[ ! $response =~ ^([yY][eE][sS]|[yY])$ ]]; do
   echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
-  echo -n "Installation path ($PIO_DIR): "
-  read pio_dir
+  read -e -p "Installation path ($PIO_DIR): " pio_dir
   pio_dir=${pio_dir:-$PIO_DIR}
 
-  echo -n "Vendor path ($pio_dir/vendors): "
-  read vendors_dir
+  read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
   vendors_dir=${vendors_dir:-$pio_dir/vendors}
 
   spark_dir=$vendors_dir/spark-$SPARK_VERSION
@@ -93,31 +109,53 @@ else
   done
 fi
 
-# Java
-if [[ "$OS" = "Darwin" ]]; then
-  echo -e "\033[1;36mStarting Java install...\033[0m"
+# Java install
+if [[ $OS = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
+  echo -e "\033[1mSelect your linux distribution:\033[0m"
+  select distribution in "Debian/Ubuntu" "Other"; do
+    case $distribution in
+      "Debian/Ubuntu")
+        echo -e "\033[1;36mStarting Java install...\033[0m"
 
+        echo -e "\033[33mThis script requires superuser access!\033[0m"
+        echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
+
+        sudo apt-get install openjdk-7-jdk -y
+
+        echo -e "\033[1;32mJava install done!\033[0m"
+        break
+        ;;
+      "Other")
+        echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+        echo -e "\033[1;31mPlease install Java manually!\033[0m"
+        exit 2
+        ;;
+      *)
+        ;;
+    esac
+  done
+fi
+
+# Try to find JAVA_HOME
+echo -n "Locating JAVA_HOME... "
+if [[ "$OS" = "Darwin" ]]; then
   JAVA_VERSION=`echo "$(java -version 2>&1)" | grep "java version" | awk '{ print substr($3, 2, length($3)-2); }'`
   JAVA_HOME=`/usr/libexec/java_home`
-
-  echo "Your Java version is: $JAVA_VERSION"
-  echo "JAVA_HOME is now set to: $JAVA_HOME"
-  echo -e "\033[1;32mJava done!\033[0m"
 elif [[ "$OS" = "Linux" ]]; then
-  # Java
-  echo -e "\033[1;36mStarting Java install...\033[0m"
-
-  echo -e "\033[1;33mThis script requires superuser access!\033[0m"
-  echo -e "\033[1;33mYou will be prompted for your password by sudo:\033[0m"
-
-  sudo apt-get update
-  sudo apt-get install openjdk-7-jre openjdk-7-jdk -y
-
   JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-
-  echo "JAVA_HOME is now set to: $JAVA_HOME"
-  echo -e "\033[1;32mJava install done!\033[0m"
 fi
+echo "found \"$JAVA_HOME\"."
+
+# Check if the JAVA_HOME is correct
+while [ ! -f "$JAVA_HOME/bin/javac" ]; do
+  echo -e "\033[1;31mThe JAVA_HOME is incorrect!\033[0m"
+  read -e -p "Please enter JAVA_HOME manually (it should contain file \"bin/javac\"): " JAVA_HOME
+done;
+
+if [ -n "$JAVA_VERSION" ]; then
+  echo "Your Java version is: $JAVA_VERSION"
+fi
+echo "JAVA_HOME is now set to: $JAVA_HOME"
 
 # PredictionIO
 echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
