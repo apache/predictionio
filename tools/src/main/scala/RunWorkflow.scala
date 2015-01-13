@@ -51,8 +51,6 @@ object RunWorkflow extends Logging {
     val hadoopConf = new Configuration
     val hdfs = FileSystem.get(hadoopConf)
 
-    val extraFiles = WorkflowUtils.thirdPartyConfFiles
-
     val driverClassPathIndex =
       ca.common.sparkPassThrough.indexOf("--driver-class-path")
     val driverClassPathPrefix =
@@ -63,7 +61,44 @@ object RunWorkflow extends Logging {
     val extraClasspaths =
       driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
+    val deployModeIndex =
+      ca.common.sparkPassThrough.indexOf("--deploy-mode")
+    val deployMode = if (deployModeIndex != -1)
+      ca.common.sparkPassThrough(deployModeIndex + 1)
+    else
+      "client"
+
+    val extraFiles = WorkflowUtils.thirdPartyConfFiles
+
+    val mainJar =
+      if (ca.build.uberJar) {
+        if (deployMode == "cluster")
+          em.files.filter(_.startsWith("hdfs")).head
+        else
+          em.files.filterNot(_.startsWith("hdfs")).head
+      } else {
+        if (deployMode == "cluster") {
+          em.files.filter(_.contains("pio-assembly")).head
+        } else {
+          core.getCanonicalPath
+        }
+      }
+
     val workMode = ca.metricsClass.map(_ => "Evaluation").getOrElse("Training")
+
+    val engineLocation = Seq(
+      sys.env("PIO_FS_ENGINESDIR"),
+      em.id,
+      em.version)
+
+    if (deployMode == "cluster") {
+      val dstPath = new Path(engineLocation.mkString(Path.SEPARATOR))
+      info("Cluster deploy mode detected. Trying to copy " +
+        s"${variantJson.getCanonicalPath} to " +
+        s"${hdfs.makeQualified(dstPath).toString}.")
+      hdfs.copyFromLocalFile(new Path(variantJson.toURI), dstPath)
+    }
+
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
       ca.common.sparkPassThrough ++
@@ -75,8 +110,9 @@ object RunWorkflow extends Logging {
       (if (!ca.build.uberJar) {
         Seq(
           "--jars",
-          (em.files ++ Console.builtinEngines(
-            ca.common.pioHome.get).map(_.getCanonicalPath)).mkString(","))
+          (em.files ++
+            Console.builtinEngines(ca.common.pioHome.get).map(
+              _.getCanonicalPath)).mkString(","))
       } else Seq()) ++
       (if (extraFiles.size > 0)
         Seq("--files", extraFiles.mkString(","))
@@ -87,7 +123,7 @@ object RunWorkflow extends Logging {
       else
         Seq()) ++
       Seq(
-        (if (ca.build.uberJar) em.files.head else core.getCanonicalPath),
+        mainJar,
         "--env",
         pioEnvVars,
         "--engineId",
@@ -95,7 +131,13 @@ object RunWorkflow extends Logging {
         "--engineVersion",
         em.version,
         "--engineVariant",
-        variantJson.getCanonicalPath) ++
+        (if (deployMode == "cluster")
+          hdfs.makeQualified(new Path(
+            (engineLocation :+ variantJson.getName).mkString(Path.SEPARATOR))).
+            toString
+        else
+          variantJson.getCanonicalPath)) ++
+      (if (deployMode == "cluster") Seq("--deploy-mode", "cluster") else Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.debug) Seq("--debug") else Seq()) ++

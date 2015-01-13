@@ -32,6 +32,7 @@ import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
+import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{read, write}
@@ -808,7 +809,15 @@ object Console extends Logging {
       info("HADOOP_CONF_DIR is not set. Assuming HDFS is unavailable.")
       false
     }
-    RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles, copyLocal)
+    val finalJarFiles = if (sys.env.contains("HADOOP_CONF_DIR") && !ca.build.uberJar) {
+      info("Also copying PredictionIO core assembly.")
+      jarFiles :+ coreAssembly(ca.common.pioHome.get)
+    } else
+      jarFiles
+    RegisterEngine.registerEngine(
+      ca.common.manifestJson,
+      finalJarFiles,
+      copyLocal)
     info("Your engine is ready for training.")
     0
   }
@@ -842,17 +851,20 @@ object Console extends Logging {
       ca.common.manifestJson,
       ca.common.engineId,
       ca.common.engineVersion) { em =>
-      if (em.files.size > 1 && ca.build.uberJar) {
-        error("Uber JAR mode cannot be turned on when current build produced " +
-          "more than 1 engine JAR files. Aborting.")
-        1
-      } else {
-        RunWorkflow.runWorkflow(
-          ca,
-          coreAssembly(ca.common.pioHome.get),
-          em,
-          ca.common.variantJson)
+      if (ca.build.uberJar) {
+        val uniqueJars =
+          em.files.map(_.split(Path.SEPARATOR_CHAR).last).groupBy(identity).keys
+        if (uniqueJars.size > 1) {
+          error("Uber JAR mode cannot be turned on when current build produced " +
+            "more than 1 engine JAR files. Aborting.")
+          return 1
+        }
       }
+      RunWorkflow.runWorkflow(
+        ca,
+        coreAssembly(ca.common.pioHome.get),
+        em,
+        ca.common.variantJson)
     }
   }
 

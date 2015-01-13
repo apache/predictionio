@@ -49,6 +49,27 @@ object RunServer extends Logging {
     val extraClasspaths =
       driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
+    val deployModeIndex =
+      ca.common.sparkPassThrough.indexOf("--deploy-mode")
+    val deployMode = if (deployModeIndex != -1)
+      ca.common.sparkPassThrough(deployModeIndex + 1)
+    else
+      "client"
+
+    val mainJar =
+      if (ca.build.uberJar) {
+        if (deployMode == "cluster")
+          em.files.filter(_.startsWith("hdfs")).head
+        else
+          em.files.filterNot(_.startsWith("hdfs")).head
+      } else {
+        if (deployMode == "cluster") {
+          em.files.filter(_.contains("pio-assembly")).head
+        } else {
+          core.getCanonicalPath
+        }
+      } 
+
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
       ca.common.sparkPassThrough ++
@@ -72,7 +93,7 @@ object RunServer extends Logging {
       else
         Seq()) ++
       Seq(
-        (if (ca.build.uberJar) em.files.head else core.getCanonicalPath),
+        mainJar,
         "--engineInstanceId",
         engineInstanceId,
         "--ip",

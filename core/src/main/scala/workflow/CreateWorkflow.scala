@@ -46,6 +46,7 @@ import java.io.File
 object CreateWorkflow extends Logging {
 
   case class WorkflowConfig(
+    deployMode: String = "",
     batch: String = "",
     engineId: String = "",
     engineVersion: String = "",
@@ -183,11 +184,15 @@ object CreateWorkflow extends Logging {
       opt[Unit]("stop-after-prepare") action { (x, c) =>
         c.copy(stopAfterPrepare = true)
       }
+      opt[String]("deploy-mode") action { (x, c) =>
+        c.copy(deployMode = x)
+      }
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
       WorkflowUtils.setupLogging(wfc.verbose, wfc.debug)
-      val variantJson = parse(stringFromFile("", wfc.engineVariant, localfs))
+      val targetfs = if (wfc.deployMode == "cluster") hdfs else localfs
+      val variantJson = parse(stringFromFile("", wfc.engineVariant, targetfs))
       val engineFactory = variantJson \ "engineFactory" match {
         case JString(s) => s
         case _ =>
