@@ -88,6 +88,36 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   echo -e "\033[1;32mJava install done!\033[0m"
 
   JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+elif [[ "$1" == "-y" ]]; then
+  # Non-interactive
+  echo -e "\033[1;33mNon-interactive installation requested!\033[0m"
+  echo -e "\033[1;33mForcing defaults!\033[0m"
+  pio_dir=$PIO_DIR
+  vendors_dir=$pio_dir/vendors
+
+  spark_dir=$vendors_dir/spark-$SPARK_VERSION
+  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+  zookeeper_dir=$vendors_dir/zookeeper
+
+  echo "--------------------------------------------------------------------------------"
+  echo -e "\033[1;32mOK, looks good!\033[0m"
+  echo "You are going to install PredictionIO to: $pio_dir"
+  echo -e "Vendor applications will go in: $vendors_dir\n"
+  echo "Spark: $spark_dir"
+  echo "Elasticsearch: $elasticsearch_dir"
+  echo "HBase: $hbase_dir"
+  echo "ZooKeeper: $zookeeper_dir"
+  echo "--------------------------------------------------------------------------------"
+
+  # Java Install
+  echo -e "\033[1;36mStarting Java install...\033[0m"
+
+  sudo apt-get install openjdk-7-jdk -y
+
+  echo -e "\033[1;32mJava install done!\033[0m"
+
+  JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 else
   # Interactive
   while true; do
