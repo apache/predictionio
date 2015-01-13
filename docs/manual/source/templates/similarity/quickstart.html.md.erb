@@ -7,11 +7,11 @@ This engine template recommends products that are "similar" to the input product
 Similarity is not defined by text description but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B.
 
 This template is ideal for recommending products to customers based on their recent actions.
-Use the IDs of the recently viewed products of a customer as the *Query*, 
+Use the IDs of the recently viewed products of a customer as the *Query*,
 the engine will predict other products that this customer may also like.
 
 This approach works perfectly for customers who are **first-time visitors** or have not signed in.
-Recommendations are made dynamically in *real-time* based on the most recently product preference you provide in the *Query*. 
+Recommendations are made dynamically in *real-time* based on the most recently product preference you provide in the *Query*.
 You can, therefore, recommend products to visitors without knowing a long history about them.
 
 You can also use this template to build the popular feature of Amazon: **"Customers Who Viewed This Item Also Viewed..."** quickly.
@@ -103,16 +103,16 @@ client.create_event(
 # A user views an item
 
 client.create_event(
-    event="view",
-    entity_type="user",
-    entity_id=<USER ID>,
-    target_entity_type="item",
-    target_entity_id=<ITEM ID>
+  event="view",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
 )
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
-(TODO: UPDATE ME)
+
 ```php
 <?php
 require_once("vendor/autoload.php");
@@ -120,19 +120,24 @@ use predictionio\EventClient;
 
 $client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
 
-// A user rates an item
+// Create a new user
 $client->createEvent(array(
-   'event' => 'rate',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'targetEntityType' => 'item',
-   'targetEntityId' => <ITEM ID>,
-   'properties' => array('ratings'=> <RATING>)
+  'event' => '$set',
+  'entityType' => 'user',
+  'entityId' => <USER ID>
 ));
 
-// A user buys an item
+// Create a new item or set existing item's categories
 $client->createEvent(array(
-   'event' => 'buy',
+  'event' => '$set',
+  'entityType' => 'item',
+  'entityId' => <ITEM ID>
+  'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
+));
+
+// A user views an item
+$client->createEvent(array(
+   'event' => 'view',
    'entityType' => 'user',
    'entityId' => <USER ID>,
    'targetEntityType' => 'item',
@@ -143,59 +148,73 @@ $client->createEvent(array(
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
-(TODO: UPDATE ME)
+
 ```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
 
-# A user rates an item.
+# Create a new user
 client.create_event(
-  'rate',
+  '$set',
   'user',
-  <USER ID>, {
-    'targetEntityType' => 'item',
-    'targetEntityId' => <ITEM ID>,
-    'properties' => { 'rating' => <RATING (float)> }
+  <USER ID>
+)
+
+# Create a new item or set existing item's categories
+client.create_event(
+  '$set',
+  'item',
+  <ITEM ID>, {
+    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
   }
 )
 
-# A user buys an item.
+# A user views an item.
 client.create_event(
-  'buy',
+  'view',
   'user',
   <USER ID>, {
     'targetEntityType' => 'item',
     'targetEntityId' => <ITEM ID>
   }
 )
+
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
-(TODO: UPDATE ME)
+
 ```java
 import io.prediction.Event;
 import io.prediction.EventClient;
 
+import com.google.common.collect.ImmutableList;
+
 EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
 
-// A user rates an item
-Event rateEvent = new Event()
-    .event("rate")
-    .entityType("user")
-    .entityId(<USER_ID>)
-    .targetEntityType("item")
-    .targetEntityId(<ITEM_ID>)
-    .property("rating", new Float(<RATING>));
-client.createEvent(rateEvent);
+// Create a new user
+Event userEvent = new Event()
+  .event("$set")
+  .entityType("user")
+  .entityId(<USER_ID>);
+client.createEvent(userEvent);
 
-// A user buys an item
-Event buyEvent = new Event()
-    .event("buy")
+// Create a new item or set existing item's categories
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("item")
+  .entityId(<ITEM_ID>)
+  .property("categories", ImmutableList.of("<CATEGORY_1>", "<CATEGORY_2>"));
+client.createEvent(itemEvent)
+
+// A user views an item
+Event viewEvent = new Event()
+    .event("view")
     .entityType("user")
     .entityId(<USER_ID>)
     .targetEntityType("item")
     .targetEntityId(<ITEM_ID>);
-client.createEvent(buyEvent);
+client.createEvent(viewEvent);
+
 ```
   </div>
   <div data-tab="REST API" data-lang="json">
@@ -266,7 +285,7 @@ User u10 views item i29
 160 events are imported.
 ```
 
-WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**, 
+WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
 please update the Python SDK to the latest version.
 
 ## Deploy the Engine as a Service
@@ -345,7 +364,6 @@ print engine_client.send_query({"items": ["i1"], "num": 4})
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
-(TODO: UPDATE ME)
 ```php
 <?php
 require_once("vendor/autoload.php");
@@ -353,38 +371,40 @@ use predictionio\EngineClient;
 
 $client = new EngineClient('http://localhost:8000');
 
-$response = $client->sendQuery(array('items'=> 'i1', 'num'=> 4));
+$response = $client->sendQuery(array('items'=> array('i1'), 'num'=> 4));
 print_r($response);
 
 ?>
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
-    (TODO: UPDATE ME)
+
 ```ruby
 # Create client object.
-client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+client = PredictionIO::EngineClient.new('http://localhost:8000')
 
 # Query PredictionIO.
-response = client.send_query('items' => <USER ID>, 'num' => <NUMBER (integer)>)
+response = client.send_query('items' => ['i1'], 'num' => 4)
 
 puts response
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
-    (TODO: UPDATE ME)
+
 ```java
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 
 import io.prediction.EngineClient;
 
 // create client object
-EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+EngineClient engineClient = new EngineClient('http://localhost:8000');
 
 // query
+
 JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
-        "user", "1",
+        "items", ImmutableList.of("i1"),
         "num",  4
     ));
 ```
