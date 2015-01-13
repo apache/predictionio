@@ -82,6 +82,7 @@ case class CommonArgs(
   stopAfterPrepare: Boolean = false,
   skipSanityCheck: Boolean = false,
   verbose: Boolean = false,
+  verbosity: Int = 0,
   debug: Boolean = false)
 
 case class BuildArgs(
@@ -313,6 +314,9 @@ object Console extends Logging {
           },
           opt[Unit]("uber-jar") action { (x, c) =>
             c.copy(build = c.build.copy(uberJar = true))
+          },
+          opt[Int]("verbosity") action { (x, c) =>
+            c.copy(common = c.common.copy(verbosity = x))
           }
         )
       note("")

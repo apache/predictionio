@@ -136,7 +136,9 @@ object RunWorkflow extends Logging {
             (engineLocation :+ variantJson.getName).mkString(Path.SEPARATOR))).
             toString
         else
-          variantJson.getCanonicalPath)) ++
+          variantJson.getCanonicalPath),
+        "--verbosity",
+        ca.common.verbosity.toString) ++
       (if (deployMode == "cluster") Seq("--deploy-mode", "cluster") else Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++

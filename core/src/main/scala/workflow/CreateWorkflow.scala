@@ -62,6 +62,7 @@ object CreateWorkflow extends Logging {
     skipSanityCheck: Boolean = false,
     stopAfterRead: Boolean = false,
     stopAfterPrepare: Boolean = false,
+    verbosity: Int = 0,
     verbose: Boolean = false,
     debug: Boolean = false)
 
@@ -186,6 +187,9 @@ object CreateWorkflow extends Logging {
       }
       opt[String]("deploy-mode") action { (x, c) =>
         c.copy(deployMode = x)
+      }
+      opt[Int]("verbosity") action { (x, c) =>
+        c.copy(verbosity = x)
       }
     }
 
@@ -436,7 +440,7 @@ object CreateWorkflow extends Logging {
       CoreWorkflow.runEngineTypeless(
         env = pioEnvVars,
         params = WorkflowParams(
-          verbose = 3,
+          verbose = wfc.verbosity,
           batch = (if (wfc.batch == "") engineFactory else wfc.batch),
           skipSanityCheck = wfc.skipSanityCheck,
           stopAfterRead = wfc.stopAfterRead,
