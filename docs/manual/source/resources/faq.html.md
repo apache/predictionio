@@ -9,11 +9,10 @@ url, etc.) with it. You can supply these as pass-through arguments at the end of
 `bin/pio` command.
 
 For example, the follow command set the Spark master to `spark://localhost:7077`
-(the default url of standalone cluster) and set the executor memory to 24G.
+(the default url of standalone cluster) and set the executor memory to 24G for `pio train`.
 
 ```
-$ pio run io.prediction.examples.mlc.Evaluation1 -- \
-  --master spark://localhost:7077  --executor-memory 24G
+$ pio train -- --master spark://localhost:7077 --executor-memory 24G
 ```
 
 ### Q: How do I increase the JVM heap size of the Event Server?
