@@ -68,7 +68,7 @@ object RunServer extends Logging {
         } else {
           core.getCanonicalPath
         }
-      } 
+      }
 
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
@@ -97,9 +97,9 @@ object RunServer extends Logging {
         "--engineInstanceId",
         engineInstanceId,
         "--ip",
-        ca.ip,
+        ca.deploy.ip,
         "--port",
-        ca.port.toString,
+        ca.deploy.port.toString,
         "--event-server-ip",
         ca.eventServer.ip,
         "--event-server-port",
@@ -109,7 +109,9 @@ object RunServer extends Logging {
       (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
-      (if (ca.common.debug) Seq("--debug") else Seq())
+      (if (ca.common.debug) Seq("--debug") else Seq()) ++
+      ca.deploy.logUrl.map(x => Seq("--log-url", x)).getOrElse(Seq()) ++
+      ca.deploy.logPrefix.map(x => Seq("--log-prefix", x)).getOrElse(Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 

@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "org.elasticsearch"       % "elasticsearch"   % elasticsearchVersion.value,
   "org.json4s"             %% "json4s-native"   % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"      % json4sVersion.value,
-  "org.scalaj"             %% "scalaj-http"     % "0.3.16",
+  "org.scalaj"             %% "scalaj-http"     % "1.1.0",
   "org.scalatest"          %% "scalatest"       % "2.1.6" % "test",
   "org.slf4j"               % "slf4j-log4j12"   % "1.7.7",
   "org.specs2"             %% "specs2"          % "2.3.13" % "test")

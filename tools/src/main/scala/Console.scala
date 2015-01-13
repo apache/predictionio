@@ -51,7 +51,9 @@ case class ConsoleArgs(
   build: BuildArgs = BuildArgs(),
   app: AppArgs = AppArgs(),
   accessKey: AccessKeyArgs = AccessKeyArgs(),
+  deploy: DeployArgs = DeployArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "",
@@ -63,8 +65,6 @@ case class ConsoleArgs(
   metricsParamsJsonPath: Option[String] = None,
   paramsPath: String = "params",
   engineInstanceId: Option[String] = None,
-  ip: String = "localhost",
-  port: Int = 8000,
   mainClass: Option[String] = None,
   projectName: Option[String] = None,
   directoryName: Option[String] = None)
@@ -100,10 +100,20 @@ case class AccessKeyArgs(
   accessKey: String = "",
   events: Seq[String] = Seq())
 
+case class DeployArgs(
+  ip: String = "localhost",
+  port: Int = 8000,
+  logUrl: Option[String] = None,
+  logPrefix: Option[String] = None)
+
 case class EventServerArgs(
   enabled: Boolean = false,
   ip: String = "localhost",
   port: Int = 7070)
+
+case class DashboardArgs(
+  ip: String = "localhost",
+  port: Int = 9000)
 
 case class UpgradeArgs(
   from: String = "0.0.0",
@@ -358,10 +368,10 @@ object Console extends Logging {
             c.copy(engineInstanceId = Some(x))
           } text("Engine instance ID."),
           opt[String]("ip") action { (x, c) =>
-            c.copy(ip = x)
+            c.copy(deploy = c.deploy.copy(ip = x))
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
-            c.copy(port = x)
+            c.copy(deploy = c.deploy.copy(port = x))
           } text("Port to bind to. Default: 8000"),
           opt[Unit]("feedback") action { (_, c) =>
             c.copy(eventServer = c.eventServer.copy(enabled = true))
@@ -377,6 +387,12 @@ object Console extends Logging {
           } text("Access key of the App where feedback data will be stored."),
           opt[Unit]("uber-jar") action { (x, c) =>
             c.copy(build = c.build.copy(uberJar = true))
+          },
+          opt[String]("log-url") action { (x, c) =>
+            c.copy(deploy = c.deploy.copy(logUrl = Some(x)))
+          },
+          opt[String]("log-prefix") action { (x, c) =>
+            c.copy(deploy = c.deploy.copy(logPrefix = Some(x)))
           }
         )
       note("")
@@ -386,40 +402,36 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "undeploy")
         } children(
           opt[String]("ip") action { (x, c) =>
-            c.copy(ip = x)
+            c.copy(deploy = c.deploy.copy(ip = x))
           } text("IP to unbind from. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
-            c.copy(port = x)
+            c.copy(deploy = c.deploy.copy(port = x))
           } text("Port to unbind from. Default: 8000")
         )
       note("")
       cmd("dashboard").
         text("Launch a dashboard at the specific IP and port.").
         action { (_, c) =>
-          c.copy(
-            commands = c.commands :+ "dashboard",
-            port = 9000)
+          c.copy(commands = c.commands :+ "dashboard")
         } children(
           opt[String]("ip") action { (x, c) =>
-            c.copy(ip = x)
+            c.copy(dashboard = c.dashboard.copy(ip = x))
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
-            c.copy(port = x)
+            c.copy(dashboard = c.dashboard.copy(port = x))
           } text("Port to bind to. Default: 9000")
         )
       note("")
       cmd("eventserver").
         text("Launch an Event Server at the specific IP and port.").
         action { (_, c) =>
-          c.copy(
-            commands = c.commands :+ "eventserver",
-            port = 7070)
+          c.copy(commands = c.commands :+ "eventserver")
         } children(
           opt[String]("ip") action { (x, c) =>
-            c.copy(ip = x)
+            c.copy(eventServer = c.eventServer.copy(ip = x))
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
-            c.copy(port = x)
+            c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070")
         )
       //note("")
@@ -909,43 +921,44 @@ object Console extends Logging {
   }
 
   def dashboard(ca: ConsoleArgs): Unit = {
-    info(s"Creating dashboard at ${ca.ip}:${ca.port}")
+    info(s"Creating dashboard at ${ca.dashboard.ip}:${ca.dashboard.port}")
     Dashboard.createDashboard(DashboardConfig(
-      ip = ca.ip,
-      port = ca.port))
+      ip = ca.dashboard.ip,
+      port = ca.dashboard.port))
   }
 
   def eventserver(ca: ConsoleArgs): Unit = {
-    info(s"Creating Event Server at ${ca.ip}:${ca.port}")
+    info(
+      s"Creating Event Server at ${ca.eventServer.ip}:${ca.eventServer.port}")
     EventServer.createEventServer(EventServerConfig(
-      ip = ca.ip,
-      port = ca.port))
+      ip = ca.eventServer.ip,
+      port = ca.eventServer.port))
   }
 
   def undeploy(ca: ConsoleArgs): Int = {
-    val serverUrl = s"http://${ca.ip}:${ca.port}"
+    val serverUrl = s"http://${ca.deploy.ip}:${ca.deploy.port}"
     info(
       s"Undeploying any existing engine instance at ${serverUrl}")
     try {
-      Http(s"${serverUrl}/stop").asString
-      0
-    } catch {
-      case e: scalaj.http.HttpException => e.code match {
+      val code = Http(s"${serverUrl}/stop").asString.code
+      code match {
+        case 200 => 0
         case 404 =>
           error(s"Another process is using ${serverUrl}. Unable to undeploy.")
           1
         case _ =>
           error(s"Another process is using ${serverUrl}, or an existing " +
-            s"engine server is not responding properly (HTTP ${e.code}). " +
+            s"engine server is not responding properly (HTTP ${code}). " +
             "Unable to undeploy.")
-          1
+            1
       }
+    } catch {
       case e: java.net.ConnectException =>
         warn(s"Nothing at ${serverUrl}")
         0
       case _: Throwable =>
-        error(s"Another process might be occupying ${ca.ip}:${ca.port}. " +
-          "Unable to undeploy.")
+        error("Another process might be occupying " +
+          s"${ca.deploy.ip}:${ca.deploy.port}. Unable to undeploy.")
         1
     }
   }

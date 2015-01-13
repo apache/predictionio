@@ -68,6 +68,8 @@ import scala.util.Success
 import java.io.File
 import java.io.ByteArrayInputStream
 import java.io.ObjectInputStream
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.net.URLClassLoader
 
 class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
@@ -89,6 +91,8 @@ case class ServerConfig(
   eventServerIp: String = "localhost",
   eventServerPort: Int = 7070,
   accessKey: Option[String] = None,
+  logUrl: Option[String] = None,
+  logPrefix: Option[String] = None,
   verbose: Boolean = false,
   debug: Boolean = false)
 
@@ -135,6 +139,12 @@ object CreateServer extends Logging {
       opt[String]("accesskey") action { (x, c) =>
         c.copy(accessKey = Some(x))
       } text("Event server access key.")
+      opt[String]("log-url") action { (x, c) =>
+        c.copy(logUrl = Some(x))
+      }
+      opt[String]("log-prefix") action { (x, c) =>
+        c.copy(logPrefix = Some(x))
+      }
       opt[Unit]("verbose") action { (x, c) =>
         c.copy(verbose = true)
       } text("Enable verbose output.")
@@ -458,6 +468,26 @@ class ServerActor[Q, P](
     }
   } else false
 
+  def remoteLog(logUrl: String, logPrefix: String, message: String): Unit = {
+    implicit val formats = Utils.json4sDefaultFormats
+    try {
+      scalaj.http.Http(logUrl).postData(
+        logPrefix + write(Map(
+          "engineInstance" -> engineInstance,
+          "message" -> message))).asString
+    } catch {
+      case e: Throwable =>
+        log.error(s"Unable to send remote log: ${e.getMessage}")
+    }
+  }
+
+  def getStackTraceString(e: Throwable): String = {
+    val writer = new StringWriter()
+    val printWriter = new PrintWriter(writer)
+    e.printStackTrace(printWriter)
+    writer.toString
+  }
+
   val myRoute =
     path("") {
       get {
@@ -562,10 +592,11 @@ class ServerActor[Q, P](
                 // At this point args.accessKey should be Some(String).
                 val accessKey = args.accessKey.getOrElse("")
                 val f: Future[Int] = future {
-                  scalaj.http.Http.postData(
+                  scalaj.http.Http(
                     s"http://${args.eventServerIp}:${args.eventServerPort}/" +
-                    s"events.json?accessKey=$accessKey", write(data)).
-                    header("content-type", "application/json").responseCode
+                    s"events.json?accessKey=$accessKey").postData(
+                    write(data)).header(
+                    "content-type", "application/json").asString.code
                 }
                 f onComplete {
                   case Success(code) => {
@@ -593,7 +624,23 @@ class ServerActor[Q, P](
               case e: MappingException =>
                 log.error(
                   s"Query '${queryString}' is invalid. Reason: ${e.getMessage}")
+                args.logUrl map { url =>
+                  remoteLog(
+                    url,
+                    args.logPrefix.getOrElse(""),
+                    s"Query:\n${queryString}\n\nStack Trace:\n" +
+                      s"${getStackTraceString(e)}\n\n")
+                  }
                 complete(StatusCodes.BadRequest, e.getMessage)
+              case e: Throwable =>
+                args.logUrl map { url =>
+                  remoteLog(
+                    url,
+                    args.logPrefix.getOrElse(""),
+                    s"Query:\n${queryString}\n\nStack Trace:\n" +
+                      s"${getStackTraceString(e)}\n\n")
+                  }
+                complete(StatusCodes.InternalServerError, getStackTraceString(e))
             }
           }
         }
