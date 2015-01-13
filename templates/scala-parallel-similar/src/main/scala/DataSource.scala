@@ -109,6 +109,6 @@ class TrainingData(
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
     s"items: [${items.count()} (${items.take(2).toList}...)]" +
-    s"ratings: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)"
+    s"viewEvents: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)"
   }
 }
