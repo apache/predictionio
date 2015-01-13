@@ -9,7 +9,7 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.8.4
+PIO_VERSION=0.8.5
 SPARK_VERSION=1.2.0
 ELASTICSEARCH_VERSION=1.4.2
 HBASE_VERSION=0.98.6
@@ -61,7 +61,7 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # Docker
   # REQUIRED: No user input for Docker!
   echo -e "\033[1;33mDocker detected!\033[0m"
-  echo -e "\033[1;33mForcing Docker defaults!\033[0m"	
+  echo -e "\033[1;33mForcing Docker defaults!\033[0m"
   pio_dir=$PIO_DIR
   vendors_dir=$pio_dir/vendors
 
@@ -79,14 +79,14 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   echo "HBase: $hbase_dir"
   echo "ZooKeeper: $zookeeper_dir"
   echo "--------------------------------------------------------------------------------"
-  
+
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
   sudo apt-get install openjdk-7-jdk -y
 
   echo -e "\033[1;32mJava install done!\033[0m"
-  
+
   JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 else
   # Interactive
@@ -94,15 +94,15 @@ else
     echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
     read -e -p "Installation path ($PIO_DIR): " pio_dir
     pio_dir=${pio_dir:-$PIO_DIR}
-  
+
     read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
     vendors_dir=${vendors_dir:-$pio_dir/vendors}
-  
+
     spark_dir=$vendors_dir/spark-$SPARK_VERSION
     elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
     hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
     zookeeper_dir=$vendors_dir/zookeeper
-  
+
     echo "--------------------------------------------------------------------------------"
     echo -e "\033[1;32mOK, looks good!\033[0m"
     echo "You are going to install PredictionIO to: $pio_dir"
@@ -124,12 +124,12 @@ else
       case $distribution in
         "Debian/Ubuntu")
           echo -e "\033[1;36mStarting Java install...\033[0m"
-  
+
           echo -e "\033[33mThis script requires superuser access!\033[0m"
           echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
-  
+
           sudo apt-get install openjdk-7-jdk -y
-  
+
           echo -e "\033[1;32mJava install done!\033[0m"
           break
           ;;
@@ -143,7 +143,7 @@ else
       esac
     done
   fi
-  
+
   # Try to find JAVA_HOME
   echo "Locating JAVA_HOME..."
   if [[ "$OS" = "Darwin" ]]; then
@@ -153,7 +153,7 @@ else
     JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
   fi
   echo "Found: $JAVA_HOME"
-  
+
   # Check JAVA_HOME
   while [ ! -f "$JAVA_HOME/bin/javac" ]; do
     echo -e "\033[1;31mJAVA_HOME is incorrect!\033[0m"

@@ -1,6 +1,6 @@
 {
   "id": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory",
-  "version": "0.8.5-SNAPSHOT",
+  "version": "0.8.5",
   "name": "Simple Recommendations Engine",
   "engineFactory": "io.prediction.examples.java.recommendations.tutorial1.EngineFactory"
 }

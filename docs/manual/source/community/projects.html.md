@@ -25,7 +25,7 @@ to the community! Simply:
 
 URL: https://github.com/PredictionIO/PredictionIO-Vagrant
 
-Bring Up PredictionIO 0.8.4 VM with Vagrant.
+Bring Up PredictionIO 0.8.5 VM with Vagrant.
 
 - Core Author: Raphael Mäder
 
@@ -67,4 +67,3 @@ based on the PredictionIO Java SDK API.
 - Core Author: Themos Piperakis
 
 - Status: It works with PredictionIO v0.8 - Under active development
-
