@@ -2,7 +2,7 @@
 title: DebuggingEngine
 ---
 
-PredictionIO provides the following debug features to help you debug engines during the development cycle.
+PredictionIO provides the following features to help you debug engines during development cycle.
 
 ## Pause Training between Stages
 
