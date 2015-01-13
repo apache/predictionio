@@ -61,30 +61,31 @@ class DataSource(val dsp: DataSourceParams)
     }
 
     // get all "user" "view" "item" events
-    val eventsRDD: RDD[Event] = eventsDb.find(
+    val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
       appId = dsp.appId,
       entityType = Some("user"),
       eventNames = Some(List("view")),
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("item")))(sc)
-
-    val viewEventsRDD: RDD[ViewEvent] = eventsRDD.map { event =>
-      val viewEvent = try {
-        event.event match {
-          case "view" => ViewEvent(
-            user = event.entityId,
-            item = event.targetEntityId.get,
-            t = event.eventTime.getMillis)
-          case _ => throw new Exception(s"Unexpected event ${event} is read.")
+      // eventsDb.find() returns RDD[Event]
+      .map { event =>
+        val viewEvent = try {
+          event.event match {
+            case "view" => ViewEvent(
+              user = event.entityId,
+              item = event.targetEntityId.get,
+              t = event.eventTime.getMillis)
+            case _ => throw new Exception(s"Unexpected event ${event} is read.")
+          }
+        } catch {
+          case e: Exception => {
+            logger.error(s"Cannot convert ${event} to ViewEvent." +
+              s" Exception: ${e}.")
+            throw e
+          }
         }
-      } catch {
-        case e: Exception => {
-          logger.error(s"Cannot convert ${event} to U2IEvent. Exception: ${e}.")
-          throw e
-        }
+        viewEvent
       }
-      viewEvent
-    }
 
     new TrainingData(
       users = usersRDD,
@@ -98,11 +99,7 @@ case class User()
 
 case class Item(val categories: Option[List[String]])
 
-case class ViewEvent(
-  val user: String,
-  val item: String,
-  val t: Long
-)
+case class ViewEvent(val user: String, val item: String, val t: Long)
 
 class TrainingData(
   val users: RDD[(String, User)],
