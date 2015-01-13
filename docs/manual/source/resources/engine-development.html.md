@@ -1,5 +1,5 @@
 ---
-title: DebuggingEngine
+title: Engine Development - Troubleshoot
 ---
 
 PredictionIO provides the following features to help you debug engines during development cycle.
