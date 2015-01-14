@@ -753,6 +753,9 @@ object CoreWorkflow {
 
     evaluatorOutput foreach { logger.info(_) }
 
+    val epmParams = evaluatorClassOpt.map { x =>
+      params.copy(saveModel = false)
+    } getOrElse params
 
     val models: Seq[Seq[Any]] = extractPersistentModels(
       sc,
@@ -760,7 +763,7 @@ object CoreWorkflow {
       evalAlgoModelMap,
       algorithmParamsList,
       algoInstanceList,
-      params)
+      epmParams)
 
     saveEngineInstance(
       realEngineInstance,
