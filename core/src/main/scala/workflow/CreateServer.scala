@@ -310,15 +310,15 @@ object CreateServer extends Logging {
       kryo.invert(modeldata.get(engineInstance.id).get.models).get.
         asInstanceOf[Seq[Seq[Any]]]
     val models = modelsFromEngineInstance.head.zip(algorithms).
-      zip(algorithmsParams).map {
-        case ((m, a), p) =>
+      zip(algorithmsParamsWithNames).zipWithIndex.map {
+        case (((m, a), pwn), i) =>
           if (m.isInstanceOf[PersistentModelManifest]) {
             info("Custom-persisted model detected for algorithm " +
               a.getClass.getName)
             SparkWorkflowUtils.getPersistentModel(
               m.asInstanceOf[PersistentModelManifest],
-              engineInstance.id,
-              p,
+              Seq(engineInstance.id, i, pwn._1).mkString("-"),
+              pwn._2,
               sparkContext,
               getClass.getClassLoader)
           } else if (a.isParallel) {

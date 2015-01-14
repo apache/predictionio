@@ -797,7 +797,7 @@ object CoreWorkflow {
     def getPersistentModel(model: Any, instanceId: String, algoParams: Params)
     : Any = {
       if (model.asInstanceOf[IPersistentModel[Params]].save(
-          realEngineInstance.id, algoParams, sc))
+          instanceId, algoParams, sc))
         PersistentModelManifest(className = model.getClass.getName)
       else
         Unit
@@ -825,13 +825,17 @@ object CoreWorkflow {
       .par
       .map { case(ai, model) =>
         val algo = algoInstanceList(ai)
+        val algoName = algorithmParamsList(ai)._1
         val algoParams = algorithmParamsList(ai)._2
 
         // Parallel Model
         if (algo.isInstanceOf[PAlgorithm[_, _, _, _]]
             || algo.isInstanceOf[PJavaAlgorithm[_, _, _, _]]) {
           if (model.isInstanceOf[IPersistentModel[_]]) {
-            getPersistentModel(model, realEngineInstance.id, algoParams)
+            getPersistentModel(
+              model,
+              Seq(realEngineInstance.id, ai, algoName).mkString("-"),
+              algoParams)
           } else {
             Unit
           }
@@ -842,7 +846,10 @@ object CoreWorkflow {
             .collect
             .head
           if (m.isInstanceOf[IPersistentModel[_]]) {
-            getPersistentModel(m, realEngineInstance.id, algoParams)
+            getPersistentModel(
+              m,
+              Seq(realEngineInstance.id, ai, algoName).mkString("-"),
+              algoParams)
           } else {
             m
           }
