@@ -11,8 +11,6 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.ALS
 import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
-import org.apache.spark.mllib.linalg.distributed.MatrixEntry
-import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix
 
 import grizzled.slf4j.Logger
 
@@ -95,8 +93,6 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       (itemStringIntMap(id), item)
     }.collectAsMap.toMap
 
-    val itemCount = items.size
-    val sc = data.viewEvents.context
     val mllibRatings = data.viewEvents
       .map { r =>
         // Convert user and item String IDs to Int index for MLlib
@@ -224,7 +220,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       d += v1(i) * v2(i)
       i += 1
     }
-    d / (math.sqrt(n1) * math.sqrt(n2))
+    val n1n2 = (math.sqrt(n1) * math.sqrt(n2))
+    if (n1n2 == 0) 0 else (d / n1n2)
   }
 
   private
