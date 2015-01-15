@@ -54,6 +54,29 @@ def import_events(client):
       )
       count += 1
 
+  # each user randomly liked/disliked 10 items
+  for user_id in user_ids:
+    for viewed_item in random.sample(item_ids, 10):
+      if random.choice((False, True)) :
+        print "User", user_id ,"likes item", viewed_item
+        client.create_event(
+          event="like",
+          entity_type="user",
+          entity_id=user_id,
+          target_entity_type="item",
+          target_entity_id=viewed_item
+        )
+      else:
+        print "User", user_id ,"dislikes item", viewed_item
+        client.create_event(
+          event="dislike",
+          entity_type="user",
+          entity_id=user_id,
+          target_entity_type="item",
+          target_entity_id=viewed_item
+        )
+      count += 1
+
   print "%s events are imported." % count
 
 if __name__ == '__main__':
