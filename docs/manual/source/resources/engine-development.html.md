@@ -1,22 +1,22 @@
 ---
-title: Engine Development
+title: Engine Development - Troubleshoot
 ---
 
-PredictionIO provides the following debug features to help you develop and debug engines.
+PredictionIO provides the following features to help you debug engines during development cycle.
 
-## Using pio train with --stop-after-read and --stop-after-prepare options
+## Pause Training between Stages
 
-By default `pio train` runs through the whole training processes including DataSource, Preparator and Algorithm.
+By default `pio train` runs through the whole training process including [DataSource, Preparator and Algorithm](../../templates/recommendation/dase/). To speed up the development and debug cycle, you can stop the process after each stage to verify it has completed correctly. 
 
-To speed up the development and debug cycle, sometimes you may want to stop the process right after DataSource to verify the the TrainingData output only (for example, you modify DataSource and want to debug it). You can run `pio train` with `--stop-after-read` option:
+If you have modified DataSource and want to confirm the TrainingData is generated as expected, you can run `pio train` with `--stop-after-read` option:
 
 ```
 pio train --stop-after-read
 ```
 
-This would stop the training process after TrainingData is generated.
+This would stop the training process after the TrainingData is generated.
 
-For example, if you are running with Recommendation Template, you should see the the training process stops after the TrainingData is printed.
+For example, if you are running [Recommendation Template](../../templates/recommendation/quickstart/), you should see the the training process stops after the TrainingData is printed.
 
 ```
 2015-01-12 17:01:26,531 INFO  workflow.CoreWorkflow$ - TrainingData:
@@ -25,13 +25,13 @@ For example, if you are running with Recommendation Template, you should see the
 2015-01-12 17:01:27,717 INFO  workflow.CoreWorkflow$ - Training has stopped after reading from data source and is incomplete.
 ```
 
-Similarly, you can stop the training after the Preparator stage by using --stop-after-prepare option and it would stop after PreparedData is generated:
+Similarly, you can stop the training after the Preparator phase by using --stop-after-prepare option and it would stop after PreparedData is generated:
 
 ```
 pio train --stop-after-prepare
 ```
 
-## Using SanityCheck
+##  Sanity Check Training Data
 
 If you overrides `toString()` method in the data classes (TrainingData, PreparedData, and Model), PredictionIO will print the data to the console output for debugging purpose.
 
