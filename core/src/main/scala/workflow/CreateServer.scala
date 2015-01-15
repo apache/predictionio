@@ -235,6 +235,12 @@ object CreateServer extends Logging {
     val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
       servingParamsWithName._2)
 
+    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
+    val kryo = KryoInjection.instance(kryoInstantiator)
+    val modelsFromEngineInstance =
+      kryo.invert(modeldata.get(engineInstance.id).get.models).get.
+      asInstanceOf[Seq[Seq[Any]]]
+
     val sparkContext =
       Option(WorkflowContext(
         batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
@@ -278,7 +284,10 @@ object CreateServer extends Logging {
       (name, extractedParams)
     }
 
-    val evalPreparedMap = sparkContext map { sc =>
+    val evalPreparedMap = sparkContext.filter(_ =>
+      algorithms.zip(modelsFromEngineInstance.head).exists(am =>
+        am._1.isParallel && !am._2.isInstanceOf[PersistentModelManifest]
+    )).map { sc =>
       logger.info("Data Source")
       val dataSource = Doer(
         engine.dataSourceClassMap(dataSourceParamsWithName._1),
@@ -304,11 +313,6 @@ object CreateServer extends Logging {
       evalPreparedMap
     }
 
-    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
-    val kryo = KryoInjection.instance(kryoInstantiator)
-    val modelsFromEngineInstance =
-      kryo.invert(modeldata.get(engineInstance.id).get.models).get.
-        asInstanceOf[Seq[Seq[Any]]]
     val models = modelsFromEngineInstance.head.zip(algorithms).
       zip(algorithmsParamsWithNames).zipWithIndex.map {
         case (((m, a), pwn), i) =>
