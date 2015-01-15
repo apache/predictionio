@@ -294,19 +294,25 @@ Field | Type | Description
 :---- | :----| :-----
 `event` | String | Name of the event.
         | | (Examples: "sign-up", "rate", "view", "buy").
-        | | **Note**: All event names start with "$" are reserved
+        | | **Note**: All event names start with "$" and "pio_" are reserved
         | | and shouldn't be used as your custom event name (eg. "$set").
 `entityType` | String | The entity type. It is the namespace of the entityId and
              | | analogous to the table name of a relational database. The
              | | entityId must be unique within same entityType.
+             | | **Note**: All entityType names start with "$" and "pio_" are
+             | | reserved and shouldn't be used.
 `entityId` | String | The entity ID. `entityType-entityId` becomes the unique
            | | identifier of the entity. For example, you may have entityType
            | | named `user`, and different entity IDs, say `1` and `2`. In this
            | | case, `user-1` and `user-2` uniquely identifies | these two
            | | entities.
 `targetEntityType` | String | (Optional) The target entity type.
+                   | | **Note**: All entityType names start with "$" and "pio_"
+                   | | are reserved and shouldn't be used.
 `targetEntityId` | String | (Optional) The target entity ID.
-`properties` | JSON | (Optional) See **Note** below.
+`properties` | JSON | (Optional) See **Note About Properties** below
+             | | **Note**: All peroperty names start with "$" and "pio_"
+             | | are reserved and shouldn't be used as keys inside `properties`.
 `eventTime` | String | (Optional) The time of the event. Although Event Server's
             | | current system time and UTC timezone will be used if this is
             | | unspecified, it is highly recommended that this time should be
@@ -315,7 +321,9 @@ Field | Type | Description
             | |  Must be in ISO 8601 format (e.g.
             | | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
 
-#### Note
+
+#### Note About Properties
+
 `properties` can be associated with an *entity* or *event*:
 
 1.  `properties` **associated with an *entity*:**
@@ -385,7 +393,7 @@ Field | Type | Description
       "entityType" : "user",
       "entityId" : "2",
       "properties" : {
-        "b" : null,
+        "b" : null
       },
       "eventTime" : "2014-09-11T14:17:42.456-08:00"
     }
