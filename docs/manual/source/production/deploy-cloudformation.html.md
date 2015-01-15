@@ -75,21 +75,19 @@ The next screen shows the stack parameters. You must enter your AWS SSH key pair
 
 | Parameter | Description |
 |-----------|-------------|
-| AWS sSSH Key Pair | The AWS SSH key pair name that can be used to access all instances in the cluster. |
-| ClusterAZ | Specify the availability zone that the PredictionIO cluster will be launched in. All instances of the cluster will be launched into the same zone for optimal network performance between one another.
-| ComputeInstance-Type | The EC2 instance type of all compute instances. Memory-optimized EC2 instances are recommended. |
-| StorageInstance-Type | The EC2 instance type of all storage instances. General purpose EC2 instances are recommended. |
-| StorageInstance-Size | Size in GB of each core storage instance. This cannot be changed once the cluster is launched. |
-| StorageInstance-VolumeType | The EBS volume type of each core storage instance. Valid values are *standard* and *gp2*. This cannot be changed once the cluster is launched. |
-
+| AWS-KeyPair | The AWS SSH key pair name that can be used to access all instances in the cluster. |
+| AvailabilityZone | Specify the availability zone that the PredictionIO cluster will be launched in. All instances of the cluster will be launched into the same zone for optimal network performance between one another.
+| ComputeInstanceType | The EC2 instance type of all compute instances. Memory-optimized EC2 instances are recommended. |
 | ComputeInstanceExtra | Number of extra compute instances besides the core compute instance. This can be increased and decreased. |
 | StorageInstanceExtra | Number of extra storage instances besides core storage instances. **Never decrease this value or you will risk data corruption.** |
-| StorageInstanceExtra-Size | Size in GB of each extra storage instance. This can be changed when you add an extra storage instance. |
-| StorageInstanceExtra-VolumeType | The EBS volume type of each extra storage instance. Valid values are *standard* and *gp2*. This can be changed when you add an extra storage instance. |
+| StorageInstanceExtraSize | Size in GB of each extra storage instance. This can be changed when you add an extra storage instance. |
+| StorageInstanceExtraVolumeType | The EBS volume type of each extra storage instance. Valid values are *standard* and *gp2*. This can be changed when you add an extra storage instance. |
+ StorageInstanceType | The EC2 instance type of all storage instances. General purpose EC2 instances are recommended. |
+| StorageInstanceSize | Size in GB of each core storage instance. This cannot be changed once the cluster is launched. |
+| StorageInstanceVolumeType | The EBS volume type of each core storage instance. Valid values are *standard* and *gp2*. This cannot be changed once the cluster is launched. |
 
 
-Click **Next** when you are done. You will arrive at the **Options** screen. You
-may click **Next** again if you do not have other options to specify.
+Click **Next** when you are done. You will arrive at the **Options** screen. You can skip this step if you do not have other options to specify.
 
 At the **Review** screen, click **Create** to finish.
 
@@ -103,20 +101,17 @@ previous step.
 Once the stack creation has finished, you can click on **Events** and select
 **Outputs** to arrive to the following screen.
 
-NOTE: If your browser window is wide enough, you should see the **Outputs** tab
-without clicking on **Events**.
-
 ![Completed Stack](/images/cloudformation/cf-06.png)
 
 Take note of **PIOComputeMasterPublicIp** and **PIOStorageMasterPublicIp**. We
 will now access the cluster and make sure everything is in place.
 
-WARNING: Sometimes even though the stack is created successfully, not all
-cluster services would be launched successfully due to potential network
+WARNING: Sometimes the stack is created successfully but not all
+cluster services would launch due to potential network
 glitches or system issues within a cluster instance. In this case, simply
 delete and create the stack again.
 
-### Verify Compute Nodes
+### Verify Compute Instances
 
 SSH to the master compute instance using the **PIOComputeMasterPublicIp**. In this
 example, let us assume the IP address be 54.175.145.84, and your private key
@@ -131,12 +126,11 @@ something similar to the following.
 
 ![Example Spark UI](/images/cloudformation/spark.png)
 
-Notice that the case above was with **NumberOfComputeWorkers** set to **2**. If
-you do not have extra compute worker instances, you will see only one worker.
+NOTE:In the example above **NumberOfComputeWorkers** is **2**. This is because the example has 1 compute instance and 1 extra compute instance. If you do not have any extra compute instances, you will see only 1 worker on the above page.
 
-### Verify Storage Nodes
+### Verify Storage Instances
 
-SSH to the master core storage instance using the **PIOStorageMasterPublicIp**. In
+SSH to the storage instance using the **PIOStorageMasterPublicIp**. In
 this example, let us assume the IP address be 54.175.1.36, and your private key
 file be **yourkey.pem**.
 
@@ -145,14 +139,13 @@ $ ssh -i yourkey.pem -A -L 50070:localhost:50070 -L 60010:localhost:60010 ubuntu
 ```
 
 Once you are in, point your web browser to http://localhost:50070 and click on
-**Datainstances** at the top menu. You should see something similar to the
-following.
+**Datainstances** at the top menu. You should see the following page.
 
 ![Example HDFS UI](/images/cloudformation/hdfs.png)
 
-All **3 core storage instances** must be up for proper operation.
+WARNING:All **3 storage instances** must be up for proper operation.
 
-If all **3 core storage instances** are working properly, verify HBase by pointing
+If all **3 storage instances** are working properly, you can then verify HBase by pointing
 your web browser to http://localhost:60010. You should see something similar to
 the following.
 
@@ -163,11 +156,11 @@ There should also be 1 backup master.
 
 ### Running Quick Start
 
-You can now get your hands dirty with your fully-distributed PredictionIO
+You can now start with the fully-distributed PredictionIO
 cluster. Let's start with the [recommendation quick
 start](/templates/recommendation/quickstart/) with a few twists.
 
-1. Skip all the way down to `pio status`. Run the command and you should see
+1. Skip the installation steps and run `pio status`. You should see
    everything functional.
 
 2. Run through the section **Create a Sample App** as described. The
