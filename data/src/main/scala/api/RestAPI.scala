@@ -3,8 +3,7 @@ package io.prediction.data.api
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
-import io.prediction.data.storage.EventJson4sSupport
-import io.prediction.data.api.CmdClient
+import io.prediction.data.storage.{EventJson4sSupport, Storage}
 import org.json4s.DefaultFormats
 //import org.json4s.ext.JodaTimeSerializers
 
@@ -15,7 +14,7 @@ import spray.routing._
 
 
 class RestServiceActor() extends HttpServiceActor {
-  val cmdClient:
+
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
       new EventJson4sSupport.APISerializer
@@ -56,15 +55,31 @@ class RestServiceActor() extends HttpServiceActor {
           }
         }
     } ~
-      path("cmd" / "build") {
+      path("cmd" / "app") {
         get {
-            handleRejections(rejectionHandler){
-
-              complete(cwd)
+          respondWithMediaType(MediaTypes.`application/json`){
+            val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
+            val accessKeys = Storage.getMetaDataAccessKeys
+            var appsRes = List[AppResponse]()
+            apps.map {
+              app => {
+                AppResponse(app.id,app.name,accessKeys.getByAppid(app.id))
+              }
             }
+            complete(apps)
+          }
+        } ~
+        delete {
+          entity(as[AppRequest]) { appArgs =>
+            complete("App deleted successfully")
+          }
+        } ~
+        post {
+          entity(as[AppRequest]) { appArgs =>
+            complete("App added successfully")
+          }
         }
     }
-
   def receive = runRoute(route)
 }
 
