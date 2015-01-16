@@ -11,22 +11,10 @@ You can scale PredictionIO on AWS with [CloudFormation](http://aws.amazon.com/cl
 The PredictionIO CloudFormation stack creates two types of instance: **compute
 and storage**. By default, the stack will launch **1 compute Instance and 3 Storage instances**.
 
-The compute instance acts as Spark master. You can launch extra compute instances by updating the stack. They will join the master and become slave compute instances as Spark workers. The extra compute instances are fully elastic and can be increased or decreased at anytime.
-
-The storage instances form the core of the HDFS, ZooKeeper quorum, and
-HBase storage. Their roles are described below.
-
-* Storage instance 1 (master) will become the Hadoop NameNode, a Hadoop
-  DataNode, and the HBase Master.
-* Storage instance 2 will become a Hadoop DataNode, the HBase Backup Master,
-  and an HBase RegionServer.
-* Storage instance 3 will become a Hadoop DataNode, and an HBase RegionServer.
-
-In addition, PredictionIO Event Server will be launched on all storage instances.
-
-Extra storage instances can be added to the cluster by updating the stack. They cannot be removed once they
+The compute instance *(ComputeInstance)* acts as Spark master. You can launch extra compute instances *(ComputeInstanceExtra)* by updating the stack. The storage instances *(StorageInstance)* form the core of the HDFS, ZooKeeper quorum, and HBase storage. Extra storage instances *(StorageInstanceExtra)* can be added to the cluster by updating the stack. They cannot be removed once they
 are spinned up.
 
+PredictionIO Event Server will be launched on all storage instances.
 
 ### Networking
 
@@ -186,22 +174,17 @@ start](/templates/recommendation/quickstart/) with a few twists.
 
 ## Scaling the Cluster
 
-As your data size and/or audience grow, you may need to scale out your cluster
-to handle more workload, or decrease turnaround time. In this section, we will
+As your data size and/or audience grow, you can scale your cluster
+to handle more workload or decrease turnaround time. In this section, we will
 provide some general guidelines about when and how to scale your cluster with
 CloudFormation.
 
 ### Scaling Compute Instances
 
-You may want to scale your compute instances when the turnaround time of
-`pio train` increases, or when the turnaround time of querying an engine server
-launched by `pio deploy` increases. Another way to look at whether you need
-additional computation power is to look at the Spark Master web UI (shown
-previously in the **Verify Compute Instances** section above).
+You can increase compute instances to reduce training time *($pio train)*
+and the time to query an engine server. You can also check the [Spark Master Web UI] to see if you need additional compute power,
 
-Notice that for compute instances, you can increase or decrease the
-number of extra compute instances as much as you like (within bounds of AWS EC2
-limits).
+Notice that for compute instances, you can increase or decrease the number of extra compute instances *(ComputeInstanceExtra)* as much as you like. The extra compute instances will join the master and become slave compute instances as Spark workers. 
 
 Let us begin by adding 2 extra compute instances. At the CloudFormation console,
 right click on the cluster stack and click on **Update Stack**.
@@ -233,18 +216,13 @@ Progress](/images/cloudformation/compute-4.png)
 
 Once the status become **UPDATE_COMPLETED**, you will have 2 extra compute
 instances. Notice that during the update, your cluster is still functional and
-any existing work will not be affected (existing work might be affected if you
-are downscaling).
+any existing work will not be affected. If you are downscaling, existing work might be affected during the update process.
 
 ### Scaling Storage Instances
 
-You scale your storage instances when you are about to run out of space. By
-looking at the Hadoop NameNode web UI (shown previously in the **Verify Storage
-Instances** section above), it is obvious whether you are approaching storage
-limits or not.
+You can scale your storage instances when you are about to run out of space. You can check your storage usage at the [Hadoop NameNode web UI].
 
-Notice that for storage instances, you can only increase the number of extra
-storage instances (within bounds of AWS EC2 limits).
+WARNING: For storage instances, you can only increase the number of extra storage instances *(StorageInstanceExtra)* within the bounds of AWS EC2 limits. Decreasing the instances will risk data corruption.
 
 Let us begin by adding 2 extra storage instances. At the CloudFormation console,
 right click on the cluster stack and click on **Update Stack**.
@@ -280,6 +258,8 @@ stack status changed to **UPDATE_IN_PROGRESS**.
 Progress](/images/cloudformation/compute-4.png)
 
 Once the status become **UPDATE_COMPLETED**, you will have 2 extra storage
-instances. Notice that during the update, your cluster is still functional and
-any existing work will not be affected (existing work might be affected if you
-are downscaling).
+instances. Notice that during the up-scaling update, your cluster is still functional and existing work will not be affected. They may be affected during downscale. 
+
+## Support and Pricing
+
+PredictionIO Cluster comes with Enterprise Support. For pricing and support details, please contact support@prediction.io.
