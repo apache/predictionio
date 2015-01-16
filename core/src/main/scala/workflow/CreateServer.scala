@@ -430,8 +430,9 @@ class MasterActor(
       engineInstance: EngineInstance,
       engineFactoryName: String,
       manifest: EngineManifest): ActorRef = {
-    val (engineLanguage, engine) =
+    val (engineLanguage, engineFactory) =
       WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
+    val engine = engineFactory()
     CreateServer.createServerActorWithEngine(
       sc,
       engineInstance,

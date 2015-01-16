@@ -76,6 +76,8 @@ case class CommonArgs(
   sparkHome: Option[String] = None,
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
+  engineFactory: Option[String] = None,
+  engineParamsKey: Option[String] = None,
   variantJson: File = new File("engine.json"),
   manifestJson: File = new File("manifest.json"),
   stopAfterRead: Boolean = false,
@@ -317,6 +319,12 @@ object Console extends Logging {
           },
           opt[Int]("verbosity") action { (x, c) =>
             c.copy(common = c.common.copy(verbosity = x))
+          },
+          opt[String]("engine-factory") action { (x, c) =>
+            c.copy(common = c.common.copy(engineFactory = Some(x)))
+          },
+          opt[String]("engine-params-key") action { (x, c) =>
+            c.copy(common = c.common.copy(engineParamsKey = Some(x)))
           }
         )
       note("")

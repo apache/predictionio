@@ -139,6 +139,10 @@ object RunWorkflow extends Logging {
           variantJson.getCanonicalPath),
         "--verbosity",
         ca.common.verbosity.toString) ++
+      ca.common.engineFactory.map(
+        x => Seq("--engine-factory", x)).getOrElse(Seq()) ++
+      ca.common.engineParamsKey.map(
+        x => Seq("--engine-params-key", x)).getOrElse(Seq()) ++
       (if (deployMode == "cluster") Seq("--deploy-mode", "cluster") else Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++

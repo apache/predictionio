@@ -244,6 +244,9 @@ class SimpleEngineParams(
 trait IEngineFactory {
   /** Creates an instance of an [[Engine]]. */
   def apply(): Engine[_, _, _, _, _, _]
+
+  /** Override this method to programatically return engine parameters. */
+  def engineParams(key: String): EngineParams = EngineParams()
 }
 
 /** Mix in this trait for queries that contain prId (PredictedResultId).
