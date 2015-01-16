@@ -34,11 +34,11 @@ The `PredictedResult` case class defines the format of **predicted result**,
 such as
 
 ```json
-{"productScores":[
-  {"product":22,"score":4.07},
-  {"product":62,"score":4.05},
-  {"product":75,"score":4.04},
-  {"product":68,"score":3.81}
+{"itemScores":[
+  {"item":22,"score":4.07},
+  {"item":62,"score":4.05},
+  {"item":75,"score":4.04},
+  {"item":68,"score":3.81}
 ]}
 ```
 
