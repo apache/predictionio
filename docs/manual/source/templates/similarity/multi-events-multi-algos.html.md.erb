@@ -6,7 +6,7 @@ The default algorithm described in [Quick Start](quickstart.html) uses user-to-i
 
 In this example, we will add another algorithm to process like/dislike events. The final PredictedResults will be the combined outputs of both algorithms.
 
-NOTE: This is just one of the ways to handle mutliple types of events. We use this use case to demonstrate how one can build an engine with multiple algorithms. You may also build one single algorithm which takes different events into account without multiple algorithms.
+NOTE: This is just one of the ways to handle mutliple types of events. We use this use case to demonstrate how one can build an engine with multiple algorithms. You may also build one single algorithm which takes different events into account without using multiple algorithms.
 
 This example will demonstrate the following:
 
@@ -14,7 +14,7 @@ This example will demonstrate the following:
 - Use positive and negative implicit events such as like and dislike with MLlib ALS algorithm
 - Integrate multiple algorithms into one engine
 
-The complete source code of this examlpe can be found in GitHub(TODO: ADD LINK).
+The complete source code of this examlpe can be found in `examples/scala-parallel-similar-multi`.
 
 ### Step 1. Read "like" and "dislike" events as TrainingData
 
@@ -136,11 +136,13 @@ For demonstration purpose, we also use MLlib ALS to train model with `likeEvents
 
 NOTE: You may also create a completely new algorithm to process `likeEvents` or other types of events without extending any existing algorithm, or simply modifying the same algorithm to take new events into account.
 
+#### Using positive and negative implicit events (without explicit rating) with MLlib ALS
+
 In the original `ALSAlgorithm`, the `train()` function calculates the number of times that the user has viewed the same item and then map it to `MLlibRating` object. However, like/dislike event is boolean and one time preference, so it doesn't make sense to aggregate the events if the user has multiple like/dislike events on the same item. However, a user may like an item and change her mind to dislike the same item later, or vice versa. In this case, we could simply use the latest like or dislike event of the user for the same item.
 
 In addition, MLlib ALS can handle negative preference with `ALS.trainImplicit()`. Hence, we can map a dislike to rating of -1 and like to 1.
 
-INFO: Negative preference does not work if use `ALS.train()` instead, which is for explicit rating such as rate event.
+INFO: Negative preference does not work if use `ALS.train()` instead, which is for explicit rating such as "rate" event.
 
 In summary, this new `LikeAlgorithm` does the following:
 
@@ -353,16 +355,14 @@ INFO: You may notice that the parameters of the new `"likealgo"` contains the sa
 
 That's it! Now you have a engine configured with two algorithms.
 
-You are ready to run pio build, train and deploy as described in the [Quick Start](quickstart/#deploy-the-engine-as-a-service)!
 
-
-### Sample Data with Like and Dislike Events
+### Sample data with "like" and "dislike" events
 
 For demonstration purpose, a sample import script is also provided for you to quickly test this engine. The script is modified from the original one used in [Quick Start](quickstart/#sample-data-for-quick-start) with the addition of importing like and dislike events.
 
-You could find the import script here (TODO: ADD LINK)
+You could find the import script in `examples/scala-parallel-similar-multi/data/import_eventserver.py`.
 
-Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+You can create a new App. Go to the directory `examples/scala-parallel-similar-multi`. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -370,3 +370,6 @@ $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsT
 
 WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
 please update the Python SDK to the latest version.
+
+
+You are ready to run pio build, train and deploy as described in the [Quick Start](quickstart/#deploy-the-engine-as-a-service)!
