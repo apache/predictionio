@@ -14,6 +14,10 @@
   */
 package io.prediction.data.storage
 
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
+
 /* @experimental */
 class EntityIdIxMap(val idToIx: BiMap[String, Long]) extends Serializable {
 
@@ -44,6 +48,13 @@ class EntityIdIxMap(val idToIx: BiMap[String, Long]) extends Serializable {
   def take(n: Int) = new EntityIdIxMap(idToIx.take(n))
 
   override def toString = idToIx.toString
+}
+
+/* @experimental */
+object EntityIdIxMap {
+  def apply(keys: RDD[String]): EntityIdIxMap = {
+    new EntityIdIxMap(BiMap.stringLong(keys))
+  }
 }
 
 /* @experimental */
