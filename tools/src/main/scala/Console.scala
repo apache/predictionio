@@ -28,6 +28,8 @@ import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
 import io.prediction.data.api.EventServerConfig
+import io.prediction.data.api.RestServer
+import io.prediction.data.api.RestServerConfig
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -53,6 +55,7 @@ case class ConsoleArgs(
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   deploy: DeployArgs = DeployArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  restServer: RestServerArgs = RestServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   commands: Seq[String] = Seq(),
@@ -111,6 +114,10 @@ case class EventServerArgs(
   enabled: Boolean = false,
   ip: String = "localhost",
   port: Int = 7070)
+
+case class RestServerArgs(
+ip: String = "localhost",
+port: Int = 7071)
 
 case class DashboardArgs(
   ip: String = "localhost",
@@ -386,6 +393,12 @@ object Console extends Logging {
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Event server port. Default: 7070"),
+          opt[Int]("rest-server-port") action { (x, c) =>
+            c.copy(restServer = c.restServer.copy(port = x))
+          } text("Rest server port. Default: 7071"),
+          opt[String]("rest-server-port") action { (x, c) =>
+          c.copy(restServer = c.restServer.copy(ip = x))
+          } text("Rest server IP. Default: localhost"),
           opt[String]("accesskey") action { (x, c) =>
             c.copy(accessKey = c.accessKey.copy(accessKey = x))
           } text("Access key of the App where feedback data will be stored."),
@@ -437,6 +450,18 @@ object Console extends Logging {
           opt[Int]("port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070")
+        )
+      cmd("restserver").
+        text("Launch an Rest Server at the specific IP and port.").
+        action { (_, c) =>
+        c.copy(commands = c.commands :+ "restserver")
+      } children(
+        opt[String]("ip") action { (x, c) =>
+          c.copy(restServer = c.restServer.copy(ip = x))
+        } text("IP to bind to. Default: localhost"),
+        opt[Int]("port") action { (x, c) =>
+          c.copy(restServer = c.restServer.copy(port = x))
+        } text("Port to bind to. Default: 7071")
         )
       //note("")
       //cmd("compile").
@@ -668,6 +693,9 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
           0
+        case Seq("restserver") =>
+          restserver(ca)
+          0
         case Seq("compile") =>
           generateManifestJson(ca.common.manifestJson)
           compile(ca)
@@ -732,6 +760,7 @@ object Console extends Logging {
     "train" -> console.txt.train().toString,
     "deploy" -> console.txt.deploy().toString,
     "eventserver" -> console.txt.eventserver().toString,
+    "restserver" -> console.txt.restserver().toString,
     "app" -> console.txt.app().toString,
     "accesskey" -> console.txt.accesskey().toString,
     "run" -> console.txt.run().toString,
@@ -937,6 +966,15 @@ object Console extends Logging {
     EventServer.createEventServer(EventServerConfig(
       ip = ca.eventServer.ip,
       port = ca.eventServer.port))
+  }
+
+  def restserver(ca: ConsoleArgs): Unit = {
+    info(
+      s"Creating Rest Server at ${ca.restServer.ip}:${ca.restServer.port}")
+    RestServer.createRestServer(RestServerConfig(
+      ip = ca.restServer.ip,
+      port = ca.restServer.port
+    ))
   }
 
   def undeploy(ca: ConsoleArgs): Int = {
