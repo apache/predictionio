@@ -28,7 +28,7 @@ object SimilarityEngine extends IEngineFactory {
       classOf[DataSource],
       classOf[Preparator],
       Map("als" -> classOf[ALSAlgorithm],
-        "like" -> classOf[LikeAlgorithm]),
+        "likealgo" -> classOf[LikeAlgorithm]), // ADDED
       classOf[Serving])
   }
 }

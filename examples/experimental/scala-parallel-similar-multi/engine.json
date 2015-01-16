@@ -16,7 +16,7 @@
       }
     },
     {
-      "name": "like",
+      "name": "likealgo",
       "params": {
         "rank": 8,
         "numIterations" : 15

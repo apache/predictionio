@@ -142,12 +142,13 @@ class TrainingData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
   val viewEvents: RDD[ViewEvent],
-  val likeEvents: RDD[LikeEvent]
+  val likeEvents: RDD[LikeEvent] // ADDED
 ) extends Serializable {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
     s"items: [${items.count()} (${items.take(2).toList}...)]" +
     s"viewEvents: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)" +
+    // ADDED
     s"likeEvents: [${likeEvents.count()}] (${likeEvents.take(2).toList}...)"
   }
 }
