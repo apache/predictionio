@@ -4,7 +4,7 @@ title: Engine Development - Troubleshoot
 
 PredictionIO provides the following features to help you debug engines during development cycle.
 
-## Pause Training between Stages
+## Stop Training between Stages
 
 By default `pio train` runs through the whole training process including [DataSource, Preparator and Algorithm](../../templates/recommendation/dase/). To speed up the development and debug cycle, you can stop the process after each stage to verify it has completed correctly. 
 
@@ -31,7 +31,7 @@ Similarly, you can stop the training after the Preparator phase by using --stop-
 pio train --stop-after-prepare
 ```
 
-##  Sanity Check Training Data
+##  Sanity Check
 
 If you overrides `toString()` method in the data classes (TrainingData, PreparedData, and Model), PredictionIO will print the data to the console output for debugging purpose.
 
