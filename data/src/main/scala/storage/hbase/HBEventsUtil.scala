@@ -353,8 +353,9 @@ object HBEventsUtil {
 
     targetEntityType.foreach { tetOpt =>
       if (tetOpt.isEmpty) {
-        val comp = new BinaryComparator(Bytes.toBytes("targetEntityType"))
-        val q = new QualifierFilter(CompareOp.EQUAL, comp)
+        val comp = new BinaryComparator(colNames("targetEntityType"))
+        val q = new QualifierFilter(CompareOp.NOT_EQUAL, comp)
+        // filters an entire row if any of the Cell checks do not pass
         val filter = new SkipFilter(q)
         filters.addFilter(filter)
       } else {
@@ -370,8 +371,9 @@ object HBEventsUtil {
 
     targetEntityId.foreach { teidOpt =>
       if (teidOpt.isEmpty) {
-        val comp = new BinaryComparator(Bytes.toBytes("targetEntityId"))
-        val q = new QualifierFilter(CompareOp.EQUAL, comp)
+        val comp = new BinaryComparator(colNames("targetEntityId"))
+        val q = new QualifierFilter(CompareOp.NOT_EQUAL, comp)
+        // filters an entire row if any of the Cell checks do not pass
         val filter = new SkipFilter(q)
         filters.addFilter(filter)
       } else {
