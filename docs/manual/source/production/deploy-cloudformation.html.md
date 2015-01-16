@@ -9,7 +9,7 @@ You can scale PredictionIO on AWS with [CloudFormation](http://aws.amazon.com/cl
 ###  Instances
 
 The PredictionIO CloudFormation stack creates two types of instance: **compute
-and storage**. By default, the stack will launch **1 compute Instance and 3 Storage instances**. 
+and storage**. By default, the stack will launch **1 compute Instance and 3 Storage instances**.
 
 The compute instance acts as Spark master. You can launch extra compute instances by updating the stack. They will join the master and become slave compute instances as Spark workers. The extra compute instances are fully elastic and can be increased or decreased at anytime.
 
@@ -68,7 +68,7 @@ Click **Next** when you are done.
 
 ### Specify Stack Parameters
 
-The next screen shows the stack parameters. You must enter your AWS SSH key pair. For the other parameters, you can change them to meet your needs or simply use the default values. 
+The next screen shows the stack parameters. You must enter your AWS SSH key pair. For the other parameters, you can change them to meet your needs or simply use the default values.
 
 
 ![Stack Parameters](/images/cloudformation/cf-04.png)
@@ -183,3 +183,103 @@ start](/templates/recommendation/quickstart/) with a few twists.
    local machine. The Spark master URL must match exactly the one shown on its
    web UI. Repeat the same steps for subsection **Deploying**, which will
    create an Engine Server backed by the compute cluster.
+
+## Scaling the Cluster
+
+As your data size and/or audience grow, you may need to scale out your cluster
+to handle more workload, or decrease turnaround time. In this section, we will
+provide some general guidelines about when and how to scale your cluster with
+CloudFormation.
+
+### Scaling Compute Instances
+
+You may want to scale your compute instances when the turnaround time of
+`pio train` increases, or when the turnaround time of querying an engine server
+launched by `pio deploy` increases. Another way to look at whether you need
+additional computation power is to look at the Spark Master web UI (shown
+previously in the **Verify Compute Instances** section above).
+
+Notice that for compute instances, you can increase or decrease the
+number of extra compute instances as much as you like (within bounds of AWS EC2
+limits).
+
+Let us begin by adding 2 extra compute instances. At the CloudFormation console,
+right click on the cluster stack and click on **Update Stack**.
+
+![Updating Stack to Add Extra Compute
+Instances](/images/cloudformation/compute-1.png)
+
+At the **Select Template** screen, make sure **Use existing template** is
+picked, then click **Next**.
+
+At the **Specify Parameters** screen, increase the value of
+**ComputeInstanceExtra** to **2**, then click **Next**.
+
+![Adding 2 Extra Compute Instances](/images/cloudformation/compute-2.png)
+
+At the **Options** screen, leave everything unchanged, and click **Next**.
+
+At the **Review** screen, make sure **ComputeInstanceExtra** is now updated to
+**2**. Finish by clicking **Update**.
+
+![Review Changes of Adding Extra Compute
+Instances](/images/cloudformation/compute-3.png)
+
+You will be brought back to the CloudFormation console. You should see the
+stack status changed to **UPDATE_IN_PROGRESS**.
+
+![Adding Extra Compute Instances In
+Progress](/images/cloudformation/compute-4.png)
+
+Once the status become **UPDATE_COMPLETED**, you will have 2 extra compute
+instances. Notice that during the update, your cluster is still functional and
+any existing work will not be affected (existing work might be affected if you
+are downscaling).
+
+### Scaling Storage Instances
+
+You scale your storage instances when you are about to run out of space. By
+looking at the Hadoop NameNode web UI (shown previously in the **Verify Storage
+Instances** section above), it is obvious whether you are approaching storage
+limits or not.
+
+Notice that for storage instances, you can only increase the number of extra
+storage instances (within bounds of AWS EC2 limits).
+
+Let us begin by adding 2 extra storage instances. At the CloudFormation console,
+right click on the cluster stack and click on **Update Stack**.
+
+![Updating Stack to Add Extra Storage
+Instances](/images/cloudformation/compute-1.png)
+
+At the **Select Template** screen, make sure **Use existing template** is picked,
+then click **Next**.
+
+At the **Specify Parameters** screen, increase the value of
+**StorageInstanceExtra** to **2**, and set the value of
+**StorageInstanceExtraSize** to **100**, then click **Next**. Notice that
+whenever you add an extra storage instance, you can change its size to a new
+value. The new size will not affect existing storage instances and your data
+will be safe.
+
+![Adding 2 Extra Storage Instances](/images/cloudformation/storage-1.png)
+
+At the **Options** screen, leave everything unchanged, and click **Next**.
+
+At the **Review** screen, make sure **StorageInstanceExtra** is now updated to
+**2**, and **StorageInstanceExtraSize** is updated to **100**. Finish by
+clicking **Update**.
+
+![Review Changes of Adding Extra Storage
+Instances](/images/cloudformation/storage-2.png)
+
+You will be brought back to the CloudFormation console. You should see the
+stack status changed to **UPDATE_IN_PROGRESS**.
+
+![Adding Extra Compute Instances In
+Progress](/images/cloudformation/compute-4.png)
+
+Once the status become **UPDATE_COMPLETED**, you will have 2 extra storage
+instances. Notice that during the update, your cluster is still functional and
+any existing work will not be affected (existing work might be affected if you
+are downscaling).
