@@ -49,12 +49,12 @@ You can offer features like "Customers Who Bought This Item Also Bought....".
 
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MySimilar* by copying the Similar Product Engine Template, assuming `/home/yourname/predictionio`
+Now let's create a new engine called *MySimilarProduct* by copying the Similar Product Engine Template, assuming `/home/yourname/predictionio`
 is the installation directory of PredictionIO:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-similar MySimilar
-$ cd MySimilar
+$ cp -r /home/yourname/predictionio/templates/scala-parallel-similarproduct MySimilarProduct
+$ cd MySimilarProduct
 ```
 
 ## Collecting Data
@@ -266,7 +266,7 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 
 For demonstration purpose, a python script is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50") with some random assigned categories ( with categories "c1" to "c6"). Each user then randomly view 10 items.
 
-First, make sure you are under the `MySimilar` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+First, make sure you are under the `MySimilarProduct` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -290,10 +290,10 @@ please update the Python SDK to the latest version.
 
 ## Deploy the Engine as a Service
 
-Now you can build, train, and deploy the engine. First, make sure you are under the `MySimilar` directory.
+Now you can build, train, and deploy the engine. First, make sure you are under the `MySimilarProduct` directory.
 
 ```
-$ cd MySimilar
+$ cd MySimilarProduct
 ```
 
 Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**.
@@ -310,7 +310,7 @@ Under the directory, you should find an `engine.json` file; this is where you sp
 
 ### Building
 
-Start with building your *MySimilar* engine.
+Start with building your *MySimilarProduct* engine.
 
 ```
 $ pio build
@@ -420,7 +420,7 @@ http://localhost:8000/queries.json
   </div>
 </div>
 
-*MySimilar* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`.
+*MySimilarProduct* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`.
 
 
 ## Advanced Query

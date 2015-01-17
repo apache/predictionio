@@ -16,7 +16,7 @@ This example will demonstrate the following:
 - Use positive and negative implicit events such as like and dislike with MLlib ALS algorithm
 - Integrate multiple algorithms into one engine
 
-The complete source code of this examlpe can be found in `examples/scala-parallel-similar-multi`.
+The complete source code of this examlpe can be found in `examples/scala-parallel-similarproduct-multi`.
 
 INFO: Require PredictionIO version >= 0.8.6 to run this example.
 
@@ -364,9 +364,9 @@ That's it! Now you have a engine configured with two algorithms.
 
 For demonstration purpose, a sample import script is also provided for you to quickly test this engine. The script is modified from the original one used in [Quick Start](quickstart.html#sample-data-for-quick-start) with the addition of importing like and dislike events.
 
-You could find the import script in `examples/scala-parallel-similar-multi/data/import_eventserver.py`.
+You could find the import script in `examples/scala-parallel-similarproduct-multi/data/import_eventserver.py`.
 
-You can create a new App. Go to the directory `examples/scala-parallel-similar-multi`. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+You can create a new App. Go to the directory `examples/scala-parallel-similarproduct-multi`. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F

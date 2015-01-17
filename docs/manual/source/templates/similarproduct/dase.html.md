@@ -18,9 +18,9 @@ INFO: Evaluator will not be covered in this tutorial.
 
 ## The Engine Design
 
-As you can see from the Quick Start, *MySimilar* takes a JSON prediction
+As you can see from the Quick Start, *MySimilarProduct* takes a JSON prediction
 query, e.g. `{ "items": ["i1"], "num": 4 }`, and return a JSON predicted result.
-In MySimilar/src/main/scala/***Engine.scala***, the `Query` case class
+In MySimilarProduct/src/main/scala/***Engine.scala***, the `Query` case class
 defines the format of such **query**:
 
 ```scala
@@ -80,7 +80,7 @@ Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]`
 and train a model, which is a `MatrixFactorizationModel` object.
 
 The PredictionIO Similar Product Engine Template, which
-*MySimilar* bases on, integrates this algorithm under the DASE
+*MySimilarProduct* bases on, integrates this algorithm under the DASE
 architecture. We will take a closer look at the DASE code below.
 
 INFO: [Check this
@@ -131,7 +131,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-PredictionIO automatically loads the parameters of *datasource* specified in MySimilar/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MySimilarProduct/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
 
@@ -263,7 +263,7 @@ INFO: You could modify the DataSource to read more events (TODO: ADD LINK) other
 
 ### Data Preparator
 
-In MySimilar/src/main/scala/***Preparator.scala***, the `prepare` method
+In MySimilarProduct/src/main/scala/***Preparator.scala***, the `prepare` method
 of class `Preparator` takes `TrainingData` as its input and performs any
 necessary feature selection and data processing tasks. At the end, it returns
 `PreparedData` which should contain the data *Algorithm* needs.
@@ -293,7 +293,7 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 ## Algorithm
 
-In MySimilar/src/main/scala/***ALSAlgorithm.scala***, the two methods of
+In MySimilarProduct/src/main/scala/***ALSAlgorithm.scala***, the two methods of
 the algorithm class are `train` and `predict`. `train` is responsible for
 training a predictive model. PredictionIO will store this model and `predict` is
 responsible for using this model to make prediction.
