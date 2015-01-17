@@ -81,7 +81,8 @@ object Storage extends Logging {
       source: String,
       parallel: Boolean,
       test: Boolean): Option[ClientMeta] = {
-    s2cm.getOrElseUpdate(source, updateS2CM(source, parallel, test))
+    val sourceName = if (parallel) s"parallel-${source}" else source
+    s2cm.getOrElseUpdate(sourceName, updateS2CM(source, parallel, test))
   }
   private def sourcesToClientMeta(
       source: String,
