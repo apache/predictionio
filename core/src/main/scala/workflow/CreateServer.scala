@@ -638,14 +638,16 @@ class ServerActor[Q, P](
                   }
                 complete(StatusCodes.BadRequest, e.getMessage)
               case e: Throwable =>
+                val msg = s"Query:\n${queryString}\n\nStack Trace:\n" +
+                  s"${getStackTraceString(e)}\n\n"
+                log.error(msg)
                 args.logUrl map { url =>
                   remoteLog(
                     url,
                     args.logPrefix.getOrElse(""),
-                    s"Query:\n${queryString}\n\nStack Trace:\n" +
-                      s"${getStackTraceString(e)}\n\n")
+                    msg)
                   }
-                complete(StatusCodes.InternalServerError, getStackTraceString(e))
+                complete(StatusCodes.InternalServerError, msg)
             }
           }
         }
