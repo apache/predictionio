@@ -2,7 +2,9 @@
 title: Multiple Events and Multiple Algorithms
 ---
 
-The default algorithm described in [Quick Start](quickstart.html) uses user-to-item view events as training data. However, your application may have more than one type of events which you want to take into account, such as buy, rate and like events. One way to incorporate other types of events to improve the system is to add another algorithm to process these events, build a separated model and then combine the outputs of multiple algorithms during Serving.
+This is more advanced example, we recommend you go through the [DASE](dase.html) explanation first.
+
+The [default algorithm described in DASE](dase.html#algorithm) uses user-to-item view events as training data. However, your application may have more than one type of events which you want to take into account, such as buy, rate and like events. One way to incorporate other types of events to improve the system is to add another algorithm to process these events, build a separated model and then combine the outputs of multiple algorithms during Serving.
 
 In this example, we will add another algorithm to process like/dislike events. The final PredictedResults will be the combined outputs of both algorithms.
 
@@ -15,6 +17,8 @@ This example will demonstrate the following:
 - Integrate multiple algorithms into one engine
 
 The complete source code of this examlpe can be found in `examples/scala-parallel-similar-multi`.
+
+INFO: Require PredictionIO version >= 0.8.6 to run this example.
 
 ### Step 1. Read "like" and "dislike" events as TrainingData
 
