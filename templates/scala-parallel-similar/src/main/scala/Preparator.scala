@@ -1,4 +1,4 @@
-package org.template.similar
+package org.template.similarproduct
 
 import io.prediction.controller.PPreparator
 

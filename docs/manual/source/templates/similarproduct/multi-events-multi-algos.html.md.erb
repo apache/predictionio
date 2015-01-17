@@ -160,7 +160,7 @@ In summary, this new `LikeAlgorithm` does the following:
 It is shown in the code below:
 
 ```scala
-package org.template.similar
+package org.template.similarproduct
 
 import io.prediction.data.storage.BiMap
 
@@ -312,7 +312,7 @@ Modify Engine.scala to include the new algorithm `LikeAlgorithm` class and give 
 ```scala
 ...
 
-object SimilarityEngine extends IEngineFactory {
+object SimilarProductEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],

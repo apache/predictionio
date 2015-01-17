@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "template-scala-parallel-similar"
+name := "template-scala-parallel-similarproduct"
 
 organization := "io.prediction"
 

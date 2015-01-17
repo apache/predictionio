@@ -1,4 +1,4 @@
-package org.template.similar
+package org.template.similarproduct
 
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
@@ -22,7 +22,7 @@ case class ItemScore(
   score: Double
 ) extends Serializable
 
-object SimilarityEngine extends IEngineFactory {
+object SimilarProductEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],

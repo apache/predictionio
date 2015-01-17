@@ -58,12 +58,12 @@ case class ItemScore(
 ) extends Serializable
 ```
 
-Finally, `SimilarityEngine` is the *Engine Factory* that defines the
+Finally, `SimilarProductEngine` is the *Engine Factory* that defines the
 components this engine will use: Data Source, Data Preparator, Algorithm(s) and
 Serving components.
 
 ```scala
-object SimilarityEngine extends IEngineFactory {
+object SimilarProductEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],

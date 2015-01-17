@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "template-scala-parallel-similar-dimsum"
+name := "template-scala-parallel-similarproduct-dimsum"
 
 organization := "io.prediction"
 

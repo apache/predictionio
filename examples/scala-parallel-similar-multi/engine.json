@@ -1,7 +1,7 @@
 {
   "id": "default",
   "description": "Default settings",
-  "engineFactory": "org.template.similar.SimilarityEngine",
+  "engineFactory": "org.template.similarproduct.SimilarProductEngine",
   "datasource": {
     "params" : {
       "appId": 11
