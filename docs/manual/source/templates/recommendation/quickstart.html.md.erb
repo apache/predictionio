@@ -77,7 +77,7 @@ $ pio app list
 
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MyRecommendation* by cloning the Recommendation 
+Now let's create a new engine called *MyRecommendation* by cloning the Recommendation
 Engine Template, assuming `/home/yourname/predictionio`
 is the installation directory of PredictionIO:
 
@@ -142,7 +142,7 @@ $client->createEvent(array(
    'entityId' => <USER ID>,
    'targetEntityType' => 'item',
    'targetEntityId' => <ITEM ID>,
-   'properties' => array('ratings'=> <RATING>)
+   'properties' => array('rating'=> <RATING>)
 ));
 
 // A user buys an item
@@ -223,7 +223,7 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   "targetEntityType" : "item",
   "targetEntityId" : <ITEM ID>,
   "properties" : {
-    "ratings" : <RATING>
+    "rating" : <RATING>
   }
   "eventTime" : <TIME OF THIS EVENT>
 }'
