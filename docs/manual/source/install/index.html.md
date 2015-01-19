@@ -54,4 +54,4 @@ Elasticsearch. See more [here](/resources/schema-change.html).**
 [//]: # (For production environment setup, please refer to [Production)
 [//]: # (Deployment](/production/deploy.html) guide.)
 
-#### [Next: Recommendation Engine Quick Start](/recommendation/quickstart.html)
+#### [Next: Recommendation Engine Quick Start](/recommendation/quickstart/)
