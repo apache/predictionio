@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 
 import grizzled.slf4j.Logger
 
-case class AlgorithmParams(val mult: Int) extends Params
+case class AlgorithmParams(mult: Int) extends Params
 
 class Algorithm(val ap: AlgorithmParams)
   // extends PAlgorithm if Model contains RDD[]

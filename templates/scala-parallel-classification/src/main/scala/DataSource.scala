@@ -15,7 +15,7 @@ import org.apache.spark.mllib.linalg.Vectors
 
 import grizzled.slf4j.Logger
 
-case class DataSourceParams(val appId: Int) extends Params
+case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,

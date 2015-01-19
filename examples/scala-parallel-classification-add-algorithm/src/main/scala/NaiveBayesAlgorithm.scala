@@ -8,7 +8,7 @@ import org.apache.spark.mllib.classification.NaiveBayesModel
 import org.apache.spark.mllib.linalg.Vectors
 
 case class NaiveBayesAlgorithmParams(
-  val lambda: Double
+  lambda: Double
 ) extends Params
 
 // extends P2LAlgorithm because the MLlib's NaiveBayesModel doesn't contain RDD.

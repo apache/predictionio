@@ -14,9 +14,9 @@ import org.apache.spark.mllib.recommendation.ALSModel
 import grizzled.slf4j.Logger
 
 case class ALSAlgorithmParams(
-  val rank: Int,
-  val numIterations: Int,
-  val lambda: Double) extends Params
+  rank: Int,
+  numIterations: Int,
+  lambda: Double) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
   extends PAlgorithm[PreparedData, ALSModel, Query, PredictedResult] {

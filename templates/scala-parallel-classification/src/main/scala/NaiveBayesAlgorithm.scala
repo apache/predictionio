@@ -10,7 +10,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import grizzled.slf4j.Logger
 
 case class AlgorithmParams(
-  val lambda: Double
+  lambda: Double
 ) extends Params
 
 // extends P2LAlgorithm because the MLlib's NaiveBayesModel doesn't contain RDD.

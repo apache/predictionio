@@ -17,8 +17,8 @@ import grizzled.slf4j.Logger
 import scala.collection.mutable.PriorityQueue
 
 case class ALSAlgorithmParams(
-  val rank: Int,
-  val numIterations: Int
+  rank: Int,
+  numIterations: Int
 ) extends Params
 
 class ALSModel(
