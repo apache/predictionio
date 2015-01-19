@@ -142,7 +142,7 @@ import io.prediction.controller.Params // ADDED
 
  // ADDED CustomPreparatorParams case class
 case class CustomPreparatorParams(
-  val filepath: String
+  filepath: String
 ) extends Params
 
 class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams

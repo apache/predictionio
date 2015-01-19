@@ -10,9 +10,9 @@ Locate `src/main/scala/NaiveBayesAlgorithm.scala` under your engine directory, w
 
 ##  Define the algorithm class and parameters
 
-In 'RandomForestAlgorithm.scala', import the MLlib Random Forests algorithm by changing the following lines: 
+In 'RandomForestAlgorithm.scala', import the MLlib Random Forests algorithm by changing the following lines:
 
-Original 
+Original
 
 ```scala
 import org.apache.spark.mllib.classification.NaiveBayes
@@ -33,18 +33,18 @@ Modify the `AlgorithmParams` class for the Random Forest algorithm:
 ```scala
 // CHANGED
 case class RandomForestAlgorithmParams(
-  val numClasses: Int,
-  val numTrees: Int,
-  val featureSubsetStrategy: String,
-  val impurity: String,
-  val maxDepth: Int,
-  val maxBins: Int
+  numClasses: Int,
+  numTrees: Int,
+  featureSubsetStrategy: String,
+  impurity: String,
+  maxDepth: Int,
+  maxBins: Int
 ) extends Params
 ```
 
 This class defines the parameters of the Random Forest algorithm (which later you can specify the value in engine.json). Please refer to [MLlib  documentation](https://spark.apache.org/docs/latest/mllib-ensembles.html) for the description and usage of these parameters.
 
-Modify the `NaiveBayesAlgorithm` class to `RandomForestAlgorithm`. The changes are: 
+Modify the `NaiveBayesAlgorithm` class to `RandomForestAlgorithm`. The changes are:
 
 * The new `RandomForestAlgorithmParams` class is used as parameter.
 * `RandomForestModel` is used in type parameter. This is the model returned by the Random Forest algorithm.

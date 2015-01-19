@@ -82,8 +82,8 @@ This is a Scala code block:
 
 ```scala
 case class Query(
-  val user: Int,
-  val num: Int
+  user: Int,
+  num: Int
 ) extends Serializable
 
 ```

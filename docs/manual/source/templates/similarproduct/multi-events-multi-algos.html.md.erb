@@ -85,10 +85,10 @@ class DataSource(val dsp: DataSourceParams)
 ...
 
 case class LikeEvent( // ADDED
-  val user: String,
-  val item: String,
-  val t: Long,
-  val like: Boolean // true: like. false: dislike
+  user: String,
+  item: String,
+  t: Long,
+  like: Boolean // true: like. false: dislike
 )
 
 class TrainingData(

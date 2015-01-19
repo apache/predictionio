@@ -25,11 +25,11 @@ defines the format of such **query**:
 
 ```scala
 case class Query(
-  val items: List[String],
-  val num: Int,
-  val categories: Option[Set[String]],
-  val whiteList: Option[Set[String]],
-  val blackList: Option[Set[String]]
+  items: List[String],
+  num: Int,
+  categories: Option[Set[String]],
+  whiteList: Option[Set[String]],
+  blackList: Option[Set[String]]
 ) extends Serializable
 ```
 
@@ -49,7 +49,7 @@ with:
 
 ```scala
 case class PredictedResult(
-  val itemScores: Array[ItemScore]
+  itemScores: Array[ItemScore]
 ) extends Serializable
 
 case class ItemScore(
@@ -101,7 +101,7 @@ method of class `DataSource` reads, and selects, data from the *Event Store*
 (data store of the *Event Server*) and returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(val appId: Int) extends Params
+case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -203,7 +203,7 @@ Similarly, the following code aggregates the properties of `item` entities and t
 The `Item` case class is defined as
 
 ```scala
-case class Item(val categories: Option[List[String]])
+case class Item(categories: Option[List[String]])
 ```
 
 `eventsDb.find(...)` specifies the events that you want to read. In this case, "user view item" events are read and then each event is mapped to a `ViewEvent()` object.
@@ -242,7 +242,7 @@ case class Item(val categories: Option[List[String]])
 `ViewEvent` case class is defined as:
 
 ```scala
-case class ViewEvent(val user: String, val item: String, val t: Long)
+case class ViewEvent(user: String, item: String, t: Long)
 ```
 
 For flexibility, this template is designed to support user ID and item ID in `String`.
@@ -433,8 +433,8 @@ which has a corresponding case case `ALSAlgorithmParams`:
 
 ```scala
 case class ALSAlgorithmParams(
-  val rank: Int,
-  val numIterations: Int
+  rank: Int,
+  numIterations: Int
 ) extends Params
 ```
 

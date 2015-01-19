@@ -25,8 +25,8 @@ defines the format of such **query**:
 
 ```scala
 case class Query(
-  val user: String,
-  val num: Int
+  user: String,
+  num: Int
 ) extends Serializable
 ```
 
@@ -46,7 +46,7 @@ with:
 
 ```scala
 case class PredictedResult(
-  val itemScores: Array[ItemScore]
+  itemScores: Array[ItemScore]
 ) extends Serializable
 
 case class ItemScore(
@@ -99,7 +99,7 @@ method of class `DataSource` reads, and selects, data from the *Event Store*
 (data store of the *Event Server*) and returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(val appId: Int) extends Params
+case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -167,9 +167,9 @@ Since Spark MLlib's `Rating` class assumes `Int`-only user ID and item ID, you h
 
 ```scala
 case class Rating(
-  val user: String,
-  val item: String,
-  val rating: Double
+  user: String,
+  item: String,
+  rating: Double
 )
 ```
 
@@ -310,9 +310,9 @@ which has a corresponding case case `ALSAlgorithmParams`:
 
 ```scala
 case class ALSAlgorithmParams(
-  val rank: Int,
-  val numIterations: Int,
-  val lambda: Double) extends Params
+  rank: Int,
+  numIterations: Int,
+  lambda: Double) extends Params
 ```
 
 `ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD
