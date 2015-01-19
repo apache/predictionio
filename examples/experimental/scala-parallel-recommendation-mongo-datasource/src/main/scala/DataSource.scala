@@ -18,10 +18,10 @@ import org.bson.BSONObject // ADDED
 import com.mongodb.hadoop.MongoInputFormat // ADDED
 
 case class DataSourceParams( // CHANGED
-  val host: String,
-  val port: Int,
-  val db: String, // DB name
-  val collection: String // collection name
+  host: String,
+  port: Int,
+  db: String, // DB name
+  collection: String // collection name
 ) extends Params
 
 class DataSource(val dsp: DataSourceParams)
@@ -53,9 +53,9 @@ class DataSource(val dsp: DataSourceParams)
 }
 
 case class Rating(
-  val user: String,
-  val item: String,
-  val rating: Double
+  user: String,
+  item: String,
+  rating: Double
 )
 
 class TrainingData(

@@ -4,12 +4,12 @@ import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
 case class Query(
-  val user: String,
-  val num: Int
+  user: String,
+  num: Int
 ) extends Serializable
 
 case class PredictedResult(
-  val itemScores: Array[ItemScore]
+  itemScores: Array[ItemScore]
 ) extends Serializable
 
 case class ItemScore(

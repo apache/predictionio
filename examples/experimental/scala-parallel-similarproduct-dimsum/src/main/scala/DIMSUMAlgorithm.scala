@@ -20,7 +20,7 @@ import grizzled.slf4j.Logger
 
 import scala.collection.mutable.PriorityQueue
 
-case class DIMSUMAlgorithmParams(val threshold: Double) extends Params
+case class DIMSUMAlgorithmParams(threshold: Double) extends Params
 
 class DIMSUMModel(
     val similarities: RDD[(Int, SparseVector)],

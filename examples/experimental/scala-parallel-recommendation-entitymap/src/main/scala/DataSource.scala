@@ -14,7 +14,7 @@ import org.apache.spark.rdd.RDD
 
 import grizzled.slf4j.Logger
 
-case class DataSourceParams(val appId: Int) extends Params
+case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -81,21 +81,21 @@ class DataSource(val dsp: DataSourceParams)
 }
 
 case class User(
-  val attr0: Double,
-  val attr1: Int,
-  val attr2: Int
+  attr0: Double,
+  attr1: Int,
+  attr2: Int
 )
 
 case class Item(
-  val attrA: String,
-  val attrB: Int,
-  val attrC: Boolean
+  attrA: String,
+  attrB: Int,
+  attrC: Boolean
 )
 
 case class Rating(
-  val user: String,
-  val item: String,
-  val rating: Double
+  user: String,
+  item: String,
+  rating: Double
 )
 
 class TrainingData(
