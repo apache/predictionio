@@ -20,13 +20,13 @@ The data structure looks like this:
 
 [Episode List](https://github.com/PredictionIO/Demo-Tapster/blob/master/data/episode_list.csv) `data/episode_list.csv`
 
-**Fields:** episodeId | episodeTitle | episodeStory | episodeCategories | episodeThumbUrl | episodeUrl | episodeImageUrls
+**Fields:** episodeId | episodeTitle | episodeCategories | episodeUrl | episodeImageUrls
 
 1,000 rows. Each row represents one episode.
 
 [User Like Event List](https://github.com/PredictionIO/Demo-Tapster/blob/master/data/user_list.csv) `data/user_list.csv`
 
-**Fields:** userId | episodeId | likedTimestamp | likedUTCDate
+**Fields:** userId | episodeId | likedTimestamp
 
 192,587 rows. Each row represents one user like for the given episode.
 
@@ -341,4 +341,3 @@ Love this tutorial and PredictionIO? Both are open source (Apache 2 License). [F
 Found a typo? Think something should be explained better? This tutorial (and all our other documenation) live in the main repo [here](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/demo/tapster.html.md). Our documentation is in the `livedoc` branch. Find out how to contribute documentation at [docs.prediction.io/community/contribute-documentation/](http://docs.prediction.io/community/contribute-documentation/).
 
 We &hearts; pull requests!
-
