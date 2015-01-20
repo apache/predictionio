@@ -128,7 +128,7 @@ INFO: You can check the status of PredictionIO at any time by running: `$ pio st
 ALERT: If your laptop goes to sleep you might manually need to restart HBase with:
 
 ```
-$  cd PredictionIO/venders/hbase-0.98.6/bin
+$ cd PredictionIO/venders/hbase-0.98.6/bin
 $ ./stop-hbase.sh
 $ ./start-hbase.sh
 ```
@@ -165,9 +165,9 @@ First the users:
 
 ```
 user_ids.each_with_index do |id, i|
-# Send unique user IDs to PredictionIO.
-client.aset_user(id)
-puts "Sent user ID #{id} to PredictionIO. Action #{i + 1} of #{user_count}"
+  # Send unique user IDs to PredictionIO.
+  client.aset_user(id)
+  puts "Sent user ID #{id} to PredictionIO. Action #{i + 1} of #{user_count}"
 end
 ```
 
@@ -221,7 +221,7 @@ In total the script takes about 4 minutes to run on a basic laptop. At this poin
 We train the engine with the following command:
 
 ```
-cd tapster-episode-similar
+$ cd tapster-episode-similar
 $ pio train -- --driver-memory 4g
 ```
 
@@ -319,7 +319,6 @@ Next we decode the JSON sent from the browser.
 After that we check to see if the user has liked anything yet. If not we just return a random episode.
 
 If the user has likes then we can send that data to PredictionIO event server.
-
 
 We also blacklist the dislikes so that they are not returned.
 
