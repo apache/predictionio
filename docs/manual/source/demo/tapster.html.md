@@ -1,5 +1,5 @@
 ---
-title: Tapster Demo
+title: Tapster - Similar Product Template
 ---
 
 ## Introduction
