@@ -24,7 +24,7 @@ The data structure looks like this:
 
 1,000 rows. Each row represents one episode.
 
-[User Like Event List](https://github.com/PredictionIO/Demo-Tapster/blob/master/data/user_list.csv) `data/user_list.csv’
+[User Like Event List](https://github.com/PredictionIO/Demo-Tapster/blob/master/data/user_list.csv) `data/user_list.csv`
 
 **Fields:** userId | episodeId | likedTimestamp | likedUTCDate
 
@@ -96,6 +96,7 @@ $ cd templates
 $ cp -R scala-parallel-similar ../tapster-episode-similar
 $ cd ..
 ```
+
 Next we are going to update the App ID in the ‘engine.json’ file to match the App ID we just created.
 
 ```
@@ -154,7 +155,7 @@ client = PredictionIO::EventClient.new(ENV['PIO_ACCESS_KEY'], ENV['PIO_EVENT_SER
 
 You will need to create the environmental variables `PIO_ACCESS_KEY` and `PIO_EVENT_SERVER_URL`. The default Event Server URL is: http://localhost:7070.
 
-NOTE: If you forget your Access Key you can always run `$ pio app list`.
+INFO: If you forget your **Access Key** you can always run: `$ pio app list`
 
 You can set these values in the `.env` file located in the application root directory and it will be automatically loaded into your environment each time Rails is run.
 
@@ -327,7 +328,7 @@ With our response from PredictionIO it’s just a matter of looking it up in the
 
 Once the response is sent to the browser JavaScript is used to replace the existing comic and hide the loading message.
 
-Thats it. You’re done!. If Ruby is not your language of choice check out our other [SDKs](http://docs.prediction.io/sdk/) and remember you can always interact with the Event Server though it’s native JSON API.
+Thats it. You’re done! If Ruby is not your language of choice check out our other [SDKs](http://docs.prediction.io/sdk/) and remember you can always interact with the Event Server though it’s native JSON API.
 
 ## Links
 Source code is on GitHub at: [github.com/PredictionIO/Demo-Tapster](https://github.com/PredictionIO/Demo-Tapster)
@@ -337,6 +338,7 @@ Live demo is available at: [tapster.prediction.io](http://tapster.prediction.io)
 
 Love this tutorial and PredictionIO? Both are open source (Apache 2 License). [Fork](https://github.com/PredictionIO/Demo-Tapster) this demo and build upon it. If you produce something cool shoot us an email and we will link to it from here.
 
-Found a typo? Think something should be explained better? This tutorial (and all our other documenation) live in the main repo on at: https://github.com/PredictionIO/PredictionIO/tree/livedoc/docs/manual/source FIX. Our documentation is in the `livedoc` branch. Find out how to contribute documentation at http://docs.prediction.io/community/contribute-documentation/.
+Found a typo? Think something should be explained better? This tutorial (and all our other documenation) live in the main repo [here](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/demo/tapster.html.md). Our documentation is in the `livedoc` branch. Find out how to contribute documentation at [docs.prediction.io/community/contribute-documentation/](http://docs.prediction.io/community/contribute-documentation/).
 
 We &hearts; pull requests!
+
