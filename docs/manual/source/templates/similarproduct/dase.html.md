@@ -14,7 +14,7 @@ components of an engine:
 Let's look at the code and see how you can customize the engine
 you built from the Similar Product Engine Template.
 
-INFO: Evaluator will not be covered in this tutorial.
+(Evaluator will not be covered in this tutorial.)
 
 ## The Engine Design
 
@@ -76,29 +76,24 @@ object SimilarProductEngine extends IEngineFactory {
 
 ### Spark MLlib
 
-Spark's MLlib ALS algorithm takes training data of RDD type, i.e. `RDD[Rating]`
-and train a model, which is a `MatrixFactorizationModel` object.
-
-The PredictionIO Similar Product Engine Template, which
-*MySimilarProduct* bases on, integrates this algorithm under the DASE
+The PredictionIO Similar Product Engine Template integrates Spark's MLlib ALS algorithm under the DASE
 architecture. We will take a closer look at the DASE code below.
 
-INFO: [Check this
-out](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to
-learn more about MLlib's ALS collaborative filtering algorithm.
+It takes training data of RDD type, i.e. `RDD[Rating]` and train a model, which is a `MatrixFactorizationModel` object.
+
+You can visit [here](https://spark.apache.org/docs/latest/mllib-collaborative-filtering.html) to learn more about MLlib's ALS collaborative filtering algorithm.
 
 
 ## Data
 
-In the DASE architecture, data is prepared by 2 components sequentially: *Data
-Source* and *Data Preparator*. *Data Source* and *Data Preparator* takes data
-from the data store and prepares the necessary data for the Algorithm.
+In the DASE architecture, data is prepared by 2 components sequentially: *DataSource* and *DataPreparator*. They take data
+from the data store and prepare them for Algorithm.
 
 ### Data Source
 
 In MyRecommendation/src/main/scala/***DataSource.scala***, the `readTraining`
-method of class `DataSource` reads, and selects, data from the *Event Store*
-(data store of the *Event Server*) and returns `TrainingData`.
+method of class `DataSource` reads and selects data from the *Event Store*
+(data store of the *Event Server*). It returns `TrainingData`.
 
 ```scala
 case class DataSourceParams(appId: Int) extends Params
@@ -147,13 +142,16 @@ In ***engine.json***:
 }
 ```
 
-In the `readTraining()` function, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO *Event Server*.
+In `readTraining()`, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO Event Server.
 
-This Similar Product engine template requires "user" and "item" entities are set by events.
+This Similar Product template requires "user" and "item" entities that are set by events.
 
-`eventsDb.aggregateProperties(...)` aggregates the properties of the `user` and `item` entities being set, unset or delete by the events. Please refer to (TODO: ADD LINK) for more details of setting properties for entities by events.
+`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by events.
 
-The following code aggregates the properties of `user` entities and then map each result to a `User()` object. By default, this template doesn't make use of any user properties so it's a simple dummy `User()` object as a placeholder for you to customize and expand.
+
+<!-- // Please refer to  ADD LINK) for more details of setting properties for entities by events.  -->
+
+The following code aggregates the properties of `user` and then map each result to a `User()` object. 
 
 ```scala
 
@@ -175,9 +173,10 @@ The following code aggregates the properties of `user` entities and then map eac
   }
 
 ```
+In the template, `User()` object is a simple dummy as a placeholder for you to customize and expand.
 
-Similarly, the following code aggregates the properties of `item` entities and then map each result to an `Item()` object. By default, this template assumes each item has an optional property `categories` which is a list of String specifying the categories of the item.
 
+Similarly, the following code aggregates `item` properties  and then map each result to an `Item()` object. By default, this template assumes each item has an optional property `categories`, which is a list of String. 
 ```scala
 
   // create a RDD of (entityID, Item)
@@ -206,7 +205,7 @@ The `Item` case class is defined as
 case class Item(categories: Option[List[String]])
 ```
 
-`eventsDb.find(...)` specifies the events that you want to read. In this case, "user view item" events are read and then each event is mapped to a `ViewEvent()` object.
+`eventsDb.find(...)` specifies the events that you want to read. In this case, "user view item" events are read and then each is mapped to a `ViewEvent()` object.
 
 ```scala
 
@@ -245,9 +244,9 @@ case class Item(categories: Option[List[String]])
 case class ViewEvent(user: String, item: String, t: Long)
 ```
 
-For flexibility, this template is designed to support user ID and item ID in `String`.
+INFO: For flexibility, this template is designed to support user ID and item ID in String.
 
-`TrainingData` contains an RDD of all these `User`, `Item' and `ViewEvent` objects. The class definition of `TrainingData` is:
+`TrainingData` contains an RDD of `User`, `Item` and `ViewEvent` objects. The class definition of `TrainingData` is:
 
 ```scala
 class TrainingData(
@@ -257,9 +256,9 @@ class TrainingData(
 ) extends Serializable { ... }
 ```
 
-PredictionIO passes the returned `TrainingData` object to *Data Preparator*.
+PredictionIO then passes the returned `TrainingData` object to *Data Preparator*.
 
-INFO: You could modify the DataSource to read more events (TODO: ADD LINK) other than the default **view**.
+You could modify the DataSource to [read other event types](/similarproduct/multi-events-multi-algos/) other than the default **view**.
 
 ### Data Preparator
 
@@ -295,7 +294,7 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 In MySimilarProduct/src/main/scala/***ALSAlgorithm.scala***, the two methods of
 the algorithm class are `train` and `predict`. `train` is responsible for
-training a predictive model. PredictionIO will store this model and `predict` is
+training the predictive model;`predict` is
 responsible for using this model to make prediction.
 
 ### train(...)
@@ -359,16 +358,16 @@ i.e. `ALS.trainImplicit()`, is used to train a predictive model.
 
 #### Working with Spark MLlib's ALS.trainImplicit(....)
 
-MLlib ALS does not support `String` user ID and item ID. `ALS.trainImplicit` thus also assumes `Int`-only `Rating` object. First, you can rename MLlib's Integer-only `Rating` to `MLlibRating` for clarity:
+MLlib ALS does not support `String` user ID and item ID. `ALS.trainImplicit` thus also assumes int-only `Rating` object. First, you can rename MLlib's Integer-only `Rating` to `MLlibRating` for clarity:
 
 ```
 import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 ```
 
-In order to use MLlib's ALS algorithm, we need to convert the `viewEvents` into `MLlibRating` required by `ALS`. There are two things we need to handle:
+In order to use MLlib's ALS algorithm, we need to convert the `viewEvents` into `MLlibRating`. There are two things we need to handle:
 
-1. Need to map user and item String ID of the ViewEvent into Integer ID as required by `MLlibRating`.
-2. `ViewEvent` object is an implicit event which does not have explicit rating value. `ALS.trainImplicit()` supports implicit preference, which means that if the `MLlibRating` has higher rating value, it means higher confidence that the user prefers the item. Hence we can aggregate how many times the user has viewed the item to indicate the confidence level that the user may prefer the item.
+1. Map user and item String ID of the ViewEvent into Integer ID, as required by `MLlibRating`.
+2. `ViewEvent` object is an implicit event that does not have an explicit rating value. `ALS.trainImplicit()` supports implicit preference. If the `MLlibRating` has higher rating value, it means higher confidence that the user prefers the item. Hence we can aggregate how many times the user has viewed the item to indicate the confidence level that the user may prefer the item.
 
 You create a bi-directional map with `BiMap.stringInt` which maps each String record to an Integer index.
 
