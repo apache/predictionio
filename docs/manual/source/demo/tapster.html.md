@@ -244,11 +244,12 @@ At this point, you have an demo app with data and a PredictionIO server with a t
 ### Overview
 On a high level the application keeps a record of each like and dislike. It uses jQuery to send an array of both likes and dislikes to the server on each click. The server then queries PredictionIO for a similar episode which is relayed to jQuery and displayed to the user.
 
-Sequence of actions
-The user likes an episode.
-Tapster sends the “Like” event to PredictionIO event server.
-Tapster queries PredictionIO engine with all the episodes the user has rated (likes and dislikes) in this session.
-PredictionIO returns 1 recommended episode.
+Data flow: 
+
+- The user likes an episode.
+- Tapster sends the “Like” event to PredictionIO event server.
+- Tapster queries PredictionIO engine with all the episodes the user has rated (likes and dislikes) in this session.
+- PredictionIO returns 1 recommended episode.
 
 ### JavaScript
 All the important code lives in `app/assets/javascripts/application.js` [View on GitHub](https://github.com/PredictionIO/Demo-Tapster/blob/master/app/assets/javascripts/application.js)
