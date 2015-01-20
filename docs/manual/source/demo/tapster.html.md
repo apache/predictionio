@@ -200,15 +200,15 @@ CSV.foreach(USER_LIST, headers: true) do |row|
   user_id = row[0] # userId
   episode_id = row[1] # episodeId
 
-  # Send view to PredictionIO.
+  # Send like to PredictionIO.
   client.acreate_event(
-    'view',
+    'like',
     'user',
     user_id,
     { 'targetEntityType' => 'item', 'targetEntityId' => episode_id }
   )
 
-  puts "Sent user ID #{user_id} viewed episode ID #{episode_id} to PredictionIO. Action #{$INPUT_LINE_NUMBER} of #{line_count}."
+  puts "Sent user ID #{user_id} liked episode ID #{episode_id} to PredictionIO. Action #{$INPUT_LINE_NUMBER} of #{line_count}."
 end
 ```
 
@@ -244,7 +244,7 @@ At this point, you have an demo app with data and a PredictionIO server with a t
 ### Overview
 On a high level the application keeps a record of each like and dislike. It uses jQuery to send an array of both likes and dislikes to the server on each click. The server then queries PredictionIO for a similar episode which is relayed to jQuery and displayed to the user.
 
-Data flow: 
+Data flow:
 
 - The user likes an episode.
 - Tapster sends the “Like” event to PredictionIO event server.
