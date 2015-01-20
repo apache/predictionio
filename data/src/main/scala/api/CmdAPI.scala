@@ -13,4 +13,8 @@ case class AppResponse(
         name: String = "",
         keys: Seq[AccessKey]
                         )
+case class GeneralResponse(
+        status: Int = 0,
+        message: String = ""
+                            )
 
