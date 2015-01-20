@@ -133,7 +133,7 @@ $ ./stop-hbase.sh
 $ ./start-hbase.sh
 ```
 
-The key event we are importing into PredictionIO event server is the “Like” event (for example, user X likes episode Y). An “Episode” is a single [comic strip](http://en.wikipedia.org/wiki/Comic_strip). First we have to import the episodes into our database.
+The key event we are importing into PredictionIO event server is the "Like" event (for example, user X likes episode Y). An "Episode" is a single [comic strip](http://en.wikipedia.org/wiki/Comic_strip). First we have to import the episodes into our database.
 
 We will do this with: `$ rake import:episodes`
 
@@ -247,7 +247,7 @@ On a high level the application keeps a record of each like and dislike. It uses
 Data flow:
 
 - The user likes an episode.
-- Tapster sends the “Like” event to PredictionIO event server.
+- Tapster sends the "Like" event to PredictionIO event server.
 - Tapster queries PredictionIO engine with all the episodes the user has rated (likes and dislikes) in this session.
 - PredictionIO returns 1 recommended episode.
 
