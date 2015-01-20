@@ -175,23 +175,22 @@ And now the episodes:
 
 ```
 episode_ids.each_with_index do |id, i|
-# Load episode from database - we will need this to include the categories!
-episode = Episode.where(episode_id: id).take
+  # Load episode from database - we will need this to include the categories!
+  episode = Episode.where(episode_id: id).take
 
-if episode
-# Send unique episode IDs to PredictionIO.
-client.acreate_event(
-  '$set',
-  'item',
-  id,
-  properties: { categories: episode.categories }
-  )
-  puts "Sent episode ID #{id} to PredictionIO. Action #{i + 1} of #{episode_count}"
+  if episode
+    # Send unique episode IDs to PredictionIO.
+    client.acreate_event(
+      '$set',
+      'item',
+      id,
+      properties: { categories: episode.categories }
+    )
+    puts "Sent episode ID #{id} to PredictionIO. Action #{i + 1} of #{episode_count}"
   else
-  puts "Episode ID #{id} not found in database! Skipping!".color(:red)
+    puts "Episode ID #{id} not found in database! Skipping!".color(:red)
   end
-  end
-
+end
 ```
 
 Finally we loop through the `data/user_list.csv` file a final time to send the like events:
