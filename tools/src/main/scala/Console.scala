@@ -207,17 +207,17 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "new")
         } children(
-          arg[String]("<repository>") required() action { (x, c) =>
+          arg[String]("<template ID>") required() action { (x, c) =>
             c.copy(newArgs = c.newArgs.copy(repository = x))
           },
-          arg[String]("<directory>") action { (x, c) =>
+          arg[String]("<new engine directory>") action { (x, c) =>
             c.copy(newArgs = c.newArgs.copy(directory = x))
           },
           opt[String]("name") action { (x, c) =>
             c.copy(newArgs = c.newArgs.copy(name = Some(x)))
           },
-          opt[String]("organization") action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(organization = Some(x)))
+          opt[String]("package") action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(packageName = Some(x)))
           },
           opt[String]("email") action { (x, c) =>
             c.copy(newArgs = c.newArgs.copy(email = Some(x)))

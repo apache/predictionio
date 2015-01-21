@@ -25,7 +25,7 @@ case class NewArgs(
   directory: String = "",
   repository: String = "",
   name: Option[String] = None,
-  organization: Option[String] = None,
+  packageName: Option[String] = None,
   email: Option[String] = None,
   indexUrl: String = "https://engines.prediction.io/engines.json")
 
@@ -92,10 +92,23 @@ object New extends Logging {
       "email" -> email,
       "org" -> org)
     try {
-      scalaj.http.Http("http://update.prediction.io/template.subscribe").
+      scalaj.http.Http("http://update.prediction.io/templates.subscribe").
         postData("json=" + write(data)).asString
     } catch {
       case e: Throwable => error("Unable to subscribe.")
+    }
+  }
+
+  def meta(repo: String, name: String, org: String) = {
+    val data = Map(
+      "repo" -> repo,
+      "name" -> name,
+      "org" -> org)
+    try {
+      scalaj.http.Http(
+        s"http://templates.prediction.io/${repo}/${org}/${name}").asString
+    } catch {
+      case e: Throwable => warn("Template metadata unavailable.")
     }
   }
 
@@ -118,8 +131,9 @@ object New extends Logging {
       }
     }
 
-    val organization = ca.newArgs.organization getOrElse {
-      readLine("Please enter author's organization (package): ")
+    val organization = ca.newArgs.packageName getOrElse {
+      readLine(
+        "Please enter the template's Scala package name (e.g. com.mycompany): ")
     }
 
     val email = ca.newArgs.email getOrElse {
@@ -135,8 +149,8 @@ object New extends Logging {
     println(s"Author's e-mail:       ${email}")
     println(s"Author's organization: ${organization}")
 
-    var subscribe = readLine(
-      "Would you like to subscribe to updates of this template? (Y/n) ")
+    var subscribe = readLine("Would you like to be informed about new bug " +
+      "fixes and security updates of this template? (Y/n) ")
     var valid = false
 
     do {
@@ -145,6 +159,7 @@ object New extends Logging {
           sub(ca.newArgs.repository, name, email, organization)
           valid = true
         case "n" | "N" =>
+          meta(ca.newArgs.repository, name, organization)
           valid = true
         case _ =>
           println("Please answer 'y' or 'n'")

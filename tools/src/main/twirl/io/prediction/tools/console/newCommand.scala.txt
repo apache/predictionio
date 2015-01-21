@@ -1,5 +1,5 @@
 Usage: pio new <template ID> <new engine directory>
-               [--name <value>] [--organization <value>] [--email <value>]
+               [--name <value>] [--package <value>] [--email <value>]
 
 Seeds a directory with an engine template.
 
@@ -9,8 +9,8 @@ Seeds a directory with an engine template.
       Location of the new engine.
   --name <value>
       Name of the author of the new engine.
-  --organization <value>
-      Organization of the author of the new engine.
+  --package <value>
+      Scala package name of the new engine.
   --email <value>
       E-mail address of the author of the new engine. Specify this if you want
       to receive updates (critical bug fixes, etc) about the engine template
