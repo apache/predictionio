@@ -107,6 +107,54 @@ $ cd ..
 
 ![Engine Setup](/images/demo/tapster/pio-engine-setup.png)
 
+
+### Modify  Engine Template 
+
+By the default, the engine template reads the “view” events. We can easily to change it to read “like” events. 
+
+<!-- For more advanced example of how-to combine view and like/dislike events in one recommender, please see the multi-events-multi-algos.html -->
+
+Modify `readTraining()` in DataSource.scala:
+
+```scala
+
+  override
+  def readTraining(sc: SparkContext): TrainingData = {
+    
+    ...
+    
+    val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
+      appId = dsp.appId,
+      entityType = Some("user"),
+      eventNames = Some(List("like")), // MODIFIED
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+      // eventsDb.find() returns RDD[Event]
+      .map { event =>
+        val viewEvent = try {
+          event.event match {
+            case "like" => ViewEvent( // MODIFIED
+              user = event.entityId,
+              item = event.targetEntityId.get,
+              t = event.eventTime.getMillis)
+            case _ => throw new Exception(s"Unexpected event ${event} is read.")
+          }
+        } catch {
+          case e: Exception => {
+            logger.error(s"Cannot convert ${event} to ViewEvent." +
+              s" Exception: ${e}.")
+            throw e
+          }
+        }
+        viewEvent
+      }
+
+    ...
+  }
+}
+
+```
+
 Finally to build the engine we will run:
 
 ```
