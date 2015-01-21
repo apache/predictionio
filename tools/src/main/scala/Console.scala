@@ -55,6 +55,7 @@ case class ConsoleArgs(
   eventServer: EventServerArgs = EventServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
+  newArgs: console.NewArgs = console.NewArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "",
   metricsClass: Option[String] = None,
@@ -203,15 +204,27 @@ object Console extends Logging {
         )
       note("")
       cmd("new").
-        text("Creates a new engine project in a subdirectory with the same " +
-          "name as the project. The project name will also be used as the " +
-          "default engine ID.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "new")
         } children(
-          arg[String]("<project name>") action { (x, c) =>
-            c.copy(projectName = Some(x))
-          } text("Engine project name.")
+          arg[String]("<repository>") required() action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(repository = x))
+          },
+          arg[String]("<directory>") action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(directory = x))
+          },
+          opt[String]("name") action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(name = Some(x)))
+          },
+          opt[String]("organization") action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(organization = Some(x)))
+          },
+          opt[String]("email") action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(email = Some(x)))
+          },
+          opt[String]("index-url") action { (x, c) =>
+            c.copy(newArgs = c.newArgs.copy(indexUrl = x))
+          }
         )
       //note("")
       //cmd("instance").
@@ -649,7 +662,8 @@ object Console extends Logging {
           version(ca)
           0
         case Seq("new") =>
-          createProject(ca)
+          console.New.handle(ca)
+          //createProject(ca)
           0
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
@@ -1366,7 +1380,7 @@ object Console extends Logging {
       } else {
         println("  Version information cannot be found.")
         println("  If you are using a developmental tree, please make sure")
-        println("  you are using a version of at least ${sparkMinVersion}.")
+        println(s"  you are using a version of at least ${sparkMinVersion}.")
       }
     } else {
       println("Unable to locate a proper Apache Spark installation. Aborting.")
