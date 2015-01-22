@@ -21,7 +21,7 @@ import java.io.FileOutputStream
 import java.net.URL
 import java.util.zip.ZipInputStream
 
-case class NewArgs(
+case class TemplateArgs(
   directory: String = "",
   repository: String = "",
   name: Option[String] = None,
@@ -57,7 +57,7 @@ object Template extends Logging {
     } catch {
       case e: Throwable => Map[String, GitHubCache]()
     }
-    val newReposCache = repos.map { repo =>
+    val newReposCache = reposCache ++ (repos.map { repo =>
       val url = s"https://api.github.com/repos/${repo}/${apiType}"
       val http = Http(url)
       val response = reposCache.get(repo).map { cache =>
@@ -77,7 +77,7 @@ object Template extends Logging {
       }
 
       (repo -> GitHubCache(headers = response.headers, body = body))
-    }.toMap
+    }.toMap)
     FileUtils.writeStringToFile(
       new File(repoFilename),
       write(newReposCache),
@@ -113,15 +113,23 @@ object Template extends Logging {
   }
 
   def get(ca: ConsoleArgs): Int = {
-    val repoNames = Seq(ca.newArgs.repository)
-    val repos = getGitHubRepos(repoNames, "tags", ".templates-cache")
+    val repos =
+      getGitHubRepos(Seq(ca.template.repository), "tags", ".templates-cache")
 
-    if (repos.isEmpty) {
-      error(s"Failed to retrieve ${repoNames.head}. Aborting.")
+    repos.get(ca.template.repository).map { repo =>
+      try {
+        read[List[GitHubTag]](repo.body)
+      } catch {
+        case e: MappingException =>
+          error(s"Either ${ca.template.repository} is not a valid GitHub repository, or it does not have any tag. Aborting.")
+          return 1
+      }
+    } getOrElse {
+      error(s"Failed to retrieve ${ca.template.repository}. Aborting.")
       return 1
     }
 
-    val name = ca.newArgs.name getOrElse {
+    val name = ca.template.name getOrElse {
       try {
         Process("git config --global user.name").lines.toList(0)
       } catch {
@@ -130,12 +138,12 @@ object Template extends Logging {
       }
     }
 
-    val organization = ca.newArgs.packageName getOrElse {
+    val organization = ca.template.packageName getOrElse {
       readLine(
         "Please enter the template's Scala package name (e.g. com.mycompany): ")
     }
 
-    val email = ca.newArgs.email getOrElse {
+    val email = ca.template.email getOrElse {
       try {
         Process("git config --global user.email").lines.toList(0)
       } catch {
@@ -155,10 +163,10 @@ object Template extends Logging {
     do {
       subscribe match {
         case "" | "Y" | "y" =>
-          sub(ca.newArgs.repository, name, email, organization)
+          sub(ca.template.repository, name, email, organization)
           valid = true
         case "n" | "N" =>
-          meta(ca.newArgs.repository, name, organization)
+          meta(ca.template.repository, name, organization)
           valid = true
         case _ =>
           println("Please answer 'y' or 'n'")
@@ -166,77 +174,82 @@ object Template extends Logging {
       }
     } while (!valid)
 
-    repos.map { repo =>
-      println(s"Retrieving ${repo._1}")
-      val tags = read[List[GitHubTag]](repo._2.body)
-      println(s"There are ${tags.size} tags")
-      tags.headOption.map { tag =>
-        println("Using the most recent tag")
-        val url = s"https://github.com/${repo._1}/archive/${tag.name}.zip"
-        println(s"Going to download ${url}")
-        val trial = Http(url).asBytes
-        val finalTrial = trial.location.map { loc =>
-          println(s"Redirecting to ${loc}")
-          Http(loc).asBytes
-        } getOrElse trial
-        val zipFilename = s"${repo._1.replace('/', '-')}-${tag.name}.zip"
-        FileUtils.writeByteArrayToFile(
-          new File(zipFilename),
-          finalTrial.body)
-        val zis = new ZipInputStream(
-          new BufferedInputStream(new FileInputStream(zipFilename)))
-        val bufferSize = 4096
-        var ze = zis.getNextEntry
-        while (ze != null) {
-          val filenameSegments = ze.getName.split(File.separatorChar)
-          val destFilename = (ca.newArgs.directory +: filenameSegments.tail).
-            mkString(File.separator)
-          if (ze.isDirectory) {
-            new File(destFilename).mkdirs
-          } else {
-            val os = new BufferedOutputStream(
-              new FileOutputStream(destFilename),
-              bufferSize)
-            var data = Array.ofDim[Byte](bufferSize)
-            var count = zis.read(data, 0, bufferSize)
-            while (count != -1) {
-              os.write(data, 0, count)
-              count = zis.read(data, 0, bufferSize)
-            }
-            os.flush
-            os.close
+    val repo = repos(ca.template.repository)
 
-            val nameOnly = new File(destFilename).getName
-
-            if (organization != "" &&
-              (nameOnly.endsWith(".scala") || nameOnly == "build.sbt")) {
-              val scalaContent = Source.fromFile(destFilename).getLines
-              val processedLines = scalaContent.map { l =>
-                val segments = l.split(' ').filterNot(_ == "")
-                if (l.startsWith("package")) {
-                  s"package ${organization}"
-                } else if (nameOnly == "build.sbt" &&
-                  segments.size > 2 &&
-                  segments.contains("organization") &&
-                  segments.indexOf("organization") < segments.indexOf(":=")) {
-                  val i = segments.indexOf(":=") + 1
-                  val quotedOrg = s""""$organization""""
-                  if (segments.size == i + 1)
-                    (segments.slice(0, i) :+ quotedOrg).mkString(" ")
-                  else
-                    ((segments.slice(0, i) :+ quotedOrg) ++
-                      segments.slice(i + 1, segments.size)).mkString(" ")
-                } else l
-              }
-              FileUtils.writeStringToFile(
-                new File(destFilename),
-                processedLines.mkString("\n"))
-            }
+    println(s"Retrieving ${ca.template.repository}")
+    val tags = read[List[GitHubTag]](repo.body)
+    println(s"There are ${tags.size} tags")
+    tags.headOption.map { tag =>
+      println(s"Using the most recent tag ${tag.name}")
+      val url =
+        s"https://github.com/${ca.template.repository}/archive/${tag.name}.zip"
+      println(s"Going to download ${url}")
+      val trial = Http(url).asBytes
+      val finalTrial = trial.location.map { loc =>
+        println(s"Redirecting to ${loc}")
+        Http(loc).asBytes
+      } getOrElse trial
+      val zipFilename =
+        s"${ca.template.repository.replace('/', '-')}-${tag.name}.zip"
+      FileUtils.writeByteArrayToFile(
+        new File(zipFilename),
+        finalTrial.body)
+      val zis = new ZipInputStream(
+        new BufferedInputStream(new FileInputStream(zipFilename)))
+      val bufferSize = 4096
+      var ze = zis.getNextEntry
+      while (ze != null) {
+        val filenameSegments = ze.getName.split(File.separatorChar)
+        val destFilename = (ca.template.directory +: filenameSegments.tail).
+          mkString(File.separator)
+        if (ze.isDirectory) {
+          new File(destFilename).mkdirs
+        } else {
+          val os = new BufferedOutputStream(
+            new FileOutputStream(destFilename),
+            bufferSize)
+          var data = Array.ofDim[Byte](bufferSize)
+          var count = zis.read(data, 0, bufferSize)
+          while (count != -1) {
+            os.write(data, 0, count)
+            count = zis.read(data, 0, bufferSize)
           }
-          ze = zis.getNextEntry
+          os.flush
+          os.close
+
+          val nameOnly = new File(destFilename).getName
+
+          if (organization != "" &&
+            (nameOnly.endsWith(".scala") || nameOnly == "build.sbt")) {
+            val scalaContent = Source.fromFile(destFilename).getLines
+            val processedLines = scalaContent.map { l =>
+              val segments = l.split(' ').filterNot(_ == "")
+              if (l.startsWith("package")) {
+                s"package ${organization}"
+              } else if (nameOnly == "build.sbt" &&
+                segments.size > 2 &&
+                segments.contains("organization") &&
+                segments.indexOf("organization") < segments.indexOf(":=")) {
+                val i = segments.indexOf(":=") + 1
+                val quotedOrg = s""""$organization""""
+                if (segments.size == i + 1)
+                  (segments.slice(0, i) :+ quotedOrg).mkString(" ")
+                else
+                  ((segments.slice(0, i) :+ quotedOrg) ++
+                    segments.slice(i + 1, segments.size)).mkString(" ")
+              } else l
+            }
+            FileUtils.writeStringToFile(
+              new File(destFilename),
+              processedLines.mkString("\n"))
+          }
         }
-        zis.close
+        ze = zis.getNextEntry
       }
+      zis.close
+      new File(zipFilename).delete
+      println(s"Engine template ${ca.template.repository} is now ready at " +
+        ca.template.directory)
     }
 
     0

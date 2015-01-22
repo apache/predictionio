@@ -55,7 +55,7 @@ case class ConsoleArgs(
   eventServer: EventServerArgs = EventServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
-  newArgs: console.NewArgs = console.NewArgs(),
+  template: console.TemplateArgs = console.TemplateArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "",
   metricsClass: Option[String] = None,
@@ -616,22 +616,22 @@ object Console extends Logging {
               c.copy(commands = c.commands :+ "get")
             } children(
               arg[String]("<template ID>") required() action { (x, c) =>
-                c.copy(newArgs = c.newArgs.copy(repository = x))
+                c.copy(template = c.template.copy(repository = x))
               },
               arg[String]("<new engine directory>") action { (x, c) =>
-                c.copy(newArgs = c.newArgs.copy(directory = x))
+                c.copy(template = c.template.copy(directory = x))
               },
               opt[String]("name") action { (x, c) =>
-                c.copy(newArgs = c.newArgs.copy(name = Some(x)))
+                c.copy(template = c.template.copy(name = Some(x)))
               },
               opt[String]("package") action { (x, c) =>
-                c.copy(newArgs = c.newArgs.copy(packageName = Some(x)))
+                c.copy(template = c.template.copy(packageName = Some(x)))
               },
               opt[String]("email") action { (x, c) =>
-                c.copy(newArgs = c.newArgs.copy(email = Some(x)))
+                c.copy(template = c.template.copy(email = Some(x)))
               },
               opt[String]("index-url") action { (x, c) =>
-                c.copy(newArgs = c.newArgs.copy(indexUrl = x))
+                c.copy(template = c.template.copy(indexUrl = x))
               }
             )
         )
