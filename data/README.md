@@ -20,6 +20,15 @@ $ sbt/sbt "data/run-main io.prediction.data.api.Run"
 $ data/test.sh <appId>
 ```
 
+### Unit test (Very minimal)
+
+```
+$ set -a
+$ source conf/pio-env.sh
+$ set +a
+$ sbt/sbt "data/test"
+```
+
 ### Upgrade from 0.8.0/0.8.1 to 0.8.2
 
 Experimental upgrade tool (Upgrade HBase schema from 0.8.0/0.8.1 to 0.8.2)

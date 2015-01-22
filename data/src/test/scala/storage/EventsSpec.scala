@@ -41,19 +41,24 @@ class EventsSpec extends Specification {
 
   """
 
-  def events(eventClient: Events) = s2"""
+  def events(eventClient: LEvents) = s2"""
 
     inserting and getting 3 Events ${insertTest(eventClient)}
 
   """
 
   val dbName = "test_pio_storage_events_" + hashCode
-  def hbDO = Storage.getDataObject[Events](
+  def hbDO = Storage.getDataObject[LEvents](
     StorageTestUtils.hbaseSourceName,
     dbName
   )
 
-  def insertTest(eventClient: Events) = {
+  def insertTest(eventClient: LEvents) = {
+
+    val appId = 1
+
+    eventClient.init(appId)
+
     val listOfEvents = List(
       Event(
         event = "my_event",
@@ -72,15 +77,12 @@ class EventsSpec extends Specification {
           }"""
           ).asInstanceOf[JObject]),
         eventTime = DateTime.now,
-        tags = List("tag1", "tag2"),
-        appId = 4,
         prId = Some("my_prid")
       ),
       Event(
         event = "my_event2",
         entityType = "my_entity_type2",
-        entityId = "my_entity_id2",
-        appId = 4
+        entityId = "my_entity_id2"
       ),
       Event(
         event = "my_event3",
@@ -94,22 +96,23 @@ class EventsSpec extends Specification {
             "propB" : "valueB",
           }"""
           ).asInstanceOf[JObject]),
-        appId = 4,
         prId = Some("my_prid")
       )
     )
-    val insertResp = listOfEvents.map { eventClient.insert(_) }
 
-    val getResult = insertResp.map { resp =>
-      (resp match {
-        case Right(eventId) => eventClient.get(eventId)
-        case Left(x) => Left(x)
-      }) match {
-        case Right(eventOpt) => eventOpt
-        case _ => None
-      }
+    val insertResp = listOfEvents.map { eventClient.insert(_, appId) }
+
+    val insertedEventId: List[String] = insertResp.map { resp =>
+      resp.right.get
     }
 
-    listOfEvents.map(Some(_)) must containTheSameElementsAs(getResult)
+    val insertedEvent: List[Option[Event]] = listOfEvents.zip(insertedEventId)
+      .map { case (e, id) => Some(e.copy(eventId = Some(id))) }
+
+    val getResp = insertedEventId.map { id => eventClient.get(id, appId) }
+
+    val getEvents = getResp.map { resp => resp.right.get }
+
+    insertedEvent must containTheSameElementsAs(getEvents)
   }
 }
