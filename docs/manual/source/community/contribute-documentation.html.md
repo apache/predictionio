@@ -110,7 +110,13 @@ is an excellent extension for browser resizing.
 WARNING: **OS X** users please [Disable Shadows](http://www.idownloadblog.com/2014/08/03/how-to-remove-the-shadow-window-screenshots-on-mac-os-x/)
 before taking a screenshot.
 
-Images should only show the relavent tab/terminal. Hide any additional toolbars.
+Images should only show the relevant tab/terminal. Hide any additional toolbars.
+
+Images will **automatically scale** by default. If you want an image to remain a set size you can use a raw HTML tag like this:
+
+```
+<img src="/images/path/to/image.png" alt="Image" class="static" />
+```
 
 ### Code Blocks
 
