@@ -26,6 +26,13 @@ private[prediction] object LEventAggregator {
       .mapValues(_.get)
   }
 
+  // aggregate Properties for single entity
+  def aggregatePropertiesSingle(events: Iterator[Event]): Option[DataMap] = {
+    events.toList
+      .sortBy(_.eventTime.getMillis)
+      .foldLeft[Option[DataMap]](None)(dataMapAggregator)
+  }
+
   val eventNames = List("$set", "$unset", "$delete")
 
   private

@@ -274,6 +274,28 @@ class HBLEvents(val client: HBClient, val namespace: String)
     }
 
   override
+  def futureAggregatePropertiesSingle(
+    appId: Int,
+    entityType: String,
+    entityId: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Option[DataMap]]] = {
+      futureFind(
+        appId = appId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = Some(entityType),
+        entityId = Some(entityId),
+        eventNames = Some(LEventAggregator.eventNames)
+      ).map{ either =>
+        either.right.map{ eventIt =>
+          LEventAggregator.aggregatePropertiesSingle(eventIt)
+        }
+      }
+    }
+
+  override
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = {
     Future {

@@ -138,6 +138,29 @@ private[prediction] trait LEvents {
     required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Map[String, DataMap]]] = notImplemented
 
+  /** Experimental.
+    *
+    * Aggregate properties of the specified entity (entityType + entityId)
+    * based on these special events:
+    * \$set, \$unset, \$delete events.
+    * and returns a Future of either StorageError or Option[DataMap]
+    *
+    * @param appId use events of this app ID
+    * @param entityType the entityType
+    * @param entityId the entityId
+    * @param startTime use events with eventTime >= startTime
+    * @param untilTime use events with eventTime < untilTime
+    * @param ec ExecutionContext
+    * @return Future[Either[StorageError, Option[DataMap]]]
+    */
+  def futureAggregatePropertiesSingle(
+    appId: Int,
+    entityType: String,
+    entityId: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
+    Future[Either[StorageError, Option[DataMap]]] = notImplemented
+
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = notImplemented
 
@@ -261,6 +284,38 @@ private[prediction] trait LEvents {
       startTime = startTime,
       untilTime = untilTime,
       required = required), timeout)
+  }
+
+  /** Experimental.
+    *
+    * Aggregate properties of the specified entity (entityType + entityId)
+    * based on these special events:
+    * \$set, \$unset, \$delete events.
+    * and returns either StorageError or Option[DataMap]
+    *
+    * @param appId use events of this app ID
+    * @param entityType the entityType
+    * @param entityId the entityId
+    * @param startTime use events with eventTime >= startTime
+    * @param untilTime use events with eventTime < untilTime
+    * @param ec ExecutionContext
+    * @return Future[Either[StorageError, Option[DataMap]]]
+    */
+  def aggregatePropertiesSingle(
+    appId: Int,
+    entityType: String,
+    entityId: String,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
+    Either[StorageError, Option[DataMap]] = {
+
+    Await.result(futureAggregatePropertiesSingle(
+      appId = appId,
+      entityType = entityType,
+      entityId = entityId,
+      startTime = startTime,
+      untilTime = untilTime), timeout)
   }
 
   def deleteByAppId(appId: Int,
