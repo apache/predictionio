@@ -4,7 +4,7 @@ title: Built with PredictionIO
 
 Here is a list of projects built with PredictionIO. 
 
-INFO: If you want to showcase your app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/community/showcase.html.md) and submit a pull request.
+INFO: If you want to showcase your app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/showcase.html.md) and submit a pull request.
 
 ##OnTapp
 
