@@ -1,6 +1,6 @@
 {
   "name": "Tabslet",
-  "version": "1.4.2",
+  "version": "1.4.4",
   "homepage": "https://github.com/vdw/Tabslet",
   "authors": [
     "Dimitris Krestos <dkrestos@gmail.com>"
@@ -13,14 +13,13 @@
     "plugin"
   ],
   "license": "Apache",
-  "_release": "1.4.2",
+  "_release": "1.4.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.4.2",
-    "commit": "e4e87015b663f9f8908434797021ef17faa7f91e"
+    "tag": "v1.4.4",
+    "commit": "eb979afb4d065296449cdb409cc773562fc2d557"
   },
   "_source": "git://github.com/vdw/Tabslet.git",
-  "_target": "~1.4.2",
-  "_originalSource": "Tabslet",
-  "_direct": true
+  "_target": "1.4.4",
+  "_originalSource": "Tabslet"
 }

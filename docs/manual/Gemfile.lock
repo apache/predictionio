@@ -1,15 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    CFPropertyList (2.2.8)
-    activesupport (4.1.8)
+    CFPropertyList (2.3.0)
+    activesupport (4.1.9)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
     addressable (2.3.6)
-    autoprefixer-rails (4.0.1.1)
+    autoprefixer-rails (5.0.0.1)
       execjs
     backports (3.6.4)
     builder (3.2.2)
@@ -21,14 +21,14 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.8.0)
-    compass (1.0.1)
+    compass (1.0.3)
       chunky_png (~> 1.2)
-      compass-core (~> 1.0.1)
+      compass-core (~> 1.0.2)
       compass-import-once (~> 1.0.5)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
       sass (>= 3.3.13, < 3.5)
-    compass-core (1.0.1)
+    compass-core (1.0.3)
       multi_json (~> 1.0)
       sass (>= 3.3.0, < 3.5)
     compass-import-once (1.0.5)
@@ -37,44 +37,59 @@ GEM
       eventmachine (>= 0.12.9)
       http_parser.rb (~> 0.6.0)
     erubis (2.7.0)
-    ethon (0.7.1)
+    ethon (0.7.2)
       ffi (>= 1.3.0)
-    eventmachine (1.0.3)
-    excon (0.42.0)
+    eventmachine (1.0.4)
+    excon (0.43.0)
     execjs (2.2.2)
-    faraday (0.9.0)
+    faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.9.1)
       faraday (>= 0.7.4, < 0.10)
     ffi (1.9.6)
     fission (0.5.0)
       CFPropertyList (~> 2.2)
-    fog (1.25.0)
+    fog (1.27.0)
+      fog-atmos
+      fog-aws (~> 0.0)
       fog-brightbox (~> 0.4)
-      fog-core (~> 1.25)
+      fog-core (~> 1.27, >= 1.27.3)
+      fog-ecloud
       fog-json
       fog-profitbricks
       fog-radosgw (>= 0.0.2)
       fog-sakuracloud (>= 0.0.4)
+      fog-serverlove
       fog-softlayer
+      fog-storm_on_demand
       fog-terremark
       fog-vmfusion
       fog-voxel
       fog-xml (~> 0.1.1)
       ipaddress (~> 0.5)
       nokogiri (~> 1.5, >= 1.5.11)
-      opennebula
-    fog-brightbox (0.7.0)
+    fog-atmos (0.1.0)
+      fog-core
+      fog-xml
+    fog-aws (0.0.6)
+      fog-core (~> 1.27)
+      fog-json (~> 1.0)
+      fog-xml (~> 0.1)
+      ipaddress (~> 0.8)
+    fog-brightbox (0.7.1)
       fog-core (~> 1.22)
       fog-json
       inflecto (~> 0.0.2)
-    fog-core (1.25.0)
+    fog-core (1.27.3)
       builder
       excon (~> 0.38)
       formatador (~> 0.2)
       mime-types
       net-scp (~> 1.1)
       net-ssh (>= 2.1.3)
+    fog-ecloud (0.0.2)
+      fog-core
+      fog-xml
     fog-json (1.0.0)
       multi_json (~> 1.0)
     fog-profitbricks (0.0.1)
@@ -85,10 +100,16 @@ GEM
       fog-core (>= 1.21.0)
       fog-json
       fog-xml (>= 0.0.1)
-    fog-sakuracloud (0.1.1)
+    fog-sakuracloud (0.1.2)
       fog-core
       fog-json
-    fog-softlayer (0.3.25)
+    fog-serverlove (0.1.1)
+      fog-core
+      fog-json
+    fog-softlayer (0.3.30)
+      fog-core
+      fog-json
+    fog-storm_on_demand (0.1.0)
       fog-core
       fog-json
     fog-terremark (0.0.3)
@@ -123,12 +144,12 @@ GEM
     i18n (0.6.11)
     inflecto (0.0.2)
     ipaddress (0.8.0)
-    json (1.8.1)
+    json (1.8.2)
     kramdown (1.5.0)
     launchy (2.4.3)
       addressable (~> 2.3)
     libv8 (3.16.14.7)
-    listen (2.8.3)
+    listen (2.8.5)
       celluloid (>= 0.15.2)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
@@ -144,8 +165,8 @@ GEM
       middleman-sprockets (>= 3.1.2)
       sass (>= 3.4.0, < 4.0)
       uglifier (~> 2.5)
-    middleman-autoprefixer (2.3.0)
-      autoprefixer-rails (~> 4.0.0)
+    middleman-autoprefixer (2.4.0)
+      autoprefixer-rails (>= 5.0.0.1, < 5.1.0)
       middleman-core (>= 3.3.3)
     middleman-cloudfront (0.1.0)
       fog (~> 1.9)
@@ -172,31 +193,27 @@ GEM
     middleman-search_engine_sitemap (1.3.0)
       builder
       middleman-core (~> 3.2)
-    middleman-sprockets (3.3.10)
-      middleman-core (~> 3.3)
+    middleman-sprockets (3.4.1)
+      middleman-core (>= 3.3)
       sprockets (~> 2.12.1)
       sprockets-helpers (~> 1.1.0)
-      sprockets-sass (~> 1.2.0)
+      sprockets-sass (~> 1.3.0)
     middleman-syntax (2.0.0)
       middleman-core (~> 3.2)
       rouge (~> 1.0)
     mime-types (2.4.3)
-    mini_portile (0.6.1)
-    minitest (5.4.3)
+    mini_portile (0.6.2)
+    minitest (5.5.1)
     multi_json (1.10.1)
     multipart-post (2.0.0)
     net-http-persistent (2.9.4)
     net-http-pipeline (1.0.1)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
-    net-ssh (2.9.1)
+    net-ssh (2.9.2)
     nokogiri (1.6.5)
       mini_portile (~> 0.6.0)
-    oj (2.11.1)
-    opennebula (4.10.1)
-      json
-      nokogiri
-      rbvmomi
+    oj (2.11.3)
     padrino-helpers (0.12.4)
       i18n (~> 0.6, >= 0.6.7)
       padrino-support (= 0.12.4)
@@ -210,24 +227,20 @@ GEM
     pusher-client (0.6.0)
       json
       websocket (~> 1.0)
-    rack (1.5.2)
+    rack (1.6.0)
     rack-livereload (0.3.15)
       rack
-    rack-test (0.6.2)
+    rack-test (0.6.3)
       rack (>= 1.0)
     rainbow (2.0.0)
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    rbvmomi (1.8.2)
-      builder
-      nokogiri (>= 1.4.1)
-      trollop
-    redcarpet (3.2.1)
+    redcarpet (3.2.2)
     ref (1.0.5)
-    rouge (1.7.4)
-    sass (3.4.9)
-    slim (3.0.0)
+    rouge (1.7.7)
+    sass (3.4.10)
+    slim (3.0.1)
       temple (~> 0.7.3)
       tilt (>= 1.3.3, < 2.1)
     slop (3.6.0)
@@ -238,10 +251,10 @@ GEM
       tilt (~> 1.1, != 1.3.0)
     sprockets-helpers (1.1.0)
       sprockets (~> 2.0)
-    sprockets-sass (1.2.0)
+    sprockets-sass (1.3.1)
       sprockets (~> 2.0)
       tilt (~> 1.1)
-    temple (0.7.3)
+    temple (0.7.5)
     therubyracer (0.12.1)
       libv8 (~> 3.16.14.0)
       ref
@@ -250,7 +263,7 @@ GEM
     tilt (1.4.1)
     timers (4.0.1)
       hitimes
-    travis (1.7.4)
+    travis (1.7.5)
       addressable (~> 2.3)
       backports
       faraday (~> 0.9)
@@ -261,13 +274,12 @@ GEM
       pry (~> 0.9, < 0.10)
       pusher-client (~> 0.4)
       typhoeus (~> 0.6, >= 0.6.8)
-    trollop (2.0)
-    typhoeus (0.6.9)
+    typhoeus (0.7.0)
       ethon (>= 0.7.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    uber (0.0.11)
-    uglifier (2.5.3)
+    uber (0.0.13)
+    uglifier (2.7.0)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
     websocket (1.2.1)
