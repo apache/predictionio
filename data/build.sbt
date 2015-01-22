@@ -15,11 +15,11 @@
 name := "data"
 
 libraryDependencies ++= Seq(
-  "com.google.guava"        % "guava"          % "18.0",
   "commons-codec"           % "commons-codec"  % "1.9",
   "io.spray"               %% "spray-can"      % "1.3.2",
   "io.spray"               %% "spray-routing"  % "1.3.2",
-  "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
+  "org.apache.hadoop"       % "hadoop-common"  % "2.5.0"
+    exclude("javax.servlet", "servlet-api"),
   "org.apache.hbase"        % "hbase-common"   % "0.98.5-hadoop2",
   "org.apache.hbase"        % "hbase-client"   % "0.98.5-hadoop2"
     exclude("org.apache.zookeeper", "zookeeper"),
@@ -27,6 +27,7 @@ libraryDependencies ++= Seq(
   "org.apache.hbase"        % "hbase-server"   % "0.98.5-hadoop2"
     exclude("org.apache.hbase", "hbase-client")
     exclude("org.apache.zookeeper", "zookeeper")
+    exclude("javax.servlet", "servlet-api")
     exclude("org.mortbay.jetty", "servlet-api-2.5")
     exclude("org.mortbay.jetty", "jsp-api-2.1")
     exclude("org.mortbay.jetty", "jsp-2.1"),
