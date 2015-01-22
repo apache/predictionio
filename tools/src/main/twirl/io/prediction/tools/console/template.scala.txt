@@ -1,5 +1,5 @@
-Usage: pio new <template ID> <new engine directory>
-               [--name <value>] [--package <value>] [--email <value>]
+Usage: pio template get <template ID> <new engine directory>
+                        [--name <value>] [--package <value>] [--email <value>]
 
 Seeds a directory with an engine template.
 

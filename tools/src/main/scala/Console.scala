@@ -202,30 +202,6 @@ object Console extends Logging {
             c.copy(commands = c.commands :+ x)
           }
         )
-      note("")
-      cmd("new").
-        action { (_, c) =>
-          c.copy(commands = c.commands :+ "new")
-        } children(
-          arg[String]("<template ID>") required() action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(repository = x))
-          },
-          arg[String]("<new engine directory>") action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(directory = x))
-          },
-          opt[String]("name") action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(name = Some(x)))
-          },
-          opt[String]("package") action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(packageName = Some(x)))
-          },
-          opt[String]("email") action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(email = Some(x)))
-          },
-          opt[String]("index-url") action { (x, c) =>
-            c.copy(newArgs = c.newArgs.copy(indexUrl = x))
-          }
-        )
       //note("")
       //cmd("instance").
       //  text("Creates a new engine instance in a subdirectory with the same " +
@@ -631,6 +607,34 @@ object Console extends Logging {
               } text("The access key to be deleted.")
             )
         )
+      cmd("template").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "template")
+        } children(
+          cmd("get").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "get")
+            } children(
+              arg[String]("<template ID>") required() action { (x, c) =>
+                c.copy(newArgs = c.newArgs.copy(repository = x))
+              },
+              arg[String]("<new engine directory>") action { (x, c) =>
+                c.copy(newArgs = c.newArgs.copy(directory = x))
+              },
+              opt[String]("name") action { (x, c) =>
+                c.copy(newArgs = c.newArgs.copy(name = Some(x)))
+              },
+              opt[String]("package") action { (x, c) =>
+                c.copy(newArgs = c.newArgs.copy(packageName = Some(x)))
+              },
+              opt[String]("email") action { (x, c) =>
+                c.copy(newArgs = c.newArgs.copy(email = Some(x)))
+              },
+              opt[String]("index-url") action { (x, c) =>
+                c.copy(newArgs = c.newArgs.copy(indexUrl = x))
+              }
+            )
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -660,10 +664,6 @@ object Console extends Logging {
           1
         case Seq("version") =>
           version(ca)
-          0
-        case Seq("new") =>
-          console.New.handle(ca)
-          //createProject(ca)
           0
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
@@ -719,6 +719,8 @@ object Console extends Logging {
           accessKeyList(ca)
         case Seq("accesskey", "delete") =>
           accessKeyDelete(ca)
+        case Seq("template", "get") =>
+          console.Template.get(ca)
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -749,7 +751,7 @@ object Console extends Logging {
     "status" -> console.txt.status().toString,
     "upgrade" -> console.txt.upgrade().toString,
     "version" -> console.txt.version().toString,
-    "new" -> console.txt.newCommand().toString,
+    "template" -> console.txt.template().toString,
     "build" -> console.txt.build().toString,
     "train" -> console.txt.train().toString,
     "deploy" -> console.txt.deploy().toString,

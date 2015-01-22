@@ -33,7 +33,7 @@ more information.
 The most commonly used pio commands are:
     status        Displays status information about PredictionIO
     version       Displays the version of this command line console
-    new           Creates a new engine project
+    template      Creates a new engine based on an engine template
     build         Build an engine at the current directory
     train         Kick off a training using an engine
     deploy        Deploy an engine as an engine server

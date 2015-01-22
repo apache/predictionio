@@ -43,7 +43,7 @@ case class GitHubCache(
   headers: Map[String, String],
   body: String)
 
-object New extends Logging {
+object Template extends Logging {
   implicit val formats = Utils.json4sDefaultFormats
 
   def getGitHubRepos(
@@ -112,10 +112,9 @@ object New extends Logging {
     }
   }
 
-  def handle(ca: ConsoleArgs): Int = {
-    //val repos = Seq("PredictionIO/Template-Scala-Parallel-Vanilla")
+  def get(ca: ConsoleArgs): Int = {
     val repoNames = Seq(ca.newArgs.repository)
-    val repos = getGitHubRepos(repoNames, "tags", "repos-cache")
+    val repos = getGitHubRepos(repoNames, "tags", ".templates-cache")
 
     if (repos.isEmpty) {
       error(s"Failed to retrieve ${repoNames.head}. Aborting.")
