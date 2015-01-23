@@ -43,6 +43,9 @@ case class GitHubCache(
   headers: Map[String, String],
   body: String)
 
+case class TemplateEntry(
+  repo: String)
+
 object Template extends Logging {
   implicit val formats = Utils.json4sDefaultFormats
 
@@ -109,6 +112,29 @@ object Template extends Logging {
         s"http://templates.prediction.io/${repo}/${org}/${name}").asString
     } catch {
       case e: Throwable => warn("Template metadata unavailable.")
+    }
+  }
+
+  def list(ca: ConsoleArgs): Int = {
+    val templatesUrl = "http://templates.prediction.io/index.json"
+    try {
+      val templatesJson = Source.fromURL(templatesUrl).mkString("")
+      val templates = read[List[TemplateEntry]](templatesJson)
+      println("The following is a list of template IDs officially recognized " +
+        "by PredictionIO:")
+      println()
+      templates.foreach { template =>
+        println(template.repo)
+      }
+      println()
+      println("Notice that it is possible use any GitHub repository as your " +
+        "engine template ID (e.g. YourOrg/YourTemplate).")
+      0
+    } catch {
+      case e: Throwable =>
+        error(s"Unable to list templates from ${templatesUrl} " +
+          s"(${e.getMessage}). Aborting.")
+        1
     }
   }
 

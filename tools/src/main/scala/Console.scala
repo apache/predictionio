@@ -633,7 +633,11 @@ object Console extends Logging {
               opt[String]("index-url") action { (x, c) =>
                 c.copy(template = c.template.copy(indexUrl = x))
               }
-            )
+            ),
+          cmd("list").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "list")
+            }
         )
     }
 
@@ -721,6 +725,8 @@ object Console extends Logging {
           accessKeyDelete(ca)
         case Seq("template", "get") =>
           console.Template.get(ca)
+        case Seq("template", "list") =>
+          console.Template.list(ca)
         case _ =>
           System.err.println(help(ca.commands))
           1

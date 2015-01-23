@@ -1,3 +1,7 @@
+Usage: pio template list
+
+Retrieves a list of available template IDs.
+
 Usage: pio template get <template ID> <new engine directory>
                         [--name <value>] [--package <value>] [--email <value>]
 
