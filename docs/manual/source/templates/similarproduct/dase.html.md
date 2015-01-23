@@ -177,8 +177,8 @@ In the template, `User()` object is a simple dummy as a placeholder for you to c
 
 
 Similarly, the following code aggregates `item` properties  and then map each result to an `Item()` object. By default, this template assumes each item has an optional property `categories`, which is a list of String.
-```scala
 
+```scala
   // create a RDD of (entityID, Item)
   val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(
     appId = dsp.appId,
@@ -196,7 +196,6 @@ Similarly, the following code aggregates `item` properties  and then map each re
     }
     (entityId, item)
   }
-
 ```
 
 The `Item` case class is defined as
@@ -453,23 +452,14 @@ case class ALSAlgorithmParams(
 `ALS.trainImplicit()` then returns a `MatrixFactorizationModel` model which contains two RDDs: userFeatures and productFeatures. They correspond to the user X latent features matrix and item X latent features matrix, respectively. In this case, we will make use of the productFeatures matrix to find simliar products by comparing the similarity of the latent features. Hence, we store this productFeatures as defined in `ALSModel` class:
 
 ```scala
-    val m = ALS.trainImplicit(
-      ratings = mllibRatings,
-      rank = ap.rank,
-      iterations = ap.numIterations,
-      lambda = ap.lambda,
-      blocks = -1,
-      alpha = 1.0,
-      seed = seed)
-
-    new ALSModel(
-      productFeatures = m.productFeatures,
-      itemStringIntMap = itemStringIntMap,
-      items = items
-    )
+class ALSModel(
+  val productFeatures: RDD[(Int, Array[Double])],
+  val itemStringIntMap: BiMap[String, Int],
+  val items: Map[Int, Item]
+) extends IPersistentModel[ALSAlgorithmParams] with Serializable { ... }
 ```
 
-PredictionIO will automatically store the returned model, i.e. `ALSModel` in this case.
+PredictionIO will automatically store the returned model, i.e. `ALSModel` in this example.
 
 ### predict(...)
 
