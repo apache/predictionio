@@ -223,6 +223,7 @@ object Template extends Logging {
       val zis = new ZipInputStream(
         new BufferedInputStream(new FileInputStream(zipFilename)))
       val bufferSize = 4096
+      val filesToModify = collection.mutable.ListBuffer[String]()
       var ze = zis.getNextEntry
       while (ze != null) {
         val filenameSegments = ze.getName.split(File.separatorChar)
@@ -246,34 +247,54 @@ object Template extends Logging {
           val nameOnly = new File(destFilename).getName
 
           if (organization != "" &&
-            (nameOnly.endsWith(".scala") || nameOnly == "build.sbt")) {
-            val scalaContent = Source.fromFile(destFilename).getLines
-            val processedLines = scalaContent.map { l =>
-              val segments = l.split(' ').filterNot(_ == "")
-              if (l.startsWith("package")) {
-                s"package ${organization}"
-              } else if (nameOnly == "build.sbt" &&
-                segments.size > 2 &&
-                segments.contains("organization") &&
-                segments.indexOf("organization") < segments.indexOf(":=")) {
-                val i = segments.indexOf(":=") + 1
-                val quotedOrg = s""""$organization""""
-                if (segments.size == i + 1)
-                  (segments.slice(0, i) :+ quotedOrg).mkString(" ")
-                else
-                  ((segments.slice(0, i) :+ quotedOrg) ++
-                    segments.slice(i + 1, segments.size)).mkString(" ")
-              } else l
-            }
-            FileUtils.writeStringToFile(
-              new File(destFilename),
-              processedLines.mkString("\n"))
-          }
+            (nameOnly.endsWith(".scala") ||
+              nameOnly == "build.sbt" ||
+              nameOnly == "engine.json"))
+            filesToModify += destFilename
         }
         ze = zis.getNextEntry
       }
       zis.close
       new File(zipFilename).delete
+
+      val engineJsonFile =
+        new File(ca.template.directory + File.separator + "engine.json")
+
+      val engineJson = try {
+        Some(parse(Source.fromFile(engineJsonFile).mkString))
+      } catch {
+        case e: java.io.IOException =>
+          error("Unable to read engine.json. Skipping automatic package " +
+            "name replacement.")
+          None
+        case e: MappingException =>
+          error("Unable to parse engine.json. Skipping automatic package " +
+            "name replacement.")
+          None
+      }
+
+      val engineFactory = engineJson.map { ej =>
+        (ej \ "engineFactory").extractOpt[String]
+      } getOrElse None
+
+      engineFactory.map { ef =>
+        val pkgName = ef.split('.').dropRight(1).mkString(".")
+        println(s"Replacing ${pkgName} with ${organization}...")
+
+        filesToModify.foreach { ftm =>
+          println(s"Processing ${ftm}...")
+          val fileContent = Source.fromFile(ftm).getLines
+          val processedLines =
+            fileContent.map(_.replaceAllLiterally(pkgName, organization))
+          FileUtils.writeStringToFile(
+            new File(ftm),
+            processedLines.mkString("\n"))
+        }
+      } getOrElse {
+        error("engineFactory is not found in engine.json. Skipping automatic " +
+          "package name replacement.")
+      }
+
       println(s"Engine template ${ca.template.repository} is now ready at " +
         ca.template.directory)
     }
