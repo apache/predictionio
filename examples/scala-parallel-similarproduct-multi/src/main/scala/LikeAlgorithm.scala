@@ -79,7 +79,17 @@ class LikeAlgorithm(ap: ALSAlgorithmParams) extends ALSAlgorithm(ap) {
     require(!mllibRatings.take(1).isEmpty,
       s"mllibRatings cannot be empty." +
       " Please check if your events contain valid user and item ID.")
-    val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
+    // seed for MLlib ALS
+    val seed = ap.seed.getOrElse(System.nanoTime)
+
+    val m = ALS.trainImplicit(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      alpha = 1.0,
+      seed = seed)
 
     new ALSModel(
       productFeatures = m.productFeatures,

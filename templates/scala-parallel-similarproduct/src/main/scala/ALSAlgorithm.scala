@@ -18,8 +18,9 @@ import scala.collection.mutable.PriorityQueue
 
 case class ALSAlgorithmParams(
   rank: Int,
-  numIterations: Int
-) extends Params
+  numIterations: Int,
+  lambda: Double,
+  seed: Option[Long]) extends Params
 
 class ALSModel(
   val productFeatures: RDD[(Int, Array[Double])],
@@ -121,7 +122,18 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     require(!mllibRatings.take(1).isEmpty,
       s"mllibRatings cannot be empty." +
       " Please check if your events contain valid user and item ID.")
-    val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
+
+    // seed for MLlib ALS
+    val seed = ap.seed.getOrElse(System.nanoTime)
+
+    val m = ALS.trainImplicit(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      alpha = 1.0,
+      seed = seed)
 
     new ALSModel(
       productFeatures = m.productFeatures,

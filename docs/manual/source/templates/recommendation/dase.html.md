@@ -237,6 +237,7 @@ i.e. `ALS.train`, is used to train a predictive model.
 
 ```scala
   def train(data: PreparedData): ALSModel = {
+    ...
     // Convert user and item String IDs to Int index for MLlib
     val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
     val itemStringIntMap = BiMap.stringInt(data.ratings.map(_.item))
@@ -244,10 +245,29 @@ i.e. `ALS.train`, is used to train a predictive model.
       // MLlibRating requires integer index for user and item
       MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
     )
+
+    // seed for MLlib ALS
+    val seed = ap.seed.getOrElse(System.nanoTime)
+
     // If you only have one type of implicit event (Eg. "view" event only),
     // replace ALS.train(...) with
-    // ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
-    val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
+    //val m = ALS.trainImplicit(
+      //ratings = mllibRatings,
+      //rank = ap.rank,
+      //iterations = ap.numIterations,
+      //lambda = ap.lambda,
+      //blocks = -1,
+      //alpha = 1.0,
+      //seed = seed)
+
+    val m = ALS.train(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      seed = seed)
+
     new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
@@ -282,8 +302,7 @@ MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
 ```
 
 
-In addition to `RDD[MLlibRating]`, `ALS.train` takes 3 parameters: *rank*,
-*iterations* and *lambda*.
+In addition to `RDD[MLlibRating]`, `ALS.train` takes the following parameters: *rank*, *iterations*, *lambda* and *seed*.
 
 The values of these parameters are specified in *algorithms* of
 MyRecommendation/***engine.json***:
@@ -297,7 +316,8 @@ MyRecommendation/***engine.json***:
       "params": {
         "rank": 10,
         "numIterations": 20,
-        "lambda": 0.01
+        "lambda": 0.01,
+        "seed": 3
       }
     }
   ]
@@ -312,7 +332,8 @@ which has a corresponding case case `ALSAlgorithmParams`:
 case class ALSAlgorithmParams(
   rank: Int,
   numIterations: Int,
-  lambda: Double) extends Params
+  lambda: Double,
+  seed: Option[Long]) extends Params
 ```
 
 `ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD

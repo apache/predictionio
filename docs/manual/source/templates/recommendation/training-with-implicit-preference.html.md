@@ -86,7 +86,14 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     ...
 
     // MODIFIED
-    val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
+    val m = ALS.trainImplicit(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      alpha = 1.0,
+      seed = seed)
 
     new ALSModel(
       rank = m.rank,

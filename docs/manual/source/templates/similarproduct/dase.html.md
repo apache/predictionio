@@ -151,7 +151,7 @@ This Similar Product template requires "user" and "item" entities that are set b
 
 <!-- // Please refer to  ADD LINK) for more details of setting properties for entities by events.  -->
 
-The following code aggregates the properties of `user` and then map each result to a `User()` object. 
+The following code aggregates the properties of `user` and then map each result to a `User()` object.
 
 ```scala
 
@@ -176,7 +176,7 @@ The following code aggregates the properties of `user` and then map each result 
 In the template, `User()` object is a simple dummy as a placeholder for you to customize and expand.
 
 
-Similarly, the following code aggregates `item` properties  and then map each result to an `Item()` object. By default, this template assumes each item has an optional property `categories`, which is a list of String. 
+Similarly, the following code aggregates `item` properties  and then map each result to an `Item()` object. By default, this template assumes each item has an optional property `categories`, which is a list of String.
 ```scala
 
   // create a RDD of (entityID, Item)
@@ -346,7 +346,17 @@ i.e. `ALS.trainImplicit()`, is used to train a predictive model.
       s"mllibRatings cannot be empty." +
       " Please check if your events contain valid user and item ID.")
 
-    val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
+    // seed for MLlib ALS
+    val seed = ap.seed.getOrElse(System.nanoTime)
+
+    val m = ALS.trainImplicit(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      alpha = 1.0,
+      seed = seed)
 
     new ALSModel(
       productFeatures = m.productFeatures,
@@ -406,7 +416,7 @@ val mllibRatings = data.viewEvents
 
 ```
 
-In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes 2 parameters: *rank* and *iterations*.
+In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes the following parameters: *rank*, *iterations*, *lambda" and "seed".
 
 The values of these parameters are specified in *algorithms* of
 MyRecommendation/***engine.json***:
@@ -419,7 +429,9 @@ MyRecommendation/***engine.json***:
       "name": "als",
       "params": {
         "rank": 10,
-        "numIterations": 20
+        "numIterations": 20,
+        "lambda": 0.01,
+        "seed": 3
       }
     }
   ]
@@ -433,20 +445,28 @@ which has a corresponding case case `ALSAlgorithmParams`:
 ```scala
 case class ALSAlgorithmParams(
   rank: Int,
-  numIterations: Int
-) extends Params
+  numIterations: Int,
+  lambda: Double,
+  seed: Option[Long]) extends Params
 ```
 
 `ALS.trainImplicit()` then returns a `MatrixFactorizationModel` model which contains two RDDs: userFeatures and productFeatures. They correspond to the user X latent features matrix and item X latent features matrix, respectively. In this case, we will make use of the productFeatures matrix to find simliar products by comparing the similarity of the latent features. Hence, we store this productFeatures as defined in `ALSModel` class:
 
 ```scala
-  val m = ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
+    val m = ALS.trainImplicit(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      alpha = 1.0,
+      seed = seed)
 
-  new ALSModel(
-    productFeatures = m.productFeatures,
-    itemStringIntMap = itemStringIntMap,
-    items = items
-  )
+    new ALSModel(
+      productFeatures = m.productFeatures,
+      itemStringIntMap = itemStringIntMap,
+      items = items
+    )
 ```
 
 PredictionIO will automatically store the returned model, i.e. `ALSModel` in this case.

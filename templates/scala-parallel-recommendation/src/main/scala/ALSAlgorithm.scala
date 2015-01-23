@@ -16,7 +16,8 @@ import grizzled.slf4j.Logger
 case class ALSAlgorithmParams(
   rank: Int,
   numIterations: Int,
-  lambda: Double) extends Params
+  lambda: Double,
+  seed: Option[Long]) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
   extends PAlgorithm[PreparedData, ALSModel, Query, PredictedResult] {
@@ -36,10 +37,29 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       // MLlibRating requires integer index for user and item
       MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
     )
+
+    // seed for MLlib ALS
+    val seed = ap.seed.getOrElse(System.nanoTime)
+
     // If you only have one type of implicit event (Eg. "view" event only),
     // replace ALS.train(...) with
-    // ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
-    val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
+    //val m = ALS.trainImplicit(
+      //ratings = mllibRatings,
+      //rank = ap.rank,
+      //iterations = ap.numIterations,
+      //lambda = ap.lambda,
+      //blocks = -1,
+      //alpha = 1.0,
+      //seed = seed)
+
+    val m = ALS.train(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      seed = seed)
+
     new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
