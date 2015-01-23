@@ -28,8 +28,6 @@ import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
 import io.prediction.data.api.EventServerConfig
-import io.prediction.data.api.RestServer
-import io.prediction.data.api.RestServerConfig
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -38,6 +36,7 @@ import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{read, write}
+import io.prediction.tools.rest.{RestServer, RestServerConfig}
 import scalaj.http.Http
 import semverfi._
 
