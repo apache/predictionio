@@ -15,3 +15,13 @@ Beer recommendation app built by [Victor Leung](https://twitter.com/victorleungt
 URL: http://ontappapp.com/
 
 Writeup: http://victorleungtw.com/prediction-io/
+
+
+## Yelpio 
+
+<img src="/images/showcase/yelpio-70x70.png" alt="OnTapp" class="static" />
+
+
+Business Recommendation built by [TRAN QUOC HOAN](https://twitter.com/k09ht), [Inhwan Lee](https://github.com/ihlee01), and 山本直人.
+
+URL: http://yelpio.hongo.wide.ad.jp/
