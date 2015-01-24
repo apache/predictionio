@@ -6,13 +6,13 @@ The classification template uses the Naive Bayes algorithm by default. You can e
 
 ## Create a new file RandomForestAlgorithm.scala
 
-Locate `src/main/scala/NaiveBayesAlgorithm.scala` under your engine directory, which should be /MyClassification if you are following the [Classification QuickStart](/classification/quickstart/).  Copy `NaiveBayesAlgorithm.scala` and create a new file `RandomForestAlgorithm.scala`. You will modify this file and follow the instructions below to define a new RandomForestAlgorithm class.
+Locate `src/main/scala/NaiveBayesAlgorithm.scala` under your engine directory, which should be /MyClassification if you are following the [Classification QuickStart](/templates/classification/quickstart/).  Copy `NaiveBayesAlgorithm.scala` and create a new file `RandomForestAlgorithm.scala`. You will modify this file and follow the instructions below to define a new RandomForestAlgorithm class.
 
 ##  Define the algorithm class and parameters
 
-In 'RandomForestAlgorithm.scala', import the MLlib Random Forests algorithm by changing the following lines: 
+In 'RandomForestAlgorithm.scala', import the MLlib Random Forests algorithm by changing the following lines:
 
-Original 
+Original
 
 ```scala
 import org.apache.spark.mllib.classification.NaiveBayes
@@ -44,7 +44,7 @@ case class RandomForestAlgorithmParams(
 
 This class defines the parameters of the Random Forest algorithm (which later you can specify the value in engine.json). Please refer to [MLlib  documentation](https://spark.apache.org/docs/latest/mllib-ensembles.html) for the description and usage of these parameters.
 
-Modify the `NaiveBayesAlgorithm` class to `RandomForestAlgorithm`. The changes are: 
+Modify the `NaiveBayesAlgorithm` class to `RandomForestAlgorithm`. The changes are:
 
 * The new `RandomForestAlgorithmParams` class is used as parameter.
 * `RandomForestModel` is used in type parameter. This is the model returned by the Random Forest algorithm.
@@ -129,7 +129,7 @@ Update the engine.json to use **randomforest**:
 ...
 ```
 
-The engine now uses **MLlib Random Forests algorithm** instead of the default Naive Bayes algorithm. You are ready to build, train and deploy the engine as described in [quickstart](quickstart.html).
+The engine now uses **MLlib Random Forests algorithm** instead of the default Naive Bayes algorithm. You are ready to build, train and deploy the engine as described in [quickstart](/templates/classification/quickstart/).
 
 ```
 $ pio build

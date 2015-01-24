@@ -6,7 +6,7 @@ PredictionIO provides the following features to help you debug engines during de
 
 ## Stop Training between Stages
 
-By default `pio train` runs through the whole training process including [DataSource, Preparator and Algorithm](../../templates/recommendation/dase/). To speed up the development and debug cycle, you can stop the process after each stage to verify it has completed correctly. 
+By default `pio train` runs through the whole training process including [DataSource, Preparator and Algorithm](/templates/recommendation/dase/). To speed up the development and debug cycle, you can stop the process after each stage to verify it has completed correctly. 
 
 If you have modified DataSource and want to confirm the TrainingData is generated as expected, you can run `pio train` with `--stop-after-read` option:
 
@@ -16,7 +16,7 @@ pio train --stop-after-read
 
 This would stop the training process after the TrainingData is generated.
 
-For example, if you are running [Recommendation Template](../../templates/recommendation/quickstart/), you should see the the training process stops after the TrainingData is printed.
+For example, if you are running [Recommendation Template](/templates/recommendation/quickstart/), you should see the the training process stops after the TrainingData is printed.
 
 ```
 2015-01-12 17:01:26,531 INFO  workflow.CoreWorkflow$ - TrainingData:
