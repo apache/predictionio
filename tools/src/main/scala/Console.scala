@@ -934,7 +934,7 @@ object Console extends Logging {
         engineInstances.getLatestCompleted(em.id, em.version, variantId)
       }
       engineInstance map { r =>
-        undeploy(ca)
+        //undeploy(ca)
         RunServer.runServer(
           ca,
           coreAssembly(ca.common.pioHome.get),

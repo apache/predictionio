@@ -97,6 +97,7 @@ case class ServerConfig(
   debug: Boolean = false)
 
 case class StartServer()
+case class BindServer()
 case class StopServer()
 case class ReloadServer()
 case class UpgradeCheck()
@@ -377,6 +378,32 @@ class MasterActor(
   implicit val system = context.system
   var sprayHttpListener: Option[ActorRef] = None
   var currentServerActor: Option[ActorRef] = None
+  var retry = 3
+
+  def undeploy(ip: String, port: Int): Unit = {
+    val serverUrl = s"http://${ip}:${port}"
+    log.info(
+      s"Undeploying any existing engine instance at ${serverUrl}")
+    try {
+      val code = scalaj.http.Http(s"${serverUrl}/stop").asString.code
+      code match {
+        case 200 => Unit
+        case 404 => log.error(
+          s"Another process is using ${serverUrl}. Unable to undeploy.")
+        case _ => log.error(
+          s"Another process is using ${serverUrl}, or an existing " +
+          s"engine server is not responding properly (HTTP ${code}). " +
+          "Unable to undeploy.")
+      }
+    } catch {
+      case e: java.net.ConnectException =>
+        log.warning(s"Nothing at ${serverUrl}")
+      case _: Throwable =>
+        log.error("Another process might be occupying " +
+          s"${ip}:${port}. Unable to undeploy.")
+    }
+  }
+
   def receive = {
     case x: StartServer =>
       val actor = createServerActor(
@@ -384,8 +411,15 @@ class MasterActor(
         engineInstance,
         engineFactoryName,
         manifest)
-      IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
       currentServerActor = Some(actor)
+      undeploy(sc.ip, sc.port)
+      self ! BindServer()
+    case x: BindServer =>
+      currentServerActor map { actor =>
+        IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
+      } getOrElse {
+        log.error("Cannot bind a non-existing server backend.")
+      }
     case x: StopServer =>
       log.info(s"Stop server command received.")
       sprayHttpListener.map { l =>
@@ -421,8 +455,16 @@ class MasterActor(
       log.info("Bind successful. Ready to serve.")
       sprayHttpListener = Some(sender)
     case x: Http.CommandFailed =>
-      log.error("Bind failed. Shutting down.")
-      system.shutdown
+      if (retry > 0) {
+        retry -= 1
+        log.error(s"Bind failed. Retrying... (${retry} more trial(s))")
+        context.system.scheduler.scheduleOnce(1.seconds) {
+          self ! BindServer()
+        }
+      } else {
+        log.error("Bind failed. Shutting down.")
+        system.shutdown
+      }
   }
 
   def createServerActor(
