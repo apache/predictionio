@@ -46,7 +46,7 @@ PredictionIO:
 
 WARNING: **0.8.2 contains schema changes from the previous versions, if you have
 installed the previous versions, you may need to clear both HBase and
-Elasticsearch. See more [here](/resources/schema-change.html).**
+Elasticsearch. See more [here](/resources/upgrade/).**
 
 
 [//]: # (## Production Deployment)
@@ -54,4 +54,4 @@ Elasticsearch. See more [here](/resources/schema-change.html).**
 [//]: # (For production environment setup, please refer to [Production)
 [//]: # (Deployment](/production/deploy.html) guide.)
 
-#### [Next: Recommendation Engine Quick Start](/recommendation/quickstart/)
+#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)

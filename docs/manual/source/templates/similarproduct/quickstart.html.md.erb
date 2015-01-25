@@ -4,7 +4,7 @@ title: Quick Start - Similar Product Engine Template
 
 ## Overview
 This engine template recommends products that are "similar" to the input product(s).
-Similarity is not defined by text description but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B.
+Similarity is not defined by user or item attributes but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B. The template can be customized to support other action types such as buy, rate, like..etc.
 
 This template is ideal for recommending products to customers based on their recent actions.
 Use the IDs of the recently viewed products of a customer as the *Query*,
@@ -315,6 +315,7 @@ Start with building your *MySimilarProduct* engine.
 ```
 $ pio build
 ```
+This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages. 
 
 Upon successful build, you should see a console message similar to the
 following.
@@ -326,6 +327,11 @@ following.
 ### Training the Predictive Model
 
 Train your engine.
+
+WARNING: You need to install the
+[gfortran](https://github.com/mikiobraun/jblas/wiki/Missing-Libraries)
+runtime library if it is not already present on your nodes. For Debian and
+Ubuntu systems this would be `sudo apt-get install libgfortran3`.
 
 ```
 $ pio train

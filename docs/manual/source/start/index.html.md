@@ -35,8 +35,8 @@ task. Each Engine has the following components: **Data Source**, **Data
 Preparator (Preparator)**, **Algorithm**, and **Serving**.
 
 PredictionIO comes with a few *Engine* templates for different types of Machine
-Learning, e.g. [Recommendation](/recommendation/quickstart.html) and
-[Classification](/classification/quickstart.html) that can be customized to
+Learning, e.g. [Recommendation](/templates/recommendation/quickstart.html) and
+[Classification](/templates/classification/quickstart.html) that can be customized to
 support your unique machine learning needs.
 
 To learn more about Engine and Engine Templates, please refer to [Engine: A

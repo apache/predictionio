@@ -6,7 +6,7 @@ The classification template uses the Naive Bayes algorithm by default. You can e
 
 ## Create a new file RandomForestAlgorithm.scala
 
-Locate `src/main/scala/NaiveBayesAlgorithm.scala` under your engine directory, which should be /MyClassification if you are following the [Classification QuickStart](/classification/quickstart/).  Copy `NaiveBayesAlgorithm.scala` and create a new file `RandomForestAlgorithm.scala`. You will modify this file and follow the instructions below to define a new RandomForestAlgorithm class.
+Locate `src/main/scala/NaiveBayesAlgorithm.scala` under your engine directory, which should be /MyClassification if you are following the [Classification QuickStart](/templates/classification/quickstart/).  Copy `NaiveBayesAlgorithm.scala` and create a new file `RandomForestAlgorithm.scala`. You will modify this file and follow the instructions below to define a new RandomForestAlgorithm class.
 
 ##  Define the algorithm class and parameters
 
@@ -129,7 +129,7 @@ Update the engine.json to use **randomforest**:
 ...
 ```
 
-The engine now uses **MLlib Random Forests algorithm** instead of the default Naive Bayes algorithm. You are ready to build, train and deploy the engine as described in [quickstart](quickstart.html).
+The engine now uses **MLlib Random Forests algorithm** instead of the default Naive Bayes algorithm. You are ready to build, train and deploy the engine as described in [quickstart](/templates/classification/quickstart/).
 
 ```
 $ pio build

@@ -2,7 +2,7 @@
 title: Reading Custom Properties (Classification)
 ---
 
-By default, the classification template reads 4 properties of a user entity: "attr0", "attr1", "attr2" and "plan". You can modify the [default DataSource](dase.html#data) to read to read your custom properties or different Entity Type.
+By default, the classification template reads 4 properties of a user entity: "attr0", "attr1", "attr2" and "plan". You can modify the [default DataSource](/templates/classification/dase/#data) to read to read your custom properties or different Entity Type.
 
 In this example, we modify DataSource to read properties "featureA", "featureB", "featureC", "featureD" and "label" for entity type "item".
 
