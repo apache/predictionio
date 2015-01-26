@@ -139,7 +139,7 @@ class CommandClient (
         GeneralResponse(0, s"Unable to initialize Event Store for this appId:" +
           s" ${app.id}.")
       }
-      GeneralResponse(data.status + data2.status, data.message + data2.message)
+      GeneralResponse(data.status * data2.status, data.message + data2.message)
     } getOrElse {
       GeneralResponse(0, s"App ${appName} does not exist.")
     }
