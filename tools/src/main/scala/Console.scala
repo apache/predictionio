@@ -26,8 +26,7 @@ import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
 import io.prediction.data.storage.hbase.upgrade.CheckDistribution
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
-import io.prediction.data.api.EventServer
-import io.prediction.data.api.EventServerConfig
+import io.prediction.data.api.{AdminServerConfig, AdminServer, EventServer, EventServerConfig}
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -36,7 +35,7 @@ import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{read, write}
-import io.prediction.tools.rest.{RestServer, RestServerConfig}
+
 import scalaj.http.Http
 import semverfi._
 
@@ -54,7 +53,7 @@ case class ConsoleArgs(
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   deploy: DeployArgs = DeployArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
-  restServer: RestServerArgs = RestServerArgs(),
+  adminServer: AdminServerArgs = AdminServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: console.TemplateArgs = console.TemplateArgs(),
@@ -117,7 +116,7 @@ case class EventServerArgs(
   ip: String = "localhost",
   port: Int = 7070)
 
-case class RestServerArgs(
+case class AdminServerArgs(
 ip: String = "localhost",
 port: Int = 7071)
 
@@ -389,12 +388,12 @@ object Console extends Logging {
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Event server port. Default: 7070"),
-          opt[Int]("rest-server-port") action { (x, c) =>
-            c.copy(restServer = c.restServer.copy(port = x))
-          } text("Rest server port. Default: 7071"),
-          opt[String]("rest-server-port") action { (x, c) =>
-          c.copy(restServer = c.restServer.copy(ip = x))
-          } text("Rest server IP. Default: localhost"),
+          opt[Int]("admin-server-port") action { (x, c) =>
+            c.copy(adminServer = c.adminServer.copy(port = x))
+          } text("Admin server port. Default: 7071"),
+          opt[String]("admin-server-port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+          } text("Admin server IP. Default: localhost"),
           opt[String]("accesskey") action { (x, c) =>
             c.copy(accessKey = c.accessKey.copy(accessKey = x))
           } text("Access key of the App where feedback data will be stored."),
@@ -447,16 +446,16 @@ object Console extends Logging {
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070")
         )
-      cmd("restserver").
-        text("Launch an Rest Server at the specific IP and port.").
+      cmd("adminserver").
+        text("Launch an Admin Server at the specific IP and port.").
         action { (_, c) =>
-        c.copy(commands = c.commands :+ "restserver")
+        c.copy(commands = c.commands :+ "adminserver")
       } children(
         opt[String]("ip") action { (x, c) =>
-          c.copy(restServer = c.restServer.copy(ip = x))
+          c.copy(adminServer = c.adminServer.copy(ip = x))
         } text("IP to bind to. Default: localhost"),
         opt[Int]("port") action { (x, c) =>
-          c.copy(restServer = c.restServer.copy(port = x))
+          c.copy(adminServer = c.adminServer.copy(port = x))
         } text("Port to bind to. Default: 7071")
         )
       //note("")
@@ -718,8 +717,8 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
           0
-        case Seq("restserver") =>
-          restserver(ca)
+        case Seq("adminserver") =>
+          adminserver(ca)
           0
         case Seq("compile") =>
           generateManifestJson(ca.common.manifestJson)
@@ -789,7 +788,7 @@ object Console extends Logging {
     "train" -> console.txt.train().toString,
     "deploy" -> console.txt.deploy().toString,
     "eventserver" -> console.txt.eventserver().toString,
-    "restserver" -> console.txt.restserver().toString,
+    "adminserver" -> console.txt.adminserver().toString,
     "app" -> console.txt.app().toString,
     "accesskey" -> console.txt.accesskey().toString,
     "run" -> console.txt.run().toString,
@@ -997,12 +996,12 @@ object Console extends Logging {
       port = ca.eventServer.port))
   }
 
-  def restserver(ca: ConsoleArgs): Unit = {
+  def adminserver(ca: ConsoleArgs): Unit = {
     info(
-      s"Creating Rest Server at ${ca.restServer.ip}:${ca.restServer.port}")
-    RestServer.createRestServer(RestServerConfig(
-      ip = ca.restServer.ip,
-      port = ca.restServer.port
+      s"Creating Admin Server at ${ca.adminServer.ip}:${ca.adminServer.port}")
+    AdminServer.createAdminServer(AdminServerConfig(
+      ip = ca.adminServer.ip,
+      port = ca.adminServer.port
     ))
   }
 

@@ -15,35 +15,20 @@
 
 package io.prediction.data.api
 
-import io.prediction.data.storage.Storage
-import io.prediction.data.storage.CommandClient
-
-import akka.actor.ActorSystem
-import akka.actor.Actor
-import akka.actor.Props
-import akka.io.IO
+import akka.actor.{Actor, ActorSystem, Props}
 import akka.event.Logging
-import akka.pattern.ask
+import akka.io.IO
 import akka.util.Timeout
-
+import io.prediction.data.storage.{AppRequest, CommandClient, Storage}
 import org.json4s.DefaultFormats
 //import org.json4s.ext.JodaTimeSerializers
 
-import spray.can.Http
-import spray.http.HttpCharsets
-import spray.http.HttpEntity
-import spray.http.HttpResponse
-import spray.http.MediaTypes
-import spray.http.StatusCodes
-import spray.httpx.Json4sSupport
-import spray.httpx.unmarshalling.Unmarshaller
-import spray.routing._
-import spray.routing.authentication.Authentication
-import spray.routing.Directives._
-
-import scala.concurrent.Future
-
 import java.util.concurrent.TimeUnit
+
+import spray.can.Http
+import spray.http.{MediaTypes, StatusCodes}
+import spray.httpx.Json4sSupport
+import spray.routing._
 
 // see EventAPI.scala for reference
 class AdminServiceActor(val commandClient: CommandClient)
@@ -85,7 +70,39 @@ class AdminServiceActor(val commandClient: CommandClient)
           complete(Map("status" -> "alive"))
         }
       }
-    }
+    } ~
+      path("cmd" / "app" / Segment / "data") {
+        appName => {
+          delete {
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete(commandClient.futureAppDataDelete(appName))
+            }
+          }
+        }
+      } ~
+      path("cmd" / "app" / Segment) {
+        appName => {
+          delete {
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete(commandClient.futureAppDelete(appName))
+            }
+          }
+        }
+      } ~
+      path("cmd" / "app") {
+        get {
+          respondWithMediaType(MediaTypes.`application/json`) {
+            complete(commandClient.futureAppList())
+          }
+        } ~
+          post {
+            entity(as[AppRequest]) {
+              appArgs => respondWithMediaType(MediaTypes.`application/json`) {
+                complete(commandClient.futureAppNew(appArgs))
+              }
+            }
+          }
+      }
 
   /*
   val route: Route = ...
