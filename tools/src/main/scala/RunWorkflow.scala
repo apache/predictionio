@@ -132,6 +132,8 @@ object RunWorkflow extends Logging {
         mainJar,
         "--env",
         pioEnvVars,
+        "--log-file",
+        ca.common.logFile,
         "--engineId",
         em.id,
         "--engineVersion",

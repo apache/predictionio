@@ -87,7 +87,8 @@ case class CommonArgs(
   verbose: Boolean = false,
   verbosity: Int = 0,
   debug: Boolean = false,
-  sparkKryo: Boolean = false)
+  sparkKryo: Boolean = false,
+  logFile: String = "pio.log")
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -190,6 +191,9 @@ object Console extends Logging {
       }
       opt[Unit]("spark-kryo") abbr("sk") action { (x, c) =>
         c.copy(common = c.common.copy(sparkKryo = true))
+      }
+      opt[String]("log-file") abbr("l") action { (x, c) =>
+        c.copy(common = c.common.copy(logFile = x))
       }
       note("")
       cmd("version").
@@ -665,7 +669,11 @@ object Console extends Logging {
       val ca = pca.copy(common = pca.common.copy(
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
-      WorkflowUtils.setupLogging(ca.common.verbose, ca.common.debug)
+      WorkflowUtils.setupLogging(
+        ca.common.verbose,
+        ca.common.debug,
+        "console",
+        Some(ca.common.logFile))
       val rv: Int = ca.commands match {
         case Seq("") =>
           System.err.println(help())

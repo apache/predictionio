@@ -66,7 +66,8 @@ object CreateWorkflow extends Logging {
     stopAfterPrepare: Boolean = false,
     verbosity: Int = 0,
     verbose: Boolean = false,
-    debug: Boolean = false)
+    debug: Boolean = false,
+    logFile: Option[String] = None)
 
   case class AlgorithmParams(name: String, params: JValue)
 
@@ -161,10 +162,13 @@ object CreateWorkflow extends Logging {
       opt[String]("engine-params-key") action { (x, c) =>
         c.copy(engineParamsKey = x)
       }
+      opt[String]("log-file") action { (x, c) =>
+        c.copy(logFile = Some(x))
+      }
     }
 
     parser.parse(args, WorkflowConfig()) map { wfc =>
-      WorkflowUtils.setupLogging(wfc.verbose, wfc.debug)
+      WorkflowUtils.setupLogging(wfc.verbose, wfc.debug, "train", wfc.logFile)
       val targetfs = if (wfc.deployMode == "cluster") hdfs else localfs
       val variantJson = parse(stringFromFile("", wfc.engineVariant, targetfs))
       val engineFactory = if (wfc.engineFactory == "") {
