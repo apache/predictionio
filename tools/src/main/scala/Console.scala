@@ -15,6 +15,7 @@
 
 package io.prediction.tools
 
+import io.prediction.tools.admin.{AdminServer, AdminServerConfig}
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
 import io.prediction.data.storage.App
@@ -26,7 +27,7 @@ import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
 import io.prediction.data.storage.hbase.upgrade.CheckDistribution
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
-import io.prediction.data.api.{AdminServerConfig, AdminServer, EventServer, EventServerConfig}
+import io.prediction.data.api.{EventServer, EventServerConfig}
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging

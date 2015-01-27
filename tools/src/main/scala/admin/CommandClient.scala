@@ -13,12 +13,11 @@
   * limitations under the License.
   */
 
-package io.prediction.data.storage
+package io.prediction.tools.admin
 
-import scala.concurrent.Future
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext
+import io.prediction.data.storage._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 abstract class BaseResponse(s: Int, m: String) {
   def getStatus = s
@@ -61,31 +60,30 @@ class CommandClient (
   // see def appNew() in Console.scala
   def futureAppNew(req: AppRequest)
     (implicit ec: ExecutionContext): Future[BaseResponse] = Future {
-    val apps = Storage.getMetaDataApps
-    val response = apps.getByName(req.name) map { app =>
+
+    val response = appClient.getByName(req.name) map { app =>
       GeneralResponse(0, s"App ${req.name} already exists. Aborting.")
     } getOrElse {
-      apps.get(req.id) map {
+      appClient.get(req.id) map {
         app2 =>
           GeneralResponse(0, s"App ID ${app2.id} already exists and maps to the app '${app2.name}'. " +
             "Aborting.")
       } getOrElse {
-        val appid = apps.insert(App(
+        val appid = appClient.insert(App(
           id = Option(req.id).getOrElse(0),
           name = req.name,
           description = Option(req.description)))
         appid map { id =>
-          val events = Storage.getLEvents()
-          val dbInit = events.init(id)
+          val dbInit = eventClient.init(id)
           val r = if (dbInit) {
 
-            val accessKeys = Storage.getMetaDataAccessKeys
+
             val accessKey = AccessKey(
               key = "",
               appid = id,
               events = Seq())
 
-            val accessKey2 = accessKeys.insert(AccessKey(
+            val accessKey2 = accessKeyClient.insert(AccessKey(
               key = "",
               appid = id,
               events = Seq()))
@@ -110,29 +108,27 @@ class CommandClient (
   // see def appList() in Console.scala
   def futureAppList()
     (implicit ec: ExecutionContext): Future[AppListResponse] = Future {
-    val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
-    val accessKeys = Storage.getMetaDataAccessKeys
+    val apps = appClient.getAll().sortBy(_.name)
+
 
     val appsRes = apps.map {
       app => {
-        new AppResponse(1, "Successful retrieved app.", app.id, app.name, accessKeys.getByAppid(app.id))
+        new AppResponse(1, "Successful retrieved app.", app.id, app.name, accessKeyClient.getByAppid(app.id))
       }
     }
     new AppListResponse(1,"Successful retrieved app list.",appsRes)
   }
 
   def futureAppDataDelete(appName: String)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
-    val apps = Storage.getMetaDataApps
-    val events = Storage.getLEvents()
 
-    val response = apps.getByName(appName) map { app =>
-      val data = if (events.remove(app.id)) {
+    val response = appClient.getByName(appName) map { app =>
+      val data = if (eventClient.remove(app.id)) {
         GeneralResponse(1, s"Removed Event Store for this app ID: ${app.id}")
       } else {
         GeneralResponse(0, s"Error removing Event Store for this app.")
       }
 
-      val dbInit = events.init(app.id)
+      val dbInit = eventClient.init(app.id)
       val data2 = if (dbInit) {
         GeneralResponse(1, s"Initialized Event Store for this app ID: ${app.id}.")
       } else {
@@ -147,11 +143,9 @@ class CommandClient (
   }
 
   def futureAppDelete(appName: String)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
-    val apps = Storage.getMetaDataApps
-    val events = Storage.getLEvents()
 
-    val response = apps.getByName(appName) map { app =>
-      val data = if (events.remove(app.id)) {
+    val response = appClient.getByName(appName) map { app =>
+      val data = if (eventClient.remove(app.id)) {
         if (Storage.getMetaDataApps.delete(app.id)) {
           GeneralResponse(1, s"App successfully deleted")
         } else {

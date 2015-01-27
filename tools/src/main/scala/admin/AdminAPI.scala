@@ -13,13 +13,14 @@
   * limitations under the License.
   */
 
-package io.prediction.data.api
+package io.prediction.tools.admin
 
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
 import akka.util.Timeout
-import io.prediction.data.storage.{AppRequest, CommandClient, Storage}
+import io.prediction.data.api.StartServer
+import io.prediction.data.storage.Storage
 import org.json4s.DefaultFormats
 //import org.json4s.ext.JodaTimeSerializers
 
