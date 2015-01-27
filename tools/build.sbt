@@ -29,7 +29,8 @@ libraryDependencies ++= Seq(
   "org.json4s"             %% "json4s-native"  % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
   "org.scalaj"             %% "scalaj-http"    % "1.1.0",
-  "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark")
+  "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
+  "org.spark-project.akka" %% "akka-slf4j"     % "2.3.4-spark")
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {
