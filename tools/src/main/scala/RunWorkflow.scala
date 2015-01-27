@@ -122,10 +122,18 @@ object RunWorkflow extends Logging {
         Seq("--driver-class-path", extraClasspaths.mkString(":"))
       else
         Seq()) ++
+      (if (ca.common.sparkKryo)
+        Seq(
+          "--conf",
+          "spark.serializer=org.apache.spark.serializer.KryoSerializer")
+      else
+        Seq()) ++
       Seq(
         mainJar,
         "--env",
         pioEnvVars,
+        "--log-file",
+        ca.common.logFile,
         "--engineId",
         em.id,
         "--engineVersion",
@@ -139,6 +147,10 @@ object RunWorkflow extends Logging {
           variantJson.getCanonicalPath),
         "--verbosity",
         ca.common.verbosity.toString) ++
+      ca.common.engineFactory.map(
+        x => Seq("--engine-factory", x)).getOrElse(Seq()) ++
+      ca.common.engineParamsKey.map(
+        x => Seq("--engine-params-key", x)).getOrElse(Seq()) ++
       (if (deployMode == "cluster") Seq("--deploy-mode", "cluster") else Seq()) ++
       (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++

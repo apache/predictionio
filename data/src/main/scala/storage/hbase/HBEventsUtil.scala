@@ -324,6 +324,14 @@ object HBEventsUtil {
         eBytes, colNames(col), CompareOp.EQUAL, comp)
     }
 
+    // skip the row if the column exists
+    def createSkipRowIfColumnExistFilter(col: String) = {
+      val comp = new BinaryComparator(colNames(col))
+      val q = new QualifierFilter(CompareOp.NOT_EQUAL, comp)
+      // filters an entire row if any of the Cell checks do not pass
+      new SkipFilter(q)
+    }
+
     entityType.foreach { et =>
       val compType = new BinaryComparator(Bytes.toBytes(et))
       val filterType = new SingleColumnValueFilter(
@@ -353,9 +361,7 @@ object HBEventsUtil {
 
     targetEntityType.foreach { tetOpt =>
       if (tetOpt.isEmpty) {
-        val comp = new BinaryComparator(Bytes.toBytes("targetEntityType"))
-        val q = new QualifierFilter(CompareOp.EQUAL, comp)
-        val filter = new SkipFilter(q)
+        val filter = createSkipRowIfColumnExistFilter("targetEntityType")
         filters.addFilter(filter)
       } else {
         tetOpt.foreach { tet =>
@@ -370,9 +376,7 @@ object HBEventsUtil {
 
     targetEntityId.foreach { teidOpt =>
       if (teidOpt.isEmpty) {
-        val comp = new BinaryComparator(Bytes.toBytes("targetEntityId"))
-        val q = new QualifierFilter(CompareOp.EQUAL, comp)
-        val filter = new SkipFilter(q)
+        val filter = createSkipRowIfColumnExistFilter("targetEntityId")
         filters.addFilter(filter)
       } else {
         teidOpt.foreach { teid =>

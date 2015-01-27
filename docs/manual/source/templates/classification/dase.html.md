@@ -81,7 +81,7 @@ method of the class `DataSource` reads, and selects, data from datastore of
 EventServer and it returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(val appId: Int) extends Params
+case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
@@ -228,7 +228,7 @@ which has a corresponding case case `AlgorithmParams`:
 
 ```scala
 case class AlgorithmParams(
-  val lambda: Double
+  lambda: Double
 ) extends Params
 ```
 

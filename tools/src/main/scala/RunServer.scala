@@ -92,6 +92,12 @@ object RunServer extends Logging {
         Seq("--driver-class-path", extraClasspaths.mkString(":"))
       else
         Seq()) ++
+      (if (ca.common.sparkKryo)
+        Seq(
+          "--conf",
+          "spark.serializer=org.apache.spark.serializer.KryoSerializer")
+      else
+        Seq()) ++
       Seq(
         mainJar,
         "--engineInstanceId",
@@ -103,7 +109,9 @@ object RunServer extends Logging {
         "--event-server-ip",
         ca.eventServer.ip,
         "--event-server-port",
-        ca.eventServer.port.toString) ++
+        ca.eventServer.port.toString,
+        "--log-file",
+        ca.common.logFile) ++
       (if (ca.accessKey.accessKey != "")
         Seq("--accesskey", ca.accessKey.accessKey) else Seq()) ++
       (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++

@@ -15,38 +15,38 @@
 
 package io.prediction.data.storage
 
-import com.google.common.collect.ImmutableBiMap
-import org.apache.spark.rdd.RDD
+import scala.collection.immutable.HashMap
 
-import scala.collection.JavaConversions._
+import org.apache.spark.rdd.RDD
 
 /** Immutable Bi-directional Map
   *
   */
 class BiMap[K, V] private[prediction] (
-  private val m: ImmutableBiMap[K, V],
+  private val m: Map[K, V],
   private val i: Option[BiMap[V, K]] = None
   ) extends Serializable {
 
-  val inverse: BiMap[V, K] = i.getOrElse(new BiMap(m.inverse, Some(this)))
-
-  def get(k: K): Option[V] = Option(m.get(k))
-
-  def getOrElse(k: K, default: => V): V = get(k).getOrElse(default)
-
-  def contains(k: K): Boolean = m.containsKey(k)
-
-  def apply(k: K): V = {
-    if (m.containsKey(k))
-      m.get(k)
-    else
-      throw new java.util.NoSuchElementException(s"key not found: ${k}")
+  // NOTE: make inverse's inverse point back to current BiMap
+  val inverse: BiMap[V, K] = i.getOrElse {
+    val rev = m.map(_.swap)
+    require((rev.size == m.size),
+      s"Failed to create reversed map. Cannot have duplicated values.")
+    new BiMap(rev, Some(this))
   }
+
+  def get(k: K): Option[V] = m.get(k)
+
+  def getOrElse(k: K, default: => V): V = m.getOrElse(k, default)
+
+  def contains(k: K): Boolean = m.contains(k)
+
+  def apply(k: K): V = m.apply(k)
 
   /** Converts to a map.
     * @return a map of type immutable.Map[K, V]
     */
-  def toMap: Map[K, V] = m.toMap
+  def toMap: Map[K, V] = m
 
   /** Converts to a sequence.
     * @return a sequence containing all elements of this map
@@ -55,15 +55,14 @@ class BiMap[K, V] private[prediction] (
 
   def size: Int = m.size
 
-  def take(n: Int) = BiMap(m.toMap.take(n))
+  def take(n: Int) = BiMap(m.take(n))
 
   override def toString = m.toString
 }
 
 object BiMap {
 
-  def apply[K, V](x: Map[K, V]): BiMap[K, V] =
-    new BiMap(ImmutableBiMap.copyOf[K, V](x))
+  def apply[K, V](x: Map[K, V]): BiMap[K, V] = new BiMap(x)
 
   /** Create a BiMap[String, Long] from a set of String. The Long index starts
     * from 0.
@@ -71,12 +70,8 @@ object BiMap {
     * @return a String to Long BiMap
     */
   def stringLong(keys: Set[String]): BiMap[String, Long] = {
-    val builder: ImmutableBiMap.Builder[String, Long] = ImmutableBiMap.builder()
-
-    keys.zipWithIndex.foreach { case (k, v) =>
-      builder.put(k, v)
-    }
-    new BiMap(builder.build())
+    val hm = HashMap(keys.toSeq.zipWithIndex.map(t => (t._1, t._2.toLong)) : _*)
+    new BiMap(hm)
   }
 
   /** Create a BiMap[String, Long] from an array of String.
@@ -86,12 +81,8 @@ object BiMap {
     * @return a String to Long BiMap
     */
   def stringLong(keys: Array[String]): BiMap[String, Long] = {
-    val builder: ImmutableBiMap.Builder[String, Long] = ImmutableBiMap.builder()
-
-    keys.zipWithIndex.foreach { case (k, v) =>
-      builder.put(k, v)
-    }
-    new BiMap(builder.build())
+    val hm = HashMap(keys.zipWithIndex.map(t => (t._1, t._2.toLong)) : _*)
+    new BiMap(hm)
   }
 
   /** Create a BiMap[String, Long] from RDD[String]. The Long index starts
@@ -109,12 +100,8 @@ object BiMap {
     * @return a String to Int BiMap
     */
   def stringInt(keys: Set[String]): BiMap[String, Int] = {
-    val builder: ImmutableBiMap.Builder[String, Int] = ImmutableBiMap.builder()
-
-    keys.zipWithIndex.foreach { case (k, v) =>
-      builder.put(k, v)
-    }
-    new BiMap(builder.build())
+    val hm = HashMap(keys.toSeq.zipWithIndex : _*)
+    new BiMap(hm)
   }
 
   /** Create a BiMap[String, Int] from an array of String.
@@ -124,12 +111,8 @@ object BiMap {
     * @return a String to Int BiMap
     */
   def stringInt(keys: Array[String]): BiMap[String, Int] = {
-    val builder: ImmutableBiMap.Builder[String, Int] = ImmutableBiMap.builder()
-
-    keys.zipWithIndex.foreach { case (k, v) =>
-      builder.put(k, v)
-    }
-    new BiMap(builder.build())
+    val hm = HashMap(keys.zipWithIndex : _*)
+    new BiMap(hm)
   }
 
   /** Create a BiMap[String, Int] from RDD[String]. The Int index starts

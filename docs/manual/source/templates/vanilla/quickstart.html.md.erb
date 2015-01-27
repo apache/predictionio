@@ -1,0 +1,217 @@
+---
+title: Quick Start - Vanilla Engine Template
+---
+
+The purpose of the Vanilla template is for developing new engine when you find other engine templates (e.g. *Recommemdation template*, *Classification template*) do not fit your needs. This template provides minimal functionatlity and skeleton to kick start new engine development.
+
+By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts how many of these events and multiple it by algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedsResult.
+
+## Install PredictionIO
+
+First you need to [install PredictionIO <%= data.versions.pio %>](/install)
+
+INFO: 0.8.2 contains schema changes from previous versions. If you have
+installed the previous versions, you may need to clear both HBase and
+Elasticsearch. See more [here](../resources/schema-change.html).
+
+Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
+For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/predictionio/bin`:
+
+```
+$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+```
+
+Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
+
+```
+$ pio status
+```
+
+and please make sure that PredictionIO Event Server, which collects data, is
+running:
+
+```
+$ pio eventserver
+```
+
+## Create a Sample App
+
+Let's create a sample app called "MyApp1" now. An app represents the application
+that generates the data, e.g. a movie rental app.
+
+```
+$ pio app new MyApp1
+```
+
+You should find the following in the console output:
+
+```
+...
+2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
+2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
+2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
+2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
+2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+Take note of the **Access Key** and **App ID**. You will need the **Access Key**
+to refer to "MyApp1" when you collect data. At the same time, you will use **App
+ID** to refer to "MyApp1" in engine code.
+
+`$ pio app list` will return a list of names and IDs of apps created in the Event Server.
+
+```
+$ pio app list
+2014-12-03 14:19:34,134 INFO  elasticsearch.plugins - [Hephaestus] loaded [], sites []
+2014-12-03 14:19:36,206 INFO  tools.Console$ -                 Name |   ID
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp1 |    1
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp2 |    2
+2014-12-03 14:19:36,209 INFO  tools.Console$ - Finished listing 2 app(s).
+```
+
+## Create a new Engine from an Engine Template
+
+Now let's create a new engine called *MyNewEngine* by cloning the Recommendation
+Engine Template:
+
+```
+$ pio template get PredictionIO/templates-scala-parallel-vanilla MyNewEngine
+$ cd MyNewEngine
+```
+
+## Collecting Data
+
+INFO: As long as the appId is valid, this Vanilla template does not require event data in your app in order to work.
+
+
+## Deploy the Engine as a Service
+
+Now you can build, train, and deploy the engine. First, make sure you are under the `MyNewEngine` directory.
+
+```
+$ cd MyNewEngine
+```
+
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**.
+
+```
+...
+"datasource": {
+  "params" : {
+    "appId": 1
+  }
+},
+...
+```
+
+
+
+### Building
+
+Start with building your *MyNewEngine* engine.
+
+```
+$ pio build
+```
+
+Upon successful build, you should see a console message similar to the
+following.
+
+```
+2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
+```
+
+### Training
+
+Train your successfully-built engine.
+
+```
+$ pio train
+```
+
+When your engine is trained successfully, you should see a console message
+similar to the following.
+
+```
+2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
+```
+
+### Deploying
+
+Now your engine is ready to deploy.
+
+```
+$ pio deploy
+```
+
+This will deploy an engine that binds to http://localhost:8000. You can visit
+that page in your web browser to check its status.
+
+![Engine Status](/images/engine-server.png)
+
+
+Now, You can try to retrieve predicted results. The engine accepts JSON query with the field 'q': `{ "q" : "foo" }`. A prefix is added to the query data and return as PredictedResult.
+
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({ "q": "foo" })
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('q'=> "foo"));
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
+
+# Query PredictionIO.
+response = client.send_query('q' => 'foo')
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
+
+// query
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "q", "foo"
+    ));
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" -d '{ "q": "foo" }' http://localhost:8000/queries.json
+
+{"p":"0-foo"}
+```
+  </div>
+</div>
+
+*MyNewEngine* is now running. You can start modifying it to build your new engine!
+
+#### [Next: DASE Components Explained](dase)

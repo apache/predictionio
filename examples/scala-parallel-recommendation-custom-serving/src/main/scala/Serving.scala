@@ -7,7 +7,7 @@ import scala.io.Source
 import io.prediction.controller.Params  // ADDED
 
 // ADDED ServingParams to specify the blacklisting file location.
-case class ServingParams(val filepath: String) extends Params
+case class ServingParams(filepath: String) extends Params
 
 class Serving(val params: ServingParams)
   extends LServing[Query, PredictedResult] {

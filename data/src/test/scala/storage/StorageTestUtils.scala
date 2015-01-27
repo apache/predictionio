@@ -15,7 +15,7 @@
 
 package io.prediction.data.storage
 
-import io.prediction.data.storage.hbase.HBClient
+import io.prediction.data.storage.hbase.HBLEvents
 
 import com.mongodb.casbah.Imports._
 import org.elasticsearch.client.Client
@@ -23,28 +23,33 @@ import org.elasticsearch.client.Client
 object StorageTestUtils {
   val elasticsearchSourceName = "ELASTICSEARCH"
   val mongodbSourceName = "MONGODB"
-  val hbaseSourceName = "hbase"
+  val hbaseSourceName = "HBASE"
 
   def dropElasticsearchIndex(indexName: String) = {
+    /*
     Storage.getClient(elasticsearchSourceName).get.client.asInstanceOf[Client].
       admin.indices.prepareDelete(indexName).get
+    */
   }
 
   def dropMongoDatabase(dbName: String) = {
+    /*
     Storage.getClient(mongodbSourceName).get.client.asInstanceOf[MongoClient].
       dropDatabase(dbName)
+      */
   }
 
   def dropHBaseNamespace(namespace: String) = {
-
-    val hbClient = Storage.getClient(mongodbSourceName).get.client
-      .asInstanceOf[HBClient]
-
-    val tableNames = hbClient.admin.listTableNamesByNamespace(namespace)
+    val eventDb = Storage.getDataObject[LEvents](hbaseSourceName, namespace)
+      .asInstanceOf[HBLEvents]
+    val admin = eventDb.client.admin
+    val tableNames = admin.listTableNamesByNamespace(namespace)
     tableNames.foreach { name =>
-      hbClient.admin.disableTable(name)
-      hbClient.admin.deleteTable(name)
+      admin.disableTable(name)
+      admin.deleteTable(name)
     }
-    hbClient.admin.deleteNamespace(namespace)
+
+    //Only empty namespaces (no tables) can be removed.
+    admin.deleteNamespace(namespace)
   }
 }

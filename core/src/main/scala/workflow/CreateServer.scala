@@ -93,10 +93,12 @@ case class ServerConfig(
   accessKey: Option[String] = None,
   logUrl: Option[String] = None,
   logPrefix: Option[String] = None,
+  logFile: Option[String] = None,
   verbose: Boolean = false,
   debug: Boolean = false)
 
 case class StartServer()
+case class BindServer()
 case class StopServer()
 case class ReloadServer()
 case class UpgradeCheck()
@@ -145,6 +147,9 @@ object CreateServer extends Logging {
       opt[String]("log-prefix") action { (x, c) =>
         c.copy(logPrefix = Some(x))
       }
+      opt[String]("log-file") action { (x, c) =>
+        c.copy(logFile = Some(x))
+      }
       opt[Unit]("verbose") action { (x, c) =>
         c.copy(verbose = true)
       } text("Enable verbose output.")
@@ -154,7 +159,7 @@ object CreateServer extends Logging {
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
-      WorkflowUtils.setupLogging(sc.verbose, sc.debug)
+      WorkflowUtils.setupLogging(sc.verbose, sc.debug, "deploy", sc.logFile)
       engineInstances.get(sc.engineInstanceId) map { engineInstance =>
         val engineId = sc.engineId.getOrElse(engineInstance.engineId)
         val engineVersion = sc.engineVersion.getOrElse(
@@ -235,6 +240,12 @@ object CreateServer extends Logging {
     val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
       servingParamsWithName._2)
 
+    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
+    val kryo = KryoInjection.instance(kryoInstantiator)
+    val modelsFromEngineInstance =
+      kryo.invert(modeldata.get(engineInstance.id).get.models).get.
+      asInstanceOf[Seq[Seq[Any]]]
+
     val sparkContext =
       Option(WorkflowContext(
         batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
@@ -278,7 +289,10 @@ object CreateServer extends Logging {
       (name, extractedParams)
     }
 
-    val evalPreparedMap = sparkContext map { sc =>
+    val evalPreparedMap = sparkContext.filter(_ =>
+      algorithms.zip(modelsFromEngineInstance.head).exists(am =>
+        am._1.isParallel && !am._2.isInstanceOf[PersistentModelManifest]
+    )).map { sc =>
       logger.info("Data Source")
       val dataSource = Doer(
         engine.dataSourceClassMap(dataSourceParamsWithName._1),
@@ -304,21 +318,16 @@ object CreateServer extends Logging {
       evalPreparedMap
     }
 
-    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
-    val kryo = KryoInjection.instance(kryoInstantiator)
-    val modelsFromEngineInstance =
-      kryo.invert(modeldata.get(engineInstance.id).get.models).get.
-        asInstanceOf[Seq[Seq[Any]]]
     val models = modelsFromEngineInstance.head.zip(algorithms).
-      zip(algorithmsParams).map {
-        case ((m, a), p) =>
+      zip(algorithmsParamsWithNames).zipWithIndex.map {
+        case (((m, a), pwn), i) =>
           if (m.isInstanceOf[PersistentModelManifest]) {
             info("Custom-persisted model detected for algorithm " +
               a.getClass.getName)
             SparkWorkflowUtils.getPersistentModel(
               m.asInstanceOf[PersistentModelManifest],
-              engineInstance.id,
-              p,
+              Seq(engineInstance.id, i, pwn._1).mkString("-"),
+              pwn._2,
               sparkContext,
               getClass.getClassLoader)
           } else if (a.isParallel) {
@@ -373,6 +382,32 @@ class MasterActor(
   implicit val system = context.system
   var sprayHttpListener: Option[ActorRef] = None
   var currentServerActor: Option[ActorRef] = None
+  var retry = 3
+
+  def undeploy(ip: String, port: Int): Unit = {
+    val serverUrl = s"http://${ip}:${port}"
+    log.info(
+      s"Undeploying any existing engine instance at ${serverUrl}")
+    try {
+      val code = scalaj.http.Http(s"${serverUrl}/stop").asString.code
+      code match {
+        case 200 => Unit
+        case 404 => log.error(
+          s"Another process is using ${serverUrl}. Unable to undeploy.")
+        case _ => log.error(
+          s"Another process is using ${serverUrl}, or an existing " +
+          s"engine server is not responding properly (HTTP ${code}). " +
+          "Unable to undeploy.")
+      }
+    } catch {
+      case e: java.net.ConnectException =>
+        log.warning(s"Nothing at ${serverUrl}")
+      case _: Throwable =>
+        log.error("Another process might be occupying " +
+          s"${ip}:${port}. Unable to undeploy.")
+    }
+  }
+
   def receive = {
     case x: StartServer =>
       val actor = createServerActor(
@@ -380,8 +415,15 @@ class MasterActor(
         engineInstance,
         engineFactoryName,
         manifest)
-      IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
       currentServerActor = Some(actor)
+      undeploy(sc.ip, sc.port)
+      self ! BindServer()
+    case x: BindServer =>
+      currentServerActor map { actor =>
+        IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port)
+      } getOrElse {
+        log.error("Cannot bind a non-existing server backend.")
+      }
     case x: StopServer =>
       log.info(s"Stop server command received.")
       sprayHttpListener.map { l =>
@@ -417,8 +459,16 @@ class MasterActor(
       log.info("Bind successful. Ready to serve.")
       sprayHttpListener = Some(sender)
     case x: Http.CommandFailed =>
-      log.error("Bind failed. Shutting down.")
-      system.shutdown
+      if (retry > 0) {
+        retry -= 1
+        log.error(s"Bind failed. Retrying... (${retry} more trial(s))")
+        context.system.scheduler.scheduleOnce(1.seconds) {
+          self ! BindServer()
+        }
+      } else {
+        log.error("Bind failed. Shutting down.")
+        system.shutdown
+      }
   }
 
   def createServerActor(
@@ -426,8 +476,9 @@ class MasterActor(
       engineInstance: EngineInstance,
       engineFactoryName: String,
       manifest: EngineManifest): ActorRef = {
-    val (engineLanguage, engine) =
+    val (engineLanguage, engineFactory) =
       WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
+    val engine = engineFactory()
     CreateServer.createServerActorWithEngine(
       sc,
       engineInstance,
@@ -633,14 +684,16 @@ class ServerActor[Q, P](
                   }
                 complete(StatusCodes.BadRequest, e.getMessage)
               case e: Throwable =>
+                val msg = s"Query:\n${queryString}\n\nStack Trace:\n" +
+                  s"${getStackTraceString(e)}\n\n"
+                log.error(msg)
                 args.logUrl map { url =>
                   remoteLog(
                     url,
                     args.logPrefix.getOrElse(""),
-                    s"Query:\n${queryString}\n\nStack Trace:\n" +
-                      s"${getStackTraceString(e)}\n\n")
+                    msg)
                   }
-                complete(StatusCodes.InternalServerError, getStackTraceString(e))
+                complete(StatusCodes.InternalServerError, msg)
             }
           }
         }

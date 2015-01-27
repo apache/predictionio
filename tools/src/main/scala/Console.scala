@@ -55,6 +55,7 @@ case class ConsoleArgs(
   eventServer: EventServerArgs = EventServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
+  template: console.TemplateArgs = console.TemplateArgs(),
   commands: Seq[String] = Seq(),
   batch: String = "",
   metricsClass: Option[String] = None,
@@ -76,6 +77,8 @@ case class CommonArgs(
   sparkHome: Option[String] = None,
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
+  engineFactory: Option[String] = None,
+  engineParamsKey: Option[String] = None,
   variantJson: File = new File("engine.json"),
   manifestJson: File = new File("manifest.json"),
   stopAfterRead: Boolean = false,
@@ -83,7 +86,9 @@ case class CommonArgs(
   skipSanityCheck: Boolean = false,
   verbose: Boolean = false,
   verbosity: Int = 0,
-  debug: Boolean = false)
+  debug: Boolean = false,
+  sparkKryo: Boolean = false,
+  logFile: String = "pio.log")
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -184,6 +189,12 @@ object Console extends Logging {
       opt[Unit]("debug") action { (x, c) =>
         c.copy(common = c.common.copy(debug = true))
       }
+      opt[Unit]("spark-kryo") abbr("sk") action { (x, c) =>
+        c.copy(common = c.common.copy(sparkKryo = true))
+      }
+      opt[String]("log-file") abbr("l") action { (x, c) =>
+        c.copy(common = c.common.copy(logFile = x))
+      }
       note("")
       cmd("version").
         text("Displays the version of this command line console.").
@@ -198,18 +209,6 @@ object Console extends Logging {
           action { (x, c) =>
             c.copy(commands = c.commands :+ x)
           }
-        )
-      note("")
-      cmd("new").
-        text("Creates a new engine project in a subdirectory with the same " +
-          "name as the project. The project name will also be used as the " +
-          "default engine ID.").
-        action { (_, c) =>
-          c.copy(commands = c.commands :+ "new")
-        } children(
-          arg[String]("<project name>") action { (x, c) =>
-            c.copy(projectName = Some(x))
-          } text("Engine project name.")
         )
       //note("")
       //cmd("instance").
@@ -317,6 +316,12 @@ object Console extends Logging {
           },
           opt[Int]("verbosity") action { (x, c) =>
             c.copy(common = c.common.copy(verbosity = x))
+          },
+          opt[String]("engine-factory") action { (x, c) =>
+            c.copy(common = c.common.copy(engineFactory = Some(x)))
+          },
+          opt[String]("engine-params-key") action { (x, c) =>
+            c.copy(common = c.common.copy(engineParamsKey = Some(x)))
           }
         )
       note("")
@@ -610,6 +615,38 @@ object Console extends Logging {
               } text("The access key to be deleted.")
             )
         )
+      cmd("template").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "template")
+        } children(
+          cmd("get").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "get")
+            } children(
+              arg[String]("<template ID>") required() action { (x, c) =>
+                c.copy(template = c.template.copy(repository = x))
+              },
+              arg[String]("<new engine directory>") action { (x, c) =>
+                c.copy(template = c.template.copy(directory = x))
+              },
+              opt[String]("name") action { (x, c) =>
+                c.copy(template = c.template.copy(name = Some(x)))
+              },
+              opt[String]("package") action { (x, c) =>
+                c.copy(template = c.template.copy(packageName = Some(x)))
+              },
+              opt[String]("email") action { (x, c) =>
+                c.copy(template = c.template.copy(email = Some(x)))
+              },
+              opt[String]("index-url") action { (x, c) =>
+                c.copy(template = c.template.copy(indexUrl = x))
+              }
+            ),
+          cmd("list").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "list")
+            }
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -632,16 +669,17 @@ object Console extends Logging {
       val ca = pca.copy(common = pca.common.copy(
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
-      WorkflowUtils.setupLogging(ca.common.verbose, ca.common.debug)
+      WorkflowUtils.setupLogging(
+        ca.common.verbose,
+        ca.common.debug,
+        "console",
+        Some(ca.common.logFile))
       val rv: Int = ca.commands match {
         case Seq("") =>
           System.err.println(help())
           1
         case Seq("version") =>
           version(ca)
-          0
-        case Seq("new") =>
-          createProject(ca)
           0
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
@@ -697,6 +735,10 @@ object Console extends Logging {
           accessKeyList(ca)
         case Seq("accesskey", "delete") =>
           accessKeyDelete(ca)
+        case Seq("template", "get") =>
+          console.Template.get(ca)
+        case Seq("template", "list") =>
+          console.Template.list(ca)
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -727,7 +769,7 @@ object Console extends Logging {
     "status" -> console.txt.status().toString,
     "upgrade" -> console.txt.upgrade().toString,
     "version" -> console.txt.version().toString,
-    "new" -> console.txt.newCommand().toString,
+    "template" -> console.txt.template().toString,
     "build" -> console.txt.build().toString,
     "train" -> console.txt.train().toString,
     "deploy" -> console.txt.deploy().toString,
@@ -904,7 +946,7 @@ object Console extends Logging {
         engineInstances.getLatestCompleted(em.id, em.version, variantId)
       }
       engineInstance map { r =>
-        undeploy(ca)
+        //undeploy(ca)
         RunServer.runServer(
           ca,
           coreAssembly(ca.common.pioHome.get),
@@ -1358,7 +1400,7 @@ object Console extends Logging {
       } else {
         println("  Version information cannot be found.")
         println("  If you are using a developmental tree, please make sure")
-        println("  you are using a version of at least ${sparkMinVersion}.")
+        println(s"  you are using a version of at least ${sparkMinVersion}.")
       }
     } else {
       println("Unable to locate a proper Apache Spark installation. Aborting.")

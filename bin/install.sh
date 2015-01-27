@@ -9,7 +9,7 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.8.5
+PIO_VERSION=0.8.6
 SPARK_VERSION=1.2.0
 ELASTICSEARCH_VERSION=1.4.2
 HBASE_VERSION=0.98.6
@@ -83,6 +83,38 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
+  sudo apt-get update
+  sudo apt-get install openjdk-7-jdk -y
+
+  echo -e "\033[1;32mJava install done!\033[0m"
+
+  JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+elif [[ "$1" == "-y" ]]; then
+  # Non-interactive
+  echo -e "\033[1;33mNon-interactive installation requested!\033[0m"
+  echo -e "\033[1;33mForcing defaults!\033[0m"
+  pio_dir=$PIO_DIR
+  vendors_dir=$pio_dir/vendors
+
+  spark_dir=$vendors_dir/spark-$SPARK_VERSION
+  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
+  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
+  zookeeper_dir=$vendors_dir/zookeeper
+
+  echo "--------------------------------------------------------------------------------"
+  echo -e "\033[1;32mOK, looks good!\033[0m"
+  echo "You are going to install PredictionIO to: $pio_dir"
+  echo -e "Vendor applications will go in: $vendors_dir\n"
+  echo "Spark: $spark_dir"
+  echo "Elasticsearch: $elasticsearch_dir"
+  echo "HBase: $hbase_dir"
+  echo "ZooKeeper: $zookeeper_dir"
+  echo "--------------------------------------------------------------------------------"
+
+  # Java Install
+  echo -e "\033[1;36mStarting Java install...\033[0m"
+
+  sudo apt-get update
   sudo apt-get install openjdk-7-jdk -y
 
   echo -e "\033[1;32mJava install done!\033[0m"
@@ -128,6 +160,7 @@ else
           echo -e "\033[33mThis script requires superuser access!\033[0m"
           echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
+          sudo apt-get update
           sudo apt-get install openjdk-7-jdk -y
 
           echo -e "\033[1;32mJava install done!\033[0m"

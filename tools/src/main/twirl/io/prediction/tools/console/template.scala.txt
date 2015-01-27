@@ -1,0 +1,21 @@
+Usage: pio template list
+
+Retrieves a list of available template IDs.
+
+Usage: pio template get <template ID> <new engine directory>
+                        [--name <value>] [--package <value>] [--email <value>]
+
+Seeds a directory with an engine template.
+
+  <template ID>
+      Engine template ID.
+  <new engine directory>
+      Location of the new engine.
+  --name <value>
+      Name of the author of the new engine.
+  --package <value>
+      Scala package name of the new engine.
+  --email <value>
+      E-mail address of the author of the new engine. Specify this if you want
+      to receive updates (critical bug fixes, etc) about the engine template
+      that you are going to use.

@@ -29,16 +29,19 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.apache.log4j.Appender
 import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.EnhancedPatternLayout
+import org.apache.log4j.FileAppender
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
-import org.apache.log4j.PatternLayout
 import org.apache.log4j.spi.Filter
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 
+import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.language.existentials
 import scala.reflect._
@@ -69,13 +72,13 @@ object WorkflowUtils extends Logging {
     try {
       (
         EngineLanguage.Scala,
-        engineObject.instance.asInstanceOf[IEngineFactory]()
+        engineObject.instance.asInstanceOf[IEngineFactory]
       )
     } catch {
       case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
         (
           EngineLanguage.Java,
-          Class.forName(engine).newInstance.asInstanceOf[IEngineFactory]()
+          Class.forName(engine).newInstance.asInstanceOf[IEngineFactory]
         )
       }
     }
@@ -130,6 +133,48 @@ object WorkflowUtils extends Logging {
     }
   }
 
+  def getParamsFromJsonByFieldAndClass(
+      variantJson: JValue,
+      field: String,
+      classMap: Map[String, Class[_]],
+      engineLanguage: EngineLanguage.Value): (String, Params) = {
+    variantJson findField {
+      case JField(f, _) => f == field
+      case _ => false
+    } map { jv =>
+      implicit lazy val formats = Utils.json4sDefaultFormats +
+        new NameParamsSerializer
+      val np: NameParams = try {
+        jv._2.extract[NameParams]
+      } catch {
+        case e: Exception => {
+          error(s"Unable to extract ${field} name and params ${jv}")
+          throw e
+        }
+      }
+      val extractedParams = np.params.map { p =>
+        try {
+          if (!classMap.contains(np.name)) {
+            error(s"Unable to find ${field} class with name '${np.name}'" +
+              " defined in Engine.")
+            sys.exit(1)
+          }
+          WorkflowUtils.extractParams(
+            engineLanguage,
+            compact(render(p)),
+            classMap(np.name))
+        } catch {
+          case e: Exception => {
+            error(s"Unable to extract ${field} params ${p}")
+            throw e
+          }
+        }
+      }.getOrElse(EmptyParams())
+
+      (np.name, extractedParams)
+    } getOrElse ("", EmptyParams())
+  }
+
   /** Grab environmental variables that starts with 'PIO_'. */
   def pioEnvVars: Map[String, String] =
     sys.env.filter(kv => kv._1.startsWith("PIO_"))
@@ -171,6 +216,7 @@ object WorkflowUtils extends Logging {
     */
   def thirdPartyConfFiles: Seq[String] = {
     val thirdPartyFiles = Map(
+      "PIO_CONF_DIR" -> "log4j.properties",
       "ES_CONF_DIR" -> "elasticsearch.yml",
       "HADOOP_CONF_DIR" -> "core-site.xml",
       "HBASE_CONF_DIR" -> "hbase-site.xml")
@@ -184,35 +230,101 @@ object WorkflowUtils extends Logging {
   }
 
   def thirdPartyClasspaths: Seq[String] = {
-    val thirdPartyPaths = Seq("ES_CONF_DIR", "HADOOP_CONF_DIR", "HBASE_CONF_DIR")
+    val thirdPartyPaths = Seq(
+      "PIO_CONF_DIR",
+      "ES_CONF_DIR",
+      "HADOOP_CONF_DIR",
+      "HBASE_CONF_DIR")
     thirdPartyPaths.map(p =>
       sys.env.get(p).map(Seq(_)).getOrElse(Seq[String]())
     ).flatten
   }
 
-  def setupLogging(verbose: Boolean, debug: Boolean): Unit = {
-    val layout = new PatternLayout("%d %-5p %c{2} - %m%n")
-    val filter = new PIOFilter(verbose, debug)
-    val appender = new ConsoleAppender(layout)
-    appender.addFilter(filter)
+  def setupLogging(
+      verbose: Boolean,
+      debug: Boolean,
+      mode: String = "",
+      logFile: Option[String] = None): Unit = {
+    val filter = new PIOFilter(verbose, debug, mode)
     val rootLogger = LogManager.getRootLogger()
-    rootLogger.removeAllAppenders
-    rootLogger.addAppender(appender)
+    val appenders = rootLogger.getAllAppenders.toList
+    appenders foreach { a =>
+      val appender = a.asInstanceOf[Appender]
+      appender.addFilter(filter)
+    }
+
+    val consoleLayout = new EnhancedPatternLayout("%d %-5p %c{2} - %m%n")
+    val consoleAppender = new ConsoleAppender(consoleLayout)
+    consoleAppender.setFollow(true)
+    consoleAppender.addFilter(filter)
+    rootLogger.addAppender(consoleAppender)
+
+    logFile map { l =>
+      val fileLayout = new EnhancedPatternLayout("%d %-5p %c [%t] - %m%n")
+      val fileAppender = new FileAppender(fileLayout, l, true)
+      fileAppender.addFilter(new PIOFilter(true, debug, mode))
+      rootLogger.addAppender(fileAppender)
+    }
+
     if (debug) {
       rootLogger.setLevel(Level.DEBUG)
     } else {
       rootLogger.setLevel(Level.INFO)
     }
   }
+
+  def extractNameParams(jv: JValue): NameParams = {
+    implicit val formats = Utils.json4sDefaultFormats
+    val nameOpt = (jv \ "name").extract[Option[String]]
+    val paramsOpt = (jv \ "params").extract[Option[JValue]]
+
+    if (nameOpt.isEmpty && paramsOpt.isEmpty) {
+      error("Unable to find 'name' or 'params' fields in" +
+        s" ${compact(render(jv))}.\n" +
+        "Since 0.8.4, the 'params' field is required in engine.json" +
+        " in order to specify parameters for DataSource, Preparator or" +
+        " Serving.\n" +
+        "Please go to http://docs.prediction.io/resources/upgrade/" +
+        " for detailed instruction of how to change engine.json.")
+      sys.exit(1)
+    }
+
+    if (nameOpt.isEmpty)
+    info(s"No 'name' is found. Default empty String will be used.")
+
+    if (paramsOpt.isEmpty)
+    info(s"No 'params' is found. Default EmptyParams will be used.")
+
+    NameParams(
+      name = nameOpt.getOrElse(""),
+      params = paramsOpt
+    )
+  }
 }
 
-class PIOFilter(verbose: Boolean = false, debug: Boolean = false)
-    extends Filter {
+case class NameParams(name: String, params: Option[JValue])
+
+class NameParamsSerializer extends CustomSerializer[NameParams](format => (
+  {
+    case jv: JValue => WorkflowUtils.extractNameParams(jv)
+  },
+  {
+    case x: NameParams =>
+    JObject(JField("name", JString(x.name)) ::
+    JField("params", x.params.getOrElse(JNothing)) :: Nil)
+  }
+))
+
+class PIOFilter(
+    verbose: Boolean = false,
+    debug: Boolean = false,
+    mode: String = "") extends Filter {
   override def decide(event: LoggingEvent): Int = {
+    val from = event.getLocationInformation.getClassName
     if (verbose || debug)
       Filter.NEUTRAL
-    else if (event.getLocationInformation.getClassName.
-      startsWith("grizzled.slf4j.Logger"))
+    else if (from.startsWith("grizzled.slf4j.Logger") ||
+      (mode != "train" && from.startsWith("akka.event.slf4j.Slf4jLogger")))
       Filter.NEUTRAL
     else if (event.getLevel.isGreaterOrEqual(Level.ERROR))
       Filter.NEUTRAL

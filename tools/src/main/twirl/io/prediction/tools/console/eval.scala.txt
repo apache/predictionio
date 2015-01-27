@@ -1,5 +1,7 @@
 Usage: pio eval [--batch <value>] [--metrics-class <value>]
-                [--params-path <value>] [-mp <value>] [common options...]
+                [--params-path <value>] [-mp <value>]
+                [--engine-factory <value>] [--engine-params-key <value>]
+                [common options...]
 
 Kick off an evaluation using an engine (variant) to produce an engine instance.
 This command will pass all pass-through arguments to its underlying spark-submit
@@ -14,3 +16,7 @@ command.
   -mp <value>
       Metrics parameters JSON file. Will try to use metrics.json in
       '--params-path'.
+  --engine-factory
+      Override engine factory class.
+  --engine-params-key
+      Retrieve engine parameters programmatically from the engine factory class.

@@ -33,12 +33,12 @@ Modify the `AlgorithmParams` class for the Random Forest algorithm:
 ```scala
 // CHANGED
 case class RandomForestAlgorithmParams(
-  val numClasses: Int,
-  val numTrees: Int,
-  val featureSubsetStrategy: String,
-  val impurity: String,
-  val maxDepth: Int,
-  val maxBins: Int
+  numClasses: Int,
+  numTrees: Int,
+  featureSubsetStrategy: String,
+  impurity: String,
+  maxDepth: Int,
+  maxBins: Int
 ) extends Params
 ```
 

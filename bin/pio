@@ -31,6 +31,8 @@ search() {
 
 export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 
+export PIO_CONF_DIR="$PIO_HOME/conf"
+
 FIRST_SEP=$(search "--" $@)
 
 FIRST_HALF="${@:1:$FIRST_SEP}"

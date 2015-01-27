@@ -25,8 +25,8 @@ defines the format of such **query**:
 
 ```scala
 case class Query(
-  val user: String,
-  val num: Int
+  user: String,
+  num: Int
 ) extends Serializable
 ```
 
@@ -46,7 +46,7 @@ with:
 
 ```scala
 case class PredictedResult(
-  val itemScores: Array[ItemScore]
+  itemScores: Array[ItemScore]
 ) extends Serializable
 
 case class ItemScore(
@@ -99,7 +99,7 @@ method of class `DataSource` reads, and selects, data from the *Event Store*
 (data store of the *Event Server*) and returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(val appId: Int) extends Params
+case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -167,9 +167,9 @@ Since Spark MLlib's `Rating` class assumes `Int`-only user ID and item ID, you h
 
 ```scala
 case class Rating(
-  val user: String,
-  val item: String,
-  val rating: Double
+  user: String,
+  item: String,
+  rating: Double
 )
 ```
 
@@ -237,6 +237,7 @@ i.e. `ALS.train`, is used to train a predictive model.
 
 ```scala
   def train(data: PreparedData): ALSModel = {
+    ...
     // Convert user and item String IDs to Int index for MLlib
     val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
     val itemStringIntMap = BiMap.stringInt(data.ratings.map(_.item))
@@ -244,10 +245,29 @@ i.e. `ALS.train`, is used to train a predictive model.
       // MLlibRating requires integer index for user and item
       MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
     )
+
+    // seed for MLlib ALS
+    val seed = ap.seed.getOrElse(System.nanoTime)
+
     // If you only have one type of implicit event (Eg. "view" event only),
     // replace ALS.train(...) with
-    // ALS.trainImplicit(mllibRatings, ap.rank, ap.numIterations)
-    val m = ALS.train(mllibRatings, ap.rank, ap.numIterations, ap.lambda)
+    //val m = ALS.trainImplicit(
+      //ratings = mllibRatings,
+      //rank = ap.rank,
+      //iterations = ap.numIterations,
+      //lambda = ap.lambda,
+      //blocks = -1,
+      //alpha = 1.0,
+      //seed = seed)
+
+    val m = ALS.train(
+      ratings = mllibRatings,
+      rank = ap.rank,
+      iterations = ap.numIterations,
+      lambda = ap.lambda,
+      blocks = -1,
+      seed = seed)
+
     new ALSModel(
       rank = m.rank,
       userFeatures = m.userFeatures,
@@ -282,8 +302,7 @@ MLlibRating(userStringIntMap(r.user), itemStringIntMap(r.item), r.rating)
 ```
 
 
-In addition to `RDD[MLlibRating]`, `ALS.train` takes 3 parameters: *rank*,
-*iterations* and *lambda*.
+In addition to `RDD[MLlibRating]`, `ALS.train` takes the following parameters: *rank*, *iterations*, *lambda* and *seed*.
 
 The values of these parameters are specified in *algorithms* of
 MyRecommendation/***engine.json***:
@@ -297,7 +316,8 @@ MyRecommendation/***engine.json***:
       "params": {
         "rank": 10,
         "numIterations": 20,
-        "lambda": 0.01
+        "lambda": 0.01,
+        "seed": 3
       }
     }
   ]
@@ -310,9 +330,10 @@ which has a corresponding case case `ALSAlgorithmParams`:
 
 ```scala
 case class ALSAlgorithmParams(
-  val rank: Int,
-  val numIterations: Int,
-  val lambda: Double) extends Params
+  rank: Int,
+  numIterations: Int,
+  lambda: Double,
+  seed: Option[Long]) extends Params
 ```
 
 `ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD

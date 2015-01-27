@@ -112,28 +112,34 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
-  def getLatestCompleted(
+  def getCompleted(
       engineId: String,
       engineVersion: String,
       engineVariant: String) = {
     try {
-      val response = client.prepareSearch(index).setTypes(estype).setPostFilter(
+      val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
         andFilter(
           termFilter("status", "COMPLETED"),
           termFilter("engineId", engineId),
           termFilter("engineVersion", engineVersion),
           termFilter("engineVariant", engineVariant))).
-        addSort("startTime", SortOrder.DESC).get
-      val hits = response.getHits().hits()
-      if (hits.size > 0) {
-        Some(read[EngineInstance](hits.head.getSourceAsString))
-      } else None
+        addSort("startTime", SortOrder.DESC)
+      ESUtils.getAll[EngineInstance](client, builder)
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
-        None
+        Seq()
     }
   }
+
+  def getLatestCompleted(
+      engineId: String,
+      engineVersion: String,
+      engineVariant: String) =
+    getCompleted(
+      engineId,
+      engineVersion,
+      engineVariant).headOption
 
   def getEvalCompleted() = {
     try {

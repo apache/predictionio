@@ -89,6 +89,12 @@ private[prediction] trait EngineInstances {
       engineVersion: String,
       engineVariant: String): Option[EngineInstance]
 
+  /** Get all instances that has trained to completion. */
+  def getCompleted(
+    engineId: String,
+    engineVersion: String,
+    engineVariant: String): Seq[EngineInstance]
+
   /** Get instances that are produced by evaluation and have run to completion,
     * reverse sorted by the start time.
     */

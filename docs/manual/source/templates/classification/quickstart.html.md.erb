@@ -67,11 +67,10 @@ ID** to refer to "MyApp2" in engine code.
 ## Create a new Engine from an Engine Template
 
 Now let's create a new engine called *MyClassification* by cloning the MLlib
-Classification engine template, assuming `/home/yourname/predictionio` is the
-installation directory of PredictionIO:
+Classification engine template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-classification MyClassification
+$ pio template get PredictionIO/templates-scala-parallel-classification MyClassification
 $ cd MyClassification
 ```
 
@@ -84,7 +83,7 @@ attr0, attr1, attr2 and plan.
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-To use the SDK, first install the SDK in the language of your choice - [Java](/sdk/java/), [PHP](/sdk/php), [Python](/sdk/python), or [Ruby](/sdk/ruby). 
+To use the SDK, first install the SDK in the language of your choice - [Java](/sdk/java/), [PHP](/sdk/php), [Python](/sdk/python), or [Ruby](/sdk/ruby).
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -415,7 +414,7 @@ Start with building your *MyClassification*.
 ```
 $ pio build
 ```
-This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages. 
+This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
 
 Upon successful build, you should see a console message similar to the
 following.

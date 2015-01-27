@@ -1,7 +1,0 @@
-Usage: pio new <project name>
-
-Creates a new engine project in a subdirectory with the same name as the
-project.
-
-  <project name>
-      Engine project name.

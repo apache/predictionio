@@ -1,5 +1,7 @@
-Usage: pio train [--batch <value>] [--skip-sanity-check] [--stop-after-read]
-                 [--stop-after-prepare] [common options...]
+Usage: pio train [--batch <value>] [--skip-sanity-check]
+                 [--stop-after-read] [--stop-after-prepare]
+                 [--engine-factory <value>] [--engine-params-key <value>]
+                 [common options...]
 
 Kick off a training using an engine (variant) to produce an engine instance.
 This command will pass all pass-through arguments to its underlying spark-submit
@@ -15,3 +17,7 @@ command.
   --stop-after-prepare
       Stop the training process after Preparator.prepare(). Useful for
       debugging.
+  --engine-factory
+      Override engine factory class.
+  --engine-params-key
+      Retrieve engine parameters programmatically from the engine factory class.

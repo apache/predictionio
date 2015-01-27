@@ -3,7 +3,7 @@ Usage: pio <command> [options] <args>...
 Options common to all commands:
   [--pio-home <value>] [--spark-home <value>] [--sbt <value>]
   [-ei <value>] [-ev <value>] [-v <value>] [-m <value>]
-  [--verbose] [--debug]
+  [-sk | --spark-kryo] [--verbose] [--debug] [-l <value> | --log <value>]
   [<args>] [-- [<args passed to Spark>] [-- [<args passed to runner]]]
 
   --sbt <value>
@@ -16,6 +16,11 @@ Options common to all commands:
       Path to an engine variant JSON file. Default: engine.json
   -m <value> | --manifest <value>
       Path to an engine manifest JSON file. Default: manifest.json
+  -sk | --spark-kryo
+      Shorthand for setting the spark.serializer property to
+      org.apache.spark.serializer.KryoSerializer.
+  -l <value> | --log-file <value>
+      Specify an alternate log file location. Default: pio.log
   --verbose
       Enable third-party informational messages.
   --debug
@@ -33,7 +38,7 @@ more information.
 The most commonly used pio commands are:
     status        Displays status information about PredictionIO
     version       Displays the version of this command line console
-    new           Creates a new engine project
+    template      Creates a new engine based on an engine template
     build         Build an engine at the current directory
     train         Kick off a training using an engine
     deploy        Deploy an engine as an engine server
