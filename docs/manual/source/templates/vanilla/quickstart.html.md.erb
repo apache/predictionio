@@ -73,11 +73,10 @@ $ pio app list
 ## Create a new Engine from an Engine Template
 
 Now let's create a new engine called *MyNewEngine* by cloning the Recommendation
-Engine Template, assuming `/home/yourname/predictionio`
-is the installation directory of PredictionIO:
+Engine Template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-vanilla MyNewEngine
+$ pio template get PredictionIO/templates-scala-parallel-vanilla MyNewEngine
 $ cd MyNewEngine
 ```
 

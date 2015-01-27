@@ -49,11 +49,10 @@ You can offer features like "Customers Who Bought This Item Also Bought....".
 
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MySimilar* by copying the Similar Product Engine Template, assuming `/home/yourname/predictionio`
-is the installation directory of PredictionIO:
+Now let's create a new engine called *MySimilar* by copying the Similar Product Engine Template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-similarproduct MySimilarProduct
+$ pio template get PredictionIO/templates-scala-parallel-similarproduct MySimilarProduct
 $ cd MySimilarProduct
 ```
 
@@ -315,7 +314,7 @@ Start with building your *MySimilarProduct* engine.
 ```
 $ pio build
 ```
-This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages. 
+This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
 
 Upon successful build, you should see a console message similar to the
 following.

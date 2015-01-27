@@ -92,9 +92,7 @@ We are going to copy the Similar Product Template into the PIO directory.
 
 ```
 $ cd PredictionIO
-$ cd templates
-$ cp -R scala-parallel-similar ../tapster-episode-similar
-$ cd ..
+$ pio template get PredictionIO/template-scala-parallel-similarproduct tapster-episode-similar
 ```
 
 Next we are going to update the App ID in the ‘engine.json’ file to match the App ID we just created.
@@ -108,9 +106,9 @@ $ cd ..
 ![Engine Setup](/images/demo/tapster/pio-engine-setup.png)
 
 
-### Modify  Engine Template 
+### Modify  Engine Template
 
-By the default, the engine template reads the “view” events. We can easily to change it to read “like” events. 
+By the default, the engine template reads the “view” events. We can easily to change it to read “like” events.
 
 <!-- For more advanced example of how-to combine view and like/dislike events in one recommender, please see the multi-events-multi-algos.html -->
 
@@ -120,9 +118,9 @@ Modify `readTraining()` in DataSource.scala:
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    
+
     ...
-    
+
     val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
       appId = dsp.appId,
       entityType = Some("user"),
