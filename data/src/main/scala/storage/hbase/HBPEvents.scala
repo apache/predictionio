@@ -26,6 +26,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat
 import org.apache.hadoop.hbase.mapreduce.PIOHBaseUtil
+import org.apache.hadoop.hbase.TableNotFoundException
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -42,6 +43,13 @@ import org.apache.spark.SparkContext._
 class HBPEvents(client: HBClient, namespace: String)
   extends PEvents with Logging {
 
+  def checkTableExists(appId: Int): Unit = {
+    if (!client.admin.tableExists(HBEventsUtil.tableName(namespace, appId))) {
+      error(s"The appId ${appId} does not exist. Please use valid appId.")
+      throw new Exception(s"HBase table not found for appId ${appId}.")
+    }
+  }
+
   override
   def find(
     appId: Int,
@@ -53,6 +61,8 @@ class HBPEvents(client: HBClient, namespace: String)
     targetEntityType: Option[Option[String]] = None,
     targetEntityId: Option[Option[String]] = None
     )(sc: SparkContext): RDD[Event] = {
+
+    checkTableExists(appId)
 
     val conf = HBaseConfiguration.create()
     conf.set(TableInputFormat.INPUT_TABLE,
@@ -72,6 +82,7 @@ class HBPEvents(client: HBClient, namespace: String)
 
     conf.set(TableInputFormat.SCAN, PIOHBaseUtil.convertScanToString(scan))
 
+    // HBase is not accessed until this rdd is actually used.
     val rdd = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
       classOf[Result]).map {
@@ -90,6 +101,8 @@ class HBPEvents(client: HBClient, namespace: String)
     required: Option[Seq[String]] = None)
     (sc: SparkContext): RDD[(String, DataMap)] = {
 
+    checkTableExists(appId)
+
     val eventRDD = find(
       appId = appId,
       startTime = startTime,
@@ -97,7 +110,15 @@ class HBPEvents(client: HBClient, namespace: String)
       entityType = Some(entityType),
       eventNames = Some(PEventAggregator.eventNames))(sc)
 
-    val dmRDD = PEventAggregator.aggregateProperties(eventRDD)
+    val dmRDD = try {
+      PEventAggregator.aggregateProperties(eventRDD)
+    } catch {
+      case e: TableNotFoundException => {
+        error(s"The appId ${appId} does not exist. Please use valid appId.")
+        throw e
+      }
+      case e: Exception => throw e
+    }
 
     if (required.isDefined) {
       dmRDD.filter { case (k, v) =>
