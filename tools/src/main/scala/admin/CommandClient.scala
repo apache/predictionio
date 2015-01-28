@@ -4,7 +4,7 @@
   * you may not use this file except in compliance with the License.
   * You may obtain a copy of the License at
   *
-  *     http://www.apache.org/licenses/LICENSE-2.0
+  * http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,48 +19,46 @@ import io.prediction.data.storage._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class BaseResponse(s: Int, m: String) {
-  def getStatus = s
-  def getMessage = m
-}
+abstract class BaseResponse()
 
 case class GeneralResponse(
-                            status: Int = 0,
-                            message: String = "") extends BaseResponse(status,message)
+  status: Int = 0,
+  message: String = ""
+) extends BaseResponse()
 
 case class AppRequest(
-                       id: Int = 0,
-                       name: String = "",
-                       description: String = ""
-                       )
+  id: Int = 0,
+  name: String = "",
+  description: String = ""
+)
 
 case class AppResponse(
-                        status: Int = 0,
-                        message: String = "",
-                        id: Int = 0,
-                        name: String = "",
-                        keys: Seq[AccessKey]
-                        ) extends BaseResponse(status,message)
+  id: Int = 0,
+  name: String = "",
+  keys: Seq[AccessKey]
+) extends BaseResponse()
 
+case class AppNewResponse(
+  status: Int = 0,
+  message: String = "",
+  id: Int = 0,
+  name: String = "",
+  keys: Seq[AccessKey]
+) extends BaseResponse()
 
 case class AppListResponse(
-                        status: Int = 0,
-                        message: String = "",
-                        apps: Seq[AppResponse]
-                            ) extends BaseResponse(status,message)
+  status: Int = 0,
+  message: String = "",
+  apps: Seq[AppResponse]
+) extends BaseResponse()
 
-// see Console.scala for reference
-
-class CommandClient (
+class CommandClient(
   val appClient: Apps,
   val accessKeyClient: AccessKeys,
   val eventClient: LEvents
 ) {
 
-  // see def appNew() in Console.scala
-  def futureAppNew(req: AppRequest)
-    (implicit ec: ExecutionContext): Future[BaseResponse] = Future {
-
+  def futureAppNew(req: AppRequest)(implicit ec: ExecutionContext): Future[BaseResponse] = Future {
     val response = appClient.getByName(req.name) map { app =>
       GeneralResponse(0, s"App ${req.name} already exists. Aborting.")
     } getOrElse {
@@ -76,20 +74,16 @@ class CommandClient (
         appid map { id =>
           val dbInit = eventClient.init(id)
           val r = if (dbInit) {
-
-
             val accessKey = AccessKey(
               key = "",
               appid = id,
               events = Seq())
-
             val accessKey2 = accessKeyClient.insert(AccessKey(
               key = "",
               appid = id,
               events = Seq()))
-
             accessKey2 map { k =>
-              new AppResponse(1,"App created successfuly.",id, req.name, Seq[AccessKey](accessKey))
+              new AppNewResponse(1,"App created successfully.",id, req.name, Seq[AccessKey](accessKey))
             } getOrElse {
               GeneralResponse(0, s"Unable to create new access key.")
             }
@@ -105,22 +99,17 @@ class CommandClient (
     response
   }
 
-  // see def appList() in Console.scala
-  def futureAppList()
-    (implicit ec: ExecutionContext): Future[AppListResponse] = Future {
+  def futureAppList()(implicit ec: ExecutionContext): Future[AppListResponse] = Future {
     val apps = appClient.getAll().sortBy(_.name)
-
-
     val appsRes = apps.map {
       app => {
-        new AppResponse(1, "Successful retrieved app.", app.id, app.name, accessKeyClient.getByAppid(app.id))
+        new AppResponse(app.id, app.name, accessKeyClient.getByAppid(app.id))
       }
     }
-    new AppListResponse(1,"Successful retrieved app list.",appsRes)
+    new AppListResponse(1, "Successful retrieved app list.", appsRes)
   }
 
   def futureAppDataDelete(appName: String)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
-
     val response = appClient.getByName(appName) map { app =>
       val data = if (eventClient.remove(app.id)) {
         GeneralResponse(1, s"Removed Event Store for this app ID: ${app.id}")
@@ -160,5 +149,4 @@ class CommandClient (
     }
     response
   }
-
 }

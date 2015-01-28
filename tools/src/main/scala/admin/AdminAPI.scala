@@ -104,21 +104,7 @@ class AdminServiceActor(val commandClient: CommandClient)
             }
           }
       }
-
-  /*
-  val route: Route = ...
-    path(“cmd” / “app” ) {
-      post {
-        entity(as[AppNewRequest]) { req =>
-           complete { ...
-             commandClient.futureAppNew(req)
-           }
-      }
-    }
-  */
-
   def receive = runRoute(route)
-
 }
 
 class AdminServerActor(val commandClient: CommandClient) extends Actor {

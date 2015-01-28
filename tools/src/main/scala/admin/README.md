@@ -29,35 +29,86 @@ The host and port can be specified by using the 'ip' and 'port' parameters
 ```
 $ pio adminserver --ip 127.0.0.1 --port 7080
 ```
+## API Doc
 
-### Current supported commands
+### app list:
+GET http://localhost:7071/cmd/app
 
-#### Retrieves the list of current registered applications similar to the command 'pio app list'
+OK Response:
+{
+  “status”: <STATUS>,
+  “message”: <MESSAGE>,
+  “apps” : [ 
+    { “name': “<APP_NAME>”,
+      “id': <APP_ID>,
+      “accessKey' : “<ACCESS_KEY>” },
+    { “name': “<APP_NAME>”,
+      “id': <APP_ID>,
+      “accessKey' : “<ACCESS_KEY>” }, ... ]
+}
 
-http://localhost:7071/cmd/app 
+Error Response:
+{“status”: <STATUS>, “message” : “<MESSAGE>”}
 
-via GET method with no parameters
+### app new
+POST http://localhost:7071/cmd/app
+Request Body:
+{ name”: “<APP_NAME>”, // required
+  “id”: <APP_ID>, // optional
+  “description”: “<DESCRIPTION>” } // optional
 
-Returns a JSON array string with all the current applications
+OK Response:
+{ “status”: <STATUS>,
+  “message”: <MESSAGE>,
+  “app” : {
+    “name”: “<APP_NAME>”,
+    “id”: <APP_ID>,
+    “accessKey” : “<ACCESS_KEY>” }
+}
 
-#### Creates a new application as 'pio app new'
+Error Response:
+{ “status”: <STATUS>, “message” : “<MESSAGE>”}
 
-http://localhost:7071/cmd/app
+### app delete
+DELETE http://localhost:7071/cmd/app/{appName}
 
-via POST method with ContentType: application/json and the following post body
+OK Response:
+{ "status": <STATUS>, "message" : “<MESSAGE>”}
 
-{name:'appName',id:'appId',description:'app description'}
+Error Response:
+{ “status”: <STATUS>, “message” : “<MESSAGE>”}
 
-#### Delete an application as 'pio app delete \<name\>'
+### app data-delete
+DELETE http://localhost:7071/cmd/app/{appName}/data
 
-http://localhost:7071/cmd/app/{appName}
+OK Response:
+{ "status": <STATUS>, "message" : “<MESSAGE>”}
 
-via DELETE method with no other parameters
+Error Response:
+{ “status”: <STATUS>, “message” : “<MESSAGE>” }
 
-#### Delete application data as 'pio app data-delete \<name\>'
 
-http://localhost:7071/cmd/app/{appName}/data
+### train TBD
 
-via DELETE method with no other parameters
+#### Training request:
+POST http://localhost:7071/cmd/train
+Request body: TBD
+
+OK Response: TBD
+
+Error Response: TBD
+
+#### Get training status:
+GET http://localhost:7071/cmd/train/{engineInstanceId}
+
+OK Response: TBD
+INIT
+TRAINING
+DONE
+ERROR
+
+Error Response: TBD
+
+### deploy TBD
 
 
