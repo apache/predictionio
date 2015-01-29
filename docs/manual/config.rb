@@ -68,11 +68,9 @@ configure :build do
   end
 end
 
-# CloudFront
-activate :cloudfront do |cf|
-  cf.access_key_id = ENV['AWS_ACCESS_KEY_ID']
-  cf.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
-  cf.distribution_id = ENV['CF_DISTRIBUTION_ID']
+# S3 Sync
+activate :s3_sync do |s3_sync|
+  s3_sync.bucket = 'docs.prediction.io'
 end
 
 # Hacks
