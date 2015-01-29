@@ -25,12 +25,12 @@ installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](/resources/upgrade/).**
 
 
-Let's say you have installed PredictionIO at `/home/yourname/PredictionIo/`. For
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`. For
 convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/PredictionIo/bin`:
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
 
 and please make sure that PredictionIO Event Server, which collects data, is
@@ -70,7 +70,7 @@ Now let's create a new engine called *MyClassification* by cloning the MLlib
 Classification engine template:
 
 ```
-$ pio template get PredictionIO/templates-scala-parallel-classification MyClassification
+$ pio template get PredictionIO/template-scala-parallel-classification MyClassification
 $ cd MyClassification
 ```
 
