@@ -71,6 +71,7 @@ end
 # S3 Sync
 activate :s3_sync do |s3_sync|
   s3_sync.bucket = 'docs.prediction.io'
+  s3_sync.prefer_gzip = false
 end
 
 # Hacks
