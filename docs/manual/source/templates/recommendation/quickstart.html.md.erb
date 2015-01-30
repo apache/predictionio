@@ -19,13 +19,15 @@ INFO: 0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](/resources/upgrade/).
 
-Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
 For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/predictionio/bin`:
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
+
+NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
 
 Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
 
@@ -81,7 +83,7 @@ Now let's create a new engine called *MyRecommendation* by cloning the Recommend
 Engine Template:
 
 ```
-$ pio template get PredictionIO/templates-scala-parallel-recommendation MyRecommendation
+$ pio template get PredictionIO/template-scala-parallel-recommendation MyRecommendation
 $ cd MyRecommendation
 ```
 
@@ -92,7 +94,10 @@ the Recommendation Engine Template supports 2 types of events: **rate** and
 **buy**. A user can give a rating score to an item or he can buy an item.
 
 You can send these data to PredictionIO Event Server in real-time easily by
-making a HTTP request or through the `EventClient` of an SDK.
+making a HTTP request or through the `EventClient` of an SDK. 
+
+To use the SDK, first install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK), 
+[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">

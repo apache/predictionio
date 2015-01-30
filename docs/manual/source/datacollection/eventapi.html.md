@@ -23,10 +23,10 @@ complete before starting the Event Server.
 
 Everything about PredictionIO can be done through the `pio` command. Please add
 PIO binary command path to to your `PATH` first. Assuming PredictionIO is
-installed at `/home/yourname/predictionio/`, you can run
+installed at `/home/yourname/PredictionIO/`, you can run
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
 
 To start the event server, run

@@ -8,7 +8,6 @@ In this demo, we will show you how to build a Tinder-style web application recom
 
 The demo will use [Simiar Product Template](http://docs.prediction.io/templates/similarity/quickstart/). Similar Product Template is a great choice if you want to make recommendations based on immediate user activities or for new users with limited history. It uses MLLib Alternating Least Squares (ALS) recommendation algorithm, a [Collaborative filtering](http://en.wikipedia.org/wiki/Recommender_system#Collaborative_filtering) (CF) algorithm commonly used for recommender systems. These techniques aim to fill in the missing entries of a user-item association matrix. Users and products are described by a small set of latent factors that can be used to predict missing entries. A layman's interpretation of Collaborative Filtering is "People who like this comic, Also like these comics."
 
-The first implementation uses the template as it is, without any customization.
 If you haven't already you can check out the final live demo here: [tapster.prediction.io](http://tapster.prediction.io/)
 
 All the code and data is on GitHub at: [github.com/PredictionIO/Demo-Tapster](https://github.com/PredictionIO/Demo-Tapster).

@@ -52,7 +52,7 @@ You can offer features like "Customers Who Bought This Item Also Bought....".
 Now let's create a new engine called *MySimilar* by copying the Similar Product Engine Template:
 
 ```
-$ pio template get PredictionIO/templates-scala-parallel-similarproduct MySimilarProduct
+$ pio template get PredictionIO/template-scala-parallel-similarproduct MySimilarProduct
 $ cd MySimilarProduct
 ```
 
@@ -66,6 +66,8 @@ the Similar Engine Template supports 2 types of entities: **user** and
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
+To use the SDK, first install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK), 
+[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
 
 
 <div class="tabs">

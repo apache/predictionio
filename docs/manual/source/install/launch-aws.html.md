@@ -46,4 +46,6 @@ The default security group, marked by "AutogenByAWSMP", has the following ports 
 It may take a few minutes after the EC2 instance has launched for all
 PredictionIO components to become ready. When they are ready, you may connect to your instance, see [AWS documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html) for more details.
 
+Once you connect to your instance, you can find PredictionIO  at `/opt/PredictionIO` and the binary command path is `/opt/PredictionIO/bin`.
+
 #### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)

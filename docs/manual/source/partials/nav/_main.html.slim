@@ -15,12 +15,14 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Training with Implicit Preference', '/templates/recommendation/training-with-implicit-preference/'
         li = link_to_with_active 'Customizing Data Preparator', '/templates/recommendation/customize-data-prep/'
         li = link_to_with_active 'Customizing Serving', '/templates/recommendation/customize-serving/'
+        li = link_to_with_active 'Training with Implicit Preference', '/templates/recommendation/training-with-implicit-preference/'
+        
     li.expand
       = link_to 'Similar Product Template', '#'
       ul
         li = link_to_with_active 'Quick Start', '/templates/similarproduct/quickstart/'
         li = link_to_with_active 'DASE Components Explained', '/templates/similarproduct/dase/'
-        li = link_to_with_active 'Multiple Events and Multiple Algorithms', '/templates/similarproduct/multi-events-multi-algos/'
+        li = link_to_with_active 'Multiple Events and Multiple Algorithms', '/templates/similarproduct/multi-events-multi-algos'
     li.expand
       = link_to 'Classification Template', '#'
       ul
@@ -28,6 +30,12 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'DASE Components Explained', '/templates/classification/dase/'
         li = link_to_with_active 'Using Alternative Algorithm', '/templates/classification/add-algorithm/'
         li = link_to_with_active 'Reading Custom Properties', '/templates/classification/reading-custom-properties/'
+    li.expand
+    li.expand
+      = link_to 'Vanilla Template', '#'
+      ul
+        li = link_to_with_active 'Quick Start', '/templates/vanilla/quickstart/'
+        li = link_to_with_active 'DASE Components Explained', '/templates/vanilla/dase/'
     li.expand
       = link_to 'Data Collection', '#'
       ul
@@ -38,7 +46,8 @@ nav#nav-main role="navigation"
     li.expand
       = link_to 'Demo Tutorials', '#'
       ul
-        li = link_to_with_active 'Tapser - Similar Product Template', '/demo/tapster/'   
+        li = link_to_with_active 'Tapster - Similar Product Template', '/demo/tapster/'  
+        li = link_to_with_active 'Community Contributed', '/demo/community/'
         
         
     li.expand
@@ -47,7 +56,6 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Contribute Code', '/community/contribute-code/'
         li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation/'
         li = link_to_with_active 'Community Projects', '/community/projects/'
-        li = link_to_with_active 'Built with PredictionIO', '/community/showcase/'
         
     li.expand
       = link_to 'SDKs and Plugins', '#'

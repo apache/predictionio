@@ -25,13 +25,16 @@ installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](/resources/upgrade/).**
 
 
-Let's say you have installed PredictionIO at `/home/yourname/PredictionIo/`. For
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`. For
 convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/PredictionIo/bin`:
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
+
+NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
+
 
 and please make sure that PredictionIO Event Server, which collects data, is
 running:
@@ -70,7 +73,7 @@ Now let's create a new engine called *MyClassification* by cloning the MLlib
 Classification engine template:
 
 ```
-$ pio template get PredictionIO/templates-scala-parallel-classification MyClassification
+$ pio template get PredictionIO/template-scala-parallel-classification MyClassification
 $ cd MyClassification
 ```
 
@@ -83,7 +86,9 @@ attr0, attr1, attr2 and plan.
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-To use the SDK, first install the SDK in the language of your choice - [Java](/sdk/java/), [PHP](/sdk/php), [Python](/sdk/python), or [Ruby](/sdk/ruby).
+To use the SDK, first install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK), 
+[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
+
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
