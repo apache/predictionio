@@ -159,7 +159,7 @@ object Template extends Logging {
       try {
         Process("git config --global user.name").lines.toList(0)
       } catch {
-        case e: java.io.IOException =>
+        case e: Throwable =>
           readLine("Please enter author's name: ")
       }
     }
@@ -173,7 +173,7 @@ object Template extends Logging {
       try {
         Process("git config --global user.email").lines.toList(0)
       } catch {
-        case e: java.io.IOException =>
+        case e: Throwable =>
           readLine("Please enter author's e-mail address: ")
       }
     }
