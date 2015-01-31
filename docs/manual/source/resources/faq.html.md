@@ -76,7 +76,15 @@ PredictionIO v0.8 is built on the top of Spark, a massively scalable programming
 
 PredictionIO framework natively support both RDD-based algorithms and traditional single-machine algorithms. For controllers prefixed by "P" (i.e. PJavaDataSource, PJavaAlgorithm), their data include RDD abstraction; For "L" controllers, they are traditional single machine algorithms.
 
+## Running HBase
+### Q: How to resolve 'Exception in thread "main" java.lang.NullPointerException at org.apache.hadoop.net.DNS.reverseDns(DNS.java:92)'?
 
+HBase relies on reverse DNS be set up properly to function. If your network
+configuration changes (such as working on a laptop with public WiFi hotspots),
+there could be a chance that reverse DNS does not function properly. You can
+install a DNS server on your own computer. Some users have reported that using
+[Google Public DNS](https://developers.google.com/speed/public-dns/) would also
+solve the problem.
 
 If you have other questions, you can search or post on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user) or [email the
