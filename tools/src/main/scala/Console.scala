@@ -57,20 +57,14 @@ case class ConsoleArgs(
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: console.TemplateArgs = console.TemplateArgs(),
   commands: Seq[String] = Seq(),
-  batch: String = "",
   metricsClass: Option[String] = None,
-  dataSourceParamsJsonPath: Option[String] = None,
-  preparatorParamsJsonPath: Option[String] = None,
-  algorithmsParamsJsonPath: Option[String] = None,
-  servingParamsJsonPath: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
   paramsPath: String = "params",
   engineInstanceId: Option[String] = None,
-  mainClass: Option[String] = None,
-  projectName: Option[String] = None,
-  directoryName: Option[String] = None)
+  mainClass: Option[String] = None)
 
 case class CommonArgs(
+  batch: String = "",
   sparkPassThrough: Seq[String] = Seq(),
   driverPassThrough: Seq[String] = Seq(),
   pioHome: Option[String] = None,
@@ -277,27 +271,11 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "train")
         } children(
           opt[String]("batch") action { (x, c) =>
-            c.copy(batch = x)
+            c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run."),
           opt[String]("params-path") action { (x, c) =>
             c.copy(paramsPath = x)
           } text("Directory to lookup parameters JSON files. Default: params"),
-          opt[String]("datasource-params") abbr("dsp") action { (x, c) =>
-            c.copy(dataSourceParamsJsonPath = Some(x))
-          } text("Data source parameters JSON file. Will try to use\n" +
-            "        datasource.json in the base path."),
-          opt[String]("preparator-params") abbr("pp") action { (x, c) =>
-            c.copy(preparatorParamsJsonPath = Some(x))
-          } text("Preparator parameters JSON file. Will try to use\n" +
-            "        preparator.json in the base path."),
-          opt[String]("algorithms-params") abbr("ap") action { (x, c) =>
-            c.copy(algorithmsParamsJsonPath = Some(x))
-          } text("Algorithms parameters JSON file. Will try to use\n" +
-            "        algorithms.json in the base path."),
-          opt[String]("serving-params") abbr("sp") action { (x, c) =>
-            c.copy(servingParamsJsonPath = Some(x))
-          } text("Serving parameters JSON file. Will try to use\n" +
-            "        serving.json in the base path."),
           opt[String]("metrics-params") abbr("mp") action { (x, c) =>
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
@@ -333,7 +311,7 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "eval")
         } children(
           opt[String]("batch") action { (x, c) =>
-            c.copy(batch = x)
+            c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run."),
           opt[String]("params-path") action { (x, c) =>
             c.copy(paramsPath = x)
@@ -341,22 +319,6 @@ object Console extends Logging {
           opt[String]("metrics-class") required() action { (x, c) =>
             c.copy(metricsClass = Some(x))
           } text("Name of metrics class to run."),
-          opt[String]("datasource-params") abbr("dsp") action { (x, c) =>
-            c.copy(dataSourceParamsJsonPath = Some(x))
-          } text("Data source parameters JSON file. Will try to use\n" +
-            "        datasource.json in the base path."),
-          opt[String]("preparator-params") abbr("pp") action { (x, c) =>
-            c.copy(preparatorParamsJsonPath = Some(x))
-          } text("Preparator parameters JSON file. Will try to use\n" +
-            "        preparator.json in the base path."),
-          opt[String]("algorithms-params") abbr("ap") action { (x, c) =>
-            c.copy(algorithmsParamsJsonPath = Some(x))
-          } text("Algorithms parameters JSON file. Will try to use\n" +
-            "        algorithms.json in the base path."),
-          opt[String]("serving-params") abbr("sp") action { (x, c) =>
-            c.copy(servingParamsJsonPath = Some(x))
-          } text("Serving parameters JSON file. Will try to use\n" +
-            "        serving.json in the base path."),
           opt[String]("metrics-params") abbr("mp") action { (x, c) =>
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
@@ -371,7 +333,7 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "deploy")
         } children(
           opt[String]("batch") action { (x, c) =>
-            c.copy(batch = x)
+            c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the deployment."),
           opt[String]("engine-instance-id") action { (x, c) =>
             c.copy(engineInstanceId = Some(x))
@@ -779,75 +741,6 @@ object Console extends Logging {
     "run" -> console.txt.run().toString,
     "eval" -> console.txt.eval().toString,
     "dashboard" -> console.txt.dashboard().toString)
-
-  def createProject(ca: ConsoleArgs): Unit = {
-    val scalaEngineTemplate = Map(
-      "build.sbt" -> templates.scala.txt.buildSbt(
-        ca.projectName.get,
-        BuildInfo.version,
-        BuildInfo.sparkVersion),
-      "engine.json" -> templates.scala.txt.engineJson(
-        ca.projectName.get,
-        "myorg.MyEngineFactory"),
-      "manifest.json" -> templates.scala.txt.manifestJson(
-        ca.projectName.get,
-        "0.0.1-SNAPSHOT",
-        ca.projectName.get),
-      joinFile(Seq("project", "assembly.sbt")) ->
-        templates.scala.project.txt.assemblySbt(),
-      joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
-        templates.scala.src.main.scala.txt.engine())
-
-    val template = ca.projectName.get match {
-      case _ =>
-        info(s"Creating Scala engine project ${ca.projectName.get}")
-        scalaEngineTemplate
-    }
-
-    writeTemplate(template, ca.projectName.get)
-
-    info(s"Engine project created in subdirectory ${ca.projectName.get}.")
-  }
-
-  /*
-  def createInstance(ca: ConsoleArgs): Unit = {
-    val targetDir = ca.directoryName.getOrElse(ca.projectName.get)
-    val engineId = ca.projectName.getOrElse("")
-
-    val templateOpt = BuiltInEngine.idInstanceMap.get(engineId)
-
-    if (templateOpt.isEmpty) {
-      val engineIdList = BuiltInEngine.instances
-        .zipWithIndex
-        .map { case(eit, idx) => s"  ${eit.engineId}" }
-        .mkString("\n")
-      error(s"${engineId} is not a built-in engine. \n" +
-        s"Below are built-in engines: \n$engineIdList\n" +
-        s"Aborting.")
-      sys.exit(1)
-    }
-
-    writeTemplate(templateOpt.get.template, targetDir)
-
-    info(s"Engine instance created in subdirectory ${targetDir}.")
-  }
-  */
-
-  private def writeTemplate(template: Map[String, Any], targetDir: String) = {
-    try {
-      template map { ft =>
-        FileUtils.writeStringToFile(
-          new File(targetDir, ft._1),
-          ft._2.toString,
-          "ISO-8859-1")
-      }
-    } catch {
-      case e: java.io.IOException =>
-        error(s"Error occurred while generating template: ${e.getMessage}")
-        error("Aborting.")
-        sys.exit(1)
-    }
-  }
 
   def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
 
