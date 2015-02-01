@@ -16,6 +16,8 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
+import io.prediction.tools.console.Console
+import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging

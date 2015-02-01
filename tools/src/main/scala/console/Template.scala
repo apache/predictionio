@@ -1,7 +1,6 @@
 package io.prediction.tools.console
 
 import io.prediction.controller.Utils
-import io.prediction.tools.ConsoleArgs
 
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils

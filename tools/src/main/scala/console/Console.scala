@@ -13,7 +13,7 @@
   * limitations under the License.
   */
 
-package io.prediction.tools
+package io.prediction.tools.console
 
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
@@ -28,6 +28,9 @@ import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
 import io.prediction.data.api.EventServerConfig
+import io.prediction.tools.RegisterEngine
+import io.prediction.tools.RunServer
+import io.prediction.tools.RunWorkflow
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -55,7 +58,7 @@ case class ConsoleArgs(
   eventServer: EventServerArgs = EventServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
-  template: console.TemplateArgs = console.TemplateArgs(),
+  template: TemplateArgs = TemplateArgs(),
   commands: Seq[String] = Seq(),
   metricsClass: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
@@ -698,9 +701,9 @@ object Console extends Logging {
         case Seq("accesskey", "delete") =>
           accessKeyDelete(ca)
         case Seq("template", "get") =>
-          console.Template.get(ca)
+          Template.get(ca)
         case Seq("template", "list") =>
-          console.Template.list(ca)
+          Template.list(ca)
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -724,23 +727,23 @@ object Console extends Logging {
     }
   }
 
-  val mainHelp = console.txt.main().toString
+  val mainHelp = txt.main().toString
 
   val helpText = Map(
     "" -> mainHelp,
-    "status" -> console.txt.status().toString,
-    "upgrade" -> console.txt.upgrade().toString,
-    "version" -> console.txt.version().toString,
-    "template" -> console.txt.template().toString,
-    "build" -> console.txt.build().toString,
-    "train" -> console.txt.train().toString,
-    "deploy" -> console.txt.deploy().toString,
-    "eventserver" -> console.txt.eventserver().toString,
-    "app" -> console.txt.app().toString,
-    "accesskey" -> console.txt.accesskey().toString,
-    "run" -> console.txt.run().toString,
-    "eval" -> console.txt.eval().toString,
-    "dashboard" -> console.txt.dashboard().toString)
+    "status" -> txt.status().toString,
+    "upgrade" -> txt.upgrade().toString,
+    "version" -> txt.version().toString,
+    "template" -> txt.template().toString,
+    "build" -> txt.build().toString,
+    "train" -> txt.train().toString,
+    "deploy" -> txt.deploy().toString,
+    "eventserver" -> txt.eventserver().toString,
+    "app" -> txt.app().toString,
+    "accesskey" -> txt.accesskey().toString,
+    "run" -> txt.run().toString,
+    "eval" -> txt.eval().toString,
+    "dashboard" -> txt.dashboard().toString)
 
   def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
 
