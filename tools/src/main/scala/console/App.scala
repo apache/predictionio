@@ -1,6 +1,6 @@
 package io.prediction.tools.console
 
-import io.prediction.data.storage.AccessKey
+import io.prediction.data.storage.{AccessKey => StorageAccessKey}
 import io.prediction.data.storage.{App => StorageApp}
 import io.prediction.data.storage.Storage
 
@@ -36,7 +36,7 @@ object App extends Logging {
         val r = if (dbInit) {
           info(s"Initialized Event Store for this app ID: ${id}.")
           val accessKeys = Storage.getMetaDataAccessKeys
-          val accessKey = accessKeys.insert(AccessKey(
+          val accessKey = accessKeys.insert(StorageAccessKey(
             key = "",
             appid = id,
             events = Seq()))

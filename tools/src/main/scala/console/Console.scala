@@ -17,7 +17,6 @@ package io.prediction.tools.console
 
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
-import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
@@ -92,10 +91,6 @@ case class BuildArgs(
   sbtAssemblyPackageDependency: Boolean = true,
   sbtClean: Boolean = false,
   uberJar: Boolean = false)
-
-case class AccessKeyArgs(
-  accessKey: String = "",
-  events: Seq[String] = Seq())
 
 case class DeployArgs(
   ip: String = "localhost",
@@ -689,11 +684,11 @@ object Console extends Logging {
         case Seq("app", "data-delete") =>
           App.dataDelete(ca)
         case Seq("accesskey", "new") =>
-          accessKeyNew(ca)
+          AccessKey.create(ca)
         case Seq("accesskey", "list") =>
-          accessKeyList(ca)
+          AccessKey.list(ca)
         case Seq("accesskey", "delete") =>
-          accessKeyDelete(ca)
+          AccessKey.delete(ca)
         case Seq("template", "get") =>
           Template.get(ca)
         case Seq("template", "list") =>
@@ -1050,61 +1045,6 @@ object Console extends Logging {
       FileUtils.copyDirectory(paramsDir, new File(distDir, paramsDir.getName))
     Files.createFile(distDir.toPath.resolve(distFilename))
     info(s"Successfully created distributable at: ${distDir.getCanonicalPath}")
-  }
-
-  def accessKeyNew(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    apps.getByName(ca.app.name) map { app =>
-      val accessKeys = Storage.getMetaDataAccessKeys
-      val accessKey = accessKeys.insert(AccessKey(
-        key = "",
-        appid = app.id,
-        events = ca.accessKey.events))
-      accessKey map { k =>
-        info(s"Created new access key: ${k}")
-        0
-      } getOrElse {
-        error(s"Unable to create new access key.")
-        1
-      }
-    } getOrElse {
-      error(s"App ${ca.app.name} does not exist. Aborting.")
-      1
-    }
-  }
-
-  def accessKeyList(ca: ConsoleArgs): Int = {
-    val keys =
-      if (ca.app.name == "")
-        Storage.getMetaDataAccessKeys.getAll
-      else {
-        val apps = Storage.getMetaDataApps
-        apps.getByName(ca.app.name) map { app =>
-          Storage.getMetaDataAccessKeys.getByAppid(app.id)
-        } getOrElse {
-          error(s"App ${ca.app.name} does not exist. Aborting.")
-          return 1
-        }
-      }
-    val title = "Access Key(s)"
-    info(f"$title%64s | App ID | Allowed Event(s)")
-    keys.sortBy(k => k.appid) foreach { k =>
-      val events =
-        if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
-      info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
-    }
-    info(s"Finished listing ${keys.size} access key(s).")
-    0
-  }
-
-  def accessKeyDelete(ca: ConsoleArgs): Int = {
-    if (Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)) {
-      info(s"Deleted access key ${ca.accessKey.accessKey}.")
-      0
-    } else {
-      error(s"Error deleting access key ${ca.accessKey.accessKey}.")
-      1
-    }
   }
 
   def status(ca: ConsoleArgs): Int = {
