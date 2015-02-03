@@ -25,6 +25,15 @@ $ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
 
 You can run `$ pio status` from the terminal and it will return the status of various components that PredictionIO depends on.
 
+### Q: How to resolve "Exception in thread "main" org.apache.spark.SparkException: Job aborted due to stage failure: Serialized task 165:35 was 110539813 bytes, which exceeds max allowed: spark.akka.frameSize (10485760 bytes) - reserved (204800 bytes). Consider increasing spark.akka.frameSize or using broadcast variables for large values."?
+
+A likely reason is the local algorithm model is larger than the default frame size.
+You can specify a larger value as a pass-thru argument to spark-submit when you `pio train`.
+The following command increase the frameSize to 1024MB.
+
+```
+$ pio train -- --conf spark.akka.frameSize=1024
+```
 
 ## Building PredictionIO
 ### Q: How to resolve "Error: Could not find or load main class io.prediction.tools.Console" after ./make_distribution.sh?

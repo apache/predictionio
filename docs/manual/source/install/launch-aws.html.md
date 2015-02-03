@@ -46,4 +46,4 @@ The default security group, marked by "AutogenByAWSMP", has the following ports 
 It may take a few minutes after the EC2 instance has launched for all
 PredictionIO components to become ready. When they are ready, you may connect to your instance, see [AWS documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html) for more details.
 
-#### [Next: Recommendation Engine Quick Start](../recommendation/quickstart.html)
+#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)

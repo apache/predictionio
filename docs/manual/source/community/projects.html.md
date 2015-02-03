@@ -8,18 +8,8 @@ above.
 Here you will find great projects contributed by the PredictionIO community.
 Stay tuned.
 
-INFO: You may [view projects](http://docs.prediction.io/0.7.2/contribution/projects.html)
-contributed by the community for the **earlier version** (0.7.x) of
-PredictionIO.
-
-### List Your Project Here
-
-If you have built a PredictionIO-related project, we would love to showcase it
-to the community! Simply:
-
-1. Edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/community/projects.html.md).
-
-2. Submit a pull request.
+INFO: If you have built a PredictionIO-related project, we would love to showcase it
+to the community! Simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/projects.html.md) and submit a pull request.
 
 ## Vagrant Installation for PredictionIO
 

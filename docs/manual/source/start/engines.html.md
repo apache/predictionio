@@ -44,9 +44,9 @@ implementations. You can customize it easily to fit your specific needs.
 PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
 
 * [Recommendation Engine Template - with MLlib ALS]
-  (/recommendation/quickstart)
+  (/templates/recommendation/quickstart)
 * [Classification Engine Template - with MLlib Naive Bayes]
-  (/classification/quickstart)
+  (/templates/classification/quickstart)
 
 
 ## Engine Deployment
@@ -83,4 +83,4 @@ specify an Evaluation Metric when you run an evaluation on an Engine, i.e.:
 Having a good understanding of Engine and Engine Template, you can now follow
 the Quick Start guide and develop a custom engine.
 
-#### [Next: Recommendation Engine Quick Start](/recommendation/quickstart)
+#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart)

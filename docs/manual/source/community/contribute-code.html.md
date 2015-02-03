@@ -2,30 +2,8 @@
 title:  Contribute Code
 ---
 
-Thank you for your interest in contributing to PredictionIO! Our goals are to
-enable developers to build machine learning applications in a fraction of the
-time.
-
-## Reporting an Issue
-
-Report your issues to one of the following:
-
-- [GitHub Issues](https://github.com/PredictionIO/PredictionIO/issues)
-- [PredictionIO JIRA](https://predictionio.atlassian.net)
-
-## Other Useful Links
-
-Before getting started, here are links to resources that the development team
-uses the most.
-
-- [GitHub](https://github.com/PredictionIO/PredictionIO) is where all
-  PredictionIO’s core development goes to
-- [PredictionIO Development Google
-  Group](https://groups.google.com/forum/#!forum/predictionio-dev) is where
-  development is discussed with a larger audience
-- [PredictionIO
-  Kanban](https://predictionio.atlassian.net/secure/RapidBoard.jspa?rapidView=1)
-  is our primary Kanban board for tracking progress of upcoming releases
+Thank you for your interest in contributing to PredictionIO. Our mission is to
+enable developers to build scalable machine learning applications easily. Here is how you can help with the project development. If you have questions at anytime, please free to post on the [Developer Fourm](https://groups.google.com/forum/#!forum/predictionio-dev) or email us at support@prediction.io.
 
 ## Areas in Need of Help
 
@@ -40,21 +18,39 @@ show features that are highly sought after by the community.
 - Code and data pipeline optimization
 - Developer experience (UX) improvement
 
-## How to Add / Propose a New Feature
+## How to Report an Issue
 
-If you wish to see a feature added in PredictionIO, you can <a
-href="mailto:support@prediction.io">submit your suggestions</a> directly to us,
-post on the [user
-group](https://groups.google.com/forum/#!forum/predictionio-user), or implement
-it yourself and create a pull request.
+If you wish to report an issue you found,  you can do so on [GitHub Issues](https://github.com/PredictionIO/PredictionIO/issues)
+or [PredictionIO JIRA](https://predictionio.atlassian.net).
 
 ## How to Help Resolve Existing Issues
 
-You can see a list of all issues and tasks
-[here](https://predictionio.atlassian.net). You are free to work on any issues
-you like and submit a pull request. If you are working on an issue, please
-reassign the ticket to yourself so others know that you are working on it.
+In general, bug fixes should be done the same way as new features, but critical
+bug fixes will follow a different path.
 
+#### Critical Bug Fixes Only
+
+1. File an issue against the issue tracker if there isn't one already.
+2. Create a new hotfix branch described by the *git flow* methodology, and write
+   the fix in that branch.
+3. Verify the patch and issue a pull request to the main repository.
+4. Once merged to the main repository, critical bug fixes will be merged to the
+   "master" branch and new binary will be built and distributed.
+   
+
+## How to Add / Propose a New Feature
+
+1. To propose a new feature, simply post your proposal to [PredictionIO
+   Development Google Group]
+   (https://groups.google.com/forum/#!forum/predictionio-dev) or email us directly at support@prediction.io.
+2. Discuss with the community and the core development team on what needs to be
+   done, and lay down concrete plans on deliverables.
+3. Once solid plans are made, start creating tickets in the [issue tracker]
+   (https://predictionio.atlassian.net/secure/RapidBoard.jspa?rapidView=1).
+4. Work side by side with other developers using PredictionIO Development Google
+   Group as primary mode of communication. You never know if someone else has a
+   better idea. ;)
+  
 
 ## How to Issue a Pull Request
 
@@ -71,41 +67,7 @@ request](https://help.github.com/articles/creating-a-pull-request/) against the
 - Make sure it is being opened into the right branch.
 - Make sure it has been rebased on top of that branch.
 
-## Development Processes
-
-There are several kinds of development processes depending on the nature of the
-code.
-
-### New Features
-
-1. To propose a new feature, simply post your proposal to [PredictionIO
-   Development Google Group]
-   (https://groups.google.com/forum/#!forum/predictionio-dev).
-2. Discuss with the community and the core development team on what needs to be
-   done, and lay down concrete plans on deliverables.
-3. Once solid plans are made, start creating tickets in the [issue tracker]
-   (https://predictionio.atlassian.net/secure/RapidBoard.jspa?rapidView=1).
-4. Work side by side with other developers using PredictionIO Development Google
-   Group as primary mode of communication. You never know if someone else has a
-   better idea. ;)
-
-### Bug Fixes
-
-In general, bug fixes should be done the same way as new features, but critical
-bug fixes will follow a different path.
-
-#### Critical Bug Fixes Only
-
-1. File an issue against the issue tracker.
-2. Create a new hotfix branch described by the *git flow* methodology, and write
-   the fix in that branch.
-3. Verify the patch and issue a pull request to the main repository.
-4. Once merged to the main repository, critical bug fixes will be merged to the
-   "master" branch and new binary will be built and distributed.
-
-### Releases
-
-When it is close to a release, and if there are major development ongoing, a
+NOTE: When it is close to a release, and if there are major development ongoing, a
 release branch will be forked from the develop branch to stabilize the code for
 binary release. Please refer to the *git flow* methodology page for more
 information.

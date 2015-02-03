@@ -88,7 +88,8 @@ case class CommonArgs(
   skipSanityCheck: Boolean = false,
   verbose: Boolean = false,
   verbosity: Int = 0,
-  debug: Boolean = false)
+  debug: Boolean = false,
+  sparkKryo: Boolean = false)
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -192,6 +193,9 @@ object Console extends Logging {
       }
       opt[Unit]("debug") action { (x, c) =>
         c.copy(common = c.common.copy(debug = true))
+      }
+      opt[Unit]("spark-kryo") abbr("sk") action { (x, c) =>
+        c.copy(common = c.common.copy(sparkKryo = true))
       }
       note("")
       cmd("version").
@@ -962,7 +966,7 @@ object Console extends Logging {
         engineInstances.getLatestCompleted(em.id, em.version, variantId)
       }
       engineInstance map { r =>
-        undeploy(ca)
+        //undeploy(ca)
         RunServer.runServer(
           ca,
           coreAssembly(ca.common.pioHome.get),

@@ -6,7 +6,7 @@ Serving component is where post-processing occurs. For example, if you are
 recommending items to users, you may want to remove items that are not
 currently in stock from the list of recommendation.
 
-This section is based on the [Recommendation Engine Template](quickstart.html).
+This section is based on the [Recommendation Engine Template](/templates/recommendation/quickstart/).
 
 A full end-to-end example can be found on
 [GitHub](https://github.com/PredictionIO/PredictionIO/tree/master/examples/scala-parallel-recommendation-custom-serving).
@@ -25,7 +25,7 @@ If you simply want to use this customized code, you can skip to the last section
 
 ## The Serving Component
 
-Recall [the DASE Architecture](../start/engines.html), a PredictionIO engine has
+Recall [the DASE Architecture](/start/engines/), a PredictionIO engine has
 4 main components: Data Source, Data Preparator, Algorithm, and Serving
 components. When a Query comes in, it is passed to the Algorithm component for
 making Predictions.
@@ -85,7 +85,7 @@ implementation for production deployment.
 ## Deploy the Modified Engine
 
 Now you can deploy the modified engine as described in the [Quick
-Start](/recommendation/quickstart.html) guide.
+Start](/templates/recommendation/quickstart/) guide.
 
 Make sure the `appId` defined in the file `engine.json` match your *App ID*:
 

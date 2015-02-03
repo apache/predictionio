@@ -92,6 +92,12 @@ object RunServer extends Logging {
         Seq("--driver-class-path", extraClasspaths.mkString(":"))
       else
         Seq()) ++
+      (if (ca.common.sparkKryo)
+        Seq(
+          "--conf",
+          "spark.serializer=org.apache.spark.serializer.KryoSerializer")
+      else
+        Seq()) ++
       Seq(
         mainJar,
         "--engineInstanceId",

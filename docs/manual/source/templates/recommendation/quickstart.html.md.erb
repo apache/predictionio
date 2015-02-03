@@ -17,7 +17,7 @@ First you need to [install PredictionIO <%= data.versions.pio %>](/install)
 
 INFO: 0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
-Elasticsearch. See more [here](../resources/schema-change.html).
+Elasticsearch. See more [here](/resources/upgrade/).
 
 Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
 For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
@@ -301,6 +301,7 @@ Start with building your *MyRecommendation* engine.
 ```
 $ pio build
 ```
+This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
 
 Upon successful build, you should see a console message similar to the
 following.
@@ -312,6 +313,11 @@ following.
 ### Training
 
 Train your successfully-built engine.
+
+WARNING: You need to install the
+[gfortran](https://github.com/mikiobraun/jblas/wiki/Missing-Libraries)
+runtime library if it is not already present on your nodes. For Debian and
+Ubuntu systems this would be `sudo apt-get install libgfortran3`.
 
 ```
 $ pio train
@@ -408,4 +414,4 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
 Next, we are going to take a look
 at the engine architecture and explain how you can customize it completely.
 
-#### [Next: DASE Components Explained](../dase)
+#### [Next: DASE Components Explained](/templates/recommendation/dase/)

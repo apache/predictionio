@@ -10,7 +10,7 @@ a black list of item that she wants to remove from the training data before
 feeding it to the algorithm.
 
 This section assumes that you have created a *MyRecommendation* engine based on
-the [Recommendation Engine Template: QuickStart](quickstart.html). We will
+the [Recommendation Engine Template: QuickStart](/templates/recommendation/quickstart/). We will
 demonstrate how to add a filtering logic to exclude a list of items in the
 training data.
 
@@ -22,7 +22,7 @@ A full end-to-end example can be found on
 
 ## The Data Preparator Component
 
-Recall [the DASE Architecture](../start/engines.html), data is prepared by 2
+Recall [the DASE Architecture](/start/engines/), data is prepared by 2
 components sequentially: *Data Source* and *Data Preparator*. *Data Source*
 reads data from the data store of Event Server and then *Data Preparator*
 prepares `RDD[Rating]` for the ALS algorithm.
