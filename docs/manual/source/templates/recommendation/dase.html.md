@@ -336,6 +336,8 @@ case class ALSAlgorithmParams(
   seed: Option[Long]) extends Params
 ```
 
+The `seed` parameter is an optional parameter, which is used by MLlib ALS algorithm internally to generate random values. If the `seed` is not specified, current system time would be used and hence each train may produce different reuslts. Specify a fixed value for the `seed` if you want to have deterministic result (For example, when you are testing).
+
 `ALS.train` then returns a `MatrixFactorizationModel` model which contains RDD
 data. RDD is a distributed collection of items which *does not* persist. To
 store the model, you convert the model to `ALSModel` class at the end.

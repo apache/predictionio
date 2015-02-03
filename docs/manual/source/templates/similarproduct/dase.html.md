@@ -415,7 +415,7 @@ val mllibRatings = data.viewEvents
 
 ```
 
-In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes the following parameters: *rank*, *iterations*, *lambda" and "seed".
+In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes the following parameters: *rank*, *iterations*, *lambda* and *seed*.
 
 The values of these parameters are specified in *algorithms* of
 MyRecommendation/***engine.json***:
@@ -448,6 +448,8 @@ case class ALSAlgorithmParams(
   lambda: Double,
   seed: Option[Long]) extends Params
 ```
+
+The `seed` parameter is an optional parameter, which is used by MLlib ALS algorithm internally to generate random values. If the `seed` is not specified, current system time would be used and hence each train may produce different reuslts. Specify a fixed value for the `seed` if you want to have deterministic result (For example, when you are testing).
 
 `ALS.trainImplicit()` then returns a `MatrixFactorizationModel` model which contains two RDDs: userFeatures and productFeatures. They correspond to the user X latent features matrix and item X latent features matrix, respectively. In this case, we will make use of the productFeatures matrix to find simliar products by comparing the similarity of the latent features. Hence, we store this productFeatures as defined in `ALSModel` class:
 
