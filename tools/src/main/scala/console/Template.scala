@@ -17,7 +17,8 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.URL
+import java.net.ConnectException
+import java.net.URI
 import java.util.zip.ZipInputStream
 
 case class TemplateArgs(
@@ -48,6 +49,42 @@ case class TemplateEntry(
 object Template extends Logging {
   implicit val formats = Utils.json4sDefaultFormats
 
+  /** Creates a wrapper that provides the functionality of scalaj.http.Http()
+    * with automatic proxy settings handling. The proxy settings will first
+    * come from "git" followed by system properties "http.proxyHost" and
+    * "http.proxyPort".
+    *
+    * @param url URL to be connected
+    * @return
+    */
+  def httpOptionalProxy(url: String): HttpRequest = {
+    val gitProxy = try {
+      Some(Process("git config --global http.proxy").lines.toList(0))
+    } catch {
+      case e: Throwable => None
+    }
+
+    val (host, port) = gitProxy map { p =>
+      val proxyUri = new URI(p)
+      (Option(proxyUri.getHost),
+        if (proxyUri.getPort == -1) None else Some(proxyUri.getPort))
+    } getOrElse {
+      (sys.props.get("http.proxyHost"),
+        sys.props.get("http.proxyPort").map { p =>
+          try {
+            Some(p.toInt)
+          } catch {
+            case e: NumberFormatException => None
+          }
+        } getOrElse None)
+    }
+
+    (host, port) match {
+      case (Some(h), Some(p)) => Http(url).proxy(h, p)
+      case _ => Http(url)
+    }
+  }
+
   def getGitHubRepos(
       repos: Seq[String],
       apiType: String,
@@ -59,27 +96,33 @@ object Template extends Logging {
     } catch {
       case e: Throwable => Map[String, GitHubCache]()
     }
-    val newReposCache = reposCache ++ (repos.map { repo =>
-      val url = s"https://api.github.com/repos/${repo}/${apiType}"
-      val http = Http(url)
-      val response = reposCache.get(repo).map { cache =>
-        cache.headers.get("ETag").map { etag =>
-          http.header("If-None-Match", etag).asString
+    val newReposCache = reposCache ++ (try {
+      repos.map { repo =>
+        val url = s"https://api.github.com/repos/$repo/$apiType"
+        val http = httpOptionalProxy(url)
+        val response = reposCache.get(repo).map { cache =>
+          cache.headers.get("ETag").map { etag =>
+            http.header("If-None-Match", etag).asString
+          } getOrElse {
+            http.asString
+          }
         } getOrElse {
           http.asString
         }
-      } getOrElse {
-        http.asString
-      }
 
-      val body = if (response.code == 304) {
-        reposCache(repo).body
-      } else {
-        response.body
-      }
+        val body = if (response.code == 304) {
+          reposCache(repo).body
+        } else {
+          response.body
+        }
 
-      (repo -> GitHubCache(headers = response.headers, body = body))
-    }.toMap)
+        repo -> GitHubCache(headers = response.headers, body = body)
+      }.toMap
+    } catch {
+      case e: ConnectException =>
+        githubConnectErrorMessage(e)
+        Map()
+    })
     FileUtils.writeStringToFile(
       new File(repoFilename),
       write(newReposCache),
@@ -94,7 +137,7 @@ object Template extends Logging {
       "email" -> email,
       "org" -> org)
     try {
-      scalaj.http.Http("http://update.prediction.io/templates.subscribe").
+      httpOptionalProxy("http://update.prediction.io/templates.subscribe").
         postData("json=" + write(data)).asString
     } catch {
       case e: Throwable => error("Unable to subscribe.")
@@ -107,8 +150,8 @@ object Template extends Logging {
       "name" -> name,
       "org" -> org)
     try {
-      scalaj.http.Http(
-        s"http://templates.prediction.io/${repo}/${org}/${name}").asString
+      httpOptionalProxy(
+        s"http://templates.prediction.io/$repo/$org/$name").asString
     } catch {
       case e: Throwable => warn("Template metadata unavailable.")
     }
@@ -131,10 +174,15 @@ object Template extends Logging {
       0
     } catch {
       case e: Throwable =>
-        error(s"Unable to list templates from ${templatesUrl} " +
+        error(s"Unable to list templates from $templatesUrl " +
           s"(${e.getMessage}). Aborting.")
         1
     }
+  }
+
+  def githubConnectErrorMessage(e: ConnectException): Unit = {
+    error(s"Unable to connect to GitHub (Reason: ${e.getMessage}). " +
+      "Please check your network configuration and proxy settings.")
   }
 
   def get(ca: ConsoleArgs): Int = {
@@ -146,7 +194,8 @@ object Template extends Logging {
         read[List[GitHubTag]](repo.body)
       } catch {
         case e: MappingException =>
-          error(s"Either ${ca.template.repository} is not a valid GitHub repository, or it does not have any tag. Aborting.")
+          error(s"Either ${ca.template.repository} is not a valid GitHub " +
+            "repository, or it does not have any tag. Aborting.")
           return 1
       }
     } getOrElse {
@@ -177,9 +226,9 @@ object Template extends Logging {
       }
     }
 
-    println(s"Author's name:         ${name}")
-    println(s"Author's e-mail:       ${email}")
-    println(s"Author's organization: ${organization}")
+    println(s"Author's name:         $name")
+    println(s"Author's e-mail:       $email")
+    println(s"Author's organization: $organization")
 
     var subscribe = readLine("Would you like to be informed about new bug " +
       "fixes and security updates of this template? (Y/n) ")
@@ -208,12 +257,24 @@ object Template extends Logging {
       println(s"Using the most recent tag ${tag.name}")
       val url =
         s"https://github.com/${ca.template.repository}/archive/${tag.name}.zip"
-      println(s"Going to download ${url}")
-      val trial = Http(url).asBytes
-      val finalTrial = trial.location.map { loc =>
-        println(s"Redirecting to ${loc}")
-        Http(loc).asBytes
-      } getOrElse trial
+      println(s"Going to download $url")
+      val trial = try {
+        httpOptionalProxy(url).asBytes
+      } catch {
+        case e: ConnectException =>
+          githubConnectErrorMessage(e)
+          return 1
+      }
+      val finalTrial = try {
+        trial.location.map { loc =>
+          println(s"Redirecting to $loc")
+          httpOptionalProxy(loc).asBytes
+        } getOrElse trial
+      } catch {
+        case e: ConnectException =>
+          githubConnectErrorMessage(e)
+          return 1
+      }
       val zipFilename =
         s"${ca.template.repository.replace('/', '-')}-${tag.name}.zip"
       FileUtils.writeByteArrayToFile(
@@ -234,14 +295,14 @@ object Template extends Logging {
           val os = new BufferedOutputStream(
             new FileOutputStream(destFilename),
             bufferSize)
-          var data = Array.ofDim[Byte](bufferSize)
+          val data = Array.ofDim[Byte](bufferSize)
           var count = zis.read(data, 0, bufferSize)
           while (count != -1) {
             os.write(data, 0, count)
             count = zis.read(data, 0, bufferSize)
           }
-          os.flush
-          os.close
+          os.flush()
+          os.close()
 
           val nameOnly = new File(destFilename).getName
 
@@ -253,7 +314,7 @@ object Template extends Logging {
         }
         ze = zis.getNextEntry
       }
-      zis.close
+      zis.close()
       new File(zipFilename).delete
 
       val engineJsonFile =
@@ -278,11 +339,11 @@ object Template extends Logging {
 
       engineFactory.map { ef =>
         val pkgName = ef.split('.').dropRight(1).mkString(".")
-        println(s"Replacing ${pkgName} with ${organization}...")
+        println(s"Replacing $pkgName with $organization...")
 
         filesToModify.foreach { ftm =>
-          println(s"Processing ${ftm}...")
-          val fileContent = Source.fromFile(ftm).getLines
+          println(s"Processing $ftm...")
+          val fileContent = Source.fromFile(ftm).getLines()
           val processedLines =
             fileContent.map(_.replaceAllLiterally(pkgName, organization))
           FileUtils.writeStringToFile(
