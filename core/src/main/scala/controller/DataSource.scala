@@ -54,6 +54,10 @@ abstract class LDataSource[
     }.toSeq
   }
 
+  def readTrainBase(sc: SparkContext): RDD[TD] = {
+    sc.parallelize(Seq(0)).map(_ => readTraining())
+  }
+
   /** Implement this method to only return training data from a data source.
     */
   def readTraining(): TD = null.asInstanceOf[TD]
