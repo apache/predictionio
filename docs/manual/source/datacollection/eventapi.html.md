@@ -470,13 +470,13 @@ $ curl -i -X GET http://localhost:7070/events/<your_eventId>.json?accessKey=<you
 $ curl -i -X DELETE http://localhost:7070/events/<your_eventId>.json?accessKey=<your_accessKey>
 ```
 
-### Get All Events of an App
-
-> Use cautiously!
+### Get Events of an App
 
 ```
 $ curl -i -X GET http://localhost:7070/events.json?accessKey=<your_accessKey>
 ```
+
+INFO: By default, it returns at most 20 events. Use the `limit` parameter to specify how many events returned (see below). Use cautiously!
 
 In addition, the following *optional* parameters are supported:
 
@@ -488,7 +488,7 @@ In addition, the following *optional* parameters are supported:
   get all.
 - `reversed`: Boolean. When used with both `entityType` and `entityId` specified, returns events in reversed chronological order. Default is false.
 
-> If you are using <code>curl</code> with the <code>&</code> symbol, you should quote the entire URL by using single or double quotes.
+WARNING: If you are using <code>curl</code> with the <code>&</code> symbol, you should quote the entire URL by using single or double quotes.
 
 For example, get all events of an app with `eventTime >= startTime`
 
@@ -516,7 +516,7 @@ $ curl -i -X GET "http://localhost:7070/events.json?accessKey=<your_accessKey>&e
 
 ### Delete All Events of an App
 
-> Please use the following CLI command.
+Please use the following CLI command:
 
 ```
 $ pio app data-delete <your_app_name>
