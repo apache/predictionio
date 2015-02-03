@@ -11,27 +11,10 @@ import n.io.prediction.controller._
 import n.io.prediction.core._
 import grizzled.slf4j.{ Logger, Logging }
 
-object SparkContextSetup {
-  //lazy val sc = new SparkContext("local[4]", "BaseEngineSpec test")
-}
-
-
-trait SparkSpec extends Specification with BeforeAfter {
-  //lazy val sc = new SparkContext("local[4]", "BaseEngineSpec test")
-  var sc: SparkContext = _
-
-  def before {
-    System.clearProperty("spark.driver.port")
-    System.clearProperty("spark.hostPort")
-    sc = new SparkContext("local[4]", "BaseEngineSpec test")
-  }
-  
-  def after {
-    sc.stop()
-    sc = null
-    System.clearProperty("spark.driver.port")
-    System.clearProperty("spark.hostPort")
-  }
+trait SparkSpec extends Specification {
+  System.clearProperty("spark.driver.port")
+  System.clearProperty("spark.hostPort")
+  lazy val sc = new SparkContext("local[4]", "PIO SparkSpec")
 }
 
 
@@ -315,7 +298,6 @@ class EngineWorkflowSpecDev extends SparkSpec {
 
   }
 
-  /*
   "EngineWorkflowSpec.eval" should {
     "Parallel DS/P/A/S" in {
       val id = 167
@@ -349,6 +331,5 @@ class EngineWorkflowSpecDev extends SparkSpec {
 
     }
   }
-  */
 }
 

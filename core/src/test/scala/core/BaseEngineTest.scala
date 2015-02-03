@@ -7,7 +7,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 
-import n.io.prediction.workflow.SparkContextSetup
+import n.io.prediction.workflow.SparkSpec
 
 class BaseEngineSpec extends Specification {
   //System.clearProperty("spark.driver.port")
