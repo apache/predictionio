@@ -322,16 +322,19 @@ Field | Type | Description
             | | `2004-12-13T21:39:45.618Z`, or `2014-09-09T16:17:42.937-08:00`).
 
 
-#### Note About Properties
+## Note About Properties
 
 `properties` can be associated with an *entity* or *event*:
 
 1.  `properties` **associated with an *entity*:**
 
     The following special events are reserved for updating entities and their properties:
-    -  `"$set"` event: Set properties of an entity (also implicitly create the entity). To change properties of entity, you simply set the corresponding properties with value again.
+    -  `"$set"` event: Set properties of an entity (also implicitly create the entity). To change properties of entity, you simply set the corresponding properties with value again. The `$set` events should be created only when:
+      *  The entity is *first* created (or re-create after `$delete` event), or
+      *  Set the entity's existing or new properties to new values (For example, user updates his email, user adds a phone number, item has a updated categories)
     -  `"$unset"` event: Unset properties of an entity. It means treating the specified properties as not existing anymore. Note that the field `properties` cannot be empty for `$unset` event.
     -  `"$delete"` event: delete the entity.
+
 
     There is no `targetEntityId` for these special events.
 
@@ -353,7 +356,7 @@ Field | Type | Description
 
     For example, let's say the following special events are recorded for user-2 with the given eventTime:
 
-    On `2014-09-09T...`, create `$set` event for user-2 with properties a = 3 and b = 4:
+    On `2014-09-09T...`, create the first `$set` event for user-2 with properties a = 3 and b = 4:
 
     ```json
     {

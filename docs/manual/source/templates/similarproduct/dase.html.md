@@ -146,10 +146,7 @@ In `readTraining()`, `Storage.getPEvents()` returns a data access object which y
 
 This Similar Product template requires "user" and "item" entities that are set by events.
 
-`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by events.
-
-
-<!-- // Please refer to  ADD LINK) for more details of setting properties for entities by events.  -->
+`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
 The following code aggregates the properties of `user` and then map each result to a `User()` object.
 
@@ -257,7 +254,7 @@ class TrainingData(
 
 PredictionIO then passes the returned `TrainingData` object to *Data Preparator*.
 
-You could modify the DataSource to [read other event types](/similarproduct/multi-events-multi-algos/) other than the default **view**.
+NOTE: You could modify the DataSource to [read other event types](/templates/similarproduct/multi-events-multi-algos/) other than the default **view**.
 
 ### Data Preparator
 
