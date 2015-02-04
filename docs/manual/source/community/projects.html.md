@@ -57,3 +57,14 @@ based on the PredictionIO Java SDK API.
 - Core Author: Themos Piperakis
 
 - Status: It works with PredictionIO v0.8 - Under active development
+
+
+## GraphX Parallel SimRank Algorithm
+
+URL: https://github.com/ZhouYii/PIO-Parallel-Simrank-Engine
+
+Implementation of Delta-Simrank algorithm using Spark's GraphX framework.
+
+- Core Author: Joey Zhou
+
+- Status: It works with PredictionIO v0.8 - Under active development
