@@ -80,6 +80,8 @@ read and understand it before you start your development. By default, cloning
 PredictionIO will put you in the *develop* branch, which in most cases is where
 all the latest development go to.
 
+NOTE: For core development, please follow the [Scala Style Guide](http://docs.scala-lang.org/style/).
+
 ### Create a Clone of PredictionIO’s Repository
 
 1. Start by creating a GitHub account if you do not already have one.
