@@ -142,7 +142,20 @@ abstract class LAlgorithm[
   
   */
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
-  : RDD[(Long, P)] = sc.emptyRDD[(Long, P)]
+  : RDD[(Long, P)] = {
+    val mRDD = bm.asInstanceOf[RDD[M]]
+    batchPredict(mRDD, qs)
+  }
+
+  def batchPredict(mRDD: RDD[M], qs: RDD[(Long, Q)]): RDD[(Long, P)] = {
+    val glomQs: RDD[Array[(Long, Q)]] = qs.glom()
+    val cartesian: RDD[(M, Array[(Long, Q)])] = mRDD.cartesian(glomQs)
+    cartesian.flatMap { case (m, qArray) => {
+      qArray.map { case (qx, q) => (qx, predict(m, q)) }
+    }}
+  }
+
+  def predict(m: M, q: Q): P
 }
 
 /** Base class of a parallel-to-local algorithm.

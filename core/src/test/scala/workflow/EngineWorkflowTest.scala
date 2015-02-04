@@ -59,9 +59,19 @@ object Engine0 {
     }
   }
   
-  class LDataSource0(id: Int) 
+  class LDataSource0(id: Int, en: Int = 0, qn: Int = 0) 
     extends LDataSource[TrainingData, EvalInfo, Query, Actual] {
     def readTrain(): TrainingData = TrainingData(id)
+    
+    def readEval()
+    : Seq[(TrainingData, EvalInfo, Seq[(Query, Actual)])] = {
+      (0 until en).map { ex => {
+        val qaSeq: Seq[(Query, Actual)] = (0 until qn).map { qx => {
+          (Query(id, ex=ex, qx=qx), Actual(id, ex, qx))
+        }}
+        (TrainingData(id), EvalInfo(id), qaSeq)
+      }}
+    }
   }
   
   class PPreparator0(id: Int = 0)
@@ -114,6 +124,10 @@ object Engine0 {
   class LAlgo0(id: Int = 0) 
   extends LAlgorithm[ProcessedData, LAlgo0.Model, Query, Prediction] {
     def train(pd: ProcessedData): LAlgo0.Model = LAlgo0.Model(id, pd)
+
+    def predict(m: LAlgo0.Model, q: Query): Prediction = {
+      Prediction(id, q, Some(m))
+    }
   }
   
   object LAlgo1 {
@@ -123,6 +137,10 @@ object Engine0 {
   class LAlgo1(id: Int = 0) 
   extends LAlgorithm[ProcessedData, LAlgo1.Model, Query, Prediction] {
     def train(pd: ProcessedData): LAlgo1.Model = LAlgo1.Model(id, pd)
+    
+    def predict(m: LAlgo1.Model, q: Query): Prediction = {
+      Prediction(id, q, Some(m))
+    }
   }
 
   // N : P2L. As N is in the middle of P and L.
@@ -296,6 +314,54 @@ extends FunSuite with Inside with SharedSparkContext {
     val model0 = PAlgo0.Model(3, pd)
     val model1 = PAlgo1.Model(4, pd)
     val model2 = NAlgo1.Model(5, pd)
+
+    forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
+      val (evalInfo, qpaRDD) = evalData
+      evalInfo shouldBe EvalInfo(1)
+
+      val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
+      forAll (qpaSeq) { case (q, p, a) => 
+        val Query(qId, qEx, qQx) = q
+        val Actual(aId, aEx, aQx) = a
+        qId shouldBe aId
+        qEx shouldBe ex
+        aEx shouldBe ex
+        qQx shouldBe aQx
+
+        inside (p) { case Prediction(pId, pQ, pModels, pPs) => {
+          pId shouldBe 10
+          pQ shouldBe q
+          pModels shouldBe None
+          pPs should have size 3
+          pPs shouldBe Seq(
+            Prediction(id = 3, q = q, models = Some(model0)),
+            Prediction(id = 4, q = q, models = Some(model1)),
+            Prediction(id = 5, q = q, models = Some(model2))
+          )
+        }}
+      }
+    }}
+  }
+  
+  test("Local DS/P/A/S") {
+    val en = 2
+    val qn = 5
+
+    val evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = 
+    EngineWorkflow.eval(
+      sc,
+      new LDataSource0(id = 1, en = en, qn = qn),
+      new LPreparator0(id = 2),
+      Seq(
+        new LAlgo0(id = 3), 
+        new LAlgo1(id = 4),
+        new LAlgo1(id = 5)),
+      new LServing0(id = 10))
+
+    val pd = ProcessedData(2, TrainingData(1))
+    val model0 = LAlgo0.Model(3, pd)
+    val model1 = LAlgo1.Model(4, pd)
+    val model2 = LAlgo1.Model(5, pd)
 
     forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
       val (evalInfo, qpaRDD) = evalData

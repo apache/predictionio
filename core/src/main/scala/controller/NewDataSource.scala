@@ -60,13 +60,17 @@ abstract class LDataSource[
 
   def readTrain(): TD
 
-  //def readEvalBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])]
-  def readEvalBase(sc: SparkContext): Seq[(RDD[TD], EI, RDD[(Q, A)])] = readEval(sc)
+  def readEvalBase(sc: SparkContext): Seq[(RDD[TD], EI, RDD[(Q, A)])] = {
+    val localEvalData: Seq[(TD, EI, Seq[(Q, A)])] = readEval()
 
-  // FIXME
-  def readEval(sc: SparkContext): Seq[(RDD[TD], EI, RDD[(Q, A)])] = {
-    Seq[(RDD[TD], EI, RDD[(Q, A)])]()
+    localEvalData.map { case (td, ei, qaSeq) => {
+      val tdRDD = sc.parallelize(Seq(None)).map(_ => td)
+      val qaRDD = sc.parallelize(qaSeq)
+      (tdRDD, ei, qaRDD)
+    }}
   }
+
+  def readEval(): Seq[(TD, EI, Seq[(Q, A)])] 
 }
 
 
