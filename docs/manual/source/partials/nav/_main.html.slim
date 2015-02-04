@@ -11,8 +11,7 @@ nav#nav-main role="navigation"
       ul
         li = link_to_with_active 'Quick Start', '/templates/recommendation/quickstart/'
         li = link_to_with_active 'DASE Components Explained', '/templates/recommendation/dase/'
-        li = link_to_with_active 'How To', '/templates/recommendation/how-to/'
-        
+        li = link_to_with_active 'How To', '/templates/recommendation/how-to/'        
     li.expand
       = link_to 'Similar Product Template', '#'
       ul
@@ -25,8 +24,6 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Quick Start', '/templates/classification/quickstart/'
         li = link_to_with_active 'DASE Components Explained', '/templates/classification/dase/'
         li = link_to_with_active 'How To', '/templates/classification/how-to/'
-
-    li.expand
     li.expand
       = link_to 'Vanilla Template', '#'
       ul
@@ -37,18 +34,16 @@ nav#nav-main role="navigation"
       ul
         li = link_to_with_active 'Overview', '/datacollection/overview/'
         li = link_to_with_active 'Collecting Data', '/datacollection/eventapi/'
-        li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'
-        
+        li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'        
     li.expand
       = link_to 'Demo Tutorials', '#'
       ul
         li = link_to_with_active 'Tapster - Similar Product Template', '/demo/tapster/'  
-        li = link_to_with_active 'Community Contributed', '/demo/community/'
+        li = link_to_with_active 'Community Contributed', '/demo/community/'  
     li.expand
-    = link_to 'Production', '#'
-    ul
-      li = link_to_with_active 'Deploy w/ Cloudformation', '/production/deploy-cloudformation/'
-    
+      = link_to 'Production', '#'
+      ul
+        li = link_to_with_active 'Deploy w/ Cloudformation', '/production/deploy-cloudformation/'
     li.expand
       = link_to 'Get Involved', '#'
       ul
