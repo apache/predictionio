@@ -172,8 +172,10 @@ abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
     */
   def train(pd: PD): M
   
-  def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
-  : RDD[(Long, P)] = sc.emptyRDD[(Long, P)]
+  def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)]) 
+  : RDD[(Long, P)] = batchPredict(bm.asInstanceOf[M], qs)
+
+  def batchPredict(m: M, qs: RDD[(Long, Q)]): RDD[(Long, P)]
 
   /** Implement this method to produce a prediction from a query and trained
     * model.

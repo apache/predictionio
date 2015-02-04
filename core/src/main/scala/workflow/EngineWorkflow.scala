@@ -36,6 +36,10 @@ object EngineWorkflow {
       preparator: BasePreparator[TD, PD],
       algorithmList: Seq[BaseAlgorithm[PD, _, Q, P]],
       serving: BaseServing[Q, P]): Seq[(EI, RDD[(Q, P, A)])] = {
+    logger.info(s"DataSource: $dataSource")
+    logger.info(s"Preparator: $preparator")
+    logger.info(s"AlgorithmList: $algorithmList")
+    logger.info(s"Serving: $serving")
 
     val algoMap: Map[AX, BaseAlgorithm[PD, _, Q, P]] = algorithmList
       .zipWithIndex
@@ -90,7 +94,11 @@ object EngineWorkflow {
       //val unionAlgoPredicts: RDD[(QX, (Seq[P], (Q, A)))] = 
       val unionAlgoPredicts: RDD[(QX, Seq[P])] = sc.union(algoPredicts)
       .groupByKey
-      .mapValues { _.toSeq.sortBy(_._1).map(_._2) }
+      .mapValues { ps => {
+        assert (ps.size == algoCount, "Must have same length as algoCount") 
+        // TODO. Check size == algoCount
+        ps.toSeq.sortBy(_._1).map(_._2) 
+      }}
 
       (ex, unionAlgoPredicts)
     }}
