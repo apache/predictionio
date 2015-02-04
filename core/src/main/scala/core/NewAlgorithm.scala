@@ -10,12 +10,12 @@ abstract class BaseAlgorithm[PD, M, Q, P]
   extends AbstractDoer {
   def trainBase(sc: SparkContext, pd: PD): M
 
+  // Used by Evaluation
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
   : RDD[(Long, P)]
 
-  /*
+  // Used by Deploy
   def predictBase(bm: Any, q: Q): P
-  */
 }
 
 
