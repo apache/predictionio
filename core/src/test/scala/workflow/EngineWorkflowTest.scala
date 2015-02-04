@@ -28,8 +28,6 @@ object Engine0 {
   case class TrainingData(id: Int)
   case class EvalInfo(id: Int)
   case class ProcessedData(id: Int, td: TrainingData)
-  case class PAlgo0Model(id: Int, pd: ProcessedData)
-  case class PAlgo1Model(id: Int, pd: ProcessedData)
 
   case class Query(id: Int, ex: Int = 0, qx: Int = 0)
   case class Actual(id: Int, ex: Int = 0, qx: Int = 0)
@@ -40,11 +38,6 @@ object Engine0 {
   class PDataSource0(id: Int = 0) 
   extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
     def readTrain(sc: SparkContext): TrainingData = {
-      /*
-      logger.info("PDS0.sleep")
-      Thread.sleep(10000)
-      logger.info("PDS0.awake")
-      */
       TrainingData(id)
     }
   }
@@ -56,11 +49,6 @@ object Engine0 {
     override
     def readEval(sc: SparkContext)
     : Seq[(TrainingData, EvalInfo, RDD[(Query, Actual)])] = {
-      /*
-      logger.info("PDS1.sleep")
-      Thread.sleep(10000)
-      logger.info("PDS1.awake")
-      */
       (0 until en).map { ex => {
         val qaSeq: Seq[(Query, Actual)] = (0 until qn).map { qx => {
           (Query(id, ex=ex, qx=qx), Actual(id, ex, qx))
@@ -70,31 +58,89 @@ object Engine0 {
     }
   }
   
-  class PPreparator0(id: Int = 0) extends PPreparator[TrainingData, ProcessedData] {
+  class LDataSource0(id: Int) 
+    extends LDataSource[TrainingData, EvalInfo, Query, Actual] {
+    def readTrain(): TrainingData = TrainingData(id)
+  }
+  
+  class PPreparator0(id: Int = 0)
+  extends PPreparator[TrainingData, ProcessedData] {
     def prepare(sc: SparkContext, td: TrainingData): ProcessedData = {
       ProcessedData(id, td)
     }
   }
 
-  class PAlgo0(id: Int = 0)
-  extends PAlgorithm[ProcessedData, PAlgo0Model, Query, Prediction] {
-    def train(pd: ProcessedData): PAlgo0Model = PAlgo0Model(id, pd)
+  class LPreparator0(id: Int = 0) 
+  extends LPreparator[TrainingData, ProcessedData] {
+    def prepare(td: TrainingData): ProcessedData = {
+      ProcessedData(id, td)
+    }
+  }
 
-    def batchPredict(m: PAlgo0Model, qs: RDD[(Long, Query)])
+  object PAlgo0 {
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class PAlgo0(id: Int = 0)
+  extends PAlgorithm[ProcessedData, PAlgo0.Model, Query, Prediction] {
+    def train(pd: ProcessedData): PAlgo0.Model = PAlgo0.Model(id, pd)
+
+    def batchPredict(m: PAlgo0.Model, qs: RDD[(Long, Query)])
     : RDD[(Long, Prediction)] = {
       qs.mapValues(q => Prediction(id, q, Some(m)))
     }
   }
 
-  class PAlgo1(id: Int = 0)
-  extends PAlgorithm[ProcessedData, PAlgo1Model, Query, Prediction] {
-    def train(pd: ProcessedData): PAlgo1Model = PAlgo1Model(id, pd)
+  object PAlgo1 {
+    case class Model(id: Int, pd: ProcessedData)
+  }
 
-    def batchPredict(m: PAlgo1Model, qs: RDD[(Long, Query)])
+  class PAlgo1(id: Int = 0)
+  extends PAlgorithm[ProcessedData, PAlgo1.Model, Query, Prediction] {
+    def train(pd: ProcessedData): PAlgo1.Model = PAlgo1.Model(id, pd)
+
+    def batchPredict(m: PAlgo1.Model, qs: RDD[(Long, Query)])
     : RDD[(Long, Prediction)] = {
       qs.mapValues(q => Prediction(id, q, Some(m)))
     }
     
+  }
+  
+  object LAlgo0 {
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class LAlgo0(id: Int = 0) 
+  extends LAlgorithm[ProcessedData, LAlgo0.Model, Query, Actual] {
+    def train(pd: ProcessedData): LAlgo0.Model = LAlgo0.Model(id, pd)
+  }
+  
+  object LAlgo1 {
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class LAlgo1(id: Int = 0) 
+  extends LAlgorithm[ProcessedData, LAlgo1.Model, Query, Actual] {
+    def train(pd: ProcessedData): LAlgo1.Model = LAlgo1.Model(id, pd)
+  }
+
+  // N : P2L. As N is in the middle of P and L.
+  object NAlgo0 {
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class NAlgo0 (id: Int = 0)
+  extends P2LAlgorithm[ProcessedData, NAlgo0.Model, Query, Actual] {
+    def train(pd: ProcessedData): NAlgo0.Model = NAlgo0.Model(id, pd)
+  }
+
+  object NAlgo1 {
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class NAlgo1 (id: Int = 0)
+  extends P2LAlgorithm[ProcessedData, NAlgo1.Model, Query, Actual] {
+    def train(pd: ProcessedData): NAlgo1.Model = NAlgo1.Model(id, pd)
   }
   
   class LServing0(id: Int = 0) extends LServing[Query, Prediction] {
@@ -102,91 +148,6 @@ object Engine0 {
       Prediction(id, q, ps=ps)
     }
   }
-
-  /*
-  case class Query(z: Int)
-  case class Actual(z: Int)
-  */
-
-
-  /*
-  class PDataSource0(k: Int) 
-    extends PDataSource[String, String, String, String] {
-    def readTrain(sc: SparkContext): String = s"PD0($k)"
-  }
-  
-  class PDataSource1(k: Int, e: Int, qan: Int) 
-    extends PDataSource[String, String, String, String] {
-    def readTrain(sc: SparkContext): String = s"PD1($k)"
-
-    override
-    def readEval(sc: SparkContext)
-    : Seq[(String, String, RDD[(String, String)])] = {
-      (0 until e).map { ei => {
-        val qaSeq: Seq[(String, String)] = (0 until qan).map { qai => {
-          (s"PD1(Q($ei,$qai))", s"PD1(A($ei,$qai))")
-        }}
-        (s"PD1($ei,$k)", s"PD1(E($ei,$k))", sc.parallelize(qaSeq))
-      }}
-    }
-  }
-  
-  class LDataSource0(k: Int) 
-    extends LDataSource[String, String, String, String] {
-    def readTrain(): String = s"LD0($k)"
-  }
-
-  class PPreparator0 extends PPreparator[String, String] {
-    def prepare(sc: SparkContext, td: String): String = s"PP0($td)"
-  }
-
-  class LPreparator0 extends LPreparator[String, String] {
-    def prepare(td: String): String = s"LP0($td)"
-  }
-    
-  class PAlgo0 extends PAlgorithm[String, String, String, String] {
-    def train(pd: String): String = s"PA0($pd)"
-
-    def batchPredict(m: String, qs: RDD[(Long, String)])
-    : RDD[(Long, String)] = {
-      qs.mapValues(q => s"PA0(M($m),Q($q)")
-    }
-  }
-
-  class PAlgo1 extends PAlgorithm[String, String, String, String] {
-    def train(pd: String): String = s"PA1($pd)"
-
-    def batchPredict(m: String, qs: RDD[(Long, String)])
-    : RDD[(Long, String)] = {
-      qs.mapValues(q => s"PA1(M($m),Q($q)")
-    }
-  }
-  */
- 
-  /*
-  class LAlgo0 extends LAlgorithm[String, String, String, String] {
-    def train(pd: String): String = s"LA0($pd)"
-  }
-
-  class LAlgo1 extends LAlgorithm[String, String, String, String] {
-    def train(pd: String): String = s"LA1($pd)"
-  }
- 
-  // N : P2L. As N is in the middle of P and L.
-  class NAlgo0 extends P2LAlgorithm[String, String, String, String] {
-    def train(pd: String): String = s"NA0($pd)"
-  }
-
-  class NAlgo1 extends P2LAlgorithm[String, String, String, String] {
-    def train(pd: String): String = s"NA1($pd)"
-  }
-
-  class LServing0 extends LServing[String, String] {
-    def serve(q: String, ps: Seq[String]): String = {
-      ps.mkString("LS0(", ",", ")")
-    }
-  }
-  */
 }
 
 class EngineWorkflowSuite extends FunSuite with SharedSparkContext {
@@ -197,158 +158,65 @@ class EngineWorkflowSuite extends FunSuite with SharedSparkContext {
   }
 }
 
-class EngineWorkflowTrainDevSuite extends FunSuite with SharedSparkContext {
+class EngineWorkflowTrainSuite extends FunSuite with SharedSparkContext {
   import n.io.prediction.workflow.Engine0._
   test("Parallel DS/P/Algos") {
     val models = EngineWorkflow.train(
       sc,
-      new Engine0.PDataSource0(0),
-      new Engine0.PPreparator0(1),
+      new PDataSource0(0),
+      new PPreparator0(1),
       Seq(
-        new Engine0.PAlgo0(2),
-        new Engine0.PAlgo1(3),
-        new Engine0.PAlgo0(4)))
+        new PAlgo0(2),
+        new PAlgo1(3),
+        new PAlgo0(4)))
 
     val pd = ProcessedData(1, TrainingData(0))
 
-    //models must beEqualTo(
-    //  Seq(PAlgo0Model(2, pd), PAlgo1Model(3, pd), PAlgo0Model(4, pd)))
     models should contain theSameElementsAs Seq(
-      PAlgo0Model(2, pd), PAlgo1Model(3, pd), PAlgo0Model(4, pd))
+      PAlgo0.Model(2, pd), PAlgo1.Model(3, pd), PAlgo0.Model(4, pd))
+  }
 
+  test("Local DS/P/Algos") {
+    val models = EngineWorkflow.train(
+      sc,
+      new LDataSource0(0),
+      new LPreparator0(1),
+      Seq(
+        new LAlgo0(2),
+        new LAlgo1(3),
+        new LAlgo0(4)))
+    
+    val pd = ProcessedData(1, TrainingData(0))
+
+    val expectedResults = Seq(
+      LAlgo0.Model(2, pd),
+      LAlgo1.Model(3, pd),
+      LAlgo0.Model(4, pd))
+
+    forAll(models.zip(expectedResults)) { case (model, expected) => 
+      model shouldBe a [RDD[_]]
+      val localModel = model.asInstanceOf[RDD[_]].collect
+      localModel should contain theSameElementsAs Seq(expected)
+    }
+  }
+
+  test("P2L DS/P/Algos") {
+    val models = EngineWorkflow.train(
+      sc,
+      new PDataSource0(0),
+      new PPreparator0(1),
+      Seq(
+        new NAlgo0(2),
+        new NAlgo1(3),
+        new NAlgo0(4)))
+
+    val pd = ProcessedData(1, TrainingData(0))
+    
+    models should contain theSameElementsAs Seq(
+      NAlgo0.Model(2, pd), NAlgo1.Model(3, pd), NAlgo0.Model(4, pd))
   }
 }
 
-
-//class EngineWorkflowSpecDev extends Specification {
-//class EngineWorkflowSpecDev extends SparkSpec {
-//  import n.io.prediction.workflow.Engine0._
-
-  //System.clearProperty("spark.driver.port")
-  //System.clearProperty("spark.hostPort")
-  //val sc = SparkContextSetup.sc
-  //val sc = new SparkContext("local[4]", "BaseEngineSpec test")
-
-  /*
-  @transient lazy val logger = Logger[this.type] 
-
-  "EngineWorkflowSpec.train" should {
-
-    "Parallel DS/P/Algos" in {
-      val models = EngineWorkflow.train(
-        sc,
-        new Engine0.PDataSource0(0),
-        new Engine0.PPreparator0(1),
-        Seq(
-          new Engine0.PAlgo0(2),
-          new Engine0.PAlgo1(3),
-          new Engine0.PAlgo0(4)))
-
-      val pd = ProcessedData(1, TrainingData(0))
-
-      models must beEqualTo(
-        Seq(PAlgo0Model(2, pd), PAlgo1Model(3, pd), PAlgo0Model(4, pd)))
-    }
-
-
-
-
-
-    "XX" in {
-      val a = ProcessedData(0, TrainingData(1))
-      val b = ProcessedData(0, TrainingData(1))
-      val c = ProcessedData(0, TrainingData(2))
-      
-      a === b
-      a !== c
-    }
-
-    "YY" in {
-      val pd = ProcessedData(1, TrainingData(3))
-
-      val p0 = Prediction(1, Query(2), Some(PAlgo0Model(3, pd)))
-      val p1 = Prediction(1, Query(2), Some(PAlgo0Model(4, pd)))
-      val p2 = Prediction(1, Query(2), Some(PAlgo1Model(3, pd)))
-
-      p0 !== p1
-      p0 !== p2
-      p1 !== p2
-    }
-    */
-
-    /*
-    "Parallel DS/P/Algos" in {
-      val models = EngineWorkflow.train(
-        sc,
-        new Engine0.PDataSource0(9527),
-        new Engine0.PPreparator0(),
-        Seq(
-          new Engine0.PAlgo0(),
-          new Engine0.PAlgo1(),
-          new Engine0.PAlgo0()))
-
-      models must beEqualTo(
-        Seq("PA0(PP0(PD0(9527)))", "PA1(PP0(PD0(9527)))", "PA0(PP0(PD0(9527)))")
-      )
-    }
-    */
-
-    /*
-    "Parallel DS/P/Algos" in {
-      val models = EngineWorkflow.train(
-        sc,
-        new Engine0.PDataSource0(9527),
-        new Engine0.PPreparator0(),
-        Seq(
-          new Engine0.PAlgo0(),
-          new Engine0.PAlgo1(),
-          new Engine0.PAlgo0()))
-
-      models must beEqualTo(
-        Seq("PA0(PP0(PD0(9527)))", "PA1(PP0(PD0(9527)))", "PA0(PP0(PD0(9527)))")
-      )
-    }
-  
-    "Local DS/P/Algos" in {
-      val models = EngineWorkflow.train(
-        sc,
-        new Engine0.LDataSource0(9527),
-        new Engine0.LPreparator0(),
-        Seq(
-          new Engine0.LAlgo0(),
-          new Engine0.LAlgo1(),
-          new Engine0.LAlgo0()))
-
-      val expectedResults = Seq(
-        "LA0(LP0(LD0(9527)))", 
-        "LA1(LP0(LD0(9527)))", 
-        "LA0(LP0(LD0(9527)))")
-
-      foreach(models.zip(expectedResults)) { case (model, expected) => 
-        model must beAnInstanceOf[RDD[String]]
-        val localModel = model.asInstanceOf[RDD[String]].collect
-        localModel.toSeq must contain(exactly(expected))
-      }
-    }
-
-    "P2L DS/P/Algos" in {
-      val models = EngineWorkflow.train(
-        sc,
-        new Engine0.PDataSource0(9527),
-        new Engine0.PPreparator0(),
-        Seq(
-          new Engine0.NAlgo0(),
-          new Engine0.NAlgo1(),
-          new Engine0.NAlgo0()))
-      
-      models must beEqualTo(
-        Seq("NA0(PP0(PD0(9527)))", "NA1(PP0(PD0(9527)))", "NA0(PP0(PD0(9527)))")
-      )
-    }
-
-  }
-    */
-//}
 
 class EngineWorkflowEvalDevSuite extends FunSuite with SharedSparkContext {
   import n.io.prediction.workflow.Engine0._
@@ -356,33 +224,42 @@ class EngineWorkflowEvalDevSuite extends FunSuite with SharedSparkContext {
   @transient lazy val logger = Logger[this.type] 
 
   test("Parallel DS/P/A/S") {
-    val id = 167
     val en = 2
     val qn = 5
 
     val evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = 
     EngineWorkflow.eval(
       sc,
-      new PDataSource1(id = id, en = en, qn = qn),
-      new PPreparator0(),
-      Seq(new PAlgo0()),
-      new LServing0())
+      new PDataSource1(id = 1, en = en, qn = qn),
+      new PPreparator0(id = 2),
+      Seq(
+        new PAlgo0(id = 3), 
+        new PAlgo1(id = 4)),
+      new LServing0(id = 10))
 
-    //val qRegex = """(\w+)\(Q\((\d+),(\d+)\)\)""".r
-    //val aRegex = """(\w+)\(A\((\d+),(\d+)\)\)""".r
+    val pd = ProcessedData(2, TrainingData(1))
+    val model0 = PAlgo0.Model(3, pd)
+    val model1 = PAlgo1.Model(4, pd)
 
     forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
       val (evalInfo, qpaRDD) = evalData
-      //assert(evalInfo === EvalInfo(id))
-      evalInfo shouldBe EvalInfo(id)
-      //evalInfo === s"PD1(E($ex,$k))"
+      evalInfo shouldBe EvalInfo(1)
 
       val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
       forAll (qpaSeq) { case (q, p, a) => 
-        val Query(qId, _, _) = q
-        val Actual(aId, _, _) = a
-        //assert(qId === aId)
+        val Query(qId, qEx, qQx) = q
+        val Actual(aId, aEx, aQx) = a
         qId shouldBe aId
+        qEx shouldBe ex
+        aEx shouldBe ex
+        qQx shouldBe aQx
+
+        val expectedP = Prediction(id = 10, q = q, models = None,
+          ps = Seq(
+            Prediction(id = 3, q = q, models = Some(model0)),
+            Prediction(id = 4, q = q, models = Some(model1))
+          ))
+        p shouldBe expectedP
       }
 
     }}
