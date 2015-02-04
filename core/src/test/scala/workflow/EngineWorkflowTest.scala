@@ -4,6 +4,7 @@ package n.io.prediction.workflow
 
 //import org.apache.spark.SharedSparkContext
 import org.scalatest.FunSuite
+import org.scalatest.Inside
 import org.scalatest.Matchers._
 import org.scalatest.Inspectors._
 
@@ -111,7 +112,7 @@ object Engine0 {
   }
 
   class LAlgo0(id: Int = 0) 
-  extends LAlgorithm[ProcessedData, LAlgo0.Model, Query, Actual] {
+  extends LAlgorithm[ProcessedData, LAlgo0.Model, Query, Prediction] {
     def train(pd: ProcessedData): LAlgo0.Model = LAlgo0.Model(id, pd)
   }
   
@@ -120,7 +121,7 @@ object Engine0 {
   }
 
   class LAlgo1(id: Int = 0) 
-  extends LAlgorithm[ProcessedData, LAlgo1.Model, Query, Actual] {
+  extends LAlgorithm[ProcessedData, LAlgo1.Model, Query, Prediction] {
     def train(pd: ProcessedData): LAlgo1.Model = LAlgo1.Model(id, pd)
   }
 
@@ -130,8 +131,13 @@ object Engine0 {
   }
 
   class NAlgo0 (id: Int = 0)
-  extends P2LAlgorithm[ProcessedData, NAlgo0.Model, Query, Actual] {
+  extends P2LAlgorithm[ProcessedData, NAlgo0.Model, Query, Prediction] {
     def train(pd: ProcessedData): NAlgo0.Model = NAlgo0.Model(id, pd)
+    
+    def batchPredict(m: NAlgo0.Model, qs: RDD[(Long, Query)])
+    : RDD[(Long, Prediction)] = {
+      qs.mapValues(q => Prediction(id, q, Some(m)))
+    }
   }
 
   object NAlgo1 {
@@ -139,8 +145,13 @@ object Engine0 {
   }
 
   class NAlgo1 (id: Int = 0)
-  extends P2LAlgorithm[ProcessedData, NAlgo1.Model, Query, Actual] {
+  extends P2LAlgorithm[ProcessedData, NAlgo1.Model, Query, Prediction] {
     def train(pd: ProcessedData): NAlgo1.Model = NAlgo1.Model(id, pd)
+    
+    def batchPredict(m: NAlgo1.Model, qs: RDD[(Long, Query)])
+    : RDD[(Long, Prediction)] = {
+      qs.mapValues(q => Prediction(id, q, Some(m)))
+    }
   }
   
   class LServing0(id: Int = 0) extends LServing[Query, Prediction] {
@@ -218,12 +229,13 @@ class EngineWorkflowTrainSuite extends FunSuite with SharedSparkContext {
 }
 
 
-class EngineWorkflowEvalDevSuite extends FunSuite with SharedSparkContext {
+class EngineWorkflowEvalDevSuite
+extends FunSuite with Inside with SharedSparkContext {
   import n.io.prediction.workflow.Engine0._
 
   @transient lazy val logger = Logger[this.type] 
-
-  test("Parallel DS/P/A/S") {
+  
+  test("Simple Parallel DS/P/A/S") {
     val en = 2
     val qn = 5
 
@@ -232,14 +244,11 @@ class EngineWorkflowEvalDevSuite extends FunSuite with SharedSparkContext {
       sc,
       new PDataSource1(id = 1, en = en, qn = qn),
       new PPreparator0(id = 2),
-      Seq(
-        new PAlgo0(id = 3), 
-        new PAlgo1(id = 4)),
+      Seq(new PAlgo0(id = 3)),
       new LServing0(id = 10))
 
     val pd = ProcessedData(2, TrainingData(1))
     val model0 = PAlgo0.Model(3, pd)
-    val model1 = PAlgo1.Model(4, pd)
 
     forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
       val (evalInfo, qpaRDD) = evalData
@@ -254,12 +263,64 @@ class EngineWorkflowEvalDevSuite extends FunSuite with SharedSparkContext {
         aEx shouldBe ex
         qQx shouldBe aQx
 
-        val expectedP = Prediction(id = 10, q = q, models = None,
-          ps = Seq(
+        inside (p) { case Prediction(pId, pQ, pModels, pPs) => {
+          pId shouldBe 10
+          pQ shouldBe q
+          pModels shouldBe None
+          pPs should have size 1
+          pPs shouldBe Seq(
+            Prediction(id = 3, q = q, models = Some(model0)))
+        }}
+      }
+
+    }}
+
+  }
+
+  test("Parallel DS/P/A/S") {
+    val en = 2
+    val qn = 5
+
+    val evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = 
+    EngineWorkflow.eval(
+      sc,
+      new PDataSource1(id = 1, en = en, qn = qn),
+      new PPreparator0(id = 2),
+      Seq(
+        new PAlgo0(id = 3), 
+        new PAlgo1(id = 4),
+        new NAlgo1(id = 5)),
+      new LServing0(id = 10))
+
+    val pd = ProcessedData(2, TrainingData(1))
+    val model0 = PAlgo0.Model(3, pd)
+    val model1 = PAlgo1.Model(4, pd)
+    val model2 = NAlgo1.Model(5, pd)
+
+    forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
+      val (evalInfo, qpaRDD) = evalData
+      evalInfo shouldBe EvalInfo(1)
+
+      val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
+      forAll (qpaSeq) { case (q, p, a) => 
+        val Query(qId, qEx, qQx) = q
+        val Actual(aId, aEx, aQx) = a
+        qId shouldBe aId
+        qEx shouldBe ex
+        aEx shouldBe ex
+        qQx shouldBe aQx
+
+        inside (p) { case Prediction(pId, pQ, pModels, pPs) => {
+          pId shouldBe 10
+          pQ shouldBe q
+          pModels shouldBe None
+          pPs should have size 3
+          pPs shouldBe Seq(
             Prediction(id = 3, q = q, models = Some(model0)),
-            Prediction(id = 4, q = q, models = Some(model1))
-          ))
-        p shouldBe expectedP
+            Prediction(id = 4, q = q, models = Some(model1)),
+            Prediction(id = 5, q = q, models = Some(model2))
+          )
+        }}
       }
 
     }}
