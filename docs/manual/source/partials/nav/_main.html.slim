@@ -44,15 +44,17 @@ nav#nav-main role="navigation"
       ul
         li = link_to_with_active 'Tapster - Similar Product Template', '/demo/tapster/'  
         li = link_to_with_active 'Community Contributed', '/demo/community/'
-        
-        
+    li.expand
+    = link_to 'Production', '#'
+    ul
+      li = link_to_with_active 'Deploy w/ Cloudformation', '/production/deploy-cloudformation/'
+    
     li.expand
       = link_to 'Get Involved', '#'
       ul
         li = link_to_with_active 'Contribute Code', '/community/contribute-code/'
         li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation/'
         li = link_to_with_active 'Community Projects', '/community/projects/'
-        
     li.expand
       = link_to 'SDKs and Plugins', '#'
       ul
@@ -60,6 +62,7 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'PHP SDK', '/sdk/php/'
         li = link_to_with_active 'Python SDK', '/sdk/python/'
         li = link_to_with_active 'Ruby SDK', '/sdk/ruby/'
+        
     li.expand
       = link_to 'Resources', '#'
       ul
