@@ -1,6 +1,11 @@
 package n.io.prediction.workflow
 
-import org.specs2.mutable._
+//import org.specs2.mutable._
+
+//import org.apache.spark.SharedSparkContext
+import org.scalatest.FunSuite
+import org.scalatest.Matchers._
+import org.scalatest.Inspectors._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -11,14 +16,15 @@ import n.io.prediction.controller._
 import n.io.prediction.core._
 import grizzled.slf4j.{ Logger, Logging }
 
-trait SparkSpec extends Specification {
-  System.clearProperty("spark.driver.port")
-  System.clearProperty("spark.hostPort")
-  lazy val sc = new SparkContext("local[4]", "PIO SparkSpec")
-}
+import java.lang.Thread
+
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.Suite
 
 
 object Engine0 {
+  @transient lazy val logger = Logger[this.type] 
+
   case class TrainingData(id: Int)
   case class EvalInfo(id: Int)
   case class ProcessedData(id: Int, td: TrainingData)
@@ -33,7 +39,14 @@ object Engine0 {
 
   class PDataSource0(id: Int = 0) 
   extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
-    def readTrain(sc: SparkContext): TrainingData = TrainingData(id)
+    def readTrain(sc: SparkContext): TrainingData = {
+      /*
+      logger.info("PDS0.sleep")
+      Thread.sleep(10000)
+      logger.info("PDS0.awake")
+      */
+      TrainingData(id)
+    }
   }
   
   class PDataSource1(id: Int = 0, en: Int = 0, qn: Int = 0)
@@ -43,6 +56,11 @@ object Engine0 {
     override
     def readEval(sc: SparkContext)
     : Seq[(TrainingData, EvalInfo, RDD[(Query, Actual)])] = {
+      /*
+      logger.info("PDS1.sleep")
+      Thread.sleep(10000)
+      logger.info("PDS1.awake")
+      */
       (0 until en).map { ex => {
         val qaSeq: Seq[(Query, Actual)] = (0 until qn).map { qx => {
           (Query(id, ex=ex, qx=qx), Actual(id, ex, qx))
@@ -171,15 +189,47 @@ object Engine0 {
   */
 }
 
+class EngineWorkflowSuite extends FunSuite with SharedSparkContext {
+  test("Simple") {
+    val rdd: RDD[Int] = sc.parallelize(Seq(1,2,3))
+    assert(rdd.collect === Array(1,2,3))
+    assert(rdd.collect === Array(1,2,3))
+  }
+}
+
+class EngineWorkflowTrainDevSuite extends FunSuite with SharedSparkContext {
+  import n.io.prediction.workflow.Engine0._
+  test("Parallel DS/P/Algos") {
+    val models = EngineWorkflow.train(
+      sc,
+      new Engine0.PDataSource0(0),
+      new Engine0.PPreparator0(1),
+      Seq(
+        new Engine0.PAlgo0(2),
+        new Engine0.PAlgo1(3),
+        new Engine0.PAlgo0(4)))
+
+    val pd = ProcessedData(1, TrainingData(0))
+
+    //models must beEqualTo(
+    //  Seq(PAlgo0Model(2, pd), PAlgo1Model(3, pd), PAlgo0Model(4, pd)))
+    models should contain theSameElementsAs Seq(
+      PAlgo0Model(2, pd), PAlgo1Model(3, pd), PAlgo0Model(4, pd))
+
+  }
+}
+
 
 //class EngineWorkflowSpecDev extends Specification {
-class EngineWorkflowSpecDev extends SparkSpec {
-  import n.io.prediction.workflow.Engine0._
+//class EngineWorkflowSpecDev extends SparkSpec {
+//  import n.io.prediction.workflow.Engine0._
 
   //System.clearProperty("spark.driver.port")
   //System.clearProperty("spark.hostPort")
   //val sc = SparkContextSetup.sc
   //val sc = new SparkContext("local[4]", "BaseEngineSpec test")
+
+  /*
   @transient lazy val logger = Logger[this.type] 
 
   "EngineWorkflowSpec.train" should {
@@ -224,6 +274,7 @@ class EngineWorkflowSpecDev extends SparkSpec {
       p0 !== p2
       p1 !== p2
     }
+    */
 
     /*
     "Parallel DS/P/Algos" in {
@@ -294,42 +345,48 @@ class EngineWorkflowSpecDev extends SparkSpec {
         Seq("NA0(PP0(PD0(9527)))", "NA1(PP0(PD0(9527)))", "NA0(PP0(PD0(9527)))")
       )
     }
-    */
 
   }
+    */
+//}
 
-  "EngineWorkflowSpec.eval" should {
-    "Parallel DS/P/A/S" in {
-      val id = 167
-      val en = 2
-      val qn = 5
+class EngineWorkflowEvalDevSuite extends FunSuite with SharedSparkContext {
+  import n.io.prediction.workflow.Engine0._
 
-      val evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = 
-      EngineWorkflow.eval(
-        sc,
-        new PDataSource1(id = id, en = en, qn = qn),
-        new PPreparator0(),
-        Seq(new PAlgo0()),
-        new LServing0())
+  @transient lazy val logger = Logger[this.type] 
 
-      //val qRegex = """(\w+)\(Q\((\d+),(\d+)\)\)""".r
-      //val aRegex = """(\w+)\(A\((\d+),(\d+)\)\)""".r
+  test("Parallel DS/P/A/S") {
+    val id = 167
+    val en = 2
+    val qn = 5
 
-      foreach(evalDataSet.zipWithIndex) { case (evalData, ex) => {
-        val (evalInfo, qpaRDD) = evalData
-        evalInfo === EvalInfo(id)
-        //evalInfo === s"PD1(E($ex,$k))"
+    val evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = 
+    EngineWorkflow.eval(
+      sc,
+      new PDataSource1(id = id, en = en, qn = qn),
+      new PPreparator0(),
+      Seq(new PAlgo0()),
+      new LServing0())
 
-        val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
-        foreach (qpaSeq) { case (q, p, a) => 
-          val Query(qId, _, _) = q
-          val Actual(aId, _, _) = a
-          qId == aId
-        }
+    //val qRegex = """(\w+)\(Q\((\d+),(\d+)\)\)""".r
+    //val aRegex = """(\w+)\(A\((\d+),(\d+)\)\)""".r
 
-      }}
+    forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
+      val (evalInfo, qpaRDD) = evalData
+      //assert(evalInfo === EvalInfo(id))
+      evalInfo shouldBe EvalInfo(id)
+      //evalInfo === s"PD1(E($ex,$k))"
 
-    }
+      val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
+      forAll (qpaSeq) { case (q, p, a) => 
+        val Query(qId, _, _) = q
+        val Actual(aId, _, _) = a
+        //assert(qId === aId)
+        qId shouldBe aId
+      }
+
+    }}
+
   }
 }
 
