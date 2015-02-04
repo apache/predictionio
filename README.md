@@ -22,7 +22,7 @@ Five installation options available.
   If you are installing from source code, it's recommended that you clone the master branch.
 * [Launching PredictionIO on AWS](http://docs.prediction.io/install/launch-aws/)
 * [Installing PredictionIO with Docker](https://github.com/mingfang/docker-predictionio) (Community contributed)
-* [Installing PredictionIO with Vagrant](https://github.com/magento-hackathon/PredictionIO-Vagrant) (Community contributed)
+* [Installing PredictionIO with Vagrant](http://docs.prediction.io/install/install-vagrant/)
 
 
 ## Quick start
