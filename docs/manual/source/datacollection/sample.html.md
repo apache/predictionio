@@ -14,7 +14,7 @@ http://grouplens.org/datasets/movielens/
 - Orange (KDD09)
 http://www.sigkdd.org/kdd-cup-2009-customer-relationship-prediction
 
-- LendingClub
+- Lending Club
 https://www.lendingclub.com/info/download-data.action
 
 - Amazon Reviews
@@ -30,12 +30,11 @@ http://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/task.html
 - Twitter (User Follows)
 http://an.kaist.ac.kr/traces/WWW2010.html
 
-- Youtube
+- YouTube
 http://netsg.cs.sfu.ca/youtubedata/
 
 - Million Song Dataset
 http://labrosa.ee.columbia.edu/millionsong/
-https://www.kaggle.com/c/msdchallenge/data
 
 - Yahoo! Music
 http://webscope.sandbox.yahoo.com/catalog.php?datatype=r
@@ -49,7 +48,7 @@ http://www.redditblog.com/2011/09/who-in-world-is-reddit-results-are-in.html
 - Ancestry.com
 http://www.cs.cmu.edu/~jelsas/data/ancestry.com/
 
-- Airline On-time data (12GB uncompressed)
+- Airline On-time data
 http://stat-computing.org/dataexpo/2009/the-data.html
 
 - Stack Overflow
@@ -80,7 +79,7 @@ https://www.kddcup2012.org/c/kddcup2012-track1
 https://www.kaggle.com/c/stumbleupon/data
 
 - Adzuna
-https://www.kaggle.com/c/job-salary-prediction [Regression]
+https://www.kaggle.com/c/job-salary-prediction
 
 - Event Recommendation
 https://www.kaggle.com/c/event-recommendation-engine-challenge
@@ -103,3 +102,6 @@ https://www.kaggle.com/c/march-machine-learning-mania/data
 
 - Open Public Football Data (e.g., World Cup)
 https://github.com/openfootball
+
+– CrowdFlower Open Data Library
+http://www.crowdflower.com/open-data-library
