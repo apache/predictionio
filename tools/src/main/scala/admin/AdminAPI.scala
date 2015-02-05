@@ -118,6 +118,7 @@ class AdminServerActor(val commandClient: CommandClient) extends Actor {
   def receive = {
     case StartServer(host, portNum) => {
       IO(Http) ! Http.Bind(child, interface = host, port = portNum)
+      
     }
     case m: Http.Bound => log.info("Bound received. AdminServer is ready.")
     case m: Http.CommandFailed => log.error("Command failed.")
