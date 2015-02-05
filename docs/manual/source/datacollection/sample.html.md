@@ -8,10 +8,12 @@ scripts with the community, you can post it on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user) or
 [here](../community/projects.html).
 
+## Datasets
+
 - MovieLens
 http://grouplens.org/datasets/movielens/
 
-- Orange (KDD09)
+- Orange
 http://www.sigkdd.org/kdd-cup-2009-customer-relationship-prediction
 
 - Lending Club
@@ -21,13 +23,10 @@ https://www.lendingclub.com/info/download-data.action
 http://archive.ics.uci.edu/ml/datasets/Amazon+Commerce+reviews+set and
 https://snap.stanford.edu/data/web-Amazon.html
 
-- Twitter (French)
-http://archive.ics.uci.edu/ml/datasets/Buzz+in+social+media+#
-
-- Intrusion Detector Learning (KDD99)
+- Intrusion Detector Learning
 http://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/task.html
 
-- Twitter (User Follows)
+- Twitter
 http://an.kaist.ac.kr/traces/WWW2010.html
 
 - YouTube
@@ -72,7 +71,7 @@ https://www.kaggle.com/c/socialNetwork/data
 - Careerbuilder
 https://www.kaggle.com/c/job-recommendation/data
 
-- Tencent Weibo (KDD12)
+- Tencent Weibo
 https://www.kddcup2012.org/c/kddcup2012-track1
 
 - StumbleUpon
@@ -103,5 +102,16 @@ https://www.kaggle.com/c/march-machine-learning-mania/data
 - Open Public Football Data (e.g., World Cup)
 https://github.com/openfootball
 
-– CrowdFlower Open Data Library
+## Other Lists, Libraries and Sources of Data
+
+- CrowdFlower Open Data Library
 http://www.crowdflower.com/open-data-library
+
+- bit.ly's Research Quality Data Sets
+https://bitly.com/bundles/hmason/1
+
+- Stanford Large Network Dataset Collection
+http://snap.stanford.edu/data/index.html
+
+- UC Irvine Machine Learning Repository
+http://archive.ics.uci.edu/ml/
