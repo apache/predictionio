@@ -13,13 +13,11 @@
   * limitations under the License.
   */
 
-package io.prediction.tools
+package io.prediction.tools.console
 
 import io.prediction.tools.admin.{AdminServer, AdminServerConfig}
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
-import io.prediction.data.storage.App
-import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
@@ -28,6 +26,11 @@ import io.prediction.data.storage.hbase.upgrade.CheckDistribution
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.{EventServer, EventServerConfig}
+import io.prediction.data.api.EventServer
+import io.prediction.data.api.EventServerConfig
+import io.prediction.tools.RegisterEngine
+import io.prediction.tools.RunServer
+import io.prediction.tools.RunWorkflow
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -57,22 +60,16 @@ case class ConsoleArgs(
   adminServer: AdminServerArgs = AdminServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
-  template: console.TemplateArgs = console.TemplateArgs(),
+  template: TemplateArgs = TemplateArgs(),
   commands: Seq[String] = Seq(),
-  batch: String = "",
   metricsClass: Option[String] = None,
-  dataSourceParamsJsonPath: Option[String] = None,
-  preparatorParamsJsonPath: Option[String] = None,
-  algorithmsParamsJsonPath: Option[String] = None,
-  servingParamsJsonPath: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
   paramsPath: String = "params",
   engineInstanceId: Option[String] = None,
-  mainClass: Option[String] = None,
-  projectName: Option[String] = None,
-  directoryName: Option[String] = None)
+  mainClass: Option[String] = None)
 
 case class CommonArgs(
+  batch: String = "",
   sparkPassThrough: Seq[String] = Seq(),
   driverPassThrough: Seq[String] = Seq(),
   pioHome: Option[String] = None,
@@ -89,7 +86,8 @@ case class CommonArgs(
   verbose: Boolean = false,
   verbosity: Int = 0,
   debug: Boolean = false,
-  sparkKryo: Boolean = false)
+  sparkKryo: Boolean = false,
+  logFile: String = "pio.log")
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -97,15 +95,6 @@ case class BuildArgs(
   sbtAssemblyPackageDependency: Boolean = true,
   sbtClean: Boolean = false,
   uberJar: Boolean = false)
-
-case class AppArgs(
-  id: Option[Int] = None,
-  name: String = "",
-  description: Option[String] = None)
-
-case class AccessKeyArgs(
-  accessKey: String = "",
-  events: Seq[String] = Seq())
 
 case class DeployArgs(
   ip: String = "localhost",
@@ -197,6 +186,9 @@ object Console extends Logging {
       opt[Unit]("spark-kryo") abbr("sk") action { (x, c) =>
         c.copy(common = c.common.copy(sparkKryo = true))
       }
+      opt[String]("log-file") abbr("l") action { (x, c) =>
+        c.copy(common = c.common.copy(logFile = x))
+      }
       note("")
       cmd("version").
         text("Displays the version of this command line console.").
@@ -279,27 +271,11 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "train")
         } children(
           opt[String]("batch") action { (x, c) =>
-            c.copy(batch = x)
+            c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run."),
           opt[String]("params-path") action { (x, c) =>
             c.copy(paramsPath = x)
           } text("Directory to lookup parameters JSON files. Default: params"),
-          opt[String]("datasource-params") abbr("dsp") action { (x, c) =>
-            c.copy(dataSourceParamsJsonPath = Some(x))
-          } text("Data source parameters JSON file. Will try to use\n" +
-            "        datasource.json in the base path."),
-          opt[String]("preparator-params") abbr("pp") action { (x, c) =>
-            c.copy(preparatorParamsJsonPath = Some(x))
-          } text("Preparator parameters JSON file. Will try to use\n" +
-            "        preparator.json in the base path."),
-          opt[String]("algorithms-params") abbr("ap") action { (x, c) =>
-            c.copy(algorithmsParamsJsonPath = Some(x))
-          } text("Algorithms parameters JSON file. Will try to use\n" +
-            "        algorithms.json in the base path."),
-          opt[String]("serving-params") abbr("sp") action { (x, c) =>
-            c.copy(servingParamsJsonPath = Some(x))
-          } text("Serving parameters JSON file. Will try to use\n" +
-            "        serving.json in the base path."),
           opt[String]("metrics-params") abbr("mp") action { (x, c) =>
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
@@ -335,7 +311,7 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "eval")
         } children(
           opt[String]("batch") action { (x, c) =>
-            c.copy(batch = x)
+            c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run."),
           opt[String]("params-path") action { (x, c) =>
             c.copy(paramsPath = x)
@@ -343,22 +319,6 @@ object Console extends Logging {
           opt[String]("metrics-class") required() action { (x, c) =>
             c.copy(metricsClass = Some(x))
           } text("Name of metrics class to run."),
-          opt[String]("datasource-params") abbr("dsp") action { (x, c) =>
-            c.copy(dataSourceParamsJsonPath = Some(x))
-          } text("Data source parameters JSON file. Will try to use\n" +
-            "        datasource.json in the base path."),
-          opt[String]("preparator-params") abbr("pp") action { (x, c) =>
-            c.copy(preparatorParamsJsonPath = Some(x))
-          } text("Preparator parameters JSON file. Will try to use\n" +
-            "        preparator.json in the base path."),
-          opt[String]("algorithms-params") abbr("ap") action { (x, c) =>
-            c.copy(algorithmsParamsJsonPath = Some(x))
-          } text("Algorithms parameters JSON file. Will try to use\n" +
-            "        algorithms.json in the base path."),
-          opt[String]("serving-params") abbr("sp") action { (x, c) =>
-            c.copy(servingParamsJsonPath = Some(x))
-          } text("Serving parameters JSON file. Will try to use\n" +
-            "        serving.json in the base path."),
           opt[String]("metrics-params") abbr("mp") action { (x, c) =>
             c.copy(metricsParamsJsonPath = Some(x))
           } text("Metrics parameters JSON file. Will try to use\n" +
@@ -373,7 +333,7 @@ object Console extends Logging {
           c.copy(commands = c.commands :+ "deploy")
         } children(
           opt[String]("batch") action { (x, c) =>
-            c.copy(batch = x)
+            c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the deployment."),
           opt[String]("engine-instance-id") action { (x, c) =>
             c.copy(engineInstanceId = Some(x))
@@ -689,7 +649,11 @@ object Console extends Logging {
       val ca = pca.copy(common = pca.common.copy(
         sparkPassThrough = sparkPassThroughArgs,
         driverPassThrough = driverPassThroughArgs))
-      WorkflowUtils.setupLogging(ca.common.verbose, ca.common.debug)
+      WorkflowUtils.setupLogging(
+        ca.common.verbose,
+        ca.common.debug,
+        "console",
+        Some(ca.common.logFile))
       val rv: Int = ca.commands match {
         case Seq("") =>
           System.err.println(help())
@@ -741,23 +705,23 @@ object Console extends Logging {
           upgrade(ca)
           0
         case Seq("app", "new") =>
-          appNew(ca)
+          App.create(ca)
         case Seq("app", "list") =>
-          appList(ca)
+          App.list(ca)
         case Seq("app", "delete") =>
-          appDelete(ca)
+          App.delete(ca)
         case Seq("app", "data-delete") =>
-          appDataDelete(ca)
+          App.dataDelete(ca)
         case Seq("accesskey", "new") =>
-          accessKeyNew(ca)
+          AccessKey.create(ca)
         case Seq("accesskey", "list") =>
-          accessKeyList(ca)
+          AccessKey.list(ca)
         case Seq("accesskey", "delete") =>
-          accessKeyDelete(ca)
+          AccessKey.delete(ca)
         case Seq("template", "get") =>
-          console.Template.get(ca)
+          Template.get(ca)
         case Seq("template", "list") =>
-          console.Template.list(ca)
+          Template.list(ca)
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -781,93 +745,24 @@ object Console extends Logging {
     }
   }
 
-  val mainHelp = console.txt.main().toString
+  val mainHelp = txt.main().toString
 
   val helpText = Map(
     "" -> mainHelp,
-    "status" -> console.txt.status().toString,
-    "upgrade" -> console.txt.upgrade().toString,
-    "version" -> console.txt.version().toString,
-    "template" -> console.txt.template().toString,
-    "build" -> console.txt.build().toString,
-    "train" -> console.txt.train().toString,
-    "deploy" -> console.txt.deploy().toString,
-    "eventserver" -> console.txt.eventserver().toString,
-    "adminserver" -> console.txt.adminserver().toString,
-    "app" -> console.txt.app().toString,
-    "accesskey" -> console.txt.accesskey().toString,
-    "run" -> console.txt.run().toString,
-    "eval" -> console.txt.eval().toString,
-    "dashboard" -> console.txt.dashboard().toString)
-
-  def createProject(ca: ConsoleArgs): Unit = {
-    val scalaEngineTemplate = Map(
-      "build.sbt" -> templates.scala.txt.buildSbt(
-        ca.projectName.get,
-        BuildInfo.version,
-        BuildInfo.sparkVersion),
-      "engine.json" -> templates.scala.txt.engineJson(
-        ca.projectName.get,
-        "myorg.MyEngineFactory"),
-      "manifest.json" -> templates.scala.txt.manifestJson(
-        ca.projectName.get,
-        "0.0.1-SNAPSHOT",
-        ca.projectName.get),
-      joinFile(Seq("project", "assembly.sbt")) ->
-        templates.scala.project.txt.assemblySbt(),
-      joinFile(Seq("src", "main", "scala", "Engine.scala")) ->
-        templates.scala.src.main.scala.txt.engine())
-
-    val template = ca.projectName.get match {
-      case _ =>
-        info(s"Creating Scala engine project ${ca.projectName.get}")
-        scalaEngineTemplate
-    }
-
-    writeTemplate(template, ca.projectName.get)
-
-    info(s"Engine project created in subdirectory ${ca.projectName.get}.")
-  }
-
-  /*
-  def createInstance(ca: ConsoleArgs): Unit = {
-    val targetDir = ca.directoryName.getOrElse(ca.projectName.get)
-    val engineId = ca.projectName.getOrElse("")
-
-    val templateOpt = BuiltInEngine.idInstanceMap.get(engineId)
-
-    if (templateOpt.isEmpty) {
-      val engineIdList = BuiltInEngine.instances
-        .zipWithIndex
-        .map { case(eit, idx) => s"  ${eit.engineId}" }
-        .mkString("\n")
-      error(s"${engineId} is not a built-in engine. \n" +
-        s"Below are built-in engines: \n$engineIdList\n" +
-        s"Aborting.")
-      sys.exit(1)
-    }
-
-    writeTemplate(templateOpt.get.template, targetDir)
-
-    info(s"Engine instance created in subdirectory ${targetDir}.")
-  }
-  */
-
-  private def writeTemplate(template: Map[String, Any], targetDir: String) = {
-    try {
-      template map { ft =>
-        FileUtils.writeStringToFile(
-          new File(targetDir, ft._1),
-          ft._2.toString,
-          "ISO-8859-1")
-      }
-    } catch {
-      case e: java.io.IOException =>
-        error(s"Error occurred while generating template: ${e.getMessage}")
-        error("Aborting.")
-        sys.exit(1)
-    }
-  }
+    "status" -> txt.status().toString,
+    "upgrade" -> txt.upgrade().toString,
+    "version" -> txt.version().toString,
+    "template" -> txt.template().toString,
+    "build" -> txt.build().toString,
+    "train" -> txt.train().toString,
+    "deploy" -> txt.deploy().toString,
+    "eventserver" -> txt.eventserver().toString,
+    "adminserver" -> txt.adminserver().toString,
+    "app" -> txt.app().toString,
+    "accesskey" -> txt.accesskey().toString,
+    "run" -> txt.run().toString,
+    "eval" -> txt.eval().toString,
+    "dashboard" -> txt.dashboard().toString)
 
   def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
 
@@ -1189,211 +1084,6 @@ object Console extends Logging {
       FileUtils.copyDirectory(paramsDir, new File(distDir, paramsDir.getName))
     Files.createFile(distDir.toPath.resolve(distFilename))
     info(s"Successfully created distributable at: ${distDir.getCanonicalPath}")
-  }
-
-  def appNew(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    apps.getByName(ca.app.name) map { app =>
-      error(s"App ${ca.app.name} already exists. Aborting.")
-      1
-    } getOrElse {
-      ca.app.id.map { id =>
-        apps.get(id) map { app =>
-          error(
-            s"App ID ${id} already exists and maps to the app '${app.name}'. " +
-            "Aborting.")
-          return 1
-        }
-      }
-      val appid = apps.insert(App(
-        id = ca.app.id.getOrElse(0),
-        name = ca.app.name,
-        description = ca.app.description))
-      appid map { id =>
-        val events = Storage.getLEvents()
-        val dbInit = events.init(id)
-        val r = if (dbInit) {
-          info(s"Initialized Event Store for this app ID: ${id}.")
-          val accessKeys = Storage.getMetaDataAccessKeys
-          val accessKey = accessKeys.insert(AccessKey(
-            key = "",
-            appid = id,
-            events = Seq()))
-          accessKey map { k =>
-            info("Created new app:")
-            info(s"      Name: ${ca.app.name}")
-            info(s"        ID: ${id}")
-            info(s"Access Key: ${k}")
-            0
-          } getOrElse {
-            error(s"Unable to create new access key.")
-            1
-          }
-        } else {
-          error(s"Unable to initialize Event Store for this app ID: ${id}.")
-          1
-        }
-        events.close()
-        r
-      } getOrElse {
-        error(s"Unable to create new app.")
-        1
-      }
-    }
-  }
-
-  def appList(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
-    val accessKeys = Storage.getMetaDataAccessKeys
-    val title = "Name"
-    val ak = "Access Key"
-    info(f"$title%20s |   ID | $ak%64s | Allowed Event(s)")
-    apps foreach { app =>
-      val keys = accessKeys.getByAppid(app.id)
-      keys foreach { k =>
-        val events =
-          if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
-        info(f"${app.name}%20s | ${app.id}%4d | ${k.key}%s | ${events}%s")
-      }
-    }
-    info(s"Finished listing ${apps.size} app(s).")
-    0
-  }
-
-  def appDelete(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    apps.getByName(ca.app.name) map { app =>
-      info(s"The following app will be deleted. Are you sure?")
-      info(s"    App Name: ${app.name}")
-      info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
-      val choice = readLine("Enter 'YES' to proceed: ")
-      choice match {
-        case "YES" => {
-          val events = Storage.getLEvents()
-          val r = if (events.remove(app.id)) {
-            info(s"Removed Event Store for this app ID: ${app.id}")
-            if (Storage.getMetaDataApps.delete(app.id)) {
-              info(s"Deleted app ${app.name}.")
-              0
-            } else {
-              error(s"Error deleting app ${app.name}.")
-              1
-            }
-          } else {
-            error(s"Error removing Event Store for this app.")
-            1
-          }
-          events.close()
-          info("Done.")
-          r
-        }
-        case _ =>
-          info("Aborted.")
-          0
-      }
-    } getOrElse {
-      error(s"App ${ca.app.name} does not exist. Aborting.")
-      1
-    }
-  }
-
-  def appDataDelete(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    apps.getByName(ca.app.name) map { app =>
-      info(s"The data of the following app will be deleted. Are you sure?")
-      info(s"    App Name: ${app.name}")
-      info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
-      val choice = readLine("Enter 'YES' to proceed: ")
-      choice match {
-        case "YES" => {
-          val events = Storage.getLEvents()
-          // remove table
-          val r1 = if (events.remove(app.id)) {
-            info(s"Removed Event Store for this app ID: ${app.id}")
-            0
-          } else {
-            error(s"Error removing Event Store for this app.")
-            1
-          }
-          // re-create table
-          val dbInit = events.init(app.id)
-          val r2 = if (dbInit) {
-            info(s"Initialized Event Store for this app ID: ${app.id}.")
-            0
-          } else {
-            error(s"Unable to initialize Event Store for this appId:" +
-              s" ${app.id}.")
-            1
-          }
-          events.close()
-          info("Done.")
-          r1 + r2
-        }
-        case _ =>
-          info("Aborted.")
-          0
-      }
-    } getOrElse {
-      error(s"App ${ca.app.name} does not exist. Aborting.")
-      1
-    }
-  }
-
-  def accessKeyNew(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    apps.getByName(ca.app.name) map { app =>
-      val accessKeys = Storage.getMetaDataAccessKeys
-      val accessKey = accessKeys.insert(AccessKey(
-        key = "",
-        appid = app.id,
-        events = ca.accessKey.events))
-      accessKey map { k =>
-        info(s"Created new access key: ${k}")
-        0
-      } getOrElse {
-        error(s"Unable to create new access key.")
-        1
-      }
-    } getOrElse {
-      error(s"App ${ca.app.name} does not exist. Aborting.")
-      1
-    }
-  }
-
-  def accessKeyList(ca: ConsoleArgs): Int = {
-    val keys =
-      if (ca.app.name == "")
-        Storage.getMetaDataAccessKeys.getAll
-      else {
-        val apps = Storage.getMetaDataApps
-        apps.getByName(ca.app.name) map { app =>
-          Storage.getMetaDataAccessKeys.getByAppid(app.id)
-        } getOrElse {
-          error(s"App ${ca.app.name} does not exist. Aborting.")
-          return 1
-        }
-      }
-    val title = "Access Key(s)"
-    info(f"$title%64s | App ID | Allowed Event(s)")
-    keys.sortBy(k => k.appid) foreach { k =>
-      val events =
-        if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
-      info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
-    }
-    info(s"Finished listing ${keys.size} access key(s).")
-    0
-  }
-
-  def accessKeyDelete(ca: ConsoleArgs): Int = {
-    if (Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)) {
-      info(s"Deleted access key ${ca.accessKey.accessKey}.")
-      0
-    } else {
-      error(s"Error deleting access key ${ca.accessKey.accessKey}.")
-      1
-    }
   }
 
   def status(ca: ConsoleArgs): Int = {

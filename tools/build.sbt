@@ -33,6 +33,8 @@ libraryDependencies ++= Seq(
   "io.spray" %% "spray-testkit" % "1.3.2" % "test",
   "org.scalatest"     %% "scalatest"      % "2.2.0" % "test",
   "org.specs2" %% "specs2" % "2.3.13" % "test")
+  "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
+  "org.spark-project.akka" %% "akka-slf4j"     % "2.3.4-spark")
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {

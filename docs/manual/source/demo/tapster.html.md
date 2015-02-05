@@ -8,7 +8,6 @@ In this demo, we will show you how to build a Tinder-style web application recom
 
 The demo will use [Simiar Product Template](http://docs.prediction.io/templates/similarity/quickstart/). Similar Product Template is a great choice if you want to make recommendations based on immediate user activities or for new users with limited history. It uses MLLib Alternating Least Squares (ALS) recommendation algorithm, a [Collaborative filtering](http://en.wikipedia.org/wiki/Recommender_system#Collaborative_filtering) (CF) algorithm commonly used for recommender systems. These techniques aim to fill in the missing entries of a user-item association matrix. Users and products are described by a small set of latent factors that can be used to predict missing entries. A layman's interpretation of Collaborative Filtering is "People who like this comic, Also like these comics."
 
-The first implementation uses the template as it is, without any customization.
 If you haven't already you can check out the final live demo here: [tapster.prediction.io](http://tapster.prediction.io/)
 
 All the code and data is on GitHub at: [github.com/PredictionIO/Demo-Tapster](https://github.com/PredictionIO/Demo-Tapster).
@@ -92,9 +91,7 @@ We are going to copy the Similar Product Template into the PIO directory.
 
 ```
 $ cd PredictionIO
-$ cd templates
-$ cp -R scala-parallel-similar ../tapster-episode-similar
-$ cd ..
+$ pio template get PredictionIO/template-scala-parallel-similarproduct tapster-episode-similar
 ```
 
 Next we are going to update the App ID in the ‘engine.json’ file to match the App ID we just created.
@@ -108,9 +105,9 @@ $ cd ..
 ![Engine Setup](/images/demo/tapster/pio-engine-setup.png)
 
 
-### Modify  Engine Template 
+### Modify  Engine Template
 
-By the default, the engine template reads the “view” events. We can easily to change it to read “like” events. 
+By the default, the engine template reads the “view” events. We can easily to change it to read “like” events.
 
 <!-- For more advanced example of how-to combine view and like/dislike events in one recommender, please see the multi-events-multi-algos.html -->
 
@@ -120,9 +117,9 @@ Modify `readTraining()` in DataSource.scala:
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    
+
     ...
-    
+
     val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
       appId = dsp.appId,
       entityType = Some("user"),

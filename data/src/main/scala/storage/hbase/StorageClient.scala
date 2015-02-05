@@ -23,8 +23,8 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HConnectionManager
 import org.apache.hadoop.hbase.client.HConnection
 import org.apache.hadoop.hbase.client.HBaseAdmin
-//import org.apache.hadoop.hbase.NamespaceDescriptor
-//import org.apache.hadoop.hbase.NamespaceExistException
+
+import grizzled.slf4j.Logging
 
 case class HBClient(
   val conf: Configuration,
@@ -33,7 +33,7 @@ case class HBClient(
 )
 
 class StorageClient(val config: StorageClientConfig)
-  extends BaseStorageClient {
+  extends BaseStorageClient with Logging {
 
   val conf = HBaseConfiguration.create()
 
@@ -44,38 +44,23 @@ class StorageClient(val config: StorageClientConfig)
     conf.set("zookeeper.recovery.retry", "1")
   }
 
-  if (!config.parallel)
-    HBaseAdmin.checkHBaseAvailable(conf)
-
-  val connection =
-    if (!config.parallel)
-      HConnectionManager.createConnection(conf)
-    else
-      null
-
-  val client =
-    if (!config.parallel)
-      HBClient(
-        conf = conf,
-        connection = connection,
-        admin = new HBaseAdmin(connection)
-      )
-    else
-      null
-/*
-  private val namespace = "predictionio_appdata"
-
-  val nameDesc = NamespaceDescriptor.create(namespace).build()
-
   try {
-    client.admin.createNamespace(nameDesc)
+    HBaseAdmin.checkHBaseAvailable(conf)
   } catch {
-    case e: NamespaceExistException => Unit
-    case e: Exception => throw new RuntimeException(e)
+    case e: Exception => {
+      error("Failed to connect to HBase." +
+        " Plase check if HBase is running properly.")
+      throw e
+    }
   }
 
-  val eventClient = new HBEvents(client, namespace)
-*/
+  val connection = HConnectionManager.createConnection(conf)
+
+  val client = HBClient(
+    conf = conf,
+    connection = connection,
+    admin = new HBaseAdmin(connection)
+  )
 
   override
   val prefix = "HB"

@@ -26,7 +26,7 @@ case class TrainingData(
   val identityMatrix:RDD[(VertexId,Double)]
 ) extends Serializable
 
-class DataSource(val dsp: DataSourceParams )
+class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, Double] {
 
   override

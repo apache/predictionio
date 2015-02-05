@@ -29,16 +29,19 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.apache.log4j.Appender
 import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.EnhancedPatternLayout
+import org.apache.log4j.FileAppender
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
-import org.apache.log4j.PatternLayout
 import org.apache.log4j.spi.Filter
 import org.apache.log4j.spi.LoggingEvent
 import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 
+import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.language.existentials
 import scala.reflect._
@@ -213,6 +216,7 @@ object WorkflowUtils extends Logging {
     */
   def thirdPartyConfFiles: Seq[String] = {
     val thirdPartyFiles = Map(
+      "PIO_CONF_DIR" -> "log4j.properties",
       "ES_CONF_DIR" -> "elasticsearch.yml",
       "HADOOP_CONF_DIR" -> "core-site.xml",
       "HBASE_CONF_DIR" -> "hbase-site.xml")
@@ -226,20 +230,42 @@ object WorkflowUtils extends Logging {
   }
 
   def thirdPartyClasspaths: Seq[String] = {
-    val thirdPartyPaths = Seq("ES_CONF_DIR", "HADOOP_CONF_DIR", "HBASE_CONF_DIR")
+    val thirdPartyPaths = Seq(
+      "PIO_CONF_DIR",
+      "ES_CONF_DIR",
+      "HADOOP_CONF_DIR",
+      "HBASE_CONF_DIR")
     thirdPartyPaths.map(p =>
       sys.env.get(p).map(Seq(_)).getOrElse(Seq[String]())
     ).flatten
   }
 
-  def setupLogging(verbose: Boolean, debug: Boolean): Unit = {
-    val layout = new PatternLayout("%d %-5p %c{2} - %m%n")
-    val filter = new PIOFilter(verbose, debug)
-    val appender = new ConsoleAppender(layout)
-    appender.addFilter(filter)
+  def setupLogging(
+      verbose: Boolean,
+      debug: Boolean,
+      mode: String = "",
+      logFile: Option[String] = None): Unit = {
+    val filter = new PIOFilter(verbose, debug, mode)
     val rootLogger = LogManager.getRootLogger()
-    rootLogger.removeAllAppenders
-    rootLogger.addAppender(appender)
+    val appenders = rootLogger.getAllAppenders.toList
+    appenders foreach { a =>
+      val appender = a.asInstanceOf[Appender]
+      appender.addFilter(filter)
+    }
+
+    val consoleLayout = new EnhancedPatternLayout("%d %-5p %c{2} - %m%n")
+    val consoleAppender = new ConsoleAppender(consoleLayout)
+    consoleAppender.setFollow(true)
+    consoleAppender.addFilter(filter)
+    rootLogger.addAppender(consoleAppender)
+
+    logFile map { l =>
+      val fileLayout = new EnhancedPatternLayout("%d %-5p %c [%t] - %m%n")
+      val fileAppender = new FileAppender(fileLayout, l, true)
+      fileAppender.addFilter(new PIOFilter(true, debug, mode))
+      rootLogger.addAppender(fileAppender)
+    }
+
     if (debug) {
       rootLogger.setLevel(Level.DEBUG)
     } else {
@@ -289,13 +315,16 @@ class NameParamsSerializer extends CustomSerializer[NameParams](format => (
   }
 ))
 
-class PIOFilter(verbose: Boolean = false, debug: Boolean = false)
-    extends Filter {
+class PIOFilter(
+    verbose: Boolean = false,
+    debug: Boolean = false,
+    mode: String = "") extends Filter {
   override def decide(event: LoggingEvent): Int = {
+    val from = event.getLocationInformation.getClassName
     if (verbose || debug)
       Filter.NEUTRAL
-    else if (event.getLocationInformation.getClassName.
-      startsWith("grizzled.slf4j.Logger"))
+    else if (from.startsWith("grizzled.slf4j.Logger") ||
+      (mode != "train" && from.startsWith("akka.event.slf4j.Slf4jLogger")))
       Filter.NEUTRAL
     else if (event.getLevel.isGreaterOrEqual(Level.ERROR))
       Filter.NEUTRAL

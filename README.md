@@ -1,6 +1,6 @@
 # [PredictionIO](http://prediction.io)
 
-PredictionIO is an open source machine learning framework for developers and data scientists. It supports event collection, deployment of algorithms, evaluation, querying predictive results via REST APIs. 
+PredictionIO is an open source machine learning framework for developers and data scientists. It supports event collection, deployment of algorithms, evaluation, querying predictive results via REST APIs.
 
 To get started, check out <http://prediction.io>!
 
@@ -13,22 +13,24 @@ To get started, check out <http://prediction.io>!
 - [Community](#community)
 
 
-## Installation  
+## Installation
 
-Five installation options available. 
+Five installation options available.
 
-* [Installing PredictionIO on Linux / Mac OS X](http://docs.prediction.io/current/install/install-linux.html)
-* [Installing PredictionIO from Source Code](http://docs.prediction.io/current/install/install-sourcecode.html)
-  If you are installing from source code, it's recommended that you clone the master branch. 
-* [Launching PredictionIO on AWS](http://docs.prediction.io/current/install/launch-aws.html)
+* [Installing PredictionIO on Linux / Mac OS X](http://docs.prediction.io/install/install-linux/)
+* [Installing PredictionIO from Source Code](http://docs.prediction.io/install/install-sourcecode/)
+  If you are installing from source code, it's recommended that you clone the master branch.
+* [Launching PredictionIO on AWS](http://docs.prediction.io/install/launch-aws/)
 * [Installing PredictionIO with Docker](https://github.com/mingfang/docker-predictionio) (Community contributed)
-* [Installing PredictionIO with Vagrant](https://github.com/magento-hackathon/PredictionIO-Vagrant) (Community contributed)
+* [Installing PredictionIO with Vagrant](http://docs.prediction.io/install/install-vagrant/)
 
 
 ## Quick start
-[Recommendation Engine Template Quick Start](http://docs.prediction.io/current/recommendation/quickstart.html) Guide.
+[Recommendation Engine Template Quick Start](http://docs.prediction.io/templates/recommendation/quickstart/) Guide.
 
-[Classification Engine Template Quick Start](http://docs.prediction.io/current/classification/quickstart.html) Guide.
+[Similiar Product Engine Template Quick Start](http://docs.prediction.io/templates/similarproduct/quickstart/) Guide.
+
+[Classification Engine Template Quick Start](http://docs.prediction.io/templates/classification/quickstart/) Guide.
 
 ## Bugs and feature requests
 
@@ -54,11 +56,9 @@ Keep track of development and community news.
 
 ## Contributing
 
-Please read and sign the [Contributor Agreement](http://prediction.io/cla). If you have any questions, you can post on the [Contributor Forum](https://groups.google.com/forum/#!forum/predictionio-dev). 
+Please read and sign the [Contributor Agreement](http://prediction.io/cla). If you have any questions, you can post on the [Contributor Forum](https://groups.google.com/forum/#!forum/predictionio-dev).
 
-You can also list your projects on the [Community Project page](http://docs.prediction.io/current/projects.html)
+You can also list your projects on the [Community Project page](http://docs.prediction.io/community/projects/)
 
 ## License
 PredictionIO is under [Apache 2 license](http://www.apache.org/licenses/LICENSE-2.0.html).
-
-

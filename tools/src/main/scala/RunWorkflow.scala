@@ -16,6 +16,8 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
+import io.prediction.tools.console.Console
+import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -39,10 +41,6 @@ object RunWorkflow extends Logging {
     ).mkString(",")
 
     val defaults = Map(
-      "dsp" -> (ca.dataSourceParamsJsonPath, "datasource.json"),
-      "pp" -> (ca.preparatorParamsJsonPath, "preparator.json"),
-      "ap" -> (ca.algorithmsParamsJsonPath, "algorithms.json"),
-      "sp" -> (ca.servingParamsJsonPath, "serving.json"),
       "mp" -> (ca.metricsParamsJsonPath, "metrics.json"))
 
     val sparkHome = ca.common.sparkHome.getOrElse(
@@ -106,7 +104,7 @@ object RunWorkflow extends Logging {
         "--class",
         "io.prediction.workflow.CreateWorkflow",
         "--name",
-        s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.batch})") ++
+        s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.common.batch})") ++
       (if (!ca.build.uberJar) {
         Seq(
           "--jars",
@@ -132,6 +130,8 @@ object RunWorkflow extends Logging {
         mainJar,
         "--env",
         pioEnvVars,
+        "--log-file",
+        ca.common.logFile,
         "--engineId",
         em.id,
         "--engineVersion",
@@ -150,7 +150,7 @@ object RunWorkflow extends Logging {
       ca.common.engineParamsKey.map(
         x => Seq("--engine-params-key", x)).getOrElse(Seq()) ++
       (if (deployMode == "cluster") Seq("--deploy-mode", "cluster") else Seq()) ++
-      (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.debug) Seq("--debug") else Seq()) ++
       (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++
@@ -159,7 +159,7 @@ object RunWorkflow extends Logging {
         Seq("--stop-after-prepare") else Seq()) ++
       ca.metricsClass.map(x => Seq("--metricsClass", x)).
         getOrElse(Seq()) ++
-      (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++ Seq(
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++ Seq(
       "--jsonBasePath", ca.paramsPath) ++ defaults.flatMap { _ match {
         case (key, (path, default)) =>
           path.map(p => Seq(s"--$key", p)).getOrElse {

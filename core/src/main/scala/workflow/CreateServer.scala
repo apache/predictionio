@@ -93,6 +93,7 @@ case class ServerConfig(
   accessKey: Option[String] = None,
   logUrl: Option[String] = None,
   logPrefix: Option[String] = None,
+  logFile: Option[String] = None,
   verbose: Boolean = false,
   debug: Boolean = false)
 
@@ -146,6 +147,9 @@ object CreateServer extends Logging {
       opt[String]("log-prefix") action { (x, c) =>
         c.copy(logPrefix = Some(x))
       }
+      opt[String]("log-file") action { (x, c) =>
+        c.copy(logFile = Some(x))
+      }
       opt[Unit]("verbose") action { (x, c) =>
         c.copy(verbose = true)
       } text("Enable verbose output.")
@@ -155,7 +159,7 @@ object CreateServer extends Logging {
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
-      WorkflowUtils.setupLogging(sc.verbose, sc.debug)
+      WorkflowUtils.setupLogging(sc.verbose, sc.debug, "deploy", sc.logFile)
       engineInstances.get(sc.engineInstanceId) map { engineInstance =>
         val engineId = sc.engineId.getOrElse(engineInstance.engineId)
         val engineVersion = sc.engineVersion.getOrElse(

@@ -15,7 +15,7 @@ to the community! Simply edit [this page](https://github.com/PredictionIO/Predic
 
 URL: https://github.com/PredictionIO/PredictionIO-Vagrant
 
-Bring Up PredictionIO 0.8.6-SNAPSHOT VM with Vagrant.
+Bring Up PredictionIO 0.8.7-SNAPSHOT VM with Vagrant.
 
 - Core Author: Raphael Mäder
 

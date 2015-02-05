@@ -1,0 +1,116 @@
+---
+title: Installing PredictionIO with Vagrant (VirtualBox)
+---
+
+# Installing PredictionIO with Vagrant (VirtualBox)
+
+WARNING: Running PredictionIO with Vagrant is intended for the purposes of simple tests in an isolated environment. Due to resource limitation and overhead of virtual machine (VM), it runs much more slowly or may encounter memory issue. We recommend using Linux or Mac machine for serious usage.
+
+## Install Virtual box
+
+If you don't have Virtual Box installed, please follow the instructions in the [VirtualBox site](https://www.virtualbox.org/wiki/Downloads) to download and install it.
+
+## Install Vagrant
+
+If you don't have Vagrant installed, please follow the instructions in the the [Vagrant site](https://www.vagrantup.com/downloads.html) to download and install it.
+
+## Bring up PredictoinIO VM with Vagrant
+
+Get the latest vagrant setup from github and make sure in master branch:
+
+```
+$ git clone https://github.com/PredictionIO/PredictionIO-Vagrant.git
+$ cd PredictionIO-Vagrant/
+$ git checkout master
+```
+
+You may modify the following line in the Vagrantfile to change the memory and CPU configuration setting of the VM, default is 2048 MB memory:
+
+```
+  v.customize ["modifyvm", :id, "--cpuexecutioncap", "90", "--memory", "2048"]
+```
+
+In the directory PredictionIO-Vagrant/, bring up PredictionIO VM by running:
+
+```
+$ vagrant up
+```
+
+INFO: When you run 'vagrant up' for the first time, it will download the base box ubuntu/trusty64 if you don't have it. Then it will also install all necessary libraries and setup PredictionIO in the virtual machine.
+
+When it finishes successfully, you should see somthing like the following:
+
+```
+==> default: Elasticserach and HBase started!
+==> default: --------------------------------------------------------------------------------
+==> default: Installation of PredictionIO 0.8.6 complete!
+==> default: IMPORTANT: You still have to start the eventserver manually:
+==> default: Run: 'pio eventserver --ip 0.0.0.0'
+==> default: Check the eventserver status with: 'curl -i -X GET http://localhost:7070'
+==> default: Use: 'pio [train|deploy|...]' commands
+==> default: Please report any problems to: support@prediction.io
+==> default: Documentation at: http://docs.prediction.io
+==> default: --------------------------------------------------------------------------------
+==> default: Finish PredictionIO installation.
+```
+
+Now you have a PredictionIO VM running!
+
+# Using the PredictionIO VM
+
+## Login to the VM
+
+You could ssh to the VM by running the following from your host machine in the same directory where you run `vagrant up` (i.e. PredictionIO-Vagrant/)
+
+```
+$ vagrant ssh
+```
+
+Then your console prompt becomes something like:
+
+```
+vagrant@vagrant-ubuntu-trusty-64:~$
+```
+
+One you've logged into the VM, you can follow the one of the template quickstart guides to get started.
+
+INFO: Note that when you run `pio eventserver` or `pio deploy` engine inside the **VM**, you need to specify `--ip 0.0.0.0` in order to access the event server and the deployed engine from the host machine. Please remember to specify this --ip parameter when you follow the quick start.
+
+To run eventserver:
+
+```
+vagrant@vagrant-ubuntu-trusty-64:~$ pio eventserver --ip 0.0.0.0
+```
+
+To deploy engine:
+
+```
+vagrant@vagrant-ubuntu-trusty-64:~/MyRecommendation$ pio deploy --ip 0.0.0.0
+```
+
+## Shutdown and bring up PredictionIO VM again
+
+You should shut down VM properly when you are not using PredictionIO:
+
+```
+$ vagrant halt
+```
+
+WARNING: If you didn't shut down VM properly or you ran `vagrant suspend`, the VM may go to suspend state. HBase may not be running propoerly next time when you run `vagrant up.` In this case, you can always run `vagrant halt` to do a clean shutdown first before run `vagrant up` again.
+
+Then you can run `vagrant up` again later to bring up the PredicitonIO VM again.
+
+```
+$ vagrant up
+```
+
+When it's ready, you should see the following:
+
+```
+==> default: --------------------------------------------------------------------------------
+==> default: PredictionIO VM is up!
+==> default: You could run 'pio status' inside VM ('vagrant ssh' to VM first) to confirm if PredictionIO is ready.
+==> default: IMPORTANT: You still have to start the eventserver manually (inside VM):
+==> default: Run: 'pio eventserver --ip 0.0.0.0'
+==> default: --------------------------------------------------------------------------------
+```

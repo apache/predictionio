@@ -9,7 +9,7 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.8.6-SNAPSHOT
+PIO_VERSION=0.8.7-SNAPSHOT
 SPARK_VERSION=1.2.0
 ELASTICSEARCH_VERSION=1.4.2
 HBASE_VERSION=0.98.6
@@ -84,7 +84,7 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk -y
+  sudo apt-get install openjdk-7-jdk libgfortran3 -y
 
   echo -e "\033[1;32mJava install done!\033[0m"
 
@@ -115,7 +115,7 @@ elif [[ "$1" == "-y" ]]; then
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk -y
+  sudo apt-get install openjdk-7-jdk libgfortran3 -y
 
   echo -e "\033[1;32mJava install done!\033[0m"
 
@@ -161,7 +161,7 @@ else
           echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
           sudo apt-get update
-          sudo apt-get install openjdk-7-jdk -y
+          sudo apt-get install openjdk-7-jdk libgfortran3 -y
 
           echo -e "\033[1;32mJava install done!\033[0m"
           break

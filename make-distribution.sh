@@ -43,7 +43,6 @@ cp $FWDIR/sbt/sbt-launch-lib.bash $DISTDIR/sbt
 cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
 cp $FWDIR/engines/target/scala-2.10/engines*jar $DISTDIR/lib
 cp -r $FWDIR/examples/scala* $DISTDIR/examples
-cp -r $FWDIR/templates $DISTDIR
 
 rm -f $DISTDIR/lib/*javadoc.jar
 rm -f $DISTDIR/lib/*sources.jar

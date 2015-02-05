@@ -13,25 +13,29 @@ production use based on this template.
 
 ## Install PredictionIO
 
-First you need to [install PredictionIO <%= data.versions.pio %>](/install)
+First you need to [install PredictionIO <%= data.versions.pio %>](/install) (if you haven't done it).
 
 INFO: 0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](/resources/upgrade/).
 
-Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
 For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/predictionio/bin`:
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
+
+NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
 
 Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
 
 ```
 $ pio status
 ```
+
+NOTE: If you have issues with `pio status`, please see [Using PredictionIO FAQ](/resources/faq/#using-predictionio).
 
 and please make sure that PredictionIO Event Server, which collects data, is
 running:
@@ -78,11 +82,10 @@ $ pio app list
 ## Create a new Engine from an Engine Template
 
 Now let's create a new engine called *MyRecommendation* by cloning the Recommendation
-Engine Template, assuming `/home/yourname/predictionio`
-is the installation directory of PredictionIO:
+Engine Template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-recommendation MyRecommendation
+$ pio template get PredictionIO/template-scala-parallel-recommendation MyRecommendation
 $ cd MyRecommendation
 ```
 
@@ -92,8 +95,11 @@ Next, let's collect some training data for the app of this Engine. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
 **buy**. A user can give a rating score to an item or he can buy an item.
 
-You can send these data to PredictionIO Event Server in real-time easily by
+You can send the event data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
+
+The following is sample code of using different SDKs to import user-view-item and user-buy-item events. To use the SDK, install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK),
+[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -243,8 +249,9 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
+## Import Sample Data
 
-You may use the sample movie data from MLlib repo for demonstration purpose.
+We will use the sample movie data from MLlib repo for demonstration purpose.
 Execute the following to get the data set:
 
 ```
@@ -252,9 +259,12 @@ $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_m
 ```
 
 A Python import script `import_eventserver.py` is provided to import the data to
-Event Server using Python SDK. Please upgrade to the latest SDK as well so you
-have the latest script. Replace the value of access_key parameter by your
-**Access Key**.
+Event Server using Python SDK. Please upgrade to the latest Python SDK.
+
+NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+
+Replace the value of access_key parameter by your
+**Access Key** and run:
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -273,7 +283,6 @@ please update the Python SDK to the latest version.
 
 Now the movie ratings data is stored as events inside the Event Store.
 
-
 ## Deploy the Engine as a Service
 
 Now you can build, train, and deploy the engine. First, make sure you are under the `MyRecommendation` directory.
@@ -282,7 +291,9 @@ Now you can build, train, and deploy the engine. First, make sure you are under 
 $ cd MyRecommendation
 ```
 
-Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**.
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.
+
+WARNING: Make sure the `appId` defined in the file match your **App ID**.
 
 ```
 ...

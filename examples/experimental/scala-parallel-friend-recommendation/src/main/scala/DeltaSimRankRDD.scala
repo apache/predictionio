@@ -44,12 +44,12 @@ object DeltaSimRankRDD {
 
     val newDelta = union.reduceByKey(_ + _)
       .map(k =>
-        (k._1, k._2*decay/(outDegreeMap(k._1._1) + outDegreeMap(k._1._2)))
+        (k._1, k._2*decay/(outDegreeMap(k._1._1) * outDegreeMap(k._1._2)))
       )
     newDelta
   }
 
-  def identityMatrix(sc:SparkContext, numCols:Long) : RDD[(Long, Double)] = 
+  def identityMatrix(sc:SparkContext, numCols:Long) : RDD[(Long, Double)] =
   {
     val numElements = numCols * numCols
     val arr = Array[Long]((0L to numElements).toList:_*)
@@ -73,10 +73,11 @@ object DeltaSimRankRDD {
     delta:RDD[((VertexId,VertexId), Double)]) : RDD[(Long,Double)] =
   {
     val deltaToIndex:RDD[(Long,Double)] = delta.map(x => {
-      val index = x._1._1*numCols + x._1._2
+      val index = (x._1._1-1)*numCols + (x._1._2-1)
       (index, x._2)
     })
-
+    println("detaToIndex")
+    deltaToIndex.foreach(println(_))
     val newIter = prevIter.leftOuterJoin(deltaToIndex)
     val newScores = newIter.map(x => {
       val index = x._1
@@ -113,9 +114,16 @@ object DeltaSimRankRDD {
     var prevSimrank = s0
     var prevDelta = s0Delta
 
+    println(s"initial")
+    s0.foreach(println(_))
+    prevDelta.foreach(println(_))
+
     for (i <- 0 to numIterations) {
       val nextIterDelta = calculateNthIter(numNodes, g, prevDelta, outDegreeMap)
       val nextIterSimrank = joinDelta(prevSimrank, numNodes, nextIterDelta)
+      println(s"iteration: ${i}")
+      nextIterDelta.foreach(println(_))
+      nextIterSimrank.foreach(println(_))
       prevSimrank = nextIterSimrank
       prevDelta = nextIterDelta
     }
@@ -158,5 +166,3 @@ object DeltaSimRankRDD {
   }
 
 }
-
-

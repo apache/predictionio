@@ -146,10 +146,7 @@ In `readTraining()`, `Storage.getPEvents()` returns a data access object which y
 
 This Similar Product template requires "user" and "item" entities that are set by events.
 
-`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by events.
-
-
-<!-- // Please refer to  ADD LINK) for more details of setting properties for entities by events.  -->
+`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
 The following code aggregates the properties of `user` and then map each result to a `User()` object.
 
@@ -257,7 +254,7 @@ class TrainingData(
 
 PredictionIO then passes the returned `TrainingData` object to *Data Preparator*.
 
-You could modify the DataSource to [read other event types](/similarproduct/multi-events-multi-algos/) other than the default **view**.
+NOTE: You could modify the DataSource to [read other event types](/templates/similarproduct/multi-events-multi-algos/) other than the default **view**.
 
 ### Data Preparator
 
@@ -415,7 +412,7 @@ val mllibRatings = data.viewEvents
 
 ```
 
-In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes the following parameters: *rank*, *iterations*, *lambda" and "seed".
+In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes the following parameters: *rank*, *iterations*, *lambda* and *seed*.
 
 The values of these parameters are specified in *algorithms* of
 MyRecommendation/***engine.json***:
@@ -448,6 +445,8 @@ case class ALSAlgorithmParams(
   lambda: Double,
   seed: Option[Long]) extends Params
 ```
+
+The `seed` parameter is an optional parameter, which is used by MLlib ALS algorithm internally to generate random values. If the `seed` is not specified, current system time would be used and hence each train may produce different reuslts. Specify a fixed value for the `seed` if you want to have deterministic result (For example, when you are testing).
 
 `ALS.trainImplicit()` then returns a `MatrixFactorizationModel` model which contains two RDDs: userFeatures and productFeatures. They correspond to the user X latent features matrix and item X latent features matrix, respectively. In this case, we will make use of the productFeatures matrix to find simliar products by comparing the similarity of the latent features. Hence, we store this productFeatures as defined in `ALSModel` class:
 

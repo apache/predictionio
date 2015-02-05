@@ -34,6 +34,24 @@ services:
 * EC2
 * VPC
 
+### Subscribe to PredictionIO Cluster
+
+Before you can start using PredictionIO CloudFormation template, you will need
+to subscribe to PredictionIO Cluster AMI through AWS Marketplace. To subscribe,
+go to this [link](https://aws.amazon.com/marketplace/pp/B00S74CY0A). Click the
+yellow "Continue" button on the next screen.
+
+![AWS Marketplace Subscription Page](/images/cloudformation/awsmp-1.png)
+
+In the next screen, click the "Manual Launch" tab, then select your preferred
+pricing model. Pick your desired version, then click "Accept Terms".
+
+![AWS Marketplace Term Page](/images/cloudformation/awsmp-2.png)
+
+Once your subscription is in place, you may proceed to the next section.
+
+### Start Using CloudFormation
+
 From your main AWS console, locate CloudFormation and click on it.
 
 ![CloudFormation on AWS Console](/images/cloudformation/cf-01.png)
@@ -184,7 +202,7 @@ CloudFormation.
 You can increase compute instances to reduce training time *($pio train)*
 and the time to query an engine server. You can also check the [Spark Master Web UI] to see if you need additional compute power,
 
-Notice that for compute instances, you can increase or decrease the number of extra compute instances *(ComputeInstanceExtra)* as much as you like. The extra compute instances will join the master and become slave compute instances as Spark workers. 
+Notice that for compute instances, you can increase or decrease the number of extra compute instances *(ComputeInstanceExtra)* as much as you like. The extra compute instances will join the master and become slave compute instances as Spark workers.
 
 Let us begin by adding 2 extra compute instances. At the CloudFormation console,
 right click on the cluster stack and click on **Update Stack**.
@@ -258,7 +276,7 @@ stack status changed to **UPDATE_IN_PROGRESS**.
 Progress](/images/cloudformation/compute-4.png)
 
 Once the status become **UPDATE_COMPLETED**, you will have 2 extra storage
-instances. Notice that during the up-scaling update, your cluster is still functional and existing work will not be affected. They may be affected during downscale. 
+instances. Notice that during the up-scaling update, your cluster is still functional and existing work will not be affected. They may be affected during downscale.
 
 ## Support and Pricing
 

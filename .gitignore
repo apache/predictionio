@@ -14,8 +14,12 @@ fs/
 supervisord.conf
 assembly/
 /dist
+pio.log
 *.tar.gz
 *.pyc
 # Ignore source files whose name prefixed with "Private"
 Private*.scala
 quickstartapp/
+# IntelliJ
+*.iml
+.idea/

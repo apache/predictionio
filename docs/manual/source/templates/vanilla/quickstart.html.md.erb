@@ -2,9 +2,9 @@
 title: Quick Start - Vanilla Engine Template
 ---
 
-The purpose of the Vanilla template is for developing new engine when you find other engine templates (e.g. *Recommemdation template*, *Classification template*) do not fit your needs. This template provides minimal functionatlity and skeleton to kick start new engine development.
+The purpose of the Vanilla template is for developing new engine when you find other engine templates do not fit your needs. This template provides a skeleton to kick start new engine development.
 
-By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts how many of these events and multiple it by algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedsResult.
+By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts the number of events and multiple it by the algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedsResult.
 
 ## Install PredictionIO
 
@@ -14,12 +14,12 @@ INFO: 0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](../resources/schema-change.html).
 
-Let's say you have installed PredictionIO at `/home/yourname/predictionio/`.
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
 For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/predictionio/bin`:
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
 
 Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
@@ -73,18 +73,20 @@ $ pio app list
 ## Create a new Engine from an Engine Template
 
 Now let's create a new engine called *MyNewEngine* by cloning the Recommendation
-Engine Template, assuming `/home/yourname/predictionio`
-is the installation directory of PredictionIO:
+Engine Template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-vanilla MyNewEngine
+$ pio template get PredictionIO/template-scala-parallel-vanilla MyNewEngine
 $ cd MyNewEngine
 ```
 
 ## Collecting Data
 
-INFO: As long as the appId is valid, this Vanilla template does not require event data in your app in order to work.
+As long as the appId is valid, this Vanilla template does not require event data in your app in order to work.
 
+## Import Sample Data
+
+As long as the appId is valid, this Vanilla template does not require event data in your app in order to work.
 
 ## Deploy the Engine as a Service
 
@@ -94,7 +96,9 @@ Now you can build, train, and deploy the engine. First, make sure you are under 
 $ cd MyNewEngine
 ```
 
-Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**.
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.
+
+WARNING: Make sure the `appId` defined in the file match your **App ID**.
 
 ```
 ...
@@ -215,4 +219,4 @@ $ curl -H "Content-Type: application/json" -d '{ "q": "foo" }' http://localhost:
 
 *MyNewEngine* is now running. You can start modifying it to build your new engine!
 
-#### [Next: DASE Components Explained](dase)
+#### [Next: DASE Components Explained](../dase)

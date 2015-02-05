@@ -68,7 +68,6 @@ class Engine[TD, EI, PD, Q, P, A](
     * @param preparatorClass Preparator class.
     * @param algorithmClassMap Map of algorithm names to classes.
     * @param servingClass Serving class.
-    * @group Engine
     */
   def this(
     dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],

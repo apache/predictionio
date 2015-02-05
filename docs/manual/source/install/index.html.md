@@ -31,14 +31,14 @@ Choose your platform below:
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
 * [Launching PredictionIO on Amazon Web Services](launch-aws.html)
+* [Installing PredictionIO with Vagrant(VirtualBox)](install-vagrant.html)
 
 You may also use one of the community-contributed packages to install
 PredictionIO:
 
 * [Installing PredictionIO with
   Docker](/community/projects.html#docker-installation-for-predictionio)
-* [Installing PredictionIO with Vagrant
-  (VirtualBox)](/community/projects.html#vagrant-installation-for-predictionio)
+
 
 [//]: # (* *(coming soon)* Installing PredictionIO with Homebrew)
 

@@ -16,6 +16,8 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
+import io.prediction.tools.console.Console
+import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
 
 import grizzled.slf4j.Logging
@@ -109,11 +111,13 @@ object RunServer extends Logging {
         "--event-server-ip",
         ca.eventServer.ip,
         "--event-server-port",
-        ca.eventServer.port.toString) ++
+        ca.eventServer.port.toString,
+        "--log-file",
+        ca.common.logFile) ++
       (if (ca.accessKey.accessKey != "")
         Seq("--accesskey", ca.accessKey.accessKey) else Seq()) ++
       (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
-      (if (ca.batch != "") Seq("--batch", ca.batch) else Seq()) ++
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.debug) Seq("--debug") else Seq()) ++
       ca.deploy.logUrl.map(x => Seq("--log-url", x)).getOrElse(Seq()) ++

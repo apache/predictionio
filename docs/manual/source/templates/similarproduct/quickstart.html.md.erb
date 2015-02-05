@@ -3,6 +3,9 @@ title: Quick Start - Similar Product Engine Template
 ---
 
 ## Overview
+
+INFO: This template contains more advanced features. If you are first time PredictionIO or Spark MLlib user, you may want to go through the [Recommendation Template](/templates/recommendation/quickstart) first. Of course, if you are adventurous, feel free to continue.
+
 This engine template recommends products that are "similar" to the input product(s).
 Similarity is not defined by user or item attributes but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B. The template can be customized to support other action types such as buy, rate, like..etc.
 
@@ -41,24 +44,84 @@ By default, this template takes the following data from Event Server as Training
 - Users' *view* events
 - Items' *categories* properties
 
-
-
 INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
 You can offer features like "Customers Who Bought This Item Also Bought....".
 
 
-## Create a new Engine from an Engine Template
+## Install PredictionIO
 
-Now let's create a new engine called *MySimilar* by copying the Similar Product Engine Template, assuming `/home/yourname/predictionio`
-is the installation directory of PredictionIO:
+First you need to [install PredictionIO <%= data.versions.pio %>](/install) (if you haven't done it).
+
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
+For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-similarproduct MySimilarProduct
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
+```
+
+NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
+
+Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
+
+```
+$ pio status
+```
+
+NOTE: If you have issues with `pio status`, please see [Using PredictionIO FAQ](/resources/faq/#using-predictionio).
+
+and please make sure that PredictionIO Event Server, which collects data, is
+running:
+
+```
+$ pio eventserver
+```
+
+## Create a new Engine from an Engine Template
+
+Now let's create a new engine called *MySimilarProduct* by copying the Similar Product Engine Template:
+
+```
+$ pio template get PredictionIO/template-scala-parallel-similarproduct MySimilarProduct
 $ cd MySimilarProduct
 ```
 
-## Collecting Data
+## Create a Sample App
 
+Let's create a sample app called "MyApp1" now. An app represents the application
+that generates the data, e.g. a movie rental app.
+
+```
+$ pio app new MyApp1
+```
+
+You should find the following in the console output:
+
+```
+...
+2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
+2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
+2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
+2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
+2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+Take note of the **Access Key** and **App ID**. You will need the **Access Key**
+to refer to "MyApp1" when you collect data. At the same time, you will use **App
+ID** to refer to "MyApp1" in engine code.
+
+`$ pio app list` will return a list of names and IDs of apps created in the Event Server.
+
+```
+$ pio app list
+2014-12-03 14:19:34,134 INFO  elasticsearch.plugins - [Hephaestus] loaded [], sites []
+2014-12-03 14:19:36,206 INFO  tools.Console$ -                 Name |   ID
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp1 |    1
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp2 |    2
+2014-12-03 14:19:36,209 INFO  tools.Console$ - Finished listing 2 app(s).
+```
+
+## Collecting Data
 
 Next, let's collect some training data for the app of this Engine. By default,
 the Similar Engine Template supports 2 types of entities: **user** and
@@ -67,6 +130,8 @@ the Similar Engine Template supports 2 types of entities: **user** and
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
+The following is sample code of using different SDKs to import events of setting user and item's properties, and user-view-item events. To use the SDK, first install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK),
+[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
 
 
 <div class="tabs">
@@ -261,10 +326,13 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
+The properties of the `user` and `item` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
-## Sample Data for Quick Start
+## Import Sample Data
 
 For demonstration purpose, a python script is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50") with some random assigned categories ( with categories "c1" to "c6"). Each user then randomly view 10 items.
+
+NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
 
 First, make sure you are under the `MySimilarProduct` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
@@ -296,7 +364,9 @@ Now you can build, train, and deploy the engine. First, make sure you are under 
 $ cd MySimilarProduct
 ```
 
-Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.  Make sure the `appId` defined in the file match your **App ID**.
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.
+
+WARNING: Make sure the `appId` defined in the file match your **App ID**.
 
 ```
 ...
@@ -315,7 +385,7 @@ Start with building your *MySimilarProduct* engine.
 ```
 $ pio build
 ```
-This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages. 
+This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
 
 Upon successful build, you should see a console message similar to the
 following.

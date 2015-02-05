@@ -1,6 +1,6 @@
 {
   "id": "io.prediction.engines.itemrec.examples",
-  "version": "0.8.6-SNAPSHOT",
+  "version": "0.8.7-SNAPSHOT",
   "name": "PredictionIO ItemRec Engine Examples",
   "engineFactory": "io.prediction.engines.itemrec.ItemRecEngine"
 }

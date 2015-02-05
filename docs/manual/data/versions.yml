@@ -1,4 +1,4 @@
-pio: 0.8.6-SNAPSHOT
+pio: 0.8.7-SNAPSHOT
 spark_download_filename: spark-1.2.0-bin-hadoop2.4
 elasticsearch_download_filename: elasticsearch-1.3.2
 hbase_basename: hbase-0.98.6

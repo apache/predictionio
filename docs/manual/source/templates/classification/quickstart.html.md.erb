@@ -18,20 +18,31 @@ production use based on this template.
 
 ## Install PredictionIO
 
-First you need to [install PredictionIO <%= data.versions.pio %>](/install)
+First you need to [install PredictionIO <%= data.versions.pio %>](/install) (if you haven't done it).
 
 WARNING: **0.8.2 contains schema changes from previous versions. If you have
 installed the previous versions, you may need to clear both HBase and
 Elasticsearch. See more [here](/resources/upgrade/).**
 
 
-Let's say you have installed PredictionIO at `/home/yourname/PredictionIo/`. For
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`. For
 convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/PredictionIo/bin`:
+`/home/yourname/PredictionIO/bin`:
 
 ```
-$ PATH=$PATH:/home/yourname/predictionio/bin; export PATH
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
+
+NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
+
+
+Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
+
+```
+$ pio status
+```
+
+NOTE: If you have issues with `pio status`, please see [Using PredictionIO FAQ](/resources/faq/#using-predictionio).
 
 and please make sure that PredictionIO Event Server, which collects data, is
 running:
@@ -67,11 +78,10 @@ ID** to refer to "MyApp2" in engine code.
 ## Create a new Engine from an Engine Template
 
 Now let's create a new engine called *MyClassification* by cloning the MLlib
-Classification engine template, assuming `/home/yourname/predictionio` is the
-installation directory of PredictionIO:
+Classification engine template:
 
 ```
-$ cp -r /home/yourname/predictionio/templates/scala-parallel-classification MyClassification
+$ pio template get PredictionIO/template-scala-parallel-classification MyClassification
 $ cd MyClassification
 ```
 
@@ -84,7 +94,8 @@ attr0, attr1, attr2 and plan.
 You can send these data to PredictionIO Event Server in real-time easily by
 making a HTTP request or through the `EventClient` of an SDK.
 
-To use the SDK, first install the SDK in the language of your choice - [Java](/sdk/java/), [PHP](/sdk/php), [Python](/sdk/python), or [Ruby](/sdk/ruby). 
+The following is sample code of using different SDKs to import events of setting user's properties. To use the SDK, install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK),
+[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -369,7 +380,9 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
-You may use the sample data from MLlib repo for demonstration purpose. Execute
+## Import Sample Data
+
+We will use the sample data from MLlib repo for demonstration purpose. Execute
 the following to get the data set:
 
 ```
@@ -377,8 +390,12 @@ $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_n
 ```
 
 A Python import script `import_eventserver.py` is provided to import the data to
-Event Server using Python SDK. Replace the value of access_key parameter by your
-**Access Key**.
+Event Server using Python SDK. Please upgrade to the latest Python SDK.
+
+NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+
+Replace the value of access_key parameter by your
+**Access Key** and run:
 
 ```
 $ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
@@ -395,8 +412,16 @@ Now the training data is stored as events inside the Event Store.
 
 ## Deploy the Engine as a Service
 
-Now you can deploy the engine. Make sure the `appId` defined in the file
-`engine.json` match your **App ID**:
+Now you can build, train, and deploy the engine. First, make sure you are under the `MyRecommendation` directory.
+
+```
+$ cd MyClassification
+```
+
+Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.
+
+WARNING: Make sure the `appId` defined in the file match your **App ID**.
+
 
 ```
 ...
@@ -415,7 +440,7 @@ Start with building your *MyClassification*.
 ```
 $ pio build
 ```
-This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages. 
+This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
 
 Upon successful build, you should see a console message similar to the
 following.
