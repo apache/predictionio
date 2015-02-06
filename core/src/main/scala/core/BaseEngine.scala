@@ -10,7 +10,8 @@ import scala.reflect._
 
 abstract class BaseEngine[EI, Q, P, A] extends Serializable {
   def train(sc: SparkContext, engineParams: EngineParams): Seq[Any]
-  //def eval(sc: SparkContext, engineParams): Seq[(EI, RDD[(Q, P, A)])]
+  def eval(sc: SparkContext, engineParams: EngineParams)
+  : Seq[(EI, RDD[(Q, P, A)])]
 }
 
 
