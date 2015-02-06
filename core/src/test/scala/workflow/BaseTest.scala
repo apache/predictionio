@@ -11,8 +11,10 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 
 
-/** Manages a local `sc` {@link SparkContext} variable, correctly stopping it after each test. */
-trait LocalSparkContext extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
+/** Manages a local `sc` {@link SparkContext} variable, correctly stopping it
+  * after each test. */
+trait LocalSparkContext 
+extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
 
   @transient var sc: SparkContext = _
 

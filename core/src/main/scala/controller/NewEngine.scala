@@ -107,7 +107,25 @@ class Engine[TD, EI, PD, Q, P, A](
     EngineWorkflow.train(sc, dataSource, preparator, algorithms)
   }
 
-  //def eval(sc: SparkContext, engineParams): Seq[(EI, RDD[(Q, P, A)])]
+  def eval(sc: SparkContext, engineParams: EngineParams)
+  : Seq[(EI, RDD[(Q, P, A)])] = {
+    val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
+    val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
+    
+    val (preparatorName, preparatorParams) = engineParams.preparatorParams
+    val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
+ 
+    val algoParamsList = engineParams.algorithmParamsList
+
+    val algorithms = algoParamsList.map { case (algoName, algoParams) => {
+      Doer(algorithmClassMap(algoName), algoParams)
+    }}
+
+    val (servingName, servingParams) = engineParams.servingParams
+    val serving = Doer(servingClassMap(servingName), servingParams)
+    
+    EngineWorkflow.eval(sc, dataSource, preparator, algorithms, serving)
+  }
 }
 
 

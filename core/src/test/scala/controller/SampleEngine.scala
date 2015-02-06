@@ -20,6 +20,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 
 import io.prediction.controller.{ Params => PIOParams }
+import io.prediction.controller.EngineParams
 
 object Engine0 {
   @transient lazy val logger = Logger[this.type] 
@@ -244,5 +245,3 @@ object Engine0 {
     }
   }
 }
-
-

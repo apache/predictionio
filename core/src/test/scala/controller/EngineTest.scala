@@ -21,7 +21,8 @@ import java.lang.Thread
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 
-class EngineDevSuite extends FunSuite with SharedSparkContext {
+class EngineDevSuite
+extends FunSuite with Inside with SharedSparkContext {
   import n.io.prediction.controller.Engine0._
   @transient lazy val logger = Logger[this.type] 
 
@@ -45,5 +46,55 @@ class EngineDevSuite extends FunSuite with SharedSparkContext {
     models should contain theSameElementsAs Seq(PAlgo2.Model(2, pd))
   }
 
-}
+  test("Engine.eval") {
+    val engine = new Engine(
+      classOf[PDataSource2],
+      classOf[PPreparator1],
+      Map("" -> classOf[PAlgo2]),
+      classOf[LServing1])
 
+    val qn = 10
+    val en = 3
+
+    val engineParams = EngineParams(
+      dataSourceParams = PDataSource2.Params(id = 0, en = en, qn = qn),
+      preparatorParams = PPreparator1.Params(1),
+      algorithmParamsList = Seq(("", PAlgo2.Params(2))),
+      servingParams = LServing1.Params(3))
+
+    val algoCount = engineParams.algorithmParamsList.size
+    val pd = ProcessedData(1, TrainingData(0))
+    val model0 = PAlgo2.Model(2, pd)
+
+    val evalDataSet = engine.eval(sc, engineParams)
+
+    evalDataSet should have size en
+
+    forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
+      val (evalInfo, qpaRDD) = evalData
+      evalInfo shouldBe EvalInfo(0)
+
+      val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
+
+      qpaSeq should have size qn
+
+      forAll (qpaSeq) { case (q, p, a) => 
+        val Query(qId, qEx, qQx) = q
+        val Actual(aId, aEx, aQx) = a
+        qId shouldBe aId
+        qEx shouldBe ex
+        aEx shouldBe ex
+        qQx shouldBe aQx
+
+        inside (p) { case Prediction(pId, pQ, pModels, pPs) => {
+          pId shouldBe 3
+          pQ shouldBe q
+          pModels shouldBe None
+          pPs should have size algoCount
+          pPs shouldBe Seq(
+            Prediction(id = 2, q = q, models = Some(model0)))
+        }}
+      }
+    }}
+  }
+}

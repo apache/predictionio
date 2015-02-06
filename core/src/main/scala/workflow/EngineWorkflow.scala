@@ -24,10 +24,16 @@ object EngineWorkflow {
       dataSource: BaseDataSource[TD, _, Q, _],
       preparator: BasePreparator[TD, PD],
       algorithmList: Seq[BaseAlgorithm[PD, _, Q, _]]): Seq[Any] = {
-    //logger.info("EngineWorkflow.train")
+    logger.info("EngineWorkflow.train")
+    logger.info(s"DataSource: $dataSource")
+    logger.info(s"Preparator: $preparator")
+    logger.info(s"AlgorithmList: $algorithmList")
+
     val td = dataSource.readTrainBase(sc)
     val pd = preparator.prepareBase(sc, td)
-    algorithmList.map(_.trainBase(sc, pd))
+    val models: Seq[Any] = algorithmList.map(_.trainBase(sc, pd))
+    logger.info("EngineWorkflow.train completed")
+    models
   }
 
   def eval[TD, PD, Q, P, A, EI](
