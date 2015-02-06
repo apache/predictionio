@@ -2,10 +2,10 @@
 title: Quick Start - Recommendation Engine Template
 ---
 
+## Overview
+
 An engine template is an almost-complete implementation of an engine.
-PredictionIO's [Recommendation Engine
-Template](https://github.com/PredictionIO/PredictionIO/tree/master/templates/scala-parallel-recommendation)
-has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
+PredictionIO's Recommendation Engine Template has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
 default. You can customize it easily to fit your specific needs.
 
 We are going to show you how to create your own recommendation engine for
@@ -13,81 +13,16 @@ production use based on this template.
 
 ## Install PredictionIO
 
-First you need to [install PredictionIO <%= data.versions.pio %>](/install) (if you haven't done it).
-
-INFO: 0.8.2 contains schema changes from previous versions. If you have
-installed the previous versions, you may need to clear both HBase and
-Elasticsearch. See more [here](/resources/upgrade/).
-
-Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
-For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
-`/home/yourname/PredictionIO/bin`:
-
-```
-$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
-```
-
-NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
-
-Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
-
-```
-$ pio status
-```
-
-NOTE: If you have issues with `pio status`, please see [Using PredictionIO FAQ](/resources/faq/#using-predictionio).
-
-and please make sure that PredictionIO Event Server, which collects data, is
-running:
-
-```
-$ pio eventserver
-```
+<%= partial 'shared/quickstart/install' %>
 
 ## Create a Sample App
 
-Let's create a sample app called "MyApp1" now. An app represents the application
-that generates the data, e.g. a movie rental app.
-
-```
-$ pio app new MyApp1
-```
-
-You should find the following in the console output:
-
-```
-...
-2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
-2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
-2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
-2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
-2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
-```
-
-Take note of the **Access Key** and **App ID**. You will need the **Access Key**
-to refer to "MyApp1" when you collect data. At the same time, you will use **App
-ID** to refer to "MyApp1" in engine code.
-
-`$ pio app list` will return a list of names and IDs of apps created in the Event Server.
-
-```
-$ pio app list
-2014-12-03 14:19:34,134 INFO  elasticsearch.plugins - [Hephaestus] loaded [], sites []
-2014-12-03 14:19:36,206 INFO  tools.Console$ -                 Name |   ID
-2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp1 |    1
-2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp2 |    2
-2014-12-03 14:19:36,209 INFO  tools.Console$ - Finished listing 2 app(s).
-```
+<%= partial 'shared/quickstart/create_app' %>
 
 ## Create a new Engine from an Engine Template
 
-Now let's create a new engine called *MyRecommendation* by cloning the Recommendation
-Engine Template:
-
-```
-$ pio template get PredictionIO/template-scala-parallel-recommendation MyRecommendation
-$ cd MyRecommendation
-```
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyRecommendation', template_name: 'Recommendation
+Engine Template', template_repo: 'template-scala-parallel-recommendation' } %>
 
 ## Collecting Data
 
@@ -95,11 +30,9 @@ Next, let's collect some training data for the app of this Engine. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
 **buy**. A user can give a rating score to an item or he can buy an item.
 
-You can send the event data to PredictionIO Event Server in real-time easily by
-making a HTTP request or through the `EventClient` of an SDK.
+<%= partial 'shared/quickstart/install_sdk' %>
 
-The following is sample code of using different SDKs to import user-view-item and user-buy-item events. To use the SDK, install the SDK in the language of your choice by following the install steps on ReadMe: [Python](https://github.com/PredictionIO/PredictionIO-Python-SDK),
-[Ruby](https://github.com/PredictionIO/PredictionIO-Ruby-SDK), [Java](https://github.com/PredictionIO/PredictionIO-Java-SDK), [PHP](https://github.com/PredictionIO/PredictionIO-PHP-SDK).
+The following is sample code of using different SDKs to import user-view-item and user-buy-item events:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -285,75 +218,9 @@ Now the movie ratings data is stored as events inside the Event Store.
 
 ## Deploy the Engine as a Service
 
-Now you can build, train, and deploy the engine. First, make sure you are under the `MyRecommendation` directory.
+<%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyRecommendation' } %>
 
-```
-$ cd MyRecommendation
-```
-
-Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.
-
-WARNING: Make sure the `appId` defined in the file match your **App ID**.
-
-```
-...
-"datasource": {
-  "params" : {
-    "appId": 1
-  }
-},
-...
-```
-
-### Building
-
-Start with building your *MyRecommendation* engine.
-
-```
-$ pio build
-```
-This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
-
-Upon successful build, you should see a console message similar to the
-following.
-
-```
-2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
-```
-
-### Training
-
-Train your successfully-built engine.
-
-WARNING: You need to install the
-[gfortran](https://github.com/mikiobraun/jblas/wiki/Missing-Libraries)
-runtime library if it is not already present on your nodes. For Debian and
-Ubuntu systems this would be `sudo apt-get install libgfortran3`.
-
-```
-$ pio train
-```
-
-When your engine is trained successfully, you should see a console message
-similar to the following.
-
-```
-2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
-```
-
-### Deploying
-
-Now your engine is ready to deploy.
-
-```
-$ pio deploy
-```
-
-This will deploy an engine that binds to http://localhost:8000. You can visit
-that page in your web browser to check its status.
-
-![Engine Status](/images/engine-server.png)
-
+## Using the Engine
 
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
 whose id is 1, you send this JSON `{ "user": "1", "num": 4 }` to the deployed
@@ -419,8 +286,9 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
   </div>
 </div>
 
-*MyRecommendation* is now running. To update the model periodically with new data, simply set up a cron job to call `$pio train` and `$pio deploy`. The engine will continue to serve prediction results during the re-train process. After the training is completed, `$pio deploy` will automatically shutdown the existing engine server and bring up a new process on the same port.
+*MyRecommendation* is now running.
 
+<%= partial 'shared/quickstart/production' %>
 
 Next, we are going to take a look
 at the engine architecture and explain how you can customize it completely.
