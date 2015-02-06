@@ -1,0 +1,28 @@
+First you need to [install PredictionIO <%= data.versions.pio %>](/install) (if you haven't done it).
+
+Let's say you have installed PredictionIO at `/home/yourname/PredictionIO/`.
+For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
+`/home/yourname/PredictionIO/bin`:
+
+```
+$ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
+```
+
+NOTE: If you installed from AWS Marketplace, the path is located at /opt/PredictionIO/bin
+
+Once you have completed the installation process, please make sure all the components (HBase, ElasticSearch) are up and running. You can check the status by running:
+
+```
+$ pio status
+```
+
+NOTE: If you have issues with `pio status`, please see [FAQ - Using PredictionIO](/resources/faq/#using-predictionio).
+
+and please make sure that PredictionIO Event Server, which collects data, is
+running:
+
+```
+$ pio eventserver
+```
+<!-- dummy markdown link needed if code block is last -->
+[]()
