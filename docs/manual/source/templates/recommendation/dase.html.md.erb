@@ -2,19 +2,7 @@
 title: DASE Components Explained (Recommendation)
 ---
 
-PredictionIO's DASE architecture brings the separation-of-concerns design
-principle to predictive engine development. DASE stands for the following
-components of an engine:
-
-* **D**ata - includes Data Source and Data Preparator
-* **A**lgorithm(s)
-* **S**erving
-* **E**valuator
-
-Let's look at the code and see how you can customize the Recommendation engine
-you built from the Recommendation Engine Template.
-
-INFO: Evaluator will not be covered in this tutorial.
+<%= partial 'shared/dase/dase', locals: { template_name: 'Recommendation Engine Template' } %>
 
 ## The Engine Design
 
@@ -163,7 +151,7 @@ In ***engine.json***:
 
 Each *rate* and *buy* user event data is read as `Rating`.
 For flexibility, this Recommendation engine template is designed to support user ID and item ID in `String`.
-Since Spark MLlib's `Rating` class assumes `Int`-only user ID and item ID, you have to define a new `Rating` class:  
+Since Spark MLlib's `Rating` class assumes `Int`-only user ID and item ID, you have to define a new `Rating` class:
 
 ```scala
 case class Rating(
