@@ -118,6 +118,8 @@ object Runner {
       servingParams = sp
     )
 
+    /*
+    // FIXME(yipjustin). Workflow.runEngine is deprecated.
     Workflow.runEngine(
       params = WorkflowParams(
         batch = "Imagine: Local ItemRank Engine",
@@ -129,6 +131,7 @@ object Runner {
       evaluatorClassOpt = Some(classOf[ItemRankDetailedEvaluator]),
       evaluatorParams = mp
     )
+    */
 
   }
 

@@ -27,6 +27,30 @@ trait WithBaseQuerySerializer {
 }
 
 abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
+  extends AbstractDoer with WithBaseQuerySerializer {
+  def trainBase(sc: SparkContext, pd: PD): M
+
+  // Used by Evaluation
+  def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
+  : RDD[(Long, P)]
+
+  // Used by Deploy
+  def predictBase(bm: Any, q: Q): P
+
+  def queryManifest(): Manifest[Q] = manifest[Q]
+  
+  def makePersistentModel(sc: SparkContext, modelId: String, bm: Any)
+  : Any = Unit
+
+  //def loadPersistentModel(sc: SparkContext ...)
+  
+  def isJava: Boolean
+  def isParallel: Boolean = true
+}
+
+
+/*
+abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
   extends AbstractDoer
   with WithBaseQuerySerializer {
 
@@ -75,3 +99,4 @@ trait LModelAlgorithm[M, Q, P] {
 
   def predict(model: M, query: Q): P
 }
+*/

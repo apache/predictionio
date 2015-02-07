@@ -1,5 +1,5 @@
 //package org.apache.spark
-package n.io.prediction.workflow
+package io.prediction.workflow
 
 import _root_.io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import org.scalatest.BeforeAndAfterAll

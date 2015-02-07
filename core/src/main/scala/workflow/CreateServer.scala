@@ -297,12 +297,23 @@ object CreateServer extends Logging {
       val dataSource = Doer(
         engine.dataSourceClassMap(dataSourceParamsWithName._1),
         dataSourceParamsWithName._2)
+
+      /*
       val evalParamsDataMap
       : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
         .readBase(sc)
         .zipWithIndex
         .map(_.swap)
         .toMap
+      */
+
+      // FIXME(yipjsutin). Use revamped workflow.
+      val td = dataSource.readTrainBase(sc)
+
+      val evalParamsDataMap: Map[EI, (TD, EI, RDD[(Q, A)])] = Seq(0)
+        .map { _ => (0, (td, null.asInstanceOf[EI], sc.emptyRDD[(Q, A)])) }
+        .toMap
+
       val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
         case(ei, e) => (ei -> (e._1, e._3))
       }

@@ -32,12 +32,29 @@ import org.apache.spark.SparkContext._
 
 class PEventsDataSource[DP: ClassTag, Q, A](
   dsp: AbstractEventsDataSourceParams)
-  extends PDataSource[DP, PTrainingData, Q, A] {
+  extends PDataSource[PTrainingData, DP, Q, A] {
 
   @transient lazy val logger = Logger[this.type]
 
+  def readTrain(sc: SparkContext): PTrainingData = {
+    val batchView = new PBatchView(
+      appId = dsp.appId,
+      startTime = dsp.startTime,
+      untilTime = dsp.untilTime,
+      sc = sc)
+      val (uid2ui, users) = extractUsers(batchView, dsp.untilTime)
+      val (iid2ii, items) = extractItems(batchView, dsp.untilTime)
+      val actions = extractActions(batchView, uid2ui, iid2ii,
+        dsp.startTime, dsp.untilTime)
+
+    new PTrainingData(
+        users = users,
+        items = items,
+        u2iActions = actions)
+  }
+
   override
-  def read(sc: SparkContext): Seq[(DP, PTrainingData, RDD[(Q, A)])] = {
+  def read(sc: SparkContext): Seq[(PTrainingData, DP, RDD[(Q, A)])] = {
 
     val batchView = new PBatchView(
       appId = dsp.appId,
@@ -46,17 +63,11 @@ class PEventsDataSource[DP: ClassTag, Q, A](
       sc = sc)
 
     if (dsp.slidingEval.isEmpty) {
-      val (uid2ui, users) = extractUsers(batchView, dsp.untilTime)
-      val (iid2ii, items) = extractItems(batchView, dsp.untilTime)
-      val actions = extractActions(batchView, uid2ui, iid2ii,
-        dsp.startTime, dsp.untilTime)
+      val trainingData = readTrain(sc)
 
-      val trainingData = new PTrainingData(
-        users = users,
-        items = items,
-        u2iActions = actions)
-
-      return Seq((null.asInstanceOf[DP], trainingData,
+      return Seq((
+        trainingData,
+        null.asInstanceOf[DP], 
         sc.parallelize(Seq[(Q, A)]())))
 
     } else {
@@ -99,7 +110,8 @@ class PEventsDataSource[DP: ClassTag, Q, A](
         val (dp, qaSeq) = generateQueryActualSeq(
           users, items, evalActions, trainUntil, evalStart, evalUntil, sc)
 
-        (dp, trainingData, qaSeq)
+        //(dp, trainingData, qaSeq)
+        (trainingData, dp, qaSeq)
       }}
     }
   }

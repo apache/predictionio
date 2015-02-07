@@ -1,3 +1,4 @@
+/*
 package n.io.prediction.core
 
 import io.prediction.core.AbstractDoer
@@ -11,4 +12,4 @@ abstract class BaseEvaluator[-EI, Q, P, A, ER <: AnyRef]
 
   def evaluateBase(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])]): ER
 }
-
+*/

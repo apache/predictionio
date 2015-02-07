@@ -1,3 +1,4 @@
+/*
 package n.io.prediction.core
 
 import io.prediction.core.AbstractDoer
@@ -10,3 +11,4 @@ abstract class BaseServing[Q, P]
   extends AbstractDoer {
   def serveBase(q: Q, ps: Seq[P]): P
 }
+*/

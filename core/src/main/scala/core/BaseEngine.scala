@@ -1,4 +1,4 @@
-package n.io.prediction.core
+package io.prediction.core
 
 import io.prediction.controller.Utils
 import io.prediction.controller.EngineParams
@@ -13,16 +13,3 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
   def eval(sc: SparkContext, engineParams: EngineParams)
   : Seq[(EI, RDD[(Q, P, A)])]
 }
-
-
-
-
-
-/*
-class TestEngine extends BaseEngine[Int, Int, Int, Int] {
-  def train(sc: SparkContext): Seq[Int] = Seq(1,2,3)
-
-  def test(sc: SparkContext): RDD[Int] = sc.parallelize(Seq(1,3,5))
-}
-*/
-

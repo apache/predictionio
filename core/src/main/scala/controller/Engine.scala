@@ -15,10 +15,18 @@
 
 package io.prediction.controller
 
+import io.prediction.core.AbstractDoer
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
+import io.prediction.core.Doer
+import io.prediction.core.BaseEngine
+import io.prediction.workflow.EngineWorkflow
+
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 
 import scala.language.implicitConversions
 
@@ -61,7 +69,7 @@ class Engine[TD, EI, PD, Q, P, A](
     val preparatorClassMap: Map[String, Class[_ <: BasePreparator[TD, PD]]],
     val algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
     val servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]])
-  extends Serializable {
+  extends BaseEngine[EI, Q, P, A] {
 
   /**
     * @param dataSourceClass Data source class.
@@ -96,6 +104,105 @@ class Engine[TD, EI, PD, Q, P, A](
       preparatorClassMap,
       algorithmClassMap,
       servingClassMap)
+  }
+  
+  // Return persistentable models from trained model
+  def train(sc: SparkContext, engineParams: EngineParams): Seq[Any] = {
+    val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
+    val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
+    
+    val (preparatorName, preparatorParams) = engineParams.preparatorParams
+    val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
+ 
+    val algoParamsList = engineParams.algorithmParamsList
+
+    val algorithms = algoParamsList.map { case (algoName, algoParams) => {
+      Doer(algorithmClassMap(algoName), algoParams)
+    }}
+
+    val models = EngineWorkflow.train(sc, dataSource, preparator, algorithms)
+
+
+    val algoCount = algorithms.size
+    val algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)] = 
+    (0 until algoCount).map { ax => {
+      val (name, params) = algoParamsList(ax)
+      (name, params, algorithms(ax), models(ax))
+    }}
+
+    makeSerializableModels(sc, engineInstanceId = "", algoTuples = algoTuples)
+  }
+
+  /** Extract model for persistent layer.
+    *
+    * PredictionIO presist models for future use.  It allows custom
+    * implementation for persisting models. You need to implement the
+    * [[io.prediction.controller.IPersistentModel]] interface. This method
+    * traverses all models in the workflow. If the model is a
+    * [[io.prediction.controller.IPersistentModel]], it calls the save method
+    * for custom persistence logic.
+    *
+    * For model doesn't support custom logic, PredictionIO serializes the whole
+    * model if the corresponding algorithm is local. On the other hand, if the
+    * model is parallel (i.e. model associated with a number of huge RDDS), this
+    * method return Unit, in which case PredictionIO will retrain the whole
+    * model from scratch next time it is used.
+    */
+  //def extractPersistentModels[PD, Q, P](
+
+  def makeSerializableModels(
+    sc: SparkContext,
+    engineInstanceId: String,
+    // AlgoName, Params, Algo, Model
+    algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)]//,
+    //params: WorkflowParams
+  ): Seq[Any] = {
+
+    algoTuples
+    .zipWithIndex
+    .map { case ((name, params, algo, model), ax) => {
+      algo.makePersistentModel(
+        sc = sc,
+        modelId = Seq(engineInstanceId, ax, name).mkString("-"),
+        model)
+    }}
+  }
+
+
+
+
+  /*
+  def getSerializableModels(
+    sc: SparkContext, 
+    engineParamms: EngineParams,
+    models: Seq[Any],
+    engineInstanceId: String): Seq[Any] = {
+
+    val algoParamsList = engineParams.algorithmParamsList
+  }
+  */
+
+
+
+
+  def eval(sc: SparkContext, engineParams: EngineParams)
+  : Seq[(EI, RDD[(Q, P, A)])] = {
+    val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
+    val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
+    
+    val (preparatorName, preparatorParams) = engineParams.preparatorParams
+    val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
+ 
+    val algoParamsList = engineParams.algorithmParamsList
+
+    val algorithms = algoParamsList.map { case (algoName, algoParams) => {
+      Doer(algorithmClassMap(algoName), algoParams)
+    }}
+
+    val (servingName, servingParams) = engineParams.servingParams
+    val serving = Doer(servingClassMap(servingName), servingParams)
+    
+    EngineWorkflow.eval(sc, dataSource, preparator, algorithms, serving)
   }
 }
 
@@ -242,6 +349,7 @@ class SimpleEngineParams(
 trait IEngineFactory {
   /** Creates an instance of an [[Engine]]. */
   def apply(): Engine[_, _, _, _, _, _]
+  //def apply(): BaseEngine[_, _, _, _]
 
   /** Override this method to programmatically return engine parameters. */
   def engineParams(key: String): EngineParams = EngineParams()

@@ -86,18 +86,21 @@ class EventsDataSource[DP: ClassTag, Q, A](
   @transient lazy val batchView = new LBatchView(dsp.appId,
     dsp.startTime, dsp.untilTime)
 
-  override
-  def read(): Seq[(TrainingData, DP, Seq[(Q, A)])] = {
-    if (dsp.slidingEval.isEmpty) {
+  def readTrain(): TrainingData = {
       val (uid2ui, users) = extractUsers(dsp.untilTime)
       val (iid2ii, items) = extractItems(dsp.untilTime)
       val actions = extractActions(uid2ui, iid2ii, dsp.startTime, dsp.untilTime)
 
-      val trainingData = new TrainingData(
+      new TrainingData(
         users = HashMap[Int, UserTD]() ++ users,
         items = HashMap[Int, ItemTD]() ++ items,
         u2iActions = actions.toList)
+  }
 
+  override
+  def read(): Seq[(TrainingData, DP, Seq[(Q, A)])] = {
+    if (dsp.slidingEval.isEmpty) {
+      val trainingData = readTrain()
       return Seq((trainingData, null.asInstanceOf[DP], Seq[(Q, A)]()))
     } else {
       val evalParams = dsp.slidingEval.get

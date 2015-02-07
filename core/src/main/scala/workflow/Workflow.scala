@@ -39,8 +39,9 @@ import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
+import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
-import io.prediction.core.LModelAlgorithm
+//import io.prediction.core.LModelAlgorithm
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.Model
@@ -90,6 +91,7 @@ object WorkflowContext extends Logging {
   }
 }
 
+/*
 // skipOpt = true: use slow parallel model for prediction, requires one extra
 // join stage.
 class AlgoServerWrapper[Q, P, A](
@@ -240,6 +242,7 @@ extends Serializable {
     evaluator.evaluateAllBase(input)
   }
 }
+*/
 
 object CoreWorkflow {
   @transient lazy val logger = Logger[this.type]
@@ -266,6 +269,65 @@ object CoreWorkflow {
 
   // ***Do not directly call*** any "Typeless" method unless you know exactly
   // what you are doing.
+  def runTrain[EI, Q, P, A](
+      //engine: Engine[TD, EI, PD, Q, P, A],
+      engine: BaseEngine[EI, Q, P, A],
+      engineParams: EngineParams,
+      engineInstance: EngineInstance,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+    logger.info("CoreWorkflow.runTrain")
+    logger.info("Start spark context")
+    val mode = "training"
+    WorkflowUtils.checkUpgrade(mode)
+
+    val sc = WorkflowContext(
+      params.batch,
+      env,
+      params.sparkEnv,
+      mode.capitalize)
+   
+    val models: Seq[Any] = engine.train(sc, engineParams)
+
+    val instanceId = Storage.getMetaDataEngineInstances
+
+    /*
+    val realEngineInstnace = engineInstance.copy(
+      id = Storage.getMetaDataEngineInstances.insert(i))
+    */
+  
+    //saveEngineInstance(
+    //  realEngineInstance,
+    
+    Storage.getModelDataModels.insert(Model(
+      id = engineInstance.id,
+      models = KryoInjection(models)))
+    
+    val engineInstances = Storage.getMetaDataEngineInstances
+
+    engineInstances.update(engineInstance.copy(
+      status = "COMPLETED",
+      endTime = DateTime.now
+      ))
+    
+    logger.info("Stop spark context")
+    sc.stop()
+
+    logger.info("CoreWorkflow.run completed.")
+
+    /*
+    if (params.stopAfterRead)
+      logger.info(
+        "Training has stopped after reading from data source and is " +
+        "incomplete.")
+    else if (params.stopAfterPrepare)
+      logger.info(
+        "Training has stopped after data preparation and is incomplete.")
+    else
+      logger.info("Your engine has been trained successfully.")
+    */
+
+  }
 
   // When engine and evaluator are instantiated directly from CLI, the compiler has
   // no way to know their actual type parameter during compile time. To remedy
@@ -273,6 +335,7 @@ object CoreWorkflow {
   // own type parameters, and force cast their type during runtime.
   // In particular, evaluator needs to be instantiated to keep scala compiler
   // happy.
+  /*
   def runEngineTypeless[
       EI, TD, PD, Q, P, A,
       MEI, MQ, MP, MA,
@@ -307,9 +370,11 @@ object CoreWorkflow {
       JavaUtils.fakeClassTag[MR],
       JavaUtils.fakeClassTag[MMR])
   }
+  */
 
   // yipjustin: The parameter list has more than 80 columns. But I cannot find a
   // way to spread it to multiple lines while preserving the readability.
+  /*
   def runTypeless[
       EI, TD, PD, Q, P, A,
       MEI, MQ, MP, MA,
@@ -380,7 +445,9 @@ object CoreWorkflow {
     else
       logger.info("Your engine has been trained successfully.")
   }
+  */
 
+  /* 
   def runTypelessContext[
       EIN, TD, PD, Q, P, A,
       MEIN, MQ, MP, MA,
@@ -772,6 +839,7 @@ object CoreWorkflow {
       models,
       Some(evaluatorOutput.head))
   }
+  */
 
   /** Extract model for persistent layer.
     *
@@ -928,6 +996,7 @@ difficult for the engine builder, as we wrap data structures with RDD in the
 base class. Hence, we have to sacrifices here, that all Doers calling
 JavaCoreWorkflow needs to be Java sub-doers.
 */
+
 object JavaCoreWorkflow {
   def noneIfNull[T](t: T): Option[T] = (if (t == null) None else Some(t))
 
@@ -937,7 +1006,7 @@ object JavaCoreWorkflow {
   // Another method is to use JavaEngineBuilder, add only the components you
   // already have. It will handle the missing ones.
   def run[
-      EI, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
+      EI, TD, PD, Q, P, A, ER <: AnyRef](
     env: JMap[String, String] = new JHashMap(),
     dataSourceClassMap: JMap[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]],
     dataSourceParams: (String, Params),
@@ -948,48 +1017,10 @@ object JavaCoreWorkflow {
     algorithmParamsList: JIterable[(String, Params)],
     servingClassMap: JMap[String, Class[_ <: BaseServing[Q, P]]],
     servingParams: (String, Params),
-    evaluatorClass: Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]],
+    evaluatorClass: Class[_ <: BaseEvaluator[EI, Q, P, A, ER]],
     evaluatorParams: Params,
     params: WorkflowParams
   ) = {
-
-    val scalaDataSourceClassMap =
-      if (dataSourceClassMap == null) null
-      else Map(dataSourceClassMap.toSeq:_ *)
-
-    val scalaPreparatorClassMap =
-      if (preparatorClassMap == null) null
-      else Map(preparatorClassMap.toSeq:_ *)
-
-    val scalaServingClassMap =
-      if (servingClassMap == null) null
-      else Map(servingClassMap.toSeq:_ *)
-
-    val scalaAlgorithmClassMap = (
-      if (algorithmClassMap == null) null
-      else Map(algorithmClassMap.toSeq:_ *))
-
-    val scalaAlgorithmParamsList = (
-      if (algorithmParamsList == null) null
-      else algorithmParamsList.toSeq)
-
-    CoreWorkflow.runTypeless(
-      env = mapAsScalaMap(env).toMap,
-      params = params,
-      dataSourceClassMapOpt = noneIfNull(scalaDataSourceClassMap),
-      dataSourceParams = dataSourceParams,
-      preparatorClassMapOpt = noneIfNull(scalaPreparatorClassMap),
-      preparatorParams = preparatorParams,
-      algorithmClassMapOpt = noneIfNull(scalaAlgorithmClassMap),
-      algorithmParamsList = scalaAlgorithmParamsList,
-      servingClassMapOpt = noneIfNull(scalaServingClassMap),
-      servingParams = servingParams,
-      evaluatorClassOpt = noneIfNull(evaluatorClass),
-      evaluatorParams = evaluatorParams
-    )(
-      JavaUtils.fakeClassTag[MU],
-      JavaUtils.fakeClassTag[MR],
-      JavaUtils.fakeClassTag[MMR])
-
+    throw new NotImplementedError("JavaCoreWorkflow is deprecated as of 0.8.7.")
   }
 }

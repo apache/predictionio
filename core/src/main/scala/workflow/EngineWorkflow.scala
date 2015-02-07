@@ -1,9 +1,9 @@
-package n.io.prediction.workflow
+package io.prediction.workflow
 
-import n.io.prediction.core.BaseDataSource
-import n.io.prediction.core.BasePreparator
-import n.io.prediction.core.BaseAlgorithm
-import n.io.prediction.core.BaseServing
+import io.prediction.core.BaseDataSource
+import io.prediction.core.BasePreparator
+import io.prediction.core.BaseAlgorithm
+import io.prediction.core.BaseServing
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._

@@ -1,3 +1,4 @@
+/*
 package n.io.prediction.core
 
 import io.prediction.core.AbstractDoer
@@ -17,5 +18,5 @@ abstract class BaseAlgorithm[PD, M, Q, P]
   // Used by Deploy
   def predictBase(bm: Any, q: Q): P
 }
-
+*/
 

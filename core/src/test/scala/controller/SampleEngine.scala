@@ -1,4 +1,4 @@
-package n.io.prediction.controller
+package io.prediction.controller
 
 import org.scalatest.FunSuite
 import org.scalatest.Inside
@@ -10,8 +10,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 
-import n.io.prediction.controller._
-import n.io.prediction.core._
+import io.prediction.controller._
+import io.prediction.core._
 import grizzled.slf4j.{ Logger, Logging }
 
 import java.lang.Thread
