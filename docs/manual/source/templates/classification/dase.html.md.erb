@@ -102,7 +102,7 @@ class DataSource(val dsp: DataSourceParams)
             throw e
           }
         }
-      }
+      }.cache()
 
     new TrainingData(labeledPoints)
   }
@@ -227,7 +227,7 @@ automatically store the returned model.
 
 The `predict` method is called when you send a JSON query to
 http://localhost:8000/queries.json. PredictionIO converts the query, such as `{
-"features": [4, 3, 8] }` to the `Query` class you defined previously.  
+"features": [4, 3, 8] }` to the `Query` class you defined previously.
 
 The predictive model `NaiveBayesModel` of MLlib NaiveBayes offers a function
 called `predict`. `predict` takes a dense vector of features. It predicts the

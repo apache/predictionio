@@ -155,7 +155,7 @@ The following code aggregates the properties of `user` and then map each result 
       }
     }
     (entityId, user)
-  }
+  }.cache()
 
 ```
 In the template, `User()` object is a simple dummy as a placeholder for you to customize and expand.
@@ -180,7 +180,7 @@ Similarly, the following code aggregates `item` properties and then map each res
       }
     }
     (entityId, item)
-  }
+  }.cache()
 ```
 
 The `Item` case class is defined as
@@ -218,7 +218,7 @@ case class Item(categories: Option[List[String]])
         }
       }
       viewEvent
-    }
+    }.cache()
 
 ```
 
@@ -288,8 +288,8 @@ i.e. `ALS.trainImplicit()`, is used to train a predictive model.
 
 
 ```scala
-  def train(data: PreparedData): ALSModel = {
 
+  def train(data: PreparedData): ALSModel = {
     ...
 
     // create User and item's String ID to integer index BiMap
@@ -343,11 +343,12 @@ i.e. `ALS.trainImplicit()`, is used to train a predictive model.
       seed = seed)
 
     new ALSModel(
-      productFeatures = m.productFeatures,
+      productFeatures = m.productFeatures.collectAsMap.toMap,
       itemStringIntMap = itemStringIntMap,
       items = items
     )
   }
+
 ```
 
 #### Working with Spark MLlib's ALS.trainImplicit(....)
@@ -440,10 +441,10 @@ The `seed` parameter is an optional parameter, which is used by MLlib ALS algori
 
 ```scala
 class ALSModel(
-  val productFeatures: RDD[(Int, Array[Double])],
+  val productFeatures: Map[Int, Array[Double]],
   val itemStringIntMap: BiMap[String, Int],
   val items: Map[Int, Item]
-) extends IPersistentModel[ALSAlgorithmParams] with Serializable { ... }
+) extends Serializable { ... }
 ```
 
 PredictionIO will automatically store the returned model, i.e. `ALSModel` in this example.
@@ -462,65 +463,65 @@ The `predict()` function first calculate the similarities scores of the queries 
 INFO: You can easily modify `isCandidate()` checking or `whiteList` generation if you have different requirements or condition to determine if an item is a candidate item to be recommended.
 
 ```scala
-def predict(model: ALSModel, query: Query): PredictedResult = {
+  def predict(model: ALSModel, query: Query): PredictedResult = {
 
-  // convert items to Int index
-  val queryList: Set[Int] = query.items.map(model.itemStringIntMap.get(_))
-    .flatten.toSet
+    val productFeatures = model.productFeatures
 
-  val queryFeatures: Vector[Array[Double]] = queryList.toVector.par
-    .map { item =>
+    // convert items to Int index
+    val queryList: Set[Int] = query.items.map(model.itemStringIntMap.get(_))
+      .flatten.toSet
+
+    val queryFeatures: Vector[Array[Double]] = queryList.toVector
       // productFeatures may not contain the requested item
-      val qf: Option[Array[Double]] = model.productFeatures
-        .lookup(item).headOption
-      qf
-    }.seq.flatten
+      .map { item => productFeatures.get(item) }
+      .flatten
 
-  val whiteList: Option[Set[Int]] = query.whiteList.map( set =>
-    set.map(model.itemStringIntMap.get(_)).flatten
-  )
-  val blackList: Option[Set[Int]] = query.blackList.map ( set =>
-    set.map(model.itemStringIntMap.get(_)).flatten
-  )
-
-  val ord = Ordering.by[(Int, Double), Double](_._2).reverse
-
-  val indexScores: Array[(Int, Double)] = if (queryFeatures.isEmpty) {
-    logger.info(s"No productFeatures vector for query items ${query.items}.")
-    Array[(Int, Double)]()
-  } else {
-    model.productFeatures
-      .mapValues { f =>
-        queryFeatures.map{ qf =>
-          cosine(qf, f)
-        }.reduce(_ + _)
-      }
-      .filter(_._2 > 0) // keep items with score > 0
-      .collect()
-  }
-
-  val filteredScore = indexScores.view.filter { case (i, v) =>
-    isCandidateItem(
-      i = i,
-      items = model.items,
-      categories = query.categories,
-      queryList = queryList,
-      whiteList = whiteList,
-      blackList = blackList
+    val whiteList: Option[Set[Int]] = query.whiteList.map( set =>
+      set.map(model.itemStringIntMap.get(_)).flatten
     )
-  }
-
-  val topScores = getTopN(filteredScore, query.num)(ord).toArray
-
-  val itemScores = topScores.map { case (i, s) =>
-    new ItemScore(
-      item = model.itemIntStringMap(i),
-      score = s
+    val blackList: Option[Set[Int]] = query.blackList.map ( set =>
+      set.map(model.itemStringIntMap.get(_)).flatten
     )
-  }
 
-  new PredictedResult(itemScores)
-}
+    val ord = Ordering.by[(Int, Double), Double](_._2).reverse
+
+    val indexScores: Array[(Int, Double)] = if (queryFeatures.isEmpty) {
+      logger.info(s"No productFeatures vector for query items ${query.items}.")
+      Array[(Int, Double)]()
+    } else {
+      productFeatures.par // convert to parallel collection
+        .mapValues { f =>
+          queryFeatures.map{ qf =>
+            cosine(qf, f)
+          }.reduce(_ + _)
+        }
+        .filter(_._2 > 0) // keep items with score > 0
+        .seq // convert back to sequential collection
+        .toArray
+    }
+
+    val filteredScore = indexScores.view.filter { case (i, v) =>
+      isCandidateItem(
+        i = i,
+        items = model.items,
+        categories = query.categories,
+        queryList = queryList,
+        whiteList = whiteList,
+        blackList = blackList
+      )
+    }
+
+    val topScores = getTopN(filteredScore, query.num)(ord).toArray
+
+    val itemScores = topScores.map { case (i, s) =>
+      new ItemScore(
+        item = model.itemIntStringMap(i),
+        score = s
+      )
+    }
+
+    new PredictedResult(itemScores)
+  }
 ```
 
 Note that the item IDs in top N results are the `Int` indices. You map them back to `String` with `itemIntStringMap` before they are returned:
