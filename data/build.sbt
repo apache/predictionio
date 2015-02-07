@@ -18,6 +18,7 @@ libraryDependencies ++= Seq(
   "commons-codec"           % "commons-codec"  % "1.9",
   "io.spray"               %% "spray-can"      % "1.3.2",
   "io.spray"               %% "spray-routing"  % "1.3.2",
+  "io.spray"               %% "spray-testkit"  % "1.3.2" % "test",
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0"
     exclude("javax.servlet", "servlet-api"),
   "org.apache.hbase"        % "hbase-common"   % "0.98.5-hadoop2",
