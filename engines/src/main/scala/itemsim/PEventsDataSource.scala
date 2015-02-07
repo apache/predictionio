@@ -47,6 +47,8 @@ object PEventsDataSourceRunner {
       )
     )
 
+    /*
+    // FIXME(yipjustin). Workflow.run is deprecated.
     Workflow.run(
       dataSourceClassMapOpt = Some(Map("" -> classOf[PEventsDataSource])),
       dataSourceParams = ("", dsp),
@@ -55,5 +57,6 @@ object PEventsDataSourceRunner {
         verbose = 3
       )
     )
+    */
   }
 }

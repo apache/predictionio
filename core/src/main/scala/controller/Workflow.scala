@@ -21,7 +21,6 @@ import io.prediction.core.BaseEvaluator
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
-import io.prediction.core.LModelAlgorithm
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.CoreWorkflow
 import scala.reflect.ClassTag
@@ -73,6 +72,7 @@ object Workflow {
     * @param evaluatorClassOpt Optional evaluator class.
     * @param evaluatorParams Evaluator parameters.
     */
+  /*
   def runEngine[
       EI, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
@@ -99,6 +99,7 @@ object Workflow {
       params = params
     )
   }
+  */
 
   /** Creates a workflow that runs a collection of engine components.
     *
@@ -124,6 +125,7 @@ object Workflow {
     * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.
     */
+  /*
   def run[
       EI, TD, PD, Q, P, A,
       MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
@@ -157,5 +159,5 @@ object Workflow {
         params = params
       )
   }
-
+  */
 }

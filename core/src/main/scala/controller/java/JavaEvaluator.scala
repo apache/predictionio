@@ -31,7 +31,7 @@ import scala.reflect._
  * comparisons.
  */
 abstract class JavaEvaluator[DP, Q, P, A, EU, ES, ER <: AnyRef]
-  extends BaseEvaluator[DP, Q, P, A, EU, ES, ER] {
+  extends BaseEvaluator[DP, Q, P, A, ER] {
 
   def evaluateUnitBase(input: (Q, P, A)): EU = {
     evaluateUnit(input._1, input._2, input._3)

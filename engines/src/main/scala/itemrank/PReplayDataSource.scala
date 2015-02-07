@@ -27,14 +27,21 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.engines.base.TrainingData
 
 class PReplayDataSource(val dsp: ReplayDataSource.Params)
-  extends P2LDataSource[
+  //extends P2LDataSource[
+  extends PDataSource[
+      RDD[TrainingData],
       ReplaySliceParams,
-      TrainingData,
       Query,
       Actual] {
 
+  def readTrain(sc: SparkContext): RDD[TrainingData] = {
+    val td = null.asInstanceOf[TrainingData]
+    sc.parallelize(Seq(td))
+  }
+
+  override
   def read(sc: SparkContext)
-  : Seq[(ReplaySliceParams, RDD[TrainingData], RDD[(Query, Actual)])] = {
+  : Seq[(RDD[TrainingData], ReplaySliceParams, RDD[(Query, Actual)])] = {
     implicit val formats = DefaultFormats
 
     val ds = new ReplayDataSource(dsp)
@@ -87,7 +94,8 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
       val qaRdd: RDD[(Query, Actual)] = sliceData.flatMap(_._3)
       trainingData.cache
       qaRdd.cache
-      (dp, trainingData, qaRdd)
+      //(dp, trainingData, qaRdd)
+      (trainingData, dp, qaRdd)
     }
     .toSeq
   }

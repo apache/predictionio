@@ -67,11 +67,11 @@ object JavaWorkflow {
     * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.
     */
-  def runEngine[EI, TD, PD, Q, P, A, MU, MR, MMR <: AnyRef](
+  def runEngine[EI, TD, PD, Q, P, A, ER <: AnyRef](
       engine: Engine[TD, EI, PD, Q, P, A],
       engineParams: EngineParams,
       evaluatorClass
-        : Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]],
+        : Class[_ <: BaseEvaluator[EI, Q, P, A, ER]],
       evaluatorParams: Params,
       params: WorkflowParams
     ) {

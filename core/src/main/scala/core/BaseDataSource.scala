@@ -22,7 +22,16 @@ import scala.reflect._
 
 abstract class BaseDataSource[TD, EI, Q, A]
   extends AbstractDoer {
+  def readTrainBase(sc: SparkContext): TD
+
+  def readEvalBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])]
+}
+
+/*
+abstract class BaseDataSource[TD, EI, Q, A]
+  extends AbstractDoer {
   def readBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])]
 
   def readTrainBase(sc: SparkContext): TD
 }
+*/

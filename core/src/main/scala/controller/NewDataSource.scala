@@ -1,3 +1,4 @@
+/*
 package n.io.prediction.controller
 
 import n.io.prediction.core.BaseDataSource
@@ -8,6 +9,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
+*/
 
 /** Base class of a parallel data source.
   *
@@ -21,6 +23,7 @@ import scala.reflect._
   * @group Data Source
   */
 
+/*
 abstract class PDataSource[TD, EI, Q, A]
   extends BaseDataSource[TD, EI, Q, A] {
 
@@ -34,6 +37,7 @@ abstract class PDataSource[TD, EI, Q, A]
     Seq[(TD, EI, RDD[(Q, A)])]()
   }
 }
+*/
 
 
 /** Base class of a local data source.
@@ -47,6 +51,7 @@ abstract class PDataSource[TD, EI, Q, A]
   * @tparam A Actual value class.
   * @group Data Source
   */
+/*
 abstract class LDataSource[
     TD : ClassTag,
     EI : ClassTag,
@@ -73,5 +78,5 @@ abstract class LDataSource[
   def readEval(): Seq[(TD, EI, Seq[(Q, A)])] 
 }
 
-
+*/
 

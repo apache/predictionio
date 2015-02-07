@@ -1,3 +1,4 @@
+/*
 package n.io.prediction.core
 
 import io.prediction.core.AbstractDoer
@@ -10,3 +11,4 @@ abstract class BasePreparator[TD, PD]
   extends AbstractDoer {
   def prepareBase(sc: SparkContext, td: TD): PD
 }
+*/

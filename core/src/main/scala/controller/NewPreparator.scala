@@ -1,3 +1,4 @@
+/*
 package n.io.prediction.controller
 
 import n.io.prediction.core.BaseDataSource
@@ -10,6 +11,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
+*/
 
 /** Base class of a parallel preparator.
   *
@@ -20,6 +22,8 @@ import scala.reflect.runtime.universe._
   * @tparam PD Prepared data class.
   * @group Preparator
   */
+
+/*
 abstract class PPreparator[TD, PD]
   extends BasePreparator[TD, PD] {
 
@@ -27,14 +31,9 @@ abstract class PPreparator[TD, PD]
     prepare(sc, td)
   }
 
-  /** Implement this method to produce prepared data that is ready for model
-    * training.
-    *
-    * @param sc An Apache Spark context.
-    * @param trainingData Training data to be prepared.
-    */
   def prepare(sc: SparkContext, trainingData: TD): PD
 }
+*/
 
 /** Base class of a local preparator.
   *
@@ -45,6 +44,7 @@ abstract class PPreparator[TD, PD]
   * @tparam PD Prepared data class.
   * @group Preparator
   */
+/*
 abstract class LPreparator[TD, PD : ClassTag]
   extends BasePreparator[RDD[TD], RDD[PD]] {
 
@@ -52,10 +52,6 @@ abstract class LPreparator[TD, PD : ClassTag]
     rddTd.map(prepare)
   }
 
-  /** Implement this method to produce prepared data that is ready for model
-    * training.
-    *
-    * @param trainingData Training data to be prepared.
-    */
   def prepare(trainingData: TD): PD
 }
+*/
