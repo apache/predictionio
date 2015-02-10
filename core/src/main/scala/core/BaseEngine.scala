@@ -10,8 +10,14 @@ import scala.reflect._
 import org.json4s.JValue
 
 abstract class BaseEngine[EI, Q, P, A] extends Serializable {
+  // Return Persist-able models
   def train(sc: SparkContext, engineParams: EngineParams): Seq[Any]
+
   def eval(sc: SparkContext, engineParams: EngineParams)
   : Seq[(EI, RDD[(Q, P, A)])]
-  def jValueToEngineParams(variantJson: JValue): EngineParams
+
+  def jValueToEngineParams(variantJson: JValue): EngineParams = {
+    throw new NotImplementedError("json to EngineParams is not implemented.")
+    EngineParams()  
+  }
 }

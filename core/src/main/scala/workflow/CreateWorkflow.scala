@@ -286,13 +286,9 @@ object CreateWorkflow extends Logging {
 
     } else {
       // Evaluator Not Specified. Do training.
-      /*
-      if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
-        throw new NoSuchMethodException(s"Engine $engine is not trainable")
-      }
-      */
-
-      //val trainableEngine = engine.asInstanceOf[Engine[_, _, _, _, _, _]]
+        
+      throw new NotImplementedError(
+        s"Please use 'pio run' for Evaluation")
 
       val engineParams = if (wfc.engineParamsKey == "") {
         engine.jValueToEngineParams(variantJson)
@@ -335,12 +331,9 @@ object CreateWorkflow extends Logging {
         engine = engine,
         engineParams = engineParams,
         engineInstance = engineInstance.copy(id = engineInstanceId),
-        //evaluatorClass = evaluator.get,
         evaluator = evaluatorInstance.get,
         evaluatorParams = evaluatorParams
       )
-      // Do evaluation
-      //throw new NotImplementedError("CreateWorkflow.runEval not available.")
     }
 
   }

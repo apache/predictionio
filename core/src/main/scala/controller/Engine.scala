@@ -142,6 +142,7 @@ class Engine[TD, EI, PD, Q, P, A](
     val algoCount = algorithms.size
     val algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)] = 
     (0 until algoCount).map { ax => {
+      //val (name, params) = algoParamsList(ax)
       val (name, params) = algoParamsList(ax)
       (name, params, algorithms(ax), models(ax))
     }}
@@ -169,7 +170,7 @@ class Engine[TD, EI, PD, Q, P, A](
   def makeSerializableModels(
     sc: SparkContext,
     engineInstanceId: String,
-    // AlgoName, Params, Algo, Model
+    // AlgoName, Algo, Model
     algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)]//,
     //params: WorkflowParams
   ): Seq[Any] = {
@@ -180,7 +181,8 @@ class Engine[TD, EI, PD, Q, P, A](
       algo.makePersistentModel(
         sc = sc,
         modelId = Seq(engineInstanceId, ax, name).mkString("-"),
-        model)
+        algoParams = params,
+        bm = model)
     }}
   }
 
@@ -235,7 +237,8 @@ class Engine[TD, EI, PD, Q, P, A](
     
     EngineWorkflow.eval(sc, dataSource, preparator, algorithms, serving)
   }
-  
+ 
+  override
   def jValueToEngineParams(variantJson: JValue): EngineParams = {
     val engineLanguage = EngineLanguage.Scala
     // Extract EngineParams
