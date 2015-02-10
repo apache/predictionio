@@ -39,11 +39,11 @@ import scala.reflect._
 abstract class PDataSource[TD, EI, Q, A]
   extends BaseDataSource[TD, EI, Q, A] {
 
-  def readTrainBase(sc: SparkContext): TD = readTrain(sc)
+  def readTrainingBase(sc: SparkContext): TD = readTraining(sc)
 
   /** Implement this method to only return training data from a data source.
     */
-  def readTrain(sc: SparkContext): TD
+  def readTraining(sc: SparkContext): TD
   
   def readEvalBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])] = readEval(sc)
 
@@ -77,13 +77,13 @@ abstract class LDataSource[
     A]
   extends BaseDataSource[RDD[TD], EI, Q, A] {
   
-  def readTrainBase(sc: SparkContext): RDD[TD] = {
-    sc.parallelize(Seq(None)).map(_ => readTrain())
+  def readTrainingBase(sc: SparkContext): RDD[TD] = {
+    sc.parallelize(Seq(None)).map(_ => readTraining())
   }
 
   /** Implement this method to only return training data from a data source.
     */
-  def readTrain(): TD
+  def readTraining(): TD
   
   /** Implement this method to return data from a data source. Returned data
     * can optionally include a sequence of query and actual value pairs for

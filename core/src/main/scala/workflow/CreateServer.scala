@@ -308,7 +308,7 @@ object CreateServer extends Logging {
       */
 
       // FIXME(yipjsutin). Use revamped workflow.
-      val td = dataSource.readTrainBase(sc)
+      val td = dataSource.readTrainingBase(sc)
 
       val evalParamsDataMap: Map[EI, (TD, EI, RDD[(Q, A)])] = Seq(0)
         .map { _ => (0, (td, null.asInstanceOf[EI], sc.emptyRDD[(Q, A)])) }
@@ -490,10 +490,19 @@ class MasterActor(
     val (engineLanguage, engineFactory) =
       WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
     val engine = engineFactory()
+   
+    // EngineFactory return a base engine, which may not be deployable.
+    if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
+      throw new NoSuchMethodException(s"Engine $engine is not deployable")
+    }
+
+    val deployableEngine = engine.asInstanceOf[Engine[_,_,_,_,_,_]]
+
     CreateServer.createServerActorWithEngine(
       sc,
       engineInstance,
-      engine,
+      //engine,
+      deployableEngine,
       engineLanguage,
       manifest)
   }

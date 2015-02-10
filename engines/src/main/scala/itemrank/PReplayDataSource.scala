@@ -34,7 +34,7 @@ class PReplayDataSource(val dsp: ReplayDataSource.Params)
       Query,
       Actual] {
 
-  def readTrain(sc: SparkContext): RDD[TrainingData] = {
+  def readTraining(sc: SparkContext): RDD[TrainingData] = {
     val td = null.asInstanceOf[TrainingData]
     sc.parallelize(Seq(td))
   }

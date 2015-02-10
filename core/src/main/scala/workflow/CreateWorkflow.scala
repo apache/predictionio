@@ -22,6 +22,7 @@ import io.prediction.controller.Evaluator
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.WorkflowParams
+import io.prediction.controller.Engine
 import io.prediction.core.Doer
 import io.prediction.core.BaseEvaluator
 import io.prediction.data.storage.EngineInstance
@@ -192,66 +193,6 @@ object CreateWorkflow extends Logging {
 
     val engine = engineFactoryObj()
 
-    // Extract EngineParams
-    val engineParams = if (wfc.engineParamsKey == "") {
-      info(s"Extracting datasource params...")
-      val dataSourceParams: (String, Params) =
-        WorkflowUtils.getParamsFromJsonByFieldAndClass(
-          variantJson,
-          "datasource",
-          engine.dataSourceClassMap,
-          engineLanguage)
-      info(s"datasource: ${dataSourceParams}")
-
-      info(s"Extracting preparator params...")
-      val preparatorParams: (String, Params) =
-        WorkflowUtils.getParamsFromJsonByFieldAndClass(
-          variantJson,
-          "preparator",
-          engine.preparatorClassMap,
-          engineLanguage)
-      info(s"preparator: ${preparatorParams}")
-
-      val algorithmsParams: Seq[(String, Params)] =
-        variantJson findField {
-          case JField("algorithms", _) => true
-          case _ => false
-        } map { jv =>
-          val algorithmsParamsJson = jv._2
-          algorithmsParamsJson match {
-            case JArray(s) => s.map { algorithmParamsJValue =>
-              val eap = algorithmParamsJValue.extract[AlgorithmParams]
-              (
-                eap.name,
-                WorkflowUtils.extractParams(
-                  engineLanguage,
-                  compact(render(eap.params)),
-                  engine.algorithmClassMap(eap.name))
-              )
-            }
-            case _ => Nil
-          }
-        } getOrElse Seq(("", EmptyParams()))
-
-      info(s"Extracting serving params...")
-      val servingParams: (String, Params) =
-        WorkflowUtils.getParamsFromJsonByFieldAndClass(
-          variantJson,
-          "serving",
-          engine.servingClassMap,
-          engineLanguage)
-      info(s"serving: ${servingParams}")
-
-      new EngineParams(
-        dataSourceParams = dataSourceParams,
-        preparatorParams = preparatorParams,
-        algorithmParamsList = algorithmsParams,
-        servingParams = servingParams)
-    } else {
-      engineFactoryObj.engineParams(wfc.engineParamsKey)
-    }
-    // End of Extract EngineParams
-
     val evaluator = wfc.evaluatorClass.map { mc => //mc => null
       try {
         Class.forName(mc)
@@ -280,7 +221,7 @@ object CreateWorkflow extends Logging {
       .map(m => Doer(m, evaluatorParams))
       .getOrElse(null)
     */
-    val evaluatorInstance: Option[BaseEvaluator[_, _, _, _, _]] = evaluator
+    val evaluatorInstance: Option[BaseEvaluator[_, _, _, _, _ <: AnyRef]] = evaluator
       .map(m => Doer(m, evaluatorParams))
 
     val pioEnvVars = wfc.env.map(e =>
@@ -295,7 +236,17 @@ object CreateWorkflow extends Logging {
 
     if (evaluatorInstance.isEmpty) {
       // Evaluator Not Specified. Do training.
-      //val trainableEngine = engine.asInstanceOf[Engine[_, _, _, _, _, _]]
+      if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
+        throw new NoSuchMethodException(s"Engine $engine is not trainable")
+      }
+
+      val trainableEngine = engine.asInstanceOf[Engine[_, _, _, _, _, _]]
+
+      val engineParams = if (wfc.engineParamsKey == "") {
+        trainableEngine.jValueToEngineParams(variantJson)
+      } else {
+        engineFactoryObj.engineParams(wfc.engineParamsKey)
+      }
 
       val engineInstance = EngineInstance(
         id = "",
@@ -329,13 +280,67 @@ object CreateWorkflow extends Logging {
           skipSanityCheck = wfc.skipSanityCheck,
           stopAfterRead = wfc.stopAfterRead,
           stopAfterPrepare = wfc.stopAfterPrepare),
-        engine = engine,
+        engine = trainableEngine,
         engineParams = engineParams,
         engineInstance = engineInstance.copy(id = engineInstanceId))
 
     } else {
+      // Evaluator Not Specified. Do training.
+      /*
+      if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
+        throw new NoSuchMethodException(s"Engine $engine is not trainable")
+      }
+      */
+
+      //val trainableEngine = engine.asInstanceOf[Engine[_, _, _, _, _, _]]
+
+      val engineParams = if (wfc.engineParamsKey == "") {
+        engine.jValueToEngineParams(variantJson)
+      } else {
+        engineFactoryObj.engineParams(wfc.engineParamsKey)
+      }
+
+      val engineInstance = EngineInstance(
+        id = "",
+        status = "INIT",
+        startTime = DateTime.now,
+        endTime = DateTime.now,
+        engineId = wfc.engineId,
+        engineVersion = wfc.engineVersion,
+        engineVariant = variantId,
+        engineFactory = engineFactory,
+        evaluatorClass = wfc.evaluatorClass.getOrElse(""),
+        batch = (if (wfc.batch == "") engineFactory else wfc.batch),
+        env = pioEnvVars,
+        dataSourceParams = write(engineParams.dataSourceParams),
+        preparatorParams = write(engineParams.preparatorParams),
+        algorithmsParams = write(engineParams.algorithmParamsList),
+        servingParams = write(engineParams.servingParams),
+        evaluatorParams = write(evaluatorParams),
+        evaluatorResults = "",
+        evaluatorResultsHTML = "",
+        evaluatorResultsJSON = "")
+
+      val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
+        engineInstance)
+
+      CoreWorkflow.runEvalTypeless(
+        env = pioEnvVars,
+        params = WorkflowParams(
+          verbose = wfc.verbosity,
+          batch = (if (wfc.batch == "") engineFactory else wfc.batch),
+          skipSanityCheck = wfc.skipSanityCheck,
+          stopAfterRead = wfc.stopAfterRead,
+          stopAfterPrepare = wfc.stopAfterPrepare),
+        engine = engine,
+        engineParams = engineParams,
+        engineInstance = engineInstance.copy(id = engineInstanceId),
+        //evaluatorClass = evaluator.get,
+        evaluator = evaluatorInstance.get,
+        evaluatorParams = evaluatorParams
+      )
       // Do evaluation
-      throw new NotImplementedError("CreateWorkflow.runEval not available.")
+      //throw new NotImplementedError("CreateWorkflow.runEval not available.")
     }
 
   }

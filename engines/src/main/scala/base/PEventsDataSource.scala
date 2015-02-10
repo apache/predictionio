@@ -36,7 +36,7 @@ class PEventsDataSource[DP: ClassTag, Q, A](
 
   @transient lazy val logger = Logger[this.type]
 
-  def readTrain(sc: SparkContext): PTrainingData = {
+  def readTraining(sc: SparkContext): PTrainingData = {
     val batchView = new PBatchView(
       appId = dsp.appId,
       startTime = dsp.startTime,
@@ -63,7 +63,7 @@ class PEventsDataSource[DP: ClassTag, Q, A](
       sc = sc)
 
     if (dsp.slidingEval.isEmpty) {
-      val trainingData = readTrain(sc)
+      val trainingData = readTraining(sc)
 
       return Seq((
         trainingData,
