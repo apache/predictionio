@@ -29,7 +29,7 @@ object EngineWorkflow {
     logger.info(s"Preparator: $preparator")
     logger.info(s"AlgorithmList: $algorithmList")
 
-    val td = dataSource.readTrainBase(sc)
+    val td = dataSource.readTrainingBase(sc)
     val pd = preparator.prepareBase(sc, td)
     val models: Seq[Any] = algorithmList.map(_.trainBase(sc, pd))
     logger.info("EngineWorkflow.train completed")

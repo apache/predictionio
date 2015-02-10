@@ -20,10 +20,16 @@ import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
+import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.CoreWorkflow
+import io.prediction.workflow.NameParamsSerializer
 import scala.reflect.ClassTag
+import org.json4s._
+import org.json4s.native.Serialization.write
+import io.prediction.data.storage.EngineInstance
+import com.github.nscala_time.time.Imports.DateTime
 
 /** Workflow parameters.
   *
@@ -160,4 +166,46 @@ object Workflow {
       )
   }
   */
+  
+  def runEval[EI, Q, P, A, ER <: AnyRef](
+      engine: BaseEngine[EI, Q, P, A],
+      engineParams: EngineParams,
+      evaluator: BaseEvaluator[EI, Q, P, A, ER],
+      evaluatorParams: Params,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+  
+    implicit lazy val formats = Utils.json4sDefaultFormats +
+      new NameParamsSerializer
+
+    val engineInstance = EngineInstance(
+      id = "",
+      status = "INIT",
+      startTime = DateTime.now,
+      endTime = DateTime.now,
+      engineId = "",
+      engineVersion = "",
+      engineVariant = "",
+      engineFactory = "FIXME",
+      evaluatorClass = evaluator.getClass.getName(),
+      batch = params.batch,
+      env = env,
+      dataSourceParams = write(engineParams.dataSourceParams),
+      preparatorParams = write(engineParams.preparatorParams),
+      algorithmsParams = write(engineParams.algorithmParamsList),
+      servingParams = write(engineParams.servingParams),
+      evaluatorParams = write(evaluatorParams),
+      evaluatorResults = "",
+      evaluatorResultsHTML = "",
+      evaluatorResultsJSON = "")
+
+    CoreWorkflow.runEval(
+      engine = engine,
+      engineParams = engineParams,
+      engineInstance = engineInstance,
+      evaluator = evaluator,
+      evaluatorParams = evaluatorParams,
+      env = env,
+      params = params)
+  }
 }

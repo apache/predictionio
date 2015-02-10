@@ -266,6 +266,8 @@ object CoreWorkflow {
     evaluatorResults = "",
     evaluatorResultsHTML = "",
     evaluatorResultsJSON = "")
+    
+  @transient val engineInstances = Storage.getMetaDataEngineInstances
 
   // ***Do not directly call*** any "Typeless" method unless you know exactly
   // what you are doing.
@@ -313,7 +315,7 @@ object CoreWorkflow {
     logger.info("Stop spark context")
     sc.stop()
 
-    logger.info("CoreWorkflow.run completed.")
+    logger.info("CoreWorkflow.train completed.")
 
     /*
     if (params.stopAfterRead)
@@ -980,6 +982,83 @@ object CoreWorkflow {
     logger.info(s"Saved engine instance with ID: ${realEngineInstance.id}")
     realEngineInstance.id
   }
+
+
+
+  def runEval[EI, Q, P, A, ER <: AnyRef](
+      engine: BaseEngine[EI, Q, P, A],
+      engineParams: EngineParams,
+      engineInstance: EngineInstance,
+      evaluator: BaseEvaluator[EI, Q, P, A, ER],
+      evaluatorParams: Params,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+
+    logger.info("CoreWorkflow.runEval")
+    //val engineInstances = Storage.getMetaDataEngineInstances
+
+    val eiId = engineInstances.insert(engineInstance)
+    val evalEngineInstance = engineInstance.copy(id = eiId)
+
+
+    logger.info("Start spark context")
+    val mode = "evaluation"
+    WorkflowUtils.checkUpgrade(mode)
+
+    logger.info("Instantiate evaluator")
+
+    val sc = WorkflowContext(
+      params.batch,
+      env,
+      params.sparkEnv,
+      mode.capitalize)
+
+    val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
+
+    val evalResult: ER = evaluator.evaluateBase(sc, evalDataSet)
+  
+    logger.info(s"EvalResult: $evalResult")
+    
+    val evaluatedEI = evalEngineInstance.copy(
+      status = "EVALCOMPLETED",
+      endTime = DateTime.now,
+      evaluatorResults = evalResult.toString)
+
+    logger.info(s"Insert eval result")
+    engineInstances.update(evaluatedEI)
+
+
+    logger.info("Stop spark context")
+    sc.stop()
+
+    logger.info("CoreWorkflow.runEval completed.")
+  }
+
+  // TODO(yipjustin). Consider moving it to CreateWorkflow, since it is the only
+  // place calling this function. Better make it use-case specific.
+  def runEvalTypeless[EI, Q, P, A, EEI, EQ, EP, EA, EER <: AnyRef](
+      engine: BaseEngine[EI, Q, P, A],
+      engineParams: EngineParams,
+      engineInstance: EngineInstance,
+      evaluator:  BaseEvaluator[EEI, EQ, EP, EA, EER],
+      evaluatorParams: Params,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+
+    //val evaluator = Doer(evaluatorClass, evaluatorParams)
+    val typedEvaluator = evaluator.asInstanceOf[BaseEvaluator[EI, Q, P, A, EER]]
+
+    runEval[EI, Q, P, A, EER](
+      engine,
+      engineParams,
+      engineInstance,
+      typedEvaluator,
+      evaluatorParams,
+      env,
+      params)
+  }
+
+
 
 }
 
