@@ -16,6 +16,7 @@
 package io.prediction.core
 
 import io.prediction.controller.Utils
+import io.prediction.controller.Params
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -39,7 +40,8 @@ abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
 
   def queryManifest(): Manifest[Q] = manifest[Q]
   
-  def makePersistentModel(sc: SparkContext, modelId: String, bm: Any)
+  def makePersistentModel(sc: SparkContext, modelId: String, 
+    algoParams: Params, bm: Any)
   : Any = Unit
 
   //def loadPersistentModel(sc: SparkContext ...)

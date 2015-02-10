@@ -10,17 +10,17 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 
+import _root_.java.lang.Thread
+
 import io.prediction.controller._
 import io.prediction.core._
 import grizzled.slf4j.{ Logger, Logging }
 
-import java.lang.Thread
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 
 import io.prediction.controller.{ Params => PIOParams }
-import io.prediction.controller.EngineParams
 
 object Engine0 {
   @transient lazy val logger = Logger[this.type] 
@@ -37,14 +37,14 @@ object Engine0 {
 
   class PDataSource0(id: Int = 0) 
   extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
-    def readTrain(sc: SparkContext): TrainingData = {
+    def readTraining(sc: SparkContext): TrainingData = {
       TrainingData(id)
     }
   }
   
   class PDataSource1(id: Int = 0, en: Int = 0, qn: Int = 0)
   extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
-    def readTrain(sc: SparkContext): TrainingData = TrainingData(id)
+    def readTraining(sc: SparkContext): TrainingData = TrainingData(id)
     
     override
     def readEval(sc: SparkContext)
@@ -65,7 +65,7 @@ object Engine0 {
   class PDataSource2(params: PDataSource2.Params)
   extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
     val id = params.id
-    def readTrain(sc: SparkContext): TrainingData = TrainingData(id)
+    def readTraining(sc: SparkContext): TrainingData = TrainingData(id)
     
     override
     def readEval(sc: SparkContext)
@@ -81,12 +81,33 @@ object Engine0 {
   
   class LDataSource0(id: Int, en: Int = 0, qn: Int = 0) 
     extends LDataSource[TrainingData, EvalInfo, Query, Actual] {
-    def readTrain(): TrainingData = TrainingData(id)
-    
+    def readTraining(): TrainingData = TrainingData(id)
+   
+    override
     def readEval()
     : Seq[(TrainingData, EvalInfo, Seq[(Query, Actual)])] = {
       (0 until en).map { ex => {
         val qaSeq: Seq[(Query, Actual)] = (0 until qn).map { qx => {
+          (Query(id, ex=ex, qx=qx), Actual(id, ex, qx))
+        }}
+        (TrainingData(id), EvalInfo(id), qaSeq)
+      }}
+    }
+  }
+  
+  object LDataSource1 {
+    case class Params(id: Int, en: Int = 0, qn: Int = 0) extends PIOParams
+  }
+  
+  class LDataSource1(params: LDataSource1.Params)
+  extends LDataSource[TrainingData, EvalInfo, Query, Actual] {
+    val id = params.id
+    def readTraining(): TrainingData = TrainingData(id)
+    
+    override
+    def readEval(): Seq[(TrainingData, EvalInfo, Seq[(Query, Actual)])] = {
+      (0 until params.en).map { ex => {
+        val qaSeq: Seq[(Query, Actual)] = (0 until params.qn).map { qx => {
           (Query(id, ex=ex, qx=qx), Actual(id, ex, qx))
         }}
         (TrainingData(id), EvalInfo(id), qaSeq)
@@ -116,6 +137,17 @@ object Engine0 {
   extends LPreparator[TrainingData, ProcessedData] {
     def prepare(td: TrainingData): ProcessedData = {
       ProcessedData(id, td)
+    }
+  }
+  
+  object LPreparator1 {
+    case class Params(id: Int  = 0) extends PIOParams
+  }
+
+  class LPreparator1(params: LPreparator1.Params)
+  extends LPreparator[TrainingData, ProcessedData] {
+    def prepare(td: TrainingData): ProcessedData = {
+      ProcessedData(params.id, td)
     }
   }
 
@@ -176,6 +208,31 @@ object Engine0 {
     }
   }
   
+  object PAlgo3 {
+    case class Model(id: Int, pd: ProcessedData)
+    extends IFSPersistentModel[Params]
+    
+    object Model extends IFSPersistentModelLoader[Params, Model] 
+
+    case class Params(id: Int) extends PIOParams
+  }
+
+  class PAlgo3(params: PAlgo3.Params)
+  extends PAlgorithm[ProcessedData, PAlgo3.Model, Query, Prediction] {
+    val id = params.id
+
+    def train(pd: ProcessedData): PAlgo3.Model = PAlgo3.Model(id, pd)
+
+    def batchPredict(m: PAlgo3.Model, qs: RDD[(Long, Query)])
+    : RDD[(Long, Prediction)] = {
+      qs.mapValues(q => Prediction(id, q, Some(m)))
+    }
+
+    def predict(m: PAlgo3.Model, q: Query): Prediction = {
+      Prediction(id, q, Some(m))
+    }
+  }
+  
   object LAlgo0 {
     case class Model(id: Int, pd: ProcessedData)
   }
@@ -199,6 +256,39 @@ object Engine0 {
     
     def predict(m: LAlgo1.Model, q: Query): Prediction = {
       Prediction(id, q, Some(m))
+    }
+  }
+  
+  object LAlgo2 {
+    case class Params(val id: Int) extends PIOParams
+
+    case class Model(id: Int, pd: ProcessedData)
+    extends IFSPersistentModel[EmptyParams]
+    
+    object Model extends IFSPersistentModelLoader[EmptyParams, Model] 
+  }
+
+  class LAlgo2(params: LAlgo2.Params) 
+  extends LAlgorithm[ProcessedData, LAlgo2.Model, Query, Prediction] {
+    def train(pd: ProcessedData): LAlgo2.Model = LAlgo2.Model(params.id, pd)
+    
+    def predict(m: LAlgo2.Model, q: Query): Prediction = {
+      Prediction(params.id, q, Some(m))
+    }
+  }
+
+  object LAlgo3 {
+    case class Params(val id: Int) extends PIOParams
+
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class LAlgo3(params: LAlgo3.Params) 
+  extends LAlgorithm[ProcessedData, LAlgo3.Model, Query, Prediction] {
+    def train(pd: ProcessedData): LAlgo3.Model = LAlgo3.Model(params.id, pd)
+    
+    def predict(m: LAlgo3.Model, q: Query): Prediction = {
+      Prediction(params.id, q, Some(m))
     }
   }
 
@@ -229,6 +319,39 @@ object Engine0 {
     }
   }
   
+  object NAlgo2 {
+    case class Params(val id: Int) extends PIOParams
+
+    case class Model(id: Int, pd: ProcessedData)
+    extends IFSPersistentModel[EmptyParams]
+    
+    object Model extends IFSPersistentModelLoader[EmptyParams, Model] 
+  }
+
+  class NAlgo2(params: NAlgo2.Params) 
+  extends P2LAlgorithm[ProcessedData, NAlgo2.Model, Query, Prediction] {
+    def train(pd: ProcessedData): NAlgo2.Model = NAlgo2.Model(params.id, pd)
+    
+    def predict(m: NAlgo2.Model, q: Query): Prediction = {
+      Prediction(params.id, q, Some(m))
+    }
+  }
+
+  object NAlgo3 {
+    case class Params(val id: Int) extends PIOParams
+
+    case class Model(id: Int, pd: ProcessedData)
+  }
+
+  class NAlgo3(params: NAlgo3.Params) 
+  extends P2LAlgorithm[ProcessedData, NAlgo3.Model, Query, Prediction] {
+    def train(pd: ProcessedData): NAlgo3.Model = NAlgo3.Model(params.id, pd)
+    
+    def predict(m: NAlgo3.Model, q: Query): Prediction = {
+      Prediction(params.id, q, Some(m))
+    }
+  }
+
   class LServing0(id: Int = 0) extends LServing[Query, Prediction] {
     def serve(q: Query, ps: Seq[Prediction]): Prediction = {
       Prediction(id, q, ps=ps)

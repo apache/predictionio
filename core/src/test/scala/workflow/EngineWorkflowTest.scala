@@ -1,5 +1,6 @@
 package io.prediction.workflow
 
+import _root_.java.lang.Thread
 
 import org.scalatest.FunSuite
 import org.scalatest.Inside
@@ -15,7 +16,6 @@ import io.prediction.controller._
 import io.prediction.core._
 import grizzled.slf4j.{ Logger, Logging }
 
-import java.lang.Thread
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite

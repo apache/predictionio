@@ -10,13 +10,13 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 
+import _root_.java.lang.Thread
+
 import io.prediction.controller._
 import io.prediction.core._
 import io.prediction.workflow.SharedSparkContext
-import io.prediction.controller.EngineParams
 import grizzled.slf4j.{ Logger, Logging }
 
-import java.lang.Thread
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
@@ -65,7 +65,7 @@ object TestEvaluator {
 
 
 
-class EvaluatorDevSuite
+class EvaluatorSuite
 extends FunSuite with Inside with SharedSparkContext {
   import io.prediction.controller.TestEvaluator._
   @transient lazy val logger = Logger[this.type] 

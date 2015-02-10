@@ -18,6 +18,7 @@ package io.prediction.controller
 import io.prediction.core.BaseAlgorithm
 //import io.prediction.core.LModelAlgorithm
 import io.prediction.core.WithBaseQuerySerializer
+import io.prediction.workflow.PersistentModelManifest
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -72,6 +73,29 @@ abstract class PAlgorithm[PD, M, Q : Manifest, P]
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+ 
+  override
+  def makePersistentModel(sc: SparkContext, modelId: String, 
+    algoParams: Params, bm: Any)
+  : Any = {
+    // In general, a parallel model may contain multiple RDDs. It is not easy to
+    // infer and persist them programmatically since these RDDs may be
+    // potentially huge.
+
+    // Persist is successful only if the model is an instance of
+    // IPersistentModel and save is successful.
+    val m = bm.asInstanceOf[M]
+    if (m.isInstanceOf[IPersistentModel[_]]) {
+      if (m.asInstanceOf[IPersistentModel[Params]].save(
+        modelId, algoParams, sc)) {
+        PersistentModelManifest(className = m.getClass.getName)
+      } else {
+        Unit
+      }
+    } else {
+      Unit
+    }
+  }
   
   def isJava = false
   //def isParallel = true
@@ -130,6 +154,29 @@ abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
     */
   def predict(m: M, q: Q): P
   
+  override
+  def makePersistentModel(sc: SparkContext, modelId: String, 
+    algoParams: Params, bm: Any)
+  : Any = {
+    // LAlgo has local model. By default, the model is serialized into our
+    // storage automatically. User can override this by implementing the
+    // IPersistentModel trait, then we call the save method, upon successful, we
+    // return the Manifest, otherwise, Unit. 
+
+    // Check RDD[M].count == 1
+    val m = bm.asInstanceOf[RDD[M]].first
+    if (m.isInstanceOf[IPersistentModel[_]]) {
+      if (m.asInstanceOf[IPersistentModel[Params]].save(
+        modelId, algoParams, sc)) {
+        PersistentModelManifest(className = m.getClass.getName)
+      } else {
+        Unit
+      }
+    } else {
+      m
+    }
+  }
+  
   def isJava = false
   //def isParallel = true
 }
@@ -177,6 +224,29 @@ abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
     * @return A prediction.
     */
   def predict(model: M, query: Q): P
+  
+  override
+  def makePersistentModel(sc: SparkContext, modelId: String, 
+    algoParams: Params, bm: Any)
+  : Any = {
+    // P2LAlgo has local model. By default, the model is serialized into our
+    // storage automatically. User can override this by implementing the
+    // IPersistentModel trait, then we call the save method, upon successful, we
+    // return the Manifest, otherwise, Unit. 
+
+    val m = bm.asInstanceOf[M]
+    if (m.isInstanceOf[IPersistentModel[_]]) {
+      if (m.asInstanceOf[IPersistentModel[Params]].save(
+        modelId, algoParams, sc)) {
+        PersistentModelManifest(className = m.getClass.getName)
+      } else {
+        Unit
+      }
+    } else {
+      m
+    }
+  }
+  
   
   def isJava = false
   //def isParallel = true

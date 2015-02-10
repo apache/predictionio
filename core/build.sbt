@@ -37,6 +37,6 @@ libraryDependencies ++= Seq(
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-//testOptions := Seq(Tests.Filter(s => Seq("Dev").exists(s.contains(_))))
+testOptions := Seq(Tests.Filter(s => Seq("Dev").exists(s.contains(_))))
 
 parallelExecution in Test := false
