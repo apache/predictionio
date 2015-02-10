@@ -13,22 +13,24 @@ case class AlgorithmParams(mult: Int) extends Params
 
 class Algorithm(val ap: AlgorithmParams)
   // extends PAlgorithm if Model contains RDD[]
-  extends P2LAlgorithm[PreparedData, Model, Query, PredictedResult] {
+  extends P2LAlgorithm[TrainingData, Model, Query, PredictedResult] {
 
   @transient lazy val logger = Logger[this.type]
 
-  def train(data: PreparedData): Model = {
+  def train(data: TrainingData): Model = {
     // Simply count number of events
     // and multiple it by the algorithm parameter
     // and store the number as model
-    val count = data.events.count().toInt * ap.mult
+    val count = data.events.reduce(_ + _) * ap.mult
+    logger.error("Algo.train")
     new Model(mc = count)
   }
 
   def predict(model: Model, query: Query): PredictedResult = {
     // Prefix the query with the model data
-    val result = s"${model.mc}-${query.q}"
-    PredictedResult(p = result)
+    //val result = s"${model.mc}-${query.q}"
+    logger.error("Algo.predict")
+    PredictedResult(p = model.mc + query.q)
   }
 }
 
