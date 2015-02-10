@@ -58,7 +58,7 @@ case class WorkflowParams(
 object Workflow {
   /** Creates a workflow that runs an engine.
     *
-    * @tparam EI Evalution info class.
+    * @tparam EI Evaluation info class.
     * @tparam TD Training data class.
     * @tparam PD Prepared data class.
     * @tparam Q Input query class.
@@ -102,7 +102,7 @@ object Workflow {
 
   /** Creates a workflow that runs a collection of engine components.
     *
-    * @tparam EI Evalution info class.
+    * @tparam EI Evaluation info class.
     * @tparam TD Training data class.
     * @tparam PD Prepared data class.
     * @tparam Q Input query class.

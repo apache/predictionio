@@ -45,7 +45,7 @@ class EventsDataSource(dsp: EventsDataSourceParams)
     * It constructs a list of Query-Actual pair using the list of actions.
     * For each user in the list, it creates a Query instance using all items in
     * actions, and creates an Actual instance with all actions associated with
-    * the user. Note that it is the metrics job to decide how to interprete the
+    * the user. Note that it is the metrics job to decide how to interpret the
     * semantics of the actions.
     */
   override def generateQueryActualSeq(

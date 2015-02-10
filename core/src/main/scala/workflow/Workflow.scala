@@ -149,7 +149,7 @@ extends Serializable {
     val iQuery: RDD[(QI, Q)] = iInput.map(e => (e._1, e._2._1))
     val sc = input.context
 
-    // Each algo/model is run independely.
+    // Each algo/model is run independently.
     val iAlgoPredictionSeq: Seq[RDD[(QI, (AI, P))]] = models
       .zipWithIndex
       .map { case (model, ai) => {
@@ -267,8 +267,8 @@ object CoreWorkflow {
   // ***Do not directly call*** any "Typeless" method unless you know exactly
   // what you are doing.
 
-  // When engine and evaluator are instantiated direcly from CLI, the compiler has
-  // no way to know their actual type parameter during compile time. To rememdy
+  // When engine and evaluator are instantiated directly from CLI, the compiler has
+  // no way to know their actual type parameter during compile time. To remedy
   // this restriction, we have to let engine and evaluator to be casted to their
   // own type parameters, and force cast their type during runtime.
   // In particular, evaluator needs to be instantiated to keep scala compiler
@@ -309,7 +309,7 @@ object CoreWorkflow {
   }
 
   // yipjustin: The parameter list has more than 80 columns. But I cannot find a
-  // way to spread it to multiple lines while presving the reability.
+  // way to spread it to multiple lines while preserving the readability.
   def runTypeless[
       EI, TD, PD, Q, P, A,
       MEI, MQ, MP, MA,
@@ -775,7 +775,7 @@ object CoreWorkflow {
 
   /** Extract model for persistent layer.
     *
-    * PredictionIO presist models for future use.  It allows custom
+    * PredictionIO persist models for future use.  It allows custom
     * implementation for persisting models. You need to implement the
     * [[io.prediction.controller.IPersistentModel]] interface. This method
     * traverses all models in the workflow. If the model is a

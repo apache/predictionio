@@ -137,7 +137,7 @@ object MathUtil {
   /** Average precision at k */
   def averagePrecisionAtK[T](k: Int, p: Seq[T], r: Set[T]): Double = {
     // supposedly the predictedItems.size should match k
-    // NOTE: what if predictedItems is less than k? use the avaiable items as k.
+    // NOTE: what if predictedItems is less than k? use the available items as k.
     val n = scala.math.min(p.size, k)
 
     // find if each element in the predictedItems is one of the relevant items

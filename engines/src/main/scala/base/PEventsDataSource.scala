@@ -87,7 +87,7 @@ class PEventsDataSource[DP: ClassTag, Q, A](
           items = items,
           u2iActions = trainActions)
 
-        // Use [firstTrain + idx * duration, firstTraing + (idx+1) * duration)
+        // Use [firstTrain + idx * duration, firstTraining + (idx+1) * duration)
         // as testing
         val evalActions = extractActions(
           batchView,
@@ -129,7 +129,7 @@ class PEventsDataSource[DP: ClassTag, Q, A](
     .map { case (entityId, dataMap) =>
       (entityId, new UserTD(uid = entityId))
     }
-    .zipWithUniqueId // theis Long id may exist gaps but no need spark job
+    .zipWithUniqueId // this Long id may exist gaps but no need spark job
     // TODO: may need to change local EventDataSource to use Long.
     // Force to Int now so can re-use same userTD, itemTD, and ratingTD
     .mapValues( _.toInt )

@@ -190,7 +190,7 @@ object WorkflowUtils extends Logging {
     runner.start
   }
 
-  // Extract debug string by recusively traversing the data.
+  // Extract debug string by recursively traversing the data.
   def debugString[D](data: D): String = {
     val s: String = data match {
       case rdd: RDD[_] => {

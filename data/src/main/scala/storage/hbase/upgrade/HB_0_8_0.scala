@@ -60,7 +60,7 @@ object HB_0_8_0 {
   ) {
     lazy val toBytes: Array[Byte] = {
       // add UUID least significant bits for multiple actions at the same time
-      // (UUID's most significantbits are actually timestamp,
+      // (UUID's most significant bits are actually timestamp,
       // use eventTime instead).
       Bytes.toBytes(appId) ++ Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
     }

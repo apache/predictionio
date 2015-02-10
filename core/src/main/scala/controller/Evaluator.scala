@@ -29,7 +29,7 @@ import scala.reflect.runtime.universe._
   * Evaluator compare predicted result with actual known values and produce numerical
   * comparisons.
   *
-  * @tparam PD Prepared data class.
+  * @tparam DP Prepared data class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @tparam A Actual value class.

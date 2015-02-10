@@ -31,7 +31,7 @@ object Preparator {
   // Maps actions to a numerical rating with the following logic:
   // If action belongs to actionMap, then it looks at the map value. If it is
   // defined, use it; otherwise, use the numerical value v.
-  // Last, if above method fails to define a numercical rating, default is used.
+  // Last, if above method fails to define a numerical rating, default is used.
   def action2rating(action: String, v: Option[Int],
     actionsMap: Map[String, Option[Int]], default: Int): Int = {
     actionsMap(action).getOrElse(v.getOrElse(default))
@@ -44,7 +44,7 @@ object Preparator {
 
   /*
   // Return a boolean value. Usually used by metrics to define "good" rating.
-  // Logic is simliar to action2rating, except that a threshold will be used for
+  // Logic is similar to action2rating, except that a threshold will be used for
   // comparing numerical value.
   def action2boolean(action: String, v: Option[Int],
     actionsMap: Map[String, Option[Boolean]], 

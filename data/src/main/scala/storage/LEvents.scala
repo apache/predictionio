@@ -31,7 +31,7 @@ private[prediction] trait LEvents {
   val defaultTimeout = Duration(60, "seconds")
 
   /** Initialize Event Store for the appId.
-   * initailization routine to be called when app is first created.
+   * initialization routine to be called when app is first created.
    * return true if succeed or false if fail.
    */
   def init(appId: Int): Boolean = {

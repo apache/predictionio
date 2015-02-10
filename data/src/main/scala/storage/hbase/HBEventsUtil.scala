@@ -43,14 +43,14 @@ import java.security.MessageDigest
 
 import java.util.UUID
 
-/* common utility function for acessing EventsStore in HBase */
+/* common utility function for accessing EventsStore in HBase */
 object HBEventsUtil {
 
   implicit val formats = DefaultFormats
 
   def tableName(namespace: String, appId: Int) = s"${namespace}:events_${appId}"
 
-  // column nams for "e" column family
+  // column names for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(
     "event" -> "e",
     "entityType" -> "ety",
@@ -67,7 +67,7 @@ object HBEventsUtil {
 
   def hash(entityType: String, entityId: String): Array[Byte] = {
     val s = entityType + "-" + entityId
-    // get a new MessgaeDigest object each time for thread-safe
+    // get a new MessageDigest object each time for thread-safe
     val md5 = MessageDigest.getInstance("MD5")
     md5.digest(Bytes.toBytes(s))
   }
@@ -94,7 +94,7 @@ object HBEventsUtil {
       millis: Long,
       uuidLow: Long): RowKey = {
         // add UUID least significant bits for multiple actions at the same time
-        // (UUID's most significantbits are actually timestamp,
+        // (UUID's most significant bits are actually timestamp,
         // use eventTime instead).
         val b = hash(entityType, entityId) ++
           Bytes.toBytes(millis) ++ Bytes.toBytes(uuidLow)
@@ -136,7 +136,7 @@ object HBEventsUtil {
   }
 
   def eventToPut(event: Event, appId: Int): (Put, RowKey) = {
-    // TOOD: use real UUID. not psuedo random
+    // TOOD: use real UUID. not pseudo random
     val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
     val rowKey = RowKey(
       entityType = event.entityType,
