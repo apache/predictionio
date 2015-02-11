@@ -25,6 +25,7 @@ import io.prediction.controller.WorkflowParams
 import io.prediction.controller.Engine
 import io.prediction.core.Doer
 import io.prediction.core.BaseEvaluator
+import io.prediction.core.BaseEngine
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.Storage
 
@@ -191,7 +192,7 @@ object CreateWorkflow extends Logging {
         sys.exit(1)
     }
 
-    val engine = engineFactoryObj()
+    val engine: BaseEngine[_, _, _, _] = engineFactoryObj()
 
     val evaluator = wfc.evaluatorClass.map { mc => //mc => null
       try {

@@ -159,6 +159,7 @@ object Engine0 {
   extends PAlgorithm[ProcessedData, PAlgo0.Model, Query, Prediction] {
     def train(pd: ProcessedData): PAlgo0.Model = PAlgo0.Model(id, pd)
 
+    override
     def batchPredict(m: PAlgo0.Model, qs: RDD[(Long, Query)])
     : RDD[(Long, Prediction)] = {
       qs.mapValues(q => Prediction(id, q, Some(m)))
@@ -177,6 +178,7 @@ object Engine0 {
   extends PAlgorithm[ProcessedData, PAlgo1.Model, Query, Prediction] {
     def train(pd: ProcessedData): PAlgo1.Model = PAlgo1.Model(id, pd)
 
+    override
     def batchPredict(m: PAlgo1.Model, qs: RDD[(Long, Query)])
     : RDD[(Long, Prediction)] = {
       qs.mapValues(q => Prediction(id, q, Some(m)))
@@ -198,6 +200,7 @@ object Engine0 {
 
     def train(pd: ProcessedData): PAlgo2.Model = PAlgo2.Model(id, pd)
 
+    override
     def batchPredict(m: PAlgo2.Model, qs: RDD[(Long, Query)])
     : RDD[(Long, Prediction)] = {
       qs.mapValues(q => Prediction(id, q, Some(m)))
@@ -223,6 +226,7 @@ object Engine0 {
 
     def train(pd: ProcessedData): PAlgo3.Model = PAlgo3.Model(id, pd)
 
+    override
     def batchPredict(m: PAlgo3.Model, qs: RDD[(Long, Query)])
     : RDD[(Long, Prediction)] = {
       qs.mapValues(q => Prediction(id, q, Some(m)))

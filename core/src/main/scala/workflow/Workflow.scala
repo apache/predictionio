@@ -133,7 +133,12 @@ object CoreWorkflow {
       params.sparkEnv,
       mode.capitalize)
    
-    val models: Seq[Any] = engine.train(sc, engineParams)
+    val models: Seq[Any] = engine.train(
+      sc = sc, 
+      engineParams = engineParams,
+      engineInstanceId = engineInstance.id,
+      params = params
+    )
 
     val instanceId = Storage.getMetaDataEngineInstances
    

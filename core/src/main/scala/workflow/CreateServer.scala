@@ -28,6 +28,7 @@ import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.PJavaAlgorithm
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
+import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineManifest
@@ -229,22 +230,15 @@ object CreateServer extends Logging {
       (name, extractedParams)
     }
 
-    /*val servingParams =
-      if (engineInstance.servingParams == "")
-        EmptyParams()
-      else
-        WorkflowUtils.extractParams(
-          engineLanguage,
-          engineInstance.servingParams,
-          engine.servingClass) */
     val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
       servingParamsWithName._2)
 
     val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
     val kryo = KryoInjection.instance(kryoInstantiator)
+
     val modelsFromEngineInstance =
       kryo.invert(modeldata.get(engineInstance.id).get.models).get.
-      asInstanceOf[Seq[Seq[Any]]]
+      asInstanceOf[Seq[Any]]
 
     val sparkContext =
       Option(WorkflowContext(
@@ -252,10 +246,6 @@ object CreateServer extends Logging {
         executorEnv = engineInstance.env,
         mode = "Serving")).
         filter(_ => algorithms.exists(_.isParallel))
-    /*val dataSourceParams = WorkflowUtils.extractParams(
-      engineLanguage,
-      engineInstance.dataSourceParams,
-      engine.dataSourceClass)*/
     val dataSourceParamsWithName: (String, Params) = {
       val (name, params) =
         read[(String, JValue)](engineInstance.dataSourceParams)
@@ -270,10 +260,6 @@ object CreateServer extends Logging {
         engine.dataSourceClassMap(name))
       (name, extractedParams)
     }
-    /*val preparatorParams = WorkflowUtils.extractParams(
-      engineLanguage,
-      engineInstance.preparatorParams,
-      engine.preparatorClass)*/
     val preparatorParamsWithName: (String, Params) = {
       val (name, params) =
         read[(String, JValue)](engineInstance.preparatorParams)
@@ -289,47 +275,32 @@ object CreateServer extends Logging {
       (name, extractedParams)
     }
 
-    val evalPreparedMap = sparkContext.filter(_ =>
-      algorithms.zip(modelsFromEngineInstance.head).exists(am =>
+    // If any of the model is from a Parallel algo but not persisted, need to
+    // regerenate the data
+    val processedData = sparkContext.filter(_ =>
+      algorithms.zip(modelsFromEngineInstance).exists(am =>
         am._1.isParallel && !am._2.isInstanceOf[PersistentModelManifest]
     )).map { sc =>
+      logger.info("Some models are not persisted. Need to retrain.")
       logger.info("Data Source")
+      // Ideally, this should belongs to Engine's method.
       val dataSource = Doer(
         engine.dataSourceClassMap(dataSourceParamsWithName._1),
         dataSourceParamsWithName._2)
 
-      /*
-      val evalParamsDataMap
-      : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
-        .readBase(sc)
-        .zipWithIndex
-        .map(_.swap)
-        .toMap
-      */
-
-      // FIXME(yipjsutin). Use revamped workflow.
       val td = dataSource.readTrainingBase(sc)
 
-      val evalParamsDataMap: Map[EI, (TD, EI, RDD[(Q, A)])] = Seq(0)
-        .map { _ => (0, (td, null.asInstanceOf[EI], sc.emptyRDD[(Q, A)])) }
-        .toMap
-
-      val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
-        case(ei, e) => (ei -> (e._1, e._3))
-      }
       logger.info("Preparator")
       val preparator = Doer(
         engine.preparatorClassMap(preparatorParamsWithName._1),
         preparatorParamsWithName._2)
-
-      val evalPreparedMap: Map[EI, PD] = evalDataMap
-      .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
+      val pd = preparator.prepareBase(sc, td)
       logger.info("Preparator complete")
-
-      evalPreparedMap
+      
+      pd
     }
 
-    val models = modelsFromEngineInstance.head.zip(algorithms).
+    val models = modelsFromEngineInstance.zip(algorithms).
       zip(algorithmsParamsWithNames).zipWithIndex.map {
         case (((m, a), pwn), i) =>
           if (m.isInstanceOf[PersistentModelManifest]) {
@@ -343,7 +314,7 @@ object CreateServer extends Logging {
               getClass.getClassLoader)
           } else if (a.isParallel) {
             info(s"Parallel model detected for algorithm ${a.getClass.getName}")
-            a.trainBase(sparkContext.get, evalPreparedMap.get(0))
+            a.trainBase(sparkContext.get, processedData.get)
           } else {
             try {
               info(s"Loaded model ${m.getClass.getName} for algorithm " +

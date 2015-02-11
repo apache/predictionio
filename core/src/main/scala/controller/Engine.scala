@@ -123,7 +123,12 @@ class Engine[TD, EI, PD, Q, P, A](
   }
   
   // Return persistentable models from trained model
-  def train(sc: SparkContext, engineParams: EngineParams): Seq[Any] = {
+  //def train(sc: SparkContext, engineParams: EngineParams): Seq[Any] = {
+  def train(
+      sc: SparkContext, 
+      engineParams: EngineParams,
+      engineInstanceId: String = "",
+      params: WorkflowParams = WorkflowParams()): Seq[Any] = {
     val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
     val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
     
@@ -147,7 +152,10 @@ class Engine[TD, EI, PD, Q, P, A](
       (name, params, algorithms(ax), models(ax))
     }}
 
-    makeSerializableModels(sc, engineInstanceId = "", algoTuples = algoTuples)
+    makeSerializableModels(
+      sc, 
+      engineInstanceId = engineInstanceId, 
+      algoTuples = algoTuples)
   }
 
   /** Extract model for persistent layer.
@@ -175,6 +183,8 @@ class Engine[TD, EI, PD, Q, P, A](
     //params: WorkflowParams
   ): Seq[Any] = {
 
+    logger.error(s"makeSerializableModels: engineInstanceId=$engineInstanceId") 
+  
     algoTuples
     .zipWithIndex
     .map { case ((name, params, algo, model), ax) => {
