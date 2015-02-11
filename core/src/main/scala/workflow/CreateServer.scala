@@ -497,6 +497,10 @@ class ServerActor[Q, P](
   val log = Logging(context.system, this)
   val (javaAlgorithms, scalaAlgorithms) = algorithms.partition(_.isJava)
 
+  var requestCount: Int = 0
+  var avgServingSec: Double = 0.0
+  var lastServingSec: Double = 0.0
+
   def actorRefFactory = context
 
   def receive = runRoute(myRoute)
@@ -549,7 +553,11 @@ class ServerActor[Q, P](
                 serverStartTime,
                 feedbackEnabled,
                 args.eventServerIp,
-                args.eventServerPort).toString
+                args.eventServerPort,
+                requestCount,
+                avgServingSec,
+                lastServingSec
+              ).toString
             }
           }
         }
@@ -560,6 +568,8 @@ class ServerActor[Q, P](
         detach() {
           entity(as[String]) { queryString =>
             try {
+              val servingStartTime = DateTime.now
+
               val queryTime = DateTime.now
               val javaQuery = javaAlgorithms.headOption map { alg =>
                 val queryClass = if (
@@ -658,6 +668,15 @@ class ServerActor[Q, P](
                   r._1 merge parse(s"""{"prId" : "${newPrId}"}""")
                 else r._1
               } else r._1
+              
+              // Bookkeeping 
+              val servingEndTime = DateTime.now
+              lastServingSec = (
+                servingEndTime.getMillis - servingStartTime.getMillis) / 1000.0
+              avgServingSec = (
+                ((avgServingSec * requestCount) + lastServingSec) /
+                (requestCount + 1))
+              requestCount += 1
 
               respondWithMediaType(`application/json`) {
                 complete(compact(render(result)))
