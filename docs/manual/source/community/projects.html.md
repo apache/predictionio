@@ -68,3 +68,17 @@ Implementation of Delta-Simrank algorithm using Spark's GraphX framework.
 - Core Author: Joey Zhou
 
 - Status: It works with PredictionIO v0.8 - Under active development
+
+
+## Lavarel Wrapper for PredictionIO
+
+URL: https://github.com/michael-hopkins/PredictionIO-Laravel-Wrapper and https://packagist.org/packages/hopkins/predictionio-laravel-wrapper
+
+A Laravel wrapper for PredictionIO v0.8.
+
+- Core Author: Bruno Cabral & Michael Hopkins
+
+- Status: It works with PredictionIO v0.8 - Under active development
+
+
+
