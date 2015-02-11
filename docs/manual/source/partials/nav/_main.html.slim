@@ -3,6 +3,7 @@ nav#nav-main role="navigation"
     li.expand
       = link_to 'Getting Started', '#'
       ul
+        li = link_to_with_active 'Latest Updates', '/start/new/'
         li = link_to_with_active 'Overview', '/start/'
         li = link_to_with_active 'Installing PredictionIO', '/install/'
         li = link_to_with_active 'Engine - A Closer Look', '/start/engines/'
