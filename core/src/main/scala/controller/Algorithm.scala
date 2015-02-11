@@ -56,7 +56,10 @@ abstract class PAlgorithm[PD, M, Q : Manifest, P]
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)]) 
   : RDD[(Long, P)] = batchPredict(bm.asInstanceOf[M], qs)
 
-  def batchPredict(m: M, qs: RDD[(Long, Q)]): RDD[(Long, P)]
+  def batchPredict(m: M, qs: RDD[(Long, Q)]): RDD[(Long, P)] = {
+    throw new NotImplementedError("batchPredict not implemented")
+    qs.context.emptyRDD[(Long, P)]
+  }
 
   /** Do not use directly or override this method, as this is called by
     * PredictionIO workflow to perform prediction.
