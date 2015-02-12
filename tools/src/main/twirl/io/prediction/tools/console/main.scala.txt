@@ -45,6 +45,7 @@ The most commonly used pio commands are:
     eventserver   Launch an Event Server
     app           Manage apps that are used by the Event Server
     accesskey     Manage app access keys
+    export        Export events from the Event Server
 
 The following are experimental development commands:
     run           Launch a driver program

@@ -57,6 +57,7 @@ case class ConsoleArgs(
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: TemplateArgs = TemplateArgs(),
+  export: ExportArgs = ExportArgs(),
   commands: Seq[String] = Seq(),
   metricsClass: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
@@ -601,6 +602,20 @@ object Console extends Logging {
               c.copy(commands = c.commands :+ "list")
             }
         )
+      cmd("export").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "export")
+        } children(
+          opt[Int]("appid") required() action { (x, c) =>
+            c.copy(export = c.export.copy(appId = x))
+          },
+          opt[String]("output") required() action { (x, c) =>
+            c.copy(export = c.export.copy(outputPath = x))
+          },
+          opt[String]("format") action { (x, c) =>
+            c.copy(export = c.export.copy(format = x))
+          }
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -693,6 +708,8 @@ object Console extends Logging {
           Template.get(ca)
         case Seq("template", "list") =>
           Template.list(ca)
+        case Seq("export") =>
+          Export.eventsToFile(ca, coreAssembly(ca.common.pioHome.get))
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -730,6 +747,7 @@ object Console extends Logging {
     "eventserver" -> txt.eventserver().toString,
     "app" -> txt.app().toString,
     "accesskey" -> txt.accesskey().toString,
+    "export" -> txt.export().toString,
     "run" -> txt.run().toString,
     "eval" -> txt.eval().toString,
     "dashboard" -> txt.dashboard().toString)
