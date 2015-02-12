@@ -30,14 +30,23 @@ class AdminAPISpec extends Specification{
   val adminActor= system.actorOf(Props(classOf[AdminServerActor], commandClient))
 
   adminActor ! StartServer(config.ip, config.port)
-  
-  "The 'runRoute' directive" should {
-    "properly produce HttpResponses from the admin actor" in {
+
+  "GET / request" should {
+    "properly produce OK HttpResponses" in {
       val probe = TestProbe()(system)
-      probe.send(adminActor,Get("/"))
-      //probe.expectMsg(HttpResponse(200,HttpEntity(ContentType(MediaTypes.`application/json`,HttpCharsets.`UTF-8`))))
+      probe.send(adminActor, Get("/"))
+      probe.expectMsg(
+        HttpResponse(
+          200,
+          HttpEntity(
+            contentType = ContentTypes.`application/json`,
+            string = """{"status":"alive"}"""
+          )
+        )
+      )
       success
     }
   }
-  step(system.shutdown())
+
+  //step(system.shutdown())
 }
