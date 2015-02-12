@@ -7,7 +7,7 @@ import java.io.File
 case class ExportArgs(
   appId: Int = 0,
   outputPath: String = "",
-  format: String = "parquet")
+  format: String = "json")
 
 object Export {
   def eventsToFile(ca: ConsoleArgs, core: File): Int = {

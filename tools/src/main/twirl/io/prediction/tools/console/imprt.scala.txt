@@ -1,0 +1,10 @@
+Usage: pio import --appid <value> --input <value>
+
+Imports all events from a file to an app. Each line of the file should be a JSON
+object that represent a single event. If Hadoop configuration is present, the
+file will be imported from HDFS instead of local filesystem.
+
+  --appid <value>
+      App ID of events to be imported.
+  --input <value>
+      Input path of the import file.
