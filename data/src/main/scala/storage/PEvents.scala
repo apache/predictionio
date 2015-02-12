@@ -102,4 +102,14 @@ trait PEvents extends Serializable {
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
     (sc: SparkContext)(extract: DataMap => A): EntityMap[A]
+
+  /** @experimental
+    * Write events to database
+    *
+    * @param events RDD of Event
+    * @param appId the app ID
+    * @param sc Spark Context
+    */
+  def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit
+
 }

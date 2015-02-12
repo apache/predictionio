@@ -136,14 +136,19 @@ object HBEventsUtil {
   }
 
   def eventToPut(event: Event, appId: Int): (Put, RowKey) = {
-    // TOOD: use real UUID. not pseudo random
-    val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
-    val rowKey = RowKey(
-      entityType = event.entityType,
-      entityId = event.entityId,
-      millis = event.eventTime.getMillis,
-      uuidLow = uuidLow
-    )
+    // generate new rowKey if eventId is None
+    val rowKey = event.eventId.map { id =>
+      RowKey(id) // create rowKey from eventId
+    }.getOrElse {
+      // TOOD: use real UUID. not pseudo random
+      val uuidLow: Long = UUID.randomUUID().getLeastSignificantBits
+      RowKey(
+        entityType = event.entityType,
+        entityId = event.entityId,
+        millis = event.eventTime.getMillis,
+        uuidLow = uuidLow
+      )
+    }
 
     val eBytes = Bytes.toBytes("e")
     // use eventTime as HBase's cell timestamp
