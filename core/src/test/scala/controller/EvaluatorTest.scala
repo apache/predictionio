@@ -15,6 +15,7 @@ import _root_.java.lang.Thread
 import io.prediction.controller._
 import io.prediction.core._
 import io.prediction.workflow.SharedSparkContext
+//import io.prediction.workflow.WorkflowParams
 import grizzled.slf4j.{ Logger, Logging }
 
 
@@ -29,7 +30,15 @@ object TestEvaluator {
 
   class FakeEngine(val id: Int, val en: Int, val qn: Int)
   extends BaseEngine[EvalInfo, Query, Prediction, Actual] {
-    def train(sc: SparkContext, engineParams: EngineParams): Seq[Any] = Seq[Any]()
+    def train(
+      sc: SparkContext, 
+      engineParams: EngineParams,
+      instanceId: String = "",
+      params: WorkflowParams = WorkflowParams()
+    ): Seq[Any] = {
+      Seq[Any]()
+    }
+
     def eval(sc: SparkContext, engineParams: EngineParams)
     : Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = {
       (0 until en).map { ex => {
