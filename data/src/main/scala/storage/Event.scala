@@ -27,7 +27,7 @@ import org.joda.time.DateTimeZone
   * @param entityId ID of the entity associated with this event.
   * @param targetEntityType Type of the target entity associated with this
   *                         event.
-  * @param targetEntityId ID of the target entity asssociated with this event.
+  * @param targetEntityId ID of the target entity associated with this event.
   * @param properties Properties associated with this event.
   * @param eventTime Time of the happening of this event.
   * @param tags Tags of this event.

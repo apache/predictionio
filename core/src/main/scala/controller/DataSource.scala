@@ -29,7 +29,7 @@ import scala.reflect._
   * that can fit within a single machine.
   *
   * @tparam TD Training data class.
-  * @tparam EI Evalution Info class.
+  * @tparam EI Evaluation Info class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
   * @group Data Source
@@ -60,7 +60,7 @@ abstract class LDataSource[
 
   /** Implement this method to return one set of test data (
     * a sequence of query and actual value pairs) from a data source.
-    * Should also implement readTraining to return correponding training data.
+    * Should also implement readTraining to return corresponding training data.
     */
   def readTest(): (EI, Seq[(Q, A)]) =
     (null.asInstanceOf[EI], Seq.empty[(Q, A)])
@@ -83,7 +83,7 @@ abstract class LDataSource[
   * on a cluster, to return data that is distributed across a cluster.
   *
   * @tparam TD Training data class.
-  * @tparam EI Evalution Info class.
+  * @tparam EI Evaluation Info class.
   * @tparam Q Input query class.
   * @tparam A Actual value class.
   * @group Data Source
@@ -105,7 +105,7 @@ abstract class PDataSource[TD, EI, Q, A]
 
   /** Implement this method to return one set of test data (
     * a sequence of query and actual value pairs) from a data source.
-    * Should also implement readTraining to return correponding training data.
+    * Should also implement readTraining to return corresponding training data.
     */
   def readTest(sc: SparkContext): (EI, RDD[(Q, A)]) =
     (null.asInstanceOf[EI], sc.parallelize(Seq.empty[(Q, A)]))

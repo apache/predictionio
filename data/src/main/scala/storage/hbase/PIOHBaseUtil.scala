@@ -16,7 +16,7 @@
 package org.apache.hadoop.hbase.mapreduce
 
 /* Pretends to be hbase.mapreduce package in order to expose its
- * Package-accessisble only static function convertScanToString()
+ * Package-accessible only static function convertScanToString()
  */
 
 import org.apache.hadoop.hbase.client.Scan

@@ -136,7 +136,7 @@ case class DataMap (
 
   /** Converts this DataMap to a JObject.
     *
-    * @return the JObject initizalized by this DataMap.
+    * @return the JObject initialized by this DataMap.
     */
   def toJObject(): JObject = JObject(toList())
 
@@ -151,7 +151,7 @@ object DataMap {
 
   /** Create an DataMap from a JObject
     * @param jObj JObject
-    * @return a new DataMap initlized by a JObject
+    * @return a new DataMap initialized by a JObject
     */
   def apply(jObj: JObject): DataMap = {
     if (jObj == null) DataMap() else DataMap(jObj.obj.toMap)

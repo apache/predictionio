@@ -80,7 +80,7 @@ class Engine[TD, EI, PD, Q, P, A](
       Map("" -> servingClass)
     )
 
-  /** Returns a new Engine instnace. Mimmic case class's copy method behavior.
+  /** Returns a new Engine instance. Mimic case class's copy method behavior.
     */
   def copy(
     dataSourceClassMap: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]
@@ -172,8 +172,8 @@ class EngineParams(
 
 object EngineParams {
   /** Create EngineParams
-    * @param dataSourceName Data Soure name
-    * @param dataSourceParams Data Soure parameters
+    * @param dataSourceName Data Source name
+    * @param dataSourceParams Data Source parameters
     * @param preparatorName Preparator name
     * @param preparatorParams Preparator parameters
     * @param algorithmParamsList List of algorithm name-parameter pairs.
@@ -204,12 +204,11 @@ object EngineParams {
   *
   * @tparam TD Training data class.
   * @tparam EI Evaluation info class.
-  * @tparam PD Prepared data class.
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @tparam A Actual value class.
   * @param dataSourceClass Data source class.
-  * @param algorithmClassMap Map of algorithm names to classes.
+  * @param algorithmClass of algorithm names to classes.
   * @group Engine
   */
 class SimpleEngine[TD, EI, Q, P, A](
@@ -224,7 +223,7 @@ class SimpleEngine[TD, EI, Q, P, A](
 /** This shorthand class serves the `SimpleEngine` class.
   *
   * @param dataSourceParams Data source parameters.
-  * @param algorithmParamsList List of algorithm name-parameter pairs.
+  * @param algorithmParams List of algorithm name-parameter pairs.
   * @group Engine
   */
 class SimpleEngineParams(
@@ -244,7 +243,7 @@ trait IEngineFactory {
   /** Creates an instance of an [[Engine]]. */
   def apply(): Engine[_, _, _, _, _, _]
 
-  /** Override this method to programatically return engine parameters. */
+  /** Override this method to programmatically return engine parameters. */
   def engineParams(key: String): EngineParams = EngineParams()
 }
 

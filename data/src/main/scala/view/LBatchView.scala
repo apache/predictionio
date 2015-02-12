@@ -138,7 +138,7 @@ class LBatchView(
 
   @transient lazy val events: EventSeq = new EventSeq(_events)
 
-  /* Aggreate event data
+  /* Aggregate event data
    *
    * @param entityType only aggregate event with entityType
    * @param startTimeOpt if specified, only aggregate event after (inclusive)

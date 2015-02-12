@@ -126,7 +126,7 @@ class EventsDataSource[DP: ClassTag, Q, A](
           items = HashMap[Int, ItemTD]() ++ items,
           u2iActions = trainActions.toList)
 
-        // Use [firstTrain + idx * duration, firstTraing + (idx+1) * duration)
+        // Use [firstTrain + idx * duration, firstTraining + (idx+1) * duration)
         // as testing
         val evalActions = extractActions(
           uid2ui,

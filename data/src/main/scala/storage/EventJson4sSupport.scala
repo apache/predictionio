@@ -32,7 +32,7 @@ private[prediction] object EventJson4sSupport {
   def readJson: PartialFunction[JValue, Event] = {
     case JObject(x) => {
       val fields = new DataMap(x.toMap)
-      // use get() if requried in json
+      // use get() if required in json
       // use getOpt() if not required in json
       try {
         val event = fields.get[String]("event")

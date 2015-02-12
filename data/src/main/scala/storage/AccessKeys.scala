@@ -30,7 +30,7 @@ private[prediction] case class AccessKey(
   events: Seq[String])
 
 /**
- * Base trait for implementations that interact with AcessKeys in the backend
+ * Base trait for implementations that interact with AccessKeys in the backend
  * data store.
  */
 private[prediction] trait AccessKeys {

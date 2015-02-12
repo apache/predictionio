@@ -96,7 +96,7 @@ class NCItemBasedAlgorithmModel(
   @transient lazy val itemsIndexMap: Map[String, Long] = validItemsMap.map {
       case (index, item) => (item.id, index) }
 
-  // TODO: refactor to suppport other types of Recommender (eg. SVD)
+  // TODO: refactor to support other types of Recommender (eg. SVD)
   private def buildRecommender(): ItemBasedRecommender = {
     logger.info("Building recommender...")
     val weightedParam: Weighting = if (params.weighted) Weighting.WEIGHTED
@@ -164,7 +164,7 @@ abstract class AbstractNCItemBasedAlgorithm[Q : Manifest, P](
         (r.uindex, r.iindex, r.rating.toFloat, r.t) })
     }
 
-    // don't have seperated seen actions data for now
+    // don't have separated seen actions data for now
     val seenDataModel: DataModel = preparedData.seenU2IActions.map {
       seenU2IActions =>
         if (seenU2IActions.isEmpty)

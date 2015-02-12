@@ -168,7 +168,7 @@ private[prediction] object PEventAggregator {
     eventsRDD
       .map( e => (e.entityId, EventOp(e) ))
       .aggregateByKey[EventOp](EventOp())(
-        // within same parition
+        // within same partition
         seqOp = { case (u, v) => u ++ v },
         // across partition
         combOp = { case (accu, u) => accu ++ u }
