@@ -61,7 +61,7 @@ class DataSource(val dsp: DataSourceParams)
     .reduceByKey { case (a, b) => a + b }
     .map { case ((uid, iid), r) =>
       Rating(uid, iid, r)
-    }
+    }.cache()
 
     new TrainingData(ratingsRDD)
   }
