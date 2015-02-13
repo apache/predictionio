@@ -42,11 +42,11 @@ import grizzled.slf4j.Logger
 abstract class Evaluator[EI, Q, P, A, EU: ClassTag, ES, ER <: AnyRef : ClassTag]
   extends BaseEvaluator[EI, Q, P, A, ER] {
   type EX = Int
-  @transient lazy val logger = Logger[this.type]
+  @transient private lazy val logger = Logger[this.type]
 
   def evaluateBase(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
   : ER = {
-    logger.error(s"Evaluator. EvalData Set Count: ${evalDataSet.size}")
+    logger.info(s"Evaluator. EvalData Set Count: ${evalDataSet.size}")
     val evalSetResult: Seq[RDD[(EX, EI, ES)]] = evalDataSet
     .zipWithIndex  // Need to inject an index to keep the order stable.
     .map { case (ed, ex) => {
@@ -70,9 +70,8 @@ abstract class Evaluator[EI, Q, P, A, EU: ClassTag, ES, ER <: AnyRef : ClassTag]
         evaluateAll(sorted) 
       }}
 
-    logger.error(s"RDD[ER].count: ${erRDD.count()}")
+    logger.info(s"Evaluator completed.")
 
-    //val er = erRDD.collect.head
     val er = erRDD.first
     er
   }
