@@ -21,7 +21,6 @@ import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
-import io.prediction.data.storage.hbase.upgrade.CheckDistribution
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.data.api.EventServer
@@ -45,7 +44,6 @@ import scala.sys.process._
 import scala.util.Random
 
 import java.io.File
-import java.nio.file.Files
 
 case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
@@ -58,6 +56,7 @@ case class ConsoleArgs(
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: TemplateArgs = TemplateArgs(),
   export: ExportArgs = ExportArgs(),
+  imprt: ImportArgs = ImportArgs(),
   commands: Seq[String] = Seq(),
   metricsClass: Option[String] = None,
   metricsParamsJsonPath: Option[String] = None,
@@ -116,7 +115,6 @@ case class UpgradeArgs(
 )
 
 object Console extends Logging {
-  val distFilename = "DIST"
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError = false
@@ -197,20 +195,6 @@ object Console extends Logging {
             c.copy(commands = c.commands :+ x)
           }
         )
-      //note("")
-      //cmd("instance").
-      //  text("Creates a new engine instance in a subdirectory with the same " +
-      //    "name as the engine's ID by default.").
-      //  action { (_, c) =>
-      //    c.copy(commands = c.commands :+ "instance")
-      //  } children(
-      //    arg[String]("<engine ID>") action { (x, c) =>
-      //      c.copy(projectName = Some(x))
-      //    } text("Engine ID."),
-      //    opt[String]("directory-name") action { (x, c) =>
-      //      c.copy(directoryName = Some(x))
-      //    } text("Engine instance directory name.")
-      //  )
       note("")
       cmd("build").
         text("Build an engine at the current directory.").
@@ -230,25 +214,6 @@ object Console extends Logging {
             c.copy(build = c.build.copy(uberJar = true))
           }
         )
-      //note("")
-      //cmd("register").
-      //  text("Build and register an engine at the current directory.\n" +
-      //    "If the engine at the current directory is a PredictionIO\n" +
-      //    "built-in engine that is not part of PredictionIO's source tree,\n" +
-      //    "the build step will be skipped.").
-      //  action { (_, c) =>
-      //    c.copy(commands = c.commands :+ "register")
-      //  } children(
-      //    opt[String]("sbt-extra") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtExtra = Some(x)))
-      //    } text("Extra command to pass to SBT when it builds your engine."),
-      //    opt[Unit]("clean") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtClean = true))
-      //    } text("Clean build."),
-      //    opt[Unit]("asm") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-      //    } text("Build dependencies assembly.")
-      //  )
       note("")
       cmd("unregister").
         text("Unregister an engine at the current directory.").
@@ -398,22 +363,6 @@ object Console extends Logging {
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070")
         )
-      //note("")
-      //cmd("compile").
-      //  text("Compile a driver program.").
-      //  action { (_, c) =>
-      //    c.copy(commands = c.commands :+ "compile")
-      //  } children(
-      //    opt[String]("sbt-extra") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtExtra = Some(x)))
-      //    } text("Extra command to pass to SBT when it builds your engine."),
-      //    opt[Unit]("clean") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtClean = true))
-      //    } text("Clean build."),
-      //    opt[Unit]("asm") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-      //    } text("Build dependencies assembly.")
-      //  )
       note("")
       cmd("run").
         text("Launch a driver program. This command will pass all\n" +
@@ -462,26 +411,6 @@ object Console extends Logging {
             c.copy(upgrade = c.upgrade.copy(newAppId = x))
           } text("New App ID.")
         )
-      //note("")
-      //cmd("dist").
-      //  text("Build an engine at the current directory and create a \n" +
-      //    "distributable package.\n" +
-      //    "If the engine at the current directory is a PredictionIO\n" +
-      //    "built-in engine that is not part of PredictionIO's source tree,\n" +
-      //    "the build step will be skipped.").
-      //  action { (_, c) =>
-      //    c.copy(commands = c.commands :+ "dist")
-      //  } children(
-      //    opt[String]("sbt-extra") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtExtra = Some(x)))
-      //    } text("Extra command to pass to SBT when it builds your engine."),
-      //    opt[Unit]("clean") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtClean = true))
-      //    } text("Clean build."),
-      //    opt[Unit]("asm") action { (x, c) =>
-      //      c.copy(build = c.build.copy(sbtAssemblyPackageDependency = true))
-      //    } text("Build dependencies assembly.")
-      //  )
       note("")
       cmd("app").
         text("Manage apps.\n").
@@ -616,6 +545,17 @@ object Console extends Logging {
             c.copy(export = c.export.copy(format = x))
           }
         )
+      cmd("import").
+        action { (_, c) =>
+          c.copy(commands = c.commands :+ "import")
+        } children(
+          opt[Int]("appid") required() action { (x, c) =>
+            c.copy(imprt = c.imprt.copy(appId = x))
+          },
+          opt[String]("input") required() action { (x, c) =>
+            c.copy(imprt = c.imprt.copy(inputPath = x))
+          }
+        )
     }
 
     val separatorIndex = args.indexWhere(_ == "--")
@@ -653,9 +593,6 @@ object Console extends Logging {
         case Seq("build") =>
           regenerateManifestJson(ca.common.manifestJson)
           build(ca)
-        case Seq("register") =>
-          register(ca)
-          0
         case Seq("unregister") =>
           unregister(ca)
           0
@@ -675,16 +612,9 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
           0
-        case Seq("compile") =>
-          generateManifestJson(ca.common.manifestJson)
-          compile(ca)
-          0
         case Seq("run") =>
           generateManifestJson(ca.common.manifestJson)
           run(ca)
-        case Seq("dist") =>
-          dist(ca)
-          0
         case Seq("status") =>
           status(ca)
         case Seq("upgrade") =>
@@ -710,6 +640,8 @@ object Console extends Logging {
           Template.list(ca)
         case Seq("export") =>
           Export.eventsToFile(ca, coreAssembly(ca.common.pioHome.get))
+        case Seq("import") =>
+          Import.fileToEvents(ca, coreAssembly(ca.common.pioHome.get))
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -747,6 +679,7 @@ object Console extends Logging {
     "eventserver" -> txt.eventserver().toString,
     "app" -> txt.app().toString,
     "accesskey" -> txt.accesskey().toString,
+    "import" -> txt.imprt().toString,
     "export" -> txt.export().toString,
     "run" -> txt.run().toString,
     "eval" -> txt.eval().toString,
@@ -781,26 +714,6 @@ object Console extends Logging {
       copyLocal)
     info("Your engine is ready for training.")
     0
-  }
-
-  def register(ca: ConsoleArgs): Unit = {
-    if (builtinEngineDir ||
-      !RegisterEngine.builtinEngine(ca.common.manifestJson)) {
-      if (!distEngineDir) compile(ca)
-      info("Locating files to be registered.")
-      val jarFiles = jarFilesForScala
-      if (jarFiles.size == 0) {
-        error("No files can be found for registration. Aborting.")
-        sys.exit(1)
-      }
-      jarFiles foreach { f => info(s"Found ${f.getName}")}
-      RegisterEngine.registerEngine(ca.common.manifestJson, jarFiles)
-    } else {
-      info("Registering a built-in engine.")
-      RegisterEngine.registerEngine(
-        ca.common.manifestJson,
-        builtinEngines(ca.common.pioHome.get))
-    }
   }
 
   def unregister(ca: ConsoleArgs): Unit = {
@@ -913,94 +826,48 @@ object Console extends Logging {
   }
 
   def compile(ca: ConsoleArgs): Unit = {
-    if (!new File(ca.common.pioHome.get + File.separator + "RELEASE").exists) {
-      info("Development tree detected. Building built-in engines.")
-
-      val sbt = detectSbt(ca)
-      info(s"Using command '${sbt}' at ${ca.common.pioHome.get} to build.")
-      info("If the path above is incorrect, this process will fail.")
-
-      val asm =
-        if (ca.build.sbtAssemblyPackageDependency)
-          " engines/assemblyPackageDependency"
-        else
-          ""
-      val clean =
-        if (ca.build.sbtClean)
-          " engines/clean"
-        else
-          ""
-      val cmd = Process(
-        s"${sbt}${clean} engines/publishLocal${asm}",
-        new File(ca.common.pioHome.get))
-      info(s"Going to run: ${cmd}")
-      try {
-        val r =
-          if (ca.common.verbose || ca.common.debug)
-            cmd.!(ProcessLogger(line => info(line), line => error(line)))
-          else
-            cmd.!(ProcessLogger(
-              line => outputSbtError(line),
-              line => outputSbtError(line)))
-        if (r != 0) {
-          error(s"Return code of previous step is ${r}. Aborting.")
-          sys.exit(1)
-        }
-        info("Build finished successfully.")
-      } catch {
-        case e: java.io.IOException =>
-          error(s"${e.getMessage}")
-          sys.exit(1)
-      }
-    }
-
-    if (builtinEngineDir) {
-      info("Current working directory is a PredictionIO built-in engines " +
-        "project. Skipping redundant packaging step.")
+    val sbt = detectSbt(ca)
+    info(s"Using command '${sbt}' at the current working directory to build.")
+    info("If the path above is incorrect, this process will fail.")
+    val asm =
+      if (ca.build.sbtAssemblyPackageDependency)
+        " assemblyPackageDependency"
+      else
+        ""
+    val clean = if (ca.build.sbtClean) " clean" else ""
+    val buildCmd = s"${sbt} ${ca.build.sbtExtra.getOrElse("")}${clean} " +
+      (if (ca.build.uberJar) "assembly" else s"package${asm}")
+    val core = new File(s"pio-assembly-${BuildInfo.version}.jar")
+    if (ca.build.uberJar) {
+      info(s"Uber JAR enabled. Putting ${core.getName} in lib.")
+      val dst = new File("lib")
+      dst.mkdir()
+      FileUtils.copyFileToDirectory(
+        coreAssembly(ca.common.pioHome.get),
+        dst,
+        true)
     } else {
-      val sbt = detectSbt(ca)
-      info(s"Using command '${sbt}' at the current working directory to build.")
-      info("If the path above is incorrect, this process will fail.")
-      val asm =
-        if (ca.build.sbtAssemblyPackageDependency)
-          " assemblyPackageDependency"
+      info(s"Uber JAR disabled. Making sure lib/${core.getName} is absent.")
+      new File("lib", core.getName).delete()
+    }
+    info(s"Going to run: ${buildCmd}")
+    try {
+      val r =
+        if (ca.common.verbose || ca.common.debug)
+        buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
         else
-          ""
-      val clean = if (ca.build.sbtClean) " clean" else ""
-      val buildCmd = s"${sbt} ${ca.build.sbtExtra.getOrElse("")}${clean} " +
-        (if (ca.build.uberJar) "assembly" else s"package${asm}")
-      val core = new File(s"pio-assembly-${BuildInfo.version}.jar")
-      if (ca.build.uberJar) {
-        info(s"Uber JAR enabled. Putting ${core.getName} in lib.")
-        val dst = new File("lib")
-        dst.mkdir()
-        FileUtils.copyFileToDirectory(
-          coreAssembly(ca.common.pioHome.get),
-          dst,
-          true)
-      } else {
-        info(s"Uber JAR disabled. Making sure lib/${core.getName} is absent.")
-        new File("lib", core.getName).delete()
+        buildCmd.!(ProcessLogger(
+          line => outputSbtError(line),
+          line => outputSbtError(line)))
+      if (r != 0) {
+        error(s"Return code of previous step is ${r}. Aborting.")
+        sys.exit(1)
       }
-      info(s"Going to run: ${buildCmd}")
-      try {
-        val r =
-          if (ca.common.verbose || ca.common.debug)
-          buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
-          else
-          buildCmd.!(ProcessLogger(
-            line => outputSbtError(line),
-            line => outputSbtError(line)))
-        if (r != 0) {
-          error(s"Return code of previous step is ${r}. Aborting.")
-          sys.exit(1)
-        }
-        info("Build finished successfully.")
-      } catch {
-        case e: java.io.IOException =>
-          error(s"${e.getMessage}")
-          sys.exit(1)
-      }
+      info("Build finished successfully.")
+    } catch {
+      case e: java.io.IOException =>
+        error(s"${e.getMessage}")
+        sys.exit(1)
     }
   }
 
@@ -1015,8 +882,7 @@ object Console extends Logging {
 
     val jarFiles = jarFilesForScala
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
-    val allJarFiles = (jarFiles ++
-      builtinEngines(ca.common.pioHome.get)).map(_.getCanonicalPath)
+    val allJarFiles = jarFiles.map(_.getCanonicalPath)
     val cmd = s"${getSparkHome(ca.common.sparkHome)}/bin/spark-submit --jars " +
       s"${allJarFiles.mkString(",")} " + (if (extraFiles.size > 0)
         s"--files ${extraFiles.mkString(",")} " else "") +
@@ -1036,33 +902,6 @@ object Console extends Logging {
       return 1
     }
     r
-  }
-
-  def dist(ca: ConsoleArgs): Unit = {
-    if (builtinEngineDir ||
-      !RegisterEngine.builtinEngine(ca.common.manifestJson)) {
-      compile(ca)
-    }
-    info("Locating files to be distributed.")
-    val jarFiles = jarFilesForScala
-    if (jarFiles.size == 0) {
-      error("No files can be found for distribution. Aborting.")
-      sys.exit(1)
-    }
-    val distDir = new File("dist")
-    val libDir = new File(distDir, "lib")
-    libDir.mkdirs
-    jarFiles foreach { f =>
-      info(s"Found ${f.getName}")
-      FileUtils.copyFile(f, new File(libDir, f.getName))
-    }
-    val variantJson = "engine.json"
-    FileUtils.copyFile(new File(variantJson), new File(distDir, variantJson))
-    val paramsDir = new File("params")
-    if (paramsDir.exists)
-      FileUtils.copyDirectory(paramsDir, new File(distDir, paramsDir.getName))
-    Files.createFile(distDir.toPath.resolve(distFilename))
-    info(s"Successfully created distributable at: ${distDir.getCanonicalPath}")
   }
 
   def status(ca: ConsoleArgs): Int = {
@@ -1147,34 +986,6 @@ object Console extends Logging {
     } else {
       error(s"PredictionIO Core Assembly (${coreFile.getCanonicalPath}) does " +
         "not exist. Aborting.")
-      sys.exit(1)
-    }
-  }
-
-  def builtinEngines(pioHome: String): Seq[File] = {
-    val engine = s"engines_${scalaVersionNoPatch}-${BuildInfo.version}.jar"
-    val engineDeps = s"engines-assembly-${BuildInfo.version}-deps.jar"
-    val engineDir =
-      if (new File(pioHome + File.separator + "RELEASE").exists)
-        new File(pioHome + File.separator + "lib")
-      else
-        new File(Seq(
-          pioHome,
-          "engines",
-          "target",
-          s"scala-${scalaVersionNoPatch}").mkString(File.separator))
-    val engineFiles = Seq(
-      new File(engineDir, engine),
-      new File(engineDir, engineDeps))
-    val allPresent = !engineFiles.exists(!_.exists)
-    if (allPresent) {
-      engineFiles
-    } else {
-      engineFiles foreach { f =>
-        if (!f.exists) error(s"${f.getCanonicalPath} does not exist.")
-      }
-      error(s"Built-in PredictionIO engine JAR file(s) listed above is " +
-        "missing. Aborting.")
       sys.exit(1)
     }
   }
@@ -1309,16 +1120,4 @@ object Console extends Logging {
       if (f.exists) f.getCanonicalPath else "sbt"
     }
   }
-
-  def joinFile(path: Seq[String]): String =
-    path.mkString(File.separator)
-
-  def builtinEngineDir(): Boolean = {
-    val engineDir = new File(".." + File.separator + "engines").getCanonicalPath
-    val cwd = new File(".").getCanonicalPath
-    new File(".." + File.separator + "make-distribution.sh").exists &&
-      engineDir == cwd
-  }
-
-  def distEngineDir(): Boolean = new File(distFilename).exists
 }

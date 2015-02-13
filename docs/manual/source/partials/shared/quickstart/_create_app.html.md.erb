@@ -1,0 +1,34 @@
+Let's create a sample app called "MyApp1" now. An app represents the application
+that generates the data, e.g. a movie rental app.
+
+```
+$ pio app new MyApp1
+```
+
+You should find the following in the console output:
+
+```
+...
+2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
+2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
+2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
+2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
+2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+Take note of the **Access Key** and **App ID**. You will need the **Access Key**
+to refer to "MyApp1" when you collect data. At the same time, you will use **App
+ID** to refer to "MyApp1" in engine code.
+
+`$ pio app list` will return a list of names and IDs of apps created in the Event Server.
+
+```
+$ pio app list
+2014-12-03 14:19:34,134 INFO  elasticsearch.plugins - [Hephaestus] loaded [], sites []
+2014-12-03 14:19:36,206 INFO  tools.Console$ -                 Name |   ID
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp1 |    1
+2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp2 |    2
+2014-12-03 14:19:36,209 INFO  tools.Console$ - Finished listing 2 app(s).
+```
+<!-- dummy markdown link needed if code block is last -->
+[]()

@@ -24,7 +24,7 @@ VERSION=$(grep version $FWDIR/build.sbt | grep ThisBuild | grep -o '".*"' | sed 
 echo "Building binary distribution for PredictionIO $VERSION..."
 
 cd $FWDIR
-sbt/sbt core/publishLocal data/publishLocal engines/publishLocal engines/assemblyPackageDependency tools/assembly
+sbt/sbt core/publishLocal data/publishLocal tools/assembly
 
 cd $FWDIR
 rm -rf $DISTDIR
@@ -41,7 +41,6 @@ cp $FWDIR/project/build.properties $DISTDIR/project
 cp $FWDIR/sbt/sbt $DISTDIR/sbt
 cp $FWDIR/sbt/sbt-launch-lib.bash $DISTDIR/sbt
 cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
-cp $FWDIR/engines/target/scala-2.10/engines*jar $DISTDIR/lib
 cp -r $FWDIR/examples/scala* $DISTDIR/examples
 
 rm -f $DISTDIR/lib/*javadoc.jar

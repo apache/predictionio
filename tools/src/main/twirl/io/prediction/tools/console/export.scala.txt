@@ -8,5 +8,5 @@ file will be exported to HDFS instead of local filesystem.
   --output <value>
       Output path of the exported file.
   --format <value>
-      The format of the exported file. Valid values are "parquet" and "json".
-      The default format is "parquet". 
+      The format of the exported file. Valid values are "json" and "parquet".
+      The default format is "json". 
