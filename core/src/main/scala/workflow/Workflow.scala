@@ -184,11 +184,9 @@ object CoreWorkflow {
       params: WorkflowParams = WorkflowParams()) {
 
     logger.info("CoreWorkflow.runEval")
-    //val engineInstances = Storage.getMetaDataEngineInstances
 
     val eiId = engineInstances.insert(engineInstance)
     val evalEngineInstance = engineInstance.copy(id = eiId)
-
 
     logger.info("Start spark context")
     val mode = "evaluation"
@@ -207,11 +205,24 @@ object CoreWorkflow {
     val evalResult: ER = evaluator.evaluateBase(sc, evalDataSet)
   
     logger.info(s"EvalResult: $evalResult")
+
+    val (evalResultHTML, evalResultJSON) = evalResult match {
+      case niceRenderingResult: NiceRendering => {
+        (niceRenderingResult.toHTML, niceRenderingResult.toJSON)
+      }
+      case e: Any => {
+        logger.warn(s"${e.getClass.getName} is not a NiceRendering instance.")
+          ("", "")
+      }
+    }
     
     val evaluatedEI = evalEngineInstance.copy(
       status = "EVALCOMPLETED",
       endTime = DateTime.now,
-      evaluatorResults = evalResult.toString)
+      evaluatorResults = evalResult.toString,
+      evaluatorResultsHTML = evalResultHTML,
+      evaluatorResultsJSON = evalResultJSON
+    )
 
     logger.info(s"Insert eval result")
     engineInstances.update(evaluatedEI)
