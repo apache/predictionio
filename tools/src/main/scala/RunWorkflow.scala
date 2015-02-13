@@ -106,11 +106,7 @@ object RunWorkflow extends Logging {
         "--name",
         s"PredictionIO ${workMode}: ${em.id} ${em.version} (${ca.common.batch})") ++
       (if (!ca.build.uberJar) {
-        Seq(
-          "--jars",
-          (em.files ++
-            Console.builtinEngines(ca.common.pioHome.get).map(
-              _.getCanonicalPath)).mkString(","))
+        Seq("--jars", em.files.mkString(","))
       } else Seq()) ++
       (if (extraFiles.size > 0)
         Seq("--files", extraFiles.mkString(","))
