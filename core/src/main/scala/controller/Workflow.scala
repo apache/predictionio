@@ -166,7 +166,10 @@ object Workflow {
       )
   }
   */
-  
+ 
+  // evaluator is already instantiated.
+  // evaluatorParams is used to write into EngineInstance, will be shown in
+  // dashboard.
   def runEval[EI, Q, P, A, ER <: AnyRef](
       engine: BaseEngine[EI, Q, P, A],
       engineParams: EngineParams,
