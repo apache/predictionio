@@ -8,34 +8,32 @@ scripts with the community, you can post it on the [user
 group](https://groups.google.com/forum/#!forum/predictionio-user) or
 [here](../community/projects.html).
 
+## Datasets
+
 - MovieLens
 http://grouplens.org/datasets/movielens/
 
-- Orange (KDD09)
+- Orange
 http://www.sigkdd.org/kdd-cup-2009-customer-relationship-prediction
 
-- LendingClub
+- Lending Club
 https://www.lendingclub.com/info/download-data.action
 
 - Amazon Reviews
 http://archive.ics.uci.edu/ml/datasets/Amazon+Commerce+reviews+set and
 https://snap.stanford.edu/data/web-Amazon.html
 
-- Twitter (French)
-http://archive.ics.uci.edu/ml/datasets/Buzz+in+social+media+#
-
-- Intrusion Detector Learning (KDD99)
+- Intrusion Detector Learning
 http://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/task.html
 
-- Twitter (User Follows)
+- Twitter
 http://an.kaist.ac.kr/traces/WWW2010.html
 
-- Youtube
+- YouTube
 http://netsg.cs.sfu.ca/youtubedata/
 
 - Million Song Dataset
 http://labrosa.ee.columbia.edu/millionsong/
-https://www.kaggle.com/c/msdchallenge/data
 
 - Yahoo! Music
 http://webscope.sandbox.yahoo.com/catalog.php?datatype=r
@@ -49,7 +47,7 @@ http://www.redditblog.com/2011/09/who-in-world-is-reddit-results-are-in.html
 - Ancestry.com
 http://www.cs.cmu.edu/~jelsas/data/ancestry.com/
 
-- Airline On-time data (12GB uncompressed)
+- Airline On-time data
 http://stat-computing.org/dataexpo/2009/the-data.html
 
 - Stack Overflow
@@ -73,14 +71,14 @@ https://www.kaggle.com/c/socialNetwork/data
 - Careerbuilder
 https://www.kaggle.com/c/job-recommendation/data
 
-- Tencent Weibo (KDD12)
+- Tencent Weibo
 https://www.kddcup2012.org/c/kddcup2012-track1
 
 - StumbleUpon
 https://www.kaggle.com/c/stumbleupon/data
 
 - Adzuna
-https://www.kaggle.com/c/job-salary-prediction [Regression]
+https://www.kaggle.com/c/job-salary-prediction
 
 - Event Recommendation
 https://www.kaggle.com/c/event-recommendation-engine-challenge
@@ -103,3 +101,17 @@ https://www.kaggle.com/c/march-machine-learning-mania/data
 
 - Open Public Football Data (e.g., World Cup)
 https://github.com/openfootball
+
+## Other Lists, Libraries and Sources of Data
+
+- CrowdFlower Open Data Library
+http://www.crowdflower.com/open-data-library
+
+- bit.ly's Research Quality Data Sets
+https://bitly.com/bundles/hmason/1
+
+- Stanford Large Network Dataset Collection
+http://snap.stanford.edu/data/index.html
+
+- UC Irvine Machine Learning Repository
+http://archive.ics.uci.edu/ml/

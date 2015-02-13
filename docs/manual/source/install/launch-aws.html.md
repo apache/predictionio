@@ -13,7 +13,7 @@ ready-to-use PredictionIO Amazon EC2 instance with a single click.
 
 ## Access AWS Marketplace
 
-Visit [PredictionIO product's page on AWS Marketplace](https://aws.amazon.com/marketplace/pp/B00ECGJYGE) and sign in with your
+Visit [PredictionIO product's page on AWS Marketplace](https://aws.amazon.com/marketplace/pp/B00RPIFSYS/) and sign in with your
 AWS account.
 
 ## Using 1-Click Launch

@@ -3,6 +3,7 @@ nav#nav-main role="navigation"
     li.expand
       = link_to 'Getting Started', '#'
       ul
+        li = link_to_with_active 'Latest Updates', '/start/new/'
         li = link_to_with_active 'Overview', '/start/'
         li = link_to_with_active 'Installing PredictionIO', '/install/'
         li = link_to_with_active 'Engine - A Closer Look', '/start/engines/'
@@ -11,8 +12,7 @@ nav#nav-main role="navigation"
       ul
         li = link_to_with_active 'Quick Start', '/templates/recommendation/quickstart/'
         li = link_to_with_active 'DASE Components Explained', '/templates/recommendation/dase/'
-        li = link_to_with_active 'How To', '/templates/recommendation/how-to/'
-        
+        li = link_to_with_active 'How To', '/templates/recommendation/how-to/'        
     li.expand
       = link_to 'Similar Product Template', '#'
       ul
@@ -20,13 +20,16 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'DASE Components Explained', '/templates/similarproduct/dase/'
         li = link_to_with_active 'How To', '/templates/similarproduct/how-to/'
     li.expand
+      = link_to 'Product Ranking Template', '#'
+      ul
+        li = link_to_with_active 'Quick Start', '/templates/productranking/quickstart/'
+        li = link_to_with_active 'DASE Components Explained', '/templates/productranking/dase/'
+    li.expand
       = link_to 'Classification Template', '#'
       ul
         li = link_to_with_active 'Quick Start', '/templates/classification/quickstart/'
         li = link_to_with_active 'DASE Components Explained', '/templates/classification/dase/'
         li = link_to_with_active 'How To', '/templates/classification/how-to/'
-
-    li.expand
     li.expand
       = link_to 'Vanilla Template', '#'
       ul
@@ -37,22 +40,22 @@ nav#nav-main role="navigation"
       ul
         li = link_to_with_active 'Overview', '/datacollection/overview/'
         li = link_to_with_active 'Collecting Data', '/datacollection/eventapi/'
-        li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'
-        
+        li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'        
     li.expand
       = link_to 'Demo Tutorials', '#'
       ul
         li = link_to_with_active 'Tapster - Similar Product Template', '/demo/tapster/'  
-        li = link_to_with_active 'Community Contributed', '/demo/community/'
-        
-        
+        li = link_to_with_active 'Community Contributed', '/demo/community/'  
+    li.expand
+      = link_to 'Production', '#'
+      ul
+        li = link_to_with_active 'Deploy w/ Cloudformation', '/production/deploy-cloudformation/'
     li.expand
       = link_to 'Get Involved', '#'
       ul
         li = link_to_with_active 'Contribute Code', '/community/contribute-code/'
         li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation/'
         li = link_to_with_active 'Community Projects', '/community/projects/'
-        
     li.expand
       = link_to 'SDKs and Plugins', '#'
       ul
@@ -60,6 +63,7 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'PHP SDK', '/sdk/php/'
         li = link_to_with_active 'Python SDK', '/sdk/python/'
         li = link_to_with_active 'Ruby SDK', '/sdk/ruby/'
+        
     li.expand
       = link_to 'Resources', '#'
       ul
@@ -67,6 +71,7 @@ nav#nav-main role="navigation"
         li = link_to_with_active 'Upgrade Instructions', '/resources/upgrade/'
         li = link_to_with_active 'Architecture', '/resources/systems/'
         li = link_to_with_active 'Command Line', '/resources/command-line/'
+        li = link_to_with_active 'Develope engine with Intellij IDEA', '/resources/intellij/'
         li = link_to_with_active 'Troubleshoot Engine Development', '/resources/engine-development/'
         li = link_to_with_active 'Glossary', '/resources/glossary/'
         li = link_to_with_active 'API Docs', '/api/current/#package'
