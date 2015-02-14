@@ -128,7 +128,7 @@ private[prediction] trait LEvents {
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Map[String, DataMap]]]
+    * @return Future[Either[StorageError, Map[String, PropertyMap]]]
     */
   def futureAggregateProperties(
     appId: Int,
@@ -136,14 +136,14 @@ private[prediction] trait LEvents {
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Map[String, DataMap]]] = notImplemented
+    Future[Either[StorageError, Map[String, PropertyMap]]] = notImplemented
 
   /** Experimental.
     *
     * Aggregate properties of the specified entity (entityType + entityId)
     * based on these special events:
     * \$set, \$unset, \$delete events.
-    * and returns a Future of either StorageError or Option[DataMap]
+    * and returns a Future of either StorageError or Option[PropertyMap]
     *
     * @param appId use events of this app ID
     * @param entityType the entityType
@@ -151,7 +151,7 @@ private[prediction] trait LEvents {
     * @param startTime use events with eventTime >= startTime
     * @param untilTime use events with eventTime < untilTime
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Option[DataMap]]]
+    * @return Future[Either[StorageError, Option[PropertyMap]]]
     */
   def futureAggregatePropertiesSingle(
     appId: Int,
@@ -159,7 +159,7 @@ private[prediction] trait LEvents {
     entityId: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Option[DataMap]]] = notImplemented
+    Future[Either[StorageError, Option[PropertyMap]]] = notImplemented
 
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = notImplemented
@@ -268,7 +268,7 @@ private[prediction] trait LEvents {
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
     * @param ec ExecutionContext
-    * @return Either[StorageError, Map[String, DataMap]]
+    * @return Either[StorageError, Map[String, PropertyMap]]
     */
   def aggregateProperties(
     appId: Int,
@@ -277,7 +277,7 @@ private[prediction] trait LEvents {
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
-    Either[StorageError, Map[String, DataMap]] = {
+    Either[StorageError, Map[String, PropertyMap]] = {
     Await.result(futureAggregateProperties(
       appId = appId,
       entityType = entityType,
@@ -291,7 +291,7 @@ private[prediction] trait LEvents {
     * Aggregate properties of the specified entity (entityType + entityId)
     * based on these special events:
     * \$set, \$unset, \$delete events.
-    * and returns either StorageError or Option[DataMap]
+    * and returns either StorageError or Option[PropertyMap]
     *
     * @param appId use events of this app ID
     * @param entityType the entityType
@@ -299,7 +299,7 @@ private[prediction] trait LEvents {
     * @param startTime use events with eventTime >= startTime
     * @param untilTime use events with eventTime < untilTime
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Option[DataMap]]]
+    * @return Future[Either[StorageError, Option[PropertyMap]]]
     */
   def aggregatePropertiesSingle(
     appId: Int,
@@ -308,7 +308,7 @@ private[prediction] trait LEvents {
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
-    Either[StorageError, Option[DataMap]] = {
+    Either[StorageError, Option[PropertyMap]] = {
 
     Await.result(futureAggregatePropertiesSingle(
       appId = appId,

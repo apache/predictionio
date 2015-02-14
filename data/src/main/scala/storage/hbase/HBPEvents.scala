@@ -17,6 +17,7 @@ package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.DataMap
+import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.PEvents
 import io.prediction.data.storage.PEventAggregator
 import io.prediction.data.storage.EntityMap
@@ -103,7 +104,7 @@ class HBPEvents(client: HBClient, namespace: String)
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
-    (sc: SparkContext): RDD[(String, DataMap)] = {
+    (sc: SparkContext): RDD[(String, PropertyMap)] = {
 
     checkTableExists(appId)
 
