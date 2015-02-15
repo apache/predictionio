@@ -81,6 +81,9 @@ private[prediction] trait EngineInstances {
   /** Get a EngineInstance by ID. */
   def get(id: String): Option[EngineInstance]
 
+  /** Get all EngineInstances. */
+  def getAll(): Seq[EngineInstance]
+
   /** Get an instance that has started training the latest and has trained to
     * completion.
     */
