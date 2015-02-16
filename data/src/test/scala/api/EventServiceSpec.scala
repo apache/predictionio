@@ -54,4 +54,6 @@ class EventServiceSpec extends Specification {
       success
     }
   }
+  
+  step(system.shutdown())
 }
