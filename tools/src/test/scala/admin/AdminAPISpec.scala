@@ -27,9 +27,7 @@ class AdminAPISpec extends Specification{
     eventClient = Storage.getLEvents()
   )
   
-  val adminActor= system.actorOf(Props(classOf[AdminServerActor], commandClient))
-
-  adminActor ! StartServer(config.ip, config.port)
+  val adminActor= system.actorOf(Props(classOf[AdminServiceActor], commandClient))
 
   "GET / request" should {
     "properly produce OK HttpResponses" in {
@@ -48,5 +46,5 @@ class AdminAPISpec extends Specification{
     }
   }
 
-  //step(system.shutdown())
+  step(system.shutdown())
 }
