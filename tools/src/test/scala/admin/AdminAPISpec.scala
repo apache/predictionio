@@ -6,12 +6,11 @@ package io.prediction.tools.admin
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestProbe
-import io.prediction.data.api.StartServer
 import io.prediction.data.storage.Storage
 import org.specs2.mutable.Specification
-import spray.util._
 import spray.http._
 import spray.httpx.RequestBuilding._
+import spray.util._
 
 
 class AdminAPISpec extends Specification{
@@ -33,12 +32,32 @@ class AdminAPISpec extends Specification{
     "properly produce OK HttpResponses" in {
       val probe = TestProbe()(system)
       probe.send(adminActor, Get("/"))
+
       probe.expectMsg(
         HttpResponse(
           200,
           HttpEntity(
             contentType = ContentTypes.`application/json`,
             string = """{"status":"alive"}"""
+          )
+        )
+      )
+      success
+    }
+  }
+  
+  "GET /cmd/app request" should {
+    "properly produce OK HttpResponses" in {
+      val probe = TestProbe()(system)
+      probe.send(adminActor,Get("/cmd/app"))
+      
+      //TODO: Need to convert the response string to the corresponding case object to assert some properties on the object
+      probe.expectMsg(
+        HttpResponse(
+          200,
+          HttpEntity(
+            contentType = ContentTypes.`application/json`,
+            string = """{"status":1}"""
           )
         )
       )
