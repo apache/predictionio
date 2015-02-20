@@ -4,7 +4,7 @@
   * you may not use this file except in compliance with the License.
   * You may obtain a copy of the License at
   *
-  *     http://www.apache.org/licenses/LICENSE-2.0
+  * http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -84,5 +84,19 @@ with SharedSparkContext with LabeledPointFixture {
       model.logScore(LabeledPoint("Not Exist", Array(Long, NotSweet, Yellow)))
 
     score should be(None)
+  }
+
+  it should "use the provided default likelihood function" in {
+    val labeledPointsRdd = sc.parallelize(labeledPoints)
+    val model = CategoricalNaiveBayes.train(labeledPointsRdd)
+
+    val score =
+      model.logScore(
+        LabeledPoint(Banana, Array(Long, NotSweet, "Not Exist")),
+        ls => ls.min - math.log(2)
+      )
+
+    score should not be None
+    score.get should be(-4.9236 +- Tolerance)
   }
 }

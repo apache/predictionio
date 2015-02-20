@@ -95,11 +95,17 @@ case class CategoricalNaiveBayesModel(
    * Calculate the log score of having the given features and label
    *
    * @param point label and features
+   * @param defaultLikelihood a function that calculates the likelihood when a
+   *                          feature value is not present. The input to the
+   *                          function is the other feature value likelihoods.
    * @return log score when label is present. None otherwise.
    */
-  def logScore(point: LabeledPoint): Option[Double] = {
+  def logScore(
+    point: LabeledPoint,
+    defaultLikelihood: (Seq[Double]) => Double = ls => Double.NegativeInfinity
+    ): Option[Double] = {
     val label = point.label
-    val features =point.features
+    val features = point.features
 
     if (!priors.contains(label)) {
       return None
@@ -110,7 +116,10 @@ case class CategoricalNaiveBayesModel(
 
     val likelihoodScores = features.zip(likelihood).map {
       case (feature, featureLikelihoods) =>
-        featureLikelihoods.getOrElse(feature, Double.NegativeInfinity)
+        featureLikelihoods.getOrElse(
+          feature,
+          defaultLikelihood(featureLikelihoods.values.toSeq)
+        )
     }
 
     Some(prior + likelihoodScores.sum)
