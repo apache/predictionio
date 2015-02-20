@@ -108,8 +108,17 @@ case class CategoricalNaiveBayesModel(
     val features = point.features
 
     if (!priors.contains(label)) {
-      return None
+      None
+    } else {
+      Some(logScoreInternal(label, features, defaultLikelihood))
     }
+  }
+
+  private def logScoreInternal(
+    label: String,
+    features: Array[String],
+    defaultLikelihood: (Seq[Double]) => Double = ls => Double.NegativeInfinity
+    ): Double = {
 
     val prior = priors(label)
     val likelihood = likelihoods(label)
@@ -122,7 +131,23 @@ case class CategoricalNaiveBayesModel(
         )
     }
 
-    Some(prior + likelihoodScores.sum)
+    prior + likelihoodScores.sum
+  }
+
+  /**
+   * Return the label that yields the highest score
+   *
+   * @param features features for classification
+   *
+   */
+  def predict(features: Array[String]): String = {
+    priors.keySet.map { label =>
+      (label, logScoreInternal(label, features))
+    }.toSeq
+      .sortBy(_._2)(Ordering.Double.reverse)
+      .take(1)
+      .head
+      ._1
   }
 }
 
