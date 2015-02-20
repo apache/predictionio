@@ -24,7 +24,7 @@ VERSION=$(grep version $FWDIR/build.sbt | grep ThisBuild | grep -o '".*"' | sed 
 echo "Building binary distribution for PredictionIO $VERSION..."
 
 cd $FWDIR
-sbt/sbt core/publishLocal data/publishLocal tools/assembly
+sbt/sbt core/publishLocal data/publishLocal e2/publishLocal tools/assembly
 
 cd $FWDIR
 rm -rf $DISTDIR

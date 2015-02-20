@@ -53,7 +53,8 @@ lazy val root = project in file(".") aggregate(
   core,
   data,
   engines,
-  tools)
+  tools,
+  e2)
 
 lazy val core = (project in file("core")).
   dependsOn(data).
@@ -74,6 +75,8 @@ lazy val tools = (project in file("tools")).
   dependsOn(core).
   dependsOn(data).
   enablePlugins(SbtTwirl)
+
+lazy val e2 = (project in file("e2")).settings(sonatypeSettings: _*)
 
 scalaJavaUnidocSettings
 
