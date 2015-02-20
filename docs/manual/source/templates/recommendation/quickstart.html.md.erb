@@ -186,6 +186,8 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 We will use the sample movie data from MLlib repo for demonstration purpose.
 Execute the following to get the data set:
 
+WARNING: These commands must be exectued in the Engine Directory for example: `PredictionIO/MyRecomendation`.
+
 ```
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 ```
