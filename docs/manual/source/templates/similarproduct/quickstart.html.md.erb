@@ -63,7 +63,7 @@ You can offer features like "Customers Who Bought This Item Also Bought....".
 ## Collecting Data
 
 Next, let's collect some training data for the app of this Engine. By default,
-the Similar Engine Template supports 2 types of entities: **user** and
+the Similar Product Engine Template supports 2 types of entities: **user** and
 **item**, and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item.
 
 <%= partial 'shared/quickstart/install_sdk' %>
@@ -293,6 +293,8 @@ WARNING: If you see error **TypeError: __init__() got an unexpected keyword argu
 please update the Python SDK to the latest version.
 
 ## Deploy the Engine as a Service
+
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MySimilarProduct' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MySimilarProduct' } %>
 

@@ -222,6 +222,8 @@ INFO: By default, the template train the model with "rate" events (explicit rati
 
 ## Deploy the Engine as a Service
 
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyRecommendation' } %>
+
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyRecommendation' } %>
 
 ## Using the Engine
