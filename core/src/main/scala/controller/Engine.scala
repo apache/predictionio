@@ -500,7 +500,22 @@ class EngineParams(
     val preparatorParams: (String, Params) = ("", EmptyParams()),
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
     val servingParams: (String, Params) = ("", EmptyParams()))
-  extends Serializable {}
+  extends Serializable {
+
+  // A case class style copy method.
+  def copy(
+    dataSourceParams: (String, Params) = dataSourceParams,
+    preparatorParams: (String, Params) = preparatorParams,
+    algorithmParamsList: Seq[(String, Params)] = algorithmParamsList,
+    servingParams: (String, Params) = servingParams): EngineParams = {
+
+    new EngineParams(
+      dataSourceParams,
+      preparatorParams,
+      algorithmParamsList,
+      servingParams)
+  }
+}
 
 object EngineParams {
   /** Create EngineParams

@@ -93,11 +93,18 @@ object TuningWorkflow {
     val tuningEvaluator = new TuningEvaluator(metric)
 
     val evalResultList: Seq[(EngineParams, R)] = engineParamsList
-    .map { engineParams => {
+    .zipWithIndex
+    .map { case (engineParams, idx) => {
       val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
 
       val metricResult: R = tuningEvaluator.evaluateBase(sc, evalDataSet)
+
+
       (engineParams, metricResult)
+    }}
+   
+    evalResultList.zipWithIndex.foreach { case ((ep, r), idx) => {
+      logger.info(s"Metric: EngineParamsIdx = $idx, Result: $r")
     }}
 
     // use max. take implicit from Metric.

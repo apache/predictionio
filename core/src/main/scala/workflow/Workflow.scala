@@ -314,8 +314,10 @@ object CoreWorkflow {
     logger.info("Stop spark context")
     sc.stop()
 
+    val bestEpJson = write(bestEngineParams)
+
     logger.info(s"Optimal score: $bestScore")
-    logger.info(s"EngineParams: $bestEngineParams")
+    logger.info(s"EngineParams: $bestEpJson")
 
     logger.info("CoreWorkflow.runTuning completed.")
   }
